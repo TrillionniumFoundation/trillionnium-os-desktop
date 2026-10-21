@@ -1,0 +1,386 @@
+{
+  "schema": 1,
+  "created_at": "2026-10-19T01:09:08.418699+00:00",
+  "producer_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+  "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+  "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+  "integrated_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+  "prior_a01_parent": "71524be19383e2ff98f6abc90668c48988e7c8e2",
+  "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "toolchain": "nightly-2026-07-21",
+  "source_directory": "kernel/asterinas",
+  "source_summary": "source-summary.json",
+  "pipeline_passed_after_preflight_retry": true,
+  "native_build": {
+    "execution": {
+      "producer": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+      "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+      "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+      "stage": "kernel",
+      "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9",
+      "argv": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-c",
+        "source \"$1\"; shift; exec \"$@\"",
+        "bash",
+        "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+        "support/build/kernel.sh",
+        "kernel"
+      ],
+      "selected_environment": {
+        "CARGO_BUILD_JOBS": "2",
+        "A01_SMP": "1",
+        "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/kernel",
+        "CARGO_TARGET_DIR": null,
+        "CARGO_ENCODED_RUSTFLAGS": null
+      },
+      "runtime_env": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+        "exists": true,
+        "mode": "0o100755",
+        "device": 27,
+        "inode": 1594696,
+        "size": 1345,
+        "mtime_ns": 1792312429877033233,
+        "ctime_ns": 1792312429877033233,
+        "sha256": "29a29aaf5ffc301b83ea47c0c545ebc6c2621af314269479e41c3e0c749b797c"
+      },
+      "started_at": "2026-10-19T00:52:08.171499+00:00",
+      "disk_free_before": 13388943360,
+      "target_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target",
+        "exists": false
+      },
+      "osdk_target_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/osdk/target",
+        "exists": false
+      },
+      "public_manifest_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "exists": false
+      },
+      "source_before": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/kernel-before.json",
+      "git_status_before": "",
+      "finished_at": "2026-10-19T00:55:17.821826+00:00",
+      "elapsed_seconds": 189.63256157399155,
+      "exit_code": 0,
+      "disk_free_after": 12319154176,
+      "public_manifest_after": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "exists": false
+      },
+      "git_status_after": "",
+      "source_after": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/kernel-after.json"
+    },
+    "empty_target": true,
+    "compilation_lines": 284,
+    "first_elf": {
+      "size": 8382376,
+      "sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4",
+      "mode": "0o644"
+    }
+  },
+  "boot": {
+    "execution": {
+      "producer": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+      "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+      "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+      "stage": "boot-retry",
+      "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9",
+      "argv": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-c",
+        "source \"$1\"; shift; exec \"$@\"",
+        "bash",
+        "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+        "support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "selected_environment": {
+        "CARGO_BUILD_JOBS": "2",
+        "A01_SMP": "1",
+        "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry",
+        "CARGO_TARGET_DIR": null,
+        "CARGO_ENCODED_RUSTFLAGS": null
+      },
+      "runtime_env": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+        "exists": true,
+        "mode": "0o100755",
+        "device": 27,
+        "inode": 1594696,
+        "size": 1345,
+        "mtime_ns": 1792312429877033233,
+        "ctime_ns": 1792312429877033233,
+        "sha256": "29a29aaf5ffc301b83ea47c0c545ebc6c2621af314269479e41c3e0c749b797c"
+      },
+      "started_at": "2026-10-19T00:57:08.684487+00:00",
+      "disk_free_before": 12273577984,
+      "target_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target",
+        "exists": true,
+        "mode": "0o40755",
+        "device": 27,
+        "inode": 17192,
+        "size": 4096,
+        "mtime_ns": 1792371202072177865,
+        "ctime_ns": 1792371202072177865
+      },
+      "osdk_target_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/osdk/target",
+        "exists": true,
+        "mode": "0o40755",
+        "device": 27,
+        "inode": 8256,
+        "size": 4096,
+        "mtime_ns": 1792371129909435787,
+        "ctime_ns": 1792371202351287318
+      },
+      "public_manifest_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "exists": false
+      },
+      "source_before": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/boot-retry-before.json",
+      "git_status_before": "",
+      "finished_at": "2026-10-19T00:57:12.105574+00:00",
+      "elapsed_seconds": 3.4061792499996955,
+      "exit_code": 0,
+      "disk_free_after": 12253618176,
+      "public_manifest_after": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "exists": false
+      },
+      "git_status_after": "",
+      "source_after": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/boot-retry-after.json"
+    },
+    "qemu_record": "boot/qemu.json",
+    "serial": "boot/serial.log",
+    "serial_sha256": "b585103e6b898bbd1c804b554cb66876ab7d2463872247f98d0def6bd3cc057f",
+    "serial_bytes": 72279,
+    "qemu_raw_exit": 33,
+    "qemu_seconds": 1.021,
+    "actual_argv": [
+      "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/kernel.elf",
+      "-initrd",
+      "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/bios.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=qemu.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-L",
+      "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/qemu"
+    ],
+    "first_build_equals_loaded": true,
+    "boot_stage_reused_fresh_target": true,
+    "separate_second_cold_build_claimed": false,
+    "artifact_sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4"
+  },
+  "kernel_tests": {
+    "execution": {
+      "producer": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+      "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+      "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+      "stage": "ktest",
+      "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9",
+      "argv": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-c",
+        "source \"$1\"; shift; exec \"$@\"",
+        "bash",
+        "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+        "python3",
+        "-B",
+        "-I",
+        "support/build/ktest/run.py",
+        "--output",
+        "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/ktest"
+      ],
+      "selected_environment": {
+        "CARGO_BUILD_JOBS": "2",
+        "A01_SMP": "1",
+        "A01_RUN_DIR": null,
+        "CARGO_TARGET_DIR": null,
+        "CARGO_ENCODED_RUSTFLAGS": null
+      },
+      "runtime_env": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+        "exists": true,
+        "mode": "0o100755",
+        "device": 27,
+        "inode": 1594696,
+        "size": 1345,
+        "mtime_ns": 1792312429877033233,
+        "ctime_ns": 1792312429877033233,
+        "sha256": "29a29aaf5ffc301b83ea47c0c545ebc6c2621af314269479e41c3e0c749b797c"
+      },
+      "started_at": "2026-10-19T00:57:39.147493+00:00",
+      "disk_free_before": 12250775552,
+      "target_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target",
+        "exists": true,
+        "mode": "0o40755",
+        "device": 27,
+        "inode": 17192,
+        "size": 4096,
+        "mtime_ns": 1792371202072177865,
+        "ctime_ns": 1792371202072177865
+      },
+      "osdk_target_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/osdk/target",
+        "exists": true,
+        "mode": "0o40755",
+        "device": 27,
+        "inode": 8256,
+        "size": 4096,
+        "mtime_ns": 1792371129909435787,
+        "ctime_ns": 1792371202351287318
+      },
+      "public_manifest_before": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "exists": true,
+        "mode": "0o100600",
+        "device": 27,
+        "inode": 19777,
+        "size": 1019,
+        "mtime_ns": 1792371128713027657,
+        "ctime_ns": 1792371432793208588,
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+      },
+      "source_before": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/ktest-before.json",
+      "git_status_before": "?? kernel/asterinas/kernel/OSDK.toml",
+      "finished_at": "2026-10-19T01:00:00.032181+00:00",
+      "elapsed_seconds": 140.86601254800917,
+      "exit_code": 0,
+      "disk_free_after": 10931740672,
+      "public_manifest_after": {
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "exists": true,
+        "mode": "0o100600",
+        "device": 27,
+        "inode": 19777,
+        "size": 1019,
+        "mtime_ns": 1792371128713027657,
+        "ctime_ns": 1792371432793208588,
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+      },
+      "git_status_after": "?? kernel/asterinas/kernel/OSDK.toml",
+      "source_after": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/ktest-after.json"
+    },
+    "result": "ktest/result.json",
+    "crates": [
+      {
+        "crate": "ostd",
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "observed_test_starts": 221,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      },
+      {
+        "crate": "aster-core",
+        "declared": 169,
+        "passed": 169,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 169,
+        "observed_test_starts": 169,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      }
+    ],
+    "reported_passed": 390,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 387,
+    "failed": 0,
+    "filtered": 0,
+    "new_cpu_config_tests_executed_and_passed": 9,
+    "new_tests_proof": "review/native-review.json",
+    "ktest_snapshot_scope": "Prelaunch stable-FD hashes plus matched post-execution frozen ELFs; not private prelaunch copies."
+  },
+  "dependencies": {
+    "new_installation_for_this_run": false,
+    "actual_prior_installation_archive": "dependencies/installation-2026-10-18.tar.gz",
+    "current_revalidation_archive": "dependencies/revalidation-2026-10-19.tar.gz",
+    "current_commands_passed": 13,
+    "binaries_and_libraries_matched": 70,
+    "qemu_dynamic_libraries_matched": 48,
+    "firmware_busybox_vdso_initramfs_matched": 4,
+    "original_packages_verified": 57,
+    "docker_available": false,
+    "nix_available": false,
+    "kvm_available": false,
+    "installer_iso_required": false
+  },
+  "independent_native_review": {
+    "passed": true,
+    "checks_passed": 53,
+    "checks_failed": 0,
+    "path": "review/native-review.json",
+    "new_guest_executions_by_reviewer": false
+  },
+  "failures": {
+    "first_boot_driver_exit": 1,
+    "first_boot_launched_make_or_qemu": false,
+    "original_preflight_log": "failures/boot-preflight/driver.log",
+    "manifest_first_custody": "failures/boot-preflight/quarantine.json",
+    "manifest_second_custody": "failures/post-boot-manifest/quarantine.json",
+    "manifest_current_observation": "failures/manifest-reappearance/observation.json",
+    "current_public_manifest_present": true,
+    "whole_worktree_current_clean": false,
+    "writer_identified": false,
+    "guards_unchanged": true,
+    "earlier_cache_reappearance_receipt": "source-records.tar.xz:acquisition/cache-reappearance.json"
+  },
+  "scope_limits": [
+    "No new host ABI acceptance gate or OSDK full matrix was run at this producer.",
+    "TCG soft skips do not establish KVM/VMX/EPT acceptance.",
+    "No native HOS2 four-effect enforcement, durable K-D, G1/G2, general SMP or real-device acceptance is established by these results.",
+    "No cross-host reproducibility or complete immutable host dependency lock is established.",
+    "The following evidence-only publication does not create a separately rebuilt native producer."
+  ],
+  "archives": "archive-index.json"
+}

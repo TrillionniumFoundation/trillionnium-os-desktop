@@ -1,0 +1,46 @@
+13: 
+14: #[derive(Debug)]
+15: pub struct ComponentInfo {
+16:     name: String,
+17:     /// The absolute path to the component
+18:     path: String,
+19:     priority: u16,
+20: }
+21: 
+22: impl ToTokens for ComponentInfo {
+23:     fn to_tokens(&self, tokens: &mut TokenStream) {
+24:         let token = TokenStream::from_str(
+25:             format!("\"{}\",\"{}\",{}", self.name, self.path, self.priority).as_str(),
+26:         )
+27:         .unwrap();
+28:         tokens.append(Group::new(proc_macro2::Delimiter::Parenthesis, token));
+29:     }
+30: }
+77:     let mut components_info = Vec::new();
+78:     for package in component_packages {
+79:         let path = {
+80:             // Parse the package ID <https://doc.rust-lang.org/cargo/reference/pkgid-spec.html>
+81:             // and extract the path. Let's take `path+file:///path/to/comps/pci#aster-pci@0.1.0`
+82:             // as an example package ID.
+83:             let id = package["id"].as_str().unwrap();
+84:             // Remove the prefix `path+file://`.
+85:             assert!(id.starts_with("path+file://"));
+86:             let id = id.trim_start_matches("path+file://");
+87:             // Remove the fragment part `#aster-pci@0.1.0`. Note that the package name part
+88:             // may be missing if the directory name is the same as the package name.
+89:             id.split(['#', '@']).next().unwrap()
+90:         };
+91:         let component_info = {
+92:             let package_name = package["name"].as_str().unwrap().to_string();
+93:             ComponentInfo {
+94:                 name: package_name.clone(),
+95:                 path: PathBuf::from(&workspace_root)
+96:                     .join(path)
+97:                     .to_str()
+98:                     .unwrap()
+99:                     .to_string(),
+100:                 priority: *mapping.get(&package_name).unwrap(),
+101:             }
+102:         };
+103:         components_info.push(component_info)
+104:     }

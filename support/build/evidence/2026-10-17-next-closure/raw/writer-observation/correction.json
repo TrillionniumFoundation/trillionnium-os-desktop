@@ -1,0 +1,8 @@
+{
+  "observed_first_exit": 1,
+  "failure": "ValueError: changing draft in post-rename snapshot",
+  "limitation": "first script compared entire stat_result including read-updated atime; no before-after stat details were retained, so that exception is not accepted as writer proof",
+  "correction": "v2 compares explicit dev/inode/mode/nlink/size/mtime/ctime and uses new output; original script and first quarantined bytes retained",
+  "first_sha256": "db207d182dd019d05f6e2bada847eb827d2d7c00f61a50098bb597549536c47c",
+  "v2_sha256": "e30446cbaaeaea69eacf67db87af11849565497fc6a73a951969e3733c7deb19"
+}

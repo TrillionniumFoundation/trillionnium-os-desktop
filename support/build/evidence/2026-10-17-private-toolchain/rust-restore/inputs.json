@@ -1,0 +1,43 @@
+{
+  "record_kind": "posthoc evidence packaging of original command receipts and retained inputs",
+  "official_installer": {
+    "path": "/workspace/scratch/ae1a8cf05419/round2-restore/rustup-init",
+    "bytes": 21113232,
+    "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+    "url": "https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init",
+    "retained_in_archive": false,
+    "expected_sha256_in_executed_restore_script": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+  },
+  "fixed_nightly": {
+    "channel": "nightly-2026-07-21",
+    "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+    "explicitly_installed_target": "x86_64-unknown-none",
+    "components": "rust-src,rustc-dev,llvm-tools-preview,rustfmt,clippy"
+  },
+  "manifest_observation": {
+    "record_kind": "posthoc transcription of an actual earlier tool result in this restoration session; not recorded by restore-rust.py",
+    "url": "https://static.rust-lang.org/dist/2026-07-21/channel-rust-nightly.toml",
+    "http_status": 200,
+    "bytes": 929653,
+    "sha256": "c0b09f4e128768b2d6eab27050625a1ce974f8b39c07871370368cd82fbf8617",
+    "raw_current_manifest_retained": false,
+    "prior_archive_reference": "support/build/evidence/2026-10-16/host/channel-rust-nightly.toml.gz",
+    "prior_archive_scope": "Earlier archived bytes are a reference, not substituted for missing current download."
+  },
+  "cargo_binutils": {
+    "version": "0.4.0",
+    "locked": true
+  },
+  "vdso": {
+    "url": "https://github.com/asterinas/linux_vdso.git",
+    "commit": "8af571775a3d3a1df3e84fc9709b9d6b160c771a",
+    "tree": "8e0a300d78c2a020ccc79f1253bc27a8301416e6",
+    "artifact": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso/vdso_x86_64.so",
+      "bytes": 28760,
+      "sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3"
+    },
+    "binary_retained_in_archive": false
+  },
+  "environment_scope": "Original receipts save selected environment only. The executed script prepends CARGO_HOME/bin to inherited PATH; full inherited environment was not captured."
+}

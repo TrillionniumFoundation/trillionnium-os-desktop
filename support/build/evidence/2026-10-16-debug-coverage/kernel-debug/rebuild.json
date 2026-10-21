@@ -1,0 +1,30 @@
+{
+  "purpose": "Rebuild the unretained full Rust DWARF ELF and perform a fresh real Rust-entry debug boot, rather than pretending it was archived.",
+  "argv": [
+    "python3",
+    "-I",
+    "support/build/debug/run.py",
+    "--output",
+    "NEW_DIRECTORY",
+    "--gdb",
+    "PATH_TO_GDB15"
+  ],
+  "cwd": "project repository root",
+  "required_environment": [
+    "CARGO_HOME and RUSTUP_HOME pointing to installed nightly-2026-07-21",
+    "VDSO_LIBRARY_DIR with the saved Linux VDSO",
+    "PATH includes task cargo/bin, installed cargo-binutils 0.4.0 and GDB",
+    "LD_LIBRARY_PATH when using the extracted GDB dependency root"
+  ],
+  "actual_upstream_make_command": "runs/03/readable/run/commands.json and raw log member run/boot/command.sh",
+  "original_symbol_artifact": {
+    "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+    "size": 111867352,
+    "sha256": "a1c7a44cb844553d00c2942760df0f2389919f1e530bfaa45081c7463d31e21a",
+    "symbol": "__ostd_main",
+    "address": "0xffffffff88426860",
+    "elf_class": "ELF64",
+    "elf_machine": 62
+  },
+  "exact_byte_rebuild_boundary": "DWARF embeds absolute source/build paths. The command documents how to rebuild and re-exercise the artifact; no cross-host bit-for-bit rebuild is claimed."
+}

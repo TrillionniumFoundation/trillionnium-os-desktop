@@ -1,0 +1,37 @@
+{
+  "utc": "2026-10-17T04:16:26.237Z",
+  "kind": "actual_offline_integrity_verification_not_guest_execution",
+  "cwd": "support/build/evidence/2026-10-17-main-ci-next",
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "verify.py"
+      ],
+      "result": {
+        "chunk_id": "82ca3e",
+        "wall_time_seconds": 0.035290032,
+        "exit_code": 0,
+        "original_token_count": 61,
+        "output": "{\n  \"passed\": true,\n  \"source_files\": 84,\n  \"git_tree_entries\": 9128,\n  \"merge\": \"09aea79c71dc9f48ba519757078dd8a20f5c8fb3\",\n  \"cdf_ci_checks\": 3,\n  \"09aea_observed_ci\": \"queued; not a success result\",\n  \"guest_executed_in_this_phase\": false\n}\n"
+      }
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "verify.py"
+      ],
+      "result": {
+        "chunk_id": "3f3141",
+        "wall_time_seconds": 0.205253534,
+        "exit_code": 0,
+        "original_token_count": 61,
+        "output": "{\n  \"passed\": true,\n  \"source_files\": 84,\n  \"git_tree_entries\": 9128,\n  \"merge\": \"09aea79c71dc9f48ba519757078dd8a20f5c8fb3\",\n  \"cdf_ci_checks\": 3,\n  \"09aea_observed_ci\": \"queued; not a success result\",\n  \"guest_executed_in_this_phase\": false\n}\n"
+      }
+    }
+  ],
+  "note": "These successful runs preceded adding this validation receipt to the final SHA256SUMS; the final frozen phase is rerun separately."
+}

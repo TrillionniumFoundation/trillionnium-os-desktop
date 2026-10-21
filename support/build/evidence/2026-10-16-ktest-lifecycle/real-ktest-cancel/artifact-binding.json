@@ -1,0 +1,42 @@
+{
+  "kernel": {
+    "gzip_path": "kernel.elf.gz",
+    "gzip_size": 580150,
+    "gzip_sha256": "4c83ac5148f192246b8d184a4ed4996049a0f439b4a67c017fe25a33beafd7a3",
+    "raw_size": 2004424,
+    "raw_sha256": "772fe2bf84a55651afb84d0cc1ed43c36e69175bccc451af7c0f6b0aa8fffa35",
+    "matches_native_exec_receipt_and_production_recorder": true,
+    "captured_before_cancel_and_target_reuse": true
+  },
+  "native_qemu": {
+    "path": "/usr/bin/qemu-system-x86_64",
+    "size": 26415624,
+    "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+  },
+  "test_adapter": {
+    "path": "/workspace/scratch/ae1a8cf05419/next7-real-ktest-cancel-controller-01/tools/qemu-system-x86_64",
+    "size": 1267,
+    "sha256": "bc98b3f708295d8094632c982d28b7de85e38e7a9b4fce663900343f92b9d9ce"
+  },
+  "recorded_qemu_sha_identifies_adapter_not_native_binary": true,
+  "adaptation": "test-only PATH executable delegates --version directly and execs recorded native QEMU with original production argv plus only -S; source, kernel ELF and production serial argv unchanged",
+  "not_executed": {
+    "rust_entry": true,
+    "guest_test": true,
+    "complete_boot": true
+  },
+  "serial": {
+    "path": "serial.log",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "empty": true
+  },
+  "qemu_record": {
+    "raw_exit_code": null,
+    "timed_out": false,
+    "finalized": false,
+    "native_exit_code_known": false,
+    "limitation": "wrapper was killed during cancellation before final rewrite; native pidfd proves exit but gives no wait/reap status for this non-direct child"
+  },
+  "no_TCP_lease_existed": "profile has no GDB/server/monitor TCP endpoint; no TCP port-release claim for this case"
+}

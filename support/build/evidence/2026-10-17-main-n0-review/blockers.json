@@ -1,0 +1,491 @@
+{
+  "schema": "a01.current-final-blocker-ledger.v3/1",
+  "draft": false,
+  "ready_for_final_publication": true,
+  "all_project_blockers_closed": false,
+  "producer": "fd0a5ed637312b13efdbfb6b670d4af52bd2c2b0",
+  "producer_tree": "676fcaf53cc094bdd5d1ede25b8f13c8221b5e6d",
+  "imported_main": "dfe0ed04b4789d37d41854191126e710782baa3a",
+  "pending_exact_head_ci_readback": true,
+  "native_status": {
+    "ordinary_cold_build": "passed",
+    "ordinary_boot": "passed_raw33_no_timeout",
+    "ordinary_live_artifact_check": "passed",
+    "queryabi_retry": "phase_child0_controllertrue_3raw33_sourceclean_combined_enclosing_tool44537_exit1_due_later_probe_failure",
+    "debug": "passed_command0_GDB0_detach_raw33_no_timeout_source_clean",
+    "ktest": "failed_current_core_151_passed_2_failed_raw65_OSTD221_reported3soft_raw33_postguard_not_run",
+    "osdk_integration": "passed22_cases_0failed_0blocked_1VMXfallback_11example_guests_raw33_source_clean",
+    "strict_cpu_matrix": "not_passed",
+    "owner_probe_pinned_v2": "passed4raw33_original_owner_explicit3percent_finite_ratio_bound_requested_duration1s_actual_wall_intervals_not_fixed1s_timing_inconclusive_sourceclean"
+  },
+  "items": [
+    {
+      "id": "a01-full-source-cold-build-boot",
+      "owner": "A01",
+      "status": "closed_with_bounded_native_evidence",
+      "evidence": [
+        "native-isolated/ordinary/controller-result.json",
+        "round-current/ordinary-outer-observation.json"
+      ],
+      "facts": {
+        "target_absent_before_build": true,
+        "build_command_exit": 0,
+        "boot_command_exit": 0,
+        "qemu_raw_exit": 33,
+        "qemu_timed_out": false,
+        "live_artifact_check_exit": 0,
+        "kernel_sha256": "ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9",
+        "kernel_size": 8266592,
+        "first_and_boot_kernel_bytes_equal": true,
+        "post_source_status": "clean"
+      },
+      "does_not_establish": [
+        "KVM",
+        "arbitrary_host_reproduction",
+        "immutable_builder",
+        "HOS2_effect_operations",
+        "strict_CPU_or_final_debit"
+      ]
+    },
+    {
+      "id": "a01-queryabi-new-kernel-regression",
+      "owner": "A01 validation / A05 implementation",
+      "status": "closed_for_unchanged_QueryAbi_assertions_only",
+      "evidence": [
+        "native-isolated/queryabi-retry/controller-result.json",
+        "native-isolated/queryabi-retry/run/result.json"
+      ],
+      "facts": {
+        "owner_probe_compile_exit": 0,
+        "actual_guest_raw_exits": [
+          33,
+          33,
+          33
+        ],
+        "timed_out": false,
+        "post_source_status": "clean",
+        "phase_child_exit": 0,
+        "phase_controller_passed": true,
+        "enclosing_tool_session": 44537,
+        "enclosing_tool_exit": 1,
+        "enclosing_tool_failure": "subsequent CPU probe failure; QueryAbi phase retained successful"
+      },
+      "does_not_establish": [
+        "trusted_CapSpace",
+        "full_effect_operations",
+        "G1",
+        "G2"
+      ]
+    },
+    {
+      "id": "a01-current-tcp-rust-entry-debug",
+      "owner": "A01",
+      "status": "closed_for_completed_TCP_debug_native_evidence",
+      "evidence": [
+        "native-isolated/debug/controller-result.json",
+        "native-isolated/debug/run/result.json"
+      ],
+      "facts": {
+        "controller_command_exit": 0,
+        "GDB_exit": 0,
+        "detached": true,
+        "entry_pc": "0xffffffff8841ed80",
+        "entry_bytes_compared": 32,
+        "symbol_sha256": "e14bcc8b93ab47c29e9676c5c6f98e717d528780cf3b9cc339b9124ad8f48762",
+        "boot_kernel_sha256": "929c7b652e8bee198e8eca40bc13fd4426e0adff35fa93a69868bca6888b7b73",
+        "qemu_raw_exit": 33,
+        "timed_out": false,
+        "owned_leaders_reaped": 5,
+        "post_source_status": "clean"
+      },
+      "does_not_establish": [
+        "AF_UNIX_transport",
+        "KVM",
+        "immutable_execution_custody"
+      ]
+    },
+    {
+      "id": "a01-lock-cancel-and-exit-cleanup",
+      "owner": "A01",
+      "status": "source_and_host_model_verified_with_finite_cleanup_limit",
+      "evidence": [
+        "runner-lifecycle-review/REPORT.md",
+        "runner-lifecycle-review/cleanup-grace/REPORT.md",
+        "current-code-independent-review/READY.json"
+      ],
+      "facts": {
+        "shared_lock_before_output": true,
+        "inherited_lock_description": true,
+        "worker_exit_cleanup_grace_seconds": 2,
+        "new_grace_focused_host_executions": 36,
+        "delayed_helper_seconds_successfully_exercised": 0.6
+      },
+      "limits": [
+        "3s helper exceeds2s grace: raw-9 and manifest residue are preserved; next runner refuses overwrite",
+        "owned descendants must remain in their process group",
+        "no arbitrary-descendant or immutable-execution guarantee"
+      ]
+    },
+    {
+      "id": "a01-monitor-osdk-integration-current-native",
+      "owner": "A01",
+      "status": "closed_for_current_OSDK_tooling_and_example_matrix",
+      "evidence": [
+        "native-isolated/osdk/controller-result.json",
+        "native-isolated/osdk/run/result.json"
+      ],
+      "note": "Real native OSDK/example regression; not the complete Asterinas kernel suite and not hardware VMX acceptance.",
+      "facts": {
+        "outer_tool_session": 36760,
+        "outer_exit": 0,
+        "child_exit": 0,
+        "passed_cases": 22,
+        "failed_cases": 0,
+        "blocked_cases": 0,
+        "VMX_fallback_soft_skip_count": 1,
+        "cases_with_guests": 9,
+        "cases_without_guests": 13,
+        "example_guest_raw_exits": [
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33
+        ],
+        "post_git_status": ""
+      }
+    },
+    {
+      "id": "a01-explicit-pinned-owner-QEMU-entry",
+      "owner": "A01 external validation harness",
+      "status": "closed_for_completed_guarded_bounded_diagnostic_execution",
+      "evidence": [
+        "native-isolated/probes-pinned/controller-result.json",
+        "native-isolated/probes-pinned/quota-1cpu-launches/launcher-completion.json",
+        "native-isolated/probes-pinned/quota-2cpu-launches/launcher-completion.json"
+      ],
+      "facts": {
+        "actual_QEMU_launches": 4,
+        "explicit_Python_adapter": true,
+        "fixed_real_QEMU_SHA256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+        "private_L_on_all_launches": true,
+        "owner_source_C_helper_adapter_pre_post_guards": true,
+        "host_cgroup_modified": false,
+        "launcher_normal_SystemExit0": true
+      },
+      "does_not_establish": [
+        "strict1percent",
+        "per100ms_full_matrix",
+        "final_debit",
+        "G1",
+        "G2",
+        "unknown_writer_attribution"
+      ]
+    },
+    {
+      "id": "host-kvm-vmx",
+      "owner": "cloud environment / A00",
+      "status": "open_environment_capability",
+      "evidence": [
+        "round-current/host-capabilities.json"
+      ],
+      "facts": {
+        "dev_kvm_present": false,
+        "vmx": false,
+        "svm": false,
+        "npt": true,
+        "ept": false
+      },
+      "next": "Use a genuinely capability-enabled dedicated instance when hardware virtualization acceptance is required; TCG success does not close it."
+    },
+    {
+      "id": "host-af-unix",
+      "owner": "cloud environment / A00",
+      "status": "open_environment_capability",
+      "evidence": [
+        "round-current/host-capabilities.json"
+      ],
+      "facts": {
+        "af_unix_socket_errno": 1,
+        "ipv4_loopback_available": true
+      },
+      "next": "Default UNIX transport acceptance needs an allowed environment. TCP results, when actually completed, have a separate scope."
+    },
+    {
+      "id": "immutable-cloud-and-general-reproduction",
+      "owner": "A00 / environment",
+      "status": "open_not_established",
+      "facts": {
+        "provider_attestation_established": false,
+        "immutable_execution_established": false,
+        "arbitrary_host_reproduction_established": false
+      },
+      "note": "Earlier two-observed-instance R/A4/C4 byte equality remains historical and source-bound; it is not a new fd0/ed469 proof or an immutable builder guarantee."
+    },
+    {
+      "id": "unknown-workspace-and-mode-writer",
+      "owner": "A00 / environment investigation",
+      "status": "open_unattributed",
+      "evidence": [
+        "round-current/manifest-reappearance/observation.json",
+        "native-isolated/probes-retry/quota-1cpu/result.json"
+      ],
+      "facts": {
+        "manifest_path_reappeared_after_reported_cleanup": true,
+        "adapter_observed_mode": "0644",
+        "mode_writer_attributed": false,
+        "same_actor_established": false,
+        "permanent_containment_established": false
+      },
+      "note": "Isolation and quarantine preserve evidence and permit bounded testing. They do not identify a writer. Second probe actual argv was not retained; PATH fallback is assessed from adapter mode/timing/PATH/ROM-error evidence."
+    },
+    {
+      "id": "a05-native-authority-and-effects",
+      "owner": "A05 / A00",
+      "status": "open_owner_acceptance",
+      "facts": {
+        "QueryAbi_in_main": true,
+        "current_new_kernel_QueryAbi_guest_verified": true,
+        "trusted_CapSpace_accepted": false,
+        "full_effect_operations_accepted": false,
+        "process_start_exec_epoch_accepted": false
+      },
+      "next": "Continue current Process/ioctl/hepta_control integration; do not infer authority from open/dup/fork or QueryAbi-only device access."
+    },
+    {
+      "id": "a06-current-odd-period-ktest-oracle-and-rerun",
+      "owner": "A06 / A00",
+      "status": "open_owner_tests_only_oracle_fix_and_real_native_rerun",
+      "evidence": [
+        "native-isolated/ktest/controller-result.json",
+        "native-isolated/ktest/run/result.json",
+        "native-isolated/ktest/run/ostd/result.json",
+        "native-isolated/ktest/run/aster-core/osdk-test.log",
+        "native-isolated/ktest/run/aster-core/guests/guest-001/qemu.json",
+        "native-rounding-review/math/REPORT.md",
+        "native-rounding-review/math/mathcheck-I.json",
+        "native-rounding-review/math/mathcheck-I-O.json",
+        "native-rounding-review/math/owner-tests-only-proposal.patch"
+      ],
+      "facts": {
+        "outer_tool_session": 12879,
+        "outer_exit": 1,
+        "ktest_child_exit": 1,
+        "OSTD_reported_passed": 221,
+        "OSTD_soft_skipped": 3,
+        "OSTD_exercised_passed_lower_bound": 218,
+        "OSTD_raw_exit": 33,
+        "core_passed": 151,
+        "core_failed": 2,
+        "core_raw_exit": 65,
+        "timed_out": false,
+        "post_source_guard_executed": false,
+        "source_clean_claimed": false,
+        "full_374_pass_claimed": false,
+        "assertion_unit": "TSC clock ticks",
+        "difference_each": 1,
+        "production_end_minus_from_matches_actual_interval": true,
+        "production_overcharge_demonstrated_by_these_failures": false,
+        "proposal_applied": false,
+        "post_proposal_Rust_or_VM_rerun": false
+      },
+      "assertions": [
+        {
+          "name": "idle_skipped_periods_never_subsidize_late_burst",
+          "expected": 126985880,
+          "observed": 126985881
+        },
+        {
+          "name": "long_continuous_interval_has_constant_time_bounded_debt_accounting",
+          "expected": 1153239116,
+          "observed": 1153239117
+        }
+      ],
+      "next": "A00/A06 review/apply external tests-only proposal, retain actual151/2/raw65 failure, then source-bound real core kernel rerun; no production charging change or +/-1 tolerance is justified by these two failures.",
+      "integer_triage": {
+        "period": "P=floor(F/10)",
+        "quota": "Q=floor(F/1000)",
+        "actual_suffix": "P-floor(P/2)=ceil(P/2)",
+        "old_oracle_suffix": "floor(P/2)",
+        "idle_correct_expression": "period-period/2-quota",
+        "long_correct_expression": "period-period/2-quota+4*(period-quota)",
+        "inferred_P": 259154857,
+        "inferred_Q": 2591548,
+        "frequency_is_inferred_not_measured": true,
+        "pure_Python_cases_per_mode": 52701,
+        "modes": [
+          "-I",
+          "-I -O"
+        ],
+        "Rust_VM_executed_by_math_review": false,
+        "u64_edge_exhaustiveness_claimed": false
+      }
+    },
+    {
+      "id": "a06-final-debit-issue63",
+      "owner": "A06 / A00",
+      "status": "open_source_grounded_risk_not_measured_exploit",
+      "evidence": [
+        "main-integration-review/final-debit-review/REPORT.md",
+        "main-integration-review/final-debit-review/review.json"
+      ],
+      "facts": {
+        "CPU_N0_already_in_main": true,
+        "old_SMP_unwrap_panic_remediated": true,
+        "local_debit_before_period_advance_in_main": true,
+        "readonly_cpu_stat_in_main": true,
+        "strict_final_debit_established": false,
+        "actual_undercharge_exploit_demonstrated_here": false
+      },
+      "next": "Owner must retain/settle original accounting identity through dead-Weak and move-to-root exit paths with deterministic final-debit assertions and guest exit/reap coverage."
+    },
+    {
+      "id": "a06-strict-cpu-matrix",
+      "owner": "A06 / A00",
+      "status": "open_strict_timing_and_full_matrix_not_established",
+      "evidence": [
+        "native-isolated/probes-retry/controller-result.json",
+        "native-isolated/probes-retry/quota-1cpu/result.json",
+        "round-current/probes-retry-outer-observation.json",
+        "native-isolated/probes-pinned/controller-result.json",
+        "native-isolated/probes-pinned/quota-1cpu/result.json",
+        "native-isolated/probes-pinned/quota-2cpu/result.json"
+      ],
+      "note": "Earlier124 is owner TimeoutExpired sentinel, not observed rawQEMU exit. Final pinned4raw33 passes original owner explicit3percent finite ratio bound over measured wall intervals. CLI requests1s; measured restricted intervals are not fixed1s. All serial verdicts are timing validation inconclusive;1.1percent cannot establish strict1percent. Final debit and full matrix remain open.",
+      "saved_prior_failed_attempt": {
+        "first_guest_actual_raw_exit": 33,
+        "first_guest_complete": true,
+        "first_sample_reported_cpu_percent": 1.0,
+        "second_reported_timeout_sentinel": 124,
+        "second_actual_raw_exit": null,
+        "second_actual_raw_exit_available": false,
+        "second_actual_argv_retained": false,
+        "owner_command_exit": 2,
+        "outer_controller_exit": 1,
+        "strict_matrix_passed": false
+      },
+      "current_bounded_diagnostic": {
+        "outer_tool_session": 98994,
+        "outer_exit": 0,
+        "owner_command_exits": [
+          0,
+          0
+        ],
+        "leaders_reaped": true,
+        "raw_guest_exits": [
+          33,
+          33,
+          33,
+          33
+        ],
+        "one_vcpu_reported_cpu_percent": [
+          1.001,
+          1.1
+        ],
+        "two_vcpu_reported_cpu_percent": [
+          0.822,
+          0.9
+        ],
+        "configured_quota_us": 1000,
+        "configured_period_us": 100000,
+        "explicit_acceptance_bound_percent": 3.0,
+        "strict_1percent_accepted": false,
+        "all_serial_verdict": "INCONCLUSIVE_REQUIRES_TIMING_VALIDATION",
+        "smp_qualified": false,
+        "hepta_hos2_qualified": false,
+        "source_pre_post_guards_unchanged": true,
+        "controller_post_git_status": "",
+        "requested_duration_seconds": 1,
+        "observed_restricted_wall_ns": {
+          "single_vcpu": [
+            1099269967,
+            1000225763
+          ],
+          "two_vcpu": [
+            2797054263,
+            1999040082
+          ]
+        },
+        "actual_fixed_one_second_window_established": false
+      }
+    },
+    {
+      "id": "a06-workflow-and-probe-entry",
+      "owner": "A06 / A00",
+      "status": "open_owner_runner_fix",
+      "evidence": [
+        "round-current/a06-isolated-help.log",
+        "round-current/artifact-path-correction.json",
+        "round-current/probe-firmware-correction.json"
+      ],
+      "next": "Fix sibling import under -I and workflow ELF path; select actual OSDK bundle ELF and private QEMU -L data explicitly. A01 did not edit owner tests/workflow.",
+      "note": "A01 external pinned launch now runs unchanged owner source under isolated Python with explicit real-QEMU adapter; it does not repair the selected producer owner workflow/import/path source itself."
+    },
+    {
+      "id": "a07-native-persistent-owner-G1-G2",
+      "owner": "A07 / A00",
+      "status": "open_owner_acceptance",
+      "facts": {
+        "G1_accepted_by_this_round": false,
+        "G2_accepted_by_this_round": false
+      },
+      "next": "Supply real persistent-owner/native effect lifecycle and recovery acceptance; contracts and host models do not substitute for guest evidence."
+    },
+    {
+      "id": "final-pr-ci-publication",
+      "owner": "A01 publisher / A00",
+      "status": "pending_fresh_exact_head_readback",
+      "note": "Producer SHA is fixed. Later evidence commits and PR update must record their own exact head. Parent fresh API readback updated old42c to3successful checks; that old-head success cannot establish final-head CI."
+    }
+  ],
+  "supersedes_draft_v1": {
+    "directory": "current-final-report-draft",
+    "sha256sums_sha256": "162f70df65a6ce423c934e0785ab9ea6df0e97834c2ae8862af0df6e5fe12d28",
+    "correction": "Difference is1TSCclock tick; odd-period test oracle floor/ceil error, not1ns or demonstrated production overcharge."
+  },
+  "frozen_GitHub_snapshot": {
+    "directory": "current-final-ci-readback",
+    "observed_at": "2026-10-17T06:16:58.803Z",
+    "sha256sums_sha256": "1ae11000af1470f304b7a1b3edd359baabc7b7b9a3fd8fe81436c1e1d431cafa",
+    "exact_CI_head": "42c0fbda192e61fbfad638e16aa74b67cf989bba",
+    "success_check_runs": 3,
+    "new_candidate_validated_by_that_CI": false
+  },
+  "final_publication_head_location": "PR22 final exact-head readback only, avoiding evidence-commit self reference",
+  "execution_producer_nonforce_pushed": true,
+  "owner_handoff_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6230648819",
+  "supersedes_v2": {
+    "directory": "current-final-report-v2",
+    "sha256sums_sha256": "64ad74967e82fc002a0c396bd1c38ffa85e27cca1b004a56a0d4048620c77241",
+    "corrections": [
+      "QueryAbi phase child0/controller pass/sourceclean is distinct from combined enclosing tool44537 exit1 due later CPU probe failure",
+      "CLI requested_duration_seconds1 is distinct from observed restricted wall intervals; no actual fixed1second window established"
+    ]
+  },
+  "metadata_duration_clarification": {
+    "receipt": "round-current/metadata-duration-clarification.json",
+    "old_metadata_sha256": "477acdc536776104cac4ddbc8e4d5243861bc669621cffaa11c5d62713470d15",
+    "final_metadata_sha256": "e87d098480984d482c8638904bda5d98bdd600e9939e2401e8a248f658af3208",
+    "requested_duration_seconds": 1,
+    "observed_restricted_wall_ns": {
+      "single_vcpu": [
+        1099269967,
+        1000225763
+      ],
+      "two_vcpu": [
+        2797054263,
+        1999040082
+      ]
+    },
+    "actual_fixed_one_second_window_established": false,
+    "earlier_118_source_check_metadata_sha256": "477acdc536776104cac4ddbc8e4d5243861bc669621cffaa11c5d62713470d15",
+    "new_118_check_executed_for_final_metadata": false,
+    "fixed_source_inputs_and_prior_JSON_outside_added_key_unchanged": true
+  }
+}

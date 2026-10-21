@@ -1,0 +1,79 @@
+{
+  "scope": "Actual public debug CLI host fixtures only: heavy work explicitly substituted; no real SDK, Cargo, Rust, GDB or VM.",
+  "git_head": "5e0e4a734a1dc63d9333b8e432ed071f2406b8e9",
+  "frozen_source_sha256": {
+    "run.py": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+    "test_debug.py": "df6dd1c783e07fefef3f08bdd952220d35d8e645a79f65dd4dd0a44a7734cd5c",
+    "README.md": "278049fb4d303641cff4fd2b8a4be2611f315807454a42f9b94f5a65c78138a5"
+  },
+  "commands": [
+    {
+      "label": "new-I",
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py",
+        "PrivateSdkEvidenceTests",
+        "-v"
+      ],
+      "source": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/run.py",
+      "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+      "returncode": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-I.log",
+      "log_sha256": "32f054f89ceff7b2983dc9bcf70579c0262d4fb8d8a66db28a8451eecaab8412",
+      "log_bytes": 750
+    },
+    {
+      "label": "new-IO",
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py",
+        "PrivateSdkEvidenceTests",
+        "-v"
+      ],
+      "source": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/run.py",
+      "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+      "returncode": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-IO.log",
+      "log_sha256": "48d142806ac2aff90b56a3f05cafd1e30d2fafc8c83c1f1028cf97287be8deca",
+      "log_bytes": 750
+    },
+    {
+      "label": "old-I",
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py",
+        "PrivateSdkEvidenceTests",
+        "-v"
+      ],
+      "source": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/baseline/run.py",
+      "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+      "returncode": 1,
+      "log": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-I.log",
+      "log_sha256": "40a7e1deb5cbe7d5b6de24ac45812403cbd46e27581aa3c433da85f10a61e0b3",
+      "log_bytes": 4241
+    },
+    {
+      "label": "old-IO",
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py",
+        "PrivateSdkEvidenceTests",
+        "-v"
+      ],
+      "source": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/baseline/run.py",
+      "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+      "returncode": 1,
+      "log": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO.log",
+      "log_sha256": "b12bd85dc9549f31b0374774fcf312be454c1e3663ffc8d8d194a1b7b7c6e01d",
+      "log_bytes": 4246
+    }
+  ],
+  "expected_new_zero_old_red": true,
+  "utc": "2026-10-17T04:24:02.617222+00:00"
+}

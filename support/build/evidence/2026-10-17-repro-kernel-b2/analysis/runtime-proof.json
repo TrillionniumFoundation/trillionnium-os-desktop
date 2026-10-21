@@ -1,0 +1,30 @@
+{
+  "full_serial_sha256": "e429eae97a05c5fe47e0fc4c09bb5cbf3911e86eea80598dbf22cbf5c5c0c123",
+  "full_serial_bytes": 72341,
+  "required_markers": [
+    "OSTD initialized. Preparing components.",
+    "TRILLIONNIUM_A01_INIT_BEGIN",
+    "TRILLIONNIUM_A01_CPU_COUNT=1",
+    "Successfully booted.",
+    "TRILLIONNIUM_A01_BOOT_OK"
+  ],
+  "all_required_markers_present": true,
+  "proc_version_marked_excerpt": "TRILLIONNIUM_A01_PROC_VERSION_BEGIN\r\n[     0.606] INFO  : [pid=1][tid=1][id=56][SYS_CLONE]\r\n[     0.608] INFO  : [pid=1][tid=1][id=61][SYS_WAIT4]\r\n[     0.609] INFO  : [pid=14][tid=14][id=273][SYS_SET_ROBUST_LIST]\r\n[     0.609] INFO  : [pid=14][tid=14][id=3][SYS_CLOSE]\r\n[     0.610] INFO  : [pid=14][tid=14][id=13][SYS_RT_SIGACTION]\r\n[     0.610] INFO  : [pid=14][tid=14][id=59][SYS_EXECVE]\r\n[     0.612] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.613] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.614] INFO  : [pid=14][tid=14][id=158][SYS_ARCH_PRCTL]\r\n[     0.614] INFO  : [pid=14][tid=14][id=218][SYS_SET_TID_ADDRESS]\r\n[     0.615] INFO  : [pid=14][tid=14][id=273][SYS_SET_ROBUST_LIST]\r\n[     0.615] WARN  : Unimplemented syscall number: 334\r\n[     0.616] INFO  : [pid=14][tid=14][id=302][SYS_PRLIMIT64]\r\n[     0.616] INFO  : [pid=14][tid=14][id=267][SYS_READLINKAT]\r\n[     0.617] INFO  : [pid=14][tid=14][id=318][SYS_GETRANDOM]\r\n[     0.618] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.618] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.619] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.619] INFO  : [pid=14][tid=14][id=10][SYS_MPROTECT]\r\n[     0.620] INFO  : [pid=14][tid=14][id=157][SYS_PRCTL]\r\n[     0.621] INFO  : [pid=14][tid=14][id=102][SYS_GETUID]\r\n[     0.621] INFO  : [pid=14][tid=14][id=257][SYS_OPENAT]\r\n[     0.623] INFO  : [pid=14][tid=14][id=40][SYS_SENDFILE]\r\nLinux version 5.13.0 (a01-repro@a01-fixed-profile) (rustc 1.99.0-nightly) #1 SMP Thu Jan  1 00:00:00 UTC 1970\r\n[     0.624] INFO  : [pid=14][tid=14][id=40][SYS_SENDFILE]\r\n[     0.625] INFO  : [pid=14][tid=14][id=3][SYS_CLOSE]\r\n[     0.625] INFO  : [pid=14][tid=14][id=231][SYS_EXIT_GROUP]\r\n[     0.627] INFO  : [pid=1][tid=1][id=15][SYS_RT_SIGRETURN]\r\n[     0.627] INFO  : [pid=1][tid=1][id=61][SYS_WAIT4]\r\n[     0.628] INFO  : [pid=1][tid=1][id=1][SYS_WRITE]\r\nTRILLIONNIUM_A01_PROC_VERSION_END",
+  "explicit_synthetic_embedded_builder": {
+    "username": "a01-repro",
+    "hostname": "a01-fixed-profile"
+  },
+  "actual_host": {
+    "hostname": "343e40cfefc1",
+    "username": "root",
+    "uid": 0,
+    "uname": [
+      "Linux",
+      "343e40cfefc1",
+      "6.18.44",
+      "#1 SMP Sat Sep 26 20:02:31 UTC 2026",
+      "x86_64"
+    ]
+  },
+  "scope": "B2 boot acceptance only; synthetic embedded identity and actual host remain separate."
+}

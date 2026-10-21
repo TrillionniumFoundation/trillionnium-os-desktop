@@ -1,0 +1,15 @@
+# Native cloud evidence — before
+
+This frozen phase retains exact command/controller logs, results, serial streams, source bindings and separately deduplicated actual input bytes. Runtime source: `d895dd73a07788f6fc825fb3ca29cca22d93bb07`; derived kernel tree: `6b3cab110aa6d30d5b89f99c4389c9c3e01022da`; fixed toolchain: `nightly-2026-07-21`.
+
+Correct-root ktests: **362 reported passes, 0 failures, 3 VMX soft skips (359 exercised lower bound), 2 raw-33 guests**. Initial 22 matrix: **20 passed, 2 failed, 7 raw-33 guests**. Offline dependency completion then the coverage-only retry passed with real GDB/profdata. Original case-14 kernel bytes are **unavailable**: 6/7 initial guest kernels remain; its recorded SHA/serial/error context are preserved and its ELF is not recreated. Original wrong-root installed SDK binary bytes were not frozen; static binding/hash diagnostic is preserved.
+
+`raw/manifest.json` binds every original regular raw-evidence member and its absolute source path/stat; ordered `raw/part-*` concatenate to a gzip tar. Compiled targets and raw guest artifact directories are excluded from that archive. `artifacts/manifest.json` independently binds every actual guest kernel/BIOS and coverage EM62 symbol to ordered lossless chunks. There are no reconstructed historical payloads.
+
+Run `python3 -I verify.py .` and `python3 -I -O verify.py .` from this directory for full offline integrity, gzip/raw hashes and result denominators. To reconstruct one original input into a **new** directory: `python3 -I artifacts/reassemble.py artifacts/manifest.json RAW_SHA NEW_DIRECTORY`. It fails on any part/whole/decompressed identity difference. Every published file is at most 2 MiB.
+
+Storage was atomically moved from unpublished local input-retention staging, leaving original capture facts unchanged; `artifacts/storage-migration.json` records custody. Full local gzip originals remain external and are optional, not required for reconstruction. Complete compiler/tool binaries and build caches are not duplicated; source Git objects and environment/command records identify them. The two observer drafts were never executed. This phase does not claim a complete desktop or full Asterinas acceptance from OSDK example tests.
+
+`consumed-source.tar.gz` additionally exports every original runtime input enumerated in the captured environment (92 exact Git files); every digest was compared with that run. `independent-native-review.json` independently checks both historical limits and source-S final results. `reassemble-validation.json` records actual new-directory reconstruction under both Python modes.
+
+Before first publication, the static source export list was corrected from the nonexistent `capture-coverage.py` candidate to actual `capture.py`, already retained in `consumed-source.tar.gz`. Every listed path now has an exact runtime Git blob and frozen-member binding in `source-binding.json`. Original raw archive candidate exclusions remain historical facts; no raw logs, artifact chunks or consumed-source bytes changed.

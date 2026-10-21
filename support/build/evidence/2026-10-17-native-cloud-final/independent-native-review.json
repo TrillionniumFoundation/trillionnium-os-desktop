@@ -1,0 +1,416 @@
+{
+  "reviewer": "/root/closure_abi_patch/review_round2_packages",
+  "reviewed_at_utc": "2026-10-17T02:05:54.943784+00:00",
+  "scope": "Independent read-only counts/source/actual guest snapshot checks and retained input part hashes. No Cargo, VM, source mutation or archive creation. Package completeness review remains pending package freeze.",
+  "passed": true,
+  "errors": [],
+  "source_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+  "controller_stages": 6,
+  "controller_all_exit0": true,
+  "prepost_source_checked_files": 118,
+  "prepost_source_identical": true,
+  "prepost_worktree_clean": true,
+  "pinned_Git_inputs_verified": {
+    "runner_inputs_sha256": 20,
+    "source_inputs_sha256": 49,
+    "test_inputs_sha256": 23,
+    "local_align_ext_inputs_sha256": 2
+  },
+  "case_count": 22,
+  "passed_cases": 22,
+  "failed_cases": 0,
+  "blocked_cases": 0,
+  "actual_final_guest_count": 11,
+  "all_guests_raw33": true,
+  "all_final_guest_private_snapshots_stat_size_hash_current_verified": true,
+  "hypervisor_soft_fallback_count": 1,
+  "soft_fallbacks": [
+    "VMX unavailable; hypervisor example accepted upstream fallback"
+  ],
+  "cases": [
+    {
+      "case": 1,
+      "name": "commands::run::qemu_gdb_feature::basic_debug",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": []
+    },
+    {
+      "case": 2,
+      "name": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": []
+    },
+    {
+      "case": 3,
+      "name": "cli::cli_build_help_message",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 4,
+      "name": "cli::cli_check_help_message",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 5,
+      "name": "cli::cli_clippy_help_message",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 6,
+      "name": "cli::cli_help_message",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 7,
+      "name": "cli::cli_new_crate_with_hyphen",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 8,
+      "name": "cli::cli_new_help_message",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 9,
+      "name": "cli::cli_run_help_message",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 10,
+      "name": "cli::cli_test_help_message",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 11,
+      "name": "commands::new::create_kernel_in_workspace",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 12,
+      "name": "commands::new::create_lib_in_workspace",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 13,
+      "name": "commands::new::create_two_crates_in_workspace",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 14,
+      "name": "commands::run::basic::new_kernel_and_run",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": []
+    },
+    {
+      "case": 15,
+      "name": "commands::run::coverage_feature::basic_coverage",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": []
+    },
+    {
+      "case": 16,
+      "name": "examples_in_book::create_os_projects::create_a_kernel_project",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 17,
+      "name": "examples_in_book::create_os_projects::create_a_library_project",
+      "raw_exit": 0,
+      "guests": 0,
+      "soft_skips": []
+    },
+    {
+      "case": 18,
+      "name": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": []
+    },
+    {
+      "case": 19,
+      "name": "examples_in_book::test_and_run_projects::create_and_test_library",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": []
+    },
+    {
+      "case": 20,
+      "name": "examples_in_book::work_in_workspace::work_in_workspace",
+      "raw_exit": 0,
+      "guests": 3,
+      "soft_skips": []
+    },
+    {
+      "case": 21,
+      "name": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": [
+        "VMX unavailable; hypervisor example accepted upstream fallback"
+      ]
+    },
+    {
+      "case": 22,
+      "name": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+      "raw_exit": 0,
+      "guests": 1,
+      "soft_skips": []
+    }
+  ],
+  "coverage": {
+    "raw_bytes": 2096896,
+    "raw_sha256": "0862a2568e4bb069835dfa6fdf2d15af727020848976bb0a2457b8eeb7fb601c",
+    "private_EM62_sha256": "a6d661d573f15850da38b1e687d7b3a50ff54f9238c8c55e876438897f7d95e3",
+    "llvm_total_functions": 5692,
+    "llvm_maximum_function_count": 383729,
+    "real_capture_exit": 0,
+    "real_gdb_exit": 0,
+    "breakpoint_PC_match": true
+  },
+  "input_manifests": {
+    "before-inputs": {
+      "mapping_count": 23,
+      "unique_artifacts": 12,
+      "part_files_hashes_verified": 41,
+      "compressed_bytes_hashed": 69738663,
+      "missing_count": 1,
+      "missing": [
+        {
+          "group": "initial-20-of-22",
+          "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-14/guests/guest-001/qemu.json",
+          "option": "-kernel",
+          "original_artifact": {
+            "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/myos/myos-osdk-bin.elf",
+            "size": 27819608,
+            "sha256": "04bd324919bd0b61991d6cbcab5382bbe1eddbc7c3ff885108f33456c76166a3"
+          },
+          "retained": false,
+          "status": "known_historical_payload_unavailable",
+          "reason": "initial case14 myos ELF was overwritten by later case18; original full bytes were not retained and are not reconstructed",
+          "postcheck_receipt": "/workspace/scratch/ae1a8cf05419/native-cloud/initial-matrix-artifact-postcheck.json"
+        }
+      ],
+      "groups": {
+        "wrong-sdk-ktest": 2,
+        "correct-root-ktest": 4,
+        "initial-20-of-22": 14,
+        "coverage2-success": 3
+      }
+    },
+    "final-matrix-inputs": {
+      "mapping_count": 23,
+      "unique_artifacts": 13,
+      "part_files_hashes_verified": 56,
+      "compressed_bytes_hashed": 98744564,
+      "missing_count": 0,
+      "missing": [],
+      "groups": {
+        "final": 23
+      }
+    }
+  },
+  "limits": [
+    "Final integration scope is OSDK example kernels and tooling, not complete Asterinas kernel/native HOS2 authority acceptance.",
+    "The historical case14 ELF payload 04bd3249\u2026 was overwritten and remains unavailable. Historical 23 mappings retain only22 inputs; no missing bytes were reconstructed.",
+    "Artifact gzip chunks and complete concatenated gzip hashes were independently verified here; raw decompression is not repeated in this initial counts review. Final guest raw private files were independently stat/size/hash checked.",
+    "Outer actual tool session exit receipts are held by the packaging agent and will be reviewed with the completed packages; this review verifies controller and native command records."
+  ],
+  "metadata_files_read": {
+    "/workspace/scratch/ae1a8cf05419/native-cloud/controller-final-matrix/commands.json": {
+      "bytes": 15479,
+      "sha256": "4702a7379cde8ffd117dcf7dd371dacb2ab6047542055e184e8f058e4be6419e"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/result.json": {
+      "bytes": 71838,
+      "sha256": "d85b058ab2d3d3e5b6ea694d72ebe08839910c916074207b301465214e6b626b"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/environment.json": {
+      "bytes": 16903,
+      "sha256": "7ce928ba8d638f47bb0d233803d6afa29d09503d3e8388c7b1d654fdf80016d3"
+    },
+    "/workspace/scratch/ae1a8cf05419/native-cloud/controller-final-matrix/pre-source-verification.log": {
+      "bytes": 781,
+      "sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e"
+    },
+    "/workspace/scratch/ae1a8cf05419/native-cloud/controller-final-matrix/post-source-verification.log": {
+      "bytes": 781,
+      "sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-01/result.json": {
+      "bytes": 3054,
+      "sha256": "3e9ee45740b2094f5aa50208800e613c71a2dcd75076b32974c76f5f2f307d16"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-01/guests/guest-001/qemu.json": {
+      "bytes": 11838,
+      "sha256": "b98b9d9b0599ee93d422f6b9e49470755f93556a15877c253c407fd8229dfdae"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-02/result.json": {
+      "bytes": 3072,
+      "sha256": "6c29dbfe93fd203e898b0488643d2d85e67931960cf27dc15c3b1c67e74caa45"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-02/guests/guest-001/qemu.json": {
+      "bytes": 11882,
+      "sha256": "bdbe321cfffc18013723899bf37b08f5821869ca32a6e62f0d71ff39cef91d3f"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-03/result.json": {
+      "bytes": 2544,
+      "sha256": "58d6d00bebb4a7c9b3c0047d688509bb7d7c9a83d604eb1744bfbe61db578f76"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-04/result.json": {
+      "bytes": 2544,
+      "sha256": "e7af65f57a3b0806f484ea9d26d52f644d6abcf163e9359353910d2de4635d0d"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-05/result.json": {
+      "bytes": 2546,
+      "sha256": "2de35f150b49e1398cf9a2f0db851dc007a2eeb885ab9fdfd64e70e1ccd2849a"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-06/result.json": {
+      "bytes": 2532,
+      "sha256": "f85f30e85f55c2af647913e11ddb7ff232289825372c8ecde96ebcace0c52b85"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-07/result.json": {
+      "bytes": 2550,
+      "sha256": "6edeb4540c1679a3a10e2dea302bc28f674ac8c60a4803527a8f7f0967c2cd8b"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-08/result.json": {
+      "bytes": 2540,
+      "sha256": "89ef9c24fc1fbc970560ad986d381bfaeb9c97392138f74c328190c47970f1a9"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-09/result.json": {
+      "bytes": 2540,
+      "sha256": "ef7b0b33018d97dbbae684582e8d4265b36df06f3b966b9ce540b45de4ed1518"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-10/result.json": {
+      "bytes": 2542,
+      "sha256": "6a8f76b09640fc2c739b6b146ba01acd6c8faa9a312bd6018208ef304385ebe8"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-11/result.json": {
+      "bytes": 2618,
+      "sha256": "7b9a539b5a3d51175c99d2b1ab3f047ad0b690f0bea4a702a8722cba60d56525"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-12/result.json": {
+      "bytes": 2609,
+      "sha256": "b8c0d02b54c63bb3206f386d23b0658ed44917de6716adc835a209f8a93dba5a"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-13/result.json": {
+      "bytes": 2622,
+      "sha256": "c854b458bac3cc5e5163c4228f856332c7292733ee56e8662ab1fdaab390192b"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-14/result.json": {
+      "bytes": 2830,
+      "sha256": "968f1a017ed71a055bc789915594a39498232f96689b2b05ed8c4556377c23da"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-14/guests/guest-001/qemu.json": {
+      "bytes": 10608,
+      "sha256": "817c60f28f602a3e2b84cefe600f743fcde2a705f014d1dfbdc9723f9b9f92a0"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-15/result.json": {
+      "bytes": 5353,
+      "sha256": "64fa6c2be396d1bef626d7933196fa50d82ed9821670b1a06ef2729a6295054f"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-15/guests/guest-001/qemu.json": {
+      "bytes": 16834,
+      "sha256": "562d97778de08d6dcd14cb58e44491407650bd9571f305b68e4801ca84b979f8"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-16/result.json": {
+      "bytes": 2651,
+      "sha256": "22175de3847134d9f66af936b2802504724c98527c4d6d7738e59ab591faf93f"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-17/result.json": {
+      "bytes": 2657,
+      "sha256": "f53155ba9efde7398222a45dbd5e1723705f816ad2e66945e53a41799ce07977"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-18/result.json": {
+      "bytes": 2909,
+      "sha256": "676e3c457c2683e0f42ba290830be3da0f328e57c732dd62f0d570b712cd18bf"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-18/guests/guest-001/qemu.json": {
+      "bytes": 10585,
+      "sha256": "d0815cea34d44a05b62574128cad58bf9247cc0ed48e48465dc4af22ac30874c"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-19/result.json": {
+      "bytes": 2915,
+      "sha256": "3d35fff25f5da42d43b2b470793a2bc3622cd16e542aea59cae6a0150b83d8f1"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-19/guests/guest-001/qemu.json": {
+      "bytes": 10206,
+      "sha256": "5c2ac7a73cdd0dab2893cd4e063aa5742cb1b956540e12b65fc3f595a89c65e3"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-20/result.json": {
+      "bytes": 3419,
+      "sha256": "d36b5f509259b66b1ccd235fa93aacdac1a877e352da7153f8b09173b543e022"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-20/guests/guest-001/qemu.json": {
+      "bytes": 10592,
+      "sha256": "076766a082745698b5fd9efad33397ac6bf39082380e93ac3211c5f962bbc363"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-20/guests/guest-002/qemu.json": {
+      "bytes": 10602,
+      "sha256": "72ef28b4ee50c1a9a6ed6c89d8c186fb0c81001f0f19aceada8a5c2e46075dcf"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-20/guests/guest-003/qemu.json": {
+      "bytes": 10592,
+      "sha256": "671753b7a3b9cfc01bac7b347adcc5306dcdffa34389733e0093cc11b95eba45"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-21/result.json": {
+      "bytes": 2987,
+      "sha256": "4882c1c7100de144fe3ab4f2c84f60a10f0a267fec8a7e289ffc095985fc11d6"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-21/guests/guest-001/qemu.json": {
+      "bytes": 10385,
+      "sha256": "ccc476a8c4c559859785207917b5cf62e0a50be54a193670320d5b34be29fe26"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-22/result.json": {
+      "bytes": 2948,
+      "sha256": "9f2b10be7d3f615ad572f2e28ac9b0c1247e6b4fc35fc7c09dab1ac7ff16a2ed"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-22/guests/guest-001/qemu.json": {
+      "bytes": 10750,
+      "sha256": "0bb989056af932cffeddd273d75013846b501703eb12b1f24cc093c826fd372d"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-15/coverage/result.json": {
+      "bytes": 2184,
+      "sha256": "c069c00abd217eb87246e2c189a43cec675ad93c99613af542761e1d23d58575"
+    },
+    "/tmp/trillionnium-a01-native-regressions/support/build/out/final-matrix/case-15/guests/guest-001/coverage-capture.json": {
+      "bytes": 2655,
+      "sha256": "069fe82325dac3bf51611ed5eaab083b5fa476e6d4d501bf65177f72c46001d2"
+    },
+    "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/manifest.json": {
+      "bytes": 35270,
+      "sha256": "025954ac7c47146525eb61f496622e48f31cf41d724038bef4acaa74b95f02e5"
+    },
+    "/workspace/scratch/ae1a8cf05419/native-cloud/final-matrix-inputs/manifest.json": {
+      "bytes": 60311,
+      "sha256": "402585d79b9bd355db64d97e2125304490155a546537b6bd979e76c848fe47c9"
+    }
+  }
+}

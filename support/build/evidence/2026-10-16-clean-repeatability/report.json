@@ -1,0 +1,207 @@
+{
+  "phase": "2026-10-16-clean-repeatability",
+  "role": "A01 Rust kernel foundation",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22",
+  "upstream": {
+    "repository": "asterinas/asterinas",
+    "tag": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21",
+    "source_directory": "kernel/asterinas"
+  },
+  "phase_baseline_commit": "0a533b92d4a4df8e8e4643c1b7de00e83ba0fd9d",
+  "main_at_phase_start": "a1c61d50fe281361ca04ad4bc3c6b3aba2c2260f",
+  "main_merge_commit": "81bd3f21804221dcc5de73f3e59b2f953282506a",
+  "source_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+  "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+  "source_publications": "source-publication-receipt.json",
+  "authored_paths": [
+    "support/build/kernel.sh",
+    "support/build/tests/test_kernel_runner.py",
+    "support/build/README.md"
+  ],
+  "authored_behavior": "Acquire workspace lock before creating evidence output; record explicit Rust flags/target/build timestamp",
+  "fixed_source_checks": 118,
+  "root_readme_bytes": 0,
+  "tracked_kernel_directory_files_changed": [],
+  "ostd_tree": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+  "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "clean_pair": {
+    "kind": "actual_same_host_same_path_two_clean_kernel_target_builds_and_boots",
+    "source_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+    "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+    "actual_controller_tool_observation": {
+      "session": 86915,
+      "exit_code": 0,
+      "source": "parent actual completed tool result; distinct from per-entry receipts"
+    },
+    "clean_target_before_each_launch": true,
+    "native_guests": 2,
+    "outer_exits": [
+      0,
+      0
+    ],
+    "raw_qemu_exits": [
+      33,
+      33
+    ],
+    "kernel_byte_equality_independently_verified": true,
+    "initramfs_byte_equality_independently_verified": true,
+    "kernel_sha256": "6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040",
+    "kernel_bytes": 8288088,
+    "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "initramfs_bytes": 1107990,
+    "serial_byte_equality_claimed": false,
+    "captured_all_original_outputs_before_cache_deletion": true,
+    "old_cache_custody_record": "between-builds.json",
+    "offline_checks_passed": 2,
+    "fixed_upstream_files_recorded_checked_each": 118,
+    "fixed_input_hashes_independently_compared_each": 6,
+    "run_a_generated_lock_snapshot_retained": false,
+    "run_b_generated_lock_followup": "provenance/next8-pair-B-lock.json",
+    "same_host_same_absolute_path": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat",
+    "shared_registry_cache": true,
+    "sdk_rebuilt_a_reused_b": true,
+    "all_tool_caches_cold_claimed": false,
+    "cross_directory_or_cross_host_reproducibility_claimed": false,
+    "current_target_or_manifest_read_during_packaging": false,
+    "new_vm_cargo_rustc_or_git_writes_during_packaging": false
+  },
+  "kernel_tests": {
+    "phase": "next8 full upstream kernel tests",
+    "source_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+    "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+    "passed": true,
+    "crates": [
+      {
+        "crate": "ostd",
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "raw_qemu_exit": 33,
+        "timed_out": false,
+        "serial_bytes": 23028,
+        "serial_sha256": "85f3cc2b69274521f3eeca0e699e667d462cd2d8fb58759e154bf885aa90a332",
+        "generated_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+        "actual_input_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+      },
+      {
+        "crate": "aster-core",
+        "passed": 141,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 141,
+        "raw_qemu_exit": 33,
+        "timed_out": false,
+        "serial_bytes": 15032,
+        "serial_sha256": "40b5431a766e7980cbde3e618aec95044ab13330bfe683a63f427af704a403f7",
+        "generated_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+        "actual_input_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+      }
+    ],
+    "declared_passes": 362,
+    "exercised_passed_lower_bound": 359,
+    "soft_skipped": 3,
+    "raw_qemu_exits": [
+      33,
+      33
+    ],
+    "outer_exit_code": 0,
+    "target_cache_reused": true,
+    "target_cache_note": "next8 clean A/B builds; this ktest invocation explicitly reuses B target cache",
+    "empty_target_claim": false,
+    "fixed_toolchain": "nightly-2026-07-21",
+    "source_binding": "source-binding.json",
+    "invocation": "readable/observer/invocation.json",
+    "counts_and_receipts": "counts.json",
+    "artifacts": "artifacts/manifest.json",
+    "raw_bundle": "raw.tar.gz",
+    "raw_members": "members.json",
+    "readables": "readable-index.json",
+    "not_claimed": [
+      "A06 quota or native HOS2 control acceptance",
+      "VMX/EPT hardware support",
+      "Empty-target build for this ktest invocation",
+      "Bit-for-bit comparison with prior-phase kernel artifacts"
+    ],
+    "no_new_run_during_packaging": true
+  },
+  "host": {
+    "merged_main_test_executions": 105,
+    "golden_vectors_separate": 12,
+    "busy_output_tests_per_mode": 33,
+    "python_modes": [
+      "-I",
+      "-I -O"
+    ],
+    "total_test_executions": 171,
+    "all_passed": true
+  },
+  "actual_tool_observations": [
+    {
+      "suite": "merged-host",
+      "session": 8089,
+      "exit": 0
+    },
+    {
+      "suite": "clean-pair",
+      "session": 86915,
+      "exit": 0
+    },
+    {
+      "suite": "kernel-tests",
+      "session": 88957,
+      "exit": 0
+    }
+  ],
+  "real_qemu_guests": 4,
+  "raw_qemu_exits": [
+    33,
+    33,
+    33,
+    33
+  ],
+  "commands": [
+    "support/build/prepare-host.sh --apt",
+    "support/build/kernel.sh kernel",
+    "support/build/kernel.sh run_kernel",
+    "python3 -I support/build/ktest/run.py"
+  ],
+  "dependency_installation_this_phase": false,
+  "existing_installed_dependencies_reused": true,
+  "qemu_profile": "x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS-no-network-no-data-disks",
+  "path_analysis": "path-analysis/README.md",
+  "reproducible_kernel_build_ready": false,
+  "limits": [
+    "same host and absolute source/target paths only",
+    "registry/toolchain caches shared; not all tool caches cold",
+    "A post-build generated lock snapshot not retained before owned cache deletion",
+    "3 VMX/EPT hardware soft skips; no SMP acceptance",
+    "HOS2/native budget control, full hardware/userspace/Hepta not accepted",
+    "prior A04 same-ELF fd-limit failures and SCM_RIGHTS timeouts not rerun",
+    "prior TCP/GDB, debug/cancellation and AF_UNIX probe not rerun",
+    "historical generated-manifest writer unidentified",
+    "remote CI result and main merge not claimed"
+  ],
+  "handoff": {
+    "A05_process": "kernel/asterinas/kernel/core/src/process/process/mod.rs::Process",
+    "A05_ioctl": "kernel/asterinas/kernel/core/src/syscall/ioctl.rs::sys_ioctl",
+    "A05_file_dispatch": "kernel/asterinas/kernel/core/src/fs/file/file_handle.rs::FileLike::ioctl",
+    "A06_scheduler": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs::ClassScheduler / LocalRunQueue",
+    "A01_scope": "support/build/** and support/upstream-lock.json; no owner core-source edits"
+  },
+  "kernel_subtree": "51f02c3b0c85fc150737a17d3c1a3681377c78e8",
+  "kernel_core_tree": "fa1684a84388ce4ff6f93a5519b1a5b13e2bec3c"
+}

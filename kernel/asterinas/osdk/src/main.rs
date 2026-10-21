@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
+#![deny(unsafe_code)]
+
 use env_logger::Env;
 
 #[macro_use]

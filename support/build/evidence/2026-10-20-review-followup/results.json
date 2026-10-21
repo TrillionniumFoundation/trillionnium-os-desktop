@@ -1,0 +1,531 @@
+{
+  "schema": 1,
+  "base_commit": "aeb1784735aff9673d0524ff2c382ba97b02bd61",
+  "reported_utc": "2026-10-20T16:38:00.436581+00:00",
+  "review_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6295476669",
+  "changed_source_files": [
+    {
+      "path": "support/build/osdk-integration/test_input_snapshots.py",
+      "bytes": 21918,
+      "sha256": "2f40fa37a4871e0cf3e88d0071cbccf205bb91bf75125cc4f5eee881d22d9b65",
+      "git_blob": "9e0d0e3047596a273325309ea9243653651d06f9"
+    },
+    {
+      "path": "support/build/osdk-integration/test_private_tools.py",
+      "bytes": 11948,
+      "sha256": "79209641db80c9a5f525db5e5071358ad0bf2c931b8d03fe0cecfb5121922df8",
+      "git_blob": "62e23af42196acf49ff2381e882f5c6b99c44b38"
+    },
+    {
+      "path": "support/build/ktest/record-qemu.py",
+      "bytes": 5519,
+      "sha256": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+      "git_blob": "0466fbfd66471b9194d034f2e941225b834ffad5"
+    },
+    {
+      "path": "support/build/tests/test_ktest_private_inputs.py",
+      "bytes": 11941,
+      "sha256": "c5562bc342bfd6f2b92ba0bca2cda8c9dffdc94b1120aea82f17c32c8f9abc3a",
+      "git_blob": "11d867b6433be9144ec3db8382e8fa14884d3cfd"
+    }
+  ],
+  "root_readme_bytes": 0,
+  "patches": [
+    {
+      "name": "a01-round2-fixtures.patch",
+      "sha256": "02e4b78096e090f5d460858674a3f1659163c684d15734284ed04e1d59cef413"
+    },
+    {
+      "name": "ktest-timeout-preparation.patch",
+      "sha256": "5c1d7f03d171e13d9c66ae7dfb00b37d6be9a20e1af053055b9808601dbb44e5"
+    }
+  ],
+  "changes": {
+    "coverage_fixtures": "Require exact v2 TCP profile/transport flags once each and check sidecar binding; current rejection diagnostic is exact equality.",
+    "ktest_timeout": {
+      "default_timeout_seconds": 300,
+      "requested_field": "timeout_requested",
+      "selected_field": "timeout_seconds",
+      "positive_integer_required": true,
+      "int_to_float_must_be_finite": true,
+      "arbitrary_upper_limit_added": false,
+      "prep_failure_exit": 1,
+      "raw_exit_on_prep_failure": null,
+      "version_or_guest_called_on_invalid_timeout": false,
+      "subprocess_receives_original_integer_timeout": true,
+      "normal_raw_exit": 33,
+      "existing_timeout_raw_exit": 124,
+      "popen_or_cleanup_implementation_changed": false
+    }
+  },
+  "fixture_draft": {
+    "base_commit": "aeb1784735aff9673d0524ff2c382ba97b02bd61",
+    "files": [
+      {
+        "path": "support/build/osdk-integration/test_input_snapshots.py",
+        "before_sha256": "fb3ac087283168172e7c9107db47c9f865f008cca01ded4d7ef55edddf5de5f8",
+        "after_sha256": "2f40fa37a4871e0cf3e88d0071cbccf205bb91bf75125cc4f5eee881d22d9b65"
+      },
+      {
+        "path": "support/build/osdk-integration/test_private_tools.py",
+        "before_sha256": "71bc693fea9499f07015749a753b929c81c433303d24a8597eb9e236f371a025",
+        "after_sha256": "79209641db80c9a5f525db5e5071358ad0bf2c931b8d03fe0cecfb5121922df8"
+      }
+    ],
+    "baseline_expected_failures": {
+      "test_input_snapshots": 2,
+      "test_private_tools": 1
+    },
+    "fixed_normal_tests": 17,
+    "fixed_optimized_tests": 17,
+    "all_fixed_tests_passed": true,
+    "native_tools_executed": false,
+    "canonical_or_index_modified": false,
+    "patch_sha256": "02e4b78096e090f5d460858674a3f1659163c684d15734284ed04e1d59cef413",
+    "scope": "Python host fixtures only; no kernel build or guest acceptance claim",
+    "results": [
+      {
+        "stage": "baseline",
+        "test": "test_input_snapshots",
+        "optimized": false,
+        "source_sha256": "fb3ac087283168172e7c9107db47c9f865f008cca01ded4d7ef55edddf5de5f8",
+        "exit_code": 1,
+        "tests": 11,
+        "failures": 2,
+        "errors": 0,
+        "log_sha256": "7064b22e7244e9cdc8e2f4fc60ffab1bd36dcbc4b2c1c3663de3b48081722761"
+      },
+      {
+        "stage": "baseline",
+        "test": "test_private_tools",
+        "optimized": false,
+        "source_sha256": "71bc693fea9499f07015749a753b929c81c433303d24a8597eb9e236f371a025",
+        "exit_code": 1,
+        "tests": 6,
+        "failures": 1,
+        "errors": 0,
+        "log_sha256": "b5197f436718318a4607952974ca250520ff859c62fdb338eefda70db9f5b8db"
+      },
+      {
+        "stage": "fixed",
+        "test": "test_input_snapshots",
+        "optimized": false,
+        "source_sha256": "2f40fa37a4871e0cf3e88d0071cbccf205bb91bf75125cc4f5eee881d22d9b65",
+        "exit_code": 0,
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "log_sha256": "b26a185d1912a37f7463889b910eee9fbfde11e39589716c2161b20df2810a57"
+      },
+      {
+        "stage": "fixed",
+        "test": "test_input_snapshots",
+        "optimized": true,
+        "source_sha256": "2f40fa37a4871e0cf3e88d0071cbccf205bb91bf75125cc4f5eee881d22d9b65",
+        "exit_code": 0,
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "log_sha256": "9c3c8a6a5f7bbec905aa8b8273ffd4b053a6bc0d75aa957aa86d57a93738b776"
+      },
+      {
+        "stage": "fixed",
+        "test": "test_private_tools",
+        "optimized": false,
+        "source_sha256": "79209641db80c9a5f525db5e5071358ad0bf2c931b8d03fe0cecfb5121922df8",
+        "exit_code": 0,
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "log_sha256": "13089dbac3395fa14fae5e897fcc4a26c83302f41a4c3969e2cee4d4f8991470"
+      },
+      {
+        "stage": "fixed",
+        "test": "test_private_tools",
+        "optimized": true,
+        "source_sha256": "79209641db80c9a5f525db5e5071358ad0bf2c931b8d03fe0cecfb5121922df8",
+        "exit_code": 0,
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "log_sha256": "0341233649687e47867ecd4f77b402433074818fe5ac968efaf005e0bfa79ec9"
+      }
+    ]
+  },
+  "ktest_draft": {
+    "schema": 1,
+    "base_head": "aeb1784735aff9673d0524ff2c382ba97b02bd61",
+    "allowed_changed_paths": [
+      "support/build/ktest/record-qemu.py",
+      "support/build/tests/test_ktest_private_inputs.py"
+    ],
+    "sources": [
+      {
+        "path": "support/build/ktest/record-qemu.py",
+        "old": {
+          "bytes": 5180,
+          "sha256": "52d50a46ad09be00566292bea64cf4b2b979badb84a11f055b5d06ef39e11c28",
+          "git_blob": "01420c79907b1b4291fc6c877a9e1754b0f54b85"
+        },
+        "new": {
+          "bytes": 5519,
+          "sha256": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+          "git_blob": "0466fbfd66471b9194d034f2e941225b834ffad5"
+        }
+      },
+      {
+        "path": "support/build/tests/test_ktest_private_inputs.py",
+        "old": {
+          "bytes": 8252,
+          "sha256": "e85ffc1f296429dc1d34a4728661cca2cfc589da4a9c7addcf6b41aba73cfe5a",
+          "git_blob": "089f348fc0fdbe5d6ca449d946f8bb4c86baf006"
+        },
+        "new": {
+          "bytes": 11941,
+          "sha256": "c5562bc342bfd6f2b92ba0bca2cda8c9dffdc94b1120aea82f17c32c8f9abc3a",
+          "git_blob": "11d867b6433be9144ec3db8382e8fa14884d3cfd"
+        }
+      }
+    ],
+    "shared_selector_unchanged": true,
+    "patch_sha256": "5c1d7f03d171e13d9c66ae7dfb00b37d6be9a20e1af053055b9808601dbb44e5",
+    "patch_apply_check_exit": 0,
+    "test_modes": [
+      {
+        "mode": "green-draft",
+        "test_methods": 8,
+        "recorder_invocations": 25,
+        "invalid_timeout_subcases": 6,
+        "exit_code": 0
+      },
+      {
+        "mode": "green-draft-optimized",
+        "test_methods": 8,
+        "recorder_invocations": 25,
+        "invalid_timeout_subcases": 6,
+        "exit_code": 0
+      }
+    ],
+    "unique_test_methods": 8,
+    "baseline_negative_test_methods": 1,
+    "baseline_negative_subcases_failed": 6,
+    "baseline_reproduction": "baseline-invalid-reproduction.json",
+    "semantics": {
+      "default_timeout_seconds": 300,
+      "requested_field": "timeout_requested",
+      "selected_field": "timeout_seconds",
+      "positive_integer_required": true,
+      "int_to_float_must_be_finite": true,
+      "arbitrary_upper_limit_added": false,
+      "prep_failure_exit": 1,
+      "raw_exit_on_prep_failure": null,
+      "version_or_guest_called_on_invalid_timeout": false,
+      "subprocess_receives_original_integer_timeout": true,
+      "normal_raw_exit": 33,
+      "existing_timeout_raw_exit": 124,
+      "popen_or_cleanup_implementation_changed": false
+    },
+    "scope_limits": {
+      "real_qemu_executed": false,
+      "cargo_executed": false,
+      "gdb_executed": false,
+      "canonical_or_owner_source_modified": false
+    }
+  },
+  "canonical_targeted_verification": {
+    "unique_test_methods": 25,
+    "successful_executions": 50,
+    "results": [
+      {
+        "name": "test_input_snapshots-normal",
+        "argv": [
+          "python3",
+          "-I",
+          "support/build/osdk-integration/test_input_snapshots.py",
+          "-v"
+        ],
+        "duration_seconds": 3.020734577999974,
+        "exit_code": 0,
+        "expected_test_methods": 11,
+        "optimized": false,
+        "log_bytes": 2025,
+        "log_sha256": "25da97ffe82c2fba9ac27efcd66c4ceacbeed6c3d35672c6dcb8e4c628bf91d8"
+      },
+      {
+        "name": "test_input_snapshots-optimized",
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "support/build/osdk-integration/test_input_snapshots.py",
+          "-v"
+        ],
+        "duration_seconds": 2.6651966360004735,
+        "exit_code": 0,
+        "expected_test_methods": 11,
+        "optimized": true,
+        "log_bytes": 2025,
+        "log_sha256": "3724f91063ad86ff6646514a03de8f49caff72283cfccc7ae66afd98db606a78"
+      },
+      {
+        "name": "test_private_tools-normal",
+        "argv": [
+          "python3",
+          "-I",
+          "support/build/osdk-integration/test_private_tools.py",
+          "-v"
+        ],
+        "duration_seconds": 1.3056381389978924,
+        "exit_code": 0,
+        "expected_test_methods": 6,
+        "optimized": false,
+        "log_bytes": 1176,
+        "log_sha256": "0395aceb79b179c5d1021b407eeea3c93b7649aac0538ade6ca0adc0f1eb4fa7"
+      },
+      {
+        "name": "test_private_tools-optimized",
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "support/build/osdk-integration/test_private_tools.py",
+          "-v"
+        ],
+        "duration_seconds": 1.2908815659975517,
+        "exit_code": 0,
+        "expected_test_methods": 6,
+        "optimized": true,
+        "log_bytes": 1176,
+        "log_sha256": "1b6da9184293eeb9e1e16702a74973c2033796be201b9d4412a5847fb4729942"
+      },
+      {
+        "name": "test_ktest_private_inputs-normal",
+        "argv": [
+          "python3",
+          "-I",
+          "support/build/tests/test_ktest_private_inputs.py",
+          "-v"
+        ],
+        "duration_seconds": 2.561030737000692,
+        "exit_code": 0,
+        "expected_test_methods": 8,
+        "optimized": false,
+        "log_bytes": 1452,
+        "log_sha256": "ca7632216f67d55a11be03a438eb378f4963a0853d9c5f96a3c66b9d421f7ab2"
+      },
+      {
+        "name": "test_ktest_private_inputs-optimized",
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "support/build/tests/test_ktest_private_inputs.py",
+          "-v"
+        ],
+        "duration_seconds": 2.9969020830030786,
+        "exit_code": 0,
+        "expected_test_methods": 8,
+        "optimized": true,
+        "log_bytes": 1452,
+        "log_sha256": "c25b839bbff80764763c3bf60a84df45d63eeed6c63a0455521a09ef371f9475"
+      }
+    ],
+    "source_before": {
+      "support/build/osdk-integration/test_input_snapshots.py": "2f40fa37a4871e0cf3e88d0071cbccf205bb91bf75125cc4f5eee881d22d9b65",
+      "support/build/osdk-integration/test_private_tools.py": "79209641db80c9a5f525db5e5071358ad0bf2c931b8d03fe0cecfb5121922df8",
+      "support/build/ktest/record-qemu.py": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+      "support/build/tests/test_ktest_private_inputs.py": "c5562bc342bfd6f2b92ba0bca2cda8c9dffdc94b1120aea82f17c32c8f9abc3a",
+      "support/build/osdk-integration/record-qemu.py": "27c72e377b2c1d65f46d129a7121ddd4fc4100e41a32dc131f197cf519309f37",
+      "support/build/record-qemu.py": "2c630b7877d0a5bfd44aa669c352064c707bc8e8676a396347709c23f8da0b8e"
+    },
+    "source_after": {
+      "support/build/osdk-integration/test_input_snapshots.py": "2f40fa37a4871e0cf3e88d0071cbccf205bb91bf75125cc4f5eee881d22d9b65",
+      "support/build/osdk-integration/test_private_tools.py": "79209641db80c9a5f525db5e5071358ad0bf2c931b8d03fe0cecfb5121922df8",
+      "support/build/ktest/record-qemu.py": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+      "support/build/tests/test_ktest_private_inputs.py": "c5562bc342bfd6f2b92ba0bca2cda8c9dffdc94b1120aea82f17c32c8f9abc3a",
+      "support/build/osdk-integration/record-qemu.py": "27c72e377b2c1d65f46d129a7121ddd4fc4100e41a32dc131f197cf519309f37",
+      "support/build/record-qemu.py": "2c630b7877d0a5bfd44aa669c352064c707bc8e8676a396347709c23f8da0b8e"
+    },
+    "original_receipt_sha256": "0a87a29a18747c40e19f4ccdfb622165fbdb18da7098cd584a5b3cdf5067b0b2"
+  },
+  "unchanged_source_host_gates": {
+    "source_commit": "aeb1784735aff9673d0524ff2c382ba97b02bd61",
+    "workflow_git_blob": "3e6834d7e15b33caa59757f1f3fed21f1012c6bd",
+    "workflow_sha256": "284b57ef0c382a20eb894046eca2ee0f7d7451eaedfae54953826eb8d4d62238",
+    "source_snapshot_sha256": "78610b5ec573d943d83aac7f30d458e696cf1fab380ff9b13a2246a4037c2a3b",
+    "workflow_after_fixture_recovery": {
+      "suites": 3,
+      "unique_test_methods": 102,
+      "mode_executions": 2,
+      "passing_test_executions": 204,
+      "errors": 0,
+      "failures": 0,
+      "skips": 0,
+      "qualification": "Boot evidence modes ran in an exact-byte private source closure to restore a sparse-absent tracked fixture. Other modes ran against canonical source."
+    },
+    "supplemental_unique_tests": 142,
+    "supplemental_normal_executions": 142,
+    "sparse_fixture_failure": {
+      "classification": "environment fixture absent from sparse checkout, not a changed test expectation",
+      "path": "support/build/evidence/2026-10-16/acceptance/boot/serial.log",
+      "original_attempts": 2,
+      "errors_per_attempt": 27,
+      "tests_per_attempt": 31,
+      "git_blob": "3d46545cef6a30067f0ee437334dd07cf6fc76a0",
+      "sha256": "919269f73caca7f4b6a715f5ece8f189bc26487a844dc98e247af5fd60720016",
+      "recovery": "Four exact Git blobs in a new private closure; canonical source, assertions and production code unchanged."
+    },
+    "original_summary_sha256": "5cf12c7cb240726b465296a6de6e45699db6a0f9178253645b3b9d1a950b30bb",
+    "excluded": "test_capture_lifecycle.py executes native GDB; excluded from host denominator; previous native matrix evidence remains separately scoped."
+  },
+  "nonduplicate_host_totals": {
+    "unique_test_methods": 269,
+    "successful_executions": 396,
+    "calculation": "102 workflow tests x2 + 142 supplemental tests x1 + 25 targeted patched tests x2; draft re-runs are excluded"
+  },
+  "native_recorder_replay": {
+    "scope": "New recorder, previously frozen a927 complete-crate test ELFs; no Cargo rebuild or new producer claim",
+    "rebuild_performed": false,
+    "source_before": {
+      "support/build/ktest/record-qemu.py": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+      "support/build/record-qemu.py": "2c630b7877d0a5bfd44aa669c352064c707bc8e8676a396347709c23f8da0b8e",
+      "support/build/ktest/check.py": "df37dfd48012d835cc9a7944bd7267d7a6ca9ca1822119c128bb11476a5f6ba6"
+    },
+    "source_after": {
+      "support/build/ktest/record-qemu.py": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+      "support/build/record-qemu.py": "2c630b7877d0a5bfd44aa669c352064c707bc8e8676a396347709c23f8da0b8e",
+      "support/build/ktest/check.py": "df37dfd48012d835cc9a7944bd7267d7a6ca9ca1822119c128bb11476a5f6ba6"
+    },
+    "original_summary_sha256": "dc638bcb133e752a56b5de0df0450ad53289a10d951df7245a9651f66a9e10a0",
+    "guests": [
+      {
+        "crate": "ostd",
+        "elf_producer": "a927146241a8622affd6172a1584c9555ba3cc6b",
+        "elf_sha256": "a62649352a5ff0c2e3afcbbf2992baee6c3010116a5e1eb272c9fd1d82f75039",
+        "elf_size": 1998976,
+        "recorder_sha256": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+        "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+        "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+        "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "profile": {
+          "arch": "x86_64",
+          "machine": "q35",
+          "accel": "tcg",
+          "cpu": "max",
+          "vcpus": 1,
+          "memory_mib": 512,
+          "network": false,
+          "data_disks": false
+        },
+        "timeout_requested": "300",
+        "timeout_seconds": 300,
+        "raw_qemu_exit": 33,
+        "recorder_exit": 33,
+        "timed_out": false,
+        "stage": "complete",
+        "duration_seconds": 0.867,
+        "checked": {
+          "passed": true,
+          "guests": [
+            {
+              "crate": "ostd",
+              "declared": 221,
+              "passed": 221,
+              "failed": 0,
+              "filtered": 0,
+              "soft_skipped": 3,
+              "soft_skip_reasons": [
+                "VMX unavailable",
+                "VMX unavailable",
+                "VMX/EPT invalidation unavailable"
+              ],
+              "exercised_passed_lower_bound": 218,
+              "observed_test_starts": 221,
+              "raw_qemu_exit": 33,
+              "guest": "guest-001"
+            }
+          ]
+        },
+        "qemu_json_sha256": "0fcde46611408b112bb3951fd4f8639b7b6d25456da6365b53a7264933fcdf2c",
+        "serial_sha256": "227da8f4314eee902c655afe15dc770f29ef15fec626a17961162741778c8b11",
+        "console_sha256": "227da8f4314eee902c655afe15dc770f29ef15fec626a17961162741778c8b11"
+      },
+      {
+        "crate": "aster-core",
+        "elf_producer": "a927146241a8622affd6172a1584c9555ba3cc6b",
+        "elf_sha256": "61ef6ea0ade9194e6c860e04310f2048587d5d41c6690956f46d3e80537d1fdf",
+        "elf_size": 9967432,
+        "recorder_sha256": "54e6cbfc482605b5dc6715f678de0772dac965043abcdf898c1612a9bd8438b9",
+        "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+        "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+        "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "profile": {
+          "arch": "x86_64",
+          "machine": "q35",
+          "accel": "tcg",
+          "cpu": "max",
+          "vcpus": 1,
+          "memory_mib": 512,
+          "network": false,
+          "data_disks": false
+        },
+        "timeout_requested": "300",
+        "timeout_seconds": 300,
+        "raw_qemu_exit": 33,
+        "recorder_exit": 33,
+        "timed_out": false,
+        "stage": "complete",
+        "duration_seconds": 0.817,
+        "checked": {
+          "passed": true,
+          "guests": [
+            {
+              "crate": "aster-core",
+              "declared": 247,
+              "passed": 247,
+              "failed": 0,
+              "filtered": 0,
+              "soft_skipped": 0,
+              "soft_skip_reasons": [],
+              "exercised_passed_lower_bound": 247,
+              "observed_test_starts": 247,
+              "raw_qemu_exit": 33,
+              "guest": "guest-001"
+            }
+          ]
+        },
+        "qemu_json_sha256": "28327fdba3e04e7f05cb7dfa6c242b3224862ca53f8258c88b8fb8d4849587d4",
+        "serial_sha256": "1ed8da8ddbe14e218257b0cbe6a9c6e8dc4f7f44b7d56ab6f1b808219f86a86a",
+        "console_sha256": "1ed8da8ddbe14e218257b0cbe6a9c6e8dc4f7f44b7d56ab6f1b808219f86a86a"
+      }
+    ],
+    "reported_passed": 468,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 465
+  },
+  "independent_reviews": [
+    {
+      "name": "fixtures-independent-review.json",
+      "sha256": "a6b77609562535e7404fec20c7080aea427e97b475d8eda9fc690bd5e1835fc8",
+      "blocking_findings": 0
+    },
+    {
+      "name": "independent-ktest-timeout-review.json",
+      "sha256": "3c1db77b38e2b778a8534c56c4743d44dec1c9deaf6e7a8b3a789497b1490b13",
+      "checks": 39,
+      "blocking_findings": 0
+    }
+  ],
+  "remaining_scope": {
+    "a06_latest_observation": {
+      "run_id": 39456758126,
+      "head_sha": "aeb1784735aff9673d0524ff2c382ba97b02bd61",
+      "failed_step": "Freeze the permission probe and verify it in an isolated Linux mount namespace",
+      "rust_and_qemu_steps": "skipped",
+      "classification": "separate A04/A00 owner handoff; no change to owner source"
+    },
+    "full_build_producer": "684c4c82bbe770d712da75a199b7f5757ee61191",
+    "default_unix_matrix_producer": "8769a3e224fb97ce6d06fbcb1512281a7427156e",
+    "full_current_head_ci_claim": false
+  }
+}

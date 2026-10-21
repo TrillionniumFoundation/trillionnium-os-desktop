@@ -1,0 +1,159 @@
+{
+  "baseline_commit": "1001161c45fed52b4735606c81bc039cad770db4",
+  "observed_utc": "2026-10-17T04:42:07.668676+00:00",
+  "current_sha256": "cd60952f503cd7b75af95ddc3dce356fe53fff226b15d17a1b1701f215345dcc",
+  "baseline_sha256": "372a13199509b92358c795ac6c2dc262733c4f0fe60f02511d623407dc4f273e",
+  "delta": [
+    {
+      "path": "kernel.cloud_next_validation_2026_10_17",
+      "added": {
+        "evidence": "support/build/evidence/2026-10-17-next-closure/REPORT.md",
+        "main_integrated": "47288c4465720d125658b392efc655b333c90868",
+        "kernel_directory": "kernel/asterinas",
+        "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "actual_host": {
+          "boot_id": "952006db-88a3-4a56-8049-0adbbe2acfb2",
+          "hostname": "24f0ea2620fe",
+          "kernel": "Linux version 6.18.55 (root@3cf029e815d2) (gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #1 SMP Wed Oct 14 19:45:18 UTC 2026\n",
+          "cgroup_memory_max": "8589934592",
+          "cpu_max": "800000 100000"
+        },
+        "dependency_restore": {
+          "evidence": "support/build/evidence/2026-10-17-cloud-restore-next/REPORT.md",
+          "signed_packages": 57,
+          "native_runtime_checks": 19,
+          "rust_commands": 12,
+          "frozen_input_members": 226,
+          "system_package_install": false
+        },
+        "normal_private_sdk": {
+          "code_commit": "00a24cf5557d1b8e9663a19cc4961af81131d416",
+          "host_test_executions": 161,
+          "evidence": "support/build/evidence/2026-10-17-private-sdk/REPORT.md"
+        },
+        "ordinary_cold_build_and_boot": {
+          "source_commit": "0a7037fdde1e4c21884ea4f490ff28134082d0a2",
+          "evidence": "support/build/evidence/2026-10-17-private-sdk-native/REPORT.md",
+          "tool_session": 19957,
+          "outer_exit": 0,
+          "controller_commands": 11,
+          "cold_compiling_lines": 279,
+          "subsequent_boot_compiling_lines": 0,
+          "target_absent_before_build": true,
+          "qemu_raw_exit": 33,
+          "kernel_bytes": 8255688,
+          "kernel_sha256": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7",
+          "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+          "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "serial_sha256": "01e1bd9cbe1cebdb28260ece6fe521f87bc1fc475fcb55ad2eff64204b4656e6",
+          "first_and_loaded_kernel_complete_bytes_equal": true,
+          "two_private_sdks_complete_bytes_equal": true,
+          "global_sdk_sha256_and_fd_stat_unchanged": true,
+          "global_prelaunch_payload_retained": false
+        },
+        "observed_cross_instance_reproduction": {
+          "source_commit": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+          "evidence": "support/build/evidence/2026-10-17-repro-cross-instance/README.md",
+          "cases": [
+            "A4",
+            "C4"
+          ],
+          "actual_hostnames": [
+            "343e40cfefc1",
+            "24f0ea2620fe"
+          ],
+          "schema": "a01-component-path-projection/4",
+          "complete_elf_initramfs_bios_bytes_equal": true,
+          "canonical_descriptors_equal": true,
+          "cargo_producer_identity_counts_equal": true,
+          "kernel_bytes": 8286952,
+          "kernel_sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+          "fixed_literal_toolchain_registry_profile_paths": true,
+          "arbitrary_host_reproduction_claimed": false,
+          "immutable_environment_claimed": false,
+          "provider_instance_attestation_claimed": false,
+          "canonical_descriptor_count": 61
+        },
+        "tcp_debug": {
+          "source_commit": "a5af45537dea32039ea172ad0d7e381400c07d95",
+          "evidence": "support/build/evidence/2026-10-17-debug-private-sdk-native/README.md",
+          "tool_session": 67862,
+          "outer_exit": 0,
+          "controller_commands": 6,
+          "compile_lines": 177,
+          "cold_target_claimed": false,
+          "gdb_status": 0,
+          "entry_size": 32,
+          "runtime_symbol_boot_entry_bytes_equal": true,
+          "qemu_raw_exit": 33,
+          "earlier_nm_prepare_failure_retained": true
+        },
+        "kernel_mode_tests": {
+          "source_commit": "ff0d09a2c2e0cba1d528d11a06083f588989a9f3",
+          "evidence": "support/build/evidence/2026-10-17-ktest-private-sdk-native/REPORT.md",
+          "tool_session": 79302,
+          "outer_exit": 0,
+          "controller_commands": 6,
+          "reported_passed": 362,
+          "failed": 0,
+          "soft_skipped": 3,
+          "exercised_passed_lower_bound": 359,
+          "raw_qemu_exits": [
+            33,
+            33
+          ],
+          "private_sdk_installation": true,
+          "absolute_sdk_invocation": true,
+          "legacy_skip_rejected_before_output": true,
+          "target_reused": true,
+          "cold_target_claimed": false,
+          "host_mock_checks_per_mode": 11,
+          "host_lifecycle_fixtures_executed_this_phase": false
+        },
+        "a04_exact_input_handoff": {
+          "entry": "support/build/handoffs/a04-exact-rootfs/verify.py",
+          "manifest_files": 17,
+          "elf_files": 4,
+          "original_ustar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+          "new_guest_compatibility_pass_claimed": false
+        },
+        "main_abi_host_validation": {
+          "source_commit": "47288c4465720d125658b392efc655b333c90868",
+          "evidence": "support/build/evidence/2026-10-17-main47288-abi/README.md",
+          "checks": 13,
+          "python_per_mode": 52,
+          "rust_tests_and_doctests": 75,
+          "mutants_killed": 12,
+          "guest_control_acceptance_claimed": false
+        },
+        "current_round_real_qemu_guests": 5,
+        "current_round_raw_qemu_exits": [
+          33,
+          33,
+          33,
+          33,
+          33
+        ],
+        "a01_build_boot_sdk_routing_issues_closed": true,
+        "native_resource_control_accepted": false,
+        "default_unix_gdb_supported_on_this_host": false,
+        "vmx_ept_exercised": false,
+        "unknown_workspace_writer_identified": false,
+        "all_project_blockers_closed": false,
+        "root_readme_bytes": 0,
+        "remaining_ledger": "support/build/evidence/2026-10-17-next-closure/blockers.json",
+        "prior_reproduction_note": "Two absent-target full kernel builds at schema4 source 4e8c7083575cec69efabe8d2250dfdd040c8dee8, on the same actual host and two different actual source roots, produced byte-identical complete ELF/initramfs/BIOS inputs and both booted (raw QEMU33). The opt-in source-bound compiler/component path and Cargo metadata projection uses one Cargo job. Registry/toolchain caches were shared. Ordinary source d879a9d2 independently passed a cold make kernel followed by make run_kernel. Cross-host bit reproduction and a complete immutable host/container lock remain unestablished."
+      }
+    },
+    {
+      "path": "native_build_environment",
+      "before": "support/build/evidence/2026-10-17-private-toolchain/REPORT.md",
+      "after": "support/build/evidence/2026-10-17-cloud-restore-next/REPORT.md"
+    },
+    {
+      "path": "reproducible_kernel_build_note",
+      "before": "Two absent-target full kernel builds at schema4 source 4e8c7083575cec69efabe8d2250dfdd040c8dee8, on the same actual host and two different actual source roots, produced byte-identical complete ELF/initramfs/BIOS inputs and both booted (raw QEMU33). The opt-in source-bound compiler/component path and Cargo metadata projection uses one Cargo job. Registry/toolchain caches were shared. Ordinary source d879a9d2 independently passed a cold make kernel followed by make run_kernel. Cross-host bit reproduction and a complete immutable host/container lock remain unestablished.",
+      "after": "The fixed schema4 producer 4e8c7083575cec69efabe8d2250dfdd040c8dee8 now has two observed cloud-instance builds (historical A4 and fresh C4) with byte-identical complete ELF/initramfs/BIOS inputs, equal canonical local descriptors and Cargo producer identities, and raw QEMU33 on both. This is bounded by identical literal toolchain/registry/profile paths and fixed package inputs; arbitrary-host reproduction, provider instance attestation and a complete immutable builder remain unestablished. Ordinary private-SDK source 0a7037fdde1e4c21884ea4f490ff28134082d0a2 independently cold-built and booted; debug a5af455 and kernel tests ff0d09a subsequently passed their real guest runs. See the next-closure report for exact source boundaries and remaining owners."
+    }
+  ]
+}

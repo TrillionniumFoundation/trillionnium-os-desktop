@@ -1,0 +1,197 @@
+{
+  "requested_qemu_args": [
+    "-kernel",
+    "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel",
+  "artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/kernel.elf",
+      "size": 8303048,
+      "sha256": "1eb66b33baef6b338c232598d25f743dc83526a2715811b430e5a7208e249ecd",
+      "stat": {
+        "dev": 27,
+        "ino": 395099,
+        "mode": 33024,
+        "size": 8303048,
+        "mtime_ns": 1792294209845298285,
+        "ctime_ns": 1792294209845298285
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "size": 8303048,
+        "sha256": "1eb66b33baef6b338c232598d25f743dc83526a2715811b430e5a7208e249ecd",
+        "stat": {
+          "dev": 27,
+          "ino": 279363,
+          "mode": 33261,
+          "size": 8303048,
+          "mtime_ns": 1792294209804292778,
+          "ctime_ns": 1792294209804307610
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "stat": {
+        "dev": 27,
+        "ino": 395100,
+        "mode": 33024,
+        "size": 1107990,
+        "mtime_ns": 1792294209853298490,
+        "ctime_ns": 1792294209853298490
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/initramfs.cpio.gz",
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "stat": {
+          "dev": 27,
+          "ino": 396929,
+          "mode": 33188,
+          "size": 1107990,
+          "mtime_ns": 1792294208541264873,
+          "ctime_ns": 1792294209797297055
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-bios": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/bios.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "stat": {
+        "dev": 27,
+        "ino": 395101,
+        "mode": 33024,
+        "size": 262144,
+        "mtime_ns": 1792294209855275434,
+        "ctime_ns": 1792294209855275434
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+        "path": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 148352,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792292140620731428
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    }
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "stage": "complete",
+  "timeout_requested": "300",
+  "timeout_seconds": 300,
+  "bios_selection": {
+    "origin": "A01_QEMU_BIOS",
+    "original_requested_path": "/usr/share/seabios/bios-256k.bin",
+    "selected_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/seabios/bios-256k.bin"
+  },
+  "data_selection": {
+    "origin": "A01_QEMU_DATA_DIR",
+    "original_requested_paths": [],
+    "selected_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/qemu",
+    "appended": true
+  },
+  "snapshot_directory": {
+    "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug",
+    "stat": {
+      "dev": 27,
+      "ino": 395098,
+      "mode": 16832,
+      "size": 4096,
+      "mtime_ns": 1792294209838664071,
+      "ctime_ns": 1792294209838664071
+    },
+    "ownership": "new private mkdtemp directory; retained as evidence"
+  },
+  "argv": [
+    "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/kernel.elf",
+    "-initrd",
+    "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/bios.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-L",
+    "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/qemu"
+  ],
+  "shell_command": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/kernel.elf -initrd /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel/artifacts-tj0um_ug/bios.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -L /workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/qemu",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "serial_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/qemu.log",
+  "qemu_pid": 27892,
+  "serial_sha256": "028f5736ac0a175f2b9409907f6cdc629cb70dfa9bcf0755abbe98c0bcf34d00",
+  "serial_size": 72331,
+  "duration_seconds": 0.967,
+  "recorder_exit_code": 33
+}

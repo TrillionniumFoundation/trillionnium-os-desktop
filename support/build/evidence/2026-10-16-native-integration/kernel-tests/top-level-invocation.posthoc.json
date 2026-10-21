@@ -1,0 +1,29 @@
+{
+  "provenance": "Posthoc transcription supplied by the parent agent from the original session command; not an execution-time command JSON. The original internal cargo commands.json and captured console are preserved unchanged.",
+  "argv": [
+    "env",
+    "CARGO_HOME=/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME=/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "VDSO_LIBRARY_DIR=/workspace/scratch/ae1a8cf05419/linux-vdso",
+    "python3",
+    "-I",
+    "support/build/ktest/run.py",
+    "--skip-osdk-install",
+    "--output",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next3-ktest"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "stdout_original": "/workspace/scratch/ae1a8cf05419/next3-ktest-console.log",
+  "stderr": "same file as stdout",
+  "stdout_archived": "top-level-console.log",
+  "complete_inherited_environment_saved": false,
+  "top_level_exit_code_saved_in_original_record": false,
+  "outcome_evidence": "Original tool session completion receipt reports top-level exit0; complete result.json passed=true, two per-crate OSDK exit0 files, two QEMU raw33 records and original console PASS line corroborate it. No top-level status file was present in the original run directory.",
+  "posthoc_original_tool_completion_receipt": {
+    "exec_session_id": 59172,
+    "poll_tool": "write_stdin",
+    "reported_exit_code": 0,
+    "poll_stdout": "",
+    "receipt_source": "Parent agent reported polling the original completed execution session. Output had already been redirected to the retained console log. This JSON is a later transcription of that tool completion receipt, not an execution-time status file or a rerun."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/osdk/bin/cargo-osdk",
+    "osdk",
+    "test",
+    "--release",
+    "--boot-method=vmm-direct",
+    "--grub-boot-protocol=multiboot",
+    "--qemu-exe=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/ktest/record-qemu.py",
+    "--kcmd-args=loglevel=error",
+    "--kcmd-args=earlycon",
+    "--kcmd-args=console=ttyS0"
+  ],
+  "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core",
+  "raw_exit_code": 0,
+  "exit_code": 0,
+  "group_cleanup": {
+    "leader_pid": 18850,
+    "leader_exit_code": 0,
+    "leader_reaped": true,
+    "external_reap_disarmed": false,
+    "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+  },
+  "duration_seconds": 74.148
+}

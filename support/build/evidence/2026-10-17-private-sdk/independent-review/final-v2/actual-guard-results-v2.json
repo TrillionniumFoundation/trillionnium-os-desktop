@@ -1,0 +1,128 @@
+{
+  "all_passed": true,
+  "cases": [
+    {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/placeholder/../home",
+      "HOME": "/root",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "kernel"
+      ],
+      "name": "explicit-cargo-home-kernel",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    },
+    {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/placeholder/../home",
+      "HOME": "/root",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "name": "explicit-cargo-home-run_kernel",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    },
+    {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/placeholder/../home",
+      "HOME": "/root",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "gdb_server"
+      ],
+      "name": "explicit-cargo-home-gdb_server",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    },
+    {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/..",
+      "HOME": "/root",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "kernel"
+      ],
+      "name": "explicit-cargo-home-terminal-dotdot",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    },
+    {
+      "CARGO_HOME": null,
+      "HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/placeholder/../home",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "kernel"
+      ],
+      "name": "default-home-kernel",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    },
+    {
+      "CARGO_HOME": null,
+      "HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/placeholder/../home",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "name": "default-home-run_kernel",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    },
+    {
+      "CARGO_HOME": null,
+      "HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/placeholder/../home",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "gdb_server"
+      ],
+      "name": "default-home-gdb_server",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    },
+    {
+      "CARGO_HOME": null,
+      "HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/final-v2/..",
+      "command": [
+        "/bin/bash",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+        "kernel"
+      ],
+      "name": "default-home-terminal-dotdot",
+      "output_parent_absent": true,
+      "passed": true,
+      "returncode": 2,
+      "stderr": "Cargo home path must not contain '..' components; use an absolute path without parent components\n",
+      "stdout": ""
+    }
+  ],
+  "scope": "actual wrapper invalid-environment ingress only; no SDK/compiler/kernel/QEMU",
+  "source_sha256": "4ee3118990158bb93be6ffe191cac8de5399f507973af6adc3a05e3614407f83",
+  "supersedes": "actual-guard-results.json checker incorrectly expected substring must-not-contain-a; all actual executions already rejected2 correctly"
+}

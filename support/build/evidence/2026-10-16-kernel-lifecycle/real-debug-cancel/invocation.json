@@ -1,0 +1,101 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/debug/run.py",
+    "--output",
+    "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next6-real-debug-cancel-03",
+    "--gdb",
+    "/workspace/scratch/ae1a8cf05419/next6-real-debug-cancel-controller-03/gdb-live-hold.py",
+    "--ready-timeout",
+    "900",
+    "--gdb-timeout",
+    "120",
+    "--boot-timeout",
+    "120"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/a01-next6-build",
+  "selected_environment": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target",
+    "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/linux-vdso",
+    "CARGO_BUILD_JOBS": "2",
+    "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu",
+    "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+  },
+  "complete_environment_saved": false,
+  "git_head": "aa4ec5abf2acc60153c39f6c87c8aa29e6abaff5",
+  "git_tree": "f50be48bfeffeef5d50cce72a50f09c21f65f417",
+  "git_status": "?? kernel/asterinas/kernel/OSDK.toml",
+  "published_equivalent_commit": "22fcd9edeb8d4e1abee7ce2c3109df5d922c8ed5",
+  "real_gdb": {
+    "path": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+    "size": 8920528,
+    "sha256": "3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6"
+  },
+  "shim": {
+    "path": "/workspace/scratch/ae1a8cf05419/next6-real-debug-cancel-controller-03/gdb-live-hold.py",
+    "size": 2511,
+    "sha256": "9402abb1aaab7774e5d0a9fc8dc3c2864cb2b4e509195a37e4714a24dc479d6f"
+  },
+  "source": {
+    "support/build/debug/run.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/debug/run.py",
+      "size": 22206,
+      "sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3"
+    },
+    "support/build/debug/test_debug.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/debug/test_debug.py",
+      "size": 20229,
+      "sha256": "9532fb599b1ed19eba8ec1724a04995ed4c07c677dc10e358abc9c55b74e937c"
+    },
+    "support/build/kernel.sh": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/kernel.sh",
+      "size": 5371,
+      "sha256": "8ba0febef90ae09ca7786604aa6bffee224a0d7e1ef9b5158c582ede759a0cdf"
+    },
+    "support/build/kernel-supervisor.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/kernel-supervisor.py",
+      "size": 5739,
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61"
+    },
+    "support/build/record-qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/record-qemu.py",
+      "size": 5463,
+      "sha256": "9d6779a4df75ad55f04a37aea213449d83a8ad4c7096dd1b6381628833b42e62"
+    },
+    "support/build/minimal.mk": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/minimal.mk",
+      "size": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    "support/build/minimal/OSDK.toml": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/minimal/OSDK.toml",
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "kernel/asterinas/Cargo.lock": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/Cargo.lock",
+      "size": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "kernel/asterinas/osdk/Cargo.lock": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/osdk/Cargo.lock",
+      "size": 35285,
+      "sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3"
+    },
+    "kernel/asterinas/rust-toolchain.toml": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/rust-toolchain.toml",
+      "size": 339,
+      "sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+    }
+  },
+  "controller": {
+    "path": "/workspace/scratch/ae1a8cf05419/next6-real-debug-cancel-controller-03/controller.py",
+    "size": 16978,
+    "sha256": "8e052a4998cb9b22e27788f69224b769ad71ee25c5399b38ec3ff6d90a7ba874"
+  }
+}

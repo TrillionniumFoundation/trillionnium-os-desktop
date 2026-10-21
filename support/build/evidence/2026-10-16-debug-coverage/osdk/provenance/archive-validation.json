@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "passed": true,
+  "runs": [
+    {
+      "run": "v1-pilot-01",
+      "member_count": 89,
+      "actual_guests": 3,
+      "selected_cases": 3,
+      "passed": 2,
+      "failed": 1,
+      "archive_sha256": "04336dd0edba17f1bbd7809bf6f8277d968b733314d3194bd1c4d4665dca51b4"
+    },
+    {
+      "run": "v1-pilot-02",
+      "member_count": 91,
+      "actual_guests": 3,
+      "selected_cases": 3,
+      "passed": 2,
+      "failed": 1,
+      "archive_sha256": "982d2fd3e6ebc527849e760fd5b2465f61114881e3c7c6f93336286c5d70a48c"
+    },
+    {
+      "run": "v2-exact-01",
+      "member_count": 50,
+      "actual_guests": 1,
+      "selected_cases": 1,
+      "passed": 1,
+      "failed": 0,
+      "archive_sha256": "2eb7f9ff34f20072f747e7f5c7f43ace7a5c24dc742ed2cc0ba18d235d4a3178"
+    },
+    {
+      "run": "v2-full-22",
+      "member_count": 353,
+      "actual_guests": 11,
+      "selected_cases": 22,
+      "passed": 22,
+      "failed": 0,
+      "archive_sha256": "be74ddbdb011afd73e4039d277cddceb629f707262433c0484f7c659b2bd9f4e"
+    },
+    {
+      "run": "v2-guard-exact-01",
+      "member_count": 51,
+      "actual_guests": 1,
+      "selected_cases": 1,
+      "passed": 1,
+      "failed": 0,
+      "archive_sha256": "fec04f70f439930db7adc944109255c25e450961b7cb1f9b43f29061417d9ce2"
+    }
+  ],
+  "run_tar_members_verified": 634,
+  "production_host_tar_members_verified": 4,
+  "compressed_profile_artifacts_verified": 6,
+  "guest_records_and_nonempty_serial_hashes_verified": 19,
+  "run_prefixed_summary_references_verified": 45,
+  "pure_test_logs_verified": [
+    40,
+    58,
+    16
+  ],
+  "production_host_first_suite": "34 passed / 1 failed preserved",
+  "production_host_final_suite": "35 passed / 0 failed preserved",
+  "verification_method": "Read gzip/tar directly; compare archive hashes, every indexed member size/hash, readable duplicates, original decompressed profile hashes, source/command links and recorded guest/capture acceptance facts. No guest rerun or result mutation."
+}

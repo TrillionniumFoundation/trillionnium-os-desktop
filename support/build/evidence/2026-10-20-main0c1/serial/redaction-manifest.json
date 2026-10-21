@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "prepared_utc": "2026-10-20T13:38:45.184942+00:00",
+  "scope": "Five explicitly narrowed guest serial payloads. This is not a split or transformed upload of the rejected full archive. No host environment dump, full strace, compiler binary or raw build log is included.",
+  "original_native_archive_sha256": "2e6c410637a31b1bf69f05cf2065c9e9a69ac1a0d8b89fefa1ea09093abd6c7a",
+  "raw_originals_retained_locally": true,
+  "boot_files_are_raw": false,
+  "boot_redaction_note": "Boot files replace only the actual build-host identifier and the current task absolute root. Their raw original hashes remain listed separately. The two ktest logs and first failed boot empty serial are byte-identical copies.",
+  "files": [
+    {
+      "file": "boot.redacted.log",
+      "published_kind": "explicitly_redacted_guest_serial",
+      "original_bytes": 72275,
+      "original_sha256": "3debbcf50d4bd61459481bb0037ab651497aa88d99e7382538c8fc6846d8b814",
+      "published_bytes": 72195,
+      "published_sha256": "b0796596e6508d92686e14ca8f586862943746b326f6ff24172d0b397eb771f1",
+      "replacements": [
+        {
+          "category": "build_host_identifier",
+          "replacement": "<BUILD_HOST>",
+          "count": 1
+        },
+        {
+          "category": "current_task_absolute_root",
+          "replacement": "<A01_RUN_ROOT>",
+          "count": 4
+        }
+      ],
+      "only_declared_byte_replacements": true,
+      "line_count_preserved": true,
+      "original_file_unchanged": true,
+      "recorded_qemu_serial_sha256_matches_original": true,
+      "publication_scan_hits": {
+        "github_token": 0,
+        "aws_access_key": 0,
+        "openai_key": 0,
+        "slack_token": 0,
+        "private_key_header": 0,
+        "authorization_header": 0,
+        "url_embedded_credentials": 0,
+        "credential_assignment": 0,
+        "host_workspace_path": 0,
+        "url": 0
+      }
+    },
+    {
+      "file": "boot-repeat.redacted.log",
+      "published_kind": "explicitly_redacted_guest_serial",
+      "original_bytes": 72275,
+      "original_sha256": "4720dafea55a640c71b7bc54f5fd04a8db9cbe9183c99addfe641e83a27c820f",
+      "published_bytes": 72195,
+      "published_sha256": "5bb32a25bcd956d1d58808ff2255a0e5b996fcc7e7105a5788518831344dc46e",
+      "replacements": [
+        {
+          "category": "build_host_identifier",
+          "replacement": "<BUILD_HOST>",
+          "count": 1
+        },
+        {
+          "category": "current_task_absolute_root",
+          "replacement": "<A01_RUN_ROOT>",
+          "count": 4
+        }
+      ],
+      "only_declared_byte_replacements": true,
+      "line_count_preserved": true,
+      "original_file_unchanged": true,
+      "recorded_qemu_serial_sha256_matches_original": true,
+      "publication_scan_hits": {
+        "github_token": 0,
+        "aws_access_key": 0,
+        "openai_key": 0,
+        "slack_token": 0,
+        "private_key_header": 0,
+        "authorization_header": 0,
+        "url_embedded_credentials": 0,
+        "credential_assignment": 0,
+        "host_workspace_path": 0,
+        "url": 0
+      }
+    },
+    {
+      "file": "ostd.raw.log",
+      "published_kind": "raw_guest_serial",
+      "original_bytes": 23028,
+      "original_sha256": "b0be3ce301380360885f80d55ab6aeb4955213117c72ce7cce7fd267def9aa63",
+      "published_bytes": 23028,
+      "published_sha256": "b0be3ce301380360885f80d55ab6aeb4955213117c72ce7cce7fd267def9aa63",
+      "replacements": [],
+      "only_declared_byte_replacements": true,
+      "line_count_preserved": true,
+      "original_file_unchanged": true,
+      "recorded_qemu_serial_sha256_matches_original": true,
+      "publication_scan_hits": {
+        "github_token": 0,
+        "aws_access_key": 0,
+        "openai_key": 0,
+        "slack_token": 0,
+        "private_key_header": 0,
+        "authorization_header": 0,
+        "url_embedded_credentials": 0,
+        "credential_assignment": 0,
+        "host_workspace_path": 0,
+        "url": 0
+      }
+    },
+    {
+      "file": "aster-core.raw.log",
+      "published_kind": "raw_guest_serial",
+      "original_bytes": 30845,
+      "original_sha256": "1ed8da8ddbe14e218257b0cbe6a9c6e8dc4f7f44b7d56ab6f1b808219f86a86a",
+      "published_bytes": 30845,
+      "published_sha256": "1ed8da8ddbe14e218257b0cbe6a9c6e8dc4f7f44b7d56ab6f1b808219f86a86a",
+      "replacements": [],
+      "only_declared_byte_replacements": true,
+      "line_count_preserved": true,
+      "original_file_unchanged": true,
+      "recorded_qemu_serial_sha256_matches_original": true,
+      "publication_scan_hits": {
+        "github_token": 0,
+        "aws_access_key": 0,
+        "openai_key": 0,
+        "slack_token": 0,
+        "private_key_header": 0,
+        "authorization_header": 0,
+        "url_embedded_credentials": 0,
+        "credential_assignment": 0,
+        "host_workspace_path": 0,
+        "url": 0
+      }
+    },
+    {
+      "file": "first-boot-failed.raw.log",
+      "published_kind": "raw_guest_serial",
+      "original_bytes": 0,
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_bytes": 0,
+      "published_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replacements": [],
+      "only_declared_byte_replacements": true,
+      "line_count_preserved": true,
+      "original_file_unchanged": true,
+      "recorded_qemu_serial_sha256_matches_original": true,
+      "publication_scan_hits": {
+        "github_token": 0,
+        "aws_access_key": 0,
+        "openai_key": 0,
+        "slack_token": 0,
+        "private_key_header": 0,
+        "authorization_header": 0,
+        "url_embedded_credentials": 0,
+        "credential_assignment": 0,
+        "host_workspace_path": 0,
+        "url": 0
+      }
+    }
+  ],
+  "total_public_bytes": 198263,
+  "review_conclusion": "No remaining exact build-host identifier, current-task absolute root, other host-workspace path, recognized credential, private-key header or URL pattern was detected in this narrowly reviewed guest-only subset.",
+  "limitation": "Content review supports a narrower low-risk proposal; it does not override approval rules or authorize publication by itself."
+}

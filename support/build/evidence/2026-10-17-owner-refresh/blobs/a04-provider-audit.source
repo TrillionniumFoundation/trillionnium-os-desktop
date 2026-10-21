@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "evidence_id": "a04-hepta-provider-audit-20261017",
+  "captured_utc": "2026-10-17T00:00:00Z",
+  "fixed_source": {
+    "repository": "https://github.com/TrillionniumFoundation/hepta-private-ci",
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "source_scope": "codex-rs/hepta-agentd",
+    "source_files": {
+      "src/intelligence_ingress.rs": "7a3408027a72361cb3f2dc0f3fc8a49616c73956cdbedf0e975c70ff347c5930",
+      "src/config.rs": "354d6ffd820362b55928c0736a438e69d2608186b70bd25ce039fb45b2f55587",
+      "src/runtime.rs": "34f8468a75327e539a9810b88fdbb03dfc10484e813a9f3f548f4926d7f85c24",
+      "src/main.rs": "00f3134561b2f5773c1f114fba897e369db9f2c4f28192086596a37bf93ba319",
+      "src/state.rs": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a",
+      "tests/runtime_codex_product_e2e.rs": "8f5cfad6bb03f49ec9e6bbff4e0f492aa0739da24106cd655d5075effa0d24be"
+    }
+  },
+  "static_provider_audit": {
+    "trait_definition": "codex-rs/hepta-agentd/src/intelligence_ingress.rs:49",
+    "config_attachment_api": "codex-rs/hepta-agentd/src/config.rs:518",
+    "runtime_state_attachment": "codex-rs/hepta-agentd/src/runtime.rs:114",
+    "canonical_gate": "codex-rs/hepta-agentd/src/state.rs:570-620",
+    "concrete_impl_count": 0,
+    "config_attachment_call_count_in_agentd_source_and_tests": 0,
+    "standalone_cli_attachment": false,
+    "result": "host_composition_required",
+    "kernel_abi_failure": false
+  },
+  "runtime_reprobe": {
+    "status": "not_rerun",
+    "reason": "current disposable shell has no rustc or cargo on PATH; prior fixed-commit debug build receipt remains pinned in hepta-cloud-probe-20261016.json",
+    "previous_fixed_commit_debug_e2e": {
+      "status": "compiled_then_test_failed",
+      "exit_code": 101,
+      "wiremock_expected_requests": 1,
+      "wiremock_matched_requests": 0,
+      "terminal_receipt": "not_observed",
+      "kernel_abi_failure": false
+    }
+  },
+  "trace_reprobe": {
+    "status": "blocked",
+    "reason": "managed sandbox denies ptrace; prior PTRACE_TRACEME/strace result was EPERM",
+    "kernel_abi_failure": false
+  },
+  "closure": {
+    "closed_by_this_receipt": [
+      "fixed source provider seam and absence of concrete host composition are independently pinned"
+    ],
+    "remaining_external_inputs": [
+      "host-owned AgentdIntelligenceInvocationProviderV1 implementation",
+      "authenticated fleet identity and ObjectiveStart run record",
+      "provider credentials or controlled provider endpoint",
+      "ptrace permission or an approved alternate syscall tracing facility"
+    ],
+    "owner_handoff": {
+      "A07": "provide and attach the real invocation provider and authenticated provider composition",
+      "cloud_host": "provide ptrace or alternate trace facility",
+      "A05_A06": "only investigate guest ABI behavior after a real guest replay produces a failure"
+    }
+  }
+}

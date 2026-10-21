@@ -1,0 +1,51 @@
+test_foreign_global_sdk_is_not_recorded_as_this_debug_build (__main__.PrivateSdkEvidenceTests.test_foreign_global_sdk_is_not_recorded_as_this_debug_build) ... FAIL
+test_missing_global_sdk_does_not_fail_or_change_private_evidence (__main__.PrivateSdkEvidenceTests.test_missing_global_sdk_does_not_fail_or_change_private_evidence) ... FAIL
+test_missing_private_sdk_never_falls_back_to_foreign_global (__main__.PrivateSdkEvidenceTests.test_missing_private_sdk_never_falls_back_to_foreign_global) ... FAIL
+test_private_sdk_receipt_mismatch_is_rejected_before_gdb (__main__.PrivateSdkEvidenceTests.test_private_sdk_receipt_mismatch_is_rejected_before_gdb) ... FAIL
+
+======================================================================
+FAIL: test_foreign_global_sdk_is_not_recorded_as_this_debug_build (__main__.PrivateSdkEvidenceTests.test_foreign_global_sdk_is_not_recorded_as_this_debug_build)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py", line 527, in test_foreign_global_sdk_is_not_recorded_as_this_debug_build
+    self.check_private_selected("global-foreign", True)
+  File "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py", line 515, in check_private_selected
+    self.assertEqual(record["path"], str(binary))
+AssertionError: '/wor[60 chars]al/old-IO/global-foreign/cargo-home/bin/cargo-osdk' != '/wor[60 chars]al/old-IO/global-foreign/debug-output/boot/osdk/bin/cargo-osdk'
+- /workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO/global-foreign/cargo-home/bin/cargo-osdk
+?                                                                                          ^^^  ^^ ^^
++ /workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO/global-foreign/debug-output/boot/osdk/bin/cargo-osdk
+?                                                                                          ^^^^ + ^^^^^^^ ^^^^^^^
+
+
+======================================================================
+FAIL: test_missing_global_sdk_does_not_fail_or_change_private_evidence (__main__.PrivateSdkEvidenceTests.test_missing_global_sdk_does_not_fail_or_change_private_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py", line 524, in test_missing_global_sdk_does_not_fail_or_change_private_evidence
+    self.check_private_selected("global-missing", False)
+  File "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py", line 514, in check_private_selected
+    self.assertEqual(result.returncode, 0, result.stdout.decode())
+AssertionError: 1 != 0 : FAIL: Rust-entry debug evidence: /workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO/global-missing/debug-output
+
+
+======================================================================
+FAIL: test_missing_private_sdk_never_falls_back_to_foreign_global (__main__.PrivateSdkEvidenceTests.test_missing_private_sdk_never_falls_back_to_foreign_global)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py", line 532, in test_missing_private_sdk_never_falls_back_to_foreign_global
+    self.assertNotEqual(result.returncode, 0)
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_private_sdk_receipt_mismatch_is_rejected_before_gdb (__main__.PrivateSdkEvidenceTests.test_private_sdk_receipt_mismatch_is_rejected_before_gdb)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/source/test_debug.py", line 539, in test_private_sdk_receipt_mismatch_is_rejected_before_gdb
+    self.assertNotEqual(result.returncode, 0)
+AssertionError: 0 == 0
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.918s
+
+FAILED (failures=4)

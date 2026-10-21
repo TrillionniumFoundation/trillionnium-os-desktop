@@ -1,0 +1,31 @@
+{
+  "a01_bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "a01_original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "a01_original_kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+  "c_elf_reference_qualification": {
+    "expected": 28,
+    "matched": 8,
+    "passed": false,
+    "reason": "guest boot, ELF bytes or exact observable C ELF facts differ"
+  },
+  "differential_verdict": "fail",
+  "full_w1_and_all_workloads_passed": false,
+  "guest_counts": {
+    "fail": 1,
+    "not_run": 23,
+    "pass": 8
+  },
+  "guest_execution_verified": false,
+  "guest_initramfs_sha256": "f92af9aedb59ac3a829f7c3cf90797b71356d1a77a08b9729a2de0cb778d3075",
+  "guest_storage": "initramfs_volatile_not_S1_block_media",
+  "packaged_case_count": 28,
+  "qemu_executable_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_timed_out": true,
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+  "qualification": "guest_failed_or_incomplete",
+  "raw_qemu_exit_code": null,
+  "real_hepta_w1_verified": false,
+  "schema": 1,
+  "serial_sha256": "62d4527122004e158ec4ae6176e658b12d524b5bae303959d490026f93d1f5cc",
+  "suite": "a04-asterinas-qemu-differential"
+}

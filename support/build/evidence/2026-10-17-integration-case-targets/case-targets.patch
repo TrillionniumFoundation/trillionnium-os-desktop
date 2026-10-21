@@ -1,0 +1,482 @@
+--- baseline/support/build/osdk-integration/run.py
++++ fixed/support/build/osdk-integration/run.py
+@@ -11,6 +11,7 @@
+ from pathlib import Path
+ import shutil
+ import signal
++import stat
+ import subprocess
+ import sys
+ import tempfile
+@@ -55,6 +56,115 @@
+ def external(data):
+     return {(p["name"], p["version"], p["source"], p.get("checksum", ""))
+             for p in tomllib.loads(data.decode())["package"] if p.get("source")}
++
++
++def validate_artifact_cache(cache, create=False):
++    """Reject foreign links before harness normalization or Cargo can write."""
++    cache = Path(cache).absolute()
++    if create:
++        cache.mkdir(mode=0o700)
++    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
++    descriptor = os.open(cache, flags)
++    try:
++        root = os.fstat(descriptor)
++        record = {"path": str(cache), "device": root.st_dev, "inode": root.st_ino,
++                  "artifacts": {}}
++        for name in ("debug", "release", "x86_64-unknown-none"):
++            try:
++                os.mkdir(name, dir_fd=descriptor)
++            except FileExistsError:
++                pass
++            child = os.open(name, flags, dir_fd=descriptor)
++            try:
++                opened = os.fstat(child)
++                named = os.stat(cache / name, follow_symlinks=False)
++                named_root = os.stat(cache, follow_symlinks=False)
++                if not stat.S_ISDIR(named_root.st_mode) or \
++                        (named_root.st_dev, named_root.st_ino) != (root.st_dev, root.st_ino) or \
++                        not stat.S_ISDIR(named.st_mode) or \
++                        (named.st_dev, named.st_ino) != (opened.st_dev, opened.st_ino):
++                    raise ValueError(f"integration artifact cache identity changed: {cache / name}")
++                record["artifacts"][name] = {"path": str(cache / name),
++                                           "device": opened.st_dev, "inode": opened.st_ino}
++            finally:
++                os.close(child)
++        return record
++    finally:
++        os.close(descriptor)
++
++
++def create_case_target(cache, case):
++    """Own generated workspaces per case, sharing only known Cargo artifacts.
++
++    The integration lock serializes all users of this cache. No prior generated
++    osdk workspace is copied, reused, removed or linked into the new target.
++    """
++    cache, case = Path(cache).absolute(), Path(case).absolute()
++    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
++    cache_fd = os.open(cache, flags)
++    case_fd = target_fd = None
++
++    def identity(fd):
++        value = os.fstat(fd)
++        return {"device": value.st_dev, "inode": value.st_ino}
++
++    def verify(path, fd):
++        value = os.stat(path, follow_symlinks=False)
++        expected = identity(fd)
++        if not stat.S_ISDIR(value.st_mode) or (value.st_dev, value.st_ino) != \
++                (expected["device"], expected["inode"]):
++            raise ValueError(f"integration target directory identity changed: {path}")
++        return expected
++
++    try:
++        cache_identity = verify(cache, cache_fd)
++        case_fd = os.open(case, flags)
++        case_identity = verify(case, case_fd)
++        os.mkdir("target", mode=0o700, dir_fd=case_fd)
++        target_fd = os.open("target", flags, dir_fd=case_fd)
++        target = case / "target"
++        target_identity = verify(target, target_fd)
++        # Establish this directory before OSDK runs; it can never alias the
++        # shared target's same-name base crates or bundles.
++        os.mkdir("osdk", mode=0o700, dir_fd=target_fd)
++        record = {"target": {"path": str(target), **target_identity},
++                  "case": {"path": str(case), **case_identity},
++                  "artifact_cache": {"path": str(cache), **cache_identity},
++                  "generated_osdk": {"path": str(target / "osdk"), "shared": False},
++                  "shared_artifacts": {}}
++        for name in ("debug", "release", "x86_64-unknown-none"):
++            try:
++                os.mkdir(name, dir_fd=cache_fd)
++            except FileExistsError:
++                pass
++            artifact_fd = os.open(name, flags, dir_fd=cache_fd)
++            try:
++                artifact_identity = verify(cache / name, artifact_fd)
++                verify(cache, cache_fd)
++                os.symlink(str(cache / name), name, dir_fd=target_fd,
++                           target_is_directory=True)
++                verify(cache, cache_fd)
++                verify(cache / name, artifact_fd)
++                record["shared_artifacts"][name] = {
++                    "link": str(target / name), "destination": str(cache / name),
++                    **artifact_identity}
++            finally:
++                os.close(artifact_fd)
++        verify(cache, cache_fd)
++        verify(case, case_fd)
++        verify(target, target_fd)
++        descriptor = os.open("target-profile.json", os.O_WRONLY | os.O_CREAT | os.O_EXCL |
++                             os.O_NOFOLLOW | os.O_CLOEXEC, 0o600, dir_fd=case_fd)
++        with os.fdopen(descriptor, "w") as stream:
++            json.dump(record, stream, indent=2)
++            stream.write("\n")
++        return target, record
++    finally:
++        if target_fd is not None:
++            os.close(target_fd)
++        if case_fd is not None:
++            os.close(case_fd)
++        os.close(cache_fd)
+ 
+ 
+ def adapt_basic_debug_to_local_tcp(contents):
+@@ -358,7 +468,7 @@
+     parser.add_argument("--coverage-gdb", action="store_true",
+                         help="explicit v2 coverage capture at the original poweroff breakpoint; requires --local-tcp")
+     parser.add_argument("--target-dir", type=Path,
+-                        help="reuse this runner's previous independent Cargo target cache")
++                        help="reuse a prior isolated Cargo artifact cache; generated workspaces stay per case")
+     args = parser.parse_args()
+     if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
+         print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
+@@ -394,12 +504,13 @@
+         raise SystemExit("actual compiler does not match the fixed nightly-2026-07-21")
+     env["PATH"] = str(cargo_home / "bin") + os.pathsep + env.get("PATH", "")
+     env["CARGO_BUILD_JOBS"] = env.get("CARGO_BUILD_JOBS", "2")
+-    target_dir = args.target_dir.resolve() if args.target_dir else output / "target"
+-    if args.target_dir and (not target_dir.is_relative_to(project / "support/build/out")
++    target_dir = args.target_dir.absolute() if args.target_dir else output / "target"
++    if args.target_dir and (not target_dir.resolve().is_relative_to((project / "support/build/out").resolve())
+                             or not (target_dir.parent / "harness-adaptation.patch").is_file()
+                             or not (target_dir.parent / "harness-lock.json").is_file()):
+         raise SystemExit("--target-dir must be a prior isolated integration runner cache")
+     env["CARGO_TARGET_DIR"] = str(target_dir)
++    artifact_cache_profile = validate_artifact_cache(target_dir, create=args.target_dir is None)
+     env["OSDK_LOCAL_DEV"] = "1"
+     env.pop("INTEL_TDX", None)
+     env.pop("OSDK_CARGO_LOCK", None)
+@@ -459,6 +570,9 @@
+                    "cargo_path": str(real_cargo), "cargo_sha256": digest(real_cargo),
+                    "rustc_path": str(tool_bin / "rustc"), "rustc_sha256": digest(tool_bin / "rustc"),
+                    "rustup_auto_install": "0", "isolated_fixed_root": str(fixed_root),
++                   "cargo_artifact_cache": str(target_dir),
++                   "cargo_artifact_cache_profile": artifact_cache_profile,
++                   "case_target_policy": "private generated osdk workspaces; shared debug/release/x86_64-unknown-none artifacts",
+                    "profile_id": profile_id,
+                    "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",
+                    "harness_path": str(harness), "harness_sha256": digest(harness),
+@@ -497,6 +611,16 @@
+         temp = fixed_root / f"case-{index:02d}-tmp"
+         temp.mkdir()
+         case_env = env.copy()
++        try:
++            case_target, target_profile = create_case_target(target_dir, directory)
++        except (OSError, ValueError) as error:
++            report.update({"status": "blocked", "target_error": str(error)})
++            (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
++            results.append(report)
++            print(f"BLOCKED {case}: target custody: {error}", flush=True)
++            continue
++        case_env["CARGO_TARGET_DIR"] = str(case_target)
++        report["cargo_target_profile"] = target_profile
+         case_env["TMPDIR"] = str(temp)
+         case_env["A01_OSDK_CASE_OUTPUT"] = str(directory)
+         case_env["A01_OSDK_GDB_READY"] = str(directory / "gdb-ready.json")
+--- /dev/null
++++ fixed/support/build/osdk-integration/test_case_targets.py
+@@ -0,0 +1,278 @@
++"""Exercise per-case workspace custody; fixture children do not build or boot."""
++import importlib.util
++import json
++import os
++from pathlib import Path
++import shutil
++import stat
++import sys
++import tempfile
++from types import SimpleNamespace
++import unittest
++from unittest import mock
++
++HERE = Path(__file__).resolve().parent
++SPEC = importlib.util.spec_from_file_location("a01_case_target_runner", HERE / "run.py")
++RUNNER = importlib.util.module_from_spec(SPEC)
++SPEC.loader.exec_module(RUNNER)
++
++FIRST = "examples_in_book::test_and_run_projects::create_and_run_kernel"
++SECOND = "examples_in_book::work_in_workspace::work_in_workspace"
++CHILD = r'''
++import json,os,sys
++from pathlib import Path
++case=sys.argv[2]
++root=Path(os.environ["A01_FIXTURE_FIXED_ROOT"])
++project=root/("myos" if case.endswith("create_and_run_kernel") else "myworkspace/myos")
++project.mkdir(parents=True)
++(project/"Cargo.toml").write_text("[package]\nname='myos'\nversion='0.1.0'\n")
++target=Path(os.environ["CARGO_TARGET_DIR"])
++base=target/"osdk/myos-run-base"
++base.mkdir(parents=True,exist_ok=True)
++manifest=base/"Cargo.toml"
++# Explicit fault fixture: retain a stale same-name manifest if output is shared.
++# This is not a claim that pinned OSDK normally ignores changed dependencies.
++if not manifest.exists():
++    manifest.write_text(str(project))
++bound=Path(manifest.read_text())
++out=Path(os.environ["A01_OSDK_CASE_OUTPUT"])
++(out/"child-target.json").write_text(json.dumps({"target":str(target),"project":str(project),"bound":str(bound),"bound_source_exists":(bound/"Cargo.toml").is_file()}))
++if bound!=project or not (bound/"Cargo.toml").is_file():
++    print("STALE_SAME_NAME_WORKSPACE",str(bound),flush=True)
++    raise SystemExit(1)
++print("test result: ok. 1 passed; 0 failed;",flush=True)
++'''
++
++class PublicRunnerTargetsTests(unittest.TestCase):
++    def test_same_name_cases_keep_private_generated_workspaces_and_shared_artifacts(self):
++        with tempfile.TemporaryDirectory(prefix="a01 case targets ") as temporary:
++            setting = os.environ.get("A01_CASE_TARGET_OUT")
++            root = Path(setting) / self._testMethodName if setting else Path(temporary)
++            if setting:
++                root.mkdir(parents=True, exist_ok=False)
++            project, output = root / "project", root / "output"
++            here = project / "support/build/osdk-integration"
++            here.mkdir(parents=True)
++            (here / "run.py").write_bytes((HERE / "run.py").read_bytes())
++            (here.parent / "record-qemu.py").write_text("# dependency fixture\n")
++            upstream = project / "kernel/asterinas"
++            (upstream / "osdk/tests").mkdir(parents=True)
++            (upstream / "osdk/src").mkdir()
++            (upstream / "ostd/libs/align_ext").mkdir(parents=True)
++            (upstream / "Cargo.lock").write_text("# fixture lock\n")
++            output.mkdir()
++            target = output / "target"
++            harness = output / "fixture-harness"
++            harness.write_text("#!" + sys.executable + "\n" + CHILD)
++            harness.chmod(0o700)
++            fixed = output / "fixed"
++            toolbin = root / "rustup/toolchains" / (RUNNER.TOOLCHAIN + "-x86_64-unknown-linux-gnu") / "bin"
++            toolbin.mkdir(parents=True)
++            for name in ("cargo", "rustc"):
++                (toolbin / name).write_text("# only hashed; not executed\n")
++            def prepare(_upstream, _output, _cargo, _env, _local):
++                fixed.mkdir()
++                identity = fixed.stat()
++                (output / "fixed-root.json").write_text(json.dumps(
++                    {"path": str(fixed), "device": identity.st_dev, "inode": identity.st_ino}))
++                h = output / "harness"
++                (h / "tests").mkdir(parents=True)
++                return h, fixed
++            def checked(argv, _cwd, _env, log):
++                if argv[-1] == "-Vv" and str(argv[0]).endswith("rustc"):
++                    return "commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\n"
++                if argv[-1] == "--list":
++                    return "\n".join(x + ": test" for x in [FIRST, SECOND] + [
++                        "fixture::unused_" + str(i) for i in range(20)])
++                return "fixture\n"
++            actual_command = RUNNER.command
++            def command(argv, cwd, env, log, timeout):
++                if str(argv[0]) == str(harness):
++                    return actual_command(argv, cwd, env, log, timeout)
++                if "test" in argv:
++                    log.write_text(json.dumps({"reason": "compiler-artifact", "executable": str(harness),
++                                               "target": {"name": "integration"}}) + "\n")
++                else:
++                    (target / "debug/cache-marker").write_text("retained compilation bytes\n")
++                    (target / "debug/cargo-osdk").write_text("# fake OSDK, never executed\n")
++                    log.write_text("build intentionally mocked\n")
++                return {"raw_exit_code": 0, "duration_seconds": 0, "timed_out": False}
++            args = SimpleNamespace(coverage_gdb=False, local_tcp=False, target_dir=None,
++                                   case=[FIRST, SECOND], case_timeout=10)
++            with mock.patch.dict(os.environ, {"CARGO_HOME": str(root / "cargo"),
++                                             "RUSTUP_HOME": str(root / "rustup"),
++                                             "A01_FIXTURE_FIXED_ROOT": str(fixed)}), \
++                    mock.patch.object(RUNNER, "prepare_harness", side_effect=prepare), \
++                    mock.patch.object(RUNNER, "checked_output", side_effect=checked), \
++                    mock.patch.object(RUNNER, "command", side_effect=command), \
++                    mock.patch.dict(RUNNER.VM_CASES, {FIRST: 0, SECOND: 0}):
++                RUNNER.run_locked(args, here, project, upstream, output)
++            result = json.loads((output / "result.json").read_text())
++            self.assertEqual(result["passed"], 2, result)
++            child = [json.loads((output / f"case-{i:02d}/child-target.json").read_text())
++                     for i in (1, 2)]
++            self.assertNotEqual(child[0]["target"], child[1]["target"])
++            self.assertTrue(all(x["bound"] == x["project"] and x["bound_source_exists"] for x in child))
++            for item in child:
++                case_target = Path(item["target"])
++                self.assertFalse((case_target / "osdk").is_symlink())
++                self.assertTrue((case_target / "osdk/myos-run-base/Cargo.toml").is_file())
++                for name in ("debug", "release", "x86_64-unknown-none"):
++                    self.assertTrue((case_target / name).is_symlink())
++                    self.assertEqual((case_target / name).resolve(), target / name)
++            self.assertEqual((target / "debug/cache-marker").read_text(), "retained compilation bytes\n")
++            self.assertFalse((target / "osdk").exists())
++
++class CaseTargetCustodyTests(unittest.TestCase):
++    def fixture(self, root):
++        cache, case = root / "cache", root / "case"
++        cache.mkdir()
++        case.mkdir()
++        return cache, case
++
++    def test_existing_target_is_preserved(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            cache, case = self.fixture(Path(tmp))
++            (case / "target").mkdir()
++            keep = case / "target/keep"
++            keep.write_text("foreign\n")
++            with self.assertRaises(FileExistsError):
++                RUNNER.create_case_target(cache, case)
++            self.assertEqual(keep.read_text(), "foreign\n")
++
++    def test_symlink_cache_root_is_rejected_without_touching_foreign(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            cache, case = self.fixture(root)
++            alias = root / "alias"
++            alias.symlink_to(cache, target_is_directory=True)
++            with self.assertRaises(OSError):
++                RUNNER.create_case_target(alias, case)
++            self.assertEqual(list(cache.iterdir()), [])
++
++    def test_symlink_case_root_is_rejected(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            cache, case = self.fixture(root)
++            alias = root / "alias"
++            alias.symlink_to(case, target_is_directory=True)
++            with self.assertRaises(OSError):
++                RUNNER.create_case_target(cache, alias)
++            self.assertEqual(list(case.iterdir()), [])
++
++    def test_foreign_artifact_symlink_and_file_are_preserved(self):
++        for kind in ("symlink", "file"):
++            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
++                root = Path(tmp)
++                cache, case = self.fixture(root)
++                foreign = root / "foreign"
++                foreign.mkdir()
++                keep = foreign / "keep"
++                keep.write_text("foreign\n")
++                if kind == "symlink":
++                    (cache / "debug").symlink_to(foreign, target_is_directory=True)
++                else:
++                    (cache / "debug").write_text("foreign file\n")
++                with self.assertRaises(OSError):
++                    RUNNER.create_case_target(cache, case)
++                self.assertEqual(keep.read_text(), "foreign\n")
++                self.assertTrue((cache / "debug").is_symlink() if kind == "symlink" else
++                                (cache / "debug").is_file())
++
++    def test_only_three_known_artifact_directories_are_shared_and_recorded(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            cache, case = self.fixture(root)
++            (cache / "osdk").mkdir()
++            (cache / "osdk/stale").write_text("preserve\n")
++            (cache / "unknown").mkdir()
++            target, record = RUNNER.create_case_target(cache, case)
++            self.assertEqual(target, case / "target")
++            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o700)
++            self.assertFalse((target / "osdk").is_symlink())
++            self.assertEqual(set(x.name for x in target.iterdir()),
++                             {"osdk", "debug", "release", "x86_64-unknown-none"})
++            self.assertEqual((cache / "osdk/stale").read_text(), "preserve\n")
++            self.assertEqual(set(record["shared_artifacts"]), {"debug", "release", "x86_64-unknown-none"})
++            for name, item in record["shared_artifacts"].items():
++                self.assertEqual(item["inode"], (cache / name).stat().st_ino)
++                self.assertEqual(item["device"], (cache / name).stat().st_dev)
++            self.assertEqual(record["target"]["inode"], target.stat().st_ino)
++
++    def test_cache_path_swap_fails_and_preserves_foreign_directory(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            cache, case = self.fixture(root)
++            foreign = root / "foreign"
++            foreign.mkdir()
++            (foreign / "keep").write_text("foreign\n")
++            original = RUNNER.os.symlink
++            def swap(source, destination, **kwargs):
++                cache.rename(root / "owned-cache-preserved")
++                original(foreign, cache, target_is_directory=True)
++                return original(source, destination, **kwargs)
++            with mock.patch.object(RUNNER.os, "symlink", side_effect=swap), \
++                    self.assertRaises(ValueError):
++                RUNNER.create_case_target(cache, case)
++            self.assertEqual(list(x.name for x in foreign.iterdir()), ["keep"])
++            self.assertEqual((foreign / "keep").read_text(), "foreign\n")
++            self.assertTrue((root / "owned-cache-preserved").is_dir())
++
++    def test_existing_profile_record_is_not_overwritten(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            cache, case = self.fixture(Path(tmp))
++            record = case / "target-profile.json"
++            record.write_text("foreign profile\n")
++            with self.assertRaises(FileExistsError):
++                RUNNER.create_case_target(cache, case)
++            self.assertEqual(record.read_text(), "foreign profile\n")
++
++    def test_prior_foreign_cache_profile_is_rejected_before_any_cargo_collaborator(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            project = root / "project"
++            prior = project / "support/build/out/prior"
++            prior.mkdir(parents=True)
++            for name in ("harness-adaptation.patch", "harness-lock.json"):
++                (prior / name).write_text("existing origin marker fixture\n")
++            cache = prior / "target"
++            cache.mkdir()
++            foreign = root / "foreign"
++            foreign.mkdir()
++            (foreign / "keep").write_text("foreign\n")
++            (cache / "debug").symlink_to(foreign, target_is_directory=True)
++            output = root / "new-output"
++            output.mkdir()
++            args = SimpleNamespace(coverage_gdb=False, local_tcp=False, target_dir=cache,
++                                   case=None, case_timeout=10)
++            with mock.patch.object(RUNNER, "checked_output", return_value=
++                                   "commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\n"), \
++                    mock.patch.object(RUNNER, "prepare_harness") as prepare, \
++                    mock.patch.object(RUNNER, "command") as command, \
++                    self.assertRaises(OSError):
++                RUNNER.run_locked(args, project / "support/build/osdk-integration", project,
++                                  project / "kernel/asterinas", output)
++            prepare.assert_not_called()
++            command.assert_not_called()
++            self.assertEqual(list(x.name for x in foreign.iterdir()), ["keep"])
++            self.assertEqual((foreign / "keep").read_text(), "foreign\n")
++
++    def test_prior_cache_requires_existing_directory_and_new_cache_is_exclusive(self):
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            missing, regular, existing = root / "missing", root / "file", root / "existing"
++            regular.write_text("foreign file\n")
++            existing.mkdir()
++            (existing / "keep").write_text("foreign directory\n")
++            for path in (missing, regular):
++                with self.subTest(path=path), self.assertRaises(OSError):
++                    RUNNER.validate_artifact_cache(path)
++            with self.assertRaises(FileExistsError):
++                RUNNER.validate_artifact_cache(existing, create=True)
++            self.assertFalse(missing.exists())
++            self.assertEqual(regular.read_text(), "foreign file\n")
++            self.assertEqual(list(x.name for x in existing.iterdir()), ["keep"])
++
++if __name__ == "__main__":
++    unittest.main()
++
+--- baseline/support/build/osdk-integration/README.md
++++ fixed/support/build/osdk-integration/README.md
+@@ -111,6 +111,20 @@
+ 900-second bound, and each guest has a 300-second bound. Native QEMU, SeaBIOS,
+ GCC, GDB and the pinned Rust toolchain must be available. `--target-dir` can
+ reuse a previous runner's independent Cargo cache after validating its origin.
++Every case receives a new exclusive `case-NN/target` as `CARGO_TARGET_DIR`.
++Generated `osdk/` base crates and bundles stay private to that case, preventing
++same-name examples such as the two `myos` projects from sharing generated
++workspace paths. Only `debug`, `release` and `x86_64-unknown-none` are explicit
++symlinks to verified directories in the isolated compilation cache. No prior
++`osdk/` tree is linked, copied or removed. Existing target/profile entries or
++unexpected cache types fail without replacement; partial owned directories
++remain available for diagnosis. Cache types and identities are checked before
++harness normalization or any Cargo build. `target-profile.json` and the case result bind
++the target/cache identities and each shared artifact directory. The persistent
++integration lock still serializes these shared compiled artifacts, and coverage
++symbols use the current case target. This is cache isolation for the observed
++same-name workspace hazard; it neither attributes the historical writer nor
++protects against a privileged process replacing paths during execution.
+ The runner acquires its lock before creating the requested output directory.
+ All commands have an owned session: timeout, SIGINT and SIGTERM stop that
+ original group while its direct leader is still unreaped, then reap the leader

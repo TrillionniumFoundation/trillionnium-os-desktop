@@ -1,0 +1,35 @@
+{
+  "status": "source_stable_tests_passed_ready_for_owner_publication",
+  "base_commit": "01a344c6a293fd73b158e9e6ca93bd9904b69bbf",
+  "source_sha256": {
+    "support/build/record-qemu.py": "c62c515aedd4f481ed05525dad7bb6acdd22c7a142115e1856df560e16585d58",
+    "support/build/tests/test_boot_evidence.py": "93d51c9e7dd0f59e5cf8ed6960a5d18b6b87dde997900dd38d4bec5998e270d1"
+  },
+  "unchanged_checker_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+  "tests": [
+    {
+      "mode": "-I",
+      "tests": 25,
+      "exit_code": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-restore/bios-tests-I.log",
+      "log_sha256": "d36661dba69158fd7b198e2cd9ca73a64a38429176243975049c5de8259855f3",
+      "actual_tool_session": 79876
+    },
+    {
+      "mode": "-I -O",
+      "tests": 25,
+      "exit_code": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-bios/after-all-I-O.log",
+      "log_sha256": "c22a22eb37a1c4476fa113689013d0d6880c3e67828c895702e0ced1b0a5fafc",
+      "actual_tool_session": 6857
+    },
+    {
+      "mode": "-I targeted",
+      "tests": 2,
+      "exit_code": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-bios/after-targeted-I.log",
+      "log_sha256": "e810c0cb4999f8ba4cafd2a3e027364814b271d6c7f3f4382ff33c5201e42dc6",
+      "actual_tool_session": 6857
+    }
+  ]
+}

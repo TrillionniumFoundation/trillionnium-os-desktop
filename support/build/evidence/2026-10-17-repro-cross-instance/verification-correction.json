@@ -1,0 +1,33 @@
+{
+  "scope": "New unpublished comparison verifier correction; actual kernel inputs and comparison facts unchanged",
+  "failed_checks": [
+    {
+      "command": [
+        "python3",
+        "-I",
+        "support/build/evidence/2026-10-17-repro-cross-instance/verify.py"
+      ],
+      "observed_exit_code": 1
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/evidence/2026-10-17-repro-cross-instance/verify.py"
+      ],
+      "observed_exit_code": 1
+    }
+  ],
+  "output": "comparison failed: comparison facts no longer match retained cases\n",
+  "cause": "Counter query/probe status keys were Python integers during recomputation but JSON strings after storage. The only mismatch was representation; JSON round-trip equality was independently observed true.",
+  "fix": "Normalize recomputed comparison to JSON representation before comparing; no comparison.json or actual artifact bytes changed. Reject unexpected phase directories as well as files.",
+  "debug_generated_extra_removed": {
+    "path": "__pycache__/verify.cpython-312.pyc",
+    "bytes": 25615,
+    "sha256": "ad41e50e1767ce0e1dfa8141d109552a63144088e8b0907d761899c27c34c2f0"
+  },
+  "debug_extra_scope": "Read-only debug module import also generated a new cache in this unpublished phase; preserved to scratch then removed. No historical file changed.",
+  "kernel_or_byte_comparison_failure": false,
+  "utc": "2026-10-17T04:20:02.539789+00:00"
+}

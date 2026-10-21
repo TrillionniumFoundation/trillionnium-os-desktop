@@ -1,0 +1,42 @@
+#!/bin/sh
+# SPDX-License-Identifier: MPL-2.0
+
+# Fail before the success marker if any required boot check fails. The host
+# verifier must additionally require QEMU's successful debug-exit status (33).
+set -eu
+export PATH=/bin:/sbin
+
+echo "TRILLIONNIUM_A01_INIT_BEGIN"
+# Invoke the executable explicitly. BusyBox ash's standalone applet dispatch
+# otherwise reexecs /proc/self/exe; the fixed upstream kernel reports the
+# original script there, causing recursive /init execution.
+/bin/busybox mount -t sysfs none /sys
+/bin/busybox mount -t proc none /proc
+/bin/busybox mount -t cgroup2 none /sys/fs/cgroup
+/bin/busybox mount -t configfs none /sys/kernel/config
+
+if ! /bin/busybox grep -q '^[^ ]* /dev devtmpfs ' /proc/mounts; then
+    /bin/busybox mount -t devtmpfs devtmpfs /dev
+fi
+/bin/busybox mkdir -p /dev/pts /dev/shm
+/bin/busybox mount -t tmpfs tmpfs /dev/shm
+/bin/busybox chmod 1777 /dev/shm
+/bin/busybox mount -t devpts devpts /dev/pts
+/bin/busybox chmod 0666 /dev/pts/ptmx
+/bin/busybox ln -s pts/ptmx /dev/ptmx
+
+echo "TRILLIONNIUM_A01_PROC_VERSION_BEGIN"
+/bin/busybox cat /proc/version
+echo "TRILLIONNIUM_A01_PROC_VERSION_END"
+/bin/busybox uname -a
+test "$(/bin/busybox uname -m)" = x86_64
+
+cpu_count=$(/bin/busybox grep -c '^processor[[:space:]]*:' /proc/cpuinfo)
+test "$cpu_count" -eq 1
+echo "TRILLIONNIUM_A01_CPU_COUNT=$cpu_count"
+
+# Preserve and execute the actual fixed upstream smoke test. Its plain marker
+# alone is insufficient: the checks above and the host exit checks also apply.
+/bin/busybox sh /test/boot_hello.sh
+echo "TRILLIONNIUM_A01_BOOT_OK"
+exec /bin/busybox poweroff -f

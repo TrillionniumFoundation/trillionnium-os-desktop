@@ -1,0 +1,82 @@
+{
+  "schema": "a01-repro-cross-path-evidence/1",
+  "source_commit": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+  "producer_complete_tree": "d50cc2fd3fac4e8060ff26c324267b267767bca2",
+  "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "packaged_utc": "2026-10-17T01:58:08.254433+00:00",
+  "passed": true,
+  "scope": "same host, two distinct actual source roots and absent targets, opt-in compiler/component path projection with source-bound Cargo unit metadata",
+  "profile_schema": "a01-component-path-projection/4",
+  "profile_opt_in": true,
+  "same_actual_host": true,
+  "distinct_actual_source_roots": true,
+  "target_absent_at_prelaunch": [
+    true,
+    true
+  ],
+  "complete_input_bytes_equal": {
+    "-kernel": true,
+    "-initrd": true,
+    "-bios": true
+  },
+  "raw_qemu_exits": [
+    33,
+    33
+  ],
+  "cross_host_claimed": false,
+  "immutable_host_claimed": false,
+  "ordinary_default_build_claimed": false,
+  "actual_comparator": {
+    "argv": [
+      "python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/compare-normalized-cloud-v4.py",
+      "4e8c7083575cec69efabe8d2250dfdd040c8dee8"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T01:56:19.252535+00:00",
+    "script_sha256": "7c1da58aa5b1e3ee2484404349cee31f09e7bf3e5df39e563e72865dcc933a61",
+    "actual_returncode": 0,
+    "end": "2026-10-17T01:56:19.781979+00:00",
+    "output_sha256": "7e0054a6f4c59ac80236f7d88a01fb383f7d3dd63a7fa9006a71654a160def84",
+    "output_size": 426,
+    "script_unchanged": true
+  },
+  "comparator_sha256": "7c1da58aa5b1e3ee2484404349cee31f09e7bf3e5df39e563e72865dcc933a61",
+  "launcher_sha256": "08f0184771f79cf37f38f448ce441ebc4dd97a57e37945bd5079dfec493a054b",
+  "static_review_sha256sums": "bd407076082f9b7abf6d1c6400759b52823ab7682aa9e1eb6faa363977b630bf",
+  "case_phases": [
+    {
+      "case": "A4",
+      "directory": "2026-10-17-repro-kernel-a4",
+      "sha256sums_sha256": "84c4110dc73515afc7a3be4f0bf27d5850b170be2a7c250af46b3b2dd9b62f6a",
+      "source": "Bytes read only from frozen standalone case evidence; original target/worktree not read."
+    },
+    {
+      "case": "B4",
+      "directory": "2026-10-17-repro-kernel-b4",
+      "sha256sums_sha256": "f24be56fc3e9da87c8e1fdecd4227f288eb01d0e7b5e19e077d00bf7ced846a9",
+      "source": "Bytes read only from frozen standalone case evidence; original target/worktree not read."
+    }
+  ],
+  "preservation": {
+    "original_files": 128,
+    "raw_regular_members": 120,
+    "unique_binary_inputs": 3,
+    "logical_binary_paths": 8,
+    "source_controls": 86,
+    "source_tree_objects": 30,
+    "maximum_chunk_bytes": 2097152
+  },
+  "limits": [
+    "Same cloud host and opt-in path/component/metadata projection only.",
+    "No cross-host, immutable environment, unprofiled normal build or G0/G1/G2 acceptance.",
+    "Historical A2/B2 successful boots with cross-path ELF comparison failure are preserved separately and are not rewritten.",
+    "Offline packaging/verifier reruns no original comparator, live check, Cargo, Rust compilation or guest."
+  ],
+  "verification": {
+    "command": "python3 -I support/build/evidence/2026-10-17-repro-cross-path/verify.py",
+    "optimized_command": "python3 -I -O support/build/evidence/2026-10-17-repro-cross-path/verify.py",
+    "scope": "Offline preserved evidence and complete-byte equality only; no original script or guest execution."
+  }
+}

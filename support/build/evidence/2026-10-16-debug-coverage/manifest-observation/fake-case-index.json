@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "source_reference_commit": "0e5f17911b8518d3f9e2a98595cc2990c4966522",
+  "source_reference_sha256": {
+    "support/build/kernel.sh": "a4b7f05133273d8c73af4b8c31e0cefee46eb8a825a1bfe61ff992e6de33e191",
+    "support/build/tests/test_kernel_runner.py": "8f2e1a8ae03304aa3ff40ef3f02ec9df0f3e4d49c5df4f7fe72a34113d546b3b"
+  },
+  "measurement_source_attribution": "The unchanged runner and fixture were inspected before the fake runs and match this committed version; original per-run JSON records did not themselves emit a runner hash. Later gdb_server wrapper edits are not attributed to these measurements.",
+  "normal": {
+    "total": 20,
+    "successful_exit": 20,
+    "residual_profiles": 0,
+    "inotify_creates": 20,
+    "inotify_deletes": 20,
+    "details": "normal-results.json",
+    "raw_log_archive_member": "fake/normal-inotify.log"
+  },
+  "same_content_replacement": {
+    "runner_exit": 0,
+    "old_inode": 527240,
+    "new_inode": 527244,
+    "same_bytes": true,
+    "same_mtime": true,
+    "foreign_profile_preserved": true,
+    "details": "same-content-replacement.json",
+    "raw_log_archive_member": "fake/same-content-replacement.log"
+  },
+  "execution_boundary": "External make/host tools are disposable stubs in a temporary fake project. The shell runner, locking and cleanup guards remain real. No Rust compilation, real Git operation or QEMU guest was performed by these fake cases.",
+  "historical_causality": "The known writer in the control is fixture make calling copy2 and os.replace. This does not identify the writer or cause of the earlier real residual profile.",
+  "argv_template": [
+    "bash",
+    "<temporary fake project>/support/build/kernel.sh",
+    "kernel"
+  ]
+}

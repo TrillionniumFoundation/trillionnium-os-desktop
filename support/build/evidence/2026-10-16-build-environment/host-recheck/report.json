@@ -1,0 +1,136 @@
+{
+  "kind": "additional_integrated_host_recheck_to_retain_explicit_invocation_receipts",
+  "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+  "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+  "all_passed": true,
+  "host_executions": 112,
+  "distinct_tests": 56,
+  "modes": [
+    "-I",
+    "-I -O"
+  ],
+  "source_inputs_sha256": {
+    "support/build/kernel.sh": "1aab60856d182b5fdf26c9de7360c3e34fbc91a73dd0468902f09e2f61065216",
+    "support/build/tests/test_kernel_runner.py": "33d3dad7060aba0f422930c3669102108d765164e38c7d8485d423671e8d5060",
+    "support/build/kernel-supervisor.py": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+    "support/build/tests/test_kernel_supervisor.py": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff",
+    "support/build/ktest/run.py": "6bcd7710d60ef5d0f228a821f80a452fbca9cb1b6110e7dd12f67b2eede66d27",
+    "support/build/ktest/test_runner_lifecycle.py": "0bbbbbde72aa8aff6fc85d6fc1ea3e0a1a0cb70a5b3262e42e602f7104c4704c"
+  },
+  "inputs_unchanged_after": true,
+  "receipts": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "support/build/tests/test_kernel_runner.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "started_utc": "2026-10-16T15:30:22.921834+00:00",
+      "completed_utc": "2026-10-16T15:30:32.469681+00:00",
+      "actual_exit": 0,
+      "stdout_stderr_combined": true,
+      "log": "test_kernel_runner-I.log",
+      "log_sha256": "8a2e82ed5c418d5d08e20e4fba502bf9051c55da93b7fbe5808b6a364aab2b5f",
+      "log_bytes": 4639,
+      "expected_tests": 30,
+      "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "removed_environment_keys": []
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "support/build/tests/test_kernel_supervisor.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "started_utc": "2026-10-16T15:30:32.470041+00:00",
+      "completed_utc": "2026-10-16T15:30:34.742436+00:00",
+      "actual_exit": 0,
+      "stdout_stderr_combined": true,
+      "log": "test_kernel_supervisor-I.log",
+      "log_sha256": "3e306dbc67d83709ff9122762c5e01e2bad66d0bd75f3e359d8ed85252c78f7f",
+      "log_bytes": 1474,
+      "expected_tests": 9,
+      "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "removed_environment_keys": []
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "support/build/ktest/test_runner_lifecycle.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "started_utc": "2026-10-16T15:30:34.742823+00:00",
+      "completed_utc": "2026-10-16T15:30:44.859765+00:00",
+      "actual_exit": 0,
+      "stdout_stderr_combined": true,
+      "log": "test_runner_lifecycle-I.log",
+      "log_sha256": "474193757c54074bbb7b4dd77754fd50f3be4fd0340db90f46c26eb620466f94",
+      "log_bytes": 117,
+      "expected_tests": 17,
+      "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "removed_environment_keys": []
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "support/build/tests/test_kernel_runner.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "started_utc": "2026-10-16T15:30:44.859992+00:00",
+      "completed_utc": "2026-10-16T15:30:54.089748+00:00",
+      "actual_exit": 0,
+      "stdout_stderr_combined": true,
+      "log": "test_kernel_runner-IO.log",
+      "log_sha256": "87b7d49ebf49cbb39d21e546aa3b54a2bd94fa023263f8ae8aac90c585d0ee38",
+      "log_bytes": 4639,
+      "expected_tests": 30,
+      "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "removed_environment_keys": []
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "support/build/tests/test_kernel_supervisor.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "started_utc": "2026-10-16T15:30:54.089936+00:00",
+      "completed_utc": "2026-10-16T15:30:56.501790+00:00",
+      "actual_exit": 0,
+      "stdout_stderr_combined": true,
+      "log": "test_kernel_supervisor-IO.log",
+      "log_sha256": "c6b53e1debcf6cb1916944943a139bfc9993e68dd51ebc9d2e565dcbb4988a5e",
+      "log_bytes": 1474,
+      "expected_tests": 9,
+      "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "removed_environment_keys": []
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "support/build/ktest/test_runner_lifecycle.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "started_utc": "2026-10-16T15:30:56.502158+00:00",
+      "completed_utc": "2026-10-16T15:31:10.389520+00:00",
+      "actual_exit": 0,
+      "stdout_stderr_combined": true,
+      "log": "test_runner_lifecycle-IO.log",
+      "log_sha256": "6d8410c7cf60886430db50b9a20315bb5ad817449819dde4c5b9a7c40b0c3766",
+      "log_bytes": 117,
+      "expected_tests": 17,
+      "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "removed_environment_keys": []
+    }
+  ],
+  "kernel_or_vm_run": false,
+  "prior_agent_runs_are_separate": true
+}

@@ -1,0 +1,65 @@
+{
+  "baseline_source": {
+    "bytes": 17530,
+    "file": "permission_probe.baseline.c",
+    "git_blob": "ad45a28ee7f816ab9209b864f2d2207b5d16badd",
+    "sha256": "6e1ad156e3429ecb127d763b2918fdf5491d033db05de183c146ef20e75798f6"
+  },
+  "candidate_owner_head": "233e1e998f8e05d51c132e42ca727c2f5c54db98",
+  "candidate_source": {
+    "bytes": 17832,
+    "file": "permission_probe.c",
+    "git_blob": "0ab4db24a5127b2a0cfbd2544f98f4ef83a44818",
+    "sha256": "2da41c7f02112e071177ea61998748d442f7dab41b78b5a1eb452f2f1a798264"
+  },
+  "compile_argv": [
+    "cc",
+    "-O2",
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "permission_probe.c",
+    "-o",
+    "probe.elf"
+  ],
+  "compile_completed_at": "2026-10-20T16:17:28.212218+00:00",
+  "compile_exit": 0,
+  "compile_timed_out": false,
+  "compiler_version": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "effective_cap_sys_admin": false,
+  "elf": {
+    "bytes": 812624,
+    "elf_class": 64,
+    "machine": "x86_64",
+    "pt_dynamic_present": false,
+    "pt_interp_present": false,
+    "sha256": "c698600de7c4e45fddb6aca1c204b583d2e1b0f2c67d0332ac47108002c36e6f"
+  },
+  "euid": 0,
+  "frozen_public_candidate_package_unchanged": true,
+  "namespace_preflight_argv": [
+    "/usr/bin/unshare",
+    "--mount",
+    "--propagation",
+    "private",
+    "true"
+  ],
+  "namespace_preflight_completed_at": "2026-10-20T16:17:27.935708+00:00",
+  "namespace_preflight_error": "unshare: unshare failed: Operation not permitted\n",
+  "namespace_preflight_exit": 1,
+  "namespace_preflight_timed_out": false,
+  "native_32_of_32_claimed": false,
+  "native_probe_executed": false,
+  "oracle_negative_controls": {
+    "false_observations_rejected": 5,
+    "synthetic_positive_passed": true
+  },
+  "owner_source_or_canonical_modified": false,
+  "regex_reexecuted": false,
+  "schema": 1,
+  "scope": "Isolated candidate preparation in the current dedicated environment; not the earlier A06 CI reference result.",
+  "status": "candidate_compiled_native_qualification_blocked",
+  "user_namespace_or_host_mount_fallback_attempted": false
+}

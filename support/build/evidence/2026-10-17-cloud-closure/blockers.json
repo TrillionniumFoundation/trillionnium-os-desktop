@@ -1,0 +1,133 @@
+{
+  "schema": "a01-cloud-blocker-ledger/1",
+  "all_project_blockers_closed": false,
+  "closed_owned_items": [
+    {
+      "id": "source-import",
+      "status": "closed_with_actual_evidence",
+      "finding": "Complete single-directory upstream source, pinned Git tree/Cargo locks/toolchain and license verified."
+    },
+    {
+      "id": "cloud-native-dependencies",
+      "status": "closed_with_actual_evidence",
+      "finding": "Signed private-prefix native tools and exact Rust nightly are usable; failed APT command retained."
+    },
+    {
+      "id": "bios-and-rom-paths",
+      "status": "closed_with_actual_evidence",
+      "finding": "Explicit BIOS and QEMU -L data paths passed full ordinary and projected kernel boots."
+    },
+    {
+      "id": "compiler-component-paths",
+      "status": "closed_with_actual_evidence",
+      "finding": "Actual compiler remap plus unchanged Components.toml lookup removes the original component panic."
+    },
+    {
+      "id": "local-cargo-metadata",
+      "status": "closed_with_actual_evidence",
+      "finding": "Source/compiler/producer-bound metadata makes the actual two distinct-root ELF files identical."
+    },
+    {
+      "id": "producer-ordering",
+      "status": "closed_with_actual_evidence",
+      "finding": "Opt-in one-job Cargo execution preserves strict completion checks; A4/B4 each pass."
+    },
+    {
+      "id": "native-sdk-source-root",
+      "status": "closed_with_actual_evidence",
+      "finding": "Same-absolute-root source SDK reinstall passes both actual kernel-mode suites."
+    },
+    {
+      "id": "offline-coverage-dependencies",
+      "status": "closed_with_actual_evidence",
+      "finding": "Exact root-lock crate checksums completed without lock drift; real GDB coverage succeeds."
+    },
+    {
+      "id": "generated-workspace-isolation",
+      "status": "closed_with_actual_evidence",
+      "finding": "Per-case OSDK generated state passes the formerly failing workspace case in full22."
+    },
+    {
+      "id": "guest-input-retention",
+      "status": "closed_with_actual_evidence",
+      "finding": "Final recorder freezes before QEMU version and validates all 23 actual input mappings."
+    },
+    {
+      "id": "ordinary-minimal-kernel",
+      "status": "closed_with_actual_evidence",
+      "finding": "Fresh-target make kernel followed by make run_kernel and live-artifact check all pass."
+    }
+  ],
+  "open_items": [
+    {
+      "id": "host-af-unix",
+      "status": "open",
+      "owner": "host",
+      "evidence_or_limit": "AF_UNIX socket creation remains EPERM; default upstream UNIX GDB transport cannot run here.",
+      "next_action": "Use the documented TCP profile for present acceptance; a host-policy change belongs to the cloud administrator."
+    },
+    {
+      "id": "host-kvm-vmx",
+      "status": "open",
+      "owner": "host/A09/A00",
+      "evidence_or_limit": "No /dev/kvm or VMX/EPT facilities in this host; soft skips remain.",
+      "next_action": "Run the retained tests on an authorized VMX/EPT/KVM-capable host; do not fabricate device nodes or relax capabilities."
+    },
+    {
+      "id": "cross-host-reproduction",
+      "status": "open",
+      "owner": "A00/build environment",
+      "evidence_or_limit": "No independent authorized second-host build has been validated.",
+      "next_action": "Repeat source-bound cold builds on another authorized host and compare complete bytes."
+    },
+    {
+      "id": "immutable-environment",
+      "status": "open",
+      "owner": "A00/build environment",
+      "evidence_or_limit": "Signed package/tool evidence is not a complete immutable host/container lock; container digest remains null.",
+      "next_action": "Publish and execute a complete configured builder lock on the coordinated host."
+    },
+    {
+      "id": "unknown-workspace-writer",
+      "status": "open",
+      "owner": "cloud environment/A00",
+      "evidence_or_limit": "Restored generated paths, executable-mode changes and replaced artifacts have no identified writer.",
+      "next_action": "Keep private snapshots/isolation; investigate the cloud writer without weakening its security boundary."
+    },
+    {
+      "id": "a05-native-control",
+      "status": "open",
+      "owner": "A05/A00",
+      "evidence_or_limit": "Draft #87 QueryAbi does not provide trusted CapSpace/launch/exec identity or the complete native ReadUsage/InstallBudget/QueryDelivery/RetireThrough contract.",
+      "next_action": "Implement and test the owner interfaces and required errno/authority/lifecycle behavior in the shared derived kernel."
+    },
+    {
+      "id": "a06-accounting",
+      "status": "open",
+      "owner": "A06/A00",
+      "evidence_or_limit": "Draft #18 retains a possible final runtime-debit gap on dead Weak Process upgrade (#63); this round did not demonstrate a guest exploit.",
+      "next_action": "Fix and replay final CPU accounting and full G1 enforcement with A05 identities; existing owner samples retain their own provenance."
+    },
+    {
+      "id": "a07-persistent-owner",
+      "status": "open",
+      "owner": "A07/A00",
+      "evidence_or_limit": "Reviewed repository/PR scope contains no accepted real persistent Hepta K-to-D owner/G2 chain.",
+      "next_action": "Integrate the existing unique persistent owner and prove acknowledgment/query/retire/revoke/failure/reboot behavior; do not create another ledger."
+    },
+    {
+      "id": "a04-linux-gaps",
+      "status": "open",
+      "owner": "A04/A05/A00",
+      "evidence_or_limit": "Recorded MSG_CMSG_CLOEXEC and RLIMIT_NOFILE gaps and exact original ELF provenance remain.",
+      "next_action": "Replay the retained exact guest inputs and provide owner fixes; host-Linux passes are not kernel passes."
+    },
+    {
+      "id": "integration-and-ci",
+      "status": "open",
+      "owner": "A00",
+      "evidence_or_limit": "PR22 remains unmerged; final-head CI state is recorded separately at closing readback.",
+      "next_action": "A00 reviews/merges the branch and owns docs/STATUS/ARCHITECTURE/ROADMAP/CI updates without weakening NATIVE_ABI."
+    }
+  ]
+}

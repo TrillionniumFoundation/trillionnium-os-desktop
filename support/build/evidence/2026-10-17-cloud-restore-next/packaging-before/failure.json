@@ -1,0 +1,17 @@
+{
+  "kind": "Actual replay of unchanged first packager source after its first tool-observed exit1; no dependency or frozen input was changed",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "support/build/evidence/2026-10-17-cloud-restore-next/packaging-before/package-evidence.py"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "start_utc": "2026-10-17T04:11:03.712141+00:00",
+  "end_utc": "2026-10-17T04:11:03.767942+00:00",
+  "returncode": 1,
+  "source_sha256": "1363d6526e8908ef665b5b3cabe11b11cb347777293639b957cc927eebc1bbbf",
+  "log_sha256": "c1d92289998811c80a80fe3d591939918816d051b00880fbf9b1dafb7b7ac429",
+  "log_bytes": 488,
+  "expected_failure": "frozen member count differs: old count assumed225, actual226 including nested prior-reference/SHA256SUMS",
+  "initial_failure_scope": "The initial exec tool also returned exit1 with this ValueError before any archive writes; its raw response was not a separate log file."
+}

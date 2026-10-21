@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "observation_source": "Read-only tool receipt immediately after the parent reported next4-kernel-debug-02 rejection; values copied verbatim rather than re-stat after preservation.",
+  "current_profile_observed": {
+    "device": 27,
+    "inode": 1572927,
+    "size": 1019,
+    "mtime_ns": 1792150310751512534,
+    "ctime_ns": 1792150569385873197,
+    "birth_time_ns": 1792150569096847292,
+    "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+    "matches_minimal": true
+  },
+  "first_observer": {
+    "published_inode": 1572956,
+    "delete_time_ns": 1792150565883532671,
+    "path_absent_at_delete": true,
+    "manifest_present_after": false,
+    "invocation": "support/build/out/next4-debug-observer/invocation.json",
+    "events": "support/build/out/next4-debug-observer/events.jsonl"
+  },
+  "reappearance": {
+    "new_inode": true,
+    "exact_previous_mtime_preserved": true,
+    "birth_time_after_observed_delete_ns": 3213314621,
+    "writer_unknown": true,
+    "not_a_failure_to_delete_the_original_inode": true
+  },
+  "git_readonly_checks": {
+    "path": "/usr/local/bin/git",
+    "resolved_path": "/usr/local/bin/git",
+    "type": "C ELF with debug_info, not stripped; ordinary Git entry points present; no script wrapper observed",
+    "version": "git version 2.51.1",
+    "sha256": "2dae8066ef4d6a926561b4b0eaca7b458d4f5b56bb83760656e6baa7fc3e974f",
+    "allowed_config_keys_unset": [
+      "core.hooksPath",
+      "core.fsmonitor",
+      "core.worktree",
+      "extensions.worktreeConfig"
+    ],
+    "default_hooks_directory": "Only .sample entries; no activated hook found",
+    "authentication_configuration_read": false
+  },
+  "attribution": "Temporal relationship is real; no identified executable, hook or synchronization actor has been tied to the recreation."
+}

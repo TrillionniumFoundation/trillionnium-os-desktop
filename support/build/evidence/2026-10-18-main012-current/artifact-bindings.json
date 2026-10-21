@@ -1,0 +1,133 @@
+{
+  "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "first_build_equals_actual_loaded": true,
+  "first_build_capture": {
+    "schema": "trillionnium.a01.first-build-artifact.v1",
+    "captured_at_utc": "2026-10-18T08:53:35.637803+00:00",
+    "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+    "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "source_stat": {
+      "dev": 27,
+      "ino": 1719418,
+      "mode": 33261,
+      "size": 8283136,
+      "mtime_ns": 1792313568967986629,
+      "ctime_ns": 1792313568967998387
+    },
+    "frozen_path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/artifacts-first-build/kernel.elf",
+    "bytes": 8283136,
+    "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55",
+    "stable_fd_and_path": true,
+    "before_boot": true
+  },
+  "bindings": [
+    {
+      "member": "boot/kernel.elf",
+      "record": "boot/qemu.json",
+      "selector": "-kernel",
+      "source_receipt": {
+        "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/kernel.elf",
+        "observed_at_utc": "2026-10-18T09:06:59.788256+00:00",
+        "size": 8283136,
+        "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55",
+        "mode": 256,
+        "stat": {
+          "st_dev": 27,
+          "st_ino": 2009904,
+          "st_mode": 33024,
+          "st_size": 8283136,
+          "st_mtime_ns": 1792313912849881833,
+          "st_ctime_ns": 1792313912849881833
+        },
+        "stable_fd_and_path": true
+      }
+    },
+    {
+      "member": "boot/initramfs.cpio.gz",
+      "record": "boot/qemu.json",
+      "selector": "-initrd",
+      "source_receipt": {
+        "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/initramfs.cpio.gz",
+        "observed_at_utc": "2026-10-18T09:06:59.793778+00:00",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "mode": 256,
+        "stat": {
+          "st_dev": 27,
+          "st_ino": 2009905,
+          "st_mode": 33024,
+          "st_size": 1107990,
+          "st_mtime_ns": 1792313912857882032,
+          "st_ctime_ns": 1792313912857882032
+        },
+        "stable_fd_and_path": true
+      }
+    },
+    {
+      "member": "firmware/bios.bin",
+      "record": "boot/qemu.json",
+      "selector": "-bios",
+      "source_receipt": {
+        "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/bios.bin",
+        "observed_at_utc": "2026-10-18T09:06:59.794602+00:00",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "mode": 256,
+        "stat": {
+          "st_dev": 27,
+          "st_ino": 2009906,
+          "st_mode": 33024,
+          "st_size": 262144,
+          "st_mtime_ns": 1792313912863965858,
+          "st_ctime_ns": 1792313912863965858
+        },
+        "stable_fd_and_path": true
+      }
+    },
+    {
+      "member": "ktest/ostd.elf",
+      "record": "ktest/ostd/guests/guest-001/qemu.json",
+      "selector": "-kernel",
+      "source_receipt": {
+        "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "observed_at_utc": "2026-10-18T09:06:59.808816+00:00",
+        "size": 2001544,
+        "sha256": "8370730e882d29ef00a9796577ec7aa118292a78fddc098c6b96956ad94c8862",
+        "mode": 493,
+        "stat": {
+          "st_dev": 27,
+          "st_ino": 1719902,
+          "st_mode": 33261,
+          "st_size": 2001544,
+          "st_mtime_ns": 1792313960890633059,
+          "st_ctime_ns": 1792313960890643134
+        },
+        "stable_fd_and_path": true
+      },
+      "capture_scope": "Post-test stable-FD bytes equal the recorder hash; the ktest recorder itself used these source paths, not a private snapshot."
+    },
+    {
+      "member": "ktest/aster-core.elf",
+      "record": "ktest/aster-core/guests/guest-001/qemu.json",
+      "selector": "-kernel",
+      "source_receipt": {
+        "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+        "observed_at_utc": "2026-10-18T09:06:59.817026+00:00",
+        "size": 9509024,
+        "sha256": "b0ce473e72406820b57f8469b1a078a5d52d405a286b03b074b95f389c6e4133",
+        "mode": 493,
+        "stat": {
+          "st_dev": 27,
+          "st_ino": 1718053,
+          "st_mode": 33261,
+          "st_size": 9509024,
+          "st_mtime_ns": 1792314055804271078,
+          "st_ctime_ns": 1792314055804286201
+        },
+        "stable_fd_and_path": true
+      },
+      "capture_scope": "Post-test stable-FD bytes equal the recorder hash; the ktest recorder itself used these source paths, not a private snapshot."
+    }
+  ],
+  "bios_shared_by_three_guests": true
+}

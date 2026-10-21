@@ -1,0 +1,150 @@
+{
+  "path": "/usr/local/scripts/sync_share.sh",
+  "bytes": 2418,
+  "sha256": "7a4b7aa2c2ee89eddb9b24fbe5267f4abd75a8cded4328773be9248d61cf3c32",
+  "scope_markers": {
+    "/workspace": false,
+    "/shared": false,
+    "/share": true,
+    "rsync": true,
+    "inotify": true,
+    "while": true,
+    "--delete": true,
+    "--update": true,
+    "git": true,
+    "OSDK.toml": false,
+    "trillionnium": false
+  },
+  "assignment_variable_names": [
+    "RSYNC_MODULE",
+    "SYNC_DIR",
+    "SYNC_DIR",
+    "timeout",
+    "status"
+  ],
+  "relevant_line_structure": [
+    {
+      "line": 26,
+      "commands_flags_and_variable_references": [
+        "while",
+        "-q",
+        "$RSYNC_HOST"
+      ]
+    },
+    {
+      "line": 28,
+      "commands_flags_and_variable_references": [
+        "sleep"
+      ]
+    },
+    {
+      "line": 37,
+      "commands_flags_and_variable_references": [
+        "rsync"
+      ]
+    },
+    {
+      "line": 40,
+      "commands_flags_and_variable_references": [
+        "while"
+      ]
+    },
+    {
+      "line": 47,
+      "commands_flags_and_variable_references": [
+        "sleep"
+      ]
+    },
+    {
+      "line": 48,
+      "commands_flags_and_variable_references": [
+        "rsync",
+        "$status",
+        "$status"
+      ]
+    },
+    {
+      "line": 64,
+      "commands_flags_and_variable_references": [
+        "rsync",
+        "-a"
+      ]
+    },
+    {
+      "line": 66,
+      "commands_flags_and_variable_references": [
+        "--delay-updates",
+        "--partial-dir",
+        "rsync"
+      ]
+    },
+    {
+      "line": 72,
+      "commands_flags_and_variable_references": [
+        "--exclude",
+        "rsync"
+      ]
+    },
+    {
+      "line": 74,
+      "commands_flags_and_variable_references": [
+        "$SYNC_DIR",
+        "rsync",
+        "$RSYNC_HOST",
+        "$RSYNC_MODULE"
+      ]
+    },
+    {
+      "line": 79,
+      "commands_flags_and_variable_references": [
+        "while"
+      ]
+    },
+    {
+      "line": 82,
+      "commands_flags_and_variable_references": [
+        "rsync"
+      ]
+    },
+    {
+      "line": 84,
+      "commands_flags_and_variable_references": [
+        "sleep"
+      ]
+    },
+    {
+      "line": 88,
+      "commands_flags_and_variable_references": [
+        "inotifywait",
+        "-rq"
+      ]
+    },
+    {
+      "line": 90,
+      "commands_flags_and_variable_references": [
+        "--exclude",
+        "rsync"
+      ]
+    },
+    {
+      "line": 93,
+      "commands_flags_and_variable_references": [
+        "sleep"
+      ]
+    }
+  ],
+  "scope_and_direction_observation": {
+    "script_path": "/usr/local/scripts/sync_share.sh",
+    "rsync_direction": "local_to_peer",
+    "argument_order_only": [
+      "local_SYNC_DIR",
+      "remote_endpoint"
+    ],
+    "current_agent_RSYNC_DIR": "/workspace/scratch",
+    "preserves_mtime": true,
+    "uses_delayed_file_updates": true,
+    "trigger": "inotify on local SYNC_DIR followed by two-second debounce; .git excluded",
+    "credentials_or_remote_endpoint_read": false,
+    "not_verified": "Service-specific environment and peer-side transfer history were not read."
+  }
+}

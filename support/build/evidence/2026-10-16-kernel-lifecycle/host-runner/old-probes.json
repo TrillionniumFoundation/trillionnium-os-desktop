@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "scope": "host-only controlled real-signal seam, actual owned children and TCP lease; no VM, no product source changes, no /proc or post-reap PGID signal",
+  "entry_sha256": "31b97ef6d7fbbe675364aaa1c27fdc4e36d328cbce307452434dfc7b9888d929",
+  "baseline_commit": "2eee2c3df5a837e89ae7557510008ce1de37a1ca",
+  "records": [
+    {
+      "mode": "control",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/worker.py",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/control",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/run.py",
+        "control"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/control",
+      "entry_sha256": "31b97ef6d7fbbe675364aaa1c27fdc4e36d328cbce307452434dfc7b9888d929",
+      "before": {
+        "leader_exited": false,
+        "descendant_exited": false,
+        "listener_free": false
+      },
+      "worker_exit": 130,
+      "worker_exit_seconds": 0.06363546399734332,
+      "after_worker": {
+        "leader_exited": true,
+        "descendant_exited": true,
+        "listener_free": true,
+        "runner_lock_free": true
+      },
+      "command_record": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/leader.py",
+          "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/control"
+        ],
+        "cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/control",
+        "raw_exit_code": 130,
+        "timed_out": false,
+        "interrupted_by": "SIGINT",
+        "group_cleanup": {
+          "leader_pid": 9,
+          "leader_exit_code": -15,
+          "leader_reaped": true,
+          "external_reap_disarmed": false,
+          "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+        },
+        "duration_seconds": 0.108
+      },
+      "seam_fired": false,
+      "leak_reproduced": false,
+      "control_passed": true,
+      "fixture_owned_pidfd_cleanup": {
+        "leader": true,
+        "descendant": true
+      }
+    },
+    {
+      "mode": "before-int-ignore",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/worker.py",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/before-int-ignore",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/run.py",
+        "before-int-ignore"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/before-int-ignore",
+      "entry_sha256": "31b97ef6d7fbbe675364aaa1c27fdc4e36d328cbce307452434dfc7b9888d929",
+      "before": {
+        "leader_exited": false,
+        "descendant_exited": false,
+        "listener_free": false
+      },
+      "worker_exit": 143,
+      "worker_exit_seconds": 0.015402459001052193,
+      "after_worker": {
+        "leader_exited": false,
+        "descendant_exited": false,
+        "listener_free": false,
+        "runner_lock_free": true
+      },
+      "command_record": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/leader.py",
+          "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/before-int-ignore"
+        ],
+        "cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/before-int-ignore",
+        "raw_exit_code": null,
+        "timed_out": false
+      },
+      "seam_fired": true,
+      "leak_reproduced": true,
+      "control_passed": false,
+      "fixture_owned_pidfd_cleanup": {
+        "leader": true,
+        "descendant": true
+      }
+    },
+    {
+      "mode": "between-int-term-ignore",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/worker.py",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/between-int-term-ignore",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/run.py",
+        "between-int-term-ignore"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/between-int-term-ignore",
+      "entry_sha256": "31b97ef6d7fbbe675364aaa1c27fdc4e36d328cbce307452434dfc7b9888d929",
+      "before": {
+        "leader_exited": false,
+        "descendant_exited": false,
+        "listener_free": false
+      },
+      "worker_exit": 143,
+      "worker_exit_seconds": 0.015532249999523629,
+      "after_worker": {
+        "leader_exited": false,
+        "descendant_exited": false,
+        "listener_free": false,
+        "runner_lock_free": true
+      },
+      "command_record": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/leader.py",
+          "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/between-int-term-ignore"
+        ],
+        "cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01/between-int-term-ignore",
+        "raw_exit_code": null,
+        "timed_out": false
+      },
+      "seam_fired": true,
+      "leak_reproduced": true,
+      "control_passed": false,
+      "fixture_owned_pidfd_cleanup": {
+        "leader": true,
+        "descendant": true
+      }
+    }
+  ],
+  "confirmed": true
+}

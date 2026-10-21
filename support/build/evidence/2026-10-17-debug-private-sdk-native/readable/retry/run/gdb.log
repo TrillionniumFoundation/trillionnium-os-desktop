@@ -1,0 +1,37 @@
+0x000000000000fff0 in ?? ()
+Hardware assisted breakpoint 1 at 0xffffffff88422740: file src/lib.rs, line 21.
+
+Breakpoint 1, asterinas::__ostd_main () at src/lib.rs:21
+21	#[ostd::main]
+Warning: the current language does not match this frame.
+A01_GDB_RUST_ENTRY_HIT pc=0xffffffff88422740 entry=0xffffffff88422740
+A01_GDB_RUST_ENTRY_BYTES pc=0xffffffff88422740 size=32 bytes=50e84a37f2ff48c7c7e82c5488e89e4a060048c7c000e05e8848c7c178e65e88
+#0  asterinas::__ostd_main () at src/lib.rs:21
+#1  0xffffffff8848145b in ostd::boot::start_kernel () at src/boot/mod.rs:195
+#2  0xffffffff884a09fb in ostd::arch::boot::multiboot::__multiboot_entry (boot_magic=732803074, boot_params=<optimized out>) at src/arch/x86/boot/multiboot/mod.rs:398
+#3  0xffffffff8849d67d in entry_type_multiboot ()
+#4  0x010ffcfa44ebfcfa in ?? ()
+#5  0x80b9080014f02514 in ?? ()
+#6  0x08000d320fc00000 in ?? ()
+#7  0x48e0200f300f0000 in ?? ()
+#8  0xe0220f000000a00d in ?? ()
+#9  0x80e025048bc03148 in ?? ()
+#10 0x258d48d8220f0000 in ?? ()
+#11 0x001f0fcb00000004 in ?? ()
+#12 0x00000008000080e4 in ?? ()
+#13 0x8016010fd88ec031 in ?? ()
+#14 0x01c88366c0200f80 in ?? ()
+#15 0x0008808ceac0220f in ?? ()
+#16 0x0000000000000000 in ?? ()
+Current source file is src/lib.rs
+Compilation directory is /tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/kernel
+Located in /tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/kernel/src/lib.rs
+Contains 24 lines.
+Source language is rust.
+Producer is clang LLVM (rustc version 1.99.0-nightly (87e5904f5 2026-07-20)).
+Compiled with DWARF 4 debugging format.
+Does not include preprocessor macro info.
+Line 21 of "src/lib.rs" starts at address 0xffffffff88422740 <asterinas::__ostd_main> and ends at 0xffffffff88422741 <asterinas::__ostd_main+1>.
+rip            0xffffffff88422740  0xffffffff88422740 <asterinas::__ostd_main>
+[Inferior 1 (process 1) detached]
+A01_GDB_DETACHED

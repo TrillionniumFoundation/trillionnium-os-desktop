@@ -1,0 +1,78 @@
+{
+  "schema": "a01-repro-mechanism-published-source-bindings/1",
+  "published_source_commit": "542e09ebf0471124a01e3d721b531a29e141e54b",
+  "published_tree": "8e7a594456108c9a9e796bdee2d22a26f9ebfbda",
+  "candidate_files": [
+    {
+      "path": "support/build/repro/README.md",
+      "archived_path": "candidate-source/README.md",
+      "git_blob": "3301b4217d04901e3d52c9126b209b803024b58d",
+      "git_mode": "100644",
+      "size": 4099,
+      "sha256": "10154dd06a7765a95e01cd95f60f34c4af93b968ad6c3067a54575d40644b0af"
+    },
+    {
+      "path": "support/build/repro/cargo-metadata-wrapper.py",
+      "archived_path": "candidate-source/cargo-metadata-wrapper.py",
+      "git_blob": "82a50b3819f73353b29e176d5e04969091806532",
+      "git_mode": "100755",
+      "size": 2859,
+      "sha256": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730"
+    },
+    {
+      "path": "support/build/repro/profile.py",
+      "archived_path": "candidate-source/profile.py",
+      "git_blob": "7d6951062f3dae62c25e8aefe6c29750d85c6bc0",
+      "git_mode": "100644",
+      "size": 7553,
+      "sha256": "e1dc29bebb7fa8ee32e4eb2022b26785f1ace48535f714e4da79628b2e49ac2b"
+    },
+    {
+      "path": "support/build/repro/run.py",
+      "archived_path": "candidate-source/run.py",
+      "git_blob": "0e6317a70151e4470be8441c3f96a8a563342590",
+      "git_mode": "100644",
+      "size": 6596,
+      "sha256": "1f1d5c207e5cdac85cf1c0a8b4c54ea8a398d4134e53192532f0325a4780272c"
+    },
+    {
+      "path": "support/build/repro/rustc-wrapper.py",
+      "archived_path": "candidate-source/rustc-wrapper.py",
+      "git_blob": "cebc28fa7a2353b9d879e5a99a0c0eebe1ed6723",
+      "git_mode": "100755",
+      "size": 1568,
+      "sha256": "fa966690f26ba59688cc92fc3908bc535f46ac25fdc66bf8e5fef7975c7a4b14"
+    },
+    {
+      "path": "support/build/repro/test_profile.py",
+      "archived_path": "candidate-source/test_profile.py",
+      "git_blob": "97aa3bdd90ee110d43a366847fe9f88dff16aaba",
+      "git_mode": "100644",
+      "size": 9048,
+      "sha256": "084ca13504eda89df264fac25eb48781e4398d56e2ca5c42e5572add0ad3971b"
+    }
+  ],
+  "unchanged_pinned_macro_files": [
+    {
+      "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/Cargo.toml",
+      "git_blob": "c1cb568380fc0e545fb2955812b34ef1aaacfeb8",
+      "sha256": "4995c672d1f41513727277c529b01815c42e3350238b437c2f56681e585a52f6"
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/init_comp.rs",
+      "git_blob": "6137428a68574f4e2a1ed09a66bd6acc2b74d648",
+      "sha256": "5a137cd7161c58e2972df7ce585153e1d9e1e995a8d4047cb992110ed8b608e2"
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/lib.rs",
+      "git_blob": "012c0b3a0439031b44c2b9e81f8a25146ed35f63",
+      "sha256": "cbbecb3051bb5bd333ddc1b1636548b5c97c6b5164ef562bee8a0ed2e64e47bc"
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs",
+      "git_blob": "b7d68bc0101cf7daa8b441268eba7e3b8dd7c6ed",
+      "sha256": "7c89992761844d328e1f57d03f2b02b1d9cd869e80fd1d5279566de1fb4d0761"
+    }
+  ],
+  "note": "The tiny prototype ran before final hardening. Final candidate bytes are bound to this published commit; full kernel runs are independent evidence, not claimed here."
+}

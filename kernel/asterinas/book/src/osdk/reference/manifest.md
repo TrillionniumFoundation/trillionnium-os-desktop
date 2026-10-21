@@ -50,6 +50,7 @@ display_grub_menu = false                   # <16>
 path = "path/to/it"                         # <18>
 args = "-machine q35 -m 2G"                 # <19>
 log_file = "qemu.log"                       # <20>
+monitor_transport = "unix"                  # Optional managed-monitor transport
 with_daemons = [{ path = "path/to/daemon", args = [] }] # <21>
 
 # Special options for run subcommand
@@ -212,6 +213,15 @@ can include any POSIX shell compliant separators.
 
     If the path is relative,
     it is relative to the manifest's enclosing directory.
+
+    The optional `monitor_transport` field selects `unix` (the default) or `tcp`
+    for OSDK's managed monitor connection.
+    With `tcp`, OSDK creates both ends of a private connection on `127.0.0.1`,
+    rejects unrelated clients during setup, and closes the listener before
+    QEMU inherits its connected socket descriptor.
+    This field does not enable the monitor or change the guest shutdown behavior.
+    It can also be set in `[run.qemu]` or `[test.qemu]`,
+    and `--qemu-monitor-transport` overrides it.
 
 21. The `with_daemons` host processes to run for the duration of QEMU.
 

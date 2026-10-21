@@ -1,0 +1,218 @@
+{
+  "schema": "a01-native-cloud-normal/1",
+  "case": "N1",
+  "source_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+  "producer_complete_tree": "a2baa0d707b8af80ae0e7d9f09b6e08379667bc2",
+  "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "controller_sha256": "3c4e1f2d6e70ec4211cebc80e456b0048aad16a7893db09a7a10c992ada5254b",
+  "outer_tool_observation": {
+    "session_id": 15521,
+    "exit_code": 0,
+    "source": "Root actual completed native tool-result summary; original eleven subprocess receipts are retained independently."
+  },
+  "cold_make_kernel_passed": true,
+  "cold_target_absent_before_first_build": true,
+  "first_kernel_elf": {
+    "source": "/tmp/trillionnium-a01-final-normal/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "source_stat": {
+      "st_dev": 27,
+      "st_ino": 1622014,
+      "st_mode": 33261,
+      "st_size": 8258112,
+      "st_mtime_ns": 1792202579390230942,
+      "st_ctime_ns": 1792202579390285399
+    },
+    "copy": "/workspace/scratch/ae1a8cf05419/normal-cloud-final/first-build-kernel.elf",
+    "size": 8258112,
+    "sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d"
+  },
+  "subsequent_make_run_kernel_passed": true,
+  "run_kernel_target_role": "warm reuse of the same target after successful cold make kernel",
+  "compile_lines": {
+    "cold_kernel": 279,
+    "warm_boot": 0
+  },
+  "kernel_boot_passed": true,
+  "raw_qemu_exit": 33,
+  "timed_out": false,
+  "first_and_boot_kernel_complete_bytes_equal": true,
+  "profile_opt_in": false,
+  "path_projection_claimed": false,
+  "cross_path_comparison_claimed": false,
+  "cross_host_claimed": false,
+  "immutable_host_claimed": false,
+  "all_project_blockers_closed": false,
+  "controller_commands": [
+    {
+      "name": "worktree",
+      "returncode": 0,
+      "start": "2026-10-17T01:56:23.690756+00:00",
+      "end": "2026-10-17T01:56:25.567570+00:00"
+    },
+    {
+      "name": "source-verification",
+      "returncode": 0,
+      "start": "2026-10-17T01:56:25.568199+00:00",
+      "end": "2026-10-17T01:56:25.684311+00:00"
+    },
+    {
+      "name": "target-absence",
+      "returncode": 0,
+      "start": "2026-10-17T01:56:25.685258+00:00",
+      "end": "2026-10-17T01:56:25.750611+00:00"
+    },
+    {
+      "name": "fresh-make-kernel",
+      "returncode": 0,
+      "start": "2026-10-17T01:56:25.751658+00:00",
+      "end": "2026-10-17T02:02:59.665021+00:00"
+    },
+    {
+      "name": "freeze-first-produced-kernel",
+      "returncode": 0,
+      "start": "2026-10-17T02:02:59.669543+00:00",
+      "end": "2026-10-17T02:02:59.785733+00:00"
+    },
+    {
+      "name": "make-run-kernel",
+      "returncode": 0,
+      "start": "2026-10-17T02:02:59.786386+00:00",
+      "end": "2026-10-17T02:03:03.277463+00:00"
+    },
+    {
+      "name": "boot-live-recheck",
+      "returncode": 0,
+      "start": "2026-10-17T02:03:03.278667+00:00",
+      "end": "2026-10-17T02:03:03.393790+00:00"
+    },
+    {
+      "name": "post-source-verification",
+      "returncode": 0,
+      "start": "2026-10-17T02:03:03.394420+00:00",
+      "end": "2026-10-17T02:03:03.510449+00:00"
+    },
+    {
+      "name": "worktree-status",
+      "returncode": 0,
+      "start": "2026-10-17T02:03:03.511260+00:00",
+      "end": "2026-10-17T02:03:03.576303+00:00"
+    },
+    {
+      "name": "installed-components",
+      "returncode": 0,
+      "start": "2026-10-17T02:03:03.577345+00:00",
+      "end": "2026-10-17T02:03:03.610411+00:00"
+    },
+    {
+      "name": "installed-targets",
+      "returncode": 0,
+      "start": "2026-10-17T02:03:03.611385+00:00",
+      "end": "2026-10-17T02:03:03.676153+00:00"
+    }
+  ],
+  "ordinary_environment_scope": "Controller source explicitly clears known wrapper/projection/timestamp env keys; both actual environment logs show RUSTFLAGS/encoded flags/timestamp unset and jobs2. No per-rustc argv ledger is claimed.",
+  "preservation": {
+    "original_files": 41,
+    "raw_regular_members": 35,
+    "unique_binary_inputs": 3,
+    "logical_binary_paths": 6,
+    "source_controls": 80,
+    "source_tree_objects": 29,
+    "maximum_stored_chunk_bytes": 2097152
+  },
+  "limits": [
+    "Only this ordinary build and boot pipeline passes; subsequent boot reused its already built target.",
+    "No projection profile is invoked. Copied controller docstring retains earlier normalized wording; its actual argv/environment and source define this run.",
+    "No cross-host, immutable environment or entire-project closure acceptance.",
+    "Packaging did not rerun compilation, original target reads, live checks or VM."
+  ],
+  "packaged_utc": "2026-10-17T02:06:54.160361+00:00",
+  "qemu": {
+    "record": "readable/kernel-boot/qemu.json",
+    "raw_exit_code": 33,
+    "recorder_exit_code": 33,
+    "timed_out": false,
+    "stage": "complete",
+    "duration_seconds": 1.271,
+    "serial_sha256": "3840526255cff7c53567f3e35e42739a11dba24f3feb03594719e92bec0ab5ca",
+    "serial_bytes": 72247,
+    "requested_argv": [
+      "-kernel",
+      "/tmp/trillionnium-a01-final-normal/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+      "-initrd",
+      "/workspace/scratch/ae1a8cf05419/normal-cloud-final/kernel-boot/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=qemu.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "executed_argv": [
+      "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/normal-cloud-final/kernel-boot/artifacts-n33_kyai/kernel.elf",
+      "-initrd",
+      "/workspace/scratch/ae1a8cf05419/normal-cloud-final/kernel-boot/artifacts-n33_kyai/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/workspace/scratch/ae1a8cf05419/normal-cloud-final/kernel-boot/artifacts-n33_kyai/bios.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=qemu.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-L",
+      "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu"
+    ],
+    "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers"
+  },
+  "verification": {
+    "command": "python3 -I support/build/evidence/2026-10-17-native-cloud-normal/verify.py",
+    "optimized_command": "python3 -I -O support/build/evidence/2026-10-17-native-cloud-normal/verify.py",
+    "scope": "Offline retained bytes/source/controller/guest checks only; no original target, Cargo or VM."
+  }
+}

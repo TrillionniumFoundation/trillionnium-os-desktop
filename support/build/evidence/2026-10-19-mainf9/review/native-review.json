@@ -1,0 +1,711 @@
+{
+  "kind": "independent_read_only_native_evidence_review",
+  "started_at_utc": "2026-10-19T01:02:17.897062+00:00",
+  "execution_head": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+  "evidence_root": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9",
+  "new_builds_tests_or_qemu_executed_by_reviewer": false,
+  "live_checkout_writes_by_reviewer": false,
+  "checks": [
+    {
+      "name": "producer_contains_actual_main_then_previous_A01",
+      "passed": true,
+      "observed": [
+        "f9e306f76154590e096a42f70ce9de0a7c859e60",
+        "71524be19383e2ff98f6abc90668c48988e7c8e2"
+      ]
+    },
+    {
+      "name": "fixed_upstream_git_tree",
+      "passed": true
+    },
+    {
+      "name": "all_stage_execution_receipts_completed_at_producer",
+      "passed": true
+    },
+    {
+      "name": "all_source_captures_same_selected_identity",
+      "passed": true
+    },
+    {
+      "name": "selected_captured_git_blobs_are_complete_for_producer",
+      "passed": true
+    },
+    {
+      "name": "source_capture_payload_hashes_recalculate",
+      "passed": true
+    },
+    {
+      "name": "all_captured_locks_unchanged_after_native_execution",
+      "passed": true,
+      "observed": {
+        "kernel/asterinas/Cargo.lock": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+        "kernel/asterinas/kernel/libs/comp-sys/cargo-component/Cargo.lock": "4ed0a3cb245b8f2e729ae0f8b698a5a8388f0806e03f3cbfd723d08e70667392",
+        "kernel/asterinas/kernel/libs/short-vis-path/Cargo.lock": "91029a4027be4d0fdaac8507af3db1f292f071334d69c5d8dc80f5b4bcccebd5",
+        "kernel/asterinas/osdk/Cargo.lock": "1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18",
+        "kernel/asterinas/test/nixos/Cargo.lock": "bf3abed1b8b69bd1810e49ce0d9a59633fe13762ce04faa934e690b0ad9a9697",
+        "kernel/asterinas/tools/sctrace/Cargo.lock": "3e511c799fd2adec38020e60d4848d657f96fa10ca76c6019ff5a1e12a4cfb09",
+        "support/build/ktest/locks/aster-core.Cargo.lock": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+        "support/build/ktest/locks/ostd.Cargo.lock": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+        "support/build/minimal/Cargo.lock": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+        "support/upstream-lock.json": "e8161d06f3c7a1427e8c9ed464163950db373e228398b8b79c3fe7ad56447105"
+      }
+    },
+    {
+      "name": "project_root_README_stays_zero_bytes",
+      "passed": true
+    },
+    {
+      "name": "late_capture_selected_tracked_inputs_still_match_without_clean_status_claim",
+      "passed": true
+    },
+    {
+      "name": "all_upstream_source_verifier_receipts_pass_same_pin",
+      "passed": true
+    },
+    {
+      "name": "kernel_all_build_and_cleanup_exit_codes_zero",
+      "passed": true,
+      "observed": {
+        "make-exit-code.txt": 0,
+        "log-exit-code.txt": 0,
+        "run-exit-code.txt": 0,
+        "manifest-cleanup-exit-code.txt": 0
+      }
+    },
+    {
+      "name": "kernel_cleanup_removed_only_owned_manifest",
+      "passed": true
+    },
+    {
+      "name": "kernel_full_inner_log_is_preserved_in_execution_log",
+      "passed": true
+    },
+    {
+      "name": "kernel_actual_upstream_make_target_and_fixed_overrides",
+      "passed": true
+    },
+    {
+      "name": "kernel_small_initramfs_matches_recorded_bytes",
+      "passed": true
+    },
+    {
+      "name": "boot-retry_all_build_and_cleanup_exit_codes_zero",
+      "passed": true,
+      "observed": {
+        "make-exit-code.txt": 0,
+        "log-exit-code.txt": 0,
+        "run-exit-code.txt": 0,
+        "manifest-cleanup-exit-code.txt": 0
+      }
+    },
+    {
+      "name": "boot-retry_cleanup_removed_only_owned_manifest",
+      "passed": true
+    },
+    {
+      "name": "boot-retry_full_inner_log_is_preserved_in_execution_log",
+      "passed": true
+    },
+    {
+      "name": "boot-retry_actual_upstream_make_target_and_fixed_overrides",
+      "passed": true
+    },
+    {
+      "name": "boot-retry_small_initramfs_matches_recorded_bytes",
+      "passed": true
+    },
+    {
+      "name": "fresh_build_receipt_had_no_target_and_compiler_ran",
+      "passed": true,
+      "observed": {
+        "compiling_lines": 284,
+        "target_before": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target",
+          "exists": false
+        },
+        "osdk_target_before": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/osdk/target",
+          "exists": false
+        }
+      }
+    },
+    {
+      "name": "first_boot_failed_prelaunch_with_raw_receipts_preserved",
+      "passed": true,
+      "observed": {
+        "first_boot": {
+          "producer": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+          "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+          "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+          "stage": "boot",
+          "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9",
+          "argv": [
+            "bash",
+            "--noprofile",
+            "--norc",
+            "-c",
+            "source \"$1\"; shift; exec \"$@\"",
+            "bash",
+            "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+            "support/build/kernel.sh",
+            "run_kernel"
+          ],
+          "selected_environment": {
+            "CARGO_BUILD_JOBS": "2",
+            "A01_SMP": "1",
+            "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot",
+            "CARGO_TARGET_DIR": null,
+            "CARGO_ENCODED_RUSTFLAGS": null
+          },
+          "runtime_env": {
+            "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+            "exists": true,
+            "mode": "0o100755",
+            "device": 27,
+            "inode": 1594696,
+            "size": 1345,
+            "mtime_ns": 1792312429877033233,
+            "ctime_ns": 1792312429877033233,
+            "sha256": "29a29aaf5ffc301b83ea47c0c545ebc6c2621af314269479e41c3e0c749b797c"
+          },
+          "started_at": "2026-10-19T00:55:59.227017+00:00",
+          "disk_free_before": 12279115776,
+          "target_before": {
+            "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target",
+            "exists": true,
+            "mode": "0o40755",
+            "device": 27,
+            "inode": 17192,
+            "size": 4096,
+            "mtime_ns": 1792371202072177865,
+            "ctime_ns": 1792371202072177865
+          },
+          "osdk_target_before": {
+            "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/osdk/target",
+            "exists": true,
+            "mode": "0o40755",
+            "device": 27,
+            "inode": 8256,
+            "size": 4096,
+            "mtime_ns": 1792371129909435787,
+            "ctime_ns": 1792371202351287318
+          },
+          "public_manifest_before": {
+            "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+            "exists": true,
+            "mode": "0o100600",
+            "device": 27,
+            "inode": 19670,
+            "size": 1019,
+            "mtime_ns": 1792371128713027657,
+            "ctime_ns": 1792371322963570229,
+            "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+          },
+          "source_before": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/boot-before.json",
+          "git_status_before": "?? kernel/asterinas/kernel/OSDK.toml",
+          "finished_at": "2026-10-19T00:55:59.326330+00:00",
+          "elapsed_seconds": 0.08412045400473289,
+          "exit_code": 1,
+          "disk_free_after": 12279095296,
+          "public_manifest_after": {
+            "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+            "exists": true,
+            "mode": "0o100600",
+            "device": 27,
+            "inode": 19670,
+            "size": 1019,
+            "mtime_ns": 1792371128713027657,
+            "ctime_ns": 1792371322963570229,
+            "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+          },
+          "git_status_after": "?? kernel/asterinas/kernel/OSDK.toml",
+          "source_after": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/boot-after.json"
+        },
+        "raw_log_sha256": "dbe6909cf947d7889ae4aa4141f297d9e55439319a8e9123ef9cbbb0a3a424f1",
+        "raw_log_size": 396
+      }
+    },
+    {
+      "name": "unexpected_manifest_is_preserved_with_same_inode_and_bytes",
+      "passed": true
+    },
+    {
+      "name": "boot_raw33_complete_without_timeout",
+      "passed": true
+    },
+    {
+      "name": "boot_full_raw_serial_hash_and_size_match",
+      "passed": true,
+      "observed": {
+        "size": 72279,
+        "sha256": "b585103e6b898bbd1c804b554cb66876ab7d2463872247f98d0def6bd3cc057f"
+      }
+    },
+    {
+      "name": "boot_has_one_complete_single_cpu_success_sequence",
+      "passed": true,
+      "observed": {
+        "OSTD initialized. Preparing components.": 1,
+        "TRILLIONNIUM_A01_INIT_BEGIN": 1,
+        "TRILLIONNIUM_A01_CPU_COUNT=1": 1,
+        "Successfully booted.": 1,
+        "TRILLIONNIUM_A01_BOOT_OK": 1
+      }
+    },
+    {
+      "name": "boot_has_no_fatal_panic",
+      "passed": true
+    },
+    {
+      "name": "boot_actual_qemu_fixed_profile",
+      "passed": true,
+      "observed": {
+        "observed": {
+          "-machine": "q35",
+          "-accel": "tcg",
+          "-cpu": "max",
+          "-m": "512M",
+          "-smp": "1",
+          "-display": "none",
+          "-monitor": "none",
+          "-serial": "chardev:serial",
+          "-device": "isa-debug-exit,iobase=0xf4,iosize=0x04"
+        },
+        "matches": true,
+        "unknown_options": [],
+        "no_extra_devices_or_network_disks": true
+      }
+    },
+    {
+      "name": "boot_QEMU_executable_bytes_match_record",
+      "passed": true
+    },
+    {
+      "name": "boot_loaded_actual_private_artifacts_match_before_and_after_record",
+      "passed": true
+    },
+    {
+      "name": "freshly_built_frozen_ELF_is_byte_identical_to_actual_booted_ELF",
+      "passed": true,
+      "observed": {
+        "size": 8382376,
+        "sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4"
+      }
+    },
+    {
+      "name": "ktest_unfiltered_current_source_private_OSDK",
+      "passed": true
+    },
+    {
+      "name": "recorded_actual_Rust_and_Cargo_are_fixed_builds",
+      "passed": true
+    },
+    {
+      "name": "all_ktest_command_receipts_successful_and_leaders_reaped",
+      "passed": true,
+      "observed": {
+        "count": 10
+      }
+    },
+    {
+      "name": "ostd_one_recorded_guest",
+      "passed": true
+    },
+    {
+      "name": "ostd_full_raw_serial_and_successful_guest_exit",
+      "passed": true
+    },
+    {
+      "name": "ostd_no_failed_crate_or_fatal_test_panic",
+      "passed": true
+    },
+    {
+      "name": "ostd_actual_qemu_fixed_profile",
+      "passed": true,
+      "observed": {
+        "observed": {
+          "-machine": "q35",
+          "-accel": "tcg",
+          "-cpu": "max",
+          "-m": "512M",
+          "-smp": "1",
+          "-display": "none",
+          "-monitor": "none",
+          "-serial": "chardev:serial",
+          "-device": "isa-debug-exit,iobase=0xf4,iosize=0x04"
+        },
+        "matches": true,
+        "unknown_options": [],
+        "no_extra_devices_or_network_disks": true
+      }
+    },
+    {
+      "name": "ostd_QEMU_and_firmware_match_boot_inputs",
+      "passed": true
+    },
+    {
+      "name": "ostd_postrun_frozen_ELF_matches_prelaunch_live_path_hash",
+      "passed": true
+    },
+    {
+      "name": "ostd_generated_lock_equals_fixed_source_lock",
+      "passed": true
+    },
+    {
+      "name": "ostd_independent_full_crate_serial_count",
+      "passed": true,
+      "observed": {
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "test_starts": 221
+      }
+    },
+    {
+      "name": "ostd_machine_result_matches_independent_count",
+      "passed": true
+    },
+    {
+      "name": "aster-core_one_recorded_guest",
+      "passed": true
+    },
+    {
+      "name": "aster-core_full_raw_serial_and_successful_guest_exit",
+      "passed": true
+    },
+    {
+      "name": "aster-core_no_failed_crate_or_fatal_test_panic",
+      "passed": true
+    },
+    {
+      "name": "aster-core_actual_qemu_fixed_profile",
+      "passed": true,
+      "observed": {
+        "observed": {
+          "-machine": "q35",
+          "-accel": "tcg",
+          "-cpu": "max",
+          "-m": "512M",
+          "-smp": "1",
+          "-display": "none",
+          "-monitor": "none",
+          "-serial": "chardev:serial",
+          "-device": "isa-debug-exit,iobase=0xf4,iosize=0x04"
+        },
+        "matches": true,
+        "unknown_options": [],
+        "no_extra_devices_or_network_disks": true
+      }
+    },
+    {
+      "name": "aster-core_QEMU_and_firmware_match_boot_inputs",
+      "passed": true
+    },
+    {
+      "name": "aster-core_postrun_frozen_ELF_matches_prelaunch_live_path_hash",
+      "passed": true
+    },
+    {
+      "name": "aster-core_generated_lock_equals_fixed_source_lock",
+      "passed": true
+    },
+    {
+      "name": "aster-core_independent_full_crate_serial_count",
+      "passed": true,
+      "observed": {
+        "declared": 169,
+        "passed": 169,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 169,
+        "test_starts": 169
+      }
+    },
+    {
+      "name": "aster-core_machine_result_matches_independent_count",
+      "passed": true
+    },
+    {
+      "name": "all_nine_new_main_CPU_config_tests_executed_and_completed_ok",
+      "passed": true,
+      "observed": [
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::single_quota_preserves_the_current_period",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::accepts_valid_quota_period_and_range_boundaries",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_invalid_or_overflowing_quota",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_numeric_period_outside_the_supported_range",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_explicit_invalid_period_instead_of_preserving_the_old_period",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_overflowing_period_instead_of_preserving_the_old_period",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_extra_fields_instead_of_applying_a_valid_prefix",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::invalid_cpu_max_write_does_not_change_budget_or_accounting",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        },
+        {
+          "test": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::single_quota_write_keeps_the_current_owner_period",
+          "occurrences": 1,
+          "completed_ok": true,
+          "completion_text": "ok"
+        }
+      ]
+    }
+  ],
+  "observations": {
+    "stage_timing_and_status": {
+      "kernel": {
+        "started_at": "2026-10-19T00:52:08.171499+00:00",
+        "finished_at": "2026-10-19T00:55:17.821826+00:00",
+        "elapsed_seconds": 189.63256157399155,
+        "exit_code": 0,
+        "git_status_before": "",
+        "git_status_after": "",
+        "public_manifest_before": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+          "exists": false
+        },
+        "public_manifest_after": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+          "exists": false
+        }
+      },
+      "boot-retry": {
+        "started_at": "2026-10-19T00:57:08.684487+00:00",
+        "finished_at": "2026-10-19T00:57:12.105574+00:00",
+        "elapsed_seconds": 3.4061792499996955,
+        "exit_code": 0,
+        "git_status_before": "",
+        "git_status_after": "",
+        "public_manifest_before": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+          "exists": false
+        },
+        "public_manifest_after": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+          "exists": false
+        }
+      },
+      "ktest": {
+        "started_at": "2026-10-19T00:57:39.147493+00:00",
+        "finished_at": "2026-10-19T01:00:00.032181+00:00",
+        "elapsed_seconds": 140.86601254800917,
+        "exit_code": 0,
+        "git_status_before": "?? kernel/asterinas/kernel/OSDK.toml",
+        "git_status_after": "?? kernel/asterinas/kernel/OSDK.toml",
+        "public_manifest_before": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+          "exists": true,
+          "mode": "0o100600",
+          "device": 27,
+          "inode": 19777,
+          "size": 1019,
+          "mtime_ns": 1792371128713027657,
+          "ctime_ns": 1792371432793208588,
+          "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+        },
+        "public_manifest_after": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+          "exists": true,
+          "mode": "0o100600",
+          "device": 27,
+          "inode": 19777,
+          "size": 1019,
+          "mtime_ns": 1792371128713027657,
+          "ctime_ns": 1792371432793208588,
+          "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+        }
+      }
+    },
+    "selected_input_count": 3014,
+    "source_statuses": {
+      "kernel-before": "",
+      "kernel-after": "",
+      "boot-before": "?? kernel/asterinas/kernel/OSDK.toml\n",
+      "boot-after": "?? kernel/asterinas/kernel/OSDK.toml\n",
+      "boot-retry-before": "",
+      "boot-retry-after": "",
+      "ktest-before": "?? kernel/asterinas/kernel/OSDK.toml\n",
+      "ktest-after": "?? kernel/asterinas/kernel/OSDK.toml\n"
+    },
+    "current_read_only_git_status": "?? kernel/asterinas/kernel/OSDK.toml\n",
+    "after_quarantine_source_capture": {
+      "captured_at_utc": "2026-10-19T01:00:50.954908+00:00",
+      "head": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+      "matches_git": true,
+      "files_sha256": "639e3afb598e39154a714d1df60e90fd0ae7d556774c5037ede60cd6bb38b8a7",
+      "file_count": 3014,
+      "git_status_porcelain": "?? kernel/asterinas/kernel/OSDK.toml\n",
+      "failures": []
+    },
+    "public_manifest_at_review": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+      "exists": true,
+      "device": 27,
+      "inode": 26590,
+      "mode": 33152,
+      "size": 1019,
+      "mtime_ns": 1792371128713027657,
+      "ctime_ns": 1792371633682357594,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+      "observed_at": "2026-10-19T01:02:18.041500+00:00",
+      "writer_identified": false
+    },
+    "second_manifest_custody_receipt": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/failures/post-boot-manifest/quarantine.json",
+      "sha256": "863f09bb6eda8b28a3e380261dd6a566406765870d4e18707a4481cd235ba918",
+      "record": {
+        "started_at": "2026-10-19T01:00:32.093039+00:00",
+        "reason": "entry reappeared after successful boot, observed before and after passing ktests; preserve it without modifying any build guard",
+        "source": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "destination": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/failures/post-boot-manifest/unexpected-OSDK.toml",
+        "before": {
+          "st_dev": 27,
+          "st_ino": 19777,
+          "st_mode": 33152,
+          "st_size": 1019,
+          "st_mtime_ns": 1792371128713027657,
+          "st_ctime_ns": 1792371432793208588
+        },
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+        "lock_path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out-kernel.lock",
+        "lock_inode": 8243,
+        "exclusive_nonblocking_lock": true,
+        "operation": "os.rename into exclusive new evidence directory; no unlink or overwrite",
+        "writer_identified": false,
+        "finished_at": "2026-10-19T01:00:32.093662+00:00",
+        "after": {
+          "st_dev": 27,
+          "st_ino": 19777,
+          "st_mode": 33152,
+          "st_size": 1019,
+          "st_mtime_ns": 1792371128713027657,
+          "st_ctime_ns": 1792371632093158787
+        },
+        "source_absent_after": true,
+        "bytes_equal": true
+      },
+      "interpretation": "source_absent_after is the recorded rename instant, not a claim that the public path remains absent"
+    },
+    "root_manifest_custody_receipt": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/failures/boot-preflight/quarantine.json",
+      "sha256": "81e8b6f3d0be91016a0b09b84c5f2945df38d4f78e8b646b3f8c9dcdbd653def",
+      "record": {
+        "started_at": "2026-10-19T00:57:08.185031+00:00",
+        "reason": "first boot refused before QEMU; preserve unexpected entry, keep existing build guard unchanged",
+        "source": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+        "destination": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/failures/boot-preflight/unexpected-OSDK.toml",
+        "before": {
+          "st_dev": 27,
+          "st_ino": 19670,
+          "st_mode": 33152,
+          "st_size": 1019,
+          "st_mtime_ns": 1792371128713027657,
+          "st_ctime_ns": 1792371322963570229
+        },
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+        "lock_path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out-kernel.lock",
+        "lock_inode": 8243,
+        "exclusive_nonblocking_lock": true,
+        "operation": "os.rename into exclusive new evidence directory; no unlink or overwrite",
+        "writer_identified": false,
+        "finished_at": "2026-10-19T00:57:08.185202+00:00",
+        "after": {
+          "st_dev": 27,
+          "st_ino": 19670,
+          "st_mode": 33152,
+          "st_size": 1019,
+          "st_mtime_ns": 1792371128713027657,
+          "st_ctime_ns": 1792371428185148923
+        },
+        "source_absent_after": true,
+        "bytes_equal": true
+      }
+    },
+    "ktest_counts": {
+      "ostd": {
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "test_starts": 221
+      },
+      "aster-core": {
+        "declared": 169,
+        "passed": 169,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 169,
+        "test_starts": 169
+      }
+    },
+    "total_reported_passed": 390,
+    "total_exercised_lower_bound": 387
+  },
+  "limits": [
+    "The main boot recorder loads exclusive private snapshots and checks them before and after QEMU.",
+    "The ktest recorder loads live target paths after a stable-FD prelaunch hash; post-run frozen copies are compared to those hashes, not presented as prelaunch snapshots.",
+    "Source captures check selected tracked inputs. Raw full worktree status is retained separately; they are not continuous tracing of all writers.",
+    "No cause is assigned to earlier unexplained target or manifest reappearance."
+  ],
+  "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+  "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+  "finished_at_utc": "2026-10-19T01:02:18.170557+00:00",
+  "review_script_sha256": "f8615fb48ff32dc439b34cd6a52f22c8442c464b5a00ac9825219b04959b2e7a",
+  "passed_checks": 53,
+  "failed_checks": 0,
+  "all_checked_native_evidence_consistent": true
+}

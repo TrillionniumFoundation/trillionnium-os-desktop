@@ -1,0 +1,746 @@
+{
+  "schema": "a01-private-sdk-host-evidence/1",
+  "created_utc": "2026-10-17T04:17:50.687894+00:00",
+  "published_code_commit": "00a24cf5557d1b8e9663a19cc4961af81131d416",
+  "base_commit": "09aea79c71dc9f48ba519757078dd8a20f5c8fb3",
+  "scope": "host-only SDK source-root isolation; no actual SDK/kernel/QEMU build",
+  "source_sha256": {
+    "support/build/kernel.sh": "4ee3118990158bb93be6ffe191cac8de5399f507973af6adc3a05e3614407f83",
+    "support/build/minimal.mk": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635",
+    "support/build/README.md": "0896cf8c0ca002419d1d79b69076e8fbe99d4a2fa8dc57b8ef9354ccb0caed06",
+    "support/build/tests/test_kernel_runner.py": "2311311e33ab57c37117bf431ce938370fb0610b0324c472d4772e3b7c2a4531"
+  },
+  "final_host_execution_count": 161,
+  "final_modes": {
+    "ordinary": 40,
+    "isolated": 40,
+    "isolated_optimized": 40,
+    "supervisor_isolated": 9,
+    "repro_profile_isolated": 32
+  },
+  "superseded_receipt": {
+    "receipt": "private-sdk-validation-ready.json",
+    "sha256": "cb0ccf3a74ad7b684e226659df4b1c81585433853b9520f43e1fd8dd7f7adb14",
+    "status": "superseded_not_final_acceptance",
+    "reason": "Independent real Cargo found absolute Cargo home paths containing '..' could prefer global SDK; final entry rejects parent components in explicit/default Cargo home before output."
+  },
+  "symlink_fixture_index": [
+    {
+      "source": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/home-link",
+      "target": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home",
+      "archived": false
+    }
+  ],
+  "files_copied_before_manifest": [
+    {
+      "path": "source/baseline/support/build/kernel.sh",
+      "bytes": 7767,
+      "sha256": "1aab60856d182b5fdf26c9de7360c3e34fbc91a73dd0468902f09e2f61065216"
+    },
+    {
+      "path": "source/final/support/build/kernel.sh",
+      "bytes": 8961,
+      "sha256": "4ee3118990158bb93be6ffe191cac8de5399f507973af6adc3a05e3614407f83"
+    },
+    {
+      "path": "source/baseline/support/build/minimal.mk",
+      "bytes": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "path": "source/final/support/build/minimal.mk",
+      "bytes": 1561,
+      "sha256": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635"
+    },
+    {
+      "path": "source/baseline/support/build/README.md",
+      "bytes": 23041,
+      "sha256": "afc52982de47f7995271b293dfcbe4324dec89cbcbab9a071ed8bd16007244ca"
+    },
+    {
+      "path": "source/final/support/build/README.md",
+      "bytes": 23999,
+      "sha256": "0896cf8c0ca002419d1d79b69076e8fbe99d4a2fa8dc57b8ef9354ccb0caed06"
+    },
+    {
+      "path": "source/baseline/support/build/tests/test_kernel_runner.py",
+      "bytes": 29894,
+      "sha256": "33d3dad7060aba0f422930c3669102108d765164e38c7d8485d423671e8d5060"
+    },
+    {
+      "path": "source/final/support/build/tests/test_kernel_runner.py",
+      "bytes": 42757,
+      "sha256": "2311311e33ab57c37117bf431ce938370fb0610b0324c472d4772e3b7c2a4531"
+    },
+    {
+      "path": "source/upstream-and-profile/kernel/asterinas/Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "source/upstream-and-profile/kernel/asterinas/osdk/src/util.rs",
+      "bytes": 14289,
+      "sha256": "83dbd6054e27c6e6fe281f517c45adc7f2419d132ee2246ce8c87ac4cd6cdf4f"
+    },
+    {
+      "path": "source/upstream-and-profile/support/build/repro/profile.py",
+      "bytes": 18452,
+      "sha256": "ca1a9d239846ba9654bb22ac1628040e99fb4e72a4b91545d7161509c069e180"
+    },
+    {
+      "path": "host-validation/private-sdk-validation-ready.json",
+      "bytes": 1981,
+      "sha256": "cb0ccf3a74ad7b684e226659df4b1c81585433853b9520f43e1fd8dd7f7adb14"
+    },
+    {
+      "path": "host-validation/private-sdk-validation-ready-v2.json",
+      "bytes": 4224,
+      "sha256": "600f3c7ea80bf4b3453dbf27371d69b711284dd300562428d7ac39285b4a13aa"
+    },
+    {
+      "path": "host-validation/private-sdk-optimized-validation.json",
+      "bytes": 1158,
+      "sha256": "8b4360c8d09f8991ea27e494c9deac314ae3a970d9e0d30c9ee42a44598a68f3"
+    },
+    {
+      "path": "host-validation/baseline-kernel-runner.log",
+      "bytes": 4939,
+      "sha256": "4e36d55abdb167321bc2cbd5de9cee627ee3dd111265e63f5b9e9c51d44e8a2e"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-runner-isolated.log",
+      "bytes": 6226,
+      "sha256": "0dde6b3455540276d23fd71d07499e9fd676a6956aca502fd9d2142631fc1a0c"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-runner-ordinary.log",
+      "bytes": 6406,
+      "sha256": "a0b774ca9e734bd0b9b3d376da20062b132d28c40e0d903c8af9e607b5de9a29"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-runner-final-isolated.log",
+      "bytes": 6406,
+      "sha256": "5119ca467b23c08c0dd5a054faeddfcd34a91a0f9a63dbbe27aa22a8424c6201"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-supervisor-isolated.log",
+      "bytes": 1600,
+      "sha256": "2d3c0c48e0bee5998f1dc0ea2297131efc032d4aeea545b15152ec54926d5d1b"
+    },
+    {
+      "path": "host-validation/private-sdk-repro-profile-isolated.log",
+      "bytes": 4809,
+      "sha256": "1f637b1d65c33b9dcefb3d06454eb71ca9f3dba906d0ef7d6a239c9f39539653"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-runner-v2-ordinary.log",
+      "bytes": 6758,
+      "sha256": "73b362d91f70c62c7557e03b1ce1f077f92f1ef2cd5d2ec9e8ef295b98ff8cb5"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-runner-v2-isolated.log",
+      "bytes": 6758,
+      "sha256": "60b54e1e87fdeb89b84cf1e5c6a2349aa8cb549a55526a6b1f68b323a429fe43"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-runner-v2-isolated-optimized.log",
+      "bytes": 6758,
+      "sha256": "0ac5613d8e5658463f66351c824e570d57948268041a59c35fbbcbf37caa3959"
+    },
+    {
+      "path": "host-validation/private-sdk-kernel-supervisor-v2-isolated.log",
+      "bytes": 1600,
+      "sha256": "bd35fc0b16e9d020f41a7d1bda66a4fefa414419437bf9b7d71d73ea945e341e"
+    },
+    {
+      "path": "host-validation/private-sdk-repro-profile-v2-isolated.log",
+      "bytes": 4809,
+      "sha256": "182b6d7a5e0a57b0775dd47ad0d180ff55890d9c5d8f70f21284ddb4bf2d6743"
+    },
+    {
+      "path": "make-before/results/kernel__asterinas__Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "make-before/results/kernel__asterinas__osdk__src__util.rs",
+      "bytes": 14289,
+      "sha256": "83dbd6054e27c6e6fe281f517c45adc7f2419d132ee2246ce8c87ac4cd6cdf4f"
+    },
+    {
+      "path": "make-before/results/report.json",
+      "bytes": 14181,
+      "sha256": "586f52e57e812499a0fdc8f2844b5e917d820a4defc80385ffda6b6acb3a9cd4"
+    },
+    {
+      "path": "make-before/results/support__build__minimal.mk",
+      "bytes": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "path": "make-before/results/fake-bin/cargo",
+      "bytes": 1088,
+      "sha256": "30533e587a5e501fd53735ad3b07ea72c3fd7d0d476e515ea40efdeca18e63e9"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/cargo-osdk",
+      "bytes": 83,
+      "sha256": "680d9cb360b67276e27b681e08d68083c4b0b01248ff55d27695623ebe6b9ef7"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/cargo.jsonl",
+      "bytes": 742,
+      "sha256": "d60f6f4078402422123186ad0ef08dc4976cd235432d91408aa9d058eb619c0b"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/initramfs",
+      "bytes": 12,
+      "sha256": "6fc749b05620d5f745cb45b0ff311f0345cc346259e8c78eaa2dc8de5ca1258e"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/stdout.log",
+      "bytes": 1472,
+      "sha256": "95b563c5e9d9d883d540137e5e79f179b4b06838a67747f9e5e3ae33ec08f0dd"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/new-root/Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/new-root/minimal.mk",
+      "bytes": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/new-root/osdk/Cargo.lock",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/new-root/osdk/Cargo.toml",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-gdb_server/new-root/osdk/src/lib.rs",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-kernel/cargo-osdk",
+      "bytes": 79,
+      "sha256": "ff745ea5ce4f4f27f0366be4716c4c42ffabef212ba0f86cd3ab4d2e070df9f5"
+    },
+    {
+      "path": "make-before/results/original-kernel/cargo.jsonl",
+      "bytes": 662,
+      "sha256": "4916ffacd04bb55d8ad7dbc932f7989adedc3d67409e24ba0727ebd25008d552"
+    },
+    {
+      "path": "make-before/results/original-kernel/initramfs",
+      "bytes": 12,
+      "sha256": "6fc749b05620d5f745cb45b0ff311f0345cc346259e8c78eaa2dc8de5ca1258e"
+    },
+    {
+      "path": "make-before/results/original-kernel/stdout.log",
+      "bytes": 1379,
+      "sha256": "fe4942939d5a181a91e9fb6befdff350c460be5a5a8500ae255f5ae273b3db42"
+    },
+    {
+      "path": "make-before/results/original-kernel/new-root/Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "make-before/results/original-kernel/new-root/minimal.mk",
+      "bytes": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "path": "make-before/results/original-kernel/new-root/osdk/Cargo.lock",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-kernel/new-root/osdk/Cargo.toml",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-kernel/new-root/osdk/src/lib.rs",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/cargo-osdk",
+      "bytes": 83,
+      "sha256": "7e37fc21e07b58d28e1911978b7e0d2e51ffb39f95149c5701cdc5e956edcb9d"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/cargo.jsonl",
+      "bytes": 676,
+      "sha256": "f410dd1164e7923476a8947731bff14c769474aa4e2fe447743ad587c7a95d4f"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/initramfs",
+      "bytes": 12,
+      "sha256": "6fc749b05620d5f745cb45b0ff311f0345cc346259e8c78eaa2dc8de5ca1258e"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/stdout.log",
+      "bytes": 1405,
+      "sha256": "9714ab8b83fe7a21c232c5b193998615c4d4d8483bc4e6364402cc8ca50f5592"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/new-root/Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/new-root/minimal.mk",
+      "bytes": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/new-root/osdk/Cargo.lock",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/new-root/osdk/Cargo.toml",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/original-run_kernel/new-root/osdk/src/lib.rs",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/cargo-osdk",
+      "bytes": 97,
+      "sha256": "5bec554b1d02d596b9b41d34043dee76093492b03d1cbb25cf3be3168bce18c4"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/cargo.jsonl",
+      "bytes": 1105,
+      "sha256": "1beb9ebd03e56a21ce127f1813ec5395b201cce60c4d071259dec688ed4ef8e5"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/initramfs",
+      "bytes": 12,
+      "sha256": "6fc749b05620d5f745cb45b0ff311f0345cc346259e8c78eaa2dc8de5ca1258e"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/stdout.log",
+      "bytes": 1816,
+      "sha256": "e6ef12d4a8bf54f790d26d44dea9bc88844f0e921ceab0e5fffe5ba0b534834b"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/new-root/Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/new-root/minimal.mk",
+      "bytes": 1226,
+      "sha256": "b566a51862b7cdb0152da83a2ab081a6dc39ffa3a5377f137d9c8935d9b080a8"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/new-root/osdk/Cargo.lock",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/new-root/osdk/Cargo.toml",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-gdb_server/new-root/osdk/src/lib.rs",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/cargo-osdk",
+      "bytes": 93,
+      "sha256": "3b3bf5b7ab02bf39cc83354f908564441f2780080d81014dffb9b098a23d8cb9"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/cargo.jsonl",
+      "bytes": 1017,
+      "sha256": "c62a5023521864f13cc360d573f8c8fed1368ef7151bac8bc089dbd37646a56c"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/initramfs",
+      "bytes": 12,
+      "sha256": "6fc749b05620d5f745cb45b0ff311f0345cc346259e8c78eaa2dc8de5ca1258e"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/stdout.log",
+      "bytes": 1720,
+      "sha256": "699b9e50bb02a2b81346a4632167a5b96647ae7cd21e765641bf34a0615845d2"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/new-root/Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/new-root/minimal.mk",
+      "bytes": 1226,
+      "sha256": "b566a51862b7cdb0152da83a2ab081a6dc39ffa3a5377f137d9c8935d9b080a8"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/new-root/osdk/Cargo.lock",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/new-root/osdk/Cargo.toml",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-kernel/new-root/osdk/src/lib.rs",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/cargo-osdk",
+      "bytes": 97,
+      "sha256": "a54e1540e2bcf26e1f6ab9bf35a41438b748b9f9e301a8b84020d3d306c3cde4"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/cargo.jsonl",
+      "bytes": 1039,
+      "sha256": "cf0b0c165381c357c4189847dba0f32b960da5968b78bdc8c4da756d9885bbe0"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/initramfs",
+      "bytes": 12,
+      "sha256": "6fc749b05620d5f745cb45b0ff311f0345cc346259e8c78eaa2dc8de5ca1258e"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/stdout.log",
+      "bytes": 1750,
+      "sha256": "3906c2b175d7d349ee733e70873b516c733a95f96c55ea9fcdf9118342ae38db"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/new-root/Makefile",
+      "bytes": 18799,
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/new-root/minimal.mk",
+      "bytes": 1226,
+      "sha256": "b566a51862b7cdb0152da83a2ab081a6dc39ffa3a5377f137d9c8935d9b080a8"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/new-root/osdk/Cargo.lock",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/new-root/osdk/Cargo.toml",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/results/phony_sdk_prerequisite-run_kernel/new-root/osdk/src/lib.rs",
+      "bytes": 18,
+      "sha256": "8638d5f897ec8c281d59b3177ecd5ca7f3c305e140e8a9ec167f2127b49c01be"
+    },
+    {
+      "path": "make-before/probe.py",
+      "bytes": 5464,
+      "sha256": "37bd8854d7979edffd2cf9baca1b8a05b62ac2f9cde22a8688a4df7c1ad9e331"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/explicit-home-after-private.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/explicit-home-after-private.stdout",
+      "bytes": 169,
+      "sha256": "ec0a9e5e1fd83bc0a375b933f2e3c40aba55562f1ef0f19aea0e30e5605f2dce"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/explicit-home-before-private.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/explicit-home-before-private.stdout",
+      "bytes": 171,
+      "sha256": "b1dd895e75f422765f1fa87f84447cbcc8f22135682ef276020abdc86796ccc7"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/report.json",
+      "bytes": 3217,
+      "sha256": "393eb2f3ab134a1046c20c8bd71daf5d19fd7c308f4ac8234f9f895f6817459e"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/unlisted-home-default-prepend.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/unlisted-home-default-prepend.stdout",
+      "bytes": 171,
+      "sha256": "b1dd895e75f422765f1fa87f84447cbcc8f22135682ef276020abdc86796ccc7"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/cargo-home/bin/cargo-osdk",
+      "bytes": 92,
+      "sha256": "91d57c5d93732981723b6106bd4cbe3180540d31e787608c062bc9a07c97c590"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-lookup-results/run-sdk/bin/cargo-osdk",
+      "bytes": 93,
+      "sha256": "c6521c06d7c9c80bf6376ce249c57cfdcfbfb97608b7dfcdab4badf8535567ed"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-relative-lookup-results/report.json",
+      "bytes": 654,
+      "sha256": "f2e60b1420475c4c7d461d5738ef003d73cdda7303342357af6897578a96b4fa"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-relative-lookup-results/cargo-home/bin/cargo-osdk",
+      "bytes": 28,
+      "sha256": "ca17bd51e23ac36e1f702375a48eb2cdc9afa5a88c4b61e7ec57da35fe2a4874"
+    },
+    {
+      "path": "real-cargo-lookup/cargo-relative-lookup-results/sdk/bin/cargo-osdk",
+      "bytes": 29,
+      "sha256": "57a15291ea3fe74a813d2511e0ec3b65530f8b907a187344bf07a74d28a3ebbb"
+    },
+    {
+      "path": "real-cargo-lookup/probe-cargo-lookup.py",
+      "bytes": 2729,
+      "sha256": "377b198fd99bb9434578a4d16035f7ce23cf4eef4ee65d7abee90daa31e2592f"
+    },
+    {
+      "path": "real-cargo-lookup/probe-cargo-relative-home.py",
+      "bytes": 1518,
+      "sha256": "28f0ffdd54c3afc89fcb9f63c3401481f6e64f00763754df887f58406d4cbe38"
+    },
+    {
+      "path": "profile-path-inputs/profile-host-path-results/libregistry.rlib",
+      "bytes": 50,
+      "sha256": "b8a996f1ea7189da2325434918ac1f4ac99a4048116e1c4490bd0bf0867c8a02"
+    },
+    {
+      "path": "profile-path-inputs/profile-host-path-results/profile.py",
+      "bytes": 18452,
+      "sha256": "ca1a9d239846ba9654bb22ac1628040e99fb4e72a4b91545d7161509c069e180"
+    },
+    {
+      "path": "profile-path-inputs/profile-host-path-results/report.json",
+      "bytes": 5506,
+      "sha256": "b7acd30975e1f257ee1c7d681f38c0b00ae1dbda23687ab6439a6b4fc4c3665a"
+    },
+    {
+      "path": "profile-path-inputs/profile-host-path-results/kernel/pkg/Cargo.toml",
+      "bytes": 37,
+      "sha256": "abb43c535d8dcd4b9d0f5992ff11870f1e5fa45f0cf2b12751b6df5d143857d5"
+    },
+    {
+      "path": "profile-path-inputs/profile-host-path-probe.py",
+      "bytes": 3455,
+      "sha256": "fcde5e76f9aad8cd457b9d16190b41e24ce113f2dc6c1c02df7f2fc948a6eb6c"
+    },
+    {
+      "path": "independent-review/SHA256SUMS",
+      "bytes": 3467,
+      "sha256": "466bbb6a1f6dba36fcafd852edcea4cb1012e1b00c57572e515f8e0ddef3de3e"
+    },
+    {
+      "path": "independent-review/real-cargo-path-lookup.py",
+      "bytes": 2267,
+      "sha256": "a92d72679929f66aff0b4228783b1209f1391f37ddd3655dd026892789bf5980"
+    },
+    {
+      "path": "independent-review/real-cargo-path-lookup.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "independent-review/real-cargo-path-lookup.stdout.json",
+      "bytes": 3550,
+      "sha256": "e3ac34e73aee3faf5b9392146841955dcceca96b29f8e9bcc0d209223d5c7822"
+    },
+    {
+      "path": "independent-review/unchanged-lifecycle-source.json",
+      "bytes": 973,
+      "sha256": "ddf21ac3aeee40009951b284c26a5de801cddabe700754e01dccc6fce685f4d1"
+    },
+    {
+      "path": "independent-review/default-home-dotdot/report.json",
+      "bytes": 743,
+      "sha256": "4188d92fcd5a7369c90c8acb96008ce4c3272c6caa80d66952916b8407b38be5"
+    },
+    {
+      "path": "independent-review/default-home-dotdot/home/.cargo/bin/cargo-osdk",
+      "bytes": 26,
+      "sha256": "3136c446566ab9f5abe17d07c921d3364c211f3433ca79a0aff4e2d5f223bb61"
+    },
+    {
+      "path": "independent-review/default-home-dotdot/private/bin/cargo-osdk",
+      "bytes": 27,
+      "sha256": "a82fb4880da6311c252580ae17b9e485d0571df3f84a22e1b925644c9b69e457"
+    },
+    {
+      "path": "independent-review/default-home-dotdot-v2/report.json",
+      "bytes": 700,
+      "sha256": "9cb96401e02f7e433ad396922093f5b736c034fc51ea184f1a267db8465f05b9"
+    },
+    {
+      "path": "independent-review/default-home-dotdot-v2/home/.cargo/bin/cargo-osdk",
+      "bytes": 35,
+      "sha256": "db26c3c523f2fcf3baf9ee8398aaa01392784a4786003cc28b811c11bccdb457"
+    },
+    {
+      "path": "independent-review/default-home-dotdot-v2/private/bin/cargo-osdk",
+      "bytes": 36,
+      "sha256": "72566811c78200e034466eba486319cc2e9d2639f3e394bfc06bded8076a11aa"
+    },
+    {
+      "path": "independent-review/final-v2/REVIEW.md",
+      "bytes": 2676,
+      "sha256": "631b8d26136278e66e526f16cf1bd1c40fde78326eb9255c58d18e82073bfcba"
+    },
+    {
+      "path": "independent-review/final-v2/actual-guard-results-v2.json",
+      "bytes": 4886,
+      "sha256": "708d47991e547898a64849174609a7823d512ec195cd621458379d35d484c15c"
+    },
+    {
+      "path": "independent-review/final-v2/actual-guard-results.json",
+      "bytes": 4759,
+      "sha256": "70d1b5073aaf1f87ba0ca620fd68fda58149cd50f4464c3d76fa8e1d463a211c"
+    },
+    {
+      "path": "independent-review/final-v2/baseline__support__build__README.md",
+      "bytes": 23041,
+      "sha256": "afc52982de47f7995271b293dfcbe4324dec89cbcbab9a071ed8bd16007244ca"
+    },
+    {
+      "path": "independent-review/final-v2/baseline__support__build__kernel.sh",
+      "bytes": 7767,
+      "sha256": "1aab60856d182b5fdf26c9de7360c3e34fbc91a73dd0468902f09e2f61065216"
+    },
+    {
+      "path": "independent-review/final-v2/baseline__support__build__minimal.mk",
+      "bytes": 1133,
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "path": "independent-review/final-v2/baseline__support__build__tests__test_kernel_runner.py",
+      "bytes": 29894,
+      "sha256": "33d3dad7060aba0f422930c3669102108d765164e38c7d8485d423671e8d5060"
+    },
+    {
+      "path": "independent-review/final-v2/final-review.json",
+      "bytes": 2634,
+      "sha256": "c8914e6fed9f585e74ed00ebd62ffa0ee4abed5892293b61e315ced71c505119"
+    },
+    {
+      "path": "independent-review/final-v2/final__support__build__README.md",
+      "bytes": 23999,
+      "sha256": "0896cf8c0ca002419d1d79b69076e8fbe99d4a2fa8dc57b8ef9354ccb0caed06"
+    },
+    {
+      "path": "independent-review/final-v2/final__support__build__kernel.sh",
+      "bytes": 8961,
+      "sha256": "4ee3118990158bb93be6ffe191cac8de5399f507973af6adc3a05e3614407f83"
+    },
+    {
+      "path": "independent-review/final-v2/final__support__build__minimal.mk",
+      "bytes": 1561,
+      "sha256": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635"
+    },
+    {
+      "path": "independent-review/final-v2/final__support__build__tests__test_kernel_runner.py",
+      "bytes": 42757,
+      "sha256": "2311311e33ab57c37117bf431ce938370fb0610b0324c472d4772e3b7c2a4531"
+    },
+    {
+      "path": "independent-review/final-v2/focused-runner.stderr.log",
+      "bytes": 1468,
+      "sha256": "a819a3efe898d14160d419699157ceaf672e704e33319f189962824fbb12a7c9"
+    },
+    {
+      "path": "independent-review/final-v2/focused-runner.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "independent-review/final-v2/guard-check-v2.py",
+      "bytes": 1904,
+      "sha256": "8f3c73f3543186259e3ce5076d816ddb4e0cb687d8fbf11b43b56cd2743c8986"
+    },
+    {
+      "path": "independent-review/final-v2/osdk-runtime-diff.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "independent-review/final-v2/osdk-runtime-diff.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "independent-review/real-cargo-path-lookup/results.json",
+      "bytes": 3550,
+      "sha256": "e3ac34e73aee3faf5b9392146841955dcceca96b29f8e9bcc0d209223d5c7822"
+    },
+    {
+      "path": "independent-review/real-cargo-path-lookup/cargo-home/bin/cargo-osdk",
+      "bytes": 108,
+      "sha256": "d871bf0f233030c89744e5cb6c959fbc7d9ac2e01b08869d4f8c0273f2af20ce"
+    },
+    {
+      "path": "independent-review/real-cargo-path-lookup/private/bin/cargo-osdk",
+      "bytes": 111,
+      "sha256": "cd2a72a8838cfd5d24142e054c37ad542678d06016cf2e4d9e58ab11a3d3e454"
+    },
+    {
+      "path": "independent-review/slash-forms/results.json",
+      "bytes": 1375,
+      "sha256": "639dd8e469ad5ced2406a734ae06f22da2eae7028c7500f9dab9bc1c33d5d100"
+    },
+    {
+      "path": "independent-review/slash-forms/cargo-home/bin/cargo-osdk",
+      "bytes": 35,
+      "sha256": "db26c3c523f2fcf3baf9ee8398aaa01392784a4786003cc28b811c11bccdb457"
+    },
+    {
+      "path": "independent-review/slash-forms/private/bin/cargo-osdk",
+      "bytes": 36,
+      "sha256": "72566811c78200e034466eba486319cc2e9d2639f3e394bfc06bded8076a11aa"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 6350,
+      "sha256": "c1dd764b783087aa17a8a3309faec92a4747a6018ded2ce0b502419ae5e58950"
+    },
+    {
+      "path": "tools/package-host-evidence.py",
+      "bytes": 11037,
+      "sha256": "13675104701a61ee226dd0389470097a3ace0d8ed27bb294aa972d4f29b5808c"
+    },
+    {
+      "path": "tools/finalize-host-receipt.py",
+      "bytes": 4206,
+      "sha256": "e226bdf8e9f9330ab62166708aa4362b4f6c6152531daed6032acf51c176857f"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 5412,
+      "sha256": "3c65d6c5e2cdf7c1602ef9a7dbe8e325e4c864f604ecfd4cbf0772e469703ba4"
+    }
+  ]
+}

@@ -1,0 +1,544 @@
+{
+  "schema": "trillionnium.a01.independent-pipeline-review.v1",
+  "reviewed_at_utc": "2026-10-18T03:11:26.051201+00:00",
+  "reviewer": "source_handoff_audit",
+  "method": "Read-only independent rehash of existing execution receipts and artifacts; no guest or test rerun.",
+  "passed": true,
+  "checks": [
+    {
+      "check": "source_before_manifest_independently_recomputed",
+      "passed": true
+    },
+    {
+      "check": "source_after-kernel_manifest_independently_recomputed",
+      "passed": true
+    },
+    {
+      "check": "source_after-boot_manifest_independently_recomputed",
+      "passed": true
+    },
+    {
+      "check": "source_files_unchanged_across_build_and_boot",
+      "passed": true
+    },
+    {
+      "check": "upstream_commit_tree_relation",
+      "passed": true
+    },
+    {
+      "check": "a05_a06_ostd_and_abi_preserved_from_latest_main",
+      "passed": true
+    },
+    {
+      "check": "current_tracked_source_still_matches_build_manifest",
+      "passed": true
+    },
+    {
+      "check": "driver_recorded_absent_initial_kernel_target",
+      "passed": true
+    },
+    {
+      "check": "kernel_all_execution_and_log_cleanup_codes_zero",
+      "passed": true
+    },
+    {
+      "check": "kernel_fixed_nightly_and_commit",
+      "passed": true
+    },
+    {
+      "check": "kernel_upstream_make_target",
+      "passed": true
+    },
+    {
+      "check": "kernel_fixed_input_check_passed",
+      "passed": true
+    },
+    {
+      "check": "kernel_private_sdk_hash_matches",
+      "passed": true
+    },
+    {
+      "check": "run_kernel_all_execution_and_log_cleanup_codes_zero",
+      "passed": true
+    },
+    {
+      "check": "run_kernel_fixed_nightly_and_commit",
+      "passed": true
+    },
+    {
+      "check": "run_kernel_upstream_make_target",
+      "passed": true
+    },
+    {
+      "check": "run_kernel_fixed_input_check_passed",
+      "passed": true
+    },
+    {
+      "check": "run_kernel_private_sdk_hash_matches",
+      "passed": true
+    },
+    {
+      "check": "actual_full_rust_kernel_compilation_in_build_log",
+      "passed": true
+    },
+    {
+      "check": "-kernel_snapshot_bytes_match_qemu_receipt",
+      "passed": true
+    },
+    {
+      "check": "-kernel_argv_loads_recorded_private_snapshot",
+      "passed": true
+    },
+    {
+      "check": "-kernel_source_and_snapshot_bytes_identical",
+      "passed": true
+    },
+    {
+      "check": "-initrd_snapshot_bytes_match_qemu_receipt",
+      "passed": true
+    },
+    {
+      "check": "-initrd_argv_loads_recorded_private_snapshot",
+      "passed": true
+    },
+    {
+      "check": "-initrd_source_and_snapshot_bytes_identical",
+      "passed": true
+    },
+    {
+      "check": "-bios_snapshot_bytes_match_qemu_receipt",
+      "passed": true
+    },
+    {
+      "check": "-bios_argv_loads_recorded_private_snapshot",
+      "passed": true
+    },
+    {
+      "check": "-bios_source_and_snapshot_bytes_identical",
+      "passed": true
+    },
+    {
+      "check": "make_kernel_frozen_elf_equals_actual_boot_elf",
+      "passed": true
+    },
+    {
+      "check": "qemu_binary_hash_matches",
+      "passed": true
+    },
+    {
+      "check": "fixed_qemu_machine_cpu_memory",
+      "passed": true
+    },
+    {
+      "check": "qemu_has_no_iso_disk_network_or_kvm",
+      "passed": true
+    },
+    {
+      "check": "qemu_debug_exit_device",
+      "passed": true
+    },
+    {
+      "check": "successful_qemu_and_recorder_exit",
+      "passed": true
+    },
+    {
+      "check": "complete_raw_serial_hash_and_size",
+      "passed": true
+    },
+    {
+      "check": "five_boot_markers_each_exactly_once",
+      "passed": true
+    },
+    {
+      "check": "no_fatal_kernel_panic_marker",
+      "passed": true
+    },
+    {
+      "check": "initramfs_image_matches_manifest",
+      "passed": true
+    },
+    {
+      "check": "every_initramfs_entry_matches_manifest",
+      "passed": true
+    },
+    {
+      "check": "actual_init_and_upstream_smoke_match_committed_sources",
+      "passed": true
+    },
+    {
+      "check": "initramfs_busybox_is_static_x86_64_elf",
+      "passed": true
+    }
+  ],
+  "source": {
+    "head": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "project_tree": "af19f57a5e275fb8712363d90e72eca88477ec3e",
+    "kernel_tree": "6c2904e53e79cedbbaf013a73a6173f4afa57010",
+    "manifests": [
+      {
+        "path": "/tmp/a01-source-before.json",
+        "bytes": 1339302,
+        "sha256": "4c60c63322e493c6effbb8597a7dc7604f31b8011e4e4c1070d3456928350c4b",
+        "phase": "before",
+        "captured_at_utc": "2026-10-18T03:02:27.265019+00:00",
+        "file_count": 3010,
+        "files_sha256": "36d3f324138eb079ceb994d0a190828b202bacd4c29e162ff14272313123a832",
+        "git_status_clean": true
+      },
+      {
+        "path": "/tmp/a01-source-after-kernel.json",
+        "bytes": 1339427,
+        "sha256": "5d42c0ee9d0346beca494895a5e3c3b3a4ddb31f0bac99f2b72dc753d145d0b9",
+        "phase": "after-kernel",
+        "captured_at_utc": "2026-10-18T03:06:50.059075+00:00",
+        "file_count": 3010,
+        "files_sha256": "36d3f324138eb079ceb994d0a190828b202bacd4c29e162ff14272313123a832",
+        "git_status_clean": true
+      },
+      {
+        "path": "/tmp/a01-source-after-boot.json",
+        "bytes": 1339427,
+        "sha256": "ac7ac72c01f412c0e828067342dcb50b3c300c7cf37de51c53f96057236f683d",
+        "phase": "after-boot",
+        "captured_at_utc": "2026-10-18T03:07:17.116401+00:00",
+        "file_count": 3010,
+        "files_sha256": "36d3f324138eb079ceb994d0a190828b202bacd4c29e162ff14272313123a832",
+        "git_status_clean": true
+      }
+    ],
+    "root_prebuild": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/source-before-root.json",
+      "bytes": 850956,
+      "sha256": "498f539eb66c0d95b46c7ea624af8929459339c0d791846c6e6128748a9bc3af"
+    },
+    "root_recorded_absent_target": true,
+    "external_abi": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/src/lib.rs",
+      "bytes": 46709,
+      "sha256": "0de94affd479cecd692de000cc4ab97f5ce7453d81dc0dcd46c7db2e67fa35ec"
+    },
+    "external_abi_git_blob": "1bb29f39c39ba4bd3414ecb433b4831de881d5a4"
+  },
+  "builds": [
+    {
+      "stage": "kernel",
+      "command": "make -C /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas -f Makefile -f /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/minimal.mk kernel CARGO_OSDK=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/kernel/osdk/bin/cargo-osdk A01_OSDK_INSTALL_ROOT=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/kernel/osdk A01_INITRAMFS=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/kernel/initramfs.cpio.gz A01_QEMU_WRAPPER=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/record-qemu.py TARGET_ARCH=x86_64 SMP=1 MEM=512M ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none",
+      "exit_codes": {
+        "make": 0,
+        "run": 0,
+        "log": 0,
+        "manifest-cleanup": 0,
+        "driver": 0
+      },
+      "started_at_utc": "2026-10-18T03:02:50+00:00",
+      "finished_at_utc": "2026-10-18T03:05:53+00:00",
+      "log": {
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/kernel/kernel.log",
+        "bytes": 58875,
+        "sha256": "1dd149b569ae3121798a250e813c29ce38834a0dab1a1e6f4198dd784e0e7dfd"
+      },
+      "environment": {
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/kernel/environment.log",
+        "bytes": 4371,
+        "sha256": "445ebdaa577464de0d25cf38c1351bc5a186230822ea948a1d5e9dfd42f9c011"
+      },
+      "private_osdk": {
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/kernel/osdk/bin/cargo-osdk",
+        "bytes": 8583200,
+        "sha256": "9603ae47ae9d035675c35add8bf8ea00d6c8b792eedad190ebd906b4e4694db8"
+      }
+    },
+    {
+      "stage": "run_kernel",
+      "command": "make -C /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas -f Makefile -f /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/minimal.mk run_kernel CARGO_OSDK=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/osdk/bin/cargo-osdk A01_OSDK_INSTALL_ROOT=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/osdk A01_INITRAMFS=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/initramfs.cpio.gz A01_QEMU_WRAPPER=/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/record-qemu.py TARGET_ARCH=x86_64 SMP=1 MEM=512M ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none",
+      "exit_codes": {
+        "make": 0,
+        "run": 0,
+        "log": 0,
+        "manifest-cleanup": 0,
+        "driver": 0
+      },
+      "started_at_utc": "2026-10-18T03:06:50+00:00",
+      "finished_at_utc": "2026-10-18T03:06:52+00:00",
+      "log": {
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/run_kernel.log",
+        "bytes": 115456,
+        "sha256": "52110e61d52d0562151f8fe0058653abda0a888a19b28f973a3524139341d4ef"
+      },
+      "environment": {
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/environment.log",
+        "bytes": 4383,
+        "sha256": "1cdbcab502523737dc6d731dd3a0913895df835ac2980fb65aff100f9593f791"
+      },
+      "private_osdk": {
+        "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/osdk/bin/cargo-osdk",
+        "bytes": 8583200,
+        "sha256": "9603ae47ae9d035675c35add8bf8ea00d6c8b792eedad190ebd906b4e4694db8"
+      }
+    }
+  ],
+  "build_semantics": "One absent-kernel-target source build; run_kernel reused that newly built kernel and produced byte-identical boot ELF. Dependency/toolchain caches were already prepared; not a claim of two cold builds.",
+  "artifacts": [
+    {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/kernel.elf",
+      "bytes": 8310560,
+      "sha256": "208caf5126c94f660292aacd36040ec62c9d317b116b9a861634f08cb02cd8f3",
+      "option": "-kernel",
+      "source_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf"
+    },
+    {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/initramfs.cpio.gz",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "option": "-initrd",
+      "source_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/initramfs.cpio.gz"
+    },
+    {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/bios.bin",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "option": "-bios",
+      "source_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/seabios/bios-256k.bin"
+    }
+  ],
+  "frozen_build_elf": {
+    "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/artifacts/kernel-build.elf",
+    "bytes": 8310560,
+    "sha256": "208caf5126c94f660292aacd36040ec62c9d317b116b9a861634f08cb02cd8f3"
+  },
+  "initramfs": {
+    "entries": 25,
+    "format": "newc+gzip",
+    "uses_committed_init_and_upstream_smoke": true,
+    "busybox_sha256": "dbac288c29ba568459550a2da9e7ae0ded6b1fc728ee9fad3044c44e62d6ac14"
+  },
+  "qemu": {
+    "receipt": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/qemu.json",
+      "bytes": 8588,
+      "sha256": "a1c92d8efd09c9f209835a1ae2bb0442b9e282b451def55a3dbb036aeb5914c8"
+    },
+    "argv": [
+      "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/kernel.elf",
+      "-initrd",
+      "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/bios.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=qemu.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-L",
+      "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/qemu"
+    ],
+    "shell_command": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/kernel.elf -initrd /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/bios.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -L /workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/qemu",
+    "version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "binary_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "raw_exit_code": 33,
+    "recorder_exit_code": 33,
+    "timed_out": false,
+    "duration_seconds": 0.917
+  },
+  "serial": {
+    "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/serial.log",
+    "bytes": 72331,
+    "sha256": "b661e07581dc7e7f9caa0ba104c6e5f3c3ef844dc24a28e278ee772896903b53",
+    "marker_counts": {
+      "OSTD initialized. Preparing components.": 1,
+      "TRILLIONNIUM_A01_INIT_BEGIN": 1,
+      "TRILLIONNIUM_A01_CPU_COUNT=1": 1,
+      "Successfully booted.": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "fatal_panic_markers": []
+  },
+  "attribution": {
+    "guest": "Complete derived Asterinas kernel built from the recorded Rust source.",
+    "linux_version_text": "Asterinas intentionally reports Linux 5.13.0 UTS values for glibc compatibility; kernel/core/src/net/uts_ns.rs defines those constants. Host uname is recorded only in environment.log.",
+    "iso_installer_boot": false,
+    "host_linux_counted_as_guest": false
+  },
+  "kernel_regression": {
+    "state": "passed",
+    "reviewed_at_utc": "2026-10-18T03:16:30.756653+00:00",
+    "tested_source_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "toolchain": "nightly-2026-07-21",
+    "driver_exit_code": 0,
+    "aggregate_result": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/result.json",
+      "bytes": 1541,
+      "sha256": "ebcbb3ef64e32047a7f7cde94499a0fa6a5ebd3bbacccad71366ee3c4bf6dd64"
+    },
+    "source_commit_receipt": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/git-head.log",
+      "bytes": 41,
+      "sha256": "0c011aea97742152f2dc43a12155d56b60437d48f0a7fadb58b1c1389f8d5f70"
+    },
+    "driver_exit_receipt": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest-driver-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "runner_sha256": "8bc8f712e7e1606d5744596bb390b1979b9d9559ca478dde5bba8c8670d1f59c",
+    "crates": [
+      {
+        "crate": "ostd",
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "observed_test_starts": 221,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001",
+        "result_receipt": {
+          "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/ostd/result.json",
+          "bytes": 451,
+          "sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2"
+        },
+        "qemu_receipt": {
+          "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/ostd/guests/guest-001/qemu.json",
+          "bytes": 7093,
+          "sha256": "ed63466eb39a189db736217b0e3b7a9b343eecfb264caee5a8401a0303393b91"
+        },
+        "serial": {
+          "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/ostd/guests/guest-001/serial.log",
+          "bytes": 23028,
+          "sha256": "b512437c1eba790a885e217510b41fb9751d86e763dfbffe5974b34ed760e50b"
+        },
+        "raw_serial_summary": "test result: ok. 221 passed; 0 failed; 0 filtered out.",
+        "artifacts_rehashed": [
+          {
+            "option": "-kernel",
+            "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+            "bytes": 2003184,
+            "sha256": "f83d28109c65497cd94769a8e9ab63b534b43accf68455cb59bb223f978c20db"
+          },
+          {
+            "option": "-bios",
+            "path": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+            "bytes": 262144,
+            "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+          }
+        ],
+        "fixed_profile": {
+          "arch": "x86_64",
+          "machine": "q35",
+          "accel": "tcg",
+          "cpu": "max",
+          "vcpus": 1,
+          "memory_mib": 512,
+          "network": false,
+          "data_disks": false
+        },
+        "osdk_exit_code": 0,
+        "recorder_exit_code": 33,
+        "timed_out": false
+      },
+      {
+        "crate": "aster-core",
+        "declared": 153,
+        "passed": 153,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 153,
+        "observed_test_starts": 153,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001",
+        "result_receipt": {
+          "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/aster-core/result.json",
+          "bytes": 353,
+          "sha256": "2b9cd83f255bcb8ea7f18c97cae295b53081eb3b5b4ddcc388480427425a6f10"
+        },
+        "qemu_receipt": {
+          "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/aster-core/guests/guest-001/qemu.json",
+          "bytes": 7177,
+          "sha256": "cfd95b30320e44de7cfc7b8e987cc974aff5e1629d3d709d5469f7fc10b4fa96"
+        },
+        "serial": {
+          "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/ktest/aster-core/guests/guest-001/serial.log",
+          "bytes": 16908,
+          "sha256": "2d4a53d12c28f53d96f38a90f7e12115e928f776053ccf7053faa35f33181db1"
+        },
+        "raw_serial_summary": "test result: ok. 153 passed; 0 failed; 0 filtered out.",
+        "artifacts_rehashed": [
+          {
+            "option": "-kernel",
+            "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+            "bytes": 6572072,
+            "sha256": "8704b98be8e89b295f4b7e3d0b52ef8888eebd84336172df9c06e9a1750093ec"
+          },
+          {
+            "option": "-bios",
+            "path": "/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+            "bytes": 262144,
+            "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+          }
+        ],
+        "fixed_profile": {
+          "arch": "x86_64",
+          "machine": "q35",
+          "accel": "tcg",
+          "cpu": "max",
+          "vcpus": 1,
+          "memory_mib": 512,
+          "network": false,
+          "data_disks": false
+        },
+        "osdk_exit_code": 0,
+        "recorder_exit_code": 33,
+        "timed_out": false
+      }
+    ],
+    "method": "Read-only verification of existing result receipts, raw guest serial summaries and skip reasons, recorded fixed QEMU argv/exit codes, and artifact/serial SHA256; no tests or guests were rerun.",
+    "totals": {
+      "declared": 374,
+      "reported_passed": 374,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 371
+    },
+    "note": "Upstream harness reports the three feature-unavailable soft skips as passed; they are explicitly excluded from the exercised lower bound. Only ostd and aster-core were selected; this does not establish the complete upstream device/userspace suite, SMP, VMX, or project G1/G2 completion."
+  },
+  "remaining_scope": [
+    "A05 trusted capability activation and four effect/history opcodes",
+    "A06 final debit exit/reap/rmdir and SMP/migration/locking validation",
+    "A07 unique durable owner K-D and recovery",
+    "Full upstream userspace/device matrix, physical hardware and production/G1/G2",
+    "Cross-host bit reproduction and complete immutable host dependency lock"
+  ],
+  "publication_note": "The kernel build, boot, and these ktests were executed from c22891b593f77c98ff4ea94d7aecb54f32222651. A later evidence-only publication commit has a distinct identity and must not be described as a recompilation or retest at that later HEAD."
+}

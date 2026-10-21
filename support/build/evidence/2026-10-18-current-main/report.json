@@ -1,0 +1,311 @@
+{
+  "schema": "trillionnium.a01.current-main-validation.v1",
+  "execution_date_utc": "2026-10-18",
+  "repository": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": 22,
+  "passed": true,
+  "scope": "Complete fixed Asterinas source build and minimal initramfs boot, plus two selected kernel test crates; not project G1/G2 acceptance.",
+  "source": {
+    "head": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "project_tree": "af19f57a5e275fb8712363d90e72eca88477ec3e",
+    "kernel_tree": "6c2904e53e79cedbbaf013a73a6173f4afa57010",
+    "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "script_sha256": "6f9ae236c1d2c6398e830ee9dba9d57195933e69b32c777df8038b59c874b4c9",
+    "file_count": 3010,
+    "files_sha256": "36d3f324138eb079ceb994d0a190828b202bacd4c29e162ff14272313123a832",
+    "phases": [
+      {
+        "phase": "before",
+        "captured_at_utc": "2026-10-18T03:02:27.265019+00:00",
+        "manifest": "source/before.json.gz",
+        "matches_git": true,
+        "git_status_clean": true,
+        "comparison": null
+      },
+      {
+        "phase": "after-kernel",
+        "captured_at_utc": "2026-10-18T03:06:50.059075+00:00",
+        "manifest": "source/after-kernel.json.gz",
+        "matches_git": true,
+        "git_status_clean": true,
+        "comparison": {
+          "reference": "/tmp/a01-source-before.json",
+          "changed_identity_fields": [],
+          "passed": true
+        }
+      },
+      {
+        "phase": "after-boot",
+        "captured_at_utc": "2026-10-18T03:07:17.116401+00:00",
+        "manifest": "source/after-boot.json.gz",
+        "matches_git": true,
+        "git_status_clean": true,
+        "comparison": {
+          "reference": "/tmp/a01-source-before.json",
+          "changed_identity_fields": [],
+          "passed": true
+        }
+      },
+      {
+        "phase": "after-ktest",
+        "captured_at_utc": "2026-10-18T03:13:34.295564+00:00",
+        "manifest": "source/after-ktest.json.gz",
+        "matches_git": true,
+        "git_status_clean": true,
+        "comparison": {
+          "reference": "/tmp/a01-source-before.json",
+          "changed_identity_fields": [],
+          "passed": true
+        }
+      }
+    ],
+    "external_abi": {
+      "path": "libs/os-abi/src/lib.rs",
+      "git_mode": "100644",
+      "git_kind": "blob",
+      "git_blob": "1bb29f39c39ba4bd3414ecb433b4831de881d5a4",
+      "worktree_mode": "100644",
+      "size": 46709,
+      "sha256": "0de94affd479cecd692de000cc4ab97f5ce7453d81dc0dcd46c7db2e67fa35ec",
+      "worktree_git_blob": "1bb29f39c39ba4bd3414ecb433b4831de881d5a4",
+      "matches_git": true
+    },
+    "metadata_commit_note": "This evidence is added after executing this producer commit. The evidence/report/lock-only publication commit is not asserted to have been separately rebuilt."
+  },
+  "base_main": "b7a8388726b67394398431e74d2e5d2079ff375f",
+  "previous_a01_head": "bb34933fb2f7dc8bceffbce8f42e342799c96e6e",
+  "source_directory": "kernel/asterinas",
+  "original_upstream_files_retained": 2938,
+  "owner_kernel_ostd_and_external_abi_equal_base_main": true,
+  "root_readme_bytes": 0,
+  "fixed_inputs_checked": 118,
+  "runtime": {
+    "archive": "runtime.tar.gz",
+    "installation": "APT download-only plus private extraction; no host package installation",
+    "ubuntu_snapshot": "20260828T000000Z",
+    "native_packages_verified": 57,
+    "environment_checks_passed": 18,
+    "toolchain": "nightly-2026-07-21",
+    "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "docker_available": false,
+    "nix_available": false,
+    "kvm_available": false,
+    "full_nixos_iso_downloaded": false,
+    "complete_immutable_host_lock": false
+  },
+  "pipeline": {
+    "initial_kernel_target_absent": true,
+    "separate_cold_builds_claimed": 1,
+    "kernel": {
+      "started_at_utc": "2026-10-18T03:02:50+00:00",
+      "finished_at_utc": "2026-10-18T03:05:53+00:00",
+      "make_command": "kernel/command.sh",
+      "environment": "kernel/environment.log",
+      "log": "kernel/kernel.log",
+      "driver_exit": 0,
+      "make_exit": 0,
+      "log_exit": 0,
+      "run_exit": 0,
+      "cleanup_exit": 0,
+      "compiling_lines": 284
+    },
+    "run_kernel": {
+      "started_at_utc": "2026-10-18T03:06:50+00:00",
+      "finished_at_utc": "2026-10-18T03:06:52+00:00",
+      "make_command": "run_kernel/command.sh",
+      "environment": "run_kernel/environment.log",
+      "log": "run_kernel/run_kernel.log",
+      "driver_exit": 0,
+      "make_exit": 0,
+      "log_exit": 0,
+      "run_exit": 0,
+      "cleanup_exit": 0,
+      "compiling_lines": 0
+    },
+    "same_first_build_and_loaded_elf": true
+  },
+  "artifacts": [
+    {
+      "source_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/kernel.elf",
+      "archive_path": "artifacts/kernel.elf.gz",
+      "encoding": "gzip",
+      "source_bytes": 8310560,
+      "source_sha256": "208caf5126c94f660292aacd36040ec62c9d317b116b9a861634f08cb02cd8f3",
+      "archive_bytes": 2579887,
+      "archive_sha256": "c233e5f085522abdaff12afd6790c49564e9bba12a97340fa2df28ba6150e6cf"
+    },
+    {
+      "source_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/initramfs.cpio.gz",
+      "archive_path": "artifacts/initramfs.cpio.gz",
+      "encoding": "identity",
+      "source_bytes": 1107990,
+      "source_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "archive_bytes": 1107990,
+      "archive_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "source_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-current-main/run_kernel/artifacts-ba3re2ew/bios.bin",
+      "archive_path": "artifacts/bios.bin.gz",
+      "encoding": "gzip",
+      "source_bytes": 262144,
+      "source_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "archive_bytes": 109289,
+      "archive_sha256": "f8510d8b7852c919074672d812c33f21eb740d4ed172c567929e72c691198e16"
+    }
+  ],
+  "qemu": {
+    "receipt": "run_kernel/qemu.json",
+    "raw_exit": 33,
+    "timed_out": false,
+    "duration_seconds": 0.917,
+    "machine": "q35",
+    "accelerator": "tcg",
+    "cpu": "max",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "firmware": "SeaBIOS",
+    "network_devices": 0,
+    "data_disks": 0,
+    "iso_images": 0
+  },
+  "serial": {
+    "path": "run_kernel/serial.log",
+    "bytes": 72331,
+    "sha256": "b661e07581dc7e7f9caa0ba104c6e5f3c3ef844dc24a28e278ee772896903b53",
+    "marker_counts": {
+      "OSTD initialized. Preparing components.": 1,
+      "TRILLIONNIUM_A01_INIT_BEGIN": 1,
+      "TRILLIONNIUM_A01_CPU_COUNT=1": 1,
+      "Successfully booted.": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "fatal_panic_markers": []
+  },
+  "kernel_mode_regression": {
+    "source_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "result": "ktest/result.json",
+    "driver_exit": 0,
+    "started_at_utc": "2026-10-18T03:07:33+00:00",
+    "finished_at_utc": "2026-10-18T03:09:28+00:00",
+    "reported_passed": 374,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 371,
+    "failed": 0,
+    "filtered": 0,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      },
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 153,
+            "passed": 153,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 153,
+            "observed_test_starts": 153,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "host_regression": {
+    "result": "host-results.json",
+    "ordinary_accepted_passed": 86,
+    "optimized_separate_passed": 34,
+    "source_binding_scope": {
+      "initial_86_execution_commit_in_raw_receipts": null,
+      "initial_86_execution_state": "pre-commit merge working tree (main b7a8388726b67394398431e74d2e5d2079ff375f plus A01 bb34933fb2f7dc8bceffbce8f42e342799c96e6e)",
+      "initial_86_recorded_inputs": 13,
+      "initial_86_all_recorded_inputs_match_published_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+      "initial_86_entire_repository_bound_by_hashes": false,
+      "equivalence_evidence": "metadata/source-equivalence-c22891b.json",
+      "osdk_recorded_input_files": 137,
+      "osdk_source_manifest_before": "33ffa560fb4430a5db18eeaf91e342710ac67937458995476ee54d766e78bab4",
+      "osdk_source_manifest_after": "33ffa560fb4430a5db18eeaf91e342710ac67937458995476ee54d766e78bab4",
+      "osdk_execution_head_explicitly_recorded": true
+    },
+    "osdk_host_units": {
+      "source_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+      "source_head_before": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+      "source_head_after": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+      "returncode": 0,
+      "passed": 45,
+      "failed": 0,
+      "ignored": 1,
+      "filtered_out": 0,
+      "ignored_details": [
+        {
+          "name": "bundle::monitor::tests::real_qemu_uses_preconnected_fd_after_rejecting_client_first",
+          "reason": "requires QEMU and A01_MONITOR_PROBE_OUT; transport probe only, no kernel",
+          "declaration": "pre-existing #[ignore] in kernel/asterinas/osdk/src/bundle/monitor.rs",
+          "executed": false
+        }
+      ],
+      "duration_seconds": 52.2,
+      "target_existed_before": false,
+      "log": "review/osdk-unit-c22891b/cargo-test.log",
+      "receipt": "review/osdk-unit-c22891b/result.json",
+      "qualification": "45 exercised passes and one pre-existing ignored real-QEMU transport probe; not 46/46."
+    },
+    "retained_failure": {
+      "suite": "kernel_runner",
+      "test_methods": 42,
+      "passed_test_methods": 41,
+      "errors": 1,
+      "returncode": 1,
+      "failed_subtest": "KernelRunnerTests.test_private_sdk_is_selected_for_every_developer_target (target=gdb_server)",
+      "observed_failure": "socket.socket() raised PermissionError: [Errno 1] Operation not permitted before the product GDB path ran",
+      "classification": "default execution sandbox blocked socket creation; complete suite subsequently passed in normally tool-approved escalation",
+      "log": "review/ordinary-test_kernel_runner.py.log",
+      "receipt": "review/ordinary-test_kernel_runner.py.json",
+      "original_preserved": true,
+      "tests_or_host_policy_modified": false
+    }
+  },
+  "independent_review": "independent-review.json",
+  "handoff": "HANDOFF.md",
+  "remaining": {
+    "a01_minimal_build_boot_blockers": [],
+    "a05_trusted_capspace_and_four_effect_ops_accepted": false,
+    "a06_exit_reap_rmdir_smp_migration_final_debit_accepted": false,
+    "a06_final_debit_source_present_and_compiled": true,
+    "a07_durable_owner_recovery_accepted": false,
+    "g1_g2_accepted": false,
+    "full_upstream_userspace_device_matrix_rerun": false,
+    "kvm_vmx_ept_exercised": false,
+    "bare_metal_tested": false,
+    "cross_host_bit_reproduction_established": false
+  },
+  "publication_note": "Only the producer c22891b was built and booted. The later evidence/documentation/lock publication commit has a different SHA and is not claimed as a separately executed producer."
+}

@@ -1,0 +1,16 @@
+{
+  "reviewer": "/root/next5_archive/repro_config",
+  "scope": "Read-only completed saved outputs plus fixed Git objects; no current target/manifest reads, no Cargo/rustc/VM or writes.",
+  "passed": true,
+  "blockers": [],
+  "observations": [
+    "pair and invocations agree; controller SHA matches",
+    "six upstream hashes, minimal lock and helper match fixed Git blobs; 118-file checks pass",
+    "environment logs differ only in first timestamp line",
+    "workers 22 and 4946 reaped normally; all entry/worker/check statuses pass",
+    "FD8 manifest inode matched and was removed",
+    "A 279 Compiling lines/two Finished lines including SDK; B 177 Compiling lines/one Finished line",
+    "registry shared; SDK rebuilt during A and reused during B; not an all-tools cold build",
+    "serial SHA differs; logs are not claimed byte-identical"
+  ]
+}

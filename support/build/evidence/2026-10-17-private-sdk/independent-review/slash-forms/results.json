@@ -1,0 +1,34 @@
+{
+  "all_passed": true,
+  "cases": [
+    {
+      "CARGO_HOME": "//workspace/scratch/ae1a8cf05419/sdk-root-independent-review/slash-forms/cargo-home",
+      "PATH": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/slash-forms/private/bin://workspace/scratch/ae1a8cf05419/sdk-root-independent-review/slash-forms/cargo-home/bin:/usr/bin:/bin",
+      "command": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "osdk",
+        "--version"
+      ],
+      "name": "double-leading-slash",
+      "passed": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PRIVATE\n"
+    },
+    {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/slash-forms//cargo-home",
+      "PATH": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/slash-forms/private/bin:/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/slash-forms//cargo-home/bin:/usr/bin:/bin",
+      "command": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "osdk",
+        "--version"
+      ],
+      "name": "repeated-slash",
+      "passed": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PRIVATE\n"
+    }
+  ],
+  "scope": "actualfixedCargo fakeSDK lookup only"
+}

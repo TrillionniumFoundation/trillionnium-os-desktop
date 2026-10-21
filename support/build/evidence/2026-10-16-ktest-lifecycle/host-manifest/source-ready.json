@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "source_ready": true,
+  "source_files_sha256": {
+    "support/build/kernel.sh": "4c6d3b0d87065c8e1f659c7e34793ab1e00248f5bfe038d2c617bf36449bf356",
+    "support/build/cleanup-manifest.py": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+    "support/build/tests/test_kernel_runner.py": "551d0e40e9dade0ec17fb38422f2b49985f0ee1d07acf26fbb941e205e0d661c",
+    "support/build/README.md": "605bbe9e3a52e09ac9ebdf0bdf6bb2ebcb6536e397b8d10f94035293444e1234"
+  },
+  "source_file_count": 4,
+  "baseline_bug": {
+    "probe": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe.json",
+    "probe_sha256": "06b46f59a93527824280a36113880a11056cc9844b687a27b8d6690b6874c79e",
+    "requested_commit": "8fcf645861629191721c64f850b6ffbfc3f0d07c",
+    "probe_runtime_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+    "old_kernel_sh_matches_requested_commit": true,
+    "old_kernel_sh_sha256": "8ba0febef90ae09ca7786604aa6bffee224a0d7e1ef9b5158c582ede759a0cdf",
+    "actual_foreign_manifest_deleted": true,
+    "actual_baseline_runner_exit": 0
+  },
+  "tests": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/tests",
+        "-p",
+        "test_kernel*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "stdout_stderr": "/workspace/scratch/ae1a8cf05419/next7-manifest-host-I.log",
+      "raw_exit_code": 0,
+      "observed_tool_session": 70865,
+      "tests_passed": 31,
+      "log_size": 4937,
+      "log_sha256": "4c497d5a8ef70c4649c85bd0099f45bda03930e4792b10274f82564e689b242c"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/tests",
+        "-p",
+        "test_kernel*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "stdout_stderr": "/workspace/scratch/ae1a8cf05419/next7-manifest-host-IO.log",
+      "raw_exit_code": 0,
+      "observed_tool_session": 49082,
+      "tests_passed": 31,
+      "log_size": 4937,
+      "log_sha256": "a9ae5eec732e130656905452dd387fe418359314008d32acbe402cb5e7759d14"
+    }
+  ],
+  "additional_checks": [
+    {
+      "argv": [
+        "bash",
+        "-n",
+        "support/build/kernel.sh"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "support/build/kernel.sh",
+        "support/build/cleanup-manifest.py",
+        "support/build/tests/test_kernel_runner.py",
+        "support/build/README.md"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0
+    }
+  ],
+  "scope": "A01 shell manifest cleanup only; no Git writes, core/upstream changes or real VM/build. Tests use disposable independent tool/manifest/TCP fixtures.",
+  "behavior": "FD8 pins owned regular inode before publication, lock9 held throughout. Capture public pathname atomically in fresh0700 custody, inspect captured inode only. Owned deletion stays private; foreign entry NOREPLACE restore or retained with explicit path and nonzero. Earlier nonzero status preserved.",
+  "no_continuous_public_path_occupancy_claim": true,
+  "source_binding_note": "This ready record binds tested source bytes; publication commit is assigned later by parent. README prose was finalized after tests without further executable changes."
+}

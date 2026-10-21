@@ -1,0 +1,56 @@
+{
+  "schema": "a01-native-macro-mechanism-summary/1",
+  "published_source_commit": "542e09ebf0471124a01e3d721b531a29e141e54b",
+  "scope": "Native host tiny compiler/proc-macro mechanism and opt-in profile hardening only; not a kernel build/boot or cross-host result.",
+  "host_tiny_final_cases": 9,
+  "host_tiny_initial_fixture_cases_retained": 9,
+  "final_candidate_tests": {
+    "commands": [
+      "python3 -I support/build/repro/test_profile.py",
+      "python3 -I -O support/build/repro/test_profile.py"
+    ],
+    "tests_each": 13,
+    "executions": 26,
+    "returncodes": [
+      0,
+      0
+    ],
+    "outer_tool_session": 28114,
+    "outer_returncode": 0
+  },
+  "normalized_host_elf": {
+    "size": 4512576,
+    "sha256": "2f42eb381eafe171fc226f71f687255db15a2a6a67087ce4e306f26e1a68d072",
+    "different_real_source_roots": true,
+    "same_virtual_metadata_root": true,
+    "both_compile_and_execute_zero": true,
+    "bytewise_equal": true
+  },
+  "frozen_checksum_closure": {
+    "members": 278,
+    "inner_entries": 277,
+    "inner_sha256sums_sha256": "0f8afebac118183faa6f676a97de10ade9a6f1ef3a65f35389ceaa6027753a91",
+    "content_bytes": 14726927
+  },
+  "extra_unlisted_source_file": {
+    "source_path": "original/independent-review/SHA256SUMS",
+    "outer_retained_path": "original-extra/unlisted-independent-review-SHA256SUMS",
+    "size": 1097,
+    "sha256": "646ded3d064058fe7caef06fdbe7aab217af9541c81d1c6767dd2df626621c97",
+    "reason": "The original frozen generator excluded every file named SHA256SUMS, so this nested copy was outside its 277-entry checksum closure. Its current observed bytes are retained separately outside the exact 278-member tar, without changing any frozen input."
+  },
+  "kernel_acceptance": {
+    "claimed": false,
+    "reason": "Root is independently running the full kernel profile on the published source."
+  },
+  "cache_retirement": {
+    "fixture_targets_only": 4,
+    "apparent_bytes": 2026016181,
+    "full_receipt": "fixture-cache-retirement.json"
+  },
+  "archive": {
+    "parts": 4,
+    "compressed_size": 6508438,
+    "sha256": "319092e22002eabeed08d55c324f8773808fa5d0ba72b965aca893e999d4526b"
+  }
+}

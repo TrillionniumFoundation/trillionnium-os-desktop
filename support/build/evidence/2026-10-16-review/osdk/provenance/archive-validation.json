@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "passed": true,
+  "tar_finalized_by_atomic_replacement_and_reopened": true,
+  "raw_tar_members_verified": 345,
+  "hardened_helper_selected_source_files_verified": 345,
+  "hardened_helper_original_checksums_verified": 346,
+  "all_selected_source_bytes_equal_helper_snapshot": true,
+  "coverage_artifacts_verified": 2,
+  "guest_serial_source_helper_tar_expected_hash_checks": [
+    {
+      "guest_record": "case-01/guests/guest-001/qemu.json",
+      "qemu_pid": 4581,
+      "size": 2781,
+      "sha256": "27d68ed612d954a51e62bff971da5f01fd58b1806064d4156ff585dd895d90d0",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-02/guests/guest-001/qemu.json",
+      "qemu_pid": 4927,
+      "size": 2781,
+      "sha256": "723ae42d56a9aeda5dfd05798c3e1b2d600241d166f4a10ea9050599e7b7a582",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-14/guests/guest-001/qemu.json",
+      "qemu_pid": 5522,
+      "size": 2780,
+      "sha256": "72cf37e96fb2324d6b13084a165ffce3abd8c0fe0914c5230cad46676210e299",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-15/guests/guest-001/qemu.json",
+      "qemu_pid": 6865,
+      "size": 2823,
+      "sha256": "b3e0417ade256a133984e1fcfd1621eda38aea4402e485d678d224a73b50c832",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-18/guests/guest-001/qemu.json",
+      "qemu_pid": 7557,
+      "size": 2780,
+      "sha256": "c15182061abd53bde1297508a5e745c9ca4a4fa54c7d06f3b242f34a07b6270a",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-19/guests/guest-001/qemu.json",
+      "qemu_pid": 9008,
+      "size": 3190,
+      "sha256": "bfe1fed856124bea11be6d7663a26fa0e16920c51bee200e92ec4219f8c5a295",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-20/guests/guest-001/qemu.json",
+      "qemu_pid": 9648,
+      "size": 2784,
+      "sha256": "d44c95ef6e1418d66b7e2ab48b15744a727187acdb76d190460389a4834cc9d0",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-20/guests/guest-002/qemu.json",
+      "qemu_pid": 9927,
+      "size": 3190,
+      "sha256": "682f6b6350da547461271037e0539cb766839593c2010d4c70fe62ee9f9e24cf",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-20/guests/guest-003/qemu.json",
+      "qemu_pid": 10136,
+      "size": 3082,
+      "sha256": "ea37f4b3310bad7e689ffdf2649dae5224193e73147d6c7d5a75fd8fb1f0b3d2",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-21/guests/guest-001/qemu.json",
+      "qemu_pid": 10462,
+      "size": 2787,
+      "sha256": "539a9e5743ceaa14cb25fd90b68426fe39504f64a19cbb3cb2606ae70c784c30",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    },
+    {
+      "guest_record": "case-22/guests/guest-001/qemu.json",
+      "qemu_pid": 10805,
+      "size": 2764,
+      "sha256": "d0f68791e760958aede9fea5139a2bc5f2eeee935630795c6bab3f7acad5d74c",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    }
+  ],
+  "guest_count": 11,
+  "gdb_loopback_owned_listener_handoffs": 3,
+  "private_connected_monitor_fd_handoffs": 1,
+  "source_hash_matches": 89,
+  "method": "Read actual source files, helper output and reopened tar bytes, compare original expected size/SHA from each QEMU record; verify all archive/coverage indices and capture bindings. No guest rerun and no source file mutation."
+}

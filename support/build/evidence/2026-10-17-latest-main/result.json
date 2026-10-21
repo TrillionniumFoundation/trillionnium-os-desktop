@@ -1,0 +1,109 @@
+{
+  "abi": {
+    "actual_executed_snapshot_members": 28,
+    "actual_tool_exit": 0,
+    "actual_tool_session": 36713,
+    "checks": 13,
+    "checks_passed": 13,
+    "compiled_batch_timeout_seconds": 900,
+    "compiled_mutants_killed": 12,
+    "compiled_mutants_total": 12,
+    "controller_exit": 0,
+    "errors": [],
+    "expected_mutant_assertion_failures": 17,
+    "golden_vectors": [
+      12,
+      24,
+      1
+    ],
+    "per_command_timeout_seconds": 60,
+    "python_mutation_oracle": 9,
+    "python_normal": 52,
+    "python_optimized": 52,
+    "runner_input_files": 27,
+    "runner_input_hashes_unchanged": true,
+    "rust_doctests": 1,
+    "rust_total": 70,
+    "rust_unit_integration": 69,
+    "toolchain": "nightly-2026-07-21",
+    "toolchain_override": false,
+    "unexecuted": []
+  },
+  "all_source_files_git_bound_and_unchanged": true,
+  "control": {
+    "actual_tool_exit": 0,
+    "actual_tool_session": 79554,
+    "all_check_exit_codes": {
+      "fmt": 0,
+      "no-std-target": 0,
+      "spin-clippy": 0,
+      "spin-tests": 0,
+      "std-clippy": 0,
+      "std-tests": 0
+    },
+    "backends": {
+      "spin-tests": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 113,
+        "test_group_passed": [
+          6,
+          81,
+          6,
+          8,
+          12,
+          0
+        ]
+      },
+      "std-tests": {
+        "failed": 0,
+        "filtered": 0,
+        "ignored": 0,
+        "passed": 113,
+        "test_group_passed": [
+          6,
+          81,
+          6,
+          8,
+          12,
+          0
+        ]
+      }
+    },
+    "bare_target": "x86_64-unknown-none",
+    "cargo_jobs": 2,
+    "cargo_locked": true,
+    "checks": [
+      "fmt",
+      "std-tests",
+      "std-clippy",
+      "spin-tests",
+      "spin-clippy",
+      "no-std-target"
+    ],
+    "controller_exit": 0,
+    "entry": "tests/control/run-validation.sh",
+    "fixed_absolute_tools_match_abi_report": true,
+    "offline": true,
+    "source_commit_record": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+    "source_diff_bytes": 0,
+    "std_and_spin_share_this_new_control_target": true,
+    "target_initially_absent": true,
+    "zero_exit_provenance": "owner shell set-e completes only after all six run_check calls return zero; full logs retained"
+  },
+  "git_status_after": "",
+  "historical_606_owner_evidence_modified": false,
+  "kernel_vm_executions": 0,
+  "main_or_a01_merge_performed_by_validator": false,
+  "native_HOS2_SMP_or_IRQ_safe_spin_acceptance_claimed": false,
+  "owner_branches_modified": false,
+  "readme_bytes": 0,
+  "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+  "schema": 1,
+  "source_commit": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+  "source_files": 80,
+  "source_tree": "8bf73e138a494d98369e7bd4ab2256378a7b096d",
+  "sparse_checkout_has_no_kernel_copy": true,
+  "status": "latest_main_host_validation_passed"
+}

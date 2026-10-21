@@ -1,0 +1,901 @@
+{
+  "schema": 1,
+  "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+  "control_transport": "loopback-tcp",
+  "profile": "isolated upstream harness paths, native direct multiboot, q35 TCG max 1 vCPU 512 MiB",
+  "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+  "available_cases": 22,
+  "selected_cases": 22,
+  "passed": 22,
+  "failed": 0,
+  "blocked": 0,
+  "soft_skip_count": 1,
+  "host_blocked_cases": 0,
+  "cases": [
+    {
+      "name": "commands::run::qemu_gdb_feature::basic_debug",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/kernel_test_workspace/run_command"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::run::qemu_gdb_feature::basic_debug",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-01/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 217,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 4.672,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-01/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": [
+        {
+          "path": "/tmp/a01oi-37dabf_c/kernel_test_workspace/run_command",
+          "removed": true,
+          "device": 27,
+          "inode": 1443690
+        }
+      ]
+    },
+    {
+      "name": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/kernel_test_workspace/run_command"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-02/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 585,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 5.291,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-02/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": [
+        {
+          "path": "/tmp/a01oi-37dabf_c/kernel_test_workspace/run_command",
+          "removed": true,
+          "device": 27,
+          "inode": 1443702
+        }
+      ]
+    },
+    {
+      "name": "cli::cli_build_help_message",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_build_help_message",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-03/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1019,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.111,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "cli::cli_check_help_message",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_check_help_message",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-04/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1025,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.101,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "cli::cli_clippy_help_message",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_clippy_help_message",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-05/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1031,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.111,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "cli::cli_help_message",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_help_message",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-06/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1037,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.091,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "cli::cli_new_crate_with_hyphen",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_new_crate_with_hyphen",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-07/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1043,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.305,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "cli::cli_new_help_message",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_new_help_message",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-08/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1082,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.125,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "cli::cli_run_help_message",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_run_help_message",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-09/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1088,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.111,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "cli::cli_test_help_message",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "cli::cli_test_help_message",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-10/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1094,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.101,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "commands::new::create_kernel_in_workspace",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/kernel_workspace"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::new::create_kernel_in_workspace",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-11/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1100,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.599,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "commands::new::create_lib_in_workspace",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/lib_workspace"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::new::create_lib_in_workspace",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-12/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1176,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.306,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "commands::new::create_two_crates_in_workspace",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/my_workspace"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::new::create_two_crates_in_workspace",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-13/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1215,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.549,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "commands::run::basic::new_kernel_and_run",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::run::basic::new_kernel_and_run",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-14/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1291,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 3.419,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-14/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": []
+    },
+    {
+      "name": "commands::run::coverage_feature::basic_coverage",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/kernel_test_workspace/run_command"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::run::coverage_feature::basic_coverage",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-15/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 1624,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 7.687,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-15/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "coverage": {
+        "passed": true,
+        "source": "/tmp/a01oi-37dabf_c/kernel_test_workspace/run_command/basic_coverage/coverage.profraw",
+        "source_preexisted": false,
+        "source_osdk_exit_code": 0,
+        "size": 2094448,
+        "sha256": "04e9b01a65c1f0552b0bb616c19ab058f85525062d1f85c90660f212b19115e9",
+        "llvm_profdata": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+        "commands": [
+          {
+            "argv": [
+              "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+              "merge",
+              "--sparse",
+              "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-15/coverage/coverage.profraw",
+              "-o",
+              "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-15/coverage/coverage.profdata"
+            ],
+            "raw_exit_code": 0
+          },
+          {
+            "argv": [
+              "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+              "show",
+              "--all-functions",
+              "--counts",
+              "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-15/coverage/coverage.profdata"
+            ],
+            "raw_exit_code": 0
+          }
+        ],
+        "total_functions": 5696,
+        "maximum_function_count": 383731,
+        "guest_binding": {
+          "passed": true,
+          "capture_sidecar": "guests/guest-001/coverage-capture.json",
+          "capture_sidecar_sha256": "7282f43d6032dfe0ed37e3f6877347bbaad814a3d9f45996721c8a313ee7e232",
+          "symbol_elf_sha256": "8fc9b856a4137a3d04cb2f6885183a78ae4203ca572540889e2e07f7893439fd",
+          "guest_record": "guests/guest-001/qemu.json",
+          "kernel_sha256": "38a8a5f0478a83ea2de8faad30551470f45de289844cc5319e2fb52242898bb6",
+          "serial_sha256": "1e4002c38ad35e3cc00030997cbfb9180fa196dd781102bcbef80fac8f4cb2ab",
+          "raw_sha256": "04e9b01a65c1f0552b0bb616c19ab058f85525062d1f85c90660f212b19115e9",
+          "announcement": {
+            "address": "0xffff800010400000",
+            "size": 2094448
+          }
+        }
+      },
+      "cleanup": [
+        {
+          "path": "/tmp/a01oi-37dabf_c/kernel_test_workspace/run_command",
+          "removed": true,
+          "device": 27,
+          "inode": 1443919
+        }
+      ]
+    },
+    {
+      "name": "examples_in_book::create_os_projects::create_a_kernel_project",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/my_foo_os"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "examples_in_book::create_os_projects::create_a_kernel_project",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-16/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 2004,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.303,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "examples_in_book::create_os_projects::create_a_library_project",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/my_foo_module"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "examples_in_book::create_os_projects::create_a_library_project",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-17/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 2043,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.307,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [],
+      "cleanup": []
+    },
+    {
+      "name": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/myos"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "examples_in_book::test_and_run_projects::create_and_run_kernel",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-18/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 2082,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 5.496,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-18/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": []
+    },
+    {
+      "name": "examples_in_book::test_and_run_projects::create_and_test_library",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/mylib"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "examples_in_book::test_and_run_projects::create_and_test_library",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-19/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 2671,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 3.694,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-19/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": []
+    },
+    {
+      "name": "examples_in_book::work_in_workspace::work_in_workspace",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/myworkspace"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "examples_in_book::work_in_workspace::work_in_workspace",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-20/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 2958,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 11.99,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-20/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        },
+        {
+          "record": "case-20/guests/guest-002/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        },
+        {
+          "record": "case-20/guests/guest-003/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": []
+    },
+    {
+      "name": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-21/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 4086,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 4.06,
+      "soft_skips": [
+        "VMX unavailable; hypervisor example accepted upstream fallback"
+      ],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-21/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": []
+    },
+    {
+      "name": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-37dabf_c/kernel_in_100_lines"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/case-22/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 4478,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 4.784,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-22/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "cleanup": []
+    }
+  ],
+  "build_commands": [
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "cargo-osdk"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 28,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.182
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--test",
+        "integration",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/closure-tcp-full-02/harness",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 42,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.784
+    }
+  ]
+}

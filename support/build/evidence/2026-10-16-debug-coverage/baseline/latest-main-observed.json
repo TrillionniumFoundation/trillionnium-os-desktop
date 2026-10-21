@@ -1,0 +1,57 @@
+{
+  "record_type": "posthoc_read_only_summary",
+  "observed_main_sha": "3fe03e725e9afdd76155f03199b8bfff990f00dd",
+  "main_commit_message": "docs(status): record verified IRQ-safe A06 guest regression without claiming main release",
+  "main_commit_changed_paths": [
+    "docs/STATUS.md"
+  ],
+  "status_source": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/3fe03e725e9afdd76155f03199b8bfff990f00dd/docs/STATUS.md",
+  "scope": "Posthoc summary read from fixed remote sources; no new guest test was executed and no Git reference or repository document was changed.",
+  "a06": {
+    "irq_fix_pr": 29,
+    "irq_fix_merged_into": "A06 development branch",
+    "irq_fix_merge_commit": "6b7a4580f74add2b640b6ea948797bd87733faac",
+    "irq_fix": "CpuControl.max uses SpinLock<CpuMax, LocalIrqDisabled> to prevent local timer IRQ lock reentry.",
+    "main_pr": 18,
+    "main_pr_state": "draft",
+    "merged_into_main": false,
+    "matrix_source": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/f3bf18cfce246e48b985235bf7af1a45df987bcf/results/organ-backend/2026-10-16/a06-irq-safe-merged-matrix.json",
+    "matrix_source_ref": "f3bf18cfce246e48b985235bf7af1a45df987bcf",
+    "matrix_blob_sha": "a9a4684543e885253b6a4bded7c0030f89b98eb2",
+    "matrix_recorded_code_commit": "dd20b1b3f6c62f3e198c25f7b41bb5208ae17fb4",
+    "status_source_tree_equivalence_claim": "STATUS.md says the kernel was built from the same Git tree as the latest merged A06 source; this summary did not independently compare those two trees.",
+    "kernel_sha256": "8ff3629163438f86abe755aa5a61f3e8d53d2ab44994f41d006d04e3415d80a5",
+    "guest_runs_passed": 6,
+    "guest_runs_total": 6,
+    "guest_success_attribution": "6/6 comes from the fixed linked matrix and STATUS.md, not from a new test in this read-only check; STATUS.md reports raw33 and no panic.",
+    "observed_cpu_percent": {
+      "leaf_1pct": [
+        2.001,
+        2.0,
+        1.911
+      ],
+      "leaf_10pct": [
+        11.1
+      ],
+      "sched_fifo_10pct": [
+        10.989
+      ],
+      "parent_10pct_child_unlimited": [
+        10.296
+      ]
+    },
+    "precise_1pct_guaranteed": false,
+    "production_validated": false,
+    "smp_validated": false,
+    "hos2_implemented": false,
+    "test_environment": "QEMU q35/TCG, x86_64, 1 vCPU, 512 MiB; original A01 initramfs plus statically linked guest CPU probe; no host cgroup, data disk or network changes",
+    "historical_timeout_status": "The previous 1% cpu.stat timeout remains historical evidence and is not the latest A06 branch result.",
+    "remaining_limitations": [
+      "1% observed around 1.9-2.0%; tick overshoot and exact quota remain unresolved",
+      "SMP not validated",
+      "cgroup migration/lifecycle and strict lock order not accepted",
+      "HOS2 CapSpace/ioctl, Hepta persistent effects and physical hardware not accepted",
+      "main has no release qualification for the new kernel CPU limits"
+    ]
+  }
+}

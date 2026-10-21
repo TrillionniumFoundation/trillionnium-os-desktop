@@ -1,0 +1,100 @@
+{
+  "scope": "Actual independent subprocess observations; offline verification only, no new Cargo, Rust build, target read or VM.",
+  "c4_and_restored_a4_final_checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "757882",
+        "wall_time_seconds": 0.225260642,
+        "exit_code": 0,
+        "original_token_count": 145,
+        "output": "{\n  \"passed\": true,\n  \"case\": \"A4\",\n  \"sha256sum_entries\": 36,\n  \"original_files\": 61,\n  \"raw_members\": 57,\n  \"source_controls\": 86,\n  \"source_git_tree_objects\": 30,\n  \"binary_unique_inputs\": 3,\n  \"compiler_calls\": 369,\n  \"ledger_events\": 738,\n  \"local_metadata_replacements\": 61,\n  \"actual_job1\": true,\n  \"kernel_boot_passed\": true,\n  \"raw_qemu_exit_code\": 33,\n  \"cross_path_accepted\": false,\n  \"cross_host_accepted\": false,\n  \"restored_directory\": null,\n  \"scope\": \"Offline retained evidence only; no new Cargo/Rust build, original controller, target read, live check or VM.\"\n}\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "72a46f",
+        "wall_time_seconds": 0.215008205,
+        "exit_code": 0,
+        "original_token_count": 145,
+        "output": "{\n  \"passed\": true,\n  \"case\": \"C4\",\n  \"sha256sum_entries\": 45,\n  \"original_files\": 71,\n  \"raw_members\": 67,\n  \"source_controls\": 86,\n  \"source_git_tree_objects\": 30,\n  \"binary_unique_inputs\": 3,\n  \"compiler_calls\": 369,\n  \"ledger_events\": 738,\n  \"local_metadata_replacements\": 61,\n  \"actual_job1\": true,\n  \"kernel_boot_passed\": true,\n  \"raw_qemu_exit_code\": 33,\n  \"cross_path_accepted\": false,\n  \"cross_host_accepted\": false,\n  \"restored_directory\": null,\n  \"scope\": \"Offline retained evidence only; no new Cargo/Rust build, original controller, target read, live check or VM.\"\n}\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "f8d996",
+        "wall_time_seconds": 0.477189511,
+        "exit_code": 0,
+        "original_token_count": 145,
+        "output": "{\n  \"passed\": true,\n  \"case\": \"C4\",\n  \"sha256sum_entries\": 45,\n  \"original_files\": 71,\n  \"raw_members\": 67,\n  \"source_controls\": 86,\n  \"source_git_tree_objects\": 30,\n  \"binary_unique_inputs\": 3,\n  \"compiler_calls\": 369,\n  \"ledger_events\": 738,\n  \"local_metadata_replacements\": 61,\n  \"actual_job1\": true,\n  \"kernel_boot_passed\": true,\n  \"raw_qemu_exit_code\": 33,\n  \"cross_path_accepted\": false,\n  \"cross_host_accepted\": false,\n  \"restored_directory\": null,\n  \"scope\": \"Offline retained evidence only; no new Cargo/Rust build, original controller, target read, live check or VM.\"\n}\n"
+      }
+    }
+  ],
+  "cross_instance_final_checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "5c3cfe",
+        "wall_time_seconds": 0.703555322,
+        "exit_code": 0,
+        "original_token_count": 139,
+        "output": "{\n  \"passed\": true,\n  \"cross_instance_accepted\": true,\n  \"immutable_environment_accepted\": false,\n  \"complete_input_bytes_equal\": {\n    \"-kernel\": true,\n    \"-initrd\": true,\n    \"-bios\": true\n  },\n  \"canonical_local_descriptors_equal\": true,\n  \"cargo_producer_identity_counts_equal\": true,\n  \"compiler_calls\": [\n    369,\n    369\n  ],\n  \"cargo_units\": [\n    332,\n    332\n  ],\n  \"raw_qemu_exits\": [\n    33,\n    33\n  ],\n  \"scope\": \"Offline complete retained byte/source/controller/ledger/host comparison only; no original target, build, live check or VM.\"\n}\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "4f8f18",
+        "wall_time_seconds": 0.858008595,
+        "exit_code": 0,
+        "original_token_count": 139,
+        "output": "{\n  \"passed\": true,\n  \"cross_instance_accepted\": true,\n  \"immutable_environment_accepted\": false,\n  \"complete_input_bytes_equal\": {\n    \"-kernel\": true,\n    \"-initrd\": true,\n    \"-bios\": true\n  },\n  \"canonical_local_descriptors_equal\": true,\n  \"cargo_producer_identity_counts_equal\": true,\n  \"compiler_calls\": [\n    369,\n    369\n  ],\n  \"cargo_units\": [\n    332,\n    332\n  ],\n  \"raw_qemu_exits\": [\n    33,\n    33\n  ],\n  \"scope\": \"Offline complete retained byte/source/controller/ledger/host comparison only; no original target, build, live check or VM.\"\n}\n"
+      }
+    }
+  ],
+  "relocation_and_restore": {
+    "scope": "Actual offline relocation and reconstruction only; no compiler, captured controller, target access or VM.",
+    "commands": [
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/cross-host-review/relocated-evidence/2026-10-17-repro-cross-instance/verify.py"
+        ],
+        "returncode": 0,
+        "log": "/workspace/scratch/ae1a8cf05419/cross-host-review/relocated-cross-I.log",
+        "log_sha256": "7cd3fd9ece15a87e3f59f079c56e3012ef21dfeb303703ec2afe8152cc78398a",
+        "output": "{\n  \"passed\": true,\n  \"cross_instance_accepted\": true,\n  \"immutable_environment_accepted\": false,\n  \"complete_input_bytes_equal\": {\n    \"-kernel\": true,\n    \"-initrd\": true,\n    \"-bios\": true\n  },\n  \"canonical_local_descriptors_equal\": true,\n  \"cargo_producer_identity_counts_equal\": true,\n  \"compiler_calls\": [\n    369,\n    369\n  ],\n  \"cargo_units\": [\n    332,\n    332\n  ],\n  \"raw_qemu_exits\": [\n    33,\n    33\n  ],\n  \"scope\": \"Offline complete retained byte/source/controller/ledger/host comparison only; no original target, build, live check or VM.\"\n}\n"
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "/workspace/scratch/ae1a8cf05419/cross-host-review/relocated-evidence/2026-10-17-repro-cross-instance/verify.py"
+        ],
+        "returncode": 0,
+        "log": "/workspace/scratch/ae1a8cf05419/cross-host-review/relocated-cross-IO.log",
+        "log_sha256": "7cd3fd9ece15a87e3f59f079c56e3012ef21dfeb303703ec2afe8152cc78398a",
+        "output": "{\n  \"passed\": true,\n  \"cross_instance_accepted\": true,\n  \"immutable_environment_accepted\": false,\n  \"complete_input_bytes_equal\": {\n    \"-kernel\": true,\n    \"-initrd\": true,\n    \"-bios\": true\n  },\n  \"canonical_local_descriptors_equal\": true,\n  \"cargo_producer_identity_counts_equal\": true,\n  \"compiler_calls\": [\n    369,\n    369\n  ],\n  \"cargo_units\": [\n    332,\n    332\n  ],\n  \"raw_qemu_exits\": [\n    33,\n    33\n  ],\n  \"scope\": \"Offline complete retained byte/source/controller/ledger/host comparison only; no original target, build, live check or VM.\"\n}\n"
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/cross-host-review/relocated-evidence/2026-10-17-repro-kernel-c4/verify.py",
+          "--restore",
+          "/workspace/scratch/ae1a8cf05419/cross-host-review/restored-c4"
+        ],
+        "returncode": 0,
+        "log": "/workspace/scratch/ae1a8cf05419/cross-host-review/relocated-c4-restore.log",
+        "log_sha256": "1efb83515b2c957d2c39c0da123f58c51f5d18d16692c6f624b5b7bf5b7980d8",
+        "output": "{\n  \"passed\": true,\n  \"case\": \"C4\",\n  \"sha256sum_entries\": 45,\n  \"original_files\": 71,\n  \"raw_members\": 67,\n  \"source_controls\": 86,\n  \"source_git_tree_objects\": 30,\n  \"binary_unique_inputs\": 3,\n  \"compiler_calls\": 369,\n  \"ledger_events\": 738,\n  \"local_metadata_replacements\": 61,\n  \"actual_job1\": true,\n  \"kernel_boot_passed\": true,\n  \"raw_qemu_exit_code\": 33,\n  \"cross_path_accepted\": false,\n  \"cross_host_accepted\": false,\n  \"restored_directory\": \"/workspace/scratch/ae1a8cf05419/cross-host-review/restored-c4\",\n  \"scope\": \"Offline retained evidence only; no new Cargo/Rust build, original controller, target read, live check or VM.\"\n}\n"
+      }
+    ],
+    "passed": true,
+    "utc": "2026-10-17T04:20:34.181280+00:00"
+  }
+}

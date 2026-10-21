@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "packaged_utc": "2026-10-17T02:00:44.173124+00:00",
+  "original_readback_window_utc": [
+    "2026-10-17T01:52:52.607Z",
+    "2026-10-17T01:53:47.412Z"
+  ],
+  "raw_files": 39,
+  "raw_bytes": 357755,
+  "requests": 18,
+  "original_snapshot_not_current_status": true,
+  "later_results_outside_this_package": true,
+  "temporal_context": "Original01:52-01:53 reports correctly said the pair/final full22 had no completed frozen result at that observation time. Root subsequently reported actual pair exit0 at01:56 and final22/22, retained in separate later phases. Those are not new executions or verified results of this packaging phase; old pending text must not be presented as the final current aggregate.",
+  "remote_at_original_window": {
+    "main_as_PR22_base": "40ca002fac0726b366726d3353916637b29adeae",
+    "a01_head": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+    "a01": {
+      "pr": 22,
+      "state": "open",
+      "draft": false,
+      "host_run": 38992415807,
+      "host_job": 117277478013,
+      "status": "queued",
+      "conclusion": null
+    },
+    "a05": {
+      "pr": 87,
+      "head": "25cbffe6080bdf397f4911f85111cc966ac951d3",
+      "draft": true,
+      "state": "open",
+      "G0_run": 38988938901,
+      "G0_job": 117266736845,
+      "G0_conclusion": "success",
+      "scope": "host contracts, not native authority",
+      "G0_checkout_binding_scope": "Run associated by the head-query API and job steps; actual checkout bytes/merge parents were not independently rebound by this final refresh."
+    },
+    "a06": {
+      "pr": 18,
+      "head": "57b23ede7e242711ef142b672f04c896383a264a",
+      "draft": true,
+      "state": "open",
+      "G0_run": 38932286139,
+      "G0_conclusion": "failure",
+      "issue63": "open; zero comments"
+    },
+    "a04": {
+      "pr": 8,
+      "head": "da4107f8bf525b773c8b40899f443c292c3e6dbd",
+      "draft": true,
+      "state": "open",
+      "returned_PR_workflow_runs": 0,
+      "scope": "No success inferred from an empty returned run/status list"
+    },
+    "a07": {
+      "exact_title_query_results": 0,
+      "head_query_results": 0,
+      "scope": "These two current queries are not proof that an external owner or every possible branch is absent. Do not invent an A07 Draft PR."
+    },
+    "a05_replay_handoff": {
+      "pr": 93,
+      "head": "ecdd6275b4ce4c100a41a5632920a01fb5937c65",
+      "state": "open",
+      "draft": true,
+      "owner_body_says_new_runner_and_tests_not_executed": true
+    }
+  },
+  "package_acceptance": "Original raw closure, source bindings, request timings and bounded historical API/CI facts only. No compiler, installer, Cargo, QEMU, GDB, kernel, owner test or new GitHub query is run."
+}

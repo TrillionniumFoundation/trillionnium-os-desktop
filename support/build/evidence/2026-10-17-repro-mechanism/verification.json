@@ -1,0 +1,59 @@
+{
+  "schema": "a01-repro-mechanism-archive-verification/1",
+  "checks": [
+    {
+      "name": "valid-closure",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-repro-mechanism/verify.py"
+      ],
+      "returncode": 0,
+      "stdout": "{\"archive_sha256\": \"319092e22002eabeed08d55c324f8773808fa5d0ba72b965aca893e999d4526b\", \"compressed_size\": 6508438, \"inner_entries\": 277, \"outer_entries\": 18, \"output_created\": null, \"regular_members\": 278, \"verified\": true}\n",
+      "stderr": ""
+    },
+    {
+      "name": "valid-reassembly",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-repro-mechanism/verify.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/repro-round2/packaging/verified-mechanism.tar.gz"
+      ],
+      "returncode": 0,
+      "stdout": "{\"archive_sha256\": \"319092e22002eabeed08d55c324f8773808fa5d0ba72b965aca893e999d4526b\", \"compressed_size\": 6508438, \"inner_entries\": 277, \"outer_entries\": 18, \"output_created\": \"/workspace/scratch/ae1a8cf05419/repro-round2/packaging/verified-mechanism.tar.gz\", \"regular_members\": 278, \"verified\": true}\n",
+      "stderr": ""
+    },
+    {
+      "name": "existing-output-refused",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-repro-mechanism/verify.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/repro-round2/packaging/existing-output-sentinel"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-repro-mechanism/verify.py\", line 132, in <module>\n    main()\n  File \"/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-repro-mechanism/verify.py\", line 121, in main\n    fd = os.open(args.output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileExistsError: [Errno 17] File exists: '/workspace/scratch/ae1a8cf05419/repro-round2/packaging/existing-output-sentinel'\n"
+    },
+    {
+      "name": "corrupt-part-rejected",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/repro-round2/packaging/mechanism-corrupt-6x6ta3p3/phase/verify.py"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/ae1a8cf05419/repro-round2/packaging/mechanism-corrupt-6x6ta3p3/phase/verify.py\", line 132, in <module>\n    main()\n  File \"/workspace/scratch/ae1a8cf05419/repro-round2/packaging/mechanism-corrupt-6x6ta3p3/phase/verify.py\", line 62, in main\n    raise ValueError(f\"outer checksum mismatch: {name}\")\nValueError: outer checksum mismatch: archive/mechanism.tar.gz.part000\n"
+    }
+  ],
+  "all_expected_outcomes": true,
+  "archive_sha256": "319092e22002eabeed08d55c324f8773808fa5d0ba72b965aca893e999d4526b",
+  "reassembled_output_size": 6508438,
+  "reassembled_output_sha256": "319092e22002eabeed08d55c324f8773808fa5d0ba72b965aca893e999d4526b",
+  "existing_output_unchanged": true,
+  "scope": "Archive custody/integrity checks only; no Rust compiler or guest executed."
+}

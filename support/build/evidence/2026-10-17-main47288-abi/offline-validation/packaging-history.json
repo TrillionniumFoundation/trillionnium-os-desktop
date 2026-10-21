@@ -1,0 +1,26 @@
+{
+  "acceptance_rerun": false,
+  "accepted_verifier_sha256": "b6d2522489311f3fb4d2853bcc16a9c25f651fc1c55ee78660963c51b8197741",
+  "events": [
+    {
+      "command": [
+        "python3",
+        "-I",
+        "support/build/evidence/2026-10-17-main47288-abi/verify.py"
+      ],
+      "exit_code": 1,
+      "full_draft_source_retained": false,
+      "kind": "tool_observed_draft_offline_verifier_failure",
+      "reason": "Draft verifier confused a required-oracle subset with the complete recorded mutation suite; actual raw suite denominators were8/12/7 and the original13-check acceptance remained successful.",
+      "stderr": "ABI evidence verification failed: Rust executed test names/denominator differ\n",
+      "verifier_sha256": "b23525af37847603ae8c94b5d75cd5151634a62b8ff024b3156a76cb1b7741e1"
+    },
+    {
+      "kind": "generated_python_cache_rejected_during_debug",
+      "reason": "An import generated a bytecode cache outside the checksum index. Final verifier excludes generated caches from the observed evidence set and forbids indexing them as evidence inputs. No raw bundle byte changed."
+    }
+  ],
+  "kind": "packaging_verifier_history_not_an_acceptance_rerun",
+  "original_raw_bundle_changed": false,
+  "schema": 1
+}

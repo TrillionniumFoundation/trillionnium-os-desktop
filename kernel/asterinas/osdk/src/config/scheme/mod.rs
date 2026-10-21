@@ -96,6 +96,9 @@ impl Scheme {
                     qemu.path.clone_from(&from_qemu.path);
                     self.work_dir.clone_from(&from.work_dir);
                 }
+                if qemu.monitor_transport.is_none() {
+                    qemu.monitor_transport = from_qemu.monitor_transport;
+                }
                 if qemu.log_file.is_none() {
                     qemu.log_file.clone_from(&from_qemu.log_file);
                 }
@@ -141,5 +144,75 @@ impl Scheme {
                 build: self.build.clone(),
             });
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn manifest_schemes(source: &str) -> (Scheme, Scheme) {
+        let mut manifest: crate::config::manifest::TomlManifest = toml::from_str(source).unwrap();
+        manifest.default_scheme.run_and_test_inherit_from_global();
+        let mut named = manifest.map.remove("named").unwrap();
+        named.run_and_test_inherit_from_global();
+        named.inherit(&manifest.default_scheme);
+        (manifest.default_scheme, named)
+    }
+
+    #[test]
+    fn named_scheme_partial_qemu_inherits_monitor_transport_for_all_actions() {
+        let (_, named) = manifest_schemes(
+            r#"
+            [qemu]
+            monitor_transport = "tcp"
+            [scheme.named.qemu]
+            args = "-m 512M"
+            [scheme.named.run.qemu]
+            args = "-m 256M"
+            [scheme.named.test.qemu]
+            args = "-m 128M"
+        "#,
+        );
+        assert_eq!(
+            named.qemu.unwrap().monitor_transport,
+            Some(MonitorTransport::Tcp)
+        );
+        assert_eq!(
+            named.run.unwrap().qemu.unwrap().monitor_transport,
+            Some(MonitorTransport::Tcp)
+        );
+        assert_eq!(
+            named.test.unwrap().qemu.unwrap().monitor_transport,
+            Some(MonitorTransport::Tcp)
+        );
+    }
+
+    #[test]
+    fn named_scheme_and_action_monitor_overrides_are_preserved() {
+        let (_, named) = manifest_schemes(
+            r#"
+            [qemu]
+            monitor_transport = "tcp"
+            [scheme.named.qemu]
+            monitor_transport = "unix"
+            [scheme.named.run.qemu]
+            args = "-m 256M"
+            [scheme.named.test.qemu]
+            monitor_transport = "tcp"
+        "#,
+        );
+        assert_eq!(
+            named.qemu.unwrap().monitor_transport,
+            Some(MonitorTransport::Unix)
+        );
+        assert_eq!(
+            named.run.unwrap().qemu.unwrap().monitor_transport,
+            Some(MonitorTransport::Unix)
+        );
+        assert_eq!(
+            named.test.unwrap().qemu.unwrap().monitor_transport,
+            Some(MonitorTransport::Tcp)
+        );
     }
 }

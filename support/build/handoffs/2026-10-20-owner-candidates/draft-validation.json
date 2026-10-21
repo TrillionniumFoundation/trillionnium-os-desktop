@@ -1,0 +1,55 @@
+{
+  "authorization_found_in_checked_records": false,
+  "complete_publication_regression_executed": false,
+  "native_probe_executed": false,
+  "native_qualified_in_project_cloud": false,
+  "oracle_unchanged": true,
+  "owner_source_applied": false,
+  "passed": true,
+  "patch_apply_checks": [
+    {
+      "exact_scope": [
+        "tests/workloads/linux/permission_probe.c"
+      ],
+      "exit": 0,
+      "patch": "0001-a04-searchable-pivot-root.patch",
+      "stderr": ""
+    },
+    {
+      "exact_scope": [
+        "results/integration/2026-10-19-g1b-usage/source-publication/validate-publication.py"
+      ],
+      "exit": 0,
+      "patch": "0002-publication-disjoint-destination.patch",
+      "stderr": ""
+    }
+  ],
+  "pivot_source_state": "baseline",
+  "publication_validator_executed": false,
+  "regex_checks": {
+    "baseline_negative": {
+      "bytes": 87,
+      "seconds": 1.0002937330064015,
+      "timed_out": true
+    },
+    "candidate_negative": {
+      "bytes": 300003,
+      "matches": [],
+      "seconds": 0.028563391999341547,
+      "timed_out": false
+    },
+    "corrected_parenthesis_case": {
+      "baseline": [
+        "foo(bar"
+      ],
+      "candidate": [
+        "foo(bar).md"
+      ]
+    },
+    "scope": "Only the reproduced exponential family and listed supported links; no whole-validator linear-time proof or CodeQL clearance.",
+    "unchanged_positive_cases": 11
+  },
+  "source_identities_verified": true,
+  "source_mutated": false,
+  "validator_source_state": "baseline"
+}

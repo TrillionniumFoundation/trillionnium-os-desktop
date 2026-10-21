@@ -1,0 +1,44 @@
+{
+  "observed_git_head": "b1a15d9afc456346410af658d2164ee5fa085656",
+  "fixed_upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "fixed_upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "fixed_toolchain": "nightly-2026-07-21",
+  "source_files": {
+    "kernel/asterinas/osdk/src/commands/build/mod.rs": {
+      "artifact": "source-snapshots/osdk-build-mod.rs",
+      "sha256": "806eaae191e38ee5e3945a3532c2dad7cbc01575bec3f9e8f2d87d4ded66eb25",
+      "bytes": 14006,
+      "head_blob": "78d625f88894e98ee93f9ed5216758dc22e96303",
+      "worktree_differs_from_head": false
+    },
+    "support/build/ktest/run.py": {
+      "artifact": "source-snapshots/ktest-run.py",
+      "sha256": "6bcd7710d60ef5d0f228a821f80a452fbca9cb1b6110e7dd12f67b2eede66d27",
+      "bytes": 15010,
+      "head_blob": "a6fa93291f86f97fd6dcf54445e7fdd153f836bd",
+      "worktree_differs_from_head": true
+    },
+    "support/build/ktest/test_runner_lifecycle.py": {
+      "artifact": "source-snapshots/ktest-test_runner_lifecycle.py",
+      "sha256": "0bbbbbde72aa8aff6fc85d6fc1ea3e0a1a0cb70a5b3262e42e602f7104c4704c",
+      "bytes": 20784,
+      "head_blob": "780538eff3112dd6a5f927d62b3b4fce015411ee",
+      "worktree_differs_from_head": true
+    }
+  },
+  "ordinary_RUSTFLAGS_semantics_unchanged": true,
+  "guard_key": "CARGO_ENCODED_RUSTFLAGS",
+  "presence_even_empty_rejected": true,
+  "guard_exit_code": 2,
+  "no_core_ostd_osdk_source_edits": true,
+  "scope": [
+    "support/build/kernel.sh (parallel owner)",
+    "support/build/ktest/run.py"
+  ],
+  "debug_rejection": "kernel guard catches inherited encoded flags; debug top-level may already have consumed its output path",
+  "not_extended": [
+    "osdk-integration top-level guard",
+    "debug top-level guard"
+  ],
+  "official_cargo_docs": "https://doc.rust-lang.org/cargo/reference/config.html#buildrustflags"
+}
