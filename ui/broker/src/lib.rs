@@ -13,7 +13,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fmt;
 use std::io;
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
+use std::time::{Duration, Instant};
 
 pub const PROTOCOL_VERSION: u16 = 1;
 pub const MAX_TOKEN_BYTES: usize = 128;
@@ -21,6 +22,10 @@ pub const MAX_DIGEST_BYTES: usize = 64;
 pub const MAX_REQUEST_ID_BYTES: usize = 128;
 pub const MAX_NOTIFICATIONS: usize = 128;
 pub const MAX_REPLAY_ENTRIES: usize = 256;
+/// Conservative process-cache bounds for the default-deny broker seam.
+pub const MAX_SESSIONS: usize = 128;
+pub const MAX_SESSIONS_PER_PEER: usize = 16;
+pub const SESSION_IDLE_TIMEOUT: Duration = Duration::from_secs(15 * 60);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -148,11 +153,15 @@ pub fn peer_credentials_from_unix(
 pub struct SessionHandle {
     id: u64,
     broker_identity: Arc<()>,
+    // Only client handles hold strong references; the broker stores a Weak.
+    lifetime: Arc<()>,
 }
 
 impl PartialEq for SessionHandle {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && Arc::ptr_eq(&self.broker_identity, &other.broker_identity)
+        self.id == other.id
+            && Arc::ptr_eq(&self.broker_identity, &other.broker_identity)
+            && Arc::ptr_eq(&self.lifetime, &other.lifetime)
     }
 }
 
@@ -436,6 +445,8 @@ pub enum BrokerError {
     InvalidGeneration,
     InvalidRequestId,
     SessionUnknown,
+    SessionCapacity,
+    PeerSessionCapacity,
     NotificationLimit,
     ReplayConflict,
     OperationUnknown,
@@ -456,6 +467,8 @@ impl fmt::Display for BrokerError {
             Self::InvalidGeneration => write!(f, "invalid generation fence"),
             Self::InvalidRequestId => write!(f, "invalid request_id"),
             Self::SessionUnknown => write!(f, "unknown or expired session"),
+            Self::SessionCapacity => write!(f, "broker session capacity exhausted"),
+            Self::PeerSessionCapacity => write!(f, "peer session capacity exhausted"),
             Self::NotificationLimit => write!(f, "notification limit exceeded"),
             Self::ReplayConflict => {
                 write!(f, "request id replay conflicts with the original payload")
@@ -510,6 +523,10 @@ struct ReplayRecord {
 #[derive(Clone, Debug)]
 struct SessionRecord {
     granted: BTreeSet<Capability>,
+    // Kernel transport credentials, never a client_id, nonce, or claimed grant.
+    peer: (u32, i32),
+    last_activity: Instant,
+    lifetime: Weak<()>,
 }
 
 #[derive(Debug)]
@@ -552,7 +569,35 @@ impl Broker {
         hello: ClientHello,
         peer: PeerCredentials,
     ) -> Result<(SessionHandle, SessionInfo), AuthError> {
+        self.open_session_at(authenticator, hello, peer, Instant::now())
+    }
+
+    fn open_session_at<A: PeerAuthenticator>(
+        &mut self,
+        authenticator: &A,
+        hello: ClientHello,
+        peer: PeerCredentials,
+        now: Instant,
+    ) -> Result<(SessionHandle, SessionInfo), AuthError> {
+        // Enforce structural bounds even if a future trusted authenticator has
+        // different identity checks. Authentication precedes capacity disclosure.
+        hello.validate().map_err(AuthError::Broker)?;
+        peer.validate()?;
         let identity = authenticator.authenticate(&hello, peer)?;
+        self.reap_sessions_at(now);
+        if self.sessions.len() >= MAX_SESSIONS {
+            return Err(AuthError::Broker(BrokerError::SessionCapacity));
+        }
+        let peer_key = (peer.uid, peer.pid);
+        if self
+            .sessions
+            .values()
+            .filter(|session| session.peer == peer_key)
+            .count()
+            >= MAX_SESSIONS_PER_PEER
+        {
+            return Err(AuthError::Broker(BrokerError::PeerSessionCapacity));
+        }
         let mut granted = BTreeSet::new();
         let mut denied = Vec::new();
         for requested in &hello.requested_capabilities {
@@ -567,16 +612,21 @@ impl Broker {
             .next_session
             .checked_add(1)
             .ok_or(AuthError::Broker(BrokerError::InvalidRequestId))?;
+        let lifetime = Arc::new(());
         self.sessions.insert(
             id,
             SessionRecord {
                 granted: granted.clone(),
+                peer: peer_key,
+                last_activity: now,
+                lifetime: Arc::downgrade(&lifetime),
             },
         );
         Ok((
             SessionHandle {
                 id,
                 broker_identity: Arc::clone(&self.identity),
+                lifetime,
             },
             SessionInfo {
                 protocol_version: PROTOCOL_VERSION,
@@ -595,18 +645,42 @@ impl Broker {
         }
     }
 
+    /// Reclaim idle sessions and sessions whose last handle was dropped.
+    /// Admission and request handling also sweep, so an idle host need not run
+    /// a timer to enforce the fixed capacity or reject expired handles.
+    pub fn reap_sessions(&mut self) -> usize {
+        self.reap_sessions_at(Instant::now())
+    }
+
+    fn reap_sessions_at(&mut self, now: Instant) -> usize {
+        let before = self.sessions.len();
+        self.sessions.retain(|_, session| {
+            session.lifetime.strong_count() != 0
+                && now.saturating_duration_since(session.last_activity) < SESSION_IDLE_TIMEOUT
+        });
+        before - self.sessions.len()
+    }
+
     pub fn handle(&mut self, session: &SessionHandle, request: Request) -> Response {
+        self.handle_at(session, request, Instant::now())
+    }
+
+    fn handle_at(&mut self, session: &SessionHandle, request: Request, now: Instant) -> Response {
+        // Expiration is checked before activity refresh. A retained stale clone
+        // cannot resurrect the old session by sending a late request.
+        self.reap_sessions_at(now);
         let Some(record) = self
             .sessions
-            .get(&session.id)
+            .get_mut(&session.id)
             .filter(|_| Arc::ptr_eq(&self.identity, &session.broker_identity))
-            .cloned()
         else {
             return Response::Denied {
                 code: DenialCode::UnauthenticatedSession,
                 detail: BrokerError::SessionUnknown.to_string(),
             };
         };
+        record.last_activity = now;
+        let record = record.clone();
         match request {
             Request::Draft { draft } => {
                 if !record.granted.contains(&Capability::OfflineDraft) {
@@ -945,6 +1019,172 @@ mod tests {
             bridge_generation: 1,
             owner_generation: 1,
         }
+    }
+
+    fn observe() -> Request {
+        Request::PullNotifications {
+            after_sequence: 0,
+            max_items: 1,
+        }
+    }
+
+    #[test]
+    fn idle_timeout_rejects_every_retained_clone_at_the_exact_boundary() {
+        let mut broker = Broker::new();
+        let start = Instant::now();
+        let (session, _) = broker
+            .open_session_at(
+                &SameUidAuthenticator { expected_uid: 1000 },
+                hello(vec![Capability::Observe]),
+                peer(1000),
+                start,
+            )
+            .unwrap();
+        let clone = session.clone();
+        for stale in [&session, &clone] {
+            assert!(matches!(
+                broker.handle_at(stale, observe(), start + SESSION_IDLE_TIMEOUT),
+                Response::Denied {
+                    code: DenialCode::UnauthenticatedSession,
+                    ..
+                }
+            ));
+        }
+        assert!(broker.sessions.is_empty());
+    }
+
+    #[test]
+    fn admitted_activity_refreshes_idle_time_but_expired_handles_cannot_refresh() {
+        let mut broker = Broker::new();
+        let start = Instant::now();
+        let (session, _) = broker
+            .open_session_at(
+                &SameUidAuthenticator { expected_uid: 1000 },
+                hello(vec![Capability::Observe]),
+                peer(1000),
+                start,
+            )
+            .unwrap();
+        let active = start + SESSION_IDLE_TIMEOUT - Duration::from_millis(1);
+        assert!(matches!(
+            broker.handle_at(&session, observe(), active),
+            Response::Notifications { .. }
+        ));
+        assert_eq!(broker.reap_sessions_at(start + SESSION_IDLE_TIMEOUT), 0);
+        let expired = active + SESSION_IDLE_TIMEOUT;
+        assert!(matches!(
+            broker.handle_at(&session, observe(), expired),
+            Response::Denied {
+                code: DenialCode::UnauthenticatedSession,
+                ..
+            }
+        ));
+        assert_eq!(broker.reap_sessions_at(expired), 0);
+    }
+
+    #[test]
+    fn expiration_reclaims_peer_capacity_without_reusing_session_ids() {
+        let mut broker = Broker::new();
+        let auth = SameUidAuthenticator { expected_uid: 1000 };
+        let start = Instant::now();
+        let sessions: Vec<_> = (0..MAX_SESSIONS_PER_PEER)
+            .map(|_| {
+                broker
+                    .open_session_at(&auth, hello(vec![Capability::Observe]), peer(1000), start)
+                    .unwrap()
+                    .0
+            })
+            .collect();
+        assert!(matches!(
+            broker.open_session_at(&auth, hello(vec![]), peer(1000), start),
+            Err(AuthError::Broker(BrokerError::PeerSessionCapacity))
+        ));
+        let expired = start + SESSION_IDLE_TIMEOUT;
+        let (replacement, _) = broker
+            .open_session_at(&auth, hello(vec![Capability::Observe]), peer(1000), expired)
+            .unwrap();
+        assert_eq!(replacement.id(), MAX_SESSIONS_PER_PEER as u64 + 1);
+        assert_eq!(broker.sessions.len(), 1);
+        for stale in sessions {
+            assert!(matches!(
+                broker.handle_at(&stale, observe(), expired),
+                Response::Denied {
+                    code: DenialCode::UnauthenticatedSession,
+                    ..
+                }
+            ));
+        }
+        assert!(matches!(
+            broker.handle_at(&replacement, observe(), expired),
+            Response::Notifications { .. }
+        ));
+    }
+
+    #[test]
+    fn foreign_handle_cannot_refresh_local_idle_timeout() {
+        let mut broker = Broker::new();
+        let mut foreign_broker = Broker::new();
+        let auth = SameUidAuthenticator { expected_uid: 1000 };
+        let start = Instant::now();
+        let (local, _) = broker
+            .open_session_at(&auth, hello(vec![Capability::Observe]), peer(1000), start)
+            .unwrap();
+        let (foreign, _) = foreign_broker
+            .open_session_at(&auth, hello(vec![Capability::Observe]), peer(1000), start)
+            .unwrap();
+        assert_eq!(local.id(), foreign.id());
+        assert!(matches!(
+            broker.handle_at(
+                &foreign,
+                observe(),
+                start + SESSION_IDLE_TIMEOUT - Duration::from_millis(1)
+            ),
+            Response::Denied {
+                code: DenialCode::UnauthenticatedSession,
+                ..
+            }
+        ));
+        assert!(matches!(
+            broker.handle_at(&local, observe(), start + SESSION_IDLE_TIMEOUT),
+            Response::Denied {
+                code: DenialCode::UnauthenticatedSession,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn explicit_sweep_reclaims_only_the_last_dropped_handle() {
+        let mut broker = Broker::new();
+        let (session, _) = broker
+            .open_session(
+                &SameUidAuthenticator { expected_uid: 1000 },
+                hello(vec![]),
+                peer(1000),
+            )
+            .unwrap();
+        let clone = session.clone();
+        drop(session);
+        assert_eq!(broker.reap_sessions(), 0);
+        drop(clone);
+        assert_eq!(broker.reap_sessions(), 1);
+        assert_eq!(broker.reap_sessions(), 0);
+    }
+
+    #[test]
+    fn session_id_exhaustion_does_not_insert_a_record_or_wrap() {
+        let mut broker = Broker::new();
+        broker.next_session = u64::MAX;
+        assert!(matches!(
+            broker.open_session(
+                &SameUidAuthenticator { expected_uid: 1000 },
+                hello(vec![]),
+                peer(1000),
+            ),
+            Err(AuthError::Broker(BrokerError::InvalidRequestId))
+        ));
+        assert_eq!(broker.next_session, u64::MAX);
+        assert!(broker.sessions.is_empty());
     }
 
     #[test]

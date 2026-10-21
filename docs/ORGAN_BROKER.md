@@ -31,6 +31,26 @@ a local session. Clones keep the original session identity; closing that
 session invalidates every clone. This process-local binding does not replace
 transport authentication or grant any effect authority.
 
+Session admission has conservative fixed defaults for this in-process seam:
+128 live sessions per Broker and 16 per kernel `(uid, pid)` peer. Changing a
+client ID, nonce, or group does not create another peer quota. The global bound
+also covers clients that create additional processes. These are resource
+limits, not authenticated application identities or effect grants. A different
+UID must still pass the configured authenticator before receiving any session.
+Structural validation and authentication run before admission; capacity
+rejections do not allocate a session ID or revoke an existing session.
+
+Sessions expire after 15 minutes without a request from a valid local handle,
+using the host monotonic clock. Expiration is checked before activity refresh;
+an expired handle or any retained clone must authenticate a new session.
+The broker keeps only a weak lifetime token, so dropping the last handle makes
+its record reclaimable. Admission and request handling sweep dropped and idle
+records before use; `reap_sessions()` also supports an embedding host's timer.
+Reclamation after Drop is lazy, and an idle Broker retains at most 128 records.
+Explicit close releases capacity immediately and invalidates every clone.
+Closing or expiring a session does not change an operation's unknown effect
+state or delete the separate bounded reconciliation cache.
+
 The broker operation and replay maps are bounded process caches used to
 remember an indeterminate observation and make notification replay idempotent.
 They are not a second K ledger. The maps are intentionally lost on restart.
@@ -46,4 +66,6 @@ stored by the local draft facility, but cannot submit an effect.
 The crate adversarial tests cover protocol version/unknown-field rejection,
 foreign-UID rejection, denied effect capabilities, K/D separation, generation
 fences, unknown reconciliation, bounded notification loss, replay conflict,
-foreign/restarted Broker handles, and shared clone invalidation.
+foreign/restarted Broker handles, shared clone invalidation, global and
+cross-peer admission limits, failed-admission ID preservation, last-clone
+reclamation, and deterministic idle-timeout boundaries and refresh.

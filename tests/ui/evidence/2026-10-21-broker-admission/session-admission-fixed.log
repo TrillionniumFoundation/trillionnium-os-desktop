@@ -1,0 +1,52 @@
+   Compiling trill-ui-broker v0.1.0 (/workspace/scratch/337c309bc660/os-work/ui/broker)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.09s
+     Running unittests src/lib.rs (/workspace/scratch/337c309bc660/os-tools/target/debug/deps/trill_ui_broker-c1a02fe0552a0be7)
+
+running 15 tests
+test tests::explicit_sweep_reclaims_only_the_last_dropped_handle ... ok
+test tests::foreign_handle_cannot_refresh_local_idle_timeout ... ok
+test tests::admitted_activity_refreshes_idle_time_but_expired_handles_cannot_refresh ... ok
+test tests::idle_timeout_rejects_every_retained_clone_at_the_exact_boundary ... ok
+test tests::expiration_reclaims_peer_capacity_without_reusing_session_ids ... ok
+test tests::offline_draft_is_local_only_and_never_effect_success ... ok
+test tests::owner_receipt_cannot_turn_unknown_into_terminal_without_owner_confirmation ... ok
+test tests::replay_cache_is_idempotent_and_conflict_checked ... ok
+test tests::same_uid_authentication_rejects_foreign_peer_and_bad_hello ... ok
+test tests::handshake_grants_observe_reconcile_draft_but_never_effects ... ok
+test tests::session_id_exhaustion_does_not_insert_a_record_or_wrap ... ok
+test tests::durable_k_and_boot_local_d_are_distinct_wire_objects ... ok
+test tests::unknown_reconcile_and_generation_fence_are_explicit ... ok
+test tests::versioned_pointer_free_protocol_rejects_unknown_fields ... ok
+test tests::notification_overflow_requires_pull_reconcile ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/session_admission.rs (/workspace/scratch/337c309bc660/os-tools/target/debug/deps/session_admission-e8f3c57df158c01f)
+
+running 6 tests
+test close_reclaims_peer_quota_even_while_clones_remain ... ok
+test authentication_rejection_never_consumes_an_admission_id ... ok
+test only_dropping_the_last_clone_reclaims_admission_capacity ... ok
+test per_peer_capacity_cannot_be_bypassed_by_client_nonce_or_group ... ok
+test foreign_close_cannot_release_a_local_peer_slot ... ok
+test global_capacity_is_shared_across_peers_and_close_releases_one_slot ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/session_identity.rs (/workspace/scratch/337c309bc660/os-tools/target/debug/deps/session_identity-44882039620d4232)
+
+running 5 tests
+test cloned_handle_shares_only_the_original_session_lifetime ... ok
+test foreign_handle_cannot_close_colliding_session ... ok
+test foreign_handle_cannot_use_colliding_session_capabilities ... ok
+test equal_local_ids_do_not_make_foreign_handles_equal ... ok
+test stale_handle_cannot_use_restarted_broker ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests trill_ui_broker
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

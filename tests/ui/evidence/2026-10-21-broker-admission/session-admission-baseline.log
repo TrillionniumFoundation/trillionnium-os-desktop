@@ -1,0 +1,74 @@
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded itoa v1.0.18
+  Downloaded quote v1.0.47
+  Downloaded unicode-ident v1.0.27
+  Downloaded proc-macro2 v1.0.107
+  Downloaded serde_derive v1.0.219
+  Downloaded ryu v1.0.23
+  Downloaded memchr v2.8.3
+  Downloaded syn v2.0.119
+  Downloaded serde v1.0.219
+  Downloaded serde_json v1.0.140
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling serde v1.0.219
+   Compiling serde_json v1.0.140
+   Compiling itoa v1.0.18
+   Compiling ryu v1.0.23
+   Compiling syn v2.0.119
+   Compiling memchr v2.8.3
+   Compiling serde_derive v1.0.219
+   Compiling trill-ui-core v0.1.0 (/workspace/scratch/337c309bc660/os-work/ui/core)
+   Compiling trill-ui-broker v0.1.0 (/workspace/scratch/337c309bc660/os-work/ui/broker)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.04s
+     Running tests/session_admission.rs (/workspace/scratch/337c309bc660/os-tools/target/debug/deps/session_admission-e8f3c57df158c01f)
+
+running 6 tests
+test authentication_rejection_never_consumes_an_admission_id ... ok
+test close_reclaims_peer_quota_even_while_clones_remain ... FAILED
+test foreign_close_cannot_release_a_local_peer_slot ... FAILED
+test global_capacity_is_shared_across_peers_and_close_releases_one_slot ... FAILED
+test only_dropping_the_last_clone_reclaims_admission_capacity ... FAILED
+test per_peer_capacity_cannot_be_bypassed_by_client_nonce_or_group ... FAILED
+
+failures:
+
+---- close_reclaims_peer_quota_even_while_clones_remain stdout ----
+
+thread 'close_reclaims_peer_quota_even_while_clones_remain' panicked at broker/tests/session_admission.rs:120:5:
+assertion failed: open(&mut broker, credentials, 100).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- foreign_close_cannot_release_a_local_peer_slot stdout ----
+
+thread 'foreign_close_cannot_release_a_local_peer_slot' panicked at broker/tests/session_admission.rs:167:5:
+assertion failed: open(&mut broker, credentials, 100).is_err()
+
+---- global_capacity_is_shared_across_peers_and_close_releases_one_slot stdout ----
+
+thread 'global_capacity_is_shared_across_peers_and_close_releases_one_slot' panicked at broker/tests/session_admission.rs:96:9:
+assertion failed: open(&mut broker, peer(1000, 2000), sequence).is_err()
+
+---- only_dropping_the_last_clone_reclaims_admission_capacity stdout ----
+
+thread 'only_dropping_the_last_clone_reclaims_admission_capacity' panicked at broker/tests/session_admission.rs:145:5:
+assertion failed: open(&mut broker, credentials, 100).is_err()
+
+---- per_peer_capacity_cannot_be_bypassed_by_client_nonce_or_group stdout ----
+
+thread 'per_peer_capacity_cannot_be_bypassed_by_client_nonce_or_group' panicked at broker/tests/session_admission.rs:69:9:
+a kernel peer must remain bounded when client-controlled labels change
+
+
+failures:
+    close_reclaims_peer_quota_even_while_clones_remain
+    foreign_close_cannot_release_a_local_peer_slot
+    global_capacity_is_shared_across_peers_and_close_releases_one_slot
+    only_dropping_the_last_clone_reclaims_admission_capacity
+    per_peer_capacity_cannot_be_bypassed_by_client_nonce_or_group
+
+test result: FAILED. 1 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p trill-ui-broker --test session_admission`
