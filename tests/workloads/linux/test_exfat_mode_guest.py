@@ -5,6 +5,8 @@ import gzip
 import importlib.util
 from pathlib import Path
 import struct
+import subprocess
+import tempfile
 import types
 import unittest
 from unittest import mock
@@ -112,6 +114,22 @@ class ObservationTests(unittest.TestCase):
 
 
 class InputOwnershipTests(unittest.TestCase):
+    def test_negative_mutation_matches_frozen_patch_on_real_inode_source(self):
+        original = (runner.ROOT / negative.INODE).read_bytes()
+        patch = (runner.ROOT / negative.PATCH).read_bytes()
+        self.assertEqual(runner.sha(patch), negative.PATCH_SHA256)
+        with tempfile.TemporaryDirectory(prefix='exfat-frozen-negative-') as directory:
+            inode = Path(directory) / negative.INODE
+            inode.parent.mkdir(parents=True)
+            inode.write_bytes(original)
+            subprocess.run(['git', 'apply', '--check', '-'], input=patch, cwd=directory,
+                           check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(['git', 'apply', '-'], input=patch, cwd=directory,
+                           check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            postimage = inode.read_bytes()
+        self.assertNotEqual(postimage, original)
+        self.assertEqual(negative.mutation(original), postimage)
+
     def test_initramfs_retains_original_entries_and_requires_unique_injection(self):
         body = b'#!/bin/sh\nset -eu\necho "TRILLIONNIUM_A01_BOOT_OK"\n'
         entries = [('init', [1, 0o100755, 0, 0, 1, 0, len(body), 0, 0, 0, 0, 5, 0], body)]

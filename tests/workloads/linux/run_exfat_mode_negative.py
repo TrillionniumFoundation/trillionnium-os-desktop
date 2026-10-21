@@ -21,8 +21,8 @@ ROOT, require, save = disk.ROOT, disk.require, disk.save
 INODE = 'kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode.rs'
 PATCH = 'tests/organ_backend/exfat_synthesized_setid_negative.patch'
 PATCH_SHA256 = '525e11369a5aefe9ae79358b83a293aa40e4b63de53b476b22cf220c55cd7024'
-BEFORE = b'        let mut mode = mkmod!(a+rwx);\n'
-AFTER = b'        let mut mode = InodeMode::all();\n'
+BEFORE = b'        let mut ret = mkmod!(a+rwx);\n'
+AFTER = b'        let mut ret = InodeMode::all();\n'
 
 
 def mutation(source):
