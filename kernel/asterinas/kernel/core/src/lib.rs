@@ -60,6 +60,8 @@ mod ipc;
 mod net;
 pub mod power;
 pub mod prelude;
+#[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+pub mod permission_smp_ktest;
 pub mod process;
 mod sched;
 pub mod security;

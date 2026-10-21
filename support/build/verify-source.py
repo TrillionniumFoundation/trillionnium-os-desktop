@@ -4,8 +4,8 @@
 Use --pristine for the initial import. Later kernel development may change
 Rust sources, while the default check continues to protect build input pins.
 Build-input derivatives are the explicitly enumerated G1-a local owner metadata
-dependency and optional trusted-profile declarations; --pristine still accepts
-only the original upstream tree.
+dependency, default-off G1-c/G1-d profiles and permission SMP feature declarations;
+--pristine still accepts only the original upstream tree.
 """
 import argparse
 import hashlib
@@ -71,6 +71,19 @@ ROOT_LOCK_ADDITIONS = (
      b'[[package]]\nname = "os-control"\nversion = "0.1.0"\ndependencies = [\n "spin",\n]\n\n'
      b'[[package]]\nname = "osdk-frame-allocator"\n'),
 )
+PERMISSION_SMP_FEATURE_ADDITION = (
+    b"[features]\n",
+    b"[features]\n"
+    b"# Dedicated two-CPU permission ktests; no effect outside cfg(ktest).\n"
+    b"permission-attr-smp-ktest = []\n",
+)
+PERMISSION_TEST_RUNNER_FEATURE_ADDITION = (
+    b"[lints]\n",
+    b"[features]\n"
+    b"# The generated test base supplies an entry that calls the same test runner.\n"
+    b"external-entry = []\n\n"
+    b"[lints]\n",
+)
 
 
 def derive_downstream_input(name, original):
@@ -87,6 +100,10 @@ def derive_downstream_input(name, original):
             additions += (G1C_FEATURE_ADDITIONS[name],)
         if name in G1D_FEATURE_ADDITIONS:
             additions += (G1D_FEATURE_ADDITIONS[name],)
+        if name == "kernel/core/Cargo.toml":
+            additions += (PERMISSION_SMP_FEATURE_ADDITION,)
+        if name == "osdk/deps/test-kernel/Cargo.toml":
+            additions += (PERMISSION_TEST_RUNNER_FEATURE_ADDITION,)
     derived = original
     for needle, replacement in additions:
         if derived.count(needle) != 1:
@@ -130,7 +147,12 @@ def main():
                 if actual_mode != mode:
                     raise ValueError(f"mode {actual_mode} != {mode}")
                 content = path.read_bytes()
-            if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name in G1C_FEATURE_ADDITIONS or name in G1D_FEATURE_ADDITIONS or name == "Cargo.lock"):
+            if not args.pristine and (
+                name in DOWNSTREAM_MANIFEST_ADDITIONS
+                or name in G1C_FEATURE_ADDITIONS
+                or name in G1D_FEATURE_ADDITIONS
+                or name in {"Cargo.lock", "osdk/deps/test-kernel/Cargo.toml"}
+            ):
                 original = subprocess.check_output(["git", "cat-file", "blob", expected], cwd=ROOT)
                 derived = derive_downstream_input(name, original)
                 downstream[name] = {

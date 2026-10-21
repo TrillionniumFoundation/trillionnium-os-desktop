@@ -1,0 +1,30 @@
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs
+@@ -539,22 +539,25 @@
+     pub(super) fn permission_attr_transaction(
+         &self,
+         request: &PermissionAttrRequest,
+         mode_policy: PermissionModePolicy,
+     ) -> Result<()> {
+-        let mut metadata = self.metadata.lock();
++        let metadata = self.metadata.lock();
+         let update = request.evaluate(PermissionAttrs {
+             type_: self.typ,
+             mode: metadata.mode,
+             uid: metadata.uid,
+             gid: metadata.gid,
+         })?;
+         mode_policy.check(metadata.mode, update.mode)?;
++        // NEGATIVE CONTROL ONLY: recreate the old check/use lock gap.
++        drop(metadata);
+         #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+         request.after_check_for_test(
+             crate::fs::vfs::permission_attrs::smp_support::CheckpointStage::InodeDecision,
+         );
++        let mut metadata = self.metadata.lock();
+         if let Some(mode) = update.mode {
+             metadata.mode = mode;
+         }
+         if let Some(uid) = update.uid {
+             metadata.uid = uid;

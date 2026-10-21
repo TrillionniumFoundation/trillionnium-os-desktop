@@ -101,6 +101,19 @@ pub static KTEST_CRATE_WHITELIST: Option<&[&str]> = Some(&{:#?});
     );
     let mut main_rs_content = fs::read_to_string(&main_rs_path).unwrap();
     main_rs_content.push_str(&ktest_main_rs);
+    if current_crate.name == "aster-core" {
+        // The matching generated feature also disables the runner's default
+        // entry. No dependency from aster-core to the test runner is needed.
+        main_rs_content.push_str(
+            r#"
+#[cfg(feature = "permission-attr-smp-ktest")]
+#[ostd::ktest::main]
+fn permission_smp_main() {
+    aster_core::permission_smp_ktest::boot(osdk_test_kernel::run_ktests_and_exit);
+}
+"#,
+        );
+    }
     fs::write(&main_rs_path, main_rs_content).unwrap();
 
     // Build the kernel with the given base crate

@@ -17,6 +17,12 @@ def digest(path):
 
 def main():
     requested = sys.argv[1:]
+    profile = os.environ.get("A01_KTEST_PROFILE", "default")
+    if profile not in ("default", "permission-attr-smp"):
+        raise SystemExit("unknown fixed kernel-test profile")
+    vcpus = 2 if profile == "permission-attr-smp" else 1
+    if profile == "permission-attr-smp" and os.environ["A01_KTEST_CRATE"] != "aster-core":
+        raise SystemExit("the permission SMP profile is restricted to aster-core")
     directory = Path(os.environ["A01_KTEST_GUESTS"]).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     index = 1
@@ -48,14 +54,15 @@ def main():
     artifacts["-bios"] = {"path": str(firmware), "size": firmware.stat().st_size,
                            "sha256": digest(firmware)}
     command.extend(("-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", str(firmware),
-                    "-m", "512M", "-smp", "1", "-nodefaults", "-no-user-config", "-no-reboot",
+                    "-m", "512M", "-smp", str(vcpus), "-nodefaults", "-no-user-config", "-no-reboot",
                     "-nographic", "-display", "none", "-monitor", "none", "-serial", "chardev:serial",
                     "-chardev", f"stdio,id=serial,signal=off,logfile={guest / 'serial.log'}",
                     "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"))
     record = {"schema": 1, "crate": os.environ["A01_KTEST_CRATE"], "cwd": os.getcwd(),
+              "ktest_profile": profile,
               "requested_osdk_args": requested, "argv": command, "shell_command": shlex.join(command),
               "profile": {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
-                          "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False},
+                          "vcpus": vcpus, "memory_mib": 512, "network": False, "data_disks": False},
               "qemu_sha256": digest(Path(binary)),
               "qemu_version": subprocess.check_output([binary, "--version"], text=True).strip(),
               "artifacts": artifacts, "raw_exit_code": None, "timed_out": False}

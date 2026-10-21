@@ -9,12 +9,19 @@ import re
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 HEAD = re.compile(r'^running (\d+) tests in crate "([^"]+)"$', re.MULTILINE)
 SUMMARY = re.compile(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.')
+PERMISSION_TESTS = {
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+    "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error",
+}
 
-# The default core gate keeps its 238-test baseline and exercises these seventeen
-# production-object regressions. Filtered mutation runs retain their existing
+# The default core gate keeps its 238-test baseline, five permission tests,
+# all seventeen G1-c/G1-d regressions and two ExFAT tests. Filtered runs retain
 # explicit opt-in; they cannot stand in for a complete core qualification.
-MINIMUM_CORE_TESTS = 255
-REQUIRED_CORE_TESTS = (
+MINIMUM_CORE_TESTS = 262
+TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_rechecks_alien_write_using_an_earlier_vmar_pin",
@@ -33,6 +40,11 @@ REQUIRED_CORE_TESTS = (
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_controlled_leaf_refuses_linux_configuration_and_membership_aliases",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_bounded_history_retirement_never_reexecutes_an_old_cpu_delivery",
 )
+EXFAT_CORE_TESTS = (
+    "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_never_invent_setid_or_sticky",
+    "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_keep_file_directory_masks_and_readonly",
+)
+REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS)
 
 
 def check_guest(guest, crate, allow_filtered=False):
@@ -73,8 +85,16 @@ def check_guest(guest, crate, allow_filtered=False):
         missing = [name for name in REQUIRED_CORE_TESTS if starts.count(name) != 1]
         if missing:
             raise ValueError("missing or repeated required core tests: " + ", ".join(missing))
+        for name in REQUIRED_CORE_TESTS:
+            block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
+            if "[skipped:" in block:
+                raise ValueError("required core test was soft-skipped: " + name)
         if passed < MINIMUM_CORE_TESTS:
             raise ValueError("complete core gate shrank below the retained baseline plus regressions")
+        for name in REQUIRED_CORE_TESTS:
+            block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
+            if "[skipped:" in block:
+                raise ValueError(f"required core test was soft-skipped: {name}")
     if any(result[1] == "FAILED" or int(result[3]) for result in SUMMARY.finditer(serial)):
         raise ValueError("a tested crate reported failure")
     # Expected-panic tests are valid kernel tests. Do not apply boot's broad
@@ -91,6 +111,8 @@ def check_guest(guest, crate, allow_filtered=False):
             "filtered": filtered, "soft_skipped": len(skips), "soft_skip_reasons": skips,
             "exercised_passed_lower_bound": passed - len(skips),
             "observed_test_starts": len(starts),
+            "required_permission_tests": sorted(PERMISSION_TESTS) if crate == "aster-core" and not allow_filtered else [],
+            "required_core_tests": list(REQUIRED_CORE_TESTS) if crate == "aster-core" and not allow_filtered else [],
             "raw_qemu_exit": 33, "guest": guest.name}
 
 

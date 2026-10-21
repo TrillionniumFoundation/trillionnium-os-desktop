@@ -13,5 +13,9 @@ edition.workspace = true
 ostd.workspace = true
 owo-colors.workspace = true
 
+[features]
+# The generated test base supplies an entry that calls the same test runner.
+external-entry = []
+
 [lints]
 workspace = true

@@ -31,9 +31,19 @@ def main():
     parser.add_argument("--crate", choices=CRATES, action="append")
     parser.add_argument("--output", type=Path, help="must not already exist")
     parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
+    parser.add_argument("--permission-attr-smp", action="store_true",
+                        help="run the fixed permission transaction regressions with exactly two CPUs")
     parser.add_argument("--skip-osdk-install", action="store_true",
                         help="reuse an already source-built OSDK carrying the explicit-lock patch")
     args = parser.parse_args()
+    if args.permission_attr_smp:
+        if args.crate not in (None, ["aster-core"]) or args.test_name is not None:
+            parser.error("--permission-attr-smp fixes the crate and complete test-name suffix")
+        args.crate = ["aster-core"]
+        args.test_name = "permission_attr_smp"
+    profile = "permission-attr-smp" if args.permission_attr_smp else "default"
+    vcpus = 2 if args.permission_attr_smp else 1
+    features = ["permission-attr-smp-ktest"] if args.permission_attr_smp else []
     here = Path(__file__).resolve().parent
     project = here.parents[2]
     upstream = project / "kernel/asterinas"
@@ -46,7 +56,8 @@ def main():
     env["OSDK_LOCAL_DEV"] = "1"
     env["VDSO_LIBRARY_DIR"] = env.get("VDSO_LIBRARY_DIR", str(project / "support/build/out/linux-vdso"))
     env["NETDEV"], env["ENABLE_KVM"], env["OVMF"] = "none", "0", "off"
-    env["SMP"], env["MEM"], env["CONSOLE"] = "1", "512M", "ttyS0"
+    env["SMP"], env["MEM"], env["CONSOLE"] = str(vcpus), "512M", "ttyS0"
+    env["A01_KTEST_PROFILE"] = profile
     env["BOOT_METHOD"], env["BOOT_PROTOCOL"], env["QEMU_DISPLAY"] = "vmm-direct", "multiboot", "none"
     env.pop("OSDK_CARGO_LOCK", None)
     parent_output = project / "support/build/out"
@@ -91,6 +102,7 @@ def main():
                        },
                        "osdk_sha256": digest(osdk), "vdso_sha256": digest(Path(env["VDSO_LIBRARY_DIR"]) / "vdso_x86_64.so"),
                        "cargo_build_jobs": env["CARGO_BUILD_JOBS"], "test_name": args.test_name,
+                       "ktest_profile": profile, "vcpus": vcpus, "features": features,
                        "osdk_install_skipped": args.skip_osdk_install}
         (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
         env["CARGO_TARGET_DIR"] = str(upstream / "target")
@@ -109,6 +121,8 @@ def main():
                        "--kcmd-args=loglevel=error", "--kcmd-args=earlycon", "--kcmd-args=console=ttyS0"]
             if args.test_name:
                 command.append(args.test_name)
+            if features:
+                command.append("--features=" + ",".join(features))
             commands.append({"argv": command, "cwd": str(upstream / CRATES[crate]), "lock_sha256": digest(lock_path)})
             (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
             code = run(command, upstream / CRATES[crate], env, target / "osdk-test.log")
@@ -120,8 +134,11 @@ def main():
                 raise SystemExit(f"{crate}: OSDK failed ({code}); retained evidence: {target}")
             if not generated.is_file() or digest(generated) != digest(lock_path):
                 raise SystemExit(f"{crate}: generated lock differs from the fixed test-base lock")
-            checker = [sys.executable, "-I", str(here / "check.py"), str(target / "guests"), "--crate", crate]
-            if args.test_name:
+            if args.permission_attr_smp:
+                checker = [sys.executable, "-I", str(here / "check-permission-smp.py"), str(target / "guests")]
+            else:
+                checker = [sys.executable, "-I", str(here / "check.py"), str(target / "guests"), "--crate", crate]
+            if args.test_name and not args.permission_attr_smp:
                 checker.append("--allow-filtered")
             if run(checker, project, env, target / "result.json"):
                 raise SystemExit(f"{crate}: guest evidence rejected; see {target / 'result.json'}")

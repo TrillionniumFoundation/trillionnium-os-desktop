@@ -21,6 +21,7 @@ use crate::{
                 Extension, FileOps, Inode, Metadata, MknodType, RenameMode, RevalidationPolicy,
             },
             path::{Dentry, is_dot, is_dotdot},
+            permission_attrs::PermissionAttrRequest,
         },
     },
     prelude::*,
@@ -157,6 +158,16 @@ impl<D: ProcDirOps + 'static> FileOps for ProcDir<D> {
 
 #[inherit_methods(from = "self.common")]
 impl<D: ProcDirOps + 'static> Inode for ProcDir<D> {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        _request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Unported: metadata may derive ownership from another thread's
+        // credentials, outside the common metadata lock.
+        None
+    }
+
     fn size(&self) -> usize;
     fn extension(&self) -> &Extension;
     fn ino(&self) -> u64;
