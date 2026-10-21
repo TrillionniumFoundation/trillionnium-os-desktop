@@ -86,10 +86,12 @@ static bool unprivileged(const struct credentials *value, int nnp)
         && value->ambient == 0 && value->bounding == 0 && value->nnp == nnp && value->securebits == 0;
 }
 
-static void print_credentials(const char *phase, const char *name,
+static int print_credentials(const char *phase, const char *name,
                               const struct credentials *value, unsigned long secure)
 {
-    printf("EXFAT_CREDENTIALS phase=%s name=%s ruid=%u euid=%u suid=%u fsuid=%u"
+    char line[1024];
+    int length = snprintf(line, sizeof(line),
+           "EXFAT_CREDENTIALS phase=%s name=%s ruid=%u euid=%u suid=%u fsuid=%u"
            " rgid=%u egid=%u sgid=%u fsgid=%u groups=%d nnp=%d securebits=%d"
            " effective=%" PRIu64 " permitted=%" PRIu64 " inheritable=%" PRIu64
            " ambient=%" PRIu64 " bounding=%" PRIu64 " at_secure=%lu\n",
@@ -98,6 +100,22 @@ static void print_credentials(const char *phase, const char *name,
            (unsigned)value->egid, (unsigned)value->sgid, (unsigned)value->fsgid,
            value->groups, value->nnp, value->securebits, value->effective,
            value->permitted, value->inheritable, value->ambient, value->bounding, secure);
+    if (length <= 0 || (size_t)length >= sizeof(line)) {
+        errno = EOVERFLOW;
+        return -1;
+    }
+    // One write keeps kernel syscall tracing between complete evidence records.
+    // A short write remains an observation failure; never reconstruct a record.
+    ssize_t written;
+    do {
+        written = write(STDOUT_FILENO, line, (size_t)length);
+    } while (written < 0 && errno == EINTR);
+    if (written != length) {
+        if (written >= 0)
+            errno = EIO;
+        return -1;
+    }
+    return 0;
 }
 
 static int exec_entry(const char *name, int nnp)
@@ -106,7 +124,7 @@ static int exec_entry(const char *name, int nnp)
     alarm(10);
     SETUP(credentials_read(&value) == 0);
     unsigned long secure = getauxval(AT_SECURE);
-    print_credentials("after", name, &value, secure);
+    SETUP(print_credentials("after", name, &value, secure) == 0);
     // A failed identity assertion still leaves the measured values in the log.
     return unprivileged(&value, nnp) && secure == 0 ? 0 : 1;
 }
@@ -130,7 +148,7 @@ static int drop_and_exec(const char *path, const char *name, int nnp)
         SETUP(prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == 0);
     SETUP(credentials_read(&before) == 0);
     SETUP(unprivileged(&before, nnp));
-    print_credentials("before", name, &before, getauxval(AT_SECURE));
+    SETUP(print_credentials("before", name, &before, getauxval(AT_SECURE)) == 0);
     char *arguments[] = {(char *)path, "--exec-child", (char *)name, nnp ? "1" : "0", NULL};
     char *environment[] = {"PATH=/bin:/sbin", "LC_ALL=C", NULL};
     execve(path, arguments, environment);
