@@ -141,6 +141,8 @@ class TestBaseManifest(unittest.TestCase):
         self.assertEqual(manifest['features']['default'], ['cvm_guest'])
         self.assertEqual(manifest['features']['g1c-trusted-observe'],
                          ['aster-core/g1c-trusted-observe'])
+        self.assertEqual(manifest['features']['g1d-trusted-control'],
+                         ['aster-core/g1d-trusted-control'])
         runner = tomllib.loads((upstream / 'osdk/deps/test-kernel/Cargo.toml').read_text())
         self.assertEqual(runner['features'], {'external-entry': []})
 
