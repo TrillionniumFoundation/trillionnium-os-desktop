@@ -69,7 +69,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             build-essential ca-certificates curl git python3 pkg-config libssl-dev \
             clang lld qemu-system-x86 busybox-static \
-            gcc-13 libc6-dev binutils libsqlite3-dev python3.12 python3.12-minimal \
+            gcc-13 libc6-dev binutils libsqlite3-dev e2fsprogs python3.12 python3.12-minimal \
             libpython3.12-stdlib openssl tzdata kmod
           set +e
           sudo python3 -I -B tests/workloads/linux/exfat_kernel_support.py --disposable-ci \
@@ -331,6 +331,19 @@ jobs:
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
 
+      - name: Verify SQLite WAL after abrupt guest restart and reject an omitted COMMIT
+        shell: bash
+        run: |
+          set -euo pipefail
+          kernel="${RUNNER_TEMP}/a06-queryabi-candidate/product-kernel.elf"
+          kernel_sha=$(python3 -I -B -c 'import json,sys; print(json.load(open(sys.argv[1]))["kernel_elf_sha256"])' \
+            "${RUNNER_TEMP}/a06-queryabi-candidate/result.json")
+          python3 -I -B tests/workloads/linux/run_sqlite_restart_guest.py \
+            --kernel "$kernel" --expected-kernel-sha256 "$kernel_sha" \
+            --initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --cc /usr/bin/gcc-13 --qemu /usr/bin/qemu-system-x86_64 \
+            --output "${RUNNER_TEMP}/a04-sqlite-restart"
+
       - name: Verify the same permission ELF on the exact ordinary kernel
         shell: bash
         run: |
@@ -569,6 +582,7 @@ jobs:
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
+            ${{ runner.temp }}/a04-sqlite-restart
             ${{ runner.temp }}/a06-owner-negative
             ${{ runner.temp }}/a06-clock-handoff-negative
             ${{ runner.temp }}/a06-permission-smp

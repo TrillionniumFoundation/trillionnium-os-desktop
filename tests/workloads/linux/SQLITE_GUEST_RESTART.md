@@ -5,6 +5,14 @@ It uses the real SQLite C library, the ordinary Asterinas kernel, a fresh ext2
 disk and two separate emulator processes. It does not create an operation
 owner, substitute a ledger for Hepta, or claim a native Agentd run.
 
+The fixed disk profile is 64 MiB, 4 KiB blocks, 256-byte inodes and only the
+ext2 `filetype` feature. The current directory writer emits that format's
+type byte. Legacy ext2 images with `filetype` disabled expose a separate
+compatibility defect: directory entries can have a nonzero high name-length
+byte. They are not part of this passing storage profile. The first retained
+failure and repair experiment used that legacy profile; subsequent comparisons
+must use the same explicit `none,filetype` formatter on both kernel versions.
+
 ## What runs
 
 `sqlite_restart_probe.c` selects WAL, explicitly requires `synchronous=FULL`,
@@ -54,6 +62,28 @@ owner.
 version, exact commands, crash result and both verifier outcomes. The raw
 serial logs and both disk images remain beside the result. A failed first
 case stops the run and preserves its evidence.
+
+## Allocation durability repair
+
+The first actual guest restart returned `SQLITE_RESTART_EXIT=66`: the database
+name had been written but its allocated inode was absent from the on-disk
+inode bitmap. Read-only `debugfs` and `e2fsck -fn` also identified allocated
+file blocks missing from the block bitmap. Before the repair, inode sync wrote
+the inode table and flushed the device without writing these dirty allocation
+bitmaps. A successful fsync could therefore acknowledge a file which a new
+mount could not reopen.
+
+`Ext2Inode::sync` now releases its inode lock, flushes dirty allocation metadata
+across block groups, writes the inode table, and only then acknowledges a
+successful device flush. It uses the existing metadata owners and propagates
+writeback failures. It does not recursively write every cached inode. A real
+kernel test covers both fsync and fdatasync, remounts the same device without
+an old-mount global sync, checks allocation counts, and verifies that another
+file cannot reuse the synced file's direct and indirect data blocks.
+
+CI runs this workload against the ordinary product ELF already qualified by
+the original QueryAbi step, using its previously recorded SHA-256. The
+complete core/OSTD, permission, full32 and ExFAT gates remain in place.
 
 ## Evidence boundaries and next dependency
 

@@ -13,11 +13,12 @@
 //! state: read mode for queries, write mode for allocation, deallocation,
 //! and sync. The `block_groups` vector itself is immutable after mount;
 //! each `BlockGroup` carries its own internal locks (see `block_group`
-//! module documentation). The `group_descriptors_segment` has no dedicated
-//! lock — it is loaded once at mount and updated during `sync` under each
-//! group's metadata write guard, with disjoint descriptor offsets ensuring
-//! no two writers touch the same bytes. `next_generation` is an `AtomicU32`
-//! incremented once per newly allocated inode.
+//! module documentation). Allocation and allocation-metadata writeback use
+//! the order `super_block` -> group `metadata`. The superblock write guard
+//! covers bitmap writes, descriptor staging, and all descriptor/superblock
+//! copies, so no allocator or second sync can change that snapshot in flight.
+//! Inode writeback must finish before entering this phase. `next_generation`
+//! is an `AtomicU32` incremented once per newly allocated inode.
 
 use core::sync::atomic::{AtomicU32, Ordering};
 
@@ -414,10 +415,13 @@ impl Ext2 {
             .ok_or_else(|| Error::with_message(Errno::EIO, "block group index out of range"))?;
 
         if let Err(err) = self.write_back_inode_desc(ino, &raw_inode) {
+            // Rollback is an allocation change too; it must not bypass the
+            // superblock guard held across allocation-metadata writeback.
+            let mut sb = self.super_block.write();
             if let Ok(was_allocated) = block_group.free_inode(ino, inode_type)
                 && was_allocated
             {
-                let _ = self.super_block.write().inc_free_inodes();
+                let _ = sb.inc_free_inodes();
             }
 
             return Err(err);
@@ -514,15 +518,12 @@ impl Ext2 {
         }
     }
 
-    /// Syncs cached inodes and block-group-local metadata in all groups.
+    /// Syncs all cached inodes before the coordinated allocation phase.
     pub(super) fn sync_all(&self) -> Result<()> {
-        // `group_descriptors_segment` is updated without a filesystem-wide lock,
-        // but each group writes only its own descriptor slice under its
-        // `metadata.write()` guard.  Because groups are synced sequentially and
-        // their descriptor offsets are disjoint, no two writers touch the same
-        // bytes, so the segment is always consistent.
+        // Never hold the superblock guard while calling inode writeback:
+        // inode descriptors acquire that guard themselves for validation.
         for group in &self.block_groups {
-            group.sync_all(&self.group_descriptors_segment)?;
+            group.sync_inodes()?;
         }
         self.sync_metadata()
     }
@@ -534,9 +535,6 @@ impl Ext2 {
     /// counters, without recursing into cached inode writeback. The caller must
     /// have released its inode lock and must still flush the device afterwards.
     pub(super) fn sync_allocation_metadata(&self) -> Result<()> {
-        for group in &self.block_groups {
-            group.sync_metadata(&self.group_descriptors_segment)?;
-        }
         self.sync_metadata()
     }
 
@@ -629,13 +627,21 @@ impl Ext2 {
         false
     }
 
-    /// Flushes the superblock and all dirty group descriptors to the device.
+    /// Flushes allocation metadata as one `super_block` -> group phase.
     fn sync_metadata(&self) -> Result<()> {
         let mut sb_guard = self.super_block.write();
 
-        let any_group_dirty = self.block_groups.iter().any(|group| group.is_desc_dirty());
+        let any_group_dirty = self.block_groups.iter().any(|group| group.is_metadata_dirty());
         if !sb_guard.is_dirty() && !any_group_dirty {
             return Ok(());
+        }
+
+        // Keep the same guard until the staged descriptors and all superblock
+        // copies are written. Clearing a group's dirty bit before this phase
+        // completes can lose a concurrent allocation behind an early return.
+        // On any I/O error all dirty metadata remains available for retry.
+        for group in &self.block_groups {
+            group.sync_metadata(&self.group_descriptors_segment, &sb_guard)?;
         }
 
         let nr_block_groups = sb_guard.nr_block_groups() as usize;
@@ -669,6 +675,9 @@ impl Ext2 {
             )?;
         }
 
+        for group in &self.block_groups {
+            group.clear_metadata_dirty(&sb_guard);
+        }
         sb_guard.clear_dirty();
         Ok(())
     }
@@ -700,6 +709,12 @@ impl Ext2 {
 #[cfg(ktest)]
 mod test {
 
+    use core::sync::atomic::AtomicUsize;
+
+    use aster_block::{
+        BlockDeviceMeta,
+        bio::{BioEnqueueError, BioType, SubmittedBio},
+    };
     use ostd::prelude::*;
 
     use super::*;
@@ -707,7 +722,7 @@ mod test {
         fs::{
             file::SyncMode,
             fs_impls::ext2::test_utils::{
-                BlockBitmapInit, Ext2FixtureBuilder, Ext2MemoryDisk, InodeBitmapInit,
+                BlockBitmapInit, Ext2Fixture, Ext2FixtureBuilder, Ext2MemoryDisk, InodeBitmapInit,
                 RawInodeBuilder, assert_errno, create_file, default_fixture, make_valid_group_desc,
                 make_valid_super_block,
             },
@@ -738,6 +753,163 @@ mod test {
             .link_count(link_count)
             .dtime(dtime)
             .build()
+    }
+
+    /// Observes the real metadata BIO path and can reject one selected write.
+    /// It never waits on the allocation owner while that owner may be held by
+    /// the caller: try_write observes whether another allocator could enter.
+    #[derive(Debug)]
+    struct AllocationSyncDisk {
+        inner: Arc<Ext2MemoryDisk>,
+        owner: RwMutex<Weak<Ext2>>,
+        metadata_offsets: [usize; 4],
+        observed: [AtomicUsize; 4],
+        unguarded: AtomicUsize,
+        fail_offset: AtomicUsize,
+    }
+
+    impl BlockDevice for AllocationSyncDisk {
+        fn enqueue(&self, bio: SubmittedBio) -> core::result::Result<(), BioEnqueueError> {
+            if bio.type_() == BioType::Write {
+                let offset = bio.sid_range().start.to_raw() as usize * SECTOR_SIZE;
+                if let Some(index) = self.metadata_offsets.iter().position(|value| *value == offset) {
+                    self.observed[index].fetch_add(1, Ordering::Relaxed);
+                    let owner = self.owner.read().upgrade().unwrap();
+                    if owner.super_block.try_write().is_some() {
+                        self.unguarded.fetch_add(1, Ordering::Relaxed);
+                    }
+                }
+                if self.fail_offset.compare_exchange(
+                    offset, usize::MAX, Ordering::Relaxed, Ordering::Relaxed,
+                ).is_ok() {
+                    bio.complete(BioStatus::IoError);
+                    return Ok(());
+                }
+            }
+            self.inner.enqueue(bio)
+        }
+
+        fn metadata(&self) -> BlockDeviceMeta {
+            self.inner.metadata()
+        }
+
+        fn name(&self) -> &str {
+            "ext2-allocation-sync-test"
+        }
+
+        fn id(&self) -> DeviceId {
+            self.inner.id()
+        }
+    }
+
+    fn allocation_sync_fixture() -> (Ext2Fixture, Arc<AllocationSyncDisk>) {
+        clocks::init_for_ktest();
+        let mut fixture = Ext2FixtureBuilder::new(1, 256)
+            .with_free_blocks(64, 64)
+            .with_free_inodes(1000, 1000)
+            .build().unwrap();
+        let device = Arc::new(AllocationSyncDisk {
+            inner: fixture.disk.clone(),
+            owner: RwMutex::new(Weak::new()),
+            metadata_offsets: [
+                Bid::new(fixture.descs[0].block_bitmap_bid as u64).to_offset(),
+                Bid::new(fixture.descs[0].inode_bitmap_bid as u64).to_offset(),
+                Bid::new(fixture.sb.group_descriptors_bid(0) as u64).to_offset(),
+                SUPER_BLOCK_OFFSET,
+            ],
+            observed: core::array::from_fn(|_| AtomicUsize::new(0)),
+            unguarded: AtomicUsize::new(0),
+            fail_offset: AtomicUsize::new(usize::MAX),
+        });
+        fixture.ext2 = Ext2::open(device.clone(), FsFlags::empty(), None).unwrap();
+        *device.owner.write() = Arc::downgrade(&fixture.ext2);
+        (fixture, device)
+    }
+
+    fn assert_synced_allocation(fixture: &Ext2Fixture, inodes: &[Ext2Ino], blocks: &[Ext2Bid]) {
+        let group = fixture.ext2.block_group(0);
+        let desc = fixture.disk.segment().read_val::<RawBlockGroup>(
+            Bid::new(fixture.sb.group_descriptors_bid(0) as u64).to_offset(),
+        ).unwrap();
+        assert_eq!(desc.free_blocks_count, group.free_blocks_count());
+        assert_eq!(desc.free_inodes_count, group.free_inodes_count());
+        let sb = fixture.disk.segment().read_val::<RawSuperBlock>(SUPER_BLOCK_OFFSET).unwrap();
+        assert_eq!(sb.free_blocks_count, u32::from(desc.free_blocks_count));
+        assert_eq!(sb.free_inodes_count, u32::from(desc.free_inodes_count));
+        let reopened = Ext2::open(fixture.disk.clone(), FsFlags::empty(), None).unwrap();
+        let reopened_group = reopened.block_group(0);
+        for ino in inodes {
+            assert!(reopened_group.is_inode_allocated(*ino));
+        }
+        let metadata = reopened_group.metadata();
+        for bid in blocks {
+            assert!(metadata.block_bitmap.is_allocated(
+                (*bid - reopened_group.first_block()).try_into().unwrap(),
+            ));
+        }
+        assert!(!fixture.ext2.super_block().is_dirty());
+        assert!(!group.is_metadata_dirty());
+    }
+
+    #[ktest]
+    fn allocation_sync_rechecks_an_earlier_snapshot_under_the_same_owner() {
+        let (fixture, device) = allocation_sync_fixture();
+        let fs = &fixture.ext2;
+        let first_ino = fs.alloc_ino(ROOT_INO, InodeType::File).unwrap();
+        let first_block = fs.alloc_blocks(1, 0).unwrap().start;
+        {
+            // Reproduce the earlier snapshot in the old split protocol.
+            // Another allocator is allowed to run once this scope returns.
+            let sb = fs.super_block.write();
+            for group in &fs.block_groups {
+                group.sync_metadata(&fs.group_descriptors_segment, &sb).unwrap();
+            }
+        }
+        let second_ino = fs.alloc_ino(ROOT_INO, InodeType::File).unwrap();
+        let second_block = fs.alloc_blocks(1, 0).unwrap().start;
+        assert_ne!(first_ino, second_ino);
+        assert_ne!(first_block, second_block);
+
+        // This is the old final phase's exact entry after the intervening
+        // allocation. It must restage the current descriptor, not commit the
+        // older segment and clear the sole superblock dirty flag.
+        fs.sync_metadata().unwrap();
+        assert_synced_allocation(&fixture, &[first_ino, second_ino], &[first_block, second_block]);
+
+        let third_ino = fs.alloc_ino(ROOT_INO, InodeType::File).unwrap();
+        let third_block = fs.alloc_blocks(1, 0).unwrap().start;
+        fs.sync_allocation_metadata().unwrap();
+        assert_synced_allocation(&fixture, &[first_ino, second_ino, third_ino],
+            &[first_block, second_block, third_block]);
+        assert_eq!(device.unguarded.load(Ordering::Relaxed), 0);
+        assert!(device.observed.iter().all(|count| count.load(Ordering::Relaxed) >= 2));
+    }
+
+    #[ktest]
+    fn allocation_sync_retries_all_dirty_metadata_after_write_failure() {
+        // Cover both bitmap writes, the descriptor table, and the superblock.
+        // The rejected write must be observed, propagate EIO, retain all dirty
+        // state, and converge to the real disk image on an unmodified retry.
+        for failing_index in 0..4 {
+            let (fixture, device) = allocation_sync_fixture();
+            let fs = &fixture.ext2;
+            let ino = fs.alloc_ino(ROOT_INO, InodeType::File).unwrap();
+            let block = fs.alloc_blocks(1, 0).unwrap().start;
+            device.fail_offset.store(device.metadata_offsets[failing_index], Ordering::Relaxed);
+            assert_errno!(fs.sync_allocation_metadata(), Errno::EIO);
+            assert_eq!(device.fail_offset.load(Ordering::Relaxed), usize::MAX);
+            assert!(fs.super_block().is_dirty());
+            {
+                let metadata = fs.block_group(0).metadata();
+                assert!(metadata.desc.is_dirty());
+                assert!(metadata.block_bitmap.is_dirty());
+                assert!(metadata.inode_bitmap.is_dirty());
+            }
+            fs.sync_allocation_metadata().unwrap();
+            assert_synced_allocation(&fixture, &[ino], &[block]);
+            assert_eq!(device.unguarded.load(Ordering::Relaxed), 0);
+            assert!(device.observed.iter().all(|count| count.load(Ordering::Relaxed) >= 1));
+        }
     }
 
     #[ktest]

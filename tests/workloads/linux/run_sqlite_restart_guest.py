@@ -155,7 +155,8 @@ def run(args, out, report):
     qemu, formatter = executable(args.qemu), executable(args.mkfs)
     report.update(kernel_sha256=sha(kernel), original_initramfs_sha256=sha(original),
                   bios_sha256=sha(bios), probe_sha256=sha(probe_bytes), compile_command=compile_args,
-                  qemu_version=subprocess.check_output([qemu, '--version'], timeout=10).decode(), cases=[])
+                  qemu_version=subprocess.check_output([qemu, '--version'], timeout=10).decode(),
+                  ext2_features=['filetype'], cases=[])
     for negative in (False, True):
         case = out / ('negative-omitted-commit' if negative else 'committed')
         case.mkdir()
@@ -163,7 +164,10 @@ def run(args, out, report):
         with image.open('xb') as stream:
             stream.truncate(64 * 1024 * 1024)
         require(',' not in str(image), 'disk path would alter QEMU options')
-        format_args = [formatter, '-F', '-q', '-b', '4096', '-I', '256', '-O', 'none', str(image)]
+        # The current directory writer emits the file-type byte. Qualify the
+        # matching ext2 format explicitly; legacy feature-off images are a
+        # separate known compatibility gap, not silent evidence for this run.
+        format_args = [formatter, '-F', '-q', '-b', '4096', '-I', '256', '-O', 'none,filetype', str(image)]
         with (case / 'format.log').open('xb') as log:
             result = subprocess.run(format_args, stdout=log, stderr=subprocess.STDOUT, timeout=30, check=False)
         require(result.returncode == 0, 'fresh regular-file ext2 formatting failed')
