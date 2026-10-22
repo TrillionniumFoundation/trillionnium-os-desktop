@@ -1,6 +1,6 @@
 --- a/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
 +++ b/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
-@@ -131,12 +131,30 @@
+@@ -135,12 +135,30 @@
          let peer_end = self.inner.peer_end();
  
          let mut reader = this_end.reader.lock();

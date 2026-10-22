@@ -33,15 +33,15 @@ require, digest, save = replay.require, replay.digest, ordinary.save_json
 ENDPOINT = "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs"
 CONNECTED = "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
 SOCKET = "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs"
-SOCKET_SHA = "160802e7e207e4a20e69559eff3b678189a29665a0336955cdc1c41f27ad1593"
+SOCKET_SHA = "3458b0b5a9023c26b396d73e61c13c69affcf98fe23c46fc4ca5793b75db1933"
 ENDPOINT_SHA = "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba"
 CONNECTED_SHA = {
-    "positive": "10ccbc29b3155e4c7ce52732754844e5ecbb045d1f6f20b48f856691e4c7354a",
-    "race-fixed": "6eae6736c83324b931e8b5725eb631851498375e784394b14517eccd1b6d77c6",
-    "race-stale": "527f9c849760a4b5eef43c4f4c054abccfdb4c66f1db9c35e4c5537a90cca30f",
-    "aux-zero-progress": "29b774e4ad27389989604836f52d9fddbfa9e5170301ea30374f83d6eaa4adf8",
+    "positive": "a331c8596416d56127eccd7beaa232dcb25bec5763648d322f6be5d697a904d3",
+    "race-fixed": "aac591b80a071aeb14d7ad337f538c7906b7a03bd64fe9ba44e26d92c9891348",
+    "race-stale": "b80f1157bb9cbcb513ff6231fa72693268741b34e2fd1763df34a627a5736b0e",
+    "aux-zero-progress": "c578aa3d6d2a05bc78c8100b24b39343eb8c21d9cda580e1092e6114983581e4",
 }
-PROBE_SHA = "476a7ad3cc31787203364c0f9855629df148c79c4cbd1ebf92ab42510b307939"
+PROBE_SHA = "bb7e334a76c4e201b3ef33842be7f87a235a6940d783c8c741d63839519ab747"
 ENV = {"PATH": "/usr/bin:/bin", "LC_ALL": "C", "LANG": "C"}
 
 

@@ -1,6 +1,6 @@
 --- a/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
 +++ b/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
-@@ -169,6 +169,7 @@
+@@ -173,6 +173,7 @@
          let read_base = reader.head();
          let mut read_tot_len = 0;
          let mut trunc_len = 0;
@@ -8,7 +8,7 @@
  
          loop {
              let read_snapshot = self.inner.read_snapshot();
-@@ -221,6 +222,26 @@
+@@ -225,6 +226,26 @@
                  Err(err) => return Err(err),
              };
  
@@ -35,7 +35,7 @@
              read_tot_len += read_len;
              if aux_front.is_some() {
                  aux_pos += 1;
-@@ -234,7 +255,7 @@
+@@ -238,7 +259,7 @@
                      trunc_len = aux_len - read_len;
                  }
                  break;

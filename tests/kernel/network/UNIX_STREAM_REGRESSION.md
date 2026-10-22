@@ -28,6 +28,24 @@ blocking mode, receive timeout and all control-message handling. The unchanged
 alarm before the fix. The runner pins this third production source file across
 the positive and all three qualification variants.
 
+The first stale-snapshot control then reached a real premature EOF after a
+successful 96-byte peer write and shutdown, but its queued-data witness failed:
+`FIONREAD` returned `ENOTTY`. That run remains an unqualified negative because
+the original oracle requires the actual remaining byte count. The stream and
+sequence-packet socket now implements the existing typed
+`GetNumBytesToRead` ioctl. It reads the receive queue length while holding the
+original reader lock, returns zero for an unconnected socket, and rejects a
+listening socket with `EINVAL`. It releases the socket and reader guards before
+copying the count to userspace. Sequence-packet counts include all queued data
+bytes, including the packets after the first; empty packets add no bytes.
+
+The eight positive cases additionally check this ioctl before and after real
+reads, peeks, shutdown, empty packets, packet truncation, and invalid copyout.
+These are extra syscall assertions inside the existing cases. The protocol,
+original shutdown-race function, semantic-negative oracle, 64-iteration race
+bound, and 20-second process alarm are unchanged. New source and probe pins bind
+these assertions consistently across the positive and three control kernels.
+
 These are socket correctness changes. They do not themselves qualify original
 Agentd shutdown, production authority, native HOS2 effects, or persistent Hepta
 recovery. Those gates retain their independent original-owner lifecycle tests.

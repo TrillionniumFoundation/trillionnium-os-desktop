@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <signal.h>
+#include <stddef.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -11,6 +12,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/un.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -99,12 +101,19 @@ static void eof(int fd) {
     EQUAL(recv(fd, &byte, 1, MSG_DONTWAIT), 0, "recv_eof");
 }
 
+static void queued_count(int fd, size_t expected) {
+    int count = -1;
+    EQUAL(ioctl(fd, FIONREAD, &count), 0, "fionread");
+    EQUAL(count, expected, "fionread_queued_bytes");
+}
+
 static void receive_payload(int fd, const unsigned char *expected, size_t size, size_t chunk) {
     unsigned char observed[256];
     size_t done = 0;
     REQUIRE(chunk > 0 && chunk <= sizeof observed, "receive_chunk_bound");
     emit("checkpoint", "name=before_recv expected_bytes=%zu chunk=%zu", size, chunk);
     while (done < size) {
+        queued_count(fd, size - done);
         size_t wanted = size - done < chunk ? size - done : chunk;
         errno = 0;
         ssize_t got = recv(fd, observed, wanted, MSG_DONTWAIT);
@@ -112,6 +121,7 @@ static void receive_payload(int fd, const unsigned char *expected, size_t size, 
         if (got <= 0 || (size_t)got > wanted) fail("recv_payload", (long)wanted, got, error);
         REQUIRE(memcmp(observed, expected + done, (size_t)got) == 0, "payload_bytes");
         done += (size_t)got;
+        queued_count(fd, size - done);
     }
 }
 
@@ -178,14 +188,32 @@ static void send_credentials(int fd, const unsigned char *bytes, size_t size) {
 }
 
 static void open_empty(void) {
+    int listener = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
+    REQUIRE(listener >= 0, "fionread_socket");
+    queued_count(listener, 0);
+    struct sockaddr_un address = {.sun_family = AF_UNIX};
+    memcpy(address.sun_path + 1, run_nonce, 32);
+    EQUAL(bind(listener, (const struct sockaddr *)&address,
+        offsetof(struct sockaddr_un, sun_path) + 33), 0, "fionread_bind");
+    EQUAL(listen(listener, 1), 0, "fionread_listen");
+    int count = -1;
+    errno = 0;
+    int result = ioctl(listener, FIONREAD, &count);
+    REQUIRE(result == -1 && errno == EINVAL, "fionread_listener_einval");
+    EQUAL(close(listener), 0, "fionread_listener_close");
     int sockets[2];
     pair(SOCK_STREAM, sockets);
+    queued_count(sockets[1], 0);
+    errno = 0;
+    result = ioctl(sockets[1], FIONREAD, (void *)0);
+    REQUIRE(result == -1 && errno == EFAULT, "fionread_copyout_efault");
     unsigned char byte;
     emit("checkpoint", "name=before_recv expected_bytes=0 open=1");
     errno = 0;
     ssize_t observed = recv(sockets[1], &byte, 1, MSG_DONTWAIT);
     int error = errno;
     if (observed != -1 || error != EAGAIN) fail("open_empty_eagain", -1, observed, error);
+    queued_count(sockets[1], 0);
     shut(sockets[0]);
     eof(sockets[1]);
     close_pair(sockets);
@@ -198,7 +226,9 @@ static void queued_shutdown(void) {
     payload(bytes, sizeof bytes, 1);
     pair(SOCK_STREAM, sockets);
     written(sockets[0], bytes, sizeof bytes);
+    queued_count(sockets[1], sizeof bytes);
     shut(sockets[0]);
+    queued_count(sockets[1], sizeof bytes);
     receive_payload(sockets[1], bytes, sizeof bytes, sizeof bytes);
     eof(sockets[1]);
     close_pair(sockets);
@@ -216,6 +246,7 @@ static void partial_peek(void) {
     for (unsigned index = 0; index < 2; ++index) {
         EQUAL(recv(sockets[1], prefix, sizeof prefix, MSG_PEEK | MSG_DONTWAIT), sizeof prefix, "peek_prefix");
         REQUIRE(memcmp(prefix, bytes, sizeof prefix) == 0, "peek_bytes");
+        queued_count(sockets[1], sizeof bytes);
     }
     receive_payload(sockets[1], bytes, sizeof bytes, 11);
     EQUAL(recv(sockets[1], prefix, sizeof prefix, MSG_PEEK | MSG_DONTWAIT), 0, "peek_eof");
@@ -328,21 +359,26 @@ static void seqpacket_boundaries(void) {
     written(sockets[0], first, sizeof first);
     written(sockets[0], second, sizeof second);
     shut(sockets[0]);
+    queued_count(sockets[1], sizeof first + sizeof second);
     emit("checkpoint", "name=before_recv zero_packet=1 first_bytes=7 second_bytes=11");
     struct received result;
     receive_message(sockets[1], &result, sizeof result.bytes, MSG_PEEK);
     if (result.length != 0) fail("peek_zero_packet", 0, result.length, result.error);
     receive_message(sockets[1], &result, sizeof result.bytes, 0);
     if (result.length != 0) fail("recv_zero_packet", 0, result.length, result.error);
+    queued_count(sockets[1], sizeof first + sizeof second);
     receive_message(sockets[1], &result, sizeof result.bytes, MSG_PEEK);
     if (result.length != 7) fail("peek_packet", 7, result.length, result.error);
     REQUIRE(memcmp(result.bytes, first, sizeof first) == 0, "peek_packet_bytes");
+    queued_count(sockets[1], sizeof first + sizeof second);
     receive_message(sockets[1], &result, sizeof result.bytes, 0);
     if (result.length != 7) fail("recv_first_packet", 7, result.length, result.error);
     REQUIRE(memcmp(result.bytes, first, sizeof first) == 0, "first_packet_bytes");
+    queued_count(sockets[1], sizeof second);
     receive_message(sockets[1], &result, sizeof result.bytes, 0);
     if (result.length != 11) fail("recv_second_packet", 11, result.length, result.error);
     REQUIRE(memcmp(result.bytes, second, sizeof second) == 0, "second_packet_bytes");
+    queued_count(sockets[1], 0);
     eof(sockets[1]);
     close_pair(sockets);
     emit("case_pass", "zero_packet=1 peek_packets=2 first_bytes=7 second_bytes=11 eof=1");
@@ -364,14 +400,17 @@ static void seqpacket_truncation(void) {
     if (result.length != 4) fail("packet_truncated_copy", 4, result.length, result.error);
     REQUIRE((result.message.msg_flags & MSG_TRUNC) != 0 && memcmp(result.bytes, first, 4) == 0,
         "packet_truncated_flag");
+    queued_count(sockets[1], sizeof first + sizeof second);
     receive_message(sockets[1], &result, 4, MSG_TRUNC);
     if (result.length != 13) fail("packet_trunc_returns_message_size", 13, result.length, result.error);
     REQUIRE((result.message.msg_flags & MSG_TRUNC) != 0 && memcmp(result.bytes, first, 4) == 0,
         "packet_trunc_input_flag");
+    queued_count(sockets[1], sizeof second);
     receive_message(sockets[1], &result, sizeof result.bytes, 0);
     if (result.length != 5) fail("packet_after_truncated", 5, result.length, result.error);
     REQUIRE(memcmp(result.bytes, second, sizeof second) == 0 && (result.message.msg_flags & MSG_TRUNC) == 0,
         "packet_after_truncated_bytes");
+    queued_count(sockets[1], 0);
     eof(sockets[1]);
     close_pair(sockets);
     emit("case_pass", "packet_bytes=13 copied_bytes=4 trunc_return=13 next_packet_bytes=5 eof=1");

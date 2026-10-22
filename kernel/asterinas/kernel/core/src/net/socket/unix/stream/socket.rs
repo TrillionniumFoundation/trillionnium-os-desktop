@@ -9,6 +9,7 @@ use super::{
     listener::{Backlog, Listener, get_backlog},
 };
 use crate::{
+    dispatch_ioctl,
     events::IoEvents,
     fs::{
         file::{FileCommon, FileLike},
@@ -34,7 +35,7 @@ use crate::{
         Gid,
         signal::{PollHandle, Pollable, Pollee},
     },
-    util::{MultiRead, MultiWrite, net::SockType},
+    util::{MultiRead, MultiWrite, ioctl::RawIoctl, net::SockType},
 };
 
 pub(crate) struct UnixStreamSocket {
@@ -318,6 +319,27 @@ impl Pollable for UnixStreamSocket {
 impl SocketPrivate for UnixStreamSocket {
     fn is_nonblocking(&self) -> bool {
         self.common.is_nonblocking()
+    }
+
+    fn protocol_ioctl(&self, raw_ioctl: RawIoctl) -> Result<i32> {
+        use crate::util::ioctl::common_defs::GetNumBytesToRead;
+
+        dispatch_ioctl!(match raw_ioctl {
+            cmd @ GetNumBytesToRead => {
+                let bytes_to_read = match self.state.read().as_ref() {
+                    State::Init(_) => 0,
+                    State::Listen(_) => {
+                        return_errno_with_message!(Errno::EINVAL, "the socket is listening")
+                    }
+                    State::Connected(connected) => connected.bytes_to_read(),
+                };
+                // Both socket types share a bounded receive ring. Sequence
+                // packets report all queued bytes, including later packets.
+                cmd.write(&(bytes_to_read as i32))?;
+                Ok(0)
+            }
+            _ => return_errno_with_message!(Errno::ENOTTY, "the socket ioctl command is unknown"),
+        })
     }
 }
 

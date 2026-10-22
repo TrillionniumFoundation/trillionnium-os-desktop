@@ -1,6 +1,6 @@
 --- a/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
 +++ b/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
-@@ -137,6 +137,25 @@
+@@ -141,6 +141,25 @@
          // `reader.len()` is an `Acquire` operation. So it can guarantee that the `has_aux`
          // check below sees the up-to-date value.
          let no_aux_len = reader.len();

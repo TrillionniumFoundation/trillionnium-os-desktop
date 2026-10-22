@@ -8,7 +8,8 @@
   "native_executed": false,
   "positive_source_sha256": {
     "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
-    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs": "10ccbc29b3155e4c7ce52732754844e5ecbb045d1f6f20b48f856691e4c7354a"
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs": "a331c8596416d56127eccd7beaa232dcb25bec5763648d322f6be5d697a904d3",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs": "3458b0b5a9023c26b396d73e61c13c69affcf98fe23c46fc4ca5793b75db1933"
   },
   "schema": "asterinas.unix-stream-controls.v1",
   "variants": {
@@ -17,27 +18,27 @@
         "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
       ],
       "endpoint_sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
-      "patch_sha256": "01d442ee0beddf33da834ce9a1bd9854db5859095e8f7c844fc7c06778e12894",
-      "source_bytes": 15883,
-      "source_sha256": "29b774e4ad27389989604836f52d9fddbfa9e5170301ea30374f83d6eaa4adf8"
+      "patch_sha256": "d9eb294d03b16df8bc8749f1927d87e2fe63a29399518d868a7c2ec03c5387e5",
+      "source_bytes": 15990,
+      "source_sha256": "c578aa3d6d2a05bc78c8100b24b39343eb8c21d9cda580e1092e6114983581e4"
     },
     "race-fixed": {
       "changed_paths": [
         "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
       ],
       "endpoint_sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
-      "patch_sha256": "045fd9deb87d28dc8a9d320e02715aff0c09132cf7abb2400bb1bfed89c790aa",
-      "source_bytes": 15762,
-      "source_sha256": "6eae6736c83324b931e8b5725eb631851498375e784394b14517eccd1b6d77c6"
+      "patch_sha256": "d262cc32b91f9b1bbdb494db6048c8a6f8a67229b465260d23fc4ddbf44e9a2a",
+      "source_bytes": 15869,
+      "source_sha256": "aac591b80a071aeb14d7ad337f538c7906b7a03bd64fe9ba44e26d92c9891348"
     },
     "race-stale": {
       "changed_paths": [
         "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
       ],
       "endpoint_sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
-      "patch_sha256": "e60f5ddb5272d294053a7f501f20e3f0db94cf016b8c17e809cdc63fb1e76341",
-      "source_bytes": 15675,
-      "source_sha256": "527f9c849760a4b5eef43c4f4c054abccfdb4c66f1db9c35e4c5537a90cca30f"
+      "patch_sha256": "3fadd31c117b5a2f4732a592e7261eccbef94b5652b171a48207551d20e3f544",
+      "source_bytes": 15782,
+      "source_sha256": "b80f1157bb9cbcb513ff6231fa72693268741b34e2fd1763df34a627a5736b0e"
     }
   }
 }

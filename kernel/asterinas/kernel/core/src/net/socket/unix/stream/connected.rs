@@ -89,6 +89,10 @@ impl Connected {
         self.addr.as_ref()
     }
 
+    pub(super) fn bytes_to_read(&self) -> usize {
+        self.inner.this_end().reader.lock().len()
+    }
+
     pub(super) fn peer_addr(&self) -> UnixSocketAddr {
         self.inner
             .peer_end()
