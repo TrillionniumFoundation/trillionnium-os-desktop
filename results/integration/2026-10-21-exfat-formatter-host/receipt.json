@@ -1,0 +1,38 @@
+{
+  "schema": "a06.exfat-formatter-host-regression.v1",
+  "recorded_at": "2026-10-21T10:49:27.587377+00:00",
+  "base_head": "168d053e2d5493fbc4bc45914099c62b6691ad45",
+  "test_file": "tests/workloads/linux/test_exfat_mode_guest.py",
+  "test_file_git_blob": "b0803cb2bdcf84d5105b1cb7d6f55254aa8d9308",
+  "test_file_sha256": "34a66aed5a9924133084cd64f157403d69367e2504271dcb6a9529ad93bb203c",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "results": [
+    {
+      "command": "python3 -I -B -m unittest discover -s tests/workloads/linux -p test_exfat_mode_guest.py -v",
+      "exit_code": 0,
+      "tests": 14,
+      "passed": 14,
+      "log": "normal.log",
+      "log_sha256": "372ad8bc77d226580a66a0c2edfcebad9548af6f8e64a7f0e542992f3c709ef0"
+    },
+    {
+      "command": "python3 -I -B -O -m unittest discover -s tests/workloads/linux -p test_exfat_mode_guest.py -v",
+      "exit_code": 0,
+      "tests": 14,
+      "passed": 14,
+      "log": "optimized.log",
+      "log_sha256": "40f6fedc78fa1af8b036d5ca4807593edd8dd4171b6e6f831322bee7840aeae7"
+    }
+  ],
+  "scope": "Two real Python fixture subprocesses exercise the production prepare/version/logging and failed-format paths. The fixture is not a qualification of an installed formatter.",
+  "unchanged": [
+    "Production formatter policy remains exact exfatprogs 1.2.2, exit 1, empty stderr for -V only.",
+    "Actual format still requires exit 0.",
+    "Existing version-response mock cases and all original assertions remain.",
+    "Kernel 262/265 and 24-test-name gates are unchanged."
+  ],
+  "excluded": [
+    "No C/Rust compilation, image formatting, mount, loop attachment, native guest, or physical device test."
+  ],
+  "initial_attempt": "Sparse checkout omitted tests/integration/hepta/run_original_agentd.py; importing failed before tests. The same committed source dependency was populated before both successful complete runs."
+}

@@ -3,9 +3,11 @@
 import copy
 import gzip
 import importlib.util
+import json
 from pathlib import Path
 import struct
 import subprocess
+import sys
 import tempfile
 import types
 import unittest
@@ -230,6 +232,66 @@ class InputOwnershipTests(unittest.TestCase):
             negative.verify_delta(before, after, original, changed + b'extra code')
         with self.assertRaises(ValueError):
             negative.mutation(original + negative.BEFORE)
+
+
+class FormatterProcessTests(unittest.TestCase):
+    @staticmethod
+    def formatter(directory):
+        path = directory / 'formatter fixture with spaces'
+        path.write_text('#!' + sys.executable + '\n'
+                        'import sys\n'
+                        'sys.stdout.buffer.write(b"exfatprogs version : 1.2.2\\n")\n'
+                        'sys.stdout.buffer.flush()\n'
+                        'raise SystemExit(1)\n')
+        path.chmod(0o700)
+        return path
+
+    def test_prepare_accepts_the_real_version_child_and_retains_its_command_and_output(self):
+        class CompileReached(Exception):
+            pass
+
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            formatter = self.formatter(out)
+            tools = {'test-cc': {'path': sys.executable}, 'mkfs.exfat': {'path': str(formatter)}}
+            args = types.SimpleNamespace(cc='test-cc', expected_source_head='test-head',
+                                         expected_source_tree='test-tree')
+            run_logged = runner.run_logged
+
+            def before_compile(command, output, name, **kwargs):
+                if name == 'compile':
+                    raise CompileReached
+                return run_logged(command, output, name, **kwargs)
+
+            # Source qualification is outside this subprocess test. Stop before
+            # any compilation, image creation, formatting, or device access.
+            with mock.patch.object(runner.product, 'source_snapshot', return_value={'test': 'source'}), \
+                    mock.patch.object(runner, 'tool_identity', side_effect=tools.__getitem__), \
+                    mock.patch.object(runner, 'run_logged', side_effect=before_compile):
+                with self.assertRaises(CompileReached):
+                    runner.prepare(args, out, {})
+            self.assertEqual(json.loads((out / 'formatter-version-command.json').read_text()),
+                             [str(formatter), '-V'])
+            self.assertEqual((out / 'formatter-version.exit-code.txt').read_bytes(), b'1\n')
+            self.assertEqual((out / 'formatter-version.stdout.log').read_bytes(),
+                             b'exfatprogs version : 1.2.2\n')
+            self.assertEqual((out / 'formatter-version.stderr.log').read_bytes(), b'')
+            self.assertFalse((out / 'probe.elf').exists())
+            self.assertFalse((out / 'blank.raw').exists())
+
+    def test_real_format_child_with_the_version_banner_and_exit_one_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            formatter = self.formatter(out)
+            image = out / 'owned blank.raw'
+            command = [str(formatter), str(image)]
+            with self.assertRaisesRegex(ValueError, 'format failed; original stdout/stderr retained'):
+                runner.run_logged(command, out, 'format')
+            self.assertEqual(json.loads((out / 'format-command.json').read_text()), command)
+            self.assertEqual((out / 'format.exit-code.txt').read_bytes(), b'1\n')
+            self.assertEqual((out / 'format.stdout.log').read_bytes(), b'exfatprogs version : 1.2.2\n')
+            self.assertEqual((out / 'format.stderr.log').read_bytes(), b'')
+            self.assertFalse(image.exists())
 
 
 if __name__ == '__main__':
