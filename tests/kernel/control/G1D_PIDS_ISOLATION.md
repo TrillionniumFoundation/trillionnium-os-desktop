@@ -54,6 +54,36 @@ reap. Existing deferred CPU charge leases also pin such nodes. Supporting Linux
 removal of zombie-only groups requires a separate, reviewed tombstone/charge
 lifecycle; this slice does not claim that behavior.
 
+## Stable ownership of the backing SysTree object
+
+The first pids candidate at `ad4f91a888e04339385ec2eeeefa4bc9312eed74`
+exposed a second defect at the original low-privilege write check. SysTree inode
+metadata used the lookup caller's filesystem IDs. Cgroup attribute revalidation
+constructs a new inode, so looking up a root-created `0644` attribute as the
+workload changed its apparent owner to UID 60001. The original guest rejected
+this run; its failure remains part of the evidence.
+
+Ownership now belongs to the backing `SysObj`, independently of inode caches
+and filesystem views. `SysOwnership` records an immutable numeric UID/GID pair;
+kernel-created objects default to root. Actual user-created `CgroupNode` and TSM
+`ReportNode` constructors capture the creator's fsuid/fsgid before publishing the
+object. Branch, leaf, and symlink inheritance forwards that ownership, and all
+four SysTree inode kinds use it. An attribute inherits its owning node's recorded
+identity; lookup and attribute revalidation never choose a new owner.
+
+This keeps the original VFS permission decision and its `EACCES` result. It adds
+no cgroup-only denial, capability bypass, membership rule, new lock, or alternate
+owner cache. Existing `chown` rejection and inode-local mode handling remain
+unchanged. Native delegation to multiple non-root users and mode persistence
+through reconstruction require their own tests; this slice does not qualify
+a general cgroup delegation or ownership-mutation contract.
+
+The new core regression
+`object_ownership_survives_inode_and_view_reconstruction` checks non-root owners
+on a branch, leaf, symlink, and their attributes through repeated inode lookup
+and independently reconstructed views. The native G1-d case separately verifies
+that its actual UID 60001 workload cannot write the root-created pids controls.
+
 ## Native acceptance cases
 
 `g1d_pids.c` is included in the original sealed `g1d_init.c` probe. The build
@@ -94,10 +124,35 @@ python3 -I -B tests/kernel/control/run_g1d_guest.py \
   --target-dir <fresh-target-outside-source> --output <fresh-evidence-directory>
 ```
 
-Run the full required core gate and the existing SMP gate on the same runtime
-source. No new ktest is added and the expected core test count is unchanged.
-Retain the static probe digest, product kernel digest, source snapshots, raw
-serial, exact-image result, and both altered-image rejection results.
+Run the full required core gate and the existing permission SMP gate on the
+same runtime source. The SysTree ownership regression adds one core ktest;
+the qualified source below declares and passes 275 core tests. The permission
+SMP subset is a separate execution and does not qualify multi-CPU trusted
+control. Retain the static probe digest, product kernel digest, source snapshots,
+raw serial, exact-image result, and both altered-image rejection results.
+
+## Recorded native qualification
+
+Source `2f806c2852cd21a9769c7b01a76ba5f97027c111`, tree
+`6897d0d26277f832d75100e64b92e9432977f240`, passed the full 275-test core gate,
+the separate three-test/two-CPU permission SMP subset, and all three original
+G1-d boots. The exact guest exercises workload limits and actual `EACCES`
+rejections; the two altered-image boots retain their precise pre-activation
+rejection. The original probe, oracle, time limits, and CPU/history/recovery
+assertions are unchanged.
+
+Both semantic controls below were then executed on that fixed owner source.
+The thread mutant actually admits the forbidden thread; the zombie mutant
+actually loses the retained `WNOWAIT` charge. Each original positive oracle
+fails at the documented assertion, with normal QEMU exit 33 and no timeout or
+panic; their altered-image controls also reject as required. The source is
+restored to the clean positive head afterward. The prior `ad4f91a8…` owner
+failure and a rejected reused-target preparation attempt remain preserved.
+
+[The original receipts and independent replay](../../../results/integration/2026-10-22-pids-systree-owner/README.md)
+bind all source/tool/probe/kernel/log identities and distinguish this local
+native qualification from final-branch CI. No broader E, Hepta durability,
+SMP trusted-control, general delegation, or hardware qualification follows.
 
 ## Minimal semantic negative controls
 

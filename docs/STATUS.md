@@ -1,5 +1,21 @@
 # 当前状态
 
+## 2026-10-22 接续：E 的 retained-task 计数与 SysTree owner 已完成原生正反验证
+
+[#245](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/245) 的已测源码为 `2f806c2852cd21a9769c7b01a76ba5f97027c111` / tree `6897d0d26277f832d75100e64b92e9432977f240`。此切片让原 pids 层级统一计入 fork、线程、保留 leader 与未 reap 僵尸，并在 workload 首次运行前设置 `pids.max=16`；manager/recovery 保留原 root-cgroup 容量。它还修复了 SysTree inode 按 lookup 调用者生成 owner、使 UID 60001 能打开 root 创建的 pids 属性写入口的问题：owner 现在保存在原 backing object 上，属性重建和新 filesystem view 都使用同一身份。
+
+| 本次实际执行 | 结果与边界 |
+| --- | --- |
+| 完整 aster-core | **275/275**，0 failed/filtered/soft-skipped，QEMU33；新增 ownership/view 重建测试在原串口中恰好一次 `ok`。 |
+| 独立 permission SMP | 两 CPU 的 **3/3**，278 declared / 275 filtered，QEMU33；不是278项全部执行，也不是SMP trusted control资格。 |
+| 原 G1-d 三 boot | 精确映像通过完整 retained-task、UID60001/caps0 写拒绝、CPU/history、manager-exec、独立恢复与合法暂停保持；两个 altered-image 在 commit/activation 前按原原因拒绝。 |
+| 线程限额语义负控 | 保留真实 charge/RAII，只绕过线程准入限额；实际线程返回0，原探针要求EAGAIN并精确拒绝。 |
+| 僵尸提前退账语义负控 | 只在exit提前refund；实际 `WNOWAIT` 时 current/ancestor均0，原保留charge断言精确拒绝。两负控exact均QEMU33、无timeout/panic，四个altered-image仍精确拒绝，之后恢复正向干净HEAD。 |
+
+[技术/开发手册](../tests/kernel/control/G1D_PIDS_ISOLATION.md) 与 [原始证据及独立复核](../results/integration/2026-10-22-pids-systree-owner/README.md) 固定本次源码、相同probe/QEMU/BIOS/lock及全部serial摘要。独立复核重新执行原判定器解析12份G1-d串口，保留旧 `ad4f91a8…` 的真实权限失败和首次复用target被准备门禁拒绝的记录。此处记录本地原生验收；最终发布提交仍按其自己的远端CI决定合并资格。
+
+**E 的上述两个实现缺陷已有对应正向和反向证据，完整 E 仍未闭合。** `memory.max` 仍是stub，256MiB `RLIMIT_AS` 只限制单进程；manager/recovery的完整资源隔离、自主watchdog与可信暂停原因仍需实现。多用户原生SysTree委派、chown/mode持久策略、SMP trusted control、Hepta生产authority/原store生命周期/G2持久闭环与实际硬件继续按各自门槛验收。下文旧A–G矩阵保留原时点，不把本次局部E资格转授其他切片。
+
 ## 2026-10-22 接续：ext2 初始只读 atime 修复已完成原生正反验证
 
 [#243](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/243) 的固定源码为 `9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd` / tree `eeae4dc1ef546d408b55c98310e99e3156f08207`，基于已合入的 #240。修复仅阻止初始文件系统级 RDONLY 下 buffered/direct/readdir 自动 atime 置脏；显式时间修改和 sync/writeback 路径保持原行为。源码已发布，本地原生门禁完成；本节记录时远端 CI 仍有排队，不能记为已合并。
