@@ -9,12 +9,15 @@ delivery identifiers, explicit generation fences (authority/body/resource/bridge
 pointers, CapSpace handles, signer material, Agentd UDS paths, PIDs as
 authority, or platform device handles.
 
-The protocol keeps the durable Hepta key
-K = (scope_id, operation_id, payload_digest) in DurableIntent separate from
-the boot-local HOS2 delivery binding
-D = (boot_id, delivery_id, capspace_epoch, sequence). A delivery binding is
-not a durable operation identity and a process restart does not silently turn
-a new D into a retry of K.
+Protocol version 1 keeps `OperationKey(scope_id, operation_id, payload_digest)`
+inside `DurableIntent` separate from
+`BootDelivery(boot_id, delivery_id, capspace_epoch, sequence)`. These are the
+current UI seam's wire and process-cache shapes. They are not a verified mapping
+of the original Hepta owner's canonical durable key or native HOS2 delivery
+identity. An explicitly versioned owner adapter and its binding checks are still
+required before this seam can carry production operations. A delivery binding
+is not a durable operation identity, and a process restart cannot silently turn
+a new delivery into an authorized retry.
 
 SameUidAuthenticator uses Linux kernel SO_PEERCRED data through
 peer_credentials_from_unix. This authenticates the kernel-reported UID/PID
@@ -58,6 +61,16 @@ Until the original Hepta owner supplies a verified receipt, reconciliation
 returns unknown and never infers success from a process exit, timeout, or UI
 message.
 
+Cached reconciliation and request replay compare the complete `DurableIntent`,
+including its destination, before returning a cached reply. Reusing the same
+cache key under a fresh request ID cannot replace that intent with a different
+destination. Delivery and generation checks still apply independently. When
+several request IDs refer to one cached operation, eviction retains the
+operation until its last replay entry is removed. These are bounded observation
+cache checks, not owner authentication, a durable ledger, or permission to
+submit an effect. `OwnerReceipt` remains a reserved shape without an ingestion
+API; its existing validation is insufficient for production authorization.
+
 Notifications are bounded. A dropped prefix sets reconcile_required, so a
 mobile client that disconnects must pull/reconcile before presenting a terminal
 effect. Offline drafts return local_only; they contain a digest and can be
@@ -65,7 +78,9 @@ stored by the local draft facility, but cannot submit an effect.
 
 The crate adversarial tests cover protocol version/unknown-field rejection,
 foreign-UID rejection, denied effect capabilities, K/D separation, generation
-fences, unknown reconciliation, bounded notification loss, replay conflict,
+fences, unknown reconciliation, destination-only reconciliation/replay conflicts,
+fresh-request destination rebinding, shared-operation replay eviction,
+bounded notification loss, replay conflict,
 foreign/restarted Broker handles, shared clone invalidation, global and
 cross-peer admission limits, failed-admission ID preservation, last-clone
 reclamation, and deterministic idle-timeout boundaries and refresh.

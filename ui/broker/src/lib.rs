@@ -517,7 +517,7 @@ struct OperationRecord {
 
 #[derive(Clone, Debug)]
 struct ReplayRecord {
-    key: OperationKey,
+    intent: DurableIntent,
     delivery: BootDelivery,
     fence: GenerationFence,
     reply: OperationReply,
@@ -806,6 +806,12 @@ impl Broker {
                 },
             };
         };
+        if record.intent != intent {
+            return Response::Denied {
+                code: DenialCode::InvalidRequest,
+                detail: "operation intent does not match the cached binding".into(),
+            };
+        }
         if record.delivery != delivery {
             return Response::Denied {
                 code: DenialCode::StaleGeneration,
@@ -866,7 +872,7 @@ impl Broker {
             return Err(BrokerError::InvalidRequestId);
         }
         if let Some(existing) = self.replays.get(&request_id) {
-            if existing.key != record.intent.key
+            if existing.intent != record.intent
                 || existing.delivery != record.delivery
                 || existing.fence != record.fence
             {
@@ -874,18 +880,31 @@ impl Broker {
             }
             return Ok((existing.reply.clone(), false));
         }
+        if self
+            .operations
+            .get(&record.intent.key)
+            .is_some_and(|existing| existing.intent != record.intent)
+        {
+            return Err(BrokerError::ReplayConflict);
+        }
         if self.replays.len() >= MAX_REPLAY_ENTRIES {
             let oldest = self.replays.keys().next().cloned();
             if let Some(oldest) = oldest {
                 if let Some(removed) = self.replays.remove(&oldest) {
-                    self.operations.remove(&removed.key);
+                    if !self
+                        .replays
+                        .values()
+                        .any(|replay| replay.intent.key == removed.intent.key)
+                    {
+                        self.operations.remove(&removed.intent.key);
+                    }
                 }
             }
         }
         self.replays.insert(
             request_id,
             ReplayRecord {
-                key: record.intent.key.clone(),
+                intent: record.intent.clone(),
                 delivery: record.delivery.clone(),
                 fence: record.fence.clone(),
                 reply: record.reply.clone(),
@@ -1385,6 +1404,142 @@ mod tests {
                 ..
             }
         ));
+    }
+
+    #[test]
+    fn reconcile_rejects_changed_destination_and_preserves_original_binding() {
+        let mut broker = Broker::new();
+        let (session, _) = broker
+            .open_session(
+                &SameUidAuthenticator { expected_uid: 1000 },
+                hello(vec![Capability::Reconcile]),
+                peer(1000),
+            )
+            .unwrap();
+        let original = intent("destination-bound-operation");
+        let delivery = delivery("destination-bound-delivery");
+        let fence = fence();
+        broker.seed_owner_pending(
+            "destination-bound-request",
+            original.clone(),
+            delivery.clone(),
+            fence.clone(),
+        );
+        let mut changed = original.clone();
+        changed.destination = "display:other".into();
+        assert_eq!(
+            broker.handle(
+                &session,
+                Request::Reconcile {
+                    intent: changed,
+                    delivery: delivery.clone(),
+                    fence: fence.clone(),
+                },
+            ),
+            Response::Denied {
+                code: DenialCode::InvalidRequest,
+                detail: "operation intent does not match the cached binding".into(),
+            }
+        );
+        assert_eq!(
+            broker.handle(
+                &session,
+                Request::Reconcile {
+                    intent: original.clone(),
+                    delivery: delivery.clone(),
+                    fence,
+                },
+            ),
+            Response::Operation {
+                reply: OperationReply {
+                    key: original.key.clone(),
+                    delivery,
+                    state: OperationState::Unknown,
+                    disposition: ActionDisposition::Reconciled,
+                    reason: BrokerReason::EffectOwnerUnavailable,
+                }
+            }
+        );
+        assert_eq!(broker.operations[&original.key].intent, original);
+        assert_eq!(broker.notifications.len(), 1);
+    }
+
+    #[test]
+    fn replay_rejects_destination_only_change_without_replacing_cached_intent() {
+        let mut broker = Broker::new();
+        let intent = intent("replay-destination-operation");
+        broker.seed_owner_pending(
+            "replay-destination-request",
+            intent.clone(),
+            delivery("replay-destination-delivery"),
+            fence(),
+        );
+        let original = broker.operations[&intent.key].clone();
+        let expected_reply = original.reply.clone();
+        let mut changed = original.clone();
+        changed.intent.destination = "display:other".into();
+        assert_eq!(
+            broker.remember("replay-destination-request".into(), changed),
+            Err(BrokerError::ReplayConflict)
+        );
+        assert_eq!(
+            broker.remember("replay-destination-request".into(), original),
+            Ok((expected_reply, false))
+        );
+        assert_eq!(broker.operations[&intent.key].intent, intent);
+        assert_eq!(broker.replays["replay-destination-request"].intent, intent);
+        assert_eq!(broker.replays.len(), 1);
+        assert_eq!(broker.notifications.len(), 1);
+    }
+
+    #[test]
+    fn new_request_id_cannot_rebind_a_cached_operation_destination() {
+        let mut broker = Broker::new();
+        let original = intent("shared-operation");
+        broker.seed_owner_pending(
+            "original-request",
+            original.clone(),
+            delivery("original-delivery"),
+            fence(),
+        );
+        let mut changed = broker.operations[&original.key].clone();
+        changed.intent.destination = "display:other".into();
+        assert_eq!(
+            broker.remember("new-request".into(), changed),
+            Err(BrokerError::ReplayConflict)
+        );
+        assert_eq!(broker.operations[&original.key].intent, original);
+        assert_eq!(broker.replays.len(), 1);
+        assert!(!broker.replays.contains_key("new-request"));
+    }
+
+    #[test]
+    fn replay_eviction_retains_operation_until_its_last_request_is_removed() {
+        let mut broker = Broker::new();
+        let shared = intent("shared-operation");
+        for request in ["alias-a", "alias-b"] {
+            broker.seed_owner_pending(
+                request,
+                shared.clone(),
+                delivery("shared-delivery"),
+                fence(),
+            );
+        }
+        for number in 0..MAX_REPLAY_ENTRIES - 2 {
+            broker.seed_owner_pending(
+                &format!("request-{number}"),
+                intent(&format!("operation-{number}")),
+                delivery(&format!("delivery-{number}")),
+                fence(),
+            );
+        }
+        for (request, remains) in [("new-a", true), ("new-b", false)] {
+            broker.seed_owner_pending(request, intent(request), delivery(request), fence());
+            assert_eq!(broker.replays.len(), MAX_REPLAY_ENTRIES);
+            assert_eq!(broker.operations.contains_key(&shared.key), remains);
+        }
+        assert!(!broker.replays.contains_key("alias-a"));
+        assert!(!broker.replays.contains_key("alias-b"));
     }
 
     #[test]
