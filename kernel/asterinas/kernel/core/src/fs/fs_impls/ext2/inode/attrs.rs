@@ -16,10 +16,9 @@ use crate::{
         ext2::{inode::Inode, prelude::*, utils},
         file::InodeMode,
         vfs::{
+            file_system::FsFlags,
             inode::Metadata,
-            permission_attrs::{
-                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy,
-            },
+            permission_attrs::{PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy},
             xattr::{XattrName, XattrNamespace, XattrSetFlags},
         },
     },
@@ -28,6 +27,8 @@ use crate::{
 
 #[cfg(ktest)]
 mod permission_tests;
+#[cfg(ktest)]
+mod readonly_atime_tests;
 
 impl Inode {
     /// Serializes permission decisions with all users of InodeInner and marks
@@ -168,6 +169,21 @@ impl Inode {
     /// Sets the last access time.
     pub(in ext2) fn set_atime(&self, time: Duration) {
         self.inner.write().set_atime(time);
+    }
+
+    /// Updates the access time after a read on a writable filesystem.
+    pub(super) fn update_atime_after_read(&self) {
+        let Some(fs) = self.fs.upgrade() else {
+            return;
+        };
+        // This is the filesystem-wide policy for an initially read-only
+        // mount. It does not serialize concurrent read-only remounts or
+        // decide the atime policy of a particular bind mount.
+        if fs.fs_flags().contains(FsFlags::RDONLY) {
+            return;
+        }
+
+        self.inner.write().set_atime(utils::now());
     }
 
     /// Returns the last data modification time.
