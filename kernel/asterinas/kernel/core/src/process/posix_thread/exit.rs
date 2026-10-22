@@ -10,6 +10,7 @@ use super::{
 };
 use crate::{
     context::current_userspace,
+    fs::cgroupfs::CgroupMembership,
     prelude::*,
     process::{
         TermStatus,
@@ -61,6 +62,9 @@ fn exit_internal(
     let posix_process = posix_thread.process();
 
     let is_last_thread = {
+        // Serialize task accounting with cgroup migration/activation.
+        // Membership precedes TaskSet, as it does on both clone paths.
+        let cgroup_membership = CgroupMembership::read_lock();
         let mut tasks = posix_process.tasks().lock();
         let has_exited_group = tasks.has_exited_group();
         let in_evecve = tasks.in_execve();
@@ -94,6 +98,16 @@ fn exit_internal(
             // The final thread fences it before files/VMAR/discovery teardown.
             posix_process.begin_hepta_image_close();
         }
+        drop(tasks);
+
+        // Keep the leader's TID charged until reap or non-leader exec. For a
+        // non-leader, release its PID entry before refunding, without holding
+        // TaskSet across PID-table locking (exec takes those in the other order).
+        // This also completes the refund before clear_child_tid wakes a joiner.
+        if posix_thread.tid() != posix_process.pid() {
+            pid_table::pid_table_mut().remove_thread(posix_thread.tid());
+            cgroup_membership.uncharge_released_task(&posix_process);
+        }
         is_last_thread
     };
     #[cfg(feature = "g1d-trusted-control")]
@@ -112,12 +126,6 @@ fn exit_internal(
     wake_clear_ctid(thread_local);
 
     wake_robust_list(thread_local, posix_thread.tid());
-
-    // According to Linux behavior, the main thread shouldn't be removed from the table until the
-    // process is reaped by its parent.
-    if posix_thread.tid() != posix_process.pid() {
-        pid_table::pid_table_mut().remove_thread(posix_thread.tid());
-    }
 
     // Drop fields in `PosixThread`.
     drop_after!(posix_thread.file_table().lock().take());

@@ -6,6 +6,7 @@ use super::{
     signal::{constants::SIGCHLD, with_sigmask_changed},
 };
 use crate::{
+    fs::cgroupfs::CgroupMembership,
     prelude::*,
     process::{
         ReapedChildrenStats, Uid, pid_table,
@@ -274,10 +275,14 @@ fn cleanup_exited_tracee(
         return;
     }
 
+    // Clone holds membership before the parent's children lock. Keep that
+    // same order while releasing a traced zombie's final pids charge.
+    let mut membership = CgroupMembership::write_lock();
     reap_zombie_child(
         process.pid(),
         ctx.process.children().lock().as_mut().unwrap(),
         ctx.process.reaped_children_stats(),
+        &mut membership,
     );
 }
 
@@ -287,7 +292,9 @@ fn try_wait_children(
     wait_options: WaitOptions,
     ctx: &Context,
 ) -> WaitResult {
-    // Acquire the children lock at first to prevent race conditions.
+    // Membership precedes children, matching clone and traced-child reap.
+    let mut membership = CgroupMembership::write_lock();
+    // Acquire the children lock to prevent race conditions.
     // We want to ensure that multiple waiting threads
     // do not return the same waited process status.
     let mut children_lock = ctx.process.children().lock();
@@ -314,6 +321,7 @@ fn try_wait_children(
                     child.pid(),
                     children_mut,
                     ctx.process.reaped_children_stats(),
+                    &mut membership,
                 );
             }
             return WaitResult::Found(WaitStatus::Zombie(child));
@@ -340,9 +348,14 @@ fn reap_zombie_child(
     child_pid: Pid,
     children_lock: &mut BTreeMap<Pid, Arc<Process>>,
     reaped_children_stats: &Mutex<ReapedChildrenStats>,
+    membership: &mut CgroupMembership,
 ) -> ExitCode {
     let child_process = children_lock.remove(&child_pid).unwrap();
     assert!(child_process.status().is_zombie());
+
+    // Only a consuming wait releases the zombie leader. WNOWAIT and parent
+    // reparenting preserve both its cgroup membership and its pids charge.
+    membership.move_process_to_root(&child_process);
 
     let mut pid_table = pid_table::pid_table_mut();
 

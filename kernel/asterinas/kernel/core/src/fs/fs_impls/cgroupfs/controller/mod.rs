@@ -432,10 +432,10 @@ impl Controller {
                         SubController::new(Some(parent_controller));
                     if let Some(inner) = new_controller.inner.as_mut() {
                         // When the pids sub-controller is being activated, initialize
-                        // `pids.current` with the number of processes already present
+                        // `pids.current` with the number of retained tasks already present
                         // in this cgroup's subtree. The parent's counter is already
                         // correct because charges propagated through inactive levels.
-                        let count = cgroup_membership.count_subtree_processes(child_node);
+                        let count = cgroup_membership.count_subtree_tasks(child_node);
                         if count > 0 {
                             inner.init_count(count);
                         }
@@ -501,22 +501,22 @@ impl Controller {
 
 // For pids sub-controller
 impl Controller {
-    /// Charges a process in the pids sub-controller hierarchy.
+    /// Charges retained tasks in the pids sub-controller hierarchy.
     ///
     /// This operation is used for explicit migration and will not enforce
     /// the `pids.max` limit.
     ///
     /// Reference: <https://docs.kernel.org/admin-guide/cgroup-v2.html#pid>
-    pub(super) fn charge_pids(&self) {
+    pub(super) fn charge_pids(&self, count: u32) {
         let guard = self.pids.read();
         let sub = guard.get();
-        sub.charge_hierarchy();
+        sub.charge_hierarchy(count);
     }
 
-    /// Pre-charges a process in the pids sub-controller hierarchy,
+    /// Pre-charges a task in the pids sub-controller hierarchy,
     /// enforcing `pids.max` at each level.
     ///
-    /// This is used at fork time. Returns a guard that will roll back the
+    /// This is used for fork and CLONE_THREAD. Returns a guard that rolls back the
     /// charge unless it is explicitly applied.
     ///
     /// Note that concurrent operations of moving processes to cgroups and
@@ -535,11 +535,11 @@ impl Controller {
         Ok(PidsPreCharge { controller: self })
     }
 
-    /// Uncharges a process in the pids sub-controller hierarchy.
-    pub(super) fn uncharge_pids(&self) {
+    /// Uncharges retained tasks in the pids sub-controller hierarchy.
+    pub(super) fn uncharge_pids(&self, count: u32) {
         let guard = self.pids.read();
         let sub = guard.get();
-        sub.uncharge_hierarchy();
+        sub.uncharge_hierarchy(count);
     }
 }
 
@@ -549,15 +549,15 @@ pub(crate) struct PidsPreCharge<'a> {
 }
 
 impl PidsPreCharge<'_> {
-    /// Applies the pre-charge and prevents rollback on drop.
-    pub(super) fn apply(self) {
+    /// Commits the slot after its new task has joined the charged membership.
+    pub(crate) fn apply(self) {
         core::mem::forget(self);
     }
 }
 
 impl Drop for PidsPreCharge<'_> {
     fn drop(&mut self) {
-        self.controller.uncharge_pids();
+        self.controller.uncharge_pids(1);
     }
 }
 

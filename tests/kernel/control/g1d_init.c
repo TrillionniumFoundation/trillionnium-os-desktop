@@ -9,6 +9,8 @@
 #include <inttypes.h>
 #include <linux/capability.h>
 #include <limits.h>
+#include <pthread.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -51,7 +53,8 @@ enum { RESERVED_STATE = 0, TERMINAL_STATE = 1, RETIRED_STATE = 2,
        NOT_SEEN_STATE = 3, HISTORY_LOST_STATE = 4 };
 enum { REC_QUERY_MANAGER = 1, REC_RETIRE_MANAGER = 2, REC_INSTALL = 3,
        REC_QUERY_SELF = 4, REC_STOP = 5, REC_CHECK_USER_STOP = 6,
-       REC_REJECT_REUSED_RECOVERY = 7, REC_CHECK_USER_CONTINUE = 8 };
+       REC_REJECT_REUSED_RECOVERY = 7, REC_CHECK_USER_CONTINUE = 8,
+       REC_PIDS_RESERVE = 9 };
 
 static unsigned char boot_id[16], manager_space[16], recovery_space[16], own_space[16];
 static unsigned char *boot_page;
@@ -291,7 +294,8 @@ static void publish_message(const char *name, const struct message *message) {
     write_file(temporary, message, sizeof *message);
     /* Only the readiness record is public. The workload cannot write the
      * directory or read/replace the manager/recovery command and reply files. */
-    if (strcmp(name, "ready") == 0) CHECK(chmod(temporary, 0644) == 0, "ready_readonly_mode");
+    if (strcmp(name, "ready") == 0 || strcmp(name, "pids-reserved") == 0)
+        CHECK(chmod(temporary, 0644) == 0, "ready_readonly_mode");
     CHECK(rename(temporary, final) == 0, "ipc_publish");
 }
 static int read_message(const char *name, struct message *message) {
@@ -518,9 +522,12 @@ static void workload_linux_boundary(void) {
           "workload_setuid_exec_failed");
     record("G1D_WORKLOAD_LINUX_ISOLATED uid=60001 gid=60001 groups=0 caps=0 nnp=1 securebits=195 signal_cases=10 boundary_cases=17 exec_cases=1");
 }
+#include "g1d_pids.c"
+
 static void workload(void) {
     wait_ready();
     workload_linux_boundary();
+    pids_workload();
     control_fd = open_control(1); query(control_fd, own_space);
     CHECK(memcmp(own_space, manager_space, 16) != 0 &&
           memcmp(own_space, recovery_space, 16) != 0, "workload_private_capspace");
@@ -550,6 +557,9 @@ static void recovery(void) {
     for (;;) {
         struct message message = await_message("command", ++id);
         switch (message.action) {
+        case REC_PIDS_RESERVE:
+            pids_role_reserve();
+            break;
         case REC_QUERY_MANAGER:
             history(control_fd, manager_history_slot, manager_history_gen, manager_space,
                     message.a, 0, (unsigned)message.expected_status, message.response);
@@ -733,9 +743,12 @@ static void start_workload_and_recovery(void) {
     CHECK(mount("none","/proc","proc",0,NULL)==0,"mount_proc");
     CHECK(mount("none","/sys","sysfs",0,NULL)==0,"mount_sysfs");
     CHECK(mount("none","/sys/fs/cgroup","cgroup2",0,NULL)==0,"mount_cgroup");
+    pids_accounting();
     CHECK(mkdir(IPC_DIR,0755)==0,"probe_coordination_directory");
     write_file(IPC_DIR "/heartbeat", "", 0);
     CHECK(chown(IPC_DIR "/heartbeat",WORKLOAD_ID,WORKLOAD_ID)==0,"workload_heartbeat_owner");
+    write_file(IPC_DIR "/pids-saturated", "", 0);
+    CHECK(chown(IPC_DIR "/pids-saturated",WORKLOAD_ID,WORKLOAD_ID)==0,"workload_pids_report_owner");
     CHECK(chmod("/dev/hepta-control",0666)==0,"control_query_device_access");
     int source=open("/test/g1d-init",O_RDONLY|O_CLOEXEC);
     int copy=open(IPC_DIR "/setuid-probe",O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC,0600);
@@ -758,9 +771,20 @@ static void start_workload_and_recovery(void) {
     struct message ready={.magic=IPC_MAGIC};
     publish_message("ready",&ready);
     (void)await_message("recovery-ready",0);
-    uint64_t deadline=now_ns()+UINT64_C(10000000000);
-    while (heartbeat()==0 && now_ns()<deadline) sleep_ms(2);
+    uint64_t deadline=now_ns()+UINT64_C(30000000000);
+    int reserved=0;
+    while (heartbeat()==0 && now_ns()<deadline) {
+        if (!reserved && pids_saturated()==WORKLOAD_PIDS_MAX) {
+            pids_role_reserve();
+            (void)recovery_command(REC_PIDS_RESERVE,0,0,OK);
+            struct message ready={.magic=IPC_MAGIC};
+            publish_message("pids-reserved",&ready);
+            reserved=1;
+        }
+        sleep_ms(2);
+    }
     CHECK(heartbeat()>0,"workload_really_running");
+    CHECK(reserved,"pids_role_reserve_required");
 }
 static void read_exact_file(const char *path,void *data,size_t size) {
     int fd=open(path,O_RDONLY|O_CLOEXEC);
@@ -992,6 +1016,10 @@ static void manager(void) {
 
 int main(int argc,char **argv) {
     setvbuf(stdout,NULL,_IONBF,0);
+    if(argc==2 && strcmp(argv[1],"--pids-after-exec")==0) {
+        pids_after_exec();
+        return 0;
+    }
     if(argc==2 && strcmp(argv[1],"--workload-privexec")==0) {
         CHECK(getauxval(AT_HEPTA_BOOT)==0 && workload_credentials("after_exec"),"workload_privexec_gained_authority");
         workload_address_space("after_exec");

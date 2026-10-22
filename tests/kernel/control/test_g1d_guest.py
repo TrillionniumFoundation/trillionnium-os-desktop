@@ -39,6 +39,18 @@ def fixture_workload():
     return lines
 
 
+def fixture_pids():
+    lines = ["G1D_PIDS_INITIAL pid=2 max=16 current=1"]
+    lines.extend(f"G1D_PIDS_BOUNDARY name={name} rc=-1 errno=13" for name in g1d.PIDS_BOUNDARY_NAMES)
+    lines.extend((g1d.PIDS_ROLLBACK, g1d.PIDS_DESCENDANTS,
+                  "G1D_PIDS_ROLE_RESERVE role=1 pid=1 child=10 workload_current=16 root_member=1 child_exit=0",
+                  "G1D_PIDS_ROLE_RESERVE role=3 pid=3 child=11 workload_current=16 root_member=1 child_exit=0",
+                  g1d.PIDS_FORK_REFUND, g1d.PIDS_ZOMBIES, g1d.PIDS_THREADS,
+                  "G1D_PIDS_NONLEADER_EXEC pid=12 parent=2 current=2 max=16 old_leader_refunded=1",
+                  g1d.PIDS_EXEC_REFUND, g1d.PIDS_COMPLETE))
+    return lines
+
+
 def fixture_address_space(phase, pid):
     values = dict(pid=pid, soft=g1d.WORKLOAD_AS_BYTES, hard=g1d.WORKLOAD_AS_BYTES,
                   after_soft=g1d.WORKLOAD_AS_BYTES, after_hard=g1d.WORKLOAD_AS_BYTES,
@@ -68,7 +80,9 @@ def valid_serial(boot_order=(3, 1, 2)):
                  "cap_ns=50000000 period_ns=100000000 lease_ns=300000000000 hepta_durability=false")
     lines.extend(f"G1D_BOOT role={role} pid={role} manager=1 workload=2 recovery=3 version=2 bytes=192"
                  for role in boot_order)
+    lines.extend((g1d.PIDS_ZOMBIE_RETAINED, g1d.PIDS_ACCOUNTING))
     lines.extend(fixture_workload())
+    lines.extend(fixture_pids())
     lines.extend(("G1D_WORKLOAD_NO_AUTHORITY", "G1D_RECOVERY_READY",
                   "G1D_QUERYABI_OK supported_ops=62 max_request=40 max_response=64 features=0"))
     lines.extend((fixture_apply(1, 1, 25_000_000, 2, 10_000_000, 1000, 2000),
@@ -147,6 +161,48 @@ class VerdictTests(unittest.TestCase):
         self.assertFalse(self.verdict(raw.replace(activation + b"\n", b"") + activation + b"\n"))
         role = b"[hepta-g1d] trusted role committed: role=3 pid=3\n"
         self.assertFalse(self.verdict(raw.replace(role, b"") + role))
+
+    def test_pids_limits_threads_zombies_and_rollbacks_are_required(self):
+        raw = valid_serial()
+        mutations = ((b"max=16", b"max=17"), (b"current=16", b"current=15"),
+                     (b"thread_errno=11", b"thread_errno=12"),
+                     (b"parent_fork_errno=11", b"parent_fork_errno=0"),
+                     (b"grandchildren=14", b"grandchildren=0"),
+                     (b"thread_cases=2", b"thread_cases=0"),
+                     (b"retained=15", b"retained=0"), (b"wnowait_refunded=0", b"wnowait_refunded=1"),
+                     (b"after_one_reap=15", b"after_one_reap=16"),
+                     (b"retained_leader=3", b"retained_leader=2"),
+                     (b"zombie_populated=0", b"zombie_populated=1"),
+                     (b"old_leader_refunded=1", b"old_leader_refunded=0"),
+                     (b"memory_controller=false", b"memory_controller=true"))
+        for old, new in mutations:
+            with self.subTest(old=old):
+                self.assertIn(old, raw)
+                self.assertFalse(self.verdict(raw.replace(old, new, 1)))
+
+    def test_pids_boundaries_and_reserve_role_identities_are_exact(self):
+        raw = valid_serial()
+        mutations = ((b"name=raise_limit rc=-1 errno=13", b"name=raise_limit rc=4 errno=0"),
+                     (b"name=membership rc=-1 errno=13", b"name=membership rc=-1 errno=2"),
+                     (b"role=1 pid=1 child=10 workload_current=16", b"role=1 pid=2 child=10 workload_current=16"),
+                     (b"role=3 pid=3 child=11", b"role=3 pid=3 child=10"),
+                     (b"root_member=1", b"root_member=0"),
+                     (b"pid=12 parent=2", b"pid=12 parent=3"),
+                     (b"pid=12 parent=2", b"pid=10 parent=2"))
+        for old, new in mutations:
+            with self.subTest(old=old):
+                self.assertIn(old, raw)
+                self.assertFalse(self.verdict(raw.replace(old, new, 1)))
+
+    def test_pids_observations_are_ordered_and_scope_stays_bounded(self):
+        raw = valid_serial()
+        for marker in (g1d.PIDS_ACCOUNTING, g1d.PIDS_DESCENDANTS, g1d.PIDS_ZOMBIES, g1d.PIDS_COMPLETE):
+            line = (marker + "\n").encode()
+            self.assertFalse(self.verdict(raw.replace(line, b"", 1) + line), marker)
+        report = g1d.evaluate_positive(raw, 33, False, INFO)["workload_pids_isolation"]
+        self.assertTrue(report["passed"])
+        self.assertFalse(report["memory_controller_qualified"])
+        self.assertFalse(report["cgroup_removal_with_retained_tasks_supported"])
 
     def test_native_revision_exact_caps_and_accounting_cannot_be_replaced(self):
         raw = valid_serial()

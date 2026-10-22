@@ -11,7 +11,8 @@ use super::{
     signal::sig_disposition::SigDispositions,
 };
 use crate::{
-    fs::pseudofs::SockFs, prelude::*, sched::Nice, thread::AsThread, time::clocks, util::random,
+    fs::{cgroupfs::CgroupMembership, pseudofs::SockFs},
+    prelude::*, sched::Nice, thread::AsThread, time::clocks, util::random,
     vm::vmar::VmarHandle,
 };
 
@@ -72,11 +73,15 @@ pub(crate) fn new_unstarted_process_with_threads(count: usize) -> (Arc<Process>,
     (process, tasks)
 }
 
-/// Publishes the same zombie flag that precedes cgroup detachment in `exit_process`.
+/// Publishes the same zombie/population transaction as `exit_process`.
 /// This does not execute the syscall exit or scheduler exit path.
 pub(crate) fn mark_zombie(process: &Process) {
+    let mut membership = CgroupMembership::write_lock();
     for task in process.tasks().lock().as_slice() {
         task.as_thread().unwrap().exit();
     }
-    process.status().set_zombie();
+    if !process.status().is_zombie() {
+        process.status().set_zombie();
+        membership.hide_zombie_process(process);
+    }
 }

@@ -308,11 +308,17 @@ impl NativeCpuObserver {
             return_errno_with_message!(Errno::EOPNOTSUPP, "trusted initial observation requires N0")
         }
         let root = CgroupSystem::singleton();
-        root.store_attr("cgroup.subtree_control", "+cpu")?;
+        let controllers = if cfg!(feature = "g1d-trusted-control") { "+cpu +pids" } else { "+cpu" };
+        root.store_attr("cgroup.subtree_control", controllers)?;
         let prefix = if cfg!(feature = "g1d-trusted-control") { "hepta-g1d" } else { "hepta-g1c" };
         let name = format!("{prefix}-{image_nonce}");
         let node = Arc::downcast::<CgroupNode>(root.create_child(&name)?)
             .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+        // Bound all workload TIDs before its first instruction. The separately
+        // prepared manager and recovery processes stay outside this leaf, so
+        // workload exhaustion cannot consume their pids capacity.
+        #[cfg(feature = "g1d-trusted-control")]
+        node.store_attr("pids.max", "16")?;
         let owner = node.controller().cpu.read().get().clone();
         let mut membership = CgroupMembership::write_lock();
         let target = node.controller().bind_native_cpu_once_for_owner(
