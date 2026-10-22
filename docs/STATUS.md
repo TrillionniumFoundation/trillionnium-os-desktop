@@ -1,5 +1,21 @@
 # 当前状态
 
+## 2026-10-22 接续：AF_UNIX 定向回归完成同源原生正反验证
+
+固定生产源码为 `b824d80d44456c131a6cb9d4fcc84be95c6af273` / tree `506d583455fa5ea2cf0c18fe10ed42c3874f7556`。本次修复 peer shutdown 与接收数据快照的先后关系、stream 辅助数据零进展退出、单次 `MSG_DONTWAIT`，并补原 typed `FIONREAD`。实现、锁序、开发与验收规则见 [模块技术手册](../tests/kernel/network/UNIX_STREAM_REGRESSION.md)。
+
+| 实际门禁 | 结果与范围 |
+| --- | --- |
+| 完整 aster-core | **274/274**，零 failed/filtered/soft skip，QEMU33；原 environment、launch 和 source 快照绑定同一 b824。 |
+| ordinary AF_UNIX 正控 | **8 cases / 47 records**，child0/QEMU33，1.443秒；最终 probe 含 FIONREAD 断言。 |
+| 真实调度正控 | **64/64 iterations、64 个真实窗口**，131 records，child0/QEMU33。 |
+| stale snapshot 负控 | 实际 producer 成功写96字节并shutdown/reap；提前EOF时FIONREAD仍96，原oracle精确接受该缺陷，child1/QEMU33。 |
+| auxiliary 零进展负控 | 已读13字节后连续3次真实零进展，原定ELOOP条件命中，child1/QEMU33。 |
+
+[原始证据与独立回放](../results/integration/2026-10-22-unix-stream/README.md) 保存209个受控原文文件、全部21份源码快照、7条原oracle的完整等值重放，以及v4另行取回的原命令/exit/stderr。每个v5 control的完整Git tree仅改`connected.rs`；冻结patch与实际Git diff各自验身份并得到同一后像，执行后恢复生产b824。四条当前syscall lane使用同一最终probe/编译器/QEMU/BIOS/lock，无timeout或输出超限。36个留在执行端的二进制实例仅核对原manifest身份，本地重开字节的范围明确列出。
+
+旧v2 alarm124、v3 FIONREAD/ENOTTY未合格负控、v4 rustfmt退出1全部保留；host相容性不算native资格。**本次只闭合这组AF_UNIX定向回归，不闭合原Agentd停机、G2、完整E、持久恢复、UI或实机。** core274属于本分支，不与并行SysTree分支的core275相加，也不代替完整A06/OSTD/SMP或后续合并组合的同树验收。文档追加不改变实际执行head/tree；远端CI与合并另按实际收据记录。以下历史状态保持原时点。
+
 ## 2026-10-22 接续：ext2 初始只读 atime 修复已完成原生正反验证
 
 [#243](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/243) 的固定源码为 `9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd` / tree `eeae4dc1ef546d408b55c98310e99e3156f08207`，基于已合入的 #240。修复仅阻止初始文件系统级 RDONLY 下 buffered/direct/readdir 自动 atime 置脏；显式时间修改和 sync/writeback 路径保持原行为。源码已发布，本地原生门禁完成；本节记录时远端 CI 仍有排队，不能记为已合并。

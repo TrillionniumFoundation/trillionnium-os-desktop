@@ -1,0 +1,73 @@
+{
+  "files": [
+    {
+      "bytes": 5082,
+      "git_blob": "40005d52d4520bbfd1fa7836b89e563bc22ccd32",
+      "path": "history-v4/source-command.json",
+      "sha256": "262d3ec8b7a105d73ff4469bdbc442ad00fc1a757f3136bb384992237e20e947"
+    },
+    {
+      "bytes": 303,
+      "git_blob": "ca865f8ecdea9cceba437f1be451277fe6c17200",
+      "path": "history-v4/exit.json",
+      "sha256": "c988ee4969fe58c81d00b11a4ccc37fa25777246c83fec538177f90e26007290"
+    },
+    {
+      "bytes": 446,
+      "git_blob": "eeb05e9761a35427cfcb41b4f1638e3791102716",
+      "path": "history-v4/stderr.log",
+      "sha256": "7d07690e17d6eba3ad19ca3cb2811a5ec806d6c31b1fe52377c9623eb8a58f54"
+    }
+  ],
+  "full_runtime_request_published": false,
+  "job_id": "1a16431f4a3-1b6abb-3128",
+  "native_guest_result": null,
+  "new_execution_performed": false,
+  "original_exit": {
+    "at_unix_ms": 1792682359206,
+    "cancelled": false,
+    "exit_code": 1,
+    "log_bytes": {
+      "stderr": {
+        "seen": 446,
+        "stored": 446
+      },
+      "stdout": {
+        "seen": 0,
+        "stored": 0
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "timed_out": false
+  },
+  "original_format_log_in_primary": {
+    "bytes": 830,
+    "git_blob": "55b95db1d61e15cc0acd09a4dbcffc33e125782a",
+    "path": "unix-stream-native-v4/format.log",
+    "sha256": "ee441dffeede3ebdbf8c0442a5acf15df9e64c29cbeebfbba2a3ece8c122c3af"
+  },
+  "original_request_sha256": "710067910eec0c7f80ec0ca49e88c68f5590f8477951414c1205bcdcb8f451b2",
+  "primary_independent_review_preserved_sha256": "86f0e6d603740c46e0c8df7b9dd6f148dc6472200bc7fda297a1222293ee17b6",
+  "qualified_semantic_negative": false,
+  "runtime_started_metadata_published": false,
+  "schema": "asterinas.unix-stream-v4-historical-supplement-review.v1",
+  "selected_command_fields_compared_with_original_request": [
+    "job_id",
+    "executable",
+    "args",
+    "cwd",
+    "env",
+    "timeout_seconds"
+  ],
+  "selected_command_fields_exact": true,
+  "source_command_is_selected_fields_copy": true,
+  "status": "preserved original rustfmt rejection before native execution"
+}
