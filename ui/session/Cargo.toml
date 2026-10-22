@@ -10,3 +10,6 @@ trill-ui-core.workspace = true
 trill-ui-broker.workspace = true
 serde_json.workspace = true
 hepta-os-observer = { path = "../../services/hepta-os" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc.workspace = true

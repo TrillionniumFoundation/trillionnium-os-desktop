@@ -100,6 +100,22 @@ fn real_private_channel_preserves_exact_payload_and_reads_independent_applicatio
         NotesObservation::Applied(receipt)
     );
     fixture.join().unwrap();
+    assert!(
+        target.into_initial_endpoint().is_err(),
+        "a contacted target cannot become a fresh bootstrap endpoint"
+    );
+}
+
+#[test]
+fn private_bootstrap_consumes_only_a_fresh_target_handle() {
+    let (owner, mut app) = UnixStream::pair().unwrap();
+    let target = NotesTarget::from_private_channel(owner, identity()).unwrap();
+    let (observed, mut endpoint) = target.into_initial_endpoint().unwrap();
+    assert_eq!(observed, identity());
+    endpoint.write_all(b"owned endpoint").unwrap();
+    let mut bytes = [0; 14];
+    app.read_exact(&mut bytes).unwrap();
+    assert_eq!(&bytes, b"owned endpoint");
 }
 
 #[test]

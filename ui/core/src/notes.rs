@@ -31,8 +31,10 @@ pub struct NotesDestinationObservation {
     /// and TaskRecord. Keep this bounded projection within host frame limits.
     pub incarnation: String,
     pub channel: NotesChannelObservation,
-    /// Always false for the standalone Session. The renderer cannot use this
-    /// display field as a grant, and no effect request exists in host IPC.
+    /// False for standalone Session. In explicit inherited-bootstrap mode,
+    /// true records the parent's historical attachment ACK, not present
+    /// authority, a signed grant, or application readiness. No effect request
+    /// exists in public host IPC.
     pub original_owner_registered: bool,
 }
 

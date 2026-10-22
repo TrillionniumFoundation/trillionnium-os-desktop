@@ -10,6 +10,10 @@ The standalone Session keeps each new destination private and reports
 `original_owner_registered: false`. Public Snapshot / Launch / Cancel IPC has
 no Notes edit or handle-export command. Shell displays the target incarnation
 and channel observation; it cannot submit an effect.
+An explicit trusted-parent startup mode can hand off the initial Notes
+endpoint through a private inherited descriptor. This requires the original
+production host to supply its own recovered writer, FinalUse authority and
+grant provider; normal Session launch performs no registration.
 
 ## Implementation and ownership
 
@@ -20,10 +24,14 @@ and channel observation; it cannot submit an effect.
 | `ui/app-window/src/notes_organ.rs` | Inherited stdin receiver, bounded handoff to the egui thread |
 | `ui/app-window/src/main.rs` | Notes update, user-edit revision changes, layout-only witness |
 | `ui/session/src/main.rs` | Existing child-process owner creates and retains private handles |
+| `ui/core/src/notes_bootstrap.rs` | Strict one-time descriptor handoff request and acknowledgement schema |
+| `ui/session/src/notes_bootstrap.rs` | Linux inherited datagram sender, SCM_RIGHTS and bounded acknowledgement |
 | `ui/shell/src/main.rs` | Read-only destination observation |
 | `ui/broker/tests/notes_target.rs` | Real socketpair tests against an explicit application-model fixture |
 | `ui/broker/examples/notes_host_probe.rs` | Isolated real-window target probe, separate from a production-owner run |
 | `tests/ui/notes-target-v1.json` | Cross-language request, response, payload hash, scope hash and predecessor hash |
+| `tests/ui/notes-bootstrap-v1.json` | Exact bootstrap offer and attached/rejected ACK fixtures shared with the owner |
+| `tests/ui/test-notes-bootstrap-ipc.py` | Actual Session/App descriptor handoff with a transport-only parent fixture and read-only query |
 
 The original default-deny broker is reused from PR #210 head
 `24dc73185d739695ef755c6bbd9d22ee38acf9be`. Its sessions, admission bounds,
@@ -57,11 +65,67 @@ immediately, without returning a deferred effect closure. This does not claim
 that every original Final-use issuer lock spans the entire GUI update.
 
 There is no automatic Agentd registration or same-UID socket for exporting the
-target. Trusted bootstrap must supply the same private endpoint to the original
-owner through explicit in-process composition or controlled descriptor
-inheritance. **Standalone Session does not yet implement that bootstrap
-handoff.** A publicly reachable UDS with only a UID check would not provide
-Final-use authority. The default remains deny until the original owner attaches.
+target. The inherited bootstrap below supplies the same private endpoint to
+the original owner through explicit composition. A publicly reachable UDS with
+only a UID check would not provide Final-use authority. The default remains
+deny until the original owner attaches and authorizes a particular operation.
+
+## Controlled inherited bootstrap
+
+The original production host creates `UnixDatagram::pair()`, keeps one end and
+passes the other as stdin when starting `trill-session --notes-bootstrap-stdin`.
+It must supply a recovered live-verified writer, the retained FinalUse authority
+and its existing grant provider to the original Agentd attachment API. Missing
+configuration has no generated issuer or fallback provider. The initial target
+attachment does not issue or consume a grant.
+
+Before serving any public IPC request, that explicit Session mode launches one
+Build Notes child with task id 1 and a fresh Session/child incarnation. It
+consumes its never-contacted `NotesTarget` and sends a **single atomic datagram**
+with exactly one `SCM_RIGHTS` descriptor. The descriptor is the original private
+Notes effect `UnixStream`; the ordinary effect framing remains unchanged.
+Bootstrap JSON is at most 1024 bytes, without a length prefix:
+
+```json
+{
+  "schema_version": 1,
+  "action": "offer_notes_target",
+  "target": {
+    "session_instance": "11111111111111111111111111111111",
+    "task_id": 1,
+    "incarnation": "22222222222222222222222222222222"
+  },
+  "destination_id": "trill.notes:11111111111111111111111111111111:1:22222222222222222222222222222222"
+}
+```
+
+The reply has the same `schema_version`, `target` and `destination_id`, action
+`notes_target_registration`, and status `attached` or `rejected`. It is one
+datagram of at most 1024 bytes with **no descriptors**. Unknown/duplicate fields,
+different identity, invalid status, truncation and ancillary ACK data are
+rejected. Received unwanted descriptors are closed. Linux checks `AF_UNIX`,
+socket type and unnamed connected peers; received descriptors use
+`MSG_CMSG_CLOEXEC`. Socket shape is not an authority credential.
+
+The parent must send `attached` only after original-owner validation and fixed
+destination composition succeed. The one-shot bootstrap closes afterward.
+Session records `original_owner_registered: true` only as this historical
+private-parent acknowledgement. This does not assert live authority, a signed
+grant, app readiness, a document mutation, pixels or a durable terminal outcome.
+Each later effect still passes the original production dispatcher and exact
+FinalUse checks. Public Launch creates additional private, unregistered Notes
+windows; it cannot replace or export the initial target.
+
+A total two-second handoff deadline applies. Failure disables all duplicate
+references to the offered effect endpoint, kills and reaps only the initial
+Session-owned Notes process, and fails startup before serving public requests.
+A missing ACK remains ambiguous about whether the parent attached; channel
+shutdown cannot undo an effect that may already have happened. No offer is
+automatically retried. The original host owns operation uncertainty.
+
+The local bootstrap transport fixture can acknowledge attachment for its own
+qualification run, but it is explicitly labelled as a fixture and only queries
+the actual app read-only. That test is not a production authority run.
 
 ## Frozen wire contract, version 1
 
@@ -185,6 +249,9 @@ python3 tests/ui/test-strict-request-ipc.py /absolute/path/to/built/binaries
 The socketpair tests explicitly use an application-model fixture; they do not
 claim a GUI or production-owner run. The Session test sends forged Notes effect
 requests and requires rejection before any host task id is allocated.
+The existing `tests/ui/headless-weston.sh` CI path also runs the actual Notes
+destination probe and private Session bootstrap fixture under its own
+compositor, retaining separate JSON/logs. It does not use a live user display.
 
 Within a task-owned isolated Xvfb or Weston, never the user's active display:
 
@@ -192,6 +259,9 @@ Within a task-owned isolated Xvfb or Weston, never the user's active display:
 TRILL_NOTES_PROBE_ISOLATED=1 \
   /absolute/path/to/debug/examples/notes_host_probe \
   /absolute/path/to/debug/trill-app-window
+
+TRILL_NOTES_PROBE_ISOLATED=1 \
+  python3 tests/ui/test-notes-bootstrap-ipc.py /absolute/path/to/debug
 ```
 
 This probe creates one disposable Notes process, waits for the first layout,
@@ -204,7 +274,7 @@ It is a destination test without a fabricated grant, signer or ledger.
 
 Test commands and code presence do not assert passes. Record actual tested
 commit, environment, commands and results. Remaining acceptance includes
-trusted bootstrap, real-authority dispatch through the original owner, durable
+production-configured bootstrap and real-authority dispatch through the original owner, durable
 history/restart/failure reconciliation, and separately scoped visual/device
 tests.
 

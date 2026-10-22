@@ -3,6 +3,7 @@
 pub mod conversation;
 pub mod hepta;
 pub mod notes;
+pub mod notes_bootstrap;
 pub mod observation;
 
 use serde::{Deserialize, Serialize};

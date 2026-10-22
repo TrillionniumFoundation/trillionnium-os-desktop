@@ -70,6 +70,7 @@ pub enum NotesObservation {
 struct Channel {
     stream: UnixStream,
     poisoned: bool,
+    contacted: bool,
 }
 
 pub struct NotesTarget {
@@ -101,6 +102,7 @@ impl NotesTarget {
             channel: Mutex::new(Channel {
                 stream,
                 poisoned: false,
+                contacted: false,
             }),
         })
     }
@@ -111,6 +113,23 @@ impl NotesTarget {
 
     pub fn destination_id(&self) -> String {
         self.identity.destination_id()
+    }
+
+    /// Consume an unused Session-owned handle for an explicit private
+    /// bootstrap handoff. No public Session request exposes this method. A
+    /// contacted or poisoned channel cannot be repackaged as a fresh target.
+    pub fn into_initial_endpoint(self) -> io::Result<(NotesTargetIdentity, UnixStream)> {
+        let channel = self
+            .channel
+            .into_inner()
+            .map_err(|_| io::Error::new(io::ErrorKind::BrokenPipe, "Notes channel was poisoned"))?;
+        if channel.poisoned || channel.contacted {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Notes bootstrap requires a never-contacted target",
+            ));
+        }
+        Ok((self.identity, channel.stream))
     }
 
     pub fn enter_exact(
@@ -145,6 +164,7 @@ impl NotesTarget {
         if channel.poisoned {
             return NotesDispatchOutcome::Rejected(NotesTargetRejection::ChannelUnavailable);
         }
+        channel.contacted = true;
         let response = match exchange_exact(&mut channel.stream, payload) {
             Ok(response) => response,
             Err(_) => {
@@ -202,6 +222,7 @@ impl NotesTarget {
         let Ok(raw) = serde_json::to_vec(&query) else {
             return NotesObservation::Unavailable;
         };
+        channel.contacted = true;
         match exchange_exact(&mut channel.stream, &raw) {
             Ok(response) if response.matches(&self.identity, operation_id, payload_sha256) => {
                 match response.result {

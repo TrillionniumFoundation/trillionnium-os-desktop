@@ -817,10 +817,14 @@ impl Desktop {
                 ui.label("Notes destination / 笔记目的端");
                 ui.small(format!("Channel observation: {:?}", notes.channel));
                 ui.small(format!("Target incarnation: {}", notes.incarnation));
-                ui.colored_label(
-                    warning(),
-                    "Hepta production owner: NOT REGISTERED by this Session",
-                );
+                if notes.original_owner_registered {
+                    ui.small("Original Hepta parent acknowledged target attachment; each edit still requires its authority.");
+                } else {
+                    ui.colored_label(
+                        warning(),
+                        "Original Hepta owner is not attached to this Notes window.",
+                    );
+                }
                 ui.small("This view provides no edit command or grant. App acknowledgement and visible pixels are separate evidence.");
             }
             ui.small(format!(

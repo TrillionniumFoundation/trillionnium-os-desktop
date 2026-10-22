@@ -1,6 +1,8 @@
 //! Independent host-only process launcher/lifecycle owner.
 //! It is not a Wayland compositor and it grants no kernel permissions.
 mod hepta;
+#[cfg(target_os = "linux")]
+mod notes_bootstrap;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -193,6 +195,68 @@ impl Session {
             .arg("--task-id")
             .arg(id.to_string());
         command
+    }
+
+    /// Only the trusted-parent startup path calls this, before any public
+    /// request is served. Public Launch never exports a destination endpoint.
+    #[cfg(target_os = "linux")]
+    fn start_bootstrapped_notes(
+        &mut self,
+        bootstrap: notes_bootstrap::NotesBootstrap,
+    ) -> io::Result<()> {
+        if self.next_id != 1 || !self.tasks.is_empty() || !self.children.is_empty() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Notes bootstrap is startup-only",
+            ));
+        }
+        let response = self.launch(Workspace::Build, AppKind::Notes);
+        let Response::Task { task, .. } = response else {
+            return Err(io::Error::other("initial Notes launch was refused"));
+        };
+        if task.id != 1 || task.state != TaskState::Running {
+            return Err(io::Error::other("initial Notes process did not start"));
+        }
+        let endpoint = self
+            .notes_targets
+            .remove(&1)
+            .ok_or_else(|| io::Error::other("initial Notes endpoint missing"))
+            .and_then(NotesTarget::into_initial_endpoint);
+        let attached = endpoint.and_then(|(identity, stream)| bootstrap.offer(identity, stream));
+        if let Err(error) = attached {
+            // This closes only the Session-owned initial child. An attachment
+            // timeout cannot prove the parent's grant/effect never occurred.
+            self.stop_bootstrap_child()?;
+            return Err(error);
+        }
+        self.refresh();
+        if !self.children.contains_key(&1) {
+            return Err(io::Error::other("initial Notes exited during attachment"));
+        }
+        let observation = self
+            .tasks
+            .get_mut(&1)
+            .and_then(|task| task.notes_destination.as_mut())
+            .ok_or_else(|| io::Error::other("initial Notes observation missing"))?;
+        observation.original_owner_registered = true;
+        Ok(())
+    }
+
+    #[cfg(target_os = "linux")]
+    fn stop_bootstrap_child(&mut self) -> io::Result<()> {
+        let _ = self.cancel(1);
+        if let Some(child) = self.children.get_mut(&1) {
+            let exit = child.wait()?;
+            if let Some(task) = self.tasks.get_mut(&1) {
+                settle_exit(task, exit);
+                if let Some(notes) = &mut task.notes_destination {
+                    notes.channel = NotesChannelObservation::ChildExited;
+                }
+            }
+        }
+        self.children.remove(&1);
+        self.notes_targets.remove(&1);
+        Ok(())
     }
 
     #[cfg(target_os = "linux")]
@@ -643,7 +707,35 @@ fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result
     }
 }
 
+fn notes_bootstrap_requested(
+    args: impl IntoIterator<Item = std::ffi::OsString>,
+) -> io::Result<bool> {
+    let mut args = args.into_iter();
+    match args.next() {
+        None => Ok(false),
+        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => Ok(true),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "expected no arguments or --notes-bootstrap-stdin",
+        )),
+    }
+}
+
 fn main() -> io::Result<()> {
+    let requested = notes_bootstrap_requested(std::env::args_os().skip(1))?;
+    #[cfg(target_os = "linux")]
+    let notes_bootstrap = if requested {
+        Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?)
+    } else {
+        None
+    };
+    #[cfg(not(target_os = "linux"))]
+    if requested {
+        return Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "Notes bootstrap requires Linux",
+        ));
+    }
     let socket = socket_path()?;
     private_socket_dir(&socket)?;
     // Never inspect/delete a stale Unix socket until the exclusive lock is
@@ -678,6 +770,10 @@ fn main() -> io::Result<()> {
     );
     let mut session = Session::new(app_binary)?;
     session.hepta = hepta::HeptaMonitor::from_env();
+    #[cfg(target_os = "linux")]
+    if let Some(bootstrap) = notes_bootstrap {
+        session.start_bootstrapped_notes(bootstrap)?;
+    }
     // Reap children even while the shell/client is stopped. Blocking
     // incoming() would accumulate zombies until the GUI reconnects.
     listener.set_nonblocking(true)?;
@@ -709,6 +805,25 @@ mod tests {
     use std::{thread, time::Duration};
     #[cfg(target_os = "linux")]
     use trill_ui_core::host_peer::{self, linux_socket_peer_credentials, validate_same_uid};
+
+    #[test]
+    fn notes_bootstrap_is_explicit_startup_and_never_a_public_request() {
+        use std::ffi::OsString;
+        assert!(!notes_bootstrap_requested(Vec::<OsString>::new()).unwrap());
+        assert!(notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap());
+        assert!(notes_bootstrap_requested([
+            OsString::from("--notes-bootstrap-stdin"),
+            OsString::from("extra")
+        ])
+        .is_err());
+        assert!(notes_bootstrap_requested([OsString::from("--notes-export")]).is_err());
+        for request in [
+            br#"{"type":"notes_bootstrap","fd":0}"#.as_slice(),
+            br#"{"type":"offer_notes_target","target":{"task_id":1}}"#.as_slice(),
+        ] {
+            assert!(parse_host_request(request).is_err());
+        }
+    }
 
     #[cfg(target_os = "linux")]
     #[test]

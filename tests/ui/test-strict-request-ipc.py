@@ -73,6 +73,8 @@ def check(binary_dir):
                     b'{"type":"not_an_operation"}',
                     b'{"type":"replace_note","text":"forged effect","grant":true}',
                     b'{"type":"notes_target","operation_id":"forged","confirmed_by_owner":true}',
+                    b'{"type":"notes_bootstrap","fd":0,"confirmed_by_owner":true}',
+                    b'{"type":"offer_notes_target","target":{"task_id":1}}',
                 ]
                 for idx, payload in enumerate(malformed):
                     response = roundtrip(sock, payload)
