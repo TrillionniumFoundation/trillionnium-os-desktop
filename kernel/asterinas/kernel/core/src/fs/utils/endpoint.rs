@@ -121,7 +121,42 @@ impl AsRef<EndpointState> for EndpointState {
     }
 }
 
+/// A peer-shutdown observation for one read attempt.
+///
+/// Buffer lengths and auxiliary metadata used by the read must be observed after
+/// this snapshot. Consuming the snapshot prevents a later shutdown from turning
+/// an earlier empty-buffer observation into EOF.
+#[must_use]
+pub(crate) struct EndpointReadSnapshot {
+    is_shutdown: bool,
+}
+
+impl EndpointReadSnapshot {
+    /// Reads using data state observed after this snapshot was created.
+    pub(crate) fn read_with<F>(self, read: F) -> Result<usize>
+    where
+        F: FnOnce() -> Result<usize>,
+    {
+        let read_len = read()?;
+
+        if read_len > 0 {
+            Ok(read_len)
+        } else if self.is_shutdown {
+            Ok(0)
+        } else {
+            return_errno_with_message!(Errno::EAGAIN, "the channel is empty");
+        }
+    }
+}
+
 impl<T: AsRef<EndpointState>> Endpoint<T> {
+    /// Observes peer shutdown before the data state for one read attempt.
+    pub(crate) fn read_snapshot(&self) -> EndpointReadSnapshot {
+        EndpointReadSnapshot {
+            is_shutdown: self.is_peer_shutdown(),
+        }
+    }
+
     /// Reads from the endpoint.
     ///
     /// Note that if `read` returns `Ok(0)`, it is assumed that there is no data to read and an
@@ -129,22 +164,14 @@ impl<T: AsRef<EndpointState>> Endpoint<T> {
     ///
     /// However, if the remote endpoint has shut down, this method will return `Ok(0)` to indicate
     /// the end-of-file (EOF).
+    ///
+    /// Observe all buffer lengths inside `read`. If metadata must be prepared
+    /// first, obtain a [`Self::read_snapshot`] before observing that metadata.
     pub(crate) fn read_with<F>(&self, read: F) -> Result<usize>
     where
         F: FnOnce() -> Result<usize>,
     {
-        // This must be recorded before the actual operation to avoid race conditions.
-        let is_shutdown = self.is_peer_shutdown();
-
-        let read_len = read()?;
-
-        if read_len > 0 {
-            Ok(read_len)
-        } else if is_shutdown {
-            Ok(0)
-        } else {
-            return_errno_with_message!(Errno::EAGAIN, "the channel is empty");
-        }
+        self.read_snapshot().read_with(read)
     }
 
     /// Writes to the endpoint.
@@ -222,7 +249,8 @@ impl<T: AsRef<EndpointState>> Endpoint<T> {
     }
 
     fn shutdown_impl(this_end: &EndpointState, peer_end: &EndpointState) {
-        this_end.is_shutdown.store(true, Ordering::Relaxed);
+        // Publish writes completed before shutdown to a subsequent read snapshot.
+        this_end.is_shutdown.store(true, Ordering::Release);
         peer_end
             .pollee
             .notify(IoEvents::HUP | IoEvents::RDHUP | IoEvents::IN);
@@ -256,6 +284,6 @@ impl<T: AsRef<EndpointState>> Endpoint<T> {
 
     /// Returns whether the remote endpoint has shut down.
     pub(crate) fn is_peer_shutdown(&self) -> bool {
-        self.peer_end().as_ref().is_shutdown.load(Ordering::Relaxed)
+        self.peer_end().as_ref().is_shutdown.load(Ordering::Acquire)
     }
 }

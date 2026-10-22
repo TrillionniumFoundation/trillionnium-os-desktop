@@ -131,6 +131,9 @@ impl Connected {
         let peer_end = self.inner.peer_end();
 
         let mut reader = this_end.reader.lock();
+        // EOF must be decided from a shutdown observation made before the data
+        // snapshot; the peer can write and shut down while this reader is locked.
+        let read_snapshot = self.inner.read_snapshot();
         // `reader.len()` is an `Acquire` operation. So it can guarantee that the `has_aux`
         // check below sees the up-to-date value.
         let no_aux_len = reader.len();
@@ -140,7 +143,7 @@ impl Connected {
 
         // Fast path: There are no auxiliary data to receive.
         if !peer_end.has_aux.load(Ordering::Relaxed) {
-            let read_len = self.inner.read_with(|| {
+            let read_len = read_snapshot.read_with(|| {
                 let head = reader.head();
                 let copy_range = head..head + Wrapping(no_aux_len);
                 reader.ring_buffer().pick_fallible(copy_range, writer)
@@ -168,6 +171,7 @@ impl Connected {
         let mut trunc_len = 0;
 
         loop {
+            let read_snapshot = self.inner.read_snapshot();
             let read_start = read_base + Wrapping(read_tot_len);
             let (aux_len, aux_front) = if let Some(front) = all_aux.get(aux_pos) {
                 if front.start == read_start {
@@ -204,7 +208,7 @@ impl Connected {
 
             // Read the payload bytes of the current auxiliary data.
             let read_res = if !is_empty && (aux_len > 0 || aux_front.is_none()) {
-                self.inner.read_with(|| {
+                read_snapshot.read_with(|| {
                     let copy_range = read_start..read_start + Wrapping(aux_len);
                     reader.ring_buffer().pick_fallible(copy_range, writer)
                 })
@@ -230,7 +234,10 @@ impl Connected {
                     trunc_len = aux_len - read_len;
                 }
                 break;
-            } else if read_len < aux_len {
+            } else if read_len < aux_len || read_len == 0 {
+                // A closed stream can exhaust the payload after auxiliary data
+                // compatible with the default. Return the bytes and control
+                // messages already read instead of repeating an empty range.
                 break;
             }
         }
@@ -270,7 +277,6 @@ impl Connected {
             default_aux_data.generate_control(behavior, is_pass_cred)
         };
 
-        debug_assert!(is_seqpacket || read_tot_len != 0);
         let output = if is_seqpacket {
             let message_len = read_tot_len + trunc_len;
             RecvOutput::new_for_packet(flags, read_tot_len, message_len)

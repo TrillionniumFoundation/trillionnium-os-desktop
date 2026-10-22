@@ -1,0 +1,46 @@
+--- a/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
++++ b/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
+@@ -169,6 +169,7 @@
+         let read_base = reader.head();
+         let mut read_tot_len = 0;
+         let mut trunc_len = 0;
++        let mut zero_progress = 0;
+ 
+         loop {
+             let read_snapshot = self.inner.read_snapshot();
+@@ -221,6 +222,26 @@
+                 Err(err) => return Err(err),
+             };
+ 
++
++            // Qualification-only bounded observation of the restored loop.
++            // Require three real zero-progress iterations, then return a
++            // specific errno so a timeout or panic cannot satisfy the oracle.
++            if !is_seqpacket && read_tot_len > 0 && read_len == 0
++                && aux_len == 0 && aux_front.is_none()
++                && self.inner.is_peer_shutdown()
++            {
++                zero_progress += 1;
++                if zero_progress == 3 {
++                    warn!(
++                        "UNIX_STREAM_AUX_ZERO_PROGRESS count=3 read_bytes={} remaining=0",
++                        read_tot_len
++                    );
++                    return_errno_with_message!(Errno::ELOOP, "qualification zero-progress loop");
++                }
++            } else {
++                zero_progress = 0;
++            }
++
+             read_tot_len += read_len;
+             if aux_front.is_some() {
+                 aux_pos += 1;
+@@ -234,7 +255,7 @@
+                     trunc_len = aux_len - read_len;
+                 }
+                 break;
+-            } else if read_len < aux_len || read_len == 0 {
++            } else if read_len < aux_len {
+                 // A closed stream can exhaust the payload after auxiliary data
+                 // compatible with the default. Return the bytes and control
+                 // messages already read instead of repeating an empty range.

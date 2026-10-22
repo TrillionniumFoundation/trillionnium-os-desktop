@@ -1,0 +1,2170 @@
+{
+  "schema_version": 1,
+  "record_prefix": "UNIX_STREAM_V1",
+  "input": {
+    "nonce": "[0-9a-f]{32}",
+    "selection": "optional exact case name; omitted means all default cases",
+    "invalid_exit": 64,
+    "invalid_stdout": ""
+  },
+  "wire": {
+    "encoding": "ASCII",
+    "separator": "one ASCII space",
+    "terminator": "LF",
+    "max_record_bytes_including_lf": 768,
+    "base_fields": [
+      "nonce",
+      "event",
+      "case",
+      "seq"
+    ],
+    "seq_first": 1,
+    "seq_step": 1,
+    "reject_duplicate_keys": true,
+    "reject_unknown_keys": true,
+    "reject_extra_records": true
+  },
+  "default_case_order": [
+    "open_empty",
+    "queued_shutdown",
+    "partial_peek",
+    "credential_only",
+    "credentials_preserved",
+    "rights_preserved",
+    "seqpacket_boundaries",
+    "seqpacket_truncation"
+  ],
+  "cases": {
+    "open_empty": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 0,
+          "open": 1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "open_errno": 11,
+          "closed_bytes": 0
+        }
+      }
+    ],
+    "queued_shutdown": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 96
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 96,
+          "chunk": 96
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "bytes": 96,
+          "eof": 1
+        }
+      }
+    ],
+    "partial_peek": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 96
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 7,
+          "peek": 1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 96,
+          "chunk": 11
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "bytes": 96,
+          "peek_calls": 2,
+          "peek_bytes": 7,
+          "chunk": 11,
+          "eof": 1
+        }
+      }
+    ],
+    "credential_only": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 13,
+          "credentials": 1,
+          "rights": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 13,
+          "sender_passcred": 1,
+          "receiver_passcred": 0
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "bytes": 13,
+          "delivered_controls": 0,
+          "eof": 1
+        }
+      }
+    ],
+    "credentials_preserved": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 9,
+          "credentials": 1,
+          "rights": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 9,
+          "receiver_passcred": 1
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "bytes": 9,
+          "credentials": 1,
+          "pid": "$pid",
+          "uid": "$uid",
+          "gid": "$gid",
+          "eof": 1
+        }
+      }
+    ],
+    "rights_preserved": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 3,
+          "credentials": 0,
+          "rights": 1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 8
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 3,
+          "rights": 1,
+          "trailing_bytes": 8
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "expected_bytes": 8,
+          "chunk": 8
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "bytes": 3,
+          "rights": 1,
+          "peek_rights": 1,
+          "cloexec": 1,
+          "trailing_bytes": 8,
+          "object_read": 1,
+          "eof": 1
+        }
+      }
+    ],
+    "seqpacket_boundaries": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 7
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 11
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "zero_packet": 1,
+          "first_bytes": 7,
+          "second_bytes": 11
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "zero_packet": 1,
+          "peek_packets": 2,
+          "first_bytes": 7,
+          "second_bytes": 11,
+          "eof": 1
+        }
+      }
+    ],
+    "seqpacket_truncation": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 13
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 13
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "write_done",
+          "bytes": 5
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "shutdown_done",
+          "result": 0
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "packet_bytes": 13,
+          "buffer_bytes": 4,
+          "packets": 3
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "packet_bytes": 13,
+          "copied_bytes": 4,
+          "trunc_return": 13,
+          "next_packet_bytes": 5,
+          "eof": 1
+        }
+      }
+    ],
+    "shutdown_race": [
+      {
+        "event": "case_begin",
+        "fields": {
+          "pid": "$pid"
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 0,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 0,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 1,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 1,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 2,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 2,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 3,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 3,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 4,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 4,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 5,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 5,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 6,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 6,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 7,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 7,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 8,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 8,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 9,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 9,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 10,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 10,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 11,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 11,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 12,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 12,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 13,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 13,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 14,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 14,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 15,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 15,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 16,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 16,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 17,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 17,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 18,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 18,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 19,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 19,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 20,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 20,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 21,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 21,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 22,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 22,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 23,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 23,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 24,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 24,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 25,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 25,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 26,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 26,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 27,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 27,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 28,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 28,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 29,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 29,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 30,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 30,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 31,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 31,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 32,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 32,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 33,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 33,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 34,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 34,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 35,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 35,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 36,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 36,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 37,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 37,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 38,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 38,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 39,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 39,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 40,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 40,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 41,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 41,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 42,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 42,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 43,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 43,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 44,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 44,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 45,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 45,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 46,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 46,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 47,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 47,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 48,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 48,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 49,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 49,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 50,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 50,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 51,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 51,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 52,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 52,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 53,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 53,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 54,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 54,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 55,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 55,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 56,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 56,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 57,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 57,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 58,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 58,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 59,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 59,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 60,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 60,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 61,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 61,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 62,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 62,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "before_recv",
+          "iteration": 63,
+          "expected_bytes": 96,
+          "writer_delay_us": 1000
+        }
+      },
+      {
+        "event": "checkpoint",
+        "fields": {
+          "name": "writer_reaped",
+          "iteration": 63,
+          "writer_bytes": 96,
+          "writer_errno": 0,
+          "shutdown_result": 0,
+          "shutdown_errno": 0,
+          "delay_result": 0,
+          "delay_errno": 0,
+          "child_exit": 0,
+          "observed_bytes": 96,
+          "first_non_eagain": "$first_payload_read",
+          "eof_read": -1
+        }
+      },
+      {
+        "event": "case_pass",
+        "fields": {
+          "stress_iterations": 64,
+          "bytes_per_iteration": 96,
+          "eof": 1,
+          "deterministic_race_reproduction": 0
+        }
+      }
+    ]
+  },
+  "variable_constraints": {
+    "$pid": "integer in [1,2147483647], same process for all records and same pid in credential case pass",
+    "$uid": "integer in [0,4294967295], C compares actual received credential with own getuid",
+    "$gid": "integer in [0,4294967295], C compares actual received credential with own getgid",
+    "$first_payload_read": "integer in [1,96]; C validates every returned byte, rejects overlength, total must be96"
+  },
+  "suite_pass": {
+    "case": "suite",
+    "event": "suite_pass",
+    "fields": {
+      "cases": "8 for all; 1 for a named case",
+      "selection": "all or exact selected case"
+    },
+    "process_exit": 0
+  },
+  "suite_fail": {
+    "case": "suite",
+    "event": "suite_fail",
+    "fields": {
+      "cases_passed": "number of previous case_pass records;0 for single case",
+      "selection": "all or exact selected case",
+      "failed_case": "current case or input on setup failure",
+      "exit_code": 1
+    },
+    "process_exit": 1,
+    "preceded_immediately_by": "case_fail"
+  },
+  "generic_case_fail_fields": [
+    "op",
+    "expected",
+    "observed",
+    "errno"
+  ],
+  "semantic_negative_failure_fields": {
+    "queued_early_eof": {
+      "case": "queued_shutdown",
+      "op": "recv_payload",
+      "expected": 96,
+      "observed": 0,
+      "errno": 0
+    },
+    "aux_zero_progress": {
+      "case": "credential_only",
+      "op": "recv_credential_only",
+      "expected": 13,
+      "observed": -1,
+      "errno": 40
+    },
+    "scheduled_stale_snapshot": {
+      "case": "shutdown_race",
+      "op": "race_eof",
+      "expected": 96,
+      "observed": 0,
+      "errno": 0,
+      "queued_bytes": 96,
+      "iteration": "current bounded iteration0..63",
+      "writer_bytes": 96,
+      "shutdown_result": 0,
+      "child_exit": 0,
+      "first_non_eagain": 0,
+      "eof_read": 0,
+      "requires_preceding_writer_reaped": {
+        "observed_bytes": 0,
+        "first_non_eagain": 0,
+        "eof_read": 0,
+        "all_writer_results": "as successful iteration"
+      },
+      "requires_kernel_window_marker": "bound by runner to same boot: stale length0, new length96, shutdown true; no arbitrary timeout/panic accepted"
+    }
+  },
+  "abort_exit_codes": {
+    "64": "invalid input",
+    "124": "alarm guard; never a semantic success",
+    "125": "stdout formatting/writing failure; never a semantic success"
+  },
+  "exact_positive_record_count": {
+    "all": 47,
+    "shutdown_race": 131,
+    "named_default_case": "len(cases[name])+1"
+  },
+  "external_harness": "Shell records independent actual exit code with same nonce and continues native boot exit. Neither QEMU33 nor case_pass alone is success."
+}

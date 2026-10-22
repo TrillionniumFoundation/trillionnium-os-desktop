@@ -1,0 +1,36 @@
+--- a/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
++++ b/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs
+@@ -131,12 +131,30 @@
+         let peer_end = self.inner.peer_end();
+ 
+         let mut reader = this_end.reader.lock();
+-        // EOF must be decided from a shutdown observation made before the data
+-        // snapshot; the peer can write and shut down while this reader is locked.
+-        let read_snapshot = self.inner.read_snapshot();
++        // Qualification-only negative: restore the late shutdown snapshot.
+         // `reader.len()` is an `Acquire` operation. So it can guarantee that the `has_aux`
+         // check below sees the up-to-date value.
+         let no_aux_len = reader.len();
++
++        // Qualification-only scheduling control: let a real peer finish its
++        // write and shutdown after this reader observed an empty buffer.
++        // There is no manufactured data, EOF, error or replacement producer.
++        if no_aux_len == 0 && !is_seqpacket {
++            for _ in 0..4096 {
++                if self.inner.is_peer_shutdown() {
++                    break;
++                }
++                crate::thread::Thread::yield_now();
++            }
++            let queued_len = reader.len();
++            if queued_len > 0 && self.inner.is_peer_shutdown() {
++                warn!(
++                    "UNIX_STREAM_RACE_WINDOW old_len=0 queued={} shutdown=1",
++                    queued_len
++                );
++            }
++        }
++        let read_snapshot = self.inner.read_snapshot();
+ 
+         let is_pass_cred = this_end.is_pass_cred.load(Ordering::Relaxed);
+         let behavior = flags.receive_behavior();
