@@ -1,0 +1,41 @@
+{
+  "old_head": "49e5582db15493eed60d62fb16b4c85fc7408307",
+  "qualified_head": "47141400acd8f6c26d4069dba1d08206980493e7",
+  "main_merge": "168d053e2d5493fbc4bc45914099c62b6691ad45",
+  "main_merge_utc": "2026-10-21T09:05:50Z",
+  "main_merger": "Qian QI / GitHub",
+  "tree_entries_each": 9226,
+  "blobs_each": 7531,
+  "changed_paths": 12,
+  "production_kernel_semantics": "identical; permission_smp_ktest.rs differs only by removing two explanatory comment lines; bootstrap newline retained",
+  "pr225_native_gate": {
+    "run_id": 39569111993,
+    "job_id": 119118562629,
+    "artifact_id": 12332368356,
+    "artifact_bytes": 206210111,
+    "conclusion": "success",
+    "complete_core_minimum": 262,
+    "compiled_smp_denominator": 265,
+    "required_core_test_names": 24
+  },
+  "pr224_native_gate": {
+    "run_id": 39527232732,
+    "job_id": 118984639491,
+    "artifact_id": 12314284411,
+    "conclusion": "failure",
+    "observed_failures": [
+      "malformed_or_reordered_exec_normal_before",
+      "malformed_or_reordered_exec_normal_after",
+      "malformed_or_reordered_exec_nnp_before",
+      "malformed_or_reordered_exec_nnp_after"
+    ]
+  },
+  "differences_to_retain_for_followup": [
+    "#225 lacks #224 firmware line-boundary regression although production newline and strict oracle are retained",
+    "#225 lacks a g1d manifest forwarding assertion in the host SMP test",
+    "#225 splits required core test groups and adds a redundant soft-skip refusal; baseline262 and24 names remain",
+    "#225 exact pinned formatter1.2.2/exit1 response is narrower than #224 accepted zero-exit other versions; formatting remains zero-only",
+    "#225 replaces four real-child formatter host tests with two mocked response tests; native positive/negative provenance still separately passes",
+    "#225 fixes real ExFAT credentials with one checked write; all field values and strict oracle remain"
+  ]
+}
