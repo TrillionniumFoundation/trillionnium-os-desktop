@@ -1,5 +1,55 @@
 # 当前状态
 
+## 2026-10-22：A–G 整合候选与实际资格
+
+本节核对的远端主干为 `14fca98d006e725098bc29002424c3274c7c64c3`，已经包含 A 的 #234、G 的 #237 和证据归档 #235。E #236、F #238、C #239 及恢复的后续 C bootstrap 源码已合入本地候选 `9a9dfce9011fb6720a8ad03b189f8662c39485b8` / tree `0e457cb49871be107de0edb8f5d16594243a2d93`。此身份是下面文档收口前的源码组合，不代表该组合已经发布或通过完整 CI。
+
+**当前适合继续在 Asterinas 原资源 owner 上增量开发，并行推进 Linux 桌面 organ 和 G2 CPU 接合。生产 Hepta → 原生 CPU 的持久闭环、Asterinas 上的真实 Hepta/桌面、物理设备与手机控制仍未完成。** 不同分支的运行结果不能相加为当前整树的一次验收；没有新的结构性反证支持现在重建完整 Rust kernel。路线和替换条件继续按 [DECISIONS](DECISIONS.md) 与 [ARCHITECTURE](ARCHITECTURE.md) 执行。
+
+### A–G 的实现与下一道门槛
+
+| 切片 | 当前实际进展 | 仍需完成的交付门槛 |
+| --- | --- | --- |
+| **A．当前基线** | E820、timerfd 回移及 ExFAT runner 准备已随 #234 合入。固定 `7503c168…` 的 [A06 run 39612683342](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39612683342/job/119265405609) 实际通过；同次 Linux32、ExFAT Linux/guest 各 5/5 和旧行为负控 4 fail / 1 pass 已核对。 | 新组合仍须重跑完整 core/OSTD、ordinary、Linux/ExFAT 与所有原负控。旧 A 的成功不覆盖 E/F/C 新源码。 |
+| **B．固定跨仓组合** | observer/Objective、历史查询、CPU payload/codec 各有明确 [来源合同](../services/hepta-os/README.md)；新增 [source profile builder/verifier](agents/ORGAN_RELEASE_PROFILE.md) 固定一对干净 OS/Hepta HEAD/tree，验证原 history 祖先与两份 Notes golden。#229 的 [11 CPU history / 完整 28 service / Clippy 记录](../results/integration/2026-10-21-a07-cpu-history-native/README.md) 由 #235 保留。 | 旧合同分别固定 `f8c9419d…`、`2be5fc05…`、`f27c1464…`，不是一个经过统一装配验收的发布组合。必须冻结同一原 owner、生产 grant provider、恢复 writer、目的端与启动输入，实测提交、断连核对及 `unknown`。 |
+| **C．首个 Linux 桌面 organ** | #239 最终源码 `86528f7e…` / tree `18d21dbe…` 的[原收据](../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json)记录 workspace **181 passed / 0 failed / 2 ignored**、全 targets Clippy `-D warnings` 通过；同源 C5 owned Weston 完整门禁重新通过私有 bootstrap、真实 Notes 目的端与回读，以及同一 Session 下 compositor 重启后的新 client layout。源码已同树发布为 `c645d2c8…`；[开发与技术手册](../support/ui/NOTES_ORGAN.md) 给出两种启动模式。 | 这些 Linux host 目的端/transport 证据不包含生产原 owner / FinalUse / grant provider → 实际 Notes → 回读 → 原 owner 持久终态。普通 Session 默认仍无 effect 授权；新 client layout 不证明旧 surface 连续恢复，也不授予 Asterinas 或真实显示像素资格。 |
+| **D．G2 原生 CPU 闭环** | G1-d 固定映像实验已有 HOS2 五操作与原 CPU/D owner。Hepta 合同描述原 `ProductionDurableWriter → LocalLeaseOutbox → CognitiveStore` 的 K↔D payload；OS 的 [cpu-history adapter](../services/hepta-os/CPU_DELIVERY.md) 只做一次 QueryDelivery。 | 实际恢复 writer、真实 FinalUse 下的同步 ioctl、原 outbox 持久 K↔D、终态持久后连续退役，以及丢回复/kill/reboot 的不误重放仍需在同一原生组合上执行。C 映像的资格 ack 仍标 `hepta_durability=false`。 |
+| **E．隔离与恢复** | 固定 `81897df4…` 已实际通过完整 core266、G1-d 三 boot 与旧 root workload 负控。workload 在首条指令前取得 UID/GID 60001、空能力集、独立 session 和 256 MiB `RLIMIT_AS`；原 CPU owner 有 manager 关闭/到期后的 30 秒、一次性、非零限额恢复子集。 | 不是自主 watchdog，也未实现完整可信暂停原因的 `RevokeGrant/ApplyRecovery` 契约。`cap=0` 保守保持，`SIGSTOP` 不自动解除；总进程树内存、fork 数量及恢复资源保留仍未资格化。 |
+| **F．原生 Hepta 与桌面** | 固定 `058c5e48…` 已实际通过完整 core265，及相同 ext2 `filetype` profile 上旧内核失败、新内核 SQLite WAL 突然重启成功和遗漏 COMMIT 负控。[存储手册](../tests/workloads/linux/SQLITE_GUEST_RESTART.md) 列出 fsync 分配元数据修复。 | 这只是存储前置切片。仍需以原 Agentd/app-server 的实际依赖补 Linux ABI，并让原 writer/任务/恢复和同一 Rust UI 真正在 Asterinas 上运行；物理断电、设备缓存丢失及无 `filetype` 的旧 ext2 profile 不在已通过范围。 |
+| **G．固定硬件/手机** | #237 增加五台开发主机的 [只读 inventory](../tests/hardware/evidence/2026-10-21-development-host-inventory.json) 与 [平台决策](../support/hardware/DECISION.md)。实际 RTX 4060 正用于显示；已观察主机均为 x86_64，没有已识别 ARM 板卡/已连接手机。 | GPU compute、设备级 IOMMU 隔离、DMA 静止、reset、Asterinas VMM 与 ARM BSP/Android 实机均未因此通过。先选独立可验收目标，再逐项执行任务、撤销、复位与重启。 |
+
+### 固定来源与恢复的证据
+
+| 范围 | 实际来源 | 已证明内容与边界 |
+| --- | --- | --- |
+| A #234 | head `7503c168a5b5eb94fadf5d4f34b37c0d6ec6706f` / tree `090573e185ea92693a303678e1b751a3b9826b3c`；A06 run `39612683342` / job `119265405609` / artifact `12356200312` | 六项 checks 全绿、完整 artifact 的 7,551 个 source 输入已在原审查核对。同次完整 Linux32、ExFAT 差分/负控属于这个固定 head。该 artifact 与下面 #235 保留的早期 #231 归档分别记录。 |
+| E #236 | head `81897df4ac1e60de1b29093e8cb4bb8cab41bf86` / tree `7b41a06af868dc63cd5ab26da90c5995a1e74256` | [原收据](../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json) 中 `e-qualification-81897-r2`：core266，零失败/过滤/软跳过、QEMU33；准确映像成功，两种映像篡改精确拒绝，旧 root 生产行负控被检出。manager exec 后恢复保持真实用户 STOP；到期边界由原 owner ktest 验证，不宣称 guest 实等 300 秒。 |
+| F #238 | head `058c5e48dc12790c56953f07e095773b9ecfbeff` / tree `87b7f95bd0459a2f8fe2c4c0b79bfd1c7c298b1e` | 同份收据中 `f-qualification-058c`：core265，零失败/过滤/软跳过、QEMU33；同 probe/runner、同 `filetype` 的旧核对照失败，新核已提交记录恢复且未提交记录不存在，遗漏 COMMIT 被原 verifier 拒绝。并非原 Hepta owner 或物理断电验收。 |
+| C 公开初版 | PR #239 初版 source `2fc5edfeac0679aab82c2d07c68e3e084ca49ae2` / tree `2028dd245b0df50df2045705a5a524f1aa2241ee` | [目标端原证据](../tests/ui/evidence/2026-10-21-notes-target/README.md) 绑定实际 tested-source 摘要：Rust 1.95.0 workspace 172 passed / 2 ignored、严格 IPC、真实 Notes 回执/回读、Xvfb 窗口与 PNG。不是 Rust 1.88 完整阻断门禁，也没有生产 FinalUse/原 owner；这些数字仍只属于初版。 |
+| C 最终 bootstrap / C5 | 实测 source `86528f7e933a1c6db2c9d31b47d8caa0fa047101` / tree `18d21dbeb7e7934cb4f7de21dc77a1b70db3c937`；恢复提交 `becc87a6b6f85c3b6189c9d49f6b738e44b00972` 与 PR #239 已发布 head `c645d2c85b80a8e93d9ecb78913f07bc29d6fc35` 均为同 tree | [最终原收据](../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json) 的 workspace 原日志有13个结果行，合计 **181 passed / 0 failed / 2 ignored**；两项 ignored 均需真实 CJK font。全 targets Clippy `-D warnings` 通过。`evidence-weston-complete` 绑定此 source，完整 owned Weston 门禁通过，包括重新执行 Notes bootstrap/目的端回读与 compositor crash/restart；下文列出准确边界。 |
+
+E/F 的 compact JSON 为恢复的原收据，未重写内部字段。本次恢复保留其远端 raw bundle 的路径、122 个文件、5,597,864 字节及 SHA-256 `a315a80a37048eb9fe71e1ecd3fbc7cc67a216cf2c3e4b39c35625c01eb104f2`；本地没有用该 compact 文件重新执行或替代全部原始串口。C 恢复 archive 的 111,765 字节及 SHA-256 `bf6e12b64f7bcc88ad00c8a84f4acc7ed80df0e0ddd1df8c97de8e7244b7d2d0` 记录在恢复提交说明中。
+
+C 的 compact JSON 按原字节保存，SHA-256 为 `2e7582e1e0364f5ad70d94aed4cbbf4f0c5678af105082354727985a8b92f0fe`。本次实读并核对其11份内嵌原日志的字节数与 SHA-256；它记录原执行结果，本地没有重新运行 Rust 或 Weston。C5 的 `logs/notes/bootstrap.json` 确认 private FD 往返、父端拒绝时阻断启动并回收 child、public launch 不导出，以及真实 app 的只读查询；`logs/notes/destination.json` 确认实际 app 的 revision **0 → 1**、`applied` 回执、独立结果查询与更新后的 egui layout marker。两者都明确 `final_use_authority_run=false`、`hepta_production_owner_run=false`、`asterinas_run=false`，目的端还明确 `compositor_pixels_verified=false`。
+
+C5 完整 runner 的 crash/restart 子门禁保留同一 Session，观察 socket epoch 改变，启动新 Wayland client 并确认首个 layout 和 cancellation；原 client 在 compositor 丢失后为 failed。这证明新 client 在重启后可用，**不证明旧窗口/surface 连续性**。Hepta 页面 layout 使用 scripted UDS fixture，没有启动上游 Agentd；真实显示器/GPU像素、中文候选、GPU reset 和 Rust kernel boot 均不在该资格内。packet 里的 `evidence-v2/notes-x11.Q6d8rLfM/*` 与 `evidence-v2/strict-session-ipc.log` 属于中间 source `8662dced4aad7de6a91fcc7db9ce872c7722a039`，其 Xvfb PNG、严格 IPC 等旧结果不得因 packet 顶层写了 `86528f7e…` 就转授最终版本；最终 Notes bootstrap/目的端依据是单独的 C5 同源重跑。
+
+主干 #235 的 [原证据说明](../results/integration/2026-10-21-os-integration-evidence/README.md)、[ExFAT #231 归档](../results/integration/2026-10-21-exfat-qualified/README.md) 和 A07 #229 归档全部保留原字节。#231 的成功主机已有匹配 ExFAT module，不能据此写成旧失败主机的安装回退分支已通过；#229 的主机 service 测试也不能写成 G2 guest 已装配。
+
+### 当前整合门槛与实施顺序
+
+合并 E 的四项与 F 的三项新增 core 回归后，原验收器现在要求 **至少 core269、31 个 required names**；独立三项 permission SMP profile 的编译分母为 **至少272**。原 238 项基线、权限5、G1-c 9、G1-d 12、ExFAT2、ext2 durability3 都保留。**269/31/272 是本组合应达到的门槛，目前没有本组合的真实内核通过收据。** A06 的所有原 ordinary、Linux32、权限、SCM、NOFILE、CPU 和反向控制不能由两个旧分支的通过代替。
+
+合并验收器时实际执行的主机检查为 permission SMP oracle15（普通/`-O`）、ktest checker16（普通/`-O`）、G1-d guest runner20 与 build profile4。其用途是检查解析器和构建契约，不能计作新 kernel tests。最终 C 源码恢复没有在本地重新执行 Rust，以上181项及 C5 是已核对的原执行收据。当前整合树与 C 的124项输入中120项字节相同；`services/hepta-os/{Cargo.lock,Cargo.toml,src/lib.rs}` 和 `tests/ui/check-host.sh` 已含整合改动。因此 C 原收据不替代本组合的 Rust 工具链/GUI 门禁，更不替代真实 G2 装配。
+
+继续顺序是：固定 A 的当前组合验收与 B 的跨仓输入；C 桌面目的端和 D 原生 CPU 链并行接原 owner；E 在相同 authority/资源对象上补可信暂停与自主恢复；F 按实际 Hepta 依赖推进原生任务及显示/输入。G 的只读选型可并行，实际设备交付依赖前述撤销、恢复和内存/DMA 隔离。暂不为这条交付主线另建授权中心、效果账本或完整替代内核。
+
+B 的 source profile 工具已通过19项真实临时 Git 仓库回归，覆盖错误 pin、脏工作树、隐藏改动、golden不一致、缺失原 owner、非祖先与浅历史未知等拒绝路径。工具只检查来源；这19项没有生成或验收真实跨仓发布组合。所有输出固定 `production.activation=disabled`、`effects_authorized=false`，生产 grant provider、受保护 clock、外部 frontier、可信 keyring、revocation head、恢复 writer 和当前授权 cut 七项保持未配置，不能用清单字符串启用效果。
+
+项目入口使用 [INDEX](INDEX.md)。根 README 维持 0 字节，这是 [现有 source gate](../support/build/verify-source.py) 的显式约束；本次不改变该基线契约。以下旧正文完整保留，其中“当前”“下一片”“未完成”及计数均只描述各段固定源码和原记录时间。
+
+## 历史状态记录（保留原文）
+
 ## 2026-10-19 R12：G1-c 生命周期切片 #207 已正常合并
 
 [#207](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/207) 于 14:15:35 UTC 正常合并为 `9f66434889cc3bce31cfcccda950f0c48d6fa1b3`；tree `179b076747d19c3e07ee19a665e3968c33c598ce` 与最终实际执行 head `104204016dcdea57ab73c091b1edd13008ae9a19` 相同。五项 CI checks 全部成功，官方 [A06 run](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39256580996) 的1172成员原件、完整 core238／OSTD221含3softskip、七负控3/4/3/1/4/1/2、普通7346源码三快照与18标记、SCM27／RLIMIT37／Ubuntu32以及CPU原门槛均独立核实。原普通 ELF、内核 ktest ELF、local／CI 输入与首次失败分别留证。

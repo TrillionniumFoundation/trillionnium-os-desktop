@@ -2,7 +2,9 @@
 
 本 profile 将 HOS2 的五个既有操作接到实际 `ProcessImageState`、原 `CpuBandwidthState` 和 `libs/os-control` 投递核心。同一个静态 ELF 的一次内核验证快照准备三个独立进程：manager、受控 workload、recovery。角色来自固定内核启动计划；PID、UID、路径、argv、启动页和调用者提供的 hash 均不产生授权。
 
-本文记录实现与验收契约。候选 Rust 编译、内核回归和真实启动是否通过，以绑定该源码的云 CI 原始记录为准；源码、host 检查或 ktest 名单不代表 guest 成功。这是单 CPU、固定初始映像实验，明确不宣称 Hepta 磁盘持久性或硬件设备资格。
+本文记录实现与验收契约。Rust 编译、内核回归和真实启动是否通过，以绑定该源码的构建、串口和退出记录为准；源码、host 检查或 ktest 名单不代表 guest 成功。这是单 CPU、固定初始映像实验，明确不宣称 Hepta 磁盘持久性或硬件设备资格。
+
+2026-10-22 核对：E #236 的固定 head `81897df4ac1e60de1b29093e8cb4bb8cab41bf86` / tree `7b41a06af868dc63cd5ab26da90c5995a1e74256` 已有完整 core266、准确/篡改/截断三 boot 和旧 root workload 负控的[原始判定收据](../../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json)。真实 manager exec 后的一次恢复保持 `SIGSTOP`，256 MiB 地址空间限制在 workload/fork/exec 中均受验。与 F 合并后的 core269/required31/SMP272 是新的验收门槛，尚无该整合源码的真实 kernel 通过收据；来源、C/B/D 的缺口和后续顺序见 [STATUS](../STATUS.md)。
 
 ## 构建与来源
 
@@ -30,6 +32,8 @@ freezer 在新输出目录创建只读 `trusted-initial.elf`，内核实际 `inc
 | bootstrap_version / bootstrap_bytes | 2 / 192 |
 | roles | `["manager", "workload", "recovery"]` |
 | cap_ns / period_ns / lease_ns | 50,000,000 / 100,000,000 / 300,000,000,000 |
+| recovery_grace_ns | 30,000,000,000 |
+| workload_address_space_bytes | 268,435,456 |
 
 清单版本 1 与启动页版本 2 是不同格式。G1-d 不包含 G1-c 的单槽 slot/generation 字段；G1-c 默认清单保持原格式。两处 Cargo feature 由 `verify-source.py` 在原 G1-a/G1-c 精确插入规则后派生，其他上游清单字节、包版本和 lock 保留原检查。摘要用于构建证据绑定，不是用户授权证明。
 
@@ -41,7 +45,7 @@ freezer 在新输出目录创建只读 `trusted-initial.elf`，内核实际 `inc
 
 只有 workload 进入实际 `hepta-g1d-{workload_image_nonce}` leaf。manager、recovery 留在原 root 资源域，其槽不能削减自己的恢复资源。两个管理 delegation 和两个独立 D namespace 建立后，三个原 first-run claim 全部成功，原 parent/process-group/PID 表关系发布，才调用任一 `Thread::run`。workload/recovery 是 manager 的正常子进程；readiness 文件只协调测试顺序。
 
-manager 首先完成原 first-process 的组件、设备和 console 文件表初始化，再由绑定其实际 Task 的一次启动闭包释放两个已准备的 child Task。每个 child 在首条用户指令之前复用同一 console 初始化逻辑，分别打开自己的 fd 0/1/2；三个进程不共享可变文件表。启动闭包不从 fork/exec 继承，不产生角色或 grant。此顺序使 `AT_SECURE=1` 的静态 libc 在进入 `main` 前就能检查标准描述符，不依赖用户态 readiness 文件补做运行库之前的初始化。三次 image/role commit 与 activation 仍必须先于任何 `G1D_BOOT`。
+manager 首先完成原 first-process 的组件、设备和 console 文件表初始化。它在释放两个已准备的 child Task 前，捕获已打开的 fd 0/1/2；非特权 workload 在首条用户指令前把恰好这三个句柄装入自己的文件表，不临时恢复 root，也不重新打开 root-only `/dev/console`。recovery 使用原 console 初始化逻辑自行打开标准描述符。三个进程不共享可变文件表；被移交 console 的文件对象/offset 可以共享，manager 后续文件描述符不被继承。启动闭包不从 fork/exec 继承，不产生角色或 grant，也不在文件表/启动队列锁内调用 `Thread::run`。此顺序使 `AT_SECURE=1` 的静态 libc 在进入 `main` 前就能检查标准描述符，不依赖用户态 readiness 文件补做初始化。三次 image/role commit 与 activation 仍必须先于任何 `G1D_BOOT`。
 
 精确输入有三次 loader 的 `trusted initial image committed`，并有下列三条角色记录，均先于 activation 和任何 `G1D_BOOT`：
 
@@ -55,6 +59,14 @@ manager 首先完成原 first-process 的组件、设备和 console 文件表初
 两种篡改都在任何角色准备前拒绝，精确 marker 分别为 `[hepta-g1d] rejected initial image: manifest-byte-mismatch` 与 `[hepta-g1d] rejected initial image: truncated-snapshot`。负控必须复用同一内核/嵌入 ELF，有具体拒绝、原始失败退出码且没有提交/activation/用户日志；任意 panic 或超时不算通过。
 
 G1-c 的 VMAR/alien-access 限制保持：代码/vDSO/启动页不能替换或增权；允许 RELRO 减权；已开 proc-mem fd 在实际写入时再检查；禁止跨 Process 共享 VMAR；fork 是独立 COW 且无 grant。封存固定映像不证明程序内存安全或设备 DMA 安全。
+
+## Workload 隔离与内存范围
+
+原 stopped bootstrap 在把凭证附给 workload Task 前，完成八个 real/effective/saved/filesystem UID/GID 字段为 60001、空 supplementary groups、五个 Linux capability 集全零、`no_new_privs=1` 和 locked securebits=195。workload 进入独立 session/process group，堵住同 session 的跨 UID `SIGCONT` 例外；parent 仍为 manager，保留原回收关系。manager/recovery 在此固定实验中仍为 root，其服务最小权限化没有由 workload 降权自动完成。
+
+workload 原 `ResourceLimits` 在初始分配时即设置 soft/hard `RLIMIT_AS=268435456`；trusted loader 在构造/释放 Task 前核对实际 VMAR 映射总量。原 VMAR 分配路径继续强制限制，fork 复制、exec 保留原限制。真实 guest 检查 workload、fork child、exec child 中的大映射 `ENOMEM`、提升 hard limit `EPERM`、soft 超 hard `EINVAL`，并要求正常 4 KiB 映射仍可读写。它是每进程虚拟地址空间上限，不是 RSS、`memory.max`、进程树总内存或 fork 数量限制。
+
+实际信号、凭证、capability、proc-mem/maps、setuid exec、协调文件权限及旧 root 生产行负控见 [隔离开发与验收手册](../../tests/kernel/control/G1D_WORKLOAD_ISOLATION.md)。`PTRACE_ATTACH` 的 EIO 只记录为本 profile 未支持；不能把它算成已实现 ptrace 授权。支持的 `PTRACE_POKEDATA`、proc 接口及跨角色信号另有准确拒绝观察。
 
 ## 发现页与角色
 
@@ -79,7 +91,7 @@ G1-c 的 VMAR/alien-access 限制保持：代码/vDSO/启动页不能替换或�
 | workload | 无 | 无 | 无 | 无 |
 | recovery | workload | workload，独立 delegation | observe + ack | observe + ack |
 
-无权 handle 字段为零。复制页、传 fd 或修改 argv 不创建槽。两个管理/观察 lease 从同一真实 bootstrap cut 起固定 300 秒，到期点排除，无自动续约。history 权限依赖当前实际映像和精确 namespace，独立于旧管理 lease；recovery 可继续读/退役已结束管理映像的结果。
+无权 handle 字段为零。复制页、传 fd 或修改 argv 不创建槽。两个角色的普通管理区间从同一真实 bootstrap cut 起固定 300 秒，到期点排除，无自动续约。启动页的 lease 字仍描述这个普通区间。recovery 的 canonical delegation 外层到期为 bootstrap 后330秒，但原 CPU owner 另强制首个 manager 故障 cut 起30秒的一次性受限恢复窗，不能把330秒解释成无限制管理。history 权限依赖当前实际映像和精确 namespace，独立于旧管理 lease；recovery 可继续读/退役已结束管理映像的结果。
 
 ## 五操作、计量与错误
 
@@ -112,6 +124,14 @@ exec/exit 在 TaskSet → image 下标记 Closing，释放二者后等待 operat
 
 同 Process 线程共享槽/gate；fork、SCM_RIGHTS、新开 fd 不安装授权。普通 exec 即便执行相同 ELF 也不获得 auxv/slot；旧 fd 失效，新 fd 能 QueryAbi，但无旧资源/history 权限。recovery 的独立实际映像仍持 old manager namespace 的受限 view。
 
+## 有限恢复与用户暂停
+
+恢复策略保存在原 `CpuBandwidthState.trusted_management` 下，与真实 cap/revision/消费和正债务使用同一 CPU owner 锁。manager 映像提前关闭时，以首个可靠 BOOTTIME 关闭 cut 为起点；manager 普通 lease 到期时，以原300秒端点为起点。两者取较早有效边界，晚到或重复 close 不延长恢复窗。时钟不可用/倒退使管理撤销且恢复 fail closed。窗终点排除，recovery 本身失效也不能继续产生新效果。
+
+故障后只允许一次 `InstallBudget`：当前预算必须是普通 manager 成功设置的、严格大于零且低于原50 ms恢复上限；请求必须恢复到准确原上限，并匹配当前真实 revision和原授权身份。成功只推进一次原 revision，保留消费/正债务。同 D 重取仍返回原终态，窗口结束也不把已存结果重新执行。新 D 不能借此继续调参、暂停或再次恢复。详细边界和负控见 [有限恢复手册](../../tests/kernel/control/G1D_BOUNDED_RECOVERY.md)。
+
+`InstallBudget` 只有数值，没有可信的用户暂停原因。因此 `cap=0` 记为未分类暂停，故障后的恢复子集拒绝改动；bootstrap/recovery 自己设置的预算也不伪装成可恢复 manager throttle。CPU 限额恢复不发送 `SIGCONT`，不改变原 Process job-control 状态。真实 guest 在 `SIGSTOP`、manager exec、一次恢复后等待至少两个周期，要求用量/heartbeat 不增加，再显式 `SIGCONT` 验证恢复执行。普通300秒区间内的显式零预算恢复仍是早期受信角色实验，不证明自主识别用户意图。
+
 ## 历史与 Hepta 边界
 
 两个 namespace 各自使用原 1024 槽 core。满窗拒绝新 D，旧结果继续可查；query/retire 不占新槽。manager 只有 history.observe；recovery 持有 non-Clone 原 owner authority。退役仅连续 terminal 前缀、保留 suffix、旧 D 永久 retired，不因容量释放重新执行。
@@ -124,10 +144,10 @@ exec/exit 在 TaskSet → image 下标记 Closing，释放二者后等待 operat
 
 ## 验收和范围
 
-默认 core gate 保留历史238及权限事务5项、G1-c 9项、G1-d 8项和 ExFAT 2项具名回归，组合候选最低262，24个 required names 各出现一次且不得软跳过。G1-d 的8项测试用原 cgroup/production OSTD D backend，覆盖精确纳秒资格、消费/正债务保持、拒绝/replay、独立撤销恢复、lease/clock/fault、Linux 别名、1024 窗口/退役。显式时间 cut 是 fixture，不替代 calibrated clock/真实 syscall。
+默认 core gate 保留历史238及权限事务5项、G1-c 9项、G1-d 12项、ExFAT 2项和 F 的 ext2 durability 3项，当前组合最低269，31个 required names 各出现一次且不得软跳过；独立三项 permission SMP profile 的编译分母最低272。E 单独来源原已通过266/28，F 单独来源原已通过265/27，不能把它们改记为269整合验收。G1-d 用原 cgroup/production OSTD D backend，保留精确纳秒资格、消费/正债务保持、拒绝/replay、独立撤销恢复、lease/clock/fault、Linux 别名、1024 窗口/退役，并增加四项恢复到期、一次性、旧 cut 和未知暂停/计量故障回归。显式时间 cut 是 fixture，不替代 calibrated clock/真实 syscall，也不证明 guest 等过300秒。
 
 [g1d_init.c](../../tests/kernel/control/g1d_init.c) 在真实 guest 验证三角色、用量/heartbeat、D1..D11、实际 copyout EFAULT、replay/conflict、cap=0 停止并独立恢复、1/999/1001ns、四条 Linux 别名、1024窗口、部分/最终退役、fork/SCM 与同一个已授权 PID 最终 exec。仅有一个有效 manage target，不能把无效 slot 当作两个有效资源间冲突证明；原 core 跨目标测试保留。
 
-三 boot 必须绑定相同源码、protected inputs、实际 make/OSDK 命令、kernel/probe/initramfs/QEMU/串口/退出。原 A06 全量 OSTD/core、反向控制、ordinary QueryAbi、Linux32、权限32、SCM27、NOFILE37、CPU 和 SMP gates 不降低。
+三 boot 必须绑定相同源码、protected inputs、实际 make/OSDK 命令、kernel/probe/initramfs/QEMU/串口/退出。旧 root 负控只修改指定生产行，保持同 probe，并重新执行它自己的三 boot；真实越权观察在发送破坏性信号前停止。原 A06 全量 OSTD/core、反向控制、ordinary QueryAbi、Linux32、权限32、SCM27、NOFILE37、CPU 和 SMP gates 不降低。
 
-尚未提供动态 runtime 授权/更新、自动续约、一般 ancestry/迁移、完整 SMP 原生预算、Hepta durable receipt、用户暂停原因、设备/DMA。lease 到期不会自动恢复 cap=0；固定实验须在300秒内由 recovery 恢复，生产故障策略另行闭合。
+尚未提供动态 runtime 授权/更新、自动续约、一般 ancestry/迁移、完整 SMP 原生预算、Hepta durable receipt、可信用户暂停原因、总进程树内存保证或设备/DMA。30秒有限子集没有实现自动 watchdog，也没有完成安全规格中的完整 `RevokeGrant/ApplyRecovery` 行为；wire 仍为五个既有操作。lease 到期不会自动恢复 cap=0，独立 recovery 程序仍须主动在有效窗口内发出被允许的请求。生产故障策略和原 Hepta G2 闭环继续单独交付。

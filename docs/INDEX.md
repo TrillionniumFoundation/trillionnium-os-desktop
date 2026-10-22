@@ -1,4 +1,47 @@
-# 开发文档入口
+# 开发与技术文档入口
+
+## 2026-10-22 项目入口与支持边界
+
+本仓库以 Asterinas 派生 Rust 内核、HOS2 控制接口、Hepta 原用户态 owner 和 Rust 桌面构成 organ 开发主线。当前可复核范围包括固定 x86_64/QEMU 内核实验、Linux host 上的 Rust UI/Notes 目的端，以及各自固定来源的兼容/持久性测试。完整生产 G2、Asterinas 上的 Hepta/桌面、GPU/VMM 与手机仍有明确缺口；以 [A–G 当前状态和固定证据](STATUS.md) 为准。
+
+**根 README 保持 0 字节。** 这是 [source gate](../support/build/verify-source.py) 的当前约束，本页承担项目阅读入口。`docs/agents` 的分工提示不能代替下面实际模块手册，历史测试数字也不代表当前整合 tree 已通过。
+
+### 从这里开始
+
+先读 [PROJECT](PROJECT.md) 的目标和 profile、[ARCHITECTURE](ARCHITECTURE.md) 的唯一 owner/接合方式，再按 [STATUS](STATUS.md) 区分已测分支与整合候选。进入代码前使用各模块构建手册中的固定工具链、依赖和验收命令。内核采用 Asterinas 固定来源及 `nightly-2026-07-21`；UI 的阻断 host gate 使用 Rust 1.88.0。C 初版保留的 Rust 1.95.0 运行是独立证据，不能替代 1.88 门禁。
+
+三种内核启动范围须分开：ordinary 产品仅 QueryAbi；G1-c 固定受信映像另有 ReadUsage；G1-d 的五操作只在明确开启的三角色实验 profile 内成立。Notes 正常 Session 启动仍默认不注册原 owner；显式 private bootstrap 的 offer/ACK 也不自产生 FinalUse 授权或持久结果。
+
+### A00–A10 模块交接入口
+
+| 模块 | 开发/运行/验证入口 | 技术契约与当前边界 |
+| --- | --- | --- |
+| A00 集成 | [实施分工](agents/PLAN.md)、[状态与顺序](STATUS.md)、[跨仓 source profile](agents/ORGAN_RELEASE_PROFILE.md)、[验证总则](VALIDATION.md) | [架构](ARCHITECTURE.md)、[路线决策](DECISIONS.md)；同一源码组合必须有自己的验收。 |
+| A01 源码/启动 | [构建](../support/build/README.md)、[完整 ktest](../support/build/ktest/README.md) | [上游 pin](../support/upstream-lock.json)、[source verifier](../support/build/verify-source.py)；E820/timerfd/runner修复已合入，合并 E/F 后的 core269/required31/SMP272仍待实跑。 |
+| A02 HOS2 codec | [验收收口](../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md)、[codec 源码](../libs/os-abi/src/lib.rs) | [NATIVE_ABI](NATIVE_ABI.md)；五操作 wire 不等于 ordinary 产品开放全部效果。 |
+| A03 control core | [验证手册](../tests/control/VALIDATION.md)、[运行脚本](../tests/control/run-validation.sh) | [API_CONTRACT](../libs/os-control/API_CONTRACT.md)；原 D/终态/退役 owner，内存历史与 Hepta 磁盘持久性分别验收。 |
+| A04 Linux/Hepta ELF | [主干交接](agents/handoffs/A04_LINUX_HEPTA_ELF.md)、[完整 Ubuntu32](../tests/workloads/linux/FULL_UBUNTU_PROFILE.md)、[SQLite guest restart](../tests/workloads/linux/SQLITE_GUEST_RESTART.md)、[rootfs](../support/rootfs/README.md) | [Linux 兼容契约](LINUX_COMPATIBILITY.md)、[实际缺口](../compat/linux/GAPS.md)；F 的 ext2 `filetype`/SQLite结果不等于原 Agentd 已在 guest 运行。 |
+| A05 内核控制/映像 | [普通产品手册](agents/handoffs/A05_KERNEL_CONTROL.md)、[普通 guest](../tests/kernel/control/README.md)、[G1-c profile](agents/G1C_TRUSTED_OBSERVE_PROFILE.md)、[G1-d profile](agents/G1D_TRUSTED_CONTROL_PROFILE.md) | [HOS2](NATIVE_ABI.md)、[Process image 生命周期](ASTERINAS_PROCESS_IMAGE_G1C.md)；固定初始角色与动态生产 grant 分开。 |
+| A06 CPU/隔离/恢复 | [CPU usage](../tests/organ_backend/CPU_USAGE_G1B.md)、[workload 隔离](../tests/kernel/control/G1D_WORKLOAD_ISOLATION.md)、[有限恢复](../tests/kernel/control/G1D_BOUNDED_RECOVERY.md) | [原 CPU owner](ASTERINAS_CPU_OWNER_G1A.md)、[usage 技术](ASTERINAS_CPU_USAGE_G1B.md)、[安全与恢复](SECURITY_AND_RECOVERY.md)；E 已测非零一次恢复，不具备完整 watchdog/暂停原因/总内存保证。 |
+| A07 Hepta 接合 | [client](../services/hepta-os/README.md)、[运行](../services/hepta-os/RUN.md)、[原 Objective](../tests/integration/hepta/ORIGINAL_OBJECTIVE.md)、[history probe](../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md)、[CPU delivery](../services/hepta-os/CPU_DELIVERY.md) | [集成契约](HEPTA_INTEGRATION.md)、[Objective transport](../services/hepta-os/OBJECTIVE_TRANSPORT.md)、[history 契约](../services/hepta-os/OBJECTIVE_HISTORY.md)、[CPU source pin](../services/hepta-os/CPU_UPSTREAM_CONTRACT.json)；B 跨仓组合、生产 grant/recovered writer 与 D native recovery 仍待统一验收。 |
+| A08 Android | [开发手册](../support/android/README.md)、[已有 host 证据](../results/integration/a08-host-main-20261017/README.md) | [Android 兼容](ANDROID_COMPATIBILITY.md)、[接口](../compat/android/INTERFACES.md)、[内核缺口](../compat/android/kernel-gaps.json)；Binder/seccomp/MAC、BSP/APK/实机未完成。 |
+| A09 硬件/VMM | [硬件运行手册](../tests/hardware/RUN.md)、[平台决策](../support/hardware/DECISION.md)、[VMM gates](../support/vmm/GATES.md)、[lifecycle 模型](../support/vmm/device_lifecycle/README.md) | [硬件技术契约](HARDWARE_AND_DRIVERS.md)、[只读 inventory](../tests/hardware/evidence/2026-10-21-development-host-inventory.json)；枚举及模型不授予 GPU compute/DMA/reset/VMM 资格。 |
+| A10 Rust UI/Notes | [构建与运行](../support/ui/RUN.md)、[工作区](../support/ui/CHAT_WORKSPACE.md)、[Notes 开发与私有 bootstrap](../support/ui/NOTES_ORGAN.md)、[严格 IPC](../tests/ui/test-strict-request-ipc.py)、[bootstrap probe](../tests/ui/test-notes-bootstrap-ipc.py)、[最终 C 原收据](../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json) | [UI 技术目标](DESKTOP_UX.md)、[接合契约](../support/ui/INTEGRATION_CONTRACTS.md)、[Notes wire fixture](../tests/ui/notes-target-v1.json)、[bootstrap fixture](../tests/ui/notes-bootstrap-v1.json)；最终 C 的181项、Clippy与 owned Weston C5属于 Linux host，生产原 owner终态、Asterinas显示/输入与移动适配未完成。 |
+
+所有 A00–A10 模块都有可定位的开发/验证入口和技术契约，但并非每个模块都有独立成套手册：A00/A01/A02/A05/A06 仍复用共享架构、ABI、构建或 profile 文档。上表同时标出实际源码与运行边界；文档存在性不证明功能完成。新增模块交接必须包括固定版本、命令、输入输出、错误语义、权限/状态 owner 和真实未通过项。
+
+### 当前证据入口
+
+[跨仓 source profile 手册](agents/ORGAN_RELEASE_PROFILE.md) 给出 build/verify 命令、原 history 祖先证明、两份 Notes golden 的逐字核对，以及源清单与执行资格的区别。它有19项临时 Git 回归，不发 grant、不调用 runtime、不启用生产；真实组合还需在同一原 owner 上完成独立端到端验收。
+
+- A #234 的固定 source A06 与旧 #231 的 ExFAT 归档分别见 [STATUS](STATUS.md) 和 [原 ExFAT 包](../results/integration/2026-10-21-exfat-qualified/README.md)。
+- E `81897df4…` 的 core266/三 boot/旧 root 负控，以及 F `058c5e48…` 的 core265/SQLite 同 profile 正反结果见 [恢复的原收据](../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json)。
+- C 最终实测 source `86528f7e933a1c6db2c9d31b47d8caa0fa047101` / tree `18d21dbeb7e7934cb4f7de21dc77a1b70db3c937` 已同树发布到 [PR #239](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/239) head `c645d2c85b80a8e93d9ecb78913f07bc29d6fc35`。[最终原收据](../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json) 记录 workspace **181 passed / 0 failed / 2 ignored**、全 targets Clippy `-D warnings` 与完整 C5 owned Weston 通过；C5 同源重跑 private bootstrap、真实 Notes `applied`/独立回读，并验证同一 Session 下 compositor 重启后的新 client layout。它不证明旧 surface 连续性、生产原 owner、Asterinas 或显示像素。packet 中 `evidence-v2` 的 Xvfb/严格 IPC 仍属于中间 `8662dced…`；[公开初版](../tests/ui/evidence/2026-10-21-notes-target/README.md) 的172项也不转授最终版本。来源分界及当前整合树仍需独立门禁见 [STATUS](STATUS.md)。
+- #235 的 [证据保存说明](../results/integration/2026-10-21-os-integration-evidence/README.md) 保留旧原件、实际来源和压缩载体路径，没有把旧成功改记为新整树运行。
+
+## 历史入口与当时状态（保留原文）
+
+以下原文中的“当前”、根 README 说明、测试数和模块完成度只适用于各段原记录时点。新的 A–G 整合状态以上节及 [STATUS](STATUS.md) 顶节为准；这里的原始链接、报告和统计不回写为新的验收。
 
 2026-10-20 profile 接续：[G1-c 受信初始映像观察](agents/G1C_TRUSTED_OBSERVE_PROFILE.md) 已随 [#214](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/214) 合入，普通构建继续 QueryAbi-only；新增 [G1-d 开发与技术契约](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 说明三实际角色、五操作、同 CPU/D owner、原锁序、1024 窗口和明确非 Hepta durability 的资格 ack。G1-d 编译/真实执行以其独立候选 CI 为准，不用下列历史测试数代替新验收。下面 R12/R11 的源码与计数保留其冻结时点。
 

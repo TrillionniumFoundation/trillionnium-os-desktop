@@ -24,6 +24,11 @@ shared snapshot freshness rule, v2 export/legacy import and exact test limits.
 Notes and Calculator remain explicit host launches; local chat actions do
 not submit an objective.
 
+The bounded Linux Notes destination and its original production-owner boundary
+are described in [`NOTES_ORGAN.md`](NOTES_ORGAN.md). Standalone Session prepares
+a private child channel and read-only observation; it does not register an
+effect owner or expose a Notes edit command.
+
 For explicit host font selection, shared proportional/monospace CJK fallback,
 actual Pixman screenshots and the separate live-IME gate, see
 [`CJK_RENDERING.md`](CJK_RENDERING.md).

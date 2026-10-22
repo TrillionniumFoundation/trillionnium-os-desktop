@@ -5,7 +5,9 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
+#include <grp.h>
 #include <inttypes.h>
+#include <linux/capability.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -14,12 +16,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/auxv.h>
+#include <sys/fsuid.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/mount.h>
+#include <sys/prctl.h>
+#include <sys/ptrace.h>
 #include <sys/reboot.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -33,6 +40,9 @@
 #define WINDOW_CAPACITY 1024U
 #define IPC_MAGIC UINT64_C(0x4731444348414e32)
 #define IPC_DIR "/tmp/g1d"
+#define WORKLOAD_ID 60001U
+#define WORKLOAD_SECUREBITS 195
+#define WORKLOAD_AS_BYTES UINT64_C(268435456)
 
 enum { OK = 0, INVALID = 1, DENIED = 2, STALE = 3, REVOKED = 4,
        CONFLICT = 5, EXHAUSTED = 6, UNSUPPORTED = 7, UNKNOWN = 8,
@@ -40,7 +50,8 @@ enum { OK = 0, INVALID = 1, DENIED = 2, STALE = 3, REVOKED = 4,
 enum { RESERVED_STATE = 0, TERMINAL_STATE = 1, RETIRED_STATE = 2,
        NOT_SEEN_STATE = 3, HISTORY_LOST_STATE = 4 };
 enum { REC_QUERY_MANAGER = 1, REC_RETIRE_MANAGER = 2, REC_INSTALL = 3,
-       REC_QUERY_SELF = 4, REC_STOP = 5 };
+       REC_QUERY_SELF = 4, REC_STOP = 5, REC_CHECK_USER_STOP = 6,
+       REC_REJECT_REUSED_RECOVERY = 7, REC_CHECK_USER_CONTINUE = 8 };
 
 static unsigned char boot_id[16], manager_space[16], recovery_space[16], own_space[16];
 static unsigned char *boot_page;
@@ -278,6 +289,9 @@ static void publish_message(const char *name, const struct message *message) {
     CHECK(snprintf(temporary, sizeof temporary, IPC_DIR "/%s.new", name) > 0, "ipc_temp_name");
     CHECK(snprintf(final, sizeof final, IPC_DIR "/%s", name) > 0, "ipc_final_name");
     write_file(temporary, message, sizeof *message);
+    /* Only the readiness record is public. The workload cannot write the
+     * directory or read/replace the manager/recovery command and reply files. */
+    if (strcmp(name, "ready") == 0) CHECK(chmod(temporary, 0644) == 0, "ready_readonly_mode");
     CHECK(rename(temporary, final) == 0, "ipc_publish");
 }
 static int read_message(const char *name, struct message *message) {
@@ -368,8 +382,145 @@ static uint64_t heartbeat(void) {
     CHECK((n == 0 || n == 8) && close(fd) == 0, "heartbeat_read");
     return n == 8 ? get64(bytes) : 0;
 }
+static int workload_credentials(const char *phase) {
+    uid_t ruid, euid, suid;
+    gid_t rgid, egid, sgid;
+    CHECK(getresuid(&ruid, &euid, &suid) == 0 && getresgid(&rgid, &egid, &sgid) == 0,
+          "workload_read_ids");
+    uid_t fsuid = setfsuid((uid_t)-1);
+    gid_t fsgid = setfsgid((gid_t)-1);
+    int groups = getgroups(0, NULL);
+    struct __user_cap_header_struct header = {_LINUX_CAPABILITY_VERSION_3, 0};
+    struct __user_cap_data_struct caps[2] = {{0}, {0}};
+    CHECK(groups >= 0 && syscall(SYS_capget, &header, caps) == 0, "workload_read_capabilities");
+    uint64_t effective = caps[0].effective | ((uint64_t)caps[1].effective << 32);
+    uint64_t permitted = caps[0].permitted | ((uint64_t)caps[1].permitted << 32);
+    uint64_t inheritable = caps[0].inheritable | ((uint64_t)caps[1].inheritable << 32);
+    uint64_t bounding = 0, ambient = 0;
+    for (unsigned cap = 0; cap <= 40; ++cap) {
+        int bound = prctl(PR_CAPBSET_READ, cap, 0, 0, 0);
+        int raised = prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_IS_SET, cap, 0, 0);
+        CHECK((bound == 0 || bound == 1) && (raised == 0 || raised == 1), "workload_read_capset_bit");
+        bounding |= (uint64_t)bound << cap;
+        ambient |= (uint64_t)raised << cap;
+    }
+    int nnp = prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0);
+    int securebits = prctl(PR_GET_SECUREBITS, 0, 0, 0, 0);
+    pid_t sid = getsid(0);
+    CHECK(nnp >= 0 && securebits >= 0 && sid > 0, "workload_read_privilege_flags");
+    record("G1D_WORKLOAD_CREDS phase=%s pid=%ld ruid=%u euid=%u suid=%u fsuid=%u "
+           "rgid=%u egid=%u sgid=%u fsgid=%u groups=%d effective=%" PRIu64
+           " permitted=%" PRIu64 " inheritable=%" PRIu64 " bounding=%" PRIu64
+           " ambient=%" PRIu64 " nnp=%d securebits=%d sid=%ld",
+           phase, (long)getpid(), ruid, euid, suid, fsuid, rgid, egid, sgid, fsgid,
+           groups, effective, permitted, inheritable, bounding, ambient, nnp, securebits, (long)sid);
+    return ruid == WORKLOAD_ID && euid == WORKLOAD_ID && suid == WORKLOAD_ID && fsuid == WORKLOAD_ID &&
+           rgid == WORKLOAD_ID && egid == WORKLOAD_ID && sgid == WORKLOAD_ID && fsgid == WORKLOAD_ID &&
+           groups == 0 && effective == 0 && permitted == 0 && inheritable == 0 && bounding == 0 && ambient == 0 &&
+           nnp == 1 && securebits == WORKLOAD_SECUREBITS;
+}
+static int workload_signal(const char *target, pid_t pid, int signal) {
+    errno = 0;
+    int result = kill(pid, signal), error = errno;
+    record("G1D_WORKLOAD_SIGNAL target=%s signal=%d rc=%d errno=%d", target, signal, result, error);
+    return result == -1 && error == EPERM;
+}
+static void workload_denial(const char *name, long result, int expected_error) {
+    int error = errno;
+    record("G1D_WORKLOAD_BOUNDARY name=%s rc=%ld errno=%d", name, result, error);
+    CHECK(result == -1 && error == expected_error, "workload_boundary_denial");
+}
+#define WORKLOAD_DENIED(name, call, error) do { errno = 0; workload_denial(name, (call), error); } while (0)
+static void workload_address_space(const char *phase) {
+    struct rlimit before,after;
+    CHECK(getrlimit(RLIMIT_AS,&before)==0,"workload_read_address_limit");
+    errno=0;
+    void *oversized=mmap(NULL,WORKLOAD_AS_BYTES,PROT_NONE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    int oversized_rc=oversized==MAP_FAILED ? -1 : 0, oversized_errno=errno;
+    if(oversized!=MAP_FAILED)CHECK(munmap(oversized,WORKLOAD_AS_BYTES)==0,"workload_unmap_unexpected_large");
+    struct rlimit raised={WORKLOAD_AS_BYTES,WORKLOAD_AS_BYTES+PAGE_BYTES};
+    errno=0;int raise_rc=setrlimit(RLIMIT_AS,&raised),raise_errno=errno;
+    struct rlimit invalid={WORKLOAD_AS_BYTES+PAGE_BYTES,WORKLOAD_AS_BYTES};
+    errno=0;int invalid_rc=setrlimit(RLIMIT_AS,&invalid),invalid_errno=errno;
+    CHECK(getrlimit(RLIMIT_AS,&after)==0,"workload_reread_address_limit");
+    volatile unsigned char *page=mmap(NULL,PAGE_BYTES,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    CHECK(page!=MAP_FAILED,"workload_small_mapping_available");
+    page[0]=0x5a;page[PAGE_BYTES-1]=0xa5;
+    int roundtrip=page[0]==0x5a && page[PAGE_BYTES-1]==0xa5;
+    CHECK(munmap((void *)page,PAGE_BYTES)==0,"workload_small_mapping_release");
+    record("G1D_WORKLOAD_ADDRESS_SPACE phase=%s pid=%ld soft=%" PRIu64 " hard=%" PRIu64
+           " after_soft=%" PRIu64 " after_hard=%" PRIu64 " oversized_bytes=%" PRIu64
+           " oversized_rc=%d oversized_errno=%d raise_hard_rc=%d raise_hard_errno=%d"
+           " invalid_soft_rc=%d invalid_soft_errno=%d mapped_page_bytes=4096 page_roundtrip=%d",
+           phase,(long)getpid(),(uint64_t)before.rlim_cur,(uint64_t)before.rlim_max,
+           (uint64_t)after.rlim_cur,(uint64_t)after.rlim_max,WORKLOAD_AS_BYTES,
+           oversized_rc,oversized_errno,raise_rc,raise_errno,invalid_rc,invalid_errno,roundtrip);
+    CHECK(before.rlim_cur==WORKLOAD_AS_BYTES && before.rlim_max==WORKLOAD_AS_BYTES &&
+          after.rlim_cur==WORKLOAD_AS_BYTES && after.rlim_max==WORKLOAD_AS_BYTES &&
+          oversized_rc==-1 && oversized_errno==ENOMEM && raise_rc==-1 && raise_errno==EPERM &&
+          invalid_rc==-1 && invalid_errno==EINVAL && roundtrip,"workload_address_space_boundary");
+}
+static void workload_linux_boundary(void) {
+    int credentials_ok = workload_credentials("initial");
+    int manager_denied = workload_signal("manager", manager_pid, 0);
+    int recovery_denied = workload_signal("recovery", recovery_pid, 0);
+    /* A frozen old-root kernel records the real credential/signal failures and
+     * exits here. It never sends a destructive signal in that negative boot. */
+    CHECK(credentials_ok && manager_denied && recovery_denied, "workload_privilege_boundary");
+    CHECK(getsid(0) == workload_pid && getsid(manager_pid) != getsid(0) &&
+          getsid(recovery_pid) != getsid(0), "workload_separate_session");
+    const int signals[] = {SIGSTOP, SIGTERM, SIGKILL, SIGCONT};
+    for (unsigned i = 0; i < sizeof signals / sizeof signals[0]; ++i) {
+        CHECK(workload_signal("manager", manager_pid, signals[i]), "workload_manager_signal_denied");
+        CHECK(workload_signal("recovery", recovery_pid, signals[i]), "workload_recovery_signal_denied");
+    }
+    WORKLOAD_DENIED("setresuid_root", setresuid(0, 0, 0), EPERM);
+    WORKLOAD_DENIED("setresgid_root", setresgid(0, 0, 0), EPERM);
+    gid_t root_group = 0;
+    WORKLOAD_DENIED("setgroups_root", setgroups(1, &root_group), EPERM);
+    struct __user_cap_header_struct header = {_LINUX_CAPABILITY_VERSION_3, 0};
+    struct __user_cap_data_struct raised[2] = {{.effective = 1U << CAP_KILL, .permitted = 1U << CAP_KILL}, {0}};
+    WORKLOAD_DENIED("raise_cap_kill", syscall(SYS_capset, &header, raised), EPERM);
+    WORKLOAD_DENIED("raise_ambient_kill", prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_RAISE, CAP_KILL, 0, 0), EPERM);
+    WORKLOAD_DENIED("clear_no_new_privs", prctl(PR_SET_NO_NEW_PRIVS, 0, 0, 0, 0), EINVAL);
+    WORKLOAD_DENIED("clear_securebits", prctl(PR_SET_SECUREBITS, 0, 0, 0, 0), EPERM);
+    CHECK(setfsuid(0) == WORKLOAD_ID && setfsgid(0) == WORKLOAD_ID, "workload_fsids_cannot_return_root");
+    for (unsigned i = 0; i < 2; ++i) {
+        pid_t target = i == 0 ? manager_pid : recovery_pid;
+        const char *name = i == 0 ? "manager" : "recovery";
+        char path[128], label[64];
+        /* This kernel currently rejects PTRACE_ATTACH as unsupported (EIO).
+         * The proc checks below separately exercise its real alien-access policy. */
+        CHECK(snprintf(label, sizeof label, "ptrace_attach_%s", name) > 0, "ptrace_label");
+        WORKLOAD_DENIED(label, ptrace(PTRACE_ATTACH, target, NULL, NULL), EIO);
+        CHECK(snprintf(label, sizeof label, "ptrace_pokedata_%s", name) > 0, "ptrace_pokedata_label");
+        WORKLOAD_DENIED(label, ptrace(PTRACE_POKEDATA, target, NULL, NULL), ESRCH);
+        CHECK(snprintf(path, sizeof path, "/proc/%ld/mem", (long)target) > 0, "proc_mem_path");
+        CHECK(snprintf(label, sizeof label, "proc_mem_%s", name) > 0, "proc_mem_label");
+        WORKLOAD_DENIED(label, open(path, O_RDWR | O_CLOEXEC), EACCES);
+        CHECK(snprintf(path, sizeof path, "/proc/%ld/maps", (long)target) > 0, "proc_maps_path");
+        CHECK(snprintf(label, sizeof label, "proc_maps_%s", name) > 0, "proc_maps_label");
+        WORKLOAD_DENIED(label, open(path, O_RDONLY | O_CLOEXEC), EACCES);
+    }
+    WORKLOAD_DENIED("rewrite_ready", open(IPC_DIR "/ready", O_WRONLY | O_CLOEXEC), EACCES);
+    WORKLOAD_DENIED("forge_recovery_command", open(IPC_DIR "/command.new", O_WRONLY | O_CREAT | O_CLOEXEC, 0600), EACCES);
+    CHECK(workload_credentials("after_denials"), "workload_credentials_changed");
+    workload_address_space("initial");
+    pid_t child = fork();
+    CHECK(child >= 0, "workload_setuid_exec_fork");
+    if (child == 0) {
+        workload_address_space("after_fork");
+        execl(IPC_DIR "/setuid-probe", "setuid-probe", "--workload-privexec", NULL);
+        failure("workload_setuid_exec_returned", __LINE__);
+    }
+    int status;
+    CHECK(waitpid(child, &status, 0) == child && WIFEXITED(status) && WEXITSTATUS(status) == 0,
+          "workload_setuid_exec_failed");
+    record("G1D_WORKLOAD_LINUX_ISOLATED uid=60001 gid=60001 groups=0 caps=0 nnp=1 securebits=195 signal_cases=10 boundary_cases=17 exec_cases=1");
+}
 static void workload(void) {
     wait_ready();
+    workload_linux_boundary();
     control_fd = open_control(1); query(control_fd, own_space);
     CHECK(memcmp(own_space, manager_space, 16) != 0 &&
           memcmp(own_space, recovery_space, 16) != 0, "workload_private_capspace");
@@ -378,7 +529,7 @@ static void workload(void) {
     install_request(q, 1, 1, MAX_CAP_NS); put64(q + 40, 2); put64(q + 48, 1);
     empty_response(control_fd, q, 96, DENIED);
     record("G1D_WORKLOAD_NO_AUTHORITY");
-    int fd = open(IPC_DIR "/heartbeat", O_WRONLY | O_CREAT | O_CLOEXEC, 0600);
+    int fd = open(IPC_DIR "/heartbeat", O_WRONLY | O_CLOEXEC);
     CHECK(fd >= 0, "workload_heartbeat_open");
     uint64_t count = 0;
     for (;;) {
@@ -417,6 +568,43 @@ static void recovery(void) {
             history(control_fd, recovery_history_slot, recovery_history_gen, recovery_space,
                     message.a, 0, (unsigned)message.expected_status, message.response);
             break;
+        case REC_CHECK_USER_STOP: {
+            struct usage a = usage_read(control_fd, MAX_CAP_NS);
+            uint64_t heartbeat_a = heartbeat();
+            sleep_ms(220);
+            struct usage b = usage_read(control_fd, MAX_CAP_NS);
+            uint64_t heartbeat_b = heartbeat();
+            CHECK(a.cumulative == message.a && b.cumulative == message.a &&
+                  heartbeat_a == message.b && heartbeat_b == message.b && message.b > 0 &&
+                  b.sample >= a.sample + PERIOD_NS * 2 && a.revision == b.revision,
+                  "recovery_must_preserve_user_stop");
+            record("G1D_RECOVERY_PRESERVED_USER_STOP sample_a=%" PRIu64 " sample_b=%" PRIu64
+                   " total_a=%" PRIu64 " total_b=%" PRIu64 " heartbeat_a=%" PRIu64
+                   " heartbeat_b=%" PRIu64 " revision=%" PRIu64,
+                   a.sample,b.sample,a.cumulative,b.cumulative,heartbeat_a,heartbeat_b,b.revision);
+            break;
+        }
+        case REC_REJECT_REUSED_RECOVERY: {
+            struct usage before = usage_read(control_fd, MAX_CAP_NS);
+            unsigned char q[104];
+            install_request(q,++sequence,before.revision,0);
+            empty_response(control_fd,q,96,DENIED);
+            struct usage after = usage_read(control_fd, MAX_CAP_NS);
+            CHECK(before.revision == after.revision && before.cumulative == after.cumulative,
+                  "reused_recovery_changed_budget");
+            record("G1D_RECOVERY_SINGLE_USE_DENIED sequence=%" PRIu64 " revision=%" PRIu64 " requested_cap=0 status=2",
+                   sequence,after.revision);
+            break;
+        }
+        case REC_CHECK_USER_CONTINUE: {
+            struct usage after = usage_read(control_fd, MAX_CAP_NS);
+            uint64_t count = heartbeat();
+            CHECK(after.cumulative > message.a && count > message.b,
+                  "explicit_user_continue_must_resume_workload");
+            record("G1D_USER_RESUME_REQUIRED total=%" PRIu64 " heartbeat=%" PRIu64
+                   " revision=%" PRIu64 " signal=18",after.cumulative,count,after.revision);
+            break;
+        }
         case REC_STOP:
             publish_message("reply", &message);
             record("G1D_RECOVERY_STOPPED");
@@ -545,7 +733,28 @@ static void start_workload_and_recovery(void) {
     CHECK(mount("none","/proc","proc",0,NULL)==0,"mount_proc");
     CHECK(mount("none","/sys","sysfs",0,NULL)==0,"mount_sysfs");
     CHECK(mount("none","/sys/fs/cgroup","cgroup2",0,NULL)==0,"mount_cgroup");
-    CHECK(mkdir(IPC_DIR,0700)==0,"probe_coordination_directory");
+    CHECK(mkdir(IPC_DIR,0755)==0,"probe_coordination_directory");
+    write_file(IPC_DIR "/heartbeat", "", 0);
+    CHECK(chown(IPC_DIR "/heartbeat",WORKLOAD_ID,WORKLOAD_ID)==0,"workload_heartbeat_owner");
+    CHECK(chmod("/dev/hepta-control",0666)==0,"control_query_device_access");
+    int source=open("/test/g1d-init",O_RDONLY|O_CLOEXEC);
+    int copy=open(IPC_DIR "/setuid-probe",O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC,0600);
+    CHECK(source>=0 && copy>=0,"setuid_probe_open");
+    unsigned char buffer[4096];
+    for (;;) {
+        ssize_t n=read(source,buffer,sizeof buffer);
+        CHECK(n>=0,"setuid_probe_read");
+        if(n==0)break;
+        ssize_t written=0;
+        while(written<n) {
+            ssize_t count=write(copy,buffer+written,(size_t)(n-written));
+            CHECK(count>0,"setuid_probe_write");written+=count;
+        }
+    }
+    struct stat metadata;
+    CHECK(fchmod(copy,04755)==0 && fstat(copy,&metadata)==0 && metadata.st_uid==0 &&
+          metadata.st_gid==0 && (metadata.st_mode&07777)==04755,"setuid_probe_root_owned_mode");
+    CHECK(close(copy)==0 && close(source)==0,"setuid_probe_close");
     struct message ready={.magic=IPC_MAGIC};
     publish_message("ready",&ready);
     (void)await_message("recovery-ready",0);
@@ -566,7 +775,10 @@ static void read_exact_file(const char *path,void *data,size_t size) {
     unsigned char extra;
     CHECK(read(fd,&extra,1)==0 && close(fd)==0,"saved_receipt_size");
 }
-struct saved_terminal { unsigned char receipt[128],stable_object[16]; };
+struct saved_terminal {
+    unsigned char receipt[128],stable_object[16];
+    uint64_t paused_total,paused_heartbeat;
+};
 
 static void post_exec(int argc,char **argv) {
     CHECK(argc==10 && getpid()==1,"post_exec_actual_manager");
@@ -597,6 +809,17 @@ static void post_exec(int argc,char **argv) {
     CHECK(memcmp(query_result.response+80,saved.stable_object,16)==0,"exec_history_stable_owner");
     record("G1D_EXEC_REVOKED old_fd_errno=%d no_auxv=true own_history=denied recovery_history=terminal sequence=%" PRIu64,
            ESTALE,last);
+    struct message restored = recovery_command(REC_INSTALL,get64(saved.receipt+56),UINT64_C(25000000),OK);
+    struct message recovery_history = recovery_command(REC_QUERY_SELF,2,0,OK);
+    history_terminal(recovery_history.response,2,OK,restored.response);
+    CHECK(memcmp(recovery_history.response+80,saved.stable_object,16)==0,"bounded_recovery_same_owner");
+    (void)recovery_command(REC_CHECK_USER_STOP,saved.paused_total,saved.paused_heartbeat,OK);
+    (void)recovery_command(REC_REJECT_REUSED_RECOVERY,0,0,DENIED);
+    CHECK(kill(workload_pid,SIGCONT)==0,"explicit_user_continue");
+    uint64_t deadline=now_ns()+UINT64_C(2000000000);
+    while(heartbeat()<=saved.paused_heartbeat && now_ns()<deadline)sleep_ms(2);
+    CHECK(heartbeat()>saved.paused_heartbeat,"workload_await_user_continue");
+    (void)recovery_command(REC_CHECK_USER_CONTINUE,saved.paused_total,saved.paused_heartbeat,OK);
     struct message retired=recovery_command(REC_RETIRE_MANAGER,last,0,OK);
     CHECK(get64(retired.response+64)==last && get64(retired.response+72)==last+1,
           "post_exec_independent_retirement");
@@ -731,7 +954,7 @@ static void manager(void) {
           "independent_prefix_retirement");
     struct message retired_again=recovery_command(REC_RETIRE_MANAGER,512,0,OK);
     CHECK(memcmp(retired_again.response+64,retired.response+64,16)==0,"idempotent_retirement");
-    u=usage_read(control_fd,MAX_CAP_NS);u=install_ok(1025,u,MAX_CAP_NS,r,1);
+    u=usage_read(control_fd,MAX_CAP_NS);u=install_ok(1025,u,UINT64_C(25000000),r,1);
     struct saved_terminal saved;memcpy(saved.receipt,r,128);memcpy(saved.stable_object,stable_object,16);
     install_request(q,1,initial_revision,UINT64_C(25000000));
     empty_response(control_fd,q,96,RETIRED);
@@ -741,8 +964,17 @@ static void manager(void) {
     history_empty(hist,RETIRED_STATE,3);
     history(control_fd,manager_history_slot,manager_history_gen,manager_space,1024,0,OK,hist);
     CHECK(get16(hist+64)==TERMINAL_STATE && get16(hist+66)==OK,"unretired_suffix_retained");
-    CHECK(usage_read(control_fd,MAX_CAP_NS).revision==u.revision,"retired_D_executed");
+    CHECK(usage_read(control_fd,UINT64_C(25000000)).revision==u.revision,"retired_D_executed");
     record("G1D_PREFIX_RETIRED through=512 next=1026 old_D=retired manager_ack=denied");
+    CHECK(kill(workload_pid,SIGSTOP)==0,"explicit_user_stop");
+    int stopped_status;
+    CHECK(waitpid(workload_pid,&stopped_status,WUNTRACED)==workload_pid && WIFSTOPPED(stopped_status) &&
+          WSTOPSIG(stopped_status)==SIGSTOP,"explicit_user_stop_confirmed");
+    struct usage stopped=usage_read(control_fd,UINT64_C(25000000));
+    saved.paused_total=stopped.cumulative;saved.paused_heartbeat=heartbeat();
+    record("G1D_USER_STOP_CONFIRMED pid=%ld signal=19 sample=%" PRIu64 " total=%" PRIu64
+           " heartbeat=%" PRIu64 " revision=%" PRIu64,
+           (long)workload_pid,stopped.sample,saved.paused_total,saved.paused_heartbeat,stopped.revision);
     write_file(IPC_DIR "/last-terminal",&saved,sizeof saved);
 
     char fd_text[24],boot_text[33],manager_text[33],recovery_text[33],command_text[24],wpid[24],rpid[24];
@@ -760,6 +992,11 @@ static void manager(void) {
 
 int main(int argc,char **argv) {
     setvbuf(stdout,NULL,_IONBF,0);
+    if(argc==2 && strcmp(argv[1],"--workload-privexec")==0) {
+        CHECK(getauxval(AT_HEPTA_BOOT)==0 && workload_credentials("after_exec"),"workload_privexec_gained_authority");
+        workload_address_space("after_exec");
+        return 0;
+    }
     if(argc>1 && strcmp(argv[1],"--post-exec")==0)post_exec(argc,argv);
     CHECK(argc==1,"initial_argc");
     bootstrap();

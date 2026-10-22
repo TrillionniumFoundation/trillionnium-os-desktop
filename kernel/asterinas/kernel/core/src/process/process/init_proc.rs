@@ -14,7 +14,7 @@ use crate::{
     process::{
         Credentials, ProcessVm, ShebangScriptPath, UndetectedExecutable, UserNamespace, pid_table,
         posix_thread::{AsPosixThread, PosixThreadBuilder, allocate_posix_tid, derive_thread_name},
-        rlimit::new_resource_limits_for_init,
+        rlimit::{ResourceLimits, new_resource_limits_for_init},
         signal::sig_disposition::SigDispositions,
     },
     sched::Nice,
@@ -186,7 +186,7 @@ fn create_init_process(
 ) -> Result<PreparedInitialProcess> {
     let fs = ThreadFsInfo::new(path_resolver);
 
-    let (init_proc, vmar) = allocate_initial_process(&executable_path);
+    let (init_proc, vmar) = allocate_initial_process(&executable_path, new_resource_limits_for_init());
     let pid = init_proc.pid();
 
     let loaded_vmar = vmar.clone_arc();
@@ -199,10 +199,9 @@ fn create_init_process(
     Ok(prepared)
 }
 
-fn allocate_initial_process(executable_path: &Path) -> (Arc<Process>, VmarHandle) {
+fn allocate_initial_process(executable_path: &Path, resource_limits: ResourceLimits) -> (Arc<Process>, VmarHandle) {
     let pid = allocate_posix_tid();
     let vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
-    let resource_limits = new_resource_limits_for_init();
     let nice = Nice::default();
     let oom_score_adj = 0;
     let sig_dispositions = Arc::new(Mutex::new(SigDispositions::default()));

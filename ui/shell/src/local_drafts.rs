@@ -418,7 +418,7 @@ mod tests {
                 20_000,
             )],
         };
-        let path = save_context_at(&fixture.0, &[draft.clone()]).unwrap();
+        let path = save_context_at(&fixture.0, std::slice::from_ref(&draft)).unwrap();
         assert_eq!(path.file_name().unwrap(), CONTEXT_FILE_NAME);
         assert_eq!(
             load_context_at(&fixture.0, Workspace::Build).unwrap(),

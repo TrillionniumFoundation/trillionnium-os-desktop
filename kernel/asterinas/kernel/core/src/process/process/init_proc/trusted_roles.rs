@@ -6,23 +6,34 @@
 //! the three actual allocations and final-image tokens. All resource setup,
 //! grants, page contents and first-run claims precede every Thread::run.
 //! The manager then performs normal first-process device/console startup before
-//! releasing either child. Each child opens its own console descriptors before
-//! userspace; standard I/O initialization never assigns a role or a grant.
+//! releasing either child. The workload starts with its own unprivileged
+//! credentials and session. It receives only the already-open standard console
+//! handles; this I/O handoff never assigns a role or a grant.
 
 use os_control::PublisherId;
 
 use super::*;
 use crate::{
     device::misc::{hepta_boot_id, hepta_image_space_id},
-    fs::cgroupfs::NativeCpuManager,
+    fs::{
+        cgroupfs::NativeCpuManager,
+        file::{
+            FileLike,
+            file_table::{FdFlags, FileTable},
+        },
+    },
     process::{
         clone::{CloneFlags, set_parent_and_group},
+        credentials::{Gid, SecureBits, Uid, capabilities::CapSet},
         process::trusted_control::TrustedControlSlots,
         program_loader::elf::TrustedInitialSnapshot,
+        rlimit::{ResourceType, new_resource_limits_for_initial_workload},
     },
 };
 
 const BOOT_PAGE_BYTES: u64 = 192;
+const WORKLOAD_ID: u32 = 60001;
+const WORKLOAD_AS_BYTES: u64 = 256 * 1024 * 1024;
 
 pub(super) fn spawn(
     path_resolver: PathResolver,
@@ -39,20 +50,34 @@ pub(super) fn spawn(
     // Exactly one bounded read of the input. No role loads from a later inode
     // snapshot, and the compiled manifest is not replaced for negative boots.
     let snapshot = executable.snapshot_trusted_initial()?;
-    let manager = allocate_initial_process(&executable_path);
-    let workload = allocate_initial_process(&executable_path);
-    let recovery = allocate_initial_process(&executable_path);
+    let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+    let workload = allocate_initial_process(&executable_path,
+        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES));
+    let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init());
     let keys = [manager.0.hepta_capspace_session()?, workload.0.hepta_capspace_session()?,
         recovery.0.hepta_capspace_session()?];
     let pids = [manager.0.pid(), workload.0.pid(), recovery.0.pid()];
     let spaces = [hepta_image_space_id(keys[0]), hepta_image_space_id(keys[2])];
     let pending_children = Arc::new(Mutex::new(None::<[Arc<Task>; 2]>));
+    let workload_console = Arc::new(Mutex::new(None::<[Arc<dyn FileLike>; 3]>));
     let mut prepared = Vec::with_capacity(3);
     for (index, allocation) in [manager, workload, recovery].into_iter().enumerate() {
         let page = boot_page(index as u64 + 1, pids, spaces);
         let startup: Box<dyn FnOnce(&Context<'_>) + Send> = if index == 0 {
             let pending_children = pending_children.clone();
-            Box::new(move |_| {
+            let workload_console = workload_console.clone();
+            Box::new(move |ctx| {
+                // /dev/console is root-only. Transfer exactly the standard
+                // handles already opened by first-process initialization into
+                // the workload's separate table; never give it root credentials
+                // for startup or let it inherit later manager descriptors.
+                let console = {
+                    let borrowed = ctx.thread_local.borrow_file_table();
+                    let files = borrowed.unwrap().read();
+                    assert_eq!(files.len(), 3);
+                    [0, 1, 2].map(|fd| files.get_file(fd.try_into().unwrap()).unwrap().clone())
+                };
+                *workload_console.lock() = Some(console);
                 // The first-process startup hook has finished. Release the
                 // private boot queue before entering the scheduler; no image,
                 // task-set, file-table or queue lock is held across Thread::run.
@@ -62,11 +87,21 @@ pub(super) fn spawn(
                     task.as_thread().unwrap().run();
                 }
             })
+        } else if index == 1 {
+            let workload_console = workload_console.clone();
+            Box::new(move |ctx| {
+                let console = workload_console.lock().take()
+                    .expect("workload console handles were not prepared");
+                for file in console {
+                    FileTable::reserve_fd(ctx, FdFlags::empty()).unwrap().install(file);
+                }
+            })
         } else {
             Box::new(crate::fs::init_console_file_table)
         };
+        let credentials = if index == 1 { workload_credentials()? } else { Credentials::new_root() };
         prepared.push(prepare_role(allocation, fs.clone(), &snapshot, &abs_path,
-            argv.clone(), envp.clone(), page, startup)?);
+            argv.clone(), envp.clone(), page, credentials, startup)?);
     }
     drop(snapshot);
     let (mut recovery, recovery_image, recovery_entry) = prepared.pop().unwrap();
@@ -94,12 +129,34 @@ pub(super) fn spawn(
     set_bootstrap_session_and_group(&manager.process);
     set_parent_and_group(CloneFlags::empty(), &manager.process, &workload.process);
     set_parent_and_group(CloneFlags::empty(), &manager.process, &recovery.process);
+    // No user task has run, so this fresh child cannot already lead a group.
+    // Separate the session too: POSIX permits SIGCONT within a shared session
+    // even when UIDs differ and CAP_KILL is absent.
+    workload.process.to_new_session().expect("fresh workload session must be available");
     println!("[hepta-g1d] initial control activated: manager={} workload={} recovery={} cap_ns=50000000 period_ns=100000000 lease_ns=300000000000 hepta_durability=false",
         pids[0], pids[1], pids[2]);
     let result = manager.process.clone();
     *pending_children.lock() = Some([workload.task.clone(), recovery.task.clone()]);
     manager.task.as_thread().unwrap().run();
     Ok(result)
+}
+
+fn workload_credentials() -> Result<Credentials> {
+    // This private value is never attached to a task until every restriction
+    // is applied. No user instruction or startup hook can run with root IDs.
+    let credentials = Credentials::new_root();
+    credentials.groups_mut().clear();
+    credentials.drop_bounding_capability(CapSet::all())?;
+    credentials.set_securebits(SecureBits::NOROOT | SecureBits::NOROOT_LOCKED
+        | SecureBits::NO_CAP_AMBIENT_RAISE | SecureBits::NO_CAP_AMBIENT_RAISE_LOCKED)?;
+    credentials.set_gid(Gid::new(WORKLOAD_ID))?;
+    credentials.set_uid(Uid::new(WORKLOAD_ID))?;
+    credentials.set_inheritable_capset(CapSet::empty());
+    credentials.set_permitted_capset(CapSet::empty());
+    credentials.set_effective_capset(CapSet::empty());
+    credentials.clear_ambient_capset();
+    credentials.set_no_new_privs();
+    Ok(credentials)
 }
 
 fn prepare_role(
@@ -110,15 +167,24 @@ fn prepare_role(
     argv: Vec<CString>,
     envp: Vec<CString>,
     boot: Box<[u8; PAGE_SIZE]>,
+    credentials: Credentials,
     startup: Box<dyn FnOnce(&Context<'_>) + Send>,
 ) -> Result<(PreparedInitialProcess, LoadedInitialImage, Vaddr)> {
     let loaded_vmar = vmar.clone_arc();
     let (info, image) = snapshot.load(loaded_vmar.clone(), argv, envp, boot)?;
+    // Initial loading runs in a kernel task, so generic VMAR admission may
+    // have no current userspace Process. Check this actual stopped allocation
+    // against its own original limit before attaching or releasing its task.
+    if loaded_vmar.get_mappings_total_size() as u64
+        > process.resource_limits().get_rlimit(ResourceType::RLIMIT_AS).get_cur()
+    {
+        return_errno_with_message!(Errno::ENOMEM, "initial image exceeds its address-space limit");
+    }
     let mut user_ctx = UserContext::default();
     user_ctx.set_instruction_pointer(info.entry_point as _);
     user_ctx.set_stack_pointer(info.user_stack_top as _);
     let task = PosixThreadBuilder::new(
-        process.pid(), derive_thread_name(abs_path), Box::new(user_ctx), Credentials::new_root(), vmar,
+        process.pid(), derive_thread_name(abs_path), Box::new(user_ctx), credentials, vmar,
     ).process(Arc::downgrade(&process)).fs(Arc::new(fs))
         .before_initial_user_run(startup).build();
     process.tasks().lock().insert(task.clone()).unwrap();

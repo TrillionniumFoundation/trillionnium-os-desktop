@@ -23,7 +23,8 @@
 //! `BlockGroup` uses two independent locks:
 //!
 //! - `metadata` — protects the group descriptor and both allocation
-//!   bitmaps. Held briefly during alloc/free operations.
+//!   bitmaps. Allocation and metadata writeback take the filesystem's
+//!   superblock write guard first, then this guard.
 //! - `inode_cache` — protects the per-group live inode map. Uses
 //!   double-checked locking (read then promote to write on miss).
 
@@ -38,10 +39,7 @@ use super::{
     prelude::*,
     super_block::SuperBlock,
 };
-use crate::{
-    fs::{file::SyncMode, utils::IdBitmap, vfs::inode::Inode as VfsInode},
-    vm::page_cache::PageRun,
-};
+use crate::{fs::utils::IdBitmap, vm::page_cache::PageRun};
 
 /// Represents one block group in an ext2 filesystem.
 ///
@@ -212,14 +210,8 @@ impl BlockGroup {
         self.inode_cache.write().remove(&inode_idx)
     }
 
-    /// Syncs per-group inode state and bitmap metadata.
-    pub(super) fn sync_all(&self, group_descs: &USegment) -> Result<()> {
-        self.sync_inodes()?;
-        self.sync_metadata(group_descs)
-    }
-
     /// Syncs cached inodes.
-    fn sync_inodes(&self) -> Result<()> {
+    pub(super) fn sync_inodes(&self) -> Result<()> {
         // Clone the `Arc` handles under the read lock, then drop the lock before
         // calling `sync`. Otherwise `sync` acquires `inner.write()` while
         // we still hold `inode_cache.read()`, creating a lock-order inversion with
@@ -227,7 +219,10 @@ impl BlockGroup {
         // `inode_cache.write()`.
         let inodes: Vec<Arc<Inode>> = self.inode_cache.read().values().cloned().collect();
         for inode in inodes {
-            inode.sync(SyncMode::Full)?;
+            // Flush only inode-owned state here. The filesystem completes
+            // every group's inode work before the shared allocation phase;
+            // VFS inode.sync would re-enter that phase once for every inode.
+            inode.sync_all()?;
         }
         self.sync_inode_table()
     }
@@ -267,8 +262,17 @@ impl BlockGroup {
     }
 
     /// Returns whether the group descriptor has been modified since the last writeback.
+    #[cfg(ktest)]
     pub(super) fn is_desc_dirty(&self) -> bool {
         self.metadata.read().desc.is_dirty()
+    }
+
+    /// Returns whether any allocation metadata still needs writeback.
+    pub(super) fn is_metadata_dirty(&self) -> bool {
+        let metadata = self.metadata.read();
+        metadata.desc.is_dirty()
+            || metadata.block_bitmap.is_dirty()
+            || metadata.inode_bitmap.is_dirty()
     }
 
     /// Attempts to allocate up to `count` contiguous blocks within this group.
@@ -463,9 +467,14 @@ impl BlockGroup {
     ///
     /// Dirty bitmaps are written to disk here. If the group descriptor is dirty,
     /// this method updates the caller-provided descriptor table segment; the
-    /// caller is responsible for writing that segment to disk.
-    fn sync_metadata(&self, group_descs: &USegment) -> Result<()> {
-        let mut metadata = self.metadata.write();
+    /// caller holds the filesystem superblock write guard until every copy is
+    /// written. Dirty flags remain set until the complete phase succeeds.
+    pub(super) fn sync_metadata(
+        &self,
+        group_descs: &USegment,
+        _sb_guard: &RwMutexWriteGuard<'_, Dirty<SuperBlock>>,
+    ) -> Result<()> {
+        let metadata = self.metadata.write();
 
         // Sync block bitmap.
         if metadata.block_bitmap.is_dirty() {
@@ -481,7 +490,6 @@ impl BlockGroup {
                 // Keep dirty bit set on writeback failure for retry.
                 return_errno_with_message!(Errno::EIO, "failed to write block bitmap");
             }
-            metadata.block_bitmap.clear_dirty();
         }
 
         // Sync inode bitmap.
@@ -498,7 +506,6 @@ impl BlockGroup {
                 // Keep dirty bit set on writeback failure for retry.
                 return_errno_with_message!(Errno::EIO, "failed to write inode bitmap");
             }
-            metadata.inode_bitmap.clear_dirty();
         }
 
         // Sync group descriptor.
@@ -506,10 +513,20 @@ impl BlockGroup {
             let raw_group = RawBlockGroup::from(*metadata.desc);
             let offset = self.group_idx * size_of::<RawBlockGroup>();
             group_descs.write_val(offset, &raw_group)?;
-            metadata.desc.clear_dirty();
         }
 
         Ok(())
+    }
+
+    /// Commits the dirty transition after every metadata write succeeded.
+    pub(super) fn clear_metadata_dirty(
+        &self,
+        _sb_guard: &RwMutexWriteGuard<'_, Dirty<SuperBlock>>,
+    ) {
+        let mut metadata = self.metadata.write();
+        metadata.block_bitmap.clear_dirty();
+        metadata.inode_bitmap.clear_dirty();
+        metadata.desc.clear_dirty();
     }
 
     /// Returns the 0-based group-local inode index.

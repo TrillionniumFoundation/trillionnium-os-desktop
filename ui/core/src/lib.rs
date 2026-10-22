@@ -2,6 +2,8 @@
 //! protocol, or a trusted Hepta operation ledger.
 pub mod conversation;
 pub mod hepta;
+pub mod notes;
+pub mod notes_bootstrap;
 pub mod observation;
 
 use serde::{Deserialize, Serialize};
@@ -128,6 +130,8 @@ pub struct TaskRecord {
     /// native child launch. This is NOT a surface-mapped or connected event.
     #[serde(default)]
     pub wayland_socket_epoch_at_launch: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes_destination: Option<notes::NotesDestinationObservation>,
 }
 
 impl TaskRecord {
@@ -150,6 +154,7 @@ impl TaskRecord {
             hos2_revision: None,
             ui_first_frame_unix_ms: None,
             wayland_socket_epoch_at_launch: None,
+            notes_destination: None,
         }
     }
 

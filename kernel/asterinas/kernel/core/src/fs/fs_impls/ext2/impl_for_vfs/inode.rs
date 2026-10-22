@@ -281,6 +281,11 @@ impl Inode for Ext2Inode {
             SyncMode::Full => self.sync_all()?,
         }
         let fs = self.fs()?;
+        // An inode-table entry is not reachable after remount if its inode
+        // bitmap is still only in RAM. Likewise, unpersisted block allocation
+        // can let another file reuse data that fdatasync already acknowledged.
+        // The inode lock above is released before the filesystem/group locks.
+        fs.sync_allocation_metadata()?;
         let block_group = fs.block_group(self.block_group_idx());
         block_group.sync_inode_table()?;
         if fs.block_device().sync()? != BioStatus::Complete {
