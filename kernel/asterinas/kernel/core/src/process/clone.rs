@@ -504,9 +504,8 @@ fn clone_child_task(
             )
         })?;
 
-    if let Some(charge) = pids_charge {
-        charge.apply();
-    }
+    // Consume the whole option before moving the cgroup borrowed by its guard.
+    pids_charge.map_or((), |charge| charge.apply());
     child_task
         .as_posix_thread()
         .unwrap()

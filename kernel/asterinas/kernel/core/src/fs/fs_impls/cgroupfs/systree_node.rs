@@ -248,7 +248,7 @@ impl CgroupMembership {
     /// retained TID without a second charge ledger.
     pub(crate) fn hide_zombie_process(&mut self, process: &Process) {
         debug_assert!(process.status().is_zombie());
-        let Some(cgroup) = process.cgroup().get().cloned() else {
+        let Some(cgroup) = process.cgroup().get().map(|cgroup| cgroup.clone()) else {
             return;
         };
         cgroup
