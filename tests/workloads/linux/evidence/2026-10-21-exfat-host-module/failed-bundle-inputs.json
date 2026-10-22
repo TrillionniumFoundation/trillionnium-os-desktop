@@ -1,0 +1,59 @@
+{
+  "compiler": {
+    "path": "/usr/bin/cc",
+    "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+  },
+  "compiler_version_sha256": "3e8cc208c40f60832f67377aa1b03c3e7e858f20cd5d365464944700c0bd7ad1",
+  "formatter": {
+    "path": "/usr/sbin/mkfs.exfat",
+    "sha256": "e7d914063da45bad5e2c03b8638d205f40ae0092c1868ae9bd1d7a114639119a"
+  },
+  "formatter_version": "1.2.2",
+  "formatter_version_exit": 1,
+  "formatter_version_sha256": "e7ebf573a1300e4d3f21c79f409579b7479d7e1114f077da8cd7df642345c4e4",
+  "hepta_hos2_qualification": false,
+  "image_bytes": 536870912,
+  "image_sha256": "97645366acdce7d2ff6f2dea211caeb129c0c466caeab9bf8fb8e4cbc6714c85",
+  "passed": true,
+  "physical_device_qualification": false,
+  "probe_bytes": 804736,
+  "probe_sha256": "e02d392210bbcb253ac525ddfbdedd490593ab3b095471d31c6c22073270b239",
+  "schema": "a06.exfat-prepare.v1",
+  "source_head": "22a3284a14069f79c784e6bf33bb3c6035b9765f",
+  "source_inputs": {
+    "tests/integration/hepta/run_original_agentd.py": {
+      "bytes": 30487,
+      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+    },
+    "tests/kernel/control/run_queryabi_candidate_guest.py": {
+      "bytes": 16498,
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5"
+    },
+    "tests/organ_backend/run_guest_probe.py": {
+      "bytes": 7644,
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+    },
+    "tests/workloads/linux/exfat_mode_evidence.py": {
+      "bytes": 6484,
+      "sha256": "17c78350eee1b03ee6f0bc79cb367cae6f5dd35b25c53339c7b9b9274c275c4f"
+    },
+    "tests/workloads/linux/exfat_mode_probe.c": {
+      "bytes": 12664,
+      "sha256": "c99d9589bc94b03ba8f9942851d2dcb40cba2fa8b3d1ec6d7103695c4c2f2b42"
+    },
+    "tests/workloads/linux/run_exfat_mode_guest.py": {
+      "bytes": 24044,
+      "sha256": "0ba690fd6388cee7e194527b52f9752927071d52777fbb4dc25be631ab065962"
+    },
+    "tests/workloads/linux/run_rlimit_nofile_guest.py": {
+      "bytes": 19268,
+      "sha256": "adce5f93bbc8679c6aa0b08162baf0c1f8ae854ef346b78e585525062484ad1c"
+    },
+    "tests/workloads/linux/run_scm_rights_cloexec_guest.py": {
+      "bytes": 11957,
+      "sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d"
+    }
+  },
+  "source_inputs_unchanged": true,
+  "source_tree": "4f2fe03e4a7847e9ef3273dac4474a6691da7db4"
+}

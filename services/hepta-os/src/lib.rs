@@ -15,6 +15,9 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::path::PathBuf;
 
+#[cfg(feature = "cpu-history")]
+pub mod cpu_delivery;
+
 #[cfg(target_os = "linux")]
 mod client;
 #[cfg(target_os = "linux")]

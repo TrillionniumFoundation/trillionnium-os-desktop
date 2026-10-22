@@ -1,0 +1,16 @@
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd.rs
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd.rs
+@@ -167,10 +167,12 @@
+         let mode_policy = if seals.contains(FileSeals::F_SEAL_EXEC) {
+             PermissionModePolicy::PreserveExecutableBits
+         } else {
+             PermissionModePolicy::Writable
+         };
++        // NEGATIVE CONTROL ONLY: allow sealing after a cached writable policy.
++        drop(seals);
+         #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+         request.after_check_for_test(
+             crate::fs::vfs::permission_attrs::smp_support::CheckpointStage::MemfdSealDecision,
+         );
+         Some(self.inode.permission_attr_transaction(request, mode_policy))

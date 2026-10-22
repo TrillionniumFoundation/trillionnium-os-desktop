@@ -1,0 +1,150 @@
+{
+  "schema": "a09.implementation-readonly-inventory.v1",
+  "observed_on": "2026-10-21",
+  "scope": "Configured development hosts; read-only CPU/PCI enumeration, not Asterinas execution",
+  "hardware_modified": false,
+  "gpu_compute_run": false,
+  "asterinas_vmm_qualified": false,
+  "hosts": {
+    "main": {
+      "job_id": "1a15ec13854-1b6abb-299d",
+      "state": "succeeded",
+      "exit_code": 0,
+      "observation": {
+        "accelerators": [
+          {
+            "bdf": "0000:02:00.0",
+            "boot_vga": "1",
+            "class": "0x030000",
+            "device": "0x2882",
+            "driver": "nvidia",
+            "iommu_group": "44",
+            "vendor": "0x10de"
+          }
+        ],
+        "arm_board": null,
+        "cpu": "Intel(R) Xeon(R) CPU E5-2673 v3 @ 2.40GHz",
+        "iommu_groups": 50,
+        "kernel": "7.0.0-38-generic",
+        "kvm_access": true,
+        "machine": "x86_64",
+        "virtualization": [
+          "vmx"
+        ]
+      }
+    },
+    "ai395": {
+      "job_id": "1a15ec14638-1b6abb-299f",
+      "state": "succeeded",
+      "exit_code": 0,
+      "observation": {
+        "accelerators": [
+          {
+            "bdf": "0000:c6:00.0",
+            "boot_vga": null,
+            "class": "0x038000",
+            "device": "0x1586",
+            "driver": "amdgpu",
+            "iommu_group": "22",
+            "vendor": "0x1002"
+          }
+        ],
+        "arm_board": null,
+        "cpu": "AMD RYZEN AI MAX+ 395 w/ Radeon 8060S",
+        "iommu_groups": 34,
+        "kernel": "7.0.0-38-generic",
+        "kvm_access": true,
+        "machine": "x86_64",
+        "virtualization": [
+          "svm"
+        ]
+      }
+    },
+    "rog": {
+      "job_id": "1a15ec15ead-1b6abb-29a2",
+      "state": "succeeded",
+      "exit_code": 0,
+      "observation": {
+        "accelerators": [
+          {
+            "bdf": "0000:c4:00.0",
+            "boot_vga": null,
+            "class": "0x038000",
+            "device": "0x1586",
+            "driver": "amdgpu",
+            "iommu_group": "18",
+            "vendor": "0x1002"
+          }
+        ],
+        "arm_board": null,
+        "cpu": "AMD RYZEN AI MAX+ 395 w/ Radeon 8060S",
+        "iommu_groups": 32,
+        "kernel": "7.0.0-38-generic",
+        "kvm_access": true,
+        "machine": "x86_64",
+        "virtualization": [
+          "svm"
+        ]
+      }
+    },
+    "pocket4": {
+      "job_id": "1a15ec1569f-1b6abb-29a1",
+      "state": "succeeded",
+      "exit_code": 0,
+      "observation": {
+        "accelerators": [
+          {
+            "bdf": "0000:c5:00.0",
+            "boot_vga": null,
+            "class": "0x038000",
+            "device": "0x150e",
+            "driver": "amdgpu",
+            "iommu_group": "19",
+            "vendor": "0x1002"
+          }
+        ],
+        "arm_board": null,
+        "cpu": "AMD Ryzen AI 9 HX 370 w/ Radeon 890M",
+        "iommu_groups": 31,
+        "kernel": "7.0.0-38-generic",
+        "kvm_access": true,
+        "machine": "x86_64",
+        "virtualization": [
+          "svm"
+        ]
+      }
+    },
+    "x230": {
+      "job_id": "1a15ec1654d-1b6abb-29a3",
+      "state": "succeeded",
+      "exit_code": 0,
+      "observation": {
+        "accelerators": [
+          {
+            "bdf": "0000:00:02.0",
+            "boot_vga": "1",
+            "class": "0x030000",
+            "device": "0x0166",
+            "driver": "i915",
+            "iommu_group": "0",
+            "vendor": "0x8086"
+          }
+        ],
+        "arm_board": null,
+        "cpu": "Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz",
+        "iommu_groups": 14,
+        "kernel": "6.8.0-142-generic",
+        "kvm_access": false,
+        "machine": "x86_64",
+        "virtualization": [
+          "vmx"
+        ]
+      }
+    }
+  },
+  "main_gpu_details": {
+    "job_id": "1a15eca63b3-1b6abb-29b9",
+    "raw_stdout": "00000000:02:00.0, NVIDIA GeForce RTX 4060, 580.178.04, Enabled, 8188 MiB, 1733 MiB\n{\"iommu_group_44\": [{\"bdf\": \"0000:02:00.0\", \"class\": \"0x030000\", \"vendor\": \"0x10de\", \"device\": \"0x2882\", \"driver\": \"nvidia\"}, {\"bdf\": \"0000:02:00.1\", \"class\": \"0x040300\", \"vendor\": \"0x10de\", \"device\": \"0x22be\", \"driver\": \"snd_hda_intel\"}], \"dmar\": true}\nList of devices attached\n\n",
+    "notes": "RTX 4060 is actively used for display. GPU and HDA function share IOMMU group 44. No driver rebind, reset, VFIO open, compute workload or GPU passthrough was attempted. Running main ADB server returned no attached devices."
+  }
+}

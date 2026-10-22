@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: MPL-2.0
 
-//! Process-image lifetime for the read-only HOS2 bootstrap.
+//! Process-image lifetime for the HOS2 bootstrap profiles.
 //!
 //! An image key identifies an allocation; it grants no resource authority.
 //! Closing fences discovery and sessions and drops any initial observe slot.
-//! Management effects and history still require their canonical resource-owner
-//! admission, revocation and delivery transaction before they can be enabled.
+//! G1-d also synchronizes admitted operations before revoking its canonical CPU
+//! delegation outside this mutex. Recovery retains the original D namespace;
+//! a replacement image receives no inherited management or history capability.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use super::Process;
+#[cfg(feature = "g1d-trusted-control")]
+use super::trusted_control::TrustedControlSlots;
 use crate::prelude::*;
 
 #[cfg(feature = "g1c-trusted-observe")]
@@ -82,6 +85,8 @@ pub(super) struct ProcessImageState {
     first_run: FirstRun,
     #[cfg(feature = "g1c-trusted-observe")]
     initial_observe: Option<InitialObserveGrant>,
+    #[cfg(feature = "g1d-trusted-control")]
+    initial_control: Option<Arc<TrustedControlSlots>>,
 }
 
 impl ProcessImageState {
@@ -93,6 +98,8 @@ impl ProcessImageState {
             first_run: FirstRun::Unprepared,
             #[cfg(feature = "g1c-trusted-observe")]
             initial_observe: None,
+            #[cfg(feature = "g1d-trusted-control")]
+            initial_control: None,
         }
     }
 
@@ -232,6 +239,35 @@ impl ProcessImageState {
         }
         Ok(grant)
     }
+
+    #[cfg(feature = "g1d-trusted-control")]
+    pub(super) fn activate_initial_control(
+        &mut self,
+        key: ProcessImageKey,
+        slots: Arc<TrustedControlSlots>,
+    ) -> Result<()> {
+        self.check_session(key)?;
+        if self.first_run != FirstRun::Prepared || self.initial_control.is_some()
+            || self.initial_observe.is_some() || !slots.belongs_to(key)
+        {
+            return_errno_with_message!(Errno::ESTALE, "initial control binding cannot be activated")
+        }
+        self.initial_control = Some(slots);
+        Ok(())
+    }
+
+    #[cfg(feature = "g1d-trusted-control")]
+    pub(super) fn initial_control(&self, key: ProcessImageKey)
+        -> core::result::Result<&Arc<TrustedControlSlots>, Status>
+    {
+        self.check_session(key).map_err(|_| Status::StaleHandle)?;
+        self.initial_control.as_ref().ok_or(Status::PermissionDenied)
+    }
+
+    #[cfg(feature = "g1d-trusted-control")]
+    pub(super) fn closing_control(&self) -> Option<Arc<TrustedControlSlots>> {
+        if self.phase == ImagePhase::Live { None } else { self.initial_control.clone() }
+    }
 }
 
 impl Process {
@@ -240,7 +276,10 @@ impl Process {
     #[cfg(feature = "g1c-trusted-observe")]
     pub(crate) fn has_initial_observe_authority(&self) -> bool {
         let image = self.hepta_image.lock();
-        image.phase == ImagePhase::Live && image.initial_observe.is_some()
+        let has_authority = image.initial_observe.is_some();
+        #[cfg(feature = "g1d-trusted-control")]
+        let has_authority = has_authority || image.initial_control.is_some();
+        image.phase == ImagePhase::Live && has_authority
     }
 
     /// Resolves the actual Process-owned slot around a read of the real CPU
@@ -297,13 +336,39 @@ impl Process {
 
     /// Completes a failed replacement or process exit without reopening it.
     pub(in crate::process) fn close_hepta_image(&self) {
+        #[cfg(not(feature = "g1d-trusted-control"))]
         self.hepta_image.lock().close();
+        #[cfg(feature = "g1d-trusted-control")]
+        {
+            let slots = {
+                let mut image = self.hepta_image.lock();
+                image.close();
+                image.initial_control.take()
+            };
+            if let Some(slots) = slots { slots.revoke_after_image_close(); }
+        }
     }
 
     /// Commits a successful exec as a new image with no session or grant.
     /// An old image can never transition back to Live with its old key.
     pub(in crate::process) fn commit_hepta_exec_image(&self) -> Result<u64> {
-        self.hepta_image.lock().commit_exec()
+        #[cfg(not(feature = "g1d-trusted-control"))]
+        return self.hepta_image.lock().commit_exec();
+        #[cfg(feature = "g1d-trusted-control")]
+        {
+            self.revoke_closing_hepta_control();
+            let (result, slots) = {
+                let mut image = self.hepta_image.lock();
+                let slots = if image.phase == ImagePhase::Closing {
+                    image.initial_control.take()
+                } else { None };
+                (image.commit_exec(), slots)
+            };
+            // Namespace and resource pins may have meaningful destructors.
+            // Release them after the image lock, including on epoch overflow.
+            drop(slots);
+            result
+        }
     }
 }
 

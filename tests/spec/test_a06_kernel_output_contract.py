@@ -21,11 +21,11 @@ class A06KernelOutputContract(unittest.TestCase):
     def test_probe_scripts_keep_local_import_path(self):
         source = WORKFLOW.read_text()
         self.assertIn(
-            "python3 tests/organ_backend/run_candidate_matrix.py",
+            "python3 -B tests/organ_backend/run_candidate_matrix.py",
             source,
         )
         self.assertIn(
-            "python3 tests/organ_backend/smp2/run_parallel_candidate.py",
+            "python3 -B tests/organ_backend/smp2/run_parallel_candidate.py",
             source,
         )
         self.assertNotIn(

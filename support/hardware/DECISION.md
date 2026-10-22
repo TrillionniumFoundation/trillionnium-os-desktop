@@ -1,5 +1,42 @@
 # A09 GPU/NPU hardware decision — 2026-10-16
 
+## 2026-10-21 implementation update: actual hosts observed
+
+The [current read-only inventory](../../tests/hardware/evidence/2026-10-21-development-host-inventory.json)
+supersedes the historical statement that no development GPU has been observed.
+It does not supersede any unpassed compute, device isolation or recovery gate.
+
+| Host alias | Actual CPU / visible accelerator | Consequence for implementation |
+| --- | --- | --- |
+| main | Intel E5-2673 v3, VMX, RTX 4060 at 0000:02:00.0 | Closest available CPU/backend match for the existing Intel-oriented kernel. The card is the active display, so it is not an exclusive passthrough test device. |
+| ai395 / rog | Ryzen AI MAX+ 395, SVM, amdgpu device 1002:1586 | Desktop Linux organ development can run here; an Asterinas driver VM additionally requires AMD SVM and AMD IOMMU support. |
+| pocket4 | Ryzen AI 9 HX 370, SVM, amdgpu device 1002:150e | Same AMD backend dependency; no ARM-board identity follows from this handheld form factor. |
+| x230 | Intel i5-3230M, VMX, i915 display | Possible CPU/boot target after a separately prepared boot medium; current task account lacks KVM access. It does not qualify the NVIDIA compute path. |
+
+On main, `nvidia-smi` identified **NVIDIA GeForce RTX 4060**, driver 580.178.04,
+display active, 8188 MiB total and 1733 MiB in use at observation. Sysfs showed
+DMAR and IOMMU group 44 containing both GPU function 02:00.0 and HDA function
+02:00.1, respectively bound to nvidia and snd_hda_intel. These observations
+do not prove interrupt remapping, reset safety, DMA quiescence or isolated
+group ownership. The lab profile now records this identity while keeping
+every execution/recovery gate false and `verified_isolated_machine=false`.
+
+Implement the Intel QEMU CPU/guest-memory/vCPU path before assigning physical
+devices. Keep a device-specific IOMMU domain, interrupt ownership and verified
+quiescence as prerequisites for actual PCI handoff. The existing global DMA
+mapping cannot authorize a GPU assignment. AMD machines require their own
+SVM/AMD IOMMU backend; VMX support cannot be reused by changing an architecture
+label. A second, unused GPU or a separate disposable machine is needed before
+this active display card can become a destructive reset/passthrough target.
+
+All five inspected hosts are x86_64. The already running main ADB server
+reported no attached device. No ARM board, Android BSP, bootloader unlock,
+phone flashing, GPU driver rebind, device reset or compute workload was
+performed. Mobile development therefore continues with the existing AOSP
+reference/ABI work until a specific board and its actual BSP are available.
+
+The remainder of this document is the dated research and historical evidence.
+
 **Status: research + executable host-side tests, NOT an Asterinas GPU driver, VMM or successful GPU compute.** Original A09 development base `bc294f75bfb8c03d9963f5a12ea23b9589779d96`; branch subsequently merged current main without overwriting files owned by other agents. Upstream Asterinas v0.19.0 commit c4b7ed575b7b32773475b194d2ad41fb6d03765b. Root README remains untouched at 0 bytes. Only A09-owned directories are modified.
 
 ## Actual authorized observation vs candidate

@@ -466,3 +466,42 @@ flag gap.
 The focused guest AF_UNIX abstract probe passed bind, connect, accept/read and
 child exit, confirming that the host AF_UNIX `EPERM` policy is separate from
 the guest socket implementation.
+
+## A06 ExFAT reference and kernel baseline regressions (2026-10-21)
+
+`run_exfat_mode_guest.py` freezes one static observer and a fresh 512 MiB
+ExFAT image. Its Linux reference creates a private mount namespace, binds an
+owned loop descriptor to a copied image, mounts the real kernel ExFAT driver,
+and records root/file/directory modes and identities before and after executing
+the observer from that filesystem. The ordinary Asterinas guest runs the same
+ELF on a separate copy. `run_exfat_mode_negative.py` then builds the frozen
+one-line old-mode mutation and requires the actual mode and exec-identity
+regression; an arbitrary failure or timeout does not qualify the negative.
+
+The Linux mount also requires kernel support. Installing `exfatprogs` only
+supplies the formatter. The earlier Linux `ENODEV` mount failure establishes
+that the reference did not run; it does not establish whether a module was
+missing, unloaded, or failed to load. On the disposable A06 CI host,
+`exfat_kernel_support.py --disposable-ci --output <new-directory>` first records
+`/proc/filesystems`. If ExFAT is absent, it queries the current `uname -r`
+module, installs only available `linux-modules[-extra]-<exact-running-ABI>`
+package versions when that query specifically reports a missing module, then
+runs `modprobe exfat` and checks registration again. It retains command lines,
+exit statuses and raw output; a missing matching package, a load failure, or
+continued absence is a hard failure. It never selects a different kernel or
+marks the Linux/guest workload as passed. Run this mutating preparation only
+on a disposable CI host. The reference runner itself only observes support
+and still requires its real mount, five observations, cleanup and unchanged
+inputs. A successful environment preparation cannot substitute for any of
+the Linux reference, ordinary guest, or old-behavior negative control.
+
+The baseline also backports Asterinas commits
+`266eb2e801033b69afab2d0660e9fb362d1eae1b` (E820 wire values are an integer
+newtype, so zeroed and unknown firmware types are valid) and
+`745ebe54e63c35c8b8c49971b581e62e5d5ed569` (invalidate cached timerfd readiness
+when clearing ticks). A06 runs the boot-parameter host layout/value tests and
+the OSTD unknown-type reservation test. Both full32 `async_fd` ELFs now require
+level-triggered readiness to clear after disarm, read and rearm, followed by a
+real new expiration. The full upstream timerfd regression and its original
+test entry point are retained. Host C/Python results alone do not establish an
+Asterinas guest result; acceptance still needs the exact-source A06 guest run.

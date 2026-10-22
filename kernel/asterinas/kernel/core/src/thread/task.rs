@@ -28,6 +28,8 @@ pub(crate) fn create_new_user_task(
     user_ctx: Box<UserContext>,
     thread_ref: Arc<Thread>,
     thread_local: ThreadLocal,
+    #[cfg(feature = "g1d-trusted-control")]
+    initial_user_startup: Option<Box<dyn FnOnce(&Context<'_>) + Send>>,
 ) -> Task {
     let user_task_entry = move |user_ctx: UserContext| {
         let current_task = Task::current().unwrap();
@@ -66,6 +68,11 @@ pub(crate) fn create_new_user_task(
         // The startup method is only executed when the first user thread starts up.
         if ctx.posix_thread.tid() == FIRST_POSIX_TID {
             crate::init::on_first_process_startup(&ctx);
+        }
+
+        #[cfg(feature = "g1d-trusted-control")]
+        if let Some(startup) = initial_user_startup {
+            startup(&ctx);
         }
 
         while !current_thread.is_exited() {

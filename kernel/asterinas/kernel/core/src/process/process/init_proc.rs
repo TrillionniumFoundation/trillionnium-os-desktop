@@ -22,6 +22,9 @@ use crate::{
     vm::vmar::{Vmar, VmarHandle},
 };
 
+#[cfg(feature = "g1d-trusted-control")]
+mod trusted_roles;
+
 #[cfg(not(feature = "g1c-trusted-observe"))]
 use crate::process::program_loader::ProgramToLoad;
 #[cfg(feature = "g1c-trusted-observe")]
@@ -46,6 +49,19 @@ struct PreparedInitialProcess {
 }
 
 impl PreparedInitialProcess {
+    #[cfg(feature = "g1d-trusted-control")]
+    fn activate_control(
+        &self,
+        loaded: LoadedInitialImage,
+        entry: Vaddr,
+        slots: Arc<super::trusted_control::TrustedControlSlots>,
+    ) -> Result<()> {
+        loaded.consume(&self.vmar, entry)?;
+        with_initial_image(&self.process, &self.vmar, &self.task, |image| {
+            image.activate_initial_control(self.key, slots)
+        })
+    }
+
     #[cfg(feature = "g1c-trusted-observe")]
     fn activate_observation(&self, loaded: LoadedInitialImage, entry: Vaddr) -> Result<()> {
         loaded.consume(&self.vmar, entry)?;
@@ -97,6 +113,8 @@ impl Drop for PreparedInitialProcess {
             // Cancel only this still-prepared image. A stale token cannot
             // close a different image or re-enable a consumed first run.
             self.process.hepta_image.lock().cancel_initial(self.key);
+            #[cfg(feature = "g1d-trusted-control")]
+            self.process.revoke_closing_hepta_control();
             // This task never ran. Remove its failed bootstrap membership only
             // after releasing the image mutex; retained accounting owners keep
             // the original cgroup alive until the task/RCU references retire.
@@ -154,6 +172,9 @@ pub(crate) fn spawn_init_process(
     argv: Vec<CString>,
     envp: Vec<CString>,
 ) -> Result<Arc<Process>> {
+    #[cfg(feature = "g1d-trusted-control")]
+    return trusted_roles::spawn(path_resolver, executable_path, argv, envp);
+    #[cfg(not(feature = "g1d-trusted-control"))]
     create_init_process(path_resolver, executable_path, argv, envp)?.resume()
 }
 
@@ -165,6 +186,20 @@ fn create_init_process(
 ) -> Result<PreparedInitialProcess> {
     let fs = ThreadFsInfo::new(path_resolver);
 
+    let (init_proc, vmar) = allocate_initial_process(&executable_path);
+    let pid = init_proc.pid();
+
+    let loaded_vmar = vmar.clone_arc();
+    let loaded = create_init_task(pid, &init_proc, fs, vmar, executable_path, argv, envp)?;
+    init_proc.tasks().lock().insert(loaded.task.clone()).unwrap();
+
+    let prepared = PreparedInitialProcess::new(init_proc, loaded_vmar, loaded.task)?;
+    #[cfg(feature = "g1c-trusted-observe")]
+    prepared.activate_observation(loaded.image, loaded.entry)?;
+    Ok(prepared)
+}
+
+fn allocate_initial_process(executable_path: &Path) -> (Arc<Process>, VmarHandle) {
     let pid = allocate_posix_tid();
     let vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
     let resource_limits = new_resource_limits_for_init();
@@ -183,14 +218,7 @@ fn create_init_process(
         user_ns,
     );
 
-    let loaded_vmar = vmar.clone_arc();
-    let loaded = create_init_task(pid, &init_proc, fs, vmar, executable_path, argv, envp)?;
-    init_proc.tasks().lock().insert(loaded.task.clone()).unwrap();
-
-    let prepared = PreparedInitialProcess::new(init_proc, loaded_vmar, loaded.task)?;
-    #[cfg(feature = "g1c-trusted-observe")]
-    prepared.activate_observation(loaded.image, loaded.entry)?;
-    Ok(prepared)
+    (init_proc, vmar)
 }
 
 fn set_bootstrap_session_and_group(process: &Arc<Process>) {

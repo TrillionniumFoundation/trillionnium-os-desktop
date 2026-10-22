@@ -280,6 +280,16 @@ impl FileOps for OverlayInode {
 }
 
 impl Inode for OverlayInode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        _request: &crate::fs::vfs::permission_attrs::PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Unported: copy-up, lower/upper aliases and publication must share an
+        // authorization contract. A backing inode's transaction alone is insufficient.
+        None
+    }
+
     fn size(&self) -> usize {
         self.real_object().real_inode().size()
     }

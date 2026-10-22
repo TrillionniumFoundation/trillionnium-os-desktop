@@ -45,10 +45,9 @@ pub(crate) fn init_in_first_kthread(path_resolver: &PathResolver) {
 }
 
 pub(crate) fn init_in_first_process(ctx: &Context) {
-    let fs = ctx.thread_local.borrow_fs();
-    let path_resolver = fs.resolver().read();
-
     if init::booted_from_rootfs() {
+        let fs = ctx.thread_local.borrow_fs();
+        let path_resolver = fs.resolver().read();
         let dev_path = lookup_or_create_dev(&path_resolver).unwrap();
         dev_path
             .mount(
@@ -60,7 +59,15 @@ pub(crate) fn init_in_first_process(ctx: &Context) {
             .unwrap();
     }
 
-    // Initialize the file table for the first process.
+    init_console_file_table(ctx);
+}
+
+/// Installs the standard console descriptors in an empty initial file table.
+/// Device initialization must already have completed in the first process.
+pub(crate) fn init_console_file_table(ctx: &Context) {
+    let fs = ctx.thread_local.borrow_fs();
+    let path_resolver = fs.resolver().read();
+
     let tty_path = FsPath::try_from("/dev/console").unwrap();
     let stdin = {
         let open_args = OpenArgs::from_modes(AccessMode::O_RDONLY, mkmod!(u+r));
@@ -87,7 +94,7 @@ pub(crate) fn init_in_first_process(ctx: &Context) {
             .unwrap()
     };
 
-    // The initial process has an empty table and the boot-time soft limit is at least three.
+    // Each initial process has an empty table and a soft limit of at least three.
     for file in [stdin, stdout, stderr] {
         FileTable::reserve_fd(ctx, FdFlags::empty())
             .unwrap()

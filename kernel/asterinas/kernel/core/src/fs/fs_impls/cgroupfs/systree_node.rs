@@ -165,6 +165,12 @@ impl CgroupMembership {
             None
         };
 
+        if old_cgroup.as_ref().is_some_and(|node| node.controller.has_trusted_cpu_management())
+            || new_cgroup.controller.has_trusted_cpu_management()
+        {
+            return Err(Error::PermissionDenied);
+        }
+
         // Try to add the process to the new cgroup first.
         self.add_process_to_node(&process, new_cgroup)?;
         process.set_cpu_cgroup_for_tasks(Some(new_cgroup.fields.weak_self().upgrade().unwrap()));
@@ -241,6 +247,7 @@ impl CgroupMembership {
     }
 
     /// Moves a process to the root cgroup.
+    /// Internal lifecycle cleanup; user migration must use the checked entry.
     pub(crate) fn move_process_to_root(&mut self, process: &Process) {
         let old_cgroup = if let Some(old_cgroup) = process.cgroup().get() {
             old_cgroup.clone()
@@ -273,6 +280,14 @@ impl CgroupMembership {
 
         // Uncharge the pids sub-controller for the old cgroup.
         old_cgroup.controller.uncharge_pids();
+    }
+
+    fn try_move_process_to_root(&mut self, process: &Process) -> Result<()> {
+        if process.cgroup().get().is_some_and(|node| node.controller.has_trusted_cpu_management()) {
+            return Err(Error::PermissionDenied);
+        }
+        self.move_process_to_root(process);
+        Ok(())
     }
 }
 
@@ -644,8 +659,7 @@ inherit_sys_branch_node!(CgroupSystem, fields, {
                     .ok_or(Error::InvalidOperation)?;
 
                 with_process_cgroup_locked(pid, |process, cgroup_membership| {
-                    cgroup_membership.move_process_to_root(&process);
-                    Ok(())
+                    cgroup_membership.try_move_process_to_root(&process)
                 })?;
 
                 Ok(len)

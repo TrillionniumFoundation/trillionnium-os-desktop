@@ -154,7 +154,9 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn("no real QEMU guest records", result.stdout)
 
-    def test_complete_core_requires_all_nine_new_test_names_exactly_once(self):
+    def test_complete_core_requires_all_named_regressions_exactly_once(self):
+        self.assertEqual(len(REQUIRED_CORE_TESTS), 24)
+        self.assertEqual(MINIMUM_CORE_TESTS, 262)
         baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(238))
         names = (*baseline, *REQUIRED_CORE_TESTS)
         self.evidence(core_serial(names), crate="aster-core")
@@ -165,9 +167,29 @@ class KtestCheckerTests(unittest.TestCase):
                 self.evidence(core_serial(replaced), crate="aster-core")
                 with self.assertRaisesRegex(ValueError, "required core tests"):
                     check_guest(self.guest, "aster-core")
+            with self.subTest(soft_skipped=name):
+                skipped = core_serial(names).replace(
+                    f"test {name} ... ok".encode(),
+                    f"test {name} ... [skipped: synthetic fixture] ok".encode())
+                self.evidence(skipped, crate="aster-core")
+                with self.assertRaisesRegex(ValueError, "soft-skipped"):
+                    check_guest(self.guest, "aster-core")
         self.evidence(core_serial((*names, REQUIRED_CORE_TESTS[0])), crate="aster-core")
         with self.assertRaisesRegex(ValueError, "required core tests"):
             check_guest(self.guest, "aster-core")
+
+    def test_required_core_tests_cannot_pass_as_soft_skips(self):
+        baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(238))
+        names = (*baseline, *REQUIRED_CORE_TESTS)
+        for name in REQUIRED_CORE_TESTS:
+            with self.subTest(soft_skipped=name):
+                serial = core_serial(names).replace(
+                    f"test {name} ... ok".encode(),
+                    f"test {name} ... [skipped: unavailable] ok".encode(),
+                )
+                self.evidence(serial, crate="aster-core")
+                with self.assertRaisesRegex(ValueError, "required core test was soft-skipped"):
+                    check_guest(self.guest, "aster-core")
 
     def test_pre_extension_238_test_success_cannot_pass_current_core_gate(self):
         names = tuple(f"aster_core::fixture::old_{index}" for index in range(238))
@@ -175,7 +197,7 @@ class KtestCheckerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "required core tests"):
             check_guest(self.guest, "aster-core")
 
-    def test_nine_new_tests_do_not_replace_the_retained_core_baseline(self):
+    def test_new_regressions_do_not_replace_the_retained_core_baseline(self):
         self.evidence(core_serial(REQUIRED_CORE_TESTS), crate="aster-core")
         with self.assertRaisesRegex(ValueError, "shrank"):
             check_guest(self.guest, "aster-core")

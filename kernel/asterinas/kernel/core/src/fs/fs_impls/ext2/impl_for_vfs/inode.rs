@@ -25,6 +25,7 @@ use crate::{
                 SymbolicLink,
             },
             path::Dentry,
+            permission_attrs::PermissionAttrRequest,
             xattr::{XattrName, XattrNamespace, XattrSetFlags},
         },
     },
@@ -66,6 +67,14 @@ impl FileOps for Ext2Inode {
 }
 
 impl Inode for Ext2Inode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        Some(self.permission_attr_transaction(request))
+    }
+
     fn size(&self) -> usize {
         self.file_size()
     }

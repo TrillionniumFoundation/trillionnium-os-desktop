@@ -18,14 +18,15 @@ class LabProfileContractTests(unittest.TestCase):
             (root / "support/hardware/rtx4060-lab-profile.json").read_text()
         )
 
-    def test_target_is_unobserved_and_not_prematurely_qualified(self):
+    def test_observed_in_use_target_is_not_prematurely_qualified(self):
         profile = self.profile
         self.assertEqual(profile["selected_route"],
                          "linux_guest_driver_exclusive_gpu_passthrough_on_asterinas_vmm")
-        self.assertIn("not_detected", profile["state"])
-        self.assertIsNone(profile["target_gpu"]["observed_pci_bdf"])
-        self.assertIsNone(profile["target_gpu"]["observed_driver"])
-        self.assertIsNone(profile["physical_host"]["cpu"])
+        self.assertEqual(profile["state"], "observed_in_use_not_isolated")
+        self.assertEqual(profile["target_gpu"]["observed_pci_bdf"], "0000:02:00.0")
+        self.assertEqual(profile["target_gpu"]["observed_driver"], "nvidia")
+        self.assertTrue(profile["target_gpu"]["observed_display_active"])
+        self.assertIn("Intel", profile["physical_host"]["cpu"])
         self.assertFalse(profile["physical_host"]["verified_isolated_machine"])
         self.assertTrue(all(value is False for value in profile["gates"].values()))
 

@@ -49,6 +49,8 @@ pub(crate) struct PosixThreadBuilder {
     user_ns: Option<Arc<UserNamespace>>,
     ns_proxy: Option<Arc<NsProxy>>,
     default_timer_slack_ns: u64,
+    #[cfg(feature = "g1d-trusted-control")]
+    initial_user_startup: Option<Box<dyn FnOnce(&Context<'_>) + Send>>,
 }
 
 impl PosixThreadBuilder {
@@ -77,6 +79,8 @@ impl PosixThreadBuilder {
             user_ns: None,
             ns_proxy: None,
             default_timer_slack_ns: 50_000, // 50 usec default slack
+            #[cfg(feature = "g1d-trusted-control")]
+            initial_user_startup: None,
         }
     }
 
@@ -102,6 +106,18 @@ impl PosixThreadBuilder {
 
     pub(crate) fn fs(mut self, fs: Arc<ThreadFsInfo>) -> Self {
         self.fs = Some(fs);
+        self
+    }
+
+    /// Runs once in this task's context, after normal first-process startup and
+    /// before its first userspace instruction. Clone/exec never inherit it.
+    /// This boot I/O hook carries no HOS2 image or resource authority.
+    #[cfg(feature = "g1d-trusted-control")]
+    pub(crate) fn before_initial_user_run(
+        mut self,
+        startup: Box<dyn FnOnce(&Context<'_>) + Send>,
+    ) -> Self {
+        self.initial_user_startup = Some(startup);
         self
     }
 
@@ -167,6 +183,8 @@ impl PosixThreadBuilder {
             user_ns,
             ns_proxy,
             default_timer_slack_ns,
+            #[cfg(feature = "g1d-trusted-control")]
+            initial_user_startup,
         } = self;
 
         let file_table = file_table.unwrap_or_else(FileTable::new);
@@ -230,7 +248,13 @@ impl PosixThreadBuilder {
                 ns_proxy,
             );
 
-            task::create_new_user_task(user_ctx, thread, thread_local)
+            task::create_new_user_task(
+                user_ctx,
+                thread,
+                thread_local,
+                #[cfg(feature = "g1d-trusted-control")]
+                initial_user_startup,
+            )
         })
     }
 }
