@@ -31,7 +31,8 @@ publication，支持调用者保留的 anchor 和 owner 重启后的新端点身
 | Objective input | UI drafts remain local; a separately trusted caller can provide an already signed envelope to the bounded CLI |
 | Optional `objective-transport` feature | Separate trusted-host, one-attempt UDS API and `hepta-submit` CLI; default disabled and no UI/Session submission command |
 | Optional `objective-history` feature | Separate `hepta-history` read of one retained original request through the separately pinned owner extension; publication, live run and effect remain distinct |
-| Device control/HOS2 | Not provided by this crate |
+| Default device control/HOS2 profile | No device startup, discovery or control; the default observer sends no HOS2 requests |
+| Optional `cpu-history` feature | One `QueryDelivery` per `query_once` for an original owner's retained D, through a trusted host-supplied transport; default disabled, with no effect submission or UI entry |
 | Windows/Android/Asterinas | No qualified transport here; non-Linux builds return `unsupported_platform` |
 
 ## Placement and ownership
@@ -102,3 +103,8 @@ The optional feature's complete wire, typed outcomes and remaining owner
 integration requirements are in [OBJECTIVE_TRANSPORT.md](OBJECTIVE_TRANSPORT.md).
 The separately pinned history feature has its own complete development and
 technical contract in [OBJECTIVE_HISTORY.md](OBJECTIVE_HISTORY.md).
+The independent, default-off CPU history adapter is documented in
+[CPU_DELIVERY.md](CPU_DELIVERY.md), including original outbox binding, transport
+requirements and unresolved outcomes. It provides no device startup or discovery,
+effect, retry, new K/D allocation, acknowledgement or retirement. It has no CLI or
+UI entry, and the ordinary Session does not enable it.

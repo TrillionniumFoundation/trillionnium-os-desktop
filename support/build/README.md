@@ -1,5 +1,13 @@
 # A01: fixed Asterinas source build and QEMU smoke
 
+> **Reading note — 2026-10-22:** The core141 result, the G1-a-only build-input
+> description, and the “not changed” / “untested” handoff statements below retain
+> the early A01 checkpoint; they are not the current whole-project status.
+> See [current profiles and integration qualification](../../docs/STATUS.md)
+> and the [source-bound E/F receipts](../../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json).
+> Those later core and guest results belong to their recorded source identities
+> and do not qualify a new combined tree. The original text below is retained.
+
 The single kernel source root is `kernel/asterinas/`. Its initial import is the
 complete Asterinas **v0.19.0**, commit
 `c4b7ed575b7b32773475b194d2ad41fb6d03765b`, tree

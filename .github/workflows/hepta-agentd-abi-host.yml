@@ -1,0 +1,87 @@
+name: Hepta Agentd ABI host controls
+
+on:
+  pull_request:
+    paths:
+      - 'tests/workloads/hepta_agentd_abi/**'
+      - '.github/workflows/hepta-agentd-abi-host.yml'
+  push:
+    paths:
+      - 'tests/workloads/hepta_agentd_abi/**'
+      - '.github/workflows/hepta-agentd-abi-host.yml'
+
+permissions:
+  contents: read
+
+env:
+  DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+  GIT_TERMINAL_PROMPT: '0'
+
+jobs:
+  host-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2, existing repository pin
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify exact source and existing root README invariant
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"
+          test -f README.md
+          test ! -L README.md
+          test ! -s README.md
+
+      - name: Require all 11 host control regressions with no skips
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PY'
+          import unittest
+          suite = unittest.defaultTestLoader.discover(
+              'tests/workloads/hepta_agentd_abi', pattern='test_agentd_abi.py')
+          count = suite.countTestCases()
+          if count != 11:
+              raise SystemExit(f'expected exactly 11 host controls, discovered {count}')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun != 11 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('all 11 host controls must run and pass without skips')
+          print('host_controls_only=true; native_qemu_run=false; production=false')
+          PY
+
+      - name: Compile the static guest launcher without executing it
+        run: |
+          set -euo pipefail
+          output="$RUNNER_TEMP/hepta-agentd-abi-probe-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$output"
+          cc -O2 -std=c11 -static -Wall -Wextra -Werror \
+            tests/workloads/hepta_agentd_abi/agentd_abi_probe.c -o "$output"
+          readelf -W -l "$output" > "$output.program-headers"
+          python3 -I -B - "$output.program-headers" <<'PY'
+          from pathlib import Path
+          import sys
+          if 'INTERP' in Path(sys.argv[1]).read_text():
+              raise SystemExit('guest launcher must not have a dynamic interpreter')
+          PY
+          sha256sum "$output"
+
+      - name: Verify host checks left the checkout unchanged
+        if: always()
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          test -f README.md
+          test ! -L README.md
+          test ! -s README.md
+          git diff --exit-code
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"

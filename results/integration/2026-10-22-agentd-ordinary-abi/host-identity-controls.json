@@ -1,0 +1,151 @@
+{
+  "schema": "hepta.agentd-abi-host-identity-controls.v1",
+  "scope": "Two current workflow identity run blocks only, executed in independent clean temporary Git fixtures; no host control suite, compiler, launcher, Agentd or QEMU execution",
+  "started_at_utc": "2026-10-22T04:42:17.980601+00:00",
+  "finished_at_utc": "2026-10-22T04:42:18.138492+00:00",
+  "workflow_path": "/workspace/scratch/b2da20752f15/work/os-release/.github/workflows/hepta-agentd-abi-host.yml",
+  "workflow_sha256": "a6d2aae5356742ee72c2ba2679d28b15c9ca8a8cbafc54af4bb97cf8cf5da998",
+  "workflow_action_executed": false,
+  "actual_github_ci": false,
+  "native_execution": false,
+  "product_tests_run": false,
+  "production": false,
+  "original_local_validation_preserved": true,
+  "git_no_lazy_fetch": "1",
+  "commands": [
+    {
+      "step": "Verify exact source and existing root README invariant",
+      "command": "set -euo pipefail\ntest \"$(git rev-parse HEAD)\" = \"$DESKTOP_SHA\"\ncheckout_status=$(git status --porcelain=v1 --untracked-files=all)\ntest -z \"$checkout_status\"\ntest -f README.md\ntest ! -L README.md\ntest ! -s README.md\n",
+      "sha256": "61b37b2a9555935bd968d22e87bc7e927f45d5f15d6ce51b072832ee0c4e41cf"
+    },
+    {
+      "step": "Verify host checks left the checkout unchanged",
+      "command": "set -euo pipefail\ntest \"$(git rev-parse HEAD)\" = \"$DESKTOP_SHA\"\ntest -f README.md\ntest ! -L README.md\ntest ! -s README.md\ngit diff --exit-code\ncheckout_status=$(git status --porcelain=v1 --untracked-files=all)\ntest -z \"$checkout_status\"\n",
+      "sha256": "74aa23562022122c54fc26d9b14b7a75b543d5a5839c81fb3374e5b1c214719e"
+    }
+  ],
+  "git_status_failure_shim": {
+    "path": "/workspace/scratch/b2da20752f15/work/release-final-review/agentd-abi-identity-fixtures/status-failure-tools/git",
+    "sha256": "130725eff81c4efa354fac1b3095a3f5ef8e4e8fcabf7fb23fe84791150e12e7",
+    "behavior": "Only git status exits 73 with empty stdout and labelled stderr; all other git commands delegate to actual local Git"
+  },
+  "cases": [
+    {
+      "case": "regular_empty_readme",
+      "step": "Verify exact source and existing root README invariant",
+      "command_sha256": "61b37b2a9555935bd968d22e87bc7e927f45d5f15d6ce51b072832ee0c4e41cf",
+      "fixture_head": "a93ec2e25844ed89c4adc7c7aa2c8fb5af3e8741",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "case": "regular_empty_readme",
+      "step": "Verify host checks left the checkout unchanged",
+      "command_sha256": "74aa23562022122c54fc26d9b14b7a75b543d5a5839c81fb3374e5b1c214719e",
+      "fixture_head": "a93ec2e25844ed89c4adc7c7aa2c8fb5af3e8741",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "case": "git_status_nonzero_empty_stdout",
+      "step": "Verify exact source and existing root README invariant",
+      "command_sha256": "61b37b2a9555935bd968d22e87bc7e927f45d5f15d6ce51b072832ee0c4e41cf",
+      "fixture_head": "da8f8f9a92e41677d1e5ab6e6a1ddcb884233e92",
+      "expected_exit": 73,
+      "actual_exit": 73,
+      "stdout": "",
+      "stderr": "synthetic git status failure: empty stdout\n",
+      "passed": true
+    },
+    {
+      "case": "git_status_nonzero_empty_stdout",
+      "step": "Verify host checks left the checkout unchanged",
+      "command_sha256": "74aa23562022122c54fc26d9b14b7a75b543d5a5839c81fb3374e5b1c214719e",
+      "fixture_head": "da8f8f9a92e41677d1e5ab6e6a1ddcb884233e92",
+      "expected_exit": 73,
+      "actual_exit": 73,
+      "stdout": "",
+      "stderr": "synthetic git status failure: empty stdout\n",
+      "passed": true
+    },
+    {
+      "case": "missing_readme",
+      "step": "Verify exact source and existing root README invariant",
+      "command_sha256": "61b37b2a9555935bd968d22e87bc7e927f45d5f15d6ce51b072832ee0c4e41cf",
+      "fixture_head": "7656e3ef08946efd31ee77695e07aab1686e47a7",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "case": "missing_readme",
+      "step": "Verify host checks left the checkout unchanged",
+      "command_sha256": "74aa23562022122c54fc26d9b14b7a75b543d5a5839c81fb3374e5b1c214719e",
+      "fixture_head": "7656e3ef08946efd31ee77695e07aab1686e47a7",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "case": "nonempty_readme",
+      "step": "Verify exact source and existing root README invariant",
+      "command_sha256": "61b37b2a9555935bd968d22e87bc7e927f45d5f15d6ce51b072832ee0c4e41cf",
+      "fixture_head": "53b4cc66795097c0afbebb97258cd8880c9ce312",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "case": "nonempty_readme",
+      "step": "Verify host checks left the checkout unchanged",
+      "command_sha256": "74aa23562022122c54fc26d9b14b7a75b543d5a5839c81fb3374e5b1c214719e",
+      "fixture_head": "53b4cc66795097c0afbebb97258cd8880c9ce312",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "case": "symlink_to_empty_readme_target",
+      "step": "Verify exact source and existing root README invariant",
+      "command_sha256": "61b37b2a9555935bd968d22e87bc7e927f45d5f15d6ce51b072832ee0c4e41cf",
+      "fixture_head": "d1af3f63525ae03d63e51af446365306e852013b",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "case": "symlink_to_empty_readme_target",
+      "step": "Verify host checks left the checkout unchanged",
+      "command_sha256": "74aa23562022122c54fc26d9b14b7a75b543d5a5839c81fb3374e5b1c214719e",
+      "fixture_head": "d1af3f63525ae03d63e51af446365306e852013b",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "passed": true
+    }
+  ],
+  "all_passed": true,
+  "checks": {
+    "workflow_bytes_unchanged": true,
+    "fixtures_clean_before_and_after_each_block": true,
+    "expected_case_count": 5,
+    "executed_block_count": 10
+  }
+}

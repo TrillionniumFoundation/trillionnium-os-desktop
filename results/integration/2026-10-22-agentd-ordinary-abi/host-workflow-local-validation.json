@@ -1,0 +1,46 @@
+{
+  "actual_github_ci": false,
+  "all_passed": true,
+  "checked_at_utc": "2026-10-22T04:30:08.390294+00:00",
+  "checkout_action_executed": false,
+  "compiled_launcher": {
+    "bytes": 795024,
+    "executed": false,
+    "sha256": "14ea43e070942f86f09dc073564c94cda1c8af541bd8f1908039d6b9ad0ebc11"
+  },
+  "fixture_head": "921f5d03365e67f7476be3e03967631a9447c0ad",
+  "host": {
+    "cc": "cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "uname": "Linux 641ca11bc9fe 6.18.55 #1 SMP Wed Oct 14 19:45:18 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux"
+  },
+  "schema": "hepta.agentd-abi-host-workflow-local-validation.v1",
+  "scope": "Local execution of all workflow run blocks in an independent minimal clean Git fixture; no host launcher/Agentd/QEMU execution",
+  "steps": [
+    {
+      "exit_code": 0,
+      "name": "Verify exact source and existing root README invariant",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "exit_code": 0,
+      "name": "Require all 11 host control regressions with no skips",
+      "stderr": "test_binary_traversal_symlink_and_changed_frozen_file_fail (test_agentd_abi.FrozenInputTests.test_binary_traversal_symlink_and_changed_frozen_file_fail) ... ok\ntest_same_tree_distinct_commit_identity_is_retained (test_agentd_abi.FrozenInputTests.test_same_tree_distinct_commit_identity_is_retained) ... ok\ntest_wrong_digest_size_source_tree_and_blob_fail (test_agentd_abi.FrozenInputTests.test_wrong_digest_size_source_tree_and_blob_fail) ... ok\ntest_exact_result_and_crlf (test_agentd_abi.OracleTests.test_exact_result_and_crlf) ... ok\ntest_loader_error_or_unexpected_output_cannot_masquerade_as_main (test_agentd_abi.OracleTests.test_loader_error_or_unexpected_output_cannot_masquerade_as_main) ... ok\ntest_process_failures_never_pass (test_agentd_abi.OracleTests.test_process_failures_never_pass) ... ok\ntest_stale_duplicate_reordered_and_missing_evidence_fail (test_agentd_abi.OracleTests.test_stale_duplicate_reordered_and_missing_evidence_fail) ... ok\ntest_actual_elf_closure_is_inspected_without_running_it (test_agentd_abi.StagingTests.test_actual_elf_closure_is_inspected_without_running_it) ... ok\ntest_actual_initramfs_preserves_boot_and_original_entries (test_agentd_abi.StagingTests.test_actual_initramfs_preserves_boot_and_original_entries) ... ok\ntest_default_disabled_never_calls_executor (test_agentd_abi.StagingTests.test_default_disabled_never_calls_executor) ... ok\ntest_spawned_execution_is_retained_after_collector_failure (test_agentd_abi.StagingTests.test_spawned_execution_is_retained_after_collector_failure) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.314s\n\nOK\n",
+      "stdout": "host_controls_only=true; native_qemu_run=false; production=false\n"
+    },
+    {
+      "exit_code": 0,
+      "name": "Compile the static guest launcher without executing it",
+      "stderr": "",
+      "stdout": "14ea43e070942f86f09dc073564c94cda1c8af541bd8f1908039d6b9ad0ebc11  /workspace/scratch/b2da20752f15/work/agentd-abi-repo-candidate/host-gate-output/hepta-agentd-abi-probe-local-1\n"
+    },
+    {
+      "exit_code": 0,
+      "name": "Verify host checks left the checkout unchanged",
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "trigger_and_checkout_configuration_checked": true,
+  "workflow_sha256": "d29e54bc6510d0ccf925aaf499c3f3c57fe3308837e0067eb8198cb1e6556fd3"
+}

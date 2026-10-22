@@ -73,6 +73,8 @@ A：同新内核固定策略/非AI反馈/Hepta策略；B：同硬件Linux等价�
 
 ## 9. 0.3复审落点与实际测试
 
+> **历史范围说明（2026-10-22）：** 本节保留规格0.3及早期 A02 复审的模型、检查点与当时结果。下文“当前 #147 …仍待决”及 V201、V206、V211 等“尚未完成”单元格描述该阶段，不能用作后续整合树的状态矩阵。现行 wire/恢复语义见 [NATIVE_ABI](NATIVE_ABI.md)，实际接合分别见 [Process 映像](ASTERINAS_PROCESS_IMAGE_G1C.md)、[原 CPU owner 记账](ASTERINAS_CPU_USAGE_G1B.md) 和 [G1-d 固定角色 profile](agents/G1D_TRUSTED_CONTROL_PROFILE.md)；各固定来源的执行范围见 [STATUS](STATUS.md)。这些后续切片不将原规格模型转换成真实内核、生产 G2 或设备验收。
+
 [tests/spec/test_recovery_contract.py](../tests/spec/test_recovery_contract.py)是仅用Python标准库的**顺序规格模型**，不解析wire、不调用设备，不实现Rust库或真实权限。运行 `python3 tests/spec/test_recovery_contract.py /tmp/hos-spec-results.json` 可复现14个场景。结果基线在[spec-recovery-v03.json](../results/spec-recovery-v03.json)。其中10,000次写在同一模型窗口中，每64条终局确认一次，验证旧序列不能重新执行；不是内核吞吐或并发测试。
 
 [tests/golden/hos2.json](../tests/golden/hos2.json)包含12份独立生成的固定十六进制请求/响应样本，包括降额后consumed>cap与错误响应。实际 [no_std Rust codec](../libs/os-abi/src/lib.rs) 已消费独立固定样本，并由 [run_acceptance.py](../tests/abi/run_acceptance.py) 执行黄金、语义边界、负例及编译型错误变异验收。使用以下正式入口，保留其生成的原始日志与源码/工具链身份；独立 expected 数据仍须与同一 codec 的 round-trip 分开：

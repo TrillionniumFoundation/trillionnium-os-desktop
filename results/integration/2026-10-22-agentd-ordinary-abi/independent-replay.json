@@ -1,0 +1,128 @@
+{
+  "checks": {
+    "all_out_of_scope_completion_flags_false": true,
+    "exact_oracle_replay": true,
+    "observed_child_matches_receipt": true,
+    "runner_sha256_matches_receipt": true,
+    "runtime_dependency_files_match_receipt": true,
+    "runtime_inputs_sha256_matches_receipt": true,
+    "serial_sha256_matches_receipt": true
+  },
+  "daemon_started": false,
+  "f_completed": false,
+  "files": [
+    {
+      "bytes": 3513,
+      "path": "agentd-abi-result.json",
+      "sha256": "f45a7958f5542c83cc4dcf775e58f44db5150944e2e093b762de117ac9d8b53d"
+    },
+    {
+      "bytes": 9297,
+      "path": "agentd-abi-runtime-inputs.json",
+      "sha256": "8f6801a78c66009b4a34cb4add9250ef5f42b65e3ab84533daabbfb1a58866d5"
+    },
+    {
+      "bytes": 2235,
+      "path": "agentd-abi-invocation.json",
+      "sha256": "bd1aa7b2bcc86c58179b3801c57d8cbce2d26017d85d71f54ebc9dcfe04c7d42"
+    },
+    {
+      "bytes": 253084,
+      "path": "agentd-abi-serial.log.gz",
+      "sha256": "e1b7987c58185142480184e9947b502618c58984832d77d3be186ccc9c78f585"
+    }
+  ],
+  "g2_completed": false,
+  "marker_records": [
+    {
+      "line": 837,
+      "text": "HEPTA_ABI_BEGIN nonce=e7f14057cb42a5fc2a4b5a9b0e0d1406937773633243348559a9960f102b3e0b"
+    },
+    {
+      "line": 21494,
+      "text": "HEPTA_ABI_STDOUT nonce=e7f14057cb42a5fc2a4b5a9b0e0d1406937773633243348559a9960f102b3e0b hex="
+    },
+    {
+      "line": 21500,
+      "text": "HEPTA_ABI_STDERR nonce=e7f14057cb42a5fc2a4b5a9b0e0d1406937773633243348559a9960f102b3e0b hex=4572726f723a20696e76616c6964206167656e746420636f6e66696775726174696f6e3a2048455054415f464c4545545f524f4f542069732072657175697265640a"
+    },
+    {
+      "line": 21502,
+      "text": "HEPTA_ABI_CHILD nonce=e7f14057cb42a5fc2a4b5a9b0e0d1406937773633243348559a9960f102b3e0b kind=exit code=1"
+    },
+    {
+      "line": 21507,
+      "text": "HEPTA_ABI_HARNESS nonce=e7f14057cb42a5fc2a4b5a9b0e0d1406937773633243348559a9960f102b3e0b exit=0"
+    }
+  ],
+  "not_reverified_locally": [
+    "Original frozen binary and manifest bytes (hashes retained in actual remote receipt)",
+    "Payload image before/after (remote executed receipt reports inputs_unchanged=true)",
+    "Actual process exit beyond the remote receipt (raw serial cross-check is independent)"
+  ],
+  "observed_child": {
+    "stderr": "Error: invalid agentd configuration: HEPTA_FLEET_ROOT is required\n",
+    "stdout": "",
+    "termination": "kind=exit code=1"
+  },
+  "observed_limitations": {
+    "error_free_io_qualified": false,
+    "readonly_filesystem_semantics_qualified": false,
+    "shutdown_write_io_errors": [
+      {
+        "line": 21534,
+        "text": "[    17.595] ERROR : block: failed to do Write on the device with error status: IoError"
+      },
+      {
+        "line": 21535,
+        "text": "[    17.595] ERROR : writeback I/O failed with status IoError; data may be lost"
+      },
+      {
+        "line": 21536,
+        "text": "[    17.595] ERROR : writeback I/O failed with status IoError; data may be lost"
+      }
+    ],
+    "unimplemented_syscall_334": {
+      "count": 25,
+      "interpretation": "x86_64 rseq is unimplemented; the tested startup continues. This is not a positive rseq ABI result.",
+      "lines": [
+        109,
+        146,
+        174,
+        202,
+        230,
+        258,
+        287,
+        315,
+        353,
+        381,
+        408,
+        436,
+        463,
+        492,
+        523,
+        557,
+        592,
+        629,
+        671,
+        700,
+        774,
+        800,
+        826,
+        1404,
+        21517
+      ]
+    }
+  },
+  "oracle_runner_sha256": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c",
+  "original_owner_runtime": false,
+  "production": false,
+  "reviewed_at_utc": "2026-10-22T04:27:57.464091+00:00",
+  "schema": "hepta.agentd-ordinary-abi-independent-replay.v1",
+  "scope": "Independent local replay of the retained raw serial with the exact executed oracle; no second QEMU or host Agentd execution",
+  "uncompressed_serial": {
+    "bytes": 7287706,
+    "lines": 21537,
+    "sha256": "0567b1b7a03ca4d9f5c09d5113970bb3512fc976457d68e492cab2c7463dcd74"
+  }
+}

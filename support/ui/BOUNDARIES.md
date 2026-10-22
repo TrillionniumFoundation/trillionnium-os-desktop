@@ -1,5 +1,15 @@
 # A10: host desktop prototype boundaries
 
+> **Reading note — 2026-10-22:** “Hepta is unconnected” below describes the
+> earlier host prototype. Implemented Linux-host paths now include the opt-in
+> [read-only Hepta observer](HEPTA_OBSERVER.md) and
+> [private Notes bootstrap and destination](NOTES_ORGAN.md).
+> The [final C receipts](../../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json)
+> bind host results to their specific source. These paths and receipts do not
+> supply production grants or FinalUse authorization, qualify a production
+> original-owner effect loop, or establish Asterinas execution. The original
+> boundary text below is retained.
+
 The Cargo workspace lives in ui/. It is **not** a new kernel session ABI,
 authorization/permissions protocol, compositor or HOS2 codec.
 

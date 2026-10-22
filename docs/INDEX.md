@@ -30,9 +30,17 @@
 
 所有 A00–A10 模块都有可定位的开发/验证入口和技术契约，但并非每个模块都有独立成套手册：A00/A01/A02/A05/A06 仍复用共享架构、ABI、构建或 profile 文档。上表同时标出实际源码与运行边界；文档存在性不证明功能完成。新增模块交接必须包括固定版本、命令、输入输出、错误语义、权限/状态 owner 和真实未通过项。
 
+逐模块与 crate 的实际文档分布、共享入口和缺口见 [2026-10-22 模块文档覆盖审计](agents/MODULE_DOCUMENTATION_AUDIT.md)。该清点绑定其记录的冻结源码；文档存在、链接有效和产品运行验收分别报告。
+
+文件系统专项另有 [inode 权限事务技术契约](INODE_PERMISSION_TRANSACTIONS.md)、[ExFAT 权限模式修复与验收范围](EXFAT_PERMISSION_MODE.md) 和 [chmod/chown/mount 实际回放手册](../tests/workloads/linux/PERMISSIONS.md)。这些专题逐项说明原 inode owner、尚未迁移的后端和对应正反控制，不将某个后端或 profile 的结果扩展为全部文件系统资格。
+
 ### 当前证据入口
 
-[跨仓 source profile 手册](agents/ORGAN_RELEASE_PROFILE.md) 给出 build/verify 命令、原 history 祖先证明、两份 Notes golden 的逐字核对，以及源清单与执行资格的区别。它有19项临时 Git 回归，不发 grant、不调用 runtime、不启用生产；真实组合还需在同一原 owner 上完成独立端到端验收。
+最新的 [组合验收与 #240 合并证据](../results/integration/2026-10-22-organ-qualified/README.md) 绑定实际 OS `85d394f…` 和 Hepta `6d6097d…`：七项 CI、完整组合 UI/kernel、原 writer 驱动的真实 Notes 回读和普通内核中的原 Agentd 配置拒绝门禁已执行。test issuer、ABI preflight 与生产/原生 G2/实机资格仍分别记录，具体下一步见 [按依赖实施](agents/ORGAN_IMPLEMENTATION_NEXT.md)。
+
+[跨仓 source profile 手册](agents/ORGAN_RELEASE_PROFILE.md) 给出 build/verify 命令、原 history 祖先证明、两份 Notes golden 的逐字核对，以及源清单与执行资格的区别。它有19项临时 Git 回归，当前 [真实组合清单](../support/release/profiles/2026-10-22-organ-source.json) 也已独立 build/verify；工具不发 grant、不调用 runtime、不启用生产。新 head 必须显式重新核对，生产装配仍需原部署输入与独立端到端验收。
+
+[原 Agentd 普通 ABI 开发/技术手册](../tests/workloads/hepta_agentd_abi/README.md) 和 [完整首跑证据](../results/integration/2026-10-22-agentd-ordinary-abi/README.md) 说明 disabled-default runner、精确拒绝 oracle、实际依赖、只读 ext2 写回缺陷及下一阶段原 FleetRegistry/Supervisor 启动要求。
 
 - A #234 的固定 source A06 与旧 #231 的 ExFAT 归档分别见 [STATUS](STATUS.md) 和 [原 ExFAT 包](../results/integration/2026-10-21-exfat-qualified/README.md)。
 - E `81897df4…` 的 core266/三 boot/旧 root 负控，以及 F `058c5e48…` 的 core265/SQLite 同 profile 正反结果见 [恢复的原收据](../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json)。

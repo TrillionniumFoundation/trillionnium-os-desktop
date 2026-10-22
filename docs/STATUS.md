@@ -1,5 +1,33 @@
 # 当前状态
 
+## 2026-10-22：组合七项 CI 通过并合入，原 Agentd 已完成普通 ABI 首跑
+
+[#240](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/240) 的 G0、A01、A06、A07 ARM64、G1-c、G1-d、A10 全部成功，随后按普通 merge 合入 `f85ccae8445f8d753572d41411d98ee28d253af5` / tree `bad0a3ee66859cfcf7bf1185e4f10d0f953239ad`。实际组合执行的 OS 为 `85d394f99c73ad3194d57c876712ac01b59d90ca` / tree `7389c0a3f982983087953f75de7042fc058be088`，Hepta 为 `6d6097da843f5831dfaf9cee3530da512d072a15` / tree `f722fbe5f24275c324089be720559a40901105f3`；A07 ARM64 workflow 另固定历史 Hepta `f8c9419`，不授予新 Hepta 组合 ARM64 资格。合并保留并行主干的21份历史证据与一份 ExFAT host 测试增量；运行源码没有额外变化。新文档/证据提交不冒充上述实际执行身份。
+
+**已具备一个经原 owner 驱动、能在真实 Linux Session/Notes 上动作并回读的开发组合；生产授权、原生 G2、完整自主恢复、Asterinas 上的原版 daemon/UI 和实机控制仍未完成。继续按完整 Asterinas 派生推进，当前没有要求重建 Rust kernel 的结构性反证。**
+
+### A–G 的当前完成边界
+
+| 切片 | 本次已实际完成 | 下一道完成条件 |
+| --- | --- | --- |
+| **A．基线** | E820/timerfd/ExFAT 修复已在组合 A06 实际通过；完整 core269、Linux/guest32、ExFAT Linux/guest5及旧行为负控由真实 CI 执行。主干新增的最终 ExFAT host 文件另有 normal15/15 与 `-O`15/15。 | 每次改变运行源码继续执行对应原门禁；不能用旧运行授予新源码资格。 |
+| **B．跨仓组合** | 一对干净 OS/Hepta 的 source profile 已真实 build+verify；12个 OS 角色、9个 Hepta 角色、两份 golden、原 history 祖先及原 writer 身份被固定。 | 原部署的 provider、clock、frontier、keyring、revocation、current-cut、recovered writer 尚未配置；production 保持 disabled。 |
+| **C．首个桌面 organ** | 组合 UI all-targets181通过/2明确忽略、Clippy与完整owned Weston通过；原 Agentd实际GUI测试进一步走通原writer→test issuer→真实Notes→独立回读→原committed，revision0→1。 | 用真实生产授权装配同一链路，再验收丢回复/撤销/重启；本次不证明任意应用控制、物理像素或Asterinas显示输入。 |
+| **D．原生 CPU** | 原 `AgentdHos2Device` 新增严格ReadUsage，无新D/ledger/retry；精确Hepta源码整包238通过/7跳过，另显式GUI1通过，fix/fmt后源码未变。固定映像G1-d原CPU/D五操作与独立恢复已实跑。 | 真实原Agentd的最终exec角色bootstrap、原writer/outbox持久K↔D、真实FinalUse、故障核对及终态持久后retire，仍需同一guest全链路。 |
+| **E．隔离恢复** | 实际workload UID/GID60001、空capabilities、no-new-privileges、securebits及继承的256MiB地址空间限制通过；有限独立恢复与合法零预算暂停保持通过。 | 公共`RevokeGrant/ApplyRecovery`、自主watchdog、可信暂停原因、总进程树内存及完整恢复资源隔离尚未闭合。 |
+| **F．原生Hepta/UI** | SQLite WAL/FULL同ext2 profile四boot正反验证通过；实际原Agentd动态ELF已在ordinary Asterinas装载并进入Rust main，准确拒绝缺失fleet环境，child1/QEMU33。 | 原FleetRegistry/Supervisor实际启动daemon、store/锁/socket、任务和恢复，继而同一Rust UI显示/输入。配置拒绝并未启动async runtime或原owner。 |
+| **G．硬件/手机** | 保留实际主机inventory；本轮没有把x86/QEMU或活跃RTX4060的存在升级成设备资格。 | 独立目标上的GPU/IOMMU/DMA/reset/VMM，以及明确ARM板卡/Android product的真实任务、撤销和重启。 |
+
+### 可复核入口与新发现
+
+- [组合执行与merge证据](../results/integration/2026-10-22-organ-qualified/README.md)：109份原始报告/日志/源码快照归档、七项CI元数据、完整A06/G1-d解码日志、实际merge父提交和差异核对。CI artifact ZIP未在本包独立下载，上传摘要与实际解码日志分开标明。
+- [固定source manifest](../support/release/profiles/2026-10-22-organ-source.json) 及 [使用手册](agents/ORGAN_RELEASE_PROFILE.md)：真实组合核对与19项临时Git回归分别记录；新head必须再显式verify。
+- [真实Agentd ABI首跑](../results/integration/2026-10-22-agentd-ordinary-abi/README.md) 与 [可复现runner](../tests/workloads/hepta_agentd_abi/README.md)：完整serial独立重放通过。仍保留25次未实现rseq警告，以及关机时1条失败Write和2条writeback错误；只读ext2自动atime/写回缺陷需要单独修复，本次不算只读存储资格。
+- [模块文档审计](agents/MODULE_DOCUMENTATION_AUDIT.md)：11个交付领域都有实质开发/验证与技术入口；UI5成员主要用共享手册，内核57成员中46个没有同目录Markdown，不等于没有共享文档/API注释，也不是完成率。未生成空模板。
+- [下一步按依赖实施](agents/ORGAN_IMPLEMENTATION_NEXT.md)：先收口原生产装配；C与D并行；隔离和可信恢复贯穿；再完成原daemon/存储/UI，最后固定设备验收。新的只读缺陷、原生bootstrap边界与重议内核路线的条件均列明。
+
+下节及更早记录按原时点保留；其中“候选”“待执行”和旧测试数不覆盖本节最新实际结果。
+
 ## 2026-10-22：A–G 整合候选与实际资格
 
 本节核对的远端主干为 `14fca98d006e725098bc29002424c3274c7c64c3`，已经包含 A 的 #234、G 的 #237 和证据归档 #235。E #236、F #238、C #239 及恢复的后续 C bootstrap 源码已合入本地候选 `9a9dfce9011fb6720a8ad03b189f8662c39485b8` / tree `0e457cb49871be107de0edb8f5d16594243a2d93`。此身份是下面文档收口前的源码组合，不代表该组合已经发布或通过完整 CI。

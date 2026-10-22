@@ -1,0 +1,4608 @@
+{
+  "parser": "results/integration/2026-10-19-g1b-usage/source-publication/validate-publication.py",
+  "parser_sha256": "2873ac7eef9c477a87e0d42ed1daa0c0d0f12ab9f1c02147da5e06eb1e891b48",
+  "method": "Existing pure link_destinations helper only; not the historical publication gate",
+  "document_count": 124,
+  "local_file_links_checked": 894,
+  "external_links_not_fetched": 431,
+  "anchors_checked": false,
+  "missing": [],
+  "documents": [
+    "compat/android/INTERFACES.md",
+    "compat/linux/GAPS.md",
+    "compat/linux/README.md",
+    "docs/ANDROID_COMPATIBILITY.md",
+    "docs/ARCHITECTURE.md",
+    "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+    "docs/ASTERINAS_CPU_OWNER_G1A.md",
+    "docs/ASTERINAS_CPU_USAGE_G1B.md",
+    "docs/ASTERINAS_ORGAN_BACKEND.md",
+    "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+    "docs/DECISIONS.md",
+    "docs/DESKTOP_UX.md",
+    "docs/EXFAT_PERMISSION_MODE.md",
+    "docs/HARDWARE_AND_DRIVERS.md",
+    "docs/HEPTA_INTEGRATION.md",
+    "docs/INDEX.md",
+    "docs/INODE_PERMISSION_TRANSACTIONS.md",
+    "docs/LINUX_COMPATIBILITY.md",
+    "docs/NATIVE_ABI.md",
+    "docs/PROJECT.md",
+    "docs/PUBLICATION_VALIDATOR_MAINTENANCE.md",
+    "docs/R11_REPORT_INTEGRATION.md",
+    "docs/ROADMAP.md",
+    "docs/SECURITY_AND_RECOVERY.md",
+    "docs/SOURCES.md",
+    "docs/STATUS.md",
+    "docs/VALIDATION.md",
+    "docs/agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+    "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+    "docs/agents/ORGAN_RELEASE_PROFILE.md",
+    "docs/agents/PLAN.md",
+    "docs/agents/PROMPTS.md",
+    "docs/agents/R8_NEXT_SLICE.md",
+    "docs/agents/R9_G1_OWNER_SEAM.md",
+    "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+    "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+    "docs/agents/prompts/A00-integration.md",
+    "docs/agents/prompts/A01-asterinas-boot.md",
+    "docs/agents/prompts/A02-hos2-wire.md",
+    "docs/agents/prompts/A03-control-core.md",
+    "docs/agents/prompts/A04-linux-hepta-baseline.md",
+    "docs/agents/prompts/A05-kernel-control.md",
+    "docs/agents/prompts/A06-scheduler-budget.md",
+    "docs/agents/prompts/A07-hepta-native.md",
+    "docs/agents/prompts/A08-android-compat.md",
+    "docs/agents/prompts/A09-gpu-vmm.md",
+    "docs/agents/prompts/A10-rust-desktop.md",
+    "kernel/asterinas/book/src/SUMMARY.md",
+    "libs/os-control/API_CONTRACT.md",
+    "services/hepta-os/CONTRACT.md",
+    "services/hepta-os/CPU_DELIVERY.md",
+    "services/hepta-os/OBJECTIVE_HISTORY.md",
+    "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+    "services/hepta-os/README.md",
+    "services/hepta-os/RUN.md",
+    "support/android/README.md",
+    "support/build/README.md",
+    "support/build/ktest/README.md",
+    "support/hardware/DECISION.md",
+    "support/rootfs/README.md",
+    "support/ui/BOUNDARIES.md",
+    "support/ui/CHAT_WORKSPACE.md",
+    "support/ui/CJK_RENDERING.md",
+    "support/ui/HEPTA_OBSERVER.md",
+    "support/ui/INTEGRATION_CONTRACTS.md",
+    "support/ui/NOTES_ORGAN.md",
+    "support/ui/ORIGINAL_HEPTA_SHELL.md",
+    "support/ui/RUN.md",
+    "support/ui/X11_IME.md",
+    "support/ui/ci/README.md",
+    "support/vmm/GATES.md",
+    "support/vmm/PROVENANCE.md",
+    "support/vmm/device_lifecycle/README.md",
+    "tests/abi/A02_ACCEPTANCE_2026-10-16.md",
+    "tests/abi/A02_CLOUD_CLOSURE_2026-10-16.md",
+    "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+    "tests/abi/A02_EXECUTION_2026-10-16.md",
+    "tests/abi/A02_PR65_EXECUTION_2026-10-16.md",
+    "tests/abi/A02_PREFLIGHT_2026-10-16.md",
+    "tests/abi/A02_PROFILE_ACCEPTANCE_2026-10-16.md",
+    "tests/abi/A02_RESPONSE_SNAPSHOT_ACCEPTANCE_2026-10-17.md",
+    "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+    "tests/abi/A02_SAVED_STATUS_ACCEPTANCE_2026-10-16.md",
+    "tests/control/VALIDATION-20261017-api.md",
+    "tests/control/VALIDATION-20261017-backend.md",
+    "tests/control/VALIDATION-20261017-bound.md",
+    "tests/control/VALIDATION-20261017-management.md",
+    "tests/control/VALIDATION-20261017-native.md",
+    "tests/control/VALIDATION-20261017-owner.md",
+    "tests/control/VALIDATION-20261017-window.md",
+    "tests/control/VALIDATION-20261017.md",
+    "tests/control/VALIDATION.md",
+    "tests/control/backend_no_std/VALIDATION.md",
+    "tests/hardware/RUN.md",
+    "tests/integration/hepta/BUILD_REVIEW.md",
+    "tests/integration/hepta/EVIDENCE.md",
+    "tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+    "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+    "tests/integration/hepta/ORIGINAL_AGENTD.md",
+    "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+    "tests/integration/hepta/ORIGINAL_SESSION.md",
+    "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+    "tests/integration/hepta/README.md",
+    "tests/kernel/control/G1C_TRUSTED_OBSERVE.md",
+    "tests/kernel/control/G1D_BOUNDED_RECOVERY.md",
+    "tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+    "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+    "tests/kernel/control/README.md",
+    "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+    "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+    "tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+    "tests/organ_backend/CPU_MAX_CONFIG.md",
+    "tests/organ_backend/CPU_OWNER_RETENTION.md",
+    "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+    "tests/organ_backend/CPU_USAGE_G1B.md",
+    "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+    "tests/ui/TESTPLAN.md",
+    "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+    "tests/workloads/linux/PERMISSIONS.md",
+    "tests/workloads/linux/README.md",
+    "tests/workloads/linux/RLIMIT_NOFILE.md",
+    "tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+    "tests/workloads/linux/SQLITE_GUEST_RESTART.md",
+    "tests/workloads/linux/results/ubuntu-full-20261019-gates/README.md"
+  ],
+  "checks": [
+    {
+      "document": "compat/linux/GAPS.md",
+      "destination": "../../results/organ-backend/2026-10-16/cpu-probe-02/result.json",
+      "exists": true
+    },
+    {
+      "document": "compat/linux/GAPS.md",
+      "destination": "../../support/build/evidence/2026-10-16/boot-failure-analysis.md",
+      "exists": true
+    },
+    {
+      "document": "compat/linux/README.md",
+      "destination": "../../tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ANDROID_COMPATIBILITY.md",
+      "destination": "SOURCES.md#vintf",
+      "exists": true
+    },
+    {
+      "document": "docs/ANDROID_COMPATIBILITY.md",
+      "destination": "SOURCES.md#aidl",
+      "exists": true
+    },
+    {
+      "document": "docs/ANDROID_COMPATIBILITY.md",
+      "destination": "SOURCES.md#android-cdd",
+      "exists": true
+    },
+    {
+      "document": "docs/ANDROID_COMPATIBILITY.md",
+      "destination": "SOURCES.md#lmkd",
+      "exists": true
+    },
+    {
+      "document": "docs/ANDROID_COMPATIBILITY.md",
+      "destination": "SOURCES.md#pages",
+      "exists": true
+    },
+    {
+      "document": "docs/ANDROID_COMPATIBILITY.md",
+      "destination": "SOURCES.md#android-native-bridge",
+      "exists": true
+    },
+    {
+      "document": "docs/ANDROID_COMPATIBILITY.md",
+      "destination": "SOURCES.md#android-cdd",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "INDEX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "../support/upstream-lock.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "../results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "SOURCES.md#asterinas",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "agents/handoffs/A05_KERNEL_CONTROL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ARCHITECTURE.md",
+      "destination": "ASTERINAS_ORGAN_BACKEND.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../tests/organ_backend/CPU_MAX_CONFIG.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../support/build/ktest/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../results/organ-backend/2026-10-16/a06-cpu-bandwidth-n0.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../results/organ-backend/2026-10-16/a06-aster-core-ktest.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "destination": "../results/organ-backend/2026-10-16/a06-guard-checks.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "ASTERINAS_CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "agents/R9_G1_OWNER_SEAM.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../libs/os-control/src/resource_state.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../support/build/ktest/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../support/build/ktest/locks/aster-core.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "destination": "../support/build/minimal/Cargo.lock",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../results/integration/2026-10-19-g1b-usage/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../tests/organ_backend/CPU_OWNER_RETENTION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/sched/sched_class/clock.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/time/clocks/system_wide.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/max_config.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/time/clocks/system_wide.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/vdso/clocksource_regressions.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/ostd/src/task/scheduler/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../libs/os-control/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../tests/organ_backend/CPU_OWNER_RETENTION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "destination": "../kernel/asterinas/ostd/src/sync/rcu/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_ORGAN_BACKEND.md",
+      "destination": "../tests/organ_backend/cpu_cap_probe.c",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_ORGAN_BACKEND.md",
+      "destination": "../tests/organ_backend/run_guest_probe.py",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_ORGAN_BACKEND.md",
+      "destination": "../results/organ-backend/2026-10-16/",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/execve.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/exit.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/execve.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/syscall/ptrace.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/process/clone.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "destination": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../results/integration/2026-10-18-runtime-process-boundaries/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../results/integration/2026-10-18-audit-followthrough/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "SOURCES.md#x11",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../support/ui/HEPTA_OBSERVER.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../support/ui/CHAT_WORKSPACE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../support/ui/HEPTA_OBSERVER.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../support/ui/CHAT_WORKSPACE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../results/integration/2026-10-19-main-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "../results/integration/2026-10-19-main-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/DESKTOP_UX.md",
+      "destination": "agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/HARDWARE_AND_DRIVERS.md",
+      "destination": "SOURCES.md#vfio",
+      "exists": true
+    },
+    {
+      "document": "docs/HARDWARE_AND_DRIVERS.md",
+      "destination": "SOURCES.md#dma",
+      "exists": true
+    },
+    {
+      "document": "docs/HARDWARE_AND_DRIVERS.md",
+      "destination": "SOURCES.md#ostd-vmm",
+      "exists": true
+    },
+    {
+      "document": "docs/HEPTA_INTEGRATION.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/HEPTA_INTEGRATION.md",
+      "destination": "SOURCES.md#hepta-modules",
+      "exists": true
+    },
+    {
+      "document": "docs/HEPTA_INTEGRATION.md",
+      "destination": "NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/HEPTA_INTEGRATION.md",
+      "destination": "agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/HEPTA_INTEGRATION.md",
+      "destination": "ASTERINAS_ORGAN_BACKEND.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/build/verify-source.py",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "PROJECT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/PLAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/ORGAN_RELEASE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "VALIDATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "DECISIONS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/build/ktest/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/upstream-lock.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/build/verify-source.py",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../libs/os-abi/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/control/VALIDATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/control/run-validation.sh",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/linux/SQLITE_GUEST_RESTART.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/rootfs/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "LINUX_COMPATIBILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../compat/linux/GAPS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/handoffs/A05_KERNEL_CONTROL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/G1D_BOUNDED_RECOVERY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "SECURITY_AND_RECOVERY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/RUN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/CPU_DELIVERY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "HEPTA_INTEGRATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/CPU_UPSTREAM_CONTRACT.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/android/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/a08-host-main-20261017/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ANDROID_COMPATIBILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../compat/android/INTERFACES.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../compat/android/kernel-gaps.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/hardware/RUN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/hardware/DECISION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/vmm/GATES.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/vmm/device_lifecycle/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "HARDWARE_AND_DRIVERS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/hardware/evidence/2026-10-21-development-host-inventory.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/RUN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/CHAT_WORKSPACE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/NOTES_ORGAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/ui/test-strict-request-ipc.py",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/ui/test-notes-bootstrap-ipc.py",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "DESKTOP_UX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/INTEGRATION_CONTRACTS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/ui/notes-target-v1.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/ui/notes-bootstrap-v1.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/ORGAN_RELEASE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-21-exfat-qualified/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/ui/evidence/2026-10-21-notes-target/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-21-os-integration-evidence/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1c-lifecycle/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1c-lifecycle/module-matrix.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1c-lifecycle/NEXT_IMPLEMENTATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1b-usage/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1b-usage/module-matrix.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/compat/2026-10-19-full-linux/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/organ-backend/2026-10-19-owner-retention/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "PROJECT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "HEPTA_INTEGRATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "SECURITY_AND_RECOVERY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "LINUX_COMPATIBILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ANDROID_COMPATIBILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "HARDWARE_AND_DRIVERS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "DESKTOP_UX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ROADMAP.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "VALIDATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "DECISIONS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/R9_G1_OWNER_SEAM.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "SOURCES.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/upstream-lock.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/spec/test_recovery_contract.py",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/golden/hos2.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/spec-recovery-v03.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../libs/os-abi/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "R11_REPORT_INTEGRATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/source-publication/report-main-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-final-status/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-runtime-process-boundaries/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-main-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/R9_G1_OWNER_SEAM.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_OWNER_RETENTION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/run_cpu_owner_negative.py",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/linux/RLIMIT_NOFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/compat/2026-10-19-rlimit-nofile/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/linux/results/ubuntu-full-20261019-gates/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-audit-followthrough/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/evidence/2026-10-17-r6/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/PLAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "DECISIONS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/build/ktest/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/upstream-lock.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-audit-followthrough/README.md#a02",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../libs/os-abi/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/control/VALIDATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/control/run-validation.sh",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-audit-followthrough/README.md#a03",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "LINUX_COMPATIBILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/linux/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/rootfs/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../compat/linux/GAPS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/source-publication/upstream-and-a04-current-api.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/handoffs/A05_KERNEL_CONTROL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/kernel/control/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_MAX_CONFIG.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-audit-followthrough/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_ORGAN_BACKEND.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ASTERINAS_CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-security/deny-repro-01/SECURITY_DEBT_DIAGNOSIS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-bazel-followup/BAZEL_FAILURE_DIAGNOSIS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-main-fix/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/RUN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/ORIGINAL_SESSION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-objective-history/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-objective-history-ci/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "HEPTA_INTEGRATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/android/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/a08-host-main-20261017/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "ANDROID_COMPATIBILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../compat/android/INTERFACES.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../compat/android/kernel-gaps.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/vmm/device_lifecycle/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/vmm/GATES.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "HARDWARE_AND_DRIVERS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/vmm/PROVENANCE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/RUN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/CHAT_WORKSPACE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/HEPTA_OBSERVER.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/CJK_RENDERING.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../support/ui/X11_IME.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "DESKTOP_UX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-objective-history/module-documentation-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "DESKTOP_UX.md#6-以-hepta-为核心的-ai-原生-ui",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-18-r7-recovery/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/module-documentation-delta.json",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-scoped-ci-storage-fix/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/PLAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/INDEX.md",
+      "destination": "agents/PROMPTS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/NATIVE_ABI.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/NATIVE_ABI.md",
+      "destination": "agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/NATIVE_ABI.md",
+      "destination": "agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/NATIVE_ABI.md",
+      "destination": "SOURCES.md#ioctl",
+      "exists": true
+    },
+    {
+      "document": "docs/PROJECT.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/PUBLICATION_VALIDATOR_MAINTENANCE.md",
+      "destination": "../results/maintenance/2026-10-20-publication-links/validation.json",
+      "exists": true
+    },
+    {
+      "document": "docs/R11_REPORT_INTEGRATION.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/R11_REPORT_INTEGRATION.md",
+      "destination": "INDEX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/R11_REPORT_INTEGRATION.md",
+      "destination": "../tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/R11_REPORT_INTEGRATION.md",
+      "destination": "../tests/organ_backend/CPU_OWNER_RETENTION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/R11_REPORT_INTEGRATION.md",
+      "destination": "../tests/workloads/linux/RLIMIT_NOFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/R11_REPORT_INTEGRATION.md",
+      "destination": "../tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/R11_REPORT_INTEGRATION.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/ROADMAP.md",
+      "destination": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true
+    },
+    {
+      "document": "docs/ROADMAP.md",
+      "destination": "INDEX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/SECURITY_AND_RECOVERY.md",
+      "destination": "NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/SECURITY_AND_RECOVERY.md",
+      "destination": "STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/SECURITY_AND_RECOVERY.md",
+      "destination": "SOURCES.md#sqlite",
+      "exists": true
+    },
+    {
+      "document": "docs/SOURCES.md",
+      "destination": "../support/upstream-lock.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "DECISIONS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../services/hepta-os/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "agents/ORGAN_RELEASE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-21-a07-cpu-history-native/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../support/ui/NOTES_ORGAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../services/hepta-os/CPU_DELIVERY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/workloads/linux/SQLITE_GUEST_RESTART.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/hardware/evidence/2026-10-21-development-host-inventory.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../support/hardware/DECISION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/ui/evidence/2026-10-21-notes-target/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-21-os-integration-evidence/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-21-exfat-qualified/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "INDEX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../support/build/verify-source.py",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1c-lifecycle/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1c-lifecycle/module-matrix.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1c-lifecycle/NEXT_IMPLEMENTATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1b-usage/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1b-usage/source-publication/final-state.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1b-usage/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1b-usage/hepta-final-status/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "ASTERINAS_CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "R11_REPORT_INTEGRATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/compat/2026-10-19-full-linux/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/organ-backend/2026-10-19-owner-retention/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "R11_REPORT_INTEGRATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/workloads/linux/results/ubuntu-full-20261019-gates/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/compat/2026-10-19-rlimit-nofile/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/organ_backend/CPU_OWNER_RETENTION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/compat/2026-10-19-scm-cloexec/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/workloads/linux/RLIMIT_NOFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/compat/2026-10-19-rlimit-nofile/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/source-publication/report-main-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/source-publication/main-sync/independent-merge-tree-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-remote-ci-f744/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-remote-ci-463f/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/source-publication/main-sync/main-integration-source-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/final-observation.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-scoped-ci-storage-fix/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/source-publication/hepta-scoped-disk/initial-ci-and-fleet-status.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/module-documentation-delta.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-g1-owner/hepta-final-status/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-19-main-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-objective-history/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-objective-history/native-agentd-build.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-objective-history/history-runtime.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-objective-history/history-runtime-independent-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-objective-history-ci/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-objective-history/module-documentation-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "agents/R9_G1_OWNER_SEAM.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-runtime-process-boundaries/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "DESKTOP_UX.md#41-原版观测的可见新鲜度",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/2026-10-18-audit-followthrough/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "DESKTOP_UX.md#6-以-hepta-为核心的-ai-原生-ui",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "DESKTOP_UX.md#6-以-hepta-为核心的-ai-原生-ui",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "INDEX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/integration/a08-host-main-20261017/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../support/android/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "INDEX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "agents/handoffs/A05_KERNEL_CONTROL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/organ_backend/smp2/run_parallel_candidate.py",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/organ-backend/2026-10-16/a06-smp-posix-exit-guard.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/organ-backend/2026-10-16/a06-cpustat-readonly-independent-ktest.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/organ-backend/2026-10-16/a06-cpustat-readonly-independent-qemu.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/organ-backend/2026-10-16/",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/organ-backend/2026-10-16/",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/spec-recovery-v03.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../tests/golden/hos2.json",
+      "exists": true
+    },
+    {
+      "document": "docs/STATUS.md",
+      "destination": "../results/reference-iso-probe.json",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../tests/spec/test_recovery_contract.py",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../results/spec-recovery-v03.json",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../tests/golden/hos2.json",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../libs/os-abi/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../tests/abi/run_acceptance.py",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "exists": true
+    },
+    {
+      "document": "docs/VALIDATION.md",
+      "destination": "../tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+      "destination": "../NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "../../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "../STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "../../tests/kernel/control/run_g1d_guest.py",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "G1C_TRUSTED_OBSERVE_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "../../tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "../NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "../../tests/kernel/control/G1D_BOUNDED_RECOVERY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md",
+      "destination": "../../tests/kernel/control/g1d_init.c",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PLAN.md",
+      "destination": "../STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PLAN.md",
+      "destination": "../INDEX.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PLAN.md",
+      "destination": "PROMPTS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PLAN.md",
+      "destination": "prompts/",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "PLAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A00-integration.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A01-asterinas-boot.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A02-hos2-wire.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A03-control-core.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A04-linux-hepta-baseline.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A05-kernel-control.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A06-scheduler-budget.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A07-hepta-native.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A08-android-compat.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A09-gpu-vmm.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/PROMPTS.md",
+      "destination": "prompts/A10-rust-desktop.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../ROADMAP.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "PLAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../support/upstream-lock.json",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../results/integration/2026-10-18-objective-history/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../results/integration/2026-10-18-objective-history/history-runtime-independent-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../results/integration/2026-10-18-objective-history-ci/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../tests/integration/hepta/original_objective_probe.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../results/integration/2026-10-18-runtime-process-boundaries/hepta-cli/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "R9_G1_OWNER_SEAM.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../ARCHITECTURE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R8_NEXT_SLICE.md",
+      "destination": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "destination": "R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "destination": "../NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "destination": "PLAN.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "destination": "../../tests/organ_backend/CPU_MAX_CONFIG.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../../tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../LINUX_COMPATIBILITY.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "A05_KERNEL_CONTROL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../HEPTA_INTEGRATION.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../../support/upstream-lock.json",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "destination": "../../../tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../NATIVE_ABI.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/syscall/ioctl.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/process/execve.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../tests/kernel/control/run_queryabi_guest.py",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true
+    },
+    {
+      "document": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "destination": "../../../results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/system-core/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/nix-and-nixos-tools/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/containerization-and-virtualization/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/networking/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/web-servers-and-proxies/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/databases-and-middleware/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/development-tools/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/cicd-and-devops/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/monitoring-and-observability/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/desktop-environments-and-display/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/web-browsers/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/office-and-productivity/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/multimedia/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/communication/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/file-management-and-terminal/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/popular-applications/ai-and-machine-learning/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "distro/building-on-asterinas.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/nix-development.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/advanced-instructions.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/intel-tdx.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/firecracker.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/the-framekernel-architecture.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/system-call-matching-language.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/process-and-thread-management/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/memory-management/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/file-and-directory-operations/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/file-systems-and-mount-control/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/file-descriptor-and-io-control/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/inter-process-communication/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/signals-and-timers/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/namespaces-cgroups-and-security/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/syscall-flag-coverage/system-information-and-misc/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/linux-compatibility/kernel-parameters.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/vm-based-containers/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/vm-based-containers/kata.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/vm-based-containers/coco.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "kernel/roadmap.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/a-100-line-kernel.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/a-100-line-hypervisor.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/what-soundness-means.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/sensitivity-classification.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/safe-memory-management.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/safe-user-kernel-interactions.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/safe-kernel-peripheral-interactions.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/safe-kernel-logic.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "ostd/soundness/safe-policy-injection.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/guide/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/guide/why.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/guide/create-project.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/guide/run-project.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/guide/work-in-workspace.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/guide/advanced-topics.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/guide/intel-tdx.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/commands/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/commands/new.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/commands/build.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/commands/run.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/commands/test.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/commands/debug.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/commands/profile.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/manifest.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "osdk/reference/environment-variables.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/how-guidelines-are-written.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/design.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/process.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/naming.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/layout.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/comments.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/rust-specific/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/rust-specific/naming.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/rust-specific/crates-and-modules.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/rust-specific/types-and-traits.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/rust-specific/functions-and-methods.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/rust-specific/attributes-and-macros.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-maintainability/rust-specific/comments.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-development/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-development/correctness.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-development/concurrency.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-development/resource-management.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-development/efficiency.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-development/observability.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-development/testing.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-security/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-security/memory-safety.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-security/security-properties.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-hardware/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-hardware/assembly-conventions.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-hardware/cpu-architecture-specific/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-hardware/cpu-architecture-specific/x86-64.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-documentation/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-documentation/general-style.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-documentation/path-specific/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/coding-guidelines/for-documentation/path-specific/kernel.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/boterinas.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "to-contribute/version-bump.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "rfcs/README.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "rfcs/0001-rfc-process.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "rfcs/0002-asterinas-nixos.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "rfcs/0003-hypervisor-support.md",
+      "exists": true
+    },
+    {
+      "document": "kernel/asterinas/book/src/SUMMARY.md",
+      "destination": "rfcs/rfc-template.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/CONTRACT.md",
+      "destination": "OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/CONTRACT.md",
+      "destination": "OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/CONTRACT.md",
+      "destination": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/CONTRACT.md",
+      "destination": "../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/CONTRACT.md",
+      "destination": "../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "destination": "OBJECTIVE_HISTORY_CONTRACT.json",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "destination": "../../docs/STATUS.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "destination": "../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "destination": "../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "destination": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "destination": "OBJECTIVE_UPSTREAM_CONTRACT.json",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "destination": "../../tests/integration/hepta/evidence/2026-10-18-objective-transport/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "destination": "RUN.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "destination": "../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../tests/integration/hepta/evidence/2026-10-17-r6/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../results/integration/2026-10-18-audit-followthrough/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../tests/integration/hepta/EVIDENCE.md#remaining-acceptance-gates",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "RUN.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "UPSTREAM_CONTRACT.json",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/README.md",
+      "destination": "OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "OBJECTIVE_TRANSPORT.md#trusted-single-attempt-command",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "OBJECTIVE_HISTORY.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "OBJECTIVE_UPSTREAM_CONTRACT.json",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "../../tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "../../tests/integration/hepta/evidence/2026-10-17-original-agentd-arm/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "../../tests/integration/hepta/BUILD_REVIEW.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md",
+      "exists": true
+    },
+    {
+      "document": "services/hepta-os/RUN.md",
+      "destination": "CONTRACT.md#errors-freshness-and-unsupported-submission",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "destination": "../../docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true
+    },
+    {
+      "document": "support/hardware/DECISION.md",
+      "destination": "../../tests/hardware/evidence/2026-10-21-development-host-inventory.json",
+      "exists": true
+    },
+    {
+      "document": "support/hardware/DECISION.md",
+      "destination": "../../tests/hardware/evidence/2026-10-17-sandbox-readonly-pci-034743z.json",
+      "exists": true
+    },
+    {
+      "document": "support/rootfs/README.md",
+      "destination": "../../tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/CHAT_WORKSPACE.md",
+      "destination": "HEPTA_OBSERVER.md#observe-one-already-known-run",
+      "exists": true
+    },
+    {
+      "document": "support/ui/CHAT_WORKSPACE.md",
+      "destination": "../../ui/shell/OBSERVATION_FRESHNESS.md#independently-sampled-known-run",
+      "exists": true
+    },
+    {
+      "document": "support/ui/CHAT_WORKSPACE.md",
+      "destination": "RUN.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/CHAT_WORKSPACE.md",
+      "destination": "../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/CHAT_WORKSPACE.md",
+      "destination": "../../tests/ui/evidence/2026-10-17-observation-freshness/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/CJK_RENDERING.md",
+      "destination": "X11_IME.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/CJK_RENDERING.md",
+      "destination": "../../tests/ui/evidence/2026-10-17-real-xim/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/HEPTA_OBSERVER.md",
+      "destination": "../../services/hepta-os/OBJECTIVE_TRANSPORT.md#trusted-single-attempt-command",
+      "exists": true
+    },
+    {
+      "document": "support/ui/HEPTA_OBSERVER.md",
+      "destination": "ORIGINAL_HEPTA_SHELL.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/HEPTA_OBSERVER.md",
+      "destination": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/HEPTA_OBSERVER.md",
+      "destination": "../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/NOTES_ORGAN.md",
+      "destination": "RUN.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/NOTES_ORGAN.md",
+      "destination": "../../tests/ui/evidence/2026-10-21-notes-target/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/ORIGINAL_HEPTA_SHELL.md",
+      "destination": "../../tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/ORIGINAL_HEPTA_SHELL.md",
+      "destination": "HEPTA_OBSERVER.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/RUN.md",
+      "destination": "HEPTA_OBSERVER.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/RUN.md",
+      "destination": "CHAT_WORKSPACE.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/RUN.md",
+      "destination": "NOTES_ORGAN.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/RUN.md",
+      "destination": "CJK_RENDERING.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/X11_IME.md",
+      "destination": "../../tests/ui/evidence/2026-10-17-real-xim/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/ui/ci/README.md",
+      "destination": "../../../.github/workflows/a10-host.yml",
+      "exists": true
+    },
+    {
+      "document": "support/ui/ci/README.md",
+      "destination": "../../../ui/Cargo.lock",
+      "exists": true
+    },
+    {
+      "document": "support/ui/ci/README.md",
+      "destination": "../RUN.md",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_ACCEPTANCE_2026-10-16.md",
+      "destination": "results/host-acceptance-2026-10-16.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_ACCEPTANCE_2026-10-16.md",
+      "destination": "results/rust-source-mutations-2026-10-16.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "destination": "results/evidence-integrity-acceptance-2026-10-17.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "destination": "results/evidence-integrity-mutations-2026-10-17.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "destination": "results/evidence-integrity-summary-before-2026-10-17.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "destination": "results/evidence-integrity-identity-before-2026-10-17.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "destination": "results/evidence-integrity-execution-2026-10-17.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "destination": "results/a00-protocol-counterexamples-147-2026-10-17.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_PREFLIGHT_2026-10-16.md",
+      "destination": "results/transport-preflight-2026-10-16.json",
+      "exists": true
+    },
+    {
+      "document": "tests/abi/A02_PREFLIGHT_2026-10-16.md",
+      "destination": "results/rust-source-mutations-preflight-2026-10-16.json",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-api.md",
+      "destination": "VALIDATION-20261017-backend.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-api.md",
+      "destination": "evidence/2026-10-17-api-compat/",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-api.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-backend.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-backend.md",
+      "destination": "evidence/2026-10-17-backend/",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-bound.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-management.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-native.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-owner.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017-window.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION-20261017.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "../../results/integration/2026-10-18-audit-followthrough/README.md#a03",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "VALIDATION-20261017-api.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "VALIDATION-20261017-backend.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "VALIDATION-20261017-owner.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "VALIDATION-20261017-window.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "VALIDATION-20261017-management.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "VALIDATION-20261017-bound.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "VALIDATION-20261017-native.md",
+      "exists": true
+    },
+    {
+      "document": "tests/control/VALIDATION.md",
+      "destination": "../../libs/os-control/API_CONTRACT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "evidence/2026-10-16-container-probe-1349z.json",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "evidence/2026-10-16-cuda-gemm-supervised-blocked.json",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "evidence/2026-10-16-cuda-gemm-blocked-v2-final.json",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "evidence/2026-10-16-kernel-join-blocked.json",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "evidence/2026-10-16-vfio-preflight-blocked.json",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "../../support/hardware/DECISION.md",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "../../support/vmm/GATES.md",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "../../support/vmm/GATES.md",
+      "exists": true
+    },
+    {
+      "document": "tests/hardware/RUN.md",
+      "destination": "evidence/2026-10-16-device-lifecycle-rust.json",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/BUILD_REVIEW.md",
+      "destination": "evidence/2026-10-17-original-agentd-arm/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/BUILD_REVIEW.md",
+      "destination": "evidence/2026-10-17-build-manifest/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/BUILD_REVIEW.md",
+      "destination": "evidence/2026-10-17-original-probe/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "../../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "ORIGINAL_OBJECTIVE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "../../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "evidence/2026-10-17-original-agentd-arm/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "ORIGINAL_AGENTD.md#process-group-identity-and-cleanup",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "ORIGINAL_AGENTD.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "evidence/2026-10-17-r6/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/EVIDENCE.md",
+      "destination": "../../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "destination": "evidence/2026-10-17-original-agentd-arm/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "destination": "BUILD_REVIEW.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "evidence/2026-10-17-original-agentd-arm/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "ORIGINAL_SESSION.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "BUILD_REVIEW.md#real-resolution-and-compiler-checks",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "evidence/2026-10-17-original-probe/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "LIVE_SOURCE_REVIEW.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "original_agentd_preflight_2026-10-17.json",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "PROBE_LOCK_STABILITY.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "ORIGINAL_SESSION.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "../../../results/integration/2026-10-19-main-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "destination": "upstream_artifact_snapshot.json",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "destination": "../../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "destination": "../../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_SESSION.md",
+      "destination": "ORIGINAL_AGENTD.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/ORIGINAL_SESSION.md",
+      "destination": "original_session_probe.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "../../../services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "ORIGINAL_AGENTD.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "evidence/2026-10-17-original-agentd-arm/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "ORIGINAL_OBJECTIVE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "../../../results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "../../ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "../../../docs/agents/R8_NEXT_SLICE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/integration/hepta/README.md",
+      "destination": "../../../services/hepta-os/RUN.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/G1D_BOUNDED_RECOVERY.md",
+      "destination": "G1D_WORKLOAD_ISOLATION.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+      "destination": "run_g1d_guest.py",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+      "destination": "run_g1d_workload_negative.py",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+      "destination": "../../../.github/workflows/g1d-trusted-control.yml",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+      "destination": "G1D_BOUNDED_RECOVERY.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/process/exit.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "queryabi_guest.c",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "run_queryabi_guest.py",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../.github/workflows/a06-kernel.yml",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../../support/build/ktest/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "destination": "../../organ_backend/CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/README.md",
+      "destination": "../../../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/README.md",
+      "destination": "PROCESS_IMAGE_G1C.md",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/README.md",
+      "destination": "../../../libs/os-abi/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/kernel/control/README.md",
+      "destination": "../../../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "../../kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/time/clocks/system_wide.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "../../kernel/asterinas/kernel/core/comps/time/src/tsc.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "../../kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/vdso.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/vdso/clocksource_regressions.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "clocksource_drop_fraction_negative.patch",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "vdso_drop_fraction_negative.patch",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "destination": "vdso_skip_fault_mode_negative.patch",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "destination": "CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "destination": "CPU_BOOTTIME_CLOCK.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "destination": "CPU_SCHEDULER_HANDOFF.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "destination": "../../results/organ-backend/2026-10-19-owner-retention/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_MAX_CONFIG.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/max_config.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_MAX_CONFIG.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_MAX_CONFIG.md",
+      "destination": "../../support/build/ktest/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/scheduler_handoff_regressions.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+      "destination": "cpu_handoff_drop_tail_negative.patch",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+      "destination": "cpu_handoff_eligibility_first_negative.patch",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+      "destination": "cpu_dequeue_drop_owner_negative.patch",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "CPU_CLOCK_HANDOFF_CI.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../.github/workflows/a06-kernel.yml",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../support/build/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../support/build/ktest/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../kernel/asterinas/ostd/src/sync/rcu/mod.rs",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "run_cpu_owner_negative.py",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../kernel/control/run_queryabi_candidate_guest.py",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "CPU_CONFIG_SETTLEMENT.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../.github/workflows/a06-kernel.yml",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../workloads/linux/run_scm_rights_cloexec_guest.py",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../workloads/linux/run_rlimit_nofile_guest.py",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "destination": "../../compat/linux/profiles/ubuntu24.04-x86_64-20261019.json",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "destination": "../integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "../../support/ui/CHAT_WORKSPACE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-17-original-hepta-shell/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-17-observation-freshness/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-17-original-shell-ci/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "../../support/ui/CJK_RENDERING.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-17-rust188-owner-sync/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-17-final-integration/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-17-rust188-weston/README.md",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-16-host-preflight.json",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-16-rust-validation.json",
+      "exists": true
+    },
+    {
+      "document": "tests/ui/TESTPLAN.md",
+      "destination": "evidence/2026-10-16-process-cleanup.json",
+      "exists": true
+    },
+    {
+      "document": "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "destination": "../../../compat/linux/profiles/ubuntu24.04-x86_64-20261019.json",
+      "exists": true
+    },
+    {
+      "document": "tests/workloads/linux/README.md",
+      "destination": "PERMISSIONS.md",
+      "exists": true
+    },
+    {
+      "document": "tests/workloads/linux/README.md",
+      "destination": "FULL_UBUNTU_PROFILE.md",
+      "exists": true
+    },
+    {
+      "document": "tests/workloads/linux/RLIMIT_NOFILE.md",
+      "destination": "../../integration/hepta/run_original_agentd.py",
+      "exists": true
+    },
+    {
+      "document": "tests/workloads/linux/RLIMIT_NOFILE.md",
+      "destination": "run_scm_rights_cloexec_guest.py",
+      "exists": true
+    },
+    {
+      "document": "tests/workloads/linux/RLIMIT_NOFILE.md",
+      "destination": "../../../results/compat/2026-10-19-rlimit-nofile/README.md",
+      "exists": true
+    }
+  ]
+}
