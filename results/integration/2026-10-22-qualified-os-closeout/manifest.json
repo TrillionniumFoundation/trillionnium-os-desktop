@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "recorded_on_utc": "2026-10-22",
+  "base_commit": "3f338ca9bb32003b293e641aa17c02488521340e",
+  "base_tree": "33e716c43bd61c785b51386b08c993c29a2bca0c",
+  "archive": {
+    "path": "native-logs-and-merge-receipts.tar.xz",
+    "bytes": 106400,
+    "sha256": "39b8dd1774b7f668c0cf124164dd2387ff87dd75e022a934195873a0d2aef196"
+  },
+  "archive_members": [
+    {
+      "path": "jobs/119605475886.log",
+      "bytes": 223398,
+      "sha256": "ddadfdde8e2b076620865eca1c176c332c61b0f0684536906dfc3f785e988a59"
+    },
+    {
+      "path": "jobs/119605646906.log",
+      "bytes": 249692,
+      "sha256": "89f3f435c6049c18bead034ef43c637ba91ef9ef03ed18a3299d9f2470b560d1"
+    },
+    {
+      "path": "jobs/119605754101.log",
+      "bytes": 211097,
+      "sha256": "7832699bd5b88ca1fc34db2632cd046f8e53c94245bce0bd8e332b693b8f1925"
+    },
+    {
+      "path": "merges/root-os228-qualified-merge.json",
+      "bytes": 46001,
+      "sha256": "ba8b1a14f3ea9cc8aee03d2f6abb158e5e2c5dbd7c0b452420dd85818ac79f83"
+    },
+    {
+      "path": "merges/root-os230-qualified-merge.json",
+      "bytes": 44059,
+      "sha256": "fbfbbe4d6c55b7e4e4b26c794f2b3a7a24551fc8c8c8301c6d2d98cbafc61a4e"
+    },
+    {
+      "path": "merges/root-os235-qualified-merge.json",
+      "bytes": 38504,
+      "sha256": "364299df7bd7878350d3837afb2fc659ddc9a8a7a9757fa32d4c0b2fb36ec6eb"
+    },
+    {
+      "path": "receipts/current-native-job-metadata.json",
+      "bytes": 20882,
+      "sha256": "c2b12678098c77fce7913bc094110ad92ea23c48362f0d914c1a9b64bc6c5d1c"
+    },
+    {
+      "path": "receipts/current-native-log-summary.json",
+      "bytes": 9738,
+      "sha256": "f726c257f73f26df8c0f116810172768329624a484e9acdb442b5e2f4ef3d227"
+    },
+    {
+      "path": "receipts/root-os235-premerge-verification.json",
+      "bytes": 533,
+      "sha256": "bd46ecc921ee94bbace58d8812e93fe1e78e2b40b83a66208f83c2aafd0f1790"
+    }
+  ],
+  "native_jobs": [
+    {
+      "job_id": 119605475886,
+      "run_id": 39712071275,
+      "source_head": "0be0e42c938b1184166d6b691c5924bf72e02dfc",
+      "conclusion": "success",
+      "decoded_bytes": 223398,
+      "decoded_sha256": "ddadfdde8e2b076620865eca1c176c332c61b0f0684536906dfc3f785e988a59",
+      "log_path": "jobs/119605475886.log"
+    },
+    {
+      "job_id": 119605754101,
+      "run_id": 39712124119,
+      "source_head": "10c61be18b7478869a0f33ed39d5d84e6b5a2be7",
+      "conclusion": "success",
+      "decoded_bytes": 211097,
+      "decoded_sha256": "7832699bd5b88ca1fc34db2632cd046f8e53c94245bce0bd8e332b693b8f1925",
+      "log_path": "jobs/119605754101.log"
+    },
+    {
+      "job_id": 119605646906,
+      "run_id": 39712123876,
+      "source_head": "10c61be18b7478869a0f33ed39d5d84e6b5a2be7",
+      "conclusion": "success",
+      "decoded_bytes": 249692,
+      "decoded_sha256": "89f3f435c6049c18bead034ef43c637ba91ef9ef03ed18a3299d9f2470b560d1",
+      "log_path": "jobs/119605646906.log"
+    }
+  ],
+  "qualified_merges": [
+    {
+      "pr": 235,
+      "source_head": "2ceeb4dd3ce39a136208a7212130a72d31c84766",
+      "merge_commit": "14fca98d006e725098bc29002424c3274c7c64c3",
+      "parents": [
+        "8d69980358c36e8f0843fefe008a60d2477fcf7f",
+        "2ceeb4dd3ce39a136208a7212130a72d31c84766"
+      ],
+      "tree": "5d014bd795007aa5b5f2d70b7d4ea8cd52f50b4f",
+      "successful_exact_head_checks": 2,
+      "resolved_review_threads": 0
+    },
+    {
+      "pr": 228,
+      "source_head": "2dad28e630f9cbd0715bec885bc28df97a52c6c0",
+      "merge_commit": "a8459afda16e24dfe48c4aa9b3c73442ca17b3d7",
+      "parents": [
+        "14fca98d006e725098bc29002424c3274c7c64c3",
+        "2dad28e630f9cbd0715bec885bc28df97a52c6c0"
+      ],
+      "tree": "f5df848be4703d73b088b436a483d43883c4a471",
+      "successful_exact_head_checks": 2,
+      "resolved_review_threads": 3
+    },
+    {
+      "pr": 230,
+      "source_head": "0be0e42c938b1184166d6b691c5924bf72e02dfc",
+      "merge_commit": "3f338ca9bb32003b293e641aa17c02488521340e",
+      "parents": [
+        "a8459afda16e24dfe48c4aa9b3c73442ca17b3d7",
+        "0be0e42c938b1184166d6b691c5924bf72e02dfc"
+      ],
+      "tree": "33e716c43bd61c785b51386b08c993c29a2bca0c",
+      "successful_exact_head_checks": 3,
+      "resolved_review_threads": 0
+    }
+  ],
+  "a10_result_occurrences": {
+    "passed": 307,
+    "failed": 0,
+    "existing_ignored": 2,
+    "unique_test_count": false
+  },
+  "packaging_reran_native_tests": false,
+  "fresh_artifact_zips_downloaded": false,
+  "remaining_scope": [
+    "PR 210 remains draft pending real owner assembly",
+    "Production A05/A07 durable handoff and bootstrap authority",
+    "Physical desktop and device qualification"
+  ]
+}
