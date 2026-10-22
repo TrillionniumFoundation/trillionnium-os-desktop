@@ -1,0 +1,2694 @@
+[
+  {
+    "manifest": "kernel/asterinas/Cargo.toml",
+    "manifest_sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+    "package_name": null,
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "osdk/deps/frame-allocator",
+      "osdk/deps/heap-allocator",
+      "osdk/deps/test-kernel",
+      "ostd",
+      "ostd/libs/align_ext",
+      "ostd/libs/id-alloc",
+      "ostd/libs/int-to-c-enum",
+      "ostd/libs/int-to-c-enum/derive",
+      "ostd/libs/linux-bzimage/boot-params",
+      "ostd/libs/linux-bzimage/builder",
+      "ostd/libs/linux-bzimage/setup",
+      "ostd/libs/ostd-macros",
+      "ostd/libs/ostd-pod",
+      "ostd/libs/ostd-pod/macros",
+      "ostd/libs/ostd-test",
+      "ostd/libs/padding-struct",
+      "kernel",
+      "kernel/comps/drm",
+      "kernel/comps/i8042",
+      "kernel/comps/simpledrm",
+      "kernel/comps/uart",
+      "kernel/core",
+      "kernel/core/comps/block",
+      "kernel/core/comps/cmdline",
+      "kernel/core/comps/console",
+      "kernel/core/comps/device",
+      "kernel/core/comps/framebuffer",
+      "kernel/core/comps/input",
+      "kernel/core/comps/logger",
+      "kernel/core/comps/mlsdisk",
+      "kernel/core/comps/network",
+      "kernel/core/comps/nvme",
+      "kernel/core/comps/pci",
+      "kernel/core/comps/softirq",
+      "kernel/core/comps/systree",
+      "kernel/core/comps/time",
+      "kernel/core/comps/virtio",
+      "kernel/libs/aster-bigtcp",
+      "kernel/libs/aster-fuse",
+      "kernel/libs/aster-rights",
+      "kernel/libs/aster-rights-proc",
+      "kernel/libs/aster-util",
+      "kernel/libs/atomic-integer-wrapper",
+      "kernel/libs/cpio-decoder",
+      "kernel/libs/device-id",
+      "kernel/libs/dma-pool",
+      "kernel/libs/fdt-util",
+      "kernel/libs/io-util",
+      "kernel/libs/jhash",
+      "kernel/libs/keyable-arc",
+      "kernel/libs/logo-ascii-art",
+      "kernel/libs/ring-buffer",
+      "kernel/libs/sparse-id-alloc",
+      "kernel/libs/short-vis-path",
+      "kernel/libs/typeflags",
+      "kernel/libs/typeflags-util",
+      "kernel/libs/xarray"
+    ],
+    "declared_workspace_excludes": [
+      "kernel/libs/comp-sys/cargo-component",
+      "kernel/libs/comp-sys/component",
+      "kernel/libs/comp-sys/component-macro",
+      "kernel/libs/comp-sys/controlled",
+      "osdk",
+      "tools/sctrace"
+    ],
+    "adjacent_markdown": [
+      "kernel/asterinas/AGENTS.md",
+      "kernel/asterinas/CLAUDE.md",
+      "kernel/asterinas/README.md",
+      "kernel/asterinas/RELEASES.md"
+    ],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/Cargo.toml",
+    "manifest_sha256": "793fbe82cd8cabd2d6047d5f5b4220ee16788aa46a51931f4f89a2752991ebe3",
+    "package_name": "asterinas",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/comps/drm/Cargo.toml",
+    "manifest_sha256": "a3bc60bec4797f7160efd7af5284a7cfa494a79211130daeea61416455b30479",
+    "package_name": "aster-drm",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/comps/drm/src/lib.rs",
+    "crate_entry_inner_doc_lines": 12,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/comps/i8042/Cargo.toml",
+    "manifest_sha256": "59f76aefd6209f36b0788d73d8494b8fd00c733c46dbef0be3607a0af4a5e19f",
+    "package_name": "aster-i8042",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/comps/i8042/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/comps/simpledrm/Cargo.toml",
+    "manifest_sha256": "fe0912a5d24f113943fa3716d4988b13a00adc35716934faa3ff2ebced74842f",
+    "package_name": "aster-simpledrm",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/comps/simpledrm/src/lib.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/comps/uart/Cargo.toml",
+    "manifest_sha256": "370aa88dc632e2ab8312571c2fa91537934d802778d7fbdaae0db633a038bba4",
+    "package_name": "aster-uart",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/comps/uart/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/Cargo.toml",
+    "manifest_sha256": "da62ea1ac3af6ee79f2a7e3ddf7bb0ae7cd89ae9f896ba4c22a887466480e273",
+    "package_name": "aster-core",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/src/lib.rs",
+    "crate_entry_inner_doc_lines": 3,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/block/Cargo.toml",
+    "manifest_sha256": "54a7285dfc1d868f1f2925763e96636d78c465ef7b855ef6cc007813c9f828e8",
+    "package_name": "aster-block",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/block/src/lib.rs",
+    "crate_entry_inner_doc_lines": 22,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/cmdline/Cargo.toml",
+    "manifest_sha256": "4efce6e8cdc5972b53a5aeeecae60e59c30372663f3c0525e3b4a19f4e4e4019",
+    "package_name": "aster-cmdline",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/cmdline/src/lib.rs",
+    "crate_entry_inner_doc_lines": 47,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/console/Cargo.toml",
+    "manifest_sha256": "455d88958402268f051d0135ddd6e1fdbfb67c0862f8cee14cf5c5b2782dab65",
+    "package_name": "aster-console",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/console/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/device/Cargo.toml",
+    "manifest_sha256": "e5fe11b5acc6aed35369a5b6e7c70ae559ea8c21bbbd6e96d1a78dd96bd3a7cf",
+    "package_name": "aster-device",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/device/src/lib.rs",
+    "crate_entry_inner_doc_lines": 19,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/framebuffer/Cargo.toml",
+    "manifest_sha256": "ed2e9873ded0bb62a88f76692b6b0d1d592d80e1f2789f245679dbd996b88beb",
+    "package_name": "aster-framebuffer",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/framebuffer/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/input/Cargo.toml",
+    "manifest_sha256": "bc511ee20030a626f817be32ffc9e5367bc4837b177aa9ba7a5947d1d628fdfb",
+    "package_name": "aster-input",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/input/src/lib.rs",
+    "crate_entry_inner_doc_lines": 31,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/logger/Cargo.toml",
+    "manifest_sha256": "0be205db5b547e2050750d2c50d74c6b4fdc07cac1aec3d8d942e625730df59e",
+    "package_name": "aster-logger",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/logger/src/lib.rs",
+    "crate_entry_inner_doc_lines": 11,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/mlsdisk/Cargo.toml",
+    "manifest_sha256": "74e34cbb293fac7ef80d913440da54a72c645ab83c4773e1187981a657cee76e",
+    "package_name": "aster-mlsdisk",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/mlsdisk/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/network/Cargo.toml",
+    "manifest_sha256": "3533556b83132c1fd6559d6b9cc4bb3cac9f150c854e9e4738d6a823c4826c44",
+    "package_name": "aster-network",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/network/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/nvme/Cargo.toml",
+    "manifest_sha256": "fdf0ff4e6d7f060cdc93d15a1a493d4181dc9bc43aaedfb2787469e13404d0a9",
+    "package_name": "aster-nvme",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/nvme/src/lib.rs",
+    "crate_entry_inner_doc_lines": 6,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/pci/Cargo.toml",
+    "manifest_sha256": "2b3dbca799e8b3799f9233761d4108e2bc4e456137e9ef02564436112607aa81",
+    "package_name": "aster-pci",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/pci/src/lib.rs",
+    "crate_entry_inner_doc_lines": 51,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/softirq/Cargo.toml",
+    "manifest_sha256": "e5a1da35ddbe8cde708679065fcbcca65d59191a9f889ce423cf8e62be755240",
+    "package_name": "aster-softirq",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/softirq/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/systree/Cargo.toml",
+    "manifest_sha256": "dabf99c5fef23da71779e1f4d445405163f907f1e0281e4579d3e7a254ef70f9",
+    "package_name": "aster-systree",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/systree/src/lib.rs",
+    "crate_entry_inner_doc_lines": 18,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/time/Cargo.toml",
+    "manifest_sha256": "0009062f62462fa135e294dd29b0c3013ca77de3d6133aaf385d35c6b5135802",
+    "package_name": "aster-time",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/core/comps/virtio/Cargo.toml",
+    "manifest_sha256": "8f973eba5be9f0d59a76981ed90fcca18bd6658179eea9920ef7d427cb2d562d",
+    "package_name": "aster-virtio",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/core/comps/virtio/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/aster-bigtcp/Cargo.toml",
+    "manifest_sha256": "49cf3f03650e213b38437e69cbfc0cc095ba05b24c63a7151a8bc918745818a1",
+    "package_name": "aster-bigtcp",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/aster-bigtcp/src/lib.rs",
+    "crate_entry_inner_doc_lines": 9,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/aster-fuse/Cargo.toml",
+    "manifest_sha256": "9d409bf2bce9c76008eaf0d40d68dd62d186361df91dfcc4a519dbdbdf3d19dc",
+    "package_name": "aster-fuse",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/kernel/libs/aster-fuse/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/kernel/libs/aster-fuse/src/lib.rs",
+    "crate_entry_inner_doc_lines": 13,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/aster-rights-proc/Cargo.toml",
+    "manifest_sha256": "418ce335ea99821aba4cae384a952c170146ca58c871a88b95a5746196454a94",
+    "package_name": "aster-rights-proc",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/aster-rights-proc/src/lib.rs",
+    "crate_entry_inner_doc_lines": 68,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/aster-rights/Cargo.toml",
+    "manifest_sha256": "928cf3951fa21141024ca38b07e5441a808c3c291101ad2f96d512f535913982",
+    "package_name": "aster-rights",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/aster-rights/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/aster-util/Cargo.toml",
+    "manifest_sha256": "17bef4043fa45d5a6bc3d658dca6e3b36c7c9189b89dd5b09dbb24c58abd6deb",
+    "package_name": "aster-util",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/aster-util/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/atomic-integer-wrapper/Cargo.toml",
+    "manifest_sha256": "a419518ff8d992039dcc44a4a7d2c6676e6342bd74c5f14e88c65546841a405c",
+    "package_name": "atomic-integer-wrapper",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/atomic-integer-wrapper/src/lib.rs",
+    "crate_entry_inner_doc_lines": 44,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/Cargo.toml",
+    "manifest_sha256": "fbddfc9f072a408425eb3791891f0ca2b21341f1ada9d272f00fdebbbc4d8df8",
+    "package_name": "cargo-component",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "analysis"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [
+      "kernel/asterinas/kernel/libs/comp-sys/cargo-component/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/src/main.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/analysis/Cargo.toml",
+    "manifest_sha256": "76e1c92292b644468ba0ad7da0dbcba04af2dec14594a6012d4657dc95e64dcd",
+    "package_name": "analysis",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/analysis/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/duplicate_lib_name_test/Cargo.toml",
+    "manifest_sha256": "8032ce0637979d4f659605db24435279b9fa5fde80d2894c488ee52d790dee1f",
+    "package_name": "duplicate_lib_name_test",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/duplicate_lib_name_test/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/missing_toml_test/Cargo.toml",
+    "manifest_sha256": "d062755bf2ff87d3229fc99aa4b1371fe8e0e674f0347152cd533fdc680fd070",
+    "package_name": "missing_toml_test",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/missing_toml_test/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/Cargo.toml",
+    "manifest_sha256": "6ccf9670715881749361888c18f30b46b3f3d01540f34c97da4ce520daa6ccc7",
+    "package_name": null,
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "foo",
+      "bar",
+      "baz"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/bar/Cargo.toml",
+    "manifest_sha256": "b7a542396ebc315bff5b24438f46cdbd5ed00a0cf667c76144481b80678d2966",
+    "package_name": "bar",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/bar/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/baz/Cargo.toml",
+    "manifest_sha256": "c1417ee85f10532803ab2c5884acfb2b051dc137ae86fec4a4852957336d2fc1",
+    "package_name": "baz",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/baz/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/foo/Cargo.toml",
+    "manifest_sha256": "2d464cb74167ffe2eef69a2882468bc3f82b658a966e2727951cebaf20ef6f46",
+    "package_name": "foo",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/foo/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/Cargo.toml",
+    "manifest_sha256": "ad1248e84e525f3e4a7b4c379b5dd082636bbb1f9488bc0699db51ddcd9a4a07",
+    "package_name": null,
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "foo1",
+      "bar1"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/bar1/Cargo.toml",
+    "manifest_sha256": "20d84efee940c6a0ba190a4631442e1acc5dd24da037c87379a497762fb158e9",
+    "package_name": "bar1",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/bar1/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/foo1/Cargo.toml",
+    "manifest_sha256": "7a3c4c8ee988a03f6264378f6b7dee29665c5ba63d2f73970c4e0be0c20dbfc2",
+    "package_name": "foo1",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/foo1/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/Cargo.toml",
+    "manifest_sha256": "7b13f607f447bf0330ad214c39508a73b72b2853adc9a2ca9b14c480b3826bcd",
+    "package_name": null,
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "foo2",
+      "bar2"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/bar2/Cargo.toml",
+    "manifest_sha256": "a718b9c5953f0337a0fcd4b1d37f0cee5c442f3a98bf7e7f4c00397b3ad6d6da",
+    "package_name": "bar2",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/bar2/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/foo2/Cargo.toml",
+    "manifest_sha256": "3c25ab77af5be4ef7df2ee00757d5517e46f9ffbf6b914c8767c586dba857d2d",
+    "package_name": "foo2",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/foo2/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/Cargo.toml",
+    "manifest_sha256": "fd06c0de292a858c9457a2f7347e683e7bff253c572583e8be79982246057cce",
+    "package_name": null,
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "foo3",
+      "bar3"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/bar3/Cargo.toml",
+    "manifest_sha256": "54cf595c7d4861288677683d7a729c99efcc45faaeaee6be7e8c350adc4fdfb9",
+    "package_name": "bar3",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/bar3/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/foo3/Cargo.toml",
+    "manifest_sha256": "813d0a388a0574bcc7c99908bd1da6e1466a124c658870913b6f54a169612488",
+    "package_name": "foo3",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/foo3/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/component-macro/Cargo.toml",
+    "manifest_sha256": "4995c672d1f41513727277c529b01815c42e3350238b437c2f56681e585a52f6",
+    "package_name": "component-macro",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/component/Cargo.toml",
+    "manifest_sha256": "b638c5363d0b0ab55e3e2b7622184943deb86b43d8df7e69eb9ff926313b801b",
+    "package_name": "component",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/kernel/libs/comp-sys/component/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/component/src/lib.rs",
+    "crate_entry_inner_doc_lines": 2,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/Cargo.toml",
+    "manifest_sha256": "471d1b8cd36b92a8bc6af1fd504b2b50a36bea18d8820f50a65811a6fcfb2566",
+    "package_name": "init-order",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "first-init",
+      "second-init"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/src/main.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/first-init/Cargo.toml",
+    "manifest_sha256": "dc0544e2d05e5fabe30ec342ba33cb58aada500a963390f746706c3a75c4183d",
+    "package_name": "first-init",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/first-init/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/second-init/Cargo.toml",
+    "manifest_sha256": "23341322a779f29bcb038a1bd26ed97c5505452300ee608f4b508c4013604e48",
+    "package_name": "second-init",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/second-init/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/Cargo.toml",
+    "manifest_sha256": "5f0952bdb942e26fe3acac5a8b2b1973e656ac6e2d4b99d6c43b4abc5c7ee781",
+    "package_name": "init-stage",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "foo"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/src/main.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/foo/Cargo.toml",
+    "manifest_sha256": "bfcd009475e43e899409641ef2b1df4819bbb75e379e4d8f1a8283b412d2a5ad",
+    "package_name": "foo",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/foo/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/comp-sys/controlled/Cargo.toml",
+    "manifest_sha256": "de74a41e3ceb9f6424a1fe30ab423b5eb0c3944e45693ac6fbeb6d7b4d5919f8",
+    "package_name": "controlled",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/comp-sys/controlled/src/lib.rs",
+    "crate_entry_inner_doc_lines": 20,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/cpio-decoder/Cargo.toml",
+    "manifest_sha256": "fcc846f4367a4ae91ef7682058bbec925687d2d784f67fd536ad8e502b9ec67f",
+    "package_name": "cpio-decoder",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/cpio-decoder/src/lib.rs",
+    "crate_entry_inner_doc_lines": 14,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/device-id/Cargo.toml",
+    "manifest_sha256": "09d008d0e9abd4518df96289bdfc21a1c637946fd5b53b455a87e46a0768879e",
+    "package_name": "device-id",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/device-id/src/lib.rs",
+    "crate_entry_inner_doc_lines": 8,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/dma-pool/Cargo.toml",
+    "manifest_sha256": "8d28a920dce043571a9336cf019812ecf4a253656dfd176a0ab838dfb949de26",
+    "package_name": "dma-pool",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/dma-pool/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/fdt-util/Cargo.toml",
+    "manifest_sha256": "360285fb0360ac03ad26a6acdbf4230f88b944548cfd00037ce0f427b2ec6be4",
+    "package_name": "fdt-util",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/fdt-util/src/lib.rs",
+    "crate_entry_inner_doc_lines": 5,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/io-util/Cargo.toml",
+    "manifest_sha256": "6bd0df98e47ad086991703dba73ac44b42e28d22dc9622ee0e492d1338e4a891",
+    "package_name": "io-util",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/io-util/src/lib.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/jhash/Cargo.toml",
+    "manifest_sha256": "86da7efad20ea584909156a4a2e033ade34fddb522c1b26d965e624ccc691e23",
+    "package_name": "jhash",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/jhash/src/lib.rs",
+    "crate_entry_inner_doc_lines": 8,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/keyable-arc/Cargo.toml",
+    "manifest_sha256": "909a8aed522a77e6932474ca82b0488ac13e9499e153a4a400d7f3d0e66ea8e4",
+    "package_name": "keyable-arc",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/keyable-arc/src/lib.rs",
+    "crate_entry_inner_doc_lines": 94,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/logo-ascii-art/Cargo.toml",
+    "manifest_sha256": "8461fe008cc1f45546ca76020859496b71f5e4259f4e250907a5361632723f6c",
+    "package_name": "logo-ascii-art",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/kernel/libs/logo-ascii-art/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/kernel/libs/logo-ascii-art/src/lib.rs",
+    "crate_entry_inner_doc_lines": 6,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/ring-buffer/Cargo.toml",
+    "manifest_sha256": "2de67922368827fff2cc1465627d538e9fbc9ec88279d7a0c3454b44ae01b320",
+    "package_name": "ring-buffer",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/ring-buffer/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/short-vis-path/Cargo.toml",
+    "manifest_sha256": "89d545b1d2f72e23322019809a7ac0a53dedaf3de1323ce81de85e4d2dd3ea5a",
+    "package_name": "short-vis-path",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/kernel/libs/short-vis-path/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/kernel/libs/short-vis-path/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": true,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/short-vis-path/tests/syntax-and-behavior/Cargo.toml",
+    "manifest_sha256": "90ad9e76dc9c4b9ba09b25f8d50441d836bbdd8dda40628b579f6ebb6dd19152",
+    "package_name": "syntax-and-behavior",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/short-vis-path/tests/syntax-and-behavior/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/sparse-id-alloc/Cargo.toml",
+    "manifest_sha256": "84018899d9181926e31f1e55aa60bfe578c98cd9cdc0e48fe72c4c3b579b5319",
+    "package_name": "sparse-id-alloc",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/sparse-id-alloc/src/lib.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/typeflags-util/Cargo.toml",
+    "manifest_sha256": "6dffc5a4ff27f6c377e64fdf6e9f63f36864dc6d68f1f46d7440394bc7d2a65a",
+    "package_name": "typeflags-util",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/typeflags-util/src/lib.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/typeflags/Cargo.toml",
+    "manifest_sha256": "98a4d5465f77dd5095e5cf3f31c11ce4faeab0aa518eebd5e7146baec61cb83c",
+    "package_name": "typeflags",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/typeflags/src/lib.rs",
+    "crate_entry_inner_doc_lines": 48,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/kernel/libs/xarray/Cargo.toml",
+    "manifest_sha256": "5c820dc4880c1d0e89bf727ea1e32d8fd86171a6c4cc4144645bf633fb25cbf4",
+    "package_name": "xarray",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/kernel/libs/xarray/src/lib.rs",
+    "crate_entry_inner_doc_lines": 45,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/osdk/Cargo.toml",
+    "manifest_sha256": "a13930fee211784f779a170a9f7c17ceb3ad017ab9805ba75a503a6597616190",
+    "package_name": "cargo-osdk",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/osdk/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/osdk/src/main.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/osdk/deps/frame-allocator/Cargo.toml",
+    "manifest_sha256": "ed7eb7be9823b88140e641256ed22687492293dfc38b14015904933f8af76bb2",
+    "package_name": "osdk-frame-allocator",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/osdk/deps/frame-allocator/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/osdk/deps/frame-allocator/src/lib.rs",
+    "crate_entry_inner_doc_lines": 18,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/osdk/deps/heap-allocator/Cargo.toml",
+    "manifest_sha256": "50ff2790cff95e93b91d9ac61e91e89d7d8236a073dd34afd234da0b3d6a8c68",
+    "package_name": "osdk-heap-allocator",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/osdk/deps/heap-allocator/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/osdk/deps/heap-allocator/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/osdk/deps/test-kernel/Cargo.toml",
+    "manifest_sha256": "56dbb8ccb936f9ef2c1d0223e5848a32348aaaf294c23a5cedd4aa02df39ba91",
+    "package_name": "osdk-test-kernel",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/osdk/deps/test-kernel/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/osdk/deps/test-kernel/src/lib.rs",
+    "crate_entry_inner_doc_lines": 3,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/osdk/tests/examples_in_book/work_in_workspace_templates/Cargo.toml",
+    "manifest_sha256": "b80afec4cc2ef11770499ed77037860e6ca3d4e4fd72b15ef334644634f5e63a",
+    "package_name": null,
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/osdk/tests/examples_in_book/work_in_workspace_templates/myos/Cargo.toml",
+    "manifest_sha256": "9bf58ee2e2ebfc626c892a29b2b1214b579a8a9d49a174be6433892bb568a6cb",
+    "package_name": null,
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/osdk/tests/examples_in_book/work_in_workspace_templates/myos/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/Cargo.toml",
+    "manifest_sha256": "1416286b44ff96f2ce0047d505ff33161c847b8aa5bf53261329c9ca36e99055",
+    "package_name": "ostd",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/ostd/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/ostd/src/lib.rs",
+    "crate_entry_inner_doc_lines": 5,
+    "crate_entry_readme_include": true,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/align_ext/Cargo.toml",
+    "manifest_sha256": "81995198ea3d43a78f5eef905df107284c60535921a8b07459159b419b3205e9",
+    "package_name": "align_ext",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/align_ext/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/id-alloc/Cargo.toml",
+    "manifest_sha256": "651ad8155a71f31161de0fb2aa3c43e380dcfde21e8acb3fa2c09e1073c6bdd8",
+    "package_name": "id-alloc",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/id-alloc/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/int-to-c-enum/Cargo.toml",
+    "manifest_sha256": "279ee5b1971fb5e7147b139f146d65a72ead0d39bbae4c8b10966a18526aef24",
+    "package_name": "int-to-c-enum",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/ostd/libs/int-to-c-enum/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/ostd/libs/int-to-c-enum/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": true,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/int-to-c-enum/derive/Cargo.toml",
+    "manifest_sha256": "279b48ee79ca564d5d92e81b9c98a86a3e8f627a60b2a16a47d7b260a9f1ec2b",
+    "package_name": "int-to-c-enum-derive",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/int-to-c-enum/derive/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/linux-bzimage/boot-params/Cargo.toml",
+    "manifest_sha256": "62c5787829507014953fbb5b22ad3d4fc8d7010db2278bde52df6ec35b8740b5",
+    "package_name": "linux-boot-params",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/linux-bzimage/boot-params/src/lib.rs",
+    "crate_entry_inner_doc_lines": 7,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/linux-bzimage/builder/Cargo.toml",
+    "manifest_sha256": "637ed0d86d1d98556b7320d5bb8bbc8c502b10b03606b191884db49c3c8906fb",
+    "package_name": "linux-bzimage-builder",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/linux-bzimage/builder/src/lib.rs",
+    "crate_entry_inner_doc_lines": 12,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/linux-bzimage/setup/Cargo.toml",
+    "manifest_sha256": "a50976b2d205cfb5f1be71c3666232a443184336ec3fcc344cca934af6ba7c1c",
+    "package_name": "linux-bzimage-setup",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/linux-bzimage/setup/src/main.rs",
+    "crate_entry_inner_doc_lines": 18,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/ostd-macros/Cargo.toml",
+    "manifest_sha256": "ae3392d1a34cbb228d4ce748bac1be041e44c3d9e21dac90dbf047cbed542b86",
+    "package_name": "ostd-macros",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/ostd-macros/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/ostd-pod/Cargo.toml",
+    "manifest_sha256": "1485257e37449f62b88bfbd361b2a61a3be4d5b7753919ae166877ced1b93ccb",
+    "package_name": "ostd-pod",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/ostd/libs/ostd-pod/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/ostd/libs/ostd-pod/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": true,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/ostd-pod/macros/Cargo.toml",
+    "manifest_sha256": "54e4c9e79a6797caf4d3d7945180648db9bd5c9805f2601d357d4e1bd30104c3",
+    "package_name": "ostd-pod-macros",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/ostd/libs/ostd-pod/macros/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/ostd/libs/ostd-pod/macros/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": true,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/ostd-test/Cargo.toml",
+    "manifest_sha256": "0381667acc80a5cd0358854f07d3667ca9fd365e335065fb4e948c9d4bad3f43",
+    "package_name": "ostd-test",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/ostd/libs/ostd-test/src/lib.rs",
+    "crate_entry_inner_doc_lines": 63,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/ostd/libs/padding-struct/Cargo.toml",
+    "manifest_sha256": "90ae1d06c9d28279817ac41ef12093be233728cf19e579e5964e96b86fdde58f",
+    "package_name": "padding-struct",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": true,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/ostd/libs/padding-struct/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/ostd/libs/padding-struct/src/lib.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": true,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/Cargo.toml",
+    "manifest_sha256": "8162498576557a5be2793efeee0fc049ab4d59828e6871c38de05cb9c3944ab2",
+    "package_name": null,
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "common/framework",
+      "common/test_macro",
+      "tests/*"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [
+      "kernel/asterinas/test/nixos/README.md"
+    ],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/common/framework/Cargo.toml",
+    "manifest_sha256": "6dcc8acf0836ccc3704249da09cc774cb621bd6d0ff3ded49208736e00327d7f",
+    "package_name": "nixos-test-framework",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/common/framework/src/lib.rs",
+    "crate_entry_inner_doc_lines": 20,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/common/template/Cargo.toml",
+    "manifest_sha256": "94d2df96d4c9ec5b2c2fb1f50ffa6fd64bb1f69081e475a7b9f0eccbc30e51d5",
+    "package_name": "test-<test_name>",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/common/template/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/common/test_macro/Cargo.toml",
+    "manifest_sha256": "e6983038d4107e7c35d81a6e541c21020e35588d687ec11dfe804a89d5747652",
+    "package_name": "nixos-test-macro",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/common/test_macro/src/lib.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/ai-and-machine-learning/Cargo.toml",
+    "manifest_sha256": "7908365630f89adcf8c13f617c8df8e8912bda43e0644b93f7334f26a61ecbf7",
+    "package_name": "test-ai-and-machine-learning",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/ai-and-machine-learning/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/cicd-and-devops/Cargo.toml",
+    "manifest_sha256": "858ca1743e27f8c761ba13357761f147a87d0bea3e8551fb78b92b431480853d",
+    "package_name": "test-cicd-and-devops",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/cicd-and-devops/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/communication/Cargo.toml",
+    "manifest_sha256": "c004b17330cbcef2b366cf85ad5772079e874dbc1831238f83e28c2c2c13ec5d",
+    "package_name": "test-communication",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/communication/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/containerization-and-virtualization/Cargo.toml",
+    "manifest_sha256": "8eb602265a7e0cc6d5355e5cdaf5db8baa1684687180e121a5fef5bc3bffac76",
+    "package_name": "test-containerization-and-virtualization",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/containerization-and-virtualization/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/databases-and-middleware/Cargo.toml",
+    "manifest_sha256": "a45fda00be76e04ce67d6bc6f19b7c1a878ebdac47cee11962daa97df1b90dcd",
+    "package_name": "test-databases-and-middleware",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/databases-and-middleware/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/development-tools-go/Cargo.toml",
+    "manifest_sha256": "07b25d6a4796932af8b0c5a7ab1c89ca9fa4aac26c062b36b7089459206d5fff",
+    "package_name": "test-development-tools-go",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/development-tools-go/src/main.rs",
+    "crate_entry_inner_doc_lines": 6,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/development-tools-openjdk/Cargo.toml",
+    "manifest_sha256": "9e8ed23b6931f59c91040a4fa3eac4b5243a34690491b154d70eadc5d810589c",
+    "package_name": "test-development-tools-openjdk",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/development-tools-openjdk/src/main.rs",
+    "crate_entry_inner_doc_lines": 6,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/development-tools-python/Cargo.toml",
+    "manifest_sha256": "23fd345b092e0ea7febc7aa48f8a0cc656f2aaf705e4fa901654f8be611ada36",
+    "package_name": "test-development-tools-python",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/development-tools-python/src/main.rs",
+    "crate_entry_inner_doc_lines": 6,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/development-tools/Cargo.toml",
+    "manifest_sha256": "f4a750bfa1ac3c9fa34d2d6704024571e9941729a6717d7379c2c0ee5f15e7af",
+    "package_name": "test-development-tools",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/development-tools/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/drm/Cargo.toml",
+    "manifest_sha256": "066c78696468eee4dd444fdf633ff93d9f45950ac96126dec3e2b2f288224d0b",
+    "package_name": "test-drm",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/drm/src/main.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/file-management-and-terminal/Cargo.toml",
+    "manifest_sha256": "1fb79d7e7be8e85706430cc926defa000326460a79adc3c41da58c935f659c71",
+    "package_name": "test-file-management-and-terminal",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/file-management-and-terminal/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/hello/Cargo.toml",
+    "manifest_sha256": "2c5a08e7d26c8564d59ae00e9aeaa936085eff464d57935b7f97bcab9b3765c5",
+    "package_name": "test-hello",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/hello/src/main.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/monitoring-and-observability/Cargo.toml",
+    "manifest_sha256": "d5086afe9221531af5b83dc2448015c41ce4003c9275c00fb2d109185ebd7751",
+    "package_name": "test-monitoring-and-observability",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/monitoring-and-observability/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/multimedia/Cargo.toml",
+    "manifest_sha256": "e134e24b651f03a3ab63c392dfbf0d2b9bed38889191ce8e2eb3ebc238979dbe",
+    "package_name": "test-multimedia",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/multimedia/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/networking/Cargo.toml",
+    "manifest_sha256": "810cfba518bf7c4c522ab55c6efcbaa7f4eca218f84aadc55949082e96887251",
+    "package_name": "test-networking",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/networking/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/nix-and-nixos-tools/Cargo.toml",
+    "manifest_sha256": "fed181781a1bfa8309745d31b477fbb5073f02f8340d838a578dbf84b2007df9",
+    "package_name": "test-nix-and-nixos-tools",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/nix-and-nixos-tools/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/office-and-productivity/Cargo.toml",
+    "manifest_sha256": "58a1be7cb5a9068e682fd2246d38a6bd0e283a672a4d3586429ccad45d4d7eea",
+    "package_name": "test-office-and-productivity",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/office-and-productivity/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/system-core/Cargo.toml",
+    "manifest_sha256": "107bd3bfac0450c78993ccd242da4f278bc9275b6ed36f56a63fcf569bd750a1",
+    "package_name": "test-system-core",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/system-core/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/web-browsers/Cargo.toml",
+    "manifest_sha256": "8d098b86522ce8dd23da5c261d2fa957fbb2cda40de364599857c9477d5581c3",
+    "package_name": "test-web-browsers",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/web-browsers/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/test/nixos/tests/web-servers-and-proxies/Cargo.toml",
+    "manifest_sha256": "ad6cf476fbc006cf795ca536e7cf0d1c63be2d7540d94a8bc45858d81a85d3f2",
+    "package_name": "test-web-servers-and-proxies",
+    "category": "upstream-test-or-fixture",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "kernel/asterinas/test/nixos/tests/web-servers-and-proxies/src/main.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "kernel/asterinas/tools/sctrace/Cargo.toml",
+    "manifest_sha256": "bc6753c244848c7d0fdcf5a15898055273d6de98cdcac6ab0df1b5e31495598f",
+    "package_name": "sctrace",
+    "category": "upstream-kernel-or-tool",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "kernel/asterinas/tools/sctrace/README.md"
+    ],
+    "crate_entry": "kernel/asterinas/tools/sctrace/src/lib.rs",
+    "crate_entry_inner_doc_lines": 24,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "kernel/asterinas/book/src/SUMMARY.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "libs/os-abi/Cargo.toml",
+    "manifest_sha256": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a",
+    "package_name": "hos2-os-abi",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "libs/os-abi/src/lib.rs",
+    "crate_entry_inner_doc_lines": 4,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "docs/NATIVE_ABI.md",
+      "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "libs/os-control/Cargo.toml",
+    "manifest_sha256": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f",
+    "package_name": "os-control",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "libs/os-control/API_CONTRACT.md"
+    ],
+    "crate_entry": "libs/os-control/src/lib.rs",
+    "crate_entry_inner_doc_lines": 11,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "libs/os-control/API_CONTRACT.md",
+      "tests/control/VALIDATION.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "services/hepta-os/Cargo.toml",
+    "manifest_sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b",
+    "package_name": "hepta-os-observer",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "services/hepta-os/CONTRACT.md",
+      "services/hepta-os/CPU_DELIVERY.md",
+      "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "services/hepta-os/README.md",
+      "services/hepta-os/RUN.md"
+    ],
+    "crate_entry": "services/hepta-os/src/lib.rs",
+    "crate_entry_inner_doc_lines": 10,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "services/hepta-os/README.md",
+      "services/hepta-os/RUN.md",
+      "services/hepta-os/CONTRACT.md",
+      "services/hepta-os/CPU_DELIVERY.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "support/ui/Cargo.toml",
+    "manifest_sha256": "877f6c52c402d579a2b7fcb51de5562004c545b4fd67d69c68d50e9157a9c5cd",
+    "package_name": "trill-ui-boundary",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "support/ui/BOUNDARIES.md",
+      "support/ui/CHAT_WORKSPACE.md",
+      "support/ui/CJK_RENDERING.md",
+      "support/ui/HEPTA_OBSERVER.md",
+      "support/ui/INTEGRATION_CONTRACTS.md",
+      "support/ui/NOTES_ORGAN.md",
+      "support/ui/ORIGINAL_HEPTA_SHELL.md",
+      "support/ui/RUN.md",
+      "support/ui/X11_IME.md"
+    ],
+    "crate_entry": "support/ui/src/lib.rs",
+    "crate_entry_inner_doc_lines": 16,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "support/ui/BOUNDARIES.md",
+      "support/ui/INTEGRATION_CONTRACTS.md",
+      "support/ui/RUN.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "support/vmm/device_lifecycle/Cargo.toml",
+    "manifest_sha256": "99b075644ae225612184b613f1231501593f3774f116196b5058d7b2a8f00fcb",
+    "package_name": "a09-device-lifecycle",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "support/vmm/device_lifecycle/README.md"
+    ],
+    "crate_entry": "support/vmm/device_lifecycle/src/lib.rs",
+    "crate_entry_inner_doc_lines": 10,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "support/vmm/device_lifecycle/README.md",
+      "support/vmm/GATES.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "tests/control/backend_no_std/Cargo.toml",
+    "manifest_sha256": "d0c770067d2b74c52888ad0c4b095ab8dc9d91e89b1a6140b9123b1b27543b74",
+    "package_name": "os-control-backend-no-std",
+    "category": "downstream-test",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "."
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [
+      "tests/control/backend_no_std/VALIDATION.md"
+    ],
+    "crate_entry": "tests/control/backend_no_std/src/lib.rs",
+    "crate_entry_inner_doc_lines": 5,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "tests/control/backend_no_std/VALIDATION.md",
+      "tests/control/VALIDATION.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "tests/control/loom/Cargo.toml",
+    "manifest_sha256": "4f94dacaee56584b645fcdf8f90d796daf5264362d50cc5571bd175669371a7d",
+    "package_name": "os-control-loom",
+    "category": "downstream-test",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "tests/control/VALIDATION.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "tests/ui/Cargo.toml",
+    "manifest_sha256": "f9924d58ec95c5c805ed26a12cb39c27839e4cb7d4e82c70ce375458976cfe3d",
+    "package_name": "trillionnium-ui-contracts",
+    "category": "downstream-test",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "tests/ui/TESTPLAN.md"
+    ],
+    "crate_entry": "tests/ui/src/lib.rs",
+    "crate_entry_inner_doc_lines": 7,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "tests/ui/TESTPLAN.md",
+      "support/ui/RUN.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "tests/workloads/linux/rust/Cargo.toml",
+    "manifest_sha256": "347c799ed98a98ae188802bb46f0af2885f1a7eeb26eb48436b4f932b19b24ce",
+    "package_name": "a04-tokio-workload",
+    "category": "downstream-test",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "tests/workloads/linux/rust/src/main.rs",
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "tests/workloads/linux/README.md",
+      "support/rootfs/README.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "ui/Cargo.toml",
+    "manifest_sha256": "e012325701464cb352e8bc5050012241a77e2f648d2303f68cc89632c76d0bf1",
+    "package_name": null,
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": true,
+    "declared_workspace_members": [
+      "core",
+      "session",
+      "shell",
+      "app-window",
+      "broker"
+    ],
+    "declared_workspace_excludes": [],
+    "adjacent_markdown": [],
+    "crate_entry": null,
+    "crate_entry_inner_doc_lines": 0,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "support/ui/RUN.md",
+      "support/ui/CHAT_WORKSPACE.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "ui/app-window/Cargo.toml",
+    "manifest_sha256": "02fd498b2094a5f98ee6a027f2ff70be169ab4c179b624311ba84a8f2bafd063",
+    "package_name": "trill-app-window",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "ui/app-window/src/main.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "support/ui/NOTES_ORGAN.md",
+      "support/ui/RUN.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "ui/broker/Cargo.toml",
+    "manifest_sha256": "0c8a47cb66552956e6fa5dcebd5ee354b5b66ee2003c964f285687c4d12fd07a",
+    "package_name": "trill-ui-broker",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "ui/broker/src/lib.rs",
+    "crate_entry_inner_doc_lines": 15,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "support/ui/NOTES_ORGAN.md",
+      "support/ui/RUN.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "ui/core/Cargo.toml",
+    "manifest_sha256": "34dec612e29be4a125e9ff7cf1c015ff3092a8e621f63eaa2d70cdcd763c233b",
+    "package_name": "trill-ui-core",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "ui/core/src/lib.rs",
+    "crate_entry_inner_doc_lines": 2,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "support/ui/CHAT_WORKSPACE.md",
+      "support/ui/NOTES_ORGAN.md",
+      "support/ui/RUN.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "ui/session/Cargo.toml",
+    "manifest_sha256": "af517896d0e97a4b8b39ca79f08c27106e281326518db335bff9dd2e17ecf0cb",
+    "package_name": "trill-session",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [],
+    "crate_entry": "ui/session/src/main.rs",
+    "crate_entry_inner_doc_lines": 2,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "support/ui/HEPTA_OBSERVER.md",
+      "support/ui/NOTES_ORGAN.md",
+      "support/ui/RUN.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  },
+  {
+    "manifest": "ui/shell/Cargo.toml",
+    "manifest_sha256": "f7c04a77f20cc1088f78ec9c217ab0a6068efa7f9f0318ea1898ba9ee15e56ee",
+    "package_name": "trill-shell",
+    "category": "downstream-product-or-support",
+    "kernel_workspace_member": false,
+    "has_workspace_table": false,
+    "declared_workspace_members": null,
+    "declared_workspace_excludes": null,
+    "adjacent_markdown": [
+      "ui/shell/OBSERVATION_FRESHNESS.md"
+    ],
+    "crate_entry": "ui/shell/src/main.rs",
+    "crate_entry_inner_doc_lines": 1,
+    "crate_entry_readme_include": false,
+    "shared_documentation_entries": [
+      "ui/shell/OBSERVATION_FRESHNESS.md",
+      "support/ui/CHAT_WORKSPACE.md",
+      "support/ui/RUN.md"
+    ],
+    "documentation_assessment": "shared_and_or_inline; no per-crate handbook completeness claim"
+  }
+]

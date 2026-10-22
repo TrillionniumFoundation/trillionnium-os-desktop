@@ -1,0 +1,181 @@
+{
+  "execution_job": "1a161c55881-1b6abb-2c29",
+  "explicit_gui_counts": {
+    "passed": 1,
+    "run": 1,
+    "skipped_or_filtered": 244
+  },
+  "native_guest_in_this_test_job": false,
+  "package_counts": {
+    "passed": 238,
+    "run": 238,
+    "skipped": 7
+  },
+  "production_authority": false,
+  "public_packet_contains_full_private_logs": false,
+  "qualification_json_sha256": "542fb050eb398e7a0ec6145c6149b234e3802d447d9bb8437ee2eb0143a55eb3",
+  "raw_logs": [
+    {
+      "bytes": 21673,
+      "path": "actual-gui-original-owner.log",
+      "result_lines": [
+        "     Summary [  12.951s] 1 test run: 1 passed, 244 skipped"
+      ],
+      "sha256": "f883adc6b96cc3720e9c39759f93a23d30d0dcb19d7ecb8a1791900f730babb8"
+    },
+    {
+      "bytes": 17858,
+      "path": "agentd-binary-build.log",
+      "result_lines": [],
+      "sha256": "df591b17a72ed1d4e83c875d230bf1cd06054acfbeee53a97647e35cab77ec34"
+    },
+    {
+      "bytes": 4736,
+      "path": "agentd-elf.log",
+      "result_lines": [],
+      "sha256": "254c660a93f9317634a24000714128eb9eda7527756d0bd8aa4fca9d4bac0550"
+    },
+    {
+      "bytes": 38345,
+      "path": "agentd-fix.log",
+      "result_lines": [],
+      "sha256": "79efc7621cb047e846392df9a58dd79b94e37cd01a075d55139a2f0b46b51ba7"
+    },
+    {
+      "bytes": 76599,
+      "path": "agentd-package.log",
+      "result_lines": [
+        "     Summary [  52.950s] 238 tests run: 238 passed, 7 skipped"
+      ],
+      "sha256": "e228967da46cfd1ffbc6ae7cd255e25f8bc338722791e8924f18dfc0caa3c40e"
+    },
+    {
+      "bytes": 0,
+      "path": "fmt-before.log",
+      "result_lines": [],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 73,
+      "path": "fmt-final.log",
+      "result_lines": [],
+      "sha256": "b6a6d5ad920f48c9b49a3ca8c2308227b7849b9e0a498dc452f3a7bd2f7fb752"
+    }
+  ],
+  "raw_logs_retained_at_producer": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/hepta-read-usage-tests-v2",
+  "schema": "hepta.original-agentd-qualified-execution-summary.v1",
+  "source_head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+  "source_tree": "f722fbe5f24275c324089be720559a40901105f3",
+  "source_unchanged_after_tests": true,
+  "steps": [
+    {
+      "argv": [
+        "just",
+        "fmt"
+      ],
+      "exit_code": 0,
+      "finished_unix": 1792641686.8916092,
+      "name": "fmt-before",
+      "started_unix": 1792641686.5181255,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-hepta-agentd"
+      ],
+      "exit_code": 0,
+      "finished_unix": 1792642001.4050415,
+      "name": "agentd-package",
+      "started_unix": 1792641687.0770433,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-hepta-agentd",
+        "notes_actual_ui_original_owner_roundtrip",
+        "--run-ignored",
+        "only"
+      ],
+      "exit_code": 0,
+      "finished_unix": 1792642017.8927124,
+      "name": "actual-gui-original-owner",
+      "started_unix": 1792642002.5146892,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "just",
+        "fix",
+        "-p",
+        "codex-hepta-agentd"
+      ],
+      "exit_code": 0,
+      "finished_unix": 1792642179.8527946,
+      "name": "agentd-fix",
+      "started_unix": 1792642017.909386,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "just",
+        "fmt"
+      ],
+      "exit_code": 0,
+      "finished_unix": 1792642180.0556345,
+      "name": "fmt-final",
+      "started_unix": 1792642179.8533654,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "codex-hepta-agentd",
+        "--bin",
+        "codex-hepta-agentd"
+      ],
+      "exit_code": 0,
+      "finished_unix": 1792642400.1678576,
+      "name": "agentd-binary-build",
+      "started_unix": 1792642180.1032765,
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "readelf",
+        "-W",
+        "-h",
+        "-l",
+        "-d",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/target-hepta-compact/debug/codex-hepta-agentd"
+      ],
+      "exit_code": 0,
+      "finished_unix": 1792642400.1735322,
+      "name": "agentd-elf",
+      "started_unix": 1792642400.1691353,
+      "status": "passed"
+    }
+  ]
+}

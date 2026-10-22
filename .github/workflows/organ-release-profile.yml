@@ -1,0 +1,101 @@
+name: Organ release profile source checks
+
+on:
+  pull_request:
+    paths:
+      - 'support/release/organ_release_profile.py'
+      - 'support/release/organ_source_map.json'
+      - 'support/release/test_organ_release_profile.py'
+      - '.github/workflows/organ-release-profile.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'support/release/organ_release_profile.py'
+      - 'support/release/organ_source_map.json'
+      - 'support/release/test_organ_release_profile.py'
+      - '.github/workflows/organ-release-profile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Host tests for the source-profile tool only. This job does not qualify an
+# actual Hepta/OS release pair, run the original owner, or authorize effects.
+jobs:
+  source-profile-host:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    env:
+      DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - name: Check out the exact candidate without retained credentials
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2, already pinned in this repository
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Require inputs and validate the committed source-map schema
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"
+          for path in README.md \
+            support/release/organ_release_profile.py \
+            support/release/organ_source_map.json \
+            support/release/test_organ_release_profile.py; do
+            test -f "$path"
+            test ! -L "$path"
+            git ls-files --error-unmatch -- "$path" > /dev/null
+          done
+          # Preserve support/build/verify-source.py's root README contract.
+          test ! -s README.md
+          python3 -I -B - <<'PY'
+          from pathlib import Path
+          import runpy
+
+          source = Path("support/release")
+          api = runpy.run_path(str(source / "organ_release_profile.py"))
+          mapping = api["load_json"](source / "organ_source_map.json")
+          api["check_map"](mapping)
+          print("Committed map schema passed: "
+                f"{len(mapping['sources']['os'])} OS roles, "
+                f"{len(mapping['sources']['hepta'])} Hepta roles, "
+                f"{len(mapping['goldens'])} golden pairs.")
+          print("Map structure only; mapped repository bytes and real ancestry are not qualified here.")
+          PY
+
+      - name: Run the real temporary-Git regression suite without skipped tests
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PY'
+          import importlib.util
+          from pathlib import Path
+          import unittest
+
+          path = Path("support/release/test_organ_release_profile.py")
+          spec = importlib.util.spec_from_file_location("release_profile_tests", path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          suite = unittest.defaultTestLoader.loadTestsFromModule(module)
+          count = suite.countTestCases()
+          if count < 19:
+              raise SystemExit(f"Expected at least 19 release-profile regression tests; found {count}")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if not result.wasSuccessful() or result.testsRun != count or result.skipped:
+              raise SystemExit("Release-profile suite failed, did not run completely, or skipped tests")
+          PY
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"
+          {
+            printf '## Source-profile host checks\n\n'
+            printf 'Candidate commit: `%s`\n\n' "$DESKTOP_SHA"
+            printf 'The committed map schema and temporary-Git regression suite passed.\n\n'
+            printf 'This does not verify an actual Hepta/OS release pair or production authority. '
+            printf 'No original-owner runtime, kernel, desktop, or device qualification is produced by this job.\n'
+          } >> "$GITHUB_STEP_SUMMARY"

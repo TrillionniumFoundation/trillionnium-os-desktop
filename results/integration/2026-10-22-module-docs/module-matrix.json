@@ -1,0 +1,385 @@
+{
+  "repository": ".",
+  "head": "b2b3e862bf568dab39bd8331be7def145f770408",
+  "tree": "7389c0a3f982983087953f75de7042fc058be088",
+  "scope": "A00-A10 delivery domains; current Cargo manifests; support roots; shared and module manuals",
+  "not_claimed": [
+    "every Rust mod.rs is a separately documented product module",
+    "all commands were executed",
+    "external links or anchors verified",
+    "runtime or production qualification"
+  ],
+  "excluded_archive_manifests": [
+    "results/integration/2026-10-18-runtime-process-boundaries/hepta-cli/execution/source/services/hepta-os/Cargo.toml",
+    "results/integration/2026-10-19-main-sync/ci-5060-a10/source/services/hepta-os/Cargo.toml",
+    "results/integration/2026-10-19-main-sync/ci-history-46/source/services/hepta-os/Cargo.toml",
+    "support/build/evidence/2026-10-16-daemon/daemon-probes/harness/Cargo.toml",
+    "support/build/evidence/2026-10-16-daemon/daemon-probes/patched-harness/Cargo.toml",
+    "tests/integration/hepta/evidence/2026-10-17-84e-arm-ci/evidence/work/probe/Cargo.toml",
+    "tests/integration/hepta/evidence/2026-10-17-original-session-build/build-01/probe/Cargo.toml",
+    "tests/integration/hepta/evidence/2026-10-17-original-session-build/build-02/probe/Cargo.toml",
+    "tests/integration/hepta/evidence/2026-10-17-original-session-build/lock-diagnostic-01/probe/Cargo.toml",
+    "tests/integration/hepta/evidence/2026-10-17-original-session-build/lock-diagnostic-02/probe/Cargo.toml",
+    "tests/integration/hepta/evidence/2026-10-17-original-session-build/upstream-seed/Cargo.toml",
+    "tests/integration/hepta/evidence/2026-10-18-objective-transport/validation-01/wire-reference/Cargo.toml"
+  ],
+  "cargo_manifest_count_excluding_archives": 127,
+  "downstream_manifest_count": 15,
+  "kernel_workspace_members": 57,
+  "kernel_members_with_adjacent_markdown": 11,
+  "kernel_members_without_adjacent_markdown": 46,
+  "kernel_members_with_crate_intro_or_readme_include": 48,
+  "ui_workspace_members": [
+    "core",
+    "session",
+    "shell",
+    "app-window",
+    "broker"
+  ],
+  "support_roots": [
+    "android",
+    "build",
+    "hardware",
+    "release",
+    "rootfs",
+    "ui",
+    "vmm"
+  ],
+  "canonical_workflows": [
+    ".github/workflows/a01-boot-evidence.yml",
+    ".github/workflows/a02-pinned-host-acceptance.yml",
+    ".github/workflows/a03-native-models.yml",
+    ".github/workflows/a06-kernel.yml",
+    ".github/workflows/a08-host.yml",
+    ".github/workflows/a09-hardware.yml",
+    ".github/workflows/a10-host.yml",
+    ".github/workflows/g0-contracts.yml",
+    ".github/workflows/g1c-trusted-observe.yml",
+    ".github/workflows/g1d-trusted-control.yml",
+    ".github/workflows/hepta-objective-history.yml",
+    ".github/workflows/hepta-original-agentd.yml"
+  ],
+  "root_readme_bytes": 0,
+  "module_domains": [
+    {
+      "id": "A00",
+      "name": "集成与跨仓发布组合",
+      "code_paths": [
+        ".github/workflows",
+        "support/release"
+      ],
+      "technical_docs": [
+        "docs/ARCHITECTURE.md",
+        "docs/DECISIONS.md",
+        "docs/agents/ORGAN_RELEASE_PROFILE.md"
+      ],
+      "development_docs": [
+        "docs/agents/PLAN.md",
+        "docs/agents/ORGAN_RELEASE_PROFILE.md"
+      ],
+      "verification_entries": [
+        "docs/VALIDATION.md",
+        "support/release/test_organ_release_profile.py"
+      ],
+      "implementation_and_evidence_boundary": "source profile 固定源码与祖先关系；生产 grant、原 owner 运行和 native G2 需独立验收。",
+      "documentation_gap": "共享架构/计划/发布手册，不是独立 A00 双手册；VALIDATION 的旧当前状态需要标时点。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A01",
+      "name": "上游源码、构建与启动",
+      "code_paths": [
+        "kernel/asterinas",
+        "support/build"
+      ],
+      "technical_docs": [
+        "docs/ARCHITECTURE.md",
+        "support/build/README.md"
+      ],
+      "development_docs": [
+        "support/build/README.md",
+        "support/build/ktest/README.md"
+      ],
+      "verification_entries": [
+        "support/build/verify-source.py",
+        "support/build/ktest/run.py",
+        ".github/workflows/a01-boot-evidence.yml"
+      ],
+      "implementation_and_evidence_boundary": "有真实构建/guest 入口；E/F 原收据各绑定不同 source，不能相加为本树运行。",
+      "documentation_gap": "主构建 README 混有 A01 早期 core141、G1-a-only 与未测交接语气；另备 dated note 候选。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A02",
+      "name": "HOS2 wire codec",
+      "code_paths": [
+        "libs/os-abi/src/lib.rs",
+        "tests/abi",
+        "tests/golden"
+      ],
+      "technical_docs": [
+        "docs/NATIVE_ABI.md"
+      ],
+      "development_docs": [
+        "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md"
+      ],
+      "verification_entries": [
+        "tests/abi/run_acceptance.py",
+        ".github/workflows/a02-pinned-host-acceptance.yml"
+      ],
+      "implementation_and_evidence_boundary": "codec、golden、host mutation 资格与内核操作开放不同。",
+      "documentation_gap": "libs/os-abi 无目录 Markdown；依赖共享规格和带旧 scratch 路径的历史验收手册。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A03",
+      "name": "控制核心、投递与退役模型",
+      "code_paths": [
+        "libs/os-control",
+        "tests/control"
+      ],
+      "technical_docs": [
+        "libs/os-control/API_CONTRACT.md"
+      ],
+      "development_docs": [
+        "tests/control/VALIDATION.md",
+        "tests/control/backend_no_std/VALIDATION.md"
+      ],
+      "verification_entries": [
+        "tests/control/run-validation.sh",
+        ".github/workflows/a03-native-models.yml"
+      ],
+      "implementation_and_evidence_boundary": "真实 host/Loom/no_std 检查不等于 kernel IRQ/SMP 或 Hepta fsync 资格。",
+      "documentation_gap": "技术契约与开发手册分置 libs/tests；loom 无目录 README，已有共享执行入口。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A04",
+      "name": "Linux ABI、ELF、rootfs 与存储",
+      "code_paths": [
+        "compat/linux",
+        "support/rootfs",
+        "tests/workloads/linux"
+      ],
+      "technical_docs": [
+        "docs/LINUX_COMPATIBILITY.md",
+        "compat/linux/GAPS.md"
+      ],
+      "development_docs": [
+        "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+        "support/rootfs/README.md",
+        "tests/workloads/linux/SQLITE_GUEST_RESTART.md"
+      ],
+      "verification_entries": [
+        "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+        "tests/workloads/linux/run_sqlite_restart_guest.py"
+      ],
+      "implementation_and_evidence_boundary": "F 已有固定 ext2 filetype/SQLite guest restart 收据；不是原 Agentd/UI 已在 Asterinas 运行。",
+      "documentation_gap": "有具体设计、命令与失败边界；原 Hepta 实际依赖闭包和 native 部署仍是待实现项。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A05",
+      "name": "内核控制与 Process 映像",
+      "code_paths": [
+        "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+        "kernel/asterinas/kernel/core/src/process"
+      ],
+      "technical_docs": [
+        "docs/NATIVE_ABI.md",
+        "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+        "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md"
+      ],
+      "development_docs": [
+        "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+        "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+        "tests/kernel/control/README.md"
+      ],
+      "verification_entries": [
+        "tests/kernel/control/run_g1d_guest.py",
+        ".github/workflows/g1d-trusted-control.yml"
+      ],
+      "implementation_and_evidence_boundary": "ordinary QueryAbi、G1-c ReadUsage、G1-d 固定三角色五操作必须按 profile 区分。",
+      "documentation_gap": "有专题手册；旧 ordinary handoff 需与当前 G1-c/d 入口一起读，不能泛化成整个项目现状。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A06",
+      "name": "CPU owner、计费、隔离与有限恢复",
+      "code_paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+        "tests/organ_backend"
+      ],
+      "technical_docs": [
+        "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "docs/SECURITY_AND_RECOVERY.md"
+      ],
+      "development_docs": [
+        "tests/organ_backend/CPU_USAGE_G1B.md",
+        "tests/kernel/control/G1D_WORKLOAD_ISOLATION.md",
+        "tests/kernel/control/G1D_BOUNDED_RECOVERY.md"
+      ],
+      "verification_entries": [
+        "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        ".github/workflows/a06-kernel.yml"
+      ],
+      "implementation_and_evidence_boundary": "E 有 core266/三 boot/旧 root 负控；不含完整 watchdog、可信暂停原因或总进程树内存保证。",
+      "documentation_gap": "专题技术与验证资料存在；完整恢复规范明确尚未实现，不能当成缺文档或已完成。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A07",
+      "name": "Hepta observer、Objective、history、CPU adapter",
+      "code_paths": [
+        "services/hepta-os"
+      ],
+      "technical_docs": [
+        "services/hepta-os/CONTRACT.md",
+        "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+        "services/hepta-os/OBJECTIVE_HISTORY.md",
+        "services/hepta-os/CPU_DELIVERY.md"
+      ],
+      "development_docs": [
+        "services/hepta-os/README.md",
+        "services/hepta-os/RUN.md"
+      ],
+      "verification_entries": [
+        "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+        "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+        "services/hepta-os/tests/cpu_delivery.rs"
+      ],
+      "implementation_and_evidence_boundary": "多个功能有分开的来源合同；cpu-history 是一次只读 QueryDelivery，不分配 D、不退役。",
+      "documentation_gap": "主 README/RUN 未导航到 CPU_DELIVERY；README 的 HOS2 not-provided 行未明确限定默认功能。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A08",
+      "name": "Android 兼容与产品输入",
+      "code_paths": [
+        "compat/android",
+        "support/android",
+        "tests/workloads/android"
+      ],
+      "technical_docs": [
+        "docs/ANDROID_COMPATIBILITY.md",
+        "compat/android/INTERFACES.md"
+      ],
+      "development_docs": [
+        "support/android/README.md"
+      ],
+      "verification_entries": [
+        "support/android/verify_source_integrity.py",
+        ".github/workflows/a08-host.yml"
+      ],
+      "implementation_and_evidence_boundary": "host 源码/输入校验不证明 Binder/ART/APK、Asterinas Android 或手机；具体 ARM BSP 未形成。",
+      "documentation_gap": "技术与运行手册已有；Android tests 无独立 README，使用 support 共享手册。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A09",
+      "name": "硬件、驱动接合与 VMM",
+      "code_paths": [
+        "support/hardware",
+        "support/vmm",
+        "tests/hardware"
+      ],
+      "technical_docs": [
+        "docs/HARDWARE_AND_DRIVERS.md",
+        "support/hardware/DECISION.md",
+        "support/vmm/GATES.md",
+        "support/vmm/PROVENANCE.md"
+      ],
+      "development_docs": [
+        "tests/hardware/RUN.md",
+        "support/vmm/device_lifecycle/README.md"
+      ],
+      "verification_entries": [
+        ".github/workflows/a09-hardware.yml",
+        "support/vmm/acceptance.py"
+      ],
+      "implementation_and_evidence_boundary": "G 只有只读 inventory；Rust lifecycle 是模型，不实施 DMA pin、IOMMU、IRQ 或设备 reset。",
+      "documentation_gap": "RUN 的旧容器 scorecard 缺最新 inventory 指引；实际 VMM/BSP 手册受未完成实现限制。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    },
+    {
+      "id": "A10",
+      "name": "Rust UI 与 Linux Notes organ",
+      "code_paths": [
+        "ui/core",
+        "ui/session",
+        "ui/shell",
+        "ui/app-window",
+        "ui/broker",
+        "support/ui"
+      ],
+      "technical_docs": [
+        "docs/DESKTOP_UX.md",
+        "support/ui/INTEGRATION_CONTRACTS.md",
+        "support/ui/CHAT_WORKSPACE.md",
+        "support/ui/NOTES_ORGAN.md"
+      ],
+      "development_docs": [
+        "support/ui/RUN.md",
+        "support/ui/HEPTA_OBSERVER.md",
+        "support/ui/NOTES_ORGAN.md"
+      ],
+      "verification_entries": [
+        "tests/ui/TESTPLAN.md",
+        "tests/ui/check-host.sh",
+        "tests/ui/headless-weston.sh"
+      ],
+      "implementation_and_evidence_boundary": "最终 C 固定来源有 Linux host/Notes/Weston 证据；不是 Asterinas 桌面、通用桌面控制或手机。",
+      "documentation_gap": "五 crate 共用手册，没有每 crate 独立成套开发/技术文档；BOUNDARIES 仍有早期未接 Hepta 表述。",
+      "all_listed_paths_exist": true,
+      "execution_by_this_audit": "not_run"
+    }
+  ],
+  "additional_cross_domain_slice": {
+    "id": "FS",
+    "name": "文件系统权限事务、ExFAT 与 ext2 durability",
+    "code_paths": [
+      "kernel/asterinas/kernel/core/src/fs",
+      "tests/workloads/linux"
+    ],
+    "technical_docs": [
+      "docs/INODE_PERMISSION_TRANSACTIONS.md",
+      "docs/EXFAT_PERMISSION_MODE.md"
+    ],
+    "development_docs": [
+      "tests/workloads/linux/PERMISSIONS.md",
+      "tests/workloads/linux/SQLITE_GUEST_RESTART.md"
+    ],
+    "verification_entries": [
+      "tests/organ_backend/run_permission_attr_smp.py",
+      "tests/workloads/linux/run_exfat_mode_guest.py"
+    ],
+    "implementation_and_evidence_boundary": "明确列出未迁移的 inode 后端及故障模型；事务/持久性不按文件系统名字整体授予。",
+    "documentation_gap": "两个技术专题文件存在，但 docs/INDEX.md 未直接链接它们；可发现性不足。",
+    "all_listed_paths_exist": true,
+    "execution_by_this_audit": "not_run"
+  },
+  "path_check": "passed",
+  "local_link_check": {
+    "document_count": 124,
+    "local_file_links_checked": 894,
+    "external_links_not_fetched": 431,
+    "anchors_checked": false,
+    "missing": []
+  },
+  "products_tests_run": false,
+  "path_base": "repository_root",
+  "schema": "organ-module-documentation-audit.v1",
+  "record_scope": "Frozen source inventory before the documented navigation corrections; not a runtime qualification",
+  "original_local_manifest_sha256": "4f5d0b239b57a615b502aef01eb9ddab68c54520a9b70b477ef366a1779e6aa2"
+}

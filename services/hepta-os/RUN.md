@@ -68,6 +68,29 @@ Preparation, source checks, unit tests, and actual native process qualification
 are recorded separately. No build of the lightweight client requires the full
 original workspace, while the real Agentd/probe does.
 
+## Optional retained CPU delivery history
+
+The independent, default-off `cpu-history` library adapter performs one
+`QueryDelivery` per `query_once` for the original owner's retained D through a
+trusted host-supplied transport. It has no device startup or discovery, effect,
+retry, new K/D allocation, acknowledgement or retirement, and no CLI or UI entry.
+The ordinary Session does not enable it. See [CPU_DELIVERY.md](CPU_DELIVERY.md)
+for the original outbox binding, transport requirements, result semantics and
+remaining native qualification gates.
+
+```sh
+cargo +1.88.0 test --locked --manifest-path services/hepta-os/Cargo.toml \
+  --features cpu-history
+cargo +1.88.0 clippy --locked --manifest-path services/hepta-os/Cargo.toml \
+  --features cpu-history --all-targets -- -D warnings
+cargo +1.88.0 check --locked --manifest-path services/hepta-os/Cargo.toml \
+  --no-default-features
+```
+
+The CPU history tests use the real codec with explicit transport fixtures.
+These checks do not open a native device, recover a production writer or
+qualify a native CPU effect.
+
 ## Source-derived conformance
 
 Use an authorized local checkout of the fixed Hepta revision. The first

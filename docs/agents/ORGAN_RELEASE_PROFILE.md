@@ -1,5 +1,22 @@
 # Organ cross-repository source profile
 
+## Qualified source pair recorded on 2026-10-22
+
+The first real [manifest](../../support/release/profiles/2026-10-22-organ-source.json)
+has now been built and verified on clean OS `85d394f99c73ad3194d57c876712ac01b59d90ca`
+and Hepta `6d6097da843f5831dfaf9cee3530da512d072a15`, with their exact trees in
+the [retained receipts](../../results/integration/2026-10-22-organ-qualified/README.md).
+The same source pair also has separately retained runtime evidence. This is
+distinct from the tool's 19 temporary-Git regression tests. The dedicated
+`organ-release-profile.yml` workflow checks those tool regressions and the map
+schema only; it does not fetch private sources or qualify a deployed pair.
+
+The manifest remains source-only and production-disabled. The executed OS head,
+the #240 merge, and a later documentation/evidence head are distinct identities.
+After committing or merging, verify the manifest again against the explicit
+new OS head/tree; retain that new source-verification receipt separately instead
+of relabeling the existing runtime receipts.
+
 ## Scope and current boundary
 
 `support/release/organ_release_profile.py` generates and verifies a **source-only**

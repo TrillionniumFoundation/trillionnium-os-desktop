@@ -1,0 +1,122 @@
+{
+  "schema": "exfat-final-main-host-tests-v1",
+  "started_at_utc": "2026-10-22T03:55:48.950569+00:00",
+  "finished_at_utc": "2026-10-22T03:55:49.987418+00:00",
+  "passed": true,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "git_version": "git version 2.51.1",
+  "base_main": "14fca98d006e725098bc29002424c3274c7c64c3",
+  "new_main": "3f338ca9bb32003b293e641aa17c02488521340e",
+  "candidate": "85d394f99c73ad3194d57c876712ac01b59d90ca",
+  "candidate_tree": "7389c0a3f982983087953f75de7042fc058be088",
+  "temporary_merge": "48ff4eef65c0d1a143f7274bd286783950642098",
+  "temporary_merge_tree": "d48de45b30d99eb0b1d3e869d44d4c86a48cd09a",
+  "test_file": {
+    "path": "tests/workloads/linux/test_exfat_mode_guest.py",
+    "git_blob": "e8e14a9ccbfd49255b7d9ec2768e4af6c2b27362",
+    "sha256": "bc1460518be6c8a40f67dd8ef2085c628d235630f3c443a7ed6c604e1c469860",
+    "bytes": 17380,
+    "git_mode": "100644",
+    "source": "GitHub fetch_blob; main and temporary merge compare agree",
+    "at_commits": [
+      "3f338ca9bb32003b293e641aa17c02488521340e",
+      "48ff4eef65c0d1a143f7274bd286783950642098"
+    ]
+  },
+  "source_manifest": {
+    "bytes": 9324,
+    "sha256": "a041a29569659b4696318ca1b971a3a3f8315f3f0a33617d338df81921231284"
+  },
+  "independent_copy_before": {
+    "head": "53f3dc33660d0f10277efd5df36c448b95b55c83",
+    "tree": "204273b7c3814415d36dce0653a7356325d8cedc",
+    "status_porcelain": ""
+  },
+  "independent_copy_after": {
+    "head": "53f3dc33660d0f10277efd5df36c448b95b55c83",
+    "tree": "204273b7c3814415d36dce0653a7356325d8cedc",
+    "status_porcelain": ""
+  },
+  "independent_copy_commit_is_synthetic": true,
+  "copied_inputs_unchanged": true,
+  "frozen_os_before": {
+    "head": "b2b3e862bf568dab39bd8331be7def145f770408",
+    "tree": "7389c0a3f982983087953f75de7042fc058be088",
+    "status_porcelain": ""
+  },
+  "frozen_os_after": {
+    "head": "b2b3e862bf568dab39bd8331be7def145f770408",
+    "tree": "7389c0a3f982983087953f75de7042fc058be088",
+    "status_porcelain": ""
+  },
+  "frozen_os_unchanged": true,
+  "runs": [
+    {
+      "label": "normal",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/linux",
+        "-p",
+        "test_exfat_mode_guest.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/b2da20752f15/work/release-main-delta/source",
+      "started_at_utc": "2026-10-22T03:55:49.169076+00:00",
+      "finished_at_utc": "2026-10-22T03:55:49.407067+00:00",
+      "exit_code": 0,
+      "tests_run": 15,
+      "passed": true,
+      "combined_stdout_stderr": "normal.log",
+      "log": {
+        "bytes": 2974,
+        "sha256": "ae59a318e89f74da567292b0f213dc50bce7ff47e9f8c508e83690394d7f46ba"
+      }
+    },
+    {
+      "label": "optimized",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/linux",
+        "-p",
+        "test_exfat_mode_guest.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/b2da20752f15/work/release-main-delta/source",
+      "started_at_utc": "2026-10-22T03:55:49.407595+00:00",
+      "finished_at_utc": "2026-10-22T03:55:49.952459+00:00",
+      "exit_code": 0,
+      "tests_run": 15,
+      "passed": true,
+      "combined_stdout_stderr": "optimized.log",
+      "log": {
+        "bytes": 2974,
+        "sha256": "7ccabe972e250286a8cefef81112426223a6c6bebe060da5785c2cc73c0f4bd2"
+      }
+    }
+  ],
+  "scope": {
+    "host_tests_only": true,
+    "kernel_booted": false,
+    "filesystem_mounted": false,
+    "device_access": false,
+    "hepta_runtime_called": false,
+    "whole_merge_tree_runtime_qualified": false,
+    "production_activation": false,
+    "note": "The two newly added tests run real temporary formatter child processes. Their evidence does not qualify a real ExFAT format/mount, guest boot, or entire merged OS head."
+  }
+}

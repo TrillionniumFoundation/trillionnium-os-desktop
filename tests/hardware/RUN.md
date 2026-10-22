@@ -1,5 +1,12 @@
 # A09 hardware test commands, proof boundary and blockers (2026-10-16)
 
+> **Reading note — 2026-10-22:** The 87-test result and no-GPU observations
+> below describe the 2026-10-16 execution container, not all development hosts.
+> See the [2026-10-21 actual-host update](../../support/hardware/DECISION.md#2026-10-21-implementation-update-actual-hosts-observed)
+> and its [read-only inventory](evidence/2026-10-21-development-host-inventory.json).
+> That inventory does not qualify GPU compute, DMA isolation or quiescence,
+> reset recovery, or an Asterinas VMM. The historical text below is retained.
+
 The authorized tool environment is a Linux execution container, NOT the user's physical server. All inventory is read-only. The CUDA probe changes no drivers/firmware/BIOS, performs no VFIO binding, reset, power/thermal tuning or production intervention.
 
 ## Safe commands, CPU/inventory only
