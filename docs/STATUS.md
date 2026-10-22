@@ -1,5 +1,21 @@
 # 当前状态
 
+## 2026-10-22 接续：ext2 初始只读 atime 修复已完成原生正反验证
+
+[#243](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/243) 的固定源码为 `9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd` / tree `eeae4dc1ef546d408b55c98310e99e3156f08207`，基于已合入的 #240。修复仅阻止初始文件系统级 RDONLY 下 buffered/direct/readdir 自动 atime 置脏；显式时间修改和 sync/writeback 路径保持原行为。源码已发布，本地原生门禁完成；本节记录时远端 CI 仍有排队，不能记为已合并。
+
+| 实际执行 | 结果与范围 |
+| --- | --- |
+| 完整 aster-core | **274/274**，0 failed/filtered/soft skip，36 个 required names，QEMU33。五个新增测试使用接受并转发写入的 CountingDisk：初始 RO 三路径零 Write BIO，RW 自动 atime 和已有脏数据排空两类正控。 |
+| 独立 permission SMP | 两个 CPU 上实际 **3/3**，277 declared / 274 filtered；不是277项全部执行。 |
+| ordinary QueryAbi | 18 个原标记各一次，QEMU33，7,630 个源码输入未变；内核 ELF `8bda1c48…`。 |
+| 旧 atime 行为负控 | 仅恢复原生产 helper 的无条件 atime，完整274项执行，**271 pass / 恰好3个RO回归fail**，QEMU65、原 gate1；所有其他源码保持，之后修复版 HEAD/tree 与完整快照恢复。负控失败发生在 atime/dirty 断言，不声称已观察到三次负控 Write BIO。 |
+| 同一原 Agentd ELF 复跑 | 原 `6d6097d…` 的 ELF、冻结 manifest 与运行时依赖未变，只替换已审查的内核 pin；仍精确拒绝缺失 fleet 配置，child1/QEMU33。完整7,298,680字节serial中 Write BIO、block/writeback错误和IoError均为0，原sync/reboot各一次。 |
+
+[完整技术、开发与原始证据](../results/integration/2026-10-22-ext2-rdonly/README.md) 包含99个原始成员的逐字归档、源码身份、独立复核与复现步骤。该新源码和原 Hepta 的 source profile 重新verify成功；它只核对来源，七项生产装配输入仍未配置。
+
+这次已关闭首跑中观察到的初始只读自动 atime 缺陷。完整 VFS 写权限、bind/remount、NOATIME 与 virtio RO 协商仍须独立实现和验收；没有把局部修复记作全文件系统只读保证。原 Agentd 仍仅进入 Rust main 并在配置检查退出，未启动原 daemon/owner，G2 和 F 的完成条件不变。下节 #240 的旧内核计数、首次 ABI 写回错误和更早记录保留其原版本与时点。
+
 ## 2026-10-22：组合七项 CI 通过并合入，原 Agentd 已完成普通 ABI 首跑
 
 [#240](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/240) 的 G0、A01、A06、A07 ARM64、G1-c、G1-d、A10 全部成功，随后按普通 merge 合入 `f85ccae8445f8d753572d41411d98ee28d253af5` / tree `bad0a3ee66859cfcf7bf1185e4f10d0f953239ad`。实际组合执行的 OS 为 `85d394f99c73ad3194d57c876712ac01b59d90ca` / tree `7389c0a3f982983087953f75de7042fc058be088`，Hepta 为 `6d6097da843f5831dfaf9cee3530da512d072a15` / tree `f722fbe5f24275c324089be720559a40901105f3`；A07 ARM64 workflow 另固定历史 Hepta `f8c9419`，不授予新 Hepta 组合 ARM64 资格。合并保留并行主干的21份历史证据与一份 ExFAT host 测试增量；运行源码没有额外变化。新文档/证据提交不冒充上述实际执行身份。

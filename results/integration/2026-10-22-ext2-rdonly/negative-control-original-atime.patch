@@ -1,0 +1,29 @@
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs
+index ed811244d13266a950466de407b469b51bd18846..184bd1184cb1993942334096ab839e3d6793a6cb 100644
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs
+@@ -16,7 +16,6 @@ use crate::{
+         ext2::{inode::Inode, prelude::*, utils},
+         file::InodeMode,
+         vfs::{
+-            file_system::FsFlags,
+             inode::Metadata,
+             permission_attrs::{PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy},
+             xattr::{XattrName, XattrNamespace, XattrSetFlags},
+@@ -173,16 +172,6 @@ impl Inode {
+ 
+     /// Updates the access time after a read on a writable filesystem.
+     pub(super) fn update_atime_after_read(&self) {
+-        let Some(fs) = self.fs.upgrade() else {
+-            return;
+-        };
+-        // This is the filesystem-wide policy for an initially read-only
+-        // mount. It does not serialize concurrent read-only remounts or
+-        // decide the atime policy of a particular bind mount.
+-        if fs.fs_flags().contains(FsFlags::RDONLY) {
+-            return;
+-        }
+-
+         self.inner.write().set_atime(utils::now());
+     }
+ 

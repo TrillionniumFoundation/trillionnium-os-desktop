@@ -1,0 +1,65 @@
+{
+  "argv": [
+    "python3",
+    "-I",
+    "-B",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/agentd-abi-ext2-fixed-runner-v1/run_agentd_abi.py",
+    "--execute",
+    "--input-manifest",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/agentd-abi-preflight-input-v2/manifest.json",
+    "--expected-input-manifest-sha256",
+    "999e632d8e82cc71b58436a5c0a63b50312cf83ccfcfdb35b28b947b0eb12728",
+    "--kernel",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/ext2-rdonly-qualification-v4/ordinary-queryabi/product-kernel.elf",
+    "--expected-kernel-sha256",
+    "8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09",
+    "--initramfs",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-combination/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+    "--qemu",
+    "/usr/bin/qemu-system-x86_64",
+    "--expected-qemu-sha256",
+    "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "--cc",
+    "/usr/bin/gcc-13",
+    "--output",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/agentd-ordinary-abi-ext2-fixed-v1"
+  ],
+  "logic_unchanged": true,
+  "new_inputs": {
+    "agentd_abi_probe.c": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427",
+    "cpio_codec.py": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+    "run_agentd_abi.py": "4e119a169f1daa20a4dc45113893301bef35072eea7da1158c6440357e71b61a",
+    "source-review.json": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
+  },
+  "old_inputs": {
+    "agentd_abi_probe.c": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427",
+    "cpio_codec.py": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+    "run_agentd_abi.py": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c",
+    "source-review.json": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
+  },
+  "old_kernel_unchanged": true,
+  "old_run_unchanged": true,
+  "ordinary_kernel_sha256": "8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09",
+  "replacements": [
+    {
+      "after": "KERNEL_SHA = \"8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09\"",
+      "before": "KERNEL_SHA = \"8170402aaa7408eb2c4ab1ade2cd1d9641ef03ccbd37631aaec775528df2ede7\""
+    },
+    {
+      "after": "KERNEL_HEAD = \"9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd\"",
+      "before": "KERNEL_HEAD = \"85d394f99c73ad3194d57c876712ac01b59d90ca\""
+    },
+    {
+      "after": "KERNEL_TREE = \"eeae4dc1ef546d408b55c98310e99e3156f08207\"",
+      "before": "KERNEL_TREE = \"7389c0a3f982983087953f75de7042fc058be088\""
+    },
+    {
+      "after": "ordinary kernel is not the reviewed 9076f1a artifact",
+      "before": "ordinary kernel is not the reviewed 85d artifact"
+    }
+  ],
+  "schema": "hepta.agentd-reviewed-kernel-pin-change.v1",
+  "source_head": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+  "source_tree": "eeae4dc1ef546d408b55c98310e99e3156f08207",
+  "started_unix": 1792645799.7791278
+}

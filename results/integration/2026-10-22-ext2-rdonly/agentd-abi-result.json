@@ -1,0 +1,80 @@
+{
+  "binary": {
+    "bytes": 484463504,
+    "path": "agentd.elf",
+    "profile": "dev; debug=0; incremental=0; Rust 1.95.0",
+    "sha256": "228d2e07583d0d27cf5750a6ba169254380fb4d49f1fdc21adcc04001fc3252f"
+  },
+  "build_source": {
+    "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+    "tree": "f722fbe5f24275c324089be720559a40901105f3"
+  },
+  "candidate_input_sha256": {
+    "agentd_abi_probe.c": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427",
+    "cpio_codec.py": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+    "source-review.json": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
+  },
+  "daemon_started": false,
+  "earliest_config_rejection_verified": true,
+  "evidence_directory_created": true,
+  "executed": true,
+  "execution_attempted": true,
+  "expected_child_exit": 1,
+  "expected_child_stderr": "Error: invalid agentd configuration: HEPTA_FLEET_ROOT is required\n",
+  "f_completed": false,
+  "finished_at_utc": "2026-10-22T05:10:42.108463+00:00",
+  "frozen_input_manifest_sha256": "999e632d8e82cc71b58436a5c0a63b50312cf83ccfcfdb35b28b947b0eb12728",
+  "g2_completed": false,
+  "initramfs_sha256": "9aa8de1031c5baad4e3ba074fae9f752d233181915d2e1150d40ea9e7366914d",
+  "input_source_attestation": "caller-retained frozen manifest; reviewed startup blobs checked",
+  "inputs_unchanged": true,
+  "kernel_sha256": "8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09",
+  "nonce": "9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7",
+  "observed_child": {
+    "stderr": "Error: invalid agentd configuration: HEPTA_FLEET_ROOT is required\n",
+    "stdout": "",
+    "termination": "kind=exit code=1"
+  },
+  "ordinary_os_source": {
+    "head": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+    "tree": "eeae4dc1ef546d408b55c98310e99e3156f08207"
+  },
+  "original_owner_runtime": false,
+  "passed": true,
+  "payload_sha256": "237c321730d327262db3b6a6b400a9e76b26343c2023ac6c897a05d0e2176994",
+  "probe_sha256": "628c6dbbbcc85fdc563600fad280a2698b1b5799046a470b2cebbc06cbb8878e",
+  "production": false,
+  "published_source": {
+    "branch": "agents/20261022/hos2-read-usage",
+    "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+    "tree": "f722fbe5f24275c324089be720559a40901105f3"
+  },
+  "qemu_exit": 33,
+  "qemu_started_at_utc": "2026-10-22T05:10:10.532081+00:00",
+  "runner_sha256": "4e119a169f1daa20a4dc45113893301bef35072eea7da1158c6440357e71b61a",
+  "runtime_inputs_sha256": "8f6801a78c66009b4a34cb4add9250ef5f42b65e3ab84533daabbfb1a58866d5",
+  "schema": "hepta.agentd-ordinary-abi-preflight.v1",
+  "scope": "original ELF loader -> Rust main -> expected missing HEPTA_FLEET_ROOT rejection",
+  "serial_excessive": false,
+  "serial_sha256": "7b9f6ecea33141173f2e4dc683ac131bb85e2ec34ea0bb43c011188b34a61399",
+  "started_at_utc": "2026-10-22T05:09:59.847709+00:00",
+  "timed_out": false,
+  "tool_identities": {
+    "cc": {
+      "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+    },
+    "mkfs": {
+      "path": "/usr/sbin/mke2fs",
+      "sha256": "07cd24ce58a410cc9cee93c55ae5ac95986df016c5907dc7a49b55389bd41ed2"
+    },
+    "qemu": {
+      "path": "/usr/bin/qemu-system-x86_64",
+      "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    },
+    "readelf": {
+      "path": "/usr/bin/x86_64-linux-gnu-readelf",
+      "sha256": "64c58e15274bbbb5153f31078e455e9e77ee5f51489e709bba5bb788ce9df2b0"
+    }
+  }
+}

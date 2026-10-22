@@ -1,0 +1,648 @@
+{
+  "abi": {
+    "absent_from_reviewed_abi_directory": [
+      "agentd.elf",
+      "kernel.elf",
+      "payload.raw",
+      "initramfs.cpio.gz",
+      "bios.bin",
+      "agentd-abi-probe"
+    ],
+    "activity": {
+      "extracted_files_modified": false,
+      "host_agentd_execution": false,
+      "network_used": false,
+      "new_native_execution": false,
+      "product_tests_rerun": false,
+      "runtime_tool_used": false
+    },
+    "binding_checks": {
+      "actual_companion_files_match_result": true,
+      "actual_qemu_pin_agrees_with_result": true,
+      "actual_result_hash_matches_shutdown_record": true,
+      "actual_runner_matches_result": true,
+      "actual_runtime_files_match_pin_review": true,
+      "actual_serial_bytes_and_lines_match_shutdown": true,
+      "actual_serial_hash_matches_result_and_shutdown": true,
+      "all_production_daemon_owner_g2_f_boundaries_false": true,
+      "all_reviewed_extracted_bytes_unchanged": true,
+      "child_empty_environment_and_exact_argv": true,
+      "command_log_json_equals_result_json": true,
+      "compiler_requests_static_launcher": true,
+      "complete_serial_has_sync_then_flush_then_reboot": true,
+      "formatter_uses_none_filetype": true,
+      "guest_has_no_recorded_host_filesystem_options": true,
+      "guest_network_disabled": true,
+      "guest_tcg_q35_one_cpu_2048m": true,
+      "inverse_four_pin_changes_reconstruct_old_runner_hash": true,
+      "invocation_nonce_matches_result": true,
+      "invocation_payload_hash_matches_result": true,
+      "kernel_pin_agrees_across_producer_records": true,
+      "manifest_build_and_published_trees_match": true,
+      "no_write_bio_or_io_error_markers": true,
+      "oracle_replay_accepts_recorded_guest_exit_and_timeout": true,
+      "original_agentd_sha_matches_shutdown": true,
+      "original_manifest_hash_agrees_across_producer_records": true,
+      "original_manifest_sidecar_hash_matches_input_pin": true,
+      "original_manifest_sidecar_value_matches_snapshot": true,
+      "parsed_child_equals_result_record": true,
+      "payload_is_read_only_in_recorded_qemu_argv": true,
+      "recorded_diff_equals_exact_four_replacements": true,
+      "retained_manifest_binary_equals_result": true,
+      "retained_manifest_build_source_equals_result": true,
+      "retained_manifest_is_exact_runner_save_serialization": true,
+      "retained_manifest_published_source_equals_result": true,
+      "runtime_json_hash_matches_result_and_shutdown": true,
+      "serial_within_original_runner_limit": true,
+      "shutdown_marker_counts_match_retained_record": true,
+      "source_head_tree_agree_across_producer_records": true,
+      "source_review_expected_rejection_matches_oracle": true,
+      "startup_source_record_identity_matches": true,
+      "three_companion_files_equal_old_pin_identities": true
+    },
+    "created_at_utc": "2026-10-22T05:55:59.043022+00:00",
+    "failed_checks": [],
+    "files": {
+      "abi-runner/agentd_abi_probe.c": {
+        "bytes": 2718,
+        "sha256": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427"
+      },
+      "abi-runner/cpio_codec.py": {
+        "bytes": 7644,
+        "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+      },
+      "abi-runner/pin-review.json": {
+        "bytes": 3047,
+        "sha256": "012fd1f5fd2e1fca8b0252b83afbd04c2aae2eb11ba6c46692efcff6ab1eaf71"
+      },
+      "abi-runner/reviewed-kernel-pin-only.diff": {
+        "bytes": 1327,
+        "sha256": "cf1c1c6788e676160b5210a48252ca9c5403be51ab08cc5f3bf48521023e18e0"
+      },
+      "abi-runner/run_agentd_abi.py": {
+        "bytes": 22181,
+        "sha256": "4e119a169f1daa20a4dc45113893301bef35072eea7da1158c6440357e71b61a"
+      },
+      "abi-runner/source-review.json": {
+        "bytes": 2741,
+        "sha256": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
+      },
+      "abi/agentd-symbol-versions.log": {
+        "bytes": 9475,
+        "sha256": "214a565f1a2ef6f8c23c7829a1315ffa64a3794173e522e1f3eb6dddf1d7d9ef"
+      },
+      "abi/command.log": {
+        "bytes": 3251,
+        "sha256": "877a052ad212216954f728cb0ef496a9eeefde139ac593521c7b34a30f0be14c"
+      },
+      "abi/compile-guest-probe.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "abi/format-payload.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "abi/frozen-input-manifest.json": {
+        "bytes": 2074,
+        "sha256": "0b464e10efeb8ac87a3bfb2697c9e4a854aae5def01935f867be13c03fbc6aeb"
+      },
+      "abi/invocation.json": {
+        "bytes": 2253,
+        "sha256": "ef990adca70320a0c9cc19048b5a08a289fb27cba2182c9d16a7b2ab85448203"
+      },
+      "abi/read-only-shutdown-check.json": {
+        "bytes": 1509,
+        "sha256": "18666158851fe4274af2cb0de34ade22cb13c910c70969d7264ec4d5cc89fabe"
+      },
+      "abi/result.json": {
+        "bytes": 3513,
+        "sha256": "33c74375378fc6fe7e9fec4f542d17cc2968f016f6cfb1aabd2015987e6c0ec6"
+      },
+      "abi/runtime-inputs.json": {
+        "bytes": 9297,
+        "sha256": "8f6801a78c66009b4a34cb4add9250ef5f42b65e3ab84533daabbfb1a58866d5"
+      },
+      "abi/serial.log": {
+        "bytes": 7298680,
+        "sha256": "7b9f6ecea33141173f2e4dc683ac131bb85e2ec34ea0bb43c011188b34a61399"
+      }
+    },
+    "frozen_manifest_serialization_boundary": {
+      "byte_hashes_equal": false,
+      "explanation": "The 99-member packet retains the runner-reserialized JSON snapshot (0b464e10…). A later exact original-input sidecar was independently read and hashes to the producer pin 999e632d…; both parsed values are equal. Both originals are retained and the archive was not replaced. Large binaries remain producer-retained.",
+      "original_input_manifest_bytes_independently_rehashed": true,
+      "producer_original_input_manifest_sha256": "999e632d8e82cc71b58436a5c0a63b50312cf83ccfcfdb35b28b947b0eb12728",
+      "retained_snapshot_sha256": "0b464e10efeb8ac87a3bfb2697c9e4a854aae5def01935f867be13c03fbc6aeb",
+      "sidecar_verification": {
+        "binary_artifact_bytes_still_producer_only": true,
+        "bytes": 2074,
+        "checked_at_utc": "2026-10-22T05:59:49.864377+00:00",
+        "original_input_byte_hash_matches_producer_pin": true,
+        "parsed_value_equals_archived_snapshot": true,
+        "path": "/workspace/scratch/b2da20752f15/work/ext2-evidence-delivery/results/integration/2026-10-22-ext2-rdonly/agentd-original-input-manifest.json",
+        "sha256": "999e632d8e82cc71b58436a5c0a63b50312cf83ccfcfdb35b28b947b0eb12728",
+        "snapshot_bytes_unchanged": true,
+        "snapshot_sha256": "0b464e10efeb8ac87a3bfb2697c9e4a854aae5def01935f867be13c03fbc6aeb"
+      }
+    },
+    "limits": [
+      "The archived result and command.log supply QEMU exit 33 and timed_out=false to the exact oracle; this replay does not re-observe a live process exit.",
+      "Large binary, payload, injected initramfs, BIOS, compiler/QEMU executables and shared-library bytes were not rehashed in this review; their recorded digests and source identities were cross-checked.",
+      "The retained startup source table agrees with source-review.json but does not include the private source bytes or authenticate a complete source-to-binary build.",
+      "The kernel's whole serial has no observed Write/IoError markers and retains SYNC/Flush/REBOOT; this does not qualify all VFS write denial, explicit metadata mutation, NOATIME, virtio RO negotiation, concurrent remount, crash durability or physical hardware behavior.",
+      "Agentd stopped at the expected missing HEPTA_FLEET_ROOT check. Daemon startup, original writer/outbox runtime, async runtime, native HOS2 G2, UI, F completion and production authority are not qualified.",
+      "The dynamic ET_DYN dev Agentd and its PT_LOAD sum are neither the small static trusted G1-d image nor a measured peak-RSS or release-build limit.",
+      "The exact original frozen manifest was subsequently supplied as a sidecar and independently rehashed by /root/release_profile; the original 99-member archive remains unchanged. This does not rehash any referenced binary."
+    ],
+    "replayed_oracle": {
+      "accepted": true,
+      "exact_abi_markers": [
+        {
+          "line": 838,
+          "text": "HEPTA_ABI_BEGIN nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7"
+        },
+        {
+          "line": 21529,
+          "text": "HEPTA_ABI_STDOUT nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 hex="
+        },
+        {
+          "line": 21535,
+          "text": "HEPTA_ABI_STDERR nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 hex=4572726f723a20696e76616c6964206167656e746420636f6e66696775726174696f6e3a2048455054415f464c4545545f524f4f542069732072657175697265640a"
+        },
+        {
+          "line": 21537,
+          "text": "HEPTA_ABI_CHILD nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 kind=exit code=1"
+        },
+        {
+          "line": 21542,
+          "text": "HEPTA_ABI_HARNESS nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 exit=0"
+        }
+      ],
+      "new_qemu_exit_observed_by_reviewer": false,
+      "nonce": "9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7",
+      "observed_child": {
+        "stderr": "Error: invalid agentd configuration: HEPTA_FLEET_ROOT is required\n",
+        "stdout": "",
+        "termination": "kind=exit code=1"
+      },
+      "original_boot_marker_lines": {
+        "TRILLIONNIUM_A01_BOOT_OK": [
+          21544
+        ],
+        "TRILLIONNIUM_A01_INIT_BEGIN": [
+          134
+        ]
+      },
+      "producer_reported_qemu_exit_supplied_to_oracle": 33,
+      "producer_reported_timeout_supplied_to_oracle": false
+    },
+    "result_boundaries": {
+      "daemon_started": false,
+      "f_completed": false,
+      "g2_completed": false,
+      "original_owner_runtime": false,
+      "production": false
+    },
+    "review_command": {
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "-"
+      ],
+      "calls": [
+        "oracle(raw_serial, result['qemu_exit'], result['timed_out'], result['nonce'])",
+        "child_observation(raw_serial, result['nonce'])"
+      ],
+      "method": "Parse retained runner AST, compile only original oracle and child_observation FunctionDefs, read serial bytes, invoke those two pure functions. No module import, main, execute, run_qemu, frozen_input, compiler, or payload builder invocation.",
+      "pure_function_source_sha256": {
+        "child_observation": "1b33570fd5a5d68efd96df6c32bb0203b0efdfa6711baac802a79f54d43f7f9c",
+        "oracle": "f0e8ef1b362ac5f2e388e23b01f76be7b3365ce5dc332d277c14910c8db2973e"
+      },
+      "stdin_review_body_sha256": "c70e28d4849c3e5e262872dd72aa7cb5c19ce6671ac608ffa8da0902b5460531"
+    },
+    "runner_delta": {
+      "companion_source_files_unchanged": [
+        "agentd_abi_probe.c",
+        "cpio_codec.py",
+        "source-review.json"
+      ],
+      "new_sha256": "4e119a169f1daa20a4dc45113893301bef35072eea7da1158c6440357e71b61a",
+      "old_sha256_reconstructed_in_memory": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c",
+      "replacement_count": 4,
+      "replacements": [
+        {
+          "after": "KERNEL_SHA = \"8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09\"",
+          "after_occurrences": 1,
+          "before": "KERNEL_SHA = \"8170402aaa7408eb2c4ab1ade2cd1d9641ef03ccbd37631aaec775528df2ede7\""
+        },
+        {
+          "after": "KERNEL_HEAD = \"9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd\"",
+          "after_occurrences": 1,
+          "before": "KERNEL_HEAD = \"85d394f99c73ad3194d57c876712ac01b59d90ca\""
+        },
+        {
+          "after": "KERNEL_TREE = \"eeae4dc1ef546d408b55c98310e99e3156f08207\"",
+          "after_occurrences": 1,
+          "before": "KERNEL_TREE = \"7389c0a3f982983087953f75de7042fc058be088\""
+        },
+        {
+          "after": "ordinary kernel is not the reviewed 9076f1a artifact",
+          "after_occurrences": 1,
+          "before": "ordinary kernel is not the reviewed 85d artifact"
+        }
+      ]
+    },
+    "schema": "ext2.native-abi-independent-review.v1",
+    "scope": "Independent replay of retained ordinary-Agentd ABI oracle and whole-serial shutdown observations; no new guest or binary execution.",
+    "source_and_artifact_bindings": {
+      "ordinary_kernel_sha256_from_agreeing_records": "8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09",
+      "ordinary_os_source": {
+        "head": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+        "tree": "eeae4dc1ef546d408b55c98310e99e3156f08207"
+      },
+      "original_agentd": {
+        "bytes": 484463504,
+        "path": "agentd.elf",
+        "profile": "dev; debug=0; incremental=0; Rust 1.95.0",
+        "sha256": "228d2e07583d0d27cf5750a6ba169254380fb4d49f1fdc21adcc04001fc3252f"
+      },
+      "original_agentd_source": {
+        "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+        "tree": "f722fbe5f24275c324089be720559a40901105f3"
+      },
+      "payload_sha256_from_agreeing_records": "237c321730d327262db3b6a6b400a9e76b26343c2023ac6c897a05d0e2176994",
+      "payload_unchanged_is_producer_observation": true,
+      "runtime_closure_json_sha256": "8f6801a78c66009b4a34cb4add9250ef5f42b65e3ab84533daabbfb1a58866d5",
+      "runtime_elf_summary": {
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "library_count": 6,
+        "load_memory_bytes": 331289544,
+        "machine": 62,
+        "type": 3
+      },
+      "runtime_enforced_rust_startup_record_count": 5,
+      "startup_raw_source_bytes_present_here": false,
+      "startup_source_records_checked": 6
+    },
+    "status": "passed_with_explicit_retained_evidence_limits",
+    "whole_serial": {
+      "bytes": 7298680,
+      "counting_scope": "Whole retained guest serial after removing ANSI escapes; Write counts are observable virtio BioRequest and SubmittedBio log markers, not a separate physical-device trace.",
+      "flush_between_sync_and_reboot": [
+        {
+          "line": 21567,
+          "text": "[    18.160] INFO  : virtio: Handle Request: BioRequest { type_: Flush, sid_range: BlockId(0)..BlockId(0), num_segments: 0, bios: [SubmittedBio { metadata: BioMetadata { type: Flush, sid_range: BlockId(0)..BlockId(0), status: Submit }, sid_offset: 0, segments: [] }] }"
+        }
+      ],
+      "lines": 21569,
+      "marker_counts": {
+        "any_io_error": 0,
+        "block_write_error": 0,
+        "error_log_lines": 0,
+        "panic_case_insensitive": 0,
+        "reboot": 1,
+        "submitted_write_bio": 0,
+        "sync": 1,
+        "warning_log_lines": 28,
+        "write_bio": 0,
+        "writeback_error": 0
+      },
+      "other_warning_lines": [
+        {
+          "line": 24,
+          "text": "WARN: IOMMU initialization error: NoIommu"
+        },
+        {
+          "line": 29,
+          "text": "WARN: framebuffer: Framebuffer not found"
+        },
+        {
+          "line": 97,
+          "text": "[     0.421] WARN  : simpledrm: Failed to init: boot framebuffer is unavailable"
+        }
+      ],
+      "sha256": "7b9f6ecea33141173f2e4dc683ac131bb85e2ec34ea0bb43c011188b34a61399",
+      "sys_reboot": [
+        {
+          "line": 21569,
+          "text": "[    18.163] INFO  : [pid=1][tid=1][id=169][SYS_REBOOT]"
+        }
+      ],
+      "sys_sync": [
+        {
+          "line": 21566,
+          "text": "[    18.153] INFO  : [pid=1][tid=1][id=162][SYS_SYNC]"
+        }
+      ],
+      "syscall_334": {
+        "implemented_by_this_fix": false,
+        "literal_observed_warning_after_ansi_removal": "Unimplemented syscall number: 334",
+        "name": "rseq",
+        "observation": "The recorded process reached the expected early configuration refusal despite these warnings; this establishes fallback only for this run."
+      },
+      "unimplemented_syscall_counts": {
+        "334": 25
+      },
+      "virtio_handle_request_counts": {
+        "Flush": 1,
+        "Read": 10313,
+        "Write": 0
+      }
+    }
+  },
+  "activity": {
+    "extracted_files_modified": false,
+    "network_used": false,
+    "new_native_tests": false,
+    "runtime_used": false,
+    "source_files_modified": false
+  },
+  "blocking_findings": [],
+  "core": {
+    "crate": "aster-core",
+    "declared": 274,
+    "exercised_passed_lower_bound": 274,
+    "failed": 0,
+    "filtered": 0,
+    "guest": "guest-001",
+    "kernel_sha256_recorded": "9b4e0bae271bdc1e84b142284afa01917bf5c808f8e033b87938e63f247fcb9c",
+    "observed_test_starts": 274,
+    "oracle_replayed": true,
+    "oracle_source_sha256": "e80fc3fe31b689938b742b46efec461dadd07421b2039a9d247d6911f96bb314",
+    "passed": 274,
+    "raw_qemu_exit": 33,
+    "required_core_tests": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+      "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_rechecks_alien_write_using_an_earlier_vmar_pin",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_does_not_turn_fork_into_a_shared_writable_alias",
+      "aster_core::process::process::image::tests::initial_observe_lease_includes_issue_and_excludes_expiry",
+      "aster_core::process::process::image::tests::initial_observe_lease_does_not_accept_a_pre_issue_clock_cut",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_rejects_a_replaced_real_cpu_owner",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_does_not_keep_a_deleted_resource_authorized",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_owner_lease_check_rejects_before_sampling",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_enforces_sub_microsecond_caps_on_the_original_owner",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_update_and_replay_preserve_consumption_and_positive_debt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_manager_revocation_preserves_recovery_and_saved_history",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_expiry_is_finite_single_use_and_replays_original_receipt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_never_infers_resume_from_zero_or_unowned_budget",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_first_close_cut_is_not_renewed_and_missing_clock_fences",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_refuses_expired_final_cut_and_preserves_accounting_fault",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_management_lease_edges_and_clock_absence_do_not_change_budget",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_ceiling_and_revision_rejections_are_immutable_without_effect",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_accounting_fault_cannot_publish_a_successful_budget_receipt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_controlled_leaf_refuses_linux_configuration_and_membership_aliases",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_bounded_history_retirement_never_reexecutes_an_old_cpu_delivery",
+      "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_never_invent_setid_or_sticky",
+      "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_keep_file_directory_masks_and_readonly",
+      "aster_core::fs::fs_impls::ext2::fs::test::inode_sync_preserves_allocation_and_data_across_remount",
+      "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_rechecks_an_earlier_snapshot_under_the_same_owner",
+      "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_retries_all_dirty_metadata_after_write_failure",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data"
+    ],
+    "required_permission_tests": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+      "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error"
+    ],
+    "retained_green_kernel_identity_agrees": true,
+    "serial_sha256": "f665e28b02a7f3aa4e89bb445143a3c109f080ea031b5771c44d07151d1449bf",
+    "soft_skip_reasons": [],
+    "soft_skipped": 0
+  },
+  "created_at_utc": "2026-10-22T05:59:06.654938+00:00",
+  "negative": {
+    "candidate_restored": true,
+    "declared": 274,
+    "failed": 3,
+    "failed_names": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes"
+    ],
+    "failure_site": "readonly_atime_tests.rs:130:5; all three failed at atime equality before subsequent dirty/BIO assertions",
+    "filtered": 0,
+    "kernel_sha256_recorded": "efc151fbb04bf41e74258f88f7475cc016cb1a04ff3888f02470400b29622f54",
+    "names_sha256": "937c96fef4d6faf1d0205bc00bb531f16b8eb93661ac866ac4c7968aa3448a4c",
+    "negative_write_bio_count_claimed": false,
+    "original_gate_exit": 1,
+    "passed": 271,
+    "raw_qemu_exit": 65,
+    "same_all_274_test_names_and_order": true,
+    "same_recorded_osdk_command_cwd_lock_and_qemu_binary": true,
+    "serial_sha256": "a9698a5b0bcb01675eab162464631fad6a0837a09815a5afae6b0da2bdd57731",
+    "soft_skipped": 0,
+    "two_new_positive_names_passed": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data"
+    ]
+  },
+  "ordinary": {
+    "exact_one_markers": true,
+    "kernel_sha256_recorded": "8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09",
+    "marker_counts": {
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_EXEC_EFAULT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_ENOENT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "HEPTA_THREAD_SESSION_SHARED": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "no_guest_failure": true,
+    "non_claims": {
+      "hepta_durability": false,
+      "native_grants": false,
+      "native_resource_effects": false,
+      "production_ready": false,
+      "smp_qualification": false
+    },
+    "ordered_root_completion": true,
+    "passed": true,
+    "pure_oracle_replayed": true,
+    "raw_qemu_exit": 33,
+    "raw_serial_sha256": "b71f7a24971b9ce7bc03a0c27ef07dc222140527de7ddc7c6b6adf4fdfa00dee",
+    "raw_serial_size": 86036,
+    "recorded_product_configuration": "ActionChoice::Run; no --cfg ktest",
+    "same_kernel_as_agentd_abi": true
+  },
+  "original_abi_detail_json_sha256_before_sidecar_supplement": "075a1310b2810a75f9b05bd50f7ff4052219860c3d718fa721136b81c04ce5a3",
+  "original_input_manifest_sidecar": {
+    "binary_artifact_bytes_still_producer_only": true,
+    "bytes": 2074,
+    "checked_at_utc": "2026-10-22T05:59:49.864377+00:00",
+    "original_input_byte_hash_matches_producer_pin": true,
+    "parsed_value_equals_archived_snapshot": true,
+    "path": "/workspace/scratch/b2da20752f15/work/ext2-evidence-delivery/results/integration/2026-10-22-ext2-rdonly/agentd-original-input-manifest.json",
+    "sha256": "999e632d8e82cc71b58436a5c0a63b50312cf83ccfcfdb35b28b947b0eb12728",
+    "snapshot_bytes_unchanged": true,
+    "snapshot_sha256": "0b464e10efeb8ac87a3bfb2697c9e4a854aae5def01935f867be13c03fbc6aeb"
+  },
+  "publication": {
+    "branch": "refs/heads/agents/20261022/ext2-readonly-atime",
+    "creation_time_source_identity_published_false_retained": true,
+    "current_github_state_queried": false,
+    "later_source_publication_and_push_receipt_matches_same_head_tree": true,
+    "parent_reported_evidence_pr_base": "PR #242 head 182dd",
+    "parent_reported_source_pr": 243,
+    "parent_reported_source_pr_not_merged": true,
+    "production_activation_inferred": false
+  },
+  "remaining_limits": [
+    "Native ELF, Agentd ELF, runtime libraries, BIOS/QEMU and payload bytes are deliberately producer-retained and were not rehashed locally.",
+    "SMP full artifact-reading checker and full two-clean-repository source verifier were not rerun after transport.",
+    "rseq syscall 334 remains unimplemented (25 warnings); NoIommu/framebuffer/simpledrm warnings remain.",
+    "No claims for full VFS/virtio RO, concurrent remount linearization, NOATIME, explicit mutation denial, crash durability, physical hardware, native daemon, production authority, G2 or F completion."
+  ],
+  "schema": "ext2.native-execution-independent-review.v1",
+  "scope": "Read existing retained evidence and replay pure host oracles only. No new native execution, Runtime, host Agentd, network lookup, source edits or publication.",
+  "smp": {
+    "declared": 277,
+    "failed": 0,
+    "filtered": 274,
+    "full_artifact_reader_replayed": false,
+    "kernel_sha256_recorded": "764388d690ae6fea954f6252858ad93f7302bc8f2367653e7debaa539664ff7b",
+    "observations": {
+      "clear_setid_alias": {
+        "a_rc": "0",
+        "alias_mode": "600",
+        "alias_uid": "1000",
+        "b_rc": "0",
+        "case": "clear_setid_alias",
+        "cpu_a": "0",
+        "cpu_b": "1",
+        "entered": "1",
+        "lock_busy": "true",
+        "mode": "600",
+        "uid": "1000"
+      },
+      "memfd_seal": {
+        "a_rc": "0",
+        "b_rc": "0",
+        "case": "memfd_seal",
+        "cpu_a": "0",
+        "cpu_b": "1",
+        "entered": "1",
+        "lock_busy": "true",
+        "mode": "777",
+        "seal_exec": "true",
+        "sealed_mode": "777"
+      },
+      "owner_alias": {
+        "a_rc": "0",
+        "alias_mode": "755",
+        "alias_uid": "1002",
+        "b_rc": "0",
+        "case": "owner_alias",
+        "cpu_a": "0",
+        "cpu_b": "1",
+        "entered": "1",
+        "lock_busy": "true",
+        "mode": "755",
+        "uid": "1002"
+      }
+    },
+    "passed": 3,
+    "raw_qemu_exit": 33,
+    "reason": "ELF/BIOS/QEMU binaries are producer-retained; only pure parser and retained metadata were checked without fabricating local paths.",
+    "recorded_fixed_two_cpu_profile_and_arguments_checked": true,
+    "serial_parser_replayed": true,
+    "serial_sha256": "a6cf546150e0840e93c23427a23e06020f5a8c36daaec72a1864a60871936731",
+    "tests": {
+      "aster_core::fs::fs_impls::ramfs::fs::permission_smp_tests::clear_setid_alias::permission_attr_smp": "ok",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_smp_tests::owner_alias::permission_attr_smp": "ok",
+      "aster_core::fs::fs_impls::ramfs::memfd::permission_smp_tests::permission_attr_smp": "ok"
+    }
+  },
+  "source": {
+    "all_source_bytes_present": false,
+    "five_ktests_and_sync_unchanged": true,
+    "head": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+    "native_applied_patch_sha256": "13d5185834f968f621ae4639b2e6109e16ebd069a6604e44c53a3c0a136443f6",
+    "negative_before_after_and_archive_file_snapshots_equal": true,
+    "negative_head": "76cb23695ea5d03c42bce64e9149ead8c09d8d31",
+    "negative_only_changed_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs",
+    "negative_patch_sha256": "a3d95ad68f9e8f69d7aec68c1346a4ab559d9051dc1b4195e8dee15b30a238de",
+    "negative_tree": "c5f7bdc874fddeb709b09ad545ae07e9b179d250",
+    "parent": "f85ccae8445f8d753572d41411d98ee28d253af5",
+    "positive_and_negative_git_trees_recomputed_from_recorded_modes_and_blob_ids": true,
+    "positive_before_after_and_ordinary_three_snapshots_equal": true,
+    "restored_head_tree": {
+      "head": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+      "tree": "eeae4dc1ef546d408b55c98310e99e3156f08207"
+    },
+    "snapshot_file_count": 7630,
+    "tree": "eeae4dc1ef546d408b55c98310e99e3156f08207"
+  },
+  "source_profile": {
+    "full_cross_repository_verification_locally_repeated": false,
+    "hepta": {
+      "commit": "6d6097da843f5831dfaf9cee3530da512d072a15",
+      "tree": "f722fbe5f24275c324089be720559a40901105f3"
+    },
+    "original_history_proof_from_producer": {
+      "commit": "995b6fb9ef73ada7c3348b01deb28940a2c4a2d1",
+      "method": "git merge-base --is-ancestor",
+      "shallow_repository": true
+    },
+    "original_manifest_bytes": 7372,
+    "original_manifest_path": "/workspace/scratch/b2da20752f15/work/os-release/support/release/profiles/2026-10-22-organ-source.json",
+    "original_manifest_sha256": "260139110c06921db6a156c1f072c55d0a3218f4b8da523b509adad4471e5667",
+    "os_goldens_locally_rehashed": 2,
+    "os_in_receipt": {
+      "commit": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+      "tree": "eeae4dc1ef546d408b55c98310e99e3156f08207"
+    },
+    "os_sources_locally_rehashed": 12,
+    "production": {
+      "activation": "disabled",
+      "effects_authorized": false,
+      "unconfigured": [
+        "production_grant_provider",
+        "protected_authority_clock",
+        "external_authority_frontier_store",
+        "trusted_issuer_keyring",
+        "revocation_head",
+        "recovered_writer_configuration",
+        "current_cut_authorization_state"
+      ]
+    },
+    "qualification": "source-only",
+    "reason": "Complete clean private Hepta checkout is not local. Producer receipt establishes original-owner ancestry and cross-repo fixture verification; this review binds the actual profile bytes and OS entries to that receipt.",
+    "receipt_matches_original_manifest": true,
+    "source_map_canonical_sha256": "83371d35577e75f554a5cfaad57f519971a085d528099fce06cb9d59b2a4de1c",
+    "source_map_digest_uses_tool_canonical_json_not_raw_formatting": true
+  },
+  "status": "passed_for_initial_ext2_readonly_atime_fix_with_explicit_limits",
+  "transport": {
+    "all_member_and_extracted_sizes_and_sha256_match": true,
+    "archive_bytes": 703464,
+    "archive_sha256": "6602d188cf1f236e6e60a84ce36184f8a9560ca766f95e61524702e9a16a5e2d",
+    "manifest_sha256": "9126a624e0567cf491408be53da5f9dccbc9e9226d843f4f6b50321c887f2e30",
+    "members": 99
+  }
+}

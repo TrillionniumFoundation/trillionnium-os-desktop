@@ -1,0 +1,31 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+  "candidate_restored": true,
+  "candidate_tree": "eeae4dc1ef546d408b55c98310e99e3156f08207",
+  "filtered": 0,
+  "finished_unix": 1792647870.1866627,
+  "green_kernel_sha256": "9b4e0bae271bdc1e84b142284afa01917bf5c808f8e033b87938e63f247fcb9c",
+  "green_serial_sha256": "f665e28b02a7f3aa4e89bb445143a3c109f080ea031b5771c44d07151d1449bf",
+  "negative_bio_write_count_claimed": false,
+  "negative_failed": [
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes"
+  ],
+  "negative_head": "76cb23695ea5d03c42bce64e9149ead8c09d8d31",
+  "negative_kernel_sha256": "efc151fbb04bf41e74258f88f7475cc016cb1a04ff3888f02470400b29622f54",
+  "negative_passed": 271,
+  "negative_serial_sha256": "a9698a5b0bcb01675eab162464631fad6a0837a09815a5afae6b0da2bdd57731",
+  "negative_tree": "c5f7bdc874fddeb709b09ad545ae07e9b179d250",
+  "only_changed_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs",
+  "original_gate_exit": 1,
+  "passed": true,
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "ext2.initial-rdonly-original-atime-negative.v1",
+  "soft_skipped": 0,
+  "source_snapshots_unchanged": true,
+  "total_core_tests": 274
+}
