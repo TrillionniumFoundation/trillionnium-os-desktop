@@ -1,0 +1,404 @@
+{
+  "schema": "os.a06.exfat.actual-log-verdicts.v1",
+  "head": "17afb302cd351b116830e61b97bb34da3daa0d2b",
+  "tree": "dfe5e6e544e5ad8c2f1076ea5ebb0dadc5f32d80",
+  "job_id": 119239167543,
+  "log_sha256": "b09455a260749aecb7e47b574187fd90a5b322161be8b3f5e2cb9491c2fb312e",
+  "verdicts": [
+    {
+      "line": 2272,
+      "line_sha256": "76616dc08bed26a76e5e8ccb5812603fbe244f5771085d16e2263de6cc3dc5ea",
+      "payload": {
+        "passed": true,
+        "verdict": {
+          "passed": true,
+          "guest": false,
+          "negative_control": false,
+          "observations": {
+            "fs": {
+              "type": 538032816,
+              "flags": 4128
+            },
+            "copy": {
+              "bytes": 804736,
+              "reread_equal": 1
+            },
+            "root_mode_stat": {
+              "name": "root_mode",
+              "rc": 0,
+              "errno": 0,
+              "mode": 511,
+              "type": 16384,
+              "uid": 0,
+              "gid": 0,
+              "ino": 1,
+              "dev": 1792,
+              "size": 32768
+            },
+            "root_mode_case": {
+              "name": "root_mode",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "file_mode_stat": {
+              "name": "file_mode",
+              "rc": 0,
+              "errno": 0,
+              "mode": 511,
+              "type": 32768,
+              "uid": 0,
+              "gid": 0,
+              "ino": 2,
+              "dev": 1792,
+              "size": 804736
+            },
+            "file_mode_case": {
+              "name": "file_mode",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "directory_mode_stat": {
+              "name": "directory_mode",
+              "rc": 0,
+              "errno": 0,
+              "mode": 511,
+              "type": 16384,
+              "uid": 0,
+              "gid": 0,
+              "ino": 3,
+              "dev": 1792,
+              "size": 32768
+            },
+            "directory_mode_case": {
+              "name": "directory_mode",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "exec_normal_before": {
+              "phase": "before",
+              "name": "exec_normal",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 0,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_normal_after": {
+              "phase": "after",
+              "name": "exec_normal",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 0,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_normal_case": {
+              "name": "exec_normal",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "exec_nnp_before": {
+              "phase": "before",
+              "name": "exec_nnp",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 1,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_nnp_after": {
+              "phase": "after",
+              "name": "exec_nnp",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 1,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_nnp_case": {
+              "name": "exec_nnp",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "complete": {
+              "total": 5,
+              "passed": 5,
+              "failed": 0
+            }
+          },
+          "failed_conditions": [],
+          "expected_cases": [
+            "root_mode",
+            "file_mode",
+            "directory_mode",
+            "exec_normal",
+            "exec_nnp"
+          ]
+        }
+      }
+    },
+    {
+      "line": 2287,
+      "line_sha256": "2b2c47d413df5c7842485b4f69a1b023f290e2d973a4f5882c93c0470505e9e7",
+      "payload": {
+        "passed": true,
+        "verdict": {
+          "passed": true,
+          "guest": true,
+          "negative_control": false,
+          "observations": {
+            "fs": {
+              "type": 43605,
+              "flags": 0
+            },
+            "copy": {
+              "bytes": 804736,
+              "reread_equal": 1
+            },
+            "root_mode_stat": {
+              "name": "root_mode",
+              "rc": 0,
+              "errno": 0,
+              "mode": 511,
+              "type": 16384,
+              "uid": 0,
+              "gid": 0,
+              "ino": 1,
+              "dev": 64768,
+              "size": 32768
+            },
+            "root_mode_case": {
+              "name": "root_mode",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "file_mode_stat": {
+              "name": "file_mode",
+              "rc": 0,
+              "errno": 0,
+              "mode": 511,
+              "type": 32768,
+              "uid": 0,
+              "gid": 0,
+              "ino": 2,
+              "dev": 64768,
+              "size": 804736
+            },
+            "file_mode_case": {
+              "name": "file_mode",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "directory_mode_stat": {
+              "name": "directory_mode",
+              "rc": 0,
+              "errno": 0,
+              "mode": 511,
+              "type": 16384,
+              "uid": 0,
+              "gid": 0,
+              "ino": 3,
+              "dev": 64768,
+              "size": 0
+            },
+            "directory_mode_case": {
+              "name": "directory_mode",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "exec_normal_before": {
+              "phase": "before",
+              "name": "exec_normal",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 0,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_normal_after": {
+              "phase": "after",
+              "name": "exec_normal",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 0,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_normal_case": {
+              "name": "exec_normal",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "exec_nnp_before": {
+              "phase": "before",
+              "name": "exec_nnp",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 1,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_nnp_after": {
+              "phase": "after",
+              "name": "exec_nnp",
+              "ruid": 65534,
+              "euid": 65534,
+              "suid": 65534,
+              "fsuid": 65534,
+              "rgid": 65534,
+              "egid": 65534,
+              "sgid": 65534,
+              "fsgid": 65534,
+              "groups": 0,
+              "nnp": 1,
+              "securebits": 0,
+              "effective": 0,
+              "permitted": 0,
+              "inheritable": 0,
+              "ambient": 0,
+              "bounding": 0,
+              "at_secure": 0
+            },
+            "exec_nnp_case": {
+              "name": "exec_nnp",
+              "result": "PASS",
+              "exit": 0,
+              "signal": 0
+            },
+            "complete": {
+              "total": 5,
+              "passed": 5,
+              "failed": 0
+            }
+          },
+          "failed_conditions": [],
+          "expected_cases": [
+            "root_mode",
+            "file_mode",
+            "directory_mode",
+            "exec_normal",
+            "exec_nnp"
+          ]
+        }
+      }
+    },
+    {
+      "line": 2305,
+      "line_sha256": "65cad6761645ba47c99c0f0c54b3e312c08a5d501b8b995793b244cfd1032c1d",
+      "payload": {
+        "schema": "a06.exfat-one-line-negative.v1",
+        "passed": true,
+        "runner_sha256": "d8707f73f47672f789047681647954423f06c489cbf7920cfb8a2777ab8a59b0",
+        "positive_source_head": "17afb302cd351b116830e61b97bb34da3daa0d2b",
+        "positive_source_tree": "dfe5e6e544e5ad8c2f1076ea5ebb0dadc5f32d80",
+        "negative_source_head": "2642ea0d4ecff9a51fdb9b465725623d5a3a53a4",
+        "negative_source_tree": "5beb23b3ce77e2612f59ff7c5e24d8da24536625",
+        "negative_parent": "17afb302cd351b116830e61b97bb34da3daa0d2b",
+        "mutation_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode.rs",
+        "mutation_patch_sha256": "525e11369a5aefe9ae79358b83a293aa40e4b63de53b476b22cf220c55cd7024",
+        "positive_kernel_sha256": "02529c587d7ed3eb30cce81995863f700d561e0bb52a23a6064279a5b43dde6b",
+        "positive_guest_receipt_sha256": "7fc3eb727561ac582f7ac3f7501ff29d33813c16833979153ffbd280d0e2401f",
+        "negative_kernel_sha256": "f0ced9c02dc4c4432545bab92e8038551aafa975f2f526001e94ebe08ffd1343",
+        "negative_product_receipt_sha256": "f12b5b1705a1cd583ea363cd6fbd7d6949ffdf26bd0ba5b074e4d7c2417308ff",
+        "negative_guest_receipt_sha256": "2dc495baf7aa4066216a45a5e538f6d99ba90cb64fa32994e2048f636637387f",
+        "negative_source_inputs_unchanged": true,
+        "owned_worktree_removed": true,
+        "positive_source_inputs_unchanged": true
+      }
+    }
+  ],
+  "qualification_scope": "Actual original A06 job at this head; does not substitute postmerge checks or physical desktop device qualification."
+}

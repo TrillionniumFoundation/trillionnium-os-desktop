@@ -1,0 +1,56 @@
+{
+  "schema": "os.a06.original-evidence-manifest.v1",
+  "source_head": "17afb302cd351b116830e61b97bb34da3daa0d2b",
+  "source_tree": "dfe5e6e544e5ad8c2f1076ea5ebb0dadc5f32d80",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3367,
+      "sha256": "194eaaf0f14b3980b9a1412d6d17e46a6b31bc1fac1491314945fc398347426f"
+    },
+    {
+      "path": "receipt.json",
+      "bytes": 18118,
+      "sha256": "28f6bf856ce4438799e02e2226ae0b98ad2fc390da567677e1429b330cdc4b40"
+    },
+    {
+      "path": "original-job-api.json",
+      "bytes": 7275,
+      "sha256": "7eafa2d56c47f3c37a86e4cd411ec9651805c5e22354e3aabbca0e39fde0d091"
+    },
+    {
+      "path": "job119239167543.log.xz",
+      "bytes": 31844,
+      "sha256": "a3cdd03c47489ce3363b29ed45ef7f0ac110ca734bba2337a0febf6de35ffaae"
+    },
+    {
+      "path": "exfat-verdicts.json",
+      "bytes": 12162,
+      "sha256": "46bf5d783d4e710282adc6d03415fc31595e99093df9e8209e996c9a340756e7"
+    },
+    {
+      "path": "artifact-byte-check.json",
+      "bytes": 3041,
+      "sha256": "95e9d485a5b71ba83afcbd6e7000d15aeedfe2911af491d25330464780337a90"
+    },
+    {
+      "path": "artifact-index.json.gz",
+      "bytes": 23339,
+      "sha256": "750cb7f9cc68147c8c0bd603a4bedf7181fb3b4e2a3e12f2d54bf0090362ff16"
+    },
+    {
+      "path": "host-original.tar.gz",
+      "bytes": 610,
+      "sha256": "027a4ae795764d3c38cf2675fc32d643d4538b28b4a70f27a4be3e0c54fd2a82"
+    }
+  ],
+  "large_zip_reference": "artifact-byte-check.json",
+  "raw_host_hashes": "artifact-byte-check.json",
+  "raw_host_archive_round_trip_verified": true,
+  "file_list_scope": "Actual Git payload carrier files and hashes, excluding manifest.json itself.",
+  "decoded_content_references": {
+    "artifact-index.json": "Decode artifact-index.json.gz; the plain index is not separately committed.",
+    "host-original/": "Extract host-original.tar.gz into this directory; its nine original file hashes are in artifact-byte-check.json host_files.",
+    "job119239167543.log": "Decode job119239167543.log.xz; exact original UTF-8 byte identity is in receipt.json."
+  }
+}

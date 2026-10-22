@@ -1,0 +1,212 @@
+{
+  "schema": "a07.cpu-history-native-validation.v1",
+  "packaged_at": "2026-10-21T11:55:36Z",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "remote_pr": 229,
+  "remote_head": "81b88d932cee61c4b693135399dd1e0d6a69c047",
+  "source_tree": "3ce19d617d52031bbb09813f96ea21f87895641c",
+  "local_tested_commit": "f80558fdd50a77c073a4cac3d6f46dbccc439e4a",
+  "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)\nbinary: rustc\ncommit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc\ncommit-date: 2025-06-23\nhost: x86_64-unknown-linux-gnu\nrelease: 1.88.0\nLLVM version: 20.1.5\n",
+  "cargo_environment": {
+    "CARGO_HOME": "/workspace/scratch/337c309bc660/os-tools/cargo-home",
+    "CARGO_TARGET_DIR": "/workspace/scratch/337c309bc660/os-tools/target-cpu-history",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "source_inputs": [
+    {
+      "path": "services/hepta-os/Cargo.toml",
+      "bytes": 1410,
+      "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b",
+      "git_blob": "0be14ffcedfda978c1ea7dbdf8d31a44d2e3060a"
+    },
+    {
+      "path": "services/hepta-os/Cargo.lock",
+      "bytes": 6501,
+      "sha256": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175",
+      "git_blob": "e423f6e549fe60e8496ec159463dbc1c324c256c"
+    },
+    {
+      "path": "services/hepta-os/src/cpu_owner.rs",
+      "bytes": 4587,
+      "sha256": "2d28a3c1f85d85315eb386dee5a003155dc8d308216beabb6357f77aa6f9be5d",
+      "git_blob": "ac364d99f13926a5d62a9e1e655d8fc1ed4033f9"
+    },
+    {
+      "path": "services/hepta-os/src/cpu_delivery.rs",
+      "bytes": 8702,
+      "sha256": "54ed334d80ed90be29c66fcf24bdebf2bd7eda4cc8ce1d8be3d2905d123d2547",
+      "git_blob": "8ac93db30e11eb3a8ffd8a81c1cfc57ffbc9adc7"
+    },
+    {
+      "path": "services/hepta-os/tests/cpu_delivery.rs",
+      "bytes": 16376,
+      "sha256": "eb00a61a7dc56bb73fb3bdee33aedf802289fad79022b3ac0ba74fe8f61cd387",
+      "git_blob": "8b7d46d9feaacc184b464a82e278587bf20e5b63"
+    },
+    {
+      "path": "services/hepta-os/tests/fixtures/hos2_production_owner.json",
+      "bytes": 3290,
+      "sha256": "abf6515b2e44799b926cbffd22d42981f750bb88c919dfbc6499aa20cd7f950e",
+      "git_blob": "6eb120e8f2257872f9f9287f78d0b90dc3de6c18"
+    },
+    {
+      "path": "libs/os-abi/src/lib.rs",
+      "bytes": 47272,
+      "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+      "git_blob": "276e59ef0de4df46c09b17a792c5c049024d07b3"
+    }
+  ],
+  "runs": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "cpu-history",
+        "--test",
+        "cpu_delivery"
+      ],
+      "started_at": "2026-10-21T11:51:36.326827+00:00",
+      "finished_at": "2026-10-21T11:51:55.072593+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 18.68136117600079,
+      "log": "cpu-delivery.log.gz",
+      "execution_permission": "sandbox",
+      "test_summary": {
+        "passed": 11,
+        "failed": 0
+      }
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "cpu-history"
+      ],
+      "started_at": "2026-10-21T11:52:41.770194+00:00",
+      "finished_at": "2026-10-21T11:52:44.969912+00:00",
+      "exit_code": 101,
+      "elapsed_seconds": 3.199741680997249,
+      "log": "service-sandbox-denied.log.gz",
+      "execution_permission": "sandbox",
+      "test_summary": {
+        "passed": 12,
+        "failed": 16
+      }
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "cpu-history"
+      ],
+      "started_at": "2026-10-21T11:53:26.654851+00:00",
+      "finished_at": "2026-10-21T11:53:32.134424+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 5.4795965859957505,
+      "log": "service.log.gz",
+      "execution_permission": "require_escalated",
+      "test_summary": {
+        "passed": 28,
+        "failed": 0
+      }
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--features",
+        "cpu-history",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-21T11:53:32.159551+00:00",
+      "finished_at": "2026-10-21T11:53:40.932238+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 8.772713316997397,
+      "log": "clippy.log.gz",
+      "execution_permission": "require_escalated",
+      "test_summary": null
+    }
+  ],
+  "logs": {
+    "cpu-delivery.log.gz": {
+      "bytes": 911,
+      "sha256": "42c06c404e7a5ffa870ca9f3d1ce54e8c2b970b418394b3fc18419100fbbf3ad",
+      "encoding": "gzip",
+      "mtime": 0,
+      "filename_header": "",
+      "decompressed": {
+        "bytes": 1990,
+        "sha256": "85f326a1cba973923d5e69bb91747bb283cece9681311b2c35f37ba8925a5ce3"
+      }
+    },
+    "service-sandbox-denied.log.gz": {
+      "bytes": 1943,
+      "sha256": "6174545e70cd0f9903f4e7cac220da1e674eed19526a410283a6e07dcc322e5f",
+      "encoding": "gzip",
+      "mtime": 0,
+      "filename_header": "",
+      "decompressed": {
+        "bytes": 10356,
+        "sha256": "58e85c3728db826f714ff9ccca0807a5356ebfa443c089d814ec2a21af4766e7"
+      }
+    },
+    "service.log.gz": {
+      "bytes": 1427,
+      "sha256": "b4409eaee630cbedb904ad518035c4801f0a0ac7b100e202f6a4257faab0872b",
+      "encoding": "gzip",
+      "mtime": 0,
+      "filename_header": "",
+      "decompressed": {
+        "bytes": 4192,
+        "sha256": "a57baa633b469ed12f43c2127160a44f58d3f5019293e589a7404c77d7fb0a2a"
+      }
+    },
+    "clippy.log.gz": {
+      "bytes": 353,
+      "sha256": "dda735a13b1eef386f0fa9918bcdd8fc03182304be9bf041c7e4ff0fb039f320",
+      "encoding": "gzip",
+      "mtime": 0,
+      "filename_header": "",
+      "decompressed": {
+        "bytes": 732,
+        "sha256": "47290d956c46d253b2dad9c72b728859138df52bce94cd27e9c501b8ecc7a9b9"
+      }
+    }
+  },
+  "result": {
+    "cpu_delivery_tests": 11,
+    "unique_cpu_feature_service_tests": 28,
+    "failed": 0,
+    "clippy_all_targets_warnings_denied_exit": 0,
+    "tested_source_and_locks_unchanged": true
+  },
+  "first_service_attempt": "All 16 original socket cases failed at the same AF_UNIX fixture bind with EPERM before their contract assertions. The unmodified command was rerun with permission for local Unix sockets; all 28 tests then passed. Both outputs are preserved.",
+  "memory_events_after": "low 0\nhigh 0\nmax 982816\noom 0\noom_kill 0\noom_group_kill 0",
+  "remaining_qualification": [
+    "The original A10 workflow must qualify the final published head and current base; these local results do not replace it.",
+    "Native Hepta owner assembly, real bootstrap authority, durable K-D handoff and target-kernel fault/recovery qualification remain separate.",
+    "No GUI, physical desktop, Android, GPU, InstallBudget, Submit, Cancel or Retire qualification is asserted."
+  ]
+}
