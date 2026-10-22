@@ -34,6 +34,7 @@ def module(name, path):
 
 shared = module('exfat_shared', Path(__file__).with_name('run_rlimit_nofile_guest.py'))
 oracle = module('exfat_oracle', Path(__file__).with_name('exfat_mode_evidence.py'))
+kernel_support = module('exfat_kernel_support', Path(__file__).with_name('exfat_kernel_support.py'))
 product = module('exfat_product', ROOT / 'tests/kernel/control/run_queryabi_candidate_guest.py')
 common, require, sha = shared.common, shared.common.require, shared.common.sha
 IMAGE_BYTES = 512 * 1024 * 1024
@@ -41,6 +42,7 @@ LOG_LIMIT = 8 * 1024 * 1024
 SOURCE_PATHS = tuple(str(path.relative_to(ROOT)) for path in (
     Path(__file__).resolve(), Path(__file__).with_name('exfat_mode_evidence.py'),
     Path(__file__).with_name('exfat_mode_probe.c'),
+    Path(__file__).with_name('exfat_kernel_support.py'),
     Path(__file__).with_name('run_rlimit_nofile_guest.py'), shared.COMMON_PATH,
     shared.GROUP_PATH, ROOT / 'tests/organ_backend/run_guest_probe.py',
     ROOT / 'tests/kernel/control/run_queryabi_candidate_guest.py',
@@ -186,6 +188,16 @@ def loop_binding(fd, image_stat):
 
 def reference(args, out, report):
     require(os.geteuid() == 0, 'Linux reference requires the disposable project CI root context')
+    # This runner only observes support; installation/loading belongs to the
+    # explicit disposable-CI preparation command. Fail before allocating a disk
+    # or loop device when the running kernel cannot perform the real mount.
+    filesystems = kernel_support.read_filesystems()
+    (out / 'kernel-filesystems.log').write_bytes(filesystems)
+    report.update(host_kernel=os.uname().release, host_arch=os.uname().machine,
+                  kernel_filesystems_sha256=sha(filesystems),
+                  kernel_exfat_registered=kernel_support.has_exfat(filesystems))
+    require(report['kernel_exfat_registered'],
+            'running Linux kernel has no registered ExFAT driver; prepare this disposable CI host first')
     bundle, probe = bundle_input(args.bundle, args.expected_input_sha256)
     image = out / 'disk.raw'
     copy_image(args.bundle / 'blank.raw', image, bundle['image_sha256'])
@@ -204,7 +216,6 @@ def reference(args, out, report):
         report.update(bundle_sha256=args.expected_input_sha256, probe_sha256=sha(probe),
                       image_before_sha256=bundle['image_sha256'], image_bytes=IMAGE_BYTES,
                       private_mount_namespace=True, command=command, loop_binding=binding,
-                      host_kernel=os.uname().release, host_arch=os.uname().machine,
                       unshare=unshare, losetup=losetup)
         save(out / 'input.json', report)
         report['frozen_input_sha256'] = sha((out / 'input.json').read_bytes())
@@ -243,9 +254,16 @@ def reference_input(directory, bundle, expected):
             'Linux reference did not finish its owned execution/cleanup')
     require(record['bundle_sha256'] == expected and record['probe_sha256'] == bundle['probe_sha256']
             and record['source_inputs'] == source_inputs(), 'reference was not executed from this frozen bundle')
+    filesystems = common.read_pinned(directory / 'kernel-filesystems.log', record['kernel_filesystems_sha256'], 65536)
+    require(record['kernel_exfat_registered'] is True and kernel_support.has_exfat(filesystems),
+            'Linux reference lacks the running-kernel filesystem availability record')
     before = json.loads(common.read_pinned(directory / 'input.json', record['frozen_input_sha256'], LOG_LIMIT))
     require(before['bundle_sha256'] == expected and before['command'] == record['command']
-            and before['loop_binding'] == record['loop_binding'], 'pre-execution reference changed')
+            and before['loop_binding'] == record['loop_binding']
+            and before['host_kernel'] == record['host_kernel']
+            and before['kernel_exfat_registered'] is True
+            and before['kernel_filesystems_sha256'] == record['kernel_filesystems_sha256'],
+            'pre-execution reference changed')
     stdout = common.read_pinned(directory / 'stdout.log', record['stdout_sha256'], LOG_LIMIT)
     stderr = common.read_pinned(directory / 'stderr.log', record['stderr_sha256'], LOG_LIMIT)
     require(common.read_file(directory / 'exit-code.txt', 64) == (str(record['process_exit']) + '\n').encode(),

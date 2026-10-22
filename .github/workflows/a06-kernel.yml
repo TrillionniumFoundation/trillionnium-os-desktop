@@ -71,25 +71,15 @@ jobs:
             clang lld qemu-system-x86 busybox-static \
             gcc-13 libc6-dev binutils libsqlite3-dev python3.12 python3.12-minimal \
             libpython3.12-stdlib openssl tzdata kmod
-          exfat_host="${RUNNER_TEMP}/a06-exfat-host"
-          mkdir "$exfat_host"
-          uname -a > "$exfat_host/linux-version.txt"
-          host_kernel_release=$(uname -r)
-          printf '%s\n' "$host_kernel_release" > "$exfat_host/kernel-release.txt"
-          # Hosted Azure images can omit the running kernel's extra modules.
-          # A userspace formatter cannot provide the kernel ExFAT filesystem.
-          if ! sudo modprobe exfat > "$exfat_host/modprobe-before.stdout.log" \
-              2> "$exfat_host/modprobe-before.stderr.log"; then
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-              "linux-modules-extra-${host_kernel_release}" \
-              > "$exfat_host/install-matching-modules.log" 2>&1
+          set +e
+          sudo python3 -I -B tests/workloads/linux/exfat_kernel_support.py --disposable-ci \
+            --output "${RUNNER_TEMP}/a06-exfat-kernel-support"
+          exfat_support_exit=$?
+          set -e
+          if test -d "${RUNNER_TEMP}/a06-exfat-kernel-support"; then
+            sudo chown -R -- "$(id -u):$(id -g)" "${RUNNER_TEMP}/a06-exfat-kernel-support"
           fi
-          sudo modprobe exfat > "$exfat_host/modprobe.stdout.log" \
-            2> "$exfat_host/modprobe.stderr.log"
-          modinfo -F filename exfat > "$exfat_host/module-filename.txt"
-          modinfo -F vermagic exfat > "$exfat_host/module-vermagic.txt"
-          cp /proc/filesystems "$exfat_host/filesystems.txt"
-          grep -Eq '^[[:space:]]*exfat$' "$exfat_host/filesystems.txt"
+          test "$exfat_support_exit" -eq 0
 
       - name: Freeze the permission probe and verify it in an isolated Linux mount namespace
         shell: bash
@@ -130,6 +120,18 @@ jobs:
         run: |
           set -euo pipefail
           bash support/build/prepare-host.sh
+
+      - name: Check firmware boot-parameter layout and zero initialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/a06-boot-params"
+          mkdir "$out"
+          CARGO_TARGET_DIR="${RUNNER_TEMP}/a06-boot-params-target" \
+            cargo +nightly-2026-07-21 test --locked \
+            --manifest-path kernel/asterinas/ostd/libs/linux-bzimage/boot-params/Cargo.toml \
+            --target x86_64-unknown-linux-gnu \
+            > "$out/host-tests.log" 2>&1
 
       - name: Prepare fixed OSDK test locks
         shell: bash
@@ -484,8 +486,12 @@ jobs:
           set -euo pipefail
           checks="${RUNNER_TEMP}/a06-exfat-checks"
           mkdir "$checks"
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends exfatprogs \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends exfatprogs kmod \
             > "$checks/formatter-install.log" 2>&1
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_exfat_kernel_support.py' -v \
+            > "$checks/kernel-support-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_exfat_kernel_support.py' -v \
+            > "$checks/kernel-support-tests-optimized.log" 2>&1
           python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_exfat_mode_guest.py' -v \
             > "$checks/runner-tests.log" 2>&1
           python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_exfat_mode_guest.py' -v \
@@ -558,6 +564,8 @@ jobs:
           # ELFs, runtime/image bytes and build logs. Only its regenerable Cargo
           # target cache is excluded; failed stage evidence remains included.
           path: |
+            ${{ runner.temp }}/a06-boot-params
+            ${{ runner.temp }}/a06-exfat-kernel-support
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
@@ -585,7 +593,6 @@ jobs:
             ${{ runner.temp }}/a06-probe-2vcpu
             ${{ runner.temp }}/a06-kernel.sha256
             ${{ runner.temp }}/a06-exfat-checks
-            ${{ runner.temp }}/a06-exfat-host
             ${{ runner.temp }}/a06-exfat-bundle
             ${{ runner.temp }}/a06-exfat-linux
             ${{ runner.temp }}/a06-exfat-guest

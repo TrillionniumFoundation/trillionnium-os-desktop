@@ -240,7 +240,49 @@ static int fd_transfer(const char *dir) {
     puts("{\"ok\":true,\"scm_rights\":true,\"recv_cloexec\":true,\"shared_offset\":true,\"child_reaped\":true}");
     return 0;
 }
+/* A readable level-triggered timerfd must lose readiness after settime/read.
+ * This runs in both frozen full32 ELFs, including the ordinary product guest. */
+static int timerfd_level_readiness(void) {
+    int tfd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
+    CHECK(tfd >= 0);
+    int epfd = epoll_create1(EPOLL_CLOEXEC);
+    CHECK(epfd >= 0);
+    struct epoll_event ev = {.events=EPOLLIN, .data.fd=tfd}, ready;
+    CHECK(epoll_ctl(epfd, EPOLL_CTL_ADD, tfd, &ev) == 0);
+    const struct itimerspec short_timer = {.it_value={.tv_nsec=10000000}};
+    const struct itimerspec long_timer = {.it_value={.tv_sec=60}};
+    const struct itimerspec disarmed = {0};
+    uint64_t ticks = 0;
+
+    CHECK(timerfd_settime(tfd, 0, &short_timer, NULL) == 0);
+    CHECK(epoll_wait(epfd, &ready, 1, 2000) == 1 && ready.data.fd == tfd);
+    CHECK(timerfd_settime(tfd, 0, &disarmed, NULL) == 0);
+    CHECK(epoll_wait(epfd, &ready, 1, 0) == 0);
+    errno = 0;
+    CHECK(read(tfd, &ticks, sizeof ticks) == -1 && errno == EAGAIN);
+
+    CHECK(timerfd_settime(tfd, 0, &short_timer, NULL) == 0);
+    CHECK(epoll_wait(epfd, &ready, 1, 2000) == 1 && ready.data.fd == tfd);
+    CHECK(read(tfd, &ticks, sizeof ticks) == sizeof ticks && ticks == 1);
+    CHECK(epoll_wait(epfd, &ready, 1, 0) == 0);
+
+    CHECK(timerfd_settime(tfd, 0, &short_timer, NULL) == 0);
+    CHECK(epoll_wait(epfd, &ready, 1, 2000) == 1 && ready.data.fd == tfd);
+    /* Give the scheduler ample time before the new expiry when observing
+     * cleared readiness; then require a fresh short timeout to become ready. */
+    CHECK(timerfd_settime(tfd, 0, &long_timer, NULL) == 0);
+    CHECK(epoll_wait(epfd, &ready, 1, 0) == 0);
+    errno = 0;
+    CHECK(read(tfd, &ticks, sizeof ticks) == -1 && errno == EAGAIN);
+    CHECK(timerfd_settime(tfd, 0, &short_timer, NULL) == 0);
+    CHECK(epoll_wait(epfd, &ready, 1, 2000) == 1 && ready.data.fd == tfd);
+    CHECK(read(tfd, &ticks, sizeof ticks) == sizeof ticks && ticks == 1);
+    CHECK(epoll_wait(epfd, &ready, 1, 0) == 0);
+    CHECK(close(epfd) == 0 && close(tfd) == 0);
+    return 0;
+}
 static int async_fd(void) {
+    CHECK(timerfd_level_readiness() == 0);
     int evfd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
     CHECK(evfd >= 0);
     int tfd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
