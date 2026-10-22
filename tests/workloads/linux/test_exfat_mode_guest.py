@@ -116,6 +116,25 @@ class ObservationTests(unittest.TestCase):
 
 
 class InputOwnershipTests(unittest.TestCase):
+    def test_missing_running_kernel_support_fails_before_disk_or_loop_allocation(self):
+        raw = b'nodev\tsysfs\n\text4\n'
+        with tempfile.TemporaryDirectory() as directory:
+            out, report = Path(directory), {'passed': False}
+            with mock.patch.object(runner.os, 'geteuid', return_value=0), \
+                    mock.patch.object(runner.kernel_support, 'read_filesystems', return_value=raw), \
+                    mock.patch.object(runner, 'bundle_input') as bundle, \
+                    mock.patch.object(runner, 'copy_image') as copy_disk, \
+                    mock.patch.object(runner, 'run_logged') as execute:
+                with self.assertRaisesRegex(ValueError, 'no registered ExFAT driver'):
+                    runner.reference(object(), out, report)
+            bundle.assert_not_called()
+            copy_disk.assert_not_called()
+            execute.assert_not_called()
+            self.assertFalse(report['passed'])
+            self.assertFalse(report['kernel_exfat_registered'])
+            self.assertEqual((out / 'kernel-filesystems.log').read_bytes(), raw)
+            self.assertEqual(report['kernel_filesystems_sha256'], runner.sha(raw))
+
     def test_formatter_version_requires_exact_response_and_retains_the_actual_exit(self):
         good = b'exfatprogs version : 1.2.2\n'
         cases = [(1, good, b'', True), (0, good, b'', False), (2, good, b'', False),
