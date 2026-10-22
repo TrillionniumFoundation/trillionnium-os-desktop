@@ -58,7 +58,7 @@ impl Inode {
             let inner = self.inner.read();
             inner.readdir_at(offset, visitor)
         };
-        self.inner.write().set_atime(utils::now());
+        self.update_atime_after_read();
         result
     }
 

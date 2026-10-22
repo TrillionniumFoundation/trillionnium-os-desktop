@@ -19,9 +19,10 @@ PERMISSION_TESTS = {
 
 # The default core gate keeps its 238-test baseline, five permission tests,
 # all twenty-one G1-c/G1-d regressions, two ExFAT tests and three ext2
-# durability regressions. Filtered runs retain explicit opt-in; they cannot
-# stand in for a complete core qualification.
-MINIMUM_CORE_TESTS = 269
+# durability regressions, plus five initial-readonly atime/sync regressions.
+# Filtered runs retain explicit opt-in; they cannot stand in for a complete
+# core qualification.
+MINIMUM_CORE_TESTS = 274
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -54,8 +55,15 @@ EXT2_DURABILITY_TESTS = (
     "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_rechecks_an_earlier_snapshot_under_the_same_owner",
     "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_retries_all_dirty_metadata_after_write_failure",
 )
+EXT2_READONLY_ATIME_TESTS = (
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data",
+)
 REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
-                       *EXT2_DURABILITY_TESTS)
+                       *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS)
 
 
 def check_guest(guest, crate, allow_filtered=False):
