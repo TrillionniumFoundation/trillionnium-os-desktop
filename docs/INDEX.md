@@ -42,6 +42,8 @@
 
 [原 Agentd 普通 ABI 开发/技术手册](../tests/workloads/hepta_agentd_abi/README.md) 和 [完整首跑证据](../results/integration/2026-10-22-agentd-ordinary-abi/README.md) 说明 disabled-default runner、精确拒绝 oracle、实际依赖、只读 ext2 写回缺陷及下一阶段原 FleetRegistry/Supervisor 启动要求。
 
+[ext2 初始只读 atime 修复与完整正反证据](../results/integration/2026-10-22-ext2-rdonly/README.md) 绑定 #243 的 `9076f1a…`：完整core274/274、实际SMP3/277、ordinary18标记、旧行为精确3失败负控及同原Agentd零写回错误复跑。源码已发布、本地原生门禁完成，CI/合并状态单独记录；它不授予完整RO语义或原生daemon资格。
+
 - A #234 的固定 source A06 与旧 #231 的 ExFAT 归档分别见 [STATUS](STATUS.md) 和 [原 ExFAT 包](../results/integration/2026-10-21-exfat-qualified/README.md)。
 - E `81897df4…` 的 core266/三 boot/旧 root 负控，以及 F `058c5e48…` 的 core265/SQLite 同 profile 正反结果见 [恢复的原收据](../results/integration/2026-10-22-organ-combination/ef-qualified-receipts.json)。
 - C 最终实测 source `86528f7e933a1c6db2c9d31b47d8caa0fa047101` / tree `18d21dbeb7e7934cb4f7de21dc77a1b70db3c937` 已同树发布到 [PR #239](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/239) head `c645d2c85b80a8e93d9ecb78913f07bc29d6fc35`。[最终原收据](../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json) 记录 workspace **181 passed / 0 failed / 2 ignored**、全 targets Clippy `-D warnings` 与完整 C5 owned Weston 通过；C5 同源重跑 private bootstrap、真实 Notes `applied`/独立回读，并验证同一 Session 下 compositor 重启后的新 client layout。它不证明旧 surface 连续性、生产原 owner、Asterinas 或显示像素。packet 中 `evidence-v2` 的 Xvfb/严格 IPC 仍属于中间 `8662dced…`；[公开初版](../tests/ui/evidence/2026-10-21-notes-target/README.md) 的172项也不转授最终版本。来源分界及当前整合树仍需独立门禁见 [STATUS](STATUS.md)。

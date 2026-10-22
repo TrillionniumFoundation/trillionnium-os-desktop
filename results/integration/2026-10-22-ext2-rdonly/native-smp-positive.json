@@ -1,0 +1,69 @@
+{
+  "passed": true,
+  "crates": [
+    {
+      "passed": true,
+      "guests": [
+        {
+          "declared": 277,
+          "passed": 3,
+          "failed": 0,
+          "filtered": 274,
+          "tests": {
+            "aster_core::fs::fs_impls::ramfs::fs::permission_smp_tests::clear_setid_alias::permission_attr_smp": "ok",
+            "aster_core::fs::fs_impls::ramfs::fs::permission_smp_tests::owner_alias::permission_attr_smp": "ok",
+            "aster_core::fs::fs_impls::ramfs::memfd::permission_smp_tests::permission_attr_smp": "ok"
+          },
+          "observations": {
+            "clear_setid_alias": {
+              "case": "clear_setid_alias",
+              "cpu_a": "0",
+              "cpu_b": "1",
+              "entered": "1",
+              "lock_busy": "true",
+              "a_rc": "0",
+              "b_rc": "0",
+              "uid": "1000",
+              "mode": "600",
+              "alias_uid": "1000",
+              "alias_mode": "600"
+            },
+            "owner_alias": {
+              "case": "owner_alias",
+              "cpu_a": "0",
+              "cpu_b": "1",
+              "entered": "1",
+              "lock_busy": "true",
+              "a_rc": "0",
+              "b_rc": "0",
+              "uid": "1002",
+              "mode": "755",
+              "alias_uid": "1002",
+              "alias_mode": "755"
+            },
+            "memfd_seal": {
+              "case": "memfd_seal",
+              "cpu_a": "0",
+              "cpu_b": "1",
+              "entered": "1",
+              "lock_busy": "true",
+              "a_rc": "0",
+              "b_rc": "0",
+              "mode": "777",
+              "sealed_mode": "777",
+              "seal_exec": "true"
+            }
+          },
+          "crate": "aster-core",
+          "guest": "guest-001",
+          "raw_qemu_exit": 33,
+          "soft_skipped": 0,
+          "kernel_sha256": "764388d690ae6fea954f6252858ad93f7302bc8f2367653e7debaa539664ff7b",
+          "serial_sha256": "a6cf546150e0840e93c23427a23e06020f5a8c36daaec72a1864a60871936731",
+          "control": null,
+          "product_qualification": false
+        }
+      ]
+    }
+  ]
+}

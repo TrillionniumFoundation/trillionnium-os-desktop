@@ -22,10 +22,12 @@ GUI1、SQLite 四 boot、G1-d 三 boot 和真实 Agentd 普通 ABI preflight 各
 | --- | --- | --- |
 | **1．收口 A 与 B 的发布输入** | 保留当前 green 基线；用 source profile 固定一对完整 head/tree；从原部署系统装配 provider、clock、frontier、keyring、revocation、current-cut、recovered writer。 | 真实原 owner 用同一组合提交；断连后只核对旧 K/D；未知保持 unknown。没有部署输入时 production 继续 disabled，不生成替代密钥或第二 writer。 |
 | **2a．C 的生产 Linux Notes** | 沿现有 `services/hepta-os`、Session 私有 bootstrap 和 Notes receiver 替换测试 issuer 的装配来源，保留原 FinalUse/持久 owner。 | 一个实际应用完成观察→真实授权→动作→独立结果回读→原 owner 持久终态；过期样本、撤销、丢回复及重启均不误操作。之后再扩展第二应用，避免先铺无验收的大量 adapter。 |
-| **2b．D 的原生启动接合，与 2a 并行** | 先测量实际优化构建及依赖，再实现最终 exec 之后的可信 role/bootstrap 装配；将真实 `AgentdHos2Device` 接到原 writer/outbox。 | 原 Agentd 真正在 guest 驱动原 CPU owner，原 outbox 保留不可变 K↔D 和完整 payload；终态持久确认后才允许连续 retire。丢回复、manager kill、重启均先 query/reconcile，不能凭当前 cap 推断旧操作终态。 |
+| **2b．F1 最小原 daemon + D 原生接合，与 2a 并行** | 先测量实际优化构建及依赖，用原 FleetRegistry/Supervisor 完成无模型回合的 daemon/store 生命周期；结合 E 的最低隔离，再实现最终 exec 之后的可信 role/bootstrap，将真实 `AgentdHos2Device` 接到原 writer/outbox。 | 原 Agentd 真正在 guest 驱动原 CPU owner，原 outbox 保留不可变 K↔D 和完整 payload；终态持久确认后才允许连续 retire。丢回复、manager kill、重启均先 query/reconcile，不能凭当前 cap 推断旧操作终态。 |
 | **3．E 的完整隔离与自主恢复** | 扩展已有低权限 workload、有限独立恢复和地址空间上限；按原契约实现可信暂停原因、公共 `RevokeGrant/ApplyRecovery`、独立 watchdog 与总进程树内存。 | manager 故障、租约过期、内存耗尽可恢复；合法用户暂停保持；fork/exec 不能逃逸累计资源控制；恢复者及祖先资源不受被管理域削减。 |
-| **4．F 的原版 daemon/存储，再到 UI** | 保留已通过的普通 ABI 配置拒绝门禁；用原 `FleetRegistry`、`Supervisor`、`UnixProcessDriver` 建立 guest 生命周期，逐项补实际 Linux ABI 与原 SQLite store 依赖。 | 实际原 daemon 初始化 store/锁/socket 并可停止、恢复；真实任务与原终态发生在 Asterinas。然后同一 Rust UI 在 guest 有可测显示和输入，不把 host Weston 或 ABI 负向启动算作完成。 |
+| **4．F2 的真实任务、app-server 与 UI** | 在 F1 原 daemon/store 和 D 接合已完成后，逐项补真实任务、app-server 与桌面的实际 Linux ABI/存储依赖。 | 真实任务、原终态和恢复发生在 Asterinas；同一 Rust UI 在 guest 有可测显示和输入，不把 host Weston 或 ABI 负向启动算作完成。 |
 | **5．G 的固定硬件** | 先一台独立 x86 目标，再一块明确 SoC/板卡；固定 GPU、固件、IOMMU group、reset 方法、VMM 和 Android product/BSP。 | 实机执行任务、撤销、DMA 静止、复位、重启；ARM/Android 逐项验收启动、显示、触摸、存储、无线及电源。只读 inventory 和 x86 QEMU 不能转授这些资格。 |
+
+F 应拆成 F1 与 F2：**原 Agentd 最小启动与原 store 生命周期是 D 的前置工作**；真实任务、app-server 与完整桌面则在 D 后继续。若把整个 F 排在 D 之后，D 就只能继续使用资格 C 程序，无法取得真实原 Agentd 驱动的 G2 完成证据。
 
 A 的兼容回归和 B 的身份/授权检查必须贯穿后续切片。E 中真实 workload 隔离是 D/F
 效果执行的前置条件；不能等所有产品功能完成后再补。GPU/ARM 的目标调查可并行，
@@ -53,12 +55,17 @@ manager 故障后，后继 writer 需要经过认证的新 current-cut；先用�
 崩溃、旧 boot 请求、重复相同 D、相同 D 不同 payload、窗口满、恢复者重启、前缀有洞。
 每个场景都应核对实际效果次数、原 outbox/store 和原 CPU/D owner，而不仅检查错误码。
 
-## F：本次实跑新发现的只读存储缺陷
+## F：初始只读 atime 已修复，继续原 daemon 生命周期
 
-真实 Agentd 负向启动成功后，shutdown sync 对只读 ext2 发出写回；后端拒绝它，镜像
-未变。首先修复 ext2 buffered/direct/readdir 自动 atime 在初始 RDONLY 下置脏的问题。
-应使用**可写 backing 上的 guest 只读挂载**检查 atime 不变、Write BIO 为零，并保留
-RW 正控；仅看只读后端写失败后的镜像哈希不变无法验证修复。
+[实际修复与证据](../../results/integration/2026-10-22-ext2-rdonly/README.md) 绑定 #243 的
+`9076f1a…`：初始 RDONLY 下 buffered/direct/readdir 自动 atime 不再置脏，完整 core274/274、
+SMP实际3/277、ordinary18标记与旧行为精确3失败负控均完成。同一冻结原 Agentd ELF 在
+新 ordinary 内核中仍准确拒绝缺失配置，完整 serial 不再出现旧只读写回错误。
+
+五个新增真实内核测试使用**可写 CountingDisk 上的初始只读 ext2**检查 atime 不变、
+Write BIO 为零，并保留 RW 自动 atime 与已有脏数据同步的正控。真实 Agentd 复跑继续
+保留只读 QEMU 后端；两类证据的作用分开。源码已发布，但远端 CI 与合并不能由本地
+原生通过代替。A 的下一步先收口该修复的 CI，再继续 B/C/D/F 的原 owner 装配。
 
 不要把 RO 下 sync 简单改成返回成功：RW→RO remount 的旧脏数据仍须正确排空。
 VFS write/resize/xattr/时间修改入口、bind/remount 与 virtio/block RO 协商是另外的

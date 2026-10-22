@@ -119,3 +119,10 @@ Use a separate gate for the next stage and retain this exact refusal gate. Its i
 The next source review must cover that exact tree's original process driver, runtime/store initialization and migrations before claiming daemon startup. Then require real startup/liveness and orderly stop evidence in the guest, plus the actual writable-store and socket outcomes reached by that fixture. A later restart/durability gate remains separate. This refusal result has not exercised fleet loading, writer locking, store initialization, socket binding, model work, or any device action.
 
 The later daemon stage should reuse the original FleetRegistry/Supervisor fixture after binding it to the actual final source. The existing `tests/integration/hepta/run_original_agentd.py` remains pinned to historical `f8c9419`; this new control gate does not upgrade that historical execution to the new source combination.
+
+
+### Follow-up: repaired initial read-only ext2 atime
+
+The [2026-10-22 ext2 follow-up](../../../results/integration/2026-10-22-ext2-rdonly/README.md) separately qualifies source `9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd`, tree `eeae4dc1ef546d408b55c98310e99e3156f08207`, and ordinary kernel SHA256 `8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09`. Its retained runner changes only the three kernel identity constants and one diagnostic string; the frozen original Agentd ELF, manifest, dependency closure and oracle are unchanged. The complete new serial has zero Write BIO, block/writeback errors or IoError, with the original sync/reboot and child1/QEMU33 result.
+
+The original runner and first-run records in this module retain their original pin and observed errors. Use the follow-up packet's reviewed runner and explicit new kernel identity to reproduce the repaired run; do not silently substitute a kernel in this frozen profile. The repair concerns automatic atime on initially filesystem-wide read-only ext2, not full VFS/virtio/remount semantics. It still stops at configuration refusal and does not start the original daemon, async runtime or owner.

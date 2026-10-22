@@ -1,0 +1,24 @@
+--- original/run_agentd_abi.py
++++ ext2-fixed/run_agentd_abi.py
+@@ -25,9 +25,9 @@
+ import cpio_codec
+ 
+ HERE = Path(__file__).resolve().parent
+-KERNEL_SHA = "8170402aaa7408eb2c4ab1ade2cd1d9641ef03ccbd37631aaec775528df2ede7"
+-KERNEL_HEAD = "85d394f99c73ad3194d57c876712ac01b59d90ca"
+-KERNEL_TREE = "7389c0a3f982983087953f75de7042fc058be088"
++KERNEL_SHA = "8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09"
++KERNEL_HEAD = "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd"
++KERNEL_TREE = "eeae4dc1ef546d408b55c98310e99e3156f08207"
+ INITRAMFS_SHA = "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+ BIOS_SHA = "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+ EXPECTED_ERROR = b"Error: invalid agentd configuration: HEPTA_FLEET_ROOT is required\n"
+@@ -283,7 +283,7 @@
+ 
+ 
+ def execute(args, out, report):
+-    require(args.expected_kernel_sha256 == KERNEL_SHA, "ordinary kernel is not the reviewed 85d artifact")
++    require(args.expected_kernel_sha256 == KERNEL_SHA, "ordinary kernel is not the reviewed 9076f1a artifact")
+     require(30 <= args.timeout <= 600, "guest timeout must be 30..600 seconds")
+     require(1024 <= args.memory_mib <= 4096, "guest memory must be 1024..4096 MiB")
+     manifest, binary = frozen_input(args.input_manifest, args.expected_input_manifest_sha256)

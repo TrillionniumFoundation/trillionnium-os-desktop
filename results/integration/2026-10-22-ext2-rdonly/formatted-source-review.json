@@ -1,0 +1,254 @@
+{
+  "expected_native_negative_results_not_executed": {
+    "failed": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes"
+    ],
+    "full_core_denominator": 274,
+    "new_positives": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data"
+    ],
+    "required_names": 36
+  },
+  "inputs": {
+    "applied-native-source.patch": {
+      "bytes": 20014,
+      "git_blob": "9c4aae8a3a6df24bb2396feb2cf52190754f23be",
+      "sha256": "13d5185834f968f621ae4639b2e6109e16ebd069a6604e44c53a3c0a136443f6"
+    },
+    "candidate_packaging_v2_manifest_sha256": "99eb85fdf399af9da344a8741207385a9558c29b3e11208913852b72324dcc82",
+    "old_negative_patch_sha256": "f9cddf9b0f6e09163849b50c33d6058eca232cc728b951784fc175cac36afe0a"
+  },
+  "native_comparison": [
+    {
+      "candidate_packaging_v2": {
+        "bytes": 8538,
+        "git_blob": "69fa831974957b27142f216c2bbbc3b4ab1d9692",
+        "git_mode": "100644",
+        "sha256": "5b7898c0df24654ef670e56271db677757a34e09ae62a81e5522b292afafad5a"
+      },
+      "change_from_candidate": "permission_attrs import folded only",
+      "native_diff_index_after": "ed811244",
+      "native_diff_index_before": "4e6cb5d6",
+      "native_formatted": {
+        "bytes": 8507,
+        "git_blob": "ed811244d13266a950466de407b469b51bd18846",
+        "sha256": "1dafd642ec22a3c98d4be603b6954b12b83076774b086e1bdd91ffc5e0a953b1"
+      },
+      "native_git_mode": "100644",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs"
+    },
+    {
+      "candidate_packaging_v2": {
+        "bytes": 7094,
+        "git_blob": "e008e81577794337389889887ca4a0c04867420a",
+        "git_mode": "100644",
+        "sha256": "fa793e515769b94bab9a571e12ea99768d0ce82be5329600dac5d9e2a438fd76"
+      },
+      "change_from_candidate": "byte-identical",
+      "native_diff_index_after": "e008e815",
+      "native_diff_index_before": "00000000",
+      "native_formatted": {
+        "bytes": 7094,
+        "git_blob": "e008e81577794337389889887ca4a0c04867420a",
+        "sha256": "fa793e515769b94bab9a571e12ea99768d0ce82be5329600dac5d9e2a438fd76"
+      },
+      "native_git_mode": "100644",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/readonly_atime_tests.rs"
+    },
+    {
+      "candidate_packaging_v2": {
+        "bytes": 30386,
+        "git_blob": "05d5406d75bf14d092e1a43058157e9eea75dd50",
+        "git_mode": "100644",
+        "sha256": "55e6f075cdcddf4a4021d449ece3944ff4349c5fb98dfc7dc0a12abd8e0787b9"
+      },
+      "change_from_candidate": "byte-identical",
+      "native_diff_index_after": "05d5406d",
+      "native_diff_index_before": "045cade2",
+      "native_formatted": {
+        "bytes": 30386,
+        "git_blob": "05d5406d75bf14d092e1a43058157e9eea75dd50",
+        "sha256": "55e6f075cdcddf4a4021d449ece3944ff4349c5fb98dfc7dc0a12abd8e0787b9"
+      },
+      "native_git_mode": "100644",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/dir/mod.rs"
+    },
+    {
+      "candidate_packaging_v2": {
+        "bytes": 19962,
+        "git_blob": "ad8c6b3ed1c97c96d6ca655e759b9d36ce3bf979",
+        "git_mode": "100644",
+        "sha256": "6e5adf6f602cc6a84579f06e2fc657cc92ef552558a2649cac6fdef0e3ecfb4c"
+      },
+      "change_from_candidate": "byte-identical",
+      "native_diff_index_after": "ad8c6b3e",
+      "native_diff_index_before": "bfd7402b",
+      "native_formatted": {
+        "bytes": 19962,
+        "git_blob": "ad8c6b3ed1c97c96d6ca655e759b9d36ce3bf979",
+        "sha256": "6e5adf6f602cc6a84579f06e2fc657cc92ef552558a2649cac6fdef0e3ecfb4c"
+      },
+      "native_git_mode": "100644",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/file.rs"
+    },
+    {
+      "candidate_packaging_v2": {
+        "bytes": 10283,
+        "git_blob": "3da5d50e0d048e5af7b108803539509d4c0d3c2e",
+        "git_mode": "100644",
+        "sha256": "f1a6f4f019af0d6adcb0d9004931efe797dd1febaf626bf6590f78068efc042a"
+      },
+      "change_from_candidate": "byte-identical",
+      "native_diff_index_after": "3da5d50e",
+      "native_diff_index_before": "6bc84173",
+      "native_formatted": {
+        "bytes": 10283,
+        "git_blob": "3da5d50e0d048e5af7b108803539509d4c0d3c2e",
+        "sha256": "f1a6f4f019af0d6adcb0d9004931efe797dd1febaf626bf6590f78068efc042a"
+      },
+      "native_git_mode": "100644",
+      "path": "support/build/ktest/check-permission-smp.py"
+    },
+    {
+      "candidate_packaging_v2": {
+        "bytes": 11180,
+        "git_blob": "a46094e8c540cf78af0fc49ab9b2080a0f05b240",
+        "git_mode": "100755",
+        "sha256": "e80fc3fe31b689938b742b46efec461dadd07421b2039a9d247d6911f96bb314"
+      },
+      "change_from_candidate": "byte-identical",
+      "native_diff_index_after": "a46094e8",
+      "native_diff_index_before": "360664d1",
+      "native_formatted": {
+        "bytes": 11180,
+        "git_blob": "a46094e8c540cf78af0fc49ab9b2080a0f05b240",
+        "sha256": "e80fc3fe31b689938b742b46efec461dadd07421b2039a9d247d6911f96bb314"
+      },
+      "native_git_mode": "100755",
+      "path": "support/build/ktest/check.py"
+    },
+    {
+      "candidate_packaging_v2": {
+        "bytes": 9759,
+        "git_blob": "c81321a01969a4e008053ec4191060c7baa9e790",
+        "git_mode": "100644",
+        "sha256": "b78d9a7c779eb53a6c85ee0b7997b930fe3b1b4820d51171907c0083c4c6fdd3"
+      },
+      "change_from_candidate": "byte-identical",
+      "native_diff_index_after": "c81321a0",
+      "native_diff_index_before": "68d70c9f",
+      "native_formatted": {
+        "bytes": 9759,
+        "git_blob": "c81321a01969a4e008053ec4191060c7baa9e790",
+        "sha256": "b78d9a7c779eb53a6c85ee0b7997b930fe3b1b4820d51171907c0083c4c6fdd3"
+      },
+      "native_git_mode": "100644",
+      "path": "support/build/tests/test_ktest_checker.py"
+    },
+    {
+      "candidate_packaging_v2": {
+        "bytes": 19994,
+        "git_blob": "7dc73974728be306e060987d2d294f1a2e73e193",
+        "git_mode": "100644",
+        "sha256": "c997338aeb6feac47fece18efe3631cc559135fdda6b59967177fd7326bd46b4"
+      },
+      "change_from_candidate": "byte-identical",
+      "native_diff_index_after": "7dc73974",
+      "native_diff_index_before": "705f25ff",
+      "native_formatted": {
+        "bytes": 19994,
+        "git_blob": "7dc73974728be306e060987d2d294f1a2e73e193",
+        "sha256": "c997338aeb6feac47fece18efe3631cc559135fdda6b59967177fd7326bd46b4"
+      },
+      "native_git_mode": "100644",
+      "path": "tests/organ_backend/test_permission_attr_smp.py"
+    }
+  ],
+  "negative_control": {
+    "after": {
+      "bytes": 8101,
+      "git_blob": "184bd1184cb1993942334096ab839e3d6793a6cb",
+      "sha256": "fdbc7f31d7cf16c89874d7f8eabec89c4b4ce8896da786a567b80a54ad27ae76"
+    },
+    "before": {
+      "bytes": 8507,
+      "git_blob": "ed811244d13266a950466de407b469b51bd18846",
+      "sha256": "1dafd642ec22a3c98d4be603b6954b12b83076774b086e1bdd91ffc5e0a953b1"
+    },
+    "changed_paths": [
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs"
+    ],
+    "exact_removals": [
+      "one FsFlags import",
+      "filesystem upgrade / RDONLY early returns and their comment inside update_atime_after_read"
+    ],
+    "helper_body": "self.inner.write().set_atime(utils::now());",
+    "new_ktests_retained": [
+      "readonly_buffered_read_keeps_atime_without_writes",
+      "readonly_direct_read_keeps_atime_without_writes",
+      "readonly_readdir_keeps_atime_without_writes",
+      "writable_reads_persist_atime",
+      "readonly_flag_does_not_discard_preexisting_dirty_data"
+    ],
+    "patch": {
+      "bytes": 1335,
+      "git_blob": "72f606cf40e6a68e58c5af39a8986368b141becf",
+      "sha256": "a3d95ad68f9e8f69d7aec68c1346a4ab559d9051dc1b4195e8dee15b30a238de"
+    },
+    "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs",
+    "sync_sources_unchanged": [
+      {
+        "git_blob": "21a90c3278a76e075581b20897ca4e9af0b7af39",
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/fs.rs",
+        "sha256": "8b3e543316947dd853d119a35e89ea7dd1aa71b68af5fa3fb966671a090f245c"
+      },
+      {
+        "git_blob": "b3e2afb665bebb4b52e4770244869488068662cb",
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/impl_for_vfs/fs.rs",
+        "sha256": "ca1f8d05410203e14a37f06686d442c94616a4c514a2c49027d4319034d2a344"
+      },
+      {
+        "git_blob": "71527bcea2a7477c40ee8a4d043e3eef528e903b",
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/sync.rs",
+        "sha256": "f5c66583393e7ef75639343696b7af1473f5a65ce288ba5551e3be5d1f030fc5"
+      }
+    ]
+  },
+  "schema": "ext2.native-formatted-negative-review.v1",
+  "setup_notes": [
+    "The initial independent checkout-index did not refresh index stat cache; first --index apply check rejected seven files. Exact baseline contents had passed; local git add refreshed the unchanged files and write-tree confirmed 7389 before successful native patch application.",
+    "Full tree reconstruction on 7389 yielded 3245 instead of reported eeae. Parent clarified actual base f85/bad0. This review therefore explicitly limits native identity proof to the eight changed paths.",
+    "One read-only ls-tree of f85 in local os-release triggered a missing-object fetch and failed due unavailable local network proxy. No retry or Runtime fallback was attempted; actual f85 complete tree remains parent-reported."
+  ],
+  "source_identity": {
+    "actual_complete_native_tree_independently_verified": false,
+    "actual_native_base_head_reported_by_parent": "f85ccae8445f8d753572d41411d98ee28d253af5",
+    "actual_native_base_tree_reported_by_parent": "bad0a3ee66859cfcf7bf1185e4f10d0f953239ad",
+    "actual_native_head_reported_by_parent": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+    "actual_native_tree_reported_by_parent": "eeae4dc1ef546d408b55c98310e99e3156f08207",
+    "identity_scope": "All eight paths are reconstructed from the downloaded native diff and their known preimage blobs. The local full index uses old OS tree 7389, so its tree identities are not the native full trees on f85. Parent identified the 22 extra base paths as 21 historical evidence paths plus one ExFAT host test.",
+    "local_negative_review_index_tree_on_old_base": "13c4ceb0be2af23f0248e09eceb1ea90503e0cec",
+    "local_partial_review_index_tree_on_old_base": "3245be4f6829a3fa4149c3e0eb85a25145b44934",
+    "old_os_head": "85d394f99c73ad3194d57c876712ac01b59d90ca",
+    "old_os_tree": "7389c0a3f982983087953f75de7042fc058be088"
+  },
+  "validation": {
+    "all_eight_paths_match_native_diff_index_ids": true,
+    "all_five_tests_retained": true,
+    "attrs_only_import_folding_from_candidate": true,
+    "frozen_candidate_modified": false,
+    "input_sha256_verified": true,
+    "local_review_tree_left_on_native_formatted_eight_files": true,
+    "native_build_or_test_performed_by_this_review": false,
+    "negative_apply_and_reverse_roundtrip_passed": true,
+    "negative_apply_check_index_whitespace_error_passed": true,
+    "negative_tree_only_attrs_changed": true,
+    "runtime_used": false,
+    "seven_other_candidate_files_byte_identical": true,
+    "sync_sources_unchanged": true,
+    "work_os_modified": false
+  }
+}

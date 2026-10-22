@@ -1,0 +1,428 @@
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs
+index 4e6cb5d6..ed811244 100644
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs
+@@ -16,10 +16,9 @@ use crate::{
+         ext2::{inode::Inode, prelude::*, utils},
+         file::InodeMode,
+         vfs::{
++            file_system::FsFlags,
+             inode::Metadata,
+-            permission_attrs::{
+-                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy,
+-            },
++            permission_attrs::{PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy},
+             xattr::{XattrName, XattrNamespace, XattrSetFlags},
+         },
+     },
+@@ -28,6 +27,8 @@ use crate::{
+ 
+ #[cfg(ktest)]
+ mod permission_tests;
++#[cfg(ktest)]
++mod readonly_atime_tests;
+ 
+ impl Inode {
+     /// Serializes permission decisions with all users of InodeInner and marks
+@@ -170,6 +171,21 @@ impl Inode {
+         self.inner.write().set_atime(time);
+     }
+ 
++    /// Updates the access time after a read on a writable filesystem.
++    pub(super) fn update_atime_after_read(&self) {
++        let Some(fs) = self.fs.upgrade() else {
++            return;
++        };
++        // This is the filesystem-wide policy for an initially read-only
++        // mount. It does not serialize concurrent read-only remounts or
++        // decide the atime policy of a particular bind mount.
++        if fs.fs_flags().contains(FsFlags::RDONLY) {
++            return;
++        }
++
++        self.inner.write().set_atime(utils::now());
++    }
++
+     /// Returns the last data modification time.
+     pub(in ext2) fn mtime(&self) -> Duration {
+         self.inner.read().mtime()
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/readonly_atime_tests.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/readonly_atime_tests.rs
+new file mode 100644
+index 00000000..e008e815
+--- /dev/null
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/readonly_atime_tests.rs
+@@ -0,0 +1,206 @@
++// SPDX-License-Identifier: MPL-2.0
++
++//! Regressions for the read-only writeback observed in the 2026-10-22
++//! original-Agentd ordinary-ABI smoke. The backing device accepts writes;
++//! these tests detect unwanted writes before a read-only backend can hide them.
++
++use core::sync::atomic::{AtomicUsize, Ordering};
++
++use aster_block::{
++    BlockDeviceMeta,
++    bio::{BioEnqueueError, BioType, SubmittedBio},
++};
++use ostd::prelude::ktest;
++
++use super::*;
++use crate::fs::{
++    ext2::{
++        Ext2,
++        inode::test::read_raw_inode_from_disk,
++        test_utils::{Ext2Fixture, Ext2MemoryDisk, create_file, default_fixture},
++    },
++    file::SyncMode,
++    vfs::{
++        file_system::{FileSystem as FileSystemTrait, FsFlags},
++        inode::Inode as InodeTrait,
++    },
++};
++
++const FILE_NAME: &str = "atime";
++const PAYLOAD_BYTE: u8 = 0x5a;
++
++/// Counts writes without rejecting them or changing read/flush behavior.
++#[derive(Debug)]
++struct CountingDisk {
++    inner: Arc<Ext2MemoryDisk>,
++    writes: AtomicUsize,
++}
++
++impl BlockDevice for CountingDisk {
++    fn enqueue(&self, bio: SubmittedBio) -> core::result::Result<(), BioEnqueueError> {
++        if bio.type_() == BioType::Write {
++            self.writes.fetch_add(1, Ordering::Relaxed);
++        }
++        self.inner.enqueue(bio)
++    }
++
++    fn metadata(&self) -> BlockDeviceMeta {
++        self.inner.metadata()
++    }
++
++    fn name(&self) -> &str {
++        "ext2-atime-counting-disk"
++    }
++
++    fn id(&self) -> DeviceId {
++        self.inner.id()
++    }
++}
++
++#[derive(Clone, Copy)]
++enum ReadPath {
++    Buffered,
++    Direct,
++    Directory,
++}
++
++fn persisted_fixture() -> Ext2Fixture {
++    let (fixture, root) = default_fixture();
++    let file = create_file(&root, FILE_NAME);
++    let data = vec![PAYLOAD_BYTE; BLOCK_SIZE];
++    let mut reader = VmReader::from(data.as_slice()).to_fallible();
++    assert_eq!(file.write_at(0, &mut reader).unwrap(), BLOCK_SIZE);
++    file.set_atime(Duration::from_secs(7));
++    root.set_atime(Duration::from_secs(11));
++    FileSystemTrait::sync(fixture.ext2.as_ref()).unwrap();
++    fixture
++}
++
++fn fresh_filesystem(fixture: &Ext2Fixture, flags: FsFlags) -> (Arc<Ext2>, Arc<CountingDisk>) {
++    let disk = Arc::new(CountingDisk {
++        inner: fixture.disk.clone(),
++        writes: AtomicUsize::new(0),
++    });
++    // Opening the persisted bytes creates new inode and page caches. In
++    // particular, the RO cases do not simulate initial RO with a flag change.
++    let fs = Ext2::open(disk.clone(), flags, None).unwrap();
++    (fs, disk)
++}
++
++fn read_target(fs: &Ext2, path: ReadPath) -> Arc<Inode> {
++    let root = fs.root_inode().unwrap();
++    match path {
++        ReadPath::Directory => root,
++        ReadPath::Buffered | ReadPath::Direct => root.lookup(FILE_NAME).unwrap(),
++    }
++}
++
++fn exercise_read(inode: &Inode, path: ReadPath) {
++    match path {
++        ReadPath::Directory => {
++            let mut names = Vec::<String>::new();
++            assert!(inode.readdir_at(0, &mut names).unwrap() > 0);
++            for name in [".", "..", FILE_NAME] {
++                assert!(names.iter().any(|entry| entry == name));
++            }
++        }
++        ReadPath::Buffered | ReadPath::Direct => {
++            let mut data = vec![0u8; BLOCK_SIZE];
++            let mut writer = VmWriter::from(data.as_mut_slice()).to_fallible();
++            let read_len = match path {
++                ReadPath::Buffered => inode.read_at(0, &mut writer).unwrap(),
++                ReadPath::Direct => inode.read_direct_at(0, &mut writer).unwrap(),
++                ReadPath::Directory => unreachable!(),
++            };
++            assert_eq!(read_len, BLOCK_SIZE);
++            assert!(data.iter().all(|byte| *byte == PAYLOAD_BYTE));
++        }
++    }
++}
++
++fn assert_readonly_read(path: ReadPath) {
++    let fixture = persisted_fixture();
++    let (fs, disk) = fresh_filesystem(&fixture, FsFlags::RDONLY);
++    let inode = read_target(&fs, path);
++    let before = inode.atime();
++    assert!(!inode.inner.read().is_dirty());
++    assert_eq!(disk.writes.load(Ordering::Relaxed), 0);
++
++    exercise_read(&inode, path);
++    assert_eq!(inode.atime(), before);
++    assert!(!inode.inner.read().is_dirty());
++    for mode in [SyncMode::Full, SyncMode::Data] {
++        InodeTrait::sync(inode.as_ref(), mode).unwrap();
++        assert_eq!(disk.writes.load(Ordering::Relaxed), 0);
++    }
++    FileSystemTrait::sync(fs.as_ref()).unwrap();
++    assert_eq!(disk.writes.load(Ordering::Relaxed), 0);
++    assert_eq!(
++        read_raw_inode_from_disk(&fixture, inode.ino()).atime,
++        utils::duration_to_ext2_secs(before)
++    );
++}
++
++#[ktest]
++fn readonly_buffered_read_keeps_atime_without_writes() {
++    assert_readonly_read(ReadPath::Buffered);
++}
++
++#[ktest]
++fn readonly_direct_read_keeps_atime_without_writes() {
++    assert_readonly_read(ReadPath::Direct);
++}
++
++#[ktest]
++fn readonly_readdir_keeps_atime_without_writes() {
++    assert_readonly_read(ReadPath::Directory);
++}
++
++#[ktest]
++fn writable_reads_persist_atime() {
++    for path in [ReadPath::Buffered, ReadPath::Direct, ReadPath::Directory] {
++        let fixture = persisted_fixture();
++        let (fs, disk) = fresh_filesystem(&fixture, FsFlags::empty());
++        let inode = read_target(&fs, path);
++        assert!(!inode.inner.read().is_dirty());
++        assert_eq!(disk.writes.load(Ordering::Relaxed), 0);
++
++        exercise_read(&inode, path);
++        let observed_atime = inode.atime();
++        assert!(inode.inner.read().is_dirty());
++        FileSystemTrait::sync(fs.as_ref()).unwrap();
++        assert!(disk.writes.load(Ordering::Relaxed) > 0);
++        assert!(!inode.inner.read().is_dirty());
++        // No assumption about clock advancement: even an unchanged timestamp
++        // must retain the original RW dirtying and persistence behavior.
++        assert_eq!(
++            read_raw_inode_from_disk(&fixture, inode.ino()).atime,
++            utils::duration_to_ext2_secs(observed_atime)
++        );
++    }
++}
++
++#[ktest]
++fn readonly_flag_does_not_discard_preexisting_dirty_data() {
++    let fixture = persisted_fixture();
++    let (fs, disk) = fresh_filesystem(&fixture, FsFlags::empty());
++    let inode = read_target(&fs, ReadPath::Buffered);
++    let replacement = vec![0xc3u8; BLOCK_SIZE];
++    let mut reader = VmReader::from(replacement.as_slice()).to_fallible();
++    assert_eq!(inode.write_at(0, &mut reader).unwrap(), BLOCK_SIZE);
++    assert!(inode.inner.read().is_dirty());
++    let writes_before_sync = disk.writes.load(Ordering::Relaxed);
++
++    // This preserves the existing flag setter's behavior; it does not claim
++    // an atomic RW-to-RO remount. Sync must still flush the earlier RW data.
++    fs.set_fs_flags(FsFlags::RDONLY);
++    FileSystemTrait::sync(fs.as_ref()).unwrap();
++    assert!(disk.writes.load(Ordering::Relaxed) > writes_before_sync);
++
++    let reopened = Ext2::open(fixture.disk.clone(), FsFlags::RDONLY, None).unwrap();
++    let fresh_inode = read_target(&reopened, ReadPath::Buffered);
++    let mut data = vec![0u8; BLOCK_SIZE];
++    let mut writer = VmWriter::from(data.as_mut_slice()).to_fallible();
++    assert_eq!(fresh_inode.read_at(0, &mut writer).unwrap(), BLOCK_SIZE);
++    assert_eq!(data, replacement);
++}
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/dir/mod.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/dir/mod.rs
+index 045cade2..05d5406d 100644
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/dir/mod.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/dir/mod.rs
+@@ -58,7 +58,7 @@ impl Inode {
+             let inner = self.inner.read();
+             inner.readdir_at(offset, visitor)
+         };
+-        self.inner.write().set_atime(utils::now());
++        self.update_atime_after_read();
+         result
+     }
+ 
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/file.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/file.rs
+index bfd7402b..ad8c6b3e 100644
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/file.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/file.rs
+@@ -30,7 +30,7 @@ impl Inode {
+ 
+         let read_len = self.inner.read().read_at(offset, writer)?;
+         if read_len > 0 {
+-            self.inner.write().set_atime(utils::now());
++            self.update_atime_after_read();
+         }
+         Ok(read_len)
+     }
+@@ -69,7 +69,7 @@ impl Inode {
+         let fs = self.fs()?;
+         let read_len = self.inner.read().read_direct_at(&fs, offset, writer)?;
+         if read_len > 0 {
+-            self.inner.write().set_atime(utils::now());
++            self.update_atime_after_read();
+         }
+         Ok(read_len)
+     }
+diff --git a/support/build/ktest/check-permission-smp.py b/support/build/ktest/check-permission-smp.py
+index 6bc84173..3da5d50e 100644
+--- a/support/build/ktest/check-permission-smp.py
++++ b/support/build/ktest/check-permission-smp.py
+@@ -104,9 +104,9 @@ def parse_serial(raw, control=None):
+             "kernel counts differ from the three observed tests")
+     declared = int(headers[0][1])
+     # Keep the original 238, five permission, twenty-one G1-c/G1-d, two
+-    # ExFAT cases and three ext2 durability cases. Three SMP tests are
+-    # additional; filtering cannot shrink them.
+-    require(declared >= 272 and passed + failed + filtered == declared,
++    # ExFAT cases, three ext2 durability and five initial-readonly atime/sync
++    # cases. Three SMP tests are additional; filtering cannot shrink them.
++    require(declared >= 277 and passed + failed + filtered == declared,
+             "compiled core test denominator was reduced or is inconsistent")
+     require(status == ("FAILED" if expected_failures else "ok"), "kernel summary status differs")
+     require(serial.count("[ktest runner] All crates tested.") == int(not expected_failures),
+diff --git a/support/build/ktest/check.py b/support/build/ktest/check.py
+index 360664d1..a46094e8 100755
+--- a/support/build/ktest/check.py
++++ b/support/build/ktest/check.py
+@@ -19,9 +19,10 @@ PERMISSION_TESTS = {
+ 
+ # The default core gate keeps its 238-test baseline, five permission tests,
+ # all twenty-one G1-c/G1-d regressions, two ExFAT tests and three ext2
+-# durability regressions. Filtered runs retain explicit opt-in; they cannot
+-# stand in for a complete core qualification.
+-MINIMUM_CORE_TESTS = 269
++# durability regressions, plus five initial-readonly atime/sync regressions.
++# Filtered runs retain explicit opt-in; they cannot stand in for a complete
++# core qualification.
++MINIMUM_CORE_TESTS = 274
+ TRUSTED_PROFILE_CORE_TESTS = (
+     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
+     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
+@@ -54,8 +55,15 @@ EXT2_DURABILITY_TESTS = (
+     "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_rechecks_an_earlier_snapshot_under_the_same_owner",
+     "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_retries_all_dirty_metadata_after_write_failure",
+ )
++EXT2_READONLY_ATIME_TESTS = (
++    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
++    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
++    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes",
++    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
++    "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data",
++)
+ REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+-                       *EXT2_DURABILITY_TESTS)
++                       *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS)
+ 
+ 
+ def check_guest(guest, crate, allow_filtered=False):
+diff --git a/support/build/tests/test_ktest_checker.py b/support/build/tests/test_ktest_checker.py
+index 68d70c9f..c81321a0 100644
+--- a/support/build/tests/test_ktest_checker.py
++++ b/support/build/tests/test_ktest_checker.py
+@@ -155,8 +155,8 @@ class KtestCheckerTests(unittest.TestCase):
+         self.assertIn("no real QEMU guest records", result.stdout)
+ 
+     def test_complete_core_requires_all_named_regressions_exactly_once(self):
+-        self.assertEqual(len(REQUIRED_CORE_TESTS), 31)
+-        self.assertEqual(MINIMUM_CORE_TESTS, 269)
++        self.assertEqual(len(REQUIRED_CORE_TESTS), 36)
++        self.assertEqual(MINIMUM_CORE_TESTS, 274)
+         baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(238))
+         names = (*baseline, *REQUIRED_CORE_TESTS)
+         self.evidence(core_serial(names), crate="aster-core")
+diff --git a/tests/organ_backend/test_permission_attr_smp.py b/tests/organ_backend/test_permission_attr_smp.py
+index 705f25ff..7dc73974 100644
+--- a/tests/organ_backend/test_permission_attr_smp.py
++++ b/tests/organ_backend/test_permission_attr_smp.py
+@@ -33,8 +33,8 @@ source_spec.loader.exec_module(source_verifier)
+ 
+ def fixture_serial(control=None):
+     failed = checker.FAILURES[control]
+-    lines = [checker.BOOTSTRAP, '[ktest runner] running 272 tests in 1 crates',
+-             'running 272 tests in crate "aster-core"', '']
++    lines = [checker.BOOTSTRAP, '[ktest runner] running 277 tests in 1 crates',
++             'running 277 tests in crate "aster-core"', '']
+     for case, name in checker.TESTS.items():
+         busy = "false" if case in failed else "true"
+         fields = f"case={case} cpu_a=0 cpu_b=1 entered=1 lock_busy={busy} a_rc=0 b_rc=0"
+@@ -50,7 +50,7 @@ def fixture_serial(control=None):
+         lines.extend([f"test {name} ...", "PERMISSION_SMP_OBSERVATION " + fields,
+                       " FAILED" if case in failed else " ok"])
+     status = "FAILED" if failed else "ok"
+-    lines.extend(['', f'test result: {status}. {3 - len(failed)} passed; {len(failed)} failed; 269 filtered out.'])
++    lines.extend(['', f'test result: {status}. {3 - len(failed)} passed; {len(failed)} failed; 274 filtered out.'])
+     if not failed:
+         lines.extend(['', '[ktest runner] All crates tested.'])
+     return ('\n'.join(lines) + '\n').encode()
+@@ -109,13 +109,13 @@ class SerialOracle(unittest.TestCase):
+             'missing_case': good.replace(b'case=owner_alias', b'case=missing'),
+             'missing_test': good.replace(checker.TESTS['owner_alias'].encode(), b'aster_core::other'),
+             'duplicate_test': good.replace(checker.TESTS['memfd_seal'].encode(), checker.TESTS['owner_alias'].encode()),
+-            'reduced_compiled_suite': good.replace(b'272 tests', b'271 tests').replace(b'269 filtered', b'268 filtered'),
+-            'filtered_required_test': good.replace(b'3 passed', b'2 passed').replace(b'269 filtered', b'270 filtered'),
++            'reduced_compiled_suite': good.replace(b'277 tests', b'276 tests').replace(b'274 filtered', b'273 filtered'),
++            'filtered_required_test': good.replace(b'3 passed', b'2 passed').replace(b'274 filtered', b'275 filtered'),
+             'soft_skip': good.replace(b'case=owner_alias', b'[skipped: SMP unavailable] case=owner_alias'),
+             'missing_terminal': good.replace(b' ok\n', b'\n', 1),
+             'duplicate_terminal': good.replace(b' ok\n', b' ok\n ok\n', 1),
+             'missing_completion': good.replace(b'[ktest runner] All crates tested.', b''),
+-            'duplicate_runner': good + b'[ktest runner] running 272 tests in 1 crates\n',
++            'duplicate_runner': good + b'[ktest runner] running 277 tests in 1 crates\n',
+             'fatal_panic': good + b'An uncaught panic occurred:\n',
+             'observed_outside_test': good + b'PERMISSION_SMP_OBSERVATION case=owner_alias\n',
+             'duplicate_field': good.replace(b'cpu_a=0', b'cpu_a=0 cpu_a=0'),
+@@ -316,10 +316,11 @@ class ProfileAndFullDenominator(unittest.TestCase):
+ 
+     def test_full_core_retains_all_parent_denominators_and_required_names(self):
+         required = sorted(full_checker.REQUIRED_CORE_TESTS)
+-        self.assertEqual(len(required), 31)
++        self.assertEqual(len(required), 36)
+         with tempfile.TemporaryDirectory(prefix='permission-full-count-parser-') as directory:
+             guest = Path(directory)
+-            for count, omit_required in ((269, False), (268, False), (269, True),
++            for count, omit_required in ((274, False), (273, False), (274, True),
++                                         (269, False), (268, False), (269, True),
+                                          (266, False), (265, False), (266, True),
+                                          (264, False), (265, True), (263, False), (263, True),
+                                          (262, False), (261, False), (262, True),
+@@ -339,8 +340,8 @@ class ProfileAndFullDenominator(unittest.TestCase):
+                     'crate': 'aster-core', 'raw_exit_code': 33, 'timed_out': False,
+                     'serial_sha256': checker.sha(raw)}))
+                 with self.subTest(count=count, omit_required=omit_required):
+-                    if count == 269 and not omit_required:
+-                        self.assertEqual(full_checker.check_guest(guest, 'aster-core')['passed'], 269)
++                    if count == 274 and not omit_required:
++                        self.assertEqual(full_checker.check_guest(guest, 'aster-core')['passed'], 274)
+                     else:
+                         with self.assertRaises(ValueError):
+                             full_checker.check_guest(guest, 'aster-core')

@@ -1,0 +1,264 @@
+{
+  "schema": "ext2.initial-rdonly-independent-review.v1",
+  "review_date": "2026-10-22",
+  "reviewers": [
+    "os_integration_recovery",
+    "d_native_abi_review"
+  ],
+  "verdict": "No blocking source, lock, test-oracle or host-gate issue found; local packaging mode defect repaired and independently verified; native qualification pending separate evidence.",
+  "blocking_findings": [],
+  "reviewed_packaging_revision": 2,
+  "base": {
+    "local_source_head": "b2b3e862bf568dab39bd8331be7def145f770408",
+    "local_source_tree": "7389c0a3f982983087953f75de7042fc058be088",
+    "published_equivalent_base_head": "85d394f99c73ad3194d57c876712ac01b59d90ca",
+    "published_equivalent_base_tree": "7389c0a3f982983087953f75de7042fc058be088"
+  },
+  "scope": "Initial filesystem-wide RDONLY automatic atime after buffered read, direct read and readdir. Not concurrent remount, per-bind RO, NOATIME, explicit utimes, general VFS rejection or virtio/block RO.",
+  "source_files": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs",
+      "bytes": 8538,
+      "sha256": "5b7898c0df24654ef670e56271db677757a34e09ae62a81e5522b292afafad5a",
+      "git_mode": "100644",
+      "content_unchanged_from_packaging_v1": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/readonly_atime_tests.rs",
+      "bytes": 7094,
+      "sha256": "fa793e515769b94bab9a571e12ea99768d0ce82be5329600dac5d9e2a438fd76",
+      "git_mode": "100644",
+      "content_unchanged_from_packaging_v1": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/dir/mod.rs",
+      "bytes": 30386,
+      "sha256": "55e6f075cdcddf4a4021d449ece3944ff4349c5fb98dfc7dc0a12abd8e0787b9",
+      "git_mode": "100644",
+      "content_unchanged_from_packaging_v1": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/file.rs",
+      "bytes": 19962,
+      "sha256": "6e5adf6f602cc6a84579f06e2fc657cc92ef552558a2649cac6fdef0e3ecfb4c",
+      "git_mode": "100644",
+      "content_unchanged_from_packaging_v1": true
+    },
+    {
+      "path": "support/build/ktest/check-permission-smp.py",
+      "bytes": 10283,
+      "sha256": "f1a6f4f019af0d6adcb0d9004931efe797dd1febaf626bf6590f78068efc042a",
+      "git_mode": "100644",
+      "content_unchanged_from_packaging_v1": true
+    },
+    {
+      "path": "support/build/ktest/check.py",
+      "bytes": 11180,
+      "sha256": "e80fc3fe31b689938b742b46efec461dadd07421b2039a9d247d6911f96bb314",
+      "git_mode": "100755",
+      "content_unchanged_from_packaging_v1": true
+    },
+    {
+      "path": "support/build/tests/test_ktest_checker.py",
+      "bytes": 9759,
+      "sha256": "b78d9a7c779eb53a6c85ee0b7997b930fe3b1b4820d51171907c0083c4c6fdd3",
+      "git_mode": "100644",
+      "content_unchanged_from_packaging_v1": true
+    },
+    {
+      "path": "tests/organ_backend/test_permission_attr_smp.py",
+      "bytes": 19994,
+      "sha256": "c997338aeb6feac47fece18efe3631cc559135fdda6b59967177fd7326bd46b4",
+      "git_mode": "100644",
+      "content_unchanged_from_packaging_v1": true
+    }
+  ],
+  "artifacts": {
+    "candidate-files.tar.gz": {
+      "bytes": 27268,
+      "sha256": "dd962045d147975294b1bdcdfd97e818bbbfdc55a6a8a822cab88e2df9ae2140"
+    },
+    "candidate.patch": {
+      "bytes": 19801,
+      "sha256": "4e04d6f3c755476d6a57941ad5d2807db7a09e1751e1908a3b1cfa251b1b2703"
+    },
+    "gate-counts.patch": {
+      "bytes": 9059,
+      "sha256": "214bc7a96bed55f9fd83f120c8b2bb897f0032f48d6068871d33514736ed3e4b"
+    },
+    "kernel.patch": {
+      "bytes": 10742,
+      "sha256": "08ee5a42e2d0d68dd20533813ae5314207a6a5e097e7ee854ab7628629c97019"
+    },
+    "negative-control-original-atime.patch": {
+      "bytes": 1166,
+      "sha256": "f9cddf9b0f6e09163849b50c33d6058eca232cc728b951784fc175cac36afe0a"
+    },
+    "review-manifest.json": {
+      "bytes": 10763,
+      "sha256": "99eb85fdf399af9da344a8741207385a9558c29b3e11208913852b72324dcc82"
+    }
+  },
+  "code_review": {
+    "all_three_read_guards_released_before_helper_write_guard": true,
+    "helper_adds_only_weak_fs_upgrade_and_existing_atomic_flags_load": true,
+    "no_new_superblock_group_or_inode_cache_lock": true,
+    "unchanged_sync_files": [
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/fs.rs",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/sync.rs",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/impl_for_vfs/fs.rs",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/impl_for_vfs/inode.rs"
+    ],
+    "five_ktest_oracles_reviewed": true,
+    "fresh_inode_and_page_cache": true,
+    "counting_backend_accepts_and_forwards_write_bios": true,
+    "persistent_inode_bytes_read_from_backing_segment": true,
+    "rw_positive_control_does_not_require_clock_advance": true,
+    "preexisting_rw_dirty_data_requires_real_sync_write_and_fresh_cache_readback": true,
+    "fifth_test_scope": "Filesystem sync and its internal writeback. No separate explicit inode Full/Data old-dirty-data qualification."
+  },
+  "independently_executed_host_checks": [
+    {
+      "cwd_relative_to_candidate": "tree",
+      "command": [
+        "python3",
+        "-I",
+        "-B",
+        "support/build/tests/test_ktest_checker.py"
+      ],
+      "exit_code": 0,
+      "tests_run": 16,
+      "result": "OK",
+      "review_session_chunk": "18b8b9"
+    },
+    {
+      "cwd_relative_to_candidate": "tree",
+      "command": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/organ_backend/test_permission_attr_smp.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "tests_run": 15,
+      "result": "OK",
+      "review_session_chunk": "c24558"
+    }
+  ],
+  "host_check_evidence_scope": "Summaries transcribed from independent review-session execution results. Existing host-test-tool-results.json and host log files are separate preparer executions, not this reviewer stdout. No content test was rerun merely for the mode-only packaging repair.",
+  "expected_denominators_not_native_results": {
+    "full_core": {
+      "after": 274,
+      "before": 269,
+      "filtered": 0
+    },
+    "host_core_checker_tests": 16,
+    "host_permission_smp_tests": 15,
+    "permission_smp": {
+      "declared_after": 277,
+      "declared_before": 272,
+      "executed": 3,
+      "filtered_after": 274,
+      "filtered_before": 269
+    },
+    "required_names": {
+      "after": 36,
+      "before": 31
+    }
+  },
+  "negative_control": {
+    "executed_natively_by_reviewer": false,
+    "expected_full_core_summary_not_observed": {
+      "passed": 271,
+      "failed": 3,
+      "filtered": 0
+    },
+    "expected_failure_names_not_observed": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes"
+    ],
+    "expected_new_positive_names_not_observed": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data"
+    ],
+    "reason": "Restores only original unconditional set_atime in the same helper; retains tests and sync. Dirty::deref_mut still marks dirty even if timestamps happen to match.",
+    "failure_boundary": "Three RO tests normally fail at atime or dirty-state assertions before sync. The prediction is not evidence of three Write BIOs or three writeback I/O errors.",
+    "assumption": "All tests compile and execute normally and unrelated baseline behavior remains unchanged."
+  },
+  "packaging_mode_issue": {
+    "path": "support/build/ktest/check.py",
+    "baseline_git_mode": "100755",
+    "v1_partial_tree_and_tar_mode": "100644",
+    "v2_partial_tree_and_tar_mode": "100755",
+    "all_eight_content_hashes_unchanged": true,
+    "only_patch_changes": "One check.py index-line mode per candidate.patch and gate-counts.patch; no content or requested mode transition against actual OS base.",
+    "kernel_and_negative_patch_bytes_unchanged": true,
+    "tar_member_names_and_all_contents_unchanged": true,
+    "previous_artifacts": {
+      "candidate.patch": {
+        "bytes": 19801,
+        "sha256": "965c349f023f7122e9806dfe0bd5913a0fbd57dc06b8e6b1aba5da33377cfcdb"
+      },
+      "gate-counts.patch": {
+        "bytes": 9059,
+        "sha256": "b045d989ae5c2340aba26b044df9c6ba567a9db45437da0a70953ec6c5695646"
+      },
+      "candidate-files.tar.gz": {
+        "bytes": 27260,
+        "sha256": "2e6ed8b6c99c138047eed3bd70938ce9bef0682ff49ad58a3de148aac24af2ee"
+      }
+    },
+    "history_path": "packaging-history/v1",
+    "independent_apply_checks": [
+      {
+        "patch": "kernel.patch",
+        "command_template": "git -C <frozen-os-baseline> apply --check --index --whitespace=error <candidate-directory>/<patch>",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "patch": "gate-counts.patch",
+        "command_template": "git -C <frozen-os-baseline> apply --check --index --whitespace=error <candidate-directory>/<patch>",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "patch": "candidate.patch",
+        "command_template": "git -C <frozen-os-baseline> apply --check --index --whitespace=error <candidate-directory>/<patch>",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "remote_preflight_parent_report_not_reviewer_runtime_evidence": {
+    "source": "Latest parent correction in this review session; reviewer did not invoke Runtime.",
+    "attempt_v1": "Stopped before rustfmt because task-isolated nightly lacked the rustfmt component; no compilation or ktest.",
+    "attempts_v2_v3": "Stopped at overly strict exact Unix mode assertions; no fmt, compilation, ktest or chmod.",
+    "actual_remote_worktree_unix_mode": "0700",
+    "actual_remote_index_git_mode": "100755",
+    "owner_executable_bit_present": true,
+    "check_py_sha256": "e80fc3fe31b689938b742b46efec461dadd07421b2039a9d247d6911f96bb314",
+    "remote_0644_claim_withdrawn_by_parent": true,
+    "explanation": "Runtime private umask accounts for 0700; local v1 archive 0644 defect remains a separate real packaging issue.",
+    "next_run_result": "Not read or qualified by this report; parent will check executable semantics and retain 0700."
+  },
+  "native_validation": {
+    "runtime_invoked_by_reviewer": false,
+    "rustfmt_executed_by_reviewer": false,
+    "rust_compile_executed_by_reviewer": false,
+    "kernel_tests_executed_by_reviewer": false,
+    "qemu_executed_by_reviewer": false,
+    "native_success_claimed": false,
+    "production_or_g2_qualification_claimed": false
+  },
+  "report_markdown": {
+    "path": "independent-review.md",
+    "bytes": 12792,
+    "sha256": "572948f86daddf1e8e2e0d9c2df342a97324bddd3219ade33883b3144b19a3e3"
+  }
+}

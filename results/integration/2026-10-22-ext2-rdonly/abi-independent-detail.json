@@ -1,0 +1,339 @@
+{
+  "absent_from_reviewed_abi_directory": [
+    "agentd.elf",
+    "kernel.elf",
+    "payload.raw",
+    "initramfs.cpio.gz",
+    "bios.bin",
+    "agentd-abi-probe"
+  ],
+  "activity": {
+    "extracted_files_modified": false,
+    "host_agentd_execution": false,
+    "network_used": false,
+    "new_native_execution": false,
+    "product_tests_rerun": false,
+    "runtime_tool_used": false
+  },
+  "binding_checks": {
+    "actual_companion_files_match_result": true,
+    "actual_qemu_pin_agrees_with_result": true,
+    "actual_result_hash_matches_shutdown_record": true,
+    "actual_runner_matches_result": true,
+    "actual_runtime_files_match_pin_review": true,
+    "actual_serial_bytes_and_lines_match_shutdown": true,
+    "actual_serial_hash_matches_result_and_shutdown": true,
+    "all_production_daemon_owner_g2_f_boundaries_false": true,
+    "all_reviewed_extracted_bytes_unchanged": true,
+    "child_empty_environment_and_exact_argv": true,
+    "command_log_json_equals_result_json": true,
+    "compiler_requests_static_launcher": true,
+    "complete_serial_has_sync_then_flush_then_reboot": true,
+    "formatter_uses_none_filetype": true,
+    "guest_has_no_recorded_host_filesystem_options": true,
+    "guest_network_disabled": true,
+    "guest_tcg_q35_one_cpu_2048m": true,
+    "inverse_four_pin_changes_reconstruct_old_runner_hash": true,
+    "invocation_nonce_matches_result": true,
+    "invocation_payload_hash_matches_result": true,
+    "kernel_pin_agrees_across_producer_records": true,
+    "manifest_build_and_published_trees_match": true,
+    "no_write_bio_or_io_error_markers": true,
+    "oracle_replay_accepts_recorded_guest_exit_and_timeout": true,
+    "original_agentd_sha_matches_shutdown": true,
+    "original_manifest_hash_agrees_across_producer_records": true,
+    "parsed_child_equals_result_record": true,
+    "payload_is_read_only_in_recorded_qemu_argv": true,
+    "recorded_diff_equals_exact_four_replacements": true,
+    "retained_manifest_binary_equals_result": true,
+    "retained_manifest_build_source_equals_result": true,
+    "retained_manifest_is_exact_runner_save_serialization": true,
+    "retained_manifest_published_source_equals_result": true,
+    "runtime_json_hash_matches_result_and_shutdown": true,
+    "serial_within_original_runner_limit": true,
+    "shutdown_marker_counts_match_retained_record": true,
+    "source_head_tree_agree_across_producer_records": true,
+    "source_review_expected_rejection_matches_oracle": true,
+    "startup_source_record_identity_matches": true,
+    "three_companion_files_equal_old_pin_identities": true
+  },
+  "created_at_utc": "2026-10-22T05:55:59.043022+00:00",
+  "failed_checks": [],
+  "files": {
+    "abi-runner/agentd_abi_probe.c": {
+      "bytes": 2718,
+      "sha256": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427"
+    },
+    "abi-runner/cpio_codec.py": {
+      "bytes": 7644,
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+    },
+    "abi-runner/pin-review.json": {
+      "bytes": 3047,
+      "sha256": "012fd1f5fd2e1fca8b0252b83afbd04c2aae2eb11ba6c46692efcff6ab1eaf71"
+    },
+    "abi-runner/reviewed-kernel-pin-only.diff": {
+      "bytes": 1327,
+      "sha256": "cf1c1c6788e676160b5210a48252ca9c5403be51ab08cc5f3bf48521023e18e0"
+    },
+    "abi-runner/run_agentd_abi.py": {
+      "bytes": 22181,
+      "sha256": "4e119a169f1daa20a4dc45113893301bef35072eea7da1158c6440357e71b61a"
+    },
+    "abi-runner/source-review.json": {
+      "bytes": 2741,
+      "sha256": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
+    },
+    "abi/agentd-symbol-versions.log": {
+      "bytes": 9475,
+      "sha256": "214a565f1a2ef6f8c23c7829a1315ffa64a3794173e522e1f3eb6dddf1d7d9ef"
+    },
+    "abi/command.log": {
+      "bytes": 3251,
+      "sha256": "877a052ad212216954f728cb0ef496a9eeefde139ac593521c7b34a30f0be14c"
+    },
+    "abi/compile-guest-probe.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "abi/format-payload.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "abi/frozen-input-manifest.json": {
+      "bytes": 2074,
+      "sha256": "0b464e10efeb8ac87a3bfb2697c9e4a854aae5def01935f867be13c03fbc6aeb"
+    },
+    "abi/invocation.json": {
+      "bytes": 2253,
+      "sha256": "ef990adca70320a0c9cc19048b5a08a289fb27cba2182c9d16a7b2ab85448203"
+    },
+    "abi/read-only-shutdown-check.json": {
+      "bytes": 1509,
+      "sha256": "18666158851fe4274af2cb0de34ade22cb13c910c70969d7264ec4d5cc89fabe"
+    },
+    "abi/result.json": {
+      "bytes": 3513,
+      "sha256": "33c74375378fc6fe7e9fec4f542d17cc2968f016f6cfb1aabd2015987e6c0ec6"
+    },
+    "abi/runtime-inputs.json": {
+      "bytes": 9297,
+      "sha256": "8f6801a78c66009b4a34cb4add9250ef5f42b65e3ab84533daabbfb1a58866d5"
+    },
+    "abi/serial.log": {
+      "bytes": 7298680,
+      "sha256": "7b9f6ecea33141173f2e4dc683ac131bb85e2ec34ea0bb43c011188b34a61399"
+    }
+  },
+  "frozen_manifest_serialization_boundary": {
+    "byte_hashes_equal": false,
+    "explanation": "run_agentd_abi.py execute line 301 saves decoded manifest through save() at lines 52-53, using indent=2 and sort_keys=True. The packet retains that reserialized snapshot. The original input byte hash remains a producer-recorded pin; no attempt was made to invent original JSON formatting or substitute the snapshot as the pinned original.",
+    "original_input_manifest_bytes_independently_rehashed": false,
+    "producer_original_input_manifest_sha256": "999e632d8e82cc71b58436a5c0a63b50312cf83ccfcfdb35b28b947b0eb12728",
+    "retained_snapshot_sha256": "0b464e10efeb8ac87a3bfb2697c9e4a854aae5def01935f867be13c03fbc6aeb"
+  },
+  "limits": [
+    "The archived result and command.log supply QEMU exit 33 and timed_out=false to the exact oracle; this replay does not re-observe a live process exit.",
+    "Large binary, payload, injected initramfs, BIOS, compiler/QEMU executables and shared-library bytes were not rehashed in this review; their recorded digests and source identities were cross-checked.",
+    "The frozen original input manifest is represented by a runner-generated JSON snapshot with a different byte hash; original input bytes remain producer-retained.",
+    "The retained startup source table agrees with source-review.json but does not include the private source bytes or authenticate a complete source-to-binary build.",
+    "The kernel's whole serial has no observed Write/IoError markers and retains SYNC/Flush/REBOOT; this does not qualify all VFS write denial, explicit metadata mutation, NOATIME, virtio RO negotiation, concurrent remount, crash durability or physical hardware behavior.",
+    "Agentd stopped at the expected missing HEPTA_FLEET_ROOT check. Daemon startup, original writer/outbox runtime, async runtime, native HOS2 G2, UI, F completion and production authority are not qualified.",
+    "The dynamic ET_DYN dev Agentd and its PT_LOAD sum are neither the small static trusted G1-d image nor a measured peak-RSS or release-build limit."
+  ],
+  "replayed_oracle": {
+    "accepted": true,
+    "exact_abi_markers": [
+      {
+        "line": 838,
+        "text": "HEPTA_ABI_BEGIN nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7"
+      },
+      {
+        "line": 21529,
+        "text": "HEPTA_ABI_STDOUT nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 hex="
+      },
+      {
+        "line": 21535,
+        "text": "HEPTA_ABI_STDERR nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 hex=4572726f723a20696e76616c6964206167656e746420636f6e66696775726174696f6e3a2048455054415f464c4545545f524f4f542069732072657175697265640a"
+      },
+      {
+        "line": 21537,
+        "text": "HEPTA_ABI_CHILD nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 kind=exit code=1"
+      },
+      {
+        "line": 21542,
+        "text": "HEPTA_ABI_HARNESS nonce=9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7 exit=0"
+      }
+    ],
+    "new_qemu_exit_observed_by_reviewer": false,
+    "nonce": "9c4df784982288d689d44f8d51d86e7c80c4e572e933481b3fabd07e1c9c6ce7",
+    "observed_child": {
+      "stderr": "Error: invalid agentd configuration: HEPTA_FLEET_ROOT is required\n",
+      "stdout": "",
+      "termination": "kind=exit code=1"
+    },
+    "original_boot_marker_lines": {
+      "TRILLIONNIUM_A01_BOOT_OK": [
+        21544
+      ],
+      "TRILLIONNIUM_A01_INIT_BEGIN": [
+        134
+      ]
+    },
+    "producer_reported_qemu_exit_supplied_to_oracle": 33,
+    "producer_reported_timeout_supplied_to_oracle": false
+  },
+  "result_boundaries": {
+    "daemon_started": false,
+    "f_completed": false,
+    "g2_completed": false,
+    "original_owner_runtime": false,
+    "production": false
+  },
+  "review_command": {
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "-"
+    ],
+    "calls": [
+      "oracle(raw_serial, result['qemu_exit'], result['timed_out'], result['nonce'])",
+      "child_observation(raw_serial, result['nonce'])"
+    ],
+    "method": "Parse retained runner AST, compile only original oracle and child_observation FunctionDefs, read serial bytes, invoke those two pure functions. No module import, main, execute, run_qemu, frozen_input, compiler, or payload builder invocation.",
+    "pure_function_source_sha256": {
+      "child_observation": "1b33570fd5a5d68efd96df6c32bb0203b0efdfa6711baac802a79f54d43f7f9c",
+      "oracle": "f0e8ef1b362ac5f2e388e23b01f76be7b3365ce5dc332d277c14910c8db2973e"
+    },
+    "stdin_review_body_sha256": "c70e28d4849c3e5e262872dd72aa7cb5c19ce6671ac608ffa8da0902b5460531"
+  },
+  "runner_delta": {
+    "companion_source_files_unchanged": [
+      "agentd_abi_probe.c",
+      "cpio_codec.py",
+      "source-review.json"
+    ],
+    "new_sha256": "4e119a169f1daa20a4dc45113893301bef35072eea7da1158c6440357e71b61a",
+    "old_sha256_reconstructed_in_memory": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c",
+    "replacement_count": 4,
+    "replacements": [
+      {
+        "after": "KERNEL_SHA = \"8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09\"",
+        "after_occurrences": 1,
+        "before": "KERNEL_SHA = \"8170402aaa7408eb2c4ab1ade2cd1d9641ef03ccbd37631aaec775528df2ede7\""
+      },
+      {
+        "after": "KERNEL_HEAD = \"9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd\"",
+        "after_occurrences": 1,
+        "before": "KERNEL_HEAD = \"85d394f99c73ad3194d57c876712ac01b59d90ca\""
+      },
+      {
+        "after": "KERNEL_TREE = \"eeae4dc1ef546d408b55c98310e99e3156f08207\"",
+        "after_occurrences": 1,
+        "before": "KERNEL_TREE = \"7389c0a3f982983087953f75de7042fc058be088\""
+      },
+      {
+        "after": "ordinary kernel is not the reviewed 9076f1a artifact",
+        "after_occurrences": 1,
+        "before": "ordinary kernel is not the reviewed 85d artifact"
+      }
+    ]
+  },
+  "schema": "ext2.native-abi-independent-review.v1",
+  "scope": "Independent replay of retained ordinary-Agentd ABI oracle and whole-serial shutdown observations; no new guest or binary execution.",
+  "source_and_artifact_bindings": {
+    "ordinary_kernel_sha256_from_agreeing_records": "8bda1c4876cbfbca0c441adb2d3ac4a91c4b3ff2e9faadedcb3d43503a0b6c09",
+    "ordinary_os_source": {
+      "head": "9076f1ae6ebe29e2fdb78475e7f3157ce2f1d2dd",
+      "tree": "eeae4dc1ef546d408b55c98310e99e3156f08207"
+    },
+    "original_agentd": {
+      "bytes": 484463504,
+      "path": "agentd.elf",
+      "profile": "dev; debug=0; incremental=0; Rust 1.95.0",
+      "sha256": "228d2e07583d0d27cf5750a6ba169254380fb4d49f1fdc21adcc04001fc3252f"
+    },
+    "original_agentd_source": {
+      "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+      "tree": "f722fbe5f24275c324089be720559a40901105f3"
+    },
+    "payload_sha256_from_agreeing_records": "237c321730d327262db3b6a6b400a9e76b26343c2023ac6c897a05d0e2176994",
+    "payload_unchanged_is_producer_observation": true,
+    "runtime_closure_json_sha256": "8f6801a78c66009b4a34cb4add9250ef5f42b65e3ab84533daabbfb1a58866d5",
+    "runtime_elf_summary": {
+      "interpreter": "/lib64/ld-linux-x86-64.so.2",
+      "library_count": 6,
+      "load_memory_bytes": 331289544,
+      "machine": 62,
+      "type": 3
+    },
+    "runtime_enforced_rust_startup_record_count": 5,
+    "startup_raw_source_bytes_present_here": false,
+    "startup_source_records_checked": 6
+  },
+  "status": "passed_with_explicit_retained_evidence_limits",
+  "whole_serial": {
+    "bytes": 7298680,
+    "counting_scope": "Whole retained guest serial after removing ANSI escapes; Write counts are observable virtio BioRequest and SubmittedBio log markers, not a separate physical-device trace.",
+    "flush_between_sync_and_reboot": [
+      {
+        "line": 21567,
+        "text": "[    18.160] INFO  : virtio: Handle Request: BioRequest { type_: Flush, sid_range: BlockId(0)..BlockId(0), num_segments: 0, bios: [SubmittedBio { metadata: BioMetadata { type: Flush, sid_range: BlockId(0)..BlockId(0), status: Submit }, sid_offset: 0, segments: [] }] }"
+      }
+    ],
+    "lines": 21569,
+    "marker_counts": {
+      "any_io_error": 0,
+      "block_write_error": 0,
+      "error_log_lines": 0,
+      "panic_case_insensitive": 0,
+      "reboot": 1,
+      "submitted_write_bio": 0,
+      "sync": 1,
+      "warning_log_lines": 28,
+      "write_bio": 0,
+      "writeback_error": 0
+    },
+    "other_warning_lines": [
+      {
+        "line": 24,
+        "text": "WARN: IOMMU initialization error: NoIommu"
+      },
+      {
+        "line": 29,
+        "text": "WARN: framebuffer: Framebuffer not found"
+      },
+      {
+        "line": 97,
+        "text": "[     0.421] WARN  : simpledrm: Failed to init: boot framebuffer is unavailable"
+      }
+    ],
+    "sha256": "7b9f6ecea33141173f2e4dc683ac131bb85e2ec34ea0bb43c011188b34a61399",
+    "sys_reboot": [
+      {
+        "line": 21569,
+        "text": "[    18.163] INFO  : [pid=1][tid=1][id=169][SYS_REBOOT]"
+      }
+    ],
+    "sys_sync": [
+      {
+        "line": 21566,
+        "text": "[    18.153] INFO  : [pid=1][tid=1][id=162][SYS_SYNC]"
+      }
+    ],
+    "syscall_334": {
+      "implemented_by_this_fix": false,
+      "name": "rseq",
+      "observation": "The recorded process reached the expected early configuration refusal despite these warnings; this establishes fallback only for this run."
+    },
+    "unimplemented_syscall_counts": {
+      "334": 25
+    },
+    "virtio_handle_request_counts": {
+      "Flush": 1,
+      "Read": 10313,
+      "Write": 0
+    }
+  }
+}
