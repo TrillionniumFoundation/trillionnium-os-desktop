@@ -40,7 +40,8 @@ use spin::Once;
 pub use self::{
     attr::{SysAttr, SysAttrSet, SysAttrSetBuilder},
     node::{
-        MAX_ATTR_SIZE, SysBranchNode, SysNode, SysNodeId, SysNodeType, SysObj, SysPerms, SysSymlink,
+        MAX_ATTR_SIZE, SysBranchNode, SysNode, SysNodeId, SysNodeType, SysObj, SysOwnership,
+        SysPerms, SysSymlink,
     },
     tree::SysTree,
     utils::{

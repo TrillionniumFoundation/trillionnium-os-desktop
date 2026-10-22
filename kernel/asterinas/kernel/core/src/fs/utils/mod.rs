@@ -32,7 +32,7 @@ pub(crate) type Str16 = aster_util::fixed_str::FixedNonTerminatedCStr<16>;
 pub(crate) type Str64 = aster_util::fixed_str::FixedNonTerminatedCStr<64>;
 
 /// Returns the current thread's filesystem IDs, or root IDs for kernel threads.
-pub(in crate::fs) fn current_fs_ids() -> (Uid, Gid) {
+pub(crate) fn current_fs_ids() -> (Uid, Gid) {
     Thread::current()
         .and_then(|thread| {
             let posix_thread = thread.as_posix_thread()?;

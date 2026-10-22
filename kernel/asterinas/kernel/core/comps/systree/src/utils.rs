@@ -399,6 +399,10 @@ macro_rules! _inner_impl_sys_node {
 pub trait _InheritSysLeafNode<T: SysNode> {
     fn field(&self) -> &ObjFields<T>;
 
+    fn ownership(&self) -> crate::SysOwnership {
+        crate::SysOwnership::ROOT
+    }
+
     fn is_root(&self) -> bool {
         false
     }
@@ -450,6 +454,7 @@ pub trait _InheritSysLeafNode<T: SysNode> {
 ///   - [`SysNode::perms`]
 /// - Methods with default implementations that users can override:
 ///   - [`SysObj::is_root`]
+///   - [`SysObj::ownership`]
 ///   - [`SysObj::init_parent`]
 ///   - [`SysNode::is_attr_absent`]
 ///   - [`SysNode::read_attr`]
@@ -527,6 +532,10 @@ macro_rules! inherit_sys_leaf_node {
                 <_ as $crate::_InheritSysLeafNode<$struct_name>>::is_root(self)
             }
 
+            fn ownership(&self) -> $crate::SysOwnership {
+                <_ as $crate::_InheritSysLeafNode<$struct_name>>::ownership(self)
+            }
+
             fn init_parent(&self, parent: alloc::sync::Weak<dyn $crate::SysBranchNode>) {
                 <_ as $crate::_InheritSysLeafNode<$struct_name>>::init_parent(self, parent)
             }
@@ -548,6 +557,10 @@ macro_rules! inherit_sys_leaf_node {
 #[doc(hidden)]
 pub trait _InheritSysBranchNode<T: SysBranchNode> {
     fn field(&self) -> &ObjFields<T>;
+
+    fn ownership(&self) -> crate::SysOwnership {
+        crate::SysOwnership::ROOT
+    }
 
     fn is_root(&self) -> bool {
         false
@@ -669,6 +682,10 @@ macro_rules! inherit_sys_branch_node {
                 <_ as $crate::_InheritSysBranchNode<$struct_name>>::is_root(self)
             }
 
+            fn ownership(&self) -> $crate::SysOwnership {
+                <_ as $crate::_InheritSysBranchNode<$struct_name>>::ownership(self)
+            }
+
             fn init_parent(&self, parent: alloc::sync::Weak<dyn $crate::SysBranchNode>) {
                 <_ as $crate::_InheritSysBranchNode<$struct_name>>::init_parent(self, parent)
             }
@@ -746,6 +763,10 @@ macro_rules! inherit_sys_branch_node {
 pub trait _InheritSysSymlinkNode<T: SysSymlink> {
     fn field(&self) -> &ObjFields<T>;
 
+    fn ownership(&self) -> crate::SysOwnership {
+        crate::SysOwnership::ROOT
+    }
+
     fn is_root(&self) -> bool {
         false
     }
@@ -816,6 +837,10 @@ macro_rules! inherit_sys_symlink_node {
 
             fn is_root(&self) -> bool {
                 <_ as $crate::_InheritSysSymlinkNode<$struct_name>>::is_root(self)
+            }
+
+            fn ownership(&self) -> $crate::SysOwnership {
+                <_ as $crate::_InheritSysSymlinkNode<$struct_name>>::ownership(self)
             }
 
             fn init_parent(&self, parent: alloc::sync::Weak<dyn $crate::SysBranchNode>) {

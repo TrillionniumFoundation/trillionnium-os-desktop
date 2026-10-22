@@ -57,7 +57,7 @@ use core::{
 
 use aster_systree::{
     BranchNodeFields, Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysBranchNode, SysObj,
-    SysPerms, SysStr, inherit_sys_branch_node,
+    SysOwnership, SysPerms, SysStr, inherit_sys_branch_node,
 };
 use aster_util::printer::VmPrinter;
 use inherit_methods_macro::inherit_methods;
@@ -65,7 +65,10 @@ use ostd::sync::{RwMutexReadGuard, RwMutexWriteGuard};
 use spin::Once;
 
 use crate::{
-    fs::cgroupfs::controller::{Controller, PidsPreCharge, SubCtrlSet, SubCtrlType},
+    fs::{
+        cgroupfs::controller::{Controller, PidsPreCharge, SubCtrlSet, SubCtrlType},
+        utils::current_fs_ids,
+    },
     prelude::*,
     process::{Pid, Process, pid_table},
 };
@@ -120,13 +123,13 @@ impl CgroupMembership {
     pub(super) fn count_subtree_tasks(&mut self, cgroup_node: &CgroupNode) -> u32 {
         fn count_node(node: &CgroupNode) -> u32 {
             node.with_inner(|procs| {
-                procs.values().filter_map(Weak::upgrade).fold(
-                    0u32,
-                    |sum, process| {
+                procs
+                    .values()
+                    .filter_map(Weak::upgrade)
+                    .fold(0u32, |sum, process| {
                         sum.checked_add(process.tasks().lock().pids_count())
                             .expect("retained tasks fit in the TID namespace")
-                    },
-                )
+                    })
             })
             .unwrap_or(0)
         }
@@ -177,7 +180,9 @@ impl CgroupMembership {
             None
         };
 
-        if old_cgroup.as_ref().is_some_and(|node| node.controller.has_trusted_cpu_management())
+        if old_cgroup
+            .as_ref()
+            .is_some_and(|node| node.controller.has_trusted_cpu_management())
             || new_cgroup.controller.has_trusted_cpu_management()
         {
             return Err(Error::PermissionDenied);
@@ -335,7 +340,11 @@ impl CgroupMembership {
     }
 
     fn try_move_process_to_root(&mut self, process: &Process) -> Result<()> {
-        if process.cgroup().get().is_some_and(|node| node.controller.has_trusted_cpu_management()) {
+        if process
+            .cgroup()
+            .get()
+            .is_some_and(|node| node.controller.has_trusted_cpu_management())
+        {
             return Err(Error::PermissionDenied);
         }
         self.move_process_to_root(process);
@@ -368,6 +377,8 @@ impl Debug for CgroupSystem {
 /// this type.
 pub(crate) struct CgroupNode {
     fields: BranchNodeFields<CgroupNode, Self>,
+    /// Captured when this cgroup is created, before publishing it to its parent.
+    ownership: SysOwnership,
     /// The controller of this cgroup node.
     controller: Controller,
     /// The inner data. If it is `None`, then the cgroup node is dead.
@@ -482,6 +493,8 @@ impl CgroupSysNode for CgroupSystem {
 
 impl CgroupNode {
     pub(self) fn new(name: SysStr, depth: usize, parent_controller: &Controller) -> Arc<Self> {
+        let (uid, gid) = current_fs_ids();
+        let ownership = SysOwnership::new(uid.into(), gid.into());
         let mut builder = SysAttrSetBuilder::new();
         // TODO: Add more attributes as needed. The normal cgroup node may have
         // more attributes than the unified one.
@@ -521,6 +534,7 @@ impl CgroupNode {
             let fields = BranchNodeFields::new(name, attrs, weak_self.clone());
             CgroupNode {
                 fields,
+                ownership,
                 controller: Controller::new(Some(parent_controller)),
                 inner: RwMutex::new(Some(Inner::default())),
                 cpu_charge_leases: AtomicUsize::new(0),
@@ -758,6 +772,10 @@ inherit_sys_branch_node!(CgroupSystem, fields, {
 });
 
 inherit_sys_branch_node!(CgroupNode, fields, {
+    fn ownership(&self) -> SysOwnership {
+        self.ownership
+    }
+
     fn is_attr_absent(&self, name: &str) -> bool {
         if name.starts_with("cgroup.") {
             false
