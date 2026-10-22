@@ -1,0 +1,84 @@
+{
+  "reviewed_at_utc": "2026-10-21T12:43:58.295560+00:00",
+  "reviewer": "dependency_closure",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "source_head": "0e4a0025c8bac8a70db861cb3fe2bde70752094f",
+  "parent": "24dc73185d739695ef755c6bbd9d22ee38acf9be",
+  "tree": "4cd0b1535a1303015d88d27bd5ca07e3c40957de",
+  "source_only": true,
+  "compiled_by_reviewer": false,
+  "files": [
+    {
+      "path": "docs/ORGAN_BROKER.md",
+      "bytes": 7239,
+      "sha256": "0e26adf6ebf7ca0d86e207cdd86bc922bee1afd5af884b8537c385622fb921c0"
+    },
+    {
+      "path": "ui/Cargo.lock",
+      "bytes": 83160,
+      "sha256": "ac689dc1b04a8183dbba675761c5a7dd888b2ec2e6ae0efdd4105f4aa12fef53"
+    },
+    {
+      "path": "ui/broker/Cargo.toml",
+      "bytes": 300,
+      "sha256": "536bf4d3aa4b9e6a7687874c803faf7e6201a4cddc4896effea04ce4b5718e40"
+    },
+    {
+      "path": "ui/broker/src/host.rs",
+      "bytes": 7326,
+      "sha256": "0e7ae03088e1d8ed7d28cccf32ea651a40cabde294a0b1073aff067278d92d9b"
+    },
+    {
+      "path": "ui/broker/src/lib.rs",
+      "bytes": 46659,
+      "sha256": "24607a413ae5dd8567e6a3b19055d9d3871376e5788ca4987fffdd997404e439"
+    },
+    {
+      "path": "ui/broker/tests/host_transport.rs",
+      "bytes": 9399,
+      "sha256": "bebb251ff30660d5b0a6703aef982588e1ae4bdd1c13cbe5c7f5e96cf1167253"
+    },
+    {
+      "path": "ui/session/Cargo.toml",
+      "bytes": 335,
+      "sha256": "7b561bf2b24f2c63ac0f36d56309120d20a2ac99249523be5b2222d595529a32"
+    },
+    {
+      "path": "ui/session/src/main.rs",
+      "bytes": 50333,
+      "sha256": "27426a82729f288ebdee7c10a69521e151f68b52a60c4a51e0ae21da6bda5ace"
+    },
+    {
+      "path": "ui/session/tests/organ_broker.rs",
+      "bytes": 10315,
+      "sha256": "7bedfc5a024f6c8a028b7639840e2ba051ccc4e1c555c9e6ac0cec9af51cb335"
+    }
+  ],
+  "findings": [
+    {
+      "status": "resolved_in_source_pending_native_regression",
+      "issue": "A full AF_UNIX accept backlog could indefinitely block the startup stale-socket probe while Session held its instance lock.",
+      "original_location": "ui/session/src/main.rs::bind_session_socket formerly blocking UnixStream::connect",
+      "resolution": "Linux startup now calls host::connect_until with one 500 ms absolute deadline. Only ConnectionRefused can remove a stale socket; timeout, unconnected and other errors preserve it.",
+      "source_locations": [
+        "ui/broker/src/host.rs:97-112",
+        "ui/session/src/main.rs:579-610"
+      ],
+      "regression": "ui/session/tests/organ_broker.rs:255-307 creates actual listen(0) full queues for both session.sock and organ.sock, requires bounded unsuccessful child exit, and checks the exact original dev/ino remains."
+    }
+  ],
+  "verified_boundaries": [
+    "Kernel peer credentials are obtained before reading an Organ request; claimed UID, PID, role and numeric session ID cannot substitute.",
+    "The original frame is bounded to MAX_FRAME+1 and read through EOF before typed serde deserialization and session admission. Unknown fields, nested duplicate fields, second lines and trailing malformed input remain rejected.",
+    "Every accepted exchange uses the same single-owner Broker and explicitly closes its session before attempting the reply write. Transport errors do not trigger retry or invent non-submission.",
+    "Absolute read/write deadlines are recomputed from one fixed Instant; progress and interrupted syscalls cannot reset it. Client connect is included, and peer_addr rejects an unconnected descriptor after readiness.",
+    "The original host schema/commands, private directories, instance lock and only-ConnectionRefused stale recovery are preserved. Both listeners are polled once per single-owner iteration.",
+    "Existing Broker effect capabilities remain default-deny, drafts LocalOnly and unsupported reconciliation Unknown. This is not production HOS2 effect authority or completion of issue 111.",
+    "Cargo lock contains the three new local dependency edges without an external package version update."
+  ],
+  "remaining_qualification": [
+    "Exact 0e4a source final native tests and negative controls have not yet run, according to owner handoff. Earlier 73-test execution covers an earlier source only.",
+    "Source review does not establish a hard real-time CPU scheduling guarantee or new bound for future blocking Broker handlers. Current Broker handle paths inspected are synchronous bounded local logic."
+  ],
+  "blocking_findings_remaining_in_reviewed_source": []
+}

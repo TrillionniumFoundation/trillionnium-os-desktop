@@ -117,6 +117,8 @@ impl DisplayTracker {
 }
 
 struct Session {
+    #[cfg(target_os = "linux")]
+    broker: trill_ui_broker::Broker,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -140,6 +142,8 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            #[cfg(target_os = "linux")]
+            broker: trill_ui_broker::Broker::new(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -522,7 +526,7 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
     }
 }
 
-fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result<()> {
+fn serve_connection(stream: UnixStream, session: &mut Session) -> io::Result<()> {
     require_same_uid_peer(&stream)?;
     // Invalid/malformed peers must not prevent reaping independent apps.
     // A valid Request::Snapshot/Cancel already refreshes in handle(), but
@@ -531,7 +535,18 @@ fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result
     // This is a local single-owner session loop, so an idle same-UID peer
     // must not block task reaping and every other GUI client for two seconds.
     // A legitimate request is <=64 KiB and written as one bounded frame.
+    // The deadline covers the complete read/handle/write exchange; per-read
+    // timeouts alone let a slow sender postpone every other connection.
+    #[cfg(target_os = "linux")]
+    let mut stream = trill_ui_broker::host::DeadlineStream::new(
+        stream,
+        std::time::Instant::now() + trill_ui_broker::host::EXCHANGE_TIMEOUT,
+    );
+    #[cfg(not(target_os = "linux"))]
+    let mut stream = stream;
+    #[cfg(not(target_os = "linux"))]
     stream.set_read_timeout(Some(std::time::Duration::from_millis(500)))?;
+    #[cfg(not(target_os = "linux"))]
     stream.set_write_timeout(Some(std::time::Duration::from_millis(500)))?;
     let response = match read_frame(&mut stream) {
         Ok(frame) => match parse_host_request(&frame) {
@@ -561,32 +576,49 @@ fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result
     }
 }
 
-fn main() -> io::Result<()> {
-    let socket = socket_path()?;
-    private_socket_dir(&socket)?;
-    // Never inspect/delete a stale Unix socket until the exclusive lock is
-    // acquired. This prevents the dual-starter unlink/rebind race.
-    let _instance_lock = acquire_session_lock(&socket)?;
-    if let Ok(metadata) = fs::symlink_metadata(&socket) {
+/// Called only after validating the private directory and holding the one
+/// Session instance lock. Both listeners belong to that same process owner.
+fn bind_session_socket(socket: &Path) -> io::Result<UnixListener> {
+    if let Ok(metadata) = fs::symlink_metadata(socket) {
         if !metadata.file_type().is_socket() {
             return Err(io::Error::new(
                 io::ErrorKind::AlreadyExists,
                 "socket path occupied by non-socket",
             ));
         }
-        match UnixStream::connect(&socket) {
+        #[cfg(target_os = "linux")]
+        let probe = trill_ui_broker::host::connect_until(
+            socket,
+            std::time::Instant::now() + trill_ui_broker::host::EXCHANGE_TIMEOUT,
+        );
+        #[cfg(not(target_os = "linux"))]
+        let probe = UnixStream::connect(socket);
+        match probe {
             Ok(_) => {
                 return Err(io::Error::new(
                     io::ErrorKind::AddrInUse,
                     "session service already running",
                 ))
             }
-            Err(e) if e.kind() == io::ErrorKind::ConnectionRefused => fs::remove_file(&socket)?,
+            Err(e) if e.kind() == io::ErrorKind::ConnectionRefused => fs::remove_file(socket)?,
             Err(e) => return Err(e),
         };
     }
-    let listener = UnixListener::bind(&socket)?;
-    fs::set_permissions(&socket, Permissions::from_mode(0o600))?;
+    let listener = UnixListener::bind(socket)?;
+    fs::set_permissions(socket, Permissions::from_mode(0o600))?;
+    listener.set_nonblocking(true)?;
+    Ok(listener)
+}
+
+fn main() -> io::Result<()> {
+    let socket = socket_path()?;
+    private_socket_dir(&socket)?;
+    // Never inspect/delete a stale Unix socket until the exclusive lock is
+    // acquired. This prevents the dual-starter unlink/rebind race.
+    let _instance_lock = acquire_session_lock(&socket)?;
+    let listener = bind_session_socket(&socket)?;
+    #[cfg(target_os = "linux")]
+    let broker_listener = bind_session_socket(&trill_ui_broker::host::broker_socket_path()?)?;
     let app_binary = std::env::current_exe()?.with_file_name("trill-app-window");
     eprintln!(
         "trill-session pid={} socket={} app={}",
@@ -598,24 +630,49 @@ fn main() -> io::Result<()> {
     session.hepta = hepta::HeptaMonitor::from_env();
     // Reap children even while the shell/client is stopped. Blocking
     // incoming() would accumulate zombies until the GUI reconnects.
-    listener.set_nonblocking(true)?;
     loop {
+        let mut accepted = false;
         match listener.accept() {
             Ok((stream, _addr)) => {
+                accepted = true;
                 stream.set_nonblocking(false)?;
                 if let Err(e) = serve_connection(stream, &mut session) {
                     eprintln!("session request error: {e}");
                 }
             }
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                session.refresh();
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
-            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted
+                ) => {}
             Err(e) => {
                 eprintln!("session accept error: {e}");
-                std::thread::sleep(std::time::Duration::from_millis(100));
             }
+        }
+        // At most one active connection, with no worker/task allocation per
+        // peer. Poll each endpoint once so Organ traffic cannot starve the
+        // existing host lifecycle protocol, or vice versa.
+        #[cfg(target_os = "linux")]
+        match broker_listener.accept() {
+            Ok((stream, _addr)) => {
+                accepted = true;
+                stream.set_nonblocking(false)?;
+                if let Err(error) =
+                    trill_ui_broker::host::serve_exchange(stream, &mut session.broker)
+                {
+                    eprintln!("broker request error: {error}");
+                }
+            }
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted
+                ) => {}
+            Err(error) => eprintln!("broker accept error: {error}"),
+        }
+        session.refresh();
+        if !accepted {
+            std::thread::sleep(std::time::Duration::from_millis(100));
         }
     }
 }

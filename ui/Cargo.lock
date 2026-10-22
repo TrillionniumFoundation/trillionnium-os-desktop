@@ -2423,6 +2423,8 @@ version = "0.1.0"
 dependencies = [
  "hepta-os-observer",
  "serde_json",
+ "socket2",
+ "trill-ui-broker",
  "trill-ui-core",
 ]
 
@@ -2434,6 +2436,16 @@ dependencies = [
  "eframe",
  "serde",
  "serde_json",
+ "trill-ui-core",
+]
+
+[[package]]
+name = "trill-ui-broker"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "socket2",
  "trill-ui-core",
 ]
 
