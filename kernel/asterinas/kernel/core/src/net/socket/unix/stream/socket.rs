@@ -521,14 +521,19 @@ impl Socket for UnixStreamSocket {
         flags: RecvFlags,
     ) -> Result<(RecvOutput, MessageHeader)> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - RecvFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
-        let (output, control_messages) =
+        // MSG_DONTWAIT applies to this operation without changing the shared
+        // file description's blocking mode or receive timeout.
+        let (output, control_messages) = if flags.contains(RecvFlags::MSG_DONTWAIT) {
+            self.try_recv(writer, flags)
+        } else {
             self.block_on(IoEvents::IN, self.timeouts.recv_timeout(), || {
                 self.try_recv(writer, flags)
-            })?;
+            })
+        }?;
 
         let message_header = MessageHeader::new(None, control_messages);
 

@@ -32,6 +32,8 @@ import run_queryabi_guest as replay
 require, digest, save = replay.require, replay.digest, ordinary.save_json
 ENDPOINT = "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs"
 CONNECTED = "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
+SOCKET = "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs"
+SOCKET_SHA = "160802e7e207e4a20e69559eff3b678189a29665a0336955cdc1c41f27ad1593"
 ENDPOINT_SHA = "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba"
 CONNECTED_SHA = {
     "positive": "10ccbc29b3155e4c7ce52732754844e5ecbb045d1f6f20b48f856691e4c7354a",
@@ -126,6 +128,7 @@ def execute(args, output, result):
     selection_valid(args.selection, args.variant)
     before = ordinary.source_snapshot(ROOT, args.expected_source_head, args.expected_source_tree)
     required = {ENDPOINT: ENDPOINT_SHA, CONNECTED: CONNECTED_SHA[args.variant],
+                SOCKET: SOCKET_SHA,
                 "tests/kernel/network/unix_stream_probe.c": PROBE_SHA,
                 "tests/kernel/network/unix_stream_protocol.json": oracle.PROTOCOL_SHA256}
     for name, sha in required.items():

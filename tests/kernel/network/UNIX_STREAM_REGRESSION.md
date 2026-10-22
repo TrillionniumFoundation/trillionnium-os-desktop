@@ -18,6 +18,16 @@ messages when no progress remains. Sequence-packet handling still processes
 zero-length packets, peek behavior remains non-consuming, and rights transfer
 uses the existing original ownership path.
 
+The first native syscall run also exposed a per-operation nonblocking bug:
+`recvmsg` always used the socket's file-description blocking mode and ignored
+`MSG_DONTWAIT`. An open, empty blocking socket therefore slept instead of
+returning EAGAIN. The stream/sequence-packet receive entry point now attempts
+that operation directly when the flag is present, preserving the shared
+blocking mode, receive timeout and all control-message handling. The unchanged
+`open_empty` regression observed this failure under the original 20-second
+alarm before the fix. The runner pins this third production source file across
+the positive and all three qualification variants.
+
 These are socket correctness changes. They do not themselves qualify original
 Agentd shutdown, production authority, native HOS2 effects, or persistent Hepta
 recovery. Those gates retain their independent original-owner lifecycle tests.
