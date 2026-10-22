@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "os": {
+      "hepta_adapter": "services/hepta-os/src/lib.rs",
+      "notes_broker": "ui/broker/src/notes.rs",
+      "notes_core": "ui/core/src/notes.rs",
+      "bootstrap_core": "ui/core/src/notes_bootstrap.rs",
+      "session_entry": "ui/session/src/main.rs",
+      "session_bootstrap": "ui/session/src/notes_bootstrap.rs",
+      "notes_app": "ui/app-window/src/main.rs",
+      "notes_app_target": "ui/app-window/src/notes_organ.rs",
+      "session_contract": "services/hepta-os/UPSTREAM_CONTRACT.json",
+      "objective_contract": "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json",
+      "history_contract": "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "cpu_contract": "services/hepta-os/CPU_UPSTREAM_CONTRACT.json"
+    },
+    "hepta": {
+      "production_writer_host": "codex-rs/hepta-agentd/src/production_writer_host.rs",
+      "notes_channel": "codex-rs/hepta-agentd/src/notes_channel.rs",
+      "notes_bootstrap": "codex-rs/hepta-agentd/src/notes_bootstrap.rs",
+      "notes_owner": "codex-rs/hepta-memory/src/production_notes.rs",
+      "durable_writer": "codex-rs/hepta-memory/src/production_writer.rs",
+      "lease_outbox": "codex-rs/hepta-memory/src/local_lease_outbox.rs",
+      "final_use_authority": "codex-rs/hepta-contracts/src/final_use.rs",
+      "final_use_control": "codex-rs/hepta-contracts/src/final_use_control.rs",
+      "history_owner": "codex-rs/hepta-agentd/src/objective_history.rs"
+    }
+  },
+  "goldens": {
+    "notes_target": {
+      "os": "tests/ui/notes-target-v1.json",
+      "hepta": "codex-rs/hepta-memory/tests/fixtures/notes-target-v1.json"
+    },
+    "notes_bootstrap": {
+      "os": "tests/ui/notes-bootstrap-v1.json",
+      "hepta": "codex-rs/hepta-agentd/tests/fixtures/notes-bootstrap-v1.json"
+    }
+  }
+}

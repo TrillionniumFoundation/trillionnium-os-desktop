@@ -31,6 +31,13 @@ notifications must be portal mediated with revocation, not default Hepta
 recording. Trusted prompts must be rendered from a system-owned surface.
 The host prototype offers none of these grants.
 
+The private Linux Notes destination is documented in `NOTES_ORGAN.md`. Its
+bounded, inherited socketpair accepts exact-payload document changes only when
+a trusted host explicitly calls the target behind the original production
+writer/Final-use boundary. Standalone Session retains that handle privately,
+does not register an original effect owner, and adds no renderer edit request.
+An application model ack, layout marker and durable owner result are distinct.
+
 ### Consumer-side permission state
 
 `support/ui/src/permission.rs` provides the shell's consumer-only

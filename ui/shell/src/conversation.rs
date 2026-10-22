@@ -693,7 +693,7 @@ mod tests {
         task.state = TaskState::Running;
         task.updated_unix_ms = 1;
         let mut observation = HostObservation::default();
-        observation.observe(INSTANCE, &[task.clone()], 20_000, now);
+        observation.observe(INSTANCE, std::slice::from_ref(&task), 20_000, now);
         observation.expire(now, 20_000);
         assert!(observation.is_current());
         assert!(observation.quote(1, Workspace::Personal).is_ok());

@@ -51,6 +51,12 @@ cleanup() {
                 [[ ! -f "$log" ]] || cp -- "$log" "$A10_HEADLESS_LOG_DIR/hepta-layout/" 2>/dev/null || true
             done
         fi
+        if [[ -d "$runtime/notes" ]]; then
+            mkdir -p -- "$A10_HEADLESS_LOG_DIR/notes" || true
+            for log in "$runtime"/notes/*.log "$runtime"/notes/*.json; do
+                [[ ! -f "$log" ]] || cp -- "$log" "$A10_HEADLESS_LOG_DIR/notes/" 2>/dev/null || true
+            done
+        fi
     fi
     rm -rf -- "$runtime"
     exit "$status"
@@ -79,10 +85,23 @@ for _ in {1..100}; do
 done
 [[ "$ready" -eq 1 ]] || { echo "Weston client connection timeout" >&2; exit 1; }
 
-# The inner smoke script creates another private XDG_RUNTIME_DIR and connects
-# to this exact compositor socket using an absolute WAYLAND_DISPLAY.
+# The inner smoke script builds the binaries, creates another private runtime
+# and connects to this exact compositor through an absolute WAYLAND_DISPLAY.
 export A10_SMOKE_LOG_DIR="$runtime/smoke"
 bash tests/ui/smoke-wayland.sh
+
+# Reuse this exact task-owned compositor for the Notes destination and
+# inherited Session handoff. These remain destination/transport qualifications,
+# not a configured production FinalUse/owner or Asterinas run.
+mkdir -p "$runtime/notes"
+cargo build --manifest-path ui/Cargo.toml -p trill-ui-broker --example notes_host_probe --locked
+ui_binaries="$(cd "${CARGO_TARGET_DIR:-$PWD/ui/target}/debug" && pwd -P)"
+TRILL_NOTES_PROBE_ISOLATED=1 TRILL_NOTES_PROBE_CAPTURE_MS=0 \
+    "$ui_binaries/examples/notes_host_probe" "$ui_binaries/trill-app-window" \
+    >"$runtime/notes/destination.json" 2>"$runtime/notes/destination.log"
+TRILL_NOTES_PROBE_ISOLATED=1 python3 tests/ui/test-notes-bootstrap-ipc.py "$ui_binaries" \
+    >"$runtime/notes/bootstrap.json" 2>"$runtime/notes/bootstrap.log"
+
 python3 tests/ui/probe-hepta-wayland.py \
     --binaries "${CARGO_TARGET_DIR:-$PWD/ui/target}/debug" \
     --output "$runtime/hepta-layout"

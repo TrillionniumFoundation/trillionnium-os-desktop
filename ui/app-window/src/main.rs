@@ -1,6 +1,7 @@
 //! One independent client window per app process. No embedded webview or Node.
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
+mod notes_organ;
 use eframe::egui::{self, RichText};
 use std::io::Write;
 use trill_ui_core::{AppKind, Workspace};
@@ -10,6 +11,7 @@ struct ClientWindow {
     workspace: Workspace,
     task_id: u64,
     notes: String,
+    notes_organ: Option<notes_organ::NotesAppChannel>,
     left: String,
     right: String,
     result: String,
@@ -23,6 +25,13 @@ struct ClientWindow {
 
 impl eframe::App for ClientWindow {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let mut notes_updated = false;
+        if let Some(organ) = &mut self.notes_organ {
+            if organ.poll() {
+                self.notes = organ.text().to_owned();
+                notes_updated = true;
+            }
+        }
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading(self.kind.name());
             ui.label(format!("Workspace: {} · host task #{}", self.workspace.name(), self.task_id));
@@ -39,6 +48,13 @@ impl eframe::App for ClientWindow {
                             .desired_width(f32::INFINITY)
                             .hint_text("中文输入、候选词、焦点测试……"),
                     );
+                    if let Some(organ) = &mut self.notes_organ {
+                        if editor.changed() && !organ.local_edit(self.notes.clone()) {
+                            self.notes = organ.text().to_owned();
+                        }
+                        ui.small(format!("Document revision: {} · private Notes destination", organ.revision()));
+                        ui.small("External edits require the original Hepta owner. This document is limited to 4096 UTF-8 bytes.");
+                    }
                     ui.small(if editor.has_focus() {
                         "Keyboard focus: NOTES editor (IME target)"
                     } else {
@@ -85,6 +101,18 @@ impl eframe::App for ClientWindow {
             // The session owns this child's stdout pipe. Ignore BrokenPipe:
             // session failure MUST NOT crash an independently running app.
             let _ = std::io::stdout().write_all(b"TRILL_UI_FIRST_FRAME_V1\n");
+        }
+        if notes_updated {
+            if let Some(organ) = &self.notes_organ {
+                // Independent layout witness after the widget tree consumed
+                // this document. It is still not compositor pixel evidence.
+                let marker = format!(
+                    "TRILL_NOTES_LAYOUT_V1:{}:{}\n",
+                    organ.revision(),
+                    trill_ui_core::notes::sha256_hex(self.notes.as_bytes())
+                );
+                let _ = std::io::stdout().write_all(marker.as_bytes());
+            }
         }
     }
 }
@@ -279,10 +307,20 @@ fn parse_kind(value: &str) -> Result<AppKind, String> {
     }
 }
 
-fn parse_arguments() -> Result<(AppKind, Workspace, u64), String> {
+fn parse_arguments() -> Result<
+    (
+        AppKind,
+        Workspace,
+        u64,
+        Option<trill_ui_core::notes::NotesTargetIdentity>,
+    ),
+    String,
+> {
     let mut kind = None;
     let mut workspace = None;
     let mut task_id = None;
+    let mut notes_session = None;
+    let mut notes_incarnation = None;
     let mut args = std::env::args().skip(1);
     while let Some(flag) = args.next() {
         let value = args.next().ok_or_else(|| format!("{flag} missing value"))?;
@@ -297,18 +335,34 @@ fn parse_arguments() -> Result<(AppKind, Workspace, u64), String> {
                 })
             }
             "--task-id" => task_id = Some(value.parse::<u64>().map_err(|_| "invalid task id")?),
+            "--notes-session" if notes_session.is_none() => notes_session = Some(value),
+            "--notes-incarnation" if notes_incarnation.is_none() => notes_incarnation = Some(value),
             _ => return Err(format!("unknown argument: {flag}")),
         }
     }
-    Ok((
-        kind.ok_or("missing kind")?,
-        workspace.ok_or("missing workspace")?,
-        task_id.ok_or("missing task id")?,
-    ))
+    let kind = kind.ok_or("missing kind")?;
+    let workspace = workspace.ok_or("missing workspace")?;
+    let task_id = task_id.ok_or("missing task id")?;
+    let notes = match (notes_session, notes_incarnation) {
+        (None, None) => None,
+        (Some(session_instance), Some(incarnation)) if kind == AppKind::Notes => {
+            let identity = trill_ui_core::notes::NotesTargetIdentity {
+                session_instance,
+                task_id,
+                incarnation,
+            };
+            identity.validate().map_err(|_| "invalid Notes target")?;
+            Some(identity)
+        }
+        _ => {
+            return Err("Notes destination requires both identity fields and Notes app kind".into())
+        }
+    };
+    Ok((kind, workspace, task_id, notes))
 }
 
 fn main() -> eframe::Result {
-    let (kind, workspace, task_id) = parse_arguments().unwrap_or_else(|error| {
+    let (kind, workspace, task_id, notes_target) = parse_arguments().unwrap_or_else(|error| {
         eprintln!("trill-app-window: {error}");
         std::process::exit(2);
     });
@@ -321,11 +375,17 @@ fn main() -> eframe::Result {
         options,
         Box::new(move |cc| {
             host_fonts::install(&cc.egui_ctx);
+            let notes_organ = notes_target
+                .map(|target| {
+                    notes_organ::NotesAppChannel::from_inherited_stdin(cc.egui_ctx.clone(), target)
+                })
+                .transpose()?;
             Ok(Box::new(ClientWindow {
                 kind,
                 workspace,
                 task_id,
                 notes: String::new(),
+                notes_organ,
                 left: String::new(),
                 right: String::new(),
                 result: String::new(),
@@ -353,6 +413,7 @@ mod tests {
             workspace: Workspace::Personal,
             task_id: 1,
             notes: String::new(),
+            notes_organ: None,
             left: "4".into(),
             right: "0".into(),
             result: String::new(),
@@ -377,6 +438,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 9,
             notes: String::new(),
+            notes_organ: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -428,6 +490,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 17,
             notes: String::new(),
+            notes_organ: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -550,6 +613,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 12,
             notes: String::new(),
+            notes_organ: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -594,6 +658,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 10,
             notes: String::new(),
+            notes_organ: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -640,6 +705,7 @@ mod tests {
             workspace: Workspace::Personal,
             task_id: 11,
             notes: String::new(),
+            notes_organ: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),

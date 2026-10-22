@@ -277,7 +277,7 @@ mod tests {
             ContextUnavailable::TaskNotInSnapshot
         );
         assert_eq!(
-            resolve_host_task(&reference, Some(A), &[task.clone()], false).unwrap_err(),
+            resolve_host_task(&reference, Some(A), std::slice::from_ref(&task), false).unwrap_err(),
             ContextUnavailable::SourceUnavailable
         );
         let tasks = vec![task];

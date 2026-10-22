@@ -812,6 +812,21 @@ impl Desktop {
                 task.pid, task.exit_code
             ));
             ui.small(format!("HOS2 revision: {:?}", task.hos2_revision));
+            if let Some(notes) = &task.notes_destination {
+                ui.separator();
+                ui.label("Notes destination / 笔记目的端");
+                ui.small(format!("Channel observation: {:?}", notes.channel));
+                ui.small(format!("Target incarnation: {}", notes.incarnation));
+                if notes.original_owner_registered {
+                    ui.small("Original Hepta parent acknowledged target attachment; each edit still requires its authority.");
+                } else {
+                    ui.colored_label(
+                        warning(),
+                        "Original Hepta owner is not attached to this Notes window.",
+                    );
+                }
+                ui.small("This view provides no edit command or grant. App acknowledgement and visible pixels are separate evidence.");
+            }
             ui.small(format!(
                 "Wayland socket epoch at launch: {:?}",
                 task.wayland_socket_epoch_at_launch

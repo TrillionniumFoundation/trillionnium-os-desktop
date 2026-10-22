@@ -228,3 +228,16 @@ pub(super) fn new_resource_limits_for_init() -> ResourceLimits {
         .set_raw_rlimit_unchecked(raw_rlimit);
     resource_limits
 }
+
+/// Creates the original limits for a stopped, sealed initial workload.
+/// This is a per-process virtual mapping limit, not an aggregate RSS budget.
+#[cfg(feature = "g1d-trusted-control")]
+pub(super) fn new_resource_limits_for_initial_workload(address_space_bytes: u64) -> ResourceLimits {
+    assert!(address_space_bytes != 0 && address_space_bytes != RLIM_INFINITY);
+    let limits = new_resource_limits_for_init();
+    limits.get_rlimit(ResourceType::RLIMIT_AS).set_raw_rlimit_unchecked(RawRLimit64 {
+        cur: address_space_bytes,
+        max: address_space_bytes,
+    });
+    limits
+}

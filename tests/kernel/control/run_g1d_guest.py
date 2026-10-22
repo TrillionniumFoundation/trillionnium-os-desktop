@@ -34,7 +34,11 @@ inspect_probe_elf = observation.inspect_probe_elf
 CAP_NS = 50_000_000
 PERIOD_NS = 100_000_000
 LEASE_NS = 300_000_000_000
+RECOVERY_GRACE_NS = 30_000_000_000
+WORKLOAD_AS_BYTES = 256 * 1024 * 1024
 COMPLETE = "G1D_COMPLETE native_manage=true history=true hepta_durability=false hardware=false"
+WORKLOAD_ISOLATED = ("G1D_WORKLOAD_LINUX_ISOLATED uid=60001 gid=60001 groups=0 caps=0 nnp=1 securebits=195 "
+                     "signal_cases=10 boundary_cases=17 exec_cases=1")
 MARKERS = (
     "G1D_WORKLOAD_NO_AUTHORITY", "G1D_RECOVERY_READY",
     "G1D_QUERYABI_OK supported_ops=62 max_request=40 max_response=64 features=0",
@@ -48,7 +52,7 @@ MARKERS = (
     "G1D_MANAGER_EXEC_BEGIN sequence=1025",
     "G1D_RECOVERY_RETIRED_AFTER_MANAGER_EXEC through=1025 next=1026",
     "G1D_RECOVERY_STOPPED",
-    "G1D_CHILDREN_REAPED workload_signal=15 recovery_exit=0", COMPLETE,
+    "G1D_CHILDREN_REAPED workload_signal=15 recovery_exit=0", COMPLETE, WORKLOAD_ISOLATED,
 )
 COMMITTED = re.compile(r"^\[hepta-g1d\] trusted initial image committed: bytes=([0-9]+) entry=0x([0-9a-f]+)$")
 ROLE_COMMITTED = re.compile(r"^\[hepta-g1d\] trusted role committed: role=([123]) pid=([0-9]+)$")
@@ -64,7 +68,8 @@ APPLY_KEYS = ("role", "sequence", "cap", "previous", "revision", "effective", "c
 APPLY = re.compile(r"^G1D_APPLY " + " ".join(key + r"=([0-9]+)" for key in APPLY_KEYS) + r"$")
 APPLY_CASES = ((1, 1, 25_000_000, 0), (1, 2, 25_000_000, 1), (1, 5, CAP_NS, 3),
                (1, 7, 0, 4), (3, 1, CAP_NS, 5), (1, 8, 1, 6), (1, 9, 999, 7),
-               (1, 10, 1001, 8), (1, 11, CAP_NS, 9), (1, 1025, CAP_NS, 1023))
+               (1, 10, 1001, 8), (1, 11, CAP_NS, 9), (1, 1025, 25_000_000, 1023),
+               (3, 2, CAP_NS, 1024))
 COPYOUT = re.compile(r"^G1D_COPYOUT_REPLAY sequence=3 errno=14 revision=([0-9]+) exact_bytes=true conflicts=2$")
 ALIAS_KINDS = ("cpu_max", "migrate_into", "migrate_out", "disable_controller")
 ALIAS = re.compile(r"^G1D_LEGACY_ALIAS_DENIED kind=([a-z_]+) errno=13$")
@@ -74,7 +79,33 @@ RECOVERY = re.compile(r"^G1D_INDEPENDENT_RECOVERY resumed_total=([0-9]+) revisio
 FULL = re.compile(r"^G1D_FULL_WINDOW capacity=1024 refused_sequence=1025 old_results=retained revision=([0-9]+)$")
 EXEC = re.compile(r"^G1D_EXEC_REVOKED old_fd_errno=116 no_auxv=true own_history=denied "
                   r"recovery_history=terminal sequence=1025$")
-DYNAMIC = (BOOT, APPLY, COPYOUT, ALIAS, ZERO, RECOVERY, FULL, EXEC)
+USER_STOP = re.compile(r"^G1D_USER_STOP_CONFIRMED pid=([0-9]+) signal=19 sample=([0-9]+) total=([0-9]+) "
+                       r"heartbeat=([0-9]+) revision=([0-9]+)$")
+USER_PAUSED = re.compile(r"^G1D_RECOVERY_PRESERVED_USER_STOP sample_a=([0-9]+) sample_b=([0-9]+) total_a=([0-9]+) "
+                         r"total_b=([0-9]+) heartbeat_a=([0-9]+) heartbeat_b=([0-9]+) revision=([0-9]+)$")
+RECOVERY_USED = re.compile(r"^G1D_RECOVERY_SINGLE_USE_DENIED sequence=3 revision=([0-9]+) requested_cap=0 status=2$")
+USER_RESUME = re.compile(r"^G1D_USER_RESUME_REQUIRED total=([0-9]+) heartbeat=([0-9]+) revision=([0-9]+) signal=18$")
+CREDENTIAL_KEYS = ("pid", "ruid", "euid", "suid", "fsuid", "rgid", "egid", "sgid", "fsgid", "groups",
+                   "effective", "permitted", "inheritable", "bounding", "ambient", "nnp", "securebits", "sid")
+CREDENTIALS = re.compile(r"^G1D_WORKLOAD_CREDS phase=([a-z_]+) "
+                         + " ".join(key + r"=([0-9]+)" for key in CREDENTIAL_KEYS) + r"$")
+WORKLOAD_SIGNAL = re.compile(r"^G1D_WORKLOAD_SIGNAL target=(manager|recovery) signal=([0-9]+) rc=(-?[0-9]+) errno=([0-9]+)$")
+WORKLOAD_BOUNDARY = re.compile(r"^G1D_WORKLOAD_BOUNDARY name=([a-z_]+) rc=(-?[0-9]+) errno=([0-9]+)$")
+ADDRESS_KEYS = ("pid", "soft", "hard", "after_soft", "after_hard", "oversized_bytes", "oversized_rc",
+                "oversized_errno", "raise_hard_rc", "raise_hard_errno", "invalid_soft_rc", "invalid_soft_errno",
+                "mapped_page_bytes", "page_roundtrip")
+ADDRESS_SPACE = re.compile(r"^G1D_WORKLOAD_ADDRESS_SPACE phase=([a-z_]+) "
+    + " ".join(key + (r"=(-?[0-9]+)" if key.endswith("_rc") else r"=([0-9]+)") for key in ADDRESS_KEYS) + r"$")
+SIGNAL_CASES = tuple((target, signal) for signal in (0, 19, 15, 9, 18) for target in ("manager", "recovery"))
+BOUNDARY_CASES = (("setresuid_root", 1), ("setresgid_root", 1), ("setgroups_root", 1),
+                  ("raise_cap_kill", 1), ("raise_ambient_kill", 1), ("clear_no_new_privs", 22),
+                  ("clear_securebits", 1), ("ptrace_attach_manager", 5), ("ptrace_pokedata_manager", 3),
+                  ("proc_mem_manager", 13), ("proc_maps_manager", 13), ("ptrace_attach_recovery", 5),
+                  ("ptrace_pokedata_recovery", 3), ("proc_mem_recovery", 13),
+                  ("proc_maps_recovery", 13), ("rewrite_ready", 13), ("forge_recovery_command", 13))
+DYNAMIC = (BOOT, APPLY, COPYOUT, ALIAS, ZERO, RECOVERY, FULL, EXEC, CREDENTIALS, WORKLOAD_SIGNAL, WORKLOAD_BOUNDARY,
+           USER_STOP, USER_PAUSED, RECOVERY_USED, USER_RESUME)
+DYNAMIC += (ADDRESS_SPACE,)
 
 
 def build_initramfs(original, probe):
@@ -99,6 +130,57 @@ def records(lines, pattern):
     return [(index, match) for index, line in enumerate(lines) if (match := pattern.fullmatch(line))]
 
 
+def workload_boundary(lines, pids):
+    creds, signals, boundaries = (records(lines, pattern)
+                                  for pattern in (CREDENTIALS, WORKLOAD_SIGNAL, WORKLOAD_BOUNDARY))
+    rows = [{"phase": match[1], **dict(zip(CREDENTIAL_KEYS, map(int, match.groups()[1:])))}
+            for _, match in creds]
+    memory = records(lines, ADDRESS_SPACE)
+    memory_rows = [{"phase": match[1], **dict(zip(ADDRESS_KEYS, map(int, match.groups()[1:])))}
+                   for _, match in memory]
+    credentials_ok = len(pids) == 3 and len(rows) == 3 and [row["phase"] for row in rows] == [
+        "initial", "after_denials", "after_exec"]
+    if credentials_ok:
+        for row in rows:
+            credentials_ok &= (all(row[key] == 60001 for key in CREDENTIAL_KEYS[1:9])
+                               and all(row[key] == 0 for key in ("groups", "effective", "permitted",
+                                                               "inheritable", "bounding", "ambient"))
+                               and row["nnp"] == 1 and row["securebits"] == 195 and row["sid"] == pids[1])
+        credentials_ok &= (rows[0]["pid"] == rows[1]["pid"] == pids[1]
+                           and 1 < rows[2]["pid"] < 1 << 31 and rows[2]["pid"] not in pids)
+    signals_ok = (len(signals) == len(SIGNAL_CASES)
+                  and all((match[1], int(match[2])) == case and int(match[3]) == -1 and int(match[4]) == 1
+                          for (_, match), case in zip(signals, SIGNAL_CASES)))
+    boundaries_ok = (len(boundaries) == len(BOUNDARY_CASES)
+                     and all((match[1], int(match[3])) == case and int(match[2]) == -1
+                             for (_, match), case in zip(boundaries, BOUNDARY_CASES)))
+    memory_ok = credentials_ok and len(memory_rows) == 3 and [row["phase"] for row in memory_rows] == [
+        "initial", "after_fork", "after_exec"]
+    if memory_ok:
+        expected = {key: WORKLOAD_AS_BYTES for key in ("soft", "hard", "after_soft", "after_hard", "oversized_bytes")}
+        expected.update(oversized_rc=-1, oversized_errno=12, raise_hard_rc=-1, raise_hard_errno=1,
+                        invalid_soft_rc=-1, invalid_soft_errno=22, mapped_page_bytes=4096, page_roundtrip=1)
+        memory_ok = (all(row[key] == value for row in memory_rows for key, value in expected.items())
+                     and memory_rows[0]["pid"] == pids[1]
+                     and memory_rows[1]["pid"] == memory_rows[2]["pid"] == rows[2]["pid"])
+    ordered = False
+    if credentials_ok and signals_ok and boundaries_ok and memory_ok and lines.count(WORKLOAD_ISOLATED) == 1 \
+            and lines.count("G1D_WORKLOAD_NO_AUTHORITY") == 1:
+        workload_boot = [index for index, match in records(lines, BOOT) if match[1] == "2"]
+        indices = [creds[0][0], *[index for index, _ in signals], *[index for index, _ in boundaries],
+                   creds[1][0], memory[0][0], memory[1][0], creds[2][0], memory[2][0],
+                   lines.index(WORKLOAD_ISOLATED), lines.index("G1D_WORKLOAD_NO_AUTHORITY")]
+        ordered = (len(workload_boot) == 1 and workload_boot[0] < indices[0]
+                   and all(left < right for left, right in zip(indices, indices[1:])))
+    return {"passed": bool(credentials_ok and signals_ok and boundaries_ok and memory_ok and ordered),
+            "credential_observations": rows, "nonroot_credentials_survive_setuid_exec": bool(credentials_ok),
+            "cross_role_signals_denied": bool(signals_ok), "linux_boundary_cases_exact": bool(boundaries_ok),
+            "ptrace_attach_profile": "unsupported_EIO; supported_POKEDATA_denied_ESRCH; proc_mem_and_maps_denied_EACCES",
+            "per_process_address_space_inherited_and_enforced": bool(memory_ok),
+            "address_space_observations": memory_rows,
+            "observations_ordered": ordered}
+
+
 def evaluate_positive(raw, code, timed_out, probe_info):
     require(len(raw) <= replay.MAX_SERIAL_BYTES, "G1-d serial exceeds evidence bound")
     text = ordinary.boot_check.ANSI.sub("", raw.decode(errors="replace"))
@@ -120,6 +202,7 @@ def evaluate_positive(raw, code, timed_out, probe_info):
     activation_before_resume = (bootstrap_ok
         and all(images[i][0] < roles[i][0] for i in range(3))
         and max(index for index, _ in images + roles) < activation[0][0] < min(index for index, _ in boots))
+    workload = workload_boundary(lines, pids)
     applied_records = records(lines, APPLY)
     applied = [dict(zip(APPLY_KEYS, map(int, match.groups()))) for _, match in applied_records]
     accounting_ok = len(applied) == len(APPLY_CASES)
@@ -151,6 +234,8 @@ def evaluate_positive(raw, code, timed_out, probe_info):
         previous = item
     copyout, aliases, zero = records(lines, COPYOUT), records(lines, ALIAS), records(lines, ZERO)
     recovery, full, executed = records(lines, RECOVERY), records(lines, FULL), records(lines, EXEC)
+    user_stop, user_paused, recovery_used, user_resume = (records(lines, pattern) for pattern in
+                                                        (USER_STOP, USER_PAUSED, RECOVERY_USED, USER_RESUME))
     retry_ok = len(copyout) == 1 and int(copyout[0][1][1]) == initial + 3
     aliases_ok = tuple(m[1] for _, m in aliases) == ALIAS_KINDS
     history_ok = len(full) == 1 and int(full[0][1][1]) == initial + 1023 and len(executed) == 1
@@ -165,16 +250,32 @@ def evaluate_positive(raw, code, timed_out, probe_info):
                    and sample_b <= applied[4]["before_sample"] and total_b == applied[4]["before_total"])
         resumed = (0 < total < 1 << 64 and total > total_b and total >= applied[4]["after_total"]
                    and total <= applied[5]["before_total"] and recovery_revision == initial + 6)
+    bounded_recovery = False
+    if accounting_ok and len(pids) == 3 and len(user_stop) == len(user_paused) == len(recovery_used) == len(user_resume) == 1:
+        stopped_pid, stop_sample, stop_total, stop_heartbeat, stop_revision = map(int, user_stop[0][1].groups())
+        a, b, total_a, total_b, heart_a, heart_b, revision = map(int, user_paused[0][1].groups())
+        continued_total, continued_heartbeat, continued_revision = map(int, user_resume[0][1].groups())
+        bounded_recovery = (all(0 <= value < 1 << 64 for value in
+            (stop_sample, stop_total, stop_heartbeat, a, b, total_a, total_b, heart_a, heart_b,
+             continued_total, continued_heartbeat)) and stopped_pid == pids[1]
+            and stop_revision == initial + 1024 and revision == continued_revision == initial + 1025
+            and int(recovery_used[0][1][1]) == revision
+            and applied[9]["after_sample"] <= stop_sample <= applied[10]["before_sample"]
+            and applied[9]["after_total"] <= stop_total == applied[10]["before_total"] == applied[10]["after_total"]
+            and applied[10]["after_sample"] <= a and b >= a + 2 * PERIOD_NS
+            and total_a == total_b == stop_total and heart_a == heart_b == stop_heartbeat > 0
+            and continued_total > stop_total and continued_heartbeat > stop_heartbeat)
     # Only actual manager actions are globally ordered. The three independently
     # scheduled initial processes may print their boot/readiness records in any order.
     ordered = False
-    if exact and accounting_ok and retry_ok and aliases_ok and history_ok and len(zero) == len(recovery) == 1:
+    if exact and accounting_ok and retry_ok and aliases_ok and history_ok and bounded_recovery and len(zero) == len(recovery) == 1:
         marker = lambda index: lines.index(MARKERS[index])
         action = lambda index: applied_records[index][0]
         steps = [marker(2), action(0), action(1), marker(3), copyout[0][0], marker(4), marker(5),
                  action(2), marker(6), marker(7), marker(8), *[index for index, _ in aliases], action(3),
                  zero[0][0], action(4), recovery[0][0], action(5), action(6), action(7), action(8),
-                 marker(9), full[0][0], action(9), marker(10), marker(11), executed[0][0], marker(12),
+                 marker(9), full[0][0], action(9), marker(10), user_stop[0][0], marker(11), executed[0][0],
+                 action(10), user_paused[0][0], recovery_used[0][0], user_resume[0][0], marker(12),
                  marker(13), marker(14), marker(15)]
         ordered = all(left < right for left, right in zip(steps, steps[1:]))
         if bootstrap_ok:
@@ -190,12 +291,15 @@ def evaluate_positive(raw, code, timed_out, probe_info):
                   and not any(marker in text for marker in (*ordinary.boot_check.FATAL_PANICS, "Kernel panic"))
                   and not any(line.startswith("G1D_FAIL") for line in lines))
     passed = (type(code) is int and code == 33 and timed_out is False and exact and activation_before_resume
-              and accounting_ok and retry_ok and aliases_ok and history_ok and stopped and resumed and ordered and no_failure)
+              and workload["passed"] and accounting_ok and retry_ok and aliases_ok and history_ok
+              and stopped and resumed and bounded_recovery and ordered and no_failure)
     return {"passed": bool(passed), "marker_counts": counts, "three_private_bootstraps": bool(bootstrap_ok),
             "manifest_verified_before_any_resume": bool(activation_before_resume), "role_pids": list(pids),
+            "workload_linux_isolation": workload,
             "apply_records": applied, "initial_revision": initial, "native_accounting_preserved": bool(accounting_ok),
             "copyout_replay_exact": bool(retry_ok), "legacy_aliases_denied": aliases_ok,
             "zero_budget_stops_real_workload": bool(stopped), "independent_recovery_resumes_workload": bool(resumed),
+            "bounded_recovery_after_manager_exec_preserves_user_stop": bool(bounded_recovery),
             "full_window_and_exec_history": bool(history_ok), "manager_actions_ordered": bool(ordered),
             "no_failure": no_failure, "unexpected_records": unexpected + unknown_kernel,
             "raw_serial_sha256": digest(raw), "raw_serial_size": len(raw)}
@@ -215,6 +319,62 @@ def evaluate_rejection(raw, code, timed_out, reason):
     return {"passed": type(code) is int and code == 65 and timed_out is False and rejected and no_resume and exact_failure,
             "reason": reason, "exact_rejection": rejected, "no_commit_activation_or_guest": no_resume,
             "initial_loader_failure": exact_failure, "raw_serial_sha256": digest(raw), "raw_serial_size": len(raw)}
+
+
+def evaluate_root_workload(raw, code, timed_out, probe_info):
+    """Require the actual old root credentials and two non-destructive signal probes.
+
+    A panic, missing syscall, timeout or an unrelated assertion never qualifies
+    this production mutation. The unmodified probe stops before sending any
+    destructive signal and PID 1 powers off after observing no heartbeat.
+    """
+    positive = evaluate_positive(raw, code, timed_out, probe_info)
+    text = ordinary.boot_check.ANSI.sub("", raw.decode(errors="replace"))
+    lines = text.splitlines()
+    pids = positive["role_pids"]
+    creds = records(lines, CREDENTIALS)
+    rows = positive["workload_linux_isolation"]["credential_observations"]
+    root = len(pids) == 3 and len(rows) == 1 and rows[0]["phase"] == "initial"
+    if root:
+        row = rows[0]
+        root = (row["pid"] == row["sid"] == pids[1]
+                and all(row[key] == 0 for key in CREDENTIAL_KEYS[1:9])
+                and row["groups"] == 1
+                and all(row[key] == (1 << 41) - 1 for key in ("effective", "permitted", "bounding"))
+                and all(row[key] == 0 for key in ("inheritable", "ambient", "nnp", "securebits")))
+    signals = records(lines, WORKLOAD_SIGNAL)
+    signal_access = (len(signals) == 2 and all(match[1] == target and tuple(map(int, match.groups()[1:])) == (0, 0, 0)
+                    for (_, match), target in zip(signals, ("manager", "recovery"))))
+    failure = re.compile(r"^G1D_FAIL at=([a-z_]+) line=([0-9]+) errno=([0-9]+) pid=([0-9]+) role=([123])$")
+    failures = records(lines, failure)
+    expected_failure = (len(pids) == 3 and len(failures) == 2
+        and [(match[1], int(match[4]), int(match[5])) for _, match in failures]
+            == [("workload_privilege_boundary", pids[1], 2), ("workload_really_running", pids[0], 1)]
+        and all(int(match[2]) > 0 for _, match in failures) and int(failures[0][1][3]) == 0)
+    allowed = (BOOT, CREDENTIALS, WORKLOAD_SIGNAL, failure)
+    unexpected = [line for line in lines if line.startswith("G1D_") and line != "G1D_RECOVERY_READY"
+                  and not any(pattern.fullmatch(line) for pattern in allowed)]
+    unknown_kernel = [line for line in lines if line.startswith("[hepta-g1d]")
+                      and not any(pattern.fullmatch(line) for pattern in (COMMITTED, ROLE_COMMITTED, ACTIVATED))]
+    ordered = False
+    if root and signal_access and expected_failure and lines.count("G1D_RECOVERY_READY") == 1:
+        boots = {int(match[1]): index for index, match in records(lines, BOOT)}
+        indices = [boots.get(2, len(lines)), creds[0][0], signals[0][0], signals[1][0],
+                   failures[0][0], failures[1][0]]
+        ordered = (all(left < right for left, right in zip(indices, indices[1:]))
+                   and boots.get(3, len(lines)) < lines.index("G1D_RECOVERY_READY") < failures[1][0])
+    clean_failure = (not unexpected and not unknown_kernel and "rejected initial image" not in text
+                     and not any(marker in text for marker in (*ordinary.boot_check.FATAL_PANICS, "Kernel panic")))
+    passed = (type(code) is int and code == 33 and timed_out is False and not positive["passed"]
+              and positive["manifest_verified_before_any_resume"] and root and signal_access
+              and expected_failure and ordered and clean_failure)
+    return {"passed": bool(passed), "actual_root_credential_observations": rows,
+            "both_cross_role_signal_permission_checks_succeeded": bool(signal_access),
+            "unchanged_positive_oracle_rejected": positive["passed"] is False,
+            "exact_failure_after_unsafe_credentials": bool(expected_failure and ordered),
+            "no_destructive_signal_sent": bool(signal_access and clean_failure),
+            "raw_serial_sha256": digest(raw), "raw_serial_size": len(raw)}
+
 
 def verify_build(directory, snapshot, target, probe):
     for name in ("make-exit-code.txt", "log-exit-code.txt", "run-exit-code.txt"):
@@ -246,7 +406,8 @@ def verify_build(directory, snapshot, target, probe):
                          "embedded_input": str(embedded), "bytes": len(probe), "sha256": digest(probe),
                          "supported_ops": 62, "features": 0, "bootstrap_version": 2, "bootstrap_bytes": 192,
                          "roles": ["manager", "workload", "recovery"],
-                         "cap_ns": CAP_NS, "period_ns": PERIOD_NS, "lease_ns": LEASE_NS}
+                         "cap_ns": CAP_NS, "period_ns": PERIOD_NS, "lease_ns": LEASE_NS,
+                         "recovery_grace_ns": RECOVERY_GRACE_NS, "workload_address_space_bytes": WORKLOAD_AS_BYTES}
     require(set(manifest) == set(expected_manifest) | {"source"}
             and all(manifest.get(key) == value for key, value in expected_manifest.items()), "trusted build manifest differs")
     require(Path(manifest["source"]).read_bytes() == probe, "input changed after the build snapshot")
