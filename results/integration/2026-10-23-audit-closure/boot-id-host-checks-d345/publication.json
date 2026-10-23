@@ -1,0 +1,42 @@
+{
+  "schema": "trillionnium.source-bound-acceptance-publication.v1",
+  "raw_evidence_directory": "/data/asterinas-audit-build.8tdrjboi/proc-boot-host-02",
+  "files": [
+    {
+      "raw": "checker-optimized.log",
+      "published": "checker-optimized.log.gz",
+      "raw_bytes": 117,
+      "raw_sha256": "fb1b20e9b9dd439c3e76bdf4df95b3c037992c4aca84e48e646071b218d85b54",
+      "published_sha256": "670c382c90fea790bd98b6fe0fb97640969d7b8cd574b44c89886e2078c75afe",
+      "compressed": true
+    },
+    {
+      "raw": "checker.log",
+      "published": "checker.log.gz",
+      "raw_bytes": 118,
+      "raw_sha256": "2c4e2432a4ce2604199292d3ac324be22e8d36acc3c4f6a596d4e05c8f421ee8",
+      "published_sha256": "9224c36593e3baf439a4be3689e19ecde3e9f49fd158a9ccb65a3f421901158e",
+      "compressed": true
+    },
+    {
+      "raw": "first-attempt-observation.json",
+      "published": "first-attempt-observation.json",
+      "raw_bytes": 380,
+      "raw_sha256": "4f5af5a89fede21d2362dde657c335d4f0951c13a27eb88d3902d4954fcf5e4d",
+      "published_sha256": "4f5af5a89fede21d2362dde657c335d4f0951c13a27eb88d3902d4954fcf5e4d",
+      "compressed": false
+    },
+    {
+      "raw": "linux-reference.log",
+      "published": "linux-reference.log.gz",
+      "raw_bytes": 545,
+      "raw_sha256": "4a4974f9e4b70dc27d0ff5f550333adfb7fd36a333b9d01711e1b80e87bea18c",
+      "published_sha256": "b0654efa053069f15d25d4befb47a3716f450521a6af7b2cf940b8eed20a9df5",
+      "compressed": true
+    }
+  ],
+  "selection": "Original text receipts, manifests and logs. ELF/initrd/targets remain at the recorded raw location; their SHA256 is retained.",
+  "production_ready": false,
+  "g2_complete": false,
+  "boundary": "Retained Linux reference11 case log and original checker18 normal/18 optimized logs. First old required-count fixture failure is an observation only; its full raw log was not retained. This publication adds no reconstructed pass receipt."
+}

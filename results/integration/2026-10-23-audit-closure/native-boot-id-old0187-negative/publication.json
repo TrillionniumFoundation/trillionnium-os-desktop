@@ -1,0 +1,36 @@
+{
+  "schema": "trillionnium.source-bound-acceptance-publication.v1",
+  "raw_evidence_directory": "/data/asterinas-audit-build.8tdrjboi/proc-boot-old0187-negative-01",
+  "files": [
+    {
+      "raw": "boot-1.log",
+      "published": "boot-1.log.gz",
+      "raw_bytes": 74942,
+      "raw_sha256": "9761332d18af966bb92c1fbf9abc03d4621daa63ab05b7ed4fa3e0922fc21216",
+      "published_sha256": "206975622c47188f6a0a85ffdf8c3c57090ba7c9426b1660cea7722020654b24",
+      "compressed": true
+    },
+    {
+      "raw": "compile.log",
+      "published": "compile.log.gz",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "compressed": true
+    },
+    {
+      "raw": "result.json",
+      "published": "result.json",
+      "raw_bytes": 2880,
+      "raw_sha256": "36803b0b667508a8c5e53cef6c5624c953370b02aa43d2911ebf6f22234c48e0",
+      "published_sha256": "36803b0b667508a8c5e53cef6c5624c953370b02aa43d2911ebf6f22234c48e0",
+      "compressed": false
+    }
+  ],
+  "selection": "Original text receipts, manifests and logs. ELF/initrd/targets remain at the recorded raw location; their SHA256 is retained.",
+  "production_ready": false,
+  "g2_complete": false,
+  "passed": false,
+  "negative_control_matched": true,
+  "boundary": "Actual older0187 ELF lacks boot_id and returns ENOENT before any case; raw33/original boot required."
+}

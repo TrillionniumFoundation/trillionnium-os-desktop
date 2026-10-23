@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "cargo",
+    "+nightly-2026-07-21",
+    "install",
+    "--offline",
+    "--locked",
+    "--force",
+    "cargo-osdk",
+    "--path",
+    "/data/asterinas-audit-build.8tdrjboi/proc-boot-identity/kernel/asterinas/osdk"
+  ],
+  "environment": {
+    "OSDK_LOCAL_DEV": "1",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_JOBS": "2"
+  }
+}
