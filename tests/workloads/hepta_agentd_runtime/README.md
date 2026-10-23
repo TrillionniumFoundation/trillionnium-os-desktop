@@ -31,12 +31,14 @@ It does not qualify later integrated source trees.
 ## Current fresh-build profile
 
 The current `source-review.json` selects Desktop
-`7d8906ef9fbb5f3af4e6bb0843b79ac666394833` / tree
-`ca4b875cdb553291a99f4a550eb0b2bd6649de8c` and Hepta
+`0187bd578f6786c40c812c13976e4889a1aba835` / tree
+`335007e4f94114c6a26506d9448faf0d43c4245c` and Hepta
 `b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` / tree
-`b035a577969cb503d7c09620694a6b6c54178c97`. It includes the UDP, exec
+`b035a577969cb503d7c09620694a6b6c54178c97`. It additionally binds the IPC physical-frame, explicit page-table and watchdog
+changes. This updated profile has not yet executed; earlier 7d/b3 lifecycle
+results remain source-specific. It includes the UDP, exec
 argument, family user-frame, initial-stack and readonly fixes and the Oct 23
-original-owner recovery/issuer/composition stack. The 84 selected source
+original-owner recovery/issuer/composition stack. The 154 selected source
 identities are a review input, not a runtime receipt.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
