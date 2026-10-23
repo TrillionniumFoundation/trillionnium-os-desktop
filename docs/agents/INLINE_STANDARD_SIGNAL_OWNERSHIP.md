@@ -66,8 +66,9 @@ Five real core regressions are added to the original unfiltered inventory:
 - Ptrace `ptrace_stop_requeue_keeps_inline_owner_and_dynamic_injection_origin`:
   original StopDeliverySignal pending/wait/requeue and dynamic injection states.
 
-Core minimum is 352 with 113 required names; prior 347 tests and every earlier
-required name remain. OSTD 230, allocator 20 and MLSDisk 15 are unchanged. Run
+The owner-only slice adds five tests to the prior 347; with the fault-reason
+regression below, the combined minimum is 353 with 114 required names. Every
+earlier required name remains. OSTD 230, allocator 20 and MLSDisk 15 are unchanged. Run
 `support/build/verify-source.py`, the complete `support/build/tests` suite and
 original `support/build/ktest/run.py` against a clean fully materialized source.
 Native completion still requires the original raw QEMU status 33, complete
@@ -90,11 +91,25 @@ Both baseline failures remain retained; the probe's code/address assertions
 were not weakened.
 
 A separate correction preserves the actual VMAR error through the common fault
-handler. Only its `EACCES` permission result selects the existing
-`FaultSignal(SIGSEGV, SEGV_ACCERR, address)`. Original user-space/VMAR guards drop
+handler. Only the typed `PermissionDenied` result of the original mapping
+permission check selects the existing `FaultSignal(SIGSEGV, SEGV_ACCERR, address)`.
+Original user-space/VMAR guards drop
 before enqueue. Other errors retain their original architecture classification,
 and the kernel-copy fault callback still returns its original unit error.
 A sixth real core regression uses original VMA permission denial, absent mapping
 and zero-page quota denial to check that boundary. The combined inventory is
 353 core tests / 114 required names. This does not classify allocation failure
 as an access violation or change the existing quota-failure signal policy.
+
+The first combined native run `bdda4873` passed all five signal-owner tests but
+failed the new unmapped-address negative (352/353 core, raw 65). It demonstrated
+that the original VMAR also returns EACCES when no mapping exists. That failed
+source and ELF remain frozen; its results do not qualify the final correction.
+
+`PageFaultError::{Unmapped, PermissionDenied, Other}` now carries the original
+Error from the same VMAR read-locked lookup and permission check. The legacy
+`handle_page_fault` API unwraps the unchanged Error for all existing callers.
+Only the original VmMapping permission check emits PermissionDenied; device,
+VMO, page-table and quota errors emit Other. No errno, string or later lookup
+is used to infer the reason. The same negative assertions remain, and the
+syscall probe adds a tenth unmapped-address case requiring SEGV_MAPERR.

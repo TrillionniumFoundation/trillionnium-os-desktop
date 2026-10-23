@@ -2,7 +2,7 @@
 """Strict, complete original-kernel signal probe evidence."""
 import re
 
-NAMES = ('fault_siginfo', 'kill_reap', 'tgkill_reap', 'group_kill_reap',
+NAMES = ('fault_siginfo', 'unmapped_fault_siginfo', 'kill_reap', 'tgkill_reap', 'group_kill_reap',
          'pidfd_dynamic_reap', 'original_permissions', 'dynamic_realtime_fifo',
          'dynamic_signalfd', 'ptrace_fault_owner')
 
@@ -12,7 +12,7 @@ def check(raw, code, timed_out):
     lines = clean.splitlines()
     cases = re.findall(r'^INLINE_SIGNAL_PASS (\S+)$', clean, re.M)
     required = ['INLINE_SIGNAL_BEGIN', *(f'INLINE_SIGNAL_PASS {name}' for name in NAMES),
-                'INLINE_SIGNAL_COMPLETE cases=9', 'INLINE_SIGNAL_PROBE_EXIT=0',
+                'INLINE_SIGNAL_COMPLETE cases=10', 'INLINE_SIGNAL_PROBE_EXIT=0',
                 'TRILLIONNIUM_A01_BOOT_OK']
     valid = (code == 33 and not timed_out and tuple(cases) == NAMES and
              all(lines.count(marker) == 1 for marker in required) and

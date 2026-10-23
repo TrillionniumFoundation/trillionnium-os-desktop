@@ -20,8 +20,8 @@ use ostd::{
 };
 
 use super::{
-    MmapMode, PageFaultInfo, Rmap, RssType, Vmar, interval_set::Interval, util::is_intersected,
-    vmar_impls::RssDelta,
+    MmapMode, PageFaultError, PageFaultInfo, Rmap, RssType, Vmar, interval_set::Interval,
+    util::is_intersected, vmar_impls::RssDelta,
 };
 use crate::{
     fs::{
@@ -378,9 +378,22 @@ impl VmMapping {
         page_fault_info: &PageFaultInfo,
         rss_delta: &mut RssDelta,
         owner: &UserMemoryOwner,
-    ) -> Result<()> {
-        self.check_perms_for_page_fault(page_fault_info)?;
+    ) -> Result<(), PageFaultError> {
+        self.check_perms_for_page_fault(page_fault_info)
+            .map_err(PageFaultError::PermissionDenied)?;
+        self.handle_permitted_page_fault(vm_space, page_fault_info, rss_delta, owner)
+            .map_err(PageFaultError::Other)
+    }
 
+    // The caller holds the same VMAR read guard across permission validation
+    // and this operation. Device/VMO/quota errors keep their original identity.
+    fn handle_permitted_page_fault(
+        &self,
+        vm_space: &VmSpace,
+        page_fault_info: &PageFaultInfo,
+        rss_delta: &mut RssDelta,
+        owner: &UserMemoryOwner,
+    ) -> Result<()> {
         let page_aligned_addr = page_fault_info.address.align_down(PAGE_SIZE);
         let is_write = page_fault_info.required_perms.contains(VmPerms::WRITE);
 

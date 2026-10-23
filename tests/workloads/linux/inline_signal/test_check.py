@@ -5,7 +5,7 @@ from check import NAMES, check
 
 def serial():
     return 'INLINE_SIGNAL_BEGIN\n' + ''.join(f'INLINE_SIGNAL_PASS {n}\n' for n in NAMES) + \
-        'INLINE_SIGNAL_COMPLETE cases=9\nINLINE_SIGNAL_PROBE_EXIT=0\nTRILLIONNIUM_A01_BOOT_OK\n'
+        'INLINE_SIGNAL_COMPLETE cases=10\nINLINE_SIGNAL_PROBE_EXIT=0\nTRILLIONNIUM_A01_BOOT_OK\n'
 
 
 class Evidence(unittest.TestCase):
@@ -25,7 +25,7 @@ class Evidence(unittest.TestCase):
                 self.assertFalse(check(changed, 33, False)['passed'])
 
     def test_all_completion_boundaries_required_once(self):
-        for marker in ['INLINE_SIGNAL_BEGIN\n', 'INLINE_SIGNAL_COMPLETE cases=9\n',
+        for marker in ['INLINE_SIGNAL_BEGIN\n', 'INLINE_SIGNAL_COMPLETE cases=10\n',
                        'INLINE_SIGNAL_PROBE_EXIT=0\n', 'TRILLIONNIUM_A01_BOOT_OK\n']:
             self.assertFalse(check(serial().replace(marker, ''), 33, False)['passed'])
             self.assertFalse(check(serial() + marker, 33, False)['passed'])

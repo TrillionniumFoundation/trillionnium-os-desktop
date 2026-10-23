@@ -21,7 +21,7 @@ pub(crate) use self::{
     vmar_impls::{
         RssType, Vmar,
         map::{MmapMode, VmarMapOffset},
-        page_fault::PageFaultInfo,
+        page_fault::{PageFaultError, PageFaultInfo},
         remap::RemapOldMappingAction,
     },
 };

@@ -1,7 +1,7 @@
 # Original signal ownership syscall regression
 
-The static `probe.c` exercises nine mandatory bounded cases on real syscalls:
-SA_SIGINFO code/address for a PROT_NONE fault; kill, tgkill, process-group and
+The static `probe.c` exercises ten mandatory bounded cases on real syscalls:
+SA_SIGINFO code/address for a PROT_NONE fault and a genuinely unmapped address; kill, tgkill, process-group and
 pidfd SIGKILL with actual wait/reap; denied sends between different UIDs; original
 RT FIFO/value; signalfd number/code; and ptrace fault siginfo then delivery/reap.
 Every child belongs to this probe. Parent-death signals, a 30-second process

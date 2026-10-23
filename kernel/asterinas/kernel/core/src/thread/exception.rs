@@ -13,7 +13,7 @@ use crate::{
         signals::{OwnedSignal, fault::FaultSignal},
     },
     thread::kernel_thread::AsKernelThread,
-    vm::vmar::{PageFaultInfo, Vmar},
+    vm::vmar::{PageFaultError, PageFaultInfo, Vmar},
 };
 
 pub(super) fn handle_exception(ctx: &Context, user_ctx: &UserContext, exception: CpuException) {
@@ -43,14 +43,18 @@ pub(super) fn handle_exception(ctx: &Context, user_ctx: &UserContext, exception:
 /// A denied VMA permission is an access error even when demand paging has not
 /// installed a PTE yet. Hardware "present" bits alone cannot classify that case.
 /// Other VMAR failures retain the existing architecture-specific signal policy.
-fn permission_fault_signal(error: &Error, info: &PageFaultInfo) -> Option<FaultSignal> {
-    (error.error() == Errno::EACCES)
+fn permission_fault_signal(error: &PageFaultError, info: &PageFaultInfo) -> Option<FaultSignal> {
+    matches!(error, PageFaultError::PermissionDenied(_))
         .then(|| FaultSignal::new(SIGSEGV, SEGV_ACCERR, Some(info.address() as u64)))
 }
 
 /// Handles the page fault occurs in the VMAR.
-fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> Result<()> {
-    if let Err(e) = vmar.handle_page_fault(page_fault_info) {
+fn handle_page_fault_from_vmar(
+    vmar: &Vmar,
+    page_fault_info: &PageFaultInfo,
+) -> Result<(), PageFaultError> {
+    if let Err(failure) = vmar.handle_page_fault_with_reason(page_fault_info) {
+        let e = failure.error();
         // The handler has released its VMAR, page-table and VMO locks. This
         // diagnostic is evidence of the exact admission cause, not an OOM kill.
         if e.is_user_frame_limit()
@@ -79,7 +83,7 @@ fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> 
             "page fault handler failed: info: {:#x?}, err: {:?}",
             page_fault_info, e
         );
-        return Err(e);
+        return Err(failure);
     }
     Ok(())
 }
@@ -163,7 +167,8 @@ mod tests {
             .unwrap();
         let info = PageFaultInfo::new(address, VmPerms::WRITE);
         let error = handle_page_fault_from_vmar(&vmar, &info).unwrap_err();
-        assert_eq!(error.error(), Errno::EACCES);
+        assert_eq!(error.error().error(), Errno::EACCES);
+        assert!(matches!(error, PageFaultError::PermissionDenied(_)));
         let signal = permission_fault_signal(&error, &info).unwrap();
         assert_eq!(signal.num(), SIGSEGV);
         assert_eq!(signal.to_info().si_code, SEGV_ACCERR);
@@ -171,13 +176,16 @@ mod tests {
 
         let absent = PageFaultInfo::new(address + PAGE_SIZE, VmPerms::WRITE);
         let error = handle_page_fault_from_vmar(&vmar, &absent).unwrap_err();
+        assert!(matches!(error, PageFaultError::Unmapped(_)));
+        assert_eq!(error.error().error(), Errno::EACCES); // Original errno is preserved.
         assert!(permission_fault_signal(&error, &absent).is_none());
         vmar.new_map(PAGE_SIZE, VmPerms::READ | VmPerms::WRITE)
             .offset(VmarMapOffset::FixedNoReplace(address + PAGE_SIZE))
             .build()
             .unwrap();
         let error = handle_page_fault_from_vmar(&vmar, &absent).unwrap_err();
-        assert!(error.is_user_frame_limit());
+        assert!(matches!(error, PageFaultError::Other(_)));
+        assert!(error.error().is_user_frame_limit());
         assert!(permission_fault_signal(&error, &absent).is_none());
         assert_eq!(account.current_pages(), 0);
     }

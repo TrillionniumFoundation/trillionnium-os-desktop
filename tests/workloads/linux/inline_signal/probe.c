@@ -51,6 +51,7 @@ static int reap(pid_t pid)
     require(waitpid(pid, &status, 0) == pid, "wait/reap");
     for (int i = 0; i < child_count; ++i)
         if (children[i] == pid) children[i] = 0;
+    while (child_count > 0 && children[child_count - 1] == 0) --child_count;
     return status;
 }
 static void killed(pid_t pid)
@@ -75,11 +76,12 @@ static void fault_handler(int num, siginfo_t *info, void *context)
     struct fault_info data = { num, info->si_code, (uintptr_t)info->si_addr };
     _exit(write(info_fd, &data, sizeof(data)) == (ssize_t)sizeof(data) ? 0 : 91);
 }
-static void fault_information(void)
+static void fault_information(int permission_denied)
 {
     int fds[2]; require(pipe(fds) == 0, "fault pipe");
     void *page = mmap(NULL, 4096, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     require(page != MAP_FAILED, "fault mapping");
+    if (!permission_denied) require(munmap(page, 4096) == 0, "create unmapped address");
     pid_t pid = child();
     if (pid == 0) {
         close(fds[0]); info_fd = fds[1];
@@ -92,11 +94,12 @@ static void fault_information(void)
     close(fds[1]); struct fault_info info;
     require(read(fds[0], &info, sizeof(info)) == (ssize_t)sizeof(info), "fault information read");
     printf("INLINE_SIGNAL_OBSERVED num=%d code=%d addr=%#lx expected=%#lx\n", info.num, info.code, (unsigned long)info.addr, (unsigned long)(uintptr_t)page);
-    require(info.num == SIGSEGV && info.code == SEGV_ACCERR && info.addr == (uintptr_t)page,
+    require(info.num == SIGSEGV && info.code == (permission_denied ? SEGV_ACCERR : SEGV_MAPERR) && info.addr == (uintptr_t)page,
             "fault number/code/address");
     int status = reap(pid); require(WIFEXITED(status) && WEXITSTATUS(status) == 0, "fault handler exit");
-    close(fds[0]); require(munmap(page, 4096) == 0, "unmap fault page");
-    pass("fault_siginfo");
+    close(fds[0]);
+    if (permission_denied) require(munmap(page, 4096) == 0, "unmap fault page");
+    pass(permission_denied ? "fault_siginfo" : "unmapped_fault_siginfo");
 }
 static void fatal_send(int mode)
 {
@@ -193,8 +196,8 @@ int main(int argc, char **argv)
              (!strcmp(argv[1], "--disposable-guest") && access("/.hepta-disposable-guest", F_OK) == 0)), "explicit test environment");
     signal(SIGALRM, deadline); alarm(30);
     marker("INLINE_SIGNAL_BEGIN\n");
-    fault_information();
+    fault_information(1); fault_information(0);
     for (int mode = 0; mode < 4; ++mode) fatal_send(mode);
     permission_denial(); realtime_and_signalfd(); ptrace_fault();
-    alarm(0); marker("INLINE_SIGNAL_COMPLETE cases=9\n"); return 0;
+    alarm(0); marker("INLINE_SIGNAL_COMPLETE cases=10\n"); return 0;
 }
