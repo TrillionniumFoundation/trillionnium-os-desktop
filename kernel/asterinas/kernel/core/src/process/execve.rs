@@ -74,6 +74,7 @@ pub(crate) fn do_execve(
         ProcessVm::new(executable_path.clone()),
         ctx.process.user_memory_owner().clone(),
     );
+    *new_vmar.process_vm().dumpable().lock() = exec_cred.allows_dumpability();
     let elf_load_info = program_to_load.load_to_vmar(&new_vmar, &path_resolver)?;
 
     // Ensure no other thread is concurrently performing exit_group or execve.
@@ -245,7 +246,9 @@ fn do_execve_no_return(
     // This prevents race conditions when checking access permissions while opening
     // `/proc/[pid]/mem` or `/proc/[pid]/maps`.
     let (vmar_guard, old_vmar) = activate_vmar(ctx, new_vmar);
-    apply_exec_cred(process, &ctx.credentials_mut(), exec_cred)?;
+    ctx.with_credentials_mut_in(&vmar_guard, |credentials| {
+        apply_exec_cred(process, credentials, exec_cred)
+    })?;
     drop(vmar_guard);
     drop(old_vmar);
 

@@ -655,7 +655,7 @@ impl Process {
     // ************** Virtual Memory *************
 
     pub(crate) fn lock_vmar(&self) -> ProcessVmarGuard<'_> {
-        ProcessVmarGuard::new(self.vmar.lock())
+        ProcessVmarGuard::new(self, self.vmar.lock())
     }
 
     // ****************** Signal ******************

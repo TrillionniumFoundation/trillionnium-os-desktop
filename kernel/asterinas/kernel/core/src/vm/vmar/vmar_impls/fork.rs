@@ -16,11 +16,14 @@ impl Vmar {
     /// Creates a new VMAR whose content is inherited from another
     /// using copy-on-write (COW) technique.
     pub(crate) fn fork_from(vmar: &Self) -> VmarHandle {
+        // Snapshot the image policy before acquiring the heap lock. Alien
+        // metadata capture uses image-policy -> heap; never reverse that order.
+        let dumpable = *vmar.process_vm.dumpable().lock();
         // Obtain the heap lock and hold it for the entire method to avoid race conditions.
         let heap_guard = vmar.process_vm.heap().lock();
 
         let new_vmar = VmarHandle::new_with_owner(
-            ProcessVm::fork_from(&vmar.process_vm, &heap_guard),
+            ProcessVm::fork_from(&vmar.process_vm, &heap_guard, dumpable),
             vmar.user_memory_owner()
                 .as_ref()
                 .map(|owner| owner.fork_binding()),

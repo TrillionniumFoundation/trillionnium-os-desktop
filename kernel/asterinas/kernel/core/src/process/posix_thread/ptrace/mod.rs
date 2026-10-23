@@ -15,6 +15,7 @@ use crate::{
     prelude::*,
     process::{
         CloneArgs, CloneFlags, Process, WaitOptions,
+        credentials::capabilities::CapSet,
         signal::{
             DequeuedSignal, PauseReason,
             c_types::siginfo_t,
@@ -22,6 +23,7 @@ use crate::{
             signals::{OwnedSignal, kernel::KernelSignal, raw::RawSignal, user::UserSignal},
         },
     },
+    security::lsm::hooks as lsm_hooks,
     thread::{Thread, Tid},
 };
 
@@ -47,9 +49,9 @@ impl PosixThread {
     /// # Errors
     ///
     /// Returns `EPERM` if this thread is already being traced.
-    fn set_tracer(&self, tracer: Weak<Thread>) -> Result<()> {
+    fn set_tracer(&self, tracer: Weak<Thread>, can_access_nondumpable: bool) -> Result<()> {
         let status = self.tracee_status.call_once(TraceeStatus::new);
-        status.set_tracer(tracer)
+        status.set_tracer(tracer, can_access_nondumpable)
     }
 
     /// Detaches the tracer of this thread.
@@ -274,6 +276,21 @@ impl PosixThread {
             self
         ));
 
+        // Linux retains the tracer credentials from relationship creation. With
+        // the current single user namespace, only this effective capability bit
+        // is used for later non-dumpable memory access. Snapshot it before the
+        // tracee-state lock; subsequent credential changes cannot grant access.
+        let tracee = tracee_thread.as_posix_thread().unwrap();
+        let process = tracee.process();
+        let can_access_nondumpable = {
+            let user_ns = process.user_ns().lock();
+            lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+                user_ns.as_ref(),
+                self,
+                CapSet::SYS_PTRACE,
+            ))
+            .is_ok()
+        };
         let tracees = self.tracees.call_once(|| Mutex::new(BTreeMap::new()));
 
         // Lock order: tracer.tracees -> tracee.tracee_status
@@ -285,8 +302,7 @@ impl PosixThread {
             return Ok(());
         }
 
-        let tracee = tracee_thread.as_posix_thread().unwrap();
-        tracee.set_tracer(Arc::downgrade(tracer_thread))?;
+        tracee.set_tracer(Arc::downgrade(tracer_thread), can_access_nondumpable)?;
         tracees.insert(tracee.tid(), tracee_thread);
 
         Ok(())
@@ -357,12 +373,13 @@ impl TraceeStatus {
         self.state.lock().tracer()
     }
 
-    fn set_tracer(&self, tracer: Weak<Thread>) -> Result<()> {
+    fn set_tracer(&self, tracer: Weak<Thread>, can_access_nondumpable: bool) -> Result<()> {
         let mut state = self.state.lock();
         if state.tracer().is_some() {
             return_errno_with_message!(Errno::EPERM, "the thread is already being traced");
         }
         state.tracer = tracer;
+        state.can_access_nondumpable = can_access_nondumpable;
 
         Ok(())
     }
@@ -375,6 +392,7 @@ impl TraceeStatus {
         let mut state = self.state.lock();
 
         state.tracer = Weak::new();
+        state.can_access_nondumpable = false;
         #[cfg(target_arch = "x86_64")]
         {
             if let Some(user_context) = state.user_context.as_mut() {
@@ -705,6 +723,9 @@ impl TraceeStatus {
             return_errno_with_message!(Errno::EIO, "the process has exited");
         };
 
+        let dumpable = vmar.process_vm().dumpable().lock();
+        state.check_memory_access(*dumpable)?;
+
         let mut value = [0u8; size_of::<usize>()];
         let mut writer = VmWriter::from(value.as_mut_slice()).to_fallible();
         match vmar.read_alien(addr, &mut writer) {
@@ -723,6 +744,9 @@ impl TraceeStatus {
         let Some(vmar) = vmar_guard.as_ref() else {
             return_errno_with_message!(Errno::EIO, "the process has exited");
         };
+
+        let dumpable = vmar.process_vm().dumpable().lock();
+        state.check_memory_access(*dumpable)?;
 
         let value = value.to_ne_bytes();
         let mut reader = VmReader::from(value.as_slice()).to_fallible();
@@ -760,6 +784,10 @@ impl TraceeStatus {
 
 struct TraceeState {
     tracer: Weak<Thread>,
+    /// Original capability authorization at relationship creation, not a live
+    /// credential alias. Namespace-aware snapshots are required if user
+    /// namespaces become supported.
+    can_access_nondumpable: bool,
     /// The signal associated with the current ptrace-stop and later signal delivery.
     signal: StopDeliverySignal,
     /// The event associated with the current ptrace-event-stop.
@@ -787,6 +815,7 @@ impl TraceeState {
     fn new() -> Self {
         Self {
             tracer: Weak::new(),
+            can_access_nondumpable: false,
             signal: StopDeliverySignal::default(),
             event: None,
             options: PtraceOptions::empty(),
@@ -804,6 +833,20 @@ impl TraceeState {
 
     fn tracer(&self) -> Option<Arc<Thread>> {
         self.tracer.upgrade()
+    }
+
+    // Called with the tracee state, target VMAR and shared image-policy mutexes
+    // held. An old get_tracee result must not authorize a replacement tracer's
+    // relationship. The shared policy guard remains held during the actual I/O.
+    fn check_memory_access(&self, dumpable: bool) -> Result<()> {
+        if !self
+            .tracer()
+            .is_some_and(|tracer| Arc::ptr_eq(&tracer, &current_thread!()))
+            || (!dumpable && !self.can_access_nondumpable)
+        {
+            return_errno_with_message!(Errno::EIO, "tracee memory access is not authorized");
+        }
+        Ok(())
     }
 }
 

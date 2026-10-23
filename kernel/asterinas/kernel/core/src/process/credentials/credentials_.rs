@@ -89,9 +89,14 @@ pub(in crate::process) struct ExecCred {
     permitted: CapSet,
     effective: CapSet,
     ambient: CapSet,
+    dumpable: bool,
 }
 
 impl ExecCred {
+    pub(in crate::process) const fn allows_dumpability(&self) -> bool {
+        self.dumpable
+    }
+
     pub(in crate::process) const fn will_change_ids(&self) -> bool {
         self.setuid.is_some() || self.setgid.is_some()
     }
@@ -664,6 +669,9 @@ impl Credentials_ {
             permitted,
             effective,
             ambient,
+            dumpable: new_euid == self.ruid()
+                && new_egid == self.rgid()
+                && self.permitted_capset().contains(permitted),
         })
     }
 
