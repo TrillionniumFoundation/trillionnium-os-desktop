@@ -653,7 +653,8 @@ impl RamInode {
     ) -> Self {
         Self {
             inner: Inner::new_file_in_memfd(),
-            metadata: SpinLock::new(InodeMeta::new(mode, uid, gid)),
+            // A memfd has no directory entry, just like an unnamed tmpfile.
+            metadata: SpinLock::new(InodeMeta::new_tmpfile(mode, uid, gid)),
             ino: weak_self.as_ptr() as u64,
             typ: InodeType::File,
             dir_revalidation_policy: RevalidationPolicy::empty(),
