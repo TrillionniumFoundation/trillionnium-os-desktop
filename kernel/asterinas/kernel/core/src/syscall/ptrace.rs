@@ -168,8 +168,6 @@ fn do_ptrace_attach(tracer_thread: &Arc<Thread>, tracee_thread: Arc<Thread>) -> 
         );
     }
 
-    tracee.check_traceme_access_from(tracer)?;
-
     tracer.attach_to(tracer_thread, tracee_thread)
 }
 

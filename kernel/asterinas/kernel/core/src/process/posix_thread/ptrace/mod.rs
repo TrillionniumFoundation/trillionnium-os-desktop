@@ -15,7 +15,6 @@ use crate::{
     prelude::*,
     process::{
         CloneArgs, CloneFlags, Process, WaitOptions,
-        credentials::capabilities::CapSet,
         signal::{
             DequeuedSignal, PauseReason,
             c_types::siginfo_t,
@@ -23,7 +22,6 @@ use crate::{
             signals::{OwnedSignal, kernel::KernelSignal, raw::RawSignal, user::UserSignal},
         },
     },
-    security::lsm::hooks as lsm_hooks,
     thread::{Thread, Tid},
 };
 
@@ -276,21 +274,11 @@ impl PosixThread {
             self
         ));
 
-        // Linux retains the tracer credentials from relationship creation. With
-        // the current single user namespace, only this effective capability bit
-        // is used for later non-dumpable memory access. Snapshot it before the
-        // tracee-state lock; subsequent credential changes cannot grant access.
+        // Check consent and capture the capability from the same coherent
+        // parent-credential snapshot. Release its VMAR/image guards before any
+        // tracees/tracee-state lock; later credential gains cannot grant access.
         let tracee = tracee_thread.as_posix_thread().unwrap();
-        let process = tracee.process();
-        let can_access_nondumpable = {
-            let user_ns = process.user_ns().lock();
-            lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
-                user_ns.as_ref(),
-                self,
-                CapSet::SYS_PTRACE,
-            ))
-            .is_ok()
-        };
+        let can_access_nondumpable = tracee.check_traceme_access_from(self)?;
         let tracees = self.tracees.call_once(|| Mutex::new(BTreeMap::new()));
 
         // Lock order: tracer.tracees -> tracee.tracee_status

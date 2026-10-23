@@ -90,8 +90,11 @@ PTRACE_ATTACH and process_vm_readv are not represented as protected implementati
   reused unchanged. Only the fd/fdinfo directory template can override an EACCES
   result for the actual same thread group, preserving non-root self-FD inspection.
 
-These rules do not implement full Linux commoncap permitted-set comparisons,
-user namespaces, ptrace attach, coredumps, or a general security-policy framework.
+The original dumpability-qualified source did not implement the commoncap
+permitted-set ceiling. The separate [commoncap slice](COMMONCAP_ALIEN_ACCESS.md)
+adds that check and distinct consent policy, with its own source-bound qualification.
+User namespaces, ptrace attach, coredumps, and a general security-policy framework
+remain outside these rules.
 Existing read-only proc metadata and ordinary command-line visibility are not
 blanket-denied. Kernel heap/PT accounting and global recovery remain open.
 

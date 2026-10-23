@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 360  # Retained 359 plus one real ordinary PT allocation-failure regression.
+MINIMUM_CORE_TESTS = 363  # Retained 360 plus three original-owner commoncap regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -182,6 +182,9 @@ INLINE_SIGNAL_CORE_TESTS = (
     "aster_core::process::posix_thread::ptrace::util::inline_owner_tests::ptrace_stop_requeue_keeps_inline_owner_and_dynamic_injection_origin",
 )
 DUMPABILITY_CORE_TESTS = tuple("aster_core::process::posix_thread::credentials_edit::tests::" + suffix for suffix in (
+    "alien_capture_commoncap_selects_effective_or_permitted_under_original_image_guard",
+    "commoncap_consent_preserves_distinct_identity_policy_and_real_ptrace_exception",
+    "traceme_parent_capability_snapshot_waits_for_original_credential_publication",
     "dumpability_shares_original_vm_but_fork_and_new_image_are_independent",
     "credential_transaction_preserves_dumpability_on_noop_query_and_denial",
     "credential_transaction_resets_each_effective_and_filesystem_id_change",
