@@ -280,6 +280,10 @@ fn exiting_dequeue_retains_its_owner_through_selection_retries() {
 
 fn exercise_zero_quota_fatal_cleanup(name: &'static str, process_signal: bool) {
     let fixture = Fixture::new(name);
+    // The original init predicate is parent.pid() == 0, not the numeric PID.
+    // Publish real parent/child owners so this fixture models a killable child.
+    let _parent = test_util::UnstartedParent::new(&fixture.processes[1]);
+    assert!(!fixture.processes[1].is_init_process());
     let victim = &fixture.tasks[1];
     let posix = victim.as_posix_thread().unwrap();
     let cpu = owner(fixture.leaves[1].controller());
@@ -313,6 +317,10 @@ fn exercise_zero_quota_fatal_cleanup(name: &'static str, process_signal: bool) {
     } else {
         posix.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
     }
+    assert_eq!(
+        test_util::sigkill_receipts(victim),
+        (!process_signal, process_signal)
+    );
     assert!(posix.has_fatal_sigkill());
     assert!(
         !fixture.tasks[0]
@@ -359,10 +367,25 @@ fn zero_quota_process_sigkill_resumes_only_fatal_cleanup_with_original_debit() {
 
 #[ktest]
 fn fatal_receipts_follow_original_signal_queues_without_constructor_inheritance() {
+    // The same accepted original signal remains ineffective for a parentless
+    // init process. No fake PID or scheduler-only flag is used for either cut.
+    let (init, init_task) = test_util::new_unstarted_process();
+    let init_thread = init_task.as_posix_thread().unwrap();
+    assert!(init.is_init_process());
+    init_thread.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    init.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    assert_eq!(test_util::sigkill_receipts(&init_task), (true, true));
+    assert!(init_thread.has_pending_sigkill());
+    assert!(!init_thread.has_fatal_sigkill());
+    test_util::mark_zombie(&init);
+
     let (process, tasks) = test_util::new_unstarted_process_with_threads(2);
+    let _parent = test_util::UnstartedParent::new(&process);
+    assert!(!process.is_init_process());
     let first = tasks[0].as_posix_thread().unwrap();
     let sibling = tasks[1].as_posix_thread().unwrap();
     first.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    assert_eq!(test_util::sigkill_receipts(&tasks[0]), (true, false));
     assert!(first.has_fatal_sigkill());
     assert!(!sibling.has_fatal_sigkill());
     assert_eq!(
@@ -377,6 +400,8 @@ fn fatal_receipts_follow_original_signal_queues_without_constructor_inheritance(
     assert!(!sibling.has_fatal_sigkill());
 
     process.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    assert_eq!(test_util::sigkill_receipts(&tasks[0]), (true, true));
+    assert_eq!(test_util::sigkill_receipts(&tasks[1]), (false, true));
     assert!(first.has_fatal_sigkill() && sibling.has_fatal_sigkill());
     assert_eq!(
         sibling
@@ -389,8 +414,12 @@ fn fatal_receipts_follow_original_signal_queues_without_constructor_inheritance(
     assert!(first.has_fatal_sigkill() && sibling.has_fatal_sigkill());
     // The same Process::new and PosixThreadBuilder constructors used by clone
     // initialize new queues. No fatal receipt is copied from a source image.
-    let (_fresh, fresh_tasks) = test_util::new_unstarted_process_with_threads(2);
+    let (fresh, fresh_tasks) = test_util::new_unstarted_process_with_threads(2);
+    let _fresh_parent = test_util::UnstartedParent::new(&fresh);
+    assert!(!fresh.is_init_process());
     for task in fresh_tasks {
-        assert!(!task.as_posix_thread().unwrap().has_fatal_sigkill());
+        let thread = task.as_posix_thread().unwrap();
+        assert_eq!(test_util::sigkill_receipts(&task), (false, false));
+        assert!(!thread.has_fatal_sigkill());
     }
 }

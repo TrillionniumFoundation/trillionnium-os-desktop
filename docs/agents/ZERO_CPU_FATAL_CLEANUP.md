@@ -27,8 +27,9 @@ original shared process queue. New process and thread constructors create fresh
 queues. A new thread in an already fatally signalled process still observes
 that process's receipt; this is shared process state, not copied thread state.
 
-The existing PID 1 immunity to default-action signals is preserved. The
-effective fatal predicate excludes init. Catchable signals do not qualify for
+The existing init immunity to default-action signals is preserved. The
+effective fatal predicate uses the original `Process::is_init_process()`
+observation (`parent.pid() == 0`), not a second numeric-PID rule. Catchable signals do not qualify for
 this exception, and neither a manager label nor a recovery request can set it.
 
 The scheduler still observes the original bandwidth owner and clocks. Only an
@@ -65,6 +66,17 @@ fixture. They reject SIGUSR1 as a scheduling bypass, keep the zero cap and
 positive debt, retain eligibility after actual signal dequeue, and debit the
 cleanup interval through the original owner. The constructor test exercises
 the real constructors used by clone; it is not a syscall fork qualification.
+
+The first complete 295-test core run executed all tests but passed only 292:
+the three new fixtures had no parent, so the original init predicate correctly
+kept their accepted SIGKILL receipts ineffective. That failed run is retained.
+The corrected fixtures publish the original parent/child links with a real
+`UnstartedParent`, assert non-init identity and raw queue receipt, and keep all
+original fatal eligibility and accounting assertions. Fresh queues are also
+checked with a real parent so init immunity cannot hide accidental inheritance.
+A separate parentless process proves that accepted thread/process receipts
+remain ineffective for init. No production signal or immunity rule is changed
+to accommodate a test fixture.
 
 The full OSTD gate retains 223 tests and adds
 `fatal_pre_entry_returns_kernel_event_before_unmapped_user_code` (224 total).

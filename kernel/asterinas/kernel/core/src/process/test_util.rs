@@ -6,7 +6,7 @@ use ostd::{arch::cpu::context::UserContext, task::Task};
 
 use super::{
     Credentials, Process, ProcessVm, UserNamespace,
-    posix_thread::{PosixThreadBuilder, allocate_posix_tid, derive_thread_name},
+    posix_thread::{AsPosixThread, PosixThreadBuilder, allocate_posix_tid, derive_thread_name},
     rlimit::new_resource_limits_for_init,
     signal::sig_disposition::SigDispositions,
 };
@@ -25,6 +25,16 @@ use crate::{
 pub(crate) fn new_unstarted_process() -> (Arc<Process>, Arc<Task>) {
     let (process, mut tasks) = new_unstarted_process_with_threads(1);
     (process, tasks.pop().unwrap())
+}
+
+/// Reads the original thread/process queue facts without changing signal state.
+/// Keeps private signal queues private outside the process module in production.
+pub(crate) fn sigkill_receipts(task: &Task) -> (bool, bool) {
+    let thread = task.as_posix_thread().unwrap();
+    (
+        thread.sig_queues().has_received_sigkill(),
+        thread.process().sig_queues().has_received_sigkill(),
+    )
 }
 
 /// Initializes the real heap required by the VMAR fork path. Lifecycle-only
