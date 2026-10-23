@@ -4,7 +4,7 @@ use aster_rights::ReadDupOp;
 use takeable::Takeable;
 
 use super::{
-    connected::Connected,
+    connected::{Buffers, Connected},
     init::Init,
     listener::{Backlog, Listener, get_backlog},
 };
@@ -186,14 +186,20 @@ impl UnixStreamSocket {
         })
     }
 
-    pub(crate) fn new_pair(is_nonblocking: bool, socket_type: SockType) -> (Arc<Self>, Arc<Self>) {
+    pub(crate) fn new_pair(
+        is_nonblocking: bool,
+        socket_type: SockType,
+    ) -> Result<(Arc<Self>, Arc<Self>)> {
         debug_assert!(
             socket_type == SockType::SOCK_STREAM || socket_type == SockType::SOCK_SEQPACKET
         );
 
+        let owner = crate::vm::user_memory::current_owner();
+        let buffers = Buffers::new(&owner)?;
         let cred = SocketCred::<ReadDupOp>::new_current();
 
         let (conn_a, conn_b) = Connected::new_pair(
+            buffers,
             None,
             None,
             EndpointState::default(),
@@ -201,10 +207,10 @@ impl UnixStreamSocket {
             cred.dup().restrict(),
             cred.restrict(),
         );
-        (
+        Ok((
             Self::new_connected(conn_a, OptionSet::new(), is_nonblocking, socket_type),
             Self::new_connected(conn_b, OptionSet::new(), is_nonblocking, socket_type),
-        )
+        ))
     }
 
     pub(super) fn new_connected(
@@ -616,5 +622,30 @@ impl SetSocketLevelOption for (&State, &SocketTimeouts) {
 
     fn socket_timeouts(&self) -> Option<&SocketTimeouts> {
         Some(self.1)
+    }
+}
+
+#[cfg(ktest)]
+mod memory_tests {
+    use ostd::prelude::*;
+
+    use super::*;
+    use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
+
+    #[ktest]
+    fn unix_socketpair_denial_preserves_current_family_without_endpoints() {
+        for pages in [0, 31] {
+            let account = UserMemoryAccount::new(pages);
+            let observed = account.clone();
+            test_with_current_owner(Some(account.clone()), move || {
+                for kind in [SockType::SOCK_STREAM, SockType::SOCK_SEQPACKET] {
+                    let error = UnixStreamSocket::new_pair(true, kind).err().unwrap();
+                    assert!(error.is_user_frame_limit());
+                    assert_eq!(error.error(), Errno::ENOMEM);
+                    assert_eq!(observed.current_pages(), 0);
+                }
+            });
+            assert_eq!(account.current_pages(), 0);
+        }
     }
 }

@@ -315,7 +315,7 @@ impl Backlog {
             self.addr.clone(),
             pollee,
             self.listener_cred.dup().restrict(),
-        );
+        )?;
         options.apply_to_connected(&client_conn);
         if self.is_pass_cred.load(Ordering::Relaxed) {
             server_conn.set_pass_cred(true);

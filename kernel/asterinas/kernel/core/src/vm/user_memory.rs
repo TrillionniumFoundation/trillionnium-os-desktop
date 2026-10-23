@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MPL-2.0
 
-//! Physical user-data frame admission for the fixed G1-d workload family.
+//! Physical user-data and selected IPC-buffer frame admission for the fixed G1-d workload family.
 //!
 //! A charge belongs to physical frame metadata, never to a mapping or a frame
 //! handle. Fork and shared mappings retain one charge; COW charges its new
 //! frame; the final physical-frame reference refunds it. This deliberately is
-//! not a cgroup memory controller: page tables, slabs, sockets and device MMIO
+//! not a cgroup memory controller: page tables, slabs, ancillary/datagram buffers and device MMIO
 //! are outside this account, and there is no reclaim, OOM killer or reserve.
 
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 use ostd::{
     impl_untyped_frame_meta_for,
-    mm::{Frame, FrameAllocOptions, UFrame},
+    mm::{Frame, FrameAllocOptions, Segment, UFrame},
 };
 
 use crate::{prelude::*, process::Process, thread::kernel_thread};
@@ -133,6 +133,29 @@ pub(crate) fn alloc_user_frame(
         .alloc_frame_with(metadata)?)
 }
 
+/// Allocates the original contiguous IPC backing pages against their initiator.
+///
+/// Admission precedes physical allocation. Each charge moves exactly once into
+/// original frame metadata, so partial failure and the last physical reference
+/// use the same refund path as user RAM. No reserve authority is implied.
+pub(crate) fn alloc_user_segment(
+    owner: &UserMemoryOwner,
+    count: usize,
+) -> Result<Segment<UserPageMeta>> {
+    let bytes = count
+        .checked_mul(PAGE_SIZE)
+        .ok_or_else(|| Error::new(Errno::EINVAL))?;
+    if count == 0 || core::alloc::Layout::from_size_align(bytes, PAGE_SIZE).is_err() {
+        return Err(Error::new(Errno::EINVAL));
+    }
+    let mut reservation = UserMemoryReservation::new(owner, count)?;
+    Ok(FrameAllocOptions::new()
+        .zeroed(false)
+        .alloc_segment_with(count, |_| UserPageMeta {
+            _charge: reservation.take_page(),
+        })?)
+}
+
 /// Allocates zeroed user-visible device RAM against the caller's family.
 ///
 /// The complete frame count is admitted before allocating the handle vector or
@@ -159,6 +182,41 @@ pub(crate) fn current_owner() -> UserMemoryOwner {
         return process.user_memory_owner().clone();
     }
     kernel_thread::current_user_memory_owner()
+}
+
+/// Runs a regression with the production immutable VMAR owner lookup.
+/// No global override or alternate charge path is installed. The completion
+/// flag prevents the kernel thread's panic catcher from turning a failed
+/// assertion into a passing parent test.
+#[cfg(ktest)]
+pub(crate) fn test_with_current_owner<F>(owner: UserMemoryOwner, test: F)
+where
+    F: FnOnce() + Send + 'static,
+{
+    use core::sync::atomic::AtomicBool;
+
+    use crate::{
+        fs::pseudofs::SockFs, process::ProcessVm, thread::kernel_thread::ThreadOptions,
+        vm::vmar::VmarHandle,
+    };
+    crate::time::clocks::init_for_ktest();
+    crate::util::random::init();
+    let vmar = VmarHandle::new_with_owner(ProcessVm::new(SockFs::new_path()), owner);
+    let completed = Arc::new(AtomicBool::new(false));
+    let worker_completed = completed.clone();
+    let worker = ThreadOptions::new(move || {
+        test();
+        worker_completed.store(true, Ordering::Release);
+    })
+    .vmar(vmar.clone_arc())
+    .spawn();
+    worker.join();
+    assert!(
+        completed.load(Ordering::Acquire),
+        "IPC owner regression panicked before completing"
+    );
+    drop(worker);
+    drop(vmar);
 }
 
 #[cfg(ktest)]

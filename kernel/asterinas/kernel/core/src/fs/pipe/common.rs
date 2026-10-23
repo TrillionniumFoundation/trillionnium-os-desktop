@@ -26,7 +26,9 @@ use crate::{
     },
     util::{
         ioctl::RawIoctl,
-        ring_buffer::{ConsumerU8Ext, ProducerU8Ext, RbConsumer, RbProducer, RingBuffer},
+        ring_buffer::{
+            ConsumerU8Ext, ProducerU8Ext, UserRbConsumer, UserRbProducer, new_user_ring_buffer,
+        },
     },
 };
 
@@ -226,7 +228,7 @@ impl Pipe {
         check_status_flags(status_flags)?;
 
         let mut pipe = self.pipe.lock();
-        let pipe_obj = pipe.get_or_create_pipe_obj();
+        let pipe_obj = pipe.get_or_create_pipe_obj()?;
 
         let handle = match access_mode {
             AccessMode::O_RDONLY => {
@@ -324,14 +326,14 @@ struct PipeObj {
 }
 
 impl PipeObj {
-    fn new() -> Arc<Self> {
-        let (reader, writer) = new_pair();
-        Arc::new(Self {
+    fn new() -> Result<Arc<Self>> {
+        let (reader, writer) = new_pair()?;
+        Ok(Arc::new(Self {
             reader,
             writer,
             num_reader: AtomicUsize::new(0),
             num_writer: AtomicUsize::new(0),
-        })
+        }))
     }
 }
 
@@ -346,15 +348,15 @@ struct PipeInner {
 }
 
 impl PipeInner {
-    fn get_or_create_pipe_obj(&mut self) -> Arc<PipeObj> {
+    fn get_or_create_pipe_obj(&mut self) -> Result<Arc<PipeObj>> {
         if let Some(pipe_obj) = self.pipe_obj.upgrade() {
-            return pipe_obj;
+            return Ok(pipe_obj);
         }
 
-        let pipe_obj = PipeObj::new();
+        let pipe_obj = PipeObj::new()?;
         self.pipe_obj = Arc::downgrade(&pipe_obj);
 
-        pipe_obj
+        Ok(pipe_obj)
     }
 }
 
@@ -376,28 +378,29 @@ const PIPE_BUF: usize = 4096;
 #[cfg(ktest)]
 const PIPE_BUF: usize = 2;
 
-fn new_pair() -> (PipeReader, PipeWriter) {
+fn new_pair() -> Result<(PipeReader, PipeWriter)> {
     new_pair_with_capacity(DEFAULT_PIPE_BUF_SIZE)
 }
 
-fn new_pair_with_capacity(capacity: usize) -> (PipeReader, PipeWriter) {
-    let (producer, consumer) = RingBuffer::new(capacity).split();
+fn new_pair_with_capacity(capacity: usize) -> Result<(PipeReader, PipeWriter)> {
+    let owner = crate::vm::user_memory::current_owner();
+    let (producer, consumer) = new_user_ring_buffer(capacity, &owner)?.split();
     let (producer_state, consumer_state) =
         Endpoint::new_pair(EndpointState::default(), EndpointState::default());
 
-    (
+    Ok((
         PipeReader::new(consumer, consumer_state),
         PipeWriter::new(producer, producer_state),
-    )
+    ))
 }
 
 struct PipeReader {
-    consumer: Mutex<RbConsumer<u8>>,
+    consumer: Mutex<UserRbConsumer>,
     state: Endpoint<EndpointState>,
 }
 
 impl PipeReader {
-    fn new(consumer: RbConsumer<u8>, state: Endpoint<EndpointState>) -> Self {
+    fn new(consumer: UserRbConsumer, state: Endpoint<EndpointState>) -> Self {
         Self {
             consumer: Mutex::new(consumer),
             state,
@@ -450,12 +453,12 @@ impl Pollable for PipeReader {
 }
 
 struct PipeWriter {
-    producer: Mutex<RbProducer<u8>>,
+    producer: Mutex<UserRbProducer>,
     state: Endpoint<EndpointState>,
 }
 
 impl PipeWriter {
-    fn new(producer: RbProducer<u8>, state: Endpoint<EndpointState>) -> Self {
+    fn new(producer: UserRbProducer, state: Endpoint<EndpointState>) -> Self {
         Self {
             producer: Mutex::new(producer),
             state,
@@ -672,5 +675,102 @@ mod test {
             &mut VmReader::from(buf).to_fallible(),
             StatusFlags::empty(),
         )
+    }
+
+    #[ktest]
+    fn pipe_production_capacity_uses_current_family_and_refunds_last_endpoint() {
+        use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
+        let account = UserMemoryAccount::new(16);
+        let observed = account.clone();
+        test_with_current_owner(Some(account.clone()), move || {
+            // Explicit production capacity: the retained older pipe tests use
+            // a two-byte cfg(ktest) capacity to exercise blocking and wrapping.
+            let (reader, writer) = new_pair_with_capacity(65536).unwrap();
+            assert_eq!(observed.current_pages(), 16);
+            assert!(
+                new_pair_with_capacity(65536)
+                    .err()
+                    .unwrap()
+                    .is_user_frame_limit()
+            );
+            assert_eq!(observed.current_pages(), 16);
+            drop(reader);
+            assert_eq!(observed.current_pages(), 16);
+            drop(writer);
+            assert_eq!(observed.current_pages(), 0);
+        });
+        assert_eq!(account.current_pages(), 0);
+    }
+
+    #[ktest]
+    fn fifo_shared_opens_keep_first_owner_without_double_charge() {
+        use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
+        let first = UserMemoryAccount::new(DEFAULT_PIPE_BUF_SIZE.div_ceil(PAGE_SIZE));
+        let second = UserMemoryAccount::new(0);
+        let pipe = Arc::new(Pipe::new());
+        let first_handle = Arc::new(Mutex::new(None));
+        let second_handle = Arc::new(Mutex::new(None));
+        let worker_pipe = pipe.clone();
+        let returned = first_handle.clone();
+        test_with_current_owner(Some(first.clone()), move || {
+            *returned.lock() = Some(
+                worker_pipe
+                    .open_named(AccessMode::O_RDWR, StatusFlags::O_NONBLOCK)
+                    .unwrap(),
+            );
+        });
+        let charged = DEFAULT_PIPE_BUF_SIZE.div_ceil(PAGE_SIZE);
+        assert_eq!(first.current_pages(), charged);
+        let worker_pipe = pipe.clone();
+        let returned = second_handle.clone();
+        test_with_current_owner(Some(second.clone()), move || {
+            let handle = worker_pipe
+                .open_named(AccessMode::O_RDWR, StatusFlags::O_NONBLOCK)
+                .unwrap();
+            assert_eq!(write(handle.as_ref(), &[91]).unwrap(), 1);
+            let mut bytes = [0u8; 1];
+            assert_eq!(read(handle.as_ref(), &mut bytes).unwrap(), 1);
+            assert_eq!(bytes, [91]);
+            *returned.lock() = Some(handle);
+        });
+        assert_eq!(first.current_pages(), charged);
+        assert_eq!(second.current_pages(), 0);
+        drop(first_handle.lock().take());
+        assert_eq!(first.current_pages(), charged);
+        drop(second_handle.lock().take());
+        assert_eq!(first.current_pages(), 0);
+        assert!(pipe.pipe.lock().pipe_obj.upgrade().is_none());
+        // The old inode can be reopened, with a fresh physical owner.
+        let worker_pipe = pipe.clone();
+        test_with_current_owner(Some(first.clone()), move || {
+            drop(
+                worker_pipe
+                    .open_anon(AccessMode::O_RDONLY, StatusFlags::O_NONBLOCK)
+                    .unwrap(),
+            );
+        });
+        assert_eq!(first.current_pages(), 0);
+    }
+
+    #[ktest]
+    fn pipe_denial_publishes_no_object_or_open_counts() {
+        use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
+        let account = UserMemoryAccount::new(0);
+        test_with_current_owner(Some(account.clone()), move || {
+            let pipe = Pipe::new();
+            for named in [false, true] {
+                let error = pipe
+                    .open_handle(AccessMode::O_RDWR, StatusFlags::O_NONBLOCK, named)
+                    .err()
+                    .unwrap();
+                assert!(error.is_user_frame_limit());
+                assert_eq!(error.error(), Errno::ENOMEM);
+                let inner = pipe.pipe.lock();
+                assert!(inner.pipe_obj.upgrade().is_none());
+                assert_eq!(inner.read_count, Wrapping(0));
+                assert_eq!(inner.write_count, Wrapping(0));
+            }
+        });
+        assert_eq!(account.current_pages(), 0);
     }
 }
