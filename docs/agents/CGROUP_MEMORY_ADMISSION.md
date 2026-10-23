@@ -4,17 +4,19 @@ This slice replaces the cgroup memory stub with **selected physical-page
 admission**, on base `0187bd578f6786c40c812c13976e4889a1aba835`. It is not a
 complete Linux memory controller or a global recovery guarantee. The core
 implementation, original owner regressions, and strict native inventory are
-part of the same change; native execution of this new source is **pending**
-until a source-matched original runner receipt exists. Previous 0187 results
-must not be reused as execution evidence for this change.
+part of the same change. A source-matched unfiltered native run passed at
+`2c7a8543ea49e7d87e8915f2b3463f5d2119c020`, after correcting test teardown
+of original deferred CPU owners; see the exact execution record below. Previous
+0187 results are not reused as execution evidence for this change.
 
 ## User-visible contract
 
 Non-root active memory controllers expose `memory.current` (read-only),
 `memory.max` (read/write), and `memory.events` (read-only). The old unusable
 `memory.stat` placeholder is not advertised. `memory.current` is the byte count
-of covered physical frames charged to that node and its descendants. Each
-covered frame is counted once at its leaf and once in each ancestor's aggregate;
+of admitted covered pages charged to that node and its descendants. It includes
+in-flight physical-allocation reservations; failed or unused reservations refund
+through their original owner. It is not instantaneous RSS. Each covered frame is counted once at its leaf and once in each ancestor's aggregate;
 extra mappings, FDs, `Frame` clones, forked aliases and socket endpoints do not
 create extra physical charges.
 
@@ -217,5 +219,45 @@ bounded original task yield after releasing the test Process/Task, before the
 unchanged strict deletion checks. It does not clear lease counters, bypass
 `mark_as_dead`, change a quota assertion, or alter the guest deadline.
 
-The repaired source must complete a fresh source-bound full run before claiming
-core 316 / required 77, OSTD 229, allocator 20 and MLSDisk 15 qualification.
+### Source-bound completed native execution
+
+The corrected source `2c7a8543ea49e7d87e8915f2b3463f5d2119c020`, tree
+`ebdc1bcea26f26834d2735ddc9caee7e2b8a78e6`, completed the original unfiltered
+four-crate runner. OSDK was rebuilt from that checkout and its installed binary
+was retained. The original 512-MiB, SMP-1 TCG profile and 300-second guest
+deadline were unchanged. Every guest returned raw QEMU 33; the original runner
+and the outer source/ELF-retention wrapper both returned 0.
+
+| Original suite | Declared / passed | Failed / filtered | Soft skips | Specific result |
+| --- | --- | --- | --- | --- |
+| OSTD | 229 / 229 | 0 / 0 | 3 | Original TCG VMX/EPT unavailable skips; 226 exercised lower bound. No new KVM qualification is implied. |
+| Physical allocator | 20 / 20 | 0 / 0 | 0 | Actual exhaustion of 127099 ordinary frames, reserved 64-page extent usable, final refund to original allocator. |
+| Core | 316 / 316 | 0 / 0 | 0 | All 77 exact required names, including all 10 memory additions and 3 boot-ID additions, occurred exactly once. |
+| MLSDisk | 15 / 15 | 0 / 0 | 0 | Original 512-MiB guest and 256-MiB memory-disk capacity retained; no media-power-loss claim. |
+
+The evidence directory is `cgroup-memory-native-2c7-01` under the local audit
+build root. The four retained ELF SHA-256 values are:
+
+| Crate | Retained ELF SHA-256 |
+| --- | --- |
+| OSTD | `5bfad537c6d9210e665af173086ee7bb58951ac429226f3ead765733fb8081ae` |
+| Physical allocator | `84bf3a9ff70e35030ec33775d0260ce33cd2490ea51e5dc901db04844406292e` |
+| Core | `cc01f45c4449fd4caf14e32fa27092ca59255a87446366013222a01d65d3d329` |
+| MLSDisk | `b5b443a0463c6f817d880672b2369e17e6aafbd3c7fec4bb8fff90d4c9b7f2c1` |
+
+The complete tracked-source snapshots before and after execution are identical,
+both SHA-256 `6f89bcb74d607583a33f234d2b6da2f9dbbad7df14a8f7a977371930181a13ae`.
+`outer-result.json` has SHA-256
+`bfa106295dd97f7de07190102c72e787fa3e230361791a3b3483e5294953a866`;
+`retention.json` has SHA-256
+`0e3d9c8ad441a659fb21325e5a8578471b6ee231301536ccd18ec941a708d47a`.
+The first failed 5015 source, ELF, raw-QEMU record, serial and same-ELF debugger
+diagnosis remain separate. Nothing relabels that failed run as successful.
+
+Host anti-forgery checks also passed 44 tests, and the original source verifier
+passed all 118 path boundaries. Changed-file formatting passed; full-workspace
+format checking still reports pre-existing differences outside this slice.
+These host checks are not counted as native tests. This run establishes the
+selected physical-frame admission contract under the original N0 profile;
+it does not establish new ordinary-userland, SMP-stress, KVM, full-memory,
+heap/IPC recovery, or production-device qualification.
