@@ -27,8 +27,9 @@ is a separately validated 235-package local derivative, not a new seed. Its
 only changes from the 234-package seed are the core dependency edge and local
 `os-control` package. Complete component-macro metadata uses `--locked`, so it
 cannot implicitly update that working lock during compilation. Separate
-`locks/ostd.Cargo.lock`, `locks/aster-core.Cargo.lock`, and
-`locks/osdk-frame-allocator.Cargo.lock` are committed; the
+`locks/ostd.Cargo.lock`, `locks/aster-core.Cargo.lock`,
+`locks/osdk-frame-allocator.Cargo.lock`, and `locks/aster-mlsdisk.Cargo.lock`
+are committed; the
 run-base lock is not used for tests. A failed fetch or drift audit stops
 preparation; it does not silently resolve newer versions. The G1-a derived
 aster-core lock contains 200 packages; the OSTD lock has 97 and the
@@ -40,9 +41,10 @@ the OSTD lock. The first allocator lock report records actual offline metadata
 and locked metadata only, using an existing cache without a fetch/install/build.
 
 The runner installs OSDK from the vendored source with `--locked`, then invokes
-`cargo osdk test` from `kernel/asterinas/ostd/` and
-`kernel/asterinas/kernel/core/`, and `kernel/asterinas/osdk/deps/frame-allocator/`,
-respectively. All three run by default. `OSDK_CARGO_LOCK` selects the
+`cargo osdk test` from `kernel/asterinas/ostd/`,
+`kernel/asterinas/kernel/core/`, `kernel/asterinas/osdk/deps/frame-allocator/`, and
+`kernel/asterinas/kernel/core/comps/mlsdisk/`, respectively. All four run by default.
+`OSDK_CARGO_LOCK` selects the
 corresponding fixed test-base lock. The installed downstream OSDK lock patch
 copies it into the generated workspace and passes `--locked` to Cargo. The
 runner checks the resulting generated lock against the selected input again.
@@ -59,7 +61,7 @@ The runner shares the persistent `support/build/out-kernel.lock` inode with
 the ordinary boot wrapper. Output uses a fresh directory and every guest has
 its own serial log and QEMU JSON record. `--output DIR` refuses an existing
 directory. `--crate ostd`, `--crate aster-core`, or
-`--crate osdk-frame-allocator` runs just that crate.
+`--crate osdk-frame-allocator`, or `--crate aster-mlsdisk` runs just that crate.
 `A01_KTEST_TIMEOUT` sets each guest timeout (default 300 seconds). A failed
 build, failed guest or rejected summary stops the command and retains evidence.
 
@@ -67,8 +69,8 @@ By default no positional test filter is used. OSDK's `TESTNAME` is a complete
 test-path suffix, despite the CLI describing a substring. Passing a crate name
 as `TESTNAME` can filter out every test. `--test-name SUFFIX` is available for
 focused diagnostics; the checker still requires at least one exercised test.
-The frame-allocator gate rejects `--test-name` and `--allow-filtered`, including
-when it is selected implicitly by the default three-crate run. Select OSTD or
+The frame-allocator and MLSDisk gates reject `--test-name` and `--allow-filtered`, including
+when it is selected implicitly by the default four-crate run. Select OSTD or
 core explicitly when running focused diagnostics for those crates.
 
 The checker requires raw QEMU status 33 without timeout, the target crate's
@@ -152,3 +154,39 @@ because the upstream test-kernel dependency also depends on OSTD.
 
 No test result is claimed by adding these entry points. Consult actual saved
 guest evidence for the completed, failed or filtered tests of each invocation.
+
+
+## Complete MLSDisk gate
+
+The experimental MLSDisk workspace component has a separate original-OSDK
+suite. It is not assembled into the ordinary core image. Its native suite
+retains the one original `write_sync_read` test and adds three device-flush
+regressions, for **four** exact native tests. The 34 `#[test]` declarations in
+old host-style modules are not additional executed kernel tests.
+
+```sh
+python3 -I support/build/ktest/prepare-locks.py --crate aster-mlsdisk
+python3 -I support/build/ktest/run.py --crate aster-mlsdisk --output /path/to/new-evidence
+```
+
+The independent 161-package lock is normalized by real offline Cargo metadata
+from the immutable original upstream root lock, then verified with
+`--offline --locked`. It adds only `aster-mlsdisk-osdk-bin 0.1.0`; every external
+package/source/checksum remains in the original seed. Its initial committed
+report records metadata only, without fetch, install, build or guest execution.
+The standard prepare command can subsequently prefetch this exact audited lock.
+The real OSDK-generated test-base lock must match it byte for byte at execution.
+
+The checker requires the original success test and all three new exact names
+once each, each with its own terminal `ok`, zero failures/filters/soft skips,
+ordered runner completion, unchanged serial hash, and actual default N0
+q35/TCG/one-CPU/512-MiB invocation with raw QEMU exit 33 and no timeout. Missing,
+renamed, duplicate, filtered, skipped, hung or summary-only results fail. The
+existing complete core/OSTD/frame-allocator gates remain independent.
+
+These are real native Bio paths on the original Frame-backed MemoryDisk with
+injected device errors; they do not establish physical-media durability or
+power-loss recovery. The report explicitly retains
+`mlsdisk_media_durability_qualified=false`. The entropy/key, asynchronous
+cross-I/O locking and broader append/compaction error-handling gaps are listed
+in [the implementation contract](../../../docs/agents/MLSDISK_FLUSH_PROPAGATION.md).

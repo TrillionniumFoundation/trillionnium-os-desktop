@@ -15,7 +15,8 @@ SEED_TREE = "96605cf64aeae2d34f29b97e85eff9315fe10a8e"
 SEED_BLOB = "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40"
 SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
 CRATES = {"ostd": "ostd", "aster-core": "kernel/core",
-          "osdk-frame-allocator": "osdk/deps/frame-allocator"}
+          "osdk-frame-allocator": "osdk/deps/frame-allocator",
+          "aster-mlsdisk": "kernel/core/comps/mlsdisk"}
 
 
 def digest(path):
@@ -103,7 +104,7 @@ def package_key(package):
 
 def audit_packages(packages, seed_set, crate):
     """Permit the OSDK base plus one exact local G1-a package, no external drift."""
-    expected = [(f"{crate}-osdk-bin", "0.1.0" if crate == "aster-core" else "0.19.0", "", "")]
+    expected = [(f"{crate}-osdk-bin", "0.1.0" if crate in ("aster-core", "aster-mlsdisk") else "0.19.0", "", "")]
     if crate == "aster-core":
         expected.append(("os-control", "0.1.0", "", ""))
         native = [p for p in packages if p["name"] == "os-control"]
