@@ -131,6 +131,52 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a10"
           export A10_HEADLESS_LOG_DIR="$RUNNER_TEMP/a10/wayland"
           bash tests/ui/headless-weston.sh 2>&1 | tee "$RUNNER_TEMP/a10/headless.log"
+      - name: Verify original shared presenter source and default-off candidate
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/a10"
+          python3 -I tests/ui/test_shared_presenter_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source-tests.log"
+          python3 -I tests/ui/test_wire_compatibility.py \
+            2>&1 | tee "$RUNNER_TEMP/a10/wire-compatibility-tests.log"
+          cargo metadata --manifest-path ui/Cargo.toml --locked --format-version 1 \
+            --features trill-shell/hepta-shared-presenter \
+            --filter-platform x86_64-unknown-linux-gnu \
+            > "$RUNNER_TEMP/a10/shared-presenter-metadata.json"
+          python3 -I tests/ui/verify_shared_presenter.py \
+            --metadata "$RUNNER_TEMP/a10/shared-presenter-metadata.json" \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source.log"
+      - name: Test original shared packages and real egui edit transactions
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path ui/Cargo.toml --all-targets --locked \
+            -p hepta-control-core -p hepta-robrix-ui -p trill-ui-core -p trill-shell \
+            --no-default-features --features trill-shell/hepta-shared-presenter \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-tests.log"
+          cargo clippy --manifest-path ui/Cargo.toml --all-targets --locked \
+            -p trill-ui-core -p trill-shell \
+            --features trill-shell/hepta-shared-presenter -- -D warnings \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-clippy.log"
+          cargo run --quiet --manifest-path ui/Cargo.toml --locked \
+            -p trill-ui-core --example wire_compatibility --no-default-features \
+            > "$RUNNER_TEMP/a10/shared-presenter-wire-default.json"
+          cmp tests/ui/wire-compatibility-aligned-v1.json "$RUNNER_TEMP/a10/shared-presenter-wire-default.json"
+          python3 -I tests/ui/verify_wire_compatibility.py \
+            --original tests/ui/wire-compatibility-v1.json \
+            --candidate "$RUNNER_TEMP/a10/shared-presenter-wire-default.json" \
+            | tee "$RUNNER_TEMP/a10/wire-default-compatibility.json"
+          cargo run --quiet --manifest-path ui/Cargo.toml --locked \
+            -p trill-ui-core --example wire_compatibility \
+            --features hepta-shared-presenter \
+            > "$RUNNER_TEMP/a10/shared-presenter-wire.json"
+          cmp tests/ui/wire-compatibility-aligned-v1.json "$RUNNER_TEMP/a10/shared-presenter-wire.json"
+          python3 -I tests/ui/verify_wire_compatibility.py \
+            --original tests/ui/wire-compatibility-v1.json \
+            --candidate "$RUNNER_TEMP/a10/shared-presenter-wire.json" \
+            | tee "$RUNNER_TEMP/a10/wire-candidate-compatibility.json"
+          python3 -I tests/ui/verify_shared_presenter.py \
+            --metadata "$RUNNER_TEMP/a10/shared-presenter-metadata.json" \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source-after-tests.log"
       - name: Enforce Rust 1.88 UI workspace and all-target Clippy warnings
         run: |
           set -euo pipefail

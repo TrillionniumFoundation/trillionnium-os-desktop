@@ -41,6 +41,7 @@ pub struct FramePermission {
     effects: bool,
     keyboard: bool,
     confirmation_key_seen: bool,
+    ime_confirmation_fenced: bool,
 }
 
 impl FramePermission {
@@ -54,6 +55,12 @@ impl FramePermission {
 
     pub fn confirmation_key_seen(self) -> bool {
         self.confirmation_key_seen
+    }
+
+    /// Keep the whole confirming frame fenced even when its key-up clears the
+    /// pending state before a renderer processes that frame's editor events.
+    pub fn ime_confirmation_fenced(self) -> bool {
+        self.ime_confirmation_fenced
     }
 }
 
@@ -70,11 +77,18 @@ impl ActivationPolicy {
         self.composing
     }
 
+    /// A renderer must not reinterpret a delayed IME confirmation as editor
+    /// Return while waiting for its release or fresh explicit navigation.
+    pub fn ime_confirmation_pending(&self) -> bool {
+        self.composing || self.wait_for_confirmation_release
+    }
+
     pub fn begin_frame(
         &mut self,
         focused: bool,
         events: impl IntoIterator<Item = InputEvent>,
     ) -> FramePermission {
+        let ime_confirmation_pending_at_start = self.ime_confirmation_pending();
         let mut blocks_effects = self.composing || !focused;
         let mut blocks_keyboard = false;
         let mut fresh_keyboard_activation = false;
@@ -150,6 +164,9 @@ impl ActivationPolicy {
             effects: !blocks_effects && !self.composing,
             keyboard: fresh_keyboard_activation && !blocks_keyboard,
             confirmation_key_seen,
+            ime_confirmation_fenced: ime_confirmation_pending_at_start
+                || blocks_effects
+                || self.wait_for_confirmation_release,
         }
     }
 }
@@ -174,6 +191,7 @@ mod tests {
             let frame = policy.begin_frame(true, [key(confirm, true)]);
             assert!(frame.allows(ActivationSource::Keyboard));
             assert!(frame.confirmation_key_seen());
+            assert!(!frame.ime_confirmation_fenced());
         }
     }
 
@@ -183,6 +201,7 @@ mod tests {
         for events in [vec![InputEvent::Preedit { empty: false }], vec![]] {
             let frame = policy.begin_frame(true, events);
             assert!(policy.composing());
+            assert!(frame.ime_confirmation_fenced());
             for source in [
                 ActivationSource::Keyboard,
                 ActivationSource::Pointer,
@@ -200,13 +219,17 @@ mod tests {
             policy.begin_frame(true, [InputEvent::Preedit { empty: false }]);
             let commit = policy.begin_frame(true, [InputEvent::Commit, InputEvent::ImeDisabled]);
             assert!(!policy.composing());
+            assert!(policy.ime_confirmation_pending());
+            assert!(commit.ime_confirmation_fenced());
             assert!(!commit.allows(ActivationSource::Pointer));
             assert!(!commit.allows(ActivationSource::Accessibility));
             policy.begin_frame(true, []);
+            assert!(policy.ime_confirmation_pending());
             assert!(!policy
                 .begin_frame(true, [key(confirm, true)])
                 .allows(ActivationSource::Keyboard));
             policy.begin_frame(true, [key(confirm, false)]);
+            assert!(!policy.ime_confirmation_pending());
             assert!(policy
                 .begin_frame(true, [key(confirm, true)])
                 .allows(ActivationSource::Keyboard));
@@ -230,15 +253,16 @@ mod tests {
     fn press_then_release_does_not_unblock_the_same_candidate_frame() {
         let mut policy = ActivationPolicy::default();
         policy.begin_frame(true, [InputEvent::Commit]);
-        assert!(!policy
-            .begin_frame(
-                true,
-                [key(ConfirmKey::Enter, true), key(ConfirmKey::Enter, false)],
-            )
-            .allows(ActivationSource::Keyboard));
-        assert!(policy
-            .begin_frame(true, [key(ConfirmKey::Enter, true)])
-            .allows(ActivationSource::Keyboard));
+        let confirmation = policy.begin_frame(
+            true,
+            [key(ConfirmKey::Enter, true), key(ConfirmKey::Enter, false)],
+        );
+        assert!(!confirmation.allows(ActivationSource::Keyboard));
+        assert!(!policy.ime_confirmation_pending());
+        assert!(confirmation.ime_confirmation_fenced());
+        let fresh = policy.begin_frame(true, [key(ConfirmKey::Enter, true)]);
+        assert!(fresh.allows(ActivationSource::Keyboard));
+        assert!(!fresh.ime_confirmation_fenced());
     }
 
     #[test]
@@ -260,10 +284,11 @@ mod tests {
     fn explicit_navigation_recovers_when_backend_swallows_key_release() {
         let mut policy = ActivationPolicy::default();
         policy.begin_frame(true, [InputEvent::Commit]);
-        policy.begin_frame(true, [InputEvent::ExplicitNavigation]);
-        assert!(policy
-            .begin_frame(true, [key(ConfirmKey::Enter, true)])
-            .allows(ActivationSource::Keyboard));
+        let navigation = policy.begin_frame(true, [InputEvent::ExplicitNavigation]);
+        assert!(navigation.ime_confirmation_fenced());
+        let fresh = policy.begin_frame(true, [key(ConfirmKey::Enter, true)]);
+        assert!(fresh.allows(ActivationSource::Keyboard));
+        assert!(!fresh.ime_confirmation_fenced());
     }
 
     #[test]

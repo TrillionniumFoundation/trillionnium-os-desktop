@@ -10,6 +10,9 @@ pub mod notes_recovery;
 pub mod objective;
 pub mod observation;
 
+#[cfg(feature = "hepta-shared-presenter")]
+pub mod shared_chat;
+
 use serde::{Deserialize, Serialize};
 
 pub mod host_peer;
@@ -261,12 +264,52 @@ pub struct HostResources {
     pub sampled_unix_ms: u64,
     pub mem_total_kib: Option<u64>,
     pub mem_available_kib: Option<u64>,
+    #[serde(default, deserialize_with = "deserialize_host_load_legacy")]
     pub load_average_1m: Option<f32>,
     pub source: String,
     /// Older host snapshots must default to unknown rather than implying a
     /// live compositor or restored Wayland surface.
     #[serde(default)]
     pub wayland: HostWaylandObservation,
+}
+
+// Preserve the original JSON number dispatch for this observation: integer
+// tokens narrow directly from i64/u64, and decimal tokens narrow from f64.
+// Requesting f32 directly would enable serde_json's feature-unified single-
+// precision parser; converting every token through f64 would instead double-
+// round some large integers. Missing/null and accepted f32 overflow stay local
+// observation semantics, not an authority or completion assertion.
+fn deserialize_host_load_legacy<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct LegacyHostLoad;
+
+    impl serde::de::Visitor<'_> for LegacyHostLoad {
+        type Value = Option<f32>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str("a JSON number or null for the host load observation")
+        }
+
+        fn visit_unit<E>(self) -> Result<Self::Value, E> {
+            Ok(None)
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
+            Ok(Some(value as f32))
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
+            Ok(Some(value as f32))
+        }
+
+        fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E> {
+            Ok(Some(value as f32))
+        }
+    }
+
+    deserializer.deserialize_any(LegacyHostLoad)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
