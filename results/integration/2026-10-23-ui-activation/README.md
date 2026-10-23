@@ -28,3 +28,11 @@ keydown without keyup even when a backend omits its repeat flag, then restores
 activation after release. All 13 updated policy tests passed with warnings
 denied under Rust 1.95.0. The initial 12-test record above remains historical;
 full egui and native gates still need to run on the latest commit.
+
+The archived regression adjusts only its module-relative path for this directory.
+Its original execution layout is retained in repeat-execution.json; the archived
+copy was also compiled and executed against the unchanged updated policy, as
+recorded in [archived-regression-execution.json](archived-regression-execution.json).
+From the repository root, compile this file with `rustc --edition=2021 --crate-name
+archived_input_repeat --test results/integration/2026-10-23-ui-activation/repeat-regression.rs`
+and run the resulting binary with `--exact repeated_unmarked_keydown_does_not_repeat_an_effect`.
