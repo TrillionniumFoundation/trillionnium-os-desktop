@@ -22,10 +22,8 @@ jobs:
       run:
         shell: bash
     env:
-      DESKTOP_SOURCE_PIN: c5c88794bf227b1d862b2f914b02809a0090e854
-      HEPTA_SOURCE_PIN: 6d6097da843f5831dfaf9cee3530da512d072a15
-      A06_RUN_ID: "39898657974"
-      A06_ARTIFACT_ID: "12480223660"
+      DESKTOP_SOURCE_PIN: 2da18c78cedc831b88d5e8e28e653b58f001cf20
+      HEPTA_SOURCE_PIN: 0689cd115e92e6c01f982e1e1987bf945e0c2719
       GIT_TERMINAL_PROMPT: "0"
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
@@ -65,13 +63,14 @@ jobs:
             sudo apt-get update
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
               build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils \
-              qemu-system-x86 e2fsprogs
+              qemu-system-x86 e2fsprogs clang lld busybox-static
             rustup toolchain install 1.95.0 --profile minimal
+            rustup toolchain install nightly-2026-07-21 --profile minimal --component rust-src,rustc-dev,llvm-tools-preview --target x86_64-unknown-none
             rustup run 1.95.0 rustc -Vv
             rustup run 1.95.0 cargo -Vv
             qemu-system-x86_64 --version
             gcc --version
-            dpkg-query -W build-essential pkg-config libcap-dev cmake libssl-dev binutils qemu-system-x86 e2fsprogs
+            dpkg-query -W build-essential pkg-config libcap-dev cmake libssl-dev binutils qemu-system-x86 e2fsprogs clang lld busybox-static
             df -B1 "$F1_CI_ROOT"
           } 2>&1 | tee "$F1_CI_ROOT/logs/native-setup.log"
 
@@ -95,31 +94,26 @@ jobs:
           git -C "$F1_CI_ROOT/desktop-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/desktop-source.txt"
           git -C "$F1_CI_ROOT/hepta-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/hepta-source.txt"
 
-      - name: Download the exact successful final-head A06 artifact and original metadata
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Fetch the exact original VDSO and verify its bytes
         run: |
           set -euo pipefail
-          repository=TrillionniumFoundation/trillionnium-os-desktop
-          gh api "repos/$repository/actions/runs/$A06_RUN_ID/artifacts" \
-            > "$F1_CI_ROOT/download/artifact-list.json"
-          gh api "repos/$repository/actions/runs/$A06_RUN_ID" \
-            > "$F1_CI_ROOT/download/workflow-run.json"
-          gh api "repos/$repository/actions/artifacts/$A06_ARTIFACT_ID/zip" \
-            > "$F1_CI_ROOT/download/a06-final.zip"
-          # No token is present in compilation or the guest process environment.
-          # The importer pins ZIP bytes as well as checking these original records.
+          git clone https://github.com/asterinas/linux_vdso.git "$F1_CI_ROOT/linux-vdso"
+          git -C "$F1_CI_ROOT/linux-vdso" checkout --detach 8af571775a3d3a1df3e84fc9709b9d6b160c771a
+          test "$(git -C "$F1_CI_ROOT/linux-vdso" rev-parse HEAD^{tree})" = 8e0a300d78c2a020ccc79f1253bc27a8301416e6
+          printf '%s  %s\n' 27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3 \
+            "$F1_CI_ROOT/linux-vdso/vdso_x86_64.so" | sha256sum --check
 
-      - name: Transcribe the retained ordinary build after original raw-evidence replay
+      - name: Build and boot the reviewed ordinary kernel from source
         run: |
           set -euo pipefail
-          python3 -I -B tests/workloads/hepta_agentd_runtime/import_kernel_artifact.py \
-            --archive "$F1_CI_ROOT/download/a06-final.zip" \
-            --artifact-metadata "$F1_CI_ROOT/download/artifact-list.json" \
-            --run-metadata "$F1_CI_ROOT/download/workflow-run.json" \
+          review_sha=$(sha256sum tests/workloads/hepta_agentd_runtime/source-review.json | cut -d ' ' -f1)
+          python3 -I -B tests/workloads/hepta_agentd_runtime/build_kernel.py --execute \
             --desktop-source "$F1_CI_ROOT/desktop-source" \
-            --output "$F1_CI_ROOT/kernel-inputs" \
-            2>&1 | tee "$F1_CI_ROOT/logs/kernel-import.log"
+            --hepta-source "$F1_CI_ROOT/hepta-source" \
+            --expected-source-review-sha256 "$review_sha" \
+            --cargo-home "$CARGO_HOME" --rustup-home "$RUSTUP_HOME" \
+            --vdso "$F1_CI_ROOT/linux-vdso" --output "$F1_CI_ROOT/kernel-inputs" \
+            2>&1 | tee "$F1_CI_ROOT/logs/kernel-build-and-boot.log"
 
       - name: Build original Agentd, unchanged original fixture and real observer for x86_64
         run: |

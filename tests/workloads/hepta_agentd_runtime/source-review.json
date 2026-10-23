@@ -1,14 +1,14 @@
 {
   "desktop": {
-    "head": "c5c88794bf227b1d862b2f914b02809a0090e854",
-    "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c"
+    "head": "2da18c78cedc831b88d5e8e28e653b58f001cf20",
+    "tree": "0838e8adcc78256ceb6e8777f5afeb04cf8b6091"
   },
   "hepta": {
-    "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
-    "tree": "f722fbe5f24275c324089be720559a40901105f3"
+    "head": "0689cd115e92e6c01f982e1e1987bf945e0c2719",
+    "tree": "21b6d0b41fba0e38b140f3a91b8ba0370edea085"
   },
   "schema": "hepta.native-original-runtime-source-review.v1",
-  "scope": "Original startup, registry/supervisor lifecycle fixture and observer projection. Selected-file review is not a whole-Hepta audit or execution evidence.",
+  "scope": "Reviewed source pair for a freshly built ordinary kernel, original registry/supervisor and observer. The retained c5/6d archive profile is independent; this source review is not an execution receipt.",
   "source_files": [
     {
       "git_blob": "60595420f4bf42089b5745830ac611df1c7ec2c2",
@@ -177,6 +177,72 @@
       "path": "tests/workloads/hepta_agentd_abi/test_agentd_abi.py",
       "repository": "desktop",
       "sha256": "9b87b8b3e54e3c2bc3dc0141a2c8982907aa5316b26cb78ffd7dd50a09277e71"
+    },
+    {
+      "git_blob": "caebd3c13516704713967dbdbb31c1d7c797751e",
+      "path": "support/build/kernel.sh",
+      "repository": "desktop",
+      "sha256": "627ccc5a367ae6b8f585d3d7d50969160dd2f098b40608a6ac6be93d0fbc4ef0"
+    },
+    {
+      "git_blob": "727a1a322b52a3581cc0f255a258f0dc38ef2a52",
+      "path": "support/build/minimal.mk",
+      "repository": "desktop",
+      "sha256": "59ad6337dc4618986108e7c178f3b2977859cf2d301c2f732c0b6468bc5ebb8b"
+    },
+    {
+      "git_blob": "936bec872749bcbaf5bf689c06fb4848c4ff8ce5",
+      "path": "support/build/verify-source.py",
+      "repository": "desktop",
+      "sha256": "7694187410670e9429084dc4479d406ee00ae6c4ff0ff7fe38f7fc527c4b3228"
+    },
+    {
+      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
+      "path": "support/build/check-boot.py",
+      "repository": "desktop",
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
+    },
+    {
+      "git_blob": "7e5d23fb3532907d914c59fe61357521641b645f",
+      "path": "support/build/record-qemu.py",
+      "repository": "desktop",
+      "sha256": "7aaf72cf6b39b5320f46a3bdae5dd2bd30902d79294f9b568fdba5fcb146121b"
+    },
+    {
+      "git_blob": "7963e0ffedf36c034b32596167ec3e9190ec0489",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs",
+      "repository": "desktop",
+      "sha256": "ba4aba7609e03d594caf191e8213c85a3dba8ecb473f964c23dbfa66de6b99af"
+    },
+    {
+      "git_blob": "7c1ef2d0b609baa1fc0c658f476feed8fd520b30",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs",
+      "repository": "desktop",
+      "sha256": "9d869b248072259eb3d1d864022ee35a67740d09080f34ea260b599412b27940"
+    },
+    {
+      "git_blob": "64f8328abc603d1b8d1a57714a764fde3bdc2b5e",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs",
+      "repository": "desktop",
+      "sha256": "92323bcb6cc809ea48232c94eda160bda5129b931616c0994b11e472c2bd4617"
+    },
+    {
+      "git_blob": "b6e0dbc9109ff974708a494f6bad954d957c8663",
+      "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs",
+      "repository": "desktop",
+      "sha256": "868bbb800716ef5e1f8185e86f57e7ca7c2179d6986be0dea343d2b45e1c6964"
+    },
+    {
+      "git_blob": "b32e1de07fa2c6c575290bb21643b55d78bd2bad",
+      "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs",
+      "repository": "desktop",
+      "sha256": "406f16fcb516ea41e37e735d6446cd7cceacbacf314ff5568bfdf2faf9ce39a1"
+    },
+    {
+      "git_blob": "65131393a9257b8587eeb0caa2d33a945613f208",
+      "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs",
+      "repository": "desktop",
+      "sha256": "916ac51629738be3f23c71d510a292e7903bb0d5db8e56cec5d60df165540ef0"
     }
   ]
 }

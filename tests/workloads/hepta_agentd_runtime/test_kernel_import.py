@@ -19,8 +19,8 @@ def metadata():
     return {
         "artifacts": [{"id": importer.ARTIFACT_ID, "name": importer.ARTIFACT_NAME,
                        "size_in_bytes": importer.ARCHIVE_BYTES, "digest": "sha256:" + importer.ARCHIVE_SHA256,
-                       "workflow_run": {"id": importer.RUN_ID, "head_sha": importer.gate.DESKTOP["head"]}}]
-    }, {"id": importer.RUN_ID, "head_sha": importer.gate.DESKTOP["head"], "status": "completed",
+                       "workflow_run": {"id": importer.RUN_ID, "head_sha": importer.RETAINED_DESKTOP["head"]}}]
+    }, {"id": importer.RUN_ID, "head_sha": importer.RETAINED_DESKTOP["head"], "status": "completed",
         "conclusion": "success", "path": ".github/workflows/a06-kernel.yml",
         "repository": {"full_name": importer.REPOSITORY}}
 
@@ -95,7 +95,7 @@ class RetainedEvidenceBoundaryTests(unittest.TestCase):
                 importer.read_member(archive, "result.json", 32)
 
     def test_changed_source_snapshot_fails_before_receipt_creation(self):
-        before = {"schema": "a06.g1-source-snapshot.v1", **importer.gate.DESKTOP, "files": {}}
+        before = {"schema": "a06.g1-source-snapshot.v1", **importer.RETAINED_DESKTOP, "files": {}}
         changed = {**before, "tree": "0" * 40}
         raw = {name: json.dumps(value).encode() for name, value in (
             ("source-before.json", before), ("source-after-boot.json", before), ("source-after-guest.json", changed))}

@@ -11,6 +11,42 @@ It does not complete F1, native production G2, durable crash recovery, aggregate
 memory isolation, SMP qualification, or hardware acceptance. The report keeps
 those fields false even when its lifecycle oracle passes.
 
+## Current fresh-build profile
+
+The current `source-review.json` selects Desktop
+`2da18c78cedc831b88d5e8e28e653b58f001cf20` / tree
+`0838e8adcc78256ceb6e8777f5afeb04cf8b6091` and Hepta
+`0689cd115e92e6c01f982e1e1987bf945e0c2719` / tree
+`21b6d0b41fba0e38b140f3a91b8ba0370edea085`. It includes the UDP stop fix
+and the original-owner integration onto the current convergence line. The
+39 selected source identities are a review input, not a runtime receipt.
+
+Use `build_kernel.py --execute` to run the original ordinary kernel build,
+boot and QueryAbi candidate gate, with an explicit SHA-256 of this source
+review. It retains the original command, pinned toolchain gate, raw QEMU
+record, serial bytes, all three boot binaries and complete tracked-source
+snapshots. It creates `kernel-build.json` only after successful build, boot,
+QueryAbi checks, live artifact verification and unchanged clean sources.
+No provider credentials or trusted-image flags are inherited. A failed build
+retains a failure result and never produces a success receipt.
+
+The `--execute` flag is required; without it the builder performs no build or
+filesystem mutation. Pass canonical clean source checkouts, the pinned VDSO,
+and a fresh output directory outside both checkouts. The resulting receipt
+and kernel are inputs to the existing `prepare_inputs.py`, followed by the
+existing explicit `run_agentd_runtime.py --execute` guest run.
+
+The historical c5/6d archive is now bound independently to
+`retained-source-review.json`. `import_kernel_artifact.py` always preserves
+that original identity; its receipt is rejected by the current runtime
+profile. Importing old bytes cannot qualify the UDP-fixed kernel or the new
+Hepta combination. The historical archive procedure below is retained for
+replay and provenance only. Current native CI builds the reviewed kernel
+from source instead of importing that older artifact.
+
+Current F1/G2 and hardware qualification remain open until their own real
+execution receipts exist. Host tests validate the runner, not the daemon.
+
 ## Original owners and precise scope
 
 The fixture is the existing
@@ -47,14 +83,14 @@ The earlier
 unchanged. Its expected missing-`HEPTA_FLEET_ROOT` rejection is useful early ABI
 evidence. It is never relabelled as successful daemon startup.
 
-## Reviewed sources
+## Historical retained sources
 
 | Component | Reviewed commit | Tree |
 | --- | --- | --- |
 | Desktop fixture, observer and ordinary kernel source | `c5c88794bf227b1d862b2f914b02809a0090e854` | `87bc4e4d72697a7583fb0afafe4db4b41582941c` |
 | Original Hepta owner libraries and Agentd | `6d6097da843f5831dfaf9cee3530da512d072a15` | `f722fbe5f24275c324089be720559a40901105f3` |
 
-[`source-review.json`](source-review.json) records 28 selected source files with
+[`retained-source-review.json`](retained-source-review.json) records 28 selected source files with
 their exact Git blob and SHA-256 identities. Selection covers startup, original
 registry/supervisor ownership, the fixture and observer, and the unchanged ABI
 helpers; it is not a claim that every Hepta source file was reviewed here.
@@ -74,17 +110,20 @@ repository identity. A new source tree requires a new review; there is no
 
 | File | Responsibility |
 | --- | --- |
+| `build_kernel.py` | Execute the reviewed ordinary build, boot and QueryAbi gate and retain current-source kernel inputs. |
 | `prepare_inputs.py` | Verify clean source identities, build unchanged userspace offline, preserve original dependency identities, and freeze inputs and build receipts. |
 | `import_kernel_artifact.py` | Verify the fixed successful A06 archive, replay its unchanged original boot and QueryAbi checks, and transcribe the real ordinary kernel build receipt. |
 | `run_agentd_runtime.py` | Verify frozen inputs, inspect ELF dependencies without execution, construct fresh guest images, launch QEMU explicitly, and evaluate the strict lifecycle result. |
 | `agentd_runtime_probe.c` | Create the private empty guest work directory, launch the original fixture, retain its true wait status, and emit nonce-bound bounded diagnostics. |
 | `test_agentd_runtime.py` | Host regressions for evidence rejection, source/file binding, staging, disabled mode, and terminal failure reports. Synthetic records remain test data. |
 | `test_kernel_import.py` | Reject wrong or incomplete CI metadata, untrusted archives, changed source snapshots, ktest images, and failed original builds. |
+| `test_kernel_build.py` | Check disabled mode, pre-build source rejection, failed-build receipts and retained/current profile separation. |
 | `source-review.json` | Fixed reviewed source identities and scope. |
+| `retained-source-review.json` | Independent historical archive identities; never updated to relabel old binaries. |
 | `.github/workflows/f1-original-runtime-host.yml` | Run host tests and compile the guest launcher. This workflow never qualifies native runtime. |
-| `.github/workflows/f1-original-runtime-native.yml` | On pull requests, build the three original x86_64 executables, boot the actual retained ordinary kernel, and evaluate the real no-turn lifecycle. |
+| `.github/workflows/f1-original-runtime-native.yml` | Build and qualify the current ordinary kernel and three original x86_64 executables, then evaluate the real no-turn lifecycle. |
 
-## Actual native CI path
+## Historical retained native CI path
 
 The native workflow runs on `ubuntu-24.04` x86_64. The workflow and launcher come
 from the pull request's exact head; compiled Desktop/Hepta source checkouts are

@@ -26,9 +26,6 @@ import cpio_codec
 import run_agentd_abi as abi
 
 require, sha, pinned, save = abi.require, abi.sha, abi.pinned, abi.save
-DESKTOP = {"head": "c5c88794bf227b1d862b2f914b02809a0090e854", "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c"}
-HEPTA = {"head": "6d6097da843f5831dfaf9cee3530da512d072a15", "tree": "f722fbe5f24275c324089be720559a40901105f3"}
-SOURCES = {"desktop": DESKTOP, "hepta": HEPTA}
 AGENT = "22222222-2222-4222-8222-222222222222"
 BINARIES = {"agentd": "codex-hepta-agentd", "fixture": "hepta-original-observer-probe", "observer": "hepta-observe"}
 EXPECTED_CHECKS = [
@@ -54,6 +51,11 @@ def json_value(raw):
     def invalid_constant(value):
         raise ValueError("non-finite JSON value: " + value)
     return json.loads(raw, object_pairs_hook=object_pairs, parse_constant=invalid_constant)
+
+
+SOURCE_REVIEW = json_value((HERE / "source-review.json").read_bytes())
+DESKTOP, HEPTA = SOURCE_REVIEW["desktop"], SOURCE_REVIEW["hepta"]
+SOURCES = {"desktop": DESKTOP, "hepta": HEPTA}
 
 
 def input_file(directory, record, limit):

@@ -31,6 +31,11 @@ ARCHIVE_SHA256 = "12f6e6ccd459358e5cc254c7aa60d1f0ca16d9930e66c0f58906c18ab9b578
 KERNEL_SHA256 = "5a4f528b344c2d0bdb40c41c446e141d206aafb84d4cb6a6895dcf5c962f1450"
 PREFIX = "_temp/a06-queryabi-candidate/"
 SOURCE_COUNT = 7821
+# This archive always retains its original reviewed pair. Updating the current
+# runtime profile must never relabel an older kernel as newly qualified code.
+RETAINED_REVIEW = json.loads((HERE / "retained-source-review.json").read_bytes())
+RETAINED_DESKTOP = RETAINED_REVIEW["desktop"]
+RETAINED_SOURCES = {name: RETAINED_REVIEW[name] for name in ("desktop", "hepta")}
 CHECKER_FILES = (
     "tests/kernel/control/run_queryabi_candidate_guest.py",
     "tests/kernel/control/run_queryabi_guest.py",
@@ -86,10 +91,10 @@ def validate_metadata(artifacts, run):
             "A06 artifact identity, size or digest changed")
     workflow_run = artifact.get("workflow_run", {})
     require(isinstance(workflow_run, dict) and workflow_run.get("id") == RUN_ID
-            and workflow_run.get("head_sha") == gate.DESKTOP["head"],
+            and workflow_run.get("head_sha") == RETAINED_DESKTOP["head"],
             "artifact is from a different workflow run or source")
     repository = run.get("repository")
-    require(run.get("id") == RUN_ID and run.get("head_sha") == gate.DESKTOP["head"]
+    require(run.get("id") == RUN_ID and run.get("head_sha") == RETAINED_DESKTOP["head"]
             and run.get("status") == "completed" and run.get("conclusion") == "success"
             and run.get("path") == ".github/workflows/a06-kernel.yml"
             and isinstance(repository, dict) and repository.get("full_name") == REPOSITORY,
@@ -118,7 +123,7 @@ def validate_snapshots(raw, result):
     require(isinstance(before, dict) and before == values[1] == values[2],
             "original source snapshots changed across build or execution")
     require(before.get("schema") == "a06.g1-source-snapshot.v1"
-            and {key: before.get(key) for key in ("head", "tree")} == gate.DESKTOP,
+            and {key: before.get(key) for key in ("head", "tree")} == RETAINED_DESKTOP,
             "original kernel source identity differs from reviewed source")
     files = before.get("files")
     require(isinstance(files, dict) and len(files) == SOURCE_COUNT
@@ -126,7 +131,7 @@ def validate_snapshots(raw, result):
             "original full source snapshot is incomplete")
     require(isinstance(before.get("root"), str) and Path(before["root"]).is_absolute(),
             "original build source root missing")
-    review = load_json(HERE / "source-review.json")
+    review = load_json(HERE / "retained-source-review.json")
     for item in review["source_files"]:
         if item["repository"] == "desktop":
             record = files.get(item["path"], {})
@@ -243,7 +248,7 @@ def import_archive(args, out, report):
         (raw_directory / name).write_bytes(data)
         metadata[name] = {"sha256": digest(data), "bytes": len(data)}
     receipt = {
-        "schema": "hepta.native-original-runtime-build.v1", "sources": gate.SOURCES,
+        "schema": "hepta.native-original-runtime-build.v1", "sources": RETAINED_SOURCES,
         "build_sources": {"desktop": {key: snapshot[key] for key in ("head", "tree")}},
         "kernel_profile": "ordinary-os", "built": True, "source_clean": True,
         "binary_sha256": {"kernel": KERNEL_SHA256}, "commands": [command],
@@ -275,7 +280,7 @@ def main(argv=None):
     out = args.output.absolute()
     report = {"schema": "hepta.native-original-runtime-kernel-import.v1", "imported": False,
               "kernel_built_in_this_import": False, "guest_executed_in_this_import": False,
-              "f1_completed": False, "sources": gate.SOURCES,
+              "f1_completed": False, "sources": RETAINED_SOURCES,
               "started_at_utc": datetime.now(timezone.utc).isoformat()}
     try:
         import_archive(args, out, report)
