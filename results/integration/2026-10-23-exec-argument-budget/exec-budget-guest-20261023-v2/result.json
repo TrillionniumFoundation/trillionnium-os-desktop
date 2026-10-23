@@ -1,0 +1,158 @@
+{
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "checks_passed": 0,
+  "common_header_sha256": "f4aa055d5f5755bff51158db05d37b50278db0be7ff1d115ec9a5e1af55ac467",
+  "compile_exit": 0,
+  "compiler_command": [
+    "cc",
+    "-std=gnu11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-D__asterinas__",
+    "-static",
+    "-no-pie",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-resource-closure-20261023/kernel/asterinas/test/initramfs/src/regression/process/execve/execve_args.c",
+    "-o",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/exec-budget-guest-20261023-v2/probe.elf"
+  ],
+  "elapsed_seconds": 2.92262180801481,
+  "exact_case_counts": false,
+  "groups": [
+    {
+      "failed": 0,
+      "name": "combined_argv_envp_exact_limit",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "argv_alone_exact_limit",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "execveat_shares_the_total_limit",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "stack_limit_has_a_128k_floor",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "stack_limit_uses_one_quarter",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "stack_limit_has_a_6m_ceiling",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "empty_strings_still_consume_pointer_storage",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "single_string_limit_includes_nul",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "shebang_replacement_consumes_the_same_budget",
+      "passed": 2
+    },
+    {
+      "failed": 0,
+      "name": "null_vectors_remain_accepted",
+      "passed": 1
+    }
+  ],
+  "guest_inputs_unchanged": true,
+  "initramfs_sha256": "df8844f0293cfeef1269351450290b2ec003dfb538051b21aec04408c9ad9e76",
+  "kernel_sha256": "b9d0d3780de7aa7cb2932a896eb894914e18a6a059881ad9ee1a948994205378",
+  "marker_counts": {
+    "EXEC_ARG_BUDGET_PROCESS_EXIT=0": 1,
+    "TRILLIONNIUM_A01_BOOT_OK": 1
+  },
+  "memory_controller_qualified": false,
+  "no_failure": false,
+  "ordered_completion": false,
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "passed": false,
+  "physical_memory_reserve_qualified": false,
+  "probe_sha256": "cdf00ca90e9b77ce72a4a4527d4a1b9c982a5de7699c93ab59492650f465dd2c",
+  "probe_source_head": "e0b5caa5100c7f9fb4b3219a4359642e5e791448",
+  "probe_source_sha256": "4799622e147863ccce600f981c9f9bc8922bf917f73d983d41e30144e52f14ee",
+  "probe_source_tree": "f552d8fec33d33c2afe4870e2933e5894a6c851f",
+  "product_receipt_sha256": "812f292cbd37c5bebebb270586658bcd8ce097a3f1eef658ec4f2b55e616093e",
+  "product_source_head": "e0b5caa5100c7f9fb4b3219a4359642e5e791448",
+  "product_source_tree": "f552d8fec33d33c2afe4870e2933e5894a6c851f",
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/exec-budget-guest-20261023-v2/kernel.elf",
+    "-initrd",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/exec-budget-guest-20261023-v2/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/exec-budget-guest-20261023-v2/bios.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "qemu_exit": 33,
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "raw_serial_sha256": "642f74d75eb62d08e97370b3710c387e395e66ad788c6473a7cc18db6d0f3a91",
+  "raw_serial_size": 98348,
+  "runner_sha256": "24c3253c3e1c1ae4a8e000060e266c2ab08ffeacb8c1995987e8cf298f545627",
+  "schema": "a06.exec-argument-budget.v1",
+  "scope": "19 exec/execveat argument admission checks on one ordinary x86_64 kernel",
+  "source_inputs_unchanged": true,
+  "timed_out": false,
+  "unexpected_records": [
+    "test_combined_argv_envp_exact_limit: `run_boundary(8 * (1024 * ((size_t)1024)), 2 * (1024 * ((size_t)1024)), 0, 0, USE_EXECVE)` [     1.223] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_combined_argv_envp_exact_limit: `run_boundary(8 * (1024 * ((size_t)1024)), 2 * (1024 * ((size_t)1024)), 1, 0, USE_EXECVE)` [     1.279] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_argv_alone_exact_limit: `run_boundary(8 * (1024 * ((size_t)1024)), 2 * (1024 * ((size_t)1024)), 0, 1, USE_EXECVE)` passed [[     1.358] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_argv_alone_exact_limit: `run_boundary(8 * (1024 * ((size_t)1024)), 2 * (1024 * ((size_t)1024)), 1, 1, USE_EXECVE)` passed [[     1.431] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_execveat_shares_the_total_limit: `run_boundary(8 * (1024 * ((size_t)1024)), 2 * (1024 * ((size_t)1024)), 0, 0, USE_EXECVEAT[     1.525] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_execveat_shares_the_total_limit: `run_boundary(8 * (1024 * ((size_t)1024)), 2 * (1024 * ((size_t)1024)), 1, 0, USE_EXECVEAT[     1.583] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_stack_limit_has_a_128k_floor: `run_boundary(256 * ((size_t)1024), 128 * ((size_t)1024), 0, 0, USE_EXECVE)` passed [got Succ[     1.599] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_stack_limit_has_a_128k_floor: `run_boundary(256 * ((size_t)1024), 128 * ((size_t)1024), 1, 0, USE_EXECVE)` passed [got Succ[     1.610] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_stack_limit_uses_one_quarter: `run_boundary(1 * (1024 * ((size_t)1024)), 256 * ((size_t)1024), 0, 0, USE_EXECVE)` passed [g[     1.632] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_stack_limit_uses_one_quarter: `run_boundary(1 * (1024 * ((size_t)1024)), 256 * ((size_t)1024), 1, 0, USE_EXECVE)` passed [g[     1.647] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_stack_limit_has_a_6m_ceiling: `run_boundary(32 * (1024 * ((size_t)1024)), 6 * (1024 * ((size_t)1024)), 0, 0, USE_EXECVE)` p[     1.870] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_stack_limit_has_a_6m_ceiling: `run_boundary(32 * (1024 * ((size_t)1024)), 6 * (1024 * ((size_t)1024)), 1, 0, USE_EXECVE)` p[     2.008] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_empty_strings_still_consume_pointer_storage: `run_exec(argv, ((void *)0), 256 * ((size_t)1024), USE_EXECVE)` passed [got Su[     2.095] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_empty_strings_still_consume_pointer_storage: `run_exec(argv, ((void *)0), 256 * ((size_t)1024), USE_EXECVE)` passed [got Su[     2.138] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_single_string_limit_includes_nul: `run_exec(argv, ((void *)0), 8 * (1024 * ((size_t)1024)), USE_EXECVE)` passed [got Succes[     2.155] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_single_string_limit_includes_nul: `run_exec(argv, ((void *)0), 8 * (1024 * ((size_t)1024)), USE_EXECVE)` passed [got Succes[     2.165] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_shebang_replacement_consumes_the_same_budget: `run_exec(vectors.argv, vectors.envp, 8 * (1024 * ((size_t)1024)), USE_SCRIPT[     2.240] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_shebang_replacement_consumes_the_same_budget: `run_exec(vectors.argv, vectors.envp, 8 * (1024 * ((size_t)1024)), USE_SCRIPT[     2.291] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]",
+    "test_null_vectors_remain_accepted: `run_exec(((void *)0), ((void *)0), 8 * (1024 * ((size_t)1024)), USE_EXECVE)` passed [got Suc[     2.300] INFO  : [pid=19][tid=19][id=1][SYS_WRITE]"
+  ]
+}
