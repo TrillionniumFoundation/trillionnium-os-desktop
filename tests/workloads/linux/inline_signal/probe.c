@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 #define _GNU_SOURCE
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <pthread.h>
 #include <signal.h>
@@ -290,6 +291,202 @@ static void queue_nonleader_shared_pending(void)
     require(sigprocmask(SIG_SETMASK, &original, NULL) == 0, "queue thread restore mask");
     pass("rt_queue_nonleader_shared_pending");
 }
+static long signal_send(int kind, pid_t pid, pid_t tid, int fd, long sig)
+{
+    switch (kind) {
+    case 0: return syscall(SYS_kill, pid, sig);
+    case 1: return syscall(SYS_tkill, tid, sig);
+    case 2: return syscall(SYS_tgkill, pid, tid, sig);
+    default: return syscall(SYS_pidfd_send_signal, fd, sig, NULL, 0);
+    }
+}
+static void signal_argument_bounds(void)
+{
+    sigset_t mask, original, pending;
+    sigemptyset(&mask); sigaddset(&mask, SIGUSR1);
+    require(sigprocmask(SIG_BLOCK, &mask, &original) == 0, "bounds mask");
+    int fd = syscall(SYS_pidfd_open, getpid(), 0); require(fd >= 0, "bounds pidfd");
+    const long invalid[] = { -1, 65, 256, 256 + SIGUSR1, INT_MIN, INT_MAX };
+    for (int kind = 0; kind < 4; ++kind) {
+        for (unsigned i = 0; i < sizeof(invalid)/sizeof(invalid[0]); ++i) {
+            errno = 0;
+            require(signal_send(kind, getpid(), syscall(SYS_gettid), fd, invalid[i]) == -1 &&
+                    errno == EINVAL, "full int signal range");
+        }
+        require(signal_send(kind, getpid(), syscall(SYS_gettid), fd, 0) == 0, "actual signal zero");
+        require(signal_send(kind, getpid(), syscall(SYS_gettid), fd, 1L << 32) == 0,
+                "Linux int ABI drops register high bits");
+    }
+    require(sigpending(&pending) == 0 && sigismember(&pending, SIGUSR1) == 0,
+            "invalid number never publishes low-byte signal");
+    close(fd); require(sigprocmask(SIG_SETMASK, &original, NULL) == 0, "bounds restore mask");
+    pass("signal_argument_bounds");
+}
+static void signal_target_before_range(void)
+{
+    for (int kind = 0; kind < 3; ++kind) {
+        errno = 0;
+        require(signal_send(kind, INT_MAX, INT_MAX, -1, 266) == -1 && errno == ESRCH,
+                "missing target before invalid signal");
+    }
+    errno = 0;
+    require(syscall(SYS_tgkill, INT_MAX, syscall(SYS_gettid), 266) == -1 && errno == ESRCH,
+            "TGID mismatch before invalid signal");
+    errno = 0;
+    require(syscall(SYS_kill, INT_MIN, 266) == -1 && errno == ESRCH, "minimum PID before signal");
+    errno = 0;
+    require(syscall(SYS_tkill, 0, 266) == -1 && errno == EINVAL, "nonpositive TID");
+    pass("signal_target_before_range");
+}
+static void signal_group_range(void)
+{
+    int ready[2], release[2];
+    require(pipe(ready) == 0 && pipe(release) == 0, "bounded group pipes");
+    pid_t pid = child();
+    if (pid == 0) {
+        close(ready[0]); close(release[1]);
+        require(setsid() == getpid(), "private one-child session/group");
+        sigset_t mask, pending; sigemptyset(&mask); sigaddset(&mask, SIGUSR1);
+        require(sigprocmask(SIG_BLOCK, &mask, NULL) == 0, "group masks low-byte signal");
+        require(write(ready[1], "R", 1) == 1, "group ready");
+        char value; require(read(release[0], &value, 1) == 1, "group release");
+        require(sigpending(&pending) == 0 && sigismember(&pending, SIGUSR1) == 0,
+                "invalid group signal never publishes");
+        _exit(0);
+    }
+    close(ready[1]); close(release[0]); char value;
+    require(read(ready[0], &value, 1) == 1, "group ready read"); close(ready[0]);
+    errno = 0;
+    require(syscall(SYS_kill, -pid, 266) == -1 && errno == EINVAL, "group full signal range");
+    require(kill(-pid, 0) == 0, "private group valid zero");
+    errno = 0;
+    require(syscall(SYS_kill, -INT_MAX, 266) == -1 && errno == ESRCH,
+            "missing group before signal range");
+    require(write(release[1], "X", 1) == 1, "group release write"); close(release[1]);
+    int status = reap(pid); require(WIFEXITED(status) && WEXITSTATUS(status) == 0, "private group reaped");
+    pass("signal_group_range");
+}
+
+static void pidfd_flags_fd_copy_order(void)
+{
+    int fd = syscall(SYS_pidfd_open, getpid(), 0); require(fd >= 0, "order pidfd");
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, -1, 266, NULL, 0) == -1 && errno == EBADF,
+            "bad fd before invalid signal");
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, -1, 266, (void *)1, 8) == -1 && errno == EINVAL,
+            "flags before fd and copy");
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 0, (void *)1, 0) == -1 && errno == EFAULT,
+            "signal zero still copies supplied information");
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 266, (void *)1, 0) == -1 && errno == EFAULT,
+            "copy before signal range");
+    siginfo_t info = { .si_signo = SIGUSR1, .si_code = SI_QUEUE };
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 0, &info, 0) == -1 && errno == EINVAL,
+            "zero still checks supplied signo");
+    info.si_signo = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 0, &info, 0) == 0, "valid zero payload");
+    close(fd); pass("pidfd_flags_fd_copy_order");
+}
+static void pidfd_reaped_owner_order(void)
+{
+    int ready[2], release[2];
+    require(pipe(ready) == 0 && pipe(release) == 0, "reap order pipes");
+    pid_t pid = child();
+    if (pid == 0) {
+        close(ready[0]); close(release[1]);
+        require(write(ready[1], "R", 1) == 1, "reap ready");
+        char value; require(read(release[0], &value, 1) == 1, "reap release"); _exit(0);
+    }
+    close(ready[1]); close(release[0]); char value;
+    require(read(ready[0], &value, 1) == 1, "reap ready read"); close(ready[0]);
+    int fd = syscall(SYS_pidfd_open, pid, 0); require(fd >= 0, "live original pidfd");
+    require(write(release[1], "X", 1) == 1, "release child"); close(release[1]);
+    int status = reap(pid); require(WIFEXITED(status) && WEXITSTATUS(status) == 0, "actual child reaped");
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 266, NULL, 0) == -1 && errno == ESRCH,
+            "reaped identity before range");
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 0, (void *)1, 0) == -1 && errno == EFAULT,
+            "supplied info copy before reaped target");
+    siginfo_t info = { .si_signo = 0, .si_code = SI_USER };
+    errno = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 0, &info, 0) == -1 && errno == EPERM,
+            "forged code before reaped target");
+    info.si_code = SI_QUEUE; errno = 0;
+    require(syscall(SYS_pidfd_send_signal, fd, 0, &info, 0) == -1 && errno == ESRCH,
+            "reaped target rejects valid zero");
+    close(fd); pass("pidfd_reaped_owner_order");
+}
+static void signal_actual_credentials(void)
+{
+    int ready[2]; require(pipe(ready) == 0, "signal credentials pipe");
+    pid_t target = child();
+    if (target == 0) {
+        close(ready[0]); require(setgid(60001) == 0 && setuid(60001) == 0, "signal target identity");
+        require(write(ready[1], "R", 1) == 1, "signal target ready"); close(ready[1]);
+        for (;;) pause();
+    }
+    close(ready[1]); char value; require(read(ready[0], &value, 1) == 1, "signal target ready read"); close(ready[0]);
+    int fd = syscall(SYS_pidfd_open, target, 0); require(fd >= 0, "target original pidfd");
+    pid_t sender = child();
+    if (sender == 0) {
+        require(setgid(60002) == 0 && setuid(60002) == 0, "signal sender identity");
+        for (int kind = 0; kind < 4; ++kind) {
+            errno = 0;
+            require(signal_send(kind, target, target, fd, 266) == -1 && errno == EINVAL,
+                    "range before actual credentials");
+            errno = 0;
+            require(signal_send(kind, target, target, fd, 0) == -1 && errno == EPERM,
+                    "valid zero retains actual credential check");
+        }
+        _exit(0);
+    }
+    int status = reap(sender); require(WIFEXITED(status) && WEXITSTATUS(status) == 0, "bounds sender reaped");
+    require(kill(target, 0) == 0 && kill(target, SIGKILL) == 0, "bounds target survives denials");
+    killed(target); close(fd); pass("signal_actual_credentials");
+}
+static void signal_valid_delivery(void)
+{
+    sigset_t mask, original; sigemptyset(&mask); sigaddset(&mask, SIGUSR1);
+    require(sigprocmask(SIG_BLOCK, &mask, &original) == 0, "valid delivery mask");
+    int fd = syscall(SYS_pidfd_open, getpid(), 0); require(fd >= 0, "valid delivery pidfd");
+    for (int kind = 0; kind < 4; ++kind) {
+        require(signal_send(kind, getpid(), syscall(SYS_gettid), fd, SIGUSR1) == 0, "valid send");
+        siginfo_t info; struct timespec limit = { .tv_sec = 1 };
+        // Observe the kernel ABI directly: glibc sigtimedwait normalizes
+        // SI_TKILL to SI_USER before returning to its caller.
+        require(syscall(SYS_rt_sigtimedwait, &mask, &info, &limit, 8) == SIGUSR1 &&
+                info.si_code == (kind == 1 || kind == 2 ? SI_TKILL : SI_USER) &&
+                info.si_pid == getpid() && info.si_uid == getuid(), "valid delivery original information");
+    }
+    close(fd); require(sigprocmask(SIG_SETMASK, &original, NULL) == 0, "valid restore mask");
+    pass("signal_valid_delivery");
+}
+
+static void kill_nonleader_shared_pending(void)
+{
+    sigset_t mask, original; sigemptyset(&mask); sigaddset(&mask, SIGUSR1);
+    require(sigprocmask(SIG_BLOCK, &mask, &original) == 0, "kill thread mask");
+    struct queue_thread_pipes pipes;
+    require(pipe(pipes.ready) == 0 && pipe(pipes.release) == 0, "kill thread pipes");
+    pthread_t thread; require(pthread_create(&thread, NULL, queue_thread, &pipes) == 0, "kill pthread create");
+    pid_t tid;
+    require(read(pipes.ready[0], &tid, sizeof(tid)) == sizeof(tid) && tid != getpid(), "kill nonleader TID");
+    errno = 0;
+    require(syscall(SYS_kill, tid, 266) == -1 && errno == EINVAL, "live nonleader before invalid range");
+    require(kill(tid, SIGUSR1) == 0, "kill via nonleader TID");
+    struct timespec limit = { .tv_sec = 1 }; siginfo_t got;
+    require(syscall(SYS_rt_sigtimedwait, &mask, &got, &limit, 8) == SIGUSR1 &&
+            got.si_code == SI_USER && got.si_pid == getpid(), "kill via TID reaches shared pending");
+    require(write(pipes.release[1], "R", 1) == 1 && pthread_join(thread, NULL) == 0, "kill thread join");
+    close(pipes.ready[0]); close(pipes.ready[1]); close(pipes.release[0]); close(pipes.release[1]);
+    require(sigprocmask(SIG_SETMASK, &original, NULL) == 0, "kill thread restore mask");
+    pass("kill_nonleader_shared_pending");
+}
+
 int main(int argc, char **argv)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -303,5 +500,8 @@ int main(int argc, char **argv)
     permission_denial(); realtime_and_signalfd(); ptrace_fault();
     queue_arguments(); queue_payload_and_zero(); queue_actual_credentials();
     queue_nonleader_shared_pending();
-    alarm(0); marker("INLINE_SIGNAL_COMPLETE cases=14\n"); return 0;
+    signal_argument_bounds(); signal_target_before_range(); signal_group_range(); pidfd_flags_fd_copy_order();
+    pidfd_reaped_owner_order(); signal_actual_credentials(); signal_valid_delivery();
+    kill_nonleader_shared_pending();
+    alarm(0); marker("INLINE_SIGNAL_COMPLETE cases=22\n"); return 0;
 }
