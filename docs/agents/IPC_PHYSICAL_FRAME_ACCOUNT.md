@@ -6,9 +6,17 @@ seqpacket connections. It does **not** implement `memory.max`, global memory
 isolation, fallible kernel heap allocation, or guaranteed recovery under OOM.
 
 Implementation baseline: `bcf6116f7607e6245dbc975cc7fc1a4e6c66176a` plus this
-commit. Native execution of the eight new cases is **pending**. A successful
-source check, Cargo check or Clippy run is not a guest result. The separate
-MLSDisk suite's previously recorded results do not qualify this change.
+commit. Exact source `0187bd578f6786c40c812c13976e4889a1aba835` / tree
+`335007e4f94114c6a26506d9448faf0d43c4245c` passed the original unfiltered native
+core **303/303**, all 64 required names, allocator **20/20**, OSTD **229**
+(three original TCG VMX soft skips), and MLSDisk **15/15**. All four raw QEMU
+exits were 33; complete tracked inputs matched before and after. The same
+OSTD ELF additionally passed actual KVM **229/229 with no soft skips**.
+[Full source-bound receipts](../../results/integration/2026-10-23-audit-closure/full-ipc-0187/publication.json),
+[separate KVM receipts](../../results/integration/2026-10-23-audit-closure/ostd-kvm-0187/publication.json),
+and the [initial sparse-input refusal](../../results/integration/2026-10-23-audit-closure/full-ipc-0187-preflight-failure/publication.json)
+are retained separately. These results qualify these exact source bytes, not a
+later integrated tree or the complete memory/recovery contract.
 
 ## Original owners and admission
 

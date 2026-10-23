@@ -1,0 +1,111 @@
+{
+  "schema": "hepta.original-device-entry-static-feasibility.v1",
+  "source": {
+    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+  },
+  "original_agentd_daemon": false,
+  "original_agentd_device_owner": true,
+  "executed_binary": false,
+  "native_grant_verified": false,
+  "g2_complete": false,
+  "features_disabled": false,
+  "profile_overridden": false,
+  "limits_changed": false,
+  "target": "/data/hepta-static-release-b3-target.0f4j8g5g",
+  "cache_reused_from_completed_original_static_build": true,
+  "temporary": "/data/hepta-native-device-tmp.lp94_57d",
+  "release_profile": {
+    "lto": "thin",
+    "debug": "line-tables-only",
+    "split-debuginfo": "off",
+    "strip": false,
+    "codegen-units": 4
+  },
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "log": "metadata-initial.json",
+      "timeout_seconds": 300
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "log": "metadata-locked.json",
+      "timeout_seconds": 300
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--release",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "-j2"
+      ],
+      "log": "build.log",
+      "timeout_seconds": 7200
+    }
+  ],
+  "built": true,
+  "cold_build_claimed": false,
+  "lock_verification": {
+    "shared_original_supplier_identities": 1183,
+    "extra_identities": [
+      [
+        "hepta-native-device-entry",
+        "0.0.0",
+        null,
+        null
+      ]
+    ],
+    "omitted_duplicate_origin_absent": true,
+    "original_crates_io_patch_target_active": [
+      {
+        "name": "tungstenite",
+        "version": "0.27.0",
+        "source": "git+https://github.com/openai-oss-forks/tungstenite-rs?rev=4fffad30fe373adbdcffab9545e9e9bf4f2fc19f#4fffad30fe373adbdcffab9545e9e9bf4f2fc19f",
+        "dependencies": [
+          "bytes",
+          "data-encoding",
+          "flate2",
+          "headers",
+          "http 1.5.0",
+          "httparse",
+          "log",
+          "rand 0.9.5",
+          "rustls",
+          "rustls-pki-types",
+          "sha1 0.10.7",
+          "thiserror 2.0.21",
+          "utf-8"
+        ]
+      }
+    ],
+    "original_lifecycle_gate_used": false,
+    "previous_narrow_helper_rejection_preserved": "g2-native-device-feasibility-01"
+  },
+  "fixture_sha256": {
+    "Cargo.toml": "61d444225798ffd7dd1a276bffa793121587dacea7f6ffe5349d123fd76dd2ed",
+    "Cargo.lock": "f58f148248873bd28f8c79dc53f9596a34dbbb97cab634efaa827e90542e9923",
+    "src/main.rs": "a9f173923b2bc02df34adaa6d3f6cb33ded5e4fd0534986441dc0a4f3adc2496"
+  },
+  "binary_sha256": "6b6a6a37c7f5f3548b60b20a68249f012c78fba3acdc64bda956da73801bd97f",
+  "binary_bytes": 36507936,
+  "build_seconds": 1814.426,
+  "source_unchanged": true
+}
