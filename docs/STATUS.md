@@ -1,5 +1,11 @@
 # 当前状态
 
+## 2026-10-23 接续：G1-d root-workload 负控的截止时间修复
+
+原 CI 失败来自 manager 的 30 秒 startup 等待与 recovery 的 20 秒 IPC 等待不一致；修复为共享 startup 常量加 10 秒 recovery 余量，严格负控 oracle 保持不变。固定已测源码 `458f9b1086ed7535658ae5e4e9392d3eb88f459d` / tree `f67d00514eafbd03ed66a0877667b63f2804a94f` 已完成原正向与 root-workload 负向共六 boot，24 项针对性 host 测试通过。负控只出现预期的 privilege-boundary 和 missing-workload 两条失败，无额外 IPC timeout。
+
+[新执行原文、此前失败和逐文件身份](../results/integration/2026-10-23-g1d-pids-closure/README.md) 同时保留；本次合并接入 #246 已发布的 AF_UNIX 源码并保留两条历史资格边界。旧分支运行证据不冒充合并后的运行证据，最终合并组合继续按实际 CI 收据验收。
+
 ## 2026-10-22 接续：E 的 retained-task 计数与 SysTree owner 已完成原生正反验证
 
 [#245](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/245) 的已测源码为 `2f806c2852cd21a9769c7b01a76ba5f97027c111` / tree `6897d0d26277f832d75100e64b92e9432977f240`。此切片让原 pids 层级统一计入 fork、线程、保留 leader 与未 reap 僵尸，并在 workload 首次运行前设置 `pids.max=16`；manager/recovery 保留原 root-cgroup 容量。它还修复了 SysTree inode 按 lookup 调用者生成 owner、使 UID 60001 能打开 root 创建的 pids 属性写入口的问题：owner 现在保存在原 backing object 上，属性重建和新 filesystem view 都使用同一身份。
@@ -15,6 +21,22 @@
 [技术/开发手册](../tests/kernel/control/G1D_PIDS_ISOLATION.md) 与 [原始证据及独立复核](../results/integration/2026-10-22-pids-systree-owner/README.md) 固定本次源码、相同probe/QEMU/BIOS/lock及全部serial摘要。独立复核重新执行原判定器解析12份G1-d串口，保留旧 `ad4f91a8…` 的真实权限失败和首次复用target被准备门禁拒绝的记录。此处记录本地原生验收；最终发布提交仍按其自己的远端CI决定合并资格。
 
 **E 的上述两个实现缺陷已有对应正向和反向证据，完整 E 仍未闭合。** `memory.max` 仍是stub，256MiB `RLIMIT_AS` 只限制单进程；manager/recovery的完整资源隔离、自主watchdog与可信暂停原因仍需实现。多用户原生SysTree委派、chown/mode持久策略、SMP trusted control、Hepta生产authority/原store生命周期/G2持久闭环与实际硬件继续按各自门槛验收。下文旧A–G矩阵保留原时点，不把本次局部E资格转授其他切片。
+
+## 2026-10-22 接续：AF_UNIX 定向回归完成同源原生正反验证
+
+固定生产源码为 `b824d80d44456c131a6cb9d4fcc84be95c6af273` / tree `506d583455fa5ea2cf0c18fe10ed42c3874f7556`。本次修复 peer shutdown 与接收数据快照的先后关系、stream 辅助数据零进展退出、单次 `MSG_DONTWAIT`，并补原 typed `FIONREAD`。实现、锁序、开发与验收规则见 [模块技术手册](../tests/kernel/network/UNIX_STREAM_REGRESSION.md)。
+
+| 实际门禁 | 结果与范围 |
+| --- | --- |
+| 完整 aster-core | **274/274**，零 failed/filtered/soft skip，QEMU33；原 environment、launch 和 source 快照绑定同一 b824。 |
+| ordinary AF_UNIX 正控 | **8 cases / 47 records**，child0/QEMU33，1.443秒；最终 probe 含 FIONREAD 断言。 |
+| 真实调度正控 | **64/64 iterations、64 个真实窗口**，131 records，child0/QEMU33。 |
+| stale snapshot 负控 | 实际 producer 成功写96字节并shutdown/reap；提前EOF时FIONREAD仍96，原oracle精确接受该缺陷，child1/QEMU33。 |
+| auxiliary 零进展负控 | 已读13字节后连续3次真实零进展，原定ELOOP条件命中，child1/QEMU33。 |
+
+[原始证据与独立回放](../results/integration/2026-10-22-unix-stream/README.md) 保存209个受控原文文件、全部21份源码快照、7条原oracle的完整等值重放，以及v4另行取回的原命令/exit/stderr。每个v5 control的完整Git tree仅改`connected.rs`；冻结patch与实际Git diff各自验身份并得到同一后像，执行后恢复生产b824。四条当前syscall lane使用同一最终probe/编译器/QEMU/BIOS/lock，无timeout或输出超限。36个留在执行端的二进制实例仅核对原manifest身份，本地重开字节的范围明确列出。
+
+旧v2 alarm124、v3 FIONREAD/ENOTTY未合格负控、v4 rustfmt退出1全部保留；host相容性不算native资格。**本次只闭合这组AF_UNIX定向回归，不闭合原Agentd停机、G2、完整E、持久恢复、UI或实机。** core274属于本分支，不与并行SysTree分支的core275相加，也不代替完整A06/OSTD/SMP或后续合并组合的同树验收。文档追加不改变实际执行head/tree；远端CI与合并另按实际收据记录。以下历史状态保持原时点。
 
 ## 2026-10-22 接续：ext2 初始只读 atime 修复已完成原生正反验证
 
