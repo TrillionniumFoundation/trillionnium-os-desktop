@@ -13,7 +13,8 @@ import sys
 import tempfile
 
 TOOLCHAIN = "nightly-2026-07-21"
-CRATES = {"ostd": "ostd", "aster-core": "kernel/core"}
+CRATES = {"ostd": "ostd", "aster-core": "kernel/core",
+          "osdk-frame-allocator": "osdk/deps/frame-allocator"}
 
 
 def digest(path):
@@ -41,6 +42,8 @@ def main():
             parser.error("--permission-attr-smp fixes the crate and complete test-name suffix")
         args.crate = ["aster-core"]
         args.test_name = "permission_attr_smp"
+    if args.test_name and "osdk-frame-allocator" in (args.crate or CRATES):
+        parser.error("osdk-frame-allocator requires its complete unfiltered default N0 suite")
     profile = "permission-attr-smp" if args.permission_attr_smp else "default"
     vcpus = 2 if args.permission_attr_smp else 1
     features = ["permission-attr-smp-ktest"] if args.permission_attr_smp else []
@@ -58,6 +61,7 @@ def main():
     env["NETDEV"], env["ENABLE_KVM"], env["OVMF"] = "none", "0", "off"
     env["SMP"], env["MEM"], env["CONSOLE"] = str(vcpus), "512M", "ttyS0"
     env["A01_KTEST_PROFILE"] = profile
+    env["A01_KTEST_TEST_NAME"] = args.test_name or ""
     env["BOOT_METHOD"], env["BOOT_PROTOCOL"], env["QEMU_DISPLAY"] = "vmm-direct", "multiboot", "none"
     env.pop("OSDK_CARGO_LOCK", None)
     parent_output = project / "support/build/out"

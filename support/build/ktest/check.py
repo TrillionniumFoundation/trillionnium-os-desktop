@@ -91,6 +91,111 @@ REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 
+# A separate third crate preserves all nine original allocator tests. Changes
+# to this exact inventory require review, not a smaller denominator at runtime.
+BASELINE_ALLOCATOR_TESTS = tuple("osdk_frame_allocator::" + suffix for suffix in (
+    "chunk::test::greater_order_of_works",
+    "chunk::test::lesser_order_of_works",
+    "chunk::test::max_order_from_works",
+    "chunk::test::split_to_chunks_works",
+    "chunk::test::split_to_order_works",
+    "chunk::test::free_chunk_ops",
+    "set::test::buddy_set_insert_alloc",
+    "smp_counter::test::per_cpu_counter",
+    "test::frame_allocator_alloc_layout_match",
+))
+RESERVE_ALLOCATOR_TESTS = tuple("osdk_frame_allocator::reserve::tests::" + suffix for suffix in (
+    "reserve_admission_and_stale_authority",
+    "reserve_refunds_original_owner_after_aliases_and_repurpose",
+    "reserve_fragmentation_alignment_and_failed_allocation_refund",
+    "reserve_metadata_construction_unwind_refunds_prefix_and_raw_tail",
+    "reserve_raw_subranges_and_typed_frames_share_original_refund",
+    "reserve_concurrent_holders_close_and_final_refund",
+    "reserve_concurrent_creation_publishes_only_one_extent",
+    "reserve_survives_actual_ordinary_allocator_exhaustion_n0",
+))
+REQUIRED_ALLOCATOR_TESTS = (*BASELINE_ALLOCATOR_TESTS, *RESERVE_ALLOCATOR_TESTS)
+EXHAUSTION_MARKER = re.compile(
+    r"PHYSICAL_RESERVE_EXHAUSTION ordinary_frames=([0-9]+) reserve_start=(0x[0-9a-f]+) "
+    r"reserve_pages=64 ordinary_denied=true reserved_succeeded=true "
+    r"returned_to_original_owner=true global_recovery_guarantee=false"
+)
+
+
+def check_allocator_profile(qemu):
+    """Require the recorder's actual default N0 invocation, not a profile label."""
+    if type(qemu.get("raw_exit_code")) is not int or qemu.get("timed_out") is not False:
+        raise ValueError("allocator requires an explicit raw QEMU exit and no timeout")
+    expected = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
+                "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False}
+    if (qemu.get("ktest_profile") != "default" or qemu.get("profile") != expected
+            or "test_name" not in qemu or qemu["test_name"] is not None):
+        raise ValueError("allocator requires the complete unfiltered default N0 profile")
+    argv = qemu.get("argv", [])
+    artifacts = qemu.get("artifacts", {})
+    if not isinstance(argv, list) or not argv:
+        raise ValueError("allocator QEMU invocation is missing")
+    expected_argv = [argv[0]]
+    for option in ("-kernel", "-initrd", "-append"):
+        if option == "-initrd" and option not in argv:
+            continue
+        if argv.count(option) != 1 or argv.index(option) + 1 >= len(argv):
+            raise ValueError("allocator QEMU invocation has missing or repeated boot arguments")
+        value = argv[argv.index(option) + 1]
+        expected_argv.extend((option, value))
+        if option != "-append" and artifacts.get(option, {}).get("path") != value:
+            raise ValueError("allocator QEMU boot artifact path does not match the invocation")
+    firmware = artifacts.get("-bios", {}).get("path")
+    if firmware != "/usr/share/seabios/bios-256k.bin" or argv.count("-chardev") != 1:
+        raise ValueError("allocator QEMU firmware or serial record is missing")
+    serial_index = argv.index("-chardev") + 1
+    if serial_index >= len(argv) or not re.fullmatch(r"stdio,id=serial,signal=off,logfile=.+/serial\.log", argv[serial_index]):
+        raise ValueError("allocator QEMU serial capture differs from the fixed profile")
+    expected_argv.extend(("-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", firmware,
+                          "-m", "512M", "-smp", "1", "-nodefaults", "-no-user-config", "-no-reboot",
+                          "-nographic", "-display", "none", "-monitor", "none", "-serial", "chardev:serial",
+                          "-chardev", argv[serial_index], "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"))
+    if argv != expected_argv:
+        raise ValueError("allocator actual QEMU invocation differs from the fixed N0 profile")
+    for option in ("-kernel", "-bios", *(("-initrd",) if "-initrd" in argv else ())):
+        artifact = artifacts.get(option, {})
+        if (not re.fullmatch(r"[0-9a-f]{64}", artifact.get("sha256", ""))
+                or type(artifact.get("size")) is not int or artifact["size"] <= 0):
+            raise ValueError("allocator boot artifact hash/size evidence is missing")
+
+
+def check_allocator_tests(qemu, serial, section, summary, starts, declared, allow_filtered):
+    if allow_filtered:
+        raise ValueError("allocator gate never permits filtered qualification")
+    check_allocator_profile(qemu)
+    if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
+        raise ValueError("allocator target sequence must finish before the runner completion marker")
+    if declared != len(REQUIRED_ALLOCATOR_TESTS) or sorted(starts) != sorted(REQUIRED_ALLOCATOR_TESTS):
+        raise ValueError("allocator requires every retained and reserve test exactly once (17 total)")
+    if "[skipped:" in serial.lower():
+        raise ValueError("allocator suite cannot pass with any soft-skipped test")
+    records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
+    blocks = {}
+    for index, record in enumerate(records):
+        end = records[index + 1].start() if index + 1 < len(records) else summary.start()
+        if record.end() >= end or end > summary.start():
+            raise ValueError("allocator per-test result appears outside the target test sequence")
+        block = section[record.end():end].rstrip("\n")
+        if not re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block):
+            raise ValueError("allocator named test lacks its own terminal ok result")
+        blocks[record[1]] = block
+    exhaustion = blocks[RESERVE_ALLOCATOR_TESTS[-1]]
+    markers = list(EXHAUSTION_MARKER.finditer(exhaustion))
+    if serial.count("PHYSICAL_RESERVE_EXHAUSTION") != 1 or len(markers) != 1:
+        raise ValueError("allocator exhaustion marker must occur once inside its successful named test")
+    marker = markers[0]
+    if (exhaustion[:marker.start()].strip() or exhaustion[marker.end():].strip() != "ok"
+            or int(marker[1]) <= 64 or int(marker[2], 16) == 0 or int(marker[2], 16) % 4096):
+        raise ValueError("allocator exhaustion receipt has inconsistent counts, extent or completion")
+    return {"ordinary_frames": int(marker[1]), "reserve_start": marker[2], "reserve_pages": 64,
+            "ordinary_denied": True, "reserved_succeeded": True,
+            "returned_to_original_owner": True, "global_recovery_guarantee": False}
+
 
 def check_guest(guest, crate, allow_filtered=False):
     qemu = json.loads((guest / "qemu.json").read_text())
@@ -126,6 +231,10 @@ def check_guest(guest, crate, allow_filtered=False):
     starts = re.findall(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE)
     if len(starts) != passed + failed or any(not name.startswith(crate.replace('-', '_') + '::') for name in starts):
         raise ValueError("per-test starts do not match the target summary")
+    allocator_exhaustion = None
+    if crate == "osdk-frame-allocator":
+        allocator_exhaustion = check_allocator_tests(
+            qemu, serial, section, summary, starts, declared, allow_filtered)
     if crate == "aster-core" and not allow_filtered:
         missing = [name for name in REQUIRED_CORE_TESTS if starts.count(name) != 1]
         if missing:
@@ -158,6 +267,8 @@ def check_guest(guest, crate, allow_filtered=False):
             "observed_test_starts": len(starts),
             "required_permission_tests": sorted(PERMISSION_TESTS) if crate == "aster-core" and not allow_filtered else [],
             "required_core_tests": list(REQUIRED_CORE_TESTS) if crate == "aster-core" and not allow_filtered else [],
+            "required_allocator_tests": list(REQUIRED_ALLOCATOR_TESTS) if crate == "osdk-frame-allocator" else [],
+            "allocator_exhaustion": allocator_exhaustion,
             "raw_qemu_exit": 33, "guest": guest.name}
 
 

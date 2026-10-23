@@ -14,7 +14,8 @@ TOOLCHAIN = "nightly-2026-07-21"
 SEED_TREE = "96605cf64aeae2d34f29b97e85eff9315fe10a8e"
 SEED_BLOB = "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40"
 SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
-CRATES = {"ostd": "ostd", "aster-core": "kernel/core"}
+CRATES = {"ostd": "ostd", "aster-core": "kernel/core",
+          "osdk-frame-allocator": "osdk/deps/frame-allocator"}
 
 
 def digest(path):
@@ -44,8 +45,8 @@ def generated_manifest(upstream, crate):
     """Mirror the pinned OSDK new_base_crate(..., Test, ..., true) manifest.
 
     This is preparation only: execution still uses the real upstream generator.
-    In particular its final unconditional ostd dependency replaces the target
-    dependency when testing ostd itself, including the default-features flag.
+    Its unconditional runtime dependencies replace the target dependency when
+    testing OSTD or the frame allocator, including the default-features flag.
     """
     root = tomllib.loads((upstream / "Cargo.toml").read_text())
     target = tomllib.loads((upstream / CRATES[crate] / "Cargo.toml").read_text())
@@ -121,7 +122,7 @@ def audit_native_metadata(metadata, upstream, crate):
     native = [p for p in metadata["packages"] if p["name"] == "os-control"]
     if crate != "aster-core":
         if native:
-            raise SystemExit("ostd must not resolve os-control")
+            raise SystemExit(f"{crate} must not resolve os-control")
         return
     manifest = (upstream.parents[1] / "libs/os-control/Cargo.toml").resolve()
     if len(native) != 1 or native[0]["source"] is not None or Path(native[0]["manifest_path"]).resolve() != manifest:

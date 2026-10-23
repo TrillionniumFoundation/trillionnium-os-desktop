@@ -101,6 +101,18 @@ a core-only ktest whitelist does not execute dependency allocator tests. The
 exhaustion test emits its actual ordinary frame count and protected extent after
 restoring ordinary memory and completing all assertions.
 
+The maintained execution entry is now
+`python3 -I support/build/ktest/run.py --crate osdk-frame-allocator --output DIR`,
+after preparing its distinct test-base lock with
+`support/build/ktest/prepare-locks.py --crate osdk-frame-allocator`.
+It retains the nine original allocator tests and all eight new tests as an
+explicit 17-test inventory. Filtering, soft skips, missing or repeated names,
+inconsistent raw QEMU status, and exhaustion receipts outside the successful
+test are rejected. The separate OSTD and core suites remain required. See the
+[kernel-test execution guide](../../support/build/ktest/README.md) for commands,
+fixed inputs and evidence requirements. Adding this entry and its host evidence
+rejection tests does not establish that any allocator guest has passed.
+
 ## Remaining F04 work
 
 No production path currently creates this reserve or assigns its token to a
