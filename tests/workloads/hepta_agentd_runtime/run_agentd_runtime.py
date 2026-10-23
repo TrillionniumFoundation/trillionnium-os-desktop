@@ -289,7 +289,7 @@ def qemu_argv(qemu, out, memory_mib):
             "-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", str(out / "bios.bin"),
             "-m", str(memory_mib) + "M", "-smp", "1", "-nodefaults", "-no-user-config",
             "-no-reboot", "-nographic", "-display", "none", "-monitor", "none", "-serial", "stdio", "-nic", "none",
-            "-append", "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+            "-append", "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
             "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
             "-drive", "if=none,format=raw,id=runtime_payload,readonly=on,file=" + str(out / "payload.raw"),
             "-device", "virtio-blk-pci,bus=pcie.0,addr=0x7,drive=runtime_payload,disable-legacy=on,disable-modern=off",

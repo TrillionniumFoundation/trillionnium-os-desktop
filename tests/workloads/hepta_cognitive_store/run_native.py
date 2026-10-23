@@ -66,10 +66,10 @@ def observe(raw, code, timed_out, excessive, nonce):
 def qemu_argv(qemu, out, memory_mib):
     argv = runtime.qemu_argv(qemu, out, memory_mib)
     index = argv.index("-append") + 1
-    require(argv[index].count("loglevel=info") == 1, "unexpected original boot log filter")
-    # Keep WARN/ERROR diagnostics, without INFO syscall traces splitting serial
-    # receipt records or consuming the bounded serial budget.
-    argv[index] = argv[index].replace("loglevel=info", "loglevel=warn")
+    filters = [token for token in argv[index].split() if token.startswith("loglevel=")]
+    # Keep exactly the reviewed WARN/ERROR filter supplied by the runtime
+    # helper. An INFO or duplicate filter is a failure, not a fallback.
+    require(filters == ["loglevel=warn"], "unexpected original boot log filter")
     return argv
 
 

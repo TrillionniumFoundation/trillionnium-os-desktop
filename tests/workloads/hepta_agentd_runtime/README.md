@@ -84,6 +84,16 @@ original Starting history. An `acceptance_pass` label by itself cannot pass.
 Objective submission, model turns, and device effects must all remain false;
 production authority capabilities fail this no-authority profile.
 
+The launcher reads and hex-encodes each bounded diagnostic completely before
+starting its serial record. It retries EINTR and legitimate short TTY writes;
+a read error produces no stream prefix, and any write error prevents the child
+success marker. The original 512 KiB stdout / 64 KiB stderr limits, nonce,
+record ordering and strict hex oracle remain unchanged. Guest boot selects
+`loglevel=warn`, retaining warnings/errors while preventing INFO syscall logs
+from splitting records or exhausting the serial budget. Host C regressions
+exercise the actual launcher emitter, including forced 127-byte writes and
+interrupted reads/writes; they are not daemon runtime evidence.
+
 The earlier
 [`hepta_agentd_abi`](../hepta_agentd_abi/README.md) gate remains independent and
 unchanged. Its expected missing-`HEPTA_FLEET_ROOT` rejection is useful early ABI
@@ -122,6 +132,7 @@ repository identity. A new source tree requires a new review; there is no
 | `run_agentd_runtime.py` | Verify frozen inputs, inspect ELF dependencies without execution, construct fresh guest images, launch QEMU explicitly, and evaluate the strict lifecycle result. |
 | `agentd_runtime_probe.c` | Create the private empty guest work directory, launch the original fixture, retain its true wait status, and emit nonce-bound bounded diagnostics. |
 | `test_agentd_runtime.py` | Host regressions for evidence rejection, source/file binding, staging, disabled mode, and terminal failure reports. Synthetic records remain test data. |
+| `test_runtime_emitter.py` | Compile and execute the actual bounded C emitter with interrupted/short I/O, capacity limits, and fail-closed errors. |
 | `test_kernel_import.py` | Reject wrong or incomplete CI metadata, untrusted archives, changed source snapshots, ktest images, and failed original builds. |
 | `test_kernel_build.py` | Check disabled mode, pre-build source rejection, failed-build receipts and retained/current profile separation. |
 | `source-review.json` | Fixed reviewed source identities and scope. |

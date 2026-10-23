@@ -205,8 +205,10 @@ class LauncherTests(unittest.TestCase):
         boot = argv[argv.index("-append") + 1]
         self.assertIn("loglevel=warn", boot.split())
         self.assertNotIn("loglevel=info", boot.split())
-        with mock.patch.object(native.runtime, "qemu_argv", return_value=["qemu", "-append", "unknown --"]):
-            with self.assertRaises(ValueError): native.qemu_argv("qemu", Path("/ordinary-fixture"), 4096)
+        for boot in ("unknown --", "loglevel=info --", "loglevel=debug --", "loglevel=warn loglevel=warn --",
+                     "loglevel=warn loglevel=info --"):
+            with self.subTest(boot=boot), mock.patch.object(native.runtime, "qemu_argv", return_value=["qemu", "-append", boot]):
+                with self.assertRaises(ValueError): native.qemu_argv("qemu", Path("/ordinary-fixture"), 4096)
 
 
 class KernelReceiptTests(unittest.TestCase):

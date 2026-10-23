@@ -20,24 +20,44 @@ static int emit(const char *name, const char *file, const char *nonce, size_t li
     unsigned char data[4096];
     int fd = open(file, O_RDONLY | O_NOFOLLOW);
     if (fd < 0) return -1;
-    if (fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) || info.st_size < 0 ||
-        (unsigned long long)info.st_size > limit) {
+    if (limit > 512 * 1024 || fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) ||
+        info.st_size < 0 || (unsigned long long)info.st_size > limit) {
         close(fd);
         return -1;
     }
-    printf("HEPTA_RUNTIME_%s nonce=%s hex=", name, nonce);
-    size_t used = 0;
+    /* Finish every file read before starting the serial record. Otherwise a
+     * kernel syscall log can split the hex line at the next buffered read.
+     * Bound allocation and handle legitimate partial TTY writes. An I/O error
+     * remains a visible failure rather than accepting a damaged record. */
+    char *record = malloc(128 + 2 * limit);
+    if (record == NULL) { close(fd); return -1; }
+    int prefix = snprintf(record, 128, "HEPTA_RUNTIME_%s nonce=%s hex=", name, nonce);
+    if (prefix <= 0 || prefix >= 128) { free(record); close(fd); return -1; }
+    size_t length = (size_t)prefix, used = 0;
+    const char digits[] = "0123456789abcdef";
     for (;;) {
         ssize_t count = read(fd, data, sizeof(data));
         if (count < 0 && errno == EINTR) continue;
-        if (count < 0) { close(fd); return -1; }
+        if (count < 0) { free(record); close(fd); return -1; }
         if (count == 0) break;
         used += (size_t)count;
-        if (used > limit) { close(fd); return -1; }
-        for (ssize_t index = 0; index < count; ++index) printf("%02x", data[index]);
+        if (used > limit) { free(record); close(fd); return -1; }
+        for (ssize_t index = 0; index < count; ++index) {
+            record[length++] = digits[data[index] >> 4];
+            record[length++] = digits[data[index] & 15];
+        }
     }
     close(fd);
-    putchar('\n');
+    if (used != (size_t)info.st_size) { free(record); return -1; }
+    record[length++] = '\n';
+    size_t sent = 0;
+    while (sent < length) {
+        ssize_t count = write(STDOUT_FILENO, record + sent, length - sent);
+        if (count < 0 && errno == EINTR) continue;
+        if (count <= 0) { free(record); return -1; }
+        sent += (size_t)count;
+    }
+    free(record);
     return 0;
 }
 
