@@ -53,6 +53,15 @@ def sha(value):
     return value
 
 
+def sdk_badging(badging):
+    # Current AAPT2 uses minSdkVersion; older versions print sdkVersion.
+    # Match complete fields and reject conflicting/duplicated declarations.
+    require(re.findall(r"^(?:minSdkVersion|sdkVersion):'([^']+)'$", badging,
+                       re.MULTILINE) == ['28'] and
+            re.findall(r"^targetSdkVersion:'([^']+)'$", badging,
+                       re.MULTILINE) == ['35'], 'compiled min/target SDK mismatch')
+
+
 def host_gate(args, recorder):
     require(build.checksum(args.build_manifest) == sha(args.expected_manifest_sha256),
             'build manifest digest mismatch')
@@ -93,8 +102,7 @@ def host_gate(args, recorder):
     require(re.search(r"^package: name='" + re.escape(PACKAGE) +
                       r"' versionCode='1' versionName='1.0'", badging, re.MULTILINE),
             'compiled package/version mismatch')
-    require("sdkVersion:'28'" in badging and "targetSdkVersion:'35'" in badging,
-            'compiled min/target SDK mismatch')
+    sdk_badging(badging)
     require("launchable-activity: name='" + PACKAGE + ".MainActivity'" in badging,
             'compiled launcher mismatch')
     require(not re.search(r'^uses-permission', badging, re.MULTILINE),

@@ -105,6 +105,17 @@ class FakeAdb:
 
 
 class PhysicalSmokeTests(unittest.TestCase):
+    def test_real_aapt2_35_badging_and_legacy_sdk_field_remain_exact(self):
+        for field in ('minSdkVersion', 'sdkVersion'):
+            gate.sdk_badging(field + ":'28'\ntargetSdkVersion:'35'\n")
+        for badging in ("minSdkVersion:'27'\ntargetSdkVersion:'35'\n",
+                        "minSdkVersion:'28'\ntargetSdkVersion:'34'\n",
+                        "sdkVersion:'28'\nminSdkVersion:'28'\ntargetSdkVersion:'35'\n",
+                        "minSdkVersion:'28'\ntargetSdkVersion:'35'\ntargetSdkVersion:'36'\n",
+                        "label='sdkVersion:28'\ntargetSdkVersion:'35'\n"):
+            with self.assertRaisesRegex(gate.Refused, 'SDK mismatch'):
+                gate.sdk_badging(badging)
+
     def run_fixture(self, **options):
         with tempfile.TemporaryDirectory() as directory:
             apk = Path(directory) / 'fixture.apk'
