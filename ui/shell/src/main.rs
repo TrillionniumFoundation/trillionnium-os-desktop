@@ -423,6 +423,9 @@ impl Desktop {
                         resources.sampled_unix_ms,
                         received_at,
                     );
+                    if self.session_instance.as_deref() != Some(session_instance.as_str()) {
+                        self.objectives.follow_session(&session_instance);
+                    }
                     self.session_instance = Some(session_instance);
                     self.connected = true;
                     self.session_error.clear();

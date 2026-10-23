@@ -64,6 +64,24 @@ impl ObjectivePanel {
         self.availability = None;
     }
 
+    /// Session is a display transport, not the Objective owner. Keep the
+    /// caller's original IDs after its restart and query them through the new
+    /// trusted host. This never recreates a Submit or a sender permission.
+    pub(super) fn follow_session(&mut self, session: &str) {
+        self.invalidate();
+        self.last_query = None;
+        self.query_status = false;
+        for intent in &mut self.intents {
+            if intent.session != session {
+                intent.session = session.into();
+                intent.observation.observed_unix_ms = 0;
+                intent.observation.issue =
+                    Some(trill_ui_core::objective::ObjectiveHostIssue::Unavailable);
+                intent.cancel_queued = false;
+            }
+        }
+    }
+
     fn ready(&self, session: &str, now: Instant, wall_ms: u64) -> bool {
         self.availability.as_ref().is_some_and(|receipt| {
             receipt.session == session
@@ -488,5 +506,59 @@ mod tests {
             matches!(panel.poll(Workspace::Build, "a", now), Some(Request::ObjectiveStatus { client_intent_id, .. }) if client_intent_id == "stable-intent")
         );
         assert!(panel.poll(Workspace::Build, "a", now).is_none());
+    }
+
+    #[test]
+    fn session_restart_queries_original_uncertain_intent_without_minting_or_resubmitting() {
+        let now = Instant::now();
+        let mut panel = ObjectivePanel::default();
+        panel.intents.push(IntentView {
+            workspace: Workspace::Personal,
+            session: "old-session".into(),
+            id: "original-intent".into(),
+            observation: ObjectiveObservation::new(
+                Some("original-intent".into()),
+                ObjectiveStage::SubmitUnknown,
+            ),
+            received_at: now,
+            cancel_queued: true,
+        });
+        panel.observe(
+            "old-session",
+            ObjectiveObservation::new(None, ObjectiveStage::Ready),
+            now,
+        );
+        panel.follow_session("new-session");
+        assert!(!panel.ready("new-session", now, unix_ms()));
+        let intent = panel.current(Workspace::Personal, "new-session").unwrap();
+        assert!(!finished(&intent.observation));
+        assert!(!intent.cancel_queued);
+        assert!(!fresh(
+            &intent.observation,
+            intent.received_at,
+            now,
+            unix_ms()
+        ));
+        assert!(
+            matches!(panel.poll(Workspace::Personal, "new-session", now),
+            Some(Request::ObjectiveStatus { client_intent_id, expected_instance })
+            if client_intent_id == "original-intent" && expected_instance == "new-session")
+        );
+        panel.observe(
+            "old-session",
+            ObjectiveObservation::new(Some("original-intent".into()), ObjectiveStage::Admitted),
+            now,
+        );
+        assert_eq!(
+            panel.intents[0].observation.stage,
+            ObjectiveStage::SubmitUnknown
+        );
+        let mut recovered =
+            ObjectiveObservation::new(Some("original-intent".into()), ObjectiveStage::Admitted);
+        recovered.request_retained = true;
+        panel.observe("new-session", recovered, now);
+        assert_eq!(panel.intents.len(), 1);
+        assert_eq!(panel.intents[0].id, "original-intent");
+        assert_eq!(panel.intents[0].observation.stage, ObjectiveStage::Admitted);
     }
 }
