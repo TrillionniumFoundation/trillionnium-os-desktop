@@ -19,10 +19,11 @@ PERMISSION_TESTS = {
 
 # The default core gate keeps its 238-test baseline, five permission tests,
 # all twenty-one G1-c/G1-d regressions, two ExFAT tests and three ext2
-# durability regressions, plus five initial-readonly atime/sync regressions.
+# durability regressions, five initial-readonly atime/sync regressions, six
+# physical user-frame regressions, two stopped-stack and three timestamp tests.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 274
+MINIMUM_CORE_TESTS = 285
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -62,8 +63,24 @@ EXT2_READONLY_ATIME_TESTS = (
     "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
     "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data",
 )
+USER_MEMORY_CORE_TESTS = (
+    "aster_core::vm::user_memory::tests::exact_limit_and_unconsumed_reservation_refund",
+    "aster_core::vm::user_memory::tests::shared_frame_charges_once_until_last_reference",
+    "aster_core::vm::user_memory::tests::independent_owners_do_not_consume_each_others_allowance",
+    "aster_core::vm::page_cache::vmo::options::test::contiguous_limit_is_admitted_before_any_page",
+    "aster_core::vm::page_cache::vmo::options::test::shared_vmo_aliases_keep_one_physical_charge",
+    "aster_core::vm::vmar::vm_mapping::user_memory_tests::cow_charges_the_copy_and_refunds_each_physical_page",
+    "aster_core::process::process_vm::init_stack::tests::stopped_initial_stack_charges_its_destination_without_a_current_process",
+    "aster_core::process::process_vm::init_stack::tests::rejected_stopped_initial_stack_refunds_its_pages_when_the_image_is_dropped",
+)
+TIMESTAMP_CORE_TESTS = (
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::utimes_checks_current_owner_through_alias_without_partial_update",
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::utimes_omit_preserves_newer_alias_timestamp",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::utimes_ext2_denial_is_unchanged_and_success_is_persistent",
+)
 REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
-                       *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS)
+                       *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
+                       *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS)
 
 
 def check_guest(guest, crate, allow_filtered=False):
