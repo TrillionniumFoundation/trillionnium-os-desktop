@@ -20,10 +20,11 @@ PERMISSION_TESTS = {
 # The default core gate keeps its 238-test baseline, five permission tests,
 # all twenty-one G1-c/G1-d regressions, two ExFAT tests and three ext2
 # durability regressions, five initial-readonly atime/sync regressions, six
-# physical user-frame regressions, two stopped-stack and three timestamp tests.
+# physical user-frame regressions, two stopped-stack, three timestamp and six
+# independent watchdog owner/lifecycle regressions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 285
+MINIMUM_CORE_TESTS = 291
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -73,6 +74,14 @@ USER_MEMORY_CORE_TESTS = (
     "aster_core::process::process_vm::init_stack::tests::stopped_initial_stack_charges_its_destination_without_a_current_process",
     "aster_core::process::process_vm::init_stack::tests::rejected_stopped_initial_stack_refunds_its_pages_when_the_image_is_dropped",
 )
+WATCHDOG_CORE_TESTS = (
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_first_close_deadline_restores_once_with_original_receipt",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_preserves_zero_job_stop_and_recovery_owned_budgets",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_expiry_clock_fault_and_late_tick_fail_closed",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_fenced_or_bad_accounting_never_restores",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_observes_original_status_without_retaining_process",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_poll_admission_never_settles_or_changes_budget",
+)
 TIMESTAMP_CORE_TESTS = (
     "aster_core::fs::fs_impls::ramfs::fs::permission_tests::utimes_checks_current_owner_through_alias_without_partial_update",
     "aster_core::fs::fs_impls::ramfs::fs::permission_tests::utimes_omit_preserves_newer_alias_timestamp",
@@ -80,7 +89,7 @@ TIMESTAMP_CORE_TESTS = (
 )
 REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
-                       *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS)
+                       *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 
 
 def check_guest(guest, crate, allow_filtered=False):
