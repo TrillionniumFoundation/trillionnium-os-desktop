@@ -276,7 +276,7 @@ impl CpuBandwidthState {
 /// The job-stop value is a fresh read of Process::status, not a retained pause
 /// state. Zero available means the process no longer exists, not "running".
 impl CpuController {
-    pub(in crate::fs::cgroupfs::controller::cpu) fn read_watchdog_stat(
+    pub(in crate::fs::fs_impls::cgroupfs::controller::cpu) fn read_watchdog_stat(
         &self,
         printer: &mut aster_util::printer::VmPrinter,
     ) -> aster_systree::Result<()> {
