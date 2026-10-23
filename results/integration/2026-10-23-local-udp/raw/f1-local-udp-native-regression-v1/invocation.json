@@ -1,0 +1,148 @@
+{
+  "schema": "hepta.f1-local-udp-native-regression.v1",
+  "diagnostic_only": true,
+  "original_agentd_lifecycle_qualified": false,
+  "kernel_stop_tracing": false,
+  "kernel_build": {
+    "base_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+    "source_patch_sha256": "ec6348c6c9428e899b670d293ae65783264cf9fcc024dbd81a15c2f321e01150",
+    "source_head": "c8f0c88ecb640117686ff05f850a73e60688eac7",
+    "source_tree": "641c6627ba9aaf79ca3506154831a6c51abe521f",
+    "source_clean_before_after": true,
+    "build_returncode": 0,
+    "build_timed_out": false,
+    "kernel_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-product-build-v1/product-kernel.elf",
+    "kernel_sha256": "6d7b67c7046a54c7dda7a9595794159235f3b4dad45dd2c4892a7868432a1524",
+    "actual_build_result_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-product-build-v1/actual-build-result.json",
+    "actual_build_result_sha256": "ff71924316549e99f0358c321f4fa70ca17d82a08b8f462ecac33c5bcf35bcba",
+    "ordinary_boot_passed": true,
+    "ordinary_boot_receipt_sha256": "ecd90a0a1c7a3aef94a067df6f606ca1c751d158fb644c61827d30006ffa91ba",
+    "no_ktest": true,
+    "production_ready": false
+  },
+  "kernel_build_receipt_sha256": "26c38bd6eee5762e37b56cd6532a23a103723afb652dd2da4623ce464bbf494b",
+  "actual_kernel_build_result_sha256": "ff71924316549e99f0358c321f4fa70ca17d82a08b8f462ecac33c5bcf35bcba",
+  "kernel_sha256": "6d7b67c7046a54c7dda7a9595794159235f3b4dad45dd2c4892a7868432a1524",
+  "source_patch_sha256_before_pinned_rustfmt": "ec6348c6c9428e899b670d293ae65783264cf9fcc024dbd81a15c2f321e01150",
+  "executable_sha256": "90ace4da1f2a34200dc0952ea4419d7ad67c201a53994273b9f4a93d3f2ccc40",
+  "elf": {
+    "type": 2,
+    "machine": 62,
+    "interpreter": null,
+    "needed": [],
+    "load_segments": [
+      {
+        "offset": 0,
+        "virtual_address": 4194304,
+        "file_bytes": 1272,
+        "memory_bytes": 1272,
+        "flags": 4,
+        "alignment": 4096
+      },
+      {
+        "offset": 4096,
+        "virtual_address": 4198400,
+        "file_bytes": 526493,
+        "memory_bytes": 526493,
+        "flags": 5,
+        "alignment": 4096
+      },
+      {
+        "offset": 532480,
+        "virtual_address": 4726784,
+        "file_bytes": 157716,
+        "memory_bytes": 157716,
+        "flags": 4,
+        "alignment": 4096
+      },
+      {
+        "offset": 691992,
+        "virtual_address": 4890392,
+        "file_bytes": 23456,
+        "memory_bytes": 45840,
+        "flags": 6,
+        "alignment": 4096
+      }
+    ],
+    "load_memory_bytes": 731321
+  },
+  "host_observation": {
+    "complete": true,
+    "passed": true,
+    "check_count": 43,
+    "cases": [
+      {
+        "name": "connected_error_is_read_once_and_delivery_recovers",
+        "passed": 11,
+        "failed": 0
+      },
+      {
+        "name": "receive_consumes_error",
+        "passed": 7,
+        "failed": 0
+      },
+      {
+        "name": "send_consumes_error",
+        "passed": 8,
+        "failed": 0
+      },
+      {
+        "name": "unconnected_socket_ignores_port_unreachable_without_recverr",
+        "passed": 4,
+        "failed": 0
+      },
+      {
+        "name": "connected_socket_ignores_errors_for_another_destination",
+        "passed": 8,
+        "failed": 0
+      },
+      {
+        "name": "self_delivery_has_no_error",
+        "passed": 5,
+        "failed": 0
+      }
+    ]
+  },
+  "host_linux_result_sha256": "1bf5ef902c4dd805b00f8e068c7f91407d48658f5fe4f9289fbd55e520c5212c",
+  "host_compile_result_sha256": "57e1b133d61abefd2789435c3390d548c876a36a73f22bdc87ce9e553f306c68",
+  "host_stderr_sha256": "67178f9fdbe1e761bc9daad11b88f183658fc8ef7693c77db471464a627ac085",
+  "initramfs_sha256": "2dd6331deb8691cc139ffbeca4c3e0748041fb7de80467682f9e98d5dda77039",
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-native-regression-v1/kernel.elf",
+    "-initrd",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-native-regression-v1/initramfs.cpio.gz",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/guest/bios.bin",
+    "-m",
+    "4096M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "timeout_seconds": 180,
+  "nonce": "25164e1b56d29e93a33bf6116305c168aef61e72c0e84452a89295f23c6c534f",
+  "started_ns": 1792733658813265976
+}
