@@ -1,0 +1,386 @@
+{
+  "schema": "trillionnium.ancillary-fallible-qualified-source.v1",
+  "source_head": "bad289e73b7890735580a4b09d8c1466a257c7f2",
+  "source_tree": "19efa0d8089d153c2560faa4c2d3a5c82a871042",
+  "source_unchanged": true,
+  "evidence_root": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01",
+  "elapsed_seconds": 712.051,
+  "full_suites": [
+    {
+      "crate": "ostd",
+      "declared": 229,
+      "passed": 229,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "kernel_sha256": "7358f87bd2fc7e5d705ce601bd18285aad9999195d0ccb5de9232bf2e94e4893",
+      "serial_sha256": "93663bf8ed17c1d6845443488fd1d5d7e3ea956c6ef3aad3c986aef694f9849c"
+    },
+    {
+      "crate": "osdk-frame-allocator",
+      "declared": 20,
+      "passed": 20,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "kernel_sha256": "a6c4f27bc1589df7d676d45a437643815321f8206e3d738a89a94e804522e97a",
+      "serial_sha256": "76887bd8e187e7aab9e6532b882ad32ad7ab1fd490c8a4570fb477325382fa34"
+    },
+    {
+      "crate": "aster-core",
+      "declared": 344,
+      "passed": 344,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 105,
+      "kernel_sha256": "62d35af9eb7cfe9baf2cb8850977bf6359006ab118c6c63bc11d25b890c30d60",
+      "serial_sha256": "430b0b507404beb1cb24565d577ea7898a3188a6819df9bd6a47ce6bda13a68a"
+    },
+    {
+      "crate": "aster-mlsdisk",
+      "declared": 15,
+      "passed": 15,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "kernel_sha256": "d13f9ccf8269304d3d821700261e7ca8442a3a60c31d0c3dea9678cf4b0c120d",
+      "serial_sha256": "ca7e98b5eb437cf7f4e1cfcc76fc31fbb70c84d946cdc5fa5170e66a0afd6307"
+    }
+  ],
+  "ordinary": {
+    "passed": true,
+    "kernel_sha256": "3087e283819c102abeb95971e91895f246df0a333e3ee08851f58db46552c3ad",
+    "query_abi_and_boot_markers": 18,
+    "source_file_count": 9364,
+    "raw_qemu_exit": 33
+  },
+  "same_ordinary_kernel_sgid": {
+    "passed": true,
+    "cases": [
+      {
+        "fs": "ramfs",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      }
+    ],
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "probe_sha256": "396abd5506de19a410c2391333d1413370f14c59c0e92a9c083a0eb3d5f87f36",
+    "probe_source_sha256": "00d2eb17d2fe3ab32454a3f446b099b227b33e4df9733e86e9be6490576ae7dd"
+  },
+  "same_ordinary_kernel_unix_ownership": {
+    "passed": true,
+    "cases": [
+      "notes_stream",
+      "notes_seqpacket",
+      "listener_pending_stream",
+      "listener_pending_seqpacket",
+      "datagram_future_connect",
+      "self_stream",
+      "self_seqpacket",
+      "self_datagram",
+      "seqpacket_empty_slots",
+      "concurrent_cross_edges",
+      "ancillary_multisegment_253",
+      "ancillary_rejected_inputs_publish_nothing"
+    ],
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "probe_sha256": "7f357e210c27cd2f35b50a022ee05763b7e396d883bcaea1d9985e372799409f",
+    "probe_source_sha256": "62672e40c7c5c7f83f594ec734aed6e0cb4029d73b55742a9b67c85006115e21"
+  },
+  "same_ordinary_kernel_proc_privileges": {
+    "passed": true,
+    "cases": [
+      [
+        "initial_nnp_agrees",
+        "1"
+      ],
+      [
+        "per_thread_nnp",
+        "1"
+      ],
+      [
+        "main_thread_nnp_unchanged",
+        "1"
+      ],
+      [
+        "child_sets_and_cannot_clear_nnp",
+        "1"
+      ],
+      [
+        "parent_attests_child_nnp",
+        "1"
+      ],
+      [
+        "four_child_uids",
+        "1"
+      ],
+      [
+        "four_child_gids",
+        "1"
+      ],
+      [
+        "child_groups_empty",
+        "1"
+      ],
+      [
+        "five_child_capsets_zero",
+        "1"
+      ],
+      [
+        "parent_uid_unchanged",
+        "1"
+      ],
+      [
+        "parent_nnp_unchanged",
+        "1"
+      ],
+      [
+        "exec_preserves_identity",
+        "1"
+      ]
+    ],
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "probe_sha256": "923063b008790be29b0a266bbbd8f274583effbec02c4feb513baa1652ccf8fd",
+    "probe_source_sha256": "7e711cefe6cc212beb2b0590dd54507b8b954ce75bb38a6c9a2bf98b133b2236"
+  },
+  "profile": {
+    "memory_mib": 512,
+    "vcpus": 1,
+    "acceleration": "tcg",
+    "ktest_guest_deadline_seconds": 300,
+    "probe_guest_deadline_seconds": 120,
+    "filtered_suite": false
+  },
+  "retained_receipts": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/pipeline.json",
+      "sha256": "526b0d1e91fca52dbd36eba9d505321d705399aa8fc1049c5a04be1c0c20bcf6"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/full/outer-result.json",
+      "sha256": "98f6b9239506d27146d63f5725c7b8165a2ca8a8eddba2cf89176b4aae5efc8c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/full/osdk-retention.json",
+      "sha256": "4d45c8cf3f434fd3130792632fe2b4d3daf4b28031fcdba4d22dc1a25718aab9"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/full/retention.json",
+      "sha256": "808074de3f40913e30477472b71467108b1dbd6baff7a04cd8b4328824eed8af"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/full/source-before.json",
+      "sha256": "2489f1d862e5d25febb99fcb8110d3250020793e761615a10736a8a57bf5a935"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/full/source-after.json",
+      "sha256": "2489f1d862e5d25febb99fcb8110d3250020793e761615a10736a8a57bf5a935"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ordinary/result.json",
+      "sha256": "1f25c494d60b0f4a5bdba6eb38fc523159636d6bff5a5988bdb27a0651938c4c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/sgid30/result.json",
+      "sha256": "5b910be3e859e5831736b94c6587657c276498252e8aff6ca3ae239f992084bd"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/sgid30/serial.log",
+      "sha256": "8302793725cde7ee0b0f04f1afff3e6a463ee9c20559421b51129f7a22054625"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ownership12-source-bound.json",
+      "sha256": "9bb77c98ddfbfc9a23541b09b10517f35991a7667a4aa40d633f2af3eb168554"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ownership12-source-after.json",
+      "sha256": "2489f1d862e5d25febb99fcb8110d3250020793e761615a10736a8a57bf5a935"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ownership12/result.json",
+      "sha256": "01027cfe668029662e45b8f0566c8f97fd566f12df9030a1d8083ff5560bf57b"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ownership12/serial.log",
+      "sha256": "306c96e80a4796ac2676a9e9ca9a1ee9531e61e2e7018741645172074e10dd6f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/proc-privileges12/result.json",
+      "sha256": "32959a131a6deeccc97407a85fa7d663dfa6f2278b9c33e7fdaa640ca33e560d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/proc-privileges12/serial.log",
+      "sha256": "4e62d21799c6d411aca8afe0a7b751d7b5e17d975bf81264e64d037ae674af2a"
+    }
+  ],
+  "production_authority": false,
+  "global_recovery_guarantee": false,
+  "all_kernel_memory_accounted": false,
+  "small_layout_no_memory_guest_injection_qualified": false,
+  "large_layout_rejection_is_small_layout_qualification": false,
+  "scope": "Three input Vec reservations are fallible; normal syscall success/validation/owner rollback verified. The real 16-TiB allocator refusal does not qualify normal small-layout failure under memory pressure."
+}

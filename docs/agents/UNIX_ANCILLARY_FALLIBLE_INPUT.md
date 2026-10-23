@@ -63,7 +63,7 @@ check `CLOEXEC`, perform real eventfd I/O through the first/last received aliase
 close every received descriptor, and check that invalid single/multipart counts and invalid descriptors
 publish no message.
 The two new cases pass on Linux as reference behavior.
-The complete new 12-case guest and unfiltered native kernel suite remain pending until an exact source is frozen.
+The complete new 12-case guest and original unfiltered kernel suites passed on the exact source identified below.
 
 The large-layout reservation verifies a real allocator rejection and vector/owner rollback.
 It does **not** exercise a normal small ancillary layout failing under a controlled memory-pressure condition.
@@ -77,4 +77,26 @@ the original 81 build-host tests passed, the six strict probe-oracle tests passe
 and the original 118-input source gate passed.
 The initial compile failed because the new test lacked the `HasPaddr` trait import;
 that failed compiler log is retained separately from the successful checks.
-These checks do not qualify the pending guest execution.
+These host checks are separate from the actual guest qualification below.
+
+## Exact-source native qualification
+
+Frozen source `bad289e73b7890735580a4b09d8c1466a257c7f2`, tree
+`19efa0d8089d153c2560faa4c2d3a5c82a871042`, includes the ancillary leaf
+`6c5802c3c1b5327068de14a2d0001ac94c01f78d` and the normal merge of
+`2efa3d1616650ba528271f8f5533a256a53d710a`, retaining its Groups/NoNewPrivs reporter.
+The original source-built OSDK pipeline completed in 712.051 seconds with unchanged inputs:
+
+- Full OSTD 229/229, retaining the original three TCG VMX soft skips; allocator 20/20.
+- Full core 344/344 with all 105 required names, including the three new allocation tests; MLSDisk 15/15.
+- The ordinary kernel passed all 18 boot/QueryAbi markers.
+- The same ordinary ELF passed SGID 30/30, Unix ownership 12/12 and process-privilege ABI 12/12.
+
+Every QEMU exited with raw status 33; the original 512-MiB, one-vCPU TCG profiles,
+300-second kernel-test and 120-second probe limits remained unchanged.
+The ordinary ELF SHA-256 is
+`3087e283819c102abeb95971e91895f246df0a333e3ee08851f58db46552c3ad`.
+[The retained receipt](../../results/integration/2026-10-23-audit-closure/unix-ancillary-bad289.json)
+binds each suite/ELF/serial and the source snapshots.
+This qualification applies to that source, and does not remove the small-layout
+NoMemory-injection or generic heap/page-table gaps described above.
