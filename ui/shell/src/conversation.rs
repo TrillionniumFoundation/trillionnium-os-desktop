@@ -75,7 +75,7 @@ impl Composer {
         }
     }
 
-    fn can_save_local(&self) -> Result<(), &'static str> {
+    pub(super) fn can_save_local(&self) -> Result<(), &'static str> {
         #[cfg(feature = "hepta-shared-presenter")]
         self.shared.can_save_local()?;
         Ok(())
@@ -102,13 +102,15 @@ fn composer_editor(
     workspace: Workspace,
     _ime_confirmation_fenced: bool,
 ) {
+    let label = ui.label("Message / 消息");
     ui.add(
         egui::TextEdit::multiline(&mut composer.text)
             .id(egui::Id::new("hepta-local-composer").with(workspace.code()))
             .hint_text("输入想法、任务草稿……")
             .desired_rows(3)
             .desired_width(f32::INFINITY),
-    );
+    )
+    .labelled_by(label.id);
     if composer.text().len() > trill_ui_core::conversation::MAX_DRAFT_BYTES {
         ui.colored_label(
             super::warning(),
@@ -145,7 +147,9 @@ fn composer_editor(
         // the same guard used for buttons; no second IME policy is created.
         editor = editor.return_key(None);
     }
+    let label = ui.label("Message / 消息");
     let mut output = editor.show(ui);
+    output.response = output.response.labelled_by(label.id);
     if output.response.changed()
         && composer.shared.edit(source, transaction) != ActionResult::Applied
     {
@@ -561,7 +565,7 @@ impl super::Desktop {
             ui.colored_label(super::warning(), "LOCAL DRAFT · NOT SUBMITTED");
         });
         ui.label("Connect your notes to observed host tasks and runtime context.");
-        ui.small("AI objective submission is unavailable. Saving a draft stores it locally.");
+        ui.small("General AI task execution is unavailable. Saving a draft stores it locally; the separate Hepta control writes Notes content only.");
         ui.horizontal_wrapped(|ui| {
             for app in [
                 trill_ui_core::AppKind::Notes,
@@ -626,10 +630,24 @@ impl super::Desktop {
     }
 
     fn chat_thread(&mut self, ui: &mut egui::Ui) {
+        let height = ui.available_height().max(120.0);
+        // Objective observations can grow after admission. Keep the complete
+        // editor/control stack reachable in a short native window instead of
+        // pushing cancellation or export below the viewport.
+        egui::ScrollArea::vertical()
+            .id_salt(("chat-pane", self.workspace.code()))
+            .max_height(height)
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                self.chat_thread_content(ui, (height * 0.35).max(100.0))
+            });
+    }
+
+    fn chat_thread_content(&mut self, ui: &mut egui::Ui, history_height: f32) {
         let mut open_task = None;
         egui::ScrollArea::vertical()
             .id_salt(("chat-thread", self.workspace.code()))
-            .max_height((ui.available_height() - 285.0).max(120.0))
+            .max_height(history_height)
             .show(ui, |ui| {
                 let mut any = false;
                 for draft in self.drafts.drafts.iter().filter(|draft| draft.workspace == self.workspace) {
@@ -654,7 +672,6 @@ impl super::Desktop {
             self.open_task_context(key);
         }
         ui.separator();
-        ui.label("Message / 消息");
         let composer = self.drafts.composer_mut(self.workspace);
         composer_editor(
             ui,
@@ -700,6 +717,7 @@ impl super::Desktop {
         if let Some(key) = open_task {
             self.open_task_context(key);
         }
+        self.objective_controls(ui);
         ui.horizontal_wrapped(|ui| {
             if self.activation.activated(&ui.add_enabled(!self.drafts.composer(self.workspace).text().trim().is_empty(), egui::Button::new("Save local draft")))
             {

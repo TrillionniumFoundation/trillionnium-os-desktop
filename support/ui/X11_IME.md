@@ -228,9 +228,8 @@ backend, pixels, or physical input. The archived XIM receipt above predates this
 policy change and must be replayed against the new source before extending its
 qualification. Caret candidate placement remains unresolved.
 
-The adapter preserves egui semantic accessibility actions instead of requiring
-a pointer, but the current locked build does not enable eframe's `accesskit`
-feature. Screen-reader actions and accessibility-tree coverage are therefore
-**not qualified or delivered by this change**. Enabling the backend requires a
-separately resolved lockfile and live assistive-technology validation; do not
-label synthetic input-policy tests as screen-reader evidence.
+The locked native build enables eframe's `accesskit` feature. Controls accept
+explicit semantic actions through the same IME effect guard; editors expose
+linked labels. [`ACCESSIBILITY.md`](ACCESSIBILITY.md) defines the real AT-SPI
+bridge test on a private Xvfb/D-Bus session. It is separate from synthetic
+input-policy tests, a physical screen-reader trial, and IME candidate placement.

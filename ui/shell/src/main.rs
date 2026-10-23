@@ -6,6 +6,7 @@ mod hepta_panel;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
 mod local_drafts;
+mod objective_panel;
 
 use conversation::{DraftBook, HostObservation, WorkspaceTab};
 use eframe::egui::{self, Color32, RichText};
@@ -102,6 +103,7 @@ struct BridgeReply {
 struct Bridge {
     actions: SyncSender<Request>,
     polls: SyncSender<()>,
+    objective_polls: SyncSender<Request>,
     rx: Receiver<BridgeReply>,
 }
 impl Bridge {
@@ -114,6 +116,7 @@ impl Bridge {
     ) -> Self {
         let (actions, incoming_actions) = mpsc::sync_channel::<Request>(8);
         let (polls, incoming_polls) = mpsc::sync_channel::<()>(1);
+        let (objective_polls, incoming_objective_polls) = mpsc::sync_channel::<Request>(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
         // The worker, not egui, waits for the Unix socket. After each IPC,
         // prioritized actions are handled before the coalesced next poll.
@@ -121,16 +124,19 @@ impl Bridge {
             let (message, is_action) = match incoming_actions.try_recv() {
                 Ok(action) => (action, true),
                 Err(TryRecvError::Disconnected) => break,
-                Err(TryRecvError::Empty) => match incoming_polls.try_recv() {
-                    Ok(()) => (Request::Snapshot, false),
-                    Err(TryRecvError::Disconnected) => break,
-                    Err(TryRecvError::Empty) => {
-                        match incoming_actions.recv_timeout(Duration::from_millis(40)) {
-                            Ok(action) => (action, true),
-                            Err(mpsc::RecvTimeoutError::Disconnected) => break,
-                            Err(mpsc::RecvTimeoutError::Timeout) => continue,
+                Err(TryRecvError::Empty) => match incoming_objective_polls.try_recv() {
+                    Ok(request) => (request, false),
+                    Err(_) => match incoming_polls.try_recv() {
+                        Ok(()) => (Request::Snapshot, false),
+                        Err(TryRecvError::Disconnected) => break,
+                        Err(TryRecvError::Empty) => {
+                            match incoming_actions.recv_timeout(Duration::from_millis(40)) {
+                                Ok(action) => (action, true),
+                                Err(mpsc::RecvTimeoutError::Disconnected) => break,
+                                Err(mpsc::RecvTimeoutError::Timeout) => continue,
+                            }
                         }
-                    }
+                    },
                 },
             };
             let request_started_at = Instant::now();
@@ -147,11 +153,22 @@ impl Bridge {
                 break;
             }
         });
-        Self { actions, polls, rx }
+        Self {
+            actions,
+            polls,
+            objective_polls,
+            rx,
+        }
     }
 
     fn send_action(&self, request: Request) -> bool {
         self.actions.try_send(request).is_ok()
+    }
+
+    fn poll_objective(&self, request: Request) {
+        // Coalesce passive authority/status observations independently of the
+        // bounded user action queue and ordinary snapshot polling.
+        let _ = self.objective_polls.try_send(request);
     }
 
     fn poll(&self) {
@@ -223,6 +240,7 @@ fn observed_host_line(task: &TaskRecord) -> String {
 
 struct Desktop {
     activation: activation::ActivationGuard,
+    objectives: objective_panel::ObjectivePanel,
     page: Page,
     workspace: Workspace,
     drafts: DraftBook,
@@ -268,6 +286,7 @@ impl Desktop {
         };
         Self {
             activation: activation::ActivationGuard::default(),
+            objectives: objective_panel::ObjectivePanel::default(),
             page,
             workspace: Workspace::Personal,
             drafts,
@@ -372,6 +391,7 @@ impl Desktop {
                         .as_ref()
                         .is_some_and(|id| id != &session_instance)
                     {
+                        self.objectives.invalidate();
                         self.tasks.clear();
                         self.selected = None;
                         self.notice("Host session restarted: previous child history cannot be reattached or trusted.");
@@ -417,6 +437,18 @@ impl Desktop {
                     }
                     self.tasks = tasks;
                 }
+                Ok(Response::Objective {
+                    observation,
+                    session_instance,
+                }) => {
+                    if self.session_instance.as_deref() == Some(session_instance.as_str()) {
+                        self.objectives
+                            .observe(&session_instance, observation, received_at);
+                    } else {
+                        self.objectives.invalidate();
+                        self.bridge.poll();
+                    }
+                }
                 Ok(Response::Task {
                     task,
                     session_instance,
@@ -450,6 +482,7 @@ impl Desktop {
                         self.notice(format!("Session unavailable: {err}; no success inferred"));
                     }
                     self.connected = false;
+                    self.objectives.invalidate();
                     self.host_observation.disconnect(false);
                     self.resources = None;
                     self.hepta.mark_unavailable("host_session_unavailable");
@@ -722,7 +755,7 @@ impl Desktop {
         ui.label(host_fonts::status_label(ctx));
         ui.small("Set TRILL_UI_CJK_FONT to an absolute host font path; font coverage does not verify an input method.");
         hepta_panel::status(ui, &self.hepta);
-        ui.label("Hepta objective submission: unavailable; local drafts only");
+        ui.label("General AI task execution: unavailable; Notes-only actions require current host readiness");
         ui.label("Native HOS2 resource revision: unavailable");
         ui.label("Compositor: external Wayland/X11 host, not bundled");
         ui.separator();
@@ -751,7 +784,7 @@ impl Desktop {
             ui.small(&self.session_error);
         }
         hepta_panel::status(ui, &self.hepta);
-        ui.small("Objective submission: unavailable");
+        ui.small("Notes-only actions: see Conversation for current host availability");
         ui.label("HOS2: NOT OBSERVED");
         ui.separator();
         ui.label(RichText::new("Host resource sample").strong());
@@ -1117,6 +1150,7 @@ mod observation_freshness_tests {
         let (outgoing, rx) = mpsc::sync_channel(16);
         let desktop = Desktop {
             activation: activation::ActivationGuard::default(),
+            objectives: objective_panel::ObjectivePanel::default(),
             page: Page::Hepta,
             workspace: Workspace::Personal,
             drafts: DraftBook::default(),
@@ -1131,7 +1165,12 @@ mod observation_freshness_tests {
             session_instance: None,
             session_error: String::new(),
             last_poll: Instant::now(),
-            bridge: Bridge { actions, polls, rx },
+            bridge: Bridge {
+                actions,
+                polls,
+                objective_polls: mpsc::sync_channel(1).0,
+                rx,
+            },
             zoom: 1.0,
             show_notifications: false,
             notices: VecDeque::new(),
@@ -1856,6 +1895,12 @@ mod bridge_tests {
                 Request::Snapshot => "snapshot",
                 Request::Launch { .. } => "launch",
                 Request::Cancel { .. } => "cancel",
+                Request::ObjectiveAvailability { .. } | Request::ObjectiveStatus { .. } => {
+                    "objective_poll"
+                }
+                Request::ObjectiveSubmit { .. } | Request::ObjectiveCancel { .. } => {
+                    "objective_action"
+                }
             };
             observed_in_worker.lock().unwrap().push(label.to_owned());
             if label == "snapshot" && first_poll.swap(false, Ordering::SeqCst) {
@@ -1884,6 +1929,9 @@ mod bridge_tests {
         }
         for _ in 0..500 {
             bridge.poll();
+            bridge.poll_objective(Request::ObjectiveAvailability {
+                expected_instance: "test-generation".into(),
+            });
         }
         assert!(bridge.send_action(Request::Cancel {
             id: 41,
@@ -1912,6 +1960,20 @@ mod bridge_tests {
                 .count()
                 <= 2,
             "passive polling must be coalesced"
+        );
+        let events = observed.lock().unwrap();
+        assert_eq!(
+            events.get(1).map(String::as_str),
+            Some("cancel"),
+            "user cancellation precedes both passive queues"
+        );
+        assert!(
+            events
+                .iter()
+                .filter(|event| event.as_str() == "objective_poll")
+                .count()
+                <= 1,
+            "Objective polling must also be coalesced"
         );
     }
 }
@@ -2231,6 +2293,51 @@ mod workspace_context_tests {
             ],
         );
         settle_console(desktop, ctx)
+    }
+
+    #[test]
+    fn short_conversation_keeps_export_controls_reachable_after_notes_panel() {
+        let (mut desktop, _, requests) = setup();
+        desktop.connected = true;
+        desktop.session_instance = Some(A.into());
+        let ctx = egui::Context::default();
+        let frame = |desktop: &mut Desktop, events| {
+            ctx.run(
+                egui::RawInput {
+                    focused: true,
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(900.0, 420.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| desktop.conversation(ui));
+                },
+            )
+        };
+        for _ in 0..3 {
+            frame(&mut desktop, vec![]);
+        }
+        frame(
+            &mut desktop,
+            vec![
+                egui::Event::PointerMoved(egui::pos2(450.0, 390.0)),
+                egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::vec2(0.0, -2000.0),
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+        );
+        let mut output = frame(&mut desktop, vec![]);
+        for _ in 0..30 {
+            output = frame(&mut desktop, vec![]);
+        }
+        let export = first_painted_row(&output, "Export drafts to local file");
+        assert!(export.visible_rect.bottom() <= 420.0);
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
     }
 
     #[test]

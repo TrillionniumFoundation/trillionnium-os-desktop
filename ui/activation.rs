@@ -143,6 +143,91 @@ mod tests {
         result.unwrap()
     }
 
+    fn semantic_click(id: egui::Id) -> egui::Event {
+        egui::Event::AccessKitActionRequest(egui::accesskit::ActionRequest {
+            action: egui::accesskit::Action::Click,
+            target: id.value().into(),
+            data: None,
+        })
+    }
+
+    #[test]
+    fn accesskit_button_exposes_label_role_and_semantic_activation() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut guard = ActivationGuard::default();
+        let mut id = None;
+        let output = ctx.run(raw(vec![]), |ctx| {
+            guard.begin_frame(ctx);
+            egui::CentralPanel::default().show(ctx, |ui| {
+                id = Some(ui.button("Explicit effect").id);
+            });
+        });
+        let id = id.unwrap();
+        let tree = output
+            .platform_output
+            .accesskit_update
+            .expect("semantic tree");
+        let (_, node) = tree
+            .nodes
+            .iter()
+            .find(|(node_id, _)| *node_id == id.value().into())
+            .expect("real button is in the accessibility tree");
+        assert_eq!(node.role(), egui::accesskit::Role::Button);
+        assert_eq!(node.label(), Some("Explicit effect"));
+        assert!(node.supports_action(egui::accesskit::Action::Click));
+        let (_, _, clicked, allowed) = button_frame(&ctx, &mut guard, vec![semantic_click(id)]);
+        assert!(
+            clicked && allowed,
+            "semantic action must reach the effect guard without a pointer"
+        );
+    }
+
+    #[test]
+    fn accesskit_actions_cannot_bypass_composition_or_disabled_controls() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut guard = ActivationGuard::default();
+        let (id, _, _, _) = button_frame(&ctx, &mut guard, vec![]);
+        let (_, _, clicked, allowed) = button_frame(
+            &ctx,
+            &mut guard,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("nihao".into())),
+                semantic_click(id),
+            ],
+        );
+        assert!(clicked && !allowed);
+        let (_, _, clicked, allowed) = button_frame(
+            &ctx,
+            &mut guard,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Commit("你好".into())),
+                semantic_click(id),
+            ],
+        );
+        assert!(
+            clicked && !allowed,
+            "commit frame cannot dispatch an effect"
+        );
+        assert!(
+            button_frame(&ctx, &mut guard, vec![semantic_click(id)]).3,
+            "a later explicit semantic action is independent of candidate keys"
+        );
+        let mut allowed = true;
+        let _ = ctx.run(raw(vec![semantic_click(id)]), |ctx| {
+            guard.begin_frame(ctx);
+            egui::CentralPanel::default().show(ctx, |ui| {
+                allowed =
+                    guard.activated(&ui.add_enabled(false, egui::Button::new("Explicit effect")));
+            });
+        });
+        assert!(
+            !allowed,
+            "accessibility cannot enable an unavailable effect"
+        );
+    }
+
     #[test]
     fn real_focused_button_is_accessible_by_enter_and_space() {
         for confirm in [egui::Key::Enter, egui::Key::Space] {

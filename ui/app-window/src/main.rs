@@ -45,14 +45,14 @@ impl eframe::App for ClientWindow {
             ui.separator();
             match self.kind {
                 AppKind::Notes => {
-                    ui.label("Notes / 笔记 · try composing Chinese with your host IME");
+                    let label = ui.label("Notes / 笔记 · try composing Chinese with your host IME");
                     let editor = ui.add(
                         egui::TextEdit::multiline(&mut self.notes)
                             .id(egui::Id::new("notes-editor"))
                             .desired_rows(17)
                             .desired_width(f32::INFINITY)
                             .hint_text("中文输入、候选词、焦点测试……"),
-                    );
+                    ).labelled_by(label.id);
                     if let Some(organ) = &mut self.notes_organ {
                         if editor.changed() && !organ.local_edit(self.notes.clone()) {
                             self.notes = organ.text().to_owned();
@@ -69,10 +69,10 @@ impl eframe::App for ClientWindow {
                 }
                 AppKind::Calculator => {
                     ui.horizontal(|ui| {
-                        ui.label("A");
-                        ui.text_edit_singleline(&mut self.left);
-                        ui.label("B");
-                        ui.text_edit_singleline(&mut self.right);
+                        let a = ui.label("A");
+                        ui.text_edit_singleline(&mut self.left).labelled_by(a.id);
+                        let b = ui.label("B");
+                        ui.text_edit_singleline(&mut self.right).labelled_by(b.id);
                     });
                     ui.horizontal(|ui| {
                         for (label, op) in [("+", '+'), ("−", '-'), ("×", '*'), ("÷", '/')] {
@@ -83,11 +83,11 @@ impl eframe::App for ClientWindow {
                     });
                     ui.label(RichText::new(&self.result).size(20.0));
                     ui.separator();
-                    ui.label("Keyboard and IME focus probe / 输入法焦点");
+                    let label = ui.label("Keyboard and IME focus probe / 输入法焦点");
                     let ime_probe = ui.add(
                         egui::TextEdit::singleline(&mut self.focused_input)
                             .id(egui::Id::new("calculator-ime-focus")),
-                    );
+                    ).labelled_by(label.id);
                     ui.small(if ime_probe.has_focus() {
                         "Keyboard focus: calculator IME probe"
                     } else {
@@ -165,13 +165,15 @@ impl ClientWindow {
                 }
             });
         ui.separator();
+        let label = ui.label("Command / 命令");
         ui.horizontal(|ui| {
             ui.add(
                 egui::TextEdit::singleline(&mut self.terminal_input)
                     .id(egui::Id::new("restricted-terminal-input"))
                     .desired_width(f32::INFINITY)
                     .hint_text("help / status / echo <text> / clear / exit"),
-            );
+            )
+            .labelled_by(label.id);
             // A deliberate focused Enter/Space is accessible activation. The
             // shared guard fences preedit, Commit and trailing candidate keys.
             if self

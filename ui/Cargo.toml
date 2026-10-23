@@ -5,7 +5,7 @@ members = ["core", "session", "shell", "app-window", "broker"]
 [workspace.package]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-rust-version = "1.83"
+rust-version = "1.88"
 
 [workspace.dependencies]
 trill-ui-core = { path = "core" }
@@ -14,5 +14,5 @@ serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.151"
 sha2 = "=0.10.9"
 libc = "=0.2.190"
-eframe = { version = "=0.31.1", default-features = false, features = ["glow", "default_fonts", "wayland", "x11"] }
+eframe = { version = "=0.31.1", default-features = false, features = ["glow", "default_fonts", "wayland", "x11", "accesskit"] }
 ab_glyph = "=0.2.32"

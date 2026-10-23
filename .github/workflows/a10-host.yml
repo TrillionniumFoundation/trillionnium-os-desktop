@@ -101,7 +101,7 @@ jobs:
             libgl1-mesa-dev libegl1-mesa-dev \
             libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxinerama-dev \
             weston wayland-utils libgbm-dev libgl1-mesa-dri \
-            xvfb xauth x11-utils
+            xvfb xauth x11-utils xdotool at-spi2-core dbus-x11 python3-gi gir1.2-atspi-2.0
       - name: Record real host versions, not the pinned Asterinas kernel toolchain
         run: |
           set -euo pipefail
@@ -125,6 +125,10 @@ jobs:
           cargo clippy --manifest-path ui/Cargo.toml -p trill-session --all-targets \
             --features objective-submission --locked --offline -- -D warnings \
             2>&1 | tee "$RUNNER_TEMP/a10/objective-session-clippy.log"
+      - name: Exercise native AccessKit AT-SPI discovery and semantic actions
+        run: |
+          set -euo pipefail
+          bash tests/ui/accesskit-smoke.sh 2>&1 | tee "$RUNNER_TEMP/a10/accesskit.log"
       - name: Run true Linux-host first-frame and lifecycle tests under headless Weston
         run: |
           set -euo pipefail
