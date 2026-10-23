@@ -48,6 +48,8 @@ struct OwnerState {
     identity: Option<SubmissionIdentity>,
     events: Vec<&'static str>,
     refuse_pending: bool,
+    refuse_start: bool,
+    send_started: bool,
     fail_submission: bool,
     fail_history: bool,
     fail_cancellation: bool,
@@ -109,6 +111,7 @@ impl OriginalObjectiveRequestOwner for TestOwner {
     ) -> Result<(), RequestOwnerIssue> {
         assert_eq!(*ticket, 1);
         let mut state = self.0.lock().unwrap();
+        assert!(state.send_started, "owner start must precede transport");
         assert_eq!(Some(attempt.identity()), state.identity.as_ref());
         assert!(attempt.matches_original_json(state.original.as_ref().unwrap().as_bytes()));
         state.events.push("submission_observed");
@@ -116,6 +119,19 @@ impl OriginalObjectiveRequestOwner for TestOwner {
             return Err(RequestOwnerIssue::PersistenceUnknown);
         }
         state.events.push("submission_retained");
+        Ok(())
+    }
+
+    fn mark_send_started(&mut self, ticket: &u8) -> Result<(), RequestOwnerIssue> {
+        assert_eq!(*ticket, 1);
+        let mut state = self.0.lock().unwrap();
+        assert!(!state.send_started);
+        if state.refuse_start {
+            state.events.push("send_start_refused");
+            return Err(RequestOwnerIssue::Refused);
+        }
+        state.send_started = true;
+        state.events.push("send_started");
         Ok(())
     }
 
@@ -240,6 +256,9 @@ impl Socket {
             let original = {
                 let mut state = owner.0.lock().unwrap();
                 assert!(state.identity.is_some(), "retention must precede connect");
+                if !history {
+                    assert!(state.send_started, "owner start must precede connect");
+                }
                 state.events.push("socket_connected");
                 state.original.clone().unwrap()
             };
@@ -378,11 +397,43 @@ fn exact_pending_identity_precedes_original_send_and_receipt() {
         owner.0.lock().unwrap().events,
         [
             "pending",
+            "send_started",
             "socket_connected",
             "submission_observed",
             "submission_retained"
         ]
     );
+}
+
+#[test]
+fn original_owner_start_refusal_consumes_permission_without_connecting() {
+    let socket = Socket::new();
+    let owner = TestOwner::default();
+    owner.0.lock().unwrap().refuse_start = true;
+    let mut submission =
+        ObjectiveSubmission::prepare(owner.clone(), socket.transport(), raw()).unwrap();
+    assert_eq!(
+        submission.submit_once(),
+        Err(SubmissionAdapterError::Owner(RequestOwnerIssue::Refused))
+    );
+    assert_eq!(
+        submission.view().phase,
+        LocalSubmissionPhase::SubmissionStartedOrUnknown
+    );
+    assert!(submission.view().observed_submission.is_none());
+    assert_eq!(
+        submission.submit_once(),
+        Err(SubmissionAdapterError::SendPermissionConsumed)
+    );
+    assert_eq!(
+        submission.cancel_before_send(),
+        Err(SubmissionAdapterError::OriginalOwnerCancellationRequired)
+    );
+    assert_eq!(
+        owner.0.lock().unwrap().events,
+        ["pending", "send_start_refused"]
+    );
+    socket.assert_no_connection();
 }
 
 #[test]

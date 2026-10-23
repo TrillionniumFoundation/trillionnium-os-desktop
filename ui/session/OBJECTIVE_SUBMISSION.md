@@ -34,7 +34,13 @@ ambiguous storage result, yields no sender; the original owner must retain and
 recover any ambiguous record it may have committed.
 
 `submit_once` takes that permission and marks the local state unknown **before**
-calling the unchanged original one-shot transport. It keeps the original
+calling the original owner's mandatory `mark_send_started` gate. That gate
+consumes the same live ticket's local unused state and rechecks original live
+authority; a recovered ticket cannot pass. An owner refusal drops the prepared
+transport without connecting, and the adapter's local permission stays consumed.
+This does not create another durable send claim: retention already occupied the
+unique durable opportunity. Only after this gate succeeds does the adapter call
+the unchanged original one-shot transport. It keeps the original
 `SubmissionAttempt`, then asks the same owner to retain the observation. No
 return status, including `NotSent` or `RefusedBeforePublication`, creates another
 send permission. A panic, crash or lost reply cannot be repaired by constructing
@@ -133,12 +139,15 @@ unknown fencing, local cancellation, failed receipt retention, recovery without
 a sender and unwinding after start. They can run directly with `rustc --test`;
 they do not execute Tokio, the original socket transport or a durable owner.
 
-Ten feature-gated Session tests use actual disposable Unix sockets and the
+Eleven feature-gated Session tests use actual disposable Unix sockets and the
 original `ObjectiveTransport`/`ObjectiveHistoryClient`. Their owner is an
 explicit in-memory test fixture, and their original protocol sample has an
 expired all-zero signature. They test ordering, exact byte identity, duplicate
 fencing by the injected owner, lost replies, cancellation, receipt failures,
-recovery, agent matching and history preservation. They do not qualify
+recovery, agent matching and history preservation. The added owner-start refusal
+case verifies zero connections, no second start, and no local cancellation after
+the consumed permission, including when live authority refuses at this boundary.
+They do not qualify
 authentication, real original-owner persistence or physical effects. An
 additional original transport regression checks that pre-send identity lookup
 opens no connection and exactly matches the later attempt.
