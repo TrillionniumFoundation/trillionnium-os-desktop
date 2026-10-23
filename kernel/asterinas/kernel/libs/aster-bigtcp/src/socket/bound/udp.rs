@@ -8,7 +8,7 @@ use ostd::sync::SpinLock;
 use smoltcp::{
     iface::Context,
     socket::udp::UdpMetadata,
-    wire::{IpRepr, UdpRepr},
+    wire::{IpEndpoint, IpRepr, UdpRepr},
 };
 
 use super::{
@@ -28,6 +28,13 @@ pub type UdpSocket<E> = Socket<UdpSocketInner, E>;
 pub struct UdpSocketInner {
     socket: SpinLock<Box<RawUdpSocket>, BottomHalfDisabled>,
     need_dispatch: AtomicBool,
+    errors: SpinLock<UdpErrorState, BottomHalfDisabled>,
+}
+
+#[derive(Default)]
+struct UdpErrorState {
+    peer: Option<IpEndpoint>,
+    connection_refused: bool,
 }
 
 impl<E: Ext> Inner<E> for UdpSocketInner {
@@ -45,6 +52,22 @@ impl<E: Ext> Inner<E> for UdpSocketInner {
 pub(crate) type UdpSocketBg<E> = SocketBg<UdpSocketInner, E>;
 
 impl<E: Ext> UdpSocketBg<E> {
+    /// Reports that a locally dispatched datagram had no receiver.
+    ///
+    /// Without an extended error queue, retain port-unreachable errors only for
+    /// the connected peer. The caller must have released the raw socket lock.
+    pub(crate) fn on_port_unreachable(&self, destination: IpEndpoint) {
+        {
+            let mut errors = self.inner.errors.lock();
+            if errors.peer != Some(destination) {
+                return;
+            }
+            errors.connection_refused = true;
+        }
+
+        self.notify_events(SocketEvents::ERROR);
+    }
+
     /// Tries to process an incoming packet and returns whether the packet is processed.
     pub(crate) fn process(
         &self,
@@ -143,6 +166,7 @@ impl<E: Ext> UdpSocket<E> {
         let inner = UdpSocketInner {
             socket: SpinLock::new(socket),
             need_dispatch: AtomicBool::new(false),
+            errors: SpinLock::new(UdpErrorState::default()),
         };
 
         let socket = Self::new(bound, inner);
@@ -153,6 +177,23 @@ impl<E: Ext> UdpSocket<E> {
             .register_udp_socket(socket.inner().clone());
 
         Ok(socket)
+    }
+
+    /// Sets the peer whose port-unreachable errors should be retained.
+    ///
+    /// Changing the peer does not consume an already pending error.
+    pub fn set_error_peer(&self, endpoint: IpEndpoint) {
+        self.0.inner.errors.lock().peer = Some(endpoint);
+    }
+
+    /// Returns whether a port-unreachable error is pending.
+    pub fn has_connection_refused(&self) -> bool {
+        self.0.inner.errors.lock().connection_refused
+    }
+
+    /// Takes a pending port-unreachable error, if any.
+    pub fn take_connection_refused(&self) -> bool {
+        core::mem::take(&mut self.0.inner.errors.lock().connection_refused)
     }
 
     /// Sends some data.
