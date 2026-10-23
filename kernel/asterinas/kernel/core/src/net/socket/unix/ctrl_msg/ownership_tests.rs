@@ -456,19 +456,14 @@ fn stream_full_failure_refunds_edge_and_partial_write_keeps_real_prefix_owner() 
                     RecvFlags::empty(),
                 )
                 .unwrap();
-            assert_eq!(read.len(), fill.len());
-            assert!(first.control_messages.is_empty());
-            let (read, second) = receiver
-                .recvmsg(
-                    &mut VmWriter::from(&mut bytes[..]).to_fallible(),
-                    RecvFlags::empty(),
-                )
-                .unwrap();
-            assert_eq!(read.len(), 6);
-            assert_eq!(&bytes[..6], &[0x56; 6]);
-            assert_eq!(second.control_messages.len(), 1);
+            // The original receive rule merges an empty-auxiliary prefix
+            // with a later descriptor-bearing range in the same call.
+            assert_eq!(read.len(), 65536);
+            assert_eq!(&bytes[..fill.len()], &fill[..]);
+            assert_eq!(&bytes[fill.len()..], &[0x56; 6]);
+            assert_eq!(first.control_messages.len(), 1);
             assert_eq!(reverse().unwrap_err().error(), Errno::ELOOP);
-            drop(second);
+            drop(first);
             assert_eq!(reverse().unwrap(), 0);
         }
         let weak_sender = Arc::downgrade(&sender);
