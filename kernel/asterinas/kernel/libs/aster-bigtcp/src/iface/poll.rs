@@ -6,8 +6,8 @@ use ostd::mm::{Infallible, VmReader};
 use smoltcp::{
     storage::SliceLike,
     wire::{
-        IPV4_HEADER_LEN, IPV4_MIN_MTU, Icmpv4DstUnreachable, IpAddress, IpProtocol, IpRepr,
-        Ipv4Address, Ipv4Repr, TcpControl, TcpRepr, UDP_HEADER_LEN, UdpRepr,
+        IPV4_HEADER_LEN, IPV4_MIN_MTU, Icmpv4DstUnreachable, IpAddress, IpEndpoint, IpProtocol,
+        IpRepr, Ipv4Address, Ipv4Repr, TcpControl, TcpRepr, UDP_HEADER_LEN, UdpRepr,
     },
 };
 
@@ -577,6 +577,7 @@ impl<E: Ext> PollContext<'_, E> {
             did_something = true;
 
             let mut deferred = None;
+            let mut unreachable = None;
 
             let (cx, pending) = self.iface.inner_mut();
             socket.dispatch(cx, |cx, ip_repr, udp_repr, udp_payload| {
@@ -592,9 +593,11 @@ impl<E: Ext> PollContext<'_, E> {
                 }
 
                 if !socket.can_process(udp_repr.dst_port) {
-                    // TODO: Generate the ICMP message here once we're able to handle incoming ICMP
-                    // messages.
-                    let _ = this.process_udp(ip_repr, udp_repr, PacketSlice::from(udp_payload));
+                    let processed =
+                        this.process_udp(ip_repr, udp_repr, PacketSlice::from(udp_payload));
+                    if !processed && this.iface.context().is_unicast(ip_repr.dst_addr()) {
+                        unreachable = Some(IpEndpoint::new(ip_repr.dst_addr(), udp_repr.dst_port));
+                    }
                     return;
                 }
 
@@ -604,8 +607,18 @@ impl<E: Ext> PollContext<'_, E> {
             });
 
             if let Some((ip_repr, udp_repr, payload)) = deferred {
-                let _ =
+                let processed =
                     self.process_udp(&ip_repr, &udp_repr, PacketSlice::from(payload.as_slice()));
+                if !processed && self.iface.context().is_unicast(ip_repr.dst_addr()) {
+                    unreachable = Some(IpEndpoint::new(ip_repr.dst_addr(), udp_repr.dst_port));
+                }
+            }
+
+            if let Some(destination) = unreachable {
+                // Local delivery needs no ICMP packet or socket lookup to identify the sender.
+                // Notify after dispatch has released its raw socket lock. Remote ICMP errors
+                // remain unsupported.
+                socket.on_port_unreachable(destination);
             }
 
             if tx_packet.is_some() {
