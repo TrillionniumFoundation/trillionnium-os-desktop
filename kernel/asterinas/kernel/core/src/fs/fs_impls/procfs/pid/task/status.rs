@@ -54,7 +54,7 @@ use crate::{
 /// - CapEff: Effective capabilities.
 /// - CapBnd: Bounding set.
 /// - CapAmb: Ambient capabilities.
-/// - NoNewPrivs: Whether this thread can acquire privileges through exec.
+/// - NoNewPrivs: Whether privilege gains through exec are disabled for this thread.
 /// - Seccomp: Seccomp mode.
 /// - Cpus_allowed: CPUs allowed for this process.
 /// - Cpus_allowed_list: List of CPUs allowed for this process.

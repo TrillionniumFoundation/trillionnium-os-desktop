@@ -117,7 +117,8 @@ int main(int argc, char **argv)
     if (argc != 1 || geteuid() != 0) return 2;
     int initial = prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0);
     if (nnp(getpid(), 0) < 0) { puts("PRIV_STATUS_UNAVAILABLE field=NoNewPrivs"); return 1; }
-    result("initial_nnp_agrees", initial >= 0 && nnp(getpid(), 0) == initial);
+    // A pre-enabled parent would not exercise per-thread isolation at all.
+    result("initial_nnp_agrees", initial == 0 && nnp(getpid(), 0) == 0);
     struct thread_check check = {.initial = initial, .ok = 0};
     pthread_t thread;
     if (pthread_create(&thread, NULL, thread_nnp, &check)) return 3;
