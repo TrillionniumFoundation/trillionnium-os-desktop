@@ -61,9 +61,10 @@ cargo +nightly-2026-07-21 osdk test
 Do not supply a test-name filter or count old host attributes as native tests.
 A complete result must contain all four exact native names and their own
 terminal `ok`, zero failure/filter/soft skip, runner completion, and actual raw
-QEMU exit 33 without timeout. The project wrapper needs a separate fourth
-crate/test-base lock before `--crate aster-mlsdisk` is supported; the existing
-core/OSTD/frame-allocator suites must remain independent and complete.
+QEMU exit 33 without timeout. The [project wrapper](../../support/build/ktest/README.md#complete-mlsdisk-gate)
+now has a separate fourth crate/test-base lock and supports
+`--crate aster-mlsdisk`; the existing core/OSTD/frame-allocator suites remain
+independent and complete. Its host anti-forgery tests do not execute the guest.
 
 ## Remaining blockers and qualification
 

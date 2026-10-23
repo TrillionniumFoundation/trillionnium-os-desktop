@@ -147,52 +147,52 @@ EXHAUSTION_MARKER = re.compile(
 )
 
 
-def check_allocator_profile(qemu):
+def check_fixed_n0_profile(qemu, suite):
     """Require the recorder's actual default N0 invocation, not a profile label."""
     if type(qemu.get("raw_exit_code")) is not int or qemu.get("timed_out") is not False:
-        raise ValueError("allocator requires an explicit raw QEMU exit and no timeout")
+        raise ValueError(f"{suite} requires an explicit raw QEMU exit and no timeout")
     expected = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
                 "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False}
     if (qemu.get("ktest_profile") != "default" or qemu.get("profile") != expected
             or "test_name" not in qemu or qemu["test_name"] is not None):
-        raise ValueError("allocator requires the complete unfiltered default N0 profile")
+        raise ValueError(f"{suite} requires the complete unfiltered default N0 profile")
     argv = qemu.get("argv", [])
     artifacts = qemu.get("artifacts", {})
     if not isinstance(argv, list) or not argv:
-        raise ValueError("allocator QEMU invocation is missing")
+        raise ValueError(f"{suite} QEMU invocation is missing")
     expected_argv = [argv[0]]
     for option in ("-kernel", "-initrd", "-append"):
         if option == "-initrd" and option not in argv:
             continue
         if argv.count(option) != 1 or argv.index(option) + 1 >= len(argv):
-            raise ValueError("allocator QEMU invocation has missing or repeated boot arguments")
+            raise ValueError(f"{suite} QEMU invocation has missing or repeated boot arguments")
         value = argv[argv.index(option) + 1]
         expected_argv.extend((option, value))
         if option != "-append" and artifacts.get(option, {}).get("path") != value:
-            raise ValueError("allocator QEMU boot artifact path does not match the invocation")
+            raise ValueError(f"{suite} QEMU boot artifact path does not match the invocation")
     firmware = artifacts.get("-bios", {}).get("path")
     if firmware != "/usr/share/seabios/bios-256k.bin" or argv.count("-chardev") != 1:
-        raise ValueError("allocator QEMU firmware or serial record is missing")
+        raise ValueError(f"{suite} QEMU firmware or serial record is missing")
     serial_index = argv.index("-chardev") + 1
     if serial_index >= len(argv) or not re.fullmatch(r"stdio,id=serial,signal=off,logfile=.+/serial\.log", argv[serial_index]):
-        raise ValueError("allocator QEMU serial capture differs from the fixed profile")
+        raise ValueError(f"{suite} QEMU serial capture differs from the fixed profile")
     expected_argv.extend(("-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", firmware,
                           "-m", "512M", "-smp", "1", "-nodefaults", "-no-user-config", "-no-reboot",
                           "-nographic", "-display", "none", "-monitor", "none", "-serial", "chardev:serial",
                           "-chardev", argv[serial_index], "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"))
     if argv != expected_argv:
-        raise ValueError("allocator actual QEMU invocation differs from the fixed N0 profile")
+        raise ValueError(f"{suite} actual QEMU invocation differs from the fixed N0 profile")
     for option in ("-kernel", "-bios", *(("-initrd",) if "-initrd" in argv else ())):
         artifact = artifacts.get(option, {})
         if (not re.fullmatch(r"[0-9a-f]{64}", artifact.get("sha256", ""))
                 or type(artifact.get("size")) is not int or artifact["size"] <= 0):
-            raise ValueError("allocator boot artifact hash/size evidence is missing")
+            raise ValueError(f"{suite} boot artifact hash/size evidence is missing")
 
 
 def check_allocator_tests(qemu, serial, section, summary, starts, declared, allow_filtered):
     if allow_filtered:
         raise ValueError("allocator gate never permits filtered qualification")
-    check_allocator_profile(qemu)
+    check_fixed_n0_profile(qemu, "allocator")
     if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
         raise ValueError("allocator target sequence must finish before the runner completion marker")
     if declared != len(REQUIRED_ALLOCATOR_TESTS) or sorted(starts) != sorted(REQUIRED_ALLOCATOR_TESTS):
@@ -220,6 +220,34 @@ def check_allocator_tests(qemu, serial, section, summary, starts, declared, allo
     return {"ordinary_frames": int(marker[1]), "reserve_start": marker[2], "reserve_pages": 64,
             "ordinary_denied": True, "reserved_succeeded": True,
             "returned_to_original_owner": True, "global_recovery_guarantee": False}
+
+
+REQUIRED_MLSDISK_TESTS = tuple("aster_mlsdisk::test::" + name for name in (
+    "write_sync_read",
+    "raw_disk_flush_submits_and_reports_terminal_failure",
+    "mlsdisk_sync_returns_device_flush_error",
+    "mlsdisk_flush_bio_completes_with_io_error",
+))
+
+
+def check_mlsdisk_tests(qemu, serial, section, summary, starts, declared, allow_filtered):
+    if allow_filtered:
+        raise ValueError("mlsdisk gate never permits filtered qualification")
+    check_fixed_n0_profile(qemu, "mlsdisk")
+    if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
+        raise ValueError("mlsdisk target sequence must finish before the runner completion marker")
+    if declared != len(REQUIRED_MLSDISK_TESTS) or sorted(starts) != sorted(REQUIRED_MLSDISK_TESTS):
+        raise ValueError("mlsdisk requires every original and flush test exactly once (4 total)")
+    if "[skipped:" in serial.lower():
+        raise ValueError("mlsdisk suite cannot pass with any soft-skipped test")
+    records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
+    for index, record in enumerate(records):
+        end = records[index + 1].start() if index + 1 < len(records) else summary.start()
+        if record.end() >= end or end > summary.start():
+            raise ValueError("mlsdisk per-test result appears outside the target test sequence")
+        block = section[record.end():end].rstrip("\n")
+        if not re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block):
+            raise ValueError("mlsdisk named test lacks its own terminal ok result")
 
 
 def check_guest(guest, crate, allow_filtered=False):
@@ -260,6 +288,8 @@ def check_guest(guest, crate, allow_filtered=False):
     if crate == "osdk-frame-allocator":
         allocator_exhaustion = check_allocator_tests(
             qemu, serial, section, summary, starts, declared, allow_filtered)
+    if crate == "aster-mlsdisk":
+        check_mlsdisk_tests(qemu, serial, section, summary, starts, declared, allow_filtered)
     if crate == "aster-core" and not allow_filtered:
         missing = [name for name in REQUIRED_CORE_TESTS if starts.count(name) != 1]
         if missing:
@@ -303,6 +333,8 @@ def check_guest(guest, crate, allow_filtered=False):
             "required_core_tests": list(REQUIRED_CORE_TESTS) if crate == "aster-core" and not allow_filtered else [],
             "required_allocator_tests": list(REQUIRED_ALLOCATOR_TESTS) if crate == "osdk-frame-allocator" else [],
             "allocator_exhaustion": allocator_exhaustion,
+            "required_mlsdisk_tests": list(REQUIRED_MLSDISK_TESTS) if crate == "aster-mlsdisk" else [],
+            "mlsdisk_media_durability_qualified": False if crate == "aster-mlsdisk" else None,
             "required_ostd_tests": list(REQUIRED_OSTD_TESTS) if crate == "ostd" and not allow_filtered else [],
             "raw_qemu_exit": 33, "guest": guest.name}
 

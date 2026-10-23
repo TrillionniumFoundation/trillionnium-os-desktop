@@ -14,7 +14,8 @@ import tempfile
 
 TOOLCHAIN = "nightly-2026-07-21"
 CRATES = {"ostd": "ostd", "aster-core": "kernel/core",
-          "osdk-frame-allocator": "osdk/deps/frame-allocator"}
+          "osdk-frame-allocator": "osdk/deps/frame-allocator",
+          "aster-mlsdisk": "kernel/core/comps/mlsdisk"}
 
 
 def digest(path):
@@ -42,8 +43,10 @@ def main():
             parser.error("--permission-attr-smp fixes the crate and complete test-name suffix")
         args.crate = ["aster-core"]
         args.test_name = "permission_attr_smp"
-    if args.test_name and "osdk-frame-allocator" in (args.crate or CRATES):
-        parser.error("osdk-frame-allocator requires its complete unfiltered default N0 suite")
+    if args.test_name:
+        for crate in ("osdk-frame-allocator", "aster-mlsdisk"):
+            if crate in (args.crate or CRATES):
+                parser.error(f"{crate} requires its complete unfiltered default N0 suite")
     profile = "permission-attr-smp" if args.permission_attr_smp else "default"
     vcpus = 2 if args.permission_attr_smp else 1
     features = ["permission-attr-smp-ktest"] if args.permission_attr_smp else []
