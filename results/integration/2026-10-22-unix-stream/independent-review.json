@@ -1,0 +1,1519 @@
+{
+  "actual_executed_control_git_diffs": [
+    {
+      "actual_git_diff": {
+        "bytes": 1364,
+        "sha256": "010b267c3c8851fc53602c7f21e3831f1fd5bb5adbda637599d07255590a87c0"
+      },
+      "changed_paths": [
+        "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
+      ],
+      "command": {
+        "bytes": 1035,
+        "sha256": "eaaf4442496c26a89d7c3f236524874516f72a6b277765d3a224ecfe90d0a096"
+      },
+      "full_tree_delta_verified": true,
+      "source": {
+        "archive_path": "sources/control/race-fixed/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+        "bytes": 15869,
+        "git_blob": "69ad618c717059fe61840b52142fe7a92962cb10",
+        "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+        "sha256": "aac591b80a071aeb14d7ad337f538c7906b7a03bd64fe9ba44e26d92c9891348",
+        "tracked_mode": "100644"
+      },
+      "variant": "race-fixed"
+    },
+    {
+      "actual_git_diff": {
+        "bytes": 1913,
+        "sha256": "dbd2905a076c7bdd4f608c288a052b57322b81541620a65c153cdfcd89d4f097"
+      },
+      "changed_paths": [
+        "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
+      ],
+      "command": {
+        "bytes": 1035,
+        "sha256": "eb8071b2e2b68495b99cd2c13b828a93fe0f3570d2836a2067668a0e3b5ebbe9"
+      },
+      "full_tree_delta_verified": true,
+      "source": {
+        "archive_path": "sources/control/race-stale/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+        "bytes": 15782,
+        "git_blob": "6e20811f9494d3f17b08cf16f7f81c6fe8114c83",
+        "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+        "sha256": "b80f1157bb9cbcb513ff6231fa72693268741b34e2fd1763df34a627a5736b0e",
+        "tracked_mode": "100644"
+      },
+      "variant": "race-stale"
+    },
+    {
+      "actual_git_diff": {
+        "bytes": 2155,
+        "sha256": "2c366b769943d7146ad35020cce0cede6faba17a3acc13c23ea338c4eca59f0c"
+      },
+      "changed_paths": [
+        "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
+      ],
+      "command": {
+        "bytes": 1067,
+        "sha256": "20cd624d1d158a9f59eba5e654d94b70048e89b7e4426072cf8502028d8c662c"
+      },
+      "full_tree_delta_verified": true,
+      "source": {
+        "archive_path": "sources/control/aux-zero-progress/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+        "bytes": 15990,
+        "git_blob": "381bcbacc6ce10bdd871bacf138833cae7144b6c",
+        "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+        "sha256": "c578aa3d6d2a05bc78c8100b24b39343eb8c21d9cda580e1092e6114983581e4",
+        "tracked_mode": "100644"
+      },
+      "variant": "aux-zero-progress"
+    }
+  ],
+  "core": {
+    "original_checker_replay": {
+      "crate": "aster-core",
+      "declared": 274,
+      "exercised_passed_lower_bound": 274,
+      "failed": 0,
+      "filtered": 0,
+      "guest": "guest-001",
+      "observed_test_starts": 274,
+      "passed": 274,
+      "raw_qemu_exit": 33,
+      "required_core_tests": [
+        "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+        "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+        "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+        "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+        "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error",
+        "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
+        "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
+        "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_rechecks_alien_write_using_an_earlier_vmar_pin",
+        "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_does_not_turn_fork_into_a_shared_writable_alias",
+        "aster_core::process::process::image::tests::initial_observe_lease_includes_issue_and_excludes_expiry",
+        "aster_core::process::process::image::tests::initial_observe_lease_does_not_accept_a_pre_issue_clock_cut",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_rejects_a_replaced_real_cpu_owner",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_does_not_keep_a_deleted_resource_authorized",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_owner_lease_check_rejects_before_sampling",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_enforces_sub_microsecond_caps_on_the_original_owner",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_update_and_replay_preserve_consumption_and_positive_debt",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_manager_revocation_preserves_recovery_and_saved_history",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_expiry_is_finite_single_use_and_replays_original_receipt",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_never_infers_resume_from_zero_or_unowned_budget",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_first_close_cut_is_not_renewed_and_missing_clock_fences",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_refuses_expired_final_cut_and_preserves_accounting_fault",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_management_lease_edges_and_clock_absence_do_not_change_budget",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_ceiling_and_revision_rejections_are_immutable_without_effect",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_accounting_fault_cannot_publish_a_successful_budget_receipt",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_controlled_leaf_refuses_linux_configuration_and_membership_aliases",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_bounded_history_retirement_never_reexecutes_an_old_cpu_delivery",
+        "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_never_invent_setid_or_sticky",
+        "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_keep_file_directory_masks_and_readonly",
+        "aster_core::fs::fs_impls::ext2::fs::test::inode_sync_preserves_allocation_and_data_across_remount",
+        "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_rechecks_an_earlier_snapshot_under_the_same_owner",
+        "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_retries_all_dirty_metadata_after_write_failure",
+        "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+        "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+        "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes",
+        "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
+        "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data"
+      ],
+      "required_permission_tests": [
+        "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+        "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+        "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+        "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+        "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error"
+      ],
+      "soft_skip_reasons": [],
+      "soft_skipped": 0
+    },
+    "qemu_record": {
+      "bytes": 4918,
+      "sha256": "51ed350418b0bc839632f350559c0fe79977179d97a35997f4aa48bf46930fe4"
+    },
+    "result": {
+      "bytes": 6199,
+      "sha256": "ee8a4aa441568fa31d8b8e6fc16ced8cae0eca74f983cc41d10b185188a57513"
+    },
+    "serial": {
+      "bytes": 35205,
+      "sha256": "f665e28b02a7f3aa4e89bb445143a3c109f080ea031b5771c44d07151d1449bf"
+    }
+  },
+  "current_native_evidence_accepted": true,
+  "evidence_index": {
+    "bytes": 7678,
+    "sha256": "2480e057f1339fe0ad6b4007f56b2761ea865bc9f14c1c00bfcc2aa0a69d7b42"
+  },
+  "frozen_source_control_patches": [
+    {
+      "patch": {
+        "bytes": 1919,
+        "sha256": "d9eb294d03b16df8bc8749f1927d87e2fe63a29399518d868a7c2ec03c5387e5"
+      },
+      "postimage": {
+        "bytes": 15990,
+        "sha256": "c578aa3d6d2a05bc78c8100b24b39343eb8c21d9cda580e1092e6114983581e4"
+      },
+      "variant": "aux-zero-progress"
+    },
+    {
+      "patch": {
+        "bytes": 1253,
+        "sha256": "d262cc32b91f9b1bbdb494db6048c8a6f8a67229b465260d23fc4ddbf44e9a2a"
+      },
+      "postimage": {
+        "bytes": 15869,
+        "sha256": "aac591b80a071aeb14d7ad337f538c7906b7a03bd64fe9ba44e26d92c9891348"
+      },
+      "variant": "race-fixed"
+    },
+    {
+      "patch": {
+        "bytes": 1709,
+        "sha256": "3fadd31c117b5a2f4732a592e7261eccbef94b5652b171a48207551d20e3f544"
+      },
+      "postimage": {
+        "bytes": 15782,
+        "sha256": "b80f1157bb9cbcb513ff6231fa72693268741b34e2fd1763df34a627a5736b0e"
+      },
+      "variant": "race-stale"
+    }
+  ],
+  "full_original_inventory": {
+    "host_only_artifact_records": [
+      {
+        "bytes": 813456,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v5/host-probe",
+        "sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e"
+      },
+      {
+        "bytes": 262144,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v5/positive/bios.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "bytes": 1461601,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v5/positive/initramfs.cpio.gz",
+        "sha256": "aa3412276e4333abbcb294560b57f0c123904d5957f9db85c338e5313734ccae"
+      },
+      {
+        "bytes": 1107990,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v5/positive/product-boot/initramfs.cpio.gz",
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "bytes": 8432192,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v5/positive/product-kernel.elf",
+        "sha256": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d"
+      },
+      {
+        "bytes": 813456,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v5/positive/unix-stream-probe",
+        "sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e"
+      },
+      {
+        "bytes": 262144,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/aux-zero-progress/bios.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "bytes": 1461613,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/aux-zero-progress/initramfs.cpio.gz",
+        "sha256": "5770e585e37a1fbbf51d2d5053982205b2bd2af8357bf5be54c49a75317a0607"
+      },
+      {
+        "bytes": 1107990,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/aux-zero-progress/product-boot/initramfs.cpio.gz",
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "bytes": 8432608,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/aux-zero-progress/product-kernel.elf",
+        "sha256": "6bdccb7df65af499b47584f8533f067a6af77fe7f757ee5d967663362adba8dc"
+      },
+      {
+        "bytes": 813456,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/aux-zero-progress/unix-stream-probe",
+        "sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e"
+      },
+      {
+        "bytes": 262144,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-fixed/bios.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "bytes": 1461613,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-fixed/initramfs.cpio.gz",
+        "sha256": "e7747c6653b377094d406f64ff04b59e9d30c7f10865c4ec15290153ceab4dc3"
+      },
+      {
+        "bytes": 1107990,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-fixed/product-boot/initramfs.cpio.gz",
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "bytes": 8427296,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-fixed/product-kernel.elf",
+        "sha256": "b44c692c36cb332f40b4ecdaa234e2e05080fdf4dc24d496d9fe0b8163a46b50"
+      },
+      {
+        "bytes": 813456,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-fixed/unix-stream-probe",
+        "sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e"
+      },
+      {
+        "bytes": 262144,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-stale/bios.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "bytes": 1461612,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-stale/initramfs.cpio.gz",
+        "sha256": "4d0e8951a2368a1016a625e57f01d07e1e0dcc1dc38ed119629ee4f3722e6e72"
+      },
+      {
+        "bytes": 1107990,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-stale/product-boot/initramfs.cpio.gz",
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "bytes": 8427312,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-stale/product-kernel.elf",
+        "sha256": "8cc2cab9efaae5d28cbd9bdaed7c4ac1d2a56fe8774f7d33bff56fee95ab3b43"
+      },
+      {
+        "bytes": 813456,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v5/race-stale/unix-stream-probe",
+        "sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e"
+      },
+      {
+        "bytes": 262144,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-fixed/bios.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "bytes": 1461103,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-fixed/initramfs.cpio.gz",
+        "sha256": "c0f21b365c176afce7b0a180e10c4d90c010752cb4c48ba2330277ee38ee4324"
+      },
+      {
+        "bytes": 1107990,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-fixed/product-boot/initramfs.cpio.gz",
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "bytes": 8423784,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-fixed/product-kernel.elf",
+        "sha256": "34241b87da5c36c912004ea012b66a52e4e981fcd136b146763a2d967a2366e6"
+      },
+      {
+        "bytes": 813248,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-fixed/unix-stream-probe",
+        "sha256": "052f016f9e8b8fbe60707b771d987a2e123df45ba1e9249797b7382fde11fe54"
+      },
+      {
+        "bytes": 262144,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-stale/bios.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "bytes": 1461098,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-stale/initramfs.cpio.gz",
+        "sha256": "0076a546db1dd748422a878b2e14b1e6d3f7e749fd90d2a6fe9fa70156e937b4"
+      },
+      {
+        "bytes": 1107990,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-stale/product-boot/initramfs.cpio.gz",
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "bytes": 8422824,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-stale/product-kernel.elf",
+        "sha256": "39bcfc5c0f16a08aa7fb5c1faa81c79710f007b50d9c47a814cbd6cb57ab4382"
+      },
+      {
+        "bytes": 813248,
+        "included_in_primary": false,
+        "path": "unix-stream-controls-v3/race-stale/unix-stream-probe",
+        "sha256": "052f016f9e8b8fbe60707b771d987a2e123df45ba1e9249797b7382fde11fe54"
+      },
+      {
+        "bytes": 262144,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v2/positive/bios.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "bytes": 1461080,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v2/positive/initramfs.cpio.gz",
+        "sha256": "d69a130eb9374530853f2a26173d98bc91bf647e88adac81402c0fe1c94eb682"
+      },
+      {
+        "bytes": 1107990,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v2/positive/product-boot/initramfs.cpio.gz",
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "bytes": 8455272,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v2/positive/product-kernel.elf",
+        "sha256": "92427aafe79a7360036b1fcdac7b6f3ec0625ddd53dbf70523009be40e33a1d9"
+      },
+      {
+        "bytes": 813248,
+        "included_in_primary": false,
+        "path": "unix-stream-native-v2/positive/unix-stream-probe",
+        "sha256": "052f016f9e8b8fbe60707b771d987a2e123df45ba1e9249797b7382fde11fe54"
+      }
+    ],
+    "host_only_binary_bytes_reopened": false,
+    "manifest": {
+      "bytes": 47129,
+      "sha256": "37c9a83f9ad92049a5e169d94c98abfd9c5e6bd65d91015f8f2595f7efbceda5"
+    },
+    "original_text_files_reopened": 173
+  },
+  "historical_source_bytes": [
+    {
+      "files": [
+        {
+          "archive_path": "sources/history/v2-positive/kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+          "bytes": 9099,
+          "git_blob": "339bf5715a99b5b1f5d16fbb2eed176242cf357f",
+          "repository_path": "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+          "sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v2-positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+          "bytes": 15010,
+          "git_blob": "5c029bd28ee7d85564a79995486d0b4c1f0fd13a",
+          "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+          "sha256": "10ccbc29b3155e4c7ce52732754844e5ecbb045d1f6f20b48f856691e4c7354a",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v2-positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+          "bytes": 19876,
+          "git_blob": "5f188a3776f03020567e6d3ddfa8fd07e26b0db1",
+          "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+          "sha256": "3da9c102149a7879f0fcb2a5f100b07b1664c1aa723899c4845abb6b572c7bef",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v2-positive/tests/kernel/network/run_unix_stream_guest.py",
+          "bytes": 13240,
+          "git_blob": "a76416dc04cee44db8d0e392faf95ca2a6f33c54",
+          "repository_path": "tests/kernel/network/run_unix_stream_guest.py",
+          "sha256": "8d8114fd3deb7e62ffd9b6ac62d85da56b88514377775c7344b63b5919cfd7ad",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v2-positive/tests/kernel/network/unix_stream_protocol.json",
+          "bytes": 53252,
+          "git_blob": "4926440479f67d813ee5ce34832d2ea629cd1f20",
+          "repository_path": "tests/kernel/network/unix_stream_protocol.json",
+          "sha256": "6577cd26c72c80f370cd4a654463316bf7fa5227a33a0e9ff3ade0e05eb9e680",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v2-positive/tests/kernel/network/unix_stream_oracle.py",
+          "bytes": 10428,
+          "git_blob": "91e261af6430b337bf30158bba43d97abbd12537",
+          "repository_path": "tests/kernel/network/unix_stream_oracle.py",
+          "sha256": "eefb0f272d2c396ea6fa87c0af827f795b115ca7607c6746abf80975fe544489",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v2-positive/tests/kernel/network/unix_stream_probe.c",
+          "bytes": 22690,
+          "git_blob": "05e2b9a105cc9c022894516b94e12b1f3b6c248f",
+          "repository_path": "tests/kernel/network/unix_stream_probe.c",
+          "sha256": "476a7ad3cc31787203364c0f9855629df148c79c4cbd1ebf92ab42510b307939",
+          "tracked_mode": "100644"
+        }
+      ],
+      "name": "v2-positive-rejected"
+    },
+    {
+      "files": [
+        {
+          "archive_path": "sources/history/v3-race-stale/kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+          "bytes": 9099,
+          "git_blob": "339bf5715a99b5b1f5d16fbb2eed176242cf357f",
+          "repository_path": "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+          "sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v3-race-stale/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+          "bytes": 15675,
+          "git_blob": "b130ebbfaf951b68f568857ce4a5ba535728f281",
+          "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+          "sha256": "527f9c849760a4b5eef43c4f4c054abccfdb4c66f1db9c35e4c5537a90cca30f",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v3-race-stale/kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+          "bytes": 20159,
+          "git_blob": "34eb5bd5da95047a1481331a9a5cb923fe02c49f",
+          "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+          "sha256": "160802e7e207e4a20e69559eff3b678189a29665a0336955cdc1c41f27ad1593",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v3-race-stale/tests/kernel/network/run_unix_stream_guest.py",
+          "bytes": 13433,
+          "git_blob": "8e10dbba671012bea7de23bcc0ae6585af909880",
+          "repository_path": "tests/kernel/network/run_unix_stream_guest.py",
+          "sha256": "f8c80c7e380f216c5b5eab9e98911b95852a50441c84e4bee136cd2e0bc707d7",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v3-race-stale/tests/kernel/network/unix_stream_protocol.json",
+          "bytes": 53252,
+          "git_blob": "4926440479f67d813ee5ce34832d2ea629cd1f20",
+          "repository_path": "tests/kernel/network/unix_stream_protocol.json",
+          "sha256": "6577cd26c72c80f370cd4a654463316bf7fa5227a33a0e9ff3ade0e05eb9e680",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v3-race-stale/tests/kernel/network/unix_stream_oracle.py",
+          "bytes": 10428,
+          "git_blob": "91e261af6430b337bf30158bba43d97abbd12537",
+          "repository_path": "tests/kernel/network/unix_stream_oracle.py",
+          "sha256": "eefb0f272d2c396ea6fa87c0af827f795b115ca7607c6746abf80975fe544489",
+          "tracked_mode": "100644"
+        },
+        {
+          "archive_path": "sources/history/v3-race-stale/tests/kernel/network/unix_stream_probe.c",
+          "bytes": 22690,
+          "git_blob": "05e2b9a105cc9c022894516b94e12b1f3b6c248f",
+          "repository_path": "tests/kernel/network/unix_stream_probe.c",
+          "sha256": "476a7ad3cc31787203364c0f9855629df148c79c4cbd1ebf92ab42510b307939",
+          "tracked_mode": "100644"
+        }
+      ],
+      "name": "v3-race-stale-rejected"
+    }
+  ],
+  "historical_v4_format_output": {
+    "counts_as_semantic_negative": false,
+    "file": {
+      "bytes": 830,
+      "sha256": "ee441dffeede3ebdbf8c0442a5acf15df9e64c29cbeebfbba2a3ece8c122c3af"
+    },
+    "status": "original format diff retained; no original exit record or native guest result in primary"
+  },
+  "new_native_execution_performed": false,
+  "ordinary_product_records": [
+    {
+      "binary_bytes_reopened": false,
+      "command": {
+        "bytes": 684,
+        "sha256": "dcbfdf456167738ae47a4d0bb259427133ba43326e79eaf5b36cebdb270ad033"
+      },
+      "environment": {
+        "bytes": 2901,
+        "sha256": "5db0710592530d12335c5fc936b5db66d713c3b38eda970bb0ccb3ff1f05cb76"
+      },
+      "name": "v5-positive",
+      "qemu_record": {
+        "bytes": 3249,
+        "sha256": "71ae7b03b890cc0ebfbcca88ed5f4f0642954a61cf15c641a43826036e3de9dc"
+      },
+      "recorded_binary_identities_match_full_manifest": true,
+      "serial": {
+        "bytes": 72315,
+        "sha256": "21828747861e93981f5ef60b25d8f2c5e8acd2167e8599bfc957d97b276ceecb"
+      },
+      "source_gate": {
+        "bytes": 2941,
+        "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+      }
+    },
+    {
+      "binary_bytes_reopened": false,
+      "command": {
+        "bytes": 688,
+        "sha256": "df0e99b81b6a9251546953df603a3209fd6f2a96da58f88458710f67c3f06e62"
+      },
+      "environment": {
+        "bytes": 2901,
+        "sha256": "a518fe2f601bc4eda853e0ed21e696e78cb8b3da1ddbec8dc8f5f2a820fec2a5"
+      },
+      "name": "v5-race-fixed",
+      "qemu_record": {
+        "bytes": 3294,
+        "sha256": "a864fcd99460a233b6d482c44840e1776d8a1e95449791e32f6a3c82f62fc476"
+      },
+      "recorded_binary_identities_match_full_manifest": true,
+      "serial": {
+        "bytes": 72404,
+        "sha256": "7e30b9bc78210ea839057817226e6d1c7e287a386561e6900bba7e98261758b1"
+      },
+      "source_gate": {
+        "bytes": 2941,
+        "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+      }
+    },
+    {
+      "binary_bytes_reopened": false,
+      "command": {
+        "bytes": 688,
+        "sha256": "69cb672dd5e851933d8a6c0d5fe9f157140197a4478f52a96e2810fbf81b0480"
+      },
+      "environment": {
+        "bytes": 2901,
+        "sha256": "0b0868d09ba0e2896baac4882195ba2595de2aed906d64fde77273b27063f060"
+      },
+      "name": "v5-race-stale",
+      "qemu_record": {
+        "bytes": 3293,
+        "sha256": "d7f2b603c82bde5362427386b129db2e7f600a7efd9232a094e89228ae2358aa"
+      },
+      "recorded_binary_identities_match_full_manifest": true,
+      "serial": {
+        "bytes": 72404,
+        "sha256": "d489d262948150e984892e3a2bea0d4f6b4e0113e47c18b6289914143140478f"
+      },
+      "source_gate": {
+        "bytes": 2941,
+        "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+      }
+    },
+    {
+      "binary_bytes_reopened": false,
+      "command": {
+        "bytes": 695,
+        "sha256": "49daaed0258d192fb45ff45e21366e2b568b1e755118548c9972555f134bf2f9"
+      },
+      "environment": {
+        "bytes": 2901,
+        "sha256": "7e81dc9f6b3697769789878ee29b7be5b6d26fa11f885224b2fc2e4a933cd540"
+      },
+      "name": "v5-aux-zero-progress",
+      "qemu_record": {
+        "bytes": 3335,
+        "sha256": "6a87de7b304f05620d021da7b78db64cd57f2422cd484f2f9b5f78945f742d5b"
+      },
+      "recorded_binary_identities_match_full_manifest": true,
+      "serial": {
+        "bytes": 72405,
+        "sha256": "65a9ae99c64feb0900c76caecae8d0fa948fef97bf404a9230aba523db175e06"
+      },
+      "source_gate": {
+        "bytes": 2941,
+        "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+      }
+    },
+    {
+      "binary_bytes_reopened": false,
+      "command": {
+        "bytes": 684,
+        "sha256": "674651aa7803eccf1469cf7dcdcf2f3580e75f8eea3b224d1bd63da2ba8dde85"
+      },
+      "environment": {
+        "bytes": 2901,
+        "sha256": "63f32d2ec8ae07f8c66f5f8ae0cf9247fb6978bb76946a0c0bac012056250012"
+      },
+      "name": "v2-positive-rejected",
+      "qemu_record": {
+        "bytes": 3249,
+        "sha256": "6fe07bc08466d29d9eaad4cc6b9d618b192b10229cad41458ce27f598f1150e7"
+      },
+      "recorded_binary_identities_match_full_manifest": true,
+      "serial": {
+        "bytes": 72404,
+        "sha256": "8023fec01134120467fa5f5b3f2793c56faf9aa1e5dc1048b341d4a3358cff8d"
+      },
+      "source_gate": {
+        "bytes": 2941,
+        "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+      }
+    },
+    {
+      "binary_bytes_reopened": false,
+      "command": {
+        "bytes": 688,
+        "sha256": "419672d957443e8debae8926a35bbe1454f4180c42fa011ac6e32be446c2d27f"
+      },
+      "environment": {
+        "bytes": 2901,
+        "sha256": "17afdc3473d6db10b44ecefb94bd5a7282d5063c14b8c69a220dfcf82e4591a4"
+      },
+      "name": "v3-race-fixed-historical",
+      "qemu_record": {
+        "bytes": 3294,
+        "sha256": "667f27dec5610421ca6bc1561dec115310b477aa46f9806edd355f473d0b6591"
+      },
+      "recorded_binary_identities_match_full_manifest": true,
+      "serial": {
+        "bytes": 72405,
+        "sha256": "229168fbe3d9c25df4b1233c8a30dbbb65f5c16c098daf96fd552fe0d2fc5e13"
+      },
+      "source_gate": {
+        "bytes": 2941,
+        "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+      }
+    },
+    {
+      "binary_bytes_reopened": false,
+      "command": {
+        "bytes": 688,
+        "sha256": "6173c5e072e328cac8aae6d05cf10a9010447aef9068defbefb9198b9e66486c"
+      },
+      "environment": {
+        "bytes": 2901,
+        "sha256": "fe1310ebc0b8db03bc61c784f912827007e78ae855199c8a81f9f7610ce29212"
+      },
+      "name": "v3-race-stale-rejected",
+      "qemu_record": {
+        "bytes": 3294,
+        "sha256": "e04d4c5db21655d85f733ec67c718591e7fdab32097935796919d80898f13f31"
+      },
+      "recorded_binary_identities_match_full_manifest": true,
+      "serial": {
+        "bytes": 72404,
+        "sha256": "4c1997d00843acd339c19e3edad55f971b9f66c8daf3b89678e336148d2cc984"
+      },
+      "source_gate": {
+        "bytes": 2941,
+        "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+      }
+    }
+  ],
+  "original_execution_binding": {
+    "actual_native_execution_rows": [
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "support/build/ktest/run.py",
+          "--crate",
+          "aster-core",
+          "--output",
+          "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/unix-stream-native-v5/core"
+        ],
+        "exit_code": 0,
+        "finish_ns": 1792682636687656763,
+        "log_sha256": "df7eff67ff4f2a3bc992c6a508825e8e3c1711db0518653e5f3c3911d741d39c",
+        "name": "core",
+        "source_unchanged": true,
+        "start_ns": 1792682543407839152
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "-B",
+          "tests/kernel/network/run_unix_stream_guest.py",
+          "--expected-source-head",
+          "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+          "--expected-source-tree",
+          "506d583455fa5ea2cf0c18fe10ed42c3874f7556",
+          "--target-dir",
+          "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/target-unix-stream-v5",
+          "--output",
+          "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/unix-stream-native-v5/positive",
+          "--timeout",
+          "90"
+        ],
+        "exit_code": 0,
+        "finish_ns": 1792682776387675797,
+        "log_sha256": "5d249b0a9102084f70bf129f12f0ed0ef6050e6e31018180b3642e1bc11f6e8f",
+        "name": "positive",
+        "source_unchanged": true,
+        "start_ns": 1792682636760291212
+      }
+    ],
+    "collection_record": {
+      "bytes": 793,
+      "sha256": "aa4fb58011fd2b6c86e6a5925b86974513dcf2ebd55c3bbff075b0d5ad2372ea"
+    },
+    "core_binary_bytes_reopened": false,
+    "core_commands": {
+      "bytes": 895,
+      "sha256": "fa3182fd65c135a80f00f897bbc7dbff012ed4362f90c79ddce73b8dea9a9324"
+    },
+    "core_environment": {
+      "bytes": 2420,
+      "sha256": "369e6a42554c00fbbd1179b1e9d0863e0805abebf97d4d3f8edd0354d38e6621"
+    },
+    "core_generated_lock": {
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    "core_kernel_sha256_recorded_by_original_qemu": "e3f0ec57cb54288a6c11ebb58bb0726ac2d18014c51dca596f368cba0114281a",
+    "original_control_job_id": "1a16438e362-1b6abb-3132",
+    "original_launch_records": {
+      "bytes": 12284,
+      "sha256": "d23795ca537728f9434fc5692145ea201f3cd697efad48fd988c570fd9a17a3d"
+    },
+    "original_native_job_id": "1a16434c267-1b6abb-312c",
+    "prepared": {
+      "bytes": 789,
+      "sha256": "759ce638b3ef2dc82cb070f3db50cfd8db90225e4159bd9ef9c2d18712d6286d"
+    },
+    "restoration_record": {
+      "bytes": 127,
+      "sha256": "a6140c06b16a1605d120f371c489f53bc16239a62c72d7e865ffdd85bbb11854"
+    },
+    "restored_positive": {
+      "branch": "agents/20261022/af-unix-stream-correctness",
+      "head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+      "restored": true
+    }
+  },
+  "original_host_compatibility_runs_counted_as_native": false,
+  "positive_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+  "positive_source_bytes": [
+    {
+      "archive_path": "sources/positive/kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+      "bytes": 9099,
+      "git_blob": "339bf5715a99b5b1f5d16fbb2eed176242cf357f",
+      "repository_path": "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+      "sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+      "bytes": 15117,
+      "git_blob": "126fc1d2b88d913d64d22b2cb620ed9e49edd04d",
+      "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+      "sha256": "a331c8596416d56127eccd7beaa232dcb25bec5763648d322f6be5d697a904d3",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+      "bytes": 21136,
+      "git_blob": "0f91d80157de1bfab7707a31d2770dc7b7e9c7a7",
+      "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+      "sha256": "3458b0b5a9023c26b396d73e61c13c69affcf98fe23c46fc4ca5793b75db1933",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/support/build/kernel.sh",
+      "bytes": 5866,
+      "git_blob": "caebd3c13516704713967dbdbb31c1d7c797751e",
+      "repository_path": "support/build/kernel.sh",
+      "sha256": "627ccc5a367ae6b8f585d3d7d50969160dd2f098b40608a6ac6be93d0fbc4ef0",
+      "tracked_mode": "100755"
+    },
+    {
+      "archive_path": "sources/positive/support/build/ktest/check-permission-smp.py",
+      "bytes": 10283,
+      "git_blob": "3da5d50e0d048e5af7b108803539509d4c0d3c2e",
+      "repository_path": "support/build/ktest/check-permission-smp.py",
+      "sha256": "f1a6f4f019af0d6adcb0d9004931efe797dd1febaf626bf6590f78068efc042a",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/support/build/ktest/check.py",
+      "bytes": 11180,
+      "git_blob": "a46094e8c540cf78af0fc49ab9b2080a0f05b240",
+      "repository_path": "support/build/ktest/check.py",
+      "sha256": "e80fc3fe31b689938b742b46efec461dadd07421b2039a9d247d6911f96bb314",
+      "tracked_mode": "100755"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/UNIX_STREAM_REGRESSION.md",
+      "bytes": 7469,
+      "git_blob": "166e967d608091e0ccc657e4b78eae11a8d167e0",
+      "repository_path": "tests/kernel/network/UNIX_STREAM_REGRESSION.md",
+      "sha256": "ee8d689ecb7b9b0d53a8c4eee37b8411f9533743984b2f46e9359c7cdb656bbc",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/aux-zero-progress.patch",
+      "bytes": 1919,
+      "git_blob": "0cb6f8296601b1fb3706f7b8f590101072ab40a2",
+      "repository_path": "tests/kernel/network/controls/aux-zero-progress.patch",
+      "sha256": "d9eb294d03b16df8bc8749f1927d87e2fe63a29399518d868a7c2ec03c5387e5",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/manifest.json",
+      "bytes": 2558,
+      "git_blob": "e7a799d3fb151a3953ce2c6af0c83a2a47bbdb3c",
+      "repository_path": "tests/kernel/network/controls/manifest.json",
+      "sha256": "e13376b03d1f3bd85aa9746bbf6b28bf99a1c8da4f8105d37d7a2dada2be844e",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/race-fixed.patch",
+      "bytes": 1253,
+      "git_blob": "46542ca2efacea2d8d0f25b5a04dbc9a7aa22463",
+      "repository_path": "tests/kernel/network/controls/race-fixed.patch",
+      "sha256": "d262cc32b91f9b1bbdb494db6048c8a6f8a67229b465260d23fc4ddbf44e9a2a",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/race-stale.patch",
+      "bytes": 1709,
+      "git_blob": "31f42dc23313699d00dfc8144e4a522f14d08d43",
+      "repository_path": "tests/kernel/network/controls/race-stale.patch",
+      "sha256": "3fadd31c117b5a2f4732a592e7261eccbef94b5652b171a48207551d20e3f544",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/run_unix_stream_guest.py",
+      "bytes": 13433,
+      "git_blob": "b111afd3c3eff10116f8bf4168cad2ada01ab33e",
+      "repository_path": "tests/kernel/network/run_unix_stream_guest.py",
+      "sha256": "81d84a3c3d2a476c7b1eb467f04254b1613a4b5b7f82066ab4b5c9e839d9f1c0",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/test_unix_stream_guest.py",
+      "bytes": 9757,
+      "git_blob": "b1afac12774b9cbcd18848df41bb15db5d29a04c",
+      "repository_path": "tests/kernel/network/test_unix_stream_guest.py",
+      "sha256": "6f5a12c15054d0405074ea138072c6d076ab4c277590809059934c5d8acdece3",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/unix_stream_oracle.py",
+      "bytes": 10428,
+      "git_blob": "91e261af6430b337bf30158bba43d97abbd12537",
+      "repository_path": "tests/kernel/network/unix_stream_oracle.py",
+      "sha256": "eefb0f272d2c396ea6fa87c0af827f795b115ca7607c6746abf80975fe544489",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/unix_stream_probe.c",
+      "bytes": 24390,
+      "git_blob": "a173c57480b6dbb3fcc2bff1137ed380a0fa100a",
+      "repository_path": "tests/kernel/network/unix_stream_probe.c",
+      "sha256": "bb7e334a76c4e201b3ef33842be7f87a235a6940d783c8c741d63839519ab747",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/unix_stream_protocol.json",
+      "bytes": 53252,
+      "git_blob": "4926440479f67d813ee5ce34832d2ea629cd1f20",
+      "repository_path": "tests/kernel/network/unix_stream_protocol.json",
+      "sha256": "6577cd26c72c80f370cd4a654463316bf7fa5227a33a0e9ff3ade0e05eb9e680",
+      "tracked_mode": "100644"
+    }
+  ],
+  "positive_tree": "506d583455fa5ea2cf0c18fe10ed42c3874f7556",
+  "primary_archive": {
+    "archive_members_verified": 210,
+    "bytes": 554740,
+    "original_files_verified": 209,
+    "sha256": "e5f8fc0d1d2be66798fe5c3974728b461dfc821148510925b0ddb4761f6fec9e"
+  },
+  "primary_manifest": {
+    "bytes": 40167,
+    "sha256": "584256beaac7c477ebbe4e144b7984ec5cd1fe48101bb3e4c308ae2a439579d1"
+  },
+  "qualified_scope": "preserved ordinary x86_64 TCG one-CPU AF_UNIX directed regression and exact controls",
+  "replay_script": {
+    "bytes": 35544,
+    "sha256": "1d3cf5c0d396ebb486c8e96f08d2c2ee1d328c75ca4e8bb8921956a867e94b46"
+  },
+  "runs": [
+    {
+      "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "elapsed_seconds": 1.443,
+      "kernel_sha256": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d",
+      "lock_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "name": "v5-positive",
+      "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "original_oracle_replay": {
+        "case_selection": "all",
+        "expected_probe_exit": 0,
+        "failed_iteration": null,
+        "native_execution_inferred_from_fixture": false,
+        "passed": true,
+        "probe_pid": 19,
+        "race_windows": 0,
+        "raw_serial_bytes": 21859,
+        "raw_serial_sha256": "5625eaa1960686c3b7da4033476490424118c6ef20992bf881989054481ab79e",
+        "record_count": 47,
+        "schema": "asterinas.unix-stream-oracle.v1",
+        "semantic_negative": false,
+        "variant": "positive"
+      },
+      "probe_sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e",
+      "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "result": {
+        "bytes": 4054,
+        "sha256": "ea13140637445b6e3851502367caf36d3b9ce53e3ceb050da7851557e07f2269"
+      },
+      "serial": {
+        "bytes": 21859,
+        "sha256": "5625eaa1960686c3b7da4033476490424118c6ef20992bf881989054481ab79e"
+      },
+      "source_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+      "source_tree": "506d583455fa5ea2cf0c18fe10ed42c3874f7556",
+      "witnesses": [
+        "UNIX_STREAM_HARNESS nonce=b381927354ef5cc7cb1d0b08a33aabff selection=all exit=0"
+      ]
+    },
+    {
+      "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "elapsed_seconds": 2.156,
+      "kernel_sha256": "b44c692c36cb332f40b4ecdaa234e2e05080fdf4dc24d496d9fe0b8163a46b50",
+      "lock_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "name": "v5-race-fixed",
+      "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "original_oracle_replay": {
+        "case_selection": "shutdown_race",
+        "expected_probe_exit": 0,
+        "failed_iteration": null,
+        "native_execution_inferred_from_fixture": false,
+        "passed": true,
+        "probe_pid": 19,
+        "race_windows": 64,
+        "raw_serial_bytes": 56808,
+        "raw_serial_sha256": "73ff289c172c11c000fd86192c42aea8a982c2467f40b03835c2ac809e70eb6d",
+        "record_count": 131,
+        "schema": "asterinas.unix-stream-oracle.v1",
+        "semantic_negative": false,
+        "variant": "race-fixed"
+      },
+      "probe_sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e",
+      "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "result": {
+        "bytes": 4097,
+        "sha256": "b52b9494c7c819741c522bfbe6fcab51690c244ab3fa3780b20c37df67b424f8"
+      },
+      "serial": {
+        "bytes": 56808,
+        "sha256": "73ff289c172c11c000fd86192c42aea8a982c2467f40b03835c2ac809e70eb6d"
+      },
+      "source_head": "d35d5b13be0ebae830bab1d546a7f8ac75dc892a",
+      "source_tree": "1d254fcfd61acbe9cba64c0f4c860f2187e6cc02",
+      "witnesses": [
+        "[     0.783] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.798] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.812] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.823] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.832] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.843] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.853] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.864] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.876] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.887] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.898] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.907] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.918] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.932] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.944] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.956] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.970] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.982] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.996] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.013] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.027] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.040] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.052] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.065] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.078] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.092] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.103] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.116] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.129] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.141] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.151] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.165] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.177] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.188] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.199] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.212] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.226] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.237] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.250] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.262] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.276] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.288] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.300] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.312] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.326] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.339] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.353] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.366] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.379] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.392] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.408] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.420] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.432] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.444] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.458] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.472] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.484] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.498] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.510] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.521] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.534] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.545] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.556] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.569] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "UNIX_STREAM_HARNESS nonce=257d1eb2a3c92213a3b9dfc0b5013b2b selection=shutdown_race exit=0"
+      ]
+    },
+    {
+      "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "elapsed_seconds": 1.385,
+      "kernel_sha256": "8cc2cab9efaae5d28cbd9bdaed7c4ac1d2a56fe8774f7d33bff56fee95ab3b43",
+      "lock_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "name": "v5-race-stale",
+      "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "original_oracle_replay": {
+        "case_selection": "shutdown_race",
+        "expected_probe_exit": 1,
+        "failed_iteration": 0,
+        "native_execution_inferred_from_fixture": false,
+        "passed": true,
+        "probe_pid": 19,
+        "race_windows": 1,
+        "raw_serial_bytes": 15450,
+        "raw_serial_sha256": "b0a50d18579bcdcf2146c75940a84f5fab590b57df1349372ece299fd22e9f4e",
+        "record_count": 5,
+        "schema": "asterinas.unix-stream-oracle.v1",
+        "semantic_negative": true,
+        "variant": "race-stale"
+      },
+      "probe_sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e",
+      "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "result": {
+        "bytes": 4090,
+        "sha256": "d179bb9c4f168922900b7ca03ff6a0e3c1c5012b05adc51ff33a3e840bd4b28a"
+      },
+      "serial": {
+        "bytes": 15450,
+        "sha256": "b0a50d18579bcdcf2146c75940a84f5fab590b57df1349372ece299fd22e9f4e"
+      },
+      "source_head": "b9df3b7cc3ff9cd28b3141a62c743ac817e59593",
+      "source_tree": "300db376d0dda63527f6ba54c75ebd680b9526da",
+      "witnesses": [
+        "[     0.751] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "UNIX_STREAM_V1 nonce=aa96fabac5a65a5d025c6a002f6f2128 event=case_fail case=shutdown_race seq=4 op=race_eof expected=96 observed=0 errno=0 queued_bytes=96 iteration=0 writer_bytes=96 shutdown_result=0 child_exit=0 first_non_eagain=0 eof_read=0",
+        "UNIX_STREAM_HARNESS nonce=aa96fabac5a65a5d025c6a002f6f2128 selection=shutdown_race exit=1"
+      ]
+    },
+    {
+      "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "elapsed_seconds": 1.318,
+      "kernel_sha256": "6bdccb7df65af499b47584f8533f067a6af77fe7f757ee5d967663362adba8dc",
+      "lock_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "name": "v5-aux-zero-progress",
+      "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "original_oracle_replay": {
+        "case_selection": "credential_only",
+        "expected_probe_exit": 1,
+        "failed_iteration": null,
+        "native_execution_inferred_from_fixture": false,
+        "passed": true,
+        "probe_pid": 19,
+        "race_windows": 0,
+        "raw_serial_bytes": 15376,
+        "raw_serial_sha256": "61343dee49246f05c09799bedec1a5ee2b7ee82a8ed3ddeb5bb490d1fe832825",
+        "record_count": 6,
+        "schema": "asterinas.unix-stream-oracle.v1",
+        "semantic_negative": true,
+        "variant": "aux-zero-progress"
+      },
+      "probe_sha256": "701821798ff6b052aa7e2b0dd0da238ef517adf0313ad9d50175f40ebecaa56e",
+      "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "result": {
+        "bytes": 4144,
+        "sha256": "cad946444f9736f438c59e6ef5e833fa3279571b128bc3264dce37698ad800c2"
+      },
+      "serial": {
+        "bytes": 15376,
+        "sha256": "61343dee49246f05c09799bedec1a5ee2b7ee82a8ed3ddeb5bb490d1fe832825"
+      },
+      "source_head": "5f25b73a7daaf03e2997107a88ab139a1ebe3a23",
+      "source_tree": "05f74c39ebdd51d534a03e8ccf0e56b4eebbe790",
+      "witnesses": [
+        "[     0.789] WARN  : UNIX_STREAM_AUX_ZERO_PROGRESS count=3 read_bytes=13 remaining=0",
+        "UNIX_STREAM_V1 nonce=e34f868097005b9ff5f7aec10efb9cd2 event=case_fail case=credential_only seq=5 op=recv_credential_only expected=13 observed=-1 errno=40",
+        "UNIX_STREAM_HARNESS nonce=e34f868097005b9ff5f7aec10efb9cd2 selection=credential_only exit=1"
+      ]
+    },
+    {
+      "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "elapsed_seconds": 21.414,
+      "kernel_sha256": "92427aafe79a7360036b1fcdac7b6f3ec0625ddd53dbf70523009be40e33a1d9",
+      "lock_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "name": "v2-positive-rejected",
+      "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "original_oracle_replay": {
+        "error": "independent probe exit or identity mismatch",
+        "native_execution_inferred_from_fixture": false,
+        "passed": false,
+        "raw_serial_bytes": 14603,
+        "raw_serial_sha256": "c74cf5385392a7b903cdc0ea656540a7fbabb428c039c2f987f3bbbe92d89eba",
+        "schema": "asterinas.unix-stream-oracle.v1"
+      },
+      "probe_sha256": "052f016f9e8b8fbe60707b771d987a2e123df45ba1e9249797b7382fde11fe54",
+      "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "result": {
+        "bytes": 3760,
+        "sha256": "c1371c184e5da9e3b3ce7eea2fc0f9e899d3ad8df30961dd620e3266b77aa95b"
+      },
+      "serial": {
+        "bytes": 14603,
+        "sha256": "c74cf5385392a7b903cdc0ea656540a7fbabb428c039c2f987f3bbbe92d89eba"
+      },
+      "source_head": "a2779f07740c3acec9b14d4f1154960d92c3f67e",
+      "source_tree": "ae7d900f88876a4e345dbd03963cd2aa2f50c793",
+      "witnesses": [
+        "UNIX_STREAM_HARNESS nonce=f945d1a55fbe0c44c46ff90dcfe61f94 selection=all exit=124"
+      ]
+    },
+    {
+      "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "elapsed_seconds": 2.27,
+      "kernel_sha256": "34241b87da5c36c912004ea012b66a52e4e981fcd136b146763a2d967a2366e6",
+      "lock_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "name": "v3-race-fixed-historical",
+      "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "original_oracle_replay": {
+        "case_selection": "shutdown_race",
+        "expected_probe_exit": 0,
+        "failed_iteration": null,
+        "native_execution_inferred_from_fixture": false,
+        "passed": true,
+        "probe_pid": 19,
+        "race_windows": 64,
+        "raw_serial_bytes": 56808,
+        "raw_serial_sha256": "72bff44007a43c08cb44d098cf253fdb9ee550b6847b89202d8d175f0f75cefe",
+        "record_count": 131,
+        "schema": "asterinas.unix-stream-oracle.v1",
+        "semantic_negative": false,
+        "variant": "race-fixed"
+      },
+      "probe_sha256": "052f016f9e8b8fbe60707b771d987a2e123df45ba1e9249797b7382fde11fe54",
+      "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "result": {
+        "bytes": 4096,
+        "sha256": "bc71ff03e185f23fa466a24341b302cf26f4a84a0dca49ff598c43fa2bf474dc"
+      },
+      "serial": {
+        "bytes": 56808,
+        "sha256": "72bff44007a43c08cb44d098cf253fdb9ee550b6847b89202d8d175f0f75cefe"
+      },
+      "source_head": "598b40766c1d62cd3ad275fd72b524f72e8c8f46",
+      "source_tree": "bd0730532c1f3fd7ad12bb6031a7459e4dbe7ea3",
+      "witnesses": [
+        "[     0.883] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.902] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.915] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.927] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.940] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.952] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.964] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.976] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     0.989] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.003] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.015] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.028] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.043] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.058] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.070] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.082] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.094] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.103] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.117] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.129] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.140] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.152] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.164] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.176] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.188] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.202] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.214] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.226] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.240] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.252] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.265] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.278] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.292] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.304] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.319] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.334] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.348] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.362] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.374] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.387] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.398] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.409] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.424] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.436] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.448] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.461] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.477] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.489] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.503] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.517] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.531] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.544] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.556] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.568] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.580] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.594] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.608] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.622] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.634] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.648] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.662] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.676] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.690] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "[     1.702] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "UNIX_STREAM_HARNESS nonce=d7c4ada382884d2ad02d1dbad2939c62 selection=shutdown_race exit=0"
+      ]
+    },
+    {
+      "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "elapsed_seconds": 1.453,
+      "kernel_sha256": "39bcfc5c0f16a08aa7fb5c1faa81c79710f007b50d9c47a814cbd6cb57ab4382",
+      "lock_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "name": "v3-race-stale-rejected",
+      "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "original_oracle_replay": {
+        "error": "noncanonical failed iteration",
+        "native_execution_inferred_from_fixture": false,
+        "passed": false,
+        "raw_serial_bytes": 15351,
+        "raw_serial_sha256": "05ce562312d003b90c8bc51575ffe0b25cd927c94f5f5dd9d01f3a7fd86f1243",
+        "schema": "asterinas.unix-stream-oracle.v1"
+      },
+      "probe_sha256": "052f016f9e8b8fbe60707b771d987a2e123df45ba1e9249797b7382fde11fe54",
+      "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "result": {
+        "bytes": 3915,
+        "sha256": "dd34ef833487e0ecea3d7315d79766747ce63456a7d77b56af9ccaef44eee1ce"
+      },
+      "serial": {
+        "bytes": 15351,
+        "sha256": "05ce562312d003b90c8bc51575ffe0b25cd927c94f5f5dd9d01f3a7fd86f1243"
+      },
+      "source_head": "7b5166c03d9f2c82465fc259d8e22f5b121a61ae",
+      "source_tree": "082883903755ead65aea2039d1055551b637f78f",
+      "witnesses": [
+        "[     0.901] WARN  : UNIX_STREAM_RACE_WINDOW old_len=0 queued=96 shutdown=1",
+        "UNIX_STREAM_V1 nonce=185871d1c5215948d5f09fef4009ed78 event=case_fail case=shutdown_race seq=4 op=race_fionread expected=0 observed=-1 errno=25",
+        "UNIX_STREAM_HARNESS nonce=185871d1c5215948d5f09fef4009ed78 selection=shutdown_race exit=1"
+      ]
+    }
+  ],
+  "schema": "asterinas.unix-stream-independent-review.v1",
+  "scope_not_qualified": [
+    "original Agentd graceful shutdown",
+    "HOS2/G2 native authority effects",
+    "persistent Hepta recovery",
+    "full E isolation or memory.max",
+    "combined cross-branch release",
+    "SMP",
+    "hardware or phone"
+  ],
+  "source_snapshots": [
+    {
+      "contents_reopened": true,
+      "files": [
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-native-v5/positive/source-before.json",
+          "sha256": "e18a7db62cc1ab3cce978565093e227ddc1f12cb43c44a34c7633e01609dd7a9"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-native-v5/positive/source-after-boot.json",
+          "sha256": "e18a7db62cc1ab3cce978565093e227ddc1f12cb43c44a34c7633e01609dd7a9"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-native-v5/positive/source-after-guest.json",
+          "sha256": "e18a7db62cc1ab3cce978565093e227ddc1f12cb43c44a34c7633e01609dd7a9"
+        }
+      ],
+      "git_tree_recomputed_from_all_entries": "506d583455fa5ea2cf0c18fe10ed42c3874f7556",
+      "name": "v5-positive",
+      "tracked_files": 7716
+    },
+    {
+      "contents_reopened": true,
+      "files": [
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/race-fixed/source-before.json",
+          "sha256": "2558ac1ad71b23daa16bbf2e8e3d32b603dfc0edd60d17aec40206d96c21e3d4"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/race-fixed/source-after-boot.json",
+          "sha256": "2558ac1ad71b23daa16bbf2e8e3d32b603dfc0edd60d17aec40206d96c21e3d4"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/race-fixed/source-after-guest.json",
+          "sha256": "2558ac1ad71b23daa16bbf2e8e3d32b603dfc0edd60d17aec40206d96c21e3d4"
+        }
+      ],
+      "git_tree_recomputed_from_all_entries": "1d254fcfd61acbe9cba64c0f4c860f2187e6cc02",
+      "name": "v5-race-fixed",
+      "tracked_files": 7716
+    },
+    {
+      "contents_reopened": true,
+      "files": [
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/race-stale/source-before.json",
+          "sha256": "a2b9847c1da087b37a3ffaed59275abca6f76a366af11fd7b223df87f5ffa199"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/race-stale/source-after-boot.json",
+          "sha256": "a2b9847c1da087b37a3ffaed59275abca6f76a366af11fd7b223df87f5ffa199"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/race-stale/source-after-guest.json",
+          "sha256": "a2b9847c1da087b37a3ffaed59275abca6f76a366af11fd7b223df87f5ffa199"
+        }
+      ],
+      "git_tree_recomputed_from_all_entries": "300db376d0dda63527f6ba54c75ebd680b9526da",
+      "name": "v5-race-stale",
+      "tracked_files": 7716
+    },
+    {
+      "contents_reopened": true,
+      "files": [
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/aux-zero-progress/source-before.json",
+          "sha256": "fc1eeca0f72b91c9164f53cb716becf3acc29ceb799ec79e62817c7fd199432e"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/aux-zero-progress/source-after-boot.json",
+          "sha256": "fc1eeca0f72b91c9164f53cb716becf3acc29ceb799ec79e62817c7fd199432e"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v5/aux-zero-progress/source-after-guest.json",
+          "sha256": "fc1eeca0f72b91c9164f53cb716becf3acc29ceb799ec79e62817c7fd199432e"
+        }
+      ],
+      "git_tree_recomputed_from_all_entries": "05f74c39ebdd51d534a03e8ccf0e56b4eebbe790",
+      "name": "v5-aux-zero-progress",
+      "tracked_files": 7716
+    },
+    {
+      "contents_reopened": true,
+      "files": [
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-native-v2/positive/source-before.json",
+          "sha256": "2fa030cc1fb71e9d6eb5f5b1b6c49825631a91e95ae9d5e778f5c4c2bc11e88a"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-native-v2/positive/source-after-boot.json",
+          "sha256": "2fa030cc1fb71e9d6eb5f5b1b6c49825631a91e95ae9d5e778f5c4c2bc11e88a"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-native-v2/positive/source-after-guest.json",
+          "sha256": "2fa030cc1fb71e9d6eb5f5b1b6c49825631a91e95ae9d5e778f5c4c2bc11e88a"
+        }
+      ],
+      "git_tree_recomputed_from_all_entries": "ae7d900f88876a4e345dbd03963cd2aa2f50c793",
+      "name": "v2-positive-rejected",
+      "tracked_files": 7716
+    },
+    {
+      "contents_reopened": true,
+      "files": [
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v3/race-fixed/source-before.json",
+          "sha256": "735c2e70f4e28d1ab5a6bd30db07195b076969991590d439c2e48f245ada08f6"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v3/race-fixed/source-after-boot.json",
+          "sha256": "735c2e70f4e28d1ab5a6bd30db07195b076969991590d439c2e48f245ada08f6"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v3/race-fixed/source-after-guest.json",
+          "sha256": "735c2e70f4e28d1ab5a6bd30db07195b076969991590d439c2e48f245ada08f6"
+        }
+      ],
+      "git_tree_recomputed_from_all_entries": "bd0730532c1f3fd7ad12bb6031a7459e4dbe7ea3",
+      "name": "v3-race-fixed-historical",
+      "tracked_files": 7716
+    },
+    {
+      "contents_reopened": true,
+      "files": [
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v3/race-stale/source-before.json",
+          "sha256": "41b185cefac920cc3eec912843b971f4b470009923259818517be85ab44a98ab"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v3/race-stale/source-after-boot.json",
+          "sha256": "41b185cefac920cc3eec912843b971f4b470009923259818517be85ab44a98ab"
+        },
+        {
+          "bytes": 2160602,
+          "path": "unix-stream-controls-v3/race-stale/source-after-guest.json",
+          "sha256": "41b185cefac920cc3eec912843b971f4b470009923259818517be85ab44a98ab"
+        }
+      ],
+      "git_tree_recomputed_from_all_entries": "082883903755ead65aea2039d1055551b637f78f",
+      "name": "v3-race-stale-rejected",
+      "tracked_files": 7716
+    }
+  ]
+}

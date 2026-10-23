@@ -1,0 +1,154 @@
+{
+  "archive": {
+    "bytes": 554740,
+    "path": "af-primary-evidence-v1.tar.xz",
+    "sha256": "e5f8fc0d1d2be66798fe5c3974728b461dfc821148510925b0ddb4761f6fec9e"
+  },
+  "core": {
+    "checker": "sources/positive/support/build/ktest/check.py",
+    "guest": "unix-stream-native-v5/core/aster-core/guests/guest-001",
+    "result": "unix-stream-native-v5/core/result.json"
+  },
+  "oracle": "sources/positive/tests/kernel/network/unix_stream_oracle.py",
+  "positive_sources": {
+    "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs": "sources/positive/kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs": "sources/positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs": "sources/positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+    "support/build/kernel.sh": "sources/positive/support/build/kernel.sh",
+    "support/build/ktest/check-permission-smp.py": "sources/positive/support/build/ktest/check-permission-smp.py",
+    "support/build/ktest/check.py": "sources/positive/support/build/ktest/check.py",
+    "tests/kernel/network/UNIX_STREAM_REGRESSION.md": "sources/positive/tests/kernel/network/UNIX_STREAM_REGRESSION.md",
+    "tests/kernel/network/controls/aux-zero-progress.patch": "sources/positive/tests/kernel/network/controls/aux-zero-progress.patch",
+    "tests/kernel/network/controls/manifest.json": "sources/positive/tests/kernel/network/controls/manifest.json",
+    "tests/kernel/network/controls/race-fixed.patch": "sources/positive/tests/kernel/network/controls/race-fixed.patch",
+    "tests/kernel/network/controls/race-stale.patch": "sources/positive/tests/kernel/network/controls/race-stale.patch",
+    "tests/kernel/network/run_unix_stream_guest.py": "sources/positive/tests/kernel/network/run_unix_stream_guest.py",
+    "tests/kernel/network/test_unix_stream_guest.py": "sources/positive/tests/kernel/network/test_unix_stream_guest.py",
+    "tests/kernel/network/unix_stream_oracle.py": "sources/positive/tests/kernel/network/unix_stream_oracle.py",
+    "tests/kernel/network/unix_stream_probe.c": "sources/positive/tests/kernel/network/unix_stream_probe.c",
+    "tests/kernel/network/unix_stream_protocol.json": "sources/positive/tests/kernel/network/unix_stream_protocol.json"
+  },
+  "preparation_only": false,
+  "runs": [
+    {
+      "current_qualification": true,
+      "directory": "unix-stream-native-v5/positive",
+      "expected_oracle_passed": true,
+      "name": "v5-positive",
+      "result": "unix-stream-native-v5/positive/result.json",
+      "selection": "all",
+      "serial": "unix-stream-native-v5/positive/serial.log",
+      "snapshots": [
+        "unix-stream-native-v5/positive/source-before.json",
+        "unix-stream-native-v5/positive/source-after-boot.json",
+        "unix-stream-native-v5/positive/source-after-guest.json"
+      ],
+      "source_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+      "source_tree": "506d583455fa5ea2cf0c18fe10ed42c3874f7556",
+      "variant": "positive"
+    },
+    {
+      "current_qualification": true,
+      "directory": "unix-stream-controls-v5/race-fixed",
+      "expected_oracle_passed": true,
+      "name": "v5-race-fixed",
+      "result": "unix-stream-controls-v5/race-fixed/result.json",
+      "selection": "shutdown_race",
+      "serial": "unix-stream-controls-v5/race-fixed/serial.log",
+      "snapshots": [
+        "unix-stream-controls-v5/race-fixed/source-before.json",
+        "unix-stream-controls-v5/race-fixed/source-after-boot.json",
+        "unix-stream-controls-v5/race-fixed/source-after-guest.json"
+      ],
+      "source_head": "d35d5b13be0ebae830bab1d546a7f8ac75dc892a",
+      "source_tree": "1d254fcfd61acbe9cba64c0f4c860f2187e6cc02",
+      "variant": "race-fixed"
+    },
+    {
+      "current_qualification": true,
+      "directory": "unix-stream-controls-v5/race-stale",
+      "expected_oracle_passed": true,
+      "name": "v5-race-stale",
+      "result": "unix-stream-controls-v5/race-stale/result.json",
+      "selection": "shutdown_race",
+      "serial": "unix-stream-controls-v5/race-stale/serial.log",
+      "snapshots": [
+        "unix-stream-controls-v5/race-stale/source-before.json",
+        "unix-stream-controls-v5/race-stale/source-after-boot.json",
+        "unix-stream-controls-v5/race-stale/source-after-guest.json"
+      ],
+      "source_head": "b9df3b7cc3ff9cd28b3141a62c743ac817e59593",
+      "source_tree": "300db376d0dda63527f6ba54c75ebd680b9526da",
+      "variant": "race-stale"
+    },
+    {
+      "current_qualification": true,
+      "directory": "unix-stream-controls-v5/aux-zero-progress",
+      "expected_oracle_passed": true,
+      "name": "v5-aux-zero-progress",
+      "result": "unix-stream-controls-v5/aux-zero-progress/result.json",
+      "selection": "credential_only",
+      "serial": "unix-stream-controls-v5/aux-zero-progress/serial.log",
+      "snapshots": [
+        "unix-stream-controls-v5/aux-zero-progress/source-before.json",
+        "unix-stream-controls-v5/aux-zero-progress/source-after-boot.json",
+        "unix-stream-controls-v5/aux-zero-progress/source-after-guest.json"
+      ],
+      "source_head": "5f25b73a7daaf03e2997107a88ab139a1ebe3a23",
+      "source_tree": "05f74c39ebdd51d534a03e8ccf0e56b4eebbe790",
+      "variant": "aux-zero-progress"
+    },
+    {
+      "current_qualification": false,
+      "directory": "unix-stream-native-v2/positive",
+      "expected_oracle_passed": false,
+      "name": "v2-positive-rejected",
+      "result": "unix-stream-native-v2/positive/result.json",
+      "selection": "all",
+      "serial": "unix-stream-native-v2/positive/serial.log",
+      "snapshots": [
+        "unix-stream-native-v2/positive/source-before.json",
+        "unix-stream-native-v2/positive/source-after-boot.json",
+        "unix-stream-native-v2/positive/source-after-guest.json"
+      ],
+      "source_head": "a2779f07740c3acec9b14d4f1154960d92c3f67e",
+      "source_tree": "ae7d900f88876a4e345dbd03963cd2aa2f50c793",
+      "variant": "positive"
+    },
+    {
+      "current_qualification": false,
+      "directory": "unix-stream-controls-v3/race-fixed",
+      "expected_oracle_passed": true,
+      "name": "v3-race-fixed-historical",
+      "result": "unix-stream-controls-v3/race-fixed/result.json",
+      "selection": "shutdown_race",
+      "serial": "unix-stream-controls-v3/race-fixed/serial.log",
+      "snapshots": [
+        "unix-stream-controls-v3/race-fixed/source-before.json",
+        "unix-stream-controls-v3/race-fixed/source-after-boot.json",
+        "unix-stream-controls-v3/race-fixed/source-after-guest.json"
+      ],
+      "source_head": "598b40766c1d62cd3ad275fd72b524f72e8c8f46",
+      "source_tree": "bd0730532c1f3fd7ad12bb6031a7459e4dbe7ea3",
+      "variant": "race-fixed"
+    },
+    {
+      "current_qualification": false,
+      "directory": "unix-stream-controls-v3/race-stale",
+      "expected_oracle_passed": false,
+      "name": "v3-race-stale-rejected",
+      "result": "unix-stream-controls-v3/race-stale/result.json",
+      "selection": "shutdown_race",
+      "serial": "unix-stream-controls-v3/race-stale/serial.log",
+      "snapshots": [
+        "unix-stream-controls-v3/race-stale/source-before.json",
+        "unix-stream-controls-v3/race-stale/source-after-boot.json",
+        "unix-stream-controls-v3/race-stale/source-after-guest.json"
+      ],
+      "source_head": "7b5166c03d9f2c82465fc259d8e22f5b121a61ae",
+      "source_tree": "082883903755ead65aea2039d1055551b637f78f",
+      "variant": "race-stale"
+    }
+  ],
+  "schema": "asterinas.unix-stream-evidence-index.v1"
+}

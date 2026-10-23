@@ -1,0 +1,148 @@
+{
+  "documentation_preimages": {
+    "docs/STATUS.md": {
+      "bytes": 196667,
+      "git_blob": "fec0fae91d4453f79f6275c2a335894a628a051e",
+      "sha256": "3146fab483df725c5a54b7c5ab715c4421610f645088a7cfe40a3cbbb37add9d"
+    },
+    "tests/kernel/network/UNIX_STREAM_REGRESSION.md": {
+      "bytes": 7469,
+      "git_blob": "166e967d608091e0ccc657e4b78eae11a8d167e0",
+      "sha256": "ee8d689ecb7b9b0d53a8c4eee37b8411f9533743984b2f46e9359c7cdb656bbc"
+    }
+  },
+  "implementation_and_original_assertions_changed_by_this_packet": false,
+  "schema": "asterinas.unix-stream-doc-preimages.v1",
+  "source_bytes_reviewed": [
+    {
+      "archive_path": "sources/positive/kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+      "bytes": 9099,
+      "git_blob": "339bf5715a99b5b1f5d16fbb2eed176242cf357f",
+      "repository_path": "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs",
+      "sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+      "bytes": 15117,
+      "git_blob": "126fc1d2b88d913d64d22b2cb620ed9e49edd04d",
+      "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+      "sha256": "a331c8596416d56127eccd7beaa232dcb25bec5763648d322f6be5d697a904d3",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+      "bytes": 21136,
+      "git_blob": "0f91d80157de1bfab7707a31d2770dc7b7e9c7a7",
+      "repository_path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
+      "sha256": "3458b0b5a9023c26b396d73e61c13c69affcf98fe23c46fc4ca5793b75db1933",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/support/build/kernel.sh",
+      "bytes": 5866,
+      "git_blob": "caebd3c13516704713967dbdbb31c1d7c797751e",
+      "repository_path": "support/build/kernel.sh",
+      "sha256": "627ccc5a367ae6b8f585d3d7d50969160dd2f098b40608a6ac6be93d0fbc4ef0",
+      "tracked_mode": "100755"
+    },
+    {
+      "archive_path": "sources/positive/support/build/ktest/check-permission-smp.py",
+      "bytes": 10283,
+      "git_blob": "3da5d50e0d048e5af7b108803539509d4c0d3c2e",
+      "repository_path": "support/build/ktest/check-permission-smp.py",
+      "sha256": "f1a6f4f019af0d6adcb0d9004931efe797dd1febaf626bf6590f78068efc042a",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/support/build/ktest/check.py",
+      "bytes": 11180,
+      "git_blob": "a46094e8c540cf78af0fc49ab9b2080a0f05b240",
+      "repository_path": "support/build/ktest/check.py",
+      "sha256": "e80fc3fe31b689938b742b46efec461dadd07421b2039a9d247d6911f96bb314",
+      "tracked_mode": "100755"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/UNIX_STREAM_REGRESSION.md",
+      "bytes": 7469,
+      "git_blob": "166e967d608091e0ccc657e4b78eae11a8d167e0",
+      "repository_path": "tests/kernel/network/UNIX_STREAM_REGRESSION.md",
+      "sha256": "ee8d689ecb7b9b0d53a8c4eee37b8411f9533743984b2f46e9359c7cdb656bbc",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/aux-zero-progress.patch",
+      "bytes": 1919,
+      "git_blob": "0cb6f8296601b1fb3706f7b8f590101072ab40a2",
+      "repository_path": "tests/kernel/network/controls/aux-zero-progress.patch",
+      "sha256": "d9eb294d03b16df8bc8749f1927d87e2fe63a29399518d868a7c2ec03c5387e5",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/manifest.json",
+      "bytes": 2558,
+      "git_blob": "e7a799d3fb151a3953ce2c6af0c83a2a47bbdb3c",
+      "repository_path": "tests/kernel/network/controls/manifest.json",
+      "sha256": "e13376b03d1f3bd85aa9746bbf6b28bf99a1c8da4f8105d37d7a2dada2be844e",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/race-fixed.patch",
+      "bytes": 1253,
+      "git_blob": "46542ca2efacea2d8d0f25b5a04dbc9a7aa22463",
+      "repository_path": "tests/kernel/network/controls/race-fixed.patch",
+      "sha256": "d262cc32b91f9b1bbdb494db6048c8a6f8a67229b465260d23fc4ddbf44e9a2a",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/controls/race-stale.patch",
+      "bytes": 1709,
+      "git_blob": "31f42dc23313699d00dfc8144e4a522f14d08d43",
+      "repository_path": "tests/kernel/network/controls/race-stale.patch",
+      "sha256": "3fadd31c117b5a2f4732a592e7261eccbef94b5652b171a48207551d20e3f544",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/run_unix_stream_guest.py",
+      "bytes": 13433,
+      "git_blob": "b111afd3c3eff10116f8bf4168cad2ada01ab33e",
+      "repository_path": "tests/kernel/network/run_unix_stream_guest.py",
+      "sha256": "81d84a3c3d2a476c7b1eb467f04254b1613a4b5b7f82066ab4b5c9e839d9f1c0",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/test_unix_stream_guest.py",
+      "bytes": 9757,
+      "git_blob": "b1afac12774b9cbcd18848df41bb15db5d29a04c",
+      "repository_path": "tests/kernel/network/test_unix_stream_guest.py",
+      "sha256": "6f5a12c15054d0405074ea138072c6d076ab4c277590809059934c5d8acdece3",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/unix_stream_oracle.py",
+      "bytes": 10428,
+      "git_blob": "91e261af6430b337bf30158bba43d97abbd12537",
+      "repository_path": "tests/kernel/network/unix_stream_oracle.py",
+      "sha256": "eefb0f272d2c396ea6fa87c0af827f795b115ca7607c6746abf80975fe544489",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/unix_stream_probe.c",
+      "bytes": 24390,
+      "git_blob": "a173c57480b6dbb3fcc2bff1137ed380a0fa100a",
+      "repository_path": "tests/kernel/network/unix_stream_probe.c",
+      "sha256": "bb7e334a76c4e201b3ef33842be7f87a235a6940d783c8c741d63839519ab747",
+      "tracked_mode": "100644"
+    },
+    {
+      "archive_path": "sources/positive/tests/kernel/network/unix_stream_protocol.json",
+      "bytes": 53252,
+      "git_blob": "4926440479f67d813ee5ce34832d2ea629cd1f20",
+      "repository_path": "tests/kernel/network/unix_stream_protocol.json",
+      "sha256": "6577cd26c72c80f370cd4a654463316bf7fa5227a33a0e9ff3ade0e05eb9e680",
+      "tracked_mode": "100644"
+    }
+  ],
+  "tested_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+  "tested_tree": "506d583455fa5ea2cf0c18fe10ed42c3874f7556"
+}
