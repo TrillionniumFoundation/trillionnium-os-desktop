@@ -70,4 +70,27 @@ The original reserve exhaustion tests exercise the shared pending-node transacti
 at every missing-level cut. They do not qualify ordinary physical exhaustion.
 No global OOM scenario, kernel panic or global allocation-failure flag is added.
 Normal small ordinary page-table `NoMemory` under physical pressure remains an
-explicit unqualified case. Native qualification of this new source is pending.
+explicit unqualified case. The exact qualified source and limits are recorded below.
+
+## Source-bound native qualification
+
+The complete source `d5a21bb7e70a22cd022f4275ba2d22a6b726d233` (tree
+`799487b33846203ee7b79680adbf6c2f69476024`) passed the original unfiltered
+OSTD 230, allocator 20, core 347 (108 required names), and MLSDisk 15 suites.
+All four guests exited with the original raw status 33. OSTD retains its three
+original TCG VMX soft skips; the other suites have no skips. The source-matched
+ordinary kernel then passed its 18 boot/QueryAbi checks, SGID 30, Unix ownership
+12, and proc Groups/NoNewPrivs 12 on the same retained ELF. No guest memory,
+time limit, inventory, negative assertion or authority boundary was relaxed.
+
+The earlier `689c0131` source passed OSTD 230 and allocator 20 but core 346/347
+exited 65: its COW fixture omitted the original heap initialization required by
+`Vmar::fork_from`. Its failed ELF, serial, source identity and receipts remain
+retained. `d5a21bb7` initializes that real fixture using the existing
+`ProcessVm::map_and_init_heap` before fork; it changes no production behavior or
+test assertion. Both failure and final result hashes are linked in the
+[qualification receipt](../../results/integration/2026-10-23-audit-closure/vmar-fault-d5a21.json).
+
+The actual zero-account rejection and original allocating-cursor comparison
+qualify the admission ordering. They do not prove small physical page-table
+allocation failure under memory pressure, nor whole-kernel OOM recovery.
