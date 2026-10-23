@@ -112,12 +112,23 @@ impl MessageQueue {
         if len > UNIX_DATAGRAM_DEFAULT_BUF_SIZE {
             return_errno_with_message!(Errno::EMSGSIZE, "the message is too large");
         }
+        if inner.messages.len() >= UNIX_DATAGRAM_MAX_QUEUED_MESSAGES {
+            return_errno_with_message!(Errno::EAGAIN, "the receive queue has no message slots");
+        }
         if UNIX_DATAGRAM_DEFAULT_BUF_SIZE - inner.total_length < len {
             return_errno_with_message!(
                 Errno::EAGAIN,
                 "the receive buffer does not have enough space"
             );
         }
+
+        // Queue metadata is still ordinary heap memory. Bound its cardinality
+        // and make this allocation fail before the user reader/auxiliary owner
+        // is consumed; it is not charged as fictitious physical payload pages.
+        inner
+            .messages
+            .try_reserve(1)
+            .map_err(|_| Error::new(Errno::ENOMEM))?;
 
         let msg = {
             let bytes = MessagePayload::copy_from(reader, len)?;
@@ -341,6 +352,12 @@ impl QueueTable {
 }
 
 pub(in crate::net) const UNIX_DATAGRAM_DEFAULT_BUF_SIZE: usize = 65536;
+
+// Independent of payload bytes: even an empty datagram owns a queue entry and
+// may retain ancillary objects. The existing blocking sender path treats this
+// finite slot limit as ordinary receive-queue backpressure, including for a
+// connected socket pair. This is an explicit local bound, not Linux sysctl parity.
+const UNIX_DATAGRAM_MAX_QUEUED_MESSAGES: usize = 128;
 
 #[cfg(ktest)]
 mod tests;

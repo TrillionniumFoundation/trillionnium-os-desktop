@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 321  # Retained 316 plus five original datagram-frame regressions.
+MINIMUM_CORE_TESTS = 324  # Retained 321 plus three original queue-bound regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -128,6 +128,9 @@ BOOT_ID_CORE_TESTS = (
     "aster_core::fs::fs_impls::procfs::sys::kernel::random::tests::proc_boot_id_rejects_mutation",
 )
 DATAGRAM_FRAME_CORE_TESTS = tuple("aster_core::net::socket::unix::datagram::message::tests::" + suffix for suffix in (
+    'empty_message_slots_are_bounded_and_only_consumption_reopens_capacity',
+    'message_slot_backpressure_precedes_new_payload_charge_and_reader_consumption',
+    'blocked_empty_sender_retries_after_consume_and_returns_refused_after_close',
     'payload_peek_truncation_and_alias_keep_original_physical_charge',
     'ancestor_quota_denial_does_not_consume_reader_or_publish_datagram',
     'actual_user_copy_fault_refunds_unpublished_pages_and_preserves_receive',

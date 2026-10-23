@@ -253,3 +253,150 @@ fn empty_payload_and_original_byte_capacity_preserve_datagram_boundaries() {
         assert_eq!(observed.current_pages(), 0);
     });
 }
+
+#[ktest]
+fn empty_message_slots_are_bounded_and_only_consumption_reopens_capacity() {
+    let owner = UserMemoryAccount::new(0);
+    with_sender(owner, move |_| {
+        let (source, target) = (MessageReceiver::new(), MessageReceiver::new());
+        for _ in 0..UNIX_DATAGRAM_MAX_QUEUED_MESSAGES {
+            send(&target, &source, &[]).unwrap();
+        }
+        assert_eq!(target.queue.inner.lock().as_ref().unwrap().total_length, 0);
+        assert_eq!(
+            target.queue.inner.lock().as_ref().unwrap().messages.len(),
+            UNIX_DATAGRAM_MAX_QUEUED_MESSAGES
+        );
+        assert_eq!(
+            send(&target, &source, &[]).unwrap_err().error(),
+            Errno::EAGAIN
+        );
+        let mut output = [];
+        target
+            .try_recv(
+                &mut VmWriter::from(&mut output[..]).to_fallible(),
+                RecvFlags::MSG_PEEK,
+            )
+            .unwrap();
+        assert_eq!(
+            send(&target, &source, &[]).unwrap_err().error(),
+            Errno::EAGAIN
+        );
+        target
+            .try_recv(
+                &mut VmWriter::from(&mut output[..]).to_fallible(),
+                RecvFlags::empty(),
+            )
+            .unwrap();
+        send(&target, &source, &[]).unwrap();
+        assert_eq!(
+            target.queue.inner.lock().as_ref().unwrap().messages.len(),
+            UNIX_DATAGRAM_MAX_QUEUED_MESSAGES
+        );
+    });
+}
+
+#[ktest]
+fn message_slot_backpressure_precedes_new_payload_charge_and_reader_consumption() {
+    let owner = UserMemoryAccount::new(usize::MAX);
+    let domain = hierarchy::test_leaf(UNIX_DATAGRAM_MAX_QUEUED_MESSAGES + 1);
+    owner.move_to(domain.clone(), &CgroupMembership::write_lock());
+    let observed = owner.clone();
+    with_sender(owner, move |_| {
+        let (source, target) = (MessageReceiver::new(), MessageReceiver::new());
+        for _ in 0..UNIX_DATAGRAM_MAX_QUEUED_MESSAGES {
+            send(&target, &source, &[1]).unwrap();
+        }
+        assert_eq!(observed.current_pages(), UNIX_DATAGRAM_MAX_QUEUED_MESSAGES);
+        assert_eq!(
+            target.queue.inner.lock().as_ref().unwrap().total_length,
+            UNIX_DATAGRAM_MAX_QUEUED_MESSAGES
+        );
+        let mut reader = VmReader::from(&[2u8][..]).to_fallible();
+        assert_eq!(
+            target
+                .queue
+                .try_send(&mut reader, &mut AuxiliaryData::default(), &source)
+                .unwrap_err()
+                .error(),
+            Errno::EAGAIN
+        );
+        assert_eq!(reader.remain(), 1);
+        assert_eq!(domain.snapshot().pages, UNIX_DATAGRAM_MAX_QUEUED_MESSAGES);
+        assert_eq!(domain.snapshot().max_events, 0);
+        drop(target);
+        assert_eq!(domain.snapshot().pages, 0);
+    });
+}
+
+#[ktest]
+fn blocked_empty_sender_retries_after_consume_and_returns_refused_after_close() {
+    use ostd::task::Task;
+
+    let owner = UserMemoryAccount::new(0);
+    with_sender(owner, move |vmar| {
+        for close in [false, true] {
+            let source = Arc::new(MessageReceiver::new());
+            let target = MessageReceiver::new();
+            for _ in 0..UNIX_DATAGRAM_MAX_QUEUED_MESSAGES {
+                send(&target, &source, &[]).unwrap();
+            }
+            let queue = target.queue.clone();
+            let source = source.clone();
+            let attempted = Arc::new(AtomicBool::new(false));
+            let done = Arc::new(AtomicBool::new(false));
+            let worker_attempted = attempted.clone();
+            let worker_done = done.clone();
+            let worker = ThreadOptions::new(move || {
+                let mut reader = VmReader::from(&[][..]).to_fallible();
+                let mut aux = AuxiliaryData::default();
+                let result = queue.block_send(Some(Duration::from_secs(1)), || {
+                    let result = queue.try_send(&mut reader, &mut aux, &source);
+                    if result
+                        .as_ref()
+                        .is_err_and(|err| err.error() == Errno::EAGAIN)
+                    {
+                        worker_attempted.store(true, Ordering::Release);
+                    }
+                    result
+                });
+                if close {
+                    assert_eq!(result.unwrap_err().error(), Errno::ECONNREFUSED);
+                } else {
+                    assert_eq!(result.unwrap(), 0);
+                }
+                worker_done.store(true, Ordering::Release);
+            })
+            .vmar(vmar.clone())
+            .spawn();
+            for _ in 0..128 {
+                Task::yield_now();
+                if attempted.load(Ordering::Acquire) {
+                    break;
+                }
+            }
+            assert!(attempted.load(Ordering::Acquire));
+            assert!(!done.load(Ordering::Acquire));
+            if close {
+                drop(target);
+            } else {
+                let mut output = [];
+                target
+                    .try_recv(
+                        &mut VmWriter::from(&mut output[..]).to_fallible(),
+                        RecvFlags::empty(),
+                    )
+                    .unwrap();
+                worker.join();
+                assert!(done.load(Ordering::Acquire));
+                assert_eq!(
+                    target.queue.inner.lock().as_ref().unwrap().messages.len(),
+                    UNIX_DATAGRAM_MAX_QUEUED_MESSAGES
+                );
+                continue;
+            }
+            worker.join();
+            assert!(done.load(Ordering::Acquire));
+        }
+    });
+}
