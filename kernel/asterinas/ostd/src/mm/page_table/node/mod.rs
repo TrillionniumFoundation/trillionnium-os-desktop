@@ -43,7 +43,7 @@ use super::{PageTableConfig, PteTrait, nr_subpage_per_huge};
 use crate::{
     mm::{
         FrameAllocOptions, HasPaddr, Infallible, PagingConstsTrait, PagingLevel, VmReader,
-        frame::{Frame, FrameRef, meta::AnyFrameMeta},
+        frame::{Frame, FrameRef, PhysicalReserve, meta::AnyFrameMeta},
         paddr_to_vaddr,
         page_table::{PteScalar, load_pte, store_pte},
     },
@@ -73,6 +73,16 @@ impl<C: PageTableConfig> PageTableNode<C> {
             .zeroed(true)
             .alloc_frame_with(meta)
             .expect("Failed to allocate a page table node")
+    }
+
+    /// Allocates from an explicitly borrowed reserve, without ordinary fallback.
+    pub(super) fn try_alloc_from(
+        reserve: &PhysicalReserve,
+        level: PagingLevel,
+    ) -> crate::Result<Self> {
+        FrameAllocOptions::new()
+            .zeroed(true)
+            .alloc_frame_from_with(reserve, PageTablePageMeta::new(level))
     }
 
     /// Activates the page table assuming it is a root page table.

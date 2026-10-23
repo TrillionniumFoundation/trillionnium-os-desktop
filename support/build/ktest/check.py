@@ -99,11 +99,19 @@ FATAL_CLEANUP_CORE_TESTS = tuple(
 REQUIRED_CORE_TESTS = (*FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
+RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (
+    "recovery_root_uses_explicit_reserve_and_closed_root_fails",
+    "recovery_mapping_failure_at_each_missing_level_preserves_input_and_tree",
+    "recovery_mapping_uses_only_selected_token_and_refunds_last_vm_owner",
+    "recovery_mapping_does_not_authorize_ordinary_or_closed_growth",
+    "recovery_mapping_rejects_conflict_without_replacing_original_frame",
+))
 REQUIRED_OSTD_TESTS = (
     "ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner",
     "ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code",
+    *RECOVERY_PAGE_TABLE_TESTS,
 )
-MINIMUM_OSTD_TESTS = 224  # Retained 223 plus fatal pre-entry regression.
+MINIMUM_OSTD_TESTS = 229  # Retained 224 plus five explicit-reserve page-table regressions.
 
 # A separate third crate preserves all nine original allocator tests. Changes
 # to this exact inventory require review, not a smaller denominator at runtime.
@@ -286,7 +294,7 @@ def check_guest(guest, crate, allow_filtered=False):
             if "[skipped:" in block:
                 raise ValueError("required OSTD test was soft-skipped: " + name)
         if passed < MINIMUM_OSTD_TESTS:
-            raise ValueError("complete OSTD gate shrank below the retained 223 tests plus fatal pre-entry regression")
+            raise ValueError("complete OSTD gate shrank below the retained 224 tests plus five recovery page-table regressions")
     return {"crate": crate, "declared": declared, "passed": passed, "failed": failed,
             "filtered": filtered, "soft_skipped": len(skips), "soft_skip_reasons": skips,
             "exercised_passed_lower_bound": passed - len(skips),

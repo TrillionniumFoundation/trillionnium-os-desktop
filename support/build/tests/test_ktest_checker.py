@@ -76,8 +76,8 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertEqual(result["soft_skipped"], 0)
         self.assertEqual(result["exercised_passed_lower_bound"], MINIMUM_OSTD_TESTS)
 
-    def test_complete_ostd_requires_owner_and_fatal_regressions_without_soft_skip(self):
-        self.assertEqual(len(REQUIRED_OSTD_TESTS), 2)
+    def test_complete_ostd_requires_owner_fatal_and_page_table_regressions_without_soft_skip(self):
+        self.assertEqual(len(REQUIRED_OSTD_TESTS), 7)
         for required in REQUIRED_OSTD_TESTS:
             name = required.encode()
             for serial in (serial_log().replace(name, b"ostd::fixture::unrelated"),
@@ -88,8 +88,8 @@ class KtestCheckerTests(unittest.TestCase):
                         check_guest(self.guest, "ostd")
 
     def test_ostd_owner_regression_cannot_replace_the_retained_baseline(self):
-        self.assertEqual(MINIMUM_OSTD_TESTS, 224)
-        for count in (2, 223):
+        self.assertEqual(MINIMUM_OSTD_TESTS, 229)
+        for count in (7, 224, 228):
             self.evidence(serial_log(passed=count))
             with self.assertRaisesRegex(ValueError, "OSTD gate shrank"):
                 check_guest(self.guest, "ostd")

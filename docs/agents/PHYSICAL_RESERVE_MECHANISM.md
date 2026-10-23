@@ -153,8 +153,12 @@ bounded recovery allocation along the original image/VMAR and OSTD VmSpace/page
 table ownership. A normal fork/exec must not acquire authority by inheriting a
 user-data accounting Arc, root UID, PID, or an unlimited `None` account.
 
-PageTableNode allocation still uses ordinary frames with `expect`, and the global
-Rust heap still has infallible allocations that can abort under pressure.
+Ordinary PageTableNode allocation still uses ordinary frames with `expect`.
+[Explicit recovery page tables](RECOVERY_PAGE_TABLES.md) adds a separate
+fallible OSTD root/cursor path without attaching reserve authority to ordinary
+VM spaces. It has no production image/VMAR caller yet and requires its full
+native suite before qualification. The global Rust heap still has infallible
+allocations that can abort under pressure.
 Recovery stack, page tables, IPC/control buffers, D storage, FD slots and kernel
 objects require bounded preallocation or fallible admission on their original
 owners. Socket/slab/filesystem/DMA pressure and failure rollback must be tested

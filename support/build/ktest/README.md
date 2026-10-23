@@ -130,7 +130,10 @@ The separate full OSTD run must also execute
 `ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner`
 once without soft-skipping, while preserving the 222-test baseline. Together
 with `ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code`,
-the full OSTD gate now contains at least 224 tests. The first test checks failed preclaim of a real physical
+the retained OSTD gate contains 224 tests. The five named explicit-reserve
+page-table tests in `RECOVERY_PAGE_TABLE_TESTS` increase the full gate to 229;
+all seven required OSTD names must execute once without soft-skipping. See
+[recovery page tables](../../../docs/agents/RECOVERY_PAGE_TABLES.md). The first test checks failed preclaim of a real physical
 extent: only acquired original owners are released; a busy page and unclaimed
 tail retain their separate ownership. A successful allocator-only invocation
 does not execute this OSTD test because the original OSDK crate whitelist is
