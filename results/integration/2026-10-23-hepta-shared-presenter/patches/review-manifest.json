@@ -1,0 +1,337 @@
+{
+  "status": "frozen default-off candidate after actual Rust 1.88 host checks; no Makepad renderer, physical IME, Wayland, accessibility, mobile or production Send qualification",
+  "desktop_base": "64736996d310d597ffba513ee109264cd5f5f83f",
+  "desktop_tree": "363700005afb52d2ac88aab709c3e0d0f78bcc0a",
+  "upstream_commit": "56630b12b8a4c69fff2c47b95b36d88a7389c39f",
+  "missing_planned_files": [],
+  "patch_apply_check": "both ordered patches checked and applied to exact preimages; all resulting bytes compared",
+  "files": [
+    {
+      "path": ".github/workflows/a10-host.yml",
+      "before": {
+        "git_blob": "e845909fa48508222cce75be9e2a73d1324ccef2",
+        "sha256": "1babc1636c109558928959f50d0ede9e063c454e05410ecf43147023f1999a8a",
+        "bytes": 7075
+      },
+      "after": {
+        "git_blob": "0c0de53aa34d3c37fe86e7571ad262ead3c16c50",
+        "sha256": "b12b27e8c342f7ab1eedda2fded4e19e229b09ab232c2cdd52767cc768d651a8",
+        "bytes": 10102
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "services/hepta-os/Cargo.lock",
+      "before": {
+        "git_blob": "e423f6e549fe60e8496ec159463dbc1c324c256c",
+        "sha256": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175",
+        "bytes": 6501
+      },
+      "after": {
+        "git_blob": "0bc9779bfa3228c7b5f2a0366661d50f62371120",
+        "sha256": "da23b2fefe006a3eba00af6f6013ed102b7ebc0c74701482871772297c18345c",
+        "bytes": 6763
+      },
+      "patch": "01-dependency-alignment.patch"
+    },
+    {
+      "path": "services/hepta-os/Cargo.toml",
+      "before": {
+        "git_blob": "0be14ffcedfda978c1ea7dbdf8d31a44d2e3060a",
+        "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b",
+        "bytes": 1410
+      },
+      "after": {
+        "git_blob": "fac1a23e913e24999993f8f4c656231e12f460f3",
+        "sha256": "f55be6e056c58431c4719c58434dba544c62975245e5dc75a7198ab19e6c3a94",
+        "bytes": 1410
+      },
+      "patch": "01-dependency-alignment.patch"
+    },
+    {
+      "path": "support/ui/HEPTA_SHARED_PRESENTER.json",
+      "before": null,
+      "after": {
+        "git_blob": "3dfb110cc192a1349e81f2bd8d73783881146a79",
+        "sha256": "8107ca38efca4587784d3de0b8e170c89a6fca8b46d9bd0f868e9e527f161cf4",
+        "bytes": 4544
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "support/ui/HEPTA_SHARED_PRESENTER.md",
+      "before": null,
+      "after": {
+        "git_blob": "25445fc2defb4cb2aaa4ba9ebedc9f4954f63111",
+        "sha256": "824a87ac94ec4570ddeb97f359d26a24b911a01211d330914617c6ff5a88e4ca",
+        "bytes": 15213
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "support/ui/licenses/HEPTA-LICENSE.txt",
+      "before": null,
+      "after": {
+        "git_blob": "4606e72e042564097e8780d66c1d4dcb611869bd",
+        "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc",
+        "bytes": 10926
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "support/ui/licenses/HEPTA-NOTICE.txt",
+      "before": null,
+      "after": {
+        "git_blob": "2805899d56d0332d175cfc613c67d45d6f006db7",
+        "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915",
+        "bytes": 242
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "support/ui/licenses/ROBRIX-MIT.txt",
+      "before": null,
+      "after": {
+        "git_blob": "7f77de13d6a3a5b2a7b35bfb249b7902317c2045",
+        "sha256": "7c370204a7507a3c33398d6377aa69691991b0582a3d92ace8d27d8819b223f7",
+        "bytes": 1097
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "tests/ui/test_shared_presenter_source.py",
+      "before": null,
+      "after": {
+        "git_blob": "c7988afe5286d7436cf3d0add73412438d731ae2",
+        "sha256": "631cff726a071f2d56fe111425eb29e1fea8968c400b1cec413943abd0cf100e",
+        "bytes": 7627
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "tests/ui/test_wire_compatibility.py",
+      "before": null,
+      "after": {
+        "git_blob": "13926143b0bd8aacd442a81f0a9eac76ea9012f1",
+        "sha256": "22d2d82a13651da4308a40c1167efe2b98a6cd5465e81d676c894367a21063b6",
+        "bytes": 2969
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "tests/ui/verify_shared_presenter.py",
+      "before": null,
+      "after": {
+        "git_blob": "82d4f454f7a8edef7a3c3af0fd560870a75da5b8",
+        "sha256": "795221ef4049636eb737f91603c969715bc84d53d8edf3ea9f169751509b8938",
+        "bytes": 8859
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "tests/ui/verify_wire_compatibility.py",
+      "before": null,
+      "after": {
+        "git_blob": "0e9b4b0f1bf95597a77dfae5c0396c0c8364d5e8",
+        "sha256": "cfbfb04215ed7b4583327728e797b115578aca9322a22e5d60eb5c81a3e8d692",
+        "bytes": 3740
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "tests/ui/wire-compatibility-aligned-v1.json",
+      "before": null,
+      "after": {
+        "git_blob": "16c6be153e5da3b5307990279a401a7acf3a347b",
+        "sha256": "68390137800fdfc080bfe358b00eaeab4bf85ab9692933e43eee182adf23e59a",
+        "bytes": 17548
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "tests/ui/wire-compatibility-v1.json",
+      "before": null,
+      "after": {
+        "git_blob": "c3675d86248769e81b951c3f669f7382254e1285",
+        "sha256": "1e4ced2871836a18177f166de7394b7f32d8de98af6fd6f1b4206ef28b2f85dd",
+        "bytes": 17547
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/Cargo.lock",
+      "before": {
+        "git_blob": "588c2178f4a7d1509b1889ec8a87faed52c49ff9",
+        "sha256": "b3fed596e3f954b2776ee30ed54bfa03bef8d3103b68299a6c65e0e7198843c0",
+        "bytes": 84803
+      },
+      "after": {
+        "git_blob": "f0948dd88915737af0d324515b2efb9d7c40090a",
+        "sha256": "5f7a87e55f5460153f823ba5a60c8dfabcb31e4ff1e3d2a14b2497532847dd77",
+        "bytes": 86093
+      },
+      "patch": "01-dependency-alignment.patch"
+    },
+    {
+      "path": "ui/Cargo.toml",
+      "before": {
+        "git_blob": "c635dc1d65fc0dd8b0c81e3729317440bd9d1dc5",
+        "sha256": "e012325701464cb352e8bc5050012241a77e2f648d2303f68cc89632c76d0bf1",
+        "bytes": 529
+      },
+      "after": {
+        "git_blob": "431002e36adab229fbd1e0f5eb0a343935df48ef",
+        "sha256": "41c974048d40a7c42a1d6c13fefc0e59e70b9ffd72f092b3a97d7bd354fcb7b8",
+        "bytes": 529
+      },
+      "patch": "01-dependency-alignment.patch"
+    },
+    {
+      "path": "ui/activation.rs",
+      "before": {
+        "git_blob": "e62f17391057d83e39a83c60b937e109ce94ab09",
+        "sha256": "7d30299528d341d0ddf9d456c25794d66c162f7eb7780213c6a7291c3dd3e82a",
+        "bytes": 9695
+      },
+      "after": {
+        "git_blob": "67617b9ed2ef5f26ae34b091572fc010e6d833d7",
+        "sha256": "29188ee9cc2b66a8d761ddc9efbd4f8b5c70628b80363339e2521937c104afa8",
+        "bytes": 9973
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/activation_policy.rs",
+      "before": {
+        "git_blob": "e62a9de11e96919a74730e881753b4cf22a29112",
+        "sha256": "1159a2a3978fc38a847c7b50b8746c0661dad45a922d5a558d34f19dd91092d4",
+        "bytes": 12886
+      },
+      "after": {
+        "git_blob": "adce760500fa27b79322a4c97398fb0cc39e8c68",
+        "sha256": "2b9fbbb67a71eda67470bac60ff1b46628c3f6077af6adce41493842bd2a3df1",
+        "bytes": 14309
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/core/Cargo.toml",
+      "before": {
+        "git_blob": "3e8220d551526e87ea65dd564091ce2c2b6ea33d",
+        "sha256": "34dec612e29be4a125e9ff7cf1c015ff3092a8e621f63eaa2d70cdcd763c233b",
+        "bytes": 220
+      },
+      "after": {
+        "git_blob": "96c0fceafbb02533e6d2fd8e5c39b066e950249f",
+        "sha256": "f2bc5a9de1349cb4e19be7e691be1c35a2586648de23461339cdf6965d0edbbd",
+        "bytes": 740
+      },
+      "patch": "01-dependency-alignment.patch"
+    },
+    {
+      "path": "ui/core/examples/wire_compatibility.rs",
+      "before": null,
+      "after": {
+        "git_blob": "33cdb7bb8c1afcf0a03a8d45504a4df742d683b8",
+        "sha256": "1e7fab8750d165ca1be55e9d08e1b3e957099cc24a5f54cbd2a024dc1a0b381e",
+        "bytes": 7108
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/core/src/lib.rs",
+      "before": {
+        "git_blob": "80bdcf52e9b830052fad4f4a08f381bd89c7bdd4",
+        "sha256": "f91b17ebf6a0441dc5f52800a21efa4bd8071dd1d1efd342a7b1a2511f5fd468",
+        "bytes": 23208
+      },
+      "after": {
+        "git_blob": "8d2e9af6c859288b46c34d66f4af691fb5ab2c3f",
+        "sha256": "53858f803f54c2cf4da7f59da8955b182c5bff3b632e9442a161bc5ba8d8d01c",
+        "bytes": 24734
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/core/src/shared_chat.rs",
+      "before": null,
+      "after": {
+        "git_blob": "f00b6fa351f967e54154b3c640a5b2dd3e5870e1",
+        "sha256": "1806b374aecb795d5d2686d5741a4361f823a7cda37d80d809fc66bae4da2ec7",
+        "bytes": 7618
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/core/tests/host_load_legacy.rs",
+      "before": null,
+      "after": {
+        "git_blob": "f837c67aeffa704b991b9d3001fdbc94da0634aa",
+        "sha256": "5d530381e10df211fcf3c2004dc39fc76ce03817548b456cb6afabfa27d29c4d",
+        "bytes": 2383
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/shell/Cargo.toml",
+      "before": {
+        "git_blob": "4eb8b4d5ba2240634c44c8d4dede48ddcc13fd3a",
+        "sha256": "f7c04a77f20cc1088f78ec9c217ab0a6068efa7f9f0318ea1898ba9ee15e56ee",
+        "bytes": 277
+      },
+      "after": {
+        "git_blob": "0b59f68e729d88bc95ec85bf5f2da4998889c910",
+        "sha256": "26ce2d96ea1fdc2835ddd8a6d47b3df6fbcd944699e98a5949a4a75a27d89237",
+        "bytes": 368
+      },
+      "patch": "01-dependency-alignment.patch"
+    },
+    {
+      "path": "ui/shell/src/conversation.rs",
+      "before": {
+        "git_blob": "8dde900d6290db8ee28763a08645931334484fb7",
+        "sha256": "4767a3a5fc178f42c8477cbc70829a40df717bfae676c5cd8648660df5114eb5",
+        "bytes": 29436
+      },
+      "after": {
+        "git_blob": "b749c14432e23acd9ae46cefa5ab05ddc0383e1f",
+        "sha256": "3d3bbc972507a631562f2155d7623eb827642fcb3ca7205b7638e917f10b9522",
+        "bytes": 43485
+      },
+      "patch": "02-presenter-candidate.patch"
+    },
+    {
+      "path": "ui/shell/src/main.rs",
+      "before": {
+        "git_blob": "ecd4e31a00c92c6b3ade42d299312745bc70c1ee",
+        "sha256": "6ce12dbffbc4020544e1eed6058e6768f84aceb2d46cbc67e78413d76352634d",
+        "bytes": 105062
+      },
+      "after": {
+        "git_blob": "4ec03577bab9bb54ef9b5591139c535f5adb938a",
+        "sha256": "6109767e3e8c247ef21266ab5d39d0aa9f5e4d9cbc5e11cc83b1cd2fecbff9b5",
+        "bytes": 109031
+      },
+      "patch": "02-presenter-candidate.patch"
+    }
+  ],
+  "patches": {
+    "01-dependency-alignment.patch": {
+      "git_blob": "dc16973f80ce84bf3887578db4abd385e7057cd3",
+      "sha256": "59c0dc32e321f94cb8f6a2593ff7931cf8cf0b75be8f471f251254512121d215",
+      "bytes": 9716
+    },
+    "02-presenter-candidate.patch": {
+      "git_blob": "fb80affc3344667a0ce060e0abf72e0b0252e546",
+      "sha256": "da95c2a0a205f752db667f416334d9882b15bc26841abe042f3f48f03f19541a",
+      "bytes": 157475
+    }
+  },
+  "validation": "validation/final-execution-summary.json (separate execution/archive inventory)",
+  "dependency_patch_unchanged_sha256": "59c0dc32e321f94cb8f6a2593ff7931cf8cf0b75be8f471f251254512121d215",
+  "composition_notes": [
+    "Preserve PR #247 README guard migration; this workflow diff only adds candidate steps.",
+    "Preserve PR #255 final Objective Session/transport source; this patch does not replace those files.",
+    "The baseline copy of the new wire example is a validation harness, not an original preimage."
+  ]
+}

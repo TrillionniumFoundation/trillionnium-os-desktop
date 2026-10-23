@@ -298,6 +298,17 @@ impl Desktop {
         self.notices.push_back(message.into());
     }
 
+    fn navigation_activated(&self, response: &egui::Response) -> bool {
+        if cfg!(feature = "hepta-shared-presenter") {
+            // A commit can end `composing` before this frame renders the old
+            // editor. Keep that frame's original guard fence so navigation
+            // cannot move the commit to a different workspace's composer.
+            self.activation.activated(response)
+        } else {
+            response.clicked()
+        }
+    }
+
     /// A queue admission is NOT a successful OS operation. Report false
     /// immediately if the IPC worker has not accepted the action for delivery.
     fn submit(&mut self, request: Request) -> bool {
@@ -631,13 +642,10 @@ impl Desktop {
                 .iter()
                 .filter(|task| task.workspace == workspace)
                 .count();
-            if ui
-                .selectable_label(
-                    self.workspace == workspace,
-                    format!("{}    ·    {} host tasks", workspace.name(), count),
-                )
-                .clicked()
-            {
+            if self.navigation_activated(&ui.selectable_label(
+                self.workspace == workspace,
+                format!("{}    ·    {} host tasks", workspace.name(), count),
+            )) {
                 self.workspace = workspace;
                 self.selected = None;
                 self.show_workspace_tab(WorkspaceTab::Tasks);
@@ -921,6 +929,9 @@ impl Desktop {
 impl eframe::App for Desktop {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.activation.begin_frame(ctx);
+        #[cfg(feature = "hepta-shared-presenter")]
+        self.drafts
+            .observe_composition(self.workspace, self.activation.composing());
         self.receive_and_refresh_hepta(|| (Instant::now(), trill_ui_core::unix_ms()));
         if self.last_poll.elapsed() >= Duration::from_millis(800) {
             self.last_poll = Instant::now();
@@ -951,10 +962,9 @@ impl eframe::App for Desktop {
             .show(ctx, |ui| {
                 ui.heading("Workspace");
                 for workspace in Workspace::ALL {
-                    if ui
-                        .selectable_label(self.workspace == workspace, workspace.name())
-                        .clicked()
-                    {
+                    if self.navigation_activated(
+                        &ui.selectable_label(self.workspace == workspace, workspace.name()),
+                    ) {
                         self.workspace = workspace;
                         self.selected = None;
                         self.page = Page::Conversation;
@@ -962,9 +972,8 @@ impl eframe::App for Desktop {
                 }
                 ui.separator();
                 for page in [Page::Conversation, Page::Apps, Page::Settings] {
-                    if ui
-                        .selectable_label(self.page == page, page.name())
-                        .clicked()
+                    if self
+                        .navigation_activated(&ui.selectable_label(self.page == page, page.name()))
                     {
                         self.page = page;
                     }
@@ -2011,7 +2020,10 @@ mod workspace_context_tests {
             .send(queued_reply(false, Ok(snapshot(A, 20_000, task.clone()))))
             .unwrap();
         desktop.receive_and_refresh_hepta(|| (Instant::now(), 20_000));
-        desktop.drafts.composer_mut(Workspace::Personal).text = "检查这份笔记 📝".into();
+        assert!(desktop
+            .drafts
+            .composer_mut(Workspace::Personal)
+            .edit("检查这份笔记 📝".into()));
         let ctx = egui::Context::default();
         click(&mut desktop, &ctx, "Quote in draft");
         assert_eq!(
@@ -2049,6 +2061,84 @@ mod workspace_context_tests {
             unreachable!()
         };
         assert_eq!(reference.key.session_instance, A);
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    #[cfg(feature = "hepta-shared-presenter")]
+    #[test]
+    fn real_workspace_navigation_waits_through_the_ime_commit_frame() {
+        let (mut desktop, _, requests) = setup();
+        assert!(desktop
+            .drafts
+            .composer_mut(Workspace::Personal)
+            .edit("保留原草稿".into()));
+        let ctx = egui::Context::default();
+        let draw_navigation = |desktop: &mut Desktop, events| {
+            ctx.run(
+                egui::RawInput {
+                    focused: true,
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(900.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    desktop.activation.begin_frame(ctx);
+                    desktop
+                        .drafts
+                        .observe_composition(desktop.workspace, desktop.activation.composing());
+                    egui::CentralPanel::default().show(ctx, |ui| desktop.workspaces(ui));
+                },
+            )
+        };
+        let output = draw_navigation(&mut desktop, vec![]);
+        let label = format!("{}    ·    0 host tasks", Workspace::Research.name());
+        let pos = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text == label => {
+                    Some(text.pos + text.galley.size() * 0.5)
+                }
+                _ => None,
+            })
+            .unwrap();
+        let pointer = |pressed| egui::Event::PointerButton {
+            pos,
+            button: egui::PointerButton::Primary,
+            pressed,
+            modifiers: egui::Modifiers::NONE,
+        };
+        draw_navigation(
+            &mut desktop,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("候选".into())),
+                egui::Event::PointerMoved(pos),
+                pointer(true),
+            ],
+        );
+        draw_navigation(
+            &mut desktop,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Commit("确认".into())),
+                pointer(false),
+            ],
+        );
+        assert_eq!(desktop.workspace, Workspace::Personal);
+        draw_navigation(&mut desktop, vec![pointer(true)]);
+        draw_navigation(&mut desktop, vec![pointer(false)]);
+        assert_eq!(desktop.workspace, Workspace::Research);
+        assert_eq!(
+            desktop.drafts.composer(Workspace::Personal).text(),
+            "保留原草稿"
+        );
+        assert!(desktop
+            .drafts
+            .composer(Workspace::Research)
+            .text()
+            .is_empty());
         assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
     }
 
@@ -2347,15 +2437,19 @@ mod draft_safety_tests {
     fn full_chat_never_evicts_earlier_user_text_or_clears_composer() {
         let mut book = DraftBook::default();
         for i in 0..MAX_LOCAL_DRAFTS {
-            book.composer_mut(Workspace::Personal).text = format!("draft-{i}");
+            assert!(book
+                .composer_mut(Workspace::Personal)
+                .edit(format!("draft-{i}")));
             book.save(Workspace::Personal).unwrap();
         }
-        book.composer_mut(Workspace::Personal).text = "a valuable unsaved draft".into();
+        assert!(book
+            .composer_mut(Workspace::Personal)
+            .edit("a valuable unsaved draft".into()));
         assert!(book.save(Workspace::Personal).is_err());
         assert_eq!(book.drafts.len(), MAX_LOCAL_DRAFTS);
         assert_eq!(book.drafts[0].text, "draft-0");
         assert_eq!(
-            book.composer(Workspace::Personal).text,
+            book.composer(Workspace::Personal).text(),
             "a valuable unsaved draft"
         );
     }
@@ -2364,10 +2458,18 @@ mod draft_safety_tests {
     fn oversized_utf8_draft_is_not_truncated_or_saved() {
         let mut book = DraftBook::default();
         let original = "中文".repeat(MAX_DRAFT_BYTES / 6 + 1);
-        book.composer_mut(Workspace::Personal).text = original.clone();
+        let accepted = book
+            .composer_mut(Workspace::Personal)
+            .edit(original.clone());
+        assert_eq!(accepted, !cfg!(feature = "hepta-shared-presenter"));
         assert!(book.save(Workspace::Personal).is_err());
         assert!(book.drafts.is_empty());
-        assert_eq!(book.composer(Workspace::Personal).text, original);
+        let expected = if cfg!(feature = "hepta-shared-presenter") {
+            ""
+        } else {
+            original.as_str()
+        };
+        assert_eq!(book.composer(Workspace::Personal).text(), expected);
     }
 
     #[test]
@@ -2379,7 +2481,9 @@ mod draft_safety_tests {
             contexts: vec![],
         }];
         assert!(book.may_restore());
-        book.composer_mut(Workspace::Build).text = "unfinished".into();
+        assert!(book
+            .composer_mut(Workspace::Build)
+            .edit("unfinished".into()));
         assert!(!book.may_restore());
         assert!(book.restore(imported.clone()).is_err());
         book.save(Workspace::Build).unwrap();
@@ -2392,22 +2496,28 @@ mod draft_safety_tests {
     fn export_collection_never_omits_unsent_text_or_overwrites_old_backup() {
         let mut book = DraftBook::default();
         assert!(book.export().is_err());
-        book.composer_mut(Workspace::Personal).text = "prior saved 中文".into();
+        assert!(book
+            .composer_mut(Workspace::Personal)
+            .edit("prior saved 中文".into()));
         book.save(Workspace::Personal).unwrap();
-        book.composer_mut(Workspace::Research).text = "unfinished composer".into();
+        assert!(book
+            .composer_mut(Workspace::Research)
+            .edit("unfinished composer".into()));
         assert!(book.export().is_err());
-        book.composer_mut(Workspace::Research).text.clear();
+        assert!(book.composer_mut(Workspace::Research).clear());
         assert_eq!(book.export().unwrap()[0].text, "prior saved 中文");
     }
 
     #[test]
     fn accepted_chinese_draft_is_stored_exactly_once() {
         let mut book = DraftBook::default();
-        book.composer_mut(Workspace::Personal).text = "测试输入法：你好 📝".into();
+        assert!(book
+            .composer_mut(Workspace::Personal)
+            .edit("测试输入法：你好 📝".into()));
         assert!(book.save(Workspace::Personal).is_ok());
         assert_eq!(book.drafts.len(), 1);
         assert_eq!(book.drafts[0].text, "测试输入法：你好 📝");
-        assert!(book.composer(Workspace::Personal).text.is_empty());
+        assert!(book.composer(Workspace::Personal).text().is_empty());
         assert!(book.save(Workspace::Personal).is_err());
         assert_eq!(book.drafts.len(), 1);
     }
