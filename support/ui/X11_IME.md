@@ -187,4 +187,50 @@ physical keyboard/monitor/GPU presentation, Android/mobile input, all Unicode,
 IME cancellation, every candidate-selection key, all editing/shortcut cases,
 an accessibility flow, original Agentd execution, authenticated objective
 submission or a device effect. Those require separate real tests. Existing
-pointer-only launch/cancel/run rules remain unchanged.
+pointer-only launch/cancel/run rules were part of the archived source. They
+do not qualify the current keyboard activation policy described below.
+
+
+## Current explicit-activation policy
+
+Both native apps now share `ui/activation_policy.rs` and its egui adapter
+`ui/activation.rs`. Effect controls use semantic `Response::clicked()` so a
+focused, deliberate Enter or Space can request the same operation as a primary
+pointer click. Repeating or modified keypresses do not repeat effects. No
+keyboard shortcut submits the Chat composer, and original Session/Hepta
+admission and receipt checks remain authoritative.
+
+The adapter snapshots raw events before editors consume them. Nonempty preedit
+blocks every effect source. Commit, preedit cancellation and active IME disable
+block the transition frame; a trailing Enter/Space remains fenced until the
+confirmation keys are released. A fresh Tab or primary-pointer press after
+composition can restore navigation if the backend swallowed the key release.
+A pointer does not bypass active preedit. Losing window focus ends local preedit
+tracking but does not arm a delayed candidate key. Multiple egui layout passes
+share the same frame policy.
+
+The standalone policy tests can run without GUI dependencies:
+
+```sh
+rustc --edition=2021 --test ui/activation_policy.rs -o /tmp/trill-activation-policy-tests
+/tmp/trill-activation-policy-tests
+```
+
+Real egui widget regression tests live in `ui/activation.rs` and the native app
+test modules. Run them with the locked UI workspace:
+
+```sh
+cargo test --manifest-path ui/Cargo.toml --locked -p trill-shell -p trill-app-window
+```
+
+A policy-test pass does not establish successful egui compilation, a real IME
+backend, pixels, or physical input. The archived XIM receipt above predates this
+policy change and must be replayed against the new source before extending its
+qualification. Caret candidate placement remains unresolved.
+
+The adapter preserves egui semantic accessibility actions instead of requiring
+a pointer, but the current locked build does not enable eframe's `accesskit`
+feature. Screen-reader actions and accessibility-tree coverage are therefore
+**not qualified or delivered by this change**. Enabling the backend requires a
+separately resolved lockfile and live assistive-technology validation; do not
+label synthetic input-policy tests as screen-reader evidence.

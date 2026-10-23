@@ -1,4 +1,6 @@
 //! One independent client window per app process. No embedded webview or Node.
+#[path = "../../activation.rs"]
+mod activation;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
 mod notes_organ;
@@ -7,6 +9,7 @@ use std::io::Write;
 use trill_ui_core::{AppKind, Workspace};
 
 struct ClientWindow {
+    activation: activation::ActivationGuard,
     kind: AppKind,
     workspace: Workspace,
     task_id: u64,
@@ -25,6 +28,8 @@ struct ClientWindow {
 
 impl eframe::App for ClientWindow {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.activation.begin_frame(ctx);
+        self.terminal_preedit_active = self.activation.composing();
         let mut notes_updated = false;
         if let Some(organ) = &mut self.notes_organ {
             if organ.poll() {
@@ -71,7 +76,7 @@ impl eframe::App for ClientWindow {
                     });
                     ui.horizontal(|ui| {
                         for (label, op) in [("+", '+'), ("−", '-'), ("×", '*'), ("÷", '/')] {
-                            if ui.button(label).clicked() {
+                            if self.activation.activated(&ui.button(label)) {
                                 self.calculate(op);
                             }
                         }
@@ -142,21 +147,10 @@ impl ClientWindow {
     }
 
     fn restricted_terminal(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
-        // Only a nonempty preedit blocks Run; idle IME Enabled remains usable.
-        ui.input(|input| {
-            for event in &input.events {
-                match event {
-                    egui::Event::Ime(egui::ImeEvent::Preedit(text)) => {
-                        self.terminal_preedit_active = !text.is_empty();
-                    }
-                    egui::Event::Ime(egui::ImeEvent::Commit(_))
-                    | egui::Event::Ime(egui::ImeEvent::Disabled) => {
-                        self.terminal_preedit_active = false;
-                    }
-                    _ => {}
-                }
-            }
-        });
+        // Idempotent for the app update and direct widget regression tests.
+        // Read the lifecycle before TextEdit can consume the raw IME events.
+        self.activation.begin_frame(ctx);
+        self.terminal_preedit_active = self.activation.composing();
         ui.label("Restricted task terminal / 受限任务终端");
         ui.small("This is an explicit Rust app process. It does not invoke /bin/sh, pipes, redirects, or arbitrary host commands.");
         ui.small("Allowlist: help, status, version, echo <text>, clear, exit");
@@ -178,28 +172,20 @@ impl ClientWindow {
                     .desired_width(f32::INFINITY)
                     .hint_text("help / status / echo <text> / clear / exit"),
             );
-            // egui Response::clicked() includes keyboard Enter/Space when a
-            // button has focus, not only physical clicks. An IME candidate
-            // confirmation must NEVER become an executable command merely
-            // because focus moved onto Run. Require an explicit primary
-            // pointer click; keyboard activation is intentionally excluded.
-            if ui
-                .add_enabled(!self.terminal_preedit_active, egui::Button::new("Run"))
-                .clicked_by(egui::PointerButton::Primary)
+            // A deliberate focused Enter/Space is accessible activation. The
+            // shared guard fences preedit, Commit and trailing candidate keys.
+            if self
+                .activation
+                .activated(&ui.add_enabled(!self.terminal_preedit_active, egui::Button::new("Run")))
                 && !self.terminal_close_requested
             {
                 self.run_restricted_command();
             }
-            if ui
-                .button("Clear output")
-                .clicked_by(egui::PointerButton::Primary)
-            {
-                // A Chinese IME Enter/Space candidate key must not clear
-                // local command history when the button has keyboard focus.
+            if self.activation.activated(&ui.button("Clear output")) {
                 self.terminal_output.clear();
             }
         });
-        ui.small("IME: Enter confirms a candidate, not a command. Click Run to execute.");
+        ui.small("IME: Enter confirms a candidate. To execute, click Run or Tab to Run and press Enter/Space after composition ends.");
         if self.terminal_preedit_active {
             ui.colored_label(
                 egui::Color32::YELLOW,
@@ -381,6 +367,7 @@ fn main() -> eframe::Result {
                 })
                 .transpose()?;
             Ok(Box::new(ClientWindow {
+                activation: activation::ActivationGuard::default(),
                 kind,
                 workspace,
                 task_id,
@@ -409,6 +396,7 @@ mod tests {
     #[test]
     fn division_by_zero_never_claims_a_numeric_result() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Calculator,
             workspace: Workspace::Personal,
             task_id: 1,
@@ -434,6 +422,7 @@ mod tests {
     #[test]
     fn restricted_terminal_rejects_shell_syntax_and_runs_only_allowlist() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 9,
@@ -486,6 +475,7 @@ mod tests {
 
         let ctx = egui::Context::default();
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 17,
@@ -558,8 +548,9 @@ mod tests {
     }
 
     #[test]
-    fn focused_run_button_enter_cannot_invent_a_pointer_click() {
+    fn focused_run_button_accepts_deliberate_keyboard_activation() {
         let ctx = egui::Context::default();
+        let mut activation = activation::ActivationGuard::default();
         let make_input = |events| egui::RawInput {
             focused: true,
             screen_rect: Some(egui::Rect::from_min_size(
@@ -578,7 +569,7 @@ mod tests {
         ctx.memory_mut(|memory| {
             memory.request_focus(run_button.expect("run button exists"));
         });
-        let mut pointer_activated = false;
+        let mut activated = false;
         let mut focused = false;
         let _ = ctx.run(
             make_input(vec![egui::Event::Key {
@@ -589,10 +580,11 @@ mod tests {
                 modifiers: egui::Modifiers::default(),
             }]),
             |ctx| {
+                activation.begin_frame(ctx);
                 egui::CentralPanel::default().show(ctx, |ui| {
                     let response = ui.button("Run");
                     focused = response.has_focus();
-                    pointer_activated = response.clicked_by(egui::PointerButton::Primary);
+                    activated = activation.activated(&response);
                 });
             },
         );
@@ -601,14 +593,15 @@ mod tests {
             "test must exercise an actual keyboard-focused button"
         );
         assert!(
-            !pointer_activated,
-            "keyboard Enter, including a stray IME candidate Enter, must not execute Run"
+            activated,
+            "deliberate Enter without an IME lifecycle must activate the focused Run button"
         );
     }
 
     #[test]
     fn restricted_terminal_refuses_forged_log_lines_and_bidi_controls() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 12,
@@ -654,6 +647,7 @@ mod tests {
     #[test]
     fn restricted_terminal_bounds_input_and_clear_is_local_only() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 10,
@@ -701,6 +695,7 @@ mod tests {
     #[test]
     fn restricted_terminal_refuses_commands_over_wire_budget() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Personal,
             task_id: 11,

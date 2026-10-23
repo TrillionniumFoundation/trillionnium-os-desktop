@@ -397,6 +397,7 @@ impl super::Desktop {
     }
 
     pub(super) fn conversation(&mut self, ui: &mut egui::Ui) {
+        self.activation.begin_frame(ui.ctx());
         ui.horizontal_wrapped(|ui| {
             ui.heading(format!("{} / Chat", self.workspace.name()));
             ui.colored_label(super::warning(), "LOCAL DRAFT · NOT SUBMITTED");
@@ -408,13 +409,10 @@ impl super::Desktop {
                 trill_ui_core::AppKind::Notes,
                 trill_ui_core::AppKind::Calculator,
             ] {
-                if ui
-                    .add_enabled(
-                        self.host_observation.is_current(),
-                        egui::Button::new(format!("Open {}", app.name())),
-                    )
-                    .clicked_by(egui::PointerButton::Primary)
-                    && self.launch_host_app(self.workspace, app)
+                if self.activation.activated(&ui.add_enabled(
+                    self.host_observation.is_current(),
+                    egui::Button::new(format!("Open {}", app.name())),
+                )) && self.launch_host_app(self.workspace, app)
                 {
                     self.notice(format!(
                         "Queued host launch for {}; waiting for Session observation.",
@@ -532,9 +530,9 @@ impl super::Desktop {
                             ) {
                                 open_task = Some(key);
                             }
-                            if ui
-                                .small_button("Remove from draft")
-                                .clicked_by(egui::PointerButton::Primary)
+                            if self
+                                .activation
+                                .activated(&ui.small_button("Remove from draft"))
                             {
                                 remove = Some(index);
                             }
@@ -552,8 +550,7 @@ impl super::Desktop {
             self.open_task_context(key);
         }
         ui.horizontal_wrapped(|ui| {
-            if ui.add_enabled(!self.drafts.composer(self.workspace).text.trim().is_empty(), egui::Button::new("Save local draft"))
-                .clicked_by(egui::PointerButton::Primary)
+            if self.activation.activated(&ui.add_enabled(!self.drafts.composer(self.workspace).text.trim().is_empty(), egui::Button::new("Save local draft")))
             {
                 match self.drafts.save(self.workspace) {
                     Ok(()) => self.notice("Draft and context references stored in Shell memory. Not executed or sent to Hepta."),
@@ -563,15 +560,15 @@ impl super::Desktop {
             ui.small(format!("{} / {} saved drafts", self.drafts.drafts.len(), MAX_LOCAL_DRAFTS));
         });
         ui.horizontal_wrapped(|ui| {
-            if ui
-                .button("Export drafts to local file")
-                .clicked_by(egui::PointerButton::Primary)
+            if self
+                .activation
+                .activated(&ui.button("Export drafts to local file"))
             {
                 self.export_drafts();
             }
-            if ui
-                .button("Restore local export")
-                .clicked_by(egui::PointerButton::Primary)
+            if self
+                .activation
+                .activated(&ui.button("Restore local export"))
             {
                 self.restore_drafts();
             }
@@ -602,14 +599,11 @@ impl super::Desktop {
                     egui::ScrollArea::vertical()
                         .id_salt("workspace-inspector")
                         .show(ui, |ui| {
-                            if ui
-                                .add_enabled(
-                                    self.hepta.connection
-                                        == trill_ui_core::hepta::HeptaConnectionState::Observed,
-                                    egui::Button::new("Quote current Hepta context"),
-                                )
-                                .clicked_by(egui::PointerButton::Primary)
-                            {
+                            if self.activation.activated(&ui.add_enabled(
+                                self.hepta.connection
+                                    == trill_ui_core::hepta::HeptaConnectionState::Observed,
+                                egui::Button::new("Quote current Hepta context"),
+                            )) {
                                 self.quote_hepta();
                             }
                             self.inspector(ui);
