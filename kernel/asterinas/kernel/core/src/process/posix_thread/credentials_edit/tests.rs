@@ -256,3 +256,186 @@ fn shared_vm_credential_writer_waits_for_real_alien_capture() {
     assert!(!*vmar.unwrap().process_vm().dumpable().lock());
     drop(vmar);
 }
+
+#[ktest]
+fn alien_capture_commoncap_selects_effective_or_permitted_under_original_image_guard() {
+    let target = Fixture::new();
+    let caller = Fixture::new();
+    target.become_user();
+    caller.become_user();
+    target.edit(|credentials| credentials.set_permitted_capset(CapSet::CHOWN));
+    target.set_dumpable(true);
+    for mode in [
+        AlienAccessMode::READ_WITH_FS_CREDS,
+        AlienAccessMode::READ_WITH_REAL_CREDS,
+    ] {
+        let vmar = target.process.lock_vmar();
+        assert_eq!(
+            target
+                .thread()
+                .check_alien_access_from(caller.thread(), mode, &vmar)
+                .err()
+                .unwrap()
+                .error(),
+            Errno::EPERM
+        );
+    }
+    caller.edit(|credentials| credentials.set_permitted_capset(CapSet::CHOWN));
+    let vmar = target.process.lock_vmar();
+    let access = target
+        .thread()
+        .check_alien_access_from(
+            caller.thread(),
+            AlienAccessMode::READ_WITH_REAL_CREDS,
+            &vmar,
+        )
+        .unwrap();
+    assert!(vmar.unwrap().process_vm().dumpable().try_lock().is_none());
+    drop(access);
+    assert_eq!(
+        target
+            .thread()
+            .check_alien_access_from(caller.thread(), AlienAccessMode::READ_WITH_FS_CREDS, &vmar)
+            .err()
+            .unwrap()
+            .error(),
+        Errno::EPERM
+    );
+    caller.edit(|credentials| credentials.set_effective_capset(CapSet::CHOWN));
+    drop(
+        target
+            .thread()
+            .check_alien_access_from(caller.thread(), AlienAccessMode::READ_WITH_FS_CREDS, &vmar)
+            .unwrap(),
+    );
+    drop(vmar);
+    target.edit(|credentials| credentials.set_permitted_capset(CapSet::empty()));
+    caller.edit(|credentials| {
+        credentials.set_effective_capset(CapSet::empty());
+        credentials.set_permitted_capset(CapSet::empty());
+    });
+    let vmar = target.process.lock_vmar();
+    drop(
+        target
+            .thread()
+            .check_alien_access_from(caller.thread(), AlienAccessMode::READ_WITH_FS_CREDS, &vmar)
+            .unwrap(),
+    );
+}
+
+#[ktest]
+fn commoncap_consent_preserves_distinct_identity_policy_and_real_ptrace_exception() {
+    let target = Fixture::new();
+    let caller = Fixture::new();
+    target.edit(|credentials| {
+        credentials.set_gid(Gid::new(60002)).unwrap();
+        credentials.set_uid(Uid::new(60002)).unwrap();
+        credentials.set_permitted_capset(CapSet::CHOWN);
+    });
+    caller.become_user();
+    caller.edit(|credentials| credentials.set_permitted_capset(CapSet::CHOWN));
+    target.set_dumpable(true);
+    let vmar = target.process.lock_vmar();
+    // A capability superset alone cannot bypass the ordinary UID/GID condition.
+    assert_eq!(
+        target
+            .thread()
+            .check_alien_access_from(
+                caller.thread(),
+                AlienAccessMode::READ_WITH_REAL_CREDS,
+                &vmar
+            )
+            .err()
+            .unwrap()
+            .error(),
+        Errno::EPERM
+    );
+    drop(vmar);
+    target.set_dumpable(false);
+    // Consent uses the parent's permitted set, without ordinary UID/dump gates.
+    assert!(
+        !target
+            .thread()
+            .check_traceme_access_from(caller.thread())
+            .unwrap()
+    );
+    caller.edit(|credentials| credentials.set_permitted_capset(CapSet::empty()));
+    assert_eq!(
+        target
+            .thread()
+            .check_traceme_access_from(caller.thread())
+            .unwrap_err()
+            .error(),
+        Errno::EPERM
+    );
+    caller.edit(|credentials| {
+        credentials.set_permitted_capset(CapSet::SYS_PTRACE);
+        credentials.set_effective_capset(CapSet::SYS_PTRACE);
+    });
+    assert!(
+        target
+            .thread()
+            .check_traceme_access_from(caller.thread())
+            .unwrap()
+    );
+    let vmar = target.process.lock_vmar();
+    drop(
+        target
+            .thread()
+            .check_alien_access_from(caller.thread(), AlienAccessMode::READ_WITH_FS_CREDS, &vmar)
+            .unwrap(),
+    );
+}
+
+#[ktest]
+fn traceme_parent_capability_snapshot_waits_for_original_credential_publication() {
+    let parent = Arc::new(Fixture::new());
+    let child = Fixture::new();
+    parent.become_user();
+    child.become_user();
+    parent.edit(|credentials| credentials.set_permitted_capset(CapSet::CHOWN));
+    child.edit(|credentials| credentials.set_permitted_capset(CapSet::CHOWN));
+    let vmar = parent.process.lock_vmar();
+    let image = vmar.unwrap().process_vm().dumpable().lock();
+    let started = Arc::new(AtomicBool::new(false));
+    let finished = Arc::new(AtomicBool::new(false));
+    let started_worker = started.clone();
+    let finished_worker = finished.clone();
+    let parent_worker = parent.clone();
+    let worker = ThreadOptions::new(move || {
+        started_worker.store(true, Ordering::Release);
+        assert_eq!(
+            child
+                .thread()
+                .check_traceme_access_from(parent_worker.thread())
+                .unwrap_err()
+                .error(),
+            Errno::EPERM
+        );
+        finished_worker.store(true, Ordering::Release);
+    })
+    .cpu_affinity(CpuId::current_racy().into())
+    .spawn();
+    for _ in 0..128 {
+        Task::yield_now();
+        if started.load(Ordering::Acquire) {
+            break;
+        }
+    }
+    assert!(started.load(Ordering::Acquire));
+    assert!(!finished.load(Ordering::Acquire));
+    // Finish the real credential transaction before the waiting check can read it.
+    let credentials = parent.thread().credentials.dup().restrict();
+    let transaction = CredentialsEdit::new(&credentials, image);
+    transaction.set_permitted_capset(CapSet::empty());
+    drop(transaction);
+    drop(vmar);
+    for _ in 0..256 {
+        Task::yield_now();
+        if worker.is_exited() {
+            break;
+        }
+    }
+    assert!(finished.load(Ordering::Acquire));
+    assert!(worker.is_exited());
+}

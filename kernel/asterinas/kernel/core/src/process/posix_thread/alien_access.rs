@@ -56,10 +56,25 @@ impl PosixThread {
         })
     }
 
-    /// Voluntary TRACEME retains its original LSM/trusted-image policy.
-    /// It is not an external ptrace_may_access request and gains no dumpability gate.
-    pub(crate) fn check_traceme_access_from(&self, accessor: &PosixThread) -> Result<()> {
-        self.check_original_alien_access_from(accessor, AlienAccessMode::ATTACH_WITH_REAL_CREDS)
+    /// Checks voluntary TRACEME and captures the parent's original SYS_PTRACE bit.
+    /// The calling child owns its credentials; the independently running parent's
+    /// credentials are read under its VMAR/shared-image publication transaction.
+    /// No dumpability or ordinary UID check applies to this consent operation.
+    pub(crate) fn check_traceme_access_from(&self, accessor: &PosixThread) -> Result<bool> {
+        let parent = accessor.process();
+        let vmar = parent.lock_vmar();
+        let _credentials = vmar
+            .as_ref()
+            .map(|vmar| vmar.process_vm().dumpable().lock());
+        self.check_original_alien_access_from(accessor, AlienAccessMode::TRACEME)?;
+        let process = self.process();
+        let user_ns = process.user_ns().lock();
+        Ok(lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+            user_ns.as_ref(),
+            accessor,
+            CapSet::SYS_PTRACE,
+        ))
+        .is_ok())
     }
 
     fn check_original_alien_access_from(
@@ -68,8 +83,7 @@ impl PosixThread {
         mode: AlienAccessMode,
     ) -> Result<()> {
         #[cfg(feature = "g1c-trusted-observe")]
-        if mode.kind() == AlienAccessKind::Attach && self.process().has_initial_observe_authority()
-        {
+        if mode.kind() != AlienAccessKind::Read && self.process().has_initial_observe_authority() {
             return_errno_with_message!(
                 Errno::EPERM,
                 "alien attachment to the trusted initial image is forbidden"
@@ -92,6 +106,7 @@ pub(crate) enum CredsSource {
 pub(crate) enum AlienAccessKind {
     Read,
     Attach,
+    Traceme,
 }
 
 /// An alien access check mode.
@@ -102,8 +117,10 @@ pub(crate) struct AlienAccessMode {
 }
 
 impl AlienAccessMode {
+    /// Voluntary tracing, authorized by the actual parent's permitted set.
+    const TRACEME: Self = Self::new(AlienAccessKind::Traceme, CredsSource::RealCreds);
     /// Read-only alien access check using real credentials.
-    #[expect(dead_code)]
+    #[cfg_attr(not(ktest), expect(dead_code))]
     pub(crate) const READ_WITH_REAL_CREDS: Self =
         Self::new(AlienAccessKind::Read, CredsSource::RealCreds);
     /// Attach-level alien access check using real credentials.
