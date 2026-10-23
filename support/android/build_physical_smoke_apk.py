@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the unchanged DEX fixture with an installed SDK; never contact ADB.
+"""Build the reviewed DEX fixture with an installed SDK; never contact ADB.
 
 This is an SDK-built Android application, not the pinned AOSP/Soong product.
 The task-local signing key is a disposable test identity, not a release key.
@@ -24,7 +24,7 @@ SOURCE_FILES = (
     'app/src/main/java/org/trillionnium/a08smoke/MainActivity.java',
     'app/src/main/res/values/ids.xml',
 )
-ORIGINAL_SOURCE_SHA256 = 'd5a8498ef5e36c9817d52fecb11b1b2aff36d29731b6aedce27831bdf0a59619'
+ORIGINAL_SOURCE_SHA256 = '94d550360d7b36fe69b054472d46f8e8f01b50b0618ba8f335b25e7ef34fa5da'
 PROFILE = 'a08_original_dex_installed_sdk'
 
 

@@ -18,7 +18,7 @@ intentionally rejects compilation outside x86_64; it is not used here.
 
 `support/android/build_physical_smoke_apk.py` reads seven immutable Git blobs
 from an explicit full commit SHA. Their sorted name-to-SHA256 inventory must
-hash to `d5a8498ef5e36c9817d52fecb11b1b2aff36d29731b6aedce27831bdf0a59619`.
+hash to `94d550360d7b36fe69b054472d46f8e8f01b50b0618ba8f335b25e7ef34fa5da`.
 This binds the original Java, manifest, resources and original build recipes;
 dirty or untracked checkout contents are not build inputs. Changing this fixture
 requires reviewing the source contract and updating the pin deliberately.
@@ -41,6 +41,19 @@ hashes. The local test certificate is generated per build, so APK/certificate
 digests are newly measured, not promised deterministic across builds. The
 task-local test key has a public fixture password and is never a production
 signing identity. Do not redistribute it as a release key.
+
+The current pin deliberately includes an Android 15+ edge-to-edge layout fix.
+On the measured Android 17 device, the earlier source pin
+`d5a8498ef5e36c9817d52fecb11b1b2aff36d29731b6aedce27831bdf0a59619`
+placed the saved value and input under the native title/status area. Fresh
+accessibility bounds still exposed those occluded nodes, and a coordinate tap
+did not focus the input. Original device failures, screenshot and cleanup are
+retained separately. The revised fixture uses the platform no-action-bar theme
+and actual system-bar/cutout insets, with an API 28 fallback. The three original
+resource IDs, SAVE/SharedPreferences logic, min/target SDK and permissions stay
+unchanged. It requires a fresh immutable-source build and new APK/signer digests;
+old APK or host receipts do not qualify the revision. Insets rendering on API 28
+remains unexecuted until an actual API 28 target is tested.
 
 ## Technical execution contract
 
@@ -98,7 +111,7 @@ the runner is a bounded test harness, not a new production authorization owner.
     python3 support/android/run_physical_smoke.py \
       --build-manifest /absolute/build/build.json --apk /absolute/build/A08Smoke.apk \
       --expected-manifest-sha256 MEASURED_MANIFEST_SHA256 \
-      --expected-source-sha256 d5a8498ef5e36c9817d52fecb11b1b2aff36d29731b6aedce27831bdf0a59619 \
+      --expected-source-sha256 94d550360d7b36fe69b054472d46f8e8f01b50b0618ba8f335b25e7ef34fa5da \
       --expected-apk-sha256 MEASURED_APK_SHA256 \
       --expected-certificate-sha256 MEASURED_SIGNER_SHA256 \
       --adb /absolute/existing/adb --expected-adb-sha256 MEASURED_ADB_SHA256 \
