@@ -138,11 +138,12 @@ int main(int argc, char **argv)
         if (!end || *end || !request_number) return 2;
         uint8_t request[HEADER], response[QUERY_RESPONSE] = {0}, transport[TRANSPORT] = {0};
         query(request);
-        w64(transport, (uintptr_t)request); w32(transport + 8, sizeof(request));
-        w64(transport + 16, (uintptr_t)response); w32(transport + 24, sizeof(response));
+        w64(transport, (uintptr_t)request); w64(transport + 8, (uintptr_t)response);
+        w32(transport + 16, sizeof(request)); w32(transport + 20, sizeof(response));
         fd = open("/dev/hepta-control", O_RDWR | O_CLOEXEC);
         int ok = fd >= 0 && ioctl(fd, request_number, transport) == 0 && check_query(response, sizeof(response)) == 0;
         if (fd >= 0) close(fd);
+        // Original HOSR header bytes40..56 are boot_id; body starts with image_space_id.
         result("hos2_same_boot", ok && memcmp(response + 40, identity, 16) == 0);
     }
     uuid[36] = 0;

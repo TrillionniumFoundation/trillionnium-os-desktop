@@ -21,3 +21,13 @@ The full unfiltered core gate increases from 324 to 327 tests, with all earlier 
 The preceding source `9cb609318c16fb4ad8d5352dfc57465df92688e0` / tree `5cca874fa37d75279e539bdb868ae936925b5869` passed the original four suites in `/data/asterinas-audit-build.8tdrjboi/unix-datagram-native-9cb-01`: core 324/324 (85 required, no skipped/filtered tests), allocator 20/20, MLSDisk 15/15 and OSTD 229/229 (the original three TCG VMX soft skips). All four raw QEMU exits were 33; outer exit was 0 after 337.113 seconds. Before/after source manifests were equal. The retained core ELF SHA-256 is `43e5a12d31db3296727de464c5123a6afbb176ea8ace288136733d753101e672`; its serial SHA-256 is `6d8f85e872cd8301ab1b6fcbb61059eb5c012ac696c5757358478745eed9bc2d`.
 
 That result covers the five datagram frame-owner and three datagram queue-bound regressions. It does not cover this later seqpacket patch. The earlier `adbc15a9` failed run and same-ELF fixture diagnosis remain preserved; see [fixture diagnosis](UNIX_DATAGRAM_FIXTURE_DIAGNOSIS.md).
+
+## Joint native qualification
+
+The later frozen joint source `1d10230e1d00a9a8cea982d24320099f19cac71a`
+ran all three original queue regressions in its complete 341-test core suite, without filtering.
+Its same-source ordinary kernel also passed the actual 128-empty-message syscall case,
+including readiness, peek retention and consumption reopening capacity.
+The [joint receipt](../../results/integration/2026-10-23-audit-closure/unix-ownership-1d102.json)
+records the complete source, 512 MiB/single-vCPU profile, exact artifacts and raw exit results.
+This result belongs to that source; the earlier 9cb result alone did not qualify this change.

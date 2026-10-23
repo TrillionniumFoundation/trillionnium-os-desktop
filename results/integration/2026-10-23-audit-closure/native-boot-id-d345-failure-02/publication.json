@@ -1,0 +1,45 @@
+{
+  "schema": "trillionnium.source-bound-acceptance-publication.v1",
+  "raw_evidence_directory": "/data/asterinas-audit-build.8tdrjboi/proc-boot-native-d345-02",
+  "files": [
+    {
+      "raw": "boot-1.log",
+      "published": "boot-1.log.gz",
+      "raw_bytes": 84327,
+      "raw_sha256": "9c1b71ebd3e0bf81ec508772d3d64c3fb658839cf11ee48be469175dbed32f41",
+      "published_sha256": "df818806c258dc3436e2fc88c9802e937b04dc0cdb50d9cad298e2b1b484ad06",
+      "compressed": true
+    },
+    {
+      "raw": "boot-2.log",
+      "published": "boot-2.log.gz",
+      "raw_bytes": 84328,
+      "raw_sha256": "c767a0d60f054248fa501849c366cd5843701874c0ff25102452df4598a22db9",
+      "published_sha256": "41687c563a189fb3a7badc30e6b35828092dbf8475368f71730b6c860e314f08",
+      "compressed": true
+    },
+    {
+      "raw": "compile.log",
+      "published": "compile.log.gz",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "compressed": true
+    },
+    {
+      "raw": "result.json",
+      "published": "result.json",
+      "raw_bytes": 4768,
+      "raw_sha256": "612a94f9488176dfc47419df3c9b998684757ec94d845f750e16d7595876e1c3",
+      "published_sha256": "612a94f9488176dfc47419df3c9b998684757ec94d845f750e16d7595876e1c3",
+      "compressed": false
+    }
+  ],
+  "selection": "Original text receipts, manifests and logs. ELF/initrd/targets remain at the recorded raw location; their SHA256 is retained.",
+  "production_ready": false,
+  "g2_complete": false,
+  "passed": false,
+  "failure_boundary": "Corrected transport but the probe compared image_space_id in the body with boot_id instead of the original header bytes40..56.",
+  "original_codec_changed": false,
+  "later_success_transferred": false
+}

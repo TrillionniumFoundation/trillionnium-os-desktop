@@ -51,6 +51,39 @@ The unfiltered core gate retains all prior 327 tests and adds 12 named regressio
 
 The source passes cfg(ktest) Clippy (106 pre-existing warnings), all 81 original build host tests, all six new probe-oracle tests and the original 118-input source gate. The first host attempt found 15 missing tracked historical-evidence files in a sparse checkout; that failed log is retained. The checkout was fully materialized and the unmodified 81-test suite then passed. At this source stage the candidate has compilation/checker evidence only; the new 339-test native run and ten-case userspace run are pending. The Linux `--linux-notes-reference` run executes only the two positive Notes cases and is never accepted as kernel qualification. Likewise the prior `9cb60931` 324-test result does not qualify these changes. No hardware memory-pressure, full Linux GC, power-loss or general AI-organ production readiness is claimed.
 
+## Qualified joint source
+
+The subsequent joint source `1d10230e1d00a9a8cea982d24320099f19cac71a`
+(tree `09255d5b6a90aea30779739e4e1151c81769277c`) includes the graph leaf `21cc79ff`,
+its partial-receive test correction `ccac4a62`, and the two independently reviewed SGID creation fixes.
+Its source-built OSDK ran the original unfiltered four suites:
+core **341/341** with all **102** required names,
+allocator **20/20**, MLSDisk **15/15**, and OSTD **229/229** with the original three TCG VMX soft skips.
+Each guest returned raw QEMU exit 33; core, allocator and MLSDisk had no skips or filtered tests.
+The complete four-suite wrapper returned zero and retained each exact test ELF.
+
+The same frozen source produced the ordinary kernel
+`cb98d774a1d56fb9a2e4bb0598857224528b29e1286778d30031d1bd2f767299` (SHA-256).
+That kernel passed the original 18 required QueryABI/boot markers,
+the 30 RamFs/Ext2 SGID userspace cases,
+and all ten UNIX ownership syscall cases listed above.
+The ownership guest completed in 1.858 seconds under its unchanged 120-second deadline,
+returned raw exit 33, and actually reaped both concurrent sender children before completion.
+All runs retained the original 512 MiB, single-vCPU TCG profile.
+Full tracked-file snapshots before the suites and after the userspace run are identical;
+the checkout remained clean.
+See the [source-bound receipt](../../results/integration/2026-10-23-audit-closure/unix-ownership-1d102.json)
+for complete source, test-ELF, ordinary-ELF, raw-serial and receipt hashes.
+
+This qualifies the selected payload, queue and acyclic ownership paths on that exact joint source.
+It does not qualify arbitrary future sources, SMP contention, physical devices,
+general kernel heap/page-table accounting, full Linux socket garbage collection,
+or guaranteed recovery under global exhaustion.
+The original cycle-reproduction/fixture failure remains separate evidence;
+the parked all-Unix-descriptor rejection candidate remains unsupported for Notes.
+The [Linux compatibility page](../../kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/README.md)
+and its SCML rules also state the descriptor-admission and capacity boundaries.
+
 After freezing an exact source, run the original full four-crate suite with its source-built OSDK, then build its ordinary kernel and run:
 
 ```text
@@ -58,3 +91,12 @@ python3 tests/workloads/linux/unix_ownership/run_guest.py --kernel <same-source-
 ```
 
 Keep source snapshots, compiler/checker failures, raw serial output, QEMU results and retained ELF hashes. A user-space probe failure must not be converted into success by a completion marker or a relaxed timeout.
+
+The follow-up compatibility documentation was parsed with the original `sctrace` tool
+against all 75 SCML files and a real traced host process; the validator exited zero.
+Its first offline attempt failed before running because the pinned `anstream` package was not cached.
+The retry downloaded the unchanged locked dependencies into the normal Cargo cache,
+used a separate `/data` target, and preserved the original tool lock SHA-256
+`3e511c799fd2adec38020e60d4848d657f96fa10ca76c6019ff5a1e12a4cfb09`.
+The original 118-input build-source gate also passed.
+These are documentation/build-input checks, not another native kernel qualification.

@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "crates": [
+    {
+      "passed": true,
+      "guests": [
+        {
+          "crate": "aster-mlsdisk",
+          "declared": 15,
+          "passed": 15,
+          "failed": 0,
+          "filtered": 0,
+          "soft_skipped": 0,
+          "soft_skip_reasons": [],
+          "exercised_passed_lower_bound": 15,
+          "observed_test_starts": 15,
+          "required_permission_tests": [],
+          "required_core_tests": [],
+          "required_allocator_tests": [],
+          "allocator_exhaustion": null,
+          "required_mlsdisk_tests": [
+            "aster_mlsdisk::test::write_sync_read",
+            "aster_mlsdisk::test::raw_disk_flush_submits_and_reports_terminal_failure",
+            "aster_mlsdisk::test::mlsdisk_sync_returns_device_flush_error",
+            "aster_mlsdisk::test::mlsdisk_flush_bio_completes_with_io_error",
+            "aster_mlsdisk::test::entropy_failure_prevents_blob_and_chain_publication",
+            "aster_mlsdisk::test::entropy_failure_keeps_buffered_disk_data_for_retry",
+            "aster_mlsdisk::test::entropy_failure_aborts_original_log_transaction",
+            "aster_mlsdisk::test::entropy_failure_does_not_apply_current_journal_edit",
+            "aster_mlsdisk::test::delayed_bio_completes_after_original_task_parks",
+            "aster_mlsdisk::test::transaction_callbacks_sleep_and_defer_reentrant_registration",
+            "aster_mlsdisk::test::final_store_owner_releases_real_disk_between_full_runs",
+            "aster_mlsdisk::test::frame_backed_disk_handles_noncontiguous_cross_page_bios",
+            "aster_mlsdisk::os::entropy_test::entropy_fill_reports_partial_failure_and_exact_word_count",
+            "aster_mlsdisk::os::entropy_test::entropy_cut_is_task_scoped_and_restored_on_drop",
+            "aster_mlsdisk::layers::log::tx_log::entropy_tests::journal_entropy_failure_aborts_before_log_publication"
+          ],
+          "mlsdisk_media_durability_qualified": false,
+          "required_ostd_tests": [],
+          "raw_qemu_exit": 33,
+          "guest": "guest-001"
+        }
+      ]
+    }
+  ]
+}

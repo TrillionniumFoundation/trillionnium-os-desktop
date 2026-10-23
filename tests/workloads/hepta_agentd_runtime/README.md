@@ -11,15 +11,34 @@ It does not complete F1, native production G2, durable crash recovery, aggregate
 memory isolation, SMP qualification, or hardware acceptance. The report keeps
 those fields false even when its lifecycle oracle passes.
 
+## Executed fixed-source lifecycle (2026-10-23)
+
+The original unchanged b3 library fixture executed eight checks in the actual
+7d Asterinas-derived ordinary guest: Starting, Running, bounded capabilities
+and events, missing-run read, same-process draining, restart, rejection of an
+old spawn, and controlled stop. PID changed 26 to 206 and spawn 1 to 5; QEMU
+returned 33 without timeout and all inputs remained unchanged. The exact
+[result and raw serial](../../../results/integration/2026-10-23-audit-closure/native-runtime-7d-b3/publication.json)
+bind the full source identities and actual binaries.
+
+The earlier cold preparation deadline, final clean-status deadline and formal
+60-second Running-readiness failure remain retained. A separate diagnostic run
+is not qualification. This success covers the original read-only lifecycle
+only: no model turn, objective submission, device effect, production grant,
+writer lock, authenticated cut, durable CPU K↔D or complete F1/G2 was executed.
+It does not qualify later integrated source trees.
+
 ## Current fresh-build profile
 
 The current `source-review.json` selects Desktop
-`7d8906ef9fbb5f3af4e6bb0843b79ac666394833` / tree
-`ca4b875cdb553291a99f4a550eb0b2bd6649de8c` and Hepta
+`0187bd578f6786c40c812c13976e4889a1aba835` / tree
+`335007e4f94114c6a26506d9448faf0d43c4245c` and Hepta
 `b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` / tree
-`b035a577969cb503d7c09620694a6b6c54178c97`. It includes the UDP, exec
+`b035a577969cb503d7c09620694a6b6c54178c97`. It additionally binds the IPC physical-frame, explicit page-table and watchdog
+changes. This updated profile has not yet executed; earlier 7d/b3 lifecycle
+results remain source-specific. It includes the UDP, exec
 argument, family user-frame, initial-stack and readonly fixes and the Oct 23
-original-owner recovery/issuer/composition stack. The 84 selected source
+original-owner recovery/issuer/composition stack. The 154 selected source
 identities are a review input, not a runtime receipt.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,

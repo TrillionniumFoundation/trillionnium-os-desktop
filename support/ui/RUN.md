@@ -9,13 +9,18 @@ environment; a pass there does not establish the 1.88.0 host gate. Required
 host dependencies include network/cached crates,
 Linux Wayland (or X11), OpenGL/Mesa including llvmpipe for software rendering,
 libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
-The crates' `rust-version = "1.83"` metadata is not a demonstrated minimum
-for every transitive dependency in the current lockfile.
+The UI workspace declares Rust **1.88** to match the locked dependencies and
+the blocking host workflow. Builds on a newer compiler alone do not validate
+this minimum. The native renderer includes AccessKit; see
+[`ACCESSIBILITY.md`](ACCESSIBILITY.md) for the AT-SPI gate and its limits.
 
 For the Session-owned Hepta runtime observer, explicit endpoint configuration,
 read-only UI behavior and its separate acceptance limits, see
 [`HEPTA_OBSERVER.md`](HEPTA_OBSERVER.md). Authenticated objective submission
-is not configured; Conversation remains a local draft.
+is disabled in a standalone Session. A host configured with the fixed private
+Notes-only Objective bridge can expose Write note via Hepta after a fresh
+Ready observation. Chat drafts are retained; quoted context is not silently
+dropped or promoted to authority. See [`OBJECTIVE_UI.md`](OBJECTIVE_UI.md).
 
 The default Shell now opens Workspace / Chat with typed local draft/context
 references and embedded Tasks, Context and Console tabs. See

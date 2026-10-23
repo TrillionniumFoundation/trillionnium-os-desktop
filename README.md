@@ -8,10 +8,11 @@ writer, outbox and operation-history ownership.
 
 | Need | Entry point |
 | --- | --- |
+| Current candidate capabilities, evidence and unqualified product gates | [Current capabilities](docs/CURRENT_CAPABILITIES.md) |
 | System boundaries and component ownership | [Architecture](docs/ARCHITECTURE.md) |
 | Hepta integration and original owners | [Hepta integration](docs/HEPTA_INTEGRATION.md) |
-| Development and technical documentation by delivery area | [Module documentation audit](docs/agents/MODULE_DOCUMENTATION_AUDIT.md) |
-| Current implementation sequence and remaining product work | [Implementation next steps](docs/agents/ORGAN_IMPLEMENTATION_NEXT.md) |
+| Development and technical documentation by delivery area | [Module index](docs/INDEX.md) |
+| Implementation sequence and remaining product work | [Roadmap](docs/ROADMAP.md) |
 | Current status and historical execution records | [Status](docs/STATUS.md) |
 | Kernel build, boot and source verification | [Build guide](support/build/README.md) |
 | UI development and execution | [UI run guide](support/ui/RUN.md) |
@@ -28,7 +29,7 @@ separate scopes.
 
 The next-step document records the remaining original-owner, native daemon,
 isolation, recovery and hardware work. Shared module manuals are intentional;
-the module audit identifies which crates still lack a nearby independent entry.
+the dated module audit preserves its original inventory; the module index links the current nearby entries.
 
 ## Development
 

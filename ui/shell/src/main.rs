@@ -1,9 +1,12 @@
 //! Rust AI-workspace shell for a Linux/Wayland host, not for the target kernel.
+#[path = "../../activation.rs"]
+mod activation;
 mod conversation;
 mod hepta_panel;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
 mod local_drafts;
+mod objective_panel;
 
 use conversation::{DraftBook, HostObservation, WorkspaceTab};
 use eframe::egui::{self, Color32, RichText};
@@ -100,6 +103,7 @@ struct BridgeReply {
 struct Bridge {
     actions: SyncSender<Request>,
     polls: SyncSender<()>,
+    objective_polls: SyncSender<Request>,
     rx: Receiver<BridgeReply>,
 }
 impl Bridge {
@@ -112,6 +116,7 @@ impl Bridge {
     ) -> Self {
         let (actions, incoming_actions) = mpsc::sync_channel::<Request>(8);
         let (polls, incoming_polls) = mpsc::sync_channel::<()>(1);
+        let (objective_polls, incoming_objective_polls) = mpsc::sync_channel::<Request>(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
         // The worker, not egui, waits for the Unix socket. After each IPC,
         // prioritized actions are handled before the coalesced next poll.
@@ -119,16 +124,19 @@ impl Bridge {
             let (message, is_action) = match incoming_actions.try_recv() {
                 Ok(action) => (action, true),
                 Err(TryRecvError::Disconnected) => break,
-                Err(TryRecvError::Empty) => match incoming_polls.try_recv() {
-                    Ok(()) => (Request::Snapshot, false),
-                    Err(TryRecvError::Disconnected) => break,
-                    Err(TryRecvError::Empty) => {
-                        match incoming_actions.recv_timeout(Duration::from_millis(40)) {
-                            Ok(action) => (action, true),
-                            Err(mpsc::RecvTimeoutError::Disconnected) => break,
-                            Err(mpsc::RecvTimeoutError::Timeout) => continue,
+                Err(TryRecvError::Empty) => match incoming_objective_polls.try_recv() {
+                    Ok(request) => (request, false),
+                    Err(_) => match incoming_polls.try_recv() {
+                        Ok(()) => (Request::Snapshot, false),
+                        Err(TryRecvError::Disconnected) => break,
+                        Err(TryRecvError::Empty) => {
+                            match incoming_actions.recv_timeout(Duration::from_millis(40)) {
+                                Ok(action) => (action, true),
+                                Err(mpsc::RecvTimeoutError::Disconnected) => break,
+                                Err(mpsc::RecvTimeoutError::Timeout) => continue,
+                            }
                         }
-                    }
+                    },
                 },
             };
             let request_started_at = Instant::now();
@@ -145,11 +153,22 @@ impl Bridge {
                 break;
             }
         });
-        Self { actions, polls, rx }
+        Self {
+            actions,
+            polls,
+            objective_polls,
+            rx,
+        }
     }
 
     fn send_action(&self, request: Request) -> bool {
         self.actions.try_send(request).is_ok()
+    }
+
+    fn poll_objective(&self, request: Request) {
+        // Coalesce passive authority/status observations independently of the
+        // bounded user action queue and ordinary snapshot polling.
+        let _ = self.objective_polls.try_send(request);
     }
 
     fn poll(&self) {
@@ -220,6 +239,8 @@ fn observed_host_line(task: &TaskRecord) -> String {
 }
 
 struct Desktop {
+    activation: activation::ActivationGuard,
+    objectives: objective_panel::ObjectivePanel,
     page: Page,
     workspace: Workspace,
     drafts: DraftBook,
@@ -264,6 +285,8 @@ impl Desktop {
             page => page,
         };
         Self {
+            activation: activation::ActivationGuard::default(),
+            objectives: objective_panel::ObjectivePanel::default(),
             page,
             workspace: Workspace::Personal,
             drafts,
@@ -292,6 +315,17 @@ impl Desktop {
             self.notices.pop_front();
         }
         self.notices.push_back(message.into());
+    }
+
+    fn navigation_activated(&self, response: &egui::Response) -> bool {
+        if cfg!(feature = "hepta-shared-presenter") {
+            // A commit can end `composing` before this frame renders the old
+            // editor. Keep that frame's original guard fence so navigation
+            // cannot move the commit to a different workspace's composer.
+            self.activation.activated(response)
+        } else {
+            response.clicked()
+        }
     }
 
     /// A queue admission is NOT a successful OS operation. Report false
@@ -357,6 +391,7 @@ impl Desktop {
                         .as_ref()
                         .is_some_and(|id| id != &session_instance)
                     {
+                        self.objectives.invalidate();
                         self.tasks.clear();
                         self.selected = None;
                         self.notice("Host session restarted: previous child history cannot be reattached or trusted.");
@@ -388,6 +423,9 @@ impl Desktop {
                         resources.sampled_unix_ms,
                         received_at,
                     );
+                    if self.session_instance.as_deref() != Some(session_instance.as_str()) {
+                        self.objectives.follow_session(&session_instance);
+                    }
                     self.session_instance = Some(session_instance);
                     self.connected = true;
                     self.session_error.clear();
@@ -401,6 +439,18 @@ impl Desktop {
                         }
                     }
                     self.tasks = tasks;
+                }
+                Ok(Response::Objective {
+                    observation,
+                    session_instance,
+                }) => {
+                    if self.session_instance.as_deref() == Some(session_instance.as_str()) {
+                        self.objectives
+                            .observe(&session_instance, observation, received_at);
+                    } else {
+                        self.objectives.invalidate();
+                        self.bridge.poll();
+                    }
                 }
                 Ok(Response::Task {
                     task,
@@ -435,6 +485,7 @@ impl Desktop {
                         self.notice(format!("Session unavailable: {err}; no success inferred"));
                     }
                     self.connected = false;
+                    self.objectives.invalidate();
                     self.host_observation.disconnect(false);
                     self.resources = None;
                     self.hepta.mark_unavailable("host_session_unavailable");
@@ -559,13 +610,10 @@ impl Desktop {
                 });
                 ui.small(format!("PID {:?} · {}", task.pid, task.execution_mode));
                 ui.horizontal_wrapped(|ui| {
-                    if ui
-                        .add_enabled(
-                            self.host_observation.is_current(),
-                            egui::Button::new("Quote in draft"),
-                        )
-                        .clicked_by(egui::PointerButton::Primary)
-                    {
+                    if self.activation.activated(&ui.add_enabled(
+                        self.host_observation.is_current(),
+                        egui::Button::new("Quote in draft"),
+                    )) {
                         self.quote_task(task.id);
                     }
                     if ui.small_button("Details").clicked() {
@@ -602,13 +650,10 @@ impl Desktop {
                         ui.heading(kind.name());
                         ui.label("Separate Rust GUI process · independent Wayland/X11 window");
                     });
-                    if ui
-                        .add_enabled(
-                            self.host_observation.is_current(),
-                            egui::Button::new("Launch"),
-                        )
-                        .clicked_by(egui::PointerButton::Primary)
-                        && self.launch_host_app(self.workspace, kind)
+                    if self.activation.activated(&ui.add_enabled(
+                        self.host_observation.is_current(),
+                        egui::Button::new("Launch"),
+                    )) && self.launch_host_app(self.workspace, kind)
                     {
                         self.show_workspace_tab(WorkspaceTab::Tasks);
                     }
@@ -633,13 +678,10 @@ impl Desktop {
                 .iter()
                 .filter(|task| task.workspace == workspace)
                 .count();
-            if ui
-                .selectable_label(
-                    self.workspace == workspace,
-                    format!("{}    ·    {} host tasks", workspace.name(), count),
-                )
-                .clicked()
-            {
+            if self.navigation_activated(&ui.selectable_label(
+                self.workspace == workspace,
+                format!("{}    ·    {} host tasks", workspace.name(), count),
+            )) {
                 self.workspace = workspace;
                 self.selected = None;
                 self.show_workspace_tab(WorkspaceTab::Tasks);
@@ -716,7 +758,7 @@ impl Desktop {
         ui.label(host_fonts::status_label(ctx));
         ui.small("Set TRILL_UI_CJK_FONT to an absolute host font path; font coverage does not verify an input method.");
         hepta_panel::status(ui, &self.hepta);
-        ui.label("Hepta objective submission: unavailable; local drafts only");
+        ui.label("General AI task execution: unavailable; Notes-only actions require current host readiness");
         ui.label("Native HOS2 resource revision: unavailable");
         ui.label("Compositor: external Wayland/X11 host, not bundled");
         ui.separator();
@@ -745,7 +787,7 @@ impl Desktop {
             ui.small(&self.session_error);
         }
         hepta_panel::status(ui, &self.hepta);
-        ui.small("Objective submission: unavailable");
+        ui.small("Notes-only actions: see Conversation for current host availability");
         ui.label("HOS2: NOT OBSERVED");
         ui.separator();
         ui.label(RichText::new("Host resource sample").strong());
@@ -850,13 +892,10 @@ impl Desktop {
                 ui.colored_label(warning(), "Native UI first frame: unobserved");
             }
             ui.small(format!("Last lifecycle change: {}", task.updated_unix_ms));
-            if ui
-                .add_enabled(
-                    self.host_observation.is_current(),
-                    egui::Button::new("Quote selected task in draft"),
-                )
-                .clicked_by(egui::PointerButton::Primary)
-            {
+            if self.activation.activated(&ui.add_enabled(
+                self.host_observation.is_current(),
+                egui::Button::new("Quote selected task in draft"),
+            )) {
                 self.quote_task(task.id);
             }
             ui.separator();
@@ -872,9 +911,9 @@ impl Desktop {
                     warning(),
                     "Old client window unverified after compositor restart. A fresh process cannot restore unsaved app state.",
                 );
-                if ui
-                    .button("Launch NEW window (not reattach)")
-                    .clicked_by(egui::PointerButton::Primary)
+                if self
+                    .activation
+                    .activated(&ui.button("Launch NEW window (not reattach)"))
                     && self.launch_host_app(task.workspace, task.app)
                 {
                     self.notice(format!(
@@ -886,9 +925,7 @@ impl Desktop {
             }
             if self.host_observation.is_current()
                 && !task.state.is_terminal()
-                && ui
-                    .button("Request termination")
-                    .clicked_by(egui::PointerButton::Primary)
+                && self.activation.activated(&ui.button("Request termination"))
             {
                 if let Some(expected_instance) = self.session_instance.clone() {
                     self.submit(Request::Cancel {
@@ -927,6 +964,10 @@ impl Desktop {
 
 impl eframe::App for Desktop {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.activation.begin_frame(ctx);
+        #[cfg(feature = "hepta-shared-presenter")]
+        self.drafts
+            .observe_composition(self.workspace, self.activation.composing());
         self.receive_and_refresh_hepta(|| (Instant::now(), trill_ui_core::unix_ms()));
         if self.last_poll.elapsed() >= Duration::from_millis(800) {
             self.last_poll = Instant::now();
@@ -937,6 +978,9 @@ impl eframe::App for Desktop {
                 ui.label(RichText::new("TRILLIONNIUM").size(22.0).strong());
                 ui.separator();
                 ui.label("AI-native workspace · Linux host prototype");
+                if self.activation.composing() {
+                    ui.small("IME composition active · action controls wait for commit");
+                }
                 ui.separator();
                 ui.colored_label(
                     if self.host_observation.is_current() {
@@ -954,10 +998,9 @@ impl eframe::App for Desktop {
             .show(ctx, |ui| {
                 ui.heading("Workspace");
                 for workspace in Workspace::ALL {
-                    if ui
-                        .selectable_label(self.workspace == workspace, workspace.name())
-                        .clicked()
-                    {
+                    if self.navigation_activated(
+                        &ui.selectable_label(self.workspace == workspace, workspace.name()),
+                    ) {
                         self.workspace = workspace;
                         self.selected = None;
                         self.page = Page::Conversation;
@@ -965,9 +1008,8 @@ impl eframe::App for Desktop {
                 }
                 ui.separator();
                 for page in [Page::Conversation, Page::Apps, Page::Settings] {
-                    if ui
-                        .selectable_label(self.page == page, page.name())
-                        .clicked()
+                    if self
+                        .navigation_activated(&ui.selectable_label(self.page == page, page.name()))
                     {
                         self.page = page;
                     }
@@ -1110,6 +1152,8 @@ mod observation_freshness_tests {
         let (polls, _incoming_polls) = mpsc::sync_channel(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
         let desktop = Desktop {
+            activation: activation::ActivationGuard::default(),
+            objectives: objective_panel::ObjectivePanel::default(),
             page: Page::Hepta,
             workspace: Workspace::Personal,
             drafts: DraftBook::default(),
@@ -1124,7 +1168,12 @@ mod observation_freshness_tests {
             session_instance: None,
             session_error: String::new(),
             last_poll: Instant::now(),
-            bridge: Bridge { actions, polls, rx },
+            bridge: Bridge {
+                actions,
+                polls,
+                objective_polls: mpsc::sync_channel(1).0,
+                rx,
+            },
             zoom: 1.0,
             show_notifications: false,
             notices: VecDeque::new(),
@@ -1849,6 +1898,12 @@ mod bridge_tests {
                 Request::Snapshot => "snapshot",
                 Request::Launch { .. } => "launch",
                 Request::Cancel { .. } => "cancel",
+                Request::ObjectiveAvailability { .. } | Request::ObjectiveStatus { .. } => {
+                    "objective_poll"
+                }
+                Request::ObjectiveSubmit { .. } | Request::ObjectiveCancel { .. } => {
+                    "objective_action"
+                }
             };
             observed_in_worker.lock().unwrap().push(label.to_owned());
             if label == "snapshot" && first_poll.swap(false, Ordering::SeqCst) {
@@ -1877,6 +1932,9 @@ mod bridge_tests {
         }
         for _ in 0..500 {
             bridge.poll();
+            bridge.poll_objective(Request::ObjectiveAvailability {
+                expected_instance: "test-generation".into(),
+            });
         }
         assert!(bridge.send_action(Request::Cancel {
             id: 41,
@@ -1905,6 +1963,20 @@ mod bridge_tests {
                 .count()
                 <= 2,
             "passive polling must be coalesced"
+        );
+        let events = observed.lock().unwrap();
+        assert_eq!(
+            events.get(1).map(String::as_str),
+            Some("cancel"),
+            "user cancellation precedes both passive queues"
+        );
+        assert!(
+            events
+                .iter()
+                .filter(|event| event.as_str() == "objective_poll")
+                .count()
+                <= 1,
+            "Objective polling must also be coalesced"
         );
     }
 }
@@ -2013,7 +2085,10 @@ mod workspace_context_tests {
             .send(queued_reply(false, Ok(snapshot(A, 20_000, task.clone()))))
             .unwrap();
         desktop.receive_and_refresh_hepta(|| (Instant::now(), 20_000));
-        desktop.drafts.composer_mut(Workspace::Personal).text = "检查这份笔记 📝".into();
+        assert!(desktop
+            .drafts
+            .composer_mut(Workspace::Personal)
+            .edit("检查这份笔记 📝".into()));
         let ctx = egui::Context::default();
         click(&mut desktop, &ctx, "Quote in draft");
         assert_eq!(
@@ -2051,6 +2126,84 @@ mod workspace_context_tests {
             unreachable!()
         };
         assert_eq!(reference.key.session_instance, A);
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    #[cfg(feature = "hepta-shared-presenter")]
+    #[test]
+    fn real_workspace_navigation_waits_through_the_ime_commit_frame() {
+        let (mut desktop, _, requests) = setup();
+        assert!(desktop
+            .drafts
+            .composer_mut(Workspace::Personal)
+            .edit("保留原草稿".into()));
+        let ctx = egui::Context::default();
+        let draw_navigation = |desktop: &mut Desktop, events| {
+            ctx.run(
+                egui::RawInput {
+                    focused: true,
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(900.0, 600.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    desktop.activation.begin_frame(ctx);
+                    desktop
+                        .drafts
+                        .observe_composition(desktop.workspace, desktop.activation.composing());
+                    egui::CentralPanel::default().show(ctx, |ui| desktop.workspaces(ui));
+                },
+            )
+        };
+        let output = draw_navigation(&mut desktop, vec![]);
+        let label = format!("{}    ·    0 host tasks", Workspace::Research.name());
+        let pos = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text == label => {
+                    Some(text.pos + text.galley.size() * 0.5)
+                }
+                _ => None,
+            })
+            .unwrap();
+        let pointer = |pressed| egui::Event::PointerButton {
+            pos,
+            button: egui::PointerButton::Primary,
+            pressed,
+            modifiers: egui::Modifiers::NONE,
+        };
+        draw_navigation(
+            &mut desktop,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("候选".into())),
+                egui::Event::PointerMoved(pos),
+                pointer(true),
+            ],
+        );
+        draw_navigation(
+            &mut desktop,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Commit("确认".into())),
+                pointer(false),
+            ],
+        );
+        assert_eq!(desktop.workspace, Workspace::Personal);
+        draw_navigation(&mut desktop, vec![pointer(true)]);
+        draw_navigation(&mut desktop, vec![pointer(false)]);
+        assert_eq!(desktop.workspace, Workspace::Research);
+        assert_eq!(
+            desktop.drafts.composer(Workspace::Personal).text(),
+            "保留原草稿"
+        );
+        assert!(desktop
+            .drafts
+            .composer(Workspace::Research)
+            .text()
+            .is_empty());
         assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
     }
 
@@ -2143,6 +2296,51 @@ mod workspace_context_tests {
             ],
         );
         settle_console(desktop, ctx)
+    }
+
+    #[test]
+    fn short_conversation_keeps_export_controls_reachable_after_notes_panel() {
+        let (mut desktop, _, requests) = setup();
+        desktop.connected = true;
+        desktop.session_instance = Some(A.into());
+        let ctx = egui::Context::default();
+        let frame = |desktop: &mut Desktop, events| {
+            ctx.run(
+                egui::RawInput {
+                    focused: true,
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(900.0, 420.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| desktop.conversation(ui));
+                },
+            )
+        };
+        for _ in 0..3 {
+            frame(&mut desktop, vec![]);
+        }
+        frame(
+            &mut desktop,
+            vec![
+                egui::Event::PointerMoved(egui::pos2(450.0, 390.0)),
+                egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::vec2(0.0, -2000.0),
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+        );
+        let mut output = frame(&mut desktop, vec![]);
+        for _ in 0..30 {
+            output = frame(&mut desktop, vec![]);
+        }
+        let export = first_painted_row(&output, "Export drafts to local file");
+        assert!(export.visible_rect.bottom() <= 420.0);
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
     }
 
     #[test]
@@ -2349,15 +2547,19 @@ mod draft_safety_tests {
     fn full_chat_never_evicts_earlier_user_text_or_clears_composer() {
         let mut book = DraftBook::default();
         for i in 0..MAX_LOCAL_DRAFTS {
-            book.composer_mut(Workspace::Personal).text = format!("draft-{i}");
+            assert!(book
+                .composer_mut(Workspace::Personal)
+                .edit(format!("draft-{i}")));
             book.save(Workspace::Personal).unwrap();
         }
-        book.composer_mut(Workspace::Personal).text = "a valuable unsaved draft".into();
+        assert!(book
+            .composer_mut(Workspace::Personal)
+            .edit("a valuable unsaved draft".into()));
         assert!(book.save(Workspace::Personal).is_err());
         assert_eq!(book.drafts.len(), MAX_LOCAL_DRAFTS);
         assert_eq!(book.drafts[0].text, "draft-0");
         assert_eq!(
-            book.composer(Workspace::Personal).text,
+            book.composer(Workspace::Personal).text(),
             "a valuable unsaved draft"
         );
     }
@@ -2366,10 +2568,18 @@ mod draft_safety_tests {
     fn oversized_utf8_draft_is_not_truncated_or_saved() {
         let mut book = DraftBook::default();
         let original = "中文".repeat(MAX_DRAFT_BYTES / 6 + 1);
-        book.composer_mut(Workspace::Personal).text = original.clone();
+        let accepted = book
+            .composer_mut(Workspace::Personal)
+            .edit(original.clone());
+        assert_eq!(accepted, !cfg!(feature = "hepta-shared-presenter"));
         assert!(book.save(Workspace::Personal).is_err());
         assert!(book.drafts.is_empty());
-        assert_eq!(book.composer(Workspace::Personal).text, original);
+        let expected = if cfg!(feature = "hepta-shared-presenter") {
+            ""
+        } else {
+            original.as_str()
+        };
+        assert_eq!(book.composer(Workspace::Personal).text(), expected);
     }
 
     #[test]
@@ -2381,7 +2591,9 @@ mod draft_safety_tests {
             contexts: vec![],
         }];
         assert!(book.may_restore());
-        book.composer_mut(Workspace::Build).text = "unfinished".into();
+        assert!(book
+            .composer_mut(Workspace::Build)
+            .edit("unfinished".into()));
         assert!(!book.may_restore());
         assert!(book.restore(imported.clone()).is_err());
         book.save(Workspace::Build).unwrap();
@@ -2394,22 +2606,28 @@ mod draft_safety_tests {
     fn export_collection_never_omits_unsent_text_or_overwrites_old_backup() {
         let mut book = DraftBook::default();
         assert!(book.export().is_err());
-        book.composer_mut(Workspace::Personal).text = "prior saved 中文".into();
+        assert!(book
+            .composer_mut(Workspace::Personal)
+            .edit("prior saved 中文".into()));
         book.save(Workspace::Personal).unwrap();
-        book.composer_mut(Workspace::Research).text = "unfinished composer".into();
+        assert!(book
+            .composer_mut(Workspace::Research)
+            .edit("unfinished composer".into()));
         assert!(book.export().is_err());
-        book.composer_mut(Workspace::Research).text.clear();
+        assert!(book.composer_mut(Workspace::Research).clear());
         assert_eq!(book.export().unwrap()[0].text, "prior saved 中文");
     }
 
     #[test]
     fn accepted_chinese_draft_is_stored_exactly_once() {
         let mut book = DraftBook::default();
-        book.composer_mut(Workspace::Personal).text = "测试输入法：你好 📝".into();
+        assert!(book
+            .composer_mut(Workspace::Personal)
+            .edit("测试输入法：你好 📝".into()));
         assert!(book.save(Workspace::Personal).is_ok());
         assert_eq!(book.drafts.len(), 1);
         assert_eq!(book.drafts[0].text, "测试输入法：你好 📝");
-        assert!(book.composer(Workspace::Personal).text.is_empty());
+        assert!(book.composer(Workspace::Personal).text().is_empty());
         assert!(book.save(Workspace::Personal).is_err());
         assert_eq!(book.drafts.len(), 1);
     }
@@ -2494,8 +2712,9 @@ mod shell_lifecycle_tests {
     }
 
     #[test]
-    fn keyboard_focused_host_action_cannot_fake_a_primary_pointer_click() {
+    fn keyboard_focused_host_action_accepts_deliberate_enter_and_space() {
         let ctx = egui::Context::default();
+        let mut activation = activation::ActivationGuard::default();
         let raw = |events| egui::RawInput {
             focused: true,
             screen_rect: Some(egui::Rect::from_min_size(
@@ -2524,17 +2743,18 @@ mod shell_lifecycle_tests {
                     modifiers: egui::Modifiers::default(),
                 }]),
                 |ctx| {
+                    activation.begin_frame(ctx);
                     egui::CentralPanel::default().show(ctx, |ui| {
                         let response = ui.button("Request termination");
                         focused = response.has_focus();
-                        effect_clicked = response.clicked_by(egui::PointerButton::Primary);
+                        effect_clicked = activation.activated(&response);
                     });
                 },
             );
             assert!(focused, "test must keep the process-effect control focused");
             assert!(
-                !effect_clicked,
-                "Enter/Space, including an IME candidate key, must not request a host effect"
+                effect_clicked,
+                "a deliberate focused Enter/Space must remain keyboard accessible"
             );
         }
     }
@@ -2547,6 +2767,7 @@ mod shell_lifecycle_tests {
             "Restore local export",
         ] {
             let ctx = egui::Context::default();
+            let mut activation = activation::ActivationGuard::default();
             let input = |events| egui::RawInput {
                 focused: true,
                 screen_rect: Some(egui::Rect::from_min_size(
@@ -2564,24 +2785,32 @@ mod shell_lifecycle_tests {
             });
             ctx.memory_mut(|memory| memory.request_focus(id.unwrap()));
             for key in [egui::Key::Enter, egui::Key::Space] {
-                let mut activated_by_pointer = false;
+                let mut activated = false;
                 let _ = ctx.run(
-                    input(vec![egui::Event::Key {
-                        key,
-                        physical_key: None,
-                        pressed: true,
-                        repeat: false,
-                        modifiers: egui::Modifiers::default(),
-                    }]),
+                    input(vec![
+                        egui::Event::Ime(egui::ImeEvent::Commit("你好".into())),
+                        egui::Event::Key {
+                            key,
+                            physical_key: None,
+                            pressed: true,
+                            repeat: false,
+                            modifiers: egui::Modifiers::default(),
+                        },
+                    ]),
                     |ctx| {
+                        activation.begin_frame(ctx);
                         egui::CentralPanel::default().show(ctx, |ui| {
-                            activated_by_pointer =
-                                ui.button(label).clicked_by(egui::PointerButton::Primary);
+                            let response = ui.button(label);
+                            assert!(
+                                response.clicked(),
+                                "exercise egui semantic keyboard activation"
+                            );
+                            activated = activation.activated(&response);
                         });
                     },
                 );
                 assert!(
-                    !activated_by_pointer,
+                    !activated,
                     "{label}: candidate-confirming keyboard action is not an explicit file action"
                 );
             }
