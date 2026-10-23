@@ -190,6 +190,10 @@ print("A10 X11 framebuffer pixels VERIFIED:",im.size,"colors",">1000000" if colo
 PYPIX
 else
     echo 'A10 X11 framebuffer pixels NOT VERIFIED: scrot/Pillow not installed'
+    if [[ "${A10_REQUIRE_X11_PIXELS:-0}" = 1 ]]; then
+        echo 'This qualification requires an actual framebuffer capture.' >&2
+        exit 2
+    fi
 fi
 for id in "${task_ids[@]}"; do "$ctl" cancel "$id" "$instance" >/dev/null; done
 for _ in {1..100}; do

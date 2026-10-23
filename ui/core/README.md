@@ -13,7 +13,10 @@ not issue grants, sign requests, own a durable effect journal, or implement HOS2
 - [observation.rs](src/observation.rs) and [hepta.rs](src/hepta.rs): observation
   identity, freshness and unavailable/unknown state.
 - [notes.rs](src/notes.rs) and [notes_bootstrap.rs](src/notes_bootstrap.rs): private
-  Notes identity, bounded messages and trusted bootstrap data.
+  Notes identity, bounded messages and trusted bootstrap v2 data.
+- [notes_recovery.rs](src/notes_recovery.rs) and
+  [notes_private_unix.rs](src/notes_private_unix.rs): separately inherited
+  recovery datagrams, exact acknowledgement and private descriptor checks.
 
 ## Invariants to preserve
 

@@ -1,5 +1,7 @@
 # 当前状态
 
+当前候选的能力与未取得资格集中在 [CURRENT_CAPABILITIES](CURRENT_CAPABILITIES.md)。下表记录最新逐源验收；下文按时间保留原记录，“当前”、README 空文件规则及测试数均只描述各节来源。
+
 ## 2026-10-23 审计后实施候选（持续验收）
 
 当前 Desktop 与 Hepta 集成修改分别发布于草稿 [#257](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/257) 与 [#3452](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3452)。main 未合并；下表每个实测结果只属于列出的固定源码，不给后续文档提交、分支或生产环境转授资格。

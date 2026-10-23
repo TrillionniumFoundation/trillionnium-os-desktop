@@ -1,0 +1,1414 @@
+{
+  "created_utc": "2026-10-23T09:27:22.854697+00:00",
+  "status": "Actual Rust 1.88 local host gates passed for the frozen default-off original presenter candidate.",
+  "desktop_base": "64736996d310d597ffba513ee109264cd5f5f83f",
+  "desktop_tree": "363700005afb52d2ac88aab709c3e0d0f78bcc0a",
+  "original_git_package_commit": "56630b12b8a4c69fff2c47b95b36d88a7389c39f",
+  "source_manifest": {
+    "path": "patches/review-manifest.json",
+    "bytes": 12133,
+    "sha256": "9038bf0551eb180fe4c2e2fecdcebcc930029fe715d0f0395bd094b9f1ce7a5d",
+    "git_blob": "00b58515dbc6db01f0e6dd914f4c37325a8ef57a"
+  },
+  "changed_source_files": 26,
+  "verified_original_preimages": 12,
+  "test_count_interpretation": {
+    "original_hepta_control_core": {
+      "lib": 42,
+      "canonical_differential": 2,
+      "controller": 20,
+      "total": 64
+    },
+    "original_hepta_robrix_ui_presenter_only": 23,
+    "desktop_trill_ui_core": {
+      "lib": 36,
+      "host_load_legacy": 6,
+      "total": 42
+    },
+    "core_package_union": 129,
+    "final_shared_shell_with_explicit_font_include_ignored": 87,
+    "final_core_and_shared_shell_single_invocation": 216,
+    "final_default_shell_with_explicit_font_include_ignored": 82,
+    "aligned_base_session": 45,
+    "aligned_base_observer": 51,
+    "normal_shell_invocations": "81 default / 86 candidate passed with 1 existing font test ignored in each; raw results are retained.",
+    "separate_explicit_font_tests": "1/1 each, 81/86 unrelated tests filtered respectively; final include-ignored invocations also pass the real font test at final bytes.",
+    "warning": "Counts overlap across invocations. 129 is 64+23+42, not 129 Desktop-core tests. These Session/observer packages are the #251 baseline, not root's newer #255 64/52 packages."
+  },
+  "gates": [
+    {
+      "name": "final-core-and-shell-font-v1",
+      "receipt": {
+        "path": "validation/final-core-and-shell-font-v1.json",
+        "bytes": 74234,
+        "sha256": "59f5952f610230f4db55414136aa536a0180b5684807915bb32210b5ed9e1b6b",
+        "git_blob": "bcdda1b9a2db7e5b3d6b39ae2a041a6adb57d66d"
+      },
+      "command": [
+        "env",
+        "TRILL_UI_TEST_CJK_FONT=/workspace/scratch/3d6a75235bcb/work/shared-presenter/validation/font-input/NotoSansSC-Regular.otf",
+        "cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all-targets",
+        "--locked",
+        "-p",
+        "hepta-control-core",
+        "-p",
+        "hepta-robrix-ui",
+        "-p",
+        "trill-ui-core",
+        "-p",
+        "trill-shell",
+        "--no-default-features",
+        "--features",
+        "trill-shell/hepta-shared-presenter",
+        "--",
+        "--include-ignored"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:20:36.065129+00:00",
+      "duration_seconds": 9.21180272102356,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-core-and-shell-font-v1.stdout",
+          "bytes": 20770,
+          "sha256": "475def67a9b4a86c90dd079c4faf849ae27c77c899f3d44e5a070a1ba1013fcf",
+          "git_blob": "0cb9fdbfd8b98d9068bdc0ddd194d3a6ca6d7a00"
+        },
+        "stderr": {
+          "path": "validation/final-core-and-shell-font-v1.stderr",
+          "bytes": 1699,
+          "sha256": "fea6332ffd64e0fe4a5a760593b72cdd63539f645b1bd6a2102aac0fd0f8184a",
+          "git_blob": "2c6b573993fe1b9040fc6d6d8f89dabe4e337710"
+        }
+      },
+      "test_units": [
+        [
+          42,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          20,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          23,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          87,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          36,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "test_totals_pass_fail_ignore_measure_filter": [
+        216,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [],
+      "current_snapshot_difference_scope": "Complete recorded source snapshot equals current final source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 1129684023,
+      "minimum_memory_available_bytes": 5237678080,
+      "minimum_shm_free_bytes": 1559236608
+    },
+    {
+      "name": "final-shell-default-font-v1",
+      "receipt": {
+        "path": "validation/final-shell-default-font-v1.json",
+        "bytes": 74071,
+        "sha256": "0dcfa3bc0a0baab2a77dd8ce462cb96f5e8a2e915bf8406a3dbb39c9a3c5f26c",
+        "git_blob": "f7e58e10957f2b0efa091bd419cee9e69644e5e3"
+      },
+      "command": [
+        "env",
+        "TRILL_UI_TEST_CJK_FONT=/workspace/scratch/3d6a75235bcb/work/shared-presenter/validation/font-input/NotoSansSC-Regular.otf",
+        "cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--all-targets",
+        "--no-default-features",
+        "--locked",
+        "--",
+        "--include-ignored"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:20:48.799859+00:00",
+      "duration_seconds": 4.126558542251587,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-shell-default-font-v1.stdout",
+          "bytes": 8122,
+          "sha256": "ae4509e11a14148f4973cfa8cb6ca1c3387e510ef9e701c410b51676fbebfd7b",
+          "git_blob": "60f06e12eda64768c324926b2d14ffc08c5796b8"
+        },
+        "stderr": {
+          "path": "validation/final-shell-default-font-v1.stderr",
+          "bytes": 274,
+          "sha256": "404a28d3700d0eb9a9551e3bdf75113fe90425d2d82a41faa6695031652ca76b",
+          "git_blob": "68d381d9880c2a91cb69fd4c90c6f7cd1758f9aa"
+        }
+      },
+      "test_units": [
+        [
+          82,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "test_totals_pass_fail_ignore_measure_filter": [
+        82,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [],
+      "current_snapshot_difference_scope": "Complete recorded source snapshot equals current final source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 1133380064,
+      "minimum_memory_available_bytes": 5121679360,
+      "minimum_shm_free_bytes": 1555533824
+    },
+    {
+      "name": "final-session-aligned-v1",
+      "receipt": {
+        "path": "validation/final-session-aligned-v1.json",
+        "bytes": 73960,
+        "sha256": "79677daf5454cf8365f1cf0601d3980f1af6d9328891e0a76887ea36f204e3fd",
+        "git_blob": "eade77c4ce8d29ba3de72c823cdd7a47991d89f4"
+      },
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-session",
+        "--all-targets",
+        "--locked"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:12:34.190861+00:00",
+      "duration_seconds": 22.464418172836304,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-session-aligned-v1.stdout",
+          "bytes": 4260,
+          "sha256": "397ca56f0a358008a141fdcb81e7b8b95ebde41f9632ed0d3ccfe9b5a1528216",
+          "git_blob": "59ee210d73cb909c2e9d8dcaf74f8006beb3c185"
+        },
+        "stderr": {
+          "path": "validation/final-session-aligned-v1.stderr",
+          "bytes": 1074,
+          "sha256": "a3096ccf2a3ff62e593ac4ea60026ae83946c9e5ab3c3e1f9855340bcf49de4c",
+          "git_blob": "1368625c798a976257f2947cb48d7ad457cb82b2"
+        }
+      },
+      "test_units": [
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          36,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "test_totals_pass_fail_ignore_measure_filter": [
+        45,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 892972275,
+      "minimum_memory_available_bytes": 5669515264,
+      "minimum_shm_free_bytes": 1800339456
+    },
+    {
+      "name": "final-observer-aligned-v1",
+      "receipt": {
+        "path": "validation/final-observer-aligned-v1.json",
+        "bytes": 73988,
+        "sha256": "8d27f64020fded04bde24e05fc1694b6fe5631c0ad6e62388b65ace732ed25ed",
+        "git_blob": "d101363d58d974c2341519d696ba8626132469bf"
+      },
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--features",
+        "objective-history",
+        "--all-targets",
+        "--locked"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:13:24.134454+00:00",
+      "duration_seconds": 27.52233386039734,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-observer-aligned-v1.stdout",
+          "bytes": 5000,
+          "sha256": "9119ba94b258a30b03083aed99c45052bab4e2b15289a9c9f838333ef636f096",
+          "git_blob": "205025cc473ba60eeffca307f27a5436f8556c8b"
+        },
+        "stderr": {
+          "path": "validation/final-observer-aligned-v1.stderr",
+          "bytes": 1376,
+          "sha256": "1834c8ea058ca6c462bcc0eec0070b7412321c77c8d21b39c1cf14e33fe1ff48",
+          "git_blob": "f83f01ccf361b19d534a85e35158a6bcd6d15d88"
+        }
+      },
+      "test_units": [
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          16,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "test_totals_pass_fail_ignore_measure_filter": [
+        51,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 960954873,
+      "minimum_memory_available_bytes": 5647421440,
+      "minimum_shm_free_bytes": 1731903488
+    },
+    {
+      "name": "final-clippy-default-v3",
+      "receipt": {
+        "path": "validation/final-clippy-default-v3.json",
+        "bytes": 74010,
+        "sha256": "5019f4a9d1a5b4fd3bef8a6ac302814a83a2dbdd14f4275934e0e49c75a24187",
+        "git_blob": "96ec2d4f3f26cc0ca6d956c73ce201aa1b047ee4"
+      },
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--workspace",
+        "--all-targets",
+        "--no-default-features",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:21:20.718705+00:00",
+      "duration_seconds": 2.0801799297332764,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-clippy-default-v3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-clippy-default-v3.stderr",
+          "bytes": 157,
+          "sha256": "a06f4ba44131cdd205ec789a60d36361d72cff8ac75bc7cd512f36d1d5e696fd",
+          "git_blob": "6c345d7a2fb9a426ceb5fc99bb7dbdbb8bae6723"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [],
+      "current_snapshot_difference_scope": "Complete recorded source snapshot equals current final source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 1129890520,
+      "minimum_memory_available_bytes": 5633327104,
+      "minimum_shm_free_bytes": 1559044096
+    },
+    {
+      "name": "final-clippy-candidate-v3",
+      "receipt": {
+        "path": "validation/final-clippy-candidate-v3.json",
+        "bytes": 74085,
+        "sha256": "f0933cc794ef1643ac7fa52ddfe1820930f111ae2a7f8a33600f041fbff59c80",
+        "git_blob": "52c4045a0b6931d0d78463ce25fb0c962f57be44"
+      },
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "-p",
+        "trill-shell",
+        "--all-targets",
+        "--features",
+        "trill-shell/hepta-shared-presenter",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:21:15.004035+00:00",
+      "duration_seconds": 2.070274829864502,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-clippy-candidate-v3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-clippy-candidate-v3.stderr",
+          "bytes": 157,
+          "sha256": "f0e54ac4b9f7260a9993d15507d3fb523230c912350bf272bcdea9264cff4923",
+          "git_blob": "95ded8020ee82840f6e4ddd976dd19ca83808205"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [],
+      "current_snapshot_difference_scope": "Complete recorded source snapshot equals current final source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 1129890520,
+      "minimum_memory_available_bytes": 5704331264,
+      "minimum_shm_free_bytes": 1559044096
+    },
+    {
+      "name": "final-clippy-observer-v1",
+      "receipt": {
+        "path": "validation/final-clippy-observer-v1.json",
+        "bytes": 74021,
+        "sha256": "bced323efbf938dfa2a38df3c3fb91f340d6df9ae172279c179e9aa5168098c6",
+        "git_blob": "2d6642f0701d6dee40f0104d1e56802601700107"
+      },
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--all-targets",
+        "--features",
+        "objective-history",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:18:12.031739+00:00",
+      "duration_seconds": 8.177286386489868,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-clippy-observer-v1.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-clippy-observer-v1.stderr",
+          "bytes": 339,
+          "sha256": "8630fdb1fabcc6ee160a8cf2e094bee6daf1b97373849070fb9760e1a5d33a28",
+          "git_blob": "3cb805d3275b1f4bf55e60a8a256353040a0317c"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 1110500438,
+      "minimum_memory_available_bytes": 5559283712,
+      "minimum_shm_free_bytes": 1578622976
+    },
+    {
+      "name": "final-fmt-v3",
+      "receipt": {
+        "path": "validation/final-fmt-v3.json",
+        "bytes": 73899,
+        "sha256": "9584fb9bc3d96b5a57caef9fcc0ce9aa3d02495772634f44d72fa585d2030849",
+        "git_blob": "ffecdaef1f1222addd4d4f33675f1f0c763cefb1"
+      },
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:20:04.761202+00:00",
+      "duration_seconds": 1.045827865600586,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-fmt-v3.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-fmt-v3.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [],
+      "current_snapshot_difference_scope": "Complete recorded source snapshot equals current final source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 1110501422,
+      "minimum_memory_available_bytes": 5866225664,
+      "minimum_shm_free_bytes": 1578622976
+    },
+    {
+      "name": "final-source-after-v1",
+      "receipt": {
+        "path": "validation/final-source-after-v1.json",
+        "bytes": 73908,
+        "sha256": "566c1e80e405e608a6a419c75a3057681bc095f190526b47f29183f27dd5ffe5",
+        "git_blob": "58f8b84b9102fedb7d1f8d53ab6d1dbfb86f2bb0"
+      },
+      "command": [
+        "python3",
+        "-I",
+        "tests/ui/verify_shared_presenter.py",
+        "--metadata",
+        "validation/final-metadata-v1.stdout"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:21:25.893865+00:00",
+      "duration_seconds": 1.0419118404388428,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-source-after-v1.stdout",
+          "bytes": 357,
+          "sha256": "b61ff6ffdfeea9e4d972739a6e07c8ac36990894243dd12e930d101f7ee9b42e",
+          "git_blob": "63d44d6dee2eeba39a178cab166547c19c891ff7"
+        },
+        "stderr": {
+          "path": "validation/final-source-after-v1.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [],
+      "current_snapshot_difference_scope": "Complete recorded source snapshot equals current final source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 1129890520,
+      "minimum_memory_available_bytes": 5714591744,
+      "minimum_shm_free_bytes": 1559044096
+    },
+    {
+      "name": "final-source-unit-tests-v1",
+      "receipt": {
+        "path": "validation/final-source-unit-tests-v1.json",
+        "bytes": 73861,
+        "sha256": "960e94794de44eafeedc789100ce0f26919c7cdef0ccf710d9b4571fcdac0d11",
+        "git_blob": "038e27cf71f7c7640402b2d4e7450e8b37772415"
+      },
+      "command": [
+        "python3",
+        "-I",
+        "tests/ui/test_shared_presenter_source.py"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:16:16.167514+00:00",
+      "duration_seconds": 1.047055721282959,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-source-unit-tests-v1.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-source-unit-tests-v1.stderr",
+          "bytes": 109,
+          "sha256": "530245230b24c7eb4c4fcade91b991e6508e82be3adf051de00e027872595ab4",
+          "git_blob": "9963aa5b8e1c0519ba8dd631a4919a8740286531"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 1092869239,
+      "minimum_memory_available_bytes": 5861695488,
+      "minimum_shm_free_bytes": 1596817408
+    },
+    {
+      "name": "final-wire-unit-tests-v2",
+      "receipt": {
+        "path": "validation/final-wire-unit-tests-v2.json",
+        "bytes": 73853,
+        "sha256": "9f2b5f142a6a8d263297e40c14ecc23b047ef23beb1ef1488fa43f0d773c42e5",
+        "git_blob": "025c9b6a1d0b98d7854d57dce6dde6eb3a25b9e2"
+      },
+      "command": [
+        "python3",
+        "-I",
+        "tests/ui/test_wire_compatibility.py"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:16:20.321600+00:00",
+      "duration_seconds": 1.0460188388824463,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-unit-tests-v2.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-wire-unit-tests-v2.stderr",
+          "bytes": 106,
+          "sha256": "c6352adff70a6982c739a1cd77bbb43d2425eefd2dc2112b92b0ceebf2a6ca31",
+          "git_blob": "07a2bfbba23364884cdab1e8016304a31b248248"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 1092869239,
+      "minimum_memory_available_bytes": 5865824256,
+      "minimum_shm_free_bytes": 1596817408
+    },
+    {
+      "name": "final-wire-unit-optimized-v1",
+      "receipt": {
+        "path": "validation/final-wire-unit-optimized-v1.json",
+        "bytes": 73871,
+        "sha256": "d4e6bc2dbef0aacaae1fa671fc28fbbc2c9c46409653ed2559b32f5a1348c32a",
+        "git_blob": "cf296028560bf2190983e9798f6e7511f3910daa"
+      },
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "tests/ui/test_wire_compatibility.py"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:16:25.162480+00:00",
+      "duration_seconds": 1.0440571308135986,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-unit-optimized-v1.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-wire-unit-optimized-v1.stderr",
+          "bytes": 106,
+          "sha256": "c6352adff70a6982c739a1cd77bbb43d2425eefd2dc2112b92b0ceebf2a6ca31",
+          "git_blob": "07a2bfbba23364884cdab1e8016304a31b248248"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 1092869239,
+      "minimum_memory_available_bytes": 5879050240,
+      "minimum_shm_free_bytes": 1596817408
+    },
+    {
+      "name": "final-wire-original-v2",
+      "receipt": {
+        "path": "validation/final-wire-original-v2.json",
+        "bytes": 73995,
+        "sha256": "bb87ac97a71b166b87d3d3c96adcc7f861001fadf048ee8f6899f060aa274214",
+        "git_blob": "5bddab5c538ea339362c5368af4d53be42af9d13"
+      },
+      "command": [
+        "cargo",
+        "run",
+        "--quiet",
+        "--manifest-path",
+        "base/ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "--example",
+        "wire_compatibility",
+        "--locked"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:11:40.805859+00:00",
+      "duration_seconds": 1.0434856414794922,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-original-v2.stdout",
+          "bytes": 17547,
+          "sha256": "1e4ced2871836a18177f166de7394b7f32d8de98af6fd6f1b4206ef28b2f85dd",
+          "git_blob": "c3675d86248769e81b951c3f669f7382254e1285"
+        },
+        "stderr": {
+          "path": "validation/final-wire-original-v2.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 837290537,
+      "minimum_memory_available_bytes": 6166908928,
+      "minimum_shm_free_bytes": 1856344064
+    },
+    {
+      "name": "final-wire-default-v2",
+      "receipt": {
+        "path": "validation/final-wire-default-v2.json",
+        "bytes": 73987,
+        "sha256": "423db15d9a1eab727ab157f7ed68bdd47570d5e4d44006a283b9a0af9a72db0c",
+        "git_blob": "abcd1a9f28ae2109de632ee086d712fba500aeae"
+      },
+      "command": [
+        "cargo",
+        "run",
+        "--quiet",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "--example",
+        "wire_compatibility",
+        "--locked"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:11:57.023905+00:00",
+      "duration_seconds": 2.065152883529663,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-default-v2.stdout",
+          "bytes": 17548,
+          "sha256": "68390137800fdfc080bfe358b00eaeab4bf85ab9692933e43eee182adf23e59a",
+          "git_blob": "16c6be153e5da3b5307990279a401a7acf3a347b"
+        },
+        "stderr": {
+          "path": "validation/final-wire-default-v2.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 838667537,
+      "minimum_memory_available_bytes": 6013394944,
+      "minimum_shm_free_bytes": 1854959616
+    },
+    {
+      "name": "final-wire-candidate-v3",
+      "receipt": {
+        "path": "validation/final-wire-candidate-v3.json",
+        "bytes": 74040,
+        "sha256": "3c2efc0814445890d5ca75476380bd63167a461ced4e1686d95769e3d38a7b78",
+        "git_blob": "45b1c70421f945d513be417f27fb10a71df3b591"
+      },
+      "command": [
+        "cargo",
+        "run",
+        "--quiet",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "--example",
+        "wire_compatibility",
+        "--features",
+        "hepta-shared-presenter",
+        "--locked"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:12:02.217991+00:00",
+      "duration_seconds": 1.0446715354919434,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-candidate-v3.stdout",
+          "bytes": 17548,
+          "sha256": "68390137800fdfc080bfe358b00eaeab4bf85ab9692933e43eee182adf23e59a",
+          "git_blob": "16c6be153e5da3b5307990279a401a7acf3a347b"
+        },
+        "stderr": {
+          "path": "validation/final-wire-candidate-v3.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 845982704,
+      "minimum_memory_available_bytes": 6011572224,
+      "minimum_shm_free_bytes": 1847607296
+    },
+    {
+      "name": "final-wire-original-golden-v1",
+      "receipt": {
+        "path": "validation/final-wire-original-golden-v1.json",
+        "bytes": 73833,
+        "sha256": "f096b02c2fcb3e56832f0b8fa0aaff35637dd9833cd315c4fb48b9d2834dd0c7",
+        "git_blob": "65c461e7ff83a709493117d2227c09dc2ebb1f6e"
+      },
+      "command": [
+        "cmp",
+        "validation/final-wire-original-v2.stdout",
+        "tests/ui/wire-compatibility-v1.json"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:12:07.591878+00:00",
+      "duration_seconds": 1.0470516681671143,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-original-golden-v1.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-wire-original-golden-v1.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 845988905,
+      "minimum_memory_available_bytes": 6018875392,
+      "minimum_shm_free_bytes": 1847603200
+    },
+    {
+      "name": "final-wire-default-golden-v1",
+      "receipt": {
+        "path": "validation/final-wire-default-golden-v1.json",
+        "bytes": 73838,
+        "sha256": "f4e55f6c3c5bcf729b0adb0338f605acf0d704311a9cb7f9c0f1f1a94ca4ba0f",
+        "git_blob": "09e4ae279599b58287fb796417eecc1d1266c2d3"
+      },
+      "command": [
+        "cmp",
+        "validation/final-wire-default-v2.stdout",
+        "tests/ui/wire-compatibility-aligned-v1.json"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:12:11.657491+00:00",
+      "duration_seconds": 1.0423386096954346,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-default-golden-v1.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-wire-default-golden-v1.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 845988905,
+      "minimum_memory_available_bytes": 6057377792,
+      "minimum_shm_free_bytes": 1847603200
+    },
+    {
+      "name": "final-wire-candidate-golden-v1",
+      "receipt": {
+        "path": "validation/final-wire-candidate-golden-v1.json",
+        "bytes": 73844,
+        "sha256": "c8df7cd8a490564f4668ac942f79e41b0fb147320f84de1cb95b03a553ad6d6d",
+        "git_blob": "05bdf8b77e98478fab46858c06b707c01b860120"
+      },
+      "command": [
+        "cmp",
+        "validation/final-wire-candidate-v3.stdout",
+        "tests/ui/wire-compatibility-aligned-v1.json"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:12:15.536649+00:00",
+      "duration_seconds": 1.0452361106872559,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-candidate-golden-v1.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        "stderr": {
+          "path": "validation/final-wire-candidate-golden-v1.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 300
+      },
+      "maximum_task_cache_target_bytes": 845988905,
+      "minimum_memory_available_bytes": 6074920960,
+      "minimum_shm_free_bytes": 1847603200
+    },
+    {
+      "name": "final-wire-default-review-v1",
+      "receipt": {
+        "path": "validation/final-wire-default-review-v1.json",
+        "bytes": 73993,
+        "sha256": "fb7ad339d99e0d6c299d62067a950ad3a96c2c3eab05c478b04e8bad4f30a84b",
+        "git_blob": "818d51b324c56f8f3220f5e608be79ff6b16153e"
+      },
+      "command": [
+        "python3",
+        "-I",
+        "tests/ui/verify_wire_compatibility.py",
+        "--original",
+        "validation/final-wire-original-v2.stdout",
+        "--candidate",
+        "validation/final-wire-default-v2.stdout"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:12:26.116441+00:00",
+      "duration_seconds": 1.051203966140747,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-default-review-v1.stdout",
+          "bytes": 605,
+          "sha256": "45774083485dbc25f19992e3a59e06c5f98274c3d0c8df534b722e8faf8a7c04",
+          "git_blob": "6e41603e13171c0ea9a142cf733efd70386e4277"
+        },
+        "stderr": {
+          "path": "validation/final-wire-default-review-v1.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 845988905,
+      "minimum_memory_available_bytes": 6125940736,
+      "minimum_shm_free_bytes": 1847603200
+    },
+    {
+      "name": "final-wire-candidate-review-v1",
+      "receipt": {
+        "path": "validation/final-wire-candidate-review-v1.json",
+        "bytes": 74000,
+        "sha256": "a508515971e8b3548c2b6b12add29d5bcd812c5114e39561aacd33991469d58b",
+        "git_blob": "739a94bf2c933c09f5e00a5b408e76312d9deb2a"
+      },
+      "command": [
+        "python3",
+        "-I",
+        "tests/ui/verify_wire_compatibility.py",
+        "--original",
+        "validation/final-wire-original-v2.stdout",
+        "--candidate",
+        "validation/final-wire-candidate-v3.stdout"
+      ],
+      "exit": 0,
+      "stopped": null,
+      "started_utc": "2026-10-23T09:12:29.978315+00:00",
+      "duration_seconds": 1.0439174175262451,
+      "raw_streams": {
+        "stdout": {
+          "path": "validation/final-wire-candidate-review-v1.stdout",
+          "bytes": 605,
+          "sha256": "45774083485dbc25f19992e3a59e06c5f98274c3d0c8df534b722e8faf8a7c04",
+          "git_blob": "6e41603e13171c0ea9a142cf733efd70386e4277"
+        },
+        "stderr": {
+          "path": "validation/final-wire-candidate-review-v1.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      "test_units": [],
+      "test_totals_pass_fail_ignore_measure_filter": null,
+      "source_unchanged_during_execution": true,
+      "current_snapshot_difference": [
+        "ui/shell/src/conversation.rs"
+      ],
+      "current_snapshot_difference_scope": "Only the unrelated Shell editor clone-on-Copy and rustfmt change followed this component/Python/wire run. The executed component sources, manifests and locks are still byte-identical. Final Shell and workspace Clippy are separately executed at the frozen complete source.",
+      "resource_bounds": {
+        "task_cache_and_target_max_bytes": 1310720000,
+        "minimum_memory_available_bytes": 1610612736,
+        "minimum_shm_free_bytes": 536870912,
+        "deadline_seconds": 900
+      },
+      "maximum_task_cache_target_bytes": 845988905,
+      "minimum_memory_available_bytes": 6116904960,
+      "minimum_shm_free_bytes": 1847603200
+    }
+  ],
+  "historical_core_counts": [
+    {
+      "receipt": {
+        "path": "validation/final-original-core-v1.json",
+        "bytes": 70703,
+        "sha256": "cb66ceb1beacb11e784813577bbe223977715e5dca4c5b604e5f9f7c0715f564",
+        "git_blob": "9ca045c7b238730375d9333eb4a25af0b1ea290c"
+      },
+      "test_count": 123,
+      "core_source": {
+        "sha256": "c19d6a9276fab22977ad60eabca97be178593fa436ebebd5cf34c3a2f667e1a9",
+        "git_blob": "9578ff311188bcca22df87f13f0160674ac8d8f8",
+        "bytes": 23273
+      },
+      "scope": "Historical execution at its own recorded source; never promoted to a later source revision."
+    },
+    {
+      "receipt": {
+        "path": "validation/final-original-core-v2.json",
+        "bytes": 73347,
+        "sha256": "78af0babb1a1076e5ce594427393cadf4328ea0af9ee6aca040495592330cfb9",
+        "git_blob": "061e903d9b0c06b04816fb65fea8f6ba7a575fa2"
+      },
+      "test_count": 127,
+      "core_source": {
+        "sha256": "65c1b0492317fd0d58439aa4bfd2387e15c818e170fe251290cbd46a6a07d35e",
+        "git_blob": "ba6ade2c883de9571e3992007be83c33b5e2dd60",
+        "bytes": 23878
+      },
+      "scope": "Historical execution at its own recorded source; never promoted to a later source revision."
+    },
+    {
+      "receipt": {
+        "path": "validation/final-original-core-v3.json",
+        "bytes": 74116,
+        "sha256": "b27dbd10a365e9021b0fde027ee87b12e3139e13fd951874e24768835cfced61",
+        "git_blob": "298c4b1fecabfafdabed1ffdced31603a5617bde"
+      },
+      "test_count": 129,
+      "core_source": {
+        "sha256": "53858f803f54c2cf4da7f59da8955b182c5bff3b632e9442a161bc5ba8d8d01c",
+        "git_blob": "8d2e9af6c859288b46c34d66f4af691fb5ab2c3f",
+        "bytes": 24734
+      },
+      "scope": "Historical execution at its own recorded source; never promoted to a later source revision."
+    }
+  ],
+  "wire": {
+    "passed": true,
+    "original_sha256": "1e4ced2871836a18177f166de7394b7f32d8de98af6fd6f1b4206ef28b2f85dd",
+    "candidate_sha256": "68390137800fdfc080bfe358b00eaeab4bf85ab9692933e43eee182adf23e59a",
+    "case_count": 52,
+    "exact_stdout_bytes_equal": false,
+    "exact_case_values": 51,
+    "allowed_observer_exponent_changes": [
+      {
+        "case": "response/resources/f32-7f7fffff",
+        "path": "resources.load_average_1m",
+        "original": "3.4028235e38",
+        "candidate": "3.4028235e+38"
+      }
+    ],
+    "scope": "Bounded observer/IPC corpus; not all JSON inputs, signatures or renderer qualification.",
+    "scope_limit": "Bounded actual 52-case corpus plus six public-type legacy tests; not a proof for every decimal JSON input. Unknown external resource-JSON consumers remain outside the audited checked-in paths."
+  },
+  "font": {
+    "provision_receipt": {
+      "path": "validation/pinned-font-input-v1.json",
+      "bytes": 2307,
+      "sha256": "c522454f8e0823df767f9a3c65f2fd58ae6d0c5147d01da7b8e6c855a1e3b9b5",
+      "git_blob": "2dea20cadda3eea5c42364dbe789ef76bf10e715"
+    },
+    "post_execution_identity": {
+      "bytes": 8331336,
+      "sha256": "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9",
+      "git_blob": "fc0fda9394367c16c1af7555a2ae4d5e2e6a6f02"
+    },
+    "scope": "Real CJK glyph coverage/outline rasterization and egui font fallback; no physical IME, Weston or Makepad runtime evidence."
+  },
+  "preserved_failures_and_stops": [
+    "Initial original/new wire comparison: three differences with shared feature; one exponent spelling without it.",
+    "Legacy floating boundary/overflow tests: original 4 green, candidate 2 expected red, intermediate 4 green.",
+    "Independent integer rounding cases: original 6 green, Option<f64> 2 independent expected red, numeric Visitor 6 green.",
+    "Initial 750 MiB task cache/target cap controlled stop; later explicit 1250 MiB cap retained RAM>=1.5GiB and shm>=512MiB.",
+    "Actual clone_on_copy feature Clippy failure and exact minimal correction; real rustfmt line-wrap failure and correction."
+  ],
+  "not_qualified": [
+    "GitHub Actions or fresh Weston/Wayland window execution for this candidate",
+    "Original Makepad renderer/native App composition (separate design, not in the 26-file implementation)",
+    "Physical input methods, accessibility/screen reader, Web/mobile or bare-metal deployment",
+    "Production Send/AuthBus signer/SourceEnvelope/owner composition; original SendUnavailable remains unchanged",
+    "All possible decimal JSON values or unknown external raw-JSON consumers"
+  ],
+  "source_and_execution_notes": [
+    "All source changes are local and frozen; publication is performed by root separately.",
+    "Both original Git packages come from the same exact original commit, default Makepad/native-host features disabled; final gate verifies all 85 package files.",
+    "Every recorded gate used official Rust1.88, locked dependencies, jobs1, no debug/incremental; task size is cache+target storage, not resident RAM.",
+    "The six dependency files and 01 patch retain the original frozen digest. Source entries and archive entries are separate.",
+    "Preserve #247 README workflow migration and #255 Objective source/gates when composing; do not overwrite those newer files with base snapshots.",
+    "The original pre-execution plan and old 21-file manifest are retained as historical documents. The final freeze contains 26 source files."
+  ],
+  "static_scope_review": {
+    "path": "validation/final-static-source-review-v2.json",
+    "bytes": 49518,
+    "sha256": "4106ead13aa66af957aaaa209dab3c9d9a6d08b4c8f0aa7f813792b5a90ec19f",
+    "git_blob": "664a708002d714d1463e0b31342d7b43d2e50cdc"
+  },
+  "target_release": {
+    "path": "validation/target-release-final.json",
+    "bytes": 644269,
+    "sha256": "08e9abdaa4bb5e039b2319885267bcfe538ae6e629a17afcaf78d971d93dbebd",
+    "git_blob": "c05e564695e3fa0a1598ba28b142200497d00de7"
+  },
+  "makepad_design_only": [
+    {
+      "path": "research/makepad-integration/COMPOSITION_DESIGN.md",
+      "bytes": 20963,
+      "sha256": "b206e379e04bb754991d922e9df2a6a6009131c6c8da30a772abbc481a01ef11",
+      "git_blob": "522f3997babe96674bde4a5354fe4ef49c584353"
+    },
+    {
+      "path": "research/makepad-integration/review-v2.json",
+      "bytes": 43031,
+      "sha256": "097e17914894a933dc0a0de77db81c2853b900e04e1339fb4366c1f35e19bcb0",
+      "git_blob": "0d87f49bd8ef4dbe3c5ccab94b282732985bc80e"
+    }
+  ],
+  "finalizer": {
+    "path": "probes/finalize_evidence.py",
+    "bytes": 12793,
+    "sha256": "6047b72bbe565d429c15a04f8e0bdd2cbf207edad5aef17c1c0af77b938fe900",
+    "git_blob": "4ac4971ec92405591dcad4b9d6c79709ee9435a9"
+  }
+}

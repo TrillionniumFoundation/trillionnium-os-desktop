@@ -4,6 +4,7 @@ mod deadline;
 mod hepta;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
+mod objective_bridge;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -129,6 +130,7 @@ impl DisplayTracker {
 }
 
 struct Session {
+    objective: objective_bridge::ObjectiveBridge,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -156,6 +158,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            objective: objective_bridge::ObjectiveBridge::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -496,9 +499,57 @@ impl Session {
         }
     }
 
+    fn objective_request(
+        &self,
+        expected_instance: String,
+        command: trill_ui_core::objective::ObjectiveCommand,
+    ) -> Response {
+        if expected_instance != self.instance {
+            return Response::Error {
+                message: "Stale Session; Objective command not forwarded".into(),
+                session_instance: self.instance.clone(),
+            };
+        }
+        Response::Objective {
+            observation: self.objective.request(command),
+            session_instance: self.instance.clone(),
+        }
+    }
+
     fn handle(&mut self, request: Request) -> Response {
         self.refresh();
         match request {
+            Request::ObjectiveAvailability { expected_instance } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Availability {},
+            ),
+            Request::ObjectiveSubmit {
+                client_intent_id,
+                text,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Submit {
+                    intent: trill_ui_core::objective::ObjectiveIntent {
+                        client_intent_id,
+                        text,
+                    },
+                },
+            ),
+            Request::ObjectiveStatus {
+                client_intent_id,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Status { client_intent_id },
+            ),
+            Request::ObjectiveCancel {
+                client_intent_id,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Cancel { client_intent_id },
+            ),
             Request::Snapshot => {
                 let observation = self.display.observe(probe_host_wayland());
                 Response::Snapshot {
@@ -1257,6 +1308,73 @@ mod tests {
         assert_eq!(tasks[0].id, task.id);
         assert_eq!(tasks[0].state, TaskState::Completed);
         drop(incomplete);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn response_backpressure_still_refreshes_child_exit_and_releases_owner() {
+        use std::os::fd::AsRawFd;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let Response::Task { task, .. } = session.launch(Workspace::Build, AppKind::Calculator)
+        else {
+            panic!("expected owned child");
+        };
+        // Replace only this test-owned child with a short process that exits
+        // during the blocked response; the completed original is reaped first.
+        session.children.get_mut(&task.id).unwrap().wait().unwrap();
+        session.children.insert(
+            task.id,
+            Command::new("/bin/sleep").arg("0.05").spawn().unwrap(),
+        );
+        for id in 2..26 {
+            let mut padding = task.clone();
+            padding.id = id;
+            padding.detail = "x".repeat(1000);
+            session.tasks.insert(id, padding);
+        }
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        let buffer_bytes: libc::c_int = 4096;
+        assert_eq!(
+            unsafe {
+                libc::setsockopt(
+                    stream.as_raw_fd(),
+                    libc::SOL_SOCKET,
+                    libc::SO_SNDBUF,
+                    (&buffer_bytes as *const libc::c_int).cast(),
+                    std::mem::size_of_val(&buffer_bytes) as libc::socklen_t,
+                )
+            },
+            0
+        );
+        write_frame(&mut peer, &Request::Snapshot).unwrap();
+        let started = Instant::now();
+        assert!(
+            serve_connection_until(stream, &mut session, started + Duration::from_millis(150))
+                .is_err()
+        );
+        assert!(started.elapsed() < Duration::from_secs(1));
+        assert_eq!(session.tasks[&task.id].state, TaskState::Completed);
+        assert!(
+            session.children.is_empty(),
+            "response failure must reap an unrelated child"
+        );
+        // Trim artificial response padding before proving the next client can
+        // observe the same live owner without restarting it or closing peer.
+        session.tasks.retain(|id, _| *id == task.id);
+        let (mut next, stream) = UnixStream::pair().unwrap();
+        write_frame(&mut next, &Request::Snapshot).unwrap();
+        serve_connection(stream, &mut session).unwrap();
+        let response: Response = serde_json::from_slice(&read_frame(&mut next).unwrap()).unwrap();
+        let Response::Snapshot {
+            tasks,
+            session_instance,
+            ..
+        } = response
+        else {
+            panic!("next snapshot");
+        };
+        assert_eq!(session_instance, session.instance);
+        assert_eq!(tasks[0].state, TaskState::Completed);
     }
 
     #[test]

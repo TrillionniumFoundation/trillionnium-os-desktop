@@ -44,6 +44,9 @@ capture_fmt_on_exit() {
             if [[ "$status" -eq 0 ]]; then status=1; fi
         fi
     fi
+    if [[ "$status" -eq 0 ]]; then
+        printf 'A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).\n'
+    fi
     exit "$status"
 }
 trap capture_fmt_on_exit EXIT
@@ -151,5 +154,3 @@ if [[ -n "${RUNNER_TEMP:-}" ]]; then
     bash tests/ui/replay-packaged-host.sh         "$RUNNER_TEMP/a10/a10-linux-host-binaries.tar.gz" "$(git rev-parse HEAD)"
 fi
 # The EXIT hook still preserves a formatter patch on any earlier failure.
-
-printf 'A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).\n'
