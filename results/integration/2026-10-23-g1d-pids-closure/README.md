@@ -70,8 +70,9 @@ These receipts qualify the bounded native QEMU/TCG uniprocessor G1d profile.
 They explicitly do not qualify a memory controller, physical memory reserves,
 SMP, hardware devices, Hepta durability, or production readiness. Manager and
 recovery task admission outside the workload's pids cap is not a physical
-memory reserve. This closure adds two IPC-timeout rejection regression cases
-without weakening the negative oracle; the host suite is 24 tests.
+memory reserve. This closure adds one IPC-timeout rejection test with extra, reordered,
+and substituted failure variants, without weakening the negative oracle;
+the host suite is 24 tests.
 
 The final PR head still requires the repository's hosted CI gates. Local
 native success is not a substitute for those gates. The review above uses
