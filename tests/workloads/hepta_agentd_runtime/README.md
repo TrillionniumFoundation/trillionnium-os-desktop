@@ -139,6 +139,7 @@ repository identity. A new source tree requires a new review; there is no
 | `agentd_runtime_probe.c` | Create the private empty guest work directory, launch the original fixture, retain its true wait status, and emit nonce-bound bounded diagnostics. |
 | `test_agentd_runtime.py` | Host regressions for evidence rejection, source/file binding, staging, disabled mode, and terminal failure reports. Synthetic records remain test data. |
 | `test_runtime_emitter.py` | Compile and execute the actual bounded C emitter with interrupted/short I/O, capacity limits, and fail-closed errors. |
+| `test_target_cache.py` | Check explicit cache selection, real process lease exclusion/release, retained failure evidence and unchanged original build commands/deadlines. |
 | `test_kernel_import.py` | Reject wrong or incomplete CI metadata, untrusted archives, changed source snapshots, ktest images, and failed original builds. |
 | `test_kernel_build.py` | Check disabled mode, pre-build source rejection, failed-build receipts and retained/current profile separation. |
 | `source-review.json` | Fixed reviewed source identities and scope. |
@@ -209,6 +210,20 @@ compiler, not a substitute for the kernel's pinned nightly toolchain. The option
 `--fetch-dependencies` flag requires `--execute` and warms only the two original
 locked x86_64 dependency graphs before offline compilation; no resolution drift
 or application execution is permitted by that flag.
+
+To resume a timed-out build, pass both `--original-target-cache` and
+`--observer-target-cache` with the canonical existing target directories from
+the previous attempt, and select a new output directory. Both caches must be
+separate from each other, source checkouts, the new output and retained kernel
+inputs. The builder acquires a nonblocking exclusive advisory lease on both
+caches through final binary freezing; another preparation using a held cache
+fails promptly. Other tools must respect these leases rather than run Cargo
+directly against the same directories. No earlier failure log or result is
+rewritten. The new report and userspace receipt retain the cache paths,
+directory and lease identities, actual command working directories/target
+paths, and unchanged 3600-second command deadline. This is cache reuse, not a
+cold build or authentication of preexisting cache contents. The same source,
+toolchain, original commands/features and dependency-lock checks still run.
 
 The external fixture uses the original generic `prepare_runner` and
 `verify_runner_lock` helpers. These preserve the original library path dependencies,
