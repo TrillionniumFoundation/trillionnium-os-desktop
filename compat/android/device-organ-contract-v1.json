@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "profile": "pocket4-digitalis-read-only-v1",
+  "scope": "host_device_observation_and_non_authorizing_intent",
+  "reviewed_desktop_base": "1f4a252c22adf3bc4e1de1ce655e42387070f503",
+  "reviewed_hepta_interface_base": "6d6097da843f5831dfaf9cee3530da512d072a15",
+  "device_ref": "pocket4",
+  "host_binding": "original_runtime_operator_target_required",
+  "execution_environment": "existing_droidloom_android_cell",
+  "expected_android_release": "17",
+  "expected_sdk": "37",
+  "helper": {
+    "path": "/usr/local/libexec/android-digitalis-observe-helper",
+    "sha256": "8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b",
+    "bytes": 34048,
+    "owner_uid": 0,
+    "group_or_world_writable": false,
+    "invocation": ["/usr/bin/sudo", "-n", "/usr/local/libexec/android-digitalis-observe-helper"]
+  },
+  "droidloomctl": {
+    "path": "/usr/bin/droidloomctl",
+    "observed_sha256_2026_10_23": "aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376",
+    "observed_bytes": 1687600,
+    "observed_owner_uid_2026_10_23": 1000,
+    "owner_uid_pin": "explicit_root_or_current_original_operator_uid",
+    "owner_uid_default": 0,
+    "group_or_world_writable": false,
+    "pin_source": "explicit_original_operator_input",
+    "status_argv": ["/usr/bin/droidloomctl", "status", "--json"]
+  },
+  "transport": {
+    "shell": false,
+    "automatic_retry": false,
+    "timeout_seconds_default_per_call": 55,
+    "timeout_seconds_max_per_call": 60,
+    "request_bytes_max": 4096,
+    "stdout_and_stderr_bytes_max": 1048576,
+    "post_submission_timeout_or_invalid_reply": "outcome_unknown",
+    "persistent_operation_ledger": false,
+    "device_mutation_entrypoints": []
+  },
+  "helper_operation_allowlist": ["status", "observe"],
+  "observe_profile": {
+    "display": 0,
+    "accessibility_mode": "none",
+    "with_png": false,
+    "private_ui_text_in_projection": false,
+    "atomic_snapshot": false,
+    "window_token_source": "WindowManager",
+    "accessibility_window_id_is_identity": false,
+    "process_id_is_durable_incarnation": false
+  },
+  "intent": {
+    "authority": "none",
+    "actions": ["click", "set-text"],
+    "required_exact_selector_fields_one_of": ["id", "text", "desc"],
+    "matching_policy_required_at_receiver": "exact_unique",
+    "selector_resolution": "NOT_EXECUTED",
+    "utf8_value_bytes_max": 4096,
+    "canonical_payload_bytes_max": 16384,
+    "bound_snapshot_fields": [
+      "identity_sha256", "helper_sha256", "raw_observation_sha256",
+      "native_snapshot_sha256", "window", "scope_bounds", "screen_size",
+      "frame_sha256", "scope_sha256", "context_token"
+    ],
+    "commit_text": "NOT_CONFIGURED",
+    "semantic_receiver_window_binding": "NOT_CONFIGURED",
+    "original_effect_owner": "NOT_CONFIGURED",
+    "dispatch": "NOT_CONFIGURED"
+  },
+  "trusted_read_only_organ_handler": false,
+  "production_authority": false,
+  "device_effect_verified": false,
+  "physical_handset_verified": false,
+  "android_on_asterinas_verified": false
+}
