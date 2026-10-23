@@ -1,4 +1,6 @@
 //! Rust AI-workspace shell for a Linux/Wayland host, not for the target kernel.
+#[path = "../../activation.rs"]
+mod activation;
 mod conversation;
 mod hepta_panel;
 #[path = "../../host_fonts.rs"]
@@ -220,6 +222,7 @@ fn observed_host_line(task: &TaskRecord) -> String {
 }
 
 struct Desktop {
+    activation: activation::ActivationGuard,
     page: Page,
     workspace: Workspace,
     drafts: DraftBook,
@@ -264,6 +267,7 @@ impl Desktop {
             page => page,
         };
         Self {
+            activation: activation::ActivationGuard::default(),
             page,
             workspace: Workspace::Personal,
             drafts,
@@ -559,13 +563,10 @@ impl Desktop {
                 });
                 ui.small(format!("PID {:?} · {}", task.pid, task.execution_mode));
                 ui.horizontal_wrapped(|ui| {
-                    if ui
-                        .add_enabled(
-                            self.host_observation.is_current(),
-                            egui::Button::new("Quote in draft"),
-                        )
-                        .clicked_by(egui::PointerButton::Primary)
-                    {
+                    if self.activation.activated(&ui.add_enabled(
+                        self.host_observation.is_current(),
+                        egui::Button::new("Quote in draft"),
+                    )) {
                         self.quote_task(task.id);
                     }
                     if ui.small_button("Details").clicked() {
@@ -602,13 +603,10 @@ impl Desktop {
                         ui.heading(kind.name());
                         ui.label("Separate Rust GUI process · independent Wayland/X11 window");
                     });
-                    if ui
-                        .add_enabled(
-                            self.host_observation.is_current(),
-                            egui::Button::new("Launch"),
-                        )
-                        .clicked_by(egui::PointerButton::Primary)
-                        && self.launch_host_app(self.workspace, kind)
+                    if self.activation.activated(&ui.add_enabled(
+                        self.host_observation.is_current(),
+                        egui::Button::new("Launch"),
+                    )) && self.launch_host_app(self.workspace, kind)
                     {
                         self.show_workspace_tab(WorkspaceTab::Tasks);
                     }
@@ -850,13 +848,10 @@ impl Desktop {
                 ui.colored_label(warning(), "Native UI first frame: unobserved");
             }
             ui.small(format!("Last lifecycle change: {}", task.updated_unix_ms));
-            if ui
-                .add_enabled(
-                    self.host_observation.is_current(),
-                    egui::Button::new("Quote selected task in draft"),
-                )
-                .clicked_by(egui::PointerButton::Primary)
-            {
+            if self.activation.activated(&ui.add_enabled(
+                self.host_observation.is_current(),
+                egui::Button::new("Quote selected task in draft"),
+            )) {
                 self.quote_task(task.id);
             }
             ui.separator();
@@ -872,9 +867,9 @@ impl Desktop {
                     warning(),
                     "Old client window unverified after compositor restart. A fresh process cannot restore unsaved app state.",
                 );
-                if ui
-                    .button("Launch NEW window (not reattach)")
-                    .clicked_by(egui::PointerButton::Primary)
+                if self
+                    .activation
+                    .activated(&ui.button("Launch NEW window (not reattach)"))
                     && self.launch_host_app(task.workspace, task.app)
                 {
                     self.notice(format!(
@@ -886,9 +881,7 @@ impl Desktop {
             }
             if self.host_observation.is_current()
                 && !task.state.is_terminal()
-                && ui
-                    .button("Request termination")
-                    .clicked_by(egui::PointerButton::Primary)
+                && self.activation.activated(&ui.button("Request termination"))
             {
                 if let Some(expected_instance) = self.session_instance.clone() {
                     self.submit(Request::Cancel {
@@ -927,6 +920,7 @@ impl Desktop {
 
 impl eframe::App for Desktop {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.activation.begin_frame(ctx);
         self.receive_and_refresh_hepta(|| (Instant::now(), trill_ui_core::unix_ms()));
         if self.last_poll.elapsed() >= Duration::from_millis(800) {
             self.last_poll = Instant::now();
@@ -937,6 +931,9 @@ impl eframe::App for Desktop {
                 ui.label(RichText::new("TRILLIONNIUM").size(22.0).strong());
                 ui.separator();
                 ui.label("AI-native workspace · Linux host prototype");
+                if self.activation.composing() {
+                    ui.small("IME composition active · action controls wait for commit");
+                }
                 ui.separator();
                 ui.colored_label(
                     if self.host_observation.is_current() {
@@ -1110,6 +1107,7 @@ mod observation_freshness_tests {
         let (polls, _incoming_polls) = mpsc::sync_channel(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
         let desktop = Desktop {
+            activation: activation::ActivationGuard::default(),
             page: Page::Hepta,
             workspace: Workspace::Personal,
             drafts: DraftBook::default(),
@@ -2494,8 +2492,9 @@ mod shell_lifecycle_tests {
     }
 
     #[test]
-    fn keyboard_focused_host_action_cannot_fake_a_primary_pointer_click() {
+    fn keyboard_focused_host_action_accepts_deliberate_enter_and_space() {
         let ctx = egui::Context::default();
+        let mut activation = activation::ActivationGuard::default();
         let raw = |events| egui::RawInput {
             focused: true,
             screen_rect: Some(egui::Rect::from_min_size(
@@ -2524,17 +2523,18 @@ mod shell_lifecycle_tests {
                     modifiers: egui::Modifiers::default(),
                 }]),
                 |ctx| {
+                    activation.begin_frame(ctx);
                     egui::CentralPanel::default().show(ctx, |ui| {
                         let response = ui.button("Request termination");
                         focused = response.has_focus();
-                        effect_clicked = response.clicked_by(egui::PointerButton::Primary);
+                        effect_clicked = activation.activated(&response);
                     });
                 },
             );
             assert!(focused, "test must keep the process-effect control focused");
             assert!(
-                !effect_clicked,
-                "Enter/Space, including an IME candidate key, must not request a host effect"
+                effect_clicked,
+                "a deliberate focused Enter/Space must remain keyboard accessible"
             );
         }
     }
@@ -2547,6 +2547,7 @@ mod shell_lifecycle_tests {
             "Restore local export",
         ] {
             let ctx = egui::Context::default();
+            let mut activation = activation::ActivationGuard::default();
             let input = |events| egui::RawInput {
                 focused: true,
                 screen_rect: Some(egui::Rect::from_min_size(
@@ -2564,24 +2565,32 @@ mod shell_lifecycle_tests {
             });
             ctx.memory_mut(|memory| memory.request_focus(id.unwrap()));
             for key in [egui::Key::Enter, egui::Key::Space] {
-                let mut activated_by_pointer = false;
+                let mut activated = false;
                 let _ = ctx.run(
-                    input(vec![egui::Event::Key {
-                        key,
-                        physical_key: None,
-                        pressed: true,
-                        repeat: false,
-                        modifiers: egui::Modifiers::default(),
-                    }]),
+                    input(vec![
+                        egui::Event::Ime(egui::ImeEvent::Commit("你好".into())),
+                        egui::Event::Key {
+                            key,
+                            physical_key: None,
+                            pressed: true,
+                            repeat: false,
+                            modifiers: egui::Modifiers::default(),
+                        },
+                    ]),
                     |ctx| {
+                        activation.begin_frame(ctx);
                         egui::CentralPanel::default().show(ctx, |ui| {
-                            activated_by_pointer =
-                                ui.button(label).clicked_by(egui::PointerButton::Primary);
+                            let response = ui.button(label);
+                            assert!(
+                                response.clicked(),
+                                "exercise egui semantic keyboard activation"
+                            );
+                            activated = activation.activated(&response);
                         });
                     },
                 );
                 assert!(
-                    !activated_by_pointer,
+                    !activated,
                     "{label}: candidate-confirming keyboard action is not an explicit file action"
                 );
             }
