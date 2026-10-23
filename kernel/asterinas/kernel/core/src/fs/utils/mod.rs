@@ -48,7 +48,8 @@ pub(crate) fn current_fs_ids() -> (Uid, Gid) {
 
 /// Original inode creation ownership: setgid directories supply the child's
 /// group and pass setgid onto subdirectories. A non-member cannot create a
-/// setgid non-directory for that inherited group without original CAP_FSETID.
+/// group-executable setgid non-directory for that inherited group without
+/// original CAP_FSETID. Non-executable setgid files retain their requested bit.
 /// Callers capture parent mode/group together and hold no IRQ-disabled lock.
 pub(crate) fn child_creation_attrs(
     parent_mode: InodeMode,
@@ -69,7 +70,7 @@ pub(crate) fn child_creation_attrs(
         }
     }
     if type_ != InodeType::Dir
-        && mode.has_set_gid()
+        && mode.contains(InodeMode::S_ISGID | InodeMode::S_IXGRP)
         && let Some(thread) = posix
         && !thread.credentials().has_group_for_fs_access(gid)
         && lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
