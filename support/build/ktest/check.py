@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 344  # Retained 341 plus three ancillary allocation regressions.
+MINIMUM_CORE_TESTS = 347  # Retained 344 plus three ordinary fault allocation regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -165,7 +165,12 @@ SETGID_CREATION_CORE_TESTS = (
     "aster_core::fs::fs_impls::ramfs::fs::sgid_tests::setgid_parent_group_reaches_real_socket_file_directory_fifo_symlink_and_tmpfile",
     "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::setgid_ext2_creation_inherits_group_and_directory_bit_before_persistent_publication",
 )
-REQUIRED_CORE_TESTS = (*ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+ORDINARY_FAULT_CORE_TESTS = tuple("aster_core::vm::vmar::fault_allocation_tests::" + suffix for suffix in (
+    "denied_anonymous_and_vmo_faults_leave_original_empty_page_table_ranges",
+    "ordinary_fault_and_cow_keep_old_mapping_on_quota_denial_and_refund_last_frame",
+    "fault_around_keeps_successful_prefix_and_charges_only_original_vmo_frame",
+))
+REQUIRED_CORE_TESTS = (*ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (
@@ -179,8 +184,9 @@ REQUIRED_OSTD_TESTS = (
     "ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner",
     "ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code",
     *RECOVERY_PAGE_TABLE_TESTS,
+    "ostd::mm::vm_space::recovery_tests::ordinary_no_prealloc_cursor_retains_holes_and_maps_without_reserve_authority",
 )
-MINIMUM_OSTD_TESTS = 229  # Retained 224 plus five explicit-reserve page-table regressions.
+MINIMUM_OSTD_TESTS = 230  # Retained 229 plus ordinary no-preallocation regression.
 
 # A separate third crate preserves all nine original allocator tests. Changes
 # to this exact inventory require review, not a smaller denominator at runtime.

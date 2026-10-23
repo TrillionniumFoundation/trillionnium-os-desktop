@@ -267,3 +267,60 @@ fn recovery_mapping_rejects_conflict_without_replacing_original_frame() {
     assert!(reserve.snapshot().is_none());
     assert_eq!(original.reference_count(), 1);
 }
+
+#[ktest]
+fn ordinary_no_prealloc_cursor_retains_holes_and_maps_without_reserve_authority() {
+    let vm = VmSpace::new();
+    let data = frame();
+    let far = crate::mm::page_size::<UserPtConfig>(2);
+    let empty_range;
+    {
+        let guard = disable_preempt();
+        let mut cursor = vm.cursor_no_prealloc(&guard, &(0..PAGE_SIZE)).unwrap();
+        let (range, item) = cursor.query().unwrap();
+        assert!(item.is_none());
+        assert!(range.len() > PAGE_SIZE);
+        empty_range = range;
+    }
+    // The compatibility API still preallocates even for an empty query. This
+    // real contrast proves that the observed hole range detects intermediate
+    // page-table creation, without physical exhaustion or failure injection.
+    {
+        let eager = VmSpace::new();
+        let guard = disable_preempt();
+        let mut cursor = eager.cursor(&guard, &(0..PAGE_SIZE)).unwrap();
+        assert_eq!(cursor.query().unwrap().0, 0..PAGE_SIZE);
+    }
+    for _ in 0..2 {
+        let guard = disable_preempt();
+        let mut cursor = vm.cursor_mut_no_prealloc(&guard, &(0..PAGE_SIZE)).unwrap();
+        let (range, item) = cursor.query().unwrap();
+        assert_eq!(range, empty_range);
+        assert!(item.is_none());
+    }
+    // A live but exhausted reserve must neither fund nor inhibit ordinary growth.
+    let reserve = PhysicalReserve::new(1).unwrap();
+    let held = FrameAllocOptions::new().alloc_frame_from(&reserve).unwrap();
+    let before = reserve.snapshot().unwrap();
+    {
+        let guard = disable_preempt();
+        let mut cursor = vm
+            .cursor_mut_no_prealloc(&guard, &(0..far + PAGE_SIZE))
+            .unwrap();
+        for address in [0, PAGE_SIZE, far] {
+            cursor.jump(address).unwrap();
+            cursor.try_map(data.clone(), property()).unwrap();
+            cursor.jump(address).unwrap();
+            assert!(matches!(cursor.query().unwrap(),
+                (range, Some(VmQueriedItem::MappedRam { frame, prop }))
+                    if range == (address..address + PAGE_SIZE)
+                    && frame.paddr() == data.paddr() && prop == property()));
+        }
+    }
+    assert_eq!(reserve.snapshot().unwrap(), before);
+    assert_eq!(data.reference_count(), 4);
+    drop(vm);
+    assert_eq!(data.reference_count(), 1);
+    drop(held);
+    assert_eq!(reserve.snapshot().unwrap().allocated, 0);
+}

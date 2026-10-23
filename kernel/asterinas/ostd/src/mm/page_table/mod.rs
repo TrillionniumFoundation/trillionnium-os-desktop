@@ -467,6 +467,23 @@ impl<C: PageTableConfig> PageTable<C> {
         self.cursor_mut_with_min_level(guard, va, 1)
     }
 
+    /// Locks existing nodes, stopping at the first absent branch without allocation.
+    pub(crate) fn cursor_mut_no_prealloc<'rcu, G: AsAtomicModeGuard>(
+        &'rcu self,
+        guard: &'rcu G,
+        va: &Range<Vaddr>,
+    ) -> Result<CursorMut<'rcu, C>, PageTableError> {
+        CursorMut::new_no_prealloc(self, guard.as_atomic_mode_guard(), va)
+    }
+
+    pub(crate) fn cursor_no_prealloc<'rcu, G: AsAtomicModeGuard>(
+        &'rcu self,
+        guard: &'rcu G,
+        va: &Range<Vaddr>,
+    ) -> Result<Cursor<'rcu, C>, PageTableError> {
+        Cursor::new_no_prealloc(self, guard.as_atomic_mode_guard(), va)
+    }
+
     /// Locks at the root so cursor construction cannot allocate child nodes.
     /// Reserve authority is supplied separately to each fallible map operation;
     /// neither this cursor nor the page table retains or inherits a token.

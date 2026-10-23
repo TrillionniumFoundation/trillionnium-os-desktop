@@ -75,6 +75,13 @@ impl<C: PageTableConfig> PageTableNode<C> {
             .expect("Failed to allocate a page table node")
     }
 
+    /// Allocates from the original ordinary frame allocator, propagating failure.
+    pub(super) fn try_alloc(level: PagingLevel) -> crate::Result<Self> {
+        FrameAllocOptions::new()
+            .zeroed(true)
+            .alloc_frame_with(PageTablePageMeta::new(level))
+    }
+
     /// Allocates from an explicitly borrowed reserve, without ordinary fallback.
     pub(super) fn try_alloc_from(
         reserve: &PhysicalReserve,

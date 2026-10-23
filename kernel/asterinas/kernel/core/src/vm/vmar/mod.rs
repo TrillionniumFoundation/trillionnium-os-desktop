@@ -2,6 +2,9 @@
 
 //! User address space management.
 
+#[cfg(ktest)]
+mod fault_allocation_tests;
+
 mod handle;
 mod interval_set;
 mod rmap;

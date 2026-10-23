@@ -77,7 +77,7 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertEqual(result["exercised_passed_lower_bound"], MINIMUM_OSTD_TESTS)
 
     def test_complete_ostd_requires_owner_fatal_and_page_table_regressions_without_soft_skip(self):
-        self.assertEqual(len(REQUIRED_OSTD_TESTS), 7)
+        self.assertEqual(len(REQUIRED_OSTD_TESTS), 8)
         for required in REQUIRED_OSTD_TESTS:
             name = required.encode()
             for serial in (serial_log().replace(name, b"ostd::fixture::unrelated"),
@@ -88,10 +88,10 @@ class KtestCheckerTests(unittest.TestCase):
                         check_guest(self.guest, "ostd")
 
     def test_ostd_owner_regression_cannot_replace_the_retained_baseline(self):
-        self.assertEqual(MINIMUM_OSTD_TESTS, 229)
-        for count in (7, 224, 228):
+        self.assertEqual(MINIMUM_OSTD_TESTS, 230)
+        for count in (7, 8, 224, 228, 229):
             self.evidence(serial_log(passed=count))
-            with self.assertRaisesRegex(ValueError, "OSTD gate shrank"):
+            with self.assertRaisesRegex(ValueError, "required OSTD test" if count == 7 else "OSTD gate shrank"):
                 check_guest(self.guest, "ostd")
 
     def test_serial_tampering_is_rejected_before_parsing(self):
@@ -177,8 +177,8 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertIn("no real QEMU guest records", result.stdout)
 
     def test_complete_core_requires_all_named_regressions_exactly_once(self):
-        self.assertEqual(len(REQUIRED_CORE_TESTS), 105)
-        self.assertEqual(MINIMUM_CORE_TESTS, 344)
+        self.assertEqual(len(REQUIRED_CORE_TESTS), 108)
+        self.assertEqual(MINIMUM_CORE_TESTS, 347)
         baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(239))
         names = (*baseline, *REQUIRED_CORE_TESTS)
         self.evidence(core_serial(names), crate="aster-core")

@@ -167,6 +167,35 @@ impl VmSpace {
         })
     }
 
+    /// Locks existing nodes for querying without allocating missing page tables.
+    /// An absent branch is represented by its full unmapped range.
+    pub fn cursor_no_prealloc<'a, G: AsAtomicModeGuard>(
+        &'a self,
+        guard: &'a G,
+        va: &Range<Vaddr>,
+    ) -> Result<Cursor<'a>> {
+        Ok(Cursor(self.pt.cursor_no_prealloc(guard, va)?))
+    }
+
+    /// Locks existing nodes without allocating missing page tables.
+    ///
+    /// An absent branch is locked at its parent, serializing creation there.
+    /// Existing branches retain the ordinary fine-grained locking protocol.
+    /// Use [`CursorMut::try_map`] to prepare missing nodes fallibly after user
+    /// frame admission. Other cursor operations retain their original behavior.
+    /// No recovery authority is acquired or inherited.
+    pub fn cursor_mut_no_prealloc<'a, G: AsAtomicModeGuard>(
+        &'a self,
+        guard: &'a G,
+        va: &Range<Vaddr>,
+    ) -> Result<CursorMut<'a>> {
+        Ok(CursorMut {
+            pt_cursor: self.pt.cursor_mut_no_prealloc(guard, va)?,
+            flusher: TlbFlusher::new(&self.cpus, disable_preempt()),
+            vmspace: self,
+        })
+    }
+
     /// Activates the page table on the current CPU.
     pub fn activate(self: &Arc<Self>) {
         let preempt_guard = disable_preempt();
@@ -478,6 +507,30 @@ impl<'a> CursorMut<'a> {
 
         // SAFETY: It is safe to map untyped memory into the userspace.
         unsafe { self.pt_cursor.map(item) };
+    }
+
+    /// Maps a frame after fallibly acquiring every missing ordinary page-table node.
+    ///
+    /// On failure no PTE is published, the cursor address is unchanged, and the
+    /// original frame is returned. No reserve authority is used. The same range,
+    /// alignment and conflicting-mapping restrictions as [`Self::map`] apply.
+    pub fn try_map(
+        &mut self,
+        frame: UFrame,
+        prop: PageProperty,
+    ) -> core::result::Result<(), (Error, UFrame)> {
+        let item = VmItem::new_tracked(frame, prop);
+        // SAFETY: Only a tracked user frame is mapped into user space, under
+        // the original cursor's exclusive range lock, without overwriting.
+        match unsafe { self.pt_cursor.try_map(item) } {
+            Ok(()) => Ok(()),
+            Err((error, item)) => {
+                let MappedItem::TrackedFrame(frame) = item.mapped_item else {
+                    unreachable!("ordinary tracked mapping only accepts user frames")
+                };
+                Err((error, frame))
+            }
+        }
     }
 
     /// Maps a range of [`IoMem`] into the current slot.

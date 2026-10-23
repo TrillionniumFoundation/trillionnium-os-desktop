@@ -400,7 +400,7 @@ impl VmMapping {
             // only return the error if the faulting page is still not mapped.
             if res.is_err() {
                 let preempt_guard = disable_preempt();
-                let mut cursor = vm_space.cursor(
+                let mut cursor = vm_space.cursor_no_prealloc(
                     &preempt_guard,
                     &(page_aligned_addr..page_aligned_addr + PAGE_SIZE),
                 )?;
@@ -471,7 +471,7 @@ impl VmMapping {
     ) -> Result<()> {
         'retry: loop {
             let preempt_guard = disable_preempt();
-            let mut cursor = vm_space.cursor_mut(
+            let mut cursor = vm_space.cursor_mut_no_prealloc(
                 &preempt_guard,
                 &(page_aligned_addr..page_aligned_addr + PAGE_SIZE),
             )?;
@@ -573,7 +573,9 @@ impl VmMapping {
                     }
                     let map_prop = PageProperty::new_user(page_flags, CachePolicy::Writeback);
 
-                    cursor.map(frame, map_prop);
+                    cursor
+                        .try_map(frame, map_prop)
+                        .map_err(|(error, _frame)| error)?;
                     rss_delta.add(self.rss_type(), 1);
                 }
             }
@@ -682,7 +684,8 @@ impl VmMapping {
 
         'retry: loop {
             let preempt_guard = disable_preempt();
-            let mut cursor = vm_space.cursor_mut(&preempt_guard, &(start_addr..end_addr))?;
+            let mut cursor =
+                vm_space.cursor_mut_no_prealloc(&preempt_guard, &(start_addr..end_addr))?;
 
             let rss_delta_ref = &mut rss_delta;
             let operate =
@@ -694,7 +697,9 @@ impl VmMapping {
                         let page_flags = PageFlags::from(vm_perms) | PageFlags::ACCESSED;
                         let page_prop = PageProperty::new_user(page_flags, CachePolicy::Writeback);
                         let (_, frame) = commit_fn()?;
-                        cursor.map(frame.into(), page_prop);
+                        cursor
+                            .try_map(frame.into(), page_prop)
+                            .map_err(|(error, _frame)| Error::from(error))?;
                         rss_delta_ref.add(self.rss_type(), 1);
                     } else {
                         let next_addr = cursor.virt_addr() + PAGE_SIZE;
