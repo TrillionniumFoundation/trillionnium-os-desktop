@@ -1,6 +1,6 @@
 # A08 build and APK evidence
 
-This is support/android/README.md. The repository ROOT README.md stays 0 bytes.
+This is the Android development guide. The repository [README](../../README.md) provides project navigation; [current capabilities](../../docs/CURRENT_CAPABILITIES.md) separates candidate implementation from platform qualification.
 
 ## Separate physical Android DEX smoke profile
 

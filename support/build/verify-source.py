@@ -121,6 +121,9 @@ def main():
         PINNED_COMMIT, PINNED_TREE, PINNED_TOOLCHAIN
     ):
         raise SystemExit("fixed upstream inputs changed; coordinate with A00")
+    readme = ROOT / "README.md"
+    if readme.is_symlink() or not readme.is_file():
+        raise SystemExit("root README must be a regular file")
     entries = subprocess.check_output(
         ["git", "ls-tree", "-rz", PINNED_TREE], cwd=ROOT
     ).split(b"\0")
