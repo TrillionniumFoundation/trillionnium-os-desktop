@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOTS = ("compat/android", "support/android", "tests/workloads/android")
 REQUIRED_FILES = (
     "compat/android/INTERFACES.md",
+    "compat/android/PHYSICAL_SMOKE.md",
     "compat/android/aosp-profile.json",
     "compat/android/capability-matrix.json",
     "compat/android/kernel-gaps.json",
@@ -28,6 +29,7 @@ REQUIRED_FILES = (
     "support/android/audit.py",
     "support/android/build_asterinas_abi.sh",
     "support/android/build_smoke_apk.sh",
+    "support/android/build_physical_smoke_apk.py",
     "support/android/capture_guest_logs.py",
     "support/android/generate_kernel_source_audit.py",
     "support/android/kernel_contract.py",
@@ -36,6 +38,7 @@ REQUIRED_FILES = (
     "support/android/run_asterinas_abi.py",
     "support/android/run_reference_cuttlefish.sh",
     "support/android/run_verified_apks.py",
+    "support/android/run_physical_smoke.py",
     "support/android/verify_host.py",
     "support/android/verify_launch_preflight.py",
     "support/android/verify_product_source.py",
@@ -75,6 +78,7 @@ REQUIRED_FILES = (
     "tests/workloads/android/test_kernel_contract.py",
     "tests/workloads/android/test_kernel_source_audit.py",
     "tests/workloads/android/test_native_apk.py",
+    "tests/workloads/android/test_physical_smoke.py",
     "tests/workloads/android/test_seccomp_guest_contract.py",
     "tests/workloads/android/test_source_integrity.py",
     "tests/workloads/android/test_verified_artifacts.py",

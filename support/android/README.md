@@ -2,6 +2,15 @@
 
 This is support/android/README.md. The repository ROOT README.md stays 0 bytes.
 
+## Separate physical Android DEX smoke profile
+
+The original no-permission Java/DEX fixture can also be built with an installed
+SDK and tested on one explicitly identified existing Android device. See
+[`compat/android/PHYSICAL_SMOKE.md`](../../compat/android/PHYSICAL_SMOKE.md) for
+development inputs, source/signature pins, the default host-only gate, owned-app
+execution and cleanup rules. This profile never relaxes the Cuttlefish gates or
+qualifies Asterinas, an ARM BSP, Hepta production ownership or mobile organ control.
+
 ## Current checkpoint — 2026-10-17 commit-bound source audit
 
 `generate_kernel_source_audit.py` now resolves `--project-ref` once and reads
