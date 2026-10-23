@@ -39,7 +39,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md
           python3 - <<'PY'
           import json
           from pathlib import Path

@@ -86,8 +86,8 @@ jobs:
           before = state()
           require(before["commit"] == os.environ["DESKTOP_SHA"] and not before["status"],
                   "desktop_checkout_identity_or_cleanliness_mismatch")
-          require(Path("README.md").is_file() and Path("README.md").stat().st_size == 0,
-                  "root_readme_must_be_empty")
+          require(Path("README.md").is_file() and not Path("README.md").is_symlink(),
+                  "root_readme_must_be_regular")
           for path in ["services/hepta-os/src/objective/history.rs",
                        "services/hepta-os/src/objective/history_wire.rs",
                        "services/hepta-os/src/bin/hepta-history.rs",
@@ -216,8 +216,8 @@ jobs:
                        "desktop_head_mismatch")
           history.need(not original.git(desktop, "status", "--porcelain=v1", "--untracked-files=all"),
                        "desktop_checkout_not_clean")
-          history.need(Path("README.md").is_file() and Path("README.md").stat().st_size == 0,
-                       "root_readme_must_be_empty")
+          history.need(Path("README.md").is_file() and not Path("README.md").is_symlink(),
+                       "root_readme_must_be_regular")
           contract, binding = history.read_contract(history.CONTRACT)
           paths = set(subprocess.check_output(["git", "ls-files", "-z", "--",
               "services/hepta-os"]).decode().rstrip("\0").split("\0"))
