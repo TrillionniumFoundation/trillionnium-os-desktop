@@ -54,6 +54,7 @@ use crate::{
 /// - CapEff: Effective capabilities.
 /// - CapBnd: Bounding set.
 /// - CapAmb: Ambient capabilities.
+/// - NoNewPrivs: Whether this thread can acquire privileges through exec.
 /// - Seccomp: Seccomp mode.
 /// - Cpus_allowed: CPUs allowed for this process.
 /// - Cpus_allowed_list: List of CPUs allowed for this process.
@@ -143,6 +144,33 @@ impl ProcFileOps for StatusFileOps {
             u32::from(credentials.fsgid()),
         )?;
 
+        // Allocate before acquiring the preemption-disabling groups lock, and
+        // release it before a fallible user-memory write. Bound retries when a
+        // different thread is concurrently replacing the supplementary set.
+        let mut groups = Vec::new();
+        let mut copied = false;
+        for _ in 0..4 {
+            let count = credentials.groups().len();
+            groups
+                .try_reserve_exact(count)
+                .map_err(|_| Error::new(Errno::ENOMEM))?;
+            let current = credentials.groups();
+            if current.len() > groups.capacity() {
+                continue;
+            }
+            groups.extend(current.iter().map(|gid| u32::from(*gid)));
+            copied = true;
+            break;
+        }
+        if !copied {
+            return_errno_with_message!(Errno::EAGAIN, "supplementary groups changed repeatedly");
+        }
+        write!(printer, "Groups:\t")?;
+        for gid in groups {
+            write!(printer, "{gid} ")?;
+        }
+        writeln!(printer)?;
+
         writeln!(
             printer,
             "FDSize:\t{}",
@@ -196,6 +224,11 @@ impl ProcFileOps for StatusFileOps {
             printer,
             "CapAmb:\t{:016x}",
             credentials.ambient_capset().bits()
+        )?;
+        writeln!(
+            printer,
+            "NoNewPrivs:\t{}",
+            u8::from(credentials.no_new_privs())
         )?;
 
         Ok(printer.bytes_written())
