@@ -233,6 +233,16 @@ pub trait SysObj: Any + Send + Sync + Debug + 'static {
     /// All other inodes must have an non-empty name.
     fn name(&self) -> &SysStr;
 
+    /// Returns the immutable owner of this object and its attributes.
+    ///
+    /// Kernel-created objects are owned by root by default. Objects created on
+    /// behalf of a user must capture that user's filesystem IDs before they are
+    /// published and return those same IDs throughout their lifetime. A view
+    /// must not derive ownership from the thread looking up the object.
+    fn ownership(&self) -> SysOwnership {
+        SysOwnership::ROOT
+    }
+
     /// Returns whether a node is the root of a `SysTree`.
     fn is_root(&self) -> bool {
         false
@@ -283,6 +293,36 @@ pub trait SysObj: Any + Send + Sync + Debug + 'static {
     }
 }
 
+/// The immutable numeric owner of a `SysTree` object and its attributes.
+///
+/// These IDs are in the kernel's filesystem credential domain. A filesystem
+/// view is responsible for converting them to its credential types.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct SysOwnership {
+    uid: u32,
+    gid: u32,
+}
+
+impl SysOwnership {
+    /// Root ownership for kernel-created objects.
+    pub const ROOT: Self = Self::new(0, 0);
+
+    /// Captures the owner IDs for a newly created object.
+    pub const fn new(uid: u32, gid: u32) -> Self {
+        Self { uid, gid }
+    }
+
+    /// Returns the owner's user ID.
+    pub const fn uid(self) -> u32 {
+        self.uid
+    }
+
+    /// Returns the owner's group ID.
+    pub const fn gid(self) -> u32 {
+        self.gid
+    }
+}
+
 /// The unique ID of a `SysNode`.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct SysNodeId(u64);
@@ -316,10 +356,9 @@ bitflags! {
     ///
     /// This struct is mainly used to provide the initial permissions for nodes and attributes.
     ///
-    /// The concepts of "owner"/"group"/"others" mentioned here are not explicitly represented in
-    /// systree. They exist primarily to enable finer-grained permission management at
-    /// the "view" and "control" parts for users. The definitions of these permissions match that
-    /// of VFS file permissions bit-wise.
+    /// The owner and group are given by [`SysObj::ownership`]. Permission checks
+    /// belong to the filesystem view and control layers. The definitions of
+    /// these permissions match those of VFS file permissions bit-wise.
     ///
     /// Users can provide permission modification functionality through additional abstractions at
     /// the upper layers. Correspondingly, it is the users' responsibility to do the permission

@@ -39,6 +39,21 @@ WORKLOAD_AS_BYTES = 256 * 1024 * 1024
 COMPLETE = "G1D_COMPLETE native_manage=true history=true hepta_durability=false hardware=false"
 WORKLOAD_ISOLATED = ("G1D_WORKLOAD_LINUX_ISOLATED uid=60001 gid=60001 groups=0 caps=0 nnp=1 securebits=195 "
                      "signal_cases=10 boundary_cases=17 exec_cases=1")
+PIDS_ACCOUNTING = ("G1D_PIDS_ACCOUNTING tasks=3 activated=3 leaf_errno=11 ancestor_errno=11 "
+                   "rollback_reused=1 migrated=3 moved_root=0 retained_leader=3 zombie=1 zombie_populated=0 final=0")
+PIDS_ZOMBIE_RETAINED = "G1D_PIDS_ZOMBIE_RETAINED current=1 ancestor=1 wnowait=1"
+PIDS_ROLLBACK = "G1D_PIDS_CLONE_ROLLBACK fork_cases=2 thread_cases=2 errno=14 before=1 after=1"
+PIDS_DESCENDANTS = ("G1D_PIDS_DESCENDANTS current=16 branch=1 grandchildren=14 parent_fork_errno=11 "
+                    "child_fork_errno=11 thread_errno=11")
+PIDS_FORK_REFUND = "G1D_PIDS_FORK_REFUND before=16 after=1 reused=1 final=1"
+PIDS_ZOMBIES = ("G1D_PIDS_ZOMBIES retained=15 current=16 fork_errno=11 thread_errno=11 "
+                "wnowait_refunded=0 after_one_reap=15 reused=1 live_procs=1 final=1")
+PIDS_THREADS = ("G1D_PIDS_THREADS threads=15 current=16 thread_errno=11 fork_errno=11 "
+                "after_one_exit=15 reused=1 final=1")
+PIDS_EXEC_REFUND = "G1D_PIDS_EXEC_REFUND final=1"
+PIDS_COMPLETE = "G1D_PIDS_COMPLETE max=16 current=1 peak=16 fork_threads_zombies=true memory_controller=false"
+PIDS_FIXED = (PIDS_ZOMBIE_RETAINED, PIDS_ACCOUNTING, PIDS_ROLLBACK, PIDS_DESCENDANTS, PIDS_FORK_REFUND,
+              PIDS_ZOMBIES, PIDS_THREADS, PIDS_EXEC_REFUND, PIDS_COMPLETE)
 MARKERS = (
     "G1D_WORKLOAD_NO_AUTHORITY", "G1D_RECOVERY_READY",
     "G1D_QUERYABI_OK supported_ops=62 max_request=40 max_response=64 features=0",
@@ -53,6 +68,7 @@ MARKERS = (
     "G1D_RECOVERY_RETIRED_AFTER_MANAGER_EXEC through=1025 next=1026",
     "G1D_RECOVERY_STOPPED",
     "G1D_CHILDREN_REAPED workload_signal=15 recovery_exit=0", COMPLETE, WORKLOAD_ISOLATED,
+    *PIDS_FIXED,
 )
 COMMITTED = re.compile(r"^\[hepta-g1d\] trusted initial image committed: bytes=([0-9]+) entry=0x([0-9a-f]+)$")
 ROLE_COMMITTED = re.compile(r"^\[hepta-g1d\] trusted role committed: role=([123]) pid=([0-9]+)$")
@@ -106,6 +122,14 @@ BOUNDARY_CASES = (("setresuid_root", 1), ("setresgid_root", 1), ("setgroups_root
 DYNAMIC = (BOOT, APPLY, COPYOUT, ALIAS, ZERO, RECOVERY, FULL, EXEC, CREDENTIALS, WORKLOAD_SIGNAL, WORKLOAD_BOUNDARY,
            USER_STOP, USER_PAUSED, RECOVERY_USED, USER_RESUME)
 DYNAMIC += (ADDRESS_SPACE,)
+PIDS_INITIAL = re.compile(r"^G1D_PIDS_INITIAL pid=([0-9]+) max=16 current=1$")
+PIDS_BOUNDARY = re.compile(r"^G1D_PIDS_BOUNDARY name=([a-z_]+) rc=(-?[0-9]+) errno=([0-9]+)$")
+PIDS_BOUNDARY_NAMES = ("raise_limit", "membership", "escape_root", "disable_controller")
+PIDS_RESERVE = re.compile(r"^G1D_PIDS_ROLE_RESERVE role=([13]) pid=([0-9]+) child=([0-9]+) "
+                         r"workload_current=16 root_member=1 child_exit=0$")
+PIDS_EXEC = re.compile(r"^G1D_PIDS_NONLEADER_EXEC pid=([0-9]+) parent=([0-9]+) "
+                      r"current=2 max=16 old_leader_refunded=1$")
+DYNAMIC += (PIDS_INITIAL, PIDS_BOUNDARY, PIDS_RESERVE, PIDS_EXEC)
 
 
 def build_initramfs(original, probe):
@@ -181,6 +205,41 @@ def workload_boundary(lines, pids):
             "observations_ordered": ordered}
 
 
+def workload_pids(lines, pids):
+    initial, boundaries, reserves, executed = (records(lines, pattern) for pattern in
+                                               (PIDS_INITIAL, PIDS_BOUNDARY, PIDS_RESERVE, PIDS_EXEC))
+    exact = all(lines.count(marker) == 1 for marker in (*PIDS_FIXED, WORKLOAD_ISOLATED,
+                                                       "G1D_WORKLOAD_NO_AUTHORITY"))
+    initial_ok = len(pids) == 3 and len(initial) == 1 and int(initial[0][1][1]) == pids[1]
+    boundaries_ok = ([m[1] for _, m in boundaries] == list(PIDS_BOUNDARY_NAMES)
+                     and all(int(m[2]) == -1 and int(m[3]) == 13 for _, m in boundaries))
+    reserve_rows = [dict(zip(("role", "pid", "child"), map(int, match.groups()))) for _, match in reserves]
+    reserves_ok = (len(pids) == 3 and len(reserve_rows) == 2
+                   and [(row["role"], row["pid"]) for row in reserve_rows] == [(1, pids[0]), (3, pids[2])]
+                   and all(1 < row["child"] < 1 << 31 and row["child"] not in pids for row in reserve_rows)
+                   and reserve_rows[0]["child"] != reserve_rows[1]["child"])
+    exec_ok = (len(pids) == 3 and len(executed) == 1 and int(executed[0][1][2]) == pids[1]
+               and 1 < int(executed[0][1][1]) < 1 << 31 and int(executed[0][1][1]) not in pids
+               and all(int(executed[0][1][1]) != row["child"] for row in reserve_rows))
+    ordered = False
+    if exact and initial_ok and boundaries_ok and reserves_ok and exec_ok:
+        steps = [lines.index(PIDS_ZOMBIE_RETAINED), lines.index(PIDS_ACCOUNTING), lines.index(WORKLOAD_ISOLATED), initial[0][0],
+                 *[index for index, _ in boundaries], lines.index(PIDS_ROLLBACK),
+                 lines.index(PIDS_DESCENDANTS), *[index for index, _ in reserves],
+                 lines.index(PIDS_FORK_REFUND), lines.index(PIDS_ZOMBIES), lines.index(PIDS_THREADS),
+                 executed[0][0], lines.index(PIDS_EXEC_REFUND), lines.index(PIDS_COMPLETE),
+                 lines.index("G1D_WORKLOAD_NO_AUTHORITY")]
+        ordered = all(left < right for left, right in zip(steps, steps[1:]))
+    return {"passed": bool(exact and initial_ok and boundaries_ok and reserves_ok and exec_ok and ordered),
+            "workload_max_retained_tids": 16, "thread_and_process_limits_required": exact,
+            "unreaped_zombies_remain_charged": exact, "wnowait_does_not_refund": exact,
+            "activation_migration_and_nonleader_exec_required": bool(exact and exec_ok),
+            "workload_cannot_change_limits_or_membership": boundaries_ok,
+            "independent_role_reserves": reserve_rows, "role_reserves_outside_workload": reserves_ok,
+            "observations_ordered": ordered, "memory_controller_qualified": False,
+            "cgroup_removal_with_retained_tasks_supported": False}
+
+
 def evaluate_positive(raw, code, timed_out, probe_info):
     require(len(raw) <= replay.MAX_SERIAL_BYTES, "G1-d serial exceeds evidence bound")
     text = ordinary.boot_check.ANSI.sub("", raw.decode(errors="replace"))
@@ -203,6 +262,7 @@ def evaluate_positive(raw, code, timed_out, probe_info):
         and all(images[i][0] < roles[i][0] for i in range(3))
         and max(index for index, _ in images + roles) < activation[0][0] < min(index for index, _ in boots))
     workload = workload_boundary(lines, pids)
+    pids_isolation = workload_pids(lines, pids)
     applied_records = records(lines, APPLY)
     applied = [dict(zip(APPLY_KEYS, map(int, match.groups()))) for _, match in applied_records]
     accounting_ok = len(applied) == len(APPLY_CASES)
@@ -291,11 +351,12 @@ def evaluate_positive(raw, code, timed_out, probe_info):
                   and not any(marker in text for marker in (*ordinary.boot_check.FATAL_PANICS, "Kernel panic"))
                   and not any(line.startswith("G1D_FAIL") for line in lines))
     passed = (type(code) is int and code == 33 and timed_out is False and exact and activation_before_resume
-              and workload["passed"] and accounting_ok and retry_ok and aliases_ok and history_ok
+              and workload["passed"] and pids_isolation["passed"] and accounting_ok and retry_ok and aliases_ok and history_ok
               and stopped and resumed and bounded_recovery and ordered and no_failure)
     return {"passed": bool(passed), "marker_counts": counts, "three_private_bootstraps": bool(bootstrap_ok),
             "manifest_verified_before_any_resume": bool(activation_before_resume), "role_pids": list(pids),
             "workload_linux_isolation": workload,
+            "workload_pids_isolation": pids_isolation,
             "apply_records": applied, "initial_revision": initial, "native_accounting_preserved": bool(accounting_ok),
             "copyout_replay_exact": bool(retry_ok), "legacy_aliases_denied": aliases_ok,
             "zero_budget_stops_real_workload": bool(stopped), "independent_recovery_resumes_workload": bool(resumed),
@@ -352,16 +413,20 @@ def evaluate_root_workload(raw, code, timed_out, probe_info):
             == [("workload_privilege_boundary", pids[1], 2), ("workload_really_running", pids[0], 1)]
         and all(int(match[2]) > 0 for _, match in failures) and int(failures[0][1][3]) == 0)
     allowed = (BOOT, CREDENTIALS, WORKLOAD_SIGNAL, failure)
-    unexpected = [line for line in lines if line.startswith("G1D_") and line != "G1D_RECOVERY_READY"
+    unexpected = [line for line in lines if line.startswith("G1D_")
+                  and line not in ("G1D_RECOVERY_READY", PIDS_ZOMBIE_RETAINED, PIDS_ACCOUNTING)
                   and not any(pattern.fullmatch(line) for pattern in allowed)]
     unknown_kernel = [line for line in lines if line.startswith("[hepta-g1d]")
                       and not any(pattern.fullmatch(line) for pattern in (COMMITTED, ROLE_COMMITTED, ACTIVATED))]
     ordered = False
-    if root and signal_access and expected_failure and lines.count("G1D_RECOVERY_READY") == 1:
+    if (root and signal_access and expected_failure and lines.count("G1D_RECOVERY_READY") == 1
+            and lines.count(PIDS_ACCOUNTING) == lines.count(PIDS_ZOMBIE_RETAINED) == 1):
         boots = {int(match[1]): index for index, match in records(lines, BOOT)}
         indices = [boots.get(2, len(lines)), creds[0][0], signals[0][0], signals[1][0],
                    failures[0][0], failures[1][0]]
         ordered = (all(left < right for left, right in zip(indices, indices[1:]))
+                   and boots.get(1, len(lines)) < lines.index(PIDS_ZOMBIE_RETAINED)
+                       < lines.index(PIDS_ACCOUNTING) < creds[0][0]
                    and boots.get(3, len(lines)) < lines.index("G1D_RECOVERY_READY") < failures[1][0])
     clean_failure = (not unexpected and not unknown_kernel and "rejected initial image" not in text
                      and not any(marker in text for marker in (*ordinary.boot_check.FATAL_PANICS, "Kernel panic")))
@@ -455,13 +520,13 @@ def run(args, output, result):
     (output / "git-status-porcelain.txt").write_bytes(subprocess.check_output(
         ["git", "status", "--porcelain", "--untracked-files=all"], cwd=ROOT))
     snapshot = ordinary.source_snapshot(ROOT, args.expected_source_head, args.expected_source_tree)
-    for name in ("tests/kernel/control/g1d_init.c", "tests/kernel/control/run_g1d_guest.py",
+    for name in ("tests/kernel/control/g1d_init.c", "tests/kernel/control/g1d_pids.c", "tests/kernel/control/run_g1d_guest.py",
                  "tests/kernel/control/run_g1c_guest.py", "support/build/prepare-trusted-image.py"):
         require(name in snapshot["files"], "untracked execution input")
     save_json(output / "source-before.json", snapshot)
     result.update(source_head=snapshot["head"], source_tree=snapshot["tree"], source_file_count=len(snapshot["files"]),
                   stage="compile_actual_initial_elf")
-    compiler = [args.cc, "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-static", "-no-pie",
+    compiler = [args.cc, "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-static", "-no-pie", "-pthread",
                 "-Wl,-z,noexecstack,-z,separate-code", str(ROOT / "tests/kernel/control/g1d_init.c"),
                 "-o", str(output / "g1d-init")]
     built = subprocess.run(compiler, capture_output=True, timeout=90, check=False)

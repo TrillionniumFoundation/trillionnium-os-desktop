@@ -25,7 +25,7 @@ use core::{
 
 use aster_systree::{
     BranchNodeFields, Error, NormalNodeFields, Result, SysAttrSet, SysAttrSetBuilder, SysObj,
-    SysPerms, SysStr, inherit_sys_branch_node, inherit_sys_leaf_node,
+    SysOwnership, SysPerms, SysStr, inherit_sys_branch_node, inherit_sys_leaf_node,
 };
 use inherit_methods_macro::inherit_methods;
 use ostd::{
@@ -38,6 +38,7 @@ use spin::Once;
 use crate::{
     fs::{
         file::{InodeType, mkmod},
+        utils::current_fs_ids,
         vfs::{file_system::FileSystem, path::Dentry},
     },
     time::clocks::init_for_ktest as time_init_for_ktest,
@@ -82,12 +83,15 @@ inherit_sys_branch_node!(DemoSet, fields, {
 #[derive(Debug)]
 struct DemoObject {
     fields: NormalNodeFields<Self>,
+    ownership: SysOwnership,
     attr_a: AtomicU32,
     attr_b: AtomicU32,
 }
 
 impl DemoObject {
     fn new(name: SysStr) -> Arc<Self> {
+        let (uid, gid) = current_fs_ids();
+        let ownership = SysOwnership::new(uid.into(), gid.into());
         let mut builder = SysAttrSetBuilder::new();
 
         builder.add(SysStr::from("attr_a"), SysPerms::DEFAULT_RW_ATTR_PERMS);
@@ -99,6 +103,7 @@ impl DemoObject {
             let fields = NormalNodeFields::new(name, attrs, weak_self.clone());
             DemoObject {
                 fields,
+                ownership,
                 attr_a: AtomicU32::new(0),
                 attr_b: AtomicU32::new(0),
             }
@@ -107,6 +112,10 @@ impl DemoObject {
 }
 
 inherit_sys_leaf_node!(DemoObject, fields, {
+    fn ownership(&self) -> SysOwnership {
+        self.ownership
+    }
+
     fn perms(&self) -> SysPerms {
         SysPerms::DEFAULT_RW_PERMS
     }

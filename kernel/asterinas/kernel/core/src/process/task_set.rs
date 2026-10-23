@@ -133,6 +133,14 @@ impl TaskSet {
 }
 
 impl TaskSet {
+    /// Returns the tasks charged to the pids controller, including a zombie leader.
+    ///
+    /// Non-main tasks are removed at exit. The exited main task remains charged
+    /// until process reap or non-leader exec removes its retained TID.
+    pub(crate) fn pids_count(&self) -> u32 {
+        u32::try_from(self.tasks.len()).expect("retained tasks fit in the TID namespace")
+    }
+
     /// Returns a slice of the tasks in the task set.
     pub(crate) fn as_slice(&self) -> &[Arc<Task>] {
         self.tasks.as_slice()

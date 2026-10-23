@@ -15,8 +15,8 @@ use alloc::{boxed::Box, string::ToString, sync::Arc};
 use core::fmt::Debug;
 
 use aster_systree::{
-    BranchNodeFields, Error, NormalNodeFields, Result, SysAttrSetBuilder, SysObj, SysPerms, SysStr,
-    inherit_sys_branch_node, inherit_sys_leaf_node,
+    BranchNodeFields, Error, NormalNodeFields, Result, SysAttrSetBuilder, SysObj, SysOwnership,
+    SysPerms, SysStr, inherit_sys_branch_node, inherit_sys_leaf_node,
 };
 use aster_util::printer::VmPrinter;
 use inherit_methods_macro::inherit_methods;
@@ -25,7 +25,10 @@ use ostd::{
     sync::RwMutex,
 };
 
-use crate::{device::misc::tdxguest::tdx_get_quote, fs::configfs};
+use crate::{
+    device::misc::tdxguest::tdx_get_quote,
+    fs::{configfs, utils::current_fs_ids},
+};
 
 #[derive(Debug)]
 struct Tsm {
@@ -170,11 +173,14 @@ impl TsmProvider {
 #[derive(Debug)]
 struct ReportNode {
     fields: NormalNodeFields<Self>,
+    ownership: SysOwnership,
     data: RwMutex<TsmProvider>,
 }
 
 impl ReportNode {
     fn new(name: SysStr) -> Arc<Self> {
+        let (uid, gid) = current_fs_ids();
+        let ownership = SysOwnership::new(uid.into(), gid.into());
         let mut builder = SysAttrSetBuilder::new();
         builder.add(SysStr::from("inblob"), SysPerms::DEFAULT_RW_ATTR_PERMS);
         builder.add(SysStr::from("outblob"), SysPerms::DEFAULT_RO_ATTR_PERMS);
@@ -186,6 +192,7 @@ impl ReportNode {
             let fields = NormalNodeFields::new(name, attrs, weak_self.clone());
             ReportNode {
                 fields,
+                ownership,
                 data: RwMutex::new(TsmProvider::new()),
             }
         })
@@ -207,6 +214,10 @@ impl ReportNode {
 }
 
 inherit_sys_leaf_node!(ReportNode, fields, {
+    fn ownership(&self) -> SysOwnership {
+        self.ownership
+    }
+
     fn perms(&self) -> SysPerms {
         SysPerms::DEFAULT_RW_PERMS
     }

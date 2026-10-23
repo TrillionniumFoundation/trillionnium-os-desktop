@@ -1,5 +1,27 @@
 # 当前状态
 
+## 2026-10-23 接续：G1-d root-workload 负控的截止时间修复
+
+原 CI 失败来自 manager 的 30 秒 startup 等待与 recovery 的 20 秒 IPC 等待不一致；修复为共享 startup 常量加 10 秒 recovery 余量，严格负控 oracle 保持不变。固定已测源码 `458f9b1086ed7535658ae5e4e9392d3eb88f459d` / tree `f67d00514eafbd03ed66a0877667b63f2804a94f` 已完成原正向与 root-workload 负向共六 boot，24 项针对性 host 测试通过。负控只出现预期的 privilege-boundary 和 missing-workload 两条失败，无额外 IPC timeout。
+
+[新执行原文、此前失败和逐文件身份](../results/integration/2026-10-23-g1d-pids-closure/README.md) 同时保留；本次合并接入 #246 已发布的 AF_UNIX 源码并保留两条历史资格边界。旧分支运行证据不冒充合并后的运行证据，最终合并组合继续按实际 CI 收据验收。
+
+## 2026-10-22 接续：E 的 retained-task 计数与 SysTree owner 已完成原生正反验证
+
+[#245](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/245) 的已测源码为 `2f806c2852cd21a9769c7b01a76ba5f97027c111` / tree `6897d0d26277f832d75100e64b92e9432977f240`。此切片让原 pids 层级统一计入 fork、线程、保留 leader 与未 reap 僵尸，并在 workload 首次运行前设置 `pids.max=16`；manager/recovery 保留原 root-cgroup 容量。它还修复了 SysTree inode 按 lookup 调用者生成 owner、使 UID 60001 能打开 root 创建的 pids 属性写入口的问题：owner 现在保存在原 backing object 上，属性重建和新 filesystem view 都使用同一身份。
+
+| 本次实际执行 | 结果与边界 |
+| --- | --- |
+| 完整 aster-core | **275/275**，0 failed/filtered/soft-skipped，QEMU33；新增 ownership/view 重建测试在原串口中恰好一次 `ok`。 |
+| 独立 permission SMP | 两 CPU 的 **3/3**，278 declared / 275 filtered，QEMU33；不是278项全部执行，也不是SMP trusted control资格。 |
+| 原 G1-d 三 boot | 精确映像通过完整 retained-task、UID60001/caps0 写拒绝、CPU/history、manager-exec、独立恢复与合法暂停保持；两个 altered-image 在 commit/activation 前按原原因拒绝。 |
+| 线程限额语义负控 | 保留真实 charge/RAII，只绕过线程准入限额；实际线程返回0，原探针要求EAGAIN并精确拒绝。 |
+| 僵尸提前退账语义负控 | 只在exit提前refund；实际 `WNOWAIT` 时 current/ancestor均0，原保留charge断言精确拒绝。两负控exact均QEMU33、无timeout/panic，四个altered-image仍精确拒绝，之后恢复正向干净HEAD。 |
+
+[技术/开发手册](../tests/kernel/control/G1D_PIDS_ISOLATION.md) 与 [原始证据及独立复核](../results/integration/2026-10-22-pids-systree-owner/README.md) 固定本次源码、相同probe/QEMU/BIOS/lock及全部serial摘要。独立复核重新执行原判定器解析12份G1-d串口，保留旧 `ad4f91a8…` 的真实权限失败和首次复用target被准备门禁拒绝的记录。此处记录本地原生验收；最终发布提交仍按其自己的远端CI决定合并资格。
+
+**E 的上述两个实现缺陷已有对应正向和反向证据，完整 E 仍未闭合。** `memory.max` 仍是stub，256MiB `RLIMIT_AS` 只限制单进程；manager/recovery的完整资源隔离、自主watchdog与可信暂停原因仍需实现。多用户原生SysTree委派、chown/mode持久策略、SMP trusted control、Hepta生产authority/原store生命周期/G2持久闭环与实际硬件继续按各自门槛验收。下文旧A–G矩阵保留原时点，不把本次局部E资格转授其他切片。
+
 ## 2026-10-22 接续：AF_UNIX 定向回归完成同源原生正反验证
 
 固定生产源码为 `b824d80d44456c131a6cb9d4fcc84be95c6af273` / tree `506d583455fa5ea2cf0c18fe10ed42c3874f7556`。本次修复 peer shutdown 与接收数据快照的先后关系、stream 辅助数据零进展退出、单次 `MSG_DONTWAIT`，并补原 typed `FIONREAD`。实现、锁序、开发与验收规则见 [模块技术手册](../tests/kernel/network/UNIX_STREAM_REGRESSION.md)。

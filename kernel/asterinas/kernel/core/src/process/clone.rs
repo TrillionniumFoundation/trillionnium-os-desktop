@@ -388,8 +388,17 @@ fn clone_child_task(
     // Keep the cgroup snapshot and child insertion under the same membership
     // read section as migration.  This snapshot is only a deferred-final-
     // charge fallback; live charges still resolve through Process::cgroup().
-    let _cgroup_read_guard = CgroupMembership::read_lock();
+    let cgroup_read_guard = CgroupMembership::read_lock();
     let inherited_cpu_cgroup = process.cgroup().get().map(|cgroup| cgroup.clone());
+    // A thread consumes a pids slot just like a newly forked process. Reserve it
+    // before fallible construction; the guard rolls back every failed clone.
+    let pids_charge = inherited_cpu_cgroup
+        .as_ref()
+        .map(|cgroup| cgroup.controller().pre_charge_pids(&cgroup_read_guard))
+        .transpose()
+        .map_err(|_| {
+            Error::with_message(Errno::EAGAIN, "the pids sub-controller limit is reached")
+        })?;
 
     // Clone system V semaphore
     clone_sysvsem(clone_flags)?;
@@ -495,6 +504,8 @@ fn clone_child_task(
             )
         })?;
 
+    // Consume the whole option before moving the cgroup borrowed by its guard.
+    pids_charge.map_or((), |charge| charge.apply());
     child_task
         .as_posix_thread()
         .unwrap()

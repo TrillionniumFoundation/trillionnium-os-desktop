@@ -36,16 +36,21 @@ pub(super) fn exit_process(current_process: &Process) {
     //
     // This must happen after `move_children_to_reaper_process`. See the comments in
     // `find_reaper_process` for details.
-    current_process.status().set_zombie();
+    {
+        // Publish zombie state and remove its live-population contribution as
+        // one membership transaction, before a consuming wait can reap it.
+        let mut membership = CgroupMembership::write_lock();
+        current_process.status().set_zombie();
+        membership.hide_zombie_process(current_process);
+    }
 
     current_process.pidfile_pollee.notify(IoEvents::IN);
 
     send_child_death_signal(current_process);
 
-    // Remove the process from the cgroup.
-    let mut cgroup_guard = CgroupMembership::write_lock();
-    cgroup_guard.move_process_to_root(current_process);
-    drop(cgroup_guard);
+    // Keep cgroup membership and the retained leader's pids charge until reap.
+    // Otherwise a workload can accumulate unbounded zombies without consuming
+    // pids.max. CPU final-charge leases remain independent of that release.
 }
 
 /// Drops a value after releasing the lock or borrow guard.

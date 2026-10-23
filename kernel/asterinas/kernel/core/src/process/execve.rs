@@ -12,7 +12,10 @@ use ostd::{
 
 use super::process_vm::activate_vmar;
 use crate::{
-    fs::vfs::path::{Path, PerMountFlags},
+    fs::{
+        cgroupfs::CgroupMembership,
+        vfs::path::{Path, PerMountFlags},
+    },
     prelude::*,
     process::{
         ContextUnshareAdminApi, Credentials, Process,
@@ -304,7 +307,9 @@ fn make_current_main_thread(ctx: &Context) {
 
     // The current thread is not the main thread.
 
-    // Lock order: PID table -> tracer.tracees -> tasks of process
+    // Keep removal of the retained old leader and its charge in one stable
+    // hierarchy. Lock order: membership -> PID table -> tracer.tracees -> tasks.
+    let membership = CgroupMembership::read_lock();
     let mut pid_table = pid_table::pid_table_mut();
     let tracer = ctx.posix_thread.tracer();
     let mut tracer_tracees = tracer
@@ -331,6 +336,7 @@ fn make_current_main_thread(ctx: &Context) {
 
     let thread = pid_table.take_thread(old_tid).unwrap();
     pid_table.replace_thread(pid, &thread);
+    membership.uncharge_released_task(&ctx.process);
 }
 
 fn set_cpu_context(

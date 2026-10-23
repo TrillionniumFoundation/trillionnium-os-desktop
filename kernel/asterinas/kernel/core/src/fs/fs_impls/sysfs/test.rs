@@ -6,8 +6,8 @@ use core::fmt::Debug;
 use aster_systree::{
     BranchNodeFields, Error as SysTreeError, NormalNodeFields, ObjFields, Result as SysTreeResult,
     SymlinkNodeFields, SysAttrSet, SysAttrSetBuilder, SysBranchNode, SysNode, SysNodeId,
-    SysNodeType, SysObj, SysPerms, SysStr, inherit_sys_branch_node, inherit_sys_leaf_node,
-    inherit_sys_symlink_node, init_for_ktest,
+    SysNodeType, SysObj, SysOwnership, SysPerms, SysStr, inherit_sys_branch_node,
+    inherit_sys_leaf_node, inherit_sys_symlink_node, init_for_ktest,
 };
 use aster_util::printer::VmPrinter;
 use inherit_methods_macro::inherit_methods;
@@ -32,11 +32,21 @@ use crate::{
 #[derive(Debug)]
 struct MockLeafNode {
     fields: NormalNodeFields<Self>,
+    ownership: SysOwnership,
     data: RwLock<BTreeMap<String, String>>, // Store attribute data
 }
 
 impl MockLeafNode {
     fn new(name: SysStr, read_attrs: &[&str], write_attrs: &[&str]) -> Arc<Self> {
+        Self::new_with_ownership(name, read_attrs, write_attrs, SysOwnership::ROOT)
+    }
+
+    fn new_with_ownership(
+        name: SysStr,
+        read_attrs: &[&str],
+        write_attrs: &[&str],
+        ownership: SysOwnership,
+    ) -> Arc<Self> {
         let mut builder = SysAttrSetBuilder::new();
         let mut data = BTreeMap::new();
         for &attr_name in read_attrs {
@@ -60,6 +70,7 @@ impl MockLeafNode {
             let fields = NormalNodeFields::new(name, attrs, weak_self.clone());
             MockLeafNode {
                 fields,
+                ownership,
                 data: RwLock::new(data),
             }
         })
@@ -67,6 +78,10 @@ impl MockLeafNode {
 }
 
 inherit_sys_leaf_node!(MockLeafNode, fields, {
+    fn ownership(&self) -> SysOwnership {
+        self.ownership
+    }
+
     fn read_attr_at(
         &self,
         name: &str,
@@ -123,10 +138,15 @@ inherit_sys_leaf_node!(MockLeafNode, fields, {
 #[derive(Debug)]
 struct MockBranchNode {
     fields: BranchNodeFields<dyn SysObj, Self>,
+    ownership: SysOwnership,
 }
 
 impl MockBranchNode {
     fn new(name: &str) -> Arc<Self> {
+        Self::new_with_ownership(name, SysOwnership::ROOT)
+    }
+
+    fn new_with_ownership(name: &str, ownership: SysOwnership) -> Arc<Self> {
         let name_owned: SysStr = name.to_string().into(); // Convert to owned SysStr
 
         let mut builder = SysAttrSetBuilder::new();
@@ -140,7 +160,7 @@ impl MockBranchNode {
 
         Arc::new_cyclic(|weak_self| {
             let fields = BranchNodeFields::new(name_owned, attrs, weak_self.clone());
-            MockBranchNode { fields }
+            MockBranchNode { fields, ownership }
         })
     }
 
@@ -150,6 +170,10 @@ impl MockBranchNode {
 }
 
 inherit_sys_branch_node!(MockBranchNode, fields, {
+    fn ownership(&self) -> SysOwnership {
+        self.ownership
+    }
+
     fn read_attr_at(
         &self,
         name: &str,
@@ -197,18 +221,27 @@ inherit_sys_branch_node!(MockBranchNode, fields, {
 #[derive(Debug)]
 struct MockSymlinkNode {
     fields: SymlinkNodeFields<Self>,
+    ownership: SysOwnership,
 }
 
 impl MockSymlinkNode {
     fn new(name: SysStr, target: &str) -> Arc<Self> {
+        Self::new_with_ownership(name, target, SysOwnership::ROOT)
+    }
+
+    fn new_with_ownership(name: SysStr, target: &str, ownership: SysOwnership) -> Arc<Self> {
         Arc::new_cyclic(|weak_self| {
             let fields = SymlinkNodeFields::new(name, target.to_string(), weak_self.clone());
-            MockSymlinkNode { fields }
+            MockSymlinkNode { fields, ownership }
         })
     }
 }
 
-inherit_sys_symlink_node!(MockSymlinkNode, fields);
+inherit_sys_symlink_node!(MockSymlinkNode, fields, {
+    fn ownership(&self) -> SysOwnership {
+        self.ownership
+    }
+});
 
 // A leaf node that allows changing its attribute set between lookups.
 #[derive(Debug)]
@@ -309,6 +342,61 @@ fn create_mock_systree() -> Arc<MockBranchNode> {
     root.add_child(leaf2);
     root.add_child(symlink1);
     root
+}
+
+#[ktest]
+fn object_ownership_survives_inode_and_view_reconstruction() {
+    let root = MockBranchNode::new("root");
+    let branch_owner = SysOwnership::new(60001, 61001);
+    let leaf_owner = SysOwnership::new(60002, 61002);
+    let link_owner = SysOwnership::new(60003, 61003);
+    let branch = MockBranchNode::new_with_ownership("owned_branch", branch_owner);
+    branch.add_child(MockLeafNode::new_with_ownership(
+        "owned_leaf".into(),
+        &[],
+        &["rw_attr"],
+        leaf_owner,
+    ));
+    root.add_child(branch);
+    root.add_child(MockSymlinkNode::new_with_ownership(
+        "owned_link".into(),
+        "owned_branch/owned_leaf",
+        link_owner,
+    ));
+
+    // Rebuild the filesystem view twice. The owner belongs to each original
+    // object, even when the view is constructed by a kernel thread rather than
+    // the object's recorded owner.
+    for _ in 0..2 {
+        let root_dentry = init_sysfs(root.clone());
+        let root_inode = root_dentry.inode();
+        let root_metadata = root_inode.metadata().unwrap();
+        assert_eq!(u32::from(root_metadata.uid), 0);
+        assert_eq!(u32::from(root_metadata.gid), 0);
+
+        for _ in 0..2 {
+            // Direct inode lookup bypasses dentry caching and reconstructs each
+            // inode, including the attribute's inode, from its backing object.
+            let branch_inode = root_inode.lookup("owned_branch").unwrap();
+            let branch_attr = branch_inode.lookup("branch_attr").unwrap();
+            let leaf_inode = branch_inode.lookup("owned_leaf").unwrap();
+            let leaf_attr = leaf_inode.lookup("rw_attr").unwrap();
+            let link_inode = root_inode.lookup("owned_link").unwrap();
+            for (inode, owner) in [
+                (branch_inode, branch_owner),
+                (branch_attr, branch_owner),
+                (leaf_inode, leaf_owner),
+                (leaf_attr, leaf_owner),
+                (link_inode, link_owner),
+            ] {
+                let metadata = inode.metadata().unwrap();
+                assert_eq!(u32::from(metadata.uid), owner.uid());
+                assert_eq!(u32::from(metadata.gid), owner.gid());
+                assert_eq!(u32::from(inode.owner().unwrap()), owner.uid());
+                assert_eq!(u32::from(inode.group().unwrap()), owner.gid());
+            }
+        }
+    }
 }
 
 #[ktest]

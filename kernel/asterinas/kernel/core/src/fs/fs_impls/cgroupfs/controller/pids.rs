@@ -14,11 +14,11 @@ use crate::{process::posix_thread::PID_MAX, util::ReadCString};
 ///
 /// This controller will only provide interfaces in non-root cgroup nodes.
 pub(crate) struct PidsController {
-    /// The maximum number of processes allowed.
+    /// The maximum number of retained tasks (TIDs) allowed.
     max_pids: AtomicU32,
-    /// The current number of processes in this cgroup's subtree.
+    /// The current number of retained tasks in this cgroup's subtree.
     current_count: AtomicU32,
-    /// The peak number of processes ever observed in this cgroup's subtree.
+    /// The peak number of retained tasks ever observed in this cgroup's subtree.
     peak_count: AtomicU32,
 }
 
@@ -34,23 +34,23 @@ impl PidsController {
         }
     }
 
-    /// Sets the initial process count during sub-controller activation.
+    /// Sets the initial retained task count during sub-controller activation.
     ///
     /// When the pids sub-controller is activated on a cgroup that already
-    /// has processes, this method initializes `current_count` and
+    /// has tasks, this method initializes `current_count` and
     /// `peak_count` to reflect the existing state.
     pub(super) fn init_count(&mut self, count: u32) {
         *self.current_count.get_mut() = count;
         *self.peak_count.get_mut() = count;
     }
 
-    /// Charges one process without limit checking.
-    pub(super) fn charge(&self) {
-        let new_count = self.current_count.fetch_add(1, Ordering::Relaxed) + 1;
+    /// Charges retained tasks without limit checking during migration.
+    pub(super) fn charge(&self, count: u32) {
+        let new_count = self.current_count.fetch_add(count, Ordering::Relaxed) + count;
         self.peak_count.fetch_max(new_count, Ordering::Relaxed);
     }
 
-    /// Tries to charge one process, enforcing the `pids.max` limit.
+    /// Tries to charge one task, enforcing the `pids.max` limit.
     ///
     /// Returns `true` if the charge succeeded (limit not exceeded).
     /// Returns `false` if the limit would be exceeded; the charge is rolled back.
@@ -65,10 +65,10 @@ impl PidsController {
         true
     }
 
-    /// Uncharges one process.
-    pub(super) fn uncharge(&self) {
-        let old_count = self.current_count.fetch_sub(1, Ordering::Relaxed);
-        debug_assert!(old_count > 0, "pids current count underflow");
+    /// Uncharges retained tasks after exit, rollback, or migration.
+    pub(super) fn uncharge(&self, count: u32) {
+        let old_count = self.current_count.fetch_sub(count, Ordering::Relaxed);
+        debug_assert!(old_count >= count, "pids current count underflow");
     }
 }
 
@@ -148,30 +148,30 @@ impl super::SubControlStatic for PidsController {
 
 /// Hierarchical pids charge/uncharge operations.
 impl super::SubController<PidsController> {
-    /// Charges one process across the hierarchy without limit checking.
+    /// Charges retained tasks across the hierarchy without limit checking.
     ///
     /// This is used for explicit migration (writing to `cgroup.procs`),
     /// where `pids.max` is not enforced per cgroupv2 semantics.
     ///
     /// Reference: <https://docs.kernel.org/admin-guide/cgroup-v2.html#pid>
-    pub(super) fn charge_hierarchy(&self) {
+    pub(super) fn charge_hierarchy(&self, count: u32) {
         let mut current = Some(self);
         while let Some(node) = current {
             if let Some(ref inner) = node.inner {
-                inner.charge();
+                inner.charge(count);
             }
             current = node.parent.as_deref();
         }
     }
 
-    /// Tries to charge one process across the hierarchy with limit checking.
+    /// Tries to charge one task across the hierarchy with limit checking.
     ///
     /// Walks from this cgroup upward to the root. At each level where the
     /// pids sub-controller is active, the counter is incremented and checked
     /// against `pids.max`. If any level exceeds its limit, all previously
     /// charged levels are rolled back and `Err` is returned.
     ///
-    /// This is used at fork time where `pids.max` must be enforced.
+    /// This is used for both fork and CLONE_THREAD, where `pids.max` is enforced.
     pub(super) fn try_charge_hierarchy(&self) -> Result<(), TryChargeError> {
         let mut charged: Vec<&PidsController> = Vec::new();
         let mut current = Some(self);
@@ -180,7 +180,7 @@ impl super::SubController<PidsController> {
             if let Some(ref inner) = node.inner {
                 if !inner.try_charge() {
                     for pid_controller in charged {
-                        pid_controller.uncharge();
+                        pid_controller.uncharge(1);
                     }
                     return Err(TryChargeError);
                 }
@@ -192,12 +192,12 @@ impl super::SubController<PidsController> {
         Ok(())
     }
 
-    /// Uncharges one process across the hierarchy.
-    pub(super) fn uncharge_hierarchy(&self) {
+    /// Uncharges retained tasks across the hierarchy.
+    pub(super) fn uncharge_hierarchy(&self, count: u32) {
         let mut current = Some(self);
         while let Some(node) = current {
             if let Some(ref inner) = node.inner {
-                inner.uncharge();
+                inner.uncharge(count);
             }
             current = node.parent.as_deref();
         }

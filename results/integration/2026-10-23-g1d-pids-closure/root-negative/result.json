@@ -1,0 +1,52 @@
+{
+  "mutation_patch_sha256": "2443658d41f1b5f0ac7f46e344097bfd4ed960f075ad68bdec15937de8ec5eb9",
+  "mutation_path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs",
+  "negative_guest_receipt_sha256": "19d5fd6f6c30005b96ce80870920564bc5de3afc5472e1d6ebc9b2291043b625",
+  "negative_kernel_sha256": "c5da27e3db91cd53dd1c307f1b71d0a5bcf798c79a38fdf1be8ca072ec9566ec",
+  "negative_parent": "458f9b1086ed7535658ae5e4e9392d3eb88f459d",
+  "negative_source_head": "e3f6bbac81b4bbd3acd4d017f425990183f087b6",
+  "negative_source_inputs_unchanged": true,
+  "negative_source_tree": "cfabc0b67b5fb13db384f62355e56376c07aad13",
+  "owned_worktree_removed": true,
+  "passed": true,
+  "positive_guest_receipt_sha256": "4e115dd31c4db6eb42781ccd7b7278b7e0184e129a4366de2a32e1824c0567db",
+  "positive_kernel_sha256": "b8dd3f0816585c998c336e5405954f65a079e044b26fdac6a61ef55b42045088",
+  "positive_source_head": "458f9b1086ed7535658ae5e4e9392d3eb88f459d",
+  "positive_source_inputs_unchanged": true,
+  "positive_source_tree": "f67d00514eafbd03ed66a0877667b63f2804a94f",
+  "raw_negative_verdict": {
+    "actual_root_credential_observations": [
+      {
+        "ambient": 0,
+        "bounding": 2199023255551,
+        "effective": 2199023255551,
+        "egid": 0,
+        "euid": 0,
+        "fsgid": 0,
+        "fsuid": 0,
+        "groups": 1,
+        "inheritable": 0,
+        "nnp": 0,
+        "permitted": 2199023255551,
+        "phase": "initial",
+        "pid": 2,
+        "rgid": 0,
+        "ruid": 0,
+        "securebits": 0,
+        "sgid": 0,
+        "sid": 2,
+        "suid": 0
+      }
+    ],
+    "both_cross_role_signal_permission_checks_succeeded": true,
+    "exact_failure_after_unsafe_credentials": true,
+    "no_destructive_signal_sent": true,
+    "passed": true,
+    "raw_serial_sha256": "1cd165889c678f48b6c5a6f55b90d46732968ea98e184ce59cd7876f816fdaa2",
+    "raw_serial_size": 5141783,
+    "unchanged_positive_oracle_rejected": true
+  },
+  "runner_sha256": "f715840e1abe823fbedc808b9ca7bdd79abe963809991b49265b98af9deec550",
+  "schema": "a06.g1d-root-workload-negative.v1",
+  "unchanged_probe_sha256": "c5d79aea455e5f38fa8c106f5372fc0a19b1d4cc31150f3936370e7bb47c92ab"
+}

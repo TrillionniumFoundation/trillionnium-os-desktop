@@ -4,13 +4,14 @@ use alloc::borrow::Cow;
 use core::time::Duration;
 
 use aster_systree::{
-    SysAttr, SysBranchNode, SysNode, SysNodeId, SysNodeType, SysObj, SysStr, SysSymlink,
+    SysAttr, SysBranchNode, SysNode, SysNodeId, SysNodeType, SysObj, SysOwnership, SysStr,
+    SysSymlink,
 };
 
 use crate::{
     fs::{
         file::{AccessMode, InodeMode, InodeType, PerOpenFileOps, StatusFlags, SyncMode, mkmod},
-        utils::{self, DirentVisitor},
+        utils::DirentVisitor,
         vfs::{
             file_system::{FileSystem, SuperBlock},
             inode::{
@@ -71,9 +72,13 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
         Self::new_branch_dir(node_kind, None, parent, sb)
     }
 
-    fn new_metadata(ino: u64, type_: InodeType, sb: &SuperBlock) -> Metadata {
+    fn new_metadata(
+        ino: u64,
+        type_: InodeType,
+        ownership: SysOwnership,
+        sb: &SuperBlock,
+    ) -> Metadata {
         let now = RealTimeCoarseClock::get().read_time();
-        let (uid, gid) = utils::current_fs_ids();
         Metadata {
             ino,
             size: 0,
@@ -86,8 +91,8 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
             // The mode field in metadata will not be used
             mode: mkmod!(a=),
             nr_hard_links: 1,
-            uid,
-            gid,
+            uid: Uid::new(ownership.uid()),
+            gid: Gid::new(ownership.gid()),
             container_dev_id: sb.container_dev_id,
             self_dev_id: None,
             birth_at: None,
@@ -105,7 +110,7 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
     {
         let node_kind = SysTreeNodeKind::Attr(attr.clone(), node);
         let ino = ino::from_node_kind(&node_kind);
-        let metadata = Self::new_metadata(ino, InodeType::File, sb);
+        let metadata = Self::new_metadata(ino, InodeType::File, node_kind.ownership(), sb);
         let mode = attr.perms().into();
         Self::new_arc(node_kind, metadata, mode, parent)
     }
@@ -116,7 +121,7 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
     {
         let node_kind = SysTreeNodeKind::Symlink(symlink);
         let ino = ino::from_node_kind(&node_kind);
-        let metadata = Self::new_metadata(ino, InodeType::SymLink, sb);
+        let metadata = Self::new_metadata(ino, InodeType::SymLink, node_kind.ownership(), sb);
         let mode = mkmod!(a+rwx);
         Self::new_arc(node_kind, metadata, mode, parent)
     }
@@ -131,7 +136,7 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
         Self: Sized + 'static,
     {
         let ino = ino::from_node_kind(&node_kind);
-        let metadata = Self::new_metadata(ino, InodeType::Dir, sb);
+        let metadata = Self::new_metadata(ino, InodeType::Dir, node_kind.ownership(), sb);
         let SysTreeNodeKind::Branch(branch_node) = &node_kind else {
             panic!("new_branch_dir called with non-branch SysTreeNodeKind");
         };
@@ -150,7 +155,8 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
         Self: Sized + 'static,
     {
         let ino = ino::from_node_kind(&node_kind);
-        let metadata = Self::new_metadata(ino, InodeType::Dir, sb); // Leaf nodes are represented as Dirs
+        // Leaf nodes are represented as directories.
+        let metadata = Self::new_metadata(ino, InodeType::Dir, node_kind.ownership(), sb);
 
         let SysTreeNodeKind::Leaf(leaf_node) = &node_kind else {
             panic!("new_leaf_dir called with non-leaf SysTreeNodeKind");
@@ -300,6 +306,16 @@ pub(in crate::fs) enum SysTreeNodeKind {
     Leaf(Arc<dyn SysNode>),
     Attr(SysAttr, Arc<dyn SysNode>),
     Symlink(Arc<dyn SysSymlink>),
+}
+
+impl SysTreeNodeKind {
+    fn ownership(&self) -> SysOwnership {
+        match self {
+            Self::Branch(node) => node.ownership(),
+            Self::Leaf(node) | Self::Attr(_, node) => node.ownership(),
+            Self::Symlink(node) => node.ownership(),
+        }
+    }
 }
 
 impl<KInode: SysTreeInodeTy + Send + Sync + 'static> FileOps for KInode {

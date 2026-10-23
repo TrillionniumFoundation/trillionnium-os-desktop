@@ -1,0 +1,411 @@
+{
+  "schema": "e-pids-owner-independent-review.v1",
+  "passed": true,
+  "scope": "Independent replay of preserved original logs and validation of exact source/report bytes; no guest rerun",
+  "source_head": "2f806c2852cd21a9769c7b01a76ba5f97027c111",
+  "source_tree": "6897d0d26277f832d75100e64b92e9432977f240",
+  "primary_archive": {
+    "bytes": 318026,
+    "sha256": "66a617e34b22ff9f0d90a16c79e3af721056b81ffee9ec3e5b0631c846239f00",
+    "manifest_listed_files": 78
+  },
+  "full_archive_retained_on_execution_host": {
+    "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/e-owner-native-evidence-v1.tar.gz",
+    "bytes": 7487851,
+    "sha256": "66ada5e7dc34aa5a27143346fdf11b9511bb9bab2e17427cc751b63d5a50baf0"
+  },
+  "full_archive_downloaded_by_this_reviewer": false,
+  "full_source_snapshots": {
+    "scope": "Original runner reports plus matching hashes in retained full-archive inventory; complete snapshot contents not reopened in this local review",
+    "groups": {
+      "old_owner_failure": [
+        {
+          "path": "e-pids-native-v2/g1d/source-before.json",
+          "bytes": 2158568,
+          "sha256": "426d08ab7260dfb2f42f63a33aae7f991966ef577dad7731397b53139525ee96"
+        },
+        {
+          "path": "e-pids-native-v2/g1d/source-after-build.json",
+          "bytes": 2158568,
+          "sha256": "426d08ab7260dfb2f42f63a33aae7f991966ef577dad7731397b53139525ee96"
+        },
+        {
+          "path": "e-pids-native-v2/g1d/source-after-guests.json",
+          "bytes": 2158568,
+          "sha256": "426d08ab7260dfb2f42f63a33aae7f991966ef577dad7731397b53139525ee96"
+        }
+      ],
+      "positive": [
+        {
+          "path": "e-systree-g1d-v2/g1d/source-before.json",
+          "bytes": 2158568,
+          "sha256": "e8e329a2704e75bd730158f75a3481a9397b26c37f02629d864efbf555789e95"
+        },
+        {
+          "path": "e-systree-g1d-v2/g1d/source-after-build.json",
+          "bytes": 2158568,
+          "sha256": "e8e329a2704e75bd730158f75a3481a9397b26c37f02629d864efbf555789e95"
+        },
+        {
+          "path": "e-systree-g1d-v2/g1d/source-after-guests.json",
+          "bytes": 2158568,
+          "sha256": "e8e329a2704e75bd730158f75a3481a9397b26c37f02629d864efbf555789e95"
+        }
+      ],
+      "thread-unlimited": [
+        {
+          "path": "e-owner-pids-negative-v3/thread-unlimited/source-before.json",
+          "bytes": 2158568,
+          "sha256": "5954ebf48870e616fba9005623e0ee8533f386f5e655eaa7dea96176e2acaf75"
+        },
+        {
+          "path": "e-owner-pids-negative-v3/thread-unlimited/source-after-build.json",
+          "bytes": 2158568,
+          "sha256": "5954ebf48870e616fba9005623e0ee8533f386f5e655eaa7dea96176e2acaf75"
+        },
+        {
+          "path": "e-owner-pids-negative-v3/thread-unlimited/source-after-guests.json",
+          "bytes": 2158568,
+          "sha256": "5954ebf48870e616fba9005623e0ee8533f386f5e655eaa7dea96176e2acaf75"
+        }
+      ],
+      "zombie-early-refund": [
+        {
+          "path": "e-owner-pids-negative-v3/zombie-early-refund/source-before.json",
+          "bytes": 2158568,
+          "sha256": "6dbd0d652e569f7df59a9733c65a49185f6d9eeedee764f83b141cf8a39fd497"
+        },
+        {
+          "path": "e-owner-pids-negative-v3/zombie-early-refund/source-after-build.json",
+          "bytes": 2158568,
+          "sha256": "6dbd0d652e569f7df59a9733c65a49185f6d9eeedee764f83b141cf8a39fd497"
+        },
+        {
+          "path": "e-owner-pids-negative-v3/zombie-early-refund/source-after-guests.json",
+          "bytes": 2158568,
+          "sha256": "6dbd0d652e569f7df59a9733c65a49185f6d9eeedee764f83b141cf8a39fd497"
+        }
+      ]
+    }
+  },
+  "formatted_source_files_verified": [
+    {
+      "path": "kernel/asterinas/kernel/core/comps/systree/src/node.rs",
+      "sha256": "d02471a4f592c768115c170794ad35d6c899af7e6926dcf7a5b12003bbb7e222",
+      "bytes": 14557
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/comps/systree/src/utils.rs",
+      "sha256": "5204975150643f0254d97a05e5562921ce215a4afa84a0c2954b9149630cbd95",
+      "bytes": 28264
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/comps/systree/src/lib.rs",
+      "sha256": "08300d4568d5180bc7309d490e5ae0023a39f803c7f342e4c8e91fb4938fdb0e",
+      "bytes": 4452
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/utils/systree_inode.rs",
+      "sha256": "96106046ca65ce20a91d82021ab88d055e52b74121a9e2d4f90f811945823c64",
+      "bytes": 26571
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/utils/mod.rs",
+      "sha256": "2b6400688473e048eedef249189fb6d0629749c7cd6bda8d1b7ba75512d40660",
+      "bytes": 1351
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/security/tsm.rs",
+      "sha256": "cfedb4856857e3c7544e9bfa4ae799367fe9b217cf8e4aa1e99f0e9d81940fc8",
+      "bytes": 11263
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/configfs/test.rs",
+      "sha256": "217292ce1a6a9ac9f6cacbe2c5e99a498a77e7e8203b94ea4ab9fbeb54870652",
+      "bytes": 8046
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/sysfs/test.rs",
+      "sha256": "b8569805e5b0b8c76a8fd44dff65892053980fa3dce43e536b42d76e527c8657",
+      "bytes": 29454
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "sha256": "8d024510aaac5665d6fc097e13775abf888b185c23ac164223735454579aedec",
+      "bytes": 37122
+    }
+  ],
+  "formatted_patch_reproduced_from_nine_original_git_blobs": true,
+  "core_original_checker_replay": {
+    "crate": "aster-core",
+    "declared": 275,
+    "passed": 275,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 0,
+    "soft_skip_reasons": [],
+    "exercised_passed_lower_bound": 275,
+    "observed_test_starts": 275,
+    "required_permission_tests": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+      "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error"
+    ],
+    "required_core_tests": [
+      "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+      "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_rechecks_alien_write_using_an_earlier_vmar_pin",
+      "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_does_not_turn_fork_into_a_shared_writable_alias",
+      "aster_core::process::process::image::tests::initial_observe_lease_includes_issue_and_excludes_expiry",
+      "aster_core::process::process::image::tests::initial_observe_lease_does_not_accept_a_pre_issue_clock_cut",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_rejects_a_replaced_real_cpu_owner",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_does_not_keep_a_deleted_resource_authorized",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_owner_lease_check_rejects_before_sampling",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_enforces_sub_microsecond_caps_on_the_original_owner",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_update_and_replay_preserve_consumption_and_positive_debt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_manager_revocation_preserves_recovery_and_saved_history",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_expiry_is_finite_single_use_and_replays_original_receipt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_never_infers_resume_from_zero_or_unowned_budget",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_first_close_cut_is_not_renewed_and_missing_clock_fences",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_refuses_expired_final_cut_and_preserves_accounting_fault",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_management_lease_edges_and_clock_absence_do_not_change_budget",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_ceiling_and_revision_rejections_are_immutable_without_effect",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_accounting_fault_cannot_publish_a_successful_budget_receipt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_controlled_leaf_refuses_linux_configuration_and_membership_aliases",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_bounded_history_retirement_never_reexecutes_an_old_cpu_delivery",
+      "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_never_invent_setid_or_sticky",
+      "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_keep_file_directory_masks_and_readonly",
+      "aster_core::fs::fs_impls::ext2::fs::test::inode_sync_preserves_allocation_and_data_across_remount",
+      "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_rechecks_an_earlier_snapshot_under_the_same_owner",
+      "aster_core::fs::fs_impls::ext2::fs::test::allocation_sync_retries_all_dirty_metadata_after_write_failure",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_buffered_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_direct_read_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_readdir_keeps_atime_without_writes",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
+      "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data"
+    ],
+    "raw_qemu_exit": 33,
+    "guest": "guest-001"
+  },
+  "new_ownership_test_passed_once": "aster_core::fs::fs_impls::sysfs::test::object_ownership_survives_inode_and_view_reconstruction",
+  "permission_smp_original_serial_replay": {
+    "declared": 278,
+    "passed": 3,
+    "failed": 0,
+    "filtered": 275,
+    "tests": {
+      "aster_core::fs::fs_impls::ramfs::fs::permission_smp_tests::clear_setid_alias::permission_attr_smp": "ok",
+      "aster_core::fs::fs_impls::ramfs::fs::permission_smp_tests::owner_alias::permission_attr_smp": "ok",
+      "aster_core::fs::fs_impls::ramfs::memfd::permission_smp_tests::permission_attr_smp": "ok"
+    },
+    "observations": {
+      "clear_setid_alias": {
+        "case": "clear_setid_alias",
+        "cpu_a": "0",
+        "cpu_b": "1",
+        "entered": "1",
+        "lock_busy": "true",
+        "a_rc": "0",
+        "b_rc": "0",
+        "uid": "1000",
+        "mode": "600",
+        "alias_uid": "1000",
+        "alias_mode": "600"
+      },
+      "owner_alias": {
+        "case": "owner_alias",
+        "cpu_a": "0",
+        "cpu_b": "1",
+        "entered": "1",
+        "lock_busy": "true",
+        "a_rc": "0",
+        "b_rc": "0",
+        "uid": "1002",
+        "mode": "755",
+        "alias_uid": "1002",
+        "alias_mode": "755"
+      },
+      "memfd_seal": {
+        "case": "memfd_seal",
+        "cpu_a": "0",
+        "cpu_b": "1",
+        "entered": "1",
+        "lock_busy": "true",
+        "a_rc": "0",
+        "b_rc": "0",
+        "mode": "777",
+        "sealed_mode": "777",
+        "seal_exec": "true"
+      }
+    }
+  },
+  "permission_smp_recorded_qemu_exit": 33,
+  "permission_smp_remote_kernel_and_qemu_binaries_reopened": false,
+  "g1d_original_oracle_replays": {
+    "old_owner_failure": {
+      "source_head": "ad4f91a888e04339385ec2eeeefa4bc9312eed74",
+      "source_tree": "3c41bde0b28195872d3bbb2d7b0c4ee62aab09ae",
+      "kernel_elf_sha256": "5e4640c9a7123a9c6ce03f5d447213280b6a926672372d93593fa373e10ef76f",
+      "boots": {
+        "exact": {
+          "passed": false,
+          "qemu_exit": 33,
+          "timed_out": false,
+          "raw_serial_sha256": "6767d04c0fad177ab69e4391f60e601f047d6d3bd5e365503e0ce5a268e71950",
+          "raw_serial_bytes": 4556706
+        },
+        "byte-mismatch": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "06800c1154ecde5a1af700f79a40553cf36d2b69ee849447349c321cf505f261",
+          "raw_serial_bytes": 20676
+        },
+        "truncated": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "27d3719c6abdc14f399d732aa83161b765b9bf0638433283ad27e2b1c2b11318",
+          "raw_serial_bytes": 20659
+        }
+      }
+    },
+    "positive": {
+      "source_head": "2f806c2852cd21a9769c7b01a76ba5f97027c111",
+      "source_tree": "6897d0d26277f832d75100e64b92e9432977f240",
+      "kernel_elf_sha256": "646eb89ddc0dea8beda466f1deba84224fcd3972647fc059947b65ac5489d9e1",
+      "boots": {
+        "exact": {
+          "passed": true,
+          "qemu_exit": 33,
+          "timed_out": false,
+          "raw_serial_sha256": "2fa197b6678aeec5132950026e80e371376ca9be3864559a0c9c82ee58e4aeca",
+          "raw_serial_bytes": 1121616
+        },
+        "byte-mismatch": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "62c722d05385484aff45fb00644505143c287039ae7d165cab54afe4b31695ff",
+          "raw_serial_bytes": 20676
+        },
+        "truncated": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "ef3271e2bed54b7a6e8d33f8829b18b03cdfd3f64e277ed7debbc64d52515f74",
+          "raw_serial_bytes": 20660
+        }
+      }
+    },
+    "thread-unlimited": {
+      "source_head": "cec72fe3653b3451043c71cd8f1299a1342d5034",
+      "source_tree": "31d0f5a634e56039bc9d6b533eb466dd2bd95afa",
+      "kernel_elf_sha256": "76db9646c7e1a122ab16a35593e6bc0e6d5821bf2c61d5b0f7246517b1e2a2ef",
+      "boots": {
+        "exact": {
+          "passed": false,
+          "qemu_exit": 33,
+          "timed_out": false,
+          "raw_serial_sha256": "03192f2d7d32326cd3d561ba1b4a93b4bf19351d4496be027f244b8a8f71b050",
+          "raw_serial_bytes": 39787
+        },
+        "byte-mismatch": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "41168a9d10cca74c96cf7e8829151d128352792f9d105e683cdc034bd1e21f86",
+          "raw_serial_bytes": 20676
+        },
+        "truncated": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "c4db28762bdb4fc54370ac4da1e556ee0dba931b946ff6fbc42f5b43697ab6ab",
+          "raw_serial_bytes": 20659
+        }
+      }
+    },
+    "zombie-early-refund": {
+      "source_head": "f5070bc982b29f3280ae38727337a2db4e5d1ee0",
+      "source_tree": "217d15036b637aee584277c6f7c3a22a94e7cc25",
+      "kernel_elf_sha256": "10df808aa0440945a6c69ec290207458aa25a05f03d43859285a6a4e48224a85",
+      "boots": {
+        "exact": {
+          "passed": false,
+          "qemu_exit": 33,
+          "timed_out": false,
+          "raw_serial_sha256": "a67ea269dcea8f7d8bccc120e448371a8ed6addccd950e6228a89416be515979",
+          "raw_serial_bytes": 59412
+        },
+        "byte-mismatch": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "932602f6072ac14eb3ac195a54afdd4481c208f64110602bece3fe5e16d8524e",
+          "raw_serial_bytes": 20676
+        },
+        "truncated": {
+          "passed": true,
+          "qemu_exit": 65,
+          "timed_out": false,
+          "raw_serial_sha256": "c44bbfc65c281a5cdfa9c9d376fe61254096f5a1c77f96d8c0352cca49b97d08",
+          "raw_serial_bytes": 20659
+        }
+      }
+    }
+  },
+  "semantic_negative_observations": {
+    "thread-unlimited": [
+      "G1D_PIDS_THREAD_LIMIT_UNSAFE rc=0 expected=11 pid=4 parent=1",
+      "G1D_FAIL at=pids_thread_must_return_eagain line=113 errno=11 pid=4 role=1",
+      "G1D_FAIL at=pids_pipe_read line=18 errno=0 pid=1 role=1"
+    ],
+    "zombie-early-refund": [
+      "G1D_PIDS_ZOMBIE_RETAINED current=0 ancestor=0 wnowait=1",
+      "G1D_FAIL at=pids_zombie_charge_retained line=210 errno=0 pid=1 role=1"
+    ]
+  },
+  "semantic_negative_patches_reapplied_to_exact_positive_preimages": {
+    "thread-unlimited": {
+      "actual_patch_sha256": "c337b2183fbcaf3274bed8e9e95747746bd1cfe8c640aac0349fff15f8c4916f",
+      "files": {
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs": {
+          "before_sha256": "0cc9b490b16e46bf026bc76bd4d646237909ec979f3e0b53c7375713622c863c",
+          "after_sha256": "f0a64d866f5cb9bb414f8eab0e99d0b0b33b72d2ef808b0b9004b0a7b954d394"
+        },
+        "kernel/asterinas/kernel/core/src/process/clone.rs": {
+          "before_sha256": "d7943c397f5acf258944850e9fef44c037475001fe84a0d52d2b3306083fbf24",
+          "after_sha256": "3316113c056f345f77c5570c8932c959a1c1feaa6c8772cd72068ad712fc7493"
+        }
+      }
+    },
+    "zombie-early-refund": {
+      "actual_patch_sha256": "4db257ab9f2233ed3da597bcb096d98b570048613beb02251e305c009bba72e3",
+      "files": {
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs": {
+          "before_sha256": "8d024510aaac5665d6fc097e13775abf888b185c23ac164223735454579aedec",
+          "after_sha256": "a7ce6f352e02f97ae30e1c784fbe409adbabbedf06a282c61a99ceec1f3f4b14"
+        }
+      }
+    }
+  },
+  "probe_tools_and_lock_unchanged_across_all_four_sources": true,
+  "restoration_receipt": {
+    "positive_head": "2f806c2852cd21a9769c7b01a76ba5f97027c111",
+    "branch": "agents/20261022/pids-thread-zombie-isolation",
+    "restored": true
+  },
+  "full_e_closed": false,
+  "g2_closed": false,
+  "aggregate_memory_controller_qualified": false,
+  "general_systree_delegation_qualified": false,
+  "hardware_qualified": false
+}

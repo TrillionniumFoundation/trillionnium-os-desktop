@@ -29,8 +29,8 @@
 //!    from joining, only a writer has a truly stable view of all the processes
 //!    within a cgroup subtree.
 //!
-//!    For example, fork and cgroup child creation use the read lock, while explicit
-//!    migration, process exit, and sub-controller activation use the write lock.
+//!    Fork, thread creation/exit, and cgroup child creation use the read lock.
+//!    Explicit migration, process zombie/reap, and controller activation use the writer.
 //!
 //! ### Locking Rules
 //!
@@ -48,6 +48,7 @@
 //! 3. **Global Lock First**:
 //!    When acquiring the `Cgroup Membership Lock` along with any other cgroup locks,
 //!    the `Cgroup Membership Lock` must be acquired first.
+//!    This also precedes a process's task-set lock for task accounting.
 
 use core::{
     str::FromStr,
@@ -56,7 +57,7 @@ use core::{
 
 use aster_systree::{
     BranchNodeFields, Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysBranchNode, SysObj,
-    SysPerms, SysStr, inherit_sys_branch_node,
+    SysOwnership, SysPerms, SysStr, inherit_sys_branch_node,
 };
 use aster_util::printer::VmPrinter;
 use inherit_methods_macro::inherit_methods;
@@ -64,7 +65,10 @@ use ostd::sync::{RwMutexReadGuard, RwMutexWriteGuard};
 use spin::Once;
 
 use crate::{
-    fs::cgroupfs::controller::{Controller, PidsPreCharge, SubCtrlSet, SubCtrlType},
+    fs::{
+        cgroupfs::controller::{Controller, PidsPreCharge, SubCtrlSet, SubCtrlType},
+        utils::current_fs_ids,
+    },
     prelude::*,
     process::{Pid, Process, pid_table},
 };
@@ -111,18 +115,29 @@ impl CgroupMembership {
         global_cgroup_membership().read()
     }
 
-    /// Counts the total number of processes in a cgroup subtree.
+    /// Counts the charged tasks, including zombie leaders, in a cgroup subtree.
     ///
     /// This is used when the pids sub-controller is activated to initialize
     /// `pids.current` with the correct value reflecting already-existing
-    /// processes.
-    pub(super) fn count_subtree_processes(&mut self, cgroup_node: &CgroupNode) -> u32 {
+    /// tasks. The writer excludes concurrent task creation, exit, and migration.
+    pub(super) fn count_subtree_tasks(&mut self, cgroup_node: &CgroupNode) -> u32 {
+        fn count_node(node: &CgroupNode) -> u32 {
+            node.with_inner(|procs| {
+                procs
+                    .values()
+                    .filter_map(Weak::upgrade)
+                    .fold(0u32, |sum, process| {
+                        sum.checked_add(process.tasks().lock().pids_count())
+                            .expect("retained tasks fit in the TID namespace")
+                    })
+            })
+            .unwrap_or(0)
+        }
+
         let mut total: u32 = 0;
         let mut stack: Vec<Arc<dyn SysObj>> = vec![];
 
-        total += cgroup_node
-            .with_inner(|procs| procs.len() as u32)
-            .unwrap_or(0);
+        total += count_node(cgroup_node);
         cgroup_node.visit_children_with(0, &mut |child| {
             stack.push(child.clone());
             Some(())
@@ -131,9 +146,9 @@ impl CgroupMembership {
         while let Some(node) = stack.pop() {
             let cgroup_node = Arc::downcast::<CgroupNode>(node).unwrap();
 
-            total += cgroup_node
-                .with_inner(|procs| procs.len() as u32)
-                .unwrap_or(0);
+            total = total
+                .checked_add(count_node(&cgroup_node))
+                .expect("retained tasks fit in the TID namespace");
 
             cgroup_node.visit_children_with(0, &mut |child| {
                 stack.push(child.clone());
@@ -165,23 +180,29 @@ impl CgroupMembership {
             None
         };
 
-        if old_cgroup.as_ref().is_some_and(|node| node.controller.has_trusted_cpu_management())
+        if old_cgroup
+            .as_ref()
+            .is_some_and(|node| node.controller.has_trusted_cpu_management())
             || new_cgroup.controller.has_trusted_cpu_management()
         {
             return Err(Error::PermissionDenied);
         }
 
+        // The membership writer excludes task creation and exit, so the same
+        // count is transferred between hierarchies even for a threaded process.
+        let task_count = process.tasks().lock().pids_count();
+
         // Try to add the process to the new cgroup first.
         self.add_process_to_node(&process, new_cgroup)?;
         process.set_cpu_cgroup_for_tasks(Some(new_cgroup.fields.weak_self().upgrade().unwrap()));
-        new_cgroup.controller.charge_pids();
+        new_cgroup.controller.charge_pids(task_count);
 
         // Remove the process from the old cgroup second.
         if let Some(old_cgroup) = old_cgroup {
             old_cgroup
                 .with_inner_mut(|old_cgroup_processes| {
                     old_cgroup_processes.remove(&process.pid()).unwrap();
-                    if old_cgroup_processes.is_empty() {
+                    if !has_live_processes(old_cgroup_processes) {
                         let old_count = old_cgroup.populated_count.fetch_sub(1, Ordering::Relaxed);
                         if old_count == 1 {
                             old_cgroup.propagate_sub_populated();
@@ -191,7 +212,7 @@ impl CgroupMembership {
                 .unwrap();
 
             // Uncharge the pids sub-controller for the old cgroup.
-            old_cgroup.controller.uncharge_pids();
+            old_cgroup.controller.uncharge_pids(task_count);
         }
 
         Ok(())
@@ -215,6 +236,39 @@ impl CgroupMembership {
         process.set_cpu_cgroup_for_tasks(Some(new_cgroup.fields.weak_self().upgrade().unwrap()));
     }
 
+    /// Refunds one released task after exit or non-leader exec removes it.
+    ///
+    /// The caller holds membership before the task-set lock, keeping this exit
+    /// and its charge in the same hierarchy as concurrent migration/activation.
+    pub(crate) fn uncharge_released_task(&self, process: &Process) {
+        if let Some(cgroup) = process.cgroup().get() {
+            cgroup.controller.uncharge_pids(1);
+        }
+    }
+
+    /// Removes a newly zombified process from live population accounting.
+    ///
+    /// Its existing map entry and pids charge remain until reap. Keeping them
+    /// in the same membership index lets later controller activation count the
+    /// retained TID without a second charge ledger.
+    pub(crate) fn hide_zombie_process(&mut self, process: &Process) {
+        debug_assert!(process.status().is_zombie());
+        let Some(cgroup) = process.cgroup().get().map(|cgroup| cgroup.clone()) else {
+            return;
+        };
+        cgroup
+            .with_inner(|processes| {
+                if !has_live_processes(processes) {
+                    let previous = cgroup.populated_count.fetch_sub(1, Ordering::Relaxed);
+                    debug_assert!(previous > 0);
+                    if previous == 1 {
+                        cgroup.propagate_sub_populated();
+                    }
+                }
+            })
+            .unwrap();
+    }
+
     fn add_process_to_node(&self, process: &Arc<Process>, new_cgroup: &CgroupNode) -> Result<()> {
         // According to "no internal processes" rule of cgroupv2, if a non-root
         // cgroup node has activated some sub-controls, it cannot bind any process.
@@ -225,7 +279,7 @@ impl CgroupMembership {
         }
         new_cgroup
             .with_inner_mut(|current_processes| {
-                if current_processes.is_empty() {
+                if !has_live_processes(current_processes) {
                     let old_count = new_cgroup.populated_count.fetch_add(1, Ordering::Relaxed);
                     if old_count == 0 {
                         new_cgroup.propagate_add_populated();
@@ -256,10 +310,13 @@ impl CgroupMembership {
             return;
         };
 
+        // Reap refunds the retained zombie leader. Explicit migration transfers
+        // every charged TID, including a dead leader with surviving threads.
+        let task_count = process.tasks().lock().pids_count();
         crate::sched::with_current_cpu_bandwidth_owner_update(|| {
             process.set_cgroup(None);
         });
-        // exit_process() marks the process zombie before removing its cgroup.
+        // Reap removes a zombie process from its cgroup.
         // Keep the old snapshot for the deferred scheduler debit of exited
         // tasks; a live explicit migration to root must switch to root.
         if !process.status().is_zombie() {
@@ -269,7 +326,7 @@ impl CgroupMembership {
         old_cgroup
             .with_inner_mut(|old_cgroup_processes| {
                 old_cgroup_processes.remove(&process.pid()).unwrap();
-                if old_cgroup_processes.is_empty() {
+                if !process.status().is_zombie() && !has_live_processes(old_cgroup_processes) {
                     let old_count = old_cgroup.populated_count.fetch_sub(1, Ordering::Relaxed);
                     if old_count == 1 {
                         old_cgroup.propagate_sub_populated();
@@ -279,11 +336,15 @@ impl CgroupMembership {
             .unwrap();
 
         // Uncharge the pids sub-controller for the old cgroup.
-        old_cgroup.controller.uncharge_pids();
+        old_cgroup.controller.uncharge_pids(task_count);
     }
 
     fn try_move_process_to_root(&mut self, process: &Process) -> Result<()> {
-        if process.cgroup().get().is_some_and(|node| node.controller.has_trusted_cpu_management()) {
+        if process
+            .cgroup()
+            .get()
+            .is_some_and(|node| node.controller.has_trusted_cpu_management())
+        {
             return Err(Error::PermissionDenied);
         }
         self.move_process_to_root(process);
@@ -316,6 +377,8 @@ impl Debug for CgroupSystem {
 /// this type.
 pub(crate) struct CgroupNode {
     fields: BranchNodeFields<CgroupNode, Self>,
+    /// Captured when this cgroup is created, before publishing it to its parent.
+    ownership: SysOwnership,
     /// The controller of this cgroup node.
     controller: Controller,
     /// The inner data. If it is `None`, then the cgroup node is dead.
@@ -352,8 +415,15 @@ impl Debug for CgroupNode {
 
 #[derive(Default)]
 struct Inner {
-    /// Processes bound to the cgroup node.
+    /// Processes bound to the cgroup node, including retained zombie charges.
     processes: BTreeMap<Pid, Weak<Process>>,
+}
+
+fn has_live_processes(processes: &BTreeMap<Pid, Weak<Process>>) -> bool {
+    processes
+        .values()
+        .filter_map(Weak::upgrade)
+        .any(|process| !process.status().is_zombie())
 }
 
 #[inherit_methods(from = "self.fields")]
@@ -423,6 +493,8 @@ impl CgroupSysNode for CgroupSystem {
 
 impl CgroupNode {
     pub(self) fn new(name: SysStr, depth: usize, parent_controller: &Controller) -> Arc<Self> {
+        let (uid, gid) = current_fs_ids();
+        let ownership = SysOwnership::new(uid.into(), gid.into());
         let mut builder = SysAttrSetBuilder::new();
         // TODO: Add more attributes as needed. The normal cgroup node may have
         // more attributes than the unified one.
@@ -462,6 +534,7 @@ impl CgroupNode {
             let fields = BranchNodeFields::new(name, attrs, weak_self.clone());
             CgroupNode {
                 fields,
+                ownership,
                 controller: Controller::new(Some(parent_controller)),
                 inner: RwMutex::new(Some(Inner::default())),
                 cpu_charge_leases: AtomicUsize::new(0),
@@ -630,7 +703,7 @@ inherit_sys_branch_node!(CgroupSystem, fields, {
             "cgroup.procs" => {
                 let pid_table = pid_table::pid_table_mut();
                 for process in pid_table.iter_processes() {
-                    if process.cgroup().is_none() {
+                    if process.cgroup().is_none() && !process.status().is_zombie() {
                         writeln!(printer, "{}", process.pid())?;
                     }
                 }
@@ -699,6 +772,10 @@ inherit_sys_branch_node!(CgroupSystem, fields, {
 });
 
 inherit_sys_branch_node!(CgroupNode, fields, {
+    fn ownership(&self) -> SysOwnership {
+        self.ownership
+    }
+
     fn is_attr_absent(&self, name: &str) -> bool {
         if name.starts_with("cgroup.") {
             false
@@ -748,8 +825,10 @@ inherit_sys_branch_node!(CgroupNode, fields, {
                 .ok_or(Error::IsDead)?,
             "cgroup.procs" => self
                 .with_inner(|processes| {
-                    for pid in processes.keys() {
-                        writeln!(printer, "{}", pid)?;
+                    for process in processes.values().filter_map(Weak::upgrade) {
+                        if !process.status().is_zombie() {
+                            writeln!(printer, "{}", process.pid())?;
+                        }
                     }
 
                     Ok::<usize, Error>(printer.bytes_written())
@@ -804,7 +883,7 @@ inherit_sys_branch_node!(CgroupNode, fields, {
                     // cgroup node has bound processes, it cannot activate any sub-control.
                     //
                     // Reference: <https://man7.org/linux/man-pages/man7/cgroups.7.html>
-                    if !processes.is_empty() {
+                    if has_live_processes(processes) {
                         return Err(Error::ResourceUnavailable);
                     }
 
