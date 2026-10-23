@@ -122,6 +122,7 @@ fn ordinary_fault_and_cow_keep_old_mapping_on_quota_denial_and_refund_last_frame
     let (original, _) = mapped(&vmar, address);
     original.write_bytes(0, &[91]).unwrap();
     assert_eq!(account.current_pages(), 1);
+    crate::process::test_util::initialize_vmar_heap_for_fork(&vmar, 0x1000_0000);
     let child = Vmar::fork_from(&vmar);
     let (alias, before_prop) = mapped(&child, address);
     assert_eq!(alias.paddr(), original.paddr());

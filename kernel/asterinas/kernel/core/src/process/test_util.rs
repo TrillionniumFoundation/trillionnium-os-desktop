@@ -17,7 +17,7 @@ use crate::{
     thread::AsThread,
     time::clocks,
     util::random,
-    vm::vmar::VmarHandle,
+    vm::vmar::{Vmar, VmarHandle},
 };
 
 /// Builds a POSIX process and its main task without adding either to the PID table
@@ -42,6 +42,11 @@ pub(crate) fn sigkill_receipts(task: &Task) -> (bool, bool) {
 pub(crate) fn initialize_heap_for_fork(process: &Process, heap_base: Vaddr) {
     let locked_vmar = process.lock_vmar();
     let vmar = locked_vmar.unwrap();
+    initialize_vmar_heap_for_fork(vmar, heap_base);
+}
+
+/// Initializes the same real heap for a VMAR fixture without constructing a process.
+pub(crate) fn initialize_vmar_heap_for_fork(vmar: &Vmar, heap_base: Vaddr) {
     vmar.process_vm()
         .map_and_init_heap(vmar, 0, heap_base)
         .unwrap();
