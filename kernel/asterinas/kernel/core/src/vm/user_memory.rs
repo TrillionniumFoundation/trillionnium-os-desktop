@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
 
-//! Physical user-data and selected IPC-buffer frame admission for the fixed G1-d workload family.
+//! Physical user-data and selected IPC frame admission for families and cgroups.
 //!
 //! A charge belongs to physical frame metadata, never to a mapping or a frame
 //! handle. Fork and shared mappings retain one charge; COW charges its new
 //! frame; the final physical-frame reference refunds it. This deliberately is
-//! not a cgroup memory controller: page tables, slabs, ancillary/datagram buffers and device MMIO
-//! are outside this account, and there is no reclaim, OOM killer or reserve.
+//! a selected-frame cgroup controller: page tables, slabs, ancillary/datagram buffers
+//! and device MMIO are outside this account; there is no reclaim, OOM killer or reserve.
 
 use core::sync::atomic::{AtomicUsize, Ordering};
 
@@ -19,73 +19,166 @@ use crate::{prelude::*, process::Process, thread::kernel_thread};
 
 pub(crate) type UserMemoryOwner = Option<Arc<UserMemoryAccount>>;
 
-/// One immutable admission limit shared by a workload and all its descendants.
+pub(crate) mod hierarchy;
+use hierarchy::{MemoryDomain, transaction};
+
+/// The fixed workload-family limit is independent of cgroup migration. Fork
+/// retains this budget, but gets a distinct binding for future allocations.
 #[derive(Debug)]
-pub(crate) struct UserMemoryAccount {
+struct FamilyBudget {
     limit_pages: usize,
     current_pages: AtomicUsize,
     denied: AtomicUsize,
 }
 
+#[derive(Debug)]
+pub(crate) struct UserMemoryAccount {
+    family: Arc<FamilyBudget>,
+    domain: SpinLock<Arc<MemoryDomain>>,
+    processes: AtomicUsize,
+}
+
 impl UserMemoryAccount {
-    #[cfg_attr(not(any(ktest, feature = "g1d-trusted-control")), expect(dead_code))]
     pub(crate) fn new(limit_pages: usize) -> Arc<Self> {
         Arc::new(Self {
-            limit_pages,
-            current_pages: AtomicUsize::new(0),
-            denied: AtomicUsize::new(0),
+            family: Arc::new(FamilyBudget {
+                limit_pages,
+                current_pages: AtomicUsize::new(0),
+                denied: AtomicUsize::new(0),
+            }),
+            domain: SpinLock::new(MemoryDomain::root()),
+            processes: AtomicUsize::new(0),
+        })
+    }
+
+    pub(crate) fn fork_binding(&self) -> Arc<Self> {
+        let domain = {
+            let _tx = transaction();
+            self.domain.lock().clone()
+        };
+        Arc::new(Self {
+            family: self.family.clone(),
+            domain: SpinLock::new(domain),
+            processes: AtomicUsize::new(0),
         })
     }
 
     pub(crate) fn limit_pages(&self) -> usize {
-        self.limit_pages
+        self.family.limit_pages
     }
-
     pub(crate) fn current_pages(&self) -> usize {
-        self.current_pages.load(Ordering::Acquire)
+        self.family.current_pages.load(Ordering::Acquire)
     }
-
-    // All reservation operations are bounded, non-sleeping atomic operations.
-    // No logging, allocation, process lock or cgroup lock is allowed here.
-    fn reserve(&self, pages: usize) -> Result<()> {
-        self.current_pages
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
-                current
-                    .checked_add(pages)
-                    .filter(|next| *next <= self.limit_pages)
-            })
-            .map(|_| ())
-            .map_err(|_| Error::user_frame_limit())
-    }
-
-    fn refund(&self, pages: usize) {
-        let previous = self.current_pages.fetch_sub(pages, Ordering::AcqRel);
-        debug_assert!(previous >= pages);
-    }
-
-    /// Limits diagnostics after returning from all VM/allocator locks.
     pub(crate) fn report_denial(&self) -> bool {
-        self.denied.fetch_add(1, Ordering::Relaxed) < 16
+        self.family.denied.fetch_add(1, Ordering::Relaxed) < 16
+    }
+
+    /// The membership writer excludes new Process leases and competing moves.
+    /// Separate CLONE_VM processes cannot be migrated independently yet.
+    pub(crate) fn can_move_to(
+        &self,
+        target: &Arc<MemoryDomain>,
+        _membership: &crate::fs::cgroupfs::CgroupMembership,
+    ) -> bool {
+        let tx = transaction();
+        !target.is_closed(&tx)
+            && (Arc::ptr_eq(&self.domain.lock(), target)
+                || self.processes.load(Ordering::Relaxed) <= 1)
+    }
+
+    /// Only after target-node validation, while holding membership. Existing
+    /// frames retain their captured domain; no page is transferred or recharged.
+    pub(crate) fn move_to(
+        &self,
+        target: Arc<MemoryDomain>,
+        _membership: &crate::fs::cgroupfs::CgroupMembership,
+    ) {
+        let old = {
+            let tx = transaction();
+            let mut domain = self.domain.lock();
+            assert!(!target.is_closed(&tx));
+            assert!(Arc::ptr_eq(&domain, &target) || self.processes.load(Ordering::Relaxed) <= 1);
+            core::mem::replace(&mut *domain, target)
+        };
+        // Destruction of the last old domain/ancestor Arc can free heap memory.
+        // It must happen after leaving the IRQ-disabled transaction.
+        drop(old);
+    }
+}
+
+/// One lease per Process, rather than per thread or VmarHandle. Fork/clone holds
+/// original membership before constructing this lease; migration holds writer.
+#[derive(Debug)]
+pub(crate) struct ProcessMemoryOwner(UserMemoryOwner);
+impl ProcessMemoryOwner {
+    pub(crate) fn new(owner: UserMemoryOwner) -> Self {
+        if let Some(owner) = &owner {
+            let _tx = transaction();
+            owner.processes.fetch_add(1, Ordering::Relaxed);
+        }
+        Self(owner)
+    }
+    pub(crate) fn owner(&self) -> &UserMemoryOwner {
+        &self.0
+    }
+}
+impl Drop for ProcessMemoryOwner {
+    fn drop(&mut self) {
+        if let Some(owner) = &self.0 {
+            let _tx = transaction();
+            let old = owner.processes.fetch_sub(1, Ordering::Relaxed);
+            debug_assert!(old > 0);
+        }
+    }
+}
+
+/// Captured at admission; never reads a subsequently migrated binding.
+#[derive(Debug, Clone)]
+struct CapturedOwner {
+    family: Arc<FamilyBudget>,
+    domain: Arc<MemoryDomain>,
+}
+impl CapturedOwner {
+    fn refund(&self, pages: usize) {
+        let tx = transaction();
+        let old = self
+            .family
+            .current_pages
+            .fetch_sub(pages, Ordering::Release);
+        debug_assert!(old >= pages);
+        self.domain.refund(pages, &tx);
     }
 }
 
 /// A precharge for an allocation which has not yet produced all its frames.
 pub(crate) struct UserMemoryReservation {
-    owner: UserMemoryOwner,
+    owner: Option<CapturedOwner>,
     remaining: usize,
 }
-
 impl UserMemoryReservation {
     pub(crate) fn new(owner: &UserMemoryOwner, pages: usize) -> Result<Self> {
-        if let Some(account) = owner {
-            account.reserve(pages)?;
-        }
+        let captured = if let Some(owner) = owner {
+            let tx = transaction();
+            let current = owner.family.current_pages.load(Ordering::Relaxed);
+            let next = current
+                .checked_add(pages)
+                .filter(|next| *next <= owner.family.limit_pages)
+                .ok_or_else(Error::user_frame_limit)?;
+            let domain = owner.domain.lock();
+            domain.admit(pages, &tx)?;
+            owner.family.current_pages.store(next, Ordering::Release);
+            Some(CapturedOwner {
+                family: owner.family.clone(),
+                domain: domain.clone(),
+            })
+        } else {
+            None
+        };
         Ok(Self {
-            owner: owner.clone(),
+            owner: captured,
             remaining: pages,
         })
     }
-
     pub(crate) fn take_page(&mut self) -> Option<UserPageCharge> {
         assert!(self.remaining > 0);
         self.remaining -= 1;
@@ -94,7 +187,6 @@ impl UserMemoryReservation {
             .map(|owner| UserPageCharge(owner.clone()))
     }
 }
-
 impl Drop for UserMemoryReservation {
     fn drop(&mut self) {
         if let Some(owner) = &self.owner {
@@ -105,8 +197,7 @@ impl Drop for UserMemoryReservation {
 
 /// Linear token stored in frame metadata; intentionally not Clone.
 #[derive(Debug)]
-pub(crate) struct UserPageCharge(Arc<UserMemoryAccount>);
-
+pub(crate) struct UserPageCharge(CapturedOwner);
 impl Drop for UserPageCharge {
     fn drop(&mut self) {
         self.0.refund(1);
@@ -176,7 +267,8 @@ pub fn allocate_user_frames(count: usize) -> Result<Vec<UFrame>> {
 }
 
 /// Allocation outside a VM fault (e.g. buffered file I/O) uses its initiator.
-/// The owner is immutable and reading it does not lock the process VMAR.
+/// The binding Arc is stable; reading it does not lock the process VMAR.
+/// Admission snapshots its current domain under the memory transaction.
 pub(crate) fn current_owner() -> UserMemoryOwner {
     if let Some(process) = Process::current() {
         return process.user_memory_owner().clone();

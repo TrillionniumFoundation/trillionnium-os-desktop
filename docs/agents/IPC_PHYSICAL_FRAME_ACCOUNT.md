@@ -1,5 +1,10 @@
 # IPC physical-frame admission and remaining memory owners
 
+This page records the original 0187 IPC slice. The subsequent
+[hierarchical cgroup admission contract](CGROUP_MEMORY_ADMISSION.md) supersedes
+its historical `memory.max` stub and immutable-binding descriptions. Its eight
+original tests remain required; their old evidence does not qualify new source.
+
 This is a bounded extension of the existing fixed G1-d workload-family account.
 It closes uncharged physical backing pages in pipes/FIFOs and Unix stream or
 seqpacket connections. It does **not** implement `memory.max`, global memory

@@ -678,6 +678,52 @@ mod test {
     }
 
     #[ktest]
+    fn pipe_and_fifo_backing_obey_hierarchical_limit_with_unlimited_family() {
+        use crate::vm::user_memory::{
+            UserMemoryAccount, hierarchy::test_leaf, test_with_current_owner,
+        };
+        let domain = test_leaf(16);
+        let account = UserMemoryAccount::new(usize::MAX);
+        account.move_to(
+            domain.clone(),
+            &crate::fs::cgroupfs::CgroupMembership::write_lock(),
+        );
+        let observed = domain.clone();
+        test_with_current_owner(Some(account.clone()), move || {
+            let (reader, writer) = new_pair_with_capacity(65536).unwrap();
+            assert_eq!(observed.snapshot().pages, 16);
+            assert!(
+                new_pair_with_capacity(65536)
+                    .err()
+                    .unwrap()
+                    .is_user_frame_limit()
+            );
+            let fifo = Pipe::new();
+            assert!(
+                fifo.open_named(AccessMode::O_RDWR, StatusFlags::O_NONBLOCK)
+                    .err()
+                    .unwrap()
+                    .is_user_frame_limit()
+            );
+            drop(reader);
+            assert_eq!(observed.snapshot().pages, 16);
+            drop(writer);
+            assert_eq!(observed.snapshot().pages, 0);
+            let handle = fifo
+                .open_named(AccessMode::O_RDWR, StatusFlags::O_NONBLOCK)
+                .unwrap();
+            assert_eq!(
+                observed.snapshot().pages,
+                DEFAULT_PIPE_BUF_SIZE.div_ceil(PAGE_SIZE)
+            );
+            drop(handle);
+            assert_eq!(observed.snapshot().pages, 0);
+        });
+        assert_eq!(domain.snapshot().pages, 0);
+        assert_eq!(account.current_pages(), 0);
+    }
+
+    #[ktest]
     fn pipe_production_capacity_uses_current_family_and_refunds_last_endpoint() {
         use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
         let account = UserMemoryAccount::new(16);
