@@ -117,13 +117,18 @@ impl ActivationPolicy {
                     repeat,
                     modified,
                 } => {
+                    let was_down = match key {
+                        ConfirmKey::Enter => self.enter_down,
+                        ConfirmKey::Space => self.space_down,
+                    };
                     if pressed {
                         confirmation_key_seen = true;
                         blocks_keyboard |= self.composing
                             || self.wait_for_confirmation_release
+                            || was_down
                             || repeat
                             || modified;
-                        fresh_keyboard_activation |= !repeat && !modified;
+                        fresh_keyboard_activation |= !was_down && !repeat && !modified;
                     }
                     match key {
                         ConfirmKey::Enter => self.enter_down = pressed,
@@ -296,6 +301,24 @@ mod tests {
                         modified,
                     }],
                 )
+                .allows(ActivationSource::Keyboard));
+        }
+    }
+
+    #[test]
+    fn held_key_without_backend_repeat_flag_is_blocked_until_release() {
+        for confirm in [ConfirmKey::Enter, ConfirmKey::Space] {
+            let mut policy = ActivationPolicy::default();
+            assert!(policy
+                .begin_frame(true, [key(confirm, true)])
+                .allows(ActivationSource::Keyboard));
+            policy.begin_frame(true, []);
+            assert!(!policy
+                .begin_frame(true, [key(confirm, true)])
+                .allows(ActivationSource::Keyboard));
+            policy.begin_frame(true, [key(confirm, false)]);
+            assert!(policy
+                .begin_frame(true, [key(confirm, true)])
                 .allows(ActivationSource::Keyboard));
         }
     }

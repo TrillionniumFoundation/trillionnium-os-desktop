@@ -18,3 +18,13 @@ do not qualify it.
 No Cargo manifest or lock was changed. AccessKit is not enabled and no
 assistive-technology, Wayland IME, mobile or physical-device success is claimed.
 Chat remains a local draft, and original Hepta authority is unchanged.
+
+## Follow-up: renderer-independent held-key handling
+
+The [follow-up execution record](repeat-execution.json) binds the initial and
+updated policy hashes. The same [independent regression](repeat-regression.rs)
+failed on the initial policy and passed after the fix. It rejects a second
+keydown without keyup even when a backend omits its repeat flag, then restores
+activation after release. All 13 updated policy tests passed with warnings
+denied under Rust 1.95.0. The initial 12-test record above remains historical;
+full egui and native gates still need to run on the latest commit.
