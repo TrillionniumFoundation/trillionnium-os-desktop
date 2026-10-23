@@ -316,15 +316,23 @@ impl ObjectiveTransport {
         })
     }
 
-    pub fn submit_once(self, objective: ProvidedObjective) -> SubmissionAttempt {
-        let identity = SubmissionIdentity {
+    /// Exact metadata for an independently retained pending request, before I/O.
+    /// This does not authenticate the envelope, admit an objective, reserve an
+    /// owner record, or authorize a later retry. The same immutable configuration
+    /// and original envelope determine the identity returned by `submit_once`.
+    pub fn submission_identity(&self, objective: &ProvidedObjective) -> SubmissionIdentity {
+        SubmissionIdentity {
             request_id: self.request_id,
             agent_id: self.config.expected_agent_id.clone(),
             spawn_generation: self.config.spawn_generation,
             expected_peer_uid: self.config.expected_peer_uid,
             expected_peer_pid: self.expected_peer_pid,
             objective: objective.identity.clone(),
-        };
+        }
+    }
+
+    pub fn submit_once(self, objective: ProvidedObjective) -> SubmissionAttempt {
+        let identity = self.submission_identity(&objective);
         let mut bytes_written = 0;
         let mut frame_bytes = None;
         let result = (|| {
