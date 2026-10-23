@@ -5,7 +5,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use aster_rights::ReadOp;
 
 use super::{
-    connected::Connected,
+    connected::{Buffers, Connected},
     listener::Listener,
     socket::{SHUT_READ_EVENTS, SHUT_WRITE_EVENTS},
 };
@@ -54,17 +54,19 @@ impl Init {
         peer_addr: UnixSocketAddrBound,
         pollee: Pollee,
         peer_cred: SocketCred,
-    ) -> (Connected, Connected) {
+    ) -> Result<(Connected, Connected), (Error, Self)> {
+        let (init, buffers) = self.prepare_buffers()?;
         let Init {
             addr,
             is_read_shutdown,
             is_write_shutdown,
-        } = self;
+        } = init;
 
         pollee.invalidate();
 
         let cred = SocketCred::<ReadOp>::new_current();
         let (this_conn, peer_conn) = Connected::new_pair(
+            buffers,
             addr,
             Some(peer_addr),
             EndpointState::new(pollee, is_read_shutdown.into_inner()),
@@ -73,7 +75,16 @@ impl Init {
             peer_cred,
         );
 
-        (this_conn, peer_conn)
+        Ok((this_conn, peer_conn))
+    }
+
+    /// Preserve the original bound/half-closed state if frame admission fails.
+    fn prepare_buffers(self) -> Result<(Self, Buffers), (Error, Self)> {
+        let owner = crate::vm::user_memory::current_owner();
+        match Buffers::new(&owner) {
+            Ok(buffers) => Ok((self, buffers)),
+            Err(err) => Err((err, self)),
+        }
     }
 
     pub(super) fn listen(
@@ -129,5 +140,39 @@ impl Init {
         // According to the Linux implementation, we always have `IoEvents::HUP` and
         // `IoEvents::HUP` in this state.
         IoEvents::OUT | IoEvents::HUP
+    }
+}
+
+#[cfg(ktest)]
+mod memory_tests {
+    use ostd::prelude::*;
+
+    use super::*;
+    use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
+
+    #[ktest]
+    fn denied_connection_keeps_original_bound_and_shutdown_state() {
+        let account = UserMemoryAccount::new(31);
+        let observed = account.clone();
+        test_with_current_owner(Some(account.clone()), move || {
+            let name =
+                UnixSocketAddr::Abstract(Arc::from(&b"ipc-frame-account-denied-connect"[..]));
+            let mut init = Init::new();
+            init.bind(name.clone()).unwrap();
+            let bound = init.addr.as_ref().unwrap().to_key();
+            init.is_read_shutdown.store(true, Ordering::Relaxed);
+            init.is_write_shutdown.store(true, Ordering::Relaxed);
+            let (error, init) = init.prepare_buffers().err().unwrap();
+            assert!(error.is_user_frame_limit());
+            assert_eq!(observed.current_pages(), 0);
+            assert_eq!(init.addr.as_ref().unwrap().to_key(), bound);
+            assert!(init.is_read_shutdown.load(Ordering::Relaxed));
+            assert!(init.is_write_shutdown.load(Ordering::Relaxed));
+            assert_eq!(name.connect().unwrap(), bound);
+            drop(bound);
+            drop(init);
+            assert!(name.connect().is_err());
+        });
+        assert_eq!(account.current_pages(), 0);
     }
 }

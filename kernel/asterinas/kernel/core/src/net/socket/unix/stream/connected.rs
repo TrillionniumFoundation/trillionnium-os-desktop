@@ -20,9 +20,28 @@ use crate::{
     process::signal::Pollee,
     util::{
         MultiRead, MultiWrite,
-        ring_buffer::{ProducerU8Ext, RbConsumer, RbProducer, RingBuffer, RingBufferU8Ext},
+        ring_buffer::{
+            ProducerU8Ext, RingBufferU8Ext, UserRbConsumer, UserRbProducer, UserRingBuffer,
+            new_user_ring_buffer,
+        },
     },
 };
+
+/// Both directions are admitted before any socket state or backlog is changed.
+/// Failure of the second allocation drops and refunds the first original segment.
+pub(super) struct Buffers {
+    outgoing: UserRingBuffer,
+    incoming: UserRingBuffer,
+}
+
+impl Buffers {
+    pub(super) fn new(owner: &crate::vm::user_memory::UserMemoryOwner) -> Result<Self> {
+        Ok(Self {
+            outgoing: new_user_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE, owner)?,
+            incoming: new_user_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE, owner)?,
+        })
+    }
+}
 
 pub(super) struct Connected {
     // `addr` should be dropped as soon as the socket file is closed,
@@ -33,6 +52,7 @@ pub(super) struct Connected {
 
 impl Connected {
     pub(super) fn new_pair(
+        buffers: Buffers,
         addr: Option<UnixSocketAddrBound>,
         peer_addr: Option<UnixSocketAddrBound>,
         state: EndpointState,
@@ -40,8 +60,8 @@ impl Connected {
         cred: SocketCred,
         peer_cred: SocketCred,
     ) -> (Connected, Connected) {
-        let (this_writer, peer_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
-        let (peer_writer, this_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
+        let (this_writer, peer_reader) = buffers.outgoing.split();
+        let (peer_writer, this_reader) = buffers.incoming.split();
 
         let this_inner = Inner {
             addr: Once::new(),
@@ -433,8 +453,8 @@ struct Inner {
     addr: Once<UnixSocketAddr>,
     state: EndpointState,
     // Lock order: `reader` -> `all_aux` & `all_aux` -> `writer`
-    reader: Mutex<RbConsumer<u8>>,
-    writer: Mutex<RbProducer<u8>>,
+    reader: Mutex<UserRbConsumer>,
+    writer: Mutex<UserRbProducer>,
     all_aux: Mutex<VecDeque<RangedAuxiliaryData>>,
     has_aux: AtomicBool,
     is_pass_cred: AtomicBool,
@@ -454,3 +474,39 @@ struct RangedAuxiliaryData {
 }
 
 pub(in crate::net) const UNIX_STREAM_DEFAULT_BUF_SIZE: usize = 65536;
+
+#[cfg(ktest)]
+mod memory_tests {
+    use ostd::prelude::*;
+
+    use super::*;
+    use crate::vm::user_memory::UserMemoryAccount;
+
+    #[ktest]
+    fn unix_pair_admits_both_directions_or_refunds_the_first() {
+        for pages in [0, 15, 16, 31] {
+            let account = UserMemoryAccount::new(pages);
+            assert!(
+                Buffers::new(&Some(account.clone()))
+                    .err()
+                    .unwrap()
+                    .is_user_frame_limit()
+            );
+            assert_eq!(account.current_pages(), 0);
+        }
+        let account = UserMemoryAccount::new(32);
+        let buffers = Buffers::new(&Some(account.clone())).unwrap();
+        assert_eq!(account.current_pages(), 32);
+        let (mut writer, mut reader) = buffers.outgoing.split();
+        assert!(writer.push_slice(&[1, 2, 3]).is_some());
+        let mut bytes = [0; 3];
+        assert!(reader.pop_slice(&mut bytes).is_some());
+        assert_eq!(bytes, [1, 2, 3]);
+        drop(writer);
+        assert_eq!(account.current_pages(), 32);
+        drop(reader);
+        assert_eq!(account.current_pages(), 16);
+        drop(buffers.incoming);
+        assert_eq!(account.current_pages(), 0);
+    }
+}

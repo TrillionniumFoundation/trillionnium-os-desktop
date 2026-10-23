@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 295  # Retained 292 plus three fatal-cleanup regressions.
+MINIMUM_CORE_TESTS = 303  # Retained 295 plus eight IPC physical-frame owner regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -96,7 +96,17 @@ FATAL_CLEANUP_CORE_TESTS = tuple(
         "fatal_receipts_follow_original_signal_queues_without_constructor_inheritance",
     )
 )
-REQUIRED_CORE_TESTS = (*FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+IPC_FRAME_CORE_TESTS = (
+    "aster_core::util::ring_buffer::test::ipc_buffer_charges_original_pages_until_last_segment_alias",
+    "aster_core::util::ring_buffer::test::ipc_buffer_rejected_layout_and_allocator_failure_refund_owner",
+    "aster_core::fs::pipe::common::test::pipe_production_capacity_uses_current_family_and_refunds_last_endpoint",
+    "aster_core::fs::pipe::common::test::fifo_shared_opens_keep_first_owner_without_double_charge",
+    "aster_core::fs::pipe::common::test::pipe_denial_publishes_no_object_or_open_counts",
+    "aster_core::net::socket::unix::stream::connected::memory_tests::unix_pair_admits_both_directions_or_refunds_the_first",
+    "aster_core::net::socket::unix::stream::init::memory_tests::denied_connection_keeps_original_bound_and_shutdown_state",
+    "aster_core::net::socket::unix::stream::socket::memory_tests::unix_socketpair_denial_preserves_current_family_without_endpoints",
+)
+REQUIRED_CORE_TESTS = (*IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (
