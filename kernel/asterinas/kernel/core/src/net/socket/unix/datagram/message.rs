@@ -18,6 +18,7 @@ use crate::{
             UnixSocketAddr,
             addr::{UnixSocketAddrBound, UnixSocketAddrKey},
             ctrl_msg::AuxiliaryData,
+            ownership::{Lease, Node},
         },
         util::{ControlMessage, RecvFlags, RecvOutput},
     },
@@ -33,6 +34,7 @@ pub(super) struct MessageQueue {
     is_pass_cred: AtomicBool,
     pollee: Pollee,
     send_wait_queue: WaitQueue,
+    pub(super) ownership: Node,
 }
 
 struct Inner {
@@ -130,10 +132,12 @@ impl MessageQueue {
             .try_reserve(1)
             .map_err(|_| Error::new(Errno::ENOMEM))?;
 
+        let ownership = aux_data.prepare_ownership(&self.ownership)?;
         let msg = {
             let bytes = MessagePayload::copy_from(reader, len)?;
 
             let mut aux = core::mem::take(aux_data);
+            aux.publish_ownership(ownership);
             if self.is_pass_cred.load(Ordering::Relaxed)
                 || source.queue.is_pass_cred.load(Ordering::Relaxed)
             {
@@ -185,10 +189,15 @@ pub(super) struct MessageReceiver {
     // so it must not belong to `MessageQueue`.
     addr: SpinLock<Option<UnixSocketAddrBound>>,
     queue: Arc<MessageQueue>,
+    _ownership: Lease,
+    pub(super) ownership: Node,
 }
 
 impl MessageReceiver {
-    pub(super) fn new() -> MessageReceiver {
+    pub(super) fn new() -> Result<MessageReceiver> {
+        let ownership = Node::new()?;
+        let queue_node = Node::new()?;
+        let edge = Lease::single(&ownership, &queue_node)?;
         let inner = Inner {
             messages: VecDeque::new(),
             total_length: 0,
@@ -201,12 +210,15 @@ impl MessageReceiver {
             is_pass_cred: AtomicBool::new(false),
             pollee: Pollee::new(),
             send_wait_queue: WaitQueue::new(),
+            ownership: queue_node,
         };
 
-        Self {
+        Ok(Self {
             addr: SpinLock::new(None),
             queue: Arc::new(queue),
-        }
+            _ownership: edge,
+            ownership,
+        })
     }
 
     pub(super) fn bind(&self, addr_to_bind: UnixSocketAddr) -> Result<()> {

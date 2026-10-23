@@ -12,7 +12,11 @@ use crate::{
     fs::utils::{Endpoint, EndpointState},
     net::socket::{
         unix::{
-            UnixSocketAddr, addr::UnixSocketAddrBound, cred::SocketCred, ctrl_msg::AuxiliaryData,
+            UnixSocketAddr,
+            addr::UnixSocketAddrBound,
+            cred::SocketCred,
+            ctrl_msg::AuxiliaryData,
+            ownership::{Lease, Node},
         },
         util::{ControlMessage, RecvFlags, RecvOutput, SockShutdownCmd},
     },
@@ -32,6 +36,7 @@ use crate::{
 pub(super) struct Buffers {
     outgoing: UserRingBuffer,
     incoming: UserRingBuffer,
+    pub(super) ownership: Node,
 }
 
 impl Buffers {
@@ -39,6 +44,7 @@ impl Buffers {
         Ok(Self {
             outgoing: new_user_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE, owner)?,
             incoming: new_user_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE, owner)?,
+            ownership: Node::new()?,
         })
     }
 }
@@ -48,6 +54,7 @@ pub(super) struct Connected {
     // so it must not belong to `Inner`.
     addr: Option<UnixSocketAddrBound>,
     inner: Endpoint<Inner>,
+    ownership: Option<Lease>,
 }
 
 impl Connected {
@@ -60,6 +67,7 @@ impl Connected {
         cred: SocketCred,
         peer_cred: SocketCred,
     ) -> (Connected, Connected) {
+        let ownership = buffers.ownership;
         let (this_writer, peer_reader) = buffers.outgoing.split();
         let (peer_writer, this_reader) = buffers.incoming.split();
 
@@ -72,6 +80,7 @@ impl Connected {
             has_aux: AtomicBool::new(false),
             is_pass_cred: AtomicBool::new(false),
             cred,
+            ownership: ownership.clone(),
         };
         let peer_inner = Inner {
             addr: Once::new(),
@@ -82,6 +91,7 @@ impl Connected {
             has_aux: AtomicBool::new(false),
             is_pass_cred: AtomicBool::new(false),
             cred: peer_cred,
+            ownership,
         };
 
         if let Some(addr) = addr.as_ref() {
@@ -96,13 +106,23 @@ impl Connected {
         let this = Connected {
             addr,
             inner: this_inner,
+            ownership: None,
         };
         let peer = Connected {
             addr: peer_addr,
             inner: peer_inner,
+            ownership: None,
         };
 
         (this, peer)
+    }
+
+    pub(super) fn prepare_owner(&self, owner: &Node) -> Result<Lease> {
+        Lease::single(owner, &self.inner.this_end().ownership)
+    }
+
+    pub(super) fn publish_owner(&mut self, ownership: Lease) {
+        self.ownership = Some(ownership);
     }
 
     pub(super) fn addr(&self) -> Option<&UnixSocketAddrBound> {
@@ -362,6 +382,8 @@ impl Connected {
             .try_reserve(1)
             .map_err(|_| Error::new(Errno::ENOMEM))?;
 
+        let ownership = aux_data.prepare_ownership(&this_end.ownership)?;
+
         // No matter we succeed later or not, set the flag first to ensure that the auxiliary
         // data are always visible to `try_recv`.
         this_end.has_aux.store(true, Ordering::Relaxed);
@@ -390,6 +412,8 @@ impl Connected {
         if need_pass_cred {
             aux_data.fill_cred();
         }
+
+        aux_data.publish_ownership(ownership);
 
         // Store the auxiliary data.
         let aux_range = RangedAuxiliaryData {
@@ -478,6 +502,7 @@ struct Inner {
     has_aux: AtomicBool,
     is_pass_cred: AtomicBool,
     cred: SocketCred,
+    ownership: Node,
 }
 
 impl AsRef<EndpointState> for Inner {

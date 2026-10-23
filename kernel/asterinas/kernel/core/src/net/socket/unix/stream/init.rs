@@ -16,6 +16,7 @@ use crate::{
         unix::{
             addr::{UnixSocketAddr, UnixSocketAddrBound},
             cred::SocketCred,
+            ownership::{Lease, Node},
         },
         util::SockShutdownCmd,
     },
@@ -54,8 +55,20 @@ impl Init {
         peer_addr: UnixSocketAddrBound,
         pollee: Pollee,
         peer_cred: SocketCred,
+        owner: &Node,
+        peer_owner: &Node,
     ) -> Result<(Connected, Connected), (Error, Self)> {
         let (init, buffers) = self.prepare_buffers()?;
+        let edges = (|| {
+            Ok((
+                Lease::single(owner, &buffers.ownership)?,
+                Lease::single(peer_owner, &buffers.ownership)?,
+            ))
+        })();
+        let (edge, peer_edge) = match edges {
+            Ok(edges) => edges,
+            Err(error) => return Err((error, init)),
+        };
         let Init {
             addr,
             is_read_shutdown,
@@ -65,7 +78,7 @@ impl Init {
         pollee.invalidate();
 
         let cred = SocketCred::<ReadOp>::new_current();
-        let (this_conn, peer_conn) = Connected::new_pair(
+        let (mut this_conn, mut peer_conn) = Connected::new_pair(
             buffers,
             addr,
             Some(peer_addr),
@@ -75,6 +88,8 @@ impl Init {
             peer_cred,
         );
 
+        this_conn.publish_owner(edge);
+        peer_conn.publish_owner(peer_edge);
         Ok((this_conn, peer_conn))
     }
 
@@ -92,7 +107,23 @@ impl Init {
         backlog: usize,
         pollee: Pollee,
         is_seqpacket: bool,
+        owner: &Node,
     ) -> Result<Listener, (Error, Self)> {
+        if self.addr.is_none() {
+            return Err((
+                Error::with_message(Errno::EINVAL, "the socket is not bound"),
+                self,
+            ));
+        }
+        let admission = (|| {
+            let node = Node::new()?;
+            let edge = Lease::single(owner, &node)?;
+            Ok((node, edge))
+        })();
+        let (node, edge) = match admission {
+            Ok(pair) => pair,
+            Err(error) => return Err((error, self)),
+        };
         let Some(addr) = self.addr else {
             return Err((
                 Error::with_message(Errno::EINVAL, "the socket is not bound"),
@@ -109,6 +140,7 @@ impl Init {
             self.is_write_shutdown.into_inner(),
             pollee,
             is_seqpacket,
+            (node, edge),
         ))
     }
 

@@ -45,7 +45,7 @@ pub(super) fn sys_socketpair(
             file_pair!(UnixStreamSocket::new_pair(nonblocking, sock_type)?)
         }
         (CSocketAddrFamily::AF_UNIX, SockType::SOCK_RAW | SockType::SOCK_DGRAM) => {
-            file_pair!(UnixDatagramSocket::new_pair(nonblocking))
+            file_pair!(UnixDatagramSocket::new_pair(nonblocking)?)
         }
         _ => return_errno_with_message!(
             Errno::EAFNOSUPPORT,

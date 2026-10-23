@@ -129,7 +129,8 @@ fn blocked_seqpacket_sender_wakes_on_empty_receive_and_peer_close() {
             super::super::socket::OptionSet::new_accepted(false),
             false,
             SockType::SOCK_SEQPACKET,
-        );
+        )
+        .unwrap();
         assert!(!sender.poll(IoEvents::OUT, None).contains(IoEvents::OUT));
         let done = Arc::new(AtomicBool::new(false));
         let started = Arc::new(AtomicBool::new(false));
