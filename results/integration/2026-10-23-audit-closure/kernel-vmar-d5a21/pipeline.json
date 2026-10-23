@@ -1,0 +1,102 @@
+{
+  "schema": "trillionnium.native-kernel-integration.v1",
+  "source_head": "d5a21bb7e70a22cd022f4275ba2d22a6b726d233",
+  "source_tree": "799487b33846203ee7b79680adbf6c2f69476024",
+  "commands": [
+    {
+      "stage": "original-four-suites",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-original-full-ipc.py",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fallible-fault-fixed",
+        "--head",
+        "d5a21bb7e70a22cd022f4275ba2d22a6b726d233",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/full"
+      ],
+      "outer_deadline_seconds": 15000,
+      "exit_code": 0
+    },
+    {
+      "stage": "original-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "d5a21bb7e70a22cd022f4275ba2d22a6b726d233",
+        "--expected-source-tree",
+        "799487b33846203ee7b79680adbf6c2f69476024",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-joint-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/ordinary"
+      ],
+      "outer_deadline_seconds": 7200,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-sgid30",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-native-sgid-probe.py",
+        "--ordinary",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/ordinary",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fallible-fault-fixed",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/sgid30"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-ownership12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-vmar-fault-probe-d5a2.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-proc-privileges12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_proc_process_privileges.py",
+        "--kernel",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/ordinary/product-kernel.elf",
+        "--ordinary-receipt",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/ordinary/result.json",
+        "--expected-receipt-sha256",
+        "09f28362a8fd9b29152162922907b9b21a41807c4de2ccafe4c6bea1479442ef",
+        "--initramfs",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fallible-fault-fixed/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/proc-privileges12"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    }
+  ],
+  "passed": true,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "elapsed_seconds": 576.916,
+  "source_checkout_clean": true
+}
