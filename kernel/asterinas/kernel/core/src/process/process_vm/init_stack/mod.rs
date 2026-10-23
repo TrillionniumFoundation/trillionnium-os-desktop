@@ -469,16 +469,13 @@ impl InitStackReader<'_> {
 
 #[cfg(ktest)]
 mod tests {
-    use ostd::{
-        prelude::ktest,
-        sync::RcuDrop,
-        task::{Task, TaskOptions},
-    };
+    use ostd::{cpu::CpuId, prelude::ktest, sync::RcuDrop, task::Task};
 
     use super::*;
     use crate::{
         fs::pseudofs::SockFs,
         process::{Process, ProcessVm},
+        thread::kernel_thread::ThreadOptions,
         util::random,
         vm::{
             user_memory::{UserMemoryAccount, current_owner},
@@ -518,13 +515,19 @@ mod tests {
         // scheduler quiescent states just as xarray's no_leakage test does.
         let completed = Arc::new(core::sync::atomic::AtomicBool::new(false));
         drop(RcuDrop::new(GraceWitness(completed.clone())));
-        let _ = TaskOptions::new(|| {}).data(()).spawn();
+        // A real Core thread is accepted by both the OSTD FIFO scheduler and
+        // Core's class scheduler; raw TaskOptions.data(()) is not accepted by
+        // the latter. No VMAR or account is attached to this helper thread.
+        let worker = ThreadOptions::new(|| {})
+            .cpu_affinity(CpuId::current_racy().into())
+            .spawn();
         for _ in 0..128 {
             Task::yield_now();
-            if completed.load(Ordering::Acquire) {
+            if completed.load(Ordering::Acquire) && worker.is_exited() {
                 break;
             }
         }
+        assert!(worker.is_exited(), "RCU helper thread did not run");
         assert!(
             completed.load(Ordering::Acquire),
             "RCU grace did not complete"

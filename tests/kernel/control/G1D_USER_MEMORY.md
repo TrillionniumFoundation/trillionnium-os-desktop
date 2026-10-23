@@ -160,7 +160,9 @@ The stopped-stack tests keep a strict zero-after-final-release assertion.
 through RCU; those nodes can still hold real charged frames. The tests verify
 that the final VMAR weak reference no longer upgrades, queue an original
 `RcuDrop` completion witness after the detach callbacks, and pass bounded real
-scheduler quiescent states before checking zero. The witness never mutates the
+scheduler quiescent states before checking zero. A genuine Core helper thread
+with no VMAR/account ensures compatibility with both OSTD FIFO and the Core
+class scheduler. The witness never mutates the
 account. Production frame lifetime/refund logic is unchanged. The initial
 7d8906ef core run exposed the two premature zero assertions (284/286); the
 corrected assertions require a fresh native run and do not turn that run into
