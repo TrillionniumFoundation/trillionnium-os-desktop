@@ -43,15 +43,26 @@ impl NotesBootstrap {
     /// original host alone retains the effect endpoint. On failure shut down
     /// all duplicate endpoint references; a lost attachment ACK is not proof
     /// that the parent never attached or that any concurrent effect rolled back.
-    pub fn offer(self, identity: NotesTargetIdentity, endpoint: UnixStream) -> io::Result<()> {
-        let outcome = self.offer_inner(identity, &endpoint);
+    pub fn offer(
+        self,
+        identity: NotesTargetIdentity,
+        endpoint: UnixStream,
+        recovery: UnixDatagram,
+    ) -> io::Result<()> {
+        let outcome = self.offer_inner(identity, &endpoint, &recovery);
         if outcome.is_err() {
             let _ = endpoint.shutdown(Shutdown::Both);
+            let _ = recovery.shutdown(Shutdown::Both);
         }
         outcome
     }
 
-    fn offer_inner(&self, identity: NotesTargetIdentity, endpoint: &UnixStream) -> io::Result<()> {
+    fn offer_inner(
+        &self,
+        identity: NotesTargetIdentity,
+        endpoint: &UnixStream,
+        recovery: &UnixDatagram,
+    ) -> io::Result<()> {
         let offer = NotesBootstrapOffer::new(identity).map_err(invalid)?;
         require_socket_type(endpoint.as_raw_fd(), libc::SOCK_STREAM)?;
         if !endpoint.local_addr()?.is_unnamed() || !endpoint.peer_addr()?.is_unnamed() {
@@ -62,7 +73,13 @@ impl NotesBootstrap {
             return Err(invalid("Notes bootstrap offer bound"));
         }
         let deadline = Instant::now() + DEADLINE;
-        send_descriptor(&self.channel, &raw, endpoint.as_raw_fd(), deadline)?;
+        trill_ui_core::notes_private_unix::send_channels(
+            &self.channel,
+            &raw,
+            endpoint,
+            recovery,
+            remaining(deadline)?,
+        )?;
         let raw = receive_ack(&self.channel, deadline)?;
         let ack = NotesBootstrapAck::parse_exact(&raw).map_err(invalid)?;
         if !ack.matches(&offer) {
@@ -116,6 +133,7 @@ fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> 
     Ok(())
 }
 
+#[cfg(test)]
 fn send_descriptor(
     channel: &UnixDatagram,
     raw: &[u8],

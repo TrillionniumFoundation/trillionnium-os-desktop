@@ -1,0 +1,49 @@
+[
+  {
+    "name": "fmt",
+    "argv": [
+      "just",
+      "fmt"
+    ],
+    "started_unix": 1792727380.152188,
+    "status": "passed",
+    "returncode": 0,
+    "elapsed_seconds": 0.8531663417816162
+  },
+  {
+    "name": "memory-notes",
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "just",
+      "test",
+      "--locked",
+      "-p",
+      "codex-hepta-memory",
+      "production_notes"
+    ],
+    "started_unix": 1792727381.0058177,
+    "status": "passed",
+    "returncode": 0,
+    "elapsed_seconds": 117.0070481300354
+  },
+  {
+    "name": "agentd-notes",
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "just",
+      "test",
+      "--locked",
+      "-p",
+      "codex-hepta-agentd",
+      "notes_"
+    ],
+    "started_unix": 1792727498.013327,
+    "status": "passed",
+    "returncode": 0,
+    "elapsed_seconds": 321.21189546585083
+  }
+]

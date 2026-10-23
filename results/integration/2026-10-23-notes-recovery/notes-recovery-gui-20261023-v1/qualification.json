@@ -1,0 +1,184 @@
+{
+  "agentd_process_restart_descriptor_recovery_qualified": false,
+  "app_process_restart_recovery_qualified": false,
+  "bootstrap_fixture_receipt": {
+    "actual_app_read_only_query": true,
+    "asterinas_run": false,
+    "bootstrap_schema_version": 2,
+    "document_revision": 0,
+    "final_use_authority_run": false,
+    "hepta_production_owner_run": false,
+    "initial_task_id": 1,
+    "ordered_private_endpoints": [
+      "effect_stream",
+      "recovery_datagram"
+    ],
+    "parent_rejection_blocks_startup_and_reaps_child": true,
+    "private_fd_roundtrip": true,
+    "profile": "isolated_session_bootstrap_transport_fixture",
+    "public_launch_does_not_export": true,
+    "recovery_lane_rejects_replace": true
+  },
+  "broker_target_fixture_receipt": {
+    "app_pid": 3888277,
+    "app_receipt": {
+      "operation_id": "qualification-notes-target-only",
+      "payload_sha256": "811662e6d56a5a1ffa4f484f20e5446e5211af997b23d4b66ec6a44553ab463b",
+      "result": {
+        "previous_revision": 0,
+        "revision": 1,
+        "status": "applied",
+        "text_sha256": "febc983a7105bbe02e780aa7bd4dd1552be98302b6b3447d01f7fd5cd8dd8ca0"
+      },
+      "schema_version": 1,
+      "target": {
+        "incarnation": "f9d9811e1698d7644256cbb13076ae29",
+        "session_instance": "fc530f3d32053e3ede63c9dbbbcd92d5",
+        "task_id": 1
+      }
+    },
+    "asterinas_run": false,
+    "changed_egui_layout_marker": true,
+    "compositor_pixels_verified": false,
+    "final_use_authority_run": false,
+    "hepta_production_owner_run": false,
+    "independent_application_receipt_query": true,
+    "profile": "isolated_linux_notes_target_transport",
+    "request_sha256": "811662e6d56a5a1ffa4f484f20e5446e5211af997b23d4b66ec6a44553ab463b"
+  },
+  "companion_binaries": {
+    "app": {
+      "build_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/target-notes-ui-20261023/debug/trill-app-window",
+      "bytes": 24864616,
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/notes-recovery-gui-20261023-v1/bin/trill-app-window",
+      "sha256": "a4fdf1f81f4063e9c1de2e087db16db976ca0a4a3a98107e172f7c9b06c7566a"
+    },
+    "broker_probe": {
+      "build_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/target-notes-ui-20261023/debug/examples/notes_host_probe",
+      "bytes": 1748488,
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/notes-recovery-gui-20261023-v1/bin/notes_host_probe",
+      "sha256": "6e2ecd6f170a1162bb715240c22542ece575372d5efd355b44973220c42fd36b"
+    },
+    "session": {
+      "build_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/target-notes-ui-20261023/debug/trill-session",
+      "bytes": 4064688,
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/notes-recovery-gui-20261023-v1/bin/trill-session",
+      "sha256": "36c92ca5c897c2049b1821448c74c9d17bdc8b27e2b7e020506e09d5737f1f2f"
+    }
+  },
+  "native_asterinas": false,
+  "original_owner_gui_receipt": {
+    "app_sha256": "a4fdf1f81f4063e9c1de2e087db16db976ca0a4a3a98107e172f7c9b06c7566a",
+    "application_receipt": {
+      "operation_id": "notes-real-ui-fixture",
+      "payload_sha256": "74bd63bc299bb03258b269f35fa10bf55b28785535ee0e13a435a820d508f1ee",
+      "result": {
+        "previous_revision": 0,
+        "revision": 1,
+        "status": "applied",
+        "text_sha256": "06790c0cdc6bf6d37d7ff4c98dd496bff2bc469a038182ac1698ee50a4149134"
+      },
+      "schema_version": 1,
+      "target": {
+        "incarnation": "f11394ae1db0e0625a8c73465916355a",
+        "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+        "task_id": 1
+      }
+    },
+    "bootstrap_schema_version": 2,
+    "complete_frame_written_then_effect_stream_closed": true,
+    "effect_dispatch_attempts": 3,
+    "effect_reply_read_by_fault_fixture": false,
+    "injected_complete_frame_writes": 1,
+    "issuer_requests": 4,
+    "lost_reply_initial_source_state": "indeterminate",
+    "lost_reply_recovered_source_state": "committed",
+    "native_kernel_qualified": false,
+    "pixels_qualified": false,
+    "production_authority": false,
+    "profile": "test-issuer-original-owner-real-session-notes",
+    "receipt_capacity_reused_after_durable_ack": true,
+    "recovered_application_receipt": {
+      "operation_id": "notes-real-ui-fixture-lost-reply",
+      "payload_sha256": "7c88502d97a5ec94d657c172ec4fe59d32d03f3be424abc6eab2cf4c4a5ce21a",
+      "result": {
+        "previous_revision": 2,
+        "revision": 3,
+        "status": "applied",
+        "text_sha256": "d742490feb42388586933f9e89646c2917a4c3f95f166e2235076c408a0f229d"
+      },
+      "schema_version": 1,
+      "target": {
+        "incarnation": "f11394ae1db0e0625a8c73465916355a",
+        "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+        "task_id": 1
+      }
+    },
+    "recovered_application_receipt_utf8": "{\"schema_version\":1,\"target\":{\"session_instance\":\"57fd3437d00f5e9d99252780ff88e611\",\"task_id\":1,\"incarnation\":\"f11394ae1db0e0625a8c73465916355a\"},\"operation_id\":\"notes-real-ui-fixture-lost-reply\",\"payload_sha256\":\"7c88502d97a5ec94d657c172ec4fe59d32d03f3be424abc6eab2cf4c4a5ce21a\",\"result\":{\"status\":\"applied\",\"previous_revision\":2,\"revision\":3,\"text_sha256\":\"d742490feb42388586933f9e89646c2917a4c3f95f166e2235076c408a0f229d\"}}",
+    "recovered_receipt_sha256": "d0a65dcc991e4cd79dcd3cbc7345a34f0871390045fdab17a497b1ab71c7451c",
+    "recovered_retirement_response": {
+      "operation_id": "notes-real-ui-fixture-lost-reply",
+      "payload_sha256": "7c88502d97a5ec94d657c172ec4fe59d32d03f3be424abc6eab2cf4c4a5ce21a",
+      "receipt_sha256": "d0a65dcc991e4cd79dcd3cbc7345a34f0871390045fdab17a497b1ab71c7451c",
+      "schema_version": 1,
+      "status": "released",
+      "target": {
+        "incarnation": "f11394ae1db0e0625a8c73465916355a",
+        "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+        "task_id": 1
+      }
+    },
+    "recovery_effect_replay": false,
+    "recovery_requested_new_grant": false,
+    "recovery_transport": "private_unix_datagram",
+    "schema_version": 1,
+    "second_application_receipt": {
+      "operation_id": "notes-real-ui-fixture-second",
+      "payload_sha256": "ddf1c7e5b0c1ac31249eb48e989d7d28b0ee974fde0b2528ad6835208af40be3",
+      "result": {
+        "previous_revision": 1,
+        "revision": 2,
+        "status": "applied",
+        "text_sha256": "3073d0f3b5bb930f89a1752508c1991be66375ad7946e8ae5f70c940592413e5"
+      },
+      "schema_version": 1,
+      "target": {
+        "incarnation": "f11394ae1db0e0625a8c73465916355a",
+        "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+        "task_id": 1
+      }
+    },
+    "session_sha256": "36c92ca5c897c2049b1821448c74c9d17bdc8b27e2b7e020506e09d5737f1f2f",
+    "source_recovery_anchor": {
+      "owner_agent_id": "00000000-0000-4000-8000-00000000c061",
+      "profile": "hepta:cognitive:exact-current-cut:v1",
+      "schema_digest": "c448a01d9749d7c409bb9c384ceaa7245ef6aca0eda722ac3ec8b2501602bed0",
+      "state_digest": "d3c2f21212637a09dd0231ae588358e73a7dc6272a57506fccec948b32d88d1d"
+    },
+    "source_state": "committed",
+    "ui_first_frame_unix_ms": 1792728308755
+  },
+  "pixels_qualified": false,
+  "production_authority": false,
+  "same_live_app_effect_stream_loss_recovery_qualified": true,
+  "schema_version": 1,
+  "source": {
+    "hepta": {
+      "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+      "head_tree": "f722fbe5f24275c324089be720559a40901105f3",
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/hepta-notes-recovery-20261023",
+      "status": " M codex-rs/hepta-agentd/BUILD.bazel\n M codex-rs/hepta-agentd/src/notes_bootstrap.rs\n M codex-rs/hepta-agentd/src/notes_bootstrap_tests.rs\n M codex-rs/hepta-agentd/src/notes_channel.rs\n M codex-rs/hepta-agentd/src/notes_channel_tests.rs\n M codex-rs/hepta-agentd/src/production_notes_gui_tests.rs\n M codex-rs/hepta-agentd/src/production_notes_host_tests.rs\n M codex-rs/hepta-memory/BUILD.bazel\n M codex-rs/hepta-memory/src/lib.rs\n M codex-rs/hepta-memory/src/local_lease_outbox.rs\n M codex-rs/hepta-memory/src/production_notes.rs\n M codex-rs/hepta-memory/src/production_notes_tests.rs\n M codex-rs/hepta-memory/src/production_writer.rs\n?? codex-rs/hepta-agentd/tests/fixtures/notes-bootstrap-v2.json\n?? codex-rs/hepta-memory/src/production_notes_owner.rs\n?? codex-rs/hepta-memory/src/production_notes_owner_tests.rs\n?? codex-rs/hepta-memory/tests/fixtures/notes-recovery-v1.json\n",
+      "worktree_tree": "a406ae84235cffdde45356b66f1c6a8b88b20511"
+    },
+    "os": {
+      "head": "1f4a252c22adf3bc4e1de1ce655e42387070f503",
+      "head_tree": "31f07066e4445afd4005f8003620e5e62997ae89",
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-notes-recovery-20261023",
+      "status": " M support/release/organ_release_profile.py\n M support/release/organ_source_map.json\n M support/release/test_organ_release_profile.py\n M support/ui/NOTES_ORGAN.md\n M tests/ui/test-notes-bootstrap-ipc.py\n M ui/Cargo.lock\n M ui/app-window/src/notes_organ.rs\n M ui/broker/examples/notes_host_probe.rs\n M ui/broker/src/notes.rs\n M ui/broker/tests/notes_target.rs\n M ui/core/Cargo.toml\n M ui/core/src/lib.rs\n M ui/core/src/notes.rs\n M ui/core/src/notes_bootstrap.rs\n M ui/session/src/main.rs\n M ui/session/src/notes_bootstrap.rs\n M ui/session/src/notes_bootstrap_tests.rs\n?? tests/ui/notes-bootstrap-v2.json\n?? tests/ui/notes-recovery-v1.json\n?? ui/core/src/notes_private_unix.rs\n?? ui/core/src/notes_recovery.rs\n?? ui/core/src/notes_recovery_tests.rs\n",
+      "worktree_tree": "b003981c8c5ae24843d3150e0eec4979b8b417e4"
+    }
+  },
+  "source_was_committed_by_runner": false,
+  "status": "passed",
+  "working_tree_hash_algorithm": "Git tree from HEAD plus all nonignored worktree files using an isolated index"
+}
