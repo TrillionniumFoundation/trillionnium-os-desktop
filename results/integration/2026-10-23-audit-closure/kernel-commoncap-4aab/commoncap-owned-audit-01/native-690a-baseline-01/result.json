@@ -1,0 +1,294 @@
+{
+  "source_head": "690a7bb36a8bc355cbc0d99f72c34feda1fb06b2",
+  "ordinary_receipt_sha256": "d7ffde171ee9412042007b6b01b859236eb50e96f6cfc27921ead27a5d957e2c",
+  "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+  "source_sha256": "83b01a41e2af23a0f504ffeea72afb777c510458032ca2dbb01b8703650dccfc",
+  "probe_sha256": "fced420f39a02bb8ce94bfe91487abee8141ead2b3592520beacf094c904f76a",
+  "elf_shape": {
+    "entry": 4202512,
+    "bytes": 804280,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4726784,
+        "file_end": 528877,
+        "entry_inside": true
+      },
+      {
+        "start": 4726784,
+        "end": 4886528,
+        "file_end": 688722,
+        "entry_inside": false
+      },
+      {
+        "start": 4886528,
+        "end": 4939776,
+        "file_end": 715456,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "fced420f39a02bb8ce94bfe91487abee8141ead2b3592520beacf094c904f76a"
+  },
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/commoncap-owned-audit-01/native-690a-baseline-01/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/commoncap-owned-audit-01/native-690a-baseline-01/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "timeout_seconds": 120,
+  "production_qualified": false,
+  "raw_qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 0.917123663937673,
+  "serial_sha256": "843d50c69fb73700dfb83a022eb6f0b33d2fb9cc118e94ef93314c6f3829b070",
+  "observations": [
+    {
+      "suite": "owned-commoncap-v1",
+      "maximum_live_children": 1,
+      "production_qualified": false
+    },
+    {
+      "observer_uid": 60001,
+      "observer_euid": 60001,
+      "effective": 0,
+      "permitted": 0,
+      "nnp": 1,
+      "setup_error": 0
+    },
+    {
+      "case": "observer_actual_caps0_nnp1",
+      "passed": true
+    },
+    {
+      "case": "owned_child_pidfd",
+      "passed": true
+    },
+    {
+      "target_stage": "target_extra_permitted",
+      "uid": 60001,
+      "euid": 60001,
+      "gid": 60001,
+      "egid": 60001,
+      "effective": 0,
+      "permitted": 1,
+      "dumpable": 1,
+      "nnp": 1,
+      "setup_error": 0
+    },
+    {
+      "case": "target_actual_identity_and_caps",
+      "passed": true
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "case": "only_public_sentinel_read",
+      "passed": true
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "fd/4",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "exe",
+      "rc": 20,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "stage": "target_extra_permitted",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false
+    },
+    {
+      "case": "copied_only_owned_dev_null",
+      "passed": true
+    },
+    {
+      "target_stage": "same_permitted",
+      "uid": 60001,
+      "euid": 60001,
+      "gid": 60001,
+      "egid": 60001,
+      "effective": 0,
+      "permitted": 0,
+      "dumpable": 1,
+      "nnp": 1,
+      "setup_error": 0
+    },
+    {
+      "case": "target_actual_identity_and_caps",
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "case": "only_public_sentinel_read",
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "fd/4",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "exe",
+      "rc": 20,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "stage": "same_permitted",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "case": "copied_only_owned_dev_null",
+      "passed": true
+    },
+    {
+      "case": "owned_child_reaped",
+      "passed": true
+    },
+    {
+      "summary": true,
+      "failures": 8,
+      "setup_unavailable": false,
+      "all_children_reaped": true
+    }
+  ],
+  "probe_exits": [
+    "42"
+  ],
+  "boot_markers": 1,
+  "initramfs_sha256": "b19232294f5b720d62fa641e5e80570d01befffdfa110ce03ec411101f0b695d",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+}
