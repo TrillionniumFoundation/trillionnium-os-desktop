@@ -4,6 +4,9 @@ pub mod conversation;
 pub mod hepta;
 pub mod notes;
 pub mod notes_bootstrap;
+#[cfg(target_os = "linux")]
+pub mod notes_private_unix;
+pub mod notes_recovery;
 pub mod observation;
 
 use serde::{Deserialize, Serialize};

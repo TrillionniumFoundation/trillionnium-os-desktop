@@ -6,7 +6,7 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use std::io::{BufRead, BufReader, Read};
     use std::os::fd::OwnedFd;
-    use std::os::unix::net::UnixStream;
+    use std::os::unix::net::{UnixDatagram, UnixStream};
     use std::process::{Child, Command, Stdio};
     use std::sync::mpsc;
     use std::time::Duration;
@@ -38,7 +38,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         incarnation: hex(&random[16..]),
     };
     let (owner, app_channel) = UnixStream::pair()?;
-    let target = NotesTarget::from_private_channel(owner, identity.clone())?;
+    let (recovery, recovery_app) = UnixDatagram::pair()?;
+    let (bootstrap, bootstrap_app) = UnixDatagram::pair()?;
+    trill_ui_core::notes_private_unix::send_channels(
+        &bootstrap,
+        &serde_json::to_vec(&identity)?,
+        &app_channel,
+        &recovery_app,
+        Duration::from_secs(1),
+    )?;
+    drop(app_channel);
+    drop(recovery_app);
+    drop(bootstrap);
+    let target = NotesTarget::from_private_channels(owner, recovery, identity.clone())?;
     struct OwnedChild(Child);
     impl Drop for OwnedChild {
         fn drop(&mut self) {
@@ -65,7 +77,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .env_remove("TRILL_HEPTA_SPAWN_GENERATION")
             .env_remove("TRILL_HEPTA_PEER_UID")
             .env_remove("TRILL_HEPTA_RUN_ID")
-            .stdin(Stdio::from(OwnedFd::from(app_channel)))
+            .stdin(Stdio::from(OwnedFd::from(bootstrap_app)))
             .stdout(Stdio::piped())
             .spawn()?,
     );

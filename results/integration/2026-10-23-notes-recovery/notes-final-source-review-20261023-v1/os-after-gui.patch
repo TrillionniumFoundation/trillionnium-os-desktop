@@ -1,0 +1,91 @@
+diff --git a/docs/INDEX.md b/docs/INDEX.md
+index 9c121439..2feacd88 100644
+--- a/docs/INDEX.md
++++ b/docs/INDEX.md
+@@ -26,7 +26,7 @@
+ | A07 Hepta 接合 | [client](../services/hepta-os/README.md)、[运行](../services/hepta-os/RUN.md)、[原 Objective](../tests/integration/hepta/ORIGINAL_OBJECTIVE.md)、[history probe](../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md)、[CPU delivery](../services/hepta-os/CPU_DELIVERY.md) | [集成契约](HEPTA_INTEGRATION.md)、[Objective transport](../services/hepta-os/OBJECTIVE_TRANSPORT.md)、[history 契约](../services/hepta-os/OBJECTIVE_HISTORY.md)、[CPU source pin](../services/hepta-os/CPU_UPSTREAM_CONTRACT.json)；B 跨仓组合、生产 grant/recovered writer 与 D native recovery 仍待统一验收。 |
+ | A08 Android | [开发手册](../support/android/README.md)、[已有 host 证据](../results/integration/a08-host-main-20261017/README.md) | [Android 兼容](ANDROID_COMPATIBILITY.md)、[接口](../compat/android/INTERFACES.md)、[内核缺口](../compat/android/kernel-gaps.json)；Binder/seccomp/MAC、BSP/APK/实机未完成。 |
+ | A09 硬件/VMM | [硬件运行手册](../tests/hardware/RUN.md)、[平台决策](../support/hardware/DECISION.md)、[VMM gates](../support/vmm/GATES.md)、[lifecycle 模型](../support/vmm/device_lifecycle/README.md) | [硬件技术契约](HARDWARE_AND_DRIVERS.md)、[只读 inventory](../tests/hardware/evidence/2026-10-21-development-host-inventory.json)；枚举及模型不授予 GPU compute/DMA/reset/VMM 资格。 |
+-| A10 Rust UI/Notes | [构建与运行](../support/ui/RUN.md)、[工作区](../support/ui/CHAT_WORKSPACE.md)、[Notes 开发与私有 bootstrap](../support/ui/NOTES_ORGAN.md)、[严格 IPC](../tests/ui/test-strict-request-ipc.py)、[bootstrap probe](../tests/ui/test-notes-bootstrap-ipc.py)、[最终 C 原收据](../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json) | [UI 技术目标](DESKTOP_UX.md)、[接合契约](../support/ui/INTEGRATION_CONTRACTS.md)、[Notes wire fixture](../tests/ui/notes-target-v1.json)、[bootstrap fixture](../tests/ui/notes-bootstrap-v1.json)；最终 C 的181项、Clippy与 owned Weston C5属于 Linux host，生产原 owner终态、Asterinas显示/输入与移动适配未完成。 |
++| A10 Rust UI/Notes | [构建与运行](../support/ui/RUN.md)、[工作区](../support/ui/CHAT_WORKSPACE.md)、[Notes 开发与私有 bootstrap](../support/ui/NOTES_ORGAN.md)、[严格 IPC](../tests/ui/test-strict-request-ipc.py)、[bootstrap probe](../tests/ui/test-notes-bootstrap-ipc.py)、[最终 C 原收据](../results/integration/2026-10-22-organ-combination/c-qualified-receipts.json) | [UI 技术目标](DESKTOP_UX.md)、[接合契约](../support/ui/INTEGRATION_CONTRACTS.md)、[Notes wire fixture](../tests/ui/notes-target-v1.json)、[bootstrap v2 fixture](../tests/ui/notes-bootstrap-v2.json)、[recovery v1 fixture](../tests/ui/notes-recovery-v1.json)；最终 C 的181项、Clippy与 owned Weston C5属于 Linux host，生产原 owner终态、Asterinas显示/输入与移动适配未完成。 |
+ 
+ 所有 A00–A10 模块都有可定位的开发/验证入口和技术契约，但并非每个模块都有独立成套手册：A00/A01/A02/A05/A06 仍复用共享架构、ABI、构建或 profile 文档。上表同时标出实际源码与运行边界；文档存在性不证明功能完成。新增模块交接必须包括固定版本、命令、输入输出、错误语义、权限/状态 owner 和真实未通过项。
+ 
+@@ -38,7 +38,7 @@
+ 
+ 最新的 [组合验收与 #240 合并证据](../results/integration/2026-10-22-organ-qualified/README.md) 绑定实际 OS `85d394f…` 和 Hepta `6d6097d…`：七项 CI、完整组合 UI/kernel、原 writer 驱动的真实 Notes 回读和普通内核中的原 Agentd 配置拒绝门禁已执行。test issuer、ABI preflight 与生产/原生 G2/实机资格仍分别记录，具体下一步见 [按依赖实施](agents/ORGAN_IMPLEMENTATION_NEXT.md)。
+ 
+-[跨仓 source profile 手册](agents/ORGAN_RELEASE_PROFILE.md) 给出 build/verify 命令、原 history 祖先证明、两份 Notes golden 的逐字核对，以及源清单与执行资格的区别。它有19项临时 Git 回归，当前 [真实组合清单](../support/release/profiles/2026-10-22-organ-source.json) 也已独立 build/verify；工具不发 grant、不调用 runtime、不启用生产。新 head 必须显式重新核对，生产装配仍需原部署输入与独立端到端验收。
++[跨仓 source profile 手册](agents/ORGAN_RELEASE_PROFILE.md) 给出 build/verify 命令、原 history 祖先证明，以及 Notes target v1、bootstrap v2、recovery v1 三份 golden 的逐字核对。当前工具有22项临时 Git 回归；[2026-10-22 历史组合清单](../support/release/profiles/2026-10-22-organ-source.json) 保留其原始 source map 与固定来源，不转授新增恢复协议。新源组合须从两仓干净提交重新生成清单，并在清单入库后的最终 OS head/tree 上再次 verify。工具不发 grant、不调用 runtime、不启用生产；真实 Notes 断链恢复须保留独立执行收据，生产装配仍需原部署输入与端到端验收。
+ 
+ [原 Agentd 普通 ABI 开发/技术手册](../tests/workloads/hepta_agentd_abi/README.md) 和 [完整首跑证据](../results/integration/2026-10-22-agentd-ordinary-abi/README.md) 说明 disabled-default runner、精确拒绝 oracle、实际依赖、只读 ext2 写回缺陷及下一阶段原 FleetRegistry/Supervisor 启动要求。
+ 
+diff --git a/docs/agents/ORGAN_RELEASE_PROFILE.md b/docs/agents/ORGAN_RELEASE_PROFILE.md
+index bef551ad..2d882217 100644
+--- a/docs/agents/ORGAN_RELEASE_PROFILE.md
++++ b/docs/agents/ORGAN_RELEASE_PROFILE.md
+@@ -7,7 +7,7 @@ has now been built and verified on clean OS `85d394f99c73ad3194d57c876712ac01b59
+ and Hepta `6d6097da843f5831dfaf9cee3530da512d072a15`, with their exact trees in
+ the [retained receipts](../../results/integration/2026-10-22-organ-qualified/README.md).
+ The same source pair also has separately retained runtime evidence. This is
+-distinct from the tool's 19 temporary-Git regression tests. The dedicated
++distinct from the tool's 19 temporary-Git regression tests at that time. The dedicated
+ `organ-release-profile.yml` workflow checks those tool regressions and the map
+ schema only; it does not fetch private sources or qualify a deployed pair.
+ 
+@@ -22,8 +22,9 @@ of relabeling the existing runtime receipts.
+ `support/release/organ_release_profile.py` generates and verifies a **source-only**
+ combination of one clean OS checkout and one clean Hepta checkout. It binds one
+ complete Hepta commit/tree, proves the original history owner's ancestry, checks
+-required original-owner source files, and compares both Notes protocol goldens
+-byte for byte. It uses Python 3.9+ and Git, with no third-party Python packages,
++required original-owner source files, and compares all three current Notes
++protocol goldens byte for byte: target v1, bootstrap v2 and recovery v1. It uses
++Python 3.9+ and Git, with no third-party Python packages,
+ network calls, runtime RPCs, grant issuance, or device actions.
+ 
+ Passing this check establishes reproducible source identities. It does not
+@@ -46,6 +47,14 @@ entry points. The history role maps to
+ `codex-rs/hepta-agentd/src/objective_history.rs`; the protocol's history schema
+ is not a substitute for this original owner implementation.
+ 
++The current map also requires the UI recovery protocol and private handoff
++implementations, plus the original durable writer's Notes terminal/retirement
++implementation. Bootstrap v2 hands off ordered effect-stream and recovery-datagram
++descriptors; v1 is explicitly rejected by the v2 receiver. The recovery v1 golden
++binds observation and exact receipt acknowledgement. Historical v1 fixtures and
++the 2026-10-22 manifest retain their original bytes and do not qualify this new
++protocol; generate a new manifest for the final source combination.
++
+ The source map separately includes `hepta-contracts/src/final_use.rs` and
+ `hepta-contracts/src/final_use_control.rs`. The first defines `FinalUseAuthority`
+ and the constructor that accepts issuer keys, a protected clock and an external
+@@ -65,8 +74,9 @@ keys, deploy a clock/frontier, authenticate an approval, or enable production.
+ | Original history | `995b6fb9ef73ada7c3348b01deb28940a2c4a2d1` exists as a commit and `git merge-base --is-ancestor` returns success against Hepta HEAD |
+ | Shallow clone | Allowed only when that exact ancestry relation is actually provable; missing objects and cut/unknown ancestry fail |
+ | Required sources | Every fixed role in the reviewed map has a tracked regular blob; record its Git blob, SHA256 and byte length |
+-| Notes target golden | The OS and Hepta mapped files have exactly the same bytes, including whitespace; record SHA256 and byte length |
+-| Notes bootstrap golden | The same exact-byte check, independently of the target golden |
++| Notes target v1 golden | The OS and Hepta mapped files have exactly the same bytes, including whitespace; record SHA256 and byte length |
++| Notes bootstrap v2 golden | The same exact-byte check, independently of the target golden |
++| Notes recovery v1 golden | The same exact-byte check for observation and exact receipt acknowledgement |
+ | Manifest integrity | Recompute the entire manifest and compare it; changed paths, hashes, fields or production status fail |
+ 
+ Git replacement objects are disabled for these reads. Legacy grafts are rejected.
+@@ -177,12 +187,14 @@ opens no device/session channel, and does not approve or perform effects.
+ python3 -B -m unittest discover -s support/release -p 'test_*.py' -v
+ ```
+ 
+-The tests create real temporary Git repositories and commit DAGs. They exercise
++The 22 tests create real temporary Git repositories and commit DAGs. They exercise
+ clean success; wrong OS HEAD/tree and Hepta HEAD; tracked, untracked and hidden
+ worktree changes; committed golden differences and missing files; missing owner
+ source; missing, unrelated and shallow-unknown history; proven shallow history;
+ source change after pinning; manifest commit without OS self-reference; refusal
+-to enable production; unresolved source mapping; and output path isolation.
++to enable production; unresolved source mapping; output path isolation; acceptance
++of the shipped map; rejection of missing recovery source/golden roles; and
++rejection of differing recovery golden bytes.
+ 
+ Synthetic tests replace the history constant only inside the imported test
+ module to construct controllable Git histories. The production CLI has no

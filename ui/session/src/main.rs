@@ -221,8 +221,9 @@ impl Session {
             .notes_targets
             .remove(&1)
             .ok_or_else(|| io::Error::other("initial Notes endpoint missing"))
-            .and_then(NotesTarget::into_initial_endpoint);
-        let attached = endpoint.and_then(|(identity, stream)| bootstrap.offer(identity, stream));
+            .and_then(NotesTarget::into_initial_endpoints);
+        let attached = endpoint
+            .and_then(|(identity, effect, recovery)| bootstrap.offer(identity, effect, recovery));
         if let Err(error) = attached {
             // This closes only the Session-owned initial child. An attachment
             // timeout cannot prove the parent's grant/effect never occurred.
@@ -270,13 +271,23 @@ impl Session {
             incarnation,
         };
         let (parent, child) = UnixStream::pair()?;
-        let target = NotesTarget::from_private_channel(parent, identity.clone())?;
+        let (recovery_parent, recovery_child) = std::os::unix::net::UnixDatagram::pair()?;
+        let (bootstrap, child_bootstrap) = std::os::unix::net::UnixDatagram::pair()?;
+        let raw = serde_json::to_vec(&identity).map_err(io::Error::other)?;
+        trill_ui_core::notes_private_unix::send_channels(
+            &bootstrap,
+            &raw,
+            &child,
+            &recovery_child,
+            std::time::Duration::from_secs(1),
+        )?;
+        let target = NotesTarget::from_private_channels(parent, recovery_parent, identity.clone())?;
         command
             .arg("--notes-session")
             .arg(&identity.session_instance)
             .arg("--notes-incarnation")
             .arg(&identity.incarnation)
-            .stdin(Stdio::from(OwnedFd::from(child)));
+            .stdin(Stdio::from(OwnedFd::from(child_bootstrap)));
         Ok(target)
     }
 

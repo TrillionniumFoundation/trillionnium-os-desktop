@@ -7,7 +7,7 @@ has now been built and verified on clean OS `85d394f99c73ad3194d57c876712ac01b59
 and Hepta `6d6097da843f5831dfaf9cee3530da512d072a15`, with their exact trees in
 the [retained receipts](../../results/integration/2026-10-22-organ-qualified/README.md).
 The same source pair also has separately retained runtime evidence. This is
-distinct from the tool's 19 temporary-Git regression tests. The dedicated
+distinct from the tool's 19 temporary-Git regression tests at that time. The dedicated
 `organ-release-profile.yml` workflow checks those tool regressions and the map
 schema only; it does not fetch private sources or qualify a deployed pair.
 
@@ -22,8 +22,9 @@ of relabeling the existing runtime receipts.
 `support/release/organ_release_profile.py` generates and verifies a **source-only**
 combination of one clean OS checkout and one clean Hepta checkout. It binds one
 complete Hepta commit/tree, proves the original history owner's ancestry, checks
-required original-owner source files, and compares both Notes protocol goldens
-byte for byte. It uses Python 3.9+ and Git, with no third-party Python packages,
+required original-owner source files, and compares all three current Notes
+protocol goldens byte for byte: target v1, bootstrap v2 and recovery v1. It uses
+Python 3.9+ and Git, with no third-party Python packages,
 network calls, runtime RPCs, grant issuance, or device actions.
 
 Passing this check establishes reproducible source identities. It does not
@@ -46,6 +47,14 @@ entry points. The history role maps to
 `codex-rs/hepta-agentd/src/objective_history.rs`; the protocol's history schema
 is not a substitute for this original owner implementation.
 
+The current map also requires the UI recovery protocol and private handoff
+implementations, plus the original durable writer's Notes terminal/retirement
+implementation. Bootstrap v2 hands off ordered effect-stream and recovery-datagram
+descriptors; v1 is explicitly rejected by the v2 receiver. The recovery v1 golden
+binds observation and exact receipt acknowledgement. Historical v1 fixtures and
+the 2026-10-22 manifest retain their original bytes and do not qualify this new
+protocol; generate a new manifest for the final source combination.
+
 The source map separately includes `hepta-contracts/src/final_use.rs` and
 `hepta-contracts/src/final_use_control.rs`. The first defines `FinalUseAuthority`
 and the constructor that accepts issuer keys, a protected clock and an external
@@ -65,8 +74,9 @@ keys, deploy a clock/frontier, authenticate an approval, or enable production.
 | Original history | `995b6fb9ef73ada7c3348b01deb28940a2c4a2d1` exists as a commit and `git merge-base --is-ancestor` returns success against Hepta HEAD |
 | Shallow clone | Allowed only when that exact ancestry relation is actually provable; missing objects and cut/unknown ancestry fail |
 | Required sources | Every fixed role in the reviewed map has a tracked regular blob; record its Git blob, SHA256 and byte length |
-| Notes target golden | The OS and Hepta mapped files have exactly the same bytes, including whitespace; record SHA256 and byte length |
-| Notes bootstrap golden | The same exact-byte check, independently of the target golden |
+| Notes target v1 golden | The OS and Hepta mapped files have exactly the same bytes, including whitespace; record SHA256 and byte length |
+| Notes bootstrap v2 golden | The same exact-byte check, independently of the target golden |
+| Notes recovery v1 golden | The same exact-byte check for observation and exact receipt acknowledgement |
 | Manifest integrity | Recompute the entire manifest and compare it; changed paths, hashes, fields or production status fail |
 
 Git replacement objects are disabled for these reads. Legacy grafts are rejected.
@@ -177,12 +187,14 @@ opens no device/session channel, and does not approve or perform effects.
 python3 -B -m unittest discover -s support/release -p 'test_*.py' -v
 ```
 
-The tests create real temporary Git repositories and commit DAGs. They exercise
+The 22 tests create real temporary Git repositories and commit DAGs. They exercise
 clean success; wrong OS HEAD/tree and Hepta HEAD; tracked, untracked and hidden
 worktree changes; committed golden differences and missing files; missing owner
 source; missing, unrelated and shallow-unknown history; proven shallow history;
 source change after pinning; manifest commit without OS self-reference; refusal
-to enable production; unresolved source mapping; and output path isolation.
+to enable production; unresolved source mapping; output path isolation; acceptance
+of the shipped map; rejection of missing recovery source/golden roles; and
+rejection of differing recovery golden bytes.
 
 Synthetic tests replace the history constant only inside the imported test
 module to construct controllable Git histories. The production CLI has no

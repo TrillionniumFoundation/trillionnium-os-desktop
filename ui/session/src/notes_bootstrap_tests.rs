@@ -15,43 +15,18 @@ fn target() -> NotesTargetIdentity {
 }
 
 fn receive_offer(channel: &UnixDatagram) -> (NotesBootstrapOffer, OwnedFd) {
-    channel
-        .set_read_timeout(Some(Duration::from_secs(3)))
-        .unwrap();
-    let mut raw = [0u8; NOTES_BOOTSTRAP_MAX_BYTES + 1];
-    let mut control = [0usize; 8];
-    let mut iov = libc::iovec {
-        iov_base: raw.as_mut_ptr().cast(),
-        iov_len: raw.len(),
-    };
-    let mut message: libc::msghdr = unsafe { mem::zeroed() };
-    message.msg_iov = &mut iov;
-    message.msg_iovlen = 1;
-    message.msg_control = control.as_mut_ptr().cast();
-    message.msg_controllen = mem::size_of_val(&control);
-    let count = unsafe { libc::recvmsg(channel.as_raw_fd(), &mut message, libc::MSG_CMSG_CLOEXEC) };
-    assert!(count > 0 && count as usize <= NOTES_BOOTSTRAP_MAX_BYTES);
-    assert_eq!(message.msg_flags & (libc::MSG_TRUNC | libc::MSG_CTRUNC), 0);
-    let fd = unsafe {
-        let header = libc::CMSG_FIRSTHDR(&message);
-        assert!(!header.is_null());
-        assert_eq!((*header).cmsg_level, libc::SOL_SOCKET);
-        assert_eq!((*header).cmsg_type, libc::SCM_RIGHTS);
-        assert_eq!(
-            (*header).cmsg_len,
-            libc::CMSG_LEN(mem::size_of::<RawFd>() as libc::c_uint) as usize
-        );
-        let fd = OwnedFd::from_raw_fd(libc::CMSG_DATA(header).cast::<RawFd>().read_unaligned());
-        assert!(libc::CMSG_NXTHDR(&message, header).is_null());
+    let (raw, effect, recovery) =
+        trill_ui_core::notes_private_unix::receive_channels(channel, Duration::from_secs(3))
+            .unwrap();
+    for fd in [effect.as_raw_fd(), recovery.as_raw_fd()] {
         assert_ne!(
-            libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) & libc::FD_CLOEXEC,
+            unsafe { libc::fcntl(fd, libc::F_GETFD) } & libc::FD_CLOEXEC,
             0
         );
-        fd
-    };
+    }
     (
-        NotesBootstrapOffer::parse_exact(&raw[..count as usize]).unwrap(),
-        fd,
+        NotesBootstrapOffer::parse_exact(&raw).unwrap(),
+        OwnedFd::from(effect),
     )
 }
 
@@ -70,6 +45,7 @@ fn ack(offer: &NotesBootstrapOffer, status: NotesBootstrapStatus) -> Vec<u8> {
 fn one_private_datagram_transfers_the_exact_endpoint_with_cloexec() {
     let (session, parent) = UnixDatagram::pair().unwrap();
     let (endpoint, mut app) = UnixStream::pair().unwrap();
+    let (recovery, _recovery_app) = UnixDatagram::pair().unwrap();
     let fixture = std::thread::spawn(move || {
         let (offer, fd) = receive_offer(&parent);
         assert_eq!(offer.target, target());
@@ -84,7 +60,7 @@ fn one_private_datagram_transfers_the_exact_endpoint_with_cloexec() {
     });
     NotesBootstrap::from_private_channel(session)
         .unwrap()
-        .offer(target(), endpoint)
+        .offer(target(), endpoint, recovery)
         .unwrap();
     let _retained_parent_endpoint = fixture.join().unwrap();
     let mut bytes = [0u8; 17];
@@ -97,6 +73,7 @@ fn rejection_mismatch_and_invalid_ack_disable_transferred_aliases() {
     for mutation in 0..5 {
         let (session, parent) = UnixDatagram::pair().unwrap();
         let (endpoint, mut app) = UnixStream::pair().unwrap();
+        let (recovery, _recovery_app) = UnixDatagram::pair().unwrap();
         let fixture = std::thread::spawn(move || {
             let (offer, received) = receive_offer(&parent);
             let raw = String::from_utf8(ack(&offer, NotesBootstrapStatus::Attached)).unwrap();
@@ -112,7 +89,7 @@ fn rejection_mismatch_and_invalid_ack_disable_transferred_aliases() {
         });
         let outcome = NotesBootstrap::from_private_channel(session)
             .unwrap()
-            .offer(target(), endpoint);
+            .offer(target(), endpoint, recovery);
         assert!(outcome.is_err());
         if mutation == 0 {
             assert_eq!(outcome.unwrap_err().kind(), io::ErrorKind::PermissionDenied);
@@ -131,6 +108,7 @@ fn rejection_mismatch_and_invalid_ack_disable_transferred_aliases() {
 fn unexpected_ack_descriptor_is_rejected_and_closed() {
     let (session, parent) = UnixDatagram::pair().unwrap();
     let (endpoint, _app) = UnixStream::pair().unwrap();
+    let (recovery, _recovery_app) = UnixDatagram::pair().unwrap();
     let (stray, mut stray_peer) = UnixStream::pair().unwrap();
     let fixture = std::thread::spawn(move || {
         let (offer, _received) = receive_offer(&parent);
@@ -146,7 +124,7 @@ fn unexpected_ack_descriptor_is_rejected_and_closed() {
     });
     assert!(NotesBootstrap::from_private_channel(session)
         .unwrap()
-        .offer(target(), endpoint)
+        .offer(target(), endpoint, recovery)
         .is_err());
     fixture.join().unwrap();
     stray_peer
@@ -163,6 +141,7 @@ fn unexpected_ack_descriptor_is_rejected_and_closed() {
 fn timeout_disables_the_transferred_endpoint_without_a_second_offer() {
     let (session, parent) = UnixDatagram::pair().unwrap();
     let (endpoint, mut app) = UnixStream::pair().unwrap();
+    let (recovery, _recovery_app) = UnixDatagram::pair().unwrap();
     let (give_fd, take_fd) = mpsc::sync_channel(1);
     let (release, hold) = mpsc::sync_channel(1);
     let fixture = std::thread::spawn(move || {
@@ -178,7 +157,7 @@ fn timeout_disables_the_transferred_endpoint_without_a_second_offer() {
     let start = Instant::now();
     assert!(NotesBootstrap::from_private_channel(session)
         .unwrap()
-        .offer(target(), endpoint)
+        .offer(target(), endpoint, recovery)
         .is_err());
     assert!(start.elapsed() < Duration::from_secs(5));
     let _retained_parent_alias = take_fd.recv_timeout(Duration::from_secs(1)).unwrap();
@@ -195,11 +174,12 @@ fn wrong_socket_type_and_noninitial_target_fail_before_offer() {
     assert!(NotesBootstrap::from_private_channel(disguised).is_err());
     let (session, parent) = UnixDatagram::pair().unwrap();
     let (endpoint, _app) = UnixStream::pair().unwrap();
+    let (recovery, _recovery_app) = UnixDatagram::pair().unwrap();
     let mut other = target();
     other.task_id = 2;
     assert!(NotesBootstrap::from_private_channel(session)
         .unwrap()
-        .offer(other, endpoint)
+        .offer(other, endpoint, recovery)
         .is_err());
     parent.set_nonblocking(true).unwrap();
     assert!(parent.recv(&mut [0; 1]).is_err());
