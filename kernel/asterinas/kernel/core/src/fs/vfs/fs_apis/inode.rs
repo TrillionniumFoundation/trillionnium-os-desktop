@@ -710,7 +710,7 @@ pub(crate) fn check_inode_permission<I: Inode + ?Sized>(
         {
             return_errno_with_message!(Errno::EACCES, "owner permission check failed");
         }
-    } else if metadata.gid == creds.fsgid() {
+    } else if metadata.gid == creds.fsgid() || creds.groups().contains(&metadata.gid) {
         if (perm.may_read() && !mode.is_group_readable())
             || (perm.may_write() && !mode.is_group_writable())
             || (perm.may_exec() && !mode.is_group_executable())
