@@ -202,8 +202,7 @@ impl<D: BlockSet + 'static> MlsDisk<D> {
     /// Sync all cached data in the device to the storage medium for durability.
     pub fn sync(&self) -> Result<()> {
         let _wguard = self.inner.write_sync_region.write();
-        // TODO: Error handling the sync operation
-        self.inner.sync().unwrap();
+        self.inner.sync()?;
 
         debug!("Sync completed. {self:?}");
         Ok(())

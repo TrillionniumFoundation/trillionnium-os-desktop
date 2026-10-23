@@ -130,7 +130,13 @@ impl BlockSet for RawDisk {
     }
 
     fn flush(&self) -> Result<(), Error> {
-        Ok(())
+        // Flush the underlying device's volatile cache, including when this
+        // BlockSet is only a subregion of that device. There is no data payload.
+        let bio = Bio::new(BioType::Flush, Sid::from_offset(0), vec![], None);
+        match bio.submit_and_wait(&*self.inner) {
+            Ok(BioStatus::Complete) => Ok(()),
+            _ => return_errno_with_msg!(Errno::IoFailed, "flush io failed"),
+        }
     }
 
     fn nblocks(&self) -> usize {
@@ -140,6 +146,8 @@ impl BlockSet for RawDisk {
 
 #[cfg(ktest)]
 mod test {
+    use core::sync::atomic::{AtomicUsize, Ordering};
+
     use aster_block::{
         BlockDeviceMeta,
         bio::{BioEnqueueError, SubmittedBio},
@@ -147,6 +155,7 @@ mod test {
     use ostd::{
         mm::{FrameAllocOptions, Segment},
         prelude::*,
+        sync::SpinLock,
     };
 
     use super::*;
@@ -154,6 +163,8 @@ mod test {
     #[derive(Debug)]
     struct MemoryDisk {
         blocks: Segment<()>,
+        flush_result: SpinLock<Result<BioStatus, BioEnqueueError>>,
+        flush_count: AtomicUsize,
     }
 
     impl MemoryDisk {
@@ -162,7 +173,11 @@ mod test {
                 .zeroed(false)
                 .alloc_segment(nblocks)
                 .unwrap();
-            Self { blocks }
+            Self {
+                blocks,
+                flush_result: SpinLock::new(Ok(BioStatus::Complete)),
+                flush_count: AtomicUsize::new(0),
+            }
         }
     }
 
@@ -170,7 +185,12 @@ mod test {
         fn enqueue(&self, bio: SubmittedBio) -> Result<(), BioEnqueueError> {
             let bio_type = bio.type_();
             if bio_type == BioType::Flush {
-                bio.complete(BioStatus::Complete);
+                assert!(bio.segments().is_empty());
+                assert!(bio.sid_range().is_empty());
+                self.flush_count.fetch_add(1, Ordering::Relaxed);
+                // Drop the fault-injection lock before invoking completion.
+                let result = *self.flush_result.lock();
+                bio.complete(result?);
                 return Ok(());
             }
 
@@ -211,15 +231,11 @@ mod test {
         }
     }
 
-    fn create_rawdisk(nblocks: usize) -> RawDisk {
-        let memory_disk = MemoryDisk::new(nblocks);
-        RawDisk::new(Arc::new(memory_disk))
-    }
-
     #[ktest]
     fn write_sync_read() {
         let nblocks = 64 * 1024;
-        let raw_disk = create_rawdisk(nblocks);
+        let memory_disk = Arc::new(MemoryDisk::new(nblocks));
+        let raw_disk = RawDisk::new(memory_disk.clone());
         let root_key = AeadKey::random();
         let mlsdisk = MlsDisk::create(raw_disk.clone(), root_key, None).unwrap();
 
@@ -230,11 +246,70 @@ mod test {
             mlsdisk.write(i, rw_buf.as_ref()).unwrap();
         }
 
+        let before = memory_disk.flush_count.load(Ordering::Relaxed);
         mlsdisk.sync().unwrap();
+        assert!(memory_disk.flush_count.load(Ordering::Relaxed) > before);
 
         for i in 0..num_rw {
             mlsdisk.read(i, rw_buf.as_mut()).unwrap();
             assert_eq!(rw_buf.as_slice()[0], i as u8);
         }
+    }
+
+    #[ktest]
+    fn raw_disk_flush_submits_and_reports_terminal_failure() {
+        let memory_disk = Arc::new(MemoryDisk::new(1));
+        let raw_disk = RawDisk::new(memory_disk.clone());
+        raw_disk.flush().unwrap();
+        assert_eq!(memory_disk.flush_count.load(Ordering::Relaxed), 1);
+
+        for (index, result) in [
+            Ok(BioStatus::NotSupported),
+            Ok(BioStatus::NoSpace),
+            Ok(BioStatus::IoError),
+            Err(BioEnqueueError::Refused),
+            Err(BioEnqueueError::IsFull),
+            Err(BioEnqueueError::TooBig),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            *memory_disk.flush_result.lock() = result;
+            assert_eq!(raw_disk.flush().unwrap_err().errno(), Errno::IoFailed);
+            // No silent success or automatic retry on either submission or
+            // completion failure.
+            assert_eq!(memory_disk.flush_count.load(Ordering::Relaxed), index + 2);
+        }
+    }
+
+    fn disk_with_buffered_write() -> (Arc<MemoryDisk>, MlsDisk<RawDisk>) {
+        // Keep the original test disk geometry required by the journal's fixed
+        // snapshot capacity. This is real Frame-backed storage, not a mock sync.
+        let memory_disk = Arc::new(MemoryDisk::new(64 * 1024));
+        let raw_disk = RawDisk::new(memory_disk.clone());
+        let mlsdisk = MlsDisk::create(raw_disk, AeadKey::random(), None).unwrap();
+        let mut buf = Buf::alloc(1).unwrap();
+        buf.as_mut_slice().fill(0x5a);
+        mlsdisk.write(0, buf.as_ref()).unwrap();
+        (memory_disk, mlsdisk)
+    }
+
+    #[ktest]
+    fn mlsdisk_sync_returns_device_flush_error() {
+        let (memory_disk, mlsdisk) = disk_with_buffered_write();
+        *memory_disk.flush_result.lock() = Ok(BioStatus::IoError);
+        let before = memory_disk.flush_count.load(Ordering::Relaxed);
+        assert_eq!(mlsdisk.sync().unwrap_err().errno(), Errno::IoFailed);
+        assert_eq!(memory_disk.flush_count.load(Ordering::Relaxed), before + 1);
+    }
+
+    #[ktest]
+    fn mlsdisk_flush_bio_completes_with_io_error() {
+        let (memory_disk, mlsdisk) = disk_with_buffered_write();
+        *memory_disk.flush_result.lock() = Err(BioEnqueueError::Refused);
+        let before = memory_disk.flush_count.load(Ordering::Relaxed);
+        let bio = Bio::new(BioType::Flush, Sid::from_offset(0), vec![], None);
+        assert_eq!(bio.submit_and_wait(&mlsdisk), Ok(BioStatus::IoError));
+        assert_eq!(memory_disk.flush_count.load(Ordering::Relaxed), before + 1);
     }
 }
