@@ -21,7 +21,9 @@ use crate::{
             Error as SocketError, PeerCred, PeerGroups, SocketOption, macros::sock_option_mut,
         },
         private::SocketPrivate,
-        unix::{CUserCred, UnixSocketAddr, cred::SocketCred, ctrl_msg::AuxiliaryData},
+        unix::{
+            CUserCred, UnixSocketAddr, cred::SocketCred, ctrl_msg::AuxiliaryData, ownership::Node,
+        },
         util::{
             ControlMessage, MessageHeader, RecvFlags, RecvOutput, SendFlags, SockShutdownCmd,
             SocketAddr,
@@ -47,6 +49,7 @@ pub(crate) struct UnixStreamSocket {
     socket_type: SockType,
     pollee: Pollee,
     common: FileCommon,
+    ownership: Node,
 }
 
 enum State {
@@ -56,7 +59,7 @@ enum State {
 }
 
 impl State {
-    pub(self) fn check_io_events(&self) -> IoEvents {
+    pub(self) fn check_io_events(&self, is_seqpacket: bool) -> IoEvents {
         let mut events = IoEvents::empty();
 
         let is_read_shutdown = self.is_read_shutdown();
@@ -83,7 +86,7 @@ impl State {
         events |= match self {
             State::Init(init) => init.check_io_events(),
             State::Listen(listener) => listener.check_io_events(),
-            State::Connected(connected) => connected.check_io_events(),
+            State::Connected(connected) => connected.check_io_events(is_seqpacket),
         };
 
         events
@@ -167,7 +170,7 @@ impl OptionSet {
 }
 
 impl UnixStreamSocket {
-    pub(crate) fn new(is_nonblocking: bool, socket_type: SockType) -> Arc<Self> {
+    pub(crate) fn new(is_nonblocking: bool, socket_type: SockType) -> Result<Arc<Self>> {
         debug_assert!(
             socket_type == SockType::SOCK_STREAM || socket_type == SockType::SOCK_SEQPACKET
         );
@@ -175,15 +178,17 @@ impl UnixStreamSocket {
         Self::new_init(Init::new(), is_nonblocking, socket_type)
     }
 
-    fn new_init(init: Init, is_nonblocking: bool, socket_type: SockType) -> Arc<Self> {
-        Arc::new(Self {
+    fn new_init(init: Init, is_nonblocking: bool, socket_type: SockType) -> Result<Arc<Self>> {
+        let ownership = Node::new()?;
+        Ok(Arc::new(Self {
             state: RwMutex::new(Takeable::new(State::Init(init))),
             options: RwLock::new(OptionSet::new()),
             timeouts: SocketTimeouts::new(),
             socket_type,
             pollee: Pollee::new(),
             common: new_socket_common(is_nonblocking),
-        })
+            ownership,
+        }))
     }
 
     pub(crate) fn new_pair(
@@ -208,16 +213,59 @@ impl UnixStreamSocket {
             cred.restrict(),
         );
         Ok((
-            Self::new_connected(conn_a, OptionSet::new(), is_nonblocking, socket_type),
-            Self::new_connected(conn_b, OptionSet::new(), is_nonblocking, socket_type),
+            Self::new_connected(conn_a, OptionSet::new(), is_nonblocking, socket_type)?,
+            Self::new_connected(conn_b, OptionSet::new(), is_nonblocking, socket_type)?,
         ))
     }
 
+    #[cfg(ktest)]
+    pub(in crate::net::socket::unix) fn pair_for_ownership_test(
+        socket_type: SockType,
+    ) -> (Arc<Self>, Arc<Self>) {
+        use crate::process::posix_thread::AsPosixThread;
+        let (process, task) = crate::process::test_util::new_unstarted_process();
+        let cred = || SocketCred::from_posix_thread_for_test(task.as_posix_thread().unwrap());
+        let buffers = Buffers::new(&None).unwrap();
+        let (left, right) = Connected::new_pair(
+            buffers,
+            None,
+            None,
+            EndpointState::default(),
+            EndpointState::default(),
+            cred(),
+            cred(),
+        );
+        drop((task, process));
+        (
+            Self::new_connected(left, OptionSet::new(), true, socket_type).unwrap(),
+            Self::new_connected(right, OptionSet::new(), true, socket_type).unwrap(),
+        )
+    }
+
     pub(super) fn new_connected(
+        mut connected: Connected,
+        options: OptionSet,
+        is_nonblocking: bool,
+        socket_type: SockType,
+    ) -> Result<Arc<Self>> {
+        let ownership = Node::new()?;
+        let edge = connected.prepare_owner(&ownership)?;
+        connected.publish_owner(edge);
+        Ok(Self::new_connected_owned(
+            connected,
+            options,
+            is_nonblocking,
+            socket_type,
+            ownership,
+        ))
+    }
+
+    pub(super) fn new_connected_owned(
         connected: Connected,
         options: OptionSet,
         is_nonblocking: bool,
         socket_type: SockType,
+        ownership: Node,
     ) -> Arc<Self> {
         let cloned_pollee = connected.cloned_pollee();
         Arc::new(Self {
@@ -227,7 +275,12 @@ impl UnixStreamSocket {
             socket_type,
             pollee: cloned_pollee,
             common: new_socket_common(is_nonblocking),
+            ownership,
         })
+    }
+
+    pub(in crate::net::socket::unix) fn ownership_node(&self) -> &Node {
+        &self.ownership
     }
 
     fn try_send(
@@ -288,6 +341,7 @@ impl UnixStreamSocket {
                 self.pollee.clone(),
                 &self.options.read(),
                 self.is_seqpacket(),
+                &self.ownership,
             ) {
                 Ok(connected) => connected,
                 Err((err, init)) => return (State::Init(init), Err(err)),
@@ -317,8 +371,9 @@ pub(super) const SHUT_WRITE_EVENTS: IoEvents = IoEvents::OUT.union(IoEvents::HUP
 
 impl Pollable for UnixStreamSocket {
     fn poll(&self, mask: IoEvents, poller: Option<&mut PollHandle>) -> IoEvents {
-        self.pollee
-            .poll_with(mask, poller, || self.state.read().check_io_events())
+        self.pollee.poll_with(mask, poller, || {
+            self.state.read().check_io_events(self.is_seqpacket())
+        })
     }
 }
 
@@ -403,7 +458,12 @@ impl Socket for UnixStreamSocket {
                 }
             };
 
-            let listener = match init.listen(backlog, self.pollee.clone(), self.is_seqpacket()) {
+            let listener = match init.listen(
+                backlog,
+                self.pollee.clone(),
+                self.is_seqpacket(),
+                &self.ownership,
+            ) {
                 Ok(listener) => listener,
                 Err((err, init)) => {
                     return (State::Init(init), Err(err));

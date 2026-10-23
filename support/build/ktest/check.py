@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 318  # Retained316 plus two real setgid inode-creation regressions.
+MINIMUM_CORE_TESTS = 341  # Retained 339 plus two original setgid creation regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -127,11 +127,40 @@ BOOT_ID_CORE_TESTS = (
     "aster_core::fs::fs_impls::procfs::sys::kernel::random::tests::proc_boot_id_partial_reads_preserve_the_same_uuid",
     "aster_core::fs::fs_impls::procfs::sys::kernel::random::tests::proc_boot_id_rejects_mutation",
 )
+DATAGRAM_FRAME_CORE_TESTS = tuple("aster_core::net::socket::unix::datagram::message::tests::" + suffix for suffix in (
+    'empty_message_slots_are_bounded_and_only_consumption_reopens_capacity',
+    'message_slot_backpressure_precedes_new_payload_charge_and_reader_consumption',
+    'blocked_empty_sender_retries_after_consume_and_returns_refused_after_close',
+    'payload_peek_truncation_and_alias_keep_original_physical_charge',
+    'ancestor_quota_denial_does_not_consume_reader_or_publish_datagram',
+    'actual_user_copy_fault_refunds_unpublished_pages_and_preserves_receive',
+    'migration_and_receiver_close_refund_captured_domains_with_retained_queue',
+    'empty_payload_and_original_byte_capacity_preserve_datagram_boundaries',
+))
+SEQPACKET_QUEUE_CORE_TESTS = tuple("aster_core::net::socket::unix::stream::connected::queue_tests::" + suffix for suffix in (
+    "empty_seqpackets_bound_original_aux_queue_and_peek_keeps_slot",
+    "full_aux_queue_rejects_before_reader_or_control_consumption",
+    "blocked_seqpacket_sender_wakes_on_empty_receive_and_peer_close",
+))
+UNIX_OWNERSHIP_CORE_TESTS = (
+    "aster_core::net::socket::unix::ownership::tests::real_graph_aliases_keep_edges_until_final_lease_and_reject_stale_generation",
+    "aster_core::net::socket::unix::ownership::tests::actual_node_capacity_fails_closed_and_refunds_registration",
+    "aster_core::net::socket::unix::ownership::tests::actual_edge_capacity_rolls_back_unpublished_batch_and_duplicate_reference",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::regular_pipe_eventfd_rights_preserve_real_owners_through_peek_and_receive",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::self_cross_and_future_datagram_connection_cycles_reject_before_copy",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::real_peek_and_received_control_aliases_keep_original_owner_admission",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::original_notes_socket_types_transfer_acyclically_on_stream_and_seqpacket",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::shared_stream_pair_rejects_either_endpoint_and_cross_transport_back_edge",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::concurrent_opposite_real_socket_sends_admit_only_one_edge",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::stream_full_failure_refunds_edge_and_partial_write_keeps_real_prefix_owner",
+    "aster_core::net::socket::unix::datagram::message::tests::failed_real_user_copy_and_frame_quota_refund_unpublished_socket_edges",
+    "aster_core::events::epoll::file::unix_rights_tests::queued_epoll_watching_receiver_keeps_no_strong_socket_back_edge",
+)
 SETGID_CREATION_CORE_TESTS = (
     "aster_core::fs::fs_impls::ramfs::fs::sgid_tests::setgid_parent_group_reaches_real_socket_file_directory_fifo_symlink_and_tmpfile",
     "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::setgid_ext2_creation_inherits_group_and_directory_bit_before_persistent_publication",
 )
-REQUIRED_CORE_TESTS = (*SETGID_CREATION_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+REQUIRED_CORE_TESTS = (*SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (

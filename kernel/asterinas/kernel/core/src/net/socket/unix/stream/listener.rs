@@ -22,6 +22,7 @@ use crate::{
         unix::{
             addr::{UnixSocketAddrBound, UnixSocketAddrKey},
             cred::SocketCred,
+            ownership::{Lease, Node},
             stream::socket::OptionSet,
         },
         util::SockShutdownCmd,
@@ -34,6 +35,7 @@ use crate::{
 pub(super) struct Listener {
     backlog: Arc<Backlog>,
     is_write_shutdown: AtomicBool,
+    _ownership: Lease,
 }
 
 impl Listener {
@@ -44,14 +46,24 @@ impl Listener {
         is_write_shutdown: bool,
         pollee: Pollee,
         is_seqpacket: bool,
+        admission: (Node, Lease),
     ) -> Self {
+        let (ownership, edge) = admission;
         let backlog = BACKLOG_TABLE
-            .add_backlog(addr, pollee, backlog, is_read_shutdown, is_seqpacket)
+            .add_backlog(
+                addr,
+                pollee,
+                backlog,
+                is_read_shutdown,
+                is_seqpacket,
+                ownership,
+            )
             .unwrap();
 
         Self {
             backlog,
             is_write_shutdown: AtomicBool::new(is_write_shutdown),
+            _ownership: edge,
         }
     }
 
@@ -68,13 +80,19 @@ impl Listener {
             socket_type == SockType::SOCK_STREAM || socket_type == SockType::SOCK_SEQPACKET
         );
 
-        let connected = self.backlog.pop_incoming()?;
+        let ownership = Node::new()?;
+        let connected = self.backlog.pop_incoming(&ownership)?;
 
         let peer_addr = connected.peer_addr().into();
         let options = OptionSet::new_accepted(connected.is_pass_cred());
 
-        let socket =
-            UnixStreamSocket::new_connected(connected, options, is_nonblocking, socket_type);
+        let socket = UnixStreamSocket::new_connected_owned(
+            connected,
+            options,
+            is_nonblocking,
+            socket_type,
+            ownership,
+        );
         Ok((socket, peer_addr))
     }
 
@@ -144,6 +162,7 @@ impl BacklogTable {
         backlog: usize,
         is_shutdown: bool,
         is_seqpacket: bool,
+        ownership: Node,
     ) -> Option<Arc<Backlog>> {
         let addr_key = addr.to_key();
 
@@ -159,6 +178,7 @@ impl BacklogTable {
             backlog,
             is_shutdown,
             is_seqpacket,
+            ownership,
         ));
         let old_backlog = backlog_sockets.insert(addr_key, new_backlog.clone());
         debug_assert!(old_backlog.is_none());
@@ -185,6 +205,7 @@ pub(super) struct Backlog {
     listener_cred: SocketCred<ReadDupOp>,
     is_pass_cred: AtomicBool,
     is_seqpacket: bool,
+    ownership: Node,
 }
 
 impl Backlog {
@@ -194,6 +215,7 @@ impl Backlog {
         backlog: usize,
         is_shutdown: bool,
         is_seqpacket: bool,
+        ownership: Node,
     ) -> Self {
         let incoming_sockets = if is_shutdown {
             None
@@ -210,6 +232,7 @@ impl Backlog {
             listener_cred: SocketCred::<ReadDupOp>::new_current(),
             is_pass_cred: AtomicBool::new(false),
             is_seqpacket,
+            ownership,
         }
     }
 
@@ -217,13 +240,21 @@ impl Backlog {
         &self.addr
     }
 
-    fn pop_incoming(&self) -> Result<Connected> {
+    fn pop_incoming(&self, owner: &Node) -> Result<Connected> {
         let mut locked_incoming_conns = self.incoming_conns.lock();
 
         let Some(incoming_conns) = &mut *locked_incoming_conns else {
             return_errno_with_message!(Errno::EINVAL, "the socket is shut down for reading");
         };
-        let conn = incoming_conns.pop_front();
+        let edge = incoming_conns
+            .front()
+            .map(|conn| conn.prepare_owner(owner))
+            .transpose()?;
+        let mut conn = incoming_conns.pop_front();
+        if let Some(conn) = conn.as_mut() {
+            // The former backlog ownership is gone before releasing its edge.
+            conn.publish_owner(edge.unwrap());
+        }
 
         drop(locked_incoming_conns);
 
@@ -275,6 +306,7 @@ impl Backlog {
         pollee: Pollee,
         options: &OptionSet,
         is_seqpacket: bool,
+        owner: &Node,
     ) -> Result<Connected, (Error, Init)> {
         if is_seqpacket != self.is_seqpacket {
             // FIXME: According to the Linux implementation, we should avoid this error by
@@ -315,6 +347,8 @@ impl Backlog {
             self.addr.clone(),
             pollee,
             self.listener_cred.dup().restrict(),
+            owner,
+            &self.ownership,
         )?;
         options.apply_to_connected(&client_conn);
         if self.is_pass_cred.load(Ordering::Relaxed) {
