@@ -1,0 +1,160 @@
+{
+  "artifact_id": 12480293133,
+  "artifact_sha256": "8c23c9faa1d1ae7e983296196015477f18d4a51bd0b32491a6b65505194810ea",
+  "host_oracle_tests_normal_and_optimized": 24,
+  "kernel_sha256": "e8298af177094fb5593f5489a6056851020f19592a78ee5d7af4a8028dd317aa",
+  "limits": [
+    "memory controller not qualified",
+    "hardware not qualified",
+    "SMP trusted control not qualified",
+    "Hepta durable K-D retirement not qualified"
+  ],
+  "locally_executed_guest": false,
+  "negative_failure_records": [
+    "G1D_FAIL at=workload_privilege_boundary line=478 errno=0 pid=2 role=2",
+    "G1D_FAIL at=workload_really_running line=791 errno=2 pid=1 role=1"
+  ],
+  "passed": true,
+  "replayed_guests": [
+    {
+      "all_original_oracle_fields_match": true,
+      "case": "g1d-trusted-control/exact",
+      "original_positive_or_rejection_oracle_passed": true,
+      "qemu_exit": 33,
+      "serial_sha256": "42afdf95cb25e8d9a3d6eacc086ee45d5376e743c1eee52527ea1a97d031627e",
+      "timed_out": false
+    },
+    {
+      "all_original_oracle_fields_match": true,
+      "case": "g1d-trusted-control/byte-mismatch",
+      "original_positive_or_rejection_oracle_passed": true,
+      "qemu_exit": 65,
+      "serial_sha256": "fe56d7a826c607579e684fd10c39d34129712fd48b133842edb85c6fba0ebe20",
+      "timed_out": false
+    },
+    {
+      "all_original_oracle_fields_match": true,
+      "case": "g1d-trusted-control/truncated",
+      "original_positive_or_rejection_oracle_passed": true,
+      "qemu_exit": 65,
+      "serial_sha256": "d2023a9eea2d17beaaa7afbd528c883e8f6c35b926e80f5c1f52750c10a3310f",
+      "timed_out": false
+    },
+    {
+      "all_original_oracle_fields_match": true,
+      "case": "g1d-workload-negative/negative-guest/exact",
+      "original_positive_or_rejection_oracle_passed": false,
+      "qemu_exit": 33,
+      "serial_sha256": "7e95889a6c563b496db67da86ba4ca157b727e5c4dc599ec43831ebc3b63d37a",
+      "timed_out": false
+    },
+    {
+      "all_original_oracle_fields_match": true,
+      "case": "g1d-workload-negative/negative-guest/byte-mismatch",
+      "original_positive_or_rejection_oracle_passed": true,
+      "qemu_exit": 65,
+      "serial_sha256": "b85ec98546e15b0b89d71535fcb36045b6023e5b96b73e6a3924aaab260701db",
+      "timed_out": false
+    },
+    {
+      "all_original_oracle_fields_match": true,
+      "case": "g1d-workload-negative/negative-guest/truncated",
+      "original_positive_or_rejection_oracle_passed": true,
+      "qemu_exit": 65,
+      "serial_sha256": "450a9af7c5ce053cc23127d6dde53151a41941408b1f439c178685b0767a6601",
+      "timed_out": false
+    }
+  ],
+  "review_is_host_replay_of_ci_evidence": true,
+  "schema": "pr245.final-head-independent-g1d-review.v1",
+  "source_files_unchanged": 7821,
+  "source_head": "c5c88794bf227b1d862b2f914b02809a0090e854",
+  "source_tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c",
+  "strict_root_negative_replayed": {
+    "actual_root_credential_observations": [
+      {
+        "ambient": 0,
+        "bounding": 2199023255551,
+        "effective": 2199023255551,
+        "egid": 0,
+        "euid": 0,
+        "fsgid": 0,
+        "fsuid": 0,
+        "groups": 1,
+        "inheritable": 0,
+        "nnp": 0,
+        "permitted": 2199023255551,
+        "phase": "initial",
+        "pid": 2,
+        "rgid": 0,
+        "ruid": 0,
+        "securebits": 0,
+        "sgid": 0,
+        "sid": 2,
+        "suid": 0
+      }
+    ],
+    "both_cross_role_signal_permission_checks_succeeded": true,
+    "exact_failure_after_unsafe_credentials": true,
+    "no_destructive_signal_sent": true,
+    "passed": true,
+    "raw_serial_sha256": "7e95889a6c563b496db67da86ba4ca157b727e5c4dc599ec43831ebc3b63d37a",
+    "raw_serial_size": 7499723,
+    "unchanged_positive_oracle_rejected": true
+  },
+  "verified_original_oracle_files": [
+    {
+      "path": "tests/organ_backend/run_guest_probe.py",
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+    },
+    {
+      "path": "tests/kernel/control/run_g1c_guest.py",
+      "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1"
+    },
+    {
+      "path": "tests/kernel/control/run_g1d_workload_negative.py",
+      "sha256": "f715840e1abe823fbedc808b9ca7bdd79abe963809991b49265b98af9deec550"
+    },
+    {
+      "path": "tests/kernel/control/run_g1d_guest.py",
+      "sha256": "86025b620fe8a39b0dd745add7a795d1279d50302035ae0a838b3c886040993c"
+    },
+    {
+      "path": "tests/kernel/control/run_queryabi_candidate_guest.py",
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5"
+    },
+    {
+      "path": "tests/kernel/control/run_queryabi_guest.py",
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268"
+    },
+    {
+      "path": "support/build/check-boot.py",
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
+    }
+  ],
+  "workload_pids_isolation": {
+    "activation_migration_and_nonleader_exec_required": true,
+    "cgroup_removal_with_retained_tasks_supported": false,
+    "independent_role_reserves": [
+      {
+        "child": 29,
+        "pid": 1,
+        "role": 1
+      },
+      {
+        "child": 30,
+        "pid": 3,
+        "role": 3
+      }
+    ],
+    "memory_controller_qualified": false,
+    "observations_ordered": true,
+    "passed": true,
+    "role_reserves_outside_workload": true,
+    "thread_and_process_limits_required": true,
+    "unreaped_zombies_remain_charged": true,
+    "wnowait_does_not_refund": true,
+    "workload_cannot_change_limits_or_membership": true,
+    "workload_max_retained_tids": 16
+  }
+}

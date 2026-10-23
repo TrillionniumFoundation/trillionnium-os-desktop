@@ -1,0 +1,64 @@
+name: F1 original runtime host contracts
+
+on:
+  pull_request:
+    paths:
+      - "tests/workloads/hepta_agentd_runtime/**"
+      - "tests/workloads/hepta_agentd_abi/**"
+      - "tests/integration/hepta/original_agentd_probe.rs"
+      - "tests/integration/hepta/original_session_probe.rs"
+      - "tests/integration/hepta/run_original_agentd.py"
+      - ".github/workflows/f1-original-runtime-host.yml"
+      - ".github/workflows/f1-original-runtime-native.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tests/workloads/hepta_agentd_runtime/**"
+      - "tests/workloads/hepta_agentd_abi/**"
+      - "tests/integration/hepta/original_agentd_probe.rs"
+      - "tests/integration/hepta/original_session_probe.rs"
+      - "tests/integration/hepta/run_original_agentd.py"
+      - ".github/workflows/f1-original-runtime-host.yml"
+      - ".github/workflows/f1-original-runtime-native.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-contracts-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify runtime input boundaries and strict lifecycle oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B -m unittest discover -s tests/workloads/hepta_agentd_runtime -p 'test_*.py' -v
+          python3 -I -B -O -m unittest discover -s tests/workloads/hepta_agentd_runtime -p 'test_*.py' -v
+
+      - name: Preserve the independent earliest-config refusal gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B -m unittest discover -s tests/workloads/hepta_agentd_abi -p 'test_*.py' -v
+
+      - name: Compile and inspect guest launcher without executing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/f1-host-launcher"
+          mkdir "$out"
+          gcc -O2 -std=c11 -Wall -Wextra -Werror -static \
+            tests/workloads/hepta_agentd_runtime/agentd_runtime_probe.c -o "$out/launcher.elf"
+          readelf -lW "$out/launcher.elf" > "$out/program-headers.txt"
+          if grep -q 'INTERP' "$out/program-headers.txt"; then
+            echo "guest launcher unexpectedly requires a dynamic interpreter" >&2
+            exit 1
+          fi
+          sha256sum "$out/launcher.elf"
+          # This job does not execute QEMU, Agentd, or the original fixture.
