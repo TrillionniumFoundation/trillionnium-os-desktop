@@ -1,0 +1,127 @@
+name: Original Hepta Session host composition
+
+on:
+  pull_request:
+    paths:
+      - 'services/hepta-session-host/**'
+      - 'services/hepta-os/**'
+      - 'ui/Cargo.toml'
+      - 'ui/Cargo.lock'
+      - 'ui/core/**'
+      - 'ui/broker/**'
+      - 'ui/session/**'
+      - 'libs/os-abi/**'
+      - '.github/workflows/hepta-session-host.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'services/hepta-session-host/**'
+      - 'services/hepta-os/**'
+      - 'ui/Cargo.toml'
+      - 'ui/Cargo.lock'
+      - 'ui/core/**'
+      - 'ui/broker/**'
+      - 'ui/session/**'
+      - 'libs/os-abi/**'
+      - '.github/workflows/hepta-session-host.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hepta-session-host-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  original-owner-and-session:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      RUSTUP_TOOLCHAIN: '1.95.0'
+      CARGO_BUILD_JOBS: '1'
+      CARGO_INCREMENTAL: '0'
+      RUST_BACKTRACE: '1'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - name: Freeze the exact checked-out source
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/hepta-session-host"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          git rev-parse HEAD 'HEAD^{tree}' > "$RUNNER_TEMP/hepta-session-host/source.txt"
+      - name: Install the original Hepta host compiler and native prerequisites
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pkg-config libssl-dev
+      - name: Resolve and identify the immutable original owner dependency
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/hepta-session-host"
+          rustc -Vv | tee "$RUNNER_TEMP/hepta-session-host/rustc.txt"
+          cargo -Vv | tee "$RUNNER_TEMP/hepta-session-host/cargo.txt"
+          git rev-parse HEAD | tee "$RUNNER_TEMP/hepta-session-host/desktop-head.txt"
+          cargo metadata --manifest-path services/hepta-session-host/Cargo.toml \
+            --locked --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            > "$RUNNER_TEMP/hepta-session-host/metadata.json"
+          python3 - <<'PY'
+          import json, os, pathlib, re, tomllib
+          manifest = tomllib.loads(pathlib.Path('services/hepta-session-host/Cargo.toml').read_text())
+          dependency = manifest['dependencies']['codex-hepta-memory']
+          assert dependency['git'] == 'https://github.com/TrillionniumFoundation/hepta-private-ci'
+          revision = dependency['rev']
+          assert re.fullmatch(r'[0-9a-f]{40}', revision)
+          expected = 'git+' + dependency['git'] + '?rev=' + revision + '#' + revision
+          metadata = json.loads((pathlib.Path(os.environ['RUNNER_TEMP']) / 'hepta-session-host/metadata.json').read_text())
+          packages = metadata['packages']
+          for name in ('codex-hepta-memory', 'codex-hepta-contracts', 'codex-hepta-paths'):
+              owners = [package for package in packages if package['name'] == name]
+              assert len(owners) == 1, (name, len(owners))
+              assert owners[0]['source'] == expected, (name, owners[0]['source'])
+          original_packages = [package for package in packages if (package.get('source') or '').startswith('git+' + dependency['git'])]
+          assert original_packages and all(package['source'] == expected for package in original_packages)
+          assert not manifest.get('patch'), 'The host cannot substitute original owner packages.'
+          print('Original owner commit:', revision)
+          PY
+      - name: Execute real original-writer and Unix-socket integration tests
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path services/hepta-session-host/Cargo.toml \
+            --locked --all-targets --profile dev-small --jobs 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/hepta-session-host/tests.log"
+      - name: Enforce the host's formatting and warning gate
+        run: |
+          set -euo pipefail
+          cargo fmt --manifest-path services/hepta-session-host/Cargo.toml \
+            --package hepta-session-host -- --check
+          cargo clippy --manifest-path services/hepta-session-host/Cargo.toml \
+            --locked --all-targets --profile dev-small --jobs 1 -- -D warnings \
+            2>&1 | tee "$RUNNER_TEMP/hepta-session-host/clippy.log"
+      - name: Verify source and committed dependency locks remained exact
+        if: always()
+        run: |
+          set -euo pipefail
+          git ls-files --error-unmatch services/hepta-session-host/Cargo.lock
+          git diff --exit-code HEAD -- services/hepta-session-host/Cargo.lock \
+            ui/Cargo.lock services/hepta-os/Cargo.lock
+          git diff --exit-code HEAD -- .
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          sha256sum services/hepta-session-host/Cargo.lock ui/Cargo.lock \
+            services/hepta-os/Cargo.lock
+      - name: Preserve raw evidence even when qualification fails
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: original-hepta-session-host
+          if-no-files-found: error
+          path: |
+            services/hepta-session-host/Cargo.lock
+            ${{ runner.temp }}/hepta-session-host/
