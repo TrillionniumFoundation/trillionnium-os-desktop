@@ -64,13 +64,15 @@ jobs:
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
               build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils \
               qemu-system-x86 e2fsprogs clang lld busybox-static
-            rustup toolchain install 1.95.0 --profile minimal
-            rustup toolchain install nightly-2026-07-21 --profile minimal --component rust-src,rustc-dev,llvm-tools-preview --target x86_64-unknown-none
+            # Rustup may inspect its own CARGO_HOME path during toolchain installation.
+            # Bootstrap the isolated home before either install or the sanitized kernel build.
             rustup_binary=$(command -v rustup)
             mkdir -p "$CARGO_HOME/bin"
             for proxy in rustup cargo rustc rustdoc; do
               ln -s "$rustup_binary" "$CARGO_HOME/bin/$proxy"
             done
+            rustup toolchain install 1.95.0 --profile minimal
+            rustup toolchain install nightly-2026-07-21 --profile minimal --component rust-src,rustc-dev,llvm-tools-preview --target x86_64-unknown-none
             rustup run 1.95.0 rustc -Vv
             rustup run 1.95.0 cargo -Vv
             qemu-system-x86_64 --version
