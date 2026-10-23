@@ -24,6 +24,7 @@ struct Authority {
     origin: ObjectiveSenderOrigin,
     original: String,
     issued: Arc<AtomicUsize>,
+    writable: bool,
 }
 impl ObjectiveHostAuthority for Authority {
     type Checkpoint = TestOnlyCheckpoint;
@@ -45,6 +46,11 @@ impl ObjectiveHostAuthority for Authority {
         // Explicit test fixture mapping; production reads its canonical source.
         Ok(Some("intent-1".into()))
     }
+    fn check_submission_available(&self) -> Result<(), ObjectiveHostIssue> {
+        self.writable
+            .then_some(())
+            .ok_or(ObjectiveHostIssue::OwnerRefused)
+    }
     fn issue(
         &mut self,
         _: &ObjectiveIntent,
@@ -55,6 +61,13 @@ impl ObjectiveHostAuthority for Authority {
     }
 }
 fn host(fixture: &Fixture, issued: &Arc<AtomicUsize>) -> TypedObjectiveHost<Authority> {
+    host_with_writable(fixture, issued, true)
+}
+fn host_with_writable(
+    fixture: &Fixture,
+    issued: &Arc<AtomicUsize>,
+    writable: bool,
+) -> TypedObjectiveHost<Authority> {
     TypedObjectiveHost::new(
         Authority {
             writer: fixture.writer.clone(),
@@ -62,6 +75,7 @@ fn host(fixture: &Fixture, issued: &Arc<AtomicUsize>) -> TypedObjectiveHost<Auth
             origin: fixture.origin.clone(),
             original: fixture.original.clone(),
             issued: issued.clone(),
+            writable,
         },
         fixture.runtime.handle().clone(),
         Duration::from_secs(2),
@@ -261,4 +275,38 @@ fn fresh_host_recovers_navigation_from_original_owner_without_a_new_send() {
         events
     );
     fixture.assert_no_connection();
+}
+
+#[test]
+fn fenced_submission_keeps_original_navigation_readable_without_readiness_or_issuing() {
+    let fixture = Fixture::new();
+    let issued = Arc::new(AtomicUsize::new(0));
+    let mut denied = host_with_writable(&fixture, &issued, false);
+    let view = denied.handle(ObjectiveCommand::Submit {
+        intent: ObjectiveIntent {
+            client_intent_id: "intent-1".into(),
+            text: "must not issue".into(),
+        },
+    });
+    assert_eq!(view.issue, Some(ObjectiveHostIssue::OwnerRefused));
+    assert_eq!(issued.load(Ordering::SeqCst), 0);
+    assert!(fixture.retained().is_empty());
+    fixture.assert_no_connection();
+    drop(fixture.prepare().unwrap());
+    let server = serve(
+        &fixture,
+        vec![json!({"schema_version":2,"request_id":19,
+        "agent_id":fixture.origin.agent_id.as_str(),"spawn_generation":1,"current_generation":2,
+        "payload":{"type":"capabilities","schema_version":1,
+            "capabilities":[{"id":"objective.start","major":1,"minor":0}]}})],
+    );
+    let view = denied.handle(ObjectiveCommand::Availability {});
+    assert_eq!(view.stage, ObjectiveStage::Unavailable);
+    assert_eq!(view.issue, Some(ObjectiveHostIssue::OwnerRefused));
+    assert_eq!(
+        view.retained_intents.unwrap().client_intent_ids,
+        ["intent-1"]
+    );
+    assert_eq!(server.join().unwrap().len(), 1);
+    assert_eq!(issued.load(Ordering::SeqCst), 0);
 }

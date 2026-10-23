@@ -225,6 +225,10 @@ deadline. A partial traversal cannot advertise Ready. This is a live keyset
 traversal, not a frozen global history snapshot. New recovery scans begin again
 at Beginning. Tests verify that a fresh host recovers the IDs without creating
 an original observation, permission or additional wire submission.
+The required nonblocking `check_submission_available` separately checks the
+original writer's permanent checkpoint fence and deployment feed freshness.
+Fencing disables Ready and new issuing while preserving retained navigation
+and original status reads. A readable sender never substitutes for this check.
 
 The deployment must provide a genuine issuer, protected clock, live verifier,
 independent durable current-cut checkpoint and existing writer. Tests in

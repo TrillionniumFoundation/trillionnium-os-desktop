@@ -28,6 +28,10 @@ pub trait ObjectiveHostAuthority: Send {
         &self,
         request: &ObjectiveSenderRequest,
     ) -> Result<Option<String>, ObjectiveHostIssue>;
+    /// Bounded nonblocking check of the original writer's permanent fence and
+    /// deployment feeds. Read capability alone must never imply writable Ready.
+    /// This observation grants no future dispatch or FinalUse permission.
+    fn check_submission_available(&self) -> Result<(), ObjectiveHostIssue>;
     fn issue(
         &mut self,
         intent: &ObjectiveIntent,
@@ -110,6 +114,7 @@ impl<A: ObjectiveHostAuthority> TypedObjectiveHost<A> {
             if !complete {
                 return Err(ObjectiveHostIssue::Capacity);
             }
+            self.authority.check_submission_available()?;
             view.stage = ObjectiveStage::Ready;
             return Ok(());
         }
@@ -132,6 +137,7 @@ impl<A: ObjectiveHostAuthority> TypedObjectiveHost<A> {
             )
             .map_err(|_| ObjectiveHostIssue::PersistenceUnknown)?
         } else if let ObjectiveCommand::Submit { intent } = &command {
+            self.authority.check_submission_available()?;
             let original = self.authority.issue(intent, &origin)?;
             let parsed = ObjectiveSenderRequest::from_original(original.clone(), origin.clone())
                 .map_err(|_| ObjectiveHostIssue::InvalidIntent)?;
