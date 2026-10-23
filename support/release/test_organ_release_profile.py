@@ -88,6 +88,36 @@ class SourceCombinationTests(unittest.TestCase):
         self.assertEqual(len(manifest["production"]["unconfigured"]), 7)
         self.assertEqual(self.verify(manifest)["os"], receipt["os"])
 
+    def test_shipped_mapping_includes_recovery_sources_and_golden(self):
+        mapping = profile.load_json(Path(__file__).with_name("organ_source_map.json"))
+        profile.check_map(mapping)
+        self.assertEqual(mapping["sources"]["os"]["notes_recovery"], "ui/core/src/notes_recovery.rs")
+        self.assertEqual(mapping["sources"]["os"]["notes_private_handoff"], "ui/core/src/notes_private_unix.rs")
+        self.assertEqual(mapping["sources"]["hepta"]["notes_terminal_owner"],
+                         "codex-rs/hepta-memory/src/production_notes_owner.rs")
+        self.assertEqual(mapping["goldens"]["notes_bootstrap"]["os"], "tests/ui/notes-bootstrap-v2.json")
+        self.assertEqual(mapping["goldens"]["notes_recovery"]["os"], "tests/ui/notes-recovery-v1.json")
+
+    def test_recovery_roles_cannot_be_omitted(self):
+        for repository, role in (("os", "notes_recovery"), ("os", "notes_private_handoff"),
+                                 ("hepta", "notes_terminal_owner")):
+            mapping = copy.deepcopy(self.mapping)
+            del mapping["sources"][repository][role]
+            with self.subTest(repository=repository, role=role), self.assertRaisesRegex(
+                    profile.ProfileError, "source map requires exactly"):
+                profile.check_map(mapping)
+        mapping = copy.deepcopy(self.mapping)
+        del mapping["goldens"]["notes_recovery"]
+        with self.assertRaisesRegex(profile.ProfileError, "golden roles"):
+            profile.check_map(mapping)
+
+    def test_committed_recovery_golden_byte_mismatch_rejected(self):
+        path = self.mapping["goldens"]["notes_recovery"]["hepta"]
+        write(self.hepta, path, (self.hepta / path).read_bytes() + b" ")
+        commit(self.hepta, "different recovery golden bytes")
+        with self.assertRaisesRegex(profile.ProfileError, "golden byte mismatch: notes_recovery"):
+            self.build()
+
     def test_wrong_os_head_rejected(self):
         args = list(self.inputs())
         args[2] = "0" * 40
