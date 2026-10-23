@@ -1,0 +1,54 @@
+test_three_variants_preserve_every_original_entry_and_init (test_g1d_guest.InitramfsTests.test_three_variants_preserve_every_original_entry_and_init) ... ok
+test_every_root_credential_field_and_both_real_signal_results_are_required (test_g1d_guest.RootWorkloadNegativeTests.test_every_root_credential_field_and_both_real_signal_results_are_required) ... ok
+test_exact_old_root_observation_is_required_and_positive_gate_rejects (test_g1d_guest.RootWorkloadNegativeTests.test_exact_old_root_observation_is_required_and_positive_gate_rejects) ... ok
+test_frozen_source_mutation_cannot_change_probe_or_gate (test_g1d_guest.RootWorkloadNegativeTests.test_frozen_source_mutation_cannot_change_probe_or_gate) ... ok
+test_missing_duplicate_and_malformed_raw_records_are_rejected (test_g1d_guest.RootWorkloadNegativeTests.test_missing_duplicate_and_malformed_raw_records_are_rejected) ... ok
+test_recovery_timeout_never_qualifies_the_root_mutation (test_g1d_guest.RootWorkloadNegativeTests.test_recovery_timeout_never_qualifies_the_root_mutation) ... ok
+test_timeout_panic_other_success_and_out_of_order_failure_are_rejected (test_g1d_guest.RootWorkloadNegativeTests.test_timeout_panic_other_success_and_out_of_order_failure_are_rejected) ... ok
+test_tracked_credential_selection_mutates_only_the_workload (test_g1d_guest.RootWorkloadNegativeTests.test_tracked_credential_selection_mutates_only_the_workload) ... ERROR
+test_tracked_credential_selector_drift_is_rejected (test_g1d_guest.RootWorkloadNegativeTests.test_tracked_credential_selector_drift_is_rejected) ... 
+  test_tracked_credential_selector_drift_is_rejected (test_g1d_guest.RootWorkloadNegativeTests.test_tracked_credential_selector_drift_is_rejected) (changed=b'      let credentials = if index == 1 { workload_credentials()? } else { Credentials::new_root() };\n') ... FAIL
+test_address_limit_actual_enforcement_and_fork_exec_inheritance_are_required (test_g1d_guest.VerdictTests.test_address_limit_actual_enforcement_and_fork_exec_inheritance_are_required) ... ok
+test_all_three_sealed_images_precede_any_resume (test_g1d_guest.VerdictTests.test_all_three_sealed_images_precede_any_resume) ... ok
+test_causal_order_and_no_failure_are_required (test_g1d_guest.VerdictTests.test_causal_order_and_no_failure_are_required) ... ok
+test_complete_real_exit_is_required (test_g1d_guest.VerdictTests.test_complete_real_exit_is_required) ... ok
+test_every_dynamic_record_is_required_once (test_g1d_guest.VerdictTests.test_every_dynamic_record_is_required_once) ... ok
+test_every_fixed_record_is_required_once (test_g1d_guest.VerdictTests.test_every_fixed_record_is_required_once) ... ok
+test_every_workload_identity_capability_and_exec_flag_is_measured (test_g1d_guest.VerdictTests.test_every_workload_identity_capability_and_exec_flag_is_measured) ... ok
+test_fixture_describes_the_oracle_and_independent_boot_order (test_g1d_guest.VerdictTests.test_fixture_describes_the_oracle_and_independent_boot_order) ... ok
+test_manager_fault_recovery_never_substitutes_for_explicit_user_continue (test_g1d_guest.VerdictTests.test_manager_fault_recovery_never_substitutes_for_explicit_user_continue) ... ok
+test_native_revision_exact_caps_and_accounting_cannot_be_replaced (test_g1d_guest.VerdictTests.test_native_revision_exact_caps_and_accounting_cannot_be_replaced) ... ok
+test_pids_boundaries_and_reserve_role_identities_are_exact (test_g1d_guest.VerdictTests.test_pids_boundaries_and_reserve_role_identities_are_exact) ... ok
+test_pids_limits_threads_zombies_and_rollbacks_are_required (test_g1d_guest.VerdictTests.test_pids_limits_threads_zombies_and_rollbacks_are_required) ... ok
+test_pids_observations_are_ordered_and_scope_stays_bounded (test_g1d_guest.VerdictTests.test_pids_observations_are_ordered_and_scope_stays_bounded) ... ok
+test_receipts_history_and_old_linux_aliases_fail_closed (test_g1d_guest.VerdictTests.test_receipts_history_and_old_linux_aliases_fail_closed) ... ok
+test_rejected_images_cannot_commit_a_role_or_resume (test_g1d_guest.VerdictTests.test_rejected_images_cannot_commit_a_role_or_resume) ... ok
+test_stopped_workload_and_independent_recovery_are_measured (test_g1d_guest.VerdictTests.test_stopped_workload_and_independent_recovery_are_measured) ... ok
+test_workload_signal_and_process_memory_denials_cannot_be_replaced_by_labels (test_g1d_guest.VerdictTests.test_workload_signal_and_process_memory_denials_cannot_be_replaced_by_labels) ... ok
+
+======================================================================
+ERROR: test_tracked_credential_selection_mutates_only_the_workload (test_g1d_guest.RootWorkloadNegativeTests.test_tracked_credential_selection_mutates_only_the_workload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/3d6a75235bcb/work/pr252-negative-fix/change/tests/kernel/control/test_g1d_guest.py", line 419, in test_tracked_credential_selection_mutates_only_the_workload
+    changed = negative.mutation(original)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/3d6a75235bcb/work/pr252-negative-fix/change/tests/kernel/control/run_g1d_workload_negative.py", line 33, in mutation
+    require(source.count(BEFORE) == 1 and AFTER not in source, "credential selection is absent or ambiguous")
+  File "/workspace/scratch/3d6a75235bcb/work/pr252-negative-fix/change/tests/kernel/control/run_queryabi_guest.py", line 50, in require
+    raise ValueError(message)
+ValueError: credential selection is absent or ambiguous
+
+======================================================================
+FAIL: test_tracked_credential_selector_drift_is_rejected (test_g1d_guest.RootWorkloadNegativeTests.test_tracked_credential_selector_drift_is_rejected) (changed=b'      let credentials = if index == 1 { workload_credentials()? } else { Credentials::new_root() };\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/3d6a75235bcb/work/pr252-negative-fix/change/tests/kernel/control/test_g1d_guest.py", line 433, in test_tracked_credential_selector_drift_is_rejected
+    with self.assertRaises(ValueError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 26 tests in 0.373s
+
+FAILED (failures=1, errors=1)

@@ -409,6 +409,30 @@ class RootWorkloadNegativeTests(unittest.TestCase):
         self.assertFalse(self.verdict(raw + timeout))
         self.assertFalse(self.verdict(raw.replace(manager_failure + b"\n", timeout, 1)))
 
+    def test_tracked_credential_selection_mutates_only_the_workload(self):
+        # Read the real production input, not the runner's own BEFORE fixture:
+        # a formatting change must fail here before a costly guest build.
+        original = (g1d.ROOT / negative.SOURCE).read_bytes()
+        workload = b"            workload_credentials()?\n"
+        root = b"            Credentials::new_root()\n"
+        self.assertEqual(original.count(workload), 1)
+        changed = negative.mutation(original)
+        self.assertEqual(changed, original.replace(workload, root, 1))
+        self.assertEqual(changed.count(root), original.count(root) + 1)
+        with self.assertRaises(ValueError):
+            negative.mutation(changed)
+
+    def test_tracked_credential_selector_drift_is_rejected(self):
+        original = (g1d.ROOT / negative.SOURCE).read_bytes()
+        selector = b"        let credentials = if index == 1 {\n"
+        self.assertEqual(original.count(selector), 1)
+        for changed in (original.replace(selector, selector.replace(b"== 1", b"== 0"), 1),
+                        original.replace(b"            workload_credentials()?\n", b"            other_credentials()?\n", 1),
+                        original + negative.BEFORE):
+            with self.subTest(changed=changed[-100:]):
+                with self.assertRaises(ValueError):
+                    negative.mutation(changed)
+
     def test_frozen_source_mutation_cannot_change_probe_or_gate(self):
         original = b"before\n" + negative.BEFORE + b"after\n"
         changed = negative.mutation(original)

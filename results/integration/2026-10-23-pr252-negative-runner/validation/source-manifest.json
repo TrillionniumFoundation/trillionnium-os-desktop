@@ -1,0 +1,134 @@
+{
+  "created_at": "2026-10-23T09:10:32.996470+00:00",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "pull_request": 252,
+  "base_head": "ea704ddca7753f1565144969ad3e1d91c4a317f6",
+  "base_tree": "6e844ce1cab2231579139c2a1687a453bf1db11a",
+  "source_changes": [
+    {
+      "path": "tests/kernel/control/run_g1d_workload_negative.py",
+      "mode": "100644",
+      "type": "blob",
+      "encoding": "utf-8",
+      "candidate_git_blob": "c8e436921fd75b0e827b2f260ab22106acffa4b5",
+      "candidate_sha256": "cd2c41aa83825b2c4b878ca174934ace4c442044bb930e08f65925e6bb3bbcb3",
+      "bytes": 13042,
+      "unicode_characters": 13042,
+      "whitespace_delimited_words": 1047,
+      "lines": 201,
+      "preimage_git_blob": "52ad968887b8ed5bb220b49990e64b933742d7d4",
+      "preimage_sha256": "f715840e1abe823fbedc808b9ca7bdd79abe963809991b49265b98af9deec550",
+      "source_path": "/workspace/scratch/3d6a75235bcb/work/pr252-negative-fix/change/tests/kernel/control/run_g1d_workload_negative.py"
+    },
+    {
+      "path": "tests/kernel/control/test_g1d_guest.py",
+      "mode": "100644",
+      "type": "blob",
+      "encoding": "utf-8",
+      "candidate_git_blob": "d1215673098bb4f30dcfc7f5c50cc592b430ee43",
+      "candidate_sha256": "af3f5abefbbd5b2941a93ac4aa0957427d4f160ccc29b322db685b292f4ef2b5",
+      "bytes": 28616,
+      "unicode_characters": 28616,
+      "whitespace_delimited_words": 1963,
+      "lines": 463,
+      "preimage_git_blob": "2438681325d320590a69c5dedbf652af3c53cadb",
+      "preimage_sha256": "55bc91fef13a653c81c389144b01b541a3f618b8916d5ca1c20396284618ae41",
+      "source_path": "/workspace/scratch/3d6a75235bcb/work/pr252-negative-fix/change/tests/kernel/control/test_g1d_guest.py"
+    }
+  ],
+  "unchanged_original_runner_function_ASTs": [
+    "read",
+    "mutation",
+    "verify_delta",
+    "logged",
+    "evidence",
+    "run",
+    "main"
+  ],
+  "all_original_host_tests_and_fixtures_AST_unchanged": true,
+  "new_tests": [
+    "test_tracked_credential_selection_mutates_only_the_workload",
+    "test_tracked_credential_selector_drift_is_rejected"
+  ],
+  "kernel_source_unchanged": true,
+  "guest_oracle_unchanged": true,
+  "workflow_unchanged": true,
+  "planned_mutation": {
+    "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs",
+    "before": {
+      "bytes": 12211,
+      "sha256": "5f17a07ab204bf3800ab7001e9a40ff47ef5b4d0f863b464c5c98f8c637da18f",
+      "git_blob": "6de6df87d42c8162364093a0472e2a37a8226108"
+    },
+    "after": {
+      "bytes": 12211,
+      "sha256": "0d130e058f4bf00500ad99d21a6d8bc542101bd2a20f2c549a7acc3be96eb151",
+      "git_blob": "20e6ed1c92ab747ac878c973a71a7d59954e1e14"
+    },
+    "exactly_one_workload_expression_changed": true,
+    "manager_recovery_branch_and_surrounding_bytes_unchanged": true,
+    "patch": {
+      "bytes": 701,
+      "sha256": "d40fec21ad645789e2528888a37b58d7edfc6f834f13673efb21a7871642e4ef",
+      "git_blob": "88c30c39d816a561433e3500acf259c016541b5f"
+    },
+    "scope": "Constructed host-test mutant only; not built, booted or a production-source edit."
+  },
+  "executions": [
+    {
+      "name": "before-fix-normal",
+      "receipt": {
+        "bytes": 5881,
+        "sha256": "3bc02fb5b9368b159bff046c94b5f843f258cee7edec1840c728349f9d990d00",
+        "git_blob": "20139483c7d83008458c9abc6fd74f332b9ad642"
+      },
+      "exit_code": 1,
+      "tests_run": 26,
+      "expected_failure_count": 1,
+      "expected_error_count": 1,
+      "source_unchanged": true
+    },
+    {
+      "name": "before-fix-optimized",
+      "receipt": {
+        "bytes": 5889,
+        "sha256": "380a9ad5d01447e6ede547caec7425e9e783c338aef0add75acffc6e079d6fe6",
+        "git_blob": "6818b242b8a5e11131daf9afeae5dcd29a1324e7"
+      },
+      "exit_code": 1,
+      "tests_run": 26,
+      "expected_failure_count": 1,
+      "expected_error_count": 1,
+      "source_unchanged": true
+    },
+    {
+      "name": "after-fix-normal",
+      "receipt": {
+        "bytes": 5880,
+        "sha256": "2218e544c90a557f019a09b29dba7f9844f2b95e565aa830bbc264bb93675fe7",
+        "git_blob": "da45c9d53cc64805a054d408d34bf045cb45ec9d"
+      },
+      "exit_code": 0,
+      "tests_run": 26,
+      "expected_failure_count": 0,
+      "expected_error_count": 0,
+      "source_unchanged": true
+    },
+    {
+      "name": "after-fix-optimized",
+      "receipt": {
+        "bytes": 5889,
+        "sha256": "19f36f0365195fe3f8f0f533d7b213de791f15aa354cf7d73080ec86c951a213",
+        "git_blob": "dff73e5538cb82be91a82cd78ce4c3f137c41352"
+      },
+      "exit_code": 0,
+      "tests_run": 26,
+      "expected_failure_count": 0,
+      "expected_error_count": 0,
+      "source_unchanged": true
+    }
+  ],
+  "real_negative_guest_qualified": false,
+  "Cargo_compiler_QEMU_or_GitHub_executed": false,
+  "next_required_execution": "Existing G1-d workflow must rebuild and boot full positive and old-root negative controls on the new exact source head."
+}

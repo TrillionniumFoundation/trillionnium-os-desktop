@@ -18,8 +18,19 @@ import run_g1d_guest as guest
 
 ROOT, require, save, digest = guest.ROOT, guest.require, guest.save_json, guest.digest
 SOURCE = "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs"
-BEFORE = b"        let credentials = if index == 1 { workload_credentials()? } else { Credentials::new_root() };\n"
-AFTER = b"        let credentials = if index == 1 { Credentials::new_root() } else { Credentials::new_root() };\n"
+# Match the reviewed, rustfmt-formatted selection exactly. Keep the complete
+# branch in both images so only the workload expression changes; the host tests
+# also apply this mutation to the real tracked source, not just this constant.
+BEFORE = (b"        let credentials = if index == 1 {\n"
+          b"            workload_credentials()?\n"
+          b"        } else {\n"
+          b"            Credentials::new_root()\n"
+          b"        };\n")
+AFTER = (b"        let credentials = if index == 1 {\n"
+         b"            Credentials::new_root()\n"
+         b"        } else {\n"
+         b"            Credentials::new_root()\n"
+         b"        };\n")
 LOG_LIMIT = 64 * 1024 * 1024
 
 

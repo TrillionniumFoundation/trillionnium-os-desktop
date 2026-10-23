@@ -1,0 +1,109 @@
+{
+  "scope": "Read-only identity check against the original failing CI artifact; no build or guest replay.",
+  "head": "ea704ddca7753f1565144969ad3e1d91c4a317f6",
+  "tree": "6e844ce1cab2231579139c2a1687a453bf1db11a",
+  "files": [
+    {
+      "path": ".github/workflows/g1d-trusted-control.yml",
+      "mode": "100644",
+      "bytes": 3381,
+      "sha256": "159f7576c2449e4e4f30a6b713e9918de9df956d356daba4ff51a79f0e9912dc",
+      "git_blob": "98d0b0c5a911e0bb006ec2dc9623ffb021f1527a"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs",
+      "mode": "100644",
+      "bytes": 12211,
+      "sha256": "5f17a07ab204bf3800ab7001e9a40ff47ef5b4d0f863b464c5c98f8c637da18f",
+      "git_blob": "6de6df87d42c8162364093a0472e2a37a8226108"
+    },
+    {
+      "path": "support/build/check-boot.py",
+      "mode": "100644",
+      "bytes": 3869,
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216"
+    },
+    {
+      "path": "tests/kernel/control/run_g1c_guest.py",
+      "mode": "100644",
+      "bytes": 25177,
+      "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1",
+      "git_blob": "f35d0d0b78dc488daece154ab569fab13aab1c91"
+    },
+    {
+      "path": "tests/kernel/control/run_g1d_guest.py",
+      "mode": "100644",
+      "bytes": 45135,
+      "sha256": "86025b620fe8a39b0dd745add7a795d1279d50302035ae0a838b3c886040993c",
+      "git_blob": "310f0ac35436c13d34a886ef902c7ab23437fc83"
+    },
+    {
+      "path": "tests/kernel/control/run_g1d_workload_negative.py",
+      "mode": "100644",
+      "bytes": 12606,
+      "sha256": "f715840e1abe823fbedc808b9ca7bdd79abe963809991b49265b98af9deec550",
+      "git_blob": "52ad968887b8ed5bb220b49990e64b933742d7d4"
+    },
+    {
+      "path": "tests/kernel/control/run_queryabi_candidate_guest.py",
+      "mode": "100644",
+      "bytes": 16498,
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5",
+      "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93"
+    },
+    {
+      "path": "tests/kernel/control/run_queryabi_guest.py",
+      "mode": "100644",
+      "bytes": 9633,
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268",
+      "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719"
+    },
+    {
+      "path": "tests/kernel/control/test_g1d_guest.py",
+      "mode": "100644",
+      "bytes": 27212,
+      "sha256": "55bc91fef13a653c81c389144b01b541a3f618b8916d5ca1c20396284618ae41",
+      "git_blob": "2438681325d320590a69c5dedbf652af3c53cadb"
+    },
+    {
+      "path": "tests/organ_backend/run_guest_probe.py",
+      "mode": "100644",
+      "bytes": 7644,
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+      "git_blob": "3b31dd8cbc51c5527d28dd35f98d68de838cb5d5"
+    }
+  ],
+  "all_files_match_full_artifact_source_manifest": true,
+  "full_source_manifest": {
+    "path": "work/kernel-fixes-review/pr252/extracted/g1d-workload-negative/positive-source-before.json",
+    "bytes": 2232636,
+    "sha256": "ea042e9221ff7ba36bee6af2add187253c234f7cbb84a679e0c3f33ce32dd6ce",
+    "git_blob": "591693930d34a2e9012adefcac6a3e3b69bf2d4a"
+  },
+  "artifact": {
+    "path": "work/kernel-fixes-review/pr252/g1d-failure.zip",
+    "bytes": 12379990,
+    "sha256": "5d170a414f3c9db586bcddf24077e1b198009afe3f63371e067f3664624f329f"
+  },
+  "original_negative": {
+    "path": "work/kernel-fixes-review/pr252/extracted/g1d-workload-negative/result.json",
+    "bytes": 228,
+    "sha256": "b007f79266b260206878ab776c620b4ef288e429703f6a7a6aa5eeb4a02e02ae",
+    "git_blob": "ab2f1cc1b0840d1c129cdc696a7b5e72ed3f1f95",
+    "reported_error": "ValueError: credential selection is absent or ambiguous",
+    "passed": false
+  },
+  "original_positive": {
+    "path": "work/kernel-fixes-review/pr252/extracted/g1d-trusted-control/result.json",
+    "bytes": 20697,
+    "sha256": "0b770cddd10009ca643b1ace5d83a6bc517d9c409aa8eccfe26ab78064128590",
+    "git_blob": "c3b7cc942728b6be7d0cf47a6687aaa2a71906d2",
+    "passed": true,
+    "stage": "complete",
+    "source_head": "ea704ddca7753f1565144969ad3e1d91c4a317f6",
+    "source_tree": "6e844ce1cab2231579139c2a1687a453bf1db11a",
+    "source_inputs_unchanged": true,
+    "kernel_elf_sha256": "662cecceda1e34b77aedc0d259a83dd16275454cfb233d5394a34904c0eb2905"
+  }
+}

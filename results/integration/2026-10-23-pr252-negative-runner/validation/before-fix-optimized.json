@@ -1,0 +1,146 @@
+{
+  "scope": "Original Python host-oracle tests only; no Cargo, compiler, QEMU, guest or GitHub execution.",
+  "phase": "before-fix",
+  "optimized": true,
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "-B",
+    "-O",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/kernel/control",
+    "-p",
+    "test_g1d_guest.py",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/3d6a75235bcb/work/pr252-negative-fix/change",
+  "started_at": "2026-10-23T09:06:38.026441+00:00",
+  "duration_seconds": 0.718263508999371,
+  "exit_code": 1,
+  "expected_exit_code": 1,
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "runner": {
+    "bytes": 3357,
+    "sha256": "f3f43efdd3ef8dd602867c3975cb8cbb8cd38f5cd92d5d600badee412dc7fc82",
+    "git_blob": "c12aa728fd203ff17829c4b0d13cee692a4c253d"
+  },
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+  },
+  "stderr": {
+    "bytes": 6376,
+    "sha256": "27aa58dd9f644fc6effcd7ac61121c89ec8b12658a72e524d76ad5f30951a36d",
+    "git_blob": "feaf7b51f52a0df3553496074ee9cb789efbbb58"
+  },
+  "source_before": {
+    ".github/workflows/g1d-trusted-control.yml": {
+      "bytes": 3381,
+      "sha256": "159f7576c2449e4e4f30a6b713e9918de9df956d356daba4ff51a79f0e9912dc",
+      "git_blob": "98d0b0c5a911e0bb006ec2dc9623ffb021f1527a"
+    },
+    "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs": {
+      "bytes": 12211,
+      "sha256": "5f17a07ab204bf3800ab7001e9a40ff47ef5b4d0f863b464c5c98f8c637da18f",
+      "git_blob": "6de6df87d42c8162364093a0472e2a37a8226108"
+    },
+    "support/build/check-boot.py": {
+      "bytes": 3869,
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216"
+    },
+    "tests/kernel/control/run_g1c_guest.py": {
+      "bytes": 25177,
+      "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1",
+      "git_blob": "f35d0d0b78dc488daece154ab569fab13aab1c91"
+    },
+    "tests/kernel/control/run_g1d_guest.py": {
+      "bytes": 45135,
+      "sha256": "86025b620fe8a39b0dd745add7a795d1279d50302035ae0a838b3c886040993c",
+      "git_blob": "310f0ac35436c13d34a886ef902c7ab23437fc83"
+    },
+    "tests/kernel/control/run_g1d_workload_negative.py": {
+      "bytes": 12606,
+      "sha256": "f715840e1abe823fbedc808b9ca7bdd79abe963809991b49265b98af9deec550",
+      "git_blob": "52ad968887b8ed5bb220b49990e64b933742d7d4"
+    },
+    "tests/kernel/control/run_queryabi_candidate_guest.py": {
+      "bytes": 16498,
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5",
+      "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93"
+    },
+    "tests/kernel/control/run_queryabi_guest.py": {
+      "bytes": 9633,
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268",
+      "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719"
+    },
+    "tests/kernel/control/test_g1d_guest.py": {
+      "bytes": 28616,
+      "sha256": "af3f5abefbbd5b2941a93ac4aa0957427d4f160ccc29b322db685b292f4ef2b5",
+      "git_blob": "d1215673098bb4f30dcfc7f5c50cc592b430ee43"
+    },
+    "tests/organ_backend/run_guest_probe.py": {
+      "bytes": 7644,
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+      "git_blob": "3b31dd8cbc51c5527d28dd35f98d68de838cb5d5"
+    }
+  },
+  "source_after": {
+    ".github/workflows/g1d-trusted-control.yml": {
+      "bytes": 3381,
+      "sha256": "159f7576c2449e4e4f30a6b713e9918de9df956d356daba4ff51a79f0e9912dc",
+      "git_blob": "98d0b0c5a911e0bb006ec2dc9623ffb021f1527a"
+    },
+    "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs": {
+      "bytes": 12211,
+      "sha256": "5f17a07ab204bf3800ab7001e9a40ff47ef5b4d0f863b464c5c98f8c637da18f",
+      "git_blob": "6de6df87d42c8162364093a0472e2a37a8226108"
+    },
+    "support/build/check-boot.py": {
+      "bytes": 3869,
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216"
+    },
+    "tests/kernel/control/run_g1c_guest.py": {
+      "bytes": 25177,
+      "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1",
+      "git_blob": "f35d0d0b78dc488daece154ab569fab13aab1c91"
+    },
+    "tests/kernel/control/run_g1d_guest.py": {
+      "bytes": 45135,
+      "sha256": "86025b620fe8a39b0dd745add7a795d1279d50302035ae0a838b3c886040993c",
+      "git_blob": "310f0ac35436c13d34a886ef902c7ab23437fc83"
+    },
+    "tests/kernel/control/run_g1d_workload_negative.py": {
+      "bytes": 12606,
+      "sha256": "f715840e1abe823fbedc808b9ca7bdd79abe963809991b49265b98af9deec550",
+      "git_blob": "52ad968887b8ed5bb220b49990e64b933742d7d4"
+    },
+    "tests/kernel/control/run_queryabi_candidate_guest.py": {
+      "bytes": 16498,
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5",
+      "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93"
+    },
+    "tests/kernel/control/run_queryabi_guest.py": {
+      "bytes": 9633,
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268",
+      "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719"
+    },
+    "tests/kernel/control/test_g1d_guest.py": {
+      "bytes": 28616,
+      "sha256": "af3f5abefbbd5b2941a93ac4aa0957427d4f160ccc29b322db685b292f4ef2b5",
+      "git_blob": "d1215673098bb4f30dcfc7f5c50cc592b430ee43"
+    },
+    "tests/organ_backend/run_guest_probe.py": {
+      "bytes": 7644,
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+      "git_blob": "3b31dd8cbc51c5527d28dd35f98d68de838cb5d5"
+    }
+  },
+  "source_unchanged": true,
+  "real_guest_qualified": false
+}
