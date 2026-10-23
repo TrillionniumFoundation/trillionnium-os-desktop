@@ -192,12 +192,20 @@ original sender's bounded retained pages. A retained run only recovers and reads
 history; it never receives another issue/send opportunity, including after host
 restart. The first request's text remains authoritative for a reused ID.
 
-`ObjectiveWorker::spawn` runs that host on one blocking worker with an eight-item
-queue and at most 128 disposable observation entries. A private authenticated
+`ObjectiveWorker::spawn` runs that host on one blocking worker with eight action
+slots and at most 128 disposable observation entries. Availability and Status
+use a separate bounded, coalesced passive queue. Passive polling cannot consume
+Submit/Cancel slots; actions run before pending passive refreshes. Actions keep
+FIFO order so a Cancel cannot accidentally overtake its own queued Submit.
+A private authenticated
 socket server calls `request` to return immediately, allowing Session's bounded
 IPC budget to remain responsive. The cache is not a ledger; original-owner
 retention is the sole recovery source. A full queue reports Capacity and never
 falls back to a direct operation. See `ui/session/OBJECTIVE_BRIDGE.md` for framing.
+Dropping the host discards work that has not started. An already-running original
+call retains its original uncertainty rules; queue disposal is not a durable
+cancellation receipt. Worker-thread regressions in `src/worker_tests.rs` exercise
+poll floods, action ordering/capacity and shutdown without substituting an owner.
 
 Availability queries the actual Agentd capabilities and requires
 `objective.start` major 1. Submit, history, RunStatus and RunCancel bind the
