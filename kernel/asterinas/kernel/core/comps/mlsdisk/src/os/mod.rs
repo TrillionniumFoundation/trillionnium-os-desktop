@@ -21,7 +21,7 @@ use aes_gcm::{
 };
 use ctr::cipher::{NewCipher, StreamCipher};
 pub(crate) use hashbrown::{HashMap, HashSet};
-pub(crate) use ostd::sync::{Mutex, MutexGuard, RwLock, SpinLock};
+pub(crate) use ostd::sync::{Mutex, MutexGuard, RwLock, RwMutex, RwMutexReadGuard, SpinLock};
 use ostd::{
     arch::read_random,
     sync::{self, PreemptDisabled, WaitQueue},
@@ -35,8 +35,6 @@ use crate::{
     prelude::Result,
 };
 
-pub(crate) type RwLockReadGuard<'a, T> = sync::RwLockReadGuard<'a, T, PreemptDisabled>;
-pub(crate) type RwLockWriteGuard<'a, T> = sync::RwLockWriteGuard<'a, T, PreemptDisabled>;
 pub(crate) type SpinLockGuard<'a, T> = sync::SpinLockGuard<'a, T, PreemptDisabled>;
 pub(crate) type Tid = u32;
 

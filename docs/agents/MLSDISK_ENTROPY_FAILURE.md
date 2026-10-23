@@ -1,5 +1,9 @@
 # MLSDisk entropy failures and transaction publication
 
+This document records the 11-test entropy slice. The subsequent
+[asynchronous I/O and owner contract](MLSDISK_ASYNC_OWNERS.md) adds four cases,
+for a current complete inventory of 15. Evidence remains source-bound.
+
 ## Source and public contract
 
 This slice follows `cd515fbc9c4e60ea02b1f984753aaf0fd9934a22` (the original

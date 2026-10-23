@@ -231,6 +231,10 @@ REQUIRED_MLSDISK_TESTS = tuple("aster_mlsdisk::test::" + name for name in (
     "entropy_failure_keeps_buffered_disk_data_for_retry",
     "entropy_failure_aborts_original_log_transaction",
     "entropy_failure_does_not_apply_current_journal_edit",
+    "delayed_bio_completes_after_original_task_parks",
+    "transaction_callbacks_sleep_and_defer_reentrant_registration",
+    "final_store_owner_releases_real_disk_between_full_runs",
+    "frame_backed_disk_handles_noncontiguous_cross_page_bios",
 )) + (
     "aster_mlsdisk::os::entropy_test::entropy_fill_reports_partial_failure_and_exact_word_count",
     "aster_mlsdisk::os::entropy_test::entropy_cut_is_task_scoped_and_restored_on_drop",
@@ -245,7 +249,7 @@ def check_mlsdisk_tests(qemu, serial, section, summary, starts, declared, allow_
     if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
         raise ValueError("mlsdisk target sequence must finish before the runner completion marker")
     if declared != len(REQUIRED_MLSDISK_TESTS) or sorted(starts) != sorted(REQUIRED_MLSDISK_TESTS):
-        raise ValueError("mlsdisk requires every original, flush and entropy test exactly once (11 total)")
+        raise ValueError("mlsdisk requires every original, flush, entropy and async-owner test exactly once (15 total)")
     if "[skipped:" in serial.lower():
         raise ValueError("mlsdisk suite cannot pass with any soft-skipped test")
     records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))

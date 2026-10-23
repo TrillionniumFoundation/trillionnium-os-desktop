@@ -33,7 +33,7 @@ use crate::{
             SyncIdStore, TxEventListener, TxEventListenerFactory, TxLsmTree, TxType,
         },
     },
-    os::{Aead, AeadIv as Iv, AeadKey as Key, AeadMac as Mac, RwLock},
+    os::{Aead, AeadIv as Iv, AeadKey as Key, AeadMac as Mac, RwMutex},
     prelude::*,
     tx::CurrentTx,
 };
@@ -67,7 +67,7 @@ struct DiskInner<D: BlockSet> {
     /// Whether `MlsDisk` is dropped.
     is_dropped: AtomicBool,
     /// Scope lock for control write and sync operation.
-    write_sync_region: RwLock<()>,
+    write_sync_region: RwMutex<()>,
 }
 
 impl<D: BlockSet + 'static> aster_block::BlockDevice for MlsDisk<D> {
@@ -255,7 +255,7 @@ impl<D: BlockSet + 'static> MlsDisk<D> {
                 data_buf: DataBuf::new(DATA_BUF_CAP),
                 root_key,
                 is_dropped: AtomicBool::new(false),
-                write_sync_region: RwLock::new(()),
+                write_sync_region: RwMutex::new(()),
             }),
         };
 
@@ -307,7 +307,7 @@ impl<D: BlockSet + 'static> MlsDisk<D> {
                 data_buf: DataBuf::new(DATA_BUF_CAP),
                 root_key,
                 is_dropped: AtomicBool::new(false),
-                write_sync_region: RwLock::new(()),
+                write_sync_region: RwMutex::new(()),
             }),
         };
 

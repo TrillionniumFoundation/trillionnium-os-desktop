@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use super::{Iv, Key, Mac};
 use crate::{
     layers::bio::{BlockLog, Buf, BufMut, BufRef},
-    os::{Aead, HashMap, Mutex, RwLock},
+    os::{Aead, HashMap, Mutex, RwMutex},
     prelude::*,
 };
 
@@ -79,7 +79,7 @@ use crate::{
 ///    And after such `CryptoLog`s are done writing, they will be read once and
 ///    then discarded.
 pub(crate) struct CryptoLog<L> {
-    mht: RwLock<Mht<L>>,
+    mht: RwMutex<Mht<L>>,
 }
 
 type Lbid = BlockId; // Logical block position, in terms of user
@@ -211,7 +211,7 @@ impl<L: BlockLog> CryptoLog<L> {
     /// until the first flush, which triggers writing the root MHT node.
     pub(crate) fn new(block_log: L, root_key: Key, node_cache: Arc<dyn NodeCache>) -> Self {
         Self {
-            mht: RwLock::new(Mht::new(block_log, root_key, node_cache)),
+            mht: RwMutex::new(Mht::new(block_log, root_key, node_cache)),
         }
     }
 
@@ -226,7 +226,7 @@ impl<L: BlockLog> CryptoLog<L> {
         node_cache: Arc<dyn NodeCache>,
     ) -> Result<Self> {
         Ok(Self {
-            mht: RwLock::new(Mht::open(block_log, root_key, root_meta, node_cache)?),
+            mht: RwMutex::new(Mht::open(block_log, root_key, root_meta, node_cache)?),
         })
     }
 

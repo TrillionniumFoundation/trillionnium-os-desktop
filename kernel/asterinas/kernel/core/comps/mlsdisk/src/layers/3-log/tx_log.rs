@@ -317,9 +317,13 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
 
         // Commit handler for log store
         tx_provider.register_commit_handler({
-            let state = new_self.state.clone();
-            let raw_log_store = new_self.raw_log_store.clone();
+            let state = Arc::downgrade(&new_self.state);
+            let raw_log_store = Arc::downgrade(&new_self.raw_log_store);
             move |mut current: CurrentTx<'_>| {
+                let state = state.upgrade().expect("active transaction's log state");
+                let raw_log_store = raw_log_store
+                    .upgrade()
+                    .expect("active transaction's raw-log owner");
                 current.data_with(|store_edit: &TxLogStoreEdit| {
                     if store_edit.is_empty() {
                         return;
@@ -340,8 +344,9 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
         // A failed precommit must not retain caches for unpublished logs.
         // The original chunk allocator's abort handler releases their blocks.
         tx_provider.register_abort_handler({
-            let state = new_self.state.clone();
+            let state = Arc::downgrade(&new_self.state);
             move |current: CurrentTx<'_>| {
+                let state = state.upgrade().expect("active transaction's log state");
                 current.data_with(|edit: &TxLogStoreEdit| {
                     let mut state = state.lock();
                     for id in edit.iter_created_logs() {
