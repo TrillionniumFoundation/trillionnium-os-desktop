@@ -24,10 +24,10 @@ use crate::{
 #[expect(clippy::type_complexity)]
 pub(crate) struct TxProvider {
     id: u64,
-    initializer_map: RwLock<HashMap<TypeId, Box<dyn Any + Send + Sync>>>,
-    precommit_handlers: RwLock<Vec<Box<dyn Fn(CurrentTx<'_>) -> Result<()> + Send + Sync>>>,
-    commit_handlers: RwLock<Vec<Box<dyn Fn(CurrentTx<'_>) + Send + Sync>>>,
-    abort_handlers: RwLock<Vec<Box<dyn Fn(CurrentTx<'_>) + Send + Sync>>>,
+    initializer_map: RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>,
+    precommit_handlers: RwLock<Vec<Arc<dyn Fn(CurrentTx<'_>) -> Result<()> + Send + Sync>>>,
+    commit_handlers: RwLock<Vec<Arc<dyn Fn(CurrentTx<'_>) + Send + Sync>>>,
+    abort_handlers: RwLock<Vec<Arc<dyn Fn(CurrentTx<'_>) + Send + Sync>>>,
     weak_self: Weak<Self>,
     tx_table: Mutex<HashMap<Tid, Tx>>,
 }
@@ -79,17 +79,20 @@ impl TxProvider {
         T: TxData,
     {
         let mut initializer_map = self.initializer_map.write();
-        initializer_map.insert(TypeId::of::<T>(), Box::new(f));
+        initializer_map.insert(TypeId::of::<T>(), Arc::new(f));
     }
 
     fn init_data<T>(&self) -> T
     where
         T: TxData,
     {
-        let initializer_map = self.initializer_map.read();
-        let init_fn = initializer_map
+        let initializer = self
+            .initializer_map
+            .read()
             .get(&TypeId::of::<T>())
             .unwrap()
+            .clone();
+        let init_fn = initializer
             .downcast_ref::<Box<dyn Fn() -> T + Send + Sync>>()
             .unwrap();
         init_fn()
@@ -108,16 +111,20 @@ impl TxProvider {
     where
         F: Fn(CurrentTx<'_>) -> Result<()> + Send + Sync + 'static,
     {
-        let f = Box::new(f);
+        let f = Arc::new(f);
         let mut precommit_handlers = self.precommit_handlers.write();
         precommit_handlers.push(f);
     }
 
     fn call_precommit_handlers(&self) -> Result<()> {
         let current = self.current();
-        let precommit_handlers = self.precommit_handlers.read();
-        for precommit_func in precommit_handlers.iter().rev() {
-            precommit_func(current.clone())?;
+        // Registration only appends. Fix this dispatch's range, clone one
+        // original callback under the short lock, then permit it to sleep or
+        // register a callback. Newly registered callbacks start next dispatch.
+        let len = self.precommit_handlers.read().len();
+        for index in (0..len).rev() {
+            let handler = self.precommit_handlers.read()[index].clone();
+            handler(current.clone())?;
         }
         Ok(())
     }
@@ -132,16 +139,17 @@ impl TxProvider {
     where
         F: Fn(CurrentTx<'_>) + Send + Sync + 'static,
     {
-        let f = Box::new(f);
+        let f = Arc::new(f);
         let mut commit_handlers = self.commit_handlers.write();
         commit_handlers.push(f);
     }
 
     fn call_commit_handlers(&self) {
         let current = self.current();
-        let commit_handlers = self.commit_handlers.read();
-        for commit_func in commit_handlers.iter().rev() {
-            commit_func(current.clone())
+        let len = self.commit_handlers.read().len();
+        for index in (0..len).rev() {
+            let handler = self.commit_handlers.read()[index].clone();
+            handler(current.clone());
         }
     }
 
@@ -153,16 +161,17 @@ impl TxProvider {
     where
         F: Fn(CurrentTx<'_>) + Send + Sync + 'static,
     {
-        let f = Box::new(f);
+        let f = Arc::new(f);
         let mut abort_handlers = self.abort_handlers.write();
         abort_handlers.push(f);
     }
 
     fn call_abort_handlers(&self) {
         let current = self.current();
-        let abort_handlers = self.abort_handlers.read();
-        for abort_func in abort_handlers.iter().rev() {
-            abort_func(current.clone())
+        let len = self.abort_handlers.read().len();
+        for index in (0..len).rev() {
+            let handler = self.abort_handlers.read()[index].clone();
+            handler(current.clone());
         }
     }
 }

@@ -55,7 +55,7 @@ class MlsDiskEvidenceTests(unittest.TestCase):
     def test_complete_native_tests_do_not_claim_physical_durability(self):
         self.evidence()
         result = self.check()
-        self.assertEqual((result["declared"], result["passed"], result["filtered"], result["soft_skipped"]), (11, 11, 0, 0))
+        self.assertEqual((result["declared"], result["passed"], result["filtered"], result["soft_skipped"]), (15, 15, 0, 0))
         self.assertEqual(result["required_mlsdisk_tests"], list(NAMES))
         self.assertIs(result["mlsdisk_media_durability_qualified"], False)
 
@@ -94,7 +94,7 @@ class MlsDiskEvidenceTests(unittest.TestCase):
         self.evidence()
         with self.assertRaisesRegex(ValueError, "never permits filtered"):
             self.check(allow_filtered=True)
-        filtered = serial_log().replace(b"11 tests in crate", b"12 tests in crate").replace(
+        filtered = serial_log().replace(b"15 tests in crate", b"16 tests in crate").replace(
             b"0 filtered out", b"1 filtered out")
         self.evidence(filtered)
         with self.assertRaisesRegex(ValueError, "unexpected filtered"):
