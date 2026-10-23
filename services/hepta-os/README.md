@@ -98,7 +98,8 @@ blocked job until the OS returns it.
 
 Read [RUN.md](RUN.md) for reproducible commands, [CONTRACT.md](CONTRACT.md) for
 wire and projection rules, and [UPSTREAM_CONTRACT.json](UPSTREAM_CONTRACT.json)
-for the reviewed source hashes. Root `README.md` remains intentionally empty.
+for the reviewed source hashes. The [project README](../../README.md) provides the
+current cross-module navigation.
 The optional feature's complete wire, typed outcomes and remaining owner
 integration requirements are in [OBJECTIVE_TRANSPORT.md](OBJECTIVE_TRANSPORT.md).
 The separately pinned history feature has its own complete development and
