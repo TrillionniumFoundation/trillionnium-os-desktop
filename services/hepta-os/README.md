@@ -109,3 +109,9 @@ The independent, default-off CPU history adapter is documented in
 requirements and unresolved outcomes. It provides no device startup or discovery,
 effect, retry, new K/D allocation, acknowledgement or retirement. It has no CLI or
 UI entry, and the ordinary Session does not enable it.
+
+The independent [original CognitiveStore compatibility lane](../../tests/workloads/hepta_cognitive_store/README.md)
+links the unchanged owner API for real WAL, SIGKILL/reopen and concurrent CAS
+checks. Host and ordinary Asterinas guest results are recorded separately. It
+cannot qualify production writer-lock or authenticated recovery without the
+actual external provider/host authority and current witness.
