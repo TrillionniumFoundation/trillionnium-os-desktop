@@ -1,0 +1,11 @@
+SUPPLEMENTARY_DAC_CHILD uid=60001 gid=60001 group_count=1 group=60002 caps=0 nnp=1
+SUPPLEMENTARY_DAC_CHECK name=supplementary_file_read actual=1 expected=1 errno=0
+SUPPLEMENTARY_DAC_CHECK name=supplementary_directory_search actual=1 expected=1 errno=0
+SUPPLEMENTARY_DAC_CHECK name=member_write_refused actual=1 expected=1 errno=13
+SUPPLEMENTARY_DAC_REAP member=1 exited=1 code=0
+SUPPLEMENTARY_DAC_CHILD uid=60001 gid=60001 group_count=0 group=0 caps=0 nnp=1
+SUPPLEMENTARY_DAC_CHECK name=nonmember_file_refused actual=0 expected=0 errno=13
+SUPPLEMENTARY_DAC_CHECK name=nonmember_directory_refused actual=0 expected=0 errno=13
+SUPPLEMENTARY_DAC_CHECK name=nonmember_write_refused actual=1 expected=1 errno=13
+SUPPLEMENTARY_DAC_REAP member=0 exited=1 code=0
+SUPPLEMENTARY_DAC_COMPLETE pass=1 reaped=2 production_ready=0
