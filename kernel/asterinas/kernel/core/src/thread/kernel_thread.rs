@@ -42,6 +42,15 @@ impl AsKernelThread for Task {
     }
 }
 
+/// Gets the immutable owner of a kernel thread explicitly attached to a VMAR.
+pub(crate) fn current_user_memory_owner() -> crate::vm::user_memory::UserMemoryOwner {
+    Task::current()?
+        .as_kernel_thread()?
+        .vmar()?
+        .user_memory_owner()
+        .clone()
+}
+
 /// Options to create or spawn a new kernel thread.
 pub(crate) struct ThreadOptions {
     func: Option<Box<dyn FnOnce() + Send>>,

@@ -13,7 +13,7 @@ use aster_util::printer::VmPrinter;
 use ostd::{
     io::IoMem,
     mm::{
-        CachePolicy, Frame, FrameAllocOptions, HasSize, PageFlags, PageProperty, UFrame, VmSpace,
+        CachePolicy, Frame, HasSize, PageFlags, PageProperty, UFrame, VmSpace,
         io::util::HasVmReaderWriter, tlb::TlbFlushOp, vm_space::VmQueriedItem,
     },
     task::disable_preempt,
@@ -33,6 +33,7 @@ use crate::{
     vm::{
         page_cache::{CachePage, Vmo, VmoCommitError, VmoMapMode},
         perms::VmPerms,
+        user_memory::{UserMemoryOwner, UserPageMeta, alloc_user_frame},
     },
 };
 
@@ -376,6 +377,7 @@ impl VmMapping {
         vm_space: &VmSpace,
         page_fault_info: &PageFaultInfo,
         rss_delta: &mut RssDelta,
+        owner: &UserMemoryOwner,
     ) -> Result<()> {
         self.check_perms_for_page_fault(page_fault_info)?;
 
@@ -391,6 +393,7 @@ impl VmMapping {
                 page_aligned_addr,
                 page_fault_info.required_perms,
                 rss_delta,
+                owner,
             );
 
             // Errors caused by the "around" pages should be ignored, so here we
@@ -424,6 +427,7 @@ impl VmMapping {
             page_aligned_addr,
             page_fault_info.required_perms,
             rss_delta,
+            owner,
         )
     }
 
@@ -463,6 +467,7 @@ impl VmMapping {
         page_aligned_addr: Vaddr,
         required_perms: VmPerms,
         rss_delta: &mut RssDelta,
+        owner: &UserMemoryOwner,
     ) -> Result<()> {
         'retry: loop {
             let preempt_guard = disable_preempt();
@@ -489,12 +494,13 @@ impl VmMapping {
                         && let Err(err) = vmo.get_committed_frame(
                             page_aligned_addr - self.map_to_addr,
                             VmoMapMode::SharedWrite,
+                            owner,
                         )
                     {
                         let index = err.pending_index()?;
                         drop(cursor);
                         drop(preempt_guard);
-                        vmo.commit_on(index, VmoMapMode::SharedWrite)?;
+                        vmo.commit_on(index, VmoMapMode::SharedWrite, owner)?;
                         continue 'retry;
                     }
 
@@ -513,7 +519,7 @@ impl VmMapping {
                         cursor.flusher().dispatch_tlb_flush();
                     } else {
                         // Perform COW if it is a write access to a private mapping.
-                        let new_frame = duplicate_frame(&frame)?;
+                        let new_frame = duplicate_frame(&frame, owner)?;
                         prop.flags |= new_flags;
                         cursor.unmap(PAGE_SIZE);
                         cursor.jump(va.start).unwrap();
@@ -535,19 +541,21 @@ impl VmMapping {
                 }
                 None => {
                     // Map a new frame to the page fault address.
-                    let (frame, is_readonly) = match self.prepare_page(page_aligned_addr, is_write)
-                    {
-                        Ok((frame, is_readonly)) => (frame, is_readonly),
-                        Err(err) => {
-                            let index = err.pending_index()?;
-                            drop(cursor);
-                            drop(preempt_guard);
-                            self.vmo()
-                                .unwrap()
-                                .commit_on(index, self.vmo_map_mode_from_is_write(is_write))?;
-                            continue 'retry;
-                        }
-                    };
+                    let (frame, is_readonly) =
+                        match self.prepare_page(page_aligned_addr, is_write, owner) {
+                            Ok((frame, is_readonly)) => (frame, is_readonly),
+                            Err(err) => {
+                                let index = err.pending_index()?;
+                                drop(cursor);
+                                drop(preempt_guard);
+                                self.vmo().unwrap().commit_on(
+                                    index,
+                                    self.vmo_map_mode_from_is_write(is_write),
+                                    owner,
+                                )?;
+                                continue 'retry;
+                            }
+                        };
 
                     let vm_perms = {
                         let mut perms = self.perms;
@@ -579,6 +587,7 @@ impl VmMapping {
         &self,
         page_aligned_addr: Vaddr,
         is_write: bool,
+        owner: &UserMemoryOwner,
     ) -> Result<(UFrame, bool), VmoCommitError> {
         let mut is_readonly = false;
 
@@ -586,7 +595,7 @@ impl VmMapping {
             MappedMemory::Vmo(vmo) => vmo,
             MappedMemory::Anonymous => {
                 // Anonymous mapping. Allocate a new frame.
-                return Ok((FrameAllocOptions::new().alloc_frame()?.into(), is_readonly));
+                return Ok((alloc_user_frame(owner, true)?.into(), is_readonly));
             }
             MappedMemory::Device(_) => {
                 // Device memory is populated when the memory mapping is created.
@@ -600,14 +609,17 @@ impl VmMapping {
         let page_offset = page_aligned_addr - self.map_to_addr;
         if !self.map_mode.is_shared() && page_offset >= vmo.valid_size() {
             // The page index is outside the VMO. This is only allowed in private mapping.
-            return Ok((FrameAllocOptions::new().alloc_frame()?.into(), is_readonly));
+            return Ok((alloc_user_frame(owner, true)?.into(), is_readonly));
         }
 
-        let (page, mode) =
-            vmo.get_committed_frame(page_offset, self.vmo_map_mode_from_is_write(is_write))?;
+        let (page, mode) = vmo.get_committed_frame(
+            page_offset,
+            self.vmo_map_mode_from_is_write(is_write),
+            owner,
+        )?;
         if !self.map_mode.is_shared() && is_write {
             // Write access to private VMO-backed mapping. Performs COW directly.
-            Ok((duplicate_frame(&page.into())?.into(), is_readonly))
+            Ok((duplicate_frame(&page.into(), owner)?.into(), is_readonly))
         } else {
             // Operations to shared mapping or read access to private VMO-backed mapping.
             // If read access to private VMO-backed mapping triggers a page fault,
@@ -635,6 +647,7 @@ impl VmMapping {
         page_aligned_addr: Vaddr,
         required_perms: VmPerms,
         mut rss_delta: &mut RssDelta,
+        owner: &UserMemoryOwner,
     ) -> Result<()> {
         const SURROUNDING_PAGE_NUM: usize = 16;
         const SURROUNDING_PAGE_ADDR_MASK: usize = !(SURROUNDING_PAGE_NUM * PAGE_SIZE - 1);
@@ -656,6 +669,7 @@ impl VmMapping {
                 page_aligned_addr,
                 required_perms,
                 rss_delta,
+                owner,
             );
         }
 
@@ -693,12 +707,12 @@ impl VmMapping {
 
             let start_offset = start_addr - self.map_to_addr;
             let end_offset = end_addr - self.map_to_addr;
-            match vmo.try_operate_on_range(&(start_offset..end_offset), operate, mode) {
+            match vmo.try_operate_on_range(&(start_offset..end_offset), operate, mode, owner) {
                 Ok(_) => return Ok(()),
                 Err(err) => {
                     let index = err.pending_index()?;
                     drop(preempt_guard);
-                    vmo.commit_on(index, mode)?;
+                    vmo.commit_on(index, mode, owner)?;
                     start_addr = (index * PAGE_SIZE - vmo.offset()) + self.map_to_addr;
                     continue 'retry;
                 }
@@ -971,18 +985,24 @@ impl MappedVmo {
         &self,
         page_offset: usize,
         map_mode: VmoMapMode,
+        owner: &UserMemoryOwner,
     ) -> Result<(CachePage, VmoMapMode), VmoCommitError> {
         debug_assert!(page_offset.is_multiple_of(PAGE_SIZE));
         self.vmo
-            .try_commit_page(self.offset + page_offset, map_mode)
+            .try_commit_page_for_owner(self.offset + page_offset, map_mode, owner)
     }
 
     /// Commits a page at a specific page index.
     ///
     /// This method may involve I/O operations if the VMO needs to fetch
     /// a page from the underlying page cache.
-    pub(crate) fn commit_on(&self, page_idx: usize, map_mode: VmoMapMode) -> Result<()> {
-        self.vmo.commit_on(page_idx, map_mode)
+    pub(crate) fn commit_on(
+        &self,
+        page_idx: usize,
+        map_mode: VmoMapMode,
+        owner: &UserMemoryOwner,
+    ) -> Result<()> {
+        self.vmo.commit_on_for_owner(page_idx, map_mode, owner)
     }
 
     /// Traverses the indices within a specified range of a VMO sequentially.
@@ -997,6 +1017,7 @@ impl MappedVmo {
         range: &Range<usize>,
         operate: F,
         map_mode: VmoMapMode,
+        owner: &UserMemoryOwner,
     ) -> Result<(), VmoCommitError>
     where
         F: FnMut(
@@ -1004,7 +1025,8 @@ impl MappedVmo {
         ) -> Result<(), VmoCommitError>,
     {
         let range = self.offset + range.start..self.offset + range.end;
-        self.vmo.try_operate_on_range(&range, operate, map_mode)
+        self.vmo
+            .try_operate_on_range(&range, operate, map_mode, owner)
     }
 
     /// Gets a reference to the underlying VMO.
@@ -1102,10 +1124,41 @@ fn try_merge(left: &VmMapping, right: &VmMapping) -> Option<VmMapping> {
     })
 }
 
-fn duplicate_frame(src: &UFrame) -> Result<Frame<()>> {
-    let new_frame = FrameAllocOptions::new().zeroed(false).alloc_frame()?;
+fn duplicate_frame(src: &UFrame, owner: &UserMemoryOwner) -> Result<Frame<UserPageMeta>> {
+    let new_frame = alloc_user_frame(owner, false)?;
     new_frame.writer().write(&mut src.reader());
     Ok(new_frame)
+}
+
+#[cfg(ktest)]
+mod user_memory_tests {
+    use ostd::{mm::VmIo, prelude::ktest};
+
+    use super::*;
+    use crate::vm::user_memory::UserMemoryAccount;
+
+    #[ktest]
+    fn cow_charges_the_copy_and_refunds_each_physical_page() {
+        let account = UserMemoryAccount::new(2);
+        let owner = Some(account.clone());
+        let original: UFrame = alloc_user_frame(&owner, true).unwrap().into();
+        original.write_bytes(0, &[91]).unwrap();
+        let copy = duplicate_frame(&original, &owner).unwrap();
+        let mut value = [0];
+        copy.read_bytes(0, &mut value).unwrap();
+        assert_eq!(value, [91]);
+        assert_eq!(account.current_pages(), 2);
+        assert!(
+            duplicate_frame(&original, &owner)
+                .err()
+                .unwrap()
+                .is_user_frame_limit()
+        );
+        drop(original);
+        assert_eq!(account.current_pages(), 1);
+        drop(copy);
+        assert_eq!(account.current_pages(), 0);
+    }
 }
 
 /**************************** Device mappings ********************************/
