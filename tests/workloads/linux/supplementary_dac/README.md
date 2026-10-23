@@ -27,5 +27,9 @@ The oracle requires the exact ordered unprivileged group membership, six
 operations, two successful reaps, final completion, one boot marker, raw QEMU 33
 and no timeout. Host oracle tests reject the actual old failure even if only its
 exit marker is altered; those synthetic wrappers are not native qualification.
-New-source native qualification is pending. See
+Source `690a7bb36a8bc355cbc0d99f72c34feda1fb06b2` passed all six original
+cases against its freshly built ordinary ELF after the full original kernel
+suites, with both children reaped and raw QEMU exit 33.
+[The exact receipt](../../../../results/integration/2026-10-23-audit-closure/supplementary-dac-690a.json)
+retains the source and artifact identities. See
 [the technical contract](../../../../docs/agents/SUPPLEMENTARY_GROUP_DAC.md).
