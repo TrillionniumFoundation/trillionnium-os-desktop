@@ -23,6 +23,7 @@ HEPTA_ROLES = {
     "production_writer_host", "notes_channel", "notes_bootstrap", "notes_owner",
     "durable_writer", "lease_outbox", "final_use_authority", "final_use_control", "history_owner",
     "notes_terminal_owner",
+    "production_composition", "grant_provider", "grant_provider_worker", "protected_authority_inputs",
 }
 GOLDEN_ROLES = {"notes_target", "notes_bootstrap", "notes_recovery"}
 PRODUCTION = {

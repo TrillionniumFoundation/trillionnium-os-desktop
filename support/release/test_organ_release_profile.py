@@ -111,6 +111,25 @@ class SourceCombinationTests(unittest.TestCase):
         with self.assertRaisesRegex(profile.ProfileError, "golden roles"):
             profile.check_map(mapping)
 
+    def test_production_composition_sources_are_required_but_never_activate_trust(self):
+        roles = {"production_composition": "production_composition.rs",
+                 "grant_provider": "final_use_issuer.rs",
+                 "grant_provider_worker": "grant_provider_worker.rs",
+                 "protected_authority_inputs": "production_authority.rs"}
+        shipped = profile.load_json(Path(__file__).with_name("organ_source_map.json"))
+        for role, filename in roles.items():
+            with self.subTest(role=role):
+                self.assertEqual(shipped["sources"]["hepta"][role],
+                                 "codex-rs/hepta-agentd/src/" + filename)
+                missing = copy.deepcopy(self.mapping)
+                del missing["sources"]["hepta"][role]
+                with self.assertRaisesRegex(profile.ProfileError, "source map requires exactly"):
+                    profile.check_map(missing)
+        manifest, receipt = self.build()
+        self.assertEqual(manifest["production"]["activation"], "disabled")
+        self.assertFalse(receipt["production"]["effects_authorized"])
+        self.assertIn("protected_authority_clock", manifest["production"]["unconfigured"])
+
     def test_committed_recovery_golden_byte_mismatch_rejected(self):
         path = self.mapping["goldens"]["notes_recovery"]["hepta"]
         write(self.hepta, path, (self.hepta / path).read_bytes() + b" ")

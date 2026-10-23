@@ -55,6 +55,14 @@ binds observation and exact receipt acknowledgement. Historical v1 fixtures and
 the 2026-10-22 manifest retain their original bytes and do not qualify this new
 protocol; generate a new manifest for the final source combination.
 
+The Oct 23 integration also requires the original atomic production composition,
+private Unix issuer provider, cancellation worker and protected-authority input
+adapter. Their source identities prevent a profile from silently omitting this
+new wiring. These implementations consume externally authenticated inputs;
+their presence does not deploy an issuer, clock, durable frontier, keyring,
+revocation head or current-cut authorization. Production stays disabled in a
+source-only manifest.
+
 The source map separately includes `hepta-contracts/src/final_use.rs` and
 `hepta-contracts/src/final_use_control.rs`. The first defines `FinalUseAuthority`
 and the constructor that accepts issuer keys, a protected clock and an external
