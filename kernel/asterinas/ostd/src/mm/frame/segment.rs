@@ -97,9 +97,25 @@ impl<M: AnyFrameMeta> Segment<M> {
     /// # Panics
     ///
     /// It panics if the range is empty.
-    pub fn from_unused<F>(range: Range<Paddr>, mut metadata_fn: F) -> Result<Self, GetFrameError>
+    pub fn from_unused<F>(range: Range<Paddr>, metadata_fn: F) -> Result<Self, GetFrameError>
     where
         F: FnMut(Paddr) -> M,
+    {
+        Self::from_unused_with_progress(range, metadata_fn, |_| {})
+    }
+
+    // The allocator uses the committed-prefix callback to refund the untouched
+    // raw tail if metadata construction fails or unwinds. Only report a frame
+    // after this Segment owns it, so the two RAII owners never refund the same
+    // physical page. The callback must not panic.
+    pub(super) fn from_unused_with_progress<F, G>(
+        range: Range<Paddr>,
+        mut metadata_fn: F,
+        mut on_committed: G,
+    ) -> Result<Self, GetFrameError>
+    where
+        F: FnMut(Paddr) -> M,
+        G: FnMut(Paddr),
     {
         if !range.start.is_multiple_of(PAGE_SIZE) || !range.end.is_multiple_of(PAGE_SIZE) {
             return Err(GetFrameError::NotAligned);
@@ -123,10 +139,12 @@ impl<M: AnyFrameMeta> Segment<M> {
                 metadata_fn(first_paddr),
             )?)
         };
+        on_committed(segment.range.end);
         for paddr in paddr_iter {
             let frame = Frame::<M>::from_unused(paddr, metadata_fn(paddr))?;
             let _ = ManuallyDrop::new(frame);
             segment.range.end = paddr + PAGE_SIZE;
+            on_committed(segment.range.end);
         }
         Ok(segment)
     }

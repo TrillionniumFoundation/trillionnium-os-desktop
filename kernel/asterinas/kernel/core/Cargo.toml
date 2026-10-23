@@ -89,7 +89,7 @@ riscv_sv39_mode = ["ostd/riscv_sv39_mode"]
 # at build time; ordinary builds retain the QueryAbi-only device.
 g1c-trusted-observe = []
 # G1-d reuses the exact-byte initial-image and VMAR sealing prerequisites.
-g1d-trusted-control = ["g1c-trusted-observe"]
+g1d-trusted-control = ["g1c-trusted-observe", "osdk-frame-allocator/physical-reserve"]
 
 [lints]
 workspace = true
