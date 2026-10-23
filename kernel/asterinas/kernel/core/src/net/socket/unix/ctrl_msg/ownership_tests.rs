@@ -475,3 +475,66 @@ fn stream_full_failure_refunds_edge_and_partial_write_keeps_real_prefix_owner() 
         assert!(weak_datagram.upgrade().is_none());
     }
 }
+
+#[ktest]
+fn multisegment_rights_merge_preserves_order_and_rejects_excess_without_publication() {
+    init();
+    let first = Arc::new(EventFile::new(17, EventFileFlags::empty())) as Arc<dyn FileLike>;
+    let last = Arc::new(EventFile::new(23, EventFileFlags::empty())) as Arc<dyn FileLike>;
+    let weak_first = Arc::downgrade(&first);
+    let weak_last = Arc::downgrade(&last);
+    let mut prefix = vec![first.clone(); 252];
+    let controls = vec![
+        ControlMessage::Unix(UnixControlMessage::from_files_for_test(mem::take(
+            &mut prefix,
+        ))),
+        ControlMessage::Unix(UnixControlMessage::from_files_for_test(vec![last.clone()])),
+    ];
+    let merged = AuxiliaryData::from_control(controls).unwrap();
+    assert_eq!(merged.files.len(), 253);
+    assert!(
+        merged.files[..252]
+            .iter()
+            .all(|file| Arc::ptr_eq(file, &first))
+    );
+    assert!(Arc::ptr_eq(&merged.files[252], &last));
+    drop((merged, first, last));
+    assert!(weak_first.upgrade().is_none());
+    assert!(weak_last.upgrade().is_none());
+
+    let sender = bound(b"fallible-ancillary-sender");
+    let receiver = bound(b"fallible-ancillary-receiver");
+    let file = Arc::new(EventFile::new(29, EventFileFlags::empty())) as Arc<dyn FileLike>;
+    let weak = Arc::downgrade(&file);
+    let controls = vec![
+        ControlMessage::Unix(UnixControlMessage::from_files_for_test(vec![
+            file.clone();
+            253
+        ])),
+        ControlMessage::Unix(UnixControlMessage::from_files_for_test(vec![file])),
+    ];
+    let mut reader = VmReader::from(&[0x71][..]).to_fallible();
+    assert_eq!(
+        sender
+            .sendmsg(
+                &mut reader,
+                MessageHeader::new(Some(receiver.addr().unwrap()), controls),
+                SendFlags::empty()
+            )
+            .unwrap_err()
+            .error(),
+        Errno::EINVAL
+    );
+    assert_eq!(reader.remain(), 1);
+    assert!(weak.upgrade().is_none());
+    assert_eq!(
+        receiver
+            .recvmsg(
+                &mut VmWriter::from(&mut [0u8][..]).to_fallible(),
+                RecvFlags::empty()
+            )
+            .unwrap_err()
+            .error(),
+        Errno::EAGAIN
+    );
+}

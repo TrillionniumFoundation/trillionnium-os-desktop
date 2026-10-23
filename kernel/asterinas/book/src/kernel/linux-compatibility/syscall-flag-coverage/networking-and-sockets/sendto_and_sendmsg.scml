@@ -22,6 +22,7 @@ sendto(
     addrlen
 );
 
+// Ancillary input vector allocation failure returns ENOMEM before publication.
 // Send message using scatter-gather buffers and ancillary data
 sendmsg(
     sockfd,

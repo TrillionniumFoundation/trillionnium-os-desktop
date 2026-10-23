@@ -3,6 +3,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/wait.h>
+#include <sys/eventfd.h>
+#include <fcntl.h>
+#include <stdint.h>
 #include <poll.h>
 #include <errno.h>
 #include <stddef.h>
@@ -148,16 +151,77 @@ static void concurrent(void) {
     REQUIRE((outcome[0] == 'A' && outcome[1] == 'R') || (outcome[1] == 'A' && outcome[0] == 'R'));
     close(fd[0]); close(fd[1]); pass("concurrent_cross_edges");
 }
+static ssize_t send_split_rights(int socket, int file, size_t first, size_t second) {
+    char control[2 * CMSG_SPACE(254 * sizeof(int))] = {0};
+    char byte = 'M';
+    struct iovec io = { &byte, 1 };
+    struct msghdr message = { .msg_iov = &io, .msg_iovlen = 1, .msg_control = control,
+        .msg_controllen = CMSG_SPACE(first * sizeof(int)) + (second ? CMSG_SPACE(second * sizeof(int)) : 0) };
+    REQUIRE(first <= 254 && second <= 254);
+    struct cmsghdr *header = CMSG_FIRSTHDR(&message);
+    size_t lengths[] = {first, second};
+    for (unsigned part = 0; part < (second ? 2u : 1u); ++part) {
+        REQUIRE(header != NULL);
+        header->cmsg_level = SOL_SOCKET; header->cmsg_type = SCM_RIGHTS;
+        header->cmsg_len = CMSG_LEN(lengths[part] * sizeof(int));
+        for (size_t i = 0; i < lengths[part]; ++i)
+            memcpy(CMSG_DATA(header) + i * sizeof(int), &file, sizeof(file));
+        header = CMSG_NXTHDR(&message, header);
+    }
+    return sendmsg(socket, &message, 0);
+}
+static void ancillary_253(void) {
+    const int types[] = {SOCK_STREAM, SOCK_SEQPACKET, SOCK_DGRAM};
+    for (unsigned type = 0; type < 3; ++type) {
+        int fd[2]; pair(types[type], fd);
+        int event = eventfd(17, EFD_NONBLOCK | EFD_CLOEXEC); REQUIRE(event >= 0);
+        REQUIRE(send_split_rights(fd[0], event, 126, 127) == 1);
+        close(event);
+        char control[CMSG_SPACE(253 * sizeof(int))] = {0}, byte = 0;
+        struct iovec io = {&byte, 1};
+        struct msghdr msg = {.msg_iov = &io, .msg_iovlen = 1, .msg_control = control, .msg_controllen = sizeof(control)};
+        REQUIRE(recvmsg(fd[1], &msg, MSG_CMSG_CLOEXEC) == 1 && byte == 'M' && !(msg.msg_flags & MSG_CTRUNC));
+        struct cmsghdr *header = CMSG_FIRSTHDR(&msg);
+        REQUIRE(header && header->cmsg_level == SOL_SOCKET && header->cmsg_type == SCM_RIGHTS);
+        REQUIRE(header->cmsg_len == CMSG_LEN(253 * sizeof(int)) && !CMSG_NXTHDR(&msg, header));
+        int received[253]; memcpy(received, CMSG_DATA(header), sizeof(received));
+        for (unsigned i = 0; i < 253; ++i) REQUIRE(fcntl(received[i], F_GETFD) == FD_CLOEXEC);
+        uint64_t count = 0;
+        REQUIRE(read(received[0], &count, sizeof(count)) == sizeof(count) && count == 17);
+        count = 7; REQUIRE(write(received[252], &count, sizeof(count)) == sizeof(count));
+        count = 0; REQUIRE(read(received[0], &count, sizeof(count)) == sizeof(count) && count == 7);
+        for (unsigned i = 0; i < 253; ++i) REQUIRE(close(received[i]) == 0);
+        REQUIRE(recv(fd[1], &byte, 1, 0) == -1 && errno == EAGAIN);
+        close(fd[0]); close(fd[1]);
+    }
+    pass("ancillary_multisegment_253");
+}
+static void ancillary_reject(void) {
+    const int types[] = {SOCK_STREAM, SOCK_SEQPACKET, SOCK_DGRAM};
+    for (unsigned type = 0; type < 3; ++type) {
+        int fd[2]; pair(types[type], fd);
+        int event = eventfd(0, EFD_NONBLOCK); REQUIRE(event >= 0);
+        REQUIRE(send_split_rights(fd[0], event, 254, 0) == -1 && errno == EINVAL);
+        REQUIRE(send_split_rights(fd[0], event, 127, 127) == -1 && errno == EINVAL);
+        REQUIRE(send_split_rights(fd[0], -1, 1, 0) == -1 && errno == EBADF);
+        char byte = 0;
+        REQUIRE(recv(fd[1], &byte, 1, 0) == -1 && errno == EAGAIN);
+        close(event); close(fd[0]); close(fd[1]);
+    }
+    pass("ancillary_rejected_inputs_publish_nothing");
+}
 int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IONBF, 0); alarm(20);
     int reference = argc == 2 && strcmp(argv[1], "--linux-notes-reference") == 0;
+    int ancillary_reference = argc == 2 && strcmp(argv[1], "--linux-ancillary-reference") == 0;
+    if (ancillary_reference) { ancillary_253(); ancillary_reject(); REQUIRE(cases == 2); return 0; }
     REQUIRE(reference || (argc == 2 && strcmp(argv[1], "--disposable-guest") == 0 && access("/.hepta-disposable-guest", R_OK) == 0));
     notes(SOCK_STREAM, "notes_stream"); notes(SOCK_SEQPACKET, "notes_seqpacket");
     if (!reference) {
         listener(SOCK_STREAM, "listener_pending_stream"); listener(SOCK_SEQPACKET, "listener_pending_seqpacket");
         future_connect(); self_cycle(SOCK_STREAM, "self_stream"); self_cycle(SOCK_SEQPACKET, "self_seqpacket"); self_cycle(SOCK_DGRAM, "self_datagram");
-        slots(); concurrent();
+        slots(); concurrent(); ancillary_253(); ancillary_reject();
     }
-    REQUIRE(cases == (reference ? 2u : 10u));
+    REQUIRE(cases == (reference ? 2u : 12u));
     printf("UNIX_OWNER_COMPLETE cases=%u failures=0\n", cases); return 0;
 }

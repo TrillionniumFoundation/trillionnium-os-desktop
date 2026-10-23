@@ -5,7 +5,7 @@ from check import NAMES, check
 
 def serial():
     return ''.join(f'UNIX_OWNER_CASE {name} PASS\n' for name in NAMES) + \
-        'UNIX_OWNER_COMPLETE cases=10 failures=0\nUNIX_OWNER_PROBE_EXIT=0\nTRILLIONNIUM_A01_BOOT_OK\n'
+        'UNIX_OWNER_COMPLETE cases=12 failures=0\nUNIX_OWNER_PROBE_EXIT=0\nTRILLIONNIUM_A01_BOOT_OK\n'
 
 
 class Evidence(unittest.TestCase):
@@ -24,7 +24,7 @@ class Evidence(unittest.TestCase):
                 self.assertFalse(check(changed, 33, False)['passed'])
 
     def test_incomplete_or_duplicate_completion(self):
-        for marker in ['UNIX_OWNER_COMPLETE cases=10 failures=0\n',
+        for marker in ['UNIX_OWNER_COMPLETE cases=12 failures=0\n',
                        'UNIX_OWNER_PROBE_EXIT=0\n', 'TRILLIONNIUM_A01_BOOT_OK\n']:
             self.assertFalse(check(serial().replace(marker, ''), 33, False)['passed'])
             self.assertFalse(check(serial() + marker, 33, False)['passed'])

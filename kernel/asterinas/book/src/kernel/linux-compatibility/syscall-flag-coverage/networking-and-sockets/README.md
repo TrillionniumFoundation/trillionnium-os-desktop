@@ -78,6 +78,12 @@ Supported functionality in SCML:
 {{#include sendto_and_sendmsg.scml}}
 ```
 
+Ancillary input parsing and descriptor-vector merging return `ENOMEM`
+if their kernel vector storage cannot be reserved.
+No socket payload or control message is published by these failed input stages.
+The existing limits remain 32 parsed control messages and 253 transferred descriptors.
+This does not imply fallible allocation for all later send or receive work.
+
 Unsupported flags:
 * `MSG_CONFIRM`
 * `MSG_DONTROUTE`

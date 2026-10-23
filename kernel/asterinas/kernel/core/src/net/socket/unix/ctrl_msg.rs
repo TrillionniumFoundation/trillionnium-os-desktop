@@ -16,7 +16,7 @@ use crate::{
         FileLike,
         file_table::{FdFlags, FileTable, get_file_fast},
     },
-    net::socket::util::{CControlHeader, ControlMessage, RecvFlags},
+    net::socket::util::{CControlHeader, ControlMessage, RecvFlags, reserve_control_items},
     prelude::*,
     util::net::CSocketOptionLevel,
 };
@@ -116,7 +116,8 @@ impl FileMessage {
         // exceeds the RLIMIT_NOFILE resource limit and the caller does not have the
         // CAP_SYS_RESOURCE capability."
 
-        let mut files = Vec::with_capacity(nfiles);
+        let mut files = Vec::new();
+        reserve_control_items(&mut files, nfiles)?;
 
         let current = Task::current().unwrap();
         let mut file_table = current.as_thread_local().unwrap().borrow_file_table_mut();
@@ -280,6 +281,7 @@ impl AuxiliaryData {
                             "the SCM_RIGHTS message is too large"
                         );
                     }
+                    reserve_control_items(&mut files, msg_files.len())?;
                     files.append(&mut msg_files);
                     // These are now caller-rooted, unpublished outgoing files.
                     // The destination queue admits its own edge before publication.
