@@ -106,6 +106,26 @@ after all four Cargo suites and strict Rustfmt pass. The archive and its
 SHA256 contain four built Rust programs and their build/source provenance,
 not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
 
+## Session exchange deadline
+
+The ordinary `trill-session` unit suite exercises one shared monotonic budget
+across reads and response writes, expiry before launch dispatch, successful
+fragmented Snapshot framing, and an incomplete local request timing out
+before the next valid Snapshot observes an actually reaped `/bin/true` child.
+The timeout fixture writes one partial frame and then waits; it performs no
+retrying traffic or arbitrary command dispatch. Run it with:
+
+```sh
+cargo test --manifest-path ui/Cargo.toml -p trill-session --bin trill-session --locked
+```
+
+The server allowance is 500 ms for the complete I/O exchange. Its internal
+deadline seam gives the controlled timeout fixture a 100 ms allowance;
+deterministic clock arithmetic also checks that partial progress cannot reset
+the budget. Host scheduling delay is allowed in the test's elapsed-time
+assertion. These tests qualify local host transport and owned-process reaping,
+not the target kernel, GUI or original Hepta effects.
+
 ## Hepta observer gate
 
 See `support/ui/HEPTA_OBSERVER.md` for development/configuration and the

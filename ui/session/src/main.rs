@@ -1,5 +1,6 @@
 //! Independent host-only process launcher/lifecycle owner.
 //! It is not a Wayland compositor and it grants no kernel permissions.
+mod deadline;
 mod hepta;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
@@ -16,6 +17,7 @@ use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
+use std::time::{Duration, Instant};
 
 #[cfg(target_os = "linux")]
 use trill_ui_broker::notes::NotesTarget;
@@ -668,20 +670,42 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
     }
 }
 
-fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result<()> {
-    require_same_uid_peer(&stream)?;
+// Shared by the request read and response write; partial I/O never restarts it.
+const EXCHANGE_BUDGET: Duration = Duration::from_millis(500);
+
+fn serve_connection(stream: UnixStream, session: &mut Session) -> io::Result<()> {
+    serve_connection_until(stream, session, Instant::now() + EXCHANGE_BUDGET)
+}
+
+fn serve_connection_until(
+    stream: UnixStream,
+    session: &mut Session,
+    deadline: Instant,
+) -> io::Result<()> {
     // Invalid/malformed peers must not prevent reaping independent apps.
     // A valid Request::Snapshot/Cancel already refreshes in handle(), but
     // rejected frames never reach handle(). Refresh before parsing every peer.
     session.refresh();
-    // This is a local single-owner session loop, so an idle same-UID peer
-    // must not block task reaping and every other GUI client for two seconds.
-    // A legitimate request is <=64 KiB and written as one bounded frame.
-    stream.set_read_timeout(Some(std::time::Duration::from_millis(500)))?;
-    stream.set_write_timeout(Some(std::time::Duration::from_millis(500)))?;
-    let response = match read_frame(&mut stream) {
+    let result = (|| {
+        require_same_uid_peer(&stream)?;
+        let mut stream = deadline::DeadlineStream::new(stream, deadline);
+        serve_request(&mut stream, session)
+    })();
+    // A child may exit while the request is incomplete or its response cannot
+    // be delivered. Reap on every return path before accepting the next peer.
+    session.refresh();
+    result
+}
+
+fn serve_request(stream: &mut deadline::DeadlineStream, session: &mut Session) -> io::Result<()> {
+    let response = match read_frame(&mut *stream) {
         Ok(frame) => match parse_host_request(&frame) {
-            Ok(command) => session.handle(command),
+            // Parsing a bounded frame must not allow an expired exchange to
+            // begin a launch/cancel effect after its read allowance elapsed.
+            Ok(command) => {
+                stream.remaining()?;
+                session.handle(command)
+            }
             Err(error) => Response::Error {
                 message: format!("Invalid IPC request: {error}"),
                 session_instance: session.instance.clone(),
@@ -694,10 +718,10 @@ fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result
     };
     // Never emit a partial/truncated JSON frame or silently lose lifecycle
     // provenance if a future TaskRecord field makes a snapshot too large.
-    match write_frame(&mut stream, &response) {
+    match write_frame(&mut *stream, &response) {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == io::ErrorKind::InvalidData => write_frame(
-            &mut stream,
+            &mut *stream,
             &Response::Error {
                 message: "Session snapshot is too large; no task state is being asserted".into(),
                 session_instance: session.instance.clone(),
@@ -1134,6 +1158,94 @@ mod tests {
         assert!(settled, "malformed traffic must still reap /bin/true");
         assert_eq!(session.tasks[&task.id].exit_code, Some(0));
         assert!(session.children.is_empty());
+    }
+
+    #[test]
+    fn fragmented_snapshot_keeps_the_existing_request_and_response_api() {
+        use std::io::Write as _;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let instance = session.instance.clone();
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        peer.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        let owner = thread::spawn(move || serve_connection(stream, &mut session));
+        // Ordinary newline framing may be split across multiple writes.
+        peer.write_all(b"{\"type\":").unwrap();
+        peer.write_all(b"\"snapshot\"}\n").unwrap();
+        let response: Response = serde_json::from_slice(&read_frame(&mut peer).unwrap()).unwrap();
+        let Response::Snapshot {
+            tasks,
+            session_instance,
+            ..
+        } = response
+        else {
+            panic!("expected the unchanged snapshot response");
+        };
+        assert!(tasks.is_empty());
+        assert_eq!(session_instance, instance);
+        owner.join().unwrap().unwrap();
+    }
+
+    #[test]
+    fn an_expired_complete_request_cannot_dispatch_a_launch() {
+        use std::io::Write as _;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        write_frame(
+            &mut peer,
+            &Request::Launch {
+                workspace: Workspace::Build,
+                app: AppKind::Calculator,
+                expected_instance: session.instance.clone(),
+            },
+        )
+        .unwrap();
+        peer.flush().unwrap();
+        let error = serve_connection_until(
+            stream,
+            &mut session,
+            Instant::now() - Duration::from_millis(1),
+        )
+        .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+        assert!(session.tasks.is_empty());
+        assert!(session.children.is_empty());
+        assert_eq!(session.next_id, 1);
+    }
+
+    #[test]
+    fn incomplete_request_expires_then_next_snapshot_observes_reaped_child() {
+        use std::io::Write as _;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let Response::Task { task, .. } = session.launch(Workspace::Build, AppKind::Calculator)
+        else {
+            panic!("expected owned host child");
+        };
+        let (mut incomplete, stream) = UnixStream::pair().unwrap();
+        // One ordinary partial frame, followed by no more input. This is a
+        // controlled transport-timeout fixture with no retrying sender.
+        incomplete.write_all(b"{\"type\":").unwrap();
+        let started = Instant::now();
+        let error =
+            serve_connection_until(stream, &mut session, started + Duration::from_millis(100))
+                .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+        assert!(started.elapsed() < Duration::from_secs(2));
+        assert_eq!(session.tasks[&task.id].state, TaskState::Completed);
+        assert_eq!(session.tasks[&task.id].exit_code, Some(0));
+        assert!(session.children.is_empty());
+
+        // The next queued client retains the same Session and gets a normal
+        // bounded response after the incomplete exchange relinquishes it.
+        let (mut next, stream) = UnixStream::pair().unwrap();
+        write_frame(&mut next, &Request::Snapshot).unwrap();
+        serve_connection(stream, &mut session).unwrap();
+        let response: Response = serde_json::from_slice(&read_frame(&mut next).unwrap()).unwrap();
+        let Response::Snapshot { tasks, .. } = response else {
+            panic!("expected next client's snapshot");
+        };
+        assert_eq!(tasks[0].id, task.id);
+        assert_eq!(tasks[0].state, TaskState::Completed);
+        drop(incomplete);
     }
 
     #[test]

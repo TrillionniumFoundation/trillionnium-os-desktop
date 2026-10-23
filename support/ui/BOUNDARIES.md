@@ -95,6 +95,21 @@ binary accepted a Snapshot with extra data; the blocking native Session
 wire-regression fails against that older executable. Host frames remain
 strictly bounded to 64 KiB and are not a durable ledger.
 
+Each accepted local connection has one 500 ms monotonic I/O deadline shared
+by request reads and response writes. `ui/session/src/deadline.rs` recomputes
+the remaining socket timeout before every operation; a successful partial
+read or write never renews the allowance. Session checks the remaining budget
+again before dispatch. An expired or incomplete request closes without
+dispatching a host action; an action already dispatched keeps its real
+lifecycle outcome even if the response cannot be delivered. Clients must
+obtain a fresh snapshot before deciding whether to retry an action whose
+response was lost. The single owner loop refreshes child exits before and
+after every connection, including timeout, parse and response errors. This
+bounds transport occupancy and preserves reaping between queued peers; it
+does not impose a real-time scheduling guarantee on Linux process creation
+or local filesystem reads. The public Request/Response schema, same-UID
+peer check, 64 KiB limit and two-second client socket timeout are unchanged.
+
 Startup is protected by a Linux kernel advisory exclusive session.lock
 (0600, O_NOFOLLOW), acquired before stale Socket cleanup or UnixListener
 bind. Two simultaneous service starters cannot unlink one another's live
