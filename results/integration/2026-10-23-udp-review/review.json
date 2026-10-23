@@ -1,0 +1,335 @@
+{
+  "schema": "desktop.pr254.read-only-prerequisite-review.v1",
+  "reviewed_at_utc": "2026-10-23T06:17:53.783081+00:00",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "reviewed_pr": 254,
+  "reviewed_head": "18d400a2c112c4bd3b7d69209729640378e7db71",
+  "pr_base": "39c1d84ebf854958f5829c0118b0c8b92a6b4926",
+  "pr_changed_files_at_read": 93,
+  "review_scope": {
+    "new_build_or_guest_execution": false,
+    "kernel_or_agentd_binaries_downloaded": false,
+    "existing_archived_logs_and_receipts_read": true,
+    "all_archive_text_bytes_verified": true,
+    "all_retrieved_git_blob_hashes_recomputed": true,
+    "retrieved_full_text_git_blobs": 89,
+    "binary_hashes_independently_recomputed": false,
+    "original_external_oracle_reexecuted": false,
+    "remote_mutation": false
+  },
+  "runtime_source_comparison": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs",
+      "c5_blob": "39d16d900a9700013105b646551155887c789e36",
+      "b824_blob": "39d16d900a9700013105b646551155887c789e36",
+      "c8_blob": "7963e0ffedf36c034b32596167ec3e9190ec0489",
+      "reviewed_head_blob": "7963e0ffedf36c034b32596167ec3e9190ec0489",
+      "c5_equals_old_unfixed": true,
+      "reviewed_equals_executed_fix": true,
+      "source_urls": {
+        "c5": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c5c88794bf227b1d862b2f914b02809a0090e854/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs",
+        "old": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/b824d80d44456c131a6cb9d4fcc84be95c6af273/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs",
+        "executed_fix": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c8f0c88ecb640117686ff05f850a73e60688eac7/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs",
+        "reviewed": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs",
+      "c5_blob": "ca1651687fdd5a6d1ebeed9e74a790b8f7c11388",
+      "b824_blob": "ca1651687fdd5a6d1ebeed9e74a790b8f7c11388",
+      "c8_blob": "7c1ef2d0b609baa1fc0c658f476feed8fd520b30",
+      "reviewed_head_blob": "7c1ef2d0b609baa1fc0c658f476feed8fd520b30",
+      "c5_equals_old_unfixed": true,
+      "reviewed_equals_executed_fix": true,
+      "source_urls": {
+        "c5": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c5c88794bf227b1d862b2f914b02809a0090e854/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs",
+        "old": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/b824d80d44456c131a6cb9d4fcc84be95c6af273/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs",
+        "executed_fix": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c8f0c88ecb640117686ff05f850a73e60688eac7/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs",
+        "reviewed": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs",
+      "c5_blob": "d16e77cf57dec33d3cd8f58951b32cd2722ffdd8",
+      "b824_blob": "d16e77cf57dec33d3cd8f58951b32cd2722ffdd8",
+      "c8_blob": "64f8328abc603d1b8d1a57714a764fde3bdc2b5e",
+      "reviewed_head_blob": "64f8328abc603d1b8d1a57714a764fde3bdc2b5e",
+      "c5_equals_old_unfixed": true,
+      "reviewed_equals_executed_fix": true,
+      "source_urls": {
+        "c5": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c5c88794bf227b1d862b2f914b02809a0090e854/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs",
+        "old": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/b824d80d44456c131a6cb9d4fcc84be95c6af273/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs",
+        "executed_fix": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c8f0c88ecb640117686ff05f850a73e60688eac7/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs",
+        "reviewed": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs",
+      "c5_blob": "95e0aac2ca29842771595711b92f757a92bf865a",
+      "b824_blob": "95e0aac2ca29842771595711b92f757a92bf865a",
+      "c8_blob": "b6e0dbc9109ff974708a494f6bad954d957c8663",
+      "reviewed_head_blob": "b6e0dbc9109ff974708a494f6bad954d957c8663",
+      "c5_equals_old_unfixed": true,
+      "reviewed_equals_executed_fix": true,
+      "source_urls": {
+        "c5": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c5c88794bf227b1d862b2f914b02809a0090e854/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs",
+        "old": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/b824d80d44456c131a6cb9d4fcc84be95c6af273/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs",
+        "executed_fix": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c8f0c88ecb640117686ff05f850a73e60688eac7/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs",
+        "reviewed": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs",
+      "c5_blob": "cccbf4c74b99a41aef1f405f1c19f24ef7f28107",
+      "b824_blob": "cccbf4c74b99a41aef1f405f1c19f24ef7f28107",
+      "c8_blob": "b32e1de07fa2c6c575290bb21643b55d78bd2bad",
+      "reviewed_head_blob": "b32e1de07fa2c6c575290bb21643b55d78bd2bad",
+      "c5_equals_old_unfixed": true,
+      "reviewed_equals_executed_fix": true,
+      "source_urls": {
+        "c5": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c5c88794bf227b1d862b2f914b02809a0090e854/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs",
+        "old": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/b824d80d44456c131a6cb9d4fcc84be95c6af273/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs",
+        "executed_fix": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c8f0c88ecb640117686ff05f850a73e60688eac7/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs",
+        "reviewed": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs",
+      "c5_blob": "c51514c29b7364699e788e4993ccaec18964e1f7",
+      "b824_blob": "c51514c29b7364699e788e4993ccaec18964e1f7",
+      "c8_blob": "65131393a9257b8587eeb0caa2d33a945613f208",
+      "reviewed_head_blob": "65131393a9257b8587eeb0caa2d33a945613f208",
+      "c5_equals_old_unfixed": true,
+      "reviewed_equals_executed_fix": true,
+      "source_urls": {
+        "c5": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c5c88794bf227b1d862b2f914b02809a0090e854/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs",
+        "old": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/b824d80d44456c131a6cb9d4fcc84be95c6af273/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs",
+        "executed_fix": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/c8f0c88ecb640117686ff05f850a73e60688eac7/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs",
+        "reviewed": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs"
+      }
+    }
+  ],
+  "archive": {
+    "files": 76,
+    "bytes": 617761,
+    "all_manifest_sha256_and_lengths_match": true,
+    "manifest_sha256": "ad966d45c7418e84cbe6b8b2f609304506778768ba9e9ef7741d1ce3686abce9",
+    "binary_identities_sha256": "b21ef7207da26ce576d86f02d760d7b089994aa318be5fd72169154b92f98a9c",
+    "binary_identity_count": 11
+  },
+  "execution_pins": {
+    "old_kernel_source": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+    "executed_fixed_kernel_source": "c8f0c88ecb640117686ff05f850a73e60688eac7",
+    "executed_fixed_tree": "641c6627ba9aaf79ca3506154831a6c51abe521f",
+    "fixed_kernel_sha256": "6d7b67c7046a54c7dda7a9595794159235f3b4dad45dd2c4892a7868432a1524",
+    "old_kernel_sha256": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d",
+    "diagnostic_agentd_sha256": "fcef743f93a126364a9dbc0ee1c18ca6c0542f9ea4cb674c7d95ef870b66e84f",
+    "diagnostic_helper_sha256": "92aaeeb437b4c497a047cfc248951df402fcf9ac80a17885a75c9b69b8483ac6",
+    "diagnostic_helper_source_sha256": "d02d459d691403f3f1f178373414ef258c317495054cacbdb0653adef701364d",
+    "udp_regression_elf_sha256": "90ace4da1f2a34200dc0952ea4419d7ad67c201a53994273b9f4a93d3f2ccc40",
+    "payload_sha256": "f125011a069ddab81030bd31129883d1fd97a44f2a874d7e8d96e9d1ca6003af"
+  },
+  "original_build_record": {
+    "actual_build_exit": 0,
+    "timed_out": false,
+    "clean_git_identity_before_after": true,
+    "build_receipt_no_ktest": true,
+    "ordinary_boot_qemu_exit": 33,
+    "actual_build_output_and_invocation_hash_links_match": true
+  },
+  "native_udp_receipt_and_raw_transcript": {
+    "native_abi_passed": true,
+    "qemu_exit": 33,
+    "timed_out": false,
+    "cases": 6,
+    "checks": 43,
+    "all_49_raw_test_lines_exactly_match_archived_linux_stderr": true,
+    "linux_stderr_sha256": "67178f9fdbe1e761bc9daad11b88f183658fc8ef7693c77db471464a627ac085",
+    "receipt_sha256": "5598355ce26604de9ed0161338eea8a01c89105b8abc69fbc87e7c213e8c60ba"
+  },
+  "diagnostic_lifecycle_receipt_and_raw_streams": {
+    "diagnostic_only": true,
+    "diagnostic_lifecycle_passed": true,
+    "original_agentd_lifecycle_qualified": false,
+    "previous_agentd_build_exit_receipt_recovered": false,
+    "qemu_exit": 33,
+    "timed_out": false,
+    "original_deadlines_unchanged": true,
+    "guest_resolver_configuration_unchanged": true,
+    "stages": [
+      "registered",
+      "spawned",
+      "first_ready",
+      "original_store_witness",
+      "first_stopped",
+      "stopped_state_recovered",
+      "spawned",
+      "second_ready_witness_recovered",
+      "final_stopped"
+    ],
+    "nonce_bound_hex_streams_redecoded_and_match_guest_files": true,
+    "stdout_result_equals_result_file_equals_receipt": true,
+    "stops": {
+      "first_stop": {
+        "event_kinds": [
+          "lifecycle",
+          "drain_requested",
+          "stop_requested",
+          "lifecycle",
+          "exited"
+        ],
+        "exit_code": 0,
+        "writer_lock_released": true,
+        "no_kill_event": true
+      },
+      "final_stop": {
+        "event_kinds": [
+          "lifecycle",
+          "drain_requested",
+          "stop_requested",
+          "lifecycle",
+          "exited"
+        ],
+        "exit_code": 0,
+        "writer_lock_released": true,
+        "no_kill_event": true
+      }
+    },
+    "model_turns_requested": 0,
+    "automation_runs": 0,
+    "production_authority_configured": false,
+    "hos2_control_qualified": false,
+    "power_loss_recovery_qualified": false,
+    "receipt_sha256": "d385dc8ae0aa7f14b17b3ee51c1ca1178c7b4d7fd7ef9b9fd2981735066fee98"
+  },
+  "scope_and_limitations": [
+    "Fix is local unicast connected-peer UDP port-unreachable delivery, read-once SO_ERROR/ECONNREFUSED and readiness invalidation. Remote ICMP and extended error queues are not implemented.",
+    "Current six runtime source files exactly match the executed c8 implementation; later portable-runner/workflow additions are outside that archived execution qualification.",
+    "The reused diagnostic Agentd lacks the successful original clean build-exit receipt. Nine diagnostic stages cannot qualify clean original Agentd or production F1.",
+    "The external original diagnostic oracle and earlier diagnostic input manifests are referenced by hashes/paths in the archived wrapper; this review did not execute that external oracle or download its original ELF payload.",
+    "The 76-file archive contains ordinary build/boot receipts but no separately identified A06 QueryAbi acceptance receipt. Its README phrase boot/QueryAbi receipt must not substitute for the full A06 import gate.",
+    "PR253 uses c5 plus clean Hepta6d and its different original_agentd_probe fixture; those exact binaries/combination have not been executed by this review."
+  ],
+  "pr253_blocker_update": {
+    "fact": "All six UDP runtime files at c5 equal the old reproduced-unfixed b824 blobs. PR253 fixed c5 kernel does not include the PR254 correction.",
+    "inference": "Under the same missing-local-resolver/connected-UDP conditions the same stop-timeout mechanism remains a risk on c5. This is a source-backed expectation, not a newly executed clean-pair timeout.",
+    "next_gate": "Qualify the chosen fixed kernel through ordinary build/boot and QueryAbi/A06 evidence, pin its artifact identity, then rerun the unchanged PR253 original clean Agentd/helper lifecycle gate. Do not promote the diagnostic nine-stage receipt to production F1."
+  },
+  "ci_status_at_review": {
+    "pr254_a06": {
+      "head": "18d400a2c112c4bd3b7d69209729640378e7db71",
+      "run_id": 39909494830,
+      "status": "queued"
+    },
+    "pr255_a10": {
+      "head": "940313d876481c6effc14ad783444e9e7b9d275a",
+      "run_id": 39910104187,
+      "job_id": 120270866048,
+      "status": "queued",
+      "steps": null
+    },
+    "pr251_a10": {
+      "head": "64736996d310d597ffba513ee109264cd5f5f83f",
+      "run_id": 39906720572,
+      "job_id": 120260266676,
+      "status": "queued",
+      "steps": null
+    }
+  },
+  "key_source_receipts": [
+    {
+      "archive_path": "manifest.json",
+      "sha256": "ad966d45c7418e84cbe6b8b2f609304506778768ba9e9ef7741d1ce3686abce9",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/manifest.json"
+    },
+    {
+      "archive_path": "binary-identities.json",
+      "sha256": "b21ef7207da26ce576d86f02d760d7b089994aa318be5fd72169154b92f98a9c",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/binary-identities.json"
+    },
+    {
+      "archive_path": "raw/f1-loopback-udp-error-v1/result.json",
+      "sha256": "ac8b80ede57ec6f94d1c5b3a57d633c694bae65ce203b3eccfde252cf88d4a0e",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-loopback-udp-error-v1/result.json"
+    },
+    {
+      "archive_path": "raw/f1-udp-error-source-gates-v1/input-manifest.json",
+      "sha256": "babbd2f252af855d2568a229c6ecb67799d49b66ec965103d337fb1692b483e2",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-udp-error-source-gates-v1/input-manifest.json"
+    },
+    {
+      "archive_path": "raw/f1-local-udp-product-build-v1/actual-build-invocation.json",
+      "sha256": "6eaf428e28d66c54f351946779643b0067d1ee3b199f424af64173191a18630b",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-local-udp-product-build-v1/actual-build-invocation.json"
+    },
+    {
+      "archive_path": "raw/f1-local-udp-product-build-v1/actual-build-result.json",
+      "sha256": "ff71924316549e99f0358c321f4fa70ca17d82a08b8f462ecac33c5bcf35bcba",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-local-udp-product-build-v1/actual-build-result.json"
+    },
+    {
+      "archive_path": "raw/f1-local-udp-product-build-v1/build-receipt.json",
+      "sha256": "26c38bd6eee5762e37b56cd6532a23a103723afb652dd2da4623ce464bbf494b",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-local-udp-product-build-v1/build-receipt.json"
+    },
+    {
+      "archive_path": "raw/f1-local-udp-product-v1/qemu.json",
+      "sha256": "ecd90a0a1c7a3aef94a067df6f606ca1c751d158fb644c61827d30006ffa91ba",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-local-udp-product-v1/qemu.json"
+    },
+    {
+      "archive_path": "raw/f1-local-udp-native-regression-v1/result.json",
+      "sha256": "5598355ce26604de9ed0161338eea8a01c89105b8abc69fbc87e7c213e8c60ba",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-local-udp-native-regression-v1/result.json"
+    },
+    {
+      "archive_path": "raw/f1-local-udp-lifecycle-v1/result.json",
+      "sha256": "d385dc8ae0aa7f14b17b3ee51c1ca1178c7b4d7fd7ef9b9fd2981735066fee98",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-local-udp-lifecycle-v1/result.json"
+    },
+    {
+      "archive_path": "raw/f1-local-udp-lifecycle-v1/serial.log",
+      "sha256": "bb81065c5a09dc7153dfe7eab4496c0224644be5d8c2089a261ba49801e08374",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/raw/f1-local-udp-lifecycle-v1/serial.log"
+    },
+    {
+      "archive_path": "tools/run_f1_local_udp_kernel.py",
+      "sha256": "438774a61cf2339fdcbda8f830bee089053664a18cbde648273de25f56eecc51",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/18d400a2c112c4bd3b7d69209729640378e7db71/results/integration/2026-10-23-local-udp/tools/run_f1_local_udp_kernel.py"
+    }
+  ],
+  "remote_commit_tree_verification": [
+    {
+      "head": "c5c88794bf227b1d862b2f914b02809a0090e854",
+      "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c",
+      "parents": [
+        "2d42f93bb784a9107d316df9dd563c901c974e61"
+      ],
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/c5c88794bf227b1d862b2f914b02809a0090e854"
+    },
+    {
+      "head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+      "tree": "506d583455fa5ea2cf0c18fe10ed42c3874f7556",
+      "parents": [
+        "c1810f878a5e5a2bfb2180b10bd34bbac89bf680"
+      ],
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/b824d80d44456c131a6cb9d4fcc84be95c6af273"
+    },
+    {
+      "head": "c8f0c88ecb640117686ff05f850a73e60688eac7",
+      "tree": "641c6627ba9aaf79ca3506154831a6c51abe521f",
+      "parents": [
+        "b824d80d44456c131a6cb9d4fcc84be95c6af273"
+      ],
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/c8f0c88ecb640117686ff05f850a73e60688eac7"
+    },
+    {
+      "head": "18d400a2c112c4bd3b7d69209729640378e7db71",
+      "tree": "41025bd06d317e4bed6a981803874f14b1a0a3b9",
+      "parents": [
+        "346f4803d2b7f7b46f3a9cfc8cef454117802d07"
+      ],
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/18d400a2c112c4bd3b7d69209729640378e7db71"
+    }
+  ]
+}

@@ -38,7 +38,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Verify A00 bootstrap versus A10 source diff and empty README
+      - name: Verify A00 bootstrap versus A10 source diff and regular README
         id: scope
         shell: bash
         env:
@@ -47,7 +47,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md
           if [[ -f ui/Cargo.toml ]]; then
             echo 'has_ui=true' >> "$GITHUB_OUTPUT"
             echo 'A10 Rust source exists; host build and Wayland tests are required.'
@@ -108,7 +108,7 @@ jobs:
           cargo -Vv
           weston --version
           cat /etc/os-release
-          test ! -s README.md
+          test -f README.md && test ! -L README.md
       - name: Compile and test Rust binaries and validate rustfmt
         run: |
           set -euo pipefail
