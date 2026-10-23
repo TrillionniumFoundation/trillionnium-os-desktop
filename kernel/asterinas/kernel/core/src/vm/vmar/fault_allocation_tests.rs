@@ -188,3 +188,215 @@ fn fault_around_keeps_successful_prefix_and_charges_only_original_vmo_frame() {
     drop(first);
     assert_eq!(account.current_pages(), 0);
 }
+
+#[derive(Debug, PartialEq)]
+struct MappingSnapshot {
+    range: Range<Vaddr>,
+    mapped: Option<(ostd::mm::Paddr, ostd::mm::PageProperty)>,
+}
+
+// No assertion, formatting, allocation, or retained owning reference. The test
+// VMAR is private and never activated; queries only lock existing table nodes.
+fn mapping_snapshot(vmar: &Vmar, address: Vaddr) -> Option<MappingSnapshot> {
+    let guard = disable_preempt();
+    let mut cursor = vmar
+        .vm_space()
+        .cursor_no_prealloc(&guard, &(address..address + PAGE_SIZE))
+        .ok()?;
+    let (range, item) = cursor.query().ok()?;
+    let mapped = match item {
+        None => None,
+        Some(ostd::mm::vm_space::VmQueriedItem::MappedRam { frame, prop }) => {
+            Some((frame.paddr(), prop))
+        }
+        Some(_) => return None,
+    };
+    Some(MappingSnapshot { range, mapped })
+}
+
+#[ktest]
+fn physical_page_table_nomemory_keeps_original_vmar_and_refunds_private_nodes() {
+    use ostd::{cpu::num_cpus, irq, mm::FrameAllocOptions};
+
+    use crate::vm::{
+        page_cache::VmoMapMode,
+        user_memory::hierarchy::{MemoryDomain, test_leaf},
+        vmar::PageFaultError,
+    };
+
+    // This is the original bounded x86_64 N0 fixture. All heap bookkeeping and
+    // user/VMO frames exist before pressure. No quota denial or injected failure.
+    assert_eq!(num_cpus(), 1);
+    assert!(!ostd::log_enabled!(ostd::log::Level::Debug));
+    let parent = test_leaf(8);
+    parent.set_delegated(true);
+    let leaf = MemoryDomain::child(parent.clone()).unwrap();
+    assert!(leaf.set_max(Some(8)));
+    let account = UserMemoryAccount::new(8);
+    account.move_to(
+        leaf.clone(),
+        &crate::fs::cgroupfs::CgroupMembership::write_lock(),
+    );
+    let vmar = vmar(&account);
+    let old_address = 0x4000_0000;
+    let address = 0x0080_0000_0000;
+    vmar.new_map(PAGE_SIZE, VmPerms::READ | VmPerms::WRITE)
+        .offset(VmarMapOffset::FixedNoReplace(old_address))
+        .build()
+        .unwrap();
+    vmar.handle_page_fault(&PageFaultInfo::new(old_address, VmPerms::WRITE))
+        .unwrap();
+    let (old_frame, _) = mapped(&vmar, old_address);
+    old_frame.write_bytes(0, &[91]).unwrap();
+    let vmo = VmoOptions::new(PAGE_SIZE)
+        .memory_owner(Some(account.clone()))
+        .alloc()
+        .unwrap();
+    vmo.commit_on(0, VmoMapMode::Private).unwrap();
+    let (data, _) = vmo.try_commit_page(0, VmoMapMode::Private).unwrap();
+    data.write_bytes(0, &[37]).unwrap();
+    vmar.new_map(PAGE_SIZE, VmPerms::READ)
+        .vmo(vmo.clone())
+        .offset(VmarMapOffset::FixedNoReplace(address))
+        .build()
+        .unwrap();
+    let before_hole = mapping_snapshot(&vmar, address).unwrap();
+    let before_old = mapping_snapshot(&vmar, old_address).unwrap();
+    // A different x86 root slot requires all three child tables. Thus windows
+    // with 0/1/2 available ordinary frames must fail at distinct real depths.
+    assert_eq!(before_hole.range.len(), 1usize << 39);
+    assert!(before_hole.mapped.is_none());
+    let counters = || {
+        [
+            account.current_pages(),
+            leaf.snapshot().pages,
+            parent.snapshot().pages,
+            vmar.get_rss_counter(RssType::Anon),
+            vmar.get_rss_counter(RssType::File),
+        ]
+    };
+    assert_eq!(counters(), [2, 2, 2, 1, 0]);
+    let before_data_refs = data.reference_count();
+    // 512 MiB contains at most this many physical pages. Capacity exhaustion is
+    // an invalid fixture, never evidence of allocator exhaustion. The vector
+    // buffer itself is acquired before disabling IRQs and is never grown.
+    let mut pressure = Vec::with_capacity(512 * 1024 * 1024 / PAGE_SIZE + 1024);
+    let mut options = FrameAllocOptions::new();
+    options.zeroed(false);
+    let mut cuts: [_; 3] = core::array::from_fn(|_| None);
+    let mut overflow = false;
+    let irq_guard = irq::disable_local();
+    for nframes in [1, 2, 3, 4, 8] {
+        while let Ok(segment) = options.alloc_segment(nframes) {
+            if pressure.len() + nframes > pressure.capacity() {
+                overflow = true;
+                drop(segment);
+                break;
+            }
+            for frame in segment {
+                pressure.push(frame);
+            }
+        }
+    }
+    let held_count = pressure.len();
+    let initially_unavailable = options.alloc_frame().is_err();
+    for (available, cut) in cuts.iter_mut().enumerate() {
+        let mut released = 0;
+        for _ in 0..available {
+            if let Some(frame) = pressure.pop() {
+                drop(frame);
+                released += 1;
+            }
+        }
+        let error =
+            match vmar.handle_page_fault_with_reason(&PageFaultInfo::new(address, VmPerms::READ)) {
+                Err(PageFaultError::Other(error)) => Some((
+                    error.error(),
+                    error.is_user_frame_limit(),
+                    error.is_cgroup_frame_limit(),
+                )),
+                _ => None,
+            };
+        let hole = mapping_snapshot(&vmar, address);
+        let old = mapping_snapshot(&vmar, old_address);
+        let after_counters = counters();
+        let data_refs = data.reference_count();
+        // Reacquire returned private nodes through the same real 4 KiB owner.
+        // Fixed slots bound this even if a regression returns extra capacity.
+        let mut returned = [None, None, None];
+        let mut refunded = 0;
+        for slot in &mut returned {
+            match options.alloc_frame() {
+                Ok(frame) => {
+                    *slot = Some(frame);
+                    refunded += 1;
+                }
+                Err(_) => break,
+            }
+        }
+        let unavailable_again = options.alloc_frame().is_err();
+        for frame in returned.into_iter().flatten() {
+            if pressure.len() == pressure.capacity() {
+                overflow = true;
+                drop(frame);
+            } else {
+                pressure.push(frame);
+            }
+        }
+        *cut = Some((
+            released,
+            error,
+            hole,
+            old,
+            after_counters,
+            data_refs,
+            refunded,
+            unavailable_again,
+        ));
+    }
+    // Release the original owners before any assertion, log, scheduler action,
+    // VMAR destruction, or heap bookkeeping destruction can run.
+    pressure.clear();
+    drop(irq_guard);
+    drop(pressure);
+    assert!(!overflow, "fixed bookkeeping exhausted; no qualification");
+    assert!(held_count > 8);
+    assert!(initially_unavailable);
+    for (available, cut) in cuts.into_iter().enumerate() {
+        let (released, error, hole, old, after_counters, data_refs, refunded, unavailable) =
+            cut.unwrap();
+        assert_eq!(released, available);
+        assert_eq!(error, Some((Errno::ENOMEM, false, false)));
+        assert_eq!(hole.as_ref(), Some(&before_hole));
+        assert_eq!(old.as_ref(), Some(&before_old));
+        assert_eq!(after_counters, [2, 2, 2, 1, 0]);
+        assert_eq!(data_refs, before_data_refs);
+        assert_eq!(refunded, available);
+        assert!(unavailable);
+    }
+    vmar.handle_page_fault(&PageFaultInfo::new(address, VmPerms::READ))
+        .unwrap();
+    let (mapped_data, _) = mapped(&vmar, address);
+    assert_eq!(mapped_data.paddr(), data.paddr());
+    assert_eq!(counters(), [2, 2, 2, 1, 1]);
+    assert_eq!(mapping_snapshot(&vmar, old_address), Some(before_old));
+    let mut byte = [0];
+    mapped_data.read_bytes(0, &mut byte).unwrap();
+    assert_eq!(byte, [37]);
+    old_frame.read_bytes(0, &mut byte).unwrap();
+    assert_eq!(byte, [91]);
+    drop(mapped_data);
+    drop(vmar);
+    drop(vmo);
+    grace();
+    assert_eq!(account.current_pages(), 2);
+    drop(data);
+    drop(old_frame);
+    assert_eq!(account.current_pages(), 0);
+    assert_eq!(leaf.snapshot().pages, 0);
+    assert_eq!(parent.snapshot().pages, 0);
+    ostd::early_println!(
+        "VMAR_PHYSICAL_PT_NOMEMORY held_frames={} ordinary_4k_windows=0,1,2 unpublished_nodes_refunded=0,1,2 recovered=true global_recovery_guarantee=false",
+        held_count,
+    );
+}
