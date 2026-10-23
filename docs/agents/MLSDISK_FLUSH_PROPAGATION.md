@@ -1,5 +1,10 @@
 # MLSDisk flush completion and error propagation
 
+This document records the four-test flush slice. The subsequent
+[entropy failure contract](MLSDISK_ENTROPY_FAILURE.md) extends the complete suite
+to 11 tests and supersedes the entropy/journal error entries below. Neither
+document substitutes for same-source native evidence.
+
 This change fixes a concrete persistence-reporting defect in the experimental
 `aster-mlsdisk` crate. In source `10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd`,
 `RawDisk::flush` returned `Ok(())` without asking its underlying block device to

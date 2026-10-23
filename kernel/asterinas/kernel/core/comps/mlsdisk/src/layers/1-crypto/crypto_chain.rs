@@ -79,13 +79,13 @@ impl<L: BlockLog> CryptoChain<L> {
     pub(crate) const AVAIL_BLOCK_SIZE: usize = BLOCK_SIZE - size_of::<Footer>();
 
     /// Construct a new `CryptoChain` using `block_log: L` as the storage.
-    pub(crate) fn new(block_log: L) -> Self {
-        Self {
+    pub(crate) fn new(block_log: L) -> Result<Self> {
+        Ok(Self {
             block_log,
-            key: Key::random(),
+            key: Key::random()?,
             block_range: 0..0,
             block_macs: Vec::new(),
-        }
+        })
     }
 
     /// Recover an existing `CryptoChain` backed by `block_log: L`,
@@ -151,7 +151,7 @@ impl<L: BlockLog> CryptoChain<L> {
 
         // Encrypt payload.
         let aead = Aead::new();
-        let this_iv = Iv::random();
+        let this_iv = Iv::random()?;
         let pre_mac = self.block_macs.last().copied().unwrap_or_default();
         let output = &mut block_buf.as_mut_slice()[..buf.len()];
         let this_mac = aead.encrypt(buf, self.key(), &this_iv, &pre_mac, output)?;
@@ -339,7 +339,7 @@ mod tests {
         let disk = MemDisk::create(16).unwrap();
         let block_ring = BlockRing::new(disk);
         block_ring.set_cursor(0);
-        let chain = CryptoChain::new(block_ring);
+        let chain = CryptoChain::new(block_ring).unwrap();
 
         assert_eq!(chain.block_log.nblocks(), 0);
         assert_eq!(chain.block_range.start, 0);
@@ -352,7 +352,7 @@ mod tests {
         let disk = MemDisk::create(16).unwrap();
         let block_ring = BlockRing::new(disk);
         block_ring.set_cursor(0);
-        let mut chain = CryptoChain::new(block_ring);
+        let mut chain = CryptoChain::new(block_ring).unwrap();
 
         let data = [1u8; 1024];
         chain.append(&data[..256]).unwrap();
@@ -380,7 +380,7 @@ mod tests {
             let block_ring = BlockRing::new(sub_disk);
             block_ring.set_cursor(0);
             let data = [1u8; 1024];
-            let mut chain = CryptoChain::new(block_ring);
+            let mut chain = CryptoChain::new(block_ring).unwrap();
             for _ in 0..4 {
                 chain.append(&data).unwrap();
             }

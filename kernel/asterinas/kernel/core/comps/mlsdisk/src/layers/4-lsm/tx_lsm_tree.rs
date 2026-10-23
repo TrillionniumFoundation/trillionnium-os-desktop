@@ -978,7 +978,7 @@ mod tests {
     fn tx_lsm_tree_fns() -> Result<()> {
         let nblocks = 102400;
         let mem_disk = MemDisk::create(nblocks)?;
-        let tx_log_store = Arc::new(TxLogStore::format(mem_disk, Key::random())?);
+        let tx_log_store = Arc::new(TxLogStore::format(mem_disk, Key::random().unwrap())?);
         let tx_lsm_tree: TxLsmTree<BlockId, Value, MemDisk> =
             TxLsmTree::format(tx_log_store.clone(), Arc::new(Factory), None, None)?;
 
@@ -990,8 +990,8 @@ mod tests {
                 i as BlockId,
                 Value {
                     hba: i as BlockId,
-                    key: Key::random(),
-                    mac: Mac::random(),
+                    key: Key::random().unwrap(),
+                    mac: Mac::random().unwrap(),
                 },
             );
             tx_lsm_tree.put(k, v)?;
@@ -1011,8 +1011,8 @@ mod tests {
                 i as BlockId,
                 Value {
                     hba: (i * 2) as BlockId,
-                    key: Key::random(),
-                    mac: Mac::random(),
+                    key: Key::random().unwrap(),
+                    mac: Mac::random().unwrap(),
                 },
             );
             tx_lsm_tree.put(k, v)?;
