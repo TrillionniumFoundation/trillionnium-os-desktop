@@ -69,8 +69,8 @@ unchanged and original frame references release on VM-space destruction.
 The original reserve exhaustion tests exercise the shared pending-node transaction
 at every missing-level cut. They do not qualify ordinary physical exhaustion.
 No global OOM scenario, kernel panic or global allocation-failure flag is added.
-Normal small ordinary page-table `NoMemory` under physical pressure remains an
-explicit unqualified case. The exact qualified source and limits are recorded below.
+At that earlier source, normal small ordinary page-table `NoMemory` under physical
+pressure was unqualified. The later physical-pressure qualification is recorded below.
 
 ## Source-bound native qualification
 
@@ -95,7 +95,7 @@ The actual zero-account rejection and original allocating-cursor comparison
 qualify the admission ordering. They do not prove small physical page-table
 allocation failure under memory pressure, nor whole-kernel OOM recovery.
 
-## Real ordinary 4 KiB allocation-failure regression (pending qualification)
+## Real ordinary 4 KiB allocation-failure regression
 
 The new `physical_page_table_nomemory_keeps_original_vmar_and_refunds_private_nodes`
 core test retains the original N0, 512 MiB and guest deadline. Its VMAR, root
@@ -131,7 +131,28 @@ may remain. No free counter, quota flag or injected allocation failure is used
 to manufacture a cut. Fixed bookkeeping overflow invalidates the test.
 
 The complete core inventory becomes 360 with 121 required names; all earlier
-tests remain. OSTD 230, allocator 20 and MLSDisk 15 are unchanged. Qualification
-of this new source is pending. This test does not qualify activated-table/TLB
+tests remain. OSTD 230, allocator 20 and MLSDisk 15 are unchanged. This test does
+not qualify activated-table/TLB
 removal, SMP, arbitrary syscall heap exhaustion, page-table resource charging,
 physical recovery authority or whole-kernel recovery.
+
+### Source-bound physical-pressure result
+
+The frozen source `180d6dea2da8472faef5876a21f5054197bccd7a` (tree
+`aae21dee05f6a0db69272d5f0ff4678fdccae9bd`) passed the complete original
+core 360/360 (121 required names), OSTD 230, allocator 20 and MLSDisk 15
+suites, each with raw QEMU status 33. OSTD retains only its three original TCG
+VMX soft skips. The new test actually held 125186 ordinary frames and exercised
+all three 0/1/2-frame windows, exact private-node refunds, unchanged old mappings
+and counters, recovery after pressure release, and final-reference refund.
+
+The source-matched ordinary ELF then passed 18 boot/QueryAbi checks and, on that
+same ELF, SGID 30, Unix ownership 12, proc Groups/NoNewPrivs 12, memfd 4, signal
+22, dumpability lifecycle 164, stat 54, TRACEME 15 and supplementary DAC 6. All
+guests completed without timeout and reaped their controlled children. The
+complete pipeline took 627.577 seconds; tracked source bytes remained unchanged.
+The [receipt](../../results/integration/2026-10-23-audit-closure/ordinary-pt-180d.json)
+records every retained ELF, raw serial, source identity, host check, and the two
+earlier host inventory-expectation failures. This is a real ordinary page-table
+allocation failure qualification within the private, unactivated VMAR fixture;
+it does not broaden the remaining heap, SMP, accounting or recovery guarantees.
