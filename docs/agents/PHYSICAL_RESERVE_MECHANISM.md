@@ -140,6 +140,13 @@ rejection tests does not establish that any allocator guest has passed.
 
 ## Remaining F04 work
 
+The original ordinary `alloc_segment(usize::MAX)` panic contract is retained;
+the explicit reserve API instead returns the checked overflow error before any
+withdrawal. The existing full OSTD expected-panic test and the reserve test for
+immutable failed huge requests must both execute. A first integrated 223-test
+OSTD run exposed this compatibility regression (222 passed, 1 failed); it remains
+recorded as failed and is not replaced by a smaller or changed test inventory.
+
 No production path currently creates this reserve or assigns its token to a
 sealed recovery image. A following change must carry explicitly authorized,
 bounded recovery allocation along the original image/VMAR and OSTD VmSpace/page

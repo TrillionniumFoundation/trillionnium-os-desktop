@@ -246,7 +246,14 @@ impl FrameAllocOptions {
     where
         F: FnMut(Paddr) -> M,
     {
-        let layout = segment_layout(nframes)?;
+        // Preserve the original ordinary API's panic for an impossible layout;
+        // its existing max_segment_creation test requires that contract. The
+        // explicit recovery API rejects overflow before withdrawing any frames.
+        let layout = if reserve.is_none() && nframes != 0 {
+            segment_layout(nframes).expect("invalid ordinary segment size")
+        } else {
+            segment_layout(nframes)?
+        };
         let allocator = get_global_frame_allocator();
         let start = match reserve {
             Some(token) => allocator.alloc_reserved(token, layout),
