@@ -7,6 +7,7 @@ pub mod notes_bootstrap;
 #[cfg(target_os = "linux")]
 pub mod notes_private_unix;
 pub mod notes_recovery;
+pub mod objective;
 pub mod observation;
 
 use serde::{Deserialize, Serialize};
@@ -272,6 +273,22 @@ pub struct HostResources {
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Request {
     Snapshot,
+    ObjectiveAvailability {
+        expected_instance: String,
+    },
+    ObjectiveSubmit {
+        client_intent_id: String,
+        text: String,
+        expected_instance: String,
+    },
+    ObjectiveStatus {
+        client_intent_id: String,
+        expected_instance: String,
+    },
+    ObjectiveCancel {
+        client_intent_id: String,
+        expected_instance: String,
+    },
     Launch {
         workspace: Workspace,
         app: AppKind,
@@ -286,6 +303,10 @@ pub enum Request {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Response {
+    Objective {
+        observation: objective::ObjectiveObservation,
+        session_instance: String,
+    },
     Snapshot {
         tasks: Vec<TaskRecord>,
         resources: HostResources,
@@ -355,6 +376,11 @@ pub fn parse_host_request(frame: &[u8]) -> io::Result<Request> {
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     let allowed: &[&str] = match fields.get("type").and_then(serde_json::Value::as_str) {
         Some("snapshot") => &["type"],
+        Some("objective_availability") => &["type", "expected_instance"],
+        Some("objective_submit") => &["type", "client_intent_id", "text", "expected_instance"],
+        Some("objective_status" | "objective_cancel") => {
+            &["type", "client_intent_id", "expected_instance"]
+        }
         Some("launch") => &["type", "workspace", "app", "expected_instance"],
         Some("cancel") => &["type", "id", "expected_instance"],
         _ => {
