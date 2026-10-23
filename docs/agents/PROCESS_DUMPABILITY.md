@@ -1,8 +1,7 @@
 # Process dumpability and sensitive proc access
 
 This slice replaces the successful `PR_SET_DUMPABLE` stub with an actual memory-image
-policy. Core-dump file generation is separate. Native qualification of this new
-source is pending; prior qualification belongs to its exact source and ELF.
+policy. Core-dump file generation is separate. Exact native qualification is recorded below; it belongs to that source and ELF.
 
 ## State and ownership
 
@@ -28,7 +27,7 @@ outside the existing loader are not redefined by this slice.
 
 ## Publication and access locks
 
-All nineteen original live credential mutation call sites now use a scoped
+All original live credential mutation call sites now use a scoped
 `with_credentials_mut` closure. The original credential Arc is edited; no new
 credential ledger or replacement authority is introduced. The borrowed
 `Credentials<ReadWriteOp>` has no Dup right, no DerefMut, and cannot escape the
@@ -117,3 +116,22 @@ Primary references: [Linux ptrace access](https://github.com/torvalds/linux/blob
 [credential publication](https://github.com/torvalds/linux/blob/v7.0/kernel/cred.c),
 [proc image lifetime and ownership](https://github.com/torvalds/linux/blob/v7.0/fs/proc/base.c),
 [stat field filtering](https://github.com/torvalds/linux/blob/v7.0/fs/proc/array.c).
+
+## Exact native qualification
+
+Frozen source `4d32d94f0a3647155245d0a1b1dbe0d3caec8e7f`, tree
+`dfeff07356b3255ad91722a4fd2bf91ad720abca`, passed the original unfiltered
+core 359 / 120 required, OSTD 230, allocator 20 and MLSDisk 15 suites. All four
+raw QEMU exits were 33; OSTD retained its three original TCG VMX skips.
+The source-matched ordinary kernel passed 18 boot/QueryAbi checks, then that same
+ELF passed SGID 30, Unix ownership 12, proc Groups/NoNewPrivs 12, memfd 4, signal 22,
+and the new lifecycle 164, stat 54 and TRACEME 15 ordered observations. Every new
+probe completed, reaped its children and returned raw exit 33 without timeout.
+Source snapshots stayed unchanged; the complete pipeline took 577.893 seconds.
+
+[The exact receipt](../../results/integration/2026-10-23-audit-closure/process-dumpable-4d32.json)
+binds all source, ELF, serial, probe and checker identities. Linux references and
+old-kernel failures remain separate; the old TRACEME timeout happened before PEEK
+and is not classified as a demonstrated memory-read bypass. Successful qualification
+does not supersede the open limitations above. Supplementary-group DAC membership
+is a separately reproduced issue awaiting its own implementation and qualification.

@@ -55,6 +55,9 @@ python3 -B tests/workloads/linux/process_dumpable/test_lifecycle_checker.py
 python3 -B tests/workloads/linux/process_dumpable/test_traceme_checker.py
 ```
 
-New-source native qualification is pending. This bounded component regression
+Source `4d32d94f0a3647155245d0a1b1dbe0d3caec8e7f` passed all three suites
+against the same freshly built ordinary ELF after the full original kernel suites.
+[The exact receipt](../../../../results/integration/2026-10-23-audit-closure/process-dumpable-4d32.json)
+records the source and artifact identities. This bounded component regression
 does not certify complete Linux ptrace compatibility, general process isolation,
 core-dump writing, user namespaces, or production Hepta authority.
