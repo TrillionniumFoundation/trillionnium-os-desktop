@@ -143,7 +143,8 @@ int main(int argc, char **argv)
         fd = open("/dev/hepta-control", O_RDWR | O_CLOEXEC);
         int ok = fd >= 0 && ioctl(fd, request_number, transport) == 0 && check_query(response, sizeof(response)) == 0;
         if (fd >= 0) close(fd);
-        result("hos2_same_boot", ok && memcmp(response + HEADER, identity, 16) == 0);
+        // Original HOSR header bytes40..56 are boot_id; body starts with image_space_id.
+        result("hos2_same_boot", ok && memcmp(response + 40, identity, 16) == 0);
     }
     uuid[36] = 0;
     printf("BOOT_ID_UUID=%s\nBOOT_ID_COMPLETE cases=%u failures=%u\n", uuid, cases, failures);
