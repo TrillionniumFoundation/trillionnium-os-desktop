@@ -19,7 +19,7 @@ use crate::{
             DequeuedSignal, PauseReason,
             c_types::siginfo_t,
             constants::{CLD_TRAPPED, SIGCHLD, SIGKILL, SIGTRAP},
-            signals::{kernel::KernelSignal, raw::RawSignal, user::UserSignal},
+            signals::{OwnedSignal, kernel::KernelSignal, raw::RawSignal, user::UserSignal},
         },
     },
     thread::{Thread, Tid},
@@ -335,7 +335,7 @@ impl PosixThread {
 
         for tracee in tracees_to_kill {
             let tracee = tracee.as_posix_thread().unwrap();
-            tracee.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+            tracee.enqueue_owned_signal(OwnedSignal::new(KernelSignal::new(SIGKILL)));
         }
     }
 }
@@ -431,7 +431,7 @@ impl TraceeStatus {
 
         let siginfo = event.siginfo(ctx);
         let signal = Box::new(RawSignal::new(siginfo));
-        let signal = DequeuedSignal::FromThread(signal);
+        let signal = DequeuedSignal::FromThread(OwnedSignal::from_box(signal));
         let wait_status = PtraceWaitStatus::from_event(&event);
 
         self.do_ptrace_stop(
@@ -461,7 +461,7 @@ impl TraceeStatus {
 
         let siginfo = util::syscall_stop_siginfo(&state.options, ctx);
         let signal = Box::new(RawSignal::new(siginfo));
-        let signal = DequeuedSignal::FromThread(signal);
+        let signal = DequeuedSignal::FromThread(OwnedSignal::from_box(signal));
         let wait_status = PtraceWaitStatus::from_syscall(&state.options);
 
         self.do_ptrace_stop(state, tracer, signal, wait_status, None, ctx, user_ctx)

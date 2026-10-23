@@ -30,7 +30,7 @@ use crate::{
         signal::{
             HandlePendingSignal, PauseReason, SigStack,
             constants::{SIGCHLD, SIGKILL},
-            signals::kernel::KernelSignal,
+            signals::{OwnedSignal, kernel::KernelSignal},
         },
     },
     vm::vmar::VmarHandle,
@@ -128,7 +128,7 @@ pub(crate) fn do_execve(
         // while SIGKILL or the last-thread cleanup is still pending.
         ctx.process.close_hepta_image();
         ctx.posix_thread
-            .enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+            .enqueue_owned_signal(OwnedSignal::new(KernelSignal::new(SIGKILL)));
     }
 
     ctx.process.tasks().lock().finish_execve();

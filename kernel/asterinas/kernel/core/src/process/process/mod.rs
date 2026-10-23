@@ -16,7 +16,7 @@ use super::{
     signal::{
         sig_disposition::SigDispositions,
         sig_num::{AtomicSigNum, SigNum},
-        signals::Signal,
+        signals::{OwnedSignal, Signal},
     },
     status::ProcessStatus,
     task_set::TaskSet,
@@ -674,11 +674,16 @@ impl Process {
     /// Therefore, unless the caller can ensure that there are no permission issues,
     /// this method should be used to enqueue kernel signals or fault signals.
     pub(crate) fn enqueue_signal(&self, signal: Box<dyn Signal>) {
+        self.enqueue_owned_signal(OwnedSignal::from_box(signal));
+    }
+
+    /// Same permission precondition and wake order as `enqueue_signal`.
+    pub(crate) fn enqueue_owned_signal(&self, signal: OwnedSignal) {
         if self.status.is_zombie() {
             return;
         }
 
-        self.sig_queues.enqueue(signal);
+        self.sig_queues.enqueue_owned(signal);
 
         for task in self.tasks.lock().as_slice() {
             let posix_thread = task.as_posix_thread().unwrap();

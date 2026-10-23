@@ -3,7 +3,11 @@
 use super::{
     Pgid, Pid, Process, pid_table,
     posix_thread::AsPosixThread,
-    signal::{constants::SIGCONT, sig_num::SigNum, signals::Signal},
+    signal::{
+        constants::SIGCONT,
+        sig_num::SigNum,
+        signals::{OwnedSignal, Signal},
+    },
 };
 use crate::{
     prelude::*,
@@ -20,6 +24,11 @@ use crate::{
 /// If `signal` is `None`, this method will only check permission without sending
 /// any signal.
 pub(crate) fn kill(pid: Pid, signal: Option<Box<dyn Signal>>, ctx: &Context) -> Result<()> {
+    kill_owned(pid, signal.map(OwnedSignal::from_box), ctx)
+}
+
+/// Same permission checks as `kill`, retaining the prepared signal owner.
+pub(crate) fn kill_owned(pid: Pid, signal: Option<OwnedSignal>, ctx: &Context) -> Result<()> {
     // Fast path: If the signal is sent to self, we can skip most checks.
     if pid == ctx.process.pid() {
         let Some(signal) = signal else {
@@ -28,7 +37,7 @@ pub(crate) fn kill(pid: Pid, signal: Option<Box<dyn Signal>>, ctx: &Context) -> 
 
         if !ctx.posix_thread.has_signal_blocked(signal.num()) {
             // Killing the current thread does not raise any permission issues.
-            ctx.posix_thread.enqueue_signal(signal);
+            ctx.posix_thread.enqueue_owned_signal(signal);
             return Ok(());
         }
 
@@ -64,11 +73,7 @@ pub(crate) fn kill_group<S: Signal + Clone>(
 
     let inner = process_group.lock();
     for process in inner.iter() {
-        let res = kill_process(
-            &process,
-            signal.clone().map(|s| Box::new(s) as Box<dyn Signal>),
-            ctx,
-        );
+        let res = kill_process(&process, signal.clone().map(OwnedSignal::new), ctx);
         if res.is_err_and(|err| err.error() != Errno::EPERM) {
             result = res;
         }
@@ -88,6 +93,16 @@ pub(crate) fn tgkill(
     tid: Tid,
     tgid: Option<Pid>,
     signal: Option<Box<dyn Signal>>,
+    ctx: &Context,
+) -> Result<()> {
+    tgkill_owned(tid, tgid, signal.map(OwnedSignal::from_box), ctx)
+}
+
+/// Same target and permission checks as `tgkill`, without changing the owner.
+pub(crate) fn tgkill_owned(
+    tid: Tid,
+    tgid: Option<Pid>,
+    signal: Option<OwnedSignal>,
     ctx: &Context,
 ) -> Result<()> {
     let thread = pid_table::pid_table_mut()
@@ -117,7 +132,7 @@ pub(crate) fn tgkill(
     if let Some(signal) = signal {
         // We've checked the permission issues above.
         // FIXME: We should take some lock while checking the permission to avoid race conditions.
-        target_posix_thread.enqueue_signal(signal);
+        target_posix_thread.enqueue_owned_signal(signal);
     }
 
     Ok(())
@@ -136,11 +151,7 @@ pub(crate) fn kill_all<S: Signal + Clone>(signal: Option<S>, ctx: &Context) -> R
             continue;
         }
 
-        let res = kill_process(
-            &process,
-            signal.clone().map(|s| Box::new(s) as Box<dyn Signal>),
-            ctx,
-        );
+        let res = kill_process(&process, signal.clone().map(OwnedSignal::new), ctx);
         if res.is_err_and(|err| err.error() != Errno::EPERM) {
             result = res;
         }
@@ -149,13 +160,13 @@ pub(crate) fn kill_all<S: Signal + Clone>(signal: Option<S>, ctx: &Context) -> R
     result
 }
 
-fn kill_process(process: &Process, signal: Option<Box<dyn Signal>>, ctx: &Context) -> Result<()> {
+fn kill_process(process: &Process, signal: Option<OwnedSignal>, ctx: &Context) -> Result<()> {
     let signum = signal.as_ref().map(|signal| signal.num());
     let target_main_thread = process.main_thread();
     check_signal_perm(target_main_thread.as_posix_thread().unwrap(), ctx, signum)?;
 
     if let Some(signal) = signal {
-        process.enqueue_signal(signal);
+        process.enqueue_owned_signal(signal);
     }
 
     Ok(())

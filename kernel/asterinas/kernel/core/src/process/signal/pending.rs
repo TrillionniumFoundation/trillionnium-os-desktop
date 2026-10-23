@@ -9,7 +9,7 @@ use crate::{
             SigNum,
             constants::SIGKILL,
             sig_mask::{SigMask, SigSet},
-            signals::Signal,
+            signals::{OwnedSignal, Signal},
         },
     },
 };
@@ -17,13 +17,13 @@ use crate::{
 /// A signal dequeued from either the thread or the process queue,
 /// carrying its origin so it can be correctly re-enqueued later.
 pub(crate) enum DequeuedSignal {
-    FromProcess(Box<dyn Signal>),
-    FromThread(Box<dyn Signal>),
+    FromProcess(OwnedSignal),
+    FromThread(OwnedSignal),
 }
 
 impl DequeuedSignal {
     /// Consumes the dequeued signal and returns the inner signal.
-    pub(crate) fn unwrap(self) -> Box<dyn Signal> {
+    pub(crate) fn unwrap(self) -> OwnedSignal {
         match self {
             Self::FromProcess(signal) | Self::FromThread(signal) => signal,
         }
@@ -44,7 +44,9 @@ impl DequeuedSignal {
     /// Replaces the inner signal with `new_signal`, preserving the origin.
     pub(in crate::process) fn set_signal(&mut self, new_signal: Box<dyn Signal>) {
         match self {
-            Self::FromProcess(signal) | Self::FromThread(signal) => *signal = new_signal,
+            Self::FromProcess(signal) | Self::FromThread(signal) => {
+                *signal = OwnedSignal::from_box(new_signal)
+            }
         }
     }
 }

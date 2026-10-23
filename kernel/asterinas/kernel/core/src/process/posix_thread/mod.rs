@@ -12,12 +12,20 @@ use spin::Once;
 
 use super::{
     Credentials, Process,
-    signal::{sig_mask::AtomicSigMask, sig_num::SigNum, sig_queues::SigQueues, signals::Signal},
+    signal::{
+        sig_mask::AtomicSigMask,
+        sig_num::SigNum,
+        sig_queues::SigQueues,
+        signals::{OwnedSignal, Signal},
+    },
 };
 use crate::{
     events::IoEvents,
-    fs::{file::file_table::FileTable, thread_info::ThreadFsInfo},
-    fs::cgroupfs::{CgroupNode, CpuChargeOwner},
+    fs::{
+        cgroupfs::{CgroupNode, CpuChargeOwner},
+        file::file_table::FileTable,
+        thread_info::ThreadFsInfo,
+    },
     prelude::*,
     process::{
         ExitCode, Pid,
@@ -304,7 +312,12 @@ impl PosixThread {
     /// Therefore, unless the caller can ensure that there are no permission issues,
     /// this method should be used to enqueue kernel signals or fault signals.
     pub(crate) fn enqueue_signal(&self, signal: Box<dyn Signal>) {
-        self.sig_queues.enqueue(signal);
+        self.enqueue_owned_signal(OwnedSignal::from_box(signal));
+    }
+
+    /// Same permission precondition and wake order as `enqueue_signal`.
+    pub(crate) fn enqueue_owned_signal(&self, signal: OwnedSignal) {
+        self.sig_queues.enqueue_owned(signal);
         self.wake_signalled_waker();
     }
 

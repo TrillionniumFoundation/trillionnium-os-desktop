@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 347  # Retained 344 plus three ordinary fault allocation regressions.
+MINIMUM_CORE_TESTS = 352  # Retained 347 plus five original signal-owner regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -170,7 +170,16 @@ ORDINARY_FAULT_CORE_TESTS = tuple("aster_core::vm::vmar::fault_allocation_tests:
     "ordinary_fault_and_cow_keep_old_mapping_on_quota_denial_and_refund_last_frame",
     "fault_around_keeps_successful_prefix_and_charges_only_original_vmo_frame",
 ))
-REQUIRED_CORE_TESTS = (*ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+INLINE_SIGNAL_CORE_TESTS = (
+    *("aster_core::process::signal::owned_tests::" + suffix for suffix in (
+        "inline_fault_preserves_first_info_mask_and_original_priority",
+        "dynamic_realtime_keeps_original_fifo_and_drops_each_owner_once",
+        "inline_user_kill_keeps_siginfo_and_irreversible_original_receipt",
+        "inline_signal_wakes_original_thread_and_process_without_retaining_them",
+    )),
+    "aster_core::process::posix_thread::ptrace::util::inline_owner_tests::ptrace_stop_requeue_keeps_inline_owner_and_dynamic_injection_origin",
+)
+REQUIRED_CORE_TESTS = (*INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (

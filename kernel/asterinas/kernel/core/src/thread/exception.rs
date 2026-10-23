@@ -8,7 +8,7 @@ use ostd::{arch::cpu::context::UserContext, task::Task};
 
 use crate::{
     prelude::*,
-    process::signal::signals::fault::FaultSignal,
+    process::signal::signals::{OwnedSignal, fault::FaultSignal},
     thread::kernel_thread::AsKernelThread,
     vm::vmar::{PageFaultInfo, Vmar},
 };
@@ -89,7 +89,8 @@ fn generate_fault_signal(exception: CpuException, ctx: &Context, user_ctx: &User
     let Some(signal) = exception.to_fault_signal(user_ctx) else {
         panic!("`{:?}` cannot be handled via signals", exception);
     };
-    ctx.posix_thread.enqueue_signal(Box::new(signal));
+    ctx.posix_thread
+        .enqueue_owned_signal(OwnedSignal::new(signal));
 }
 
 pub(super) fn page_fault_handler(info: &CpuException) -> Result<(), ()> {

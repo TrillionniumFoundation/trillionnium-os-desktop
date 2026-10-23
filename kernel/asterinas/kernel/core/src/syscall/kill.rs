@@ -4,10 +4,10 @@ use super::SyscallReturn;
 use crate::{
     prelude::*,
     process::{
-        ProcessFilter, kill, kill_all, kill_group,
+        ProcessFilter, kill_all, kill_group, kill_owned,
         signal::{
             sig_num::SigNum,
-            signals::{Signal, user::UserSignal},
+            signals::{OwnedSignal, user::UserSignal},
         },
     },
 };
@@ -32,9 +32,7 @@ fn do_sys_kill(filter: ProcessFilter, sig_num: Option<SigNum>, ctx: &Context) ->
 
     match filter {
         ProcessFilter::Any => kill_all(signal, ctx)?,
-        ProcessFilter::WithPid(pid) => {
-            kill(pid, signal.map(|s| Box::new(s) as Box<dyn Signal>), ctx)?
-        }
+        ProcessFilter::WithPid(pid) => kill_owned(pid, signal.map(OwnedSignal::new), ctx)?,
         ProcessFilter::WithPgid(pgid) => kill_group(pgid, signal, ctx)?,
         ProcessFilter::WithPidfd(_) => unreachable!(),
     }

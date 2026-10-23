@@ -13,7 +13,11 @@ use crate::{
             alien_access::AlienAccessMode,
             ptrace::{PtraceContRequest, PtraceOptions},
         },
-        signal::{constants::SIGKILL, sig_num::SigNum, signals::user::UserSignal},
+        signal::{
+            constants::SIGKILL,
+            sig_num::SigNum,
+            signals::{OwnedSignal, user::UserSignal},
+        },
     },
     thread::{Thread, Tid},
 };
@@ -80,7 +84,7 @@ pub(super) fn sys_ptrace(
             let tracee = ctx.posix_thread.get_tracee(tid)?;
             let tracee = tracee.as_posix_thread().unwrap();
 
-            tracee.enqueue_signal(Box::new(UserSignal::new_kill(SIGKILL, ctx)));
+            tracee.enqueue_owned_signal(OwnedSignal::new(UserSignal::new_kill(SIGKILL, ctx)));
         }
         #[cfg(target_arch = "x86_64")]
         PtraceRequest::PTRACE_SINGLESTEP => {

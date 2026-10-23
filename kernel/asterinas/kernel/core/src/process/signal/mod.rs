@@ -2,6 +2,8 @@
 
 pub(crate) mod c_types;
 pub(crate) mod constants;
+#[cfg(ktest)]
+mod owned_tests;
 mod pause;
 mod pending;
 mod poll;
@@ -281,8 +283,8 @@ fn dequeue_pending_signal(ctx: &Context) -> Option<(DequeuedSignal, SigAction)> 
 /// This is intentionally consistent with Linux's behaviors.
 fn requeue_signal(ctx: &Context, signal: DequeuedSignal) {
     match signal {
-        DequeuedSignal::FromProcess(signal) => ctx.process.enqueue_signal(signal),
-        DequeuedSignal::FromThread(signal) => ctx.posix_thread.enqueue_signal(signal),
+        DequeuedSignal::FromProcess(signal) => ctx.process.enqueue_owned_signal(signal),
+        DequeuedSignal::FromThread(signal) => ctx.posix_thread.enqueue_owned_signal(signal),
     }
 }
 
