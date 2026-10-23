@@ -1,5 +1,9 @@
 # 开发与技术文档入口
 
+## 2026-10-23 全量施工与当前阻塞
+
+[#245 已合入主线、各 P0/P1 候选和逐模块执行绑定](agents/ORGAN_EXECUTION_2026_10_23.md) 记录本轮真实结果，包括最终 source/tree、原始 CI 产物、issuer/Session/F1 接合和仍未取得的生产及设备证据。下面 2026-10-22 的组合数字保持其原执行范围；新候选不继承旧整树通过。
+
 ## 2026-10-22 项目入口与支持边界
 
 本仓库以 Asterinas 派生 Rust 内核、HOS2 控制接口、Hepta 原用户态 owner 和 Rust 桌面构成 organ 开发主线。当前可复核范围包括固定 x86_64/QEMU 内核实验、Linux host 上的 Rust UI/Notes 目的端，以及各自固定来源的兼容/持久性测试。完整生产 G2、Asterinas 上的 Hepta/桌面、GPU/VMM 与手机仍有明确缺口；以 [A–G 当前状态和固定证据](STATUS.md) 为准。
@@ -19,7 +23,7 @@
 | 模块 | 开发/运行/验证入口 | 技术契约与当前边界 |
 | --- | --- | --- |
 | A00 集成 | [实施分工](agents/PLAN.md)、[状态与顺序](STATUS.md)、[跨仓 source profile](agents/ORGAN_RELEASE_PROFILE.md)、[验证总则](VALIDATION.md) | [架构](ARCHITECTURE.md)、[路线决策](DECISIONS.md)；同一源码组合必须有自己的验收。 |
-| A01 源码/启动 | [构建](../support/build/README.md)、[完整 ktest](../support/build/ktest/README.md) | [上游 pin](../support/upstream-lock.json)、[source verifier](../support/build/verify-source.py)；E820/timerfd/runner修复已合入，合并 E/F 后的 core269/required31/SMP272仍待实跑。 |
+| A01 源码/启动 | [构建](../support/build/README.md)、[完整 ktest](../support/build/ktest/README.md) | [上游 pin](../support/upstream-lock.json)、[source verifier](../support/build/verify-source.py)；#245 最终 A06 的 core275/OSTD222（含3项 soft-skip）已复核，见[本轮固定源码记录](agents/ORGAN_EXECUTION_2026_10_23.md)；后续整合 head 仍需各自验收。 |
 | A02 HOS2 codec | [验收收口](../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md)、[codec 源码](../libs/os-abi/src/lib.rs) | [NATIVE_ABI](NATIVE_ABI.md)；五操作 wire 不等于 ordinary 产品开放全部效果。 |
 | A03 control core | [验证手册](../tests/control/VALIDATION.md)、[运行脚本](../tests/control/run-validation.sh) | [API_CONTRACT](../libs/os-control/API_CONTRACT.md)；原 D/终态/退役 owner，内存历史与 Hepta 磁盘持久性分别验收。 |
 | A04 Linux/Hepta ELF | [主干交接](agents/handoffs/A04_LINUX_HEPTA_ELF.md)、[完整 Ubuntu32](../tests/workloads/linux/FULL_UBUNTU_PROFILE.md)、[SQLite guest restart](../tests/workloads/linux/SQLITE_GUEST_RESTART.md)、[rootfs](../support/rootfs/README.md) | [Linux 兼容契约](LINUX_COMPATIBILITY.md)、[实际缺口](../compat/linux/GAPS.md)；F 的 ext2 `filetype`/SQLite结果不等于原 Agentd 已在 guest 运行。 |
