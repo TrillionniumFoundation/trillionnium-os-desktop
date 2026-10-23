@@ -189,20 +189,19 @@ impl ObjectiveHistoryClient {
         })
     }
 
+    /// Current trusted endpoint and unchanged historical request metadata.
+    /// No connection, lookup, authentication or publication occurs here.
+    pub fn query_identity(&self, objective: &ProvidedObjective) -> SubmissionIdentity {
+        self.transport.submission_identity(objective)
+    }
+
     pub fn query_once(
         self,
         objective: ProvidedObjective,
         anchor: Option<HistoryAnchor>,
     ) -> HistoryAttempt {
         let transport = &self.transport;
-        let identity = SubmissionIdentity {
-            request_id: transport.request_id,
-            agent_id: transport.config.expected_agent_id.clone(),
-            spawn_generation: transport.config.spawn_generation,
-            expected_peer_uid: transport.config.expected_peer_uid,
-            expected_peer_pid: transport.expected_peer_pid,
-            objective: objective.identity.clone(),
-        };
+        let identity = self.query_identity(&objective);
         let mut bytes_written = 0;
         let mut frame_bytes = None;
         let result = (|| {

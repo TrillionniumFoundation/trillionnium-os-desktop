@@ -4,6 +4,7 @@ mod deadline;
 mod hepta;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
+mod objective_bridge;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -129,6 +130,7 @@ impl DisplayTracker {
 }
 
 struct Session {
+    objective: objective_bridge::ObjectiveBridge,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -156,6 +158,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            objective: objective_bridge::ObjectiveBridge::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -496,9 +499,57 @@ impl Session {
         }
     }
 
+    fn objective_request(
+        &self,
+        expected_instance: String,
+        command: trill_ui_core::objective::ObjectiveCommand,
+    ) -> Response {
+        if expected_instance != self.instance {
+            return Response::Error {
+                message: "Stale Session; Objective command not forwarded".into(),
+                session_instance: self.instance.clone(),
+            };
+        }
+        Response::Objective {
+            observation: self.objective.request(command),
+            session_instance: self.instance.clone(),
+        }
+    }
+
     fn handle(&mut self, request: Request) -> Response {
         self.refresh();
         match request {
+            Request::ObjectiveAvailability { expected_instance } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Availability {},
+            ),
+            Request::ObjectiveSubmit {
+                client_intent_id,
+                text,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Submit {
+                    intent: trill_ui_core::objective::ObjectiveIntent {
+                        client_intent_id,
+                        text,
+                    },
+                },
+            ),
+            Request::ObjectiveStatus {
+                client_intent_id,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Status { client_intent_id },
+            ),
+            Request::ObjectiveCancel {
+                client_intent_id,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Cancel { client_intent_id },
+            ),
             Request::Snapshot => {
                 let observation = self.display.observe(probe_host_wayland());
                 Response::Snapshot {
