@@ -65,7 +65,10 @@ grant-all or clear-data option. There is no `pm clear` path. A second invocation
 must refuse a preexisting test installation rather than adopt its authority.
 
 Every input action checks current user, installed APK SHA/UID, resumed original
-MainActivity, owned input focus and lock state. It uses a fresh unique UI dump
+MainActivity, owned input focus and lock state. Focus comes from the per-display
+`dumpsys window displays` state; the Android 17 individual-windows subsection
+omits `mCurrentFocus` and cannot prove input ownership. Missing or ambiguous
+focus still rejects the action. It uses a fresh unique UI dump
 path, matches the original resource IDs and validates owned enabled nodes and
 screen bounds. Coordinates are computed from that current hierarchy. The input
 must become focused before the fixed text `A08Persist42` is entered. Only the

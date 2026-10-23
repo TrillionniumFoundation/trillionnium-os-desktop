@@ -63,8 +63,10 @@ class FakeAdb:
             return 'Status: ok\nActivity: ' + gate.COMPONENT + '\n'
         if parts == ('shell', 'dumpsys', 'activity', 'activities'):
             return ' mResumedActivity: ActivityRecord{123 u0 ' + gate.COMPONENT + ' t9}\n'
-        if parts == ('shell', 'dumpsys', 'window', 'windows'):
-            return ' mCurrentFocus=Window{123 u0 ' + (gate.COMPONENT if self.focus else 'other/.Private') + '}\n'
+        if parts == ('shell', 'dumpsys', 'window', 'displays'):
+            # Measured Android 17 puts current focus in display state; the
+            # individual-windows subsection does not supply this authority.
+            return ' Display: mDisplayId=0 (organized)\n mCurrentFocus=Window{123 u0 ' + (gate.COMPONENT if self.focus else 'other/.Private') + '}\n'
         if parts == ('shell', 'pidof', gate.PACKAGE): return str(1000 + self.launches) + '\n' if self.running else ''
         if parts == ('shell', 'wm', 'size'): return 'Physical size: 1224x2992\n'
         if parts[:3] == ('shell', 'uiautomator', 'dump'):

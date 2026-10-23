@@ -255,8 +255,10 @@ def owned_foreground(adb, args, identity):
     require(any(re.search(user_component, line) for line in activities.splitlines()
                 if re.search(r'(?:topResumedActivity|mResumedActivity)\s*[:=]', line)),
             'owned MainActivity is not resumed')
-    windows = adb.cmd('shell', 'dumpsys', 'window', 'windows')
-    focused = [line for line in windows.splitlines() if 'mCurrentFocus=' in line]
+    # Android 17's windows subsection lists individual windows but omits the
+    # per-display current input focus. Require the actual display owner state.
+    displays = adb.cmd('shell', 'dumpsys', 'window', 'displays')
+    focused = [line for line in displays.splitlines() if 'mCurrentFocus=' in line]
     require(len(focused) == 1 and re.search(user_component, focused[0]),
             'current input focus does not belong to owned MainActivity')
     pids = adb.cmd('shell', 'pidof', PACKAGE).split()
