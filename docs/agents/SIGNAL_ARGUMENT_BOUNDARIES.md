@@ -56,8 +56,8 @@ OSTD 230, allocator 20 and MLSDisk 15 are unchanged. The standard ordinary
 builder and strict [syscall runner](../../tests/workloads/linux/inline_signal/README.md)
 retain 512 MiB, one CPU, original deadlines, actual reap and raw QEMU 33.
 The original fourteen assertions remain and eight bounded cases make twenty-two.
-Linux reference is separate from Asterinas qualification; new native qualification
-is pending. No test invokes kill(-1), unbounded allocation or global exhaustion.
+Linux reference is separate from the exact native qualification below. No test
+invokes kill(-1), unbounded allocation or global exhaustion.
 
 The first twenty-case Linux reference failed only because its new observation
 used libc sigtimedwait, which normalizes SI_TKILL to SI_USER. That failed source
@@ -82,3 +82,19 @@ recovery remain open. This adds no reserve and no shadow signal owner.
 - [Original helper changes](../../kernel/asterinas/kernel/core/src/process/kill.rs),
   [pidfd handler](../../kernel/asterinas/kernel/core/src/syscall/pidfd_send_signal.rs),
   [signal number](../../kernel/asterinas/kernel/core/src/process/signal/sig_num.rs).
+
+## Exact combined native qualification
+
+Frozen source `02521c15edbd8b2308248f28fcecf285b863a4c6`, tree
+`7def41fc2e4f043cc260f75abf68f617d7e7a9f5`, passed the original unfiltered
+core 353 / 114 required, OSTD 230, allocator 20 and MLSDisk 15 suites. All four
+raw QEMU exits were 33; only OSTD retained its three original TCG VMX skips.
+The same source's ordinary kernel passed 18 boot/QueryAbi checks, then the same
+ELF passed SGID 30, Unix ownership 12, proc Groups/NoNewPrivs 12, memfd 4 and
+all 22 ordered signal cases. The full source snapshots stayed unchanged.
+
+[The source-bound receipt](../../results/integration/2026-10-23-audit-closure/signal-bounds-0252.json)
+records all source, kernel, serial and probe identities, including the rejected
+6c26 baseline and corrected Linux observer. Existing memory sizes, deadlines,
+negative controls and original cases were retained. The open limits above are
+not superseded by these results.
