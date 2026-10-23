@@ -29,7 +29,8 @@ def serial_log(passed=MINIMUM_OSTD_TESTS, failed=0, filtered=0, skips=0):
     for index in range(passed + failed):
         skip = " [skipped: VMX unavailable]" if index < skips else ""
         status = "ok" if index < passed else "FAILED"
-        name = REQUIRED_OSTD_TESTS[0] if index == passed + failed - 1 else f"ostd::fixture::case_{index}"
+        offset = index - (passed + failed - len(REQUIRED_OSTD_TESTS))
+        name = REQUIRED_OSTD_TESTS[offset] if 0 <= offset < len(REQUIRED_OSTD_TESTS) else f"ostd::fixture::case_{index}"
         lines.append(f"test {name} ...{skip} \x1b[32m{status}\x1b[0m")
     status = "ok" if not failed else "FAILED"
     lines.extend((
@@ -75,17 +76,20 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertEqual(result["soft_skipped"], 0)
         self.assertEqual(result["exercised_passed_lower_bound"], MINIMUM_OSTD_TESTS)
 
-    def test_complete_ostd_requires_busy_claim_regression_without_soft_skip(self):
-        name = REQUIRED_OSTD_TESTS[0].encode()
-        for serial in (serial_log().replace(name, b"ostd::fixture::unrelated"),
-                       serial_log().replace(name + b" ...", name + b" ... [skipped: fixture]")):
-            self.evidence(serial)
-            with self.assertRaisesRegex(ValueError, "required OSTD test"):
-                check_guest(self.guest, "ostd")
+    def test_complete_ostd_requires_owner_and_fatal_regressions_without_soft_skip(self):
+        self.assertEqual(len(REQUIRED_OSTD_TESTS), 2)
+        for required in REQUIRED_OSTD_TESTS:
+            name = required.encode()
+            for serial in (serial_log().replace(name, b"ostd::fixture::unrelated"),
+                           serial_log().replace(name + b" ...", name + b" ... [skipped: fixture]")):
+                with self.subTest(required=required, serial=serial):
+                    self.evidence(serial)
+                    with self.assertRaisesRegex(ValueError, "required OSTD test"):
+                        check_guest(self.guest, "ostd")
 
     def test_ostd_owner_regression_cannot_replace_the_retained_baseline(self):
-        self.assertEqual(MINIMUM_OSTD_TESTS, 223)
-        for count in (1, 222):
+        self.assertEqual(MINIMUM_OSTD_TESTS, 224)
+        for count in (2, 223):
             self.evidence(serial_log(passed=count))
             with self.assertRaisesRegex(ValueError, "OSTD gate shrank"):
                 check_guest(self.guest, "ostd")
@@ -173,9 +177,9 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertIn("no real QEMU guest records", result.stdout)
 
     def test_complete_core_requires_all_named_regressions_exactly_once(self):
-        self.assertEqual(len(REQUIRED_CORE_TESTS), 53)
-        self.assertEqual(MINIMUM_CORE_TESTS, 291)
-        baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(238))
+        self.assertEqual(len(REQUIRED_CORE_TESTS), 56)
+        self.assertEqual(MINIMUM_CORE_TESTS, 295)
+        baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(239))
         names = (*baseline, *REQUIRED_CORE_TESTS)
         self.evidence(core_serial(names), crate="aster-core")
         self.assertEqual(check_guest(self.guest, "aster-core")["passed"], MINIMUM_CORE_TESTS)
@@ -197,7 +201,7 @@ class KtestCheckerTests(unittest.TestCase):
             check_guest(self.guest, "aster-core")
 
     def test_required_core_tests_cannot_pass_as_soft_skips(self):
-        baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(238))
+        baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(239))
         names = (*baseline, *REQUIRED_CORE_TESTS)
         for name in REQUIRED_CORE_TESTS:
             with self.subTest(soft_skipped=name):
@@ -210,7 +214,7 @@ class KtestCheckerTests(unittest.TestCase):
                     check_guest(self.guest, "aster-core")
 
     def test_pre_extension_238_test_success_cannot_pass_current_core_gate(self):
-        names = tuple(f"aster_core::fixture::old_{index}" for index in range(238))
+        names = tuple(f"aster_core::fixture::old_{index}" for index in range(239))
         self.evidence(core_serial(names), crate="aster-core")
         with self.assertRaisesRegex(ValueError, "required core tests"):
             check_guest(self.guest, "aster-core")

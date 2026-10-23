@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use super::{
     constants::*,
@@ -18,6 +18,11 @@ pub(crate) struct SigQueues {
     // The number of pending signals.
     // Useful for quickly determining if any signals are pending without locking `queues`.
     count: AtomicUsize,
+    /// Irreversible receipt of an uncatchable SIGKILL by this original queue.
+    /// Kept after dequeue so scheduler preemption during fatal cleanup cannot
+    /// strand the task again. Newly constructed queues start false; this is
+    /// never cloned into a new process/thread or reset by exec.
+    sigkill_received: AtomicBool,
     queues: Mutex<Queues>,
     signalfd_pollee: Pollee,
 }
@@ -26,6 +31,7 @@ impl SigQueues {
     pub(crate) fn new() -> Self {
         Self {
             count: AtomicUsize::new(0),
+            sigkill_received: AtomicBool::new(false),
             queues: Mutex::new(Queues::new()),
             signalfd_pollee: Pollee::new(),
         }
@@ -36,13 +42,23 @@ impl SigQueues {
     }
 
     pub(crate) fn enqueue(&self, signal: Box<dyn Signal>) {
+        let is_sigkill = signal.num() == SIGKILL;
         let mut queues = self.queues.lock();
         if queues.enqueue(signal) {
+            if is_sigkill {
+                self.sigkill_received.store(true, Ordering::Release);
+            }
             self.count.fetch_add(1, Ordering::Relaxed);
             // Avoid holding lock when notifying observers
             drop(queues);
             self.signalfd_pollee.notify(IoEvents::IN);
         }
+    }
+
+    /// Reads the original fatal receipt without taking a sleeping queue lock.
+    /// Safe to observe under the scheduler's IRQ-disabled runqueue lock.
+    pub(crate) fn has_received_sigkill(&self) -> bool {
+        self.sigkill_received.load(Ordering::Acquire)
     }
 
     pub(crate) fn dequeue(&self, blocked: &SigMask) -> Option<Box<dyn Signal>> {

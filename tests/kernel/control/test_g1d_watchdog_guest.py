@@ -27,7 +27,8 @@ def transcript(kind):
     lines.append("[hepta-g1d] initial control activated: manager=1 workload=2 recovery=3 "
                  "cap_ns=50000000 period_ns=100000000 lease_ns=300000000000 hepta_durability=false")
     lines.extend(f"G1D_BOOT role={role} pid={role} manager=1 workload=2 recovery=3 version=2 bytes=192" for role in (1, 2, 3))
-    lines.append(apply(1, 1, 0 if kind == "zero" else 25_000_000))
+    lines.append(gate.INIT_IMMUNITY)
+    lines.append(apply(1, 1, 0 if kind in gate.ZERO_CASES else 25_000_000))
     if kind != "healthy":
         lines.append(f"G1DW_MANAGER_CLOSE case={kind} original_revision=2 failure=exec_revoke")
     if kind == "recovered":
@@ -39,10 +40,14 @@ def transcript(kind):
     if kind == "stopped":
         lines.append(gate.CONTINUE)
     status, cap, revision, stopped = {"restore": (1, 50_000_000, 3, 0), "healthy": (0, 25_000_000, 2, 0),
-        "zero": (2, 0, 2, 0), "stopped": (3, 25_000_000, 2, 1), "recovered": (2, 50_000_000, 3, 0)}[kind]
+        "zero": (2, 0, 2, 0), "zerothread": (2, 0, 2, 0), "stopped": (3, 25_000_000, 2, 1), "recovered": (2, 50_000_000, 3, 0)}[kind]
     lines.append(f"G1DW_RESULT case={kind} status={status} cap={cap} revision={revision} due=7000000000 "
                  f"expires=32000000000 evaluated={0 if kind == 'healthy' else 7000000100} stopped={stopped} user_pause_intent_available=0")
     lines.append(f"G1DW_COMPLETE case={kind} timer=true original_owner=true durable=false reserve=false")
+    if kind in gate.ZERO_CASES:
+        lines.append(f"G1DW_FATAL_EXIT case={kind} signal=9 reaped=1 heartbeat_before=20 heartbeat_after=20 cap_before=0 cap_after=0 period_usec=100000")
+    if kind != "healthy":
+        lines.append(f"G1DW_REAP case={kind} workload_signal=9 recovery_exit=0")
     return "\n".join(lines).encode()
 
 
@@ -90,6 +95,23 @@ class OracleTests(unittest.TestCase):
 
     def test_no_real_followup_tick_cannot_pass(self):
         self.assertFalse(self.evaluate(transcript("restore").replace(b"after_ticks=5300", b"after_ticks=5000")))
+
+    def test_fatal_cleanup_requires_exact_reap_no_user_progress_and_zero_cap(self):
+        self.assertEqual(len(gate.CASES), 6)
+        for kind in gate.ZERO_CASES:
+            raw = transcript(kind)
+            for changed in (
+                raw.replace(b"heartbeat_after=20", b"heartbeat_after=21"),
+                raw.replace(b"cap_after=0", b"cap_after=1"),
+                raw.replace(b"signal=9 reaped=1", b"signal=15 reaped=1"),
+                raw.replace(b"workload_signal=9", b"workload_signal=15"),
+                b"\n".join(line for line in raw.splitlines() if not line.startswith(b"G1DW_FATAL_EXIT")),
+                b"\n".join(line for line in raw.splitlines() if not line.startswith(b"G1DW_REAP")),
+                raw + b"\n" + next(line for line in raw.splitlines() if line.startswith(b"G1DW_REAP")),
+            ):
+                self.assertFalse(self.evaluate(changed, kind))
+            self.assertFalse(self.evaluate(raw, kind, timeout=True))
+            self.assertFalse(self.evaluate(raw, kind, code=0))
 
     def test_automatic_recovery_has_no_recovery_request(self):
         raw = transcript("restore").replace(gate.ONE_USE.encode(), apply(3, 2, 50_000_000).encode() + b"\n" + gate.ONE_USE.encode())

@@ -17,14 +17,15 @@ PERMISSION_TESTS = {
     "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error",
 }
 
-# The default core gate keeps its 238-test baseline, five permission tests,
+# The default core gate keeps its 239-test baseline, five permission tests,
 # all twenty-one G1-c/G1-d regressions, two ExFAT tests and three ext2
 # durability regressions, five initial-readonly atime/sync regressions, six
 # physical user-frame regressions, two stopped-stack, three timestamp and six
-# independent watchdog owner/lifecycle regressions.
+# independent watchdog owner/lifecycle regressions, plus three fatal-cleanup
+# regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 291
+MINIMUM_CORE_TESTS = 295  # Retained 292 plus three fatal-cleanup regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -87,13 +88,22 @@ TIMESTAMP_CORE_TESTS = (
     "aster_core::fs::fs_impls::ramfs::fs::permission_tests::utimes_omit_preserves_newer_alias_timestamp",
     "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::utimes_ext2_denial_is_unchanged_and_success_is_persistent",
 )
-REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+FATAL_CLEANUP_CORE_TESTS = tuple(
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::" + suffix
+    for suffix in (
+        "zero_quota_thread_sigkill_resumes_only_fatal_cleanup_with_original_debit",
+        "zero_quota_process_sigkill_resumes_only_fatal_cleanup_with_original_debit",
+        "fatal_receipts_follow_original_signal_queues_without_constructor_inheritance",
+    )
+)
+REQUIRED_CORE_TESTS = (*FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 REQUIRED_OSTD_TESTS = (
     "ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner",
+    "ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code",
 )
-MINIMUM_OSTD_TESTS = 223  # Retain all 222 existing tests plus the owner regression.
+MINIMUM_OSTD_TESTS = 224  # Retained 223 plus fatal pre-entry regression.
 
 # A separate third crate preserves all nine original allocator tests. Changes
 # to this exact inventory require review, not a smaller denominator at runtime.
@@ -276,7 +286,7 @@ def check_guest(guest, crate, allow_filtered=False):
             if "[skipped:" in block:
                 raise ValueError("required OSTD test was soft-skipped: " + name)
         if passed < MINIMUM_OSTD_TESTS:
-            raise ValueError("complete OSTD gate shrank below the retained 222 tests plus owner regression")
+            raise ValueError("complete OSTD gate shrank below the retained 223 tests plus fatal pre-entry regression")
     return {"crate": crate, "declared": declared, "passed": passed, "failed": failed,
             "filtered": filtered, "soft_skipped": len(skips), "soft_skip_reasons": skips,
             "exercised_passed_lower_bound": passed - len(skips),

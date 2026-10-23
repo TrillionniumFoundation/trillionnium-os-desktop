@@ -8,6 +8,7 @@
 #define WATCHDOG_SMALL_CAP UINT64_C(25000000)
 #define WATCHDOG_TIMEOUT_NS UINT64_C(20000000000)
 static char watchdog_stat_path[448];
+static int zero_case(const char *kind) { return !strcmp(kind, "zero") || !strcmp(kind, "zerothread"); }
 
 static void watchdog_leaf(void) {
     char path[128], line[256];
@@ -21,6 +22,20 @@ static void watchdog_leaf(void) {
     *strchr(line + 4, '\n') = 0;
     CHECK(snprintf(watchdog_stat_path, sizeof watchdog_stat_path, "/sys/fs/cgroup%s/cpu.stat", line + 3) > 0,
           "watchdog_stat_path");
+}
+static void watchdog_assert_zero_cap(void) {
+    char path[448], value[96];
+    size_t prefix = strlen(watchdog_stat_path) - strlen("cpu.stat");
+    CHECK(prefix < sizeof path && snprintf(path, sizeof path, "%.*scpu.max", (int)prefix,
+          watchdog_stat_path) > 0, "watchdog_zero_cap_path");
+    int fd = open(path, O_RDONLY | O_CLOEXEC);
+    CHECK(fd >= 0, "watchdog_zero_cap_open");
+    ssize_t n = read(fd, value, sizeof value - 1);
+    CHECK(n > 0 && close(fd) == 0, "watchdog_zero_cap_read");
+    value[n] = 0;
+    uint64_t quota, period;
+    CHECK(sscanf(value, "%" SCNu64 " %" SCNu64, &quota, &period) == 2 && quota == 0 && period == 100000,
+          "watchdog_fatal_cleanup_preserves_zero_cap");
 }
 struct watchdog_stat {
     uint64_t armed, due, expires, status, evaluated, available, stopped, pause_available;
@@ -137,7 +152,7 @@ static void watchdog_recovery(const char *kind) {
               "watchdog_late_recovery_exact_replay");
         record("G1DW_ONE_USE denied=2 exact_replay=1 manager_next_D=not_seen");
     }
-    if (!strcmp(kind, "zero") || !strcmp(kind, "stopped")) {
+    if (zero_case(kind) || !strcmp(kind, "stopped")) {
         CHECK(heartbeat() == beat && after.cumulative == before.cumulative, "watchdog_preserves_pause");
         CHECK(final.stopped == (uint64_t)!strcmp(kind, "stopped"), "watchdog_original_jobstop_observation");
     }
@@ -172,15 +187,33 @@ static _Noreturn void watchdog_after_exec(int argc, char **argv) {
     CHECK(read_message("watchdog-before-close", &closed), "watchdog_saved_before_close");
     publish_message("watchdog-closed", &closed);
     (void)await_message("watchdog-done", 0);
-    CHECK(kill(workload_pid, SIGKILL) == 0, "watchdog_cleanup_workload");
+    const char *kind = argv[2];
+    uint64_t before_beat = heartbeat();
+    if (zero_case(kind)) { watchdog_leaf(); watchdog_assert_zero_cap(); }
+    if (!strcmp(kind, "zerothread")) {
+        CHECK(syscall(SYS_tgkill, workload_pid, workload_pid, SIGKILL) == 0, "watchdog_cleanup_thread");
+    } else {
+        CHECK(kill(workload_pid, SIGKILL) == 0, "watchdog_cleanup_workload");
+    }
     int status;
     CHECK(waitpid(workload_pid, &status, 0) == workload_pid && WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL,
           "watchdog_reap_workload");
     CHECK(waitpid(recovery_pid, &status, 0) == recovery_pid && WIFEXITED(status) && WEXITSTATUS(status) == 0,
           "watchdog_reap_recovery");
+    if (zero_case(kind)) {
+        uint64_t after_beat = heartbeat();
+        CHECK(after_beat == before_beat, "watchdog_fatal_cleanup_no_user_progress");
+        watchdog_assert_zero_cap();
+        record("G1DW_FATAL_EXIT case=%s signal=9 reaped=1 heartbeat_before=%" PRIu64
+               " heartbeat_after=%" PRIu64 " cap_before=0 cap_after=0 period_usec=100000",
+               kind, before_beat, after_beat);
+    }
+    record("G1DW_REAP case=%s workload_signal=9 recovery_exit=0", kind);
     reboot(RB_POWER_OFF); _exit(120);
 }
 static _Noreturn void watchdog_manager(const char *kind) {
+    CHECK(getpid() == 1 && kill(getpid(), SIGKILL) == 0, "watchdog_init_original_signal_immunity");
+    record("G1DW_INIT_SIGKILL_IGNORED original_policy=1");
     CHECK(mount("none", "/dev", "devtmpfs", 0, NULL) == 0 && mount("none", "/proc", "proc", 0, NULL) == 0 &&
           mount("none", "/sys", "sysfs", 0, NULL) == 0 && mount("none", "/sys/fs/cgroup", "cgroup2", 0, NULL) == 0,
           "watchdog_mounts");
@@ -194,7 +227,7 @@ static _Noreturn void watchdog_manager(const char *kind) {
     CHECK(heartbeat() > 0, "watchdog_workload_running");
     control_fd = open_control(1); query(control_fd, own_space);
     CHECK(memcmp(own_space, manager_space, 16) == 0, "watchdog_manager_identity");
-    uint64_t cap = !strcmp(kind, "zero") ? 0 : WATCHDOG_SMALL_CAP;
+    uint64_t cap = zero_case(kind) ? 0 : WATCHDOG_SMALL_CAP;
     struct usage before = usage_read(control_fd, MAX_CAP_NS);
     struct message closed = {.magic = IPC_MAGIC, .a = cap};
     struct usage after = install_ok(1, before, cap, closed.response, 1); closed.b = after.revision;
@@ -230,7 +263,7 @@ int main(int argc, char **argv) {
     if (argc > 1 && !strcmp(argv[1], "--watchdog-after-exec")) watchdog_after_exec(argc, argv);
     CHECK(argc == 2, "watchdog_initial_case");
     const char *kind = argv[1];
-    CHECK(!strcmp(kind, "restore") || !strcmp(kind, "healthy") || !strcmp(kind, "zero") ||
+    CHECK(!strcmp(kind, "restore") || !strcmp(kind, "healthy") || zero_case(kind) ||
           !strcmp(kind, "stopped") || !strcmp(kind, "recovered"), "watchdog_known_case");
     bootstrap();
     if (role == 1) watchdog_manager(kind);

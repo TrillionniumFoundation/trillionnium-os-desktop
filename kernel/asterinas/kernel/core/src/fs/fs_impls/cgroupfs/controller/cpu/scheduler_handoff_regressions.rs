@@ -6,7 +6,7 @@
 //! with controlled TSC endpoints. They do not replace OSTD's FIFO scheduler or
 //! qualify SMP context switching, BOOTTIME windows or native authorization.
 
-use alloc::sync::Arc;
+use alloc::{boxed::Box, sync::Arc};
 
 use aster_systree::{SysBranchNode, SysNode};
 use ostd::{
@@ -20,7 +20,17 @@ use super::{
 };
 use crate::{
     fs::cgroupfs::{CgroupMembership, CgroupNode, CgroupSysNode, CgroupSystem},
-    process::{Process, posix_thread::AsPosixThread, test_util},
+    process::{
+        Process,
+        posix_thread::AsPosixThread,
+        signal::{
+            HandlePendingSignal,
+            constants::{SIGKILL, SIGUSR1},
+            sig_mask::SigMask,
+            signals::kernel::KernelSignal,
+        },
+        test_util,
+    },
     sched::{CpuRunQueueFixture, SchedPolicy},
     thread::AsThread,
 };
@@ -266,4 +276,121 @@ fn waiting_dequeue_retains_its_owner_through_selection_retries() {
 #[ktest]
 fn exiting_dequeue_retains_its_owner_through_selection_retries() {
     exercise_dequeue("g1b-handoff-exit", UpdateFlags::Exit);
+}
+
+fn exercise_zero_quota_fatal_cleanup(name: &'static str, process_signal: bool) {
+    let fixture = Fixture::new(name);
+    let victim = &fixture.tasks[1];
+    let posix = victim.as_posix_thread().unwrap();
+    let cpu = owner(fixture.leaves[1].controller());
+    reset(&cpu, fixture.start, 0);
+    {
+        let mut state = cpu.inner.as_ref().unwrap().control().unwrap().max.lock();
+        state.max.used_ns = 13;
+        state.max.cumulative_ns = 21;
+        state.max.carry_debt_ns = 17;
+    }
+    let mut rq = fixture.runqueue(fixture.start);
+    rq.enqueue(victim.clone());
+    assert!(rq.pick(&[fixture.start + 1]).is_none());
+    assert!(rq.is_throttled(victim));
+
+    // A catchable signal never permits running user handlers at zero quota.
+    posix.enqueue_signal(Box::new(KernelSignal::new(SIGUSR1)));
+    assert!(rq.pick(&[fixture.start + 2]).is_none());
+    assert!(rq.is_throttled(victim));
+    assert!(!posix.has_fatal_sigkill());
+    assert_eq!(
+        posix
+            .dequeue_signal(&SigMask::from(0))
+            .unwrap()
+            .unwrap()
+            .num(),
+        SIGUSR1
+    );
+    if process_signal {
+        fixture.processes[1].enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    } else {
+        posix.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    }
+    assert!(posix.has_fatal_sigkill());
+    assert!(
+        !fixture.tasks[0]
+            .as_posix_thread()
+            .unwrap()
+            .has_fatal_sigkill()
+    );
+
+    let next = rq.pick(&[fixture.start + 10, fixture.start + 11]).unwrap();
+    assert!(Arc::ptr_eq(&next, victim));
+    assert!(!rq.is_throttled(victim));
+    assert_eq!(budget(&cpu).quota_ns(), 0);
+    assert_eq!(budget(&cpu).used_ns, 13);
+    assert_eq!(budget(&cpu).cumulative_ns, 21);
+    assert_eq!(budget(&cpu).carry_debt_ns, 17);
+
+    // Dequeuing the actual signal does not revoke cleanup eligibility mid-exit.
+    assert_eq!(
+        posix
+            .dequeue_signal(&SigMask::from(0))
+            .unwrap()
+            .unwrap()
+            .num(),
+        SIGKILL
+    );
+    assert!(posix.has_fatal_sigkill());
+    rq.update(UpdateFlags::Tick, fixture.start + 29);
+    assert_eq!(budget(&cpu).quota_ns(), 0);
+    assert_eq!(budget(&cpu).used_ns, 31);
+    assert_eq!(budget(&cpu).cumulative_ns, 39);
+    assert_eq!(budget(&cpu).carry_debt_ns, 17);
+    assert_eq!(rq.cfs_runtime(), Some((fixture.start + 29, 18, 18)));
+}
+
+#[ktest]
+fn zero_quota_thread_sigkill_resumes_only_fatal_cleanup_with_original_debit() {
+    exercise_zero_quota_fatal_cleanup("g1b-zero-thread-kill", false);
+}
+
+#[ktest]
+fn zero_quota_process_sigkill_resumes_only_fatal_cleanup_with_original_debit() {
+    exercise_zero_quota_fatal_cleanup("g1b-zero-process-kill", true);
+}
+
+#[ktest]
+fn fatal_receipts_follow_original_signal_queues_without_constructor_inheritance() {
+    let (process, tasks) = test_util::new_unstarted_process_with_threads(2);
+    let first = tasks[0].as_posix_thread().unwrap();
+    let sibling = tasks[1].as_posix_thread().unwrap();
+    first.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    assert!(first.has_fatal_sigkill());
+    assert!(!sibling.has_fatal_sigkill());
+    assert_eq!(
+        first
+            .dequeue_signal(&SigMask::from(0))
+            .unwrap()
+            .unwrap()
+            .num(),
+        SIGKILL
+    );
+    assert!(first.has_fatal_sigkill());
+    assert!(!sibling.has_fatal_sigkill());
+
+    process.enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+    assert!(first.has_fatal_sigkill() && sibling.has_fatal_sigkill());
+    assert_eq!(
+        sibling
+            .dequeue_signal(&SigMask::from(0))
+            .unwrap()
+            .unwrap()
+            .num(),
+        SIGKILL
+    );
+    assert!(first.has_fatal_sigkill() && sibling.has_fatal_sigkill());
+    // The same Process::new and PosixThreadBuilder constructors used by clone
+    // initialize new queues. No fatal receipt is copied from a source image.
+    let (_fresh, fresh_tasks) = test_util::new_unstarted_process_with_threads(2);
+    for task in fresh_tasks {
+        assert!(!task.as_posix_thread().unwrap().has_fatal_sigkill());
+    }
 }

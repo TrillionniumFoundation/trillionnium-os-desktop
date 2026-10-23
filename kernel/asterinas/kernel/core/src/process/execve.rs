@@ -294,7 +294,7 @@ fn wait_other_threads_exit(ctx: &Context) -> Result<()> {
 
         ctx.posix_thread
             .set_signalled_waker(waker.clone(), PauseReason::Sleep);
-        if ctx.has_pending_sigkill() {
+        if ctx.has_fatal_sigkill() {
             ctx.posix_thread.clear_signalled_waker();
             return_errno_with_message!(Errno::EAGAIN, "the current thread has received SIGKILL");
         }

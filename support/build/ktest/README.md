@@ -128,12 +128,19 @@ attestation against a host able to rewrite all evidence.
 
 The separate full OSTD run must also execute
 `ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner`
-once without soft-skipping, while preserving the 222-test baseline (223 total
-with this regression). This test checks failed preclaim of a real physical
+once without soft-skipping, while preserving the 222-test baseline. Together
+with `ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code`,
+the full OSTD gate now contains at least 224 tests. The first test checks failed preclaim of a real physical
 extent: only acquired original owners are released; a busy page and unclaimed
 tail retain their separate ownership. A successful allocator-only invocation
 does not execute this OSTD test because the original OSDK crate whitelist is
 preserved.
+
+The full core gate also retains its actual 292-test baseline plus three named
+zero-quota fatal-cleanup tests (295 total). These do not replace the real
+SIGKILL/wait/reap and user-progress checks in the six-boot watchdog suite. See
+[zero-CPU fatal cleanup](../../../docs/agents/ZERO_CPU_FATAL_CLEANUP.md) for the
+ownership and execution boundary.
 
 The preparation reports include the original seed tree/blob/SHA256, working
 root-lock SHA256 and resolved feature sets. Disabling generated

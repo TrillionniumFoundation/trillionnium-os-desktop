@@ -148,7 +148,7 @@ impl Pause for Waiter {
 
         let cancel_cond = || {
             let has_pending = match reason {
-                PauseReason::StopByPtrace => posix_thread.has_pending_sigkill(),
+                PauseReason::StopByPtrace => posix_thread.has_fatal_sigkill(),
                 _ => posix_thread.has_pending(),
             };
 

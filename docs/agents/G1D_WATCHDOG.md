@@ -88,10 +88,13 @@ expiry, unknown/backward clock and a late tick. These fault-cut fixtures are
 not physical clock-failure evidence.
 
 `tests/kernel/control/run_g1d_watchdog_guest.py` builds a frozen ordinary
-`ActionChoice::Run` G1-d kernel with the exact `g1d_watchdog.c` snapshot. Five
+`ActionChoice::Run` G1-d kernel with the exact `g1d_watchdog.c` snapshot. Six
 separate boots exercise manager exec revocation and independent timer recovery,
 healthy-manager refusal, zero-cap refusal, SIGSTOP preservation followed by an
-explicit SIGCONT, and an earlier recovery-role effect. The probe reads the
+explicit SIGCONT, an earlier recovery-role effect, and zero-cap thread-directed
+SIGKILL cleanup. The zero-cap cases require actual `waitpid`/reap, unchanged
+user heartbeats and zero quota after cleanup; see
+[Zero-CPU fatal cleanup](ZERO_CPU_FATAL_CLEANUP.md). The probe reads the
 original quota/usage, compares the original receipt's stable identity, waits
 through the real five-second interval, proves repeated ticks do not change the
 receipt/revision, and verifies a denied late D request replays identical bytes.

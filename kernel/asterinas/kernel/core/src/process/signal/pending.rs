@@ -64,6 +64,12 @@ pub(crate) trait HandlePendingSignal {
     /// Returns if a SIGKILL signal is pending.
     fn has_pending_sigkill(&self) -> bool;
 
+    /// Returns the original queue's irreversible SIGKILL receipt, including
+    /// after a sibling dequeues it or while the current task finishes exit.
+    /// Init retains the original immunity to default-action signals.
+    /// This observation never takes a sleeping signal-queue lock.
+    fn has_fatal_sigkill(&self) -> bool;
+
     /// Dequeues the next pending signal that is not masked by `mask`.
     ///
     /// Returns `None` if no such signal is available.
@@ -84,6 +90,12 @@ impl HandlePendingSignal for Context<'_> {
     fn has_pending_sigkill(&self) -> bool {
         self.posix_thread.sig_queues().has_pending_signal(SIGKILL)
             || self.process.sig_queues().has_pending_signal(SIGKILL)
+    }
+
+    fn has_fatal_sigkill(&self) -> bool {
+        !self.process.is_init_process()
+            && (self.posix_thread.sig_queues().has_received_sigkill()
+                || self.process.sig_queues().has_received_sigkill())
     }
 
     fn dequeue_signal(&self, mask: &SigMask) -> Option<DequeuedSignal> {
@@ -115,6 +127,13 @@ impl HandlePendingSignal for PosixThread {
             || self.process().sig_queues().has_pending_signal(SIGKILL)
     }
 
+    fn has_fatal_sigkill(&self) -> bool {
+        let process = self.process();
+        !process.is_init_process()
+            && (self.sig_queues().has_received_sigkill()
+                || process.sig_queues().has_received_sigkill())
+    }
+
     fn dequeue_signal(&self, mask: &SigMask) -> Option<DequeuedSignal> {
         self.sig_queues()
             .dequeue(mask)
@@ -129,6 +148,12 @@ impl HandlePendingSignal for PosixThread {
 }
 
 fn has_pending_signal(posix_thread: &PosixThread, process: &Process) -> bool {
+    if !process.is_init_process()
+        && (posix_thread.sig_queues().has_received_sigkill()
+            || process.sig_queues().has_received_sigkill())
+    {
+        return true;
+    }
     // Fast path: No signals are pending.
     if posix_thread.sig_queues().is_empty() && process.sig_queues().is_empty() {
         return false;

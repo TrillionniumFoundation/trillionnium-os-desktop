@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 """Qualify the fixed watchdog with actual sealed images and hardware timer ticks.
 
-Five separate boots use one exact ELF manifest. None of the successful recovery
+Six separate boots use one exact ELF manifest. None of the successful recovery
 checks call a test-only kernel hook. Fault-cut ktests cover late/unknown clocks;
 this gate does not claim those synthetic cuts as physical-clock fault evidence.
 """
@@ -23,13 +23,18 @@ import run_g1d_guest as control
 ROOT = Path(__file__).resolve().parents[3]
 ordinary, replay = control.ordinary, control.replay
 require, digest, save_json = control.require, control.digest, control.save_json
-CASES = ("restore", "healthy", "zero", "stopped", "recovered")
+CASES = ("restore", "healthy", "zero", "zerothread", "stopped", "recovered")
 RESULT = re.compile(r"^G1DW_RESULT case=([a-z]+) status=([0-9]+) cap=([0-9]+) revision=([0-9]+) "
                     r"due=([0-9]+) expires=([0-9]+) evaluated=([0-9]+) stopped=([01]) user_pause_intent_available=0$")
 RECEIPT = re.compile(r"^G1DW_RECEIPT previous=([0-9]+) revision=([0-9]+) effective=([0-9]+) "
                      r"consumed=([0-9]+) stable_low=([0-9]+) stable_high=([0-9]+)$")
 CLOSE = re.compile(r"^G1DW_MANAGER_CLOSE case=([a-z]+) original_revision=([0-9]+) failure=exec_revoke$")
 REPEAT = re.compile(r"^G1DW_REPEAT before_ticks=([0-9]+) after_ticks=([0-9]+) unchanged_receipt=1 unchanged_revision=1$")
+REAP = re.compile(r"^G1DW_REAP case=([a-z]+) workload_signal=9 recovery_exit=0$")
+FATAL_EXIT = re.compile(r"^G1DW_FATAL_EXIT case=([a-z]+) signal=9 reaped=1 heartbeat_before=([0-9]+) "
+                        r"heartbeat_after=([0-9]+) cap_before=0 cap_after=0 period_usec=100000$")
+ZERO_CASES = ("zero", "zerothread")
+INIT_IMMUNITY = "G1DW_INIT_SIGKILL_IGNORED original_policy=1"
 ONE_USE = "G1DW_ONE_USE denied=2 exact_replay=1 manager_next_D=not_seen"
 CONTINUE = "G1DW_EXPLICIT_CONTINUE signal=18 original_jobstop_cleared=1 budget_unchanged=1"
 
@@ -40,8 +45,8 @@ def evaluate(raw, code, timed_out, probe_info, kind):
     lines = text.splitlines()
     records = lambda pattern: control.records(lines, pattern)
     complete = f"G1DW_COMPLETE case={kind} timer=true original_owner=true durable=false reserve=false"
-    allowed = (ONE_USE, CONTINUE, complete)
-    patterns = (RESULT, RECEIPT, CLOSE, REPEAT, control.BOOT, control.APPLY, control.COMMITTED,
+    allowed = (ONE_USE, CONTINUE, complete, INIT_IMMUNITY)
+    patterns = (RESULT, RECEIPT, CLOSE, REPEAT, REAP, FATAL_EXIT, control.BOOT, control.APPLY, control.COMMITTED,
                 control.ROLE_COMMITTED, control.ACTIVATED)
     unknown = [line for line in lines if any(tag in line for tag in ("G1D_", "G1DW_", "[hepta-g1d]"))
                and line not in allowed and not any(pattern.fullmatch(line) for pattern in patterns)]
@@ -64,7 +69,7 @@ def evaluate(raw, code, timed_out, probe_info, kind):
                     < min(index for index, _ in boots))
     results, receipts, closes, applications = (records(pattern) for pattern in (RESULT, RECEIPT, CLOSE, control.APPLY))
     expected = {"restore": (1, 50_000_000, 2, 0), "healthy": (0, 25_000_000, 1, 0),
-                "zero": (2, 0, 1, 0), "stopped": (3, 25_000_000, 1, 1), "recovered": (2, 50_000_000, 2, 0)}[kind]
+                "zero": (2, 0, 1, 0), "zerothread": (2, 0, 1, 0), "stopped": (3, 25_000_000, 1, 1), "recovered": (2, 50_000_000, 2, 0)}[kind]
     effect = False
     if manifest and len(results) == 1 and len(applications) == (2 if kind == "recovered" else 1):
         result = results[0][1]
@@ -75,7 +80,7 @@ def evaluate(raw, code, timed_out, probe_info, kind):
                   and original > 0 and due > 0 and expires == due + 25_000_000_000)
         effect &= evaluated == 0 if kind == "healthy" else due <= evaluated < expires
         effect &= (applied[0]["role"] == 1 and applied[0]["sequence"] == 1
-                   and applied[0]["cap"] == (0 if kind == "zero" else 25_000_000)
+                   and applied[0]["cap"] == (0 if kind in ZERO_CASES else 25_000_000)
                    and applied[0]["revision"] == original + 1)
         for item in applied:
             effect &= (all(0 <= value < 1 << 64 for value in item.values())
@@ -97,16 +102,26 @@ def evaluate(raw, code, timed_out, probe_info, kind):
         effect &= (not closes if kind == "healthy" else len(closes) == 1 and closes[0][1][1] == kind
                    and int(closes[0][1][2]) == original + 1 and applications[0][0] < closes[0][0] < results[0][0])
     repeats = records(REPEAT)
-    markers = (lines.count(complete) == 1 and len(repeats) == (0 if kind == "healthy" else 1)
+    markers = (lines.count(INIT_IMMUNITY) == 1 and lines.count(complete) == 1 and len(repeats) == (0 if kind == "healthy" else 1)
                and lines.count(ONE_USE) == (1 if kind == "restore" else 0)
                and lines.count(CONTINUE) == (1 if kind == "stopped" else 0))
     if repeats:
         markers &= len(repeats) == 1 and 0 < int(repeats[0][1][1]) < int(repeats[0][1][2]) < 1 << 64
     if len(results) == 1 and lines.count(complete) == 1:
         markers &= results[0][0] < lines.index(complete)
-    return {"passed": bool(type(code) is int and code == 33 and timed_out is False and clean and manifest and effect and markers),
+    reaps, fatal_exits = records(REAP), records(FATAL_EXIT)
+    cleanup = len(reaps) == (0 if kind == "healthy" else 1) and len(fatal_exits) == (1 if kind in ZERO_CASES else 0)
+    if reaps:
+        cleanup &= (len(reaps) == 1 and reaps[0][1][1] == kind and lines.count(complete) == 1
+                    and lines.index(complete) < reaps[0][0])
+    if fatal_exits:
+        cleanup &= (len(fatal_exits) == 1 and fatal_exits[0][1][1] == kind
+                    and 0 < int(fatal_exits[0][1][2]) == int(fatal_exits[0][1][3]) < 1 << 64
+                    and len(reaps) == 1 and lines.count(complete) == 1
+                    and lines.index(complete) < fatal_exits[0][0] < reaps[0][0])
+    return {"passed": bool(type(code) is int and code == 33 and timed_out is False and clean and manifest and effect and markers and cleanup),
             "case": kind, "manifest_verified_before_any_resume": bool(manifest),
-            "original_owner_effect_and_deadline": bool(effect), "required_markers": bool(markers),
+            "original_owner_effect_and_deadline": bool(effect), "required_markers": bool(markers), "fatal_cleanup_and_reap": bool(cleanup),
             "unknown_records": unknown, "raw_serial_sha256": digest(raw), "raw_serial_size": len(raw),
             "qemu_exit": code, "timed_out": timed_out}
 
