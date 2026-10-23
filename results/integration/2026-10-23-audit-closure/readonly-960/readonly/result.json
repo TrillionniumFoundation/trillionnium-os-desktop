@@ -1,0 +1,432 @@
+{
+  "kernel_sha256": "572d7fde0032a55fe4a36d25d3e23f72a86d2b7bbdaed1ae39ac730adace341a",
+  "kernel_input": "/data/asterinas-audit-build.8tdrjboi/native-ordinary-960-01/product-kernel.elf",
+  "probe_source_sha256": "d67a7d4a390652779a8ae63ab8db9a2d7286cb984318c5ecca1d5ce883ecdc9e",
+  "runner_source_sha256": "38d1848dbfff450c54ed213f60c778a509c01f3b5af8d57c1d6e21353420b9c6",
+  "probe_sha256": "f3a69e6305b20164e089062900c9dda89e2a399ddc39062f4b2b04bf0cf136a7",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "initramfs_sha256": "747a2ae70ed9d210ff3dcc42df774cc220aa7ee5714ca661a5507194e3a4a9b6",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "disk_before_sha256": "3fe7f5d2a4c3a596ef81babd49ae07e0414ee8d230c71b042f996b72fab3bc80",
+  "disk_after_sha256": "3fe7f5d2a4c3a596ef81babd49ae07e0414ee8d230c71b042f996b72fab3bc80",
+  "compile_argv": [
+    "cc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "/data/asterinas-audit-build.8tdrjboi/desktop/tests/workloads/linux/readonly/readonly_probe.c",
+    "-o",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/readonly/probe.elf"
+  ],
+  "format_argv": [
+    "mkfs.ext2",
+    "-F",
+    "-q",
+    "-b",
+    "4096",
+    "-I",
+    "256",
+    "-O",
+    "none,filetype",
+    "-d",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/readonly/seed-dir",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/readonly/disk.raw"
+  ],
+  "qemu_argv": [
+    "qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/readonly/kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/readonly/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/readonly/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-drive",
+    "if=none,format=raw,id=readonly,cache=writeback,file=/data/asterinas-audit-build.8tdrjboi/readonly-960/readonly/disk.raw",
+    "-device",
+    "virtio-blk-pci,bus=pcie.0,addr=0x7,drive=readonly,disable-legacy=on,disable-modern=off"
+  ],
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 2.345244572032243,
+  "guest_complete": true,
+  "passed": true,
+  "disk_unchanged": true,
+  "expected_failure": false,
+  "retained_map_reproducer": false,
+  "legacy_remount": false,
+  "cases": [
+    {
+      "name": "open_ro_wronly",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "open_ro_rdwr",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "open_ro_trunc_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "open_ro_trunc_read",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "open_ro_create",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "ro_utimensat",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "ro_futimens",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "ro_utimens_omit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0
+    },
+    {
+      "name": "ro_path_truncate",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "ro_setxattr",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "ro_removexattr",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "readonly_fd_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 9
+    },
+    {
+      "name": "readonly_fd_pwrite",
+      "passed": true,
+      "actual": -1,
+      "errno": 9
+    },
+    {
+      "name": "readonly_fd_ftruncate",
+      "passed": true,
+      "actual": -1,
+      "errno": 22
+    },
+    {
+      "name": "open_ro_opath",
+      "passed": true,
+      "actual": 4,
+      "errno": 22
+    },
+    {
+      "name": "initial_ro_shared_0_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "initial_ro_shared_0_read",
+      "passed": true,
+      "actual": 140737471549440,
+      "errno": 0
+    },
+    {
+      "name": "initial_ro_shared_0_mprotect",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "initial_ro_shared_1_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "initial_ro_shared_1_read",
+      "passed": true,
+      "actual": 140737471549440,
+      "errno": 0
+    },
+    {
+      "name": "initial_ro_shared_1_mprotect",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "initial_ro_private_write",
+      "passed": true,
+      "actual": 140737471549440,
+      "errno": 0
+    },
+    {
+      "name": "initial_ro_private_cow",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "initial_ro_content_unchanged",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "readonly_same_policy_remount",
+      "passed": true,
+      "actual": 0,
+      "errno": 0
+    },
+    {
+      "name": "readonly_superblock_cannot_be_weakened",
+      "passed": true,
+      "actual": -1,
+      "errno": 95
+    },
+    {
+      "name": "readonly_alias_cannot_be_weakened",
+      "passed": true,
+      "actual": -1,
+      "errno": 95
+    },
+    {
+      "name": "open_readonly_superblock_alias",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "readonly_superblock_alias_truncate",
+      "passed": true,
+      "actual": -1,
+      "errno": 30
+    },
+    {
+      "name": "rw_write",
+      "passed": true,
+      "actual": 8,
+      "errno": 0
+    },
+    {
+      "name": "rw_pwrite",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "rw_ftruncate",
+      "passed": true,
+      "actual": 0,
+      "errno": 0
+    },
+    {
+      "name": "rw_futimens",
+      "passed": true,
+      "actual": 0,
+      "errno": 0
+    },
+    {
+      "name": "rw_truncate",
+      "passed": true,
+      "actual": 0,
+      "errno": 0
+    },
+    {
+      "name": "fd_survives_chmod_nonroot",
+      "passed": true,
+      "actual": 0,
+      "errno": 0
+    },
+    {
+      "name": "rw_readonly_fd_shared_0_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "rw_readonly_fd_shared_0_read",
+      "passed": true,
+      "actual": 140737471549440,
+      "errno": 0
+    },
+    {
+      "name": "rw_readonly_fd_shared_0_mprotect",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "rw_readonly_fd_shared_1_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "rw_readonly_fd_shared_1_read",
+      "passed": true,
+      "actual": 140737471549440,
+      "errno": 0
+    },
+    {
+      "name": "rw_readonly_fd_shared_1_mprotect",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "rw_readonly_fd_private_write",
+      "passed": true,
+      "actual": 140737471549440,
+      "errno": 0
+    },
+    {
+      "name": "rw_readonly_fd_private_cow",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "rw_readonly_fd_content_unchanged",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "writeonly_fd_none_0",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "writeonly_fd_none_1",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "writeonly_fd_none_2",
+      "passed": true,
+      "actual": -1,
+      "errno": 13
+    },
+    {
+      "name": "live_readonly_transition_rejected",
+      "passed": true,
+      "actual": -1,
+      "errno": 95
+    },
+    {
+      "name": "rejected_remount_fd_write",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "rejected_remount_fd_pwrite",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "rejected_remount_fd_ftruncate",
+      "passed": true,
+      "actual": 0,
+      "errno": 0
+    },
+    {
+      "name": "ro_device_open",
+      "passed": true,
+      "actual": 3,
+      "errno": 0
+    },
+    {
+      "name": "ro_device_write",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "ro_fifo_open",
+      "passed": true,
+      "actual": 3,
+      "errno": 0
+    },
+    {
+      "name": "ro_fifo_write",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    },
+    {
+      "name": "rw_alias_open",
+      "passed": true,
+      "actual": 3,
+      "errno": 0
+    },
+    {
+      "name": "rw_alias_write",
+      "passed": true,
+      "actual": 1,
+      "errno": 0
+    }
+  ],
+  "scope": "initial readonly ext2 and fail-closed live remount policy"
+}
