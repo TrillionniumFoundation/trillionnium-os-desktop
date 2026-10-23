@@ -1,5 +1,10 @@
 # Objective Session local evidence — 2026-10-23
 
+**Latest execution:** the original dependency blocks below were resolved. See
+[`LOCKED_EXECUTION.md`](LOCKED_EXECUTION.md) for actual Rust 1.88/1.95 package
+tests, Clippy, and the additional owner-start refusal regression. The original
+sections below are retained as the historical first attempt, not current status.
+
 This evidence describes the exact new adapter source on Desktop base
 `39c1d84ebf854958f5829c0118b0c8b92a6b4926` (tree
 `87bc4e4d72697a7583fb0afafe4db4b41582941c`). `source-manifest.json` binds each

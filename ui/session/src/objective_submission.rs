@@ -64,6 +64,12 @@ pub trait OriginalObjectiveRequestOwner: Send {
         exact_original: &[u8],
     ) -> Result<Self::Pending, RequestOwnerIssue>;
 
+    /// Consume this live ticket's unused local permission before transport I/O.
+    /// The owner rechecks its original live authority; an error never rearms the
+    /// ticket. A recovered ticket cannot pass. This is not another durable send
+    /// claim: the unique durable opportunity was already fenced during retain.
+    fn mark_send_started(&mut self, pending: &Self::Pending) -> Result<(), RequestOwnerIssue>;
+
     fn retain_submission_attempt(
         &mut self,
         pending: &Self::Pending,
@@ -248,6 +254,9 @@ impl<O: OriginalObjectiveRequestOwner> ObjectiveSubmission<O> {
             .pending
             .begin_send()
             .map_err(|_| SubmissionAdapterError::SendPermissionConsumed)?;
+        self.owner
+            .mark_send_started(self.pending.ticket())
+            .map_err(SubmissionAdapterError::Owner)?;
         self.submission = Some(send.transport.submit_once(send.objective));
         self.retain_observed_submission()
     }
