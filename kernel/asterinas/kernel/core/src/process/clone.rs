@@ -185,7 +185,10 @@ impl CloneArgs {
             && !clone_flags.contains(CloneFlags::CLONE_THREAD)
             && ctx.user_space().vmar().has_sealed_initial_image()
         {
-            return_errno_with_message!(Errno::EPERM, "trusted initial image cannot share its VMAR with another Process")
+            return_errno_with_message!(
+                Errno::EPERM,
+                "trusted initial image cannot share its VMAR with another Process"
+            )
         }
 
         // This checks the arguments for all clone-related system calls.
@@ -297,12 +300,38 @@ impl CloneFlags {
 ///
 /// FIXME: currently, the child process or thread will be scheduled to run at once,
 /// but this may not be the expected behavior.
+#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+fn external_vm_share_admission(
+    vmar: &Vmar,
+    flags: CloneFlags,
+) -> Result<Option<crate::util::external_mutation::ExternalMutation<'_>>> {
+    if flags.contains(CloneFlags::CLONE_VM) && !flags.contains(CloneFlags::CLONE_THREAD) {
+        Ok(Some(vmar.enter_external_mutation()?))
+    } else {
+        Ok(None)
+    }
+}
+
 pub(crate) fn clone_child(
     ctx: &Context,
     parent_context: &UserContext,
     clone_args: CloneArgs,
 ) -> Result<Tid> {
     clone_args.check(ctx)?;
+
+    // A foreign CLONE_VM alias (including vfork) must be fully constructed
+    // before a new image can be protected. Keep only an admission counter,
+    // never its mutex, through handle creation, task publication and errors.
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+    let shared_vmar = ctx
+        .thread_local
+        .vmar()
+        .borrow()
+        .as_ref()
+        .unwrap()
+        .clone_arc();
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+    let _external_share = external_vm_share_admission(&shared_vmar, clone_args.flags)?;
 
     if clone_args.flags.contains(CloneFlags::CLONE_THREAD) {
         let child_task = clone_child_task(ctx, parent_context, clone_args)?;
@@ -928,5 +957,62 @@ fn clone_parent(clone_flags: CloneFlags, current: &Arc<Process>) -> Cow<'_, Arc<
         Cow::Owned(current.parent().lock().process().upgrade().unwrap())
     } else {
         Cow::Borrowed(current)
+    }
+}
+
+#[cfg(ktest)]
+mod external_share_tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::{fs::pseudofs::SockFs, process::ProcessVm};
+
+    #[ktest]
+    fn shared_clone_and_vfork_admission_cannot_race_the_single_handle_fence() {
+        let vmar = VmarHandle::new(ProcessVm::new(SockFs::new_path()));
+        for flags in [
+            CloneFlags::CLONE_VM,
+            CloneFlags::CLONE_VM | CloneFlags::CLONE_VFORK,
+        ] {
+            let admission = external_vm_share_admission(&vmar, flags).unwrap();
+            // The allocation has not gained its second handle yet.
+            assert_eq!(
+                vmar.prepare_external_write_fence().err().unwrap().error(),
+                Errno::EBUSY
+            );
+            let shared = clone_vmar(&vmar, flags);
+            drop(admission);
+            // After admission ends, the actual live handle still blocks it.
+            assert_eq!(
+                vmar.prepare_external_write_fence().err().unwrap().error(),
+                Errno::EBUSY
+            );
+            drop(shared);
+        }
+        vmar.prepare_external_write_fence().unwrap().commit();
+        assert_eq!(
+            external_vm_share_admission(&vmar, CloneFlags::CLONE_VM)
+                .err()
+                .unwrap()
+                .error(),
+            Errno::EPERM
+        );
+        assert_eq!(
+            external_vm_share_admission(&vmar, CloneFlags::CLONE_VM | CloneFlags::CLONE_VFORK)
+                .err()
+                .unwrap()
+                .error(),
+            Errno::EPERM
+        );
+        let thread_flags = CloneFlags::CLONE_VM | CloneFlags::CLONE_THREAD;
+        assert!(
+            external_vm_share_admission(&vmar, thread_flags)
+                .unwrap()
+                .is_none()
+        );
+        let same_process_thread = clone_vmar(&vmar, thread_flags);
+        assert!(vmar.has_multiple_handles());
+        assert!(vmar.prepare_external_write_fence().unwrap().is_fenced());
+        drop(same_process_thread);
     }
 }

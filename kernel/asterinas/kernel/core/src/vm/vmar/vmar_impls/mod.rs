@@ -52,6 +52,10 @@ pub(crate) struct Vmar {
     process_vm: ProcessVm,
     /// The number of handles that this `Vmar` has (see [`super::VmarHandle`])
     num_handles: AtomicUsize,
+    /// Serializes irreversible post-exec protection with actual alien writes
+    /// and cross-Process shared-VMAR construction, not with normal own writes.
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+    external_mutation: crate::util::external_mutation::ExternalMutationFence,
     /// Weak self reference
     weak_self: Weak<Self>,
 }
@@ -70,6 +74,8 @@ impl Vmar {
             rss_counters,
             process_vm,
             num_handles: AtomicUsize::new(1),
+            #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+            external_mutation: crate::util::external_mutation::ExternalMutationFence::new(),
             weak_self: weak_self.clone(),
         })
     }
@@ -92,6 +98,30 @@ impl Vmar {
     /// Returns the attached `ProcessVm`.
     pub(crate) fn process_vm(&self) -> &ProcessVm {
         &self.process_vm
+    }
+
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+    pub(crate) fn enter_external_mutation(
+        &self,
+    ) -> Result<crate::util::external_mutation::ExternalMutation<'_>> {
+        self.external_mutation.enter()
+    }
+
+    /// An initial handoff requires one POSIX-thread handle. Arc/Weak snapshots
+    /// held by proc-mem files or caches are not handles and are not counted.
+    /// An exact retry after fencing can coexist with the owner's own threads.
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+    pub(crate) fn prepare_external_write_fence(
+        &self,
+    ) -> Result<crate::util::external_mutation::PreparedExternalFence<'_>> {
+        let prepared = self.external_mutation.prepare_fence()?;
+        if !prepared.is_fenced() && self.has_multiple_handles() {
+            return_errno_with_message!(
+                Errno::EBUSY,
+                "observe handoff requires an unshared single-thread VMAR"
+            );
+        }
+        Ok(prepared)
     }
 
     /// Returns whether this VMAR has multiple handles.

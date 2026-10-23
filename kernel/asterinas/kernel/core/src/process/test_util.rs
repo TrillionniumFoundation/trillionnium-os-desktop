@@ -12,7 +12,11 @@ use super::{
 };
 use crate::{
     fs::{cgroupfs::CgroupMembership, pseudofs::SockFs},
-    prelude::*, sched::Nice, thread::AsThread, time::clocks, util::random,
+    prelude::*,
+    sched::Nice,
+    thread::AsThread,
+    time::clocks,
+    util::random,
     vm::vmar::VmarHandle,
 };
 
@@ -84,4 +88,25 @@ pub(crate) fn mark_zombie(process: &Process) {
         process.status().set_zombie();
         membership.hide_zombie_process(process);
     }
+}
+
+/// Temporarily publishes a real Process/PidEntry for per-open procfs tests.
+/// The original PID table remains the only registry; cleanup removes the entry.
+pub(crate) fn with_registered_process<T>(
+    process: &Arc<Process>,
+    run: impl FnOnce(Arc<super::pid_table::PidEntry>) -> T,
+) -> T {
+    struct Registration<'a>(&'a Arc<Process>);
+    impl Drop for Registration<'_> {
+        fn drop(&mut self) {
+            super::pid_table::pid_table_mut().remove_process(self.0.pid());
+        }
+    }
+    let entry = {
+        let mut table = super::pid_table::pid_table_mut();
+        table.insert_process(process.pid(), process);
+        table.get_entry(process.pid()).unwrap()
+    };
+    let _registration = Registration(process);
+    run(entry)
 }

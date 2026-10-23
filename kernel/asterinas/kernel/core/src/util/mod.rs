@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 mod copy_compact;
+#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+pub(crate) mod external_mutation;
 pub mod ioctl;
 mod iovec;
 pub(crate) mod net;

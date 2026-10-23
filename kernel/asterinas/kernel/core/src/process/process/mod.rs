@@ -37,18 +37,22 @@ use crate::{
 };
 
 mod image;
+#[cfg(feature = "g1c-trusted-observe")]
+mod postexec_observe;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use postexec_observe::{ControlSessionRecipient, ObserveLaunchAuthority};
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 mod control_lock;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use control_lock::KernelControlBackend;
-#[cfg(feature = "g1d-trusted-control")]
-mod trusted_control;
 mod init_proc;
 mod job_control;
 mod process_group;
 mod session;
 mod terminal;
 mod timer_manager;
+#[cfg(feature = "g1d-trusted-control")]
+mod trusted_control;
 
 use atomic_integer_wrapper::define_atomic_version_of_integer_like_type;
 pub(crate) use image::ProcessImageKey;
@@ -163,6 +167,12 @@ pub struct Process {
     /// Lock order: VMAR -> tasks -> image, or tasks -> image. Image methods
     /// never acquire an outer lock or enter resource-accounting critical sections.
     hepta_image: Mutex<ProcessImageState>,
+
+    /// Once committed, external ptrace access remains fenced for this Process
+    /// allocation, including later exec images. Only the HOS2 grant is image-
+    /// scoped. This state is never reset by exec or inherited by fork.
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+    hepta_external_control: crate::util::external_mutation::ExternalMutationFence,
 
     // Namespaces
     /// The user namespace
@@ -281,6 +291,9 @@ impl Process {
                 timer_manager,
                 start_time: Jiffies::elapsed(),
                 hepta_image: Mutex::new(ProcessImageState::new()),
+                #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+                hepta_external_control: crate::util::external_mutation::ExternalMutationFence::new(
+                ),
                 user_ns: Mutex::new(user_ns),
             }
         })
@@ -346,6 +359,13 @@ impl Process {
     }
 
     // *********** Parent and child ***********
+
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+    pub(crate) fn external_control_fence(
+        &self,
+    ) -> &crate::util::external_mutation::ExternalMutationFence {
+        &self.hepta_external_control
+    }
 
     pub(crate) fn parent(&self) -> &ParentProcess {
         &self.parent

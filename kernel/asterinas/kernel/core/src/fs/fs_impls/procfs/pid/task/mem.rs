@@ -134,3 +134,70 @@ impl PerOpenFileOps for MemFileHandle {
         true
     }
 }
+
+#[cfg(ktest)]
+mod tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::{
+        process::test_util,
+        vm::{page_cache::VmoOptions, perms::VmPerms, vmar::VmarMapOffset},
+    };
+
+    #[ktest]
+    fn an_already_open_mem_handle_cannot_write_after_its_vmar_is_fenced() {
+        let (process, _task) = test_util::new_unstarted_process();
+        let base = 0x400000;
+        let ram = VmoOptions::new(PAGE_SIZE).alloc().unwrap();
+        process
+            .lock_vmar()
+            .unwrap()
+            .new_map(PAGE_SIZE, VmPerms::READ | VmPerms::WRITE)
+            .vmo(ram)
+            .offset(VmarMapOffset::FixedNoReplace(base))
+            .build()
+            .unwrap();
+        test_util::with_registered_process(&process, |entry| {
+            // The same concrete per-open handle and original VMAR snapshot
+            // used by MemFileOps::open, retained across the protection change.
+            let handle = MemFileHandle(TidDirOps::new(entry), process.lock_vmar().snapshot());
+            assert_eq!(
+                handle
+                    .write_at(
+                        base,
+                        &mut VmReader::from(&[0x33u8][..]).to_fallible(),
+                        StatusFlags::empty()
+                    )
+                    .unwrap(),
+                1
+            );
+            process
+                .lock_vmar()
+                .unwrap()
+                .prepare_external_write_fence()
+                .unwrap()
+                .commit();
+            let error = handle
+                .write_at(
+                    base,
+                    &mut VmReader::from(&[0x77u8][..]).to_fallible(),
+                    StatusFlags::empty(),
+                )
+                .unwrap_err();
+            assert_eq!(error.error(), Errno::EIO);
+            let mut value = [0u8; 1];
+            assert_eq!(
+                handle
+                    .read_at(
+                        base,
+                        &mut VmWriter::from(&mut value[..]).to_fallible(),
+                        StatusFlags::empty()
+                    )
+                    .unwrap(),
+                1
+            );
+            assert_eq!(value, [0x33]);
+        });
+    }
+}

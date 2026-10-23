@@ -48,7 +48,47 @@ struct PreparedInitialProcess {
     consumed: bool,
 }
 
+/// Consumed only by the internal post-exec observe authority constructor.
+/// No userspace bytes, PID, uid, or ELF digest can construct this token.
+#[cfg(feature = "g1c-trusted-observe")]
+pub(super) struct SealedObserveLauncher {
+    process: Arc<Process>,
+    key: ProcessImageKey,
+}
+
+#[cfg(feature = "g1c-trusted-observe")]
+impl SealedObserveLauncher {
+    pub(super) fn into_parts(self) -> (Arc<Process>, ProcessImageKey) {
+        (self.process, self.key)
+    }
+}
+
 impl PreparedInitialProcess {
+    /// Explicit boot-plan seam; existing G1-c/G1-d profiles never call it.
+    /// The observer is the original workload owner's read-only pin. Attaching
+    /// a recipient must never call NativeCpuObserver::prepare or reset policy.
+    #[cfg(feature = "g1c-trusted-observe")]
+    fn prepare_observe_launcher(
+        &self,
+        loaded: LoadedInitialImage,
+        entry: Vaddr,
+        observer: Arc<NativeCpuObserver>,
+        issued_ns: u64,
+    ) -> Result<super::ObserveLaunchAuthority> {
+        loaded.consume(&self.vmar, entry)?;
+        with_initial_image(&self.process, &self.vmar, &self.task, |image| {
+            image.arm_initial_observe_launcher(self.key)
+        })?;
+        super::ObserveLaunchAuthority::from_sealed_initial(
+            SealedObserveLauncher {
+                process: self.process.clone(),
+                key: self.key,
+            },
+            observer,
+            issued_ns,
+        )
+    }
+
     #[cfg(feature = "g1d-trusted-control")]
     fn activate_control(
         &self,

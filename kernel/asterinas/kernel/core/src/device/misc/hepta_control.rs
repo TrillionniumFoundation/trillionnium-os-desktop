@@ -110,6 +110,19 @@ impl Device for HeptaControlDevice {
     }
 }
 
+/// Extract a recipient from the actual per-open file, without using the fd
+/// on behalf of its owner. The existing ioctl caller/image checks are intact.
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) fn control_session_recipient(
+    file: &dyn crate::fs::file::FileLike,
+) -> Result<crate::process::ControlSessionRecipient> {
+    let session = file
+        .as_inode_handle_or_err()?
+        .downcast_open_file::<HeptaControlFile>()?
+        .ok_or_else(|| Error::with_message(Errno::EINVAL, "not an open HOS2 control session"))?;
+    session.recipient()
+}
+
 struct HeptaControlFile {
     space_id: [u8; 16],
     process: Weak<Process>,
@@ -117,6 +130,15 @@ struct HeptaControlFile {
 }
 
 impl HeptaControlFile {
+    #[cfg(feature = "g1c-trusted-observe")]
+    fn recipient(&self) -> Result<crate::process::ControlSessionRecipient> {
+        let process = self
+            .process
+            .upgrade()
+            .ok_or_else(|| Error::with_message(Errno::ESTALE, "HOS2 recipient process ended"))?;
+        crate::process::ControlSessionRecipient::capture(process, self.image_key)
+    }
+
     /// Verify the current caller is the exact process image that opened this
     /// file. Fork has another Process allocation; irreversible exec or exit
     /// closes the old image before teardown. Neither can reuse an inherited fd.
@@ -124,13 +146,64 @@ impl HeptaControlFile {
         let current = Process::current().ok_or_else(|| {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
         })?;
+        self.check_owner_session(&current)
+    }
+
+    fn check_owner_session(&self, current: &Arc<Process>) -> Result<()> {
         let Some(owner) = self.process.upgrade() else {
             return_errno_with_message!(Errno::EPERM, "HOS2 control process lifetime ended")
         };
-        if !Arc::ptr_eq(&owner, &current) {
+        if !Arc::ptr_eq(&owner, current) {
             return_errno_with_message!(Errno::EPERM, "HOS2 control fd belongs to another process")
         }
         current.check_hepta_capspace_session(self.image_key)
+    }
+}
+
+/// Real per-open object for unscheduled Process tests. No fd-table transfer,
+/// userspace ioctl, observation slot, or production launcher is fabricated.
+#[cfg(all(ktest, feature = "g1c-trusted-observe"))]
+pub(crate) fn test_control_session_recipient(
+    process: Arc<Process>,
+    key: ProcessImageKey,
+) -> Result<crate::process::ControlSessionRecipient> {
+    HeptaControlFile {
+        space_id: [0; 16],
+        process: Arc::downgrade(&process),
+        image_key: key,
+    }
+    .recipient()
+}
+
+#[cfg(all(ktest, feature = "g1c-trusted-observe"))]
+mod recipient_tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::process::test_util;
+
+    #[ktest]
+    fn actual_control_file_rejects_a_foreign_caller_and_an_ended_recipient() {
+        let (owner, _owner_task) = test_util::new_unstarted_process();
+        let key = owner.hepta_capspace_session().unwrap();
+        let file = HeptaControlFile {
+            space_id: [0; 16],
+            process: Arc::downgrade(&owner),
+            image_key: key,
+        };
+        let (broker, _broker_task) = test_util::new_unstarted_process();
+        assert!(file.recipient().is_ok());
+        assert_eq!(
+            file.check_owner_session(&broker).unwrap_err().error(),
+            Errno::EPERM
+        );
+        assert!(file.check_owner_session(&owner).is_ok());
+        drop(owner);
+        assert_eq!(file.recipient().err().unwrap().error(), Errno::ESTALE);
+        assert_eq!(
+            file.check_owner_session(&broker).unwrap_err().error(),
+            Errno::EPERM
+        );
     }
 }
 
@@ -218,14 +291,17 @@ impl PerOpenFileOps for HeptaControlFile {
             RequestPayload::QueryAbi => {
                 #[cfg(feature = "g1d-trusted-control")]
                 let (supported_ops, max_response_payload) = (
-                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16())
+                    (1u64 << Opcode::QueryAbi.as_u16())
+                        | (1u64 << Opcode::ReadUsage.as_u16())
                         | (1u64 << Opcode::InstallBudget.as_u16())
                         | (1u64 << Opcode::QueryDelivery.as_u16())
-                        | (1u64 << Opcode::RetireThrough.as_u16()), 64,
+                        | (1u64 << Opcode::RetireThrough.as_u16()),
+                    64,
                 );
                 #[cfg(all(feature = "g1c-trusted-observe", not(feature = "g1d-trusted-control")))]
                 let (supported_ops, max_response_payload) = (
-                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()), 64,
+                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()),
+                    64,
                 );
                 #[cfg(not(feature = "g1c-trusted-observe"))]
                 let (supported_ops, max_response_payload) = (1u64 << Opcode::QueryAbi.as_u16(), 48);
@@ -233,14 +309,18 @@ impl PerOpenFileOps for HeptaControlFile {
                 let max_request_payload = 40;
                 #[cfg(not(feature = "g1d-trusted-control"))]
                 let max_request_payload = 0;
-                (Status::Ok, 0, ResponsePayload::QueryAbi(QueryAbiResponse {
-                    space_id: self.space_id,
-                    page_size: u32::try_from(PAGE_SIZE).unwrap(),
-                    max_request_payload,
-                    max_response_payload,
-                    supported_ops,
-                    features: 0,
-                }))
+                (
+                    Status::Ok,
+                    0,
+                    ResponsePayload::QueryAbi(QueryAbiResponse {
+                        space_id: self.space_id,
+                        page_size: u32::try_from(PAGE_SIZE).unwrap(),
+                        max_request_payload,
+                        max_response_payload,
+                        supported_ops,
+                        features: 0,
+                    }),
+                )
             }
             #[cfg(feature = "g1c-trusted-observe")]
             RequestPayload::ReadUsage => {
@@ -248,33 +328,40 @@ impl PerOpenFileOps for HeptaControlFile {
                 let process = self.process.upgrade().ok_or_else(|| {
                     Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
                 })?;
-                #[cfg(feature = "g1d-trusted-control")]
-                let result = match process.dispatch_hepta_control(self.image_key, &request) {
-                    Ok((revision, payload)) => (Status::Ok, revision, payload),
-                    Err(status) => (status, 0, ResponsePayload::Empty),
-                };
-                #[cfg(not(feature = "g1d-trusted-control"))]
-                let result =
-                match process.read_hepta_initial_usage(
-                    self.image_key, request.target_slot, request.target_generation,
+                let result = match process.read_hepta_initial_usage(
+                    self.image_key,
+                    request.target_slot,
+                    request.target_generation,
                 ) {
-                    Ok(usage) => (Status::Ok, usage.revision, ResponsePayload::ReadUsage(wire::ReadUsageResponse {
-                        sample_boottime_ns: usage.sample_boottime_ns,
-                        cumulative_cpu_ns: usage.cumulative_cpu_ns,
-                        window_start_ns: usage.window_start_ns,
-                        window_consumed_ns: usage.window_consumed_ns,
-                        active_cap_ns: usage.active_cap_ns,
-                        active_period_ns: usage.active_period_ns,
-                        event_sequence: usage.event_sequence,
-                        dropped_events: usage.dropped_events,
-                    })),
+                    Ok(usage) => (
+                        Status::Ok,
+                        usage.revision,
+                        ResponsePayload::ReadUsage(wire::ReadUsageResponse {
+                            sample_boottime_ns: usage.sample_boottime_ns,
+                            cumulative_cpu_ns: usage.cumulative_cpu_ns,
+                            window_start_ns: usage.window_start_ns,
+                            window_consumed_ns: usage.window_consumed_ns,
+                            active_cap_ns: usage.active_cap_ns,
+                            active_period_ns: usage.active_period_ns,
+                            event_sequence: usage.event_sequence,
+                            dropped_events: usage.dropped_events,
+                        }),
+                    ),
+                    #[cfg(feature = "g1d-trusted-control")]
+                    Err(Status::PermissionDenied) => {
+                        match process.dispatch_hepta_control(self.image_key, &request) {
+                            Ok((revision, payload)) => (Status::Ok, revision, payload),
+                            Err(status) => (status, 0, ResponsePayload::Empty),
+                        }
+                    }
                     Err(status) => (status, 0, ResponsePayload::Empty),
                 };
                 result
             }
             #[cfg(feature = "g1d-trusted-control")]
-            RequestPayload::InstallBudget(_) | RequestPayload::QueryDelivery(_)
-                | RequestPayload::RetireThrough(_) => {
+            RequestPayload::InstallBudget(_)
+            | RequestPayload::QueryDelivery(_)
+            | RequestPayload::RetireThrough(_) => {
                 self.check_session()?;
                 let process = self.process.upgrade().ok_or_else(|| {
                     Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
@@ -286,7 +373,8 @@ impl PerOpenFileOps for HeptaControlFile {
             }
             #[cfg(not(feature = "g1d-trusted-control"))]
             _ => return_errno_with_message!(
-                Errno::EOPNOTSUPP, "recognized HOS2 resource operation not implemented"
+                Errno::EOPNOTSUPP,
+                "recognized HOS2 resource operation not implemented"
             ),
         };
         let response = Response {

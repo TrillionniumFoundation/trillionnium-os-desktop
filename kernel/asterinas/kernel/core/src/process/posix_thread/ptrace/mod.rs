@@ -48,6 +48,10 @@ impl PosixThread {
     ///
     /// Returns `EPERM` if this thread is already being traced.
     fn set_tracer(&self, tracer: Weak<Thread>) -> Result<()> {
+        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+        let process = self.process();
+        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+        let _external_access = process.external_control_fence().enter()?;
         let status = self.tracee_status.call_once(TraceeStatus::new);
         status.set_tracer(tracer)
     }
@@ -138,9 +142,7 @@ impl PosixThread {
     ///
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     pub(crate) fn ptrace_continue(&self, request: PtraceContRequest, ctx: &Context) -> Result<()> {
-        let status = self.get_tracee_status()?;
-
-        status.resume(request, ctx)?;
+        self.with_ptrace_access(|status| status.resume(request, ctx))?;
         self.wake_signalled_waker();
 
         Ok(())
@@ -153,8 +155,7 @@ impl PosixThread {
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     #[cfg(target_arch = "x86_64")]
     pub(crate) fn ptrace_get_regs(&self) -> Result<arch_ptrace::CUserRegsStruct> {
-        let status = self.get_tracee_status()?;
-        status.get_regs()
+        self.with_ptrace_access(TraceeStatus::get_regs)
     }
 
     /// Sets the general-purpose registers of this thread for ptrace.
@@ -164,8 +165,7 @@ impl PosixThread {
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     #[cfg(target_arch = "x86_64")]
     pub(crate) fn ptrace_set_regs(&self, regs: arch_ptrace::CUserRegsStruct) -> Result<()> {
-        let status = self.get_tracee_status()?;
-        status.set_regs(regs)
+        self.with_ptrace_access(|status| status.set_regs(regs))
     }
 
     /// Reads one word in the tracee's USER area.
@@ -175,8 +175,7 @@ impl PosixThread {
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     #[cfg(target_arch = "x86_64")]
     pub(crate) fn ptrace_peek_user(&self, offset: usize) -> Result<usize> {
-        let status = self.get_tracee_status()?;
-        status.peek_user(offset)
+        self.with_ptrace_access(|status| status.peek_user(offset))
     }
 
     /// Writes one word in the tracee's USER area.
@@ -186,8 +185,7 @@ impl PosixThread {
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     #[cfg(target_arch = "x86_64")]
     pub(crate) fn ptrace_poke_user(&self, offset: usize, value: usize) -> Result<()> {
-        let status = self.get_tracee_status()?;
-        status.poke_user(offset, value)
+        self.with_ptrace_access(|status| status.poke_user(offset, value))
     }
 
     /// Reads one word from the tracee's memory.
@@ -196,8 +194,7 @@ impl PosixThread {
     ///
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     pub(crate) fn ptrace_peek_data(&self, addr: usize) -> Result<usize> {
-        let status = self.get_tracee_status()?;
-        status.peek_data(self.weak_process(), addr)
+        self.with_ptrace_access(|status| status.peek_data(self.weak_process(), addr))
     }
 
     /// Writes one word to the tracee's memory.
@@ -206,8 +203,7 @@ impl PosixThread {
     ///
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     pub(crate) fn ptrace_poke_data(&self, addr: usize, value: usize) -> Result<()> {
-        let status = self.get_tracee_status()?;
-        status.poke_data(self.weak_process(), addr, value)
+        self.with_ptrace_access(|status| status.poke_data(self.weak_process(), addr, value))
     }
 
     /// Sets ptrace options for this thread.
@@ -216,8 +212,7 @@ impl PosixThread {
     ///
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     pub(crate) fn ptrace_set_options(&self, options: PtraceOptions) -> Result<()> {
-        let status = self.get_tracee_status()?;
-        status.set_options(options)
+        self.with_ptrace_access(|status| status.set_options(options))
     }
 
     /// Gets the event of the last ptrace-stop,
@@ -227,8 +222,7 @@ impl PosixThread {
     ///
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     pub(crate) fn ptrace_get_event(&self) -> Result<Option<PtraceEvent>> {
-        let status = self.get_tracee_status()?;
-        status.get_event()
+        self.with_ptrace_access(TraceeStatus::get_event)
     }
 
     /// Gets the signal info of this thread for ptrace.
@@ -237,8 +231,18 @@ impl PosixThread {
     ///
     /// Returns `ESRCH` if this thread is not ptrace-stopped.
     pub(crate) fn ptrace_get_siginfo(&self) -> Result<siginfo_t> {
-        let status = self.get_tracee_status()?;
-        status.get_siginfo()
+        self.with_ptrace_access(TraceeStatus::get_siginfo)
+    }
+
+    /// Includes read/peek operations: they can hold tracee state before the
+    /// VMAR lock. The grant path rejects their in-flight admission before it
+    /// inspects tracer state, avoiding a VMAR <-> tracee-state lock cycle.
+    fn with_ptrace_access<T>(&self, action: impl FnOnce(&TraceeStatus) -> Result<T>) -> Result<T> {
+        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+        let process = self.process();
+        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+        let _external_access = process.external_control_fence().enter()?;
+        action(self.get_tracee_status()?)
     }
 
     /// Returns the tracee status of this thread if it has ever been traced.
@@ -823,5 +827,63 @@ impl TraceeState {
 
     fn clear_orig_syscall_ret(&mut self) {
         self.orig_syscall_ret = Self::NOT_A_SYSCALL;
+    }
+}
+
+#[cfg(ktest)]
+mod external_fence_tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::{process::test_util, thread::AsThread};
+
+    #[ktest]
+    fn a_captured_tracee_reference_cannot_mutate_after_process_fencing_or_exec() {
+        let (process, task) = test_util::new_unstarted_process();
+        let captured = task.as_thread().unwrap().as_posix_thread().unwrap();
+        let status = captured.tracee_status.call_once(TraceeStatus::new);
+        status.is_stopped.store(true, Ordering::Relaxed);
+        captured
+            .ptrace_set_options(PtraceOptions::PTRACE_O_TRACEEXEC)
+            .unwrap();
+        captured
+            .with_ptrace_access(|_| {
+                assert_eq!(
+                    process
+                        .external_control_fence()
+                        .prepare_fence()
+                        .err()
+                        .unwrap()
+                        .error(),
+                    Errno::EBUSY
+                );
+                Ok(())
+            })
+            .unwrap();
+        process
+            .external_control_fence()
+            .prepare_fence()
+            .unwrap()
+            .commit();
+        assert_eq!(
+            captured
+                .ptrace_set_options(PtraceOptions::PTRACE_O_TRACEFORK)
+                .unwrap_err()
+                .error(),
+            Errno::EPERM
+        );
+        assert_eq!(
+            status.state.lock().options,
+            PtraceOptions::PTRACE_O_TRACEEXEC
+        );
+        process.begin_hepta_image_close();
+        process.commit_hepta_exec_image().unwrap();
+        assert_eq!(
+            captured
+                .ptrace_set_options(PtraceOptions::empty())
+                .unwrap_err()
+                .error(),
+            Errno::EPERM
+        );
     }
 }

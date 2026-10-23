@@ -9,8 +9,12 @@ use spin::Once;
 
 use super::registry::char::{MajorIdOwner, acquire_major};
 
-mod hwrng;
 mod hepta_control;
+mod hwrng;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use hepta_control::control_session_recipient;
+#[cfg(all(ktest, feature = "g1c-trusted-observe"))]
+pub(crate) use hepta_control::test_control_session_recipient;
 #[cfg(feature = "g1d-trusted-control")]
 pub(crate) use hepta_control::{boot_id as hepta_boot_id, image_space_id as hepta_image_space_id};
 #[cfg(all(target_arch = "x86_64", feature = "cvm_guest"))]

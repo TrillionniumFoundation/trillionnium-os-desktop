@@ -35,9 +35,11 @@ pub(crate) use namespace::{
     unshare::ContextUnshareAdminApi,
 };
 pub(crate) use pid_file::PidFile;
-pub use process::Process;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use process::KernelControlBackend;
+pub use process::Process;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use process::{ControlSessionRecipient, ObserveLaunchAuthority};
 pub(crate) use process::{
     ExitCode, INIT_PROCESS_PID, JobControl, Pgid, Pid, ProcessGroup, ProcessImageKey,
     ReapedChildrenStats, Session, Sid, Terminal, broadcast_signal_async, enqueue_signal_async,
