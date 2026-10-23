@@ -32,6 +32,20 @@ pub(super) fn handle_exception(ctx: &Context, user_ctx: &UserContext, exception:
 /// Handles the page fault occurs in the VMAR.
 fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> Result<(), ()> {
     if let Err(e) = vmar.handle_page_fault(page_fault_info) {
+        // The handler has released its VMAR, page-table and VMO locks. This
+        // diagnostic is evidence of the exact admission cause, not an OOM kill.
+        if e.is_user_frame_limit()
+            && let Some(owner) = vmar.user_memory_owner()
+            && owner.report_denial()
+        {
+            println!(
+                "[hepta-user-memory] denied pid={} address={} current_pages={} limit_pages={}",
+                crate::process::Process::current().map_or(0, |process| process.pid()),
+                page_fault_info.address(),
+                owner.current_pages(),
+                owner.limit_pages()
+            );
+        }
         warn!(
             "page fault handler failed: info: {:#x?}, err: {:?}",
             page_fault_info, e

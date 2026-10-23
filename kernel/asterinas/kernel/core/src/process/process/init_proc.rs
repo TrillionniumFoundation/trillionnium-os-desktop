@@ -217,8 +217,16 @@ fn allocate_initial_process(
     executable_path: &Path,
     resource_limits: ResourceLimits,
 ) -> (Arc<Process>, VmarHandle) {
+    allocate_initial_process_with_owner(executable_path, resource_limits, None)
+}
+
+fn allocate_initial_process_with_owner(
+    executable_path: &Path,
+    resource_limits: ResourceLimits,
+    owner: crate::vm::user_memory::UserMemoryOwner,
+) -> (Arc<Process>, VmarHandle) {
     let pid = allocate_posix_tid();
-    let vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
+    let vmar = VmarHandle::new_with_owner(ProcessVm::new(executable_path.clone()), owner);
     let nice = Nice::default();
     let oom_score_adj = 0;
     let sig_dispositions = Arc::new(Mutex::new(SigDispositions::default()));

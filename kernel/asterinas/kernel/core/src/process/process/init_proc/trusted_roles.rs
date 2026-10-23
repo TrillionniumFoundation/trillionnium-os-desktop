@@ -34,6 +34,9 @@ use crate::{
 const BOOT_PAGE_BYTES: u64 = 192;
 const WORKLOAD_ID: u32 = 60001;
 const WORKLOAD_AS_BYTES: u64 = 256 * 1024 * 1024;
+// Aggregate user-data frames, including the stopped initial image. This is
+// separate from virtual-address admission and is not a global memory reserve.
+const WORKLOAD_USER_PAGES: usize = 64 * 1024 * 1024 / PAGE_SIZE;
 
 pub(super) fn spawn(
     path_resolver: PathResolver,
@@ -42,7 +45,11 @@ pub(super) fn spawn(
     envp: Vec<CString>,
 ) -> Result<Arc<Process>> {
     let fs = ThreadFsInfo::new(path_resolver);
-    let abs_path = fs.resolver().read().make_abs_path(&executable_path).into_string();
+    let abs_path = fs
+        .resolver()
+        .read()
+        .make_abs_path(&executable_path)
+        .into_string();
     let executable = UndetectedExecutable::open(
         executable_path.clone(),
         ShebangScriptPath::Accessible(CString::new(abs_path.clone()).unwrap()),
@@ -51,11 +58,19 @@ pub(super) fn spawn(
     // snapshot, and the compiled manifest is not replaced for negative boots.
     let snapshot = executable.snapshot_trusted_initial()?;
     let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init());
-    let workload = allocate_initial_process(&executable_path,
-        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES));
+    let workload = allocate_initial_process_with_owner(
+        &executable_path,
+        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES),
+        Some(crate::vm::user_memory::UserMemoryAccount::new(
+            WORKLOAD_USER_PAGES,
+        )),
+    );
     let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init());
-    let keys = [manager.0.hepta_capspace_session()?, workload.0.hepta_capspace_session()?,
-        recovery.0.hepta_capspace_session()?];
+    let keys = [
+        manager.0.hepta_capspace_session()?,
+        workload.0.hepta_capspace_session()?,
+        recovery.0.hepta_capspace_session()?,
+    ];
     let pids = [manager.0.pid(), workload.0.pid(), recovery.0.pid()];
     let spaces = [hepta_image_space_id(keys[0]), hepta_image_space_id(keys[2])];
     let pending_children = Arc::new(Mutex::new(None::<[Arc<Task>; 2]>));
@@ -81,7 +96,9 @@ pub(super) fn spawn(
                 // The first-process startup hook has finished. Release the
                 // private boot queue before entering the scheduler; no image,
                 // task-set, file-table or queue lock is held across Thread::run.
-                let children = pending_children.lock().take()
+                let children = pending_children
+                    .lock()
+                    .take()
                     .expect("sealed initial children were not prepared");
                 for task in children {
                     task.as_thread().unwrap().run();
@@ -90,28 +107,48 @@ pub(super) fn spawn(
         } else if index == 1 {
             let workload_console = workload_console.clone();
             Box::new(move |ctx| {
-                let console = workload_console.lock().take()
+                let console = workload_console
+                    .lock()
+                    .take()
                     .expect("workload console handles were not prepared");
                 for file in console {
-                    FileTable::reserve_fd(ctx, FdFlags::empty()).unwrap().install(file);
+                    FileTable::reserve_fd(ctx, FdFlags::empty())
+                        .unwrap()
+                        .install(file);
                 }
             })
         } else {
             Box::new(crate::fs::init_console_file_table)
         };
-        let credentials = if index == 1 { workload_credentials()? } else { Credentials::new_root() };
-        prepared.push(prepare_role(allocation, fs.clone(), &snapshot, &abs_path,
-            argv.clone(), envp.clone(), page, credentials, startup)?);
+        let credentials = if index == 1 {
+            workload_credentials()?
+        } else {
+            Credentials::new_root()
+        };
+        prepared.push(prepare_role(
+            allocation,
+            fs.clone(),
+            &snapshot,
+            &abs_path,
+            argv.clone(),
+            envp.clone(),
+            page,
+            credentials,
+            startup,
+        )?);
     }
     drop(snapshot);
     let (mut recovery, recovery_image, recovery_entry) = prepared.pop().unwrap();
     let (mut workload, workload_image, workload_entry) = prepared.pop().unwrap();
     let (mut manager, manager_image, manager_entry) = prepared.pop().unwrap();
     let (observer, issued) = NativeCpuObserver::prepare(&workload.process, workload.key.nonce())?;
-    let managers = NativeCpuManager::prepare_pair(observer,
-        [PublisherId::new(spaces[0]), PublisherId::new(spaces[1])], issued)?;
-    let [manager_slots, recovery_slots] = TrustedControlSlots::prepare_pair(managers,
-        [manager.key, recovery.key])?;
+    let managers = NativeCpuManager::prepare_pair(
+        observer,
+        [PublisherId::new(spaces[0]), PublisherId::new(spaces[1])],
+        issued,
+    )?;
+    let [manager_slots, recovery_slots] =
+        TrustedControlSlots::prepare_pair(managers, [manager.key, recovery.key])?;
     // Each private token is consumed against its actual final VMAR/entry.
     // The workload is sealed but receives no management or history capability.
     manager.activate_control(manager_image, manager_entry, manager_slots)?;
@@ -132,9 +169,14 @@ pub(super) fn spawn(
     // No user task has run, so this fresh child cannot already lead a group.
     // Separate the session too: POSIX permits SIGCONT within a shared session
     // even when UIDs differ and CAP_KILL is absent.
-    workload.process.to_new_session().expect("fresh workload session must be available");
-    println!("[hepta-g1d] initial control activated: manager={} workload={} recovery={} cap_ns=50000000 period_ns=100000000 lease_ns=300000000000 hepta_durability=false",
-        pids[0], pids[1], pids[2]);
+    workload
+        .process
+        .to_new_session()
+        .expect("fresh workload session must be available");
+    println!(
+        "[hepta-g1d] initial control activated: manager={} workload={} recovery={} cap_ns=50000000 period_ns=100000000 lease_ns=300000000000 hepta_durability=false",
+        pids[0], pids[1], pids[2]
+    );
     let result = manager.process.clone();
     *pending_children.lock() = Some([workload.task.clone(), recovery.task.clone()]);
     manager.task.as_thread().unwrap().run();
@@ -147,8 +189,12 @@ fn workload_credentials() -> Result<Credentials> {
     let credentials = Credentials::new_root();
     credentials.groups_mut().clear();
     credentials.drop_bounding_capability(CapSet::all())?;
-    credentials.set_securebits(SecureBits::NOROOT | SecureBits::NOROOT_LOCKED
-        | SecureBits::NO_CAP_AMBIENT_RAISE | SecureBits::NO_CAP_AMBIENT_RAISE_LOCKED)?;
+    credentials.set_securebits(
+        SecureBits::NOROOT
+            | SecureBits::NOROOT_LOCKED
+            | SecureBits::NO_CAP_AMBIENT_RAISE
+            | SecureBits::NO_CAP_AMBIENT_RAISE_LOCKED,
+    )?;
     credentials.set_gid(Gid::new(WORKLOAD_ID))?;
     credentials.set_uid(Uid::new(WORKLOAD_ID))?;
     credentials.set_inheritable_capset(CapSet::empty());
@@ -176,41 +222,70 @@ fn prepare_role(
     // have no current userspace Process. Check this actual stopped allocation
     // against its own original limit before attaching or releasing its task.
     if loaded_vmar.get_mappings_total_size() as u64
-        > process.resource_limits().get_rlimit(ResourceType::RLIMIT_AS).get_cur()
+        > process
+            .resource_limits()
+            .get_rlimit(ResourceType::RLIMIT_AS)
+            .get_cur()
     {
-        return_errno_with_message!(Errno::ENOMEM, "initial image exceeds its address-space limit");
+        return_errno_with_message!(
+            Errno::ENOMEM,
+            "initial image exceeds its address-space limit"
+        );
     }
     let mut user_ctx = UserContext::default();
     user_ctx.set_instruction_pointer(info.entry_point as _);
     user_ctx.set_stack_pointer(info.user_stack_top as _);
     let task = PosixThreadBuilder::new(
-        process.pid(), derive_thread_name(abs_path), Box::new(user_ctx), credentials, vmar,
-    ).process(Arc::downgrade(&process)).fs(Arc::new(fs))
-        .before_initial_user_run(startup).build();
+        process.pid(),
+        derive_thread_name(abs_path),
+        Box::new(user_ctx),
+        credentials,
+        vmar,
+    )
+    .process(Arc::downgrade(&process))
+    .fs(Arc::new(fs))
+    .before_initial_user_run(startup)
+    .build();
     process.tasks().lock().insert(task.clone()).unwrap();
     let prepared = PreparedInitialProcess::new(process, loaded_vmar, task)?;
     Ok((prepared, image, info.entry_point))
 }
 
-fn boot_page(role: u64, pids: [crate::process::Pid; 3], spaces: [[u8; 16]; 2])
-    -> Box<[u8; PAGE_SIZE]>
-{
+fn boot_page(
+    role: u64,
+    pids: [crate::process::Pid; 3],
+    spaces: [[u8; 16]; 2],
+) -> Box<[u8; PAGE_SIZE]> {
     let mut page = Box::new([0u8; PAGE_SIZE]);
     page[..8].copy_from_slice(b"HOS2BOOT");
     let has_grants = role == 1 || role == 3;
-    let words = [2, role, BOOT_PAGE_BYTES,
-        if has_grants { 1 } else { 0 }, if has_grants { 1 } else { 0 },
-        if has_grants { 2 } else { 0 }, if has_grants { 1 } else { 0 },
-        if has_grants { 3 } else { 0 }, if has_grants { 1 } else { 0 },
-        if role == 3 { 4 } else { 0 }, if role == 3 { 1 } else { 0 }];
+    let words = [
+        2,
+        role,
+        BOOT_PAGE_BYTES,
+        if has_grants { 1 } else { 0 },
+        if has_grants { 1 } else { 0 },
+        if has_grants { 2 } else { 0 },
+        if has_grants { 1 } else { 0 },
+        if has_grants { 3 } else { 0 },
+        if has_grants { 1 } else { 0 },
+        if role == 3 { 4 } else { 0 },
+        if role == 3 { 1 } else { 0 },
+    ];
     for (index, word) in words.into_iter().enumerate() {
         page[8 + index * 8..16 + index * 8].copy_from_slice(&word.to_le_bytes());
     }
     page[96..112].copy_from_slice(&hepta_boot_id());
     page[112..128].copy_from_slice(&spaces[0]);
     page[128..144].copy_from_slice(&spaces[1]);
-    let tail = [u64::from(pids[0]), u64::from(pids[1]), u64::from(pids[2]),
-        50_000_000, 100_000_000, 300_000_000_000];
+    let tail = [
+        u64::from(pids[0]),
+        u64::from(pids[1]),
+        u64::from(pids[2]),
+        50_000_000,
+        100_000_000,
+        300_000_000_000,
+    ];
     for (index, word) in tail.into_iter().enumerate() {
         page[144 + index * 8..152 + index * 8].copy_from_slice(&word.to_le_bytes());
     }

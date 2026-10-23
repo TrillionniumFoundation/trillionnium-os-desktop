@@ -14,7 +14,12 @@ impl Vmar {
             debug_assert!(vm_mapping.range().contains(&address));
 
             let mut rss_delta = RssDelta::new(self);
-            return vm_mapping.handle_page_fault(&self.vm_space, page_fault_info, &mut rss_delta);
+            return vm_mapping.handle_page_fault(
+                &self.vm_space,
+                page_fault_info,
+                &mut rss_delta,
+                self.user_memory_owner(),
+            );
         }
 
         return_errno_with_message!(
@@ -53,6 +58,10 @@ impl PageFaultInfo {
             required_perms,
             is_forced: false,
         }
+    }
+
+    pub(crate) fn address(&self) -> Vaddr {
+        self.address
     }
 
     /// Returns whether this page fault is forced.

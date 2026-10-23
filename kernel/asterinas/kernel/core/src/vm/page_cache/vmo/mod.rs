@@ -33,6 +33,7 @@ use crate::{
     prelude::*,
     vm::{
         page_cache::{CachePage, CachePageExt, PageCacheBackend, PageRun, cache_page::PageState},
+        user_memory::{UserMemoryOwner, current_owner},
         vmar::Rmap,
     },
 };
@@ -114,6 +115,8 @@ pub(crate) use options::VmoOptions;
 /// handed off. Anonymous VMOs stay `UpToDate` in steady state once a page is
 /// committed.
 pub struct Vmo {
+    /// Explicit owner only for stopped initial images; normal pages use their initiator.
+    pub(super) memory_owner: UserMemoryOwner,
     /// The backend that provides disk I/O operations, if any.
     //
     // TODO: Using `Weak` here is to avoid circular references in exfat file systems.
@@ -293,20 +296,34 @@ impl Vmo {
     /// For anonymous VMOs the page is zero-filled on first access.
     /// For VMOs with a backend this may perform synchronous I/O.
     pub(crate) fn commit_on(&self, page_idx: usize, map_mode: VmoMapMode) -> Result<()> {
-        let page = self.commit_on_internal(page_idx, CommitMode::Read)?;
+        self.commit_on_for_owner(page_idx, map_mode, &current_owner())
+    }
+
+    pub(crate) fn commit_on_for_owner(
+        &self,
+        page_idx: usize,
+        map_mode: VmoMapMode,
+        owner: &UserMemoryOwner,
+    ) -> Result<()> {
+        let page = self.commit_on_internal(page_idx, CommitMode::Read, owner)?;
         map_mode.ensure(page);
         Ok(())
     }
 
-    fn commit_on_internal(&self, page_idx: usize, commit_mode: CommitMode) -> Result<CachePage> {
+    fn commit_on_internal(
+        &self,
+        page_idx: usize,
+        commit_mode: CommitMode,
+        owner: &UserMemoryOwner,
+    ) -> Result<CachePage> {
         if let Some(backed_vmo) = self.as_backed_vmo() {
-            return backed_vmo.commit_on_internal(page_idx, commit_mode);
+            return backed_vmo.commit_on_internal(page_idx, commit_mode, owner);
         }
 
-        self.commit_on_anonymous(page_idx)
+        self.commit_on_anonymous(page_idx, owner)
     }
 
-    fn commit_on_anonymous(&self, page_idx: usize) -> Result<CachePage> {
+    fn commit_on_anonymous(&self, page_idx: usize, owner: &UserMemoryOwner) -> Result<CachePage> {
         let mut locked_pages = self.pages.lock();
         if page_idx >= self.size().div_ceil(PAGE_SIZE) {
             return_errno_with_message!(Errno::EINVAL, "the offset is outside the VMO");
@@ -317,7 +334,7 @@ impl Vmo {
             return Ok(page.clone());
         }
 
-        let new_page = CachePage::alloc_zero()?;
+        let new_page = CachePage::alloc_zero(&self.memory_owner.clone().or_else(|| owner.clone()))?;
         cursor.store(new_page.clone());
         Ok(new_page)
     }
@@ -348,6 +365,15 @@ impl Vmo {
         offset: usize,
         map_mode: VmoMapMode,
     ) -> Result<(CachePage, VmoMapMode), VmoCommitError> {
+        self.try_commit_page_for_owner(offset, map_mode, &current_owner())
+    }
+
+    pub(crate) fn try_commit_page_for_owner(
+        &self,
+        offset: usize,
+        map_mode: VmoMapMode,
+        owner: &UserMemoryOwner,
+    ) -> Result<(CachePage, VmoMapMode), VmoCommitError> {
         let page_idx = offset / PAGE_SIZE;
         if offset >= self.size() {
             return Err(VmoCommitError::Err(Error::with_message(
@@ -360,7 +386,7 @@ impl Vmo {
             let guard = disable_preempt();
             let mut cursor = self.pages.cursor(&guard, page_idx as u64);
             // `VmoMapMode::try_ensure` checks if the page has been initialized.
-            self.try_commit_with_cursor(&mut cursor, CommitMode::Overwrite)?
+            self.try_commit_with_cursor(&mut cursor, CommitMode::Overwrite, owner)?
         };
         let mode = map_mode.try_ensure(page_idx, &page)?;
         Ok((page, mode))
@@ -370,6 +396,7 @@ impl Vmo {
         &self,
         cursor: &mut Cursor<'_, CachePage>,
         commit_mode: CommitMode,
+        owner: &UserMemoryOwner,
     ) -> Result<(usize, CachePage), VmoCommitError> {
         if let Some(backed_vmo) = self.as_backed_vmo() {
             return backed_vmo.try_commit_with_cursor(cursor, commit_mode);
@@ -381,7 +408,7 @@ impl Vmo {
         // Need to commit. Only Anonymous VMOs can reach here, because VMOs
         // with a backend will return `Err` if the page is not loaded.
         let index = cursor.index() as usize;
-        let page = self.commit_on_anonymous(index)?;
+        let page = self.commit_on_anonymous(index, owner)?;
         Ok((index, page))
     }
 
@@ -401,6 +428,7 @@ impl Vmo {
         range: &Range<usize>,
         mut operate: F,
         map_mode: VmoMapMode,
+        owner: &UserMemoryOwner,
     ) -> Result<(), VmoCommitError>
     where
         F: FnMut(
@@ -419,6 +447,7 @@ impl Vmo {
             },
             // `VmoMapMode::try_ensure` checks if the page has been initialized.
             CommitMode::Overwrite,
+            owner,
         )
     }
 
@@ -427,6 +456,7 @@ impl Vmo {
         range: &Range<usize>,
         mut operate: F,
         commit_mode: CommitMode,
+        owner: &UserMemoryOwner,
     ) -> Result<(), VmoCommitError>
     where
         F: FnMut(
@@ -444,7 +474,7 @@ impl Vmo {
         let guard = disable_preempt();
         let mut cursor = self.pages.cursor(&guard, page_idx_range.start as u64);
         for _ in page_idx_range {
-            let mut commit_fn = || self.try_commit_with_cursor(&mut cursor, commit_mode);
+            let mut commit_fn = || self.try_commit_with_cursor(&mut cursor, commit_mode, owner);
             operate(&mut commit_fn)?;
             cursor.next();
         }
@@ -781,6 +811,7 @@ impl Vmo {
         pages.clear();
         let range = (start_idx * PAGE_SIZE)..(end_idx * PAGE_SIZE);
         let mut current_range = range.clone();
+        let owner = current_owner();
 
         'retry: loop {
             let mut operate =
@@ -789,10 +820,15 @@ impl Vmo {
                     pages.push((idx, page));
                     Ok(())
                 };
-            match self.try_operate_on_range_internal(&current_range, &mut operate, commit_mode) {
+            match self.try_operate_on_range_internal(
+                &current_range,
+                &mut operate,
+                commit_mode,
+                &owner,
+            ) {
                 Ok(()) => break 'retry,
                 Err(err) => {
-                    let (idx, page) = self.handle_commit_error(err, commit_mode)?;
+                    let (idx, page) = self.handle_commit_error(err, commit_mode, &owner)?;
                     pages.push((idx, page));
                     current_range.start = (idx + 1) * PAGE_SIZE;
                     if current_range.start >= range.end {
@@ -812,11 +848,12 @@ impl Vmo {
         &self,
         err: VmoCommitError,
         commit_mode: CommitMode,
+        owner: &UserMemoryOwner,
     ) -> Result<(usize, CachePage)> {
         match err {
             VmoCommitError::Err(e) => Err(e),
             VmoCommitError::NeedIo { index } => {
-                Ok((index, self.commit_on_internal(index, commit_mode)?))
+                Ok((index, self.commit_on_internal(index, commit_mode, owner)?))
             }
             VmoCommitError::WaitUntilInit { index, page } => {
                 page.ensure_init(|locked_page| {
@@ -1038,7 +1075,12 @@ impl<'a> BackedVmo<'a> {
     }
 
     /// Commits a page at the given index for a VMO with a backend.
-    fn commit_on_internal(&self, page_idx: usize, commit_mode: CommitMode) -> Result<CachePage> {
+    fn commit_on_internal(
+        &self,
+        page_idx: usize,
+        commit_mode: CommitMode,
+        owner: &UserMemoryOwner,
+    ) -> Result<CachePage> {
         let mut locked_pages = self.pages.lock();
         if page_idx >= self.size().div_ceil(PAGE_SIZE) {
             return_errno_with_message!(Errno::EINVAL, "the offset is outside the VMO");
@@ -1059,7 +1101,8 @@ impl<'a> BackedVmo<'a> {
         };
 
         // The page is within the file bounds - need to allocate a cache page.
-        let uninit_page = CachePage::alloc_uninit()?;
+        let uninit_page =
+            CachePage::alloc_uninit(&self.memory_owner.clone().or_else(|| owner.clone()))?;
         cursor.store(uninit_page.clone());
         drop(locked_pages);
 
