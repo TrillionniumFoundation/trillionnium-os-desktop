@@ -4,6 +4,8 @@
 
 [#245 已合入主线、各 P0/P1 候选和逐模块执行绑定](agents/ORGAN_EXECUTION_2026_10_23.md) 记录本轮真实结果，包括最终 source/tree、原始 CI 产物、issuer/Session/F1 接合和仍未取得的生产及设备证据。下面 2026-10-22 的组合数字保持其原执行范围；新候选不继承旧整树通过。
 
+[原 Objective 发送 owner 的实现约束](agents/OBJECTIVE_SENDER_OWNER_NEXT.md) 将 Session #255 的 typed port 接回原 CognitiveStore / ProductionDurableWriter，列明独立 admission lifecycle、持久唯一发送许可、current-cut ACK 与 19 条待执行验收要求。这是后续实现设计；接口与文档不等于生产 owner 已完成。
+
 ## 2026-10-22 项目入口与支持边界
 
 本仓库以 Asterinas 派生 Rust 内核、HOS2 控制接口、Hepta 原用户态 owner 和 Rust 桌面构成 organ 开发主线。当前可复核范围包括固定 x86_64/QEMU 内核实验、Linux host 上的 Rust UI/Notes 目的端，以及各自固定来源的兼容/持久性测试。完整生产 G2、Asterinas 上的 Hepta/桌面、GPU/VMM 与手机仍有明确缺口；以 [A–G 当前状态和固定证据](STATUS.md) 为准。
