@@ -17,7 +17,7 @@ struct Receipt {
 }
 
 struct IntentView {
-    workspace: Workspace,
+    workspace: Option<Workspace>,
     session: String,
     id: String,
     observation: ObjectiveObservation,
@@ -31,6 +31,7 @@ pub(super) struct ObjectivePanel {
     intents: Vec<IntentView>,
     last_query: Option<Instant>,
     query_status: bool,
+    selected: Option<String>,
 }
 
 fn fresh(
@@ -86,6 +87,11 @@ impl ObjectivePanel {
         self.availability.as_ref().is_some_and(|receipt| {
             receipt.session == session
                 && receipt.observation.stage == ObjectiveStage::Ready
+                && receipt
+                    .observation
+                    .retained_intents
+                    .as_ref()
+                    .is_some_and(|retained| retained.complete && retained.validate().is_ok())
                 && fresh(&receipt.observation, receipt.received_at, now, wall_ms)
         })
     }
@@ -126,6 +132,31 @@ impl ObjectivePanel {
             intent.observation = observation;
             intent.received_at = received_at;
         } else {
+            if let Some(retained) = &observation.retained_intents {
+                if retained.validate().is_err() {
+                    self.invalidate();
+                    return;
+                }
+                for id in &retained.client_intent_ids {
+                    if self.intents.iter().any(|intent| &intent.id == id) {
+                        continue;
+                    }
+                    if self.intents.len() == MAX_OBJECTIVE_VIEWS {
+                        break;
+                    }
+                    let mut recovered =
+                        ObjectiveObservation::new(Some(id.clone()), ObjectiveStage::SubmitUnknown);
+                    recovered.request_retained = true;
+                    self.intents.push(IntentView {
+                        workspace: recovered_workspace(id),
+                        session: session.into(),
+                        id: id.clone(),
+                        observation: recovered,
+                        received_at,
+                        cancel_queued: false,
+                    });
+                }
+            }
             self.availability = Some(Receipt {
                 session: session.into(),
                 observation,
@@ -135,10 +166,23 @@ impl ObjectivePanel {
     }
 
     fn current(&self, workspace: Workspace, session: &str) -> Option<&IntentView> {
-        self.intents
-            .iter()
-            .rev()
-            .find(|intent| intent.workspace == workspace && intent.session == session)
+        let matches = |intent: &&IntentView| {
+            intent.session == session
+                && intent
+                    .workspace
+                    .is_none_or(|previous| previous == workspace)
+        };
+        if let Some(selected) = &self.selected {
+            if let Some(intent) = self
+                .intents
+                .iter()
+                .filter(matches)
+                .find(|intent| &intent.id == selected)
+            {
+                return Some(intent);
+            }
+        }
+        self.intents.iter().rev().find(matches)
     }
 
     fn poll(&mut self, workspace: Workspace, session: &str, now: Instant) -> Option<Request> {
@@ -164,11 +208,19 @@ impl ObjectivePanel {
     }
 }
 
-fn intent_id() -> std::io::Result<String> {
+fn recovered_workspace(id: &str) -> Option<Workspace> {
+    Workspace::ALL.into_iter().find(|workspace| {
+        id.strip_prefix(&format!("desktop-{}-", workspace.code()))
+            .is_some_and(|nonce| nonce.len() == 32 && nonce.bytes().all(|c| c.is_ascii_hexdigit()))
+    })
+}
+
+fn intent_id(workspace: Workspace) -> std::io::Result<String> {
     let mut nonce = [0u8; 16];
     std::fs::File::open("/dev/urandom")?.read_exact(&mut nonce)?;
     Ok(format!(
-        "desktop-{}",
+        "desktop-{}-{}",
+        workspace.code(),
         nonce
             .iter()
             .map(|byte| format!("{byte:02x}"))
@@ -189,6 +241,40 @@ impl Desktop {
             self.bridge.poll_objective(request);
         }
         let ready = self.objectives.ready(&session, now, unix_ms());
+        let previous: Vec<_> = self
+            .objectives
+            .intents
+            .iter()
+            .filter(|intent| {
+                intent.session == session
+                    && intent
+                        .workspace
+                        .is_none_or(|workspace| workspace == self.workspace)
+            })
+            .map(|intent| intent.id.clone())
+            .collect();
+        // Keep one parent scope even before the first request. Inserting the
+        // history must not renumber an already exposed cancellation control.
+        ui.scope(|ui| {
+            if !previous.is_empty() {
+                ui.collapsing("Previous Hepta requests / 之前的请求", |ui| {
+                    egui::ScrollArea::vertical()
+                        .max_height(120.0)
+                        .show(ui, |ui| {
+                            for id in previous {
+                                if self.activation.activated(&ui.selectable_label(
+                                    self.objectives.selected.as_ref() == Some(&id),
+                                    &id,
+                                )) {
+                                    self.objectives.selected = Some(id);
+                                    self.objectives.last_query = None;
+                                    self.objectives.query_status = false;
+                                }
+                            }
+                        });
+                });
+            }
+        });
         ui.label(if ready {
             "Hepta is available to write this text into the configured Notes document."
         } else {
@@ -200,8 +286,9 @@ impl Desktop {
         let text = composer.text().to_owned();
         let may_start = self
             .objectives
-            .current(self.workspace, &session)
-            .is_none_or(|intent| finished(&intent.observation));
+            .intents
+            .iter()
+            .all(|intent| finished(&intent.observation));
         let enabled = ready
             && may_start
             && !has_context
@@ -213,7 +300,7 @@ impl Desktop {
             enabled,
             egui::Button::new("Write note via Hepta / 通过 Hepta 写入笔记"),
         )) {
-            match intent_id() {
+            match intent_id(self.workspace) {
                 Ok(id) => {
                     if self.submit(Request::ObjectiveSubmit {
                         client_intent_id: id.clone(),
@@ -221,7 +308,7 @@ impl Desktop {
                         expected_instance: session.clone(),
                     }) {
                         self.objectives.intents.push(IntentView {
-                            workspace: self.workspace,
+                            workspace: Some(self.workspace),
                             session: session.clone(),
                             id: id.clone(),
                             observation: ObjectiveObservation::new(
@@ -231,6 +318,11 @@ impl Desktop {
                             received_at: now,
                             cancel_queued: false,
                         });
+                        self.objectives.selected = self
+                            .objectives
+                            .intents
+                            .last()
+                            .map(|intent| intent.id.clone());
                         self.notice("Objective queued for the host. Admission and execution are not yet confirmed; your draft remains available.");
                     }
                 }
@@ -252,6 +344,9 @@ impl Desktop {
             return;
         };
         let id = intent.id.clone();
+        if intent.workspace.is_none() {
+            ui.small("This request was recovered from Hepta. Its earlier workspace is unknown; status is queried without sending it again.");
+        }
         let observation = &intent.observation;
         let current = fresh(observation, intent.received_at, now, unix_ms());
         ui.label(format!(
@@ -288,33 +383,33 @@ impl Desktop {
         }
         ui.small("Run admission or a terminal run state does not prove a device effect. Your original draft is retained.");
         let can_cancel = !finished(observation);
-        ui.horizontal(|ui| {
-            if self
-                .activation
-                .activated(&ui.button("Refresh objective status"))
-            {
-                self.bridge.poll_objective(Request::ObjectiveStatus {
-                    client_intent_id: id.clone(),
-                    expected_instance: session.clone(),
-                });
-            }
-            if self
-                .activation
-                .activated(&ui.add_enabled(can_cancel, egui::Button::new("Request cancellation")))
-                && self.submit(Request::ObjectiveCancel {
+        ui.push_id(("objective-actions", &id), |ui| {
+            ui.horizontal(|ui| {
+                if self
+                    .activation
+                    .activated(&ui.button("Refresh objective status"))
+                {
+                    self.bridge.poll_objective(Request::ObjectiveStatus {
+                        client_intent_id: id.clone(),
+                        expected_instance: session.clone(),
+                    });
+                }
+                if self.activation.activated(
+                    &ui.add_enabled(can_cancel, egui::Button::new("Request cancellation")),
+                ) && self.submit(Request::ObjectiveCancel {
                     client_intent_id: id.clone(),
                     expected_instance: session,
-                })
-            {
-                if let Some(intent) = self
-                    .objectives
-                    .intents
-                    .iter_mut()
-                    .find(|intent| intent.id == id)
-                {
-                    intent.cancel_queued = true;
+                }) {
+                    if let Some(intent) = self
+                        .objectives
+                        .intents
+                        .iter_mut()
+                        .find(|intent| intent.id == id)
+                    {
+                        intent.cancel_queued = true;
+                    }
                 }
-            }
+            })
         });
     }
 }
@@ -323,6 +418,15 @@ impl Desktop {
 mod tests {
     use super::*;
     use trill_ui_core::objective::{ObjectiveRunObservation, ObjectiveRunPhase};
+
+    fn ready_observation() -> ObjectiveObservation {
+        let mut view = ObjectiveObservation::new(None, ObjectiveStage::Ready);
+        view.retained_intents = Some(trill_ui_core::objective::ObjectiveRetainedIntents {
+            client_intent_ids: Vec::new(),
+            complete: true,
+        });
+        view
+    }
 
     #[test]
     fn semantic_submit_preserves_draft_and_reuses_one_intent_for_cancellation() {
@@ -335,11 +439,9 @@ mod tests {
             .drafts
             .composer_mut(Workspace::Personal)
             .edit("保留原始笔记".into());
-        desktop.objectives.observe(
-            "current-session",
-            ObjectiveObservation::new(None, ObjectiveStage::Ready),
-            Instant::now(),
-        );
+        desktop
+            .objectives
+            .observe("current-session", ready_observation(), Instant::now());
         let ctx = egui::Context::default();
         ctx.enable_accesskit();
         let frame = |desktop: &mut Desktop, events| {
@@ -437,7 +539,7 @@ mod tests {
     fn ready_expires_on_both_transport_and_original_observation_clocks() {
         let now = Instant::now();
         let mut panel = ObjectivePanel::default();
-        let mut observation = ObjectiveObservation::new(None, ObjectiveStage::Ready);
+        let mut observation = ready_observation();
         observation.observed_unix_ms = 10_000;
         panel.observe("session-a", observation, now);
         assert!(panel.ready("session-a", now, 10_000));
@@ -461,7 +563,7 @@ mod tests {
             terminal_observed: true,
         });
         panel.intents.push(IntentView {
-            workspace: Workspace::Personal,
+            workspace: Some(Workspace::Personal),
             session: "a".into(),
             id: "intent-a".into(),
             observation: original.clone(),
@@ -494,7 +596,7 @@ mod tests {
         let observation =
             ObjectiveObservation::new(Some("stable-intent".into()), ObjectiveStage::SubmitUnknown);
         panel.intents.push(IntentView {
-            workspace: Workspace::Build,
+            workspace: Some(Workspace::Build),
             session: "a".into(),
             id: "stable-intent".into(),
             observation,
@@ -513,7 +615,7 @@ mod tests {
         let now = Instant::now();
         let mut panel = ObjectivePanel::default();
         panel.intents.push(IntentView {
-            workspace: Workspace::Personal,
+            workspace: Some(Workspace::Personal),
             session: "old-session".into(),
             id: "original-intent".into(),
             observation: ObjectiveObservation::new(
@@ -523,11 +625,7 @@ mod tests {
             received_at: now,
             cancel_queued: true,
         });
-        panel.observe(
-            "old-session",
-            ObjectiveObservation::new(None, ObjectiveStage::Ready),
-            now,
-        );
+        panel.observe("old-session", ready_observation(), now);
         panel.follow_session("new-session");
         assert!(!panel.ready("new-session", now, unix_ms()));
         let intent = panel.current(Workspace::Personal, "new-session").unwrap();
@@ -560,5 +658,47 @@ mod tests {
         assert_eq!(panel.intents.len(), 1);
         assert_eq!(panel.intents[0].id, "original-intent");
         assert_eq!(panel.intents[0].observation.stage, ObjectiveStage::Admitted);
+    }
+
+    #[test]
+    fn fresh_shell_recovers_original_navigation_as_unknown_and_only_queries_status() {
+        let now = Instant::now();
+        let id = format!("desktop-research-{}", "ab".repeat(16));
+        let mut view = ready_observation();
+        view.retained_intents.as_mut().unwrap().client_intent_ids =
+            vec![id.clone(), "legacy-id".into()];
+        let mut panel = ObjectivePanel::default();
+        panel.observe("session", view.clone(), now);
+        panel.observe("session", view, now);
+        assert_eq!(
+            panel.intents.len(),
+            2,
+            "repeated recovery does not duplicate cards"
+        );
+        assert_eq!(panel.intents[0].workspace, Some(Workspace::Research));
+        assert_eq!(panel.intents[1].workspace, None);
+        for intent in &panel.intents {
+            assert_eq!(intent.observation.stage, ObjectiveStage::SubmitUnknown);
+            assert!(intent.observation.request_retained);
+            assert!(!intent.observation.publication_retained);
+            assert!(intent.observation.run.is_none());
+            assert!(!finished(&intent.observation));
+        }
+        panel.selected = Some(id.clone());
+        assert!(matches!(panel.poll(Workspace::Research, "session", now),
+            Some(Request::ObjectiveStatus { client_intent_id, .. }) if client_intent_id == id));
+        let mut incomplete = ready_observation();
+        incomplete.retained_intents.as_mut().unwrap().complete = false;
+        panel.observe("session", incomplete, now);
+        assert!(!panel.ready("session", now, unix_ms()));
+        panel.observe(
+            "session",
+            ObjectiveObservation::new(None, ObjectiveStage::Ready),
+            now,
+        );
+        assert!(
+            !panel.ready("session", now, unix_ms()),
+            "missing recovery is unknown"
+        );
     }
 }
