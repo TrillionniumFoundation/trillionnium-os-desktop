@@ -1,6 +1,6 @@
 # 当前能力、源码与验收边界
 
-本实施线来自 PR #257。最新内核固定源码 `bad289e73b7890735580a4b09d8c1466a257c7f2` / tree `19efa0d8089d153c2560faa4c2d3a5c82a871042` 已通过[原完整四套与同ELF原生组合](../results/integration/2026-10-23-audit-closure/kernel-ancillary-bad289/publication.json)：core344/required105、allocator20、ML15、OSTD229（原TCG软跳3），ordinary18、SGID30、Unix通道12、进程权限状态12。较早的 `0187bd57` / tree `335007e4f94114c6a26506d9448faf0d43c4245c` 另有Linux32和原runtime/store；`f3d54e5b` 有原A10十一项Linux-host执行体。早期 `c4623788`、UI/Session `6b16d38a` 和 `9ec0874c` 记录继续保留。仍未完成生产统一验收；各项结果只属于其明确来源，不给后续分支、远端 main 或部署环境转授资格。
+本实施线来自 PR #257。最新内核固定源码 `d5a21bb7e70a22cd022f4275ba2d22a6b726d233` / tree `799487b33846203ee7b79680adbf6c2f69476024` 已通过[原完整四套与同ELF原生组合](../results/integration/2026-10-23-audit-closure/kernel-vmar-d5a21/publication.json)：core347/required108、allocator20、ML15、OSTD230（原TCG软跳3），ordinary18、SGID30、Unix通道12、进程权限状态12。指定缺页路径改为先完成原用户帧准入，再fallible准备全部缺失页表节点；[模块手册](agents/VMAR_FALLIBLE_PAGE_FAULT.md)保留常规小布局物理分配失败、页表计费与全局heap恢复的未验边界。[689c首次fixture失败](../results/integration/2026-10-23-audit-closure/kernel-vmar-689c-failure/publication.json)与[前一bad289原组合](../results/integration/2026-10-23-audit-closure/kernel-ancillary-bad289/publication.json)单独保留。较早的 `0187bd57` / tree `335007e4f94114c6a26506d9448faf0d43c4245c` 另有Linux32和原runtime/store；`f3d54e5b` 有原A10十一项Linux-host执行体。早期 `c4623788`、UI/Session `6b16d38a` 和 `9ec0874c` 记录继续保留。仍未完成生产统一验收；各项结果只属于其明确来源，不给后续分支、远端 main 或部署环境转授资格。
 
 **当前没有完整生产控制、完整原生 F1/G2、通用桌面控制或手机产品资格。** 文档与源码门禁通过只能关闭对应工程问题；不能把单个 host、guest 或设备场景的成功扩展为产品验收。
 
