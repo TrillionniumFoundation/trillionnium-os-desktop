@@ -27,6 +27,7 @@ class ReserveSourceInputTests(unittest.TestCase):
         self.source = self.root / "kernel/asterinas"
         self.source.mkdir(parents=True)
         (self.root / "support").mkdir()
+        shutil.copy2(ROOT / "README.md", self.root / "README.md", follow_symlinks=False)
         shutil.copyfile(ROOT / "support/upstream-lock.json", self.root / "support/upstream-lock.json")
         self.git_dir = subprocess.check_output(["git", "rev-parse", "--absolute-git-dir"], cwd=ROOT, text=True).strip()
         entries = subprocess.check_output(["git", "ls-tree", "-rz", verify.PINNED_TREE], cwd=ROOT).split(b"\0")
