@@ -18,15 +18,15 @@ use crate::{
     },
     prelude::*,
     process::{
-        ContextUnshareAdminApi, Credentials, Process,
+        ContextUnshareAdminApi, Credentials, Process, ResourceType,
         credentials::{ExecCred, FileCapabilities},
         pid_table,
         posix_thread::{
             AsPosixThread, ContextPthreadAdminApi, ThreadLocal, ThreadName, ptrace::PtraceEvent,
             sigkill_other_threads,
         },
-        process_vm::{MAX_LEN_STRING_ARG, MAX_NR_STRING_ARGS, ProcessVm},
-        program_loader::{ProgramToLoad, UndetectedExecutable, elf::ElfLoadInfo},
+        process_vm::{MAX_NR_STRING_ARGS, ProcessVm},
+        program_loader::{ArgBudget, ProgramToLoad, UndetectedExecutable, elf::ElfLoadInfo},
         signal::{
             HandlePendingSignal, PauseReason, SigStack,
             constants::{SIGCHLD, SIGKILL},
@@ -44,13 +44,16 @@ pub(crate) fn do_execve(
     ctx: &Context,
     user_context: &mut UserContext,
 ) -> Result<()> {
-    // FIXME: A malicious user could cause a kernel panic by exhausting available memory.
-    // Currently, the implementation reads up to `MAX_NR_STRING_ARGS` arguments, each up to
-    // `MAX_LEN_STRING_ARG` in length, without first verifying the total combined size.
-    // To prevent excessive memory allocation, a preliminary check should sum the lengths
-    // of all strings to enforce a sensible overall limit.
-    let argv = read_cstring_vec(argv_ptr_ptr, MAX_NR_STRING_ARGS, MAX_LEN_STRING_ARG, ctx)?;
-    let envp = read_cstring_vec(envp_ptr_ptr, MAX_NR_STRING_ARGS, MAX_LEN_STRING_ARG, ctx)?;
+    // Snapshot the stack limit once. Both vectors share this admission budget;
+    // repeated pointers must be charged for every copy into the new image.
+    let stack_limit_bytes = ctx
+        .process
+        .resource_limits()
+        .get_rlimit(ResourceType::RLIMIT_STACK)
+        .get_cur();
+    let mut arg_budget = ArgBudget::new(stack_limit_bytes);
+    let argv = read_cstring_vec(argv_ptr_ptr, &mut arg_budget, ctx)?;
+    let envp = read_cstring_vec(envp_ptr_ptr, &mut arg_budget, ctx)?;
 
     let fs_ref = ctx.thread_local.borrow_fs();
     let path_resolver = fs_ref.resolver().read();
@@ -63,7 +66,8 @@ pub(crate) fn do_execve(
     );
 
     let executable_path = executable.path().clone();
-    let program_to_load = ProgramToLoad::from_executable(executable, &path_resolver, argv, envp)?;
+    let program_to_load =
+        ProgramToLoad::from_executable(executable, &path_resolver, argv, envp, stack_limit_bytes)?;
     let exec_cred = prepare_exec_cred(program_to_load.elf_path(), ctx)?;
 
     let new_vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
@@ -131,8 +135,7 @@ pub(crate) fn do_execve(
 
 fn read_cstring_vec(
     array_ptr: Vaddr,
-    max_string_number: usize,
-    max_string_len: usize,
+    budget: &mut ArgBudget,
     ctx: &Context,
 ) -> Result<Vec<CString>> {
     // On Linux, argv pointer and envp pointer can be specified as NULL.
@@ -144,14 +147,16 @@ fn read_cstring_vec(
     let mut read_addr = array_ptr;
 
     let user_space = ctx.user_space();
-    for _ in 0..max_string_number {
+    for _ in 0..MAX_NR_STRING_ARGS {
         let cstring_ptr = user_space.read_val::<usize>(read_addr)?;
-        read_addr += 8;
 
         if cstring_ptr == 0 {
             return Ok(res);
         }
 
+        // Admission precedes the reader's first allocation. An over-budget
+        // string is never copied in full and then rejected after the fact.
+        let max_string_len = budget.begin_string()?;
         let cstring = user_space
             .read_cstring(cstring_ptr, max_string_len)
             .map_err(|err| {
@@ -161,7 +166,14 @@ fn read_cstring_vec(
                     err
                 }
             })?;
+        budget.consume_bytes(cstring.as_bytes_with_nul().len())?;
+        res.try_reserve(1).map_err(|_| {
+            Error::with_message(Errno::ENOMEM, "cannot allocate the argument vector")
+        })?;
         res.push(cstring);
+        read_addr = read_addr.checked_add(size_of::<Vaddr>()).ok_or_else(|| {
+            Error::with_message(Errno::EFAULT, "the argument vector address overflows")
+        })?;
     }
 
     return_errno_with_message!(Errno::E2BIG, "there are too many arguments");

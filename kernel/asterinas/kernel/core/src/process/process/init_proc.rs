@@ -69,7 +69,9 @@ impl PreparedInitialProcess {
         with_initial_image(&self.process, &self.vmar, &self.task, |image| {
             image.activate_initial_observer(self.key, observer, issued)
         })?;
-        println!("[hepta-g1c] initial observe activated: slot=1 generation=1 cap_ns=50000000 period_ns=100000000 lease_ns=300000000000");
+        println!(
+            "[hepta-g1c] initial observe activated: slot=1 generation=1 cap_ns=50000000 period_ns=100000000 lease_ns=300000000000"
+        );
         Ok(())
     }
 
@@ -172,6 +174,13 @@ pub(crate) fn spawn_init_process(
     argv: Vec<CString>,
     envp: Vec<CString>,
 ) -> Result<Arc<Process>> {
+    // Boot arguments are already kernel-owned. Check them before either the
+    // ordinary initial load or the trusted profile's three role copies.
+    crate::process::program_loader::ArgBudget::for_args(
+        crate::process::process_vm::INIT_STACK_SIZE as u64,
+        &argv,
+        &envp,
+    )?;
     #[cfg(feature = "g1d-trusted-control")]
     return trusted_roles::spawn(path_resolver, executable_path, argv, envp);
     #[cfg(not(feature = "g1d-trusted-control"))]
@@ -186,12 +195,17 @@ fn create_init_process(
 ) -> Result<PreparedInitialProcess> {
     let fs = ThreadFsInfo::new(path_resolver);
 
-    let (init_proc, vmar) = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+    let (init_proc, vmar) =
+        allocate_initial_process(&executable_path, new_resource_limits_for_init());
     let pid = init_proc.pid();
 
     let loaded_vmar = vmar.clone_arc();
     let loaded = create_init_task(pid, &init_proc, fs, vmar, executable_path, argv, envp)?;
-    init_proc.tasks().lock().insert(loaded.task.clone()).unwrap();
+    init_proc
+        .tasks()
+        .lock()
+        .insert(loaded.task.clone())
+        .unwrap();
 
     let prepared = PreparedInitialProcess::new(init_proc, loaded_vmar, loaded.task)?;
     #[cfg(feature = "g1c-trusted-observe")]
@@ -199,7 +213,10 @@ fn create_init_process(
     Ok(prepared)
 }
 
-fn allocate_initial_process(executable_path: &Path, resource_limits: ResourceLimits) -> (Arc<Process>, VmarHandle) {
+fn allocate_initial_process(
+    executable_path: &Path,
+    resource_limits: ResourceLimits,
+) -> (Arc<Process>, VmarHandle) {
     let pid = allocate_posix_tid();
     let vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
     let nice = Nice::default();
@@ -267,7 +284,17 @@ fn create_init_task(
         let executable = UndetectedExecutable::open(executable_path.clone(), shebang_script_path)?;
         #[cfg(not(feature = "g1c-trusted-observe"))]
         let elf_load_info = {
-            let program_to_load = ProgramToLoad::from_executable(executable, &path_resolver, argv, envp)?;
+            let stack_limit_bytes = process
+                .resource_limits()
+                .get_rlimit(crate::process::ResourceType::RLIMIT_STACK)
+                .get_cur();
+            let program_to_load = ProgramToLoad::from_executable(
+                executable,
+                &path_resolver,
+                argv,
+                envp,
+                stack_limit_bytes,
+            )?;
             let vmar = process.lock_vmar();
             program_to_load.load_to_vmar(vmar.unwrap(), &path_resolver)?
         };

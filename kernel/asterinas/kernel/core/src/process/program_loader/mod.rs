@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
+mod arg_budget;
 pub(super) mod elf;
 mod shebang;
 
+pub(in crate::process) use self::arg_budget::ArgBudget;
 use self::{
     elf::{ElfHeaders, ElfLoadInfo, load_elf_to_vmar},
     shebang::parse_shebang_line,
@@ -32,7 +34,9 @@ pub(crate) struct UndetectedExecutable {
 
 impl UndetectedExecutable {
     #[cfg(feature = "g1d-trusted-control")]
-    pub(in crate::process) fn snapshot_trusted_initial(self) -> Result<elf::TrustedInitialSnapshot> {
+    pub(in crate::process) fn snapshot_trusted_initial(
+        self,
+    ) -> Result<elf::TrustedInitialSnapshot> {
         elf::TrustedInitialSnapshot::read(self.file)
     }
 
@@ -153,7 +157,9 @@ impl ProgramToLoad {
         path_resolver: &PathResolver,
         mut argv: Vec<CString>,
         envp: Vec<CString>,
+        stack_limit_bytes: u64,
     ) -> Result<Self> {
+        ArgBudget::for_args(stack_limit_bytes, &argv, &envp)?;
         // A limit to the recursion depth of shebang executables.
         //
         // If the interpreter is a shebang, then recursion will be triggered. If it loops, we
@@ -173,6 +179,24 @@ impl ProgramToLoad {
                 return_errno_with_message!(Errno::ELOOP, "the recursive limit is reached");
             }
             recursive_limit -= 1;
+
+            // Count the actual replacement before allocating the concatenated
+            // vector. The discarded argv[0] no longer consumes the budget;
+            // interpreter arguments and the script path do consume it.
+            let mut rewritten_budget = ArgBudget::new(stack_limit_bytes);
+            rewritten_budget.charge_strings(
+                new_argv
+                    .iter()
+                    .chain(core::iter::once(&current_script_path))
+                    .chain(argv.iter().skip(1))
+                    .chain(&envp),
+            )?;
+            new_argv.try_reserve(argv.len().max(1)).map_err(|_| {
+                Error::with_message(
+                    Errno::ENOMEM,
+                    "cannot allocate the interpreter argument vector",
+                )
+            })?;
 
             let interpreter_filename = new_argv[0].clone();
             let interpreter = {
