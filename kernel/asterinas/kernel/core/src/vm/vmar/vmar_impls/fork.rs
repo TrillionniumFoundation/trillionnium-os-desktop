@@ -19,7 +19,10 @@ impl Vmar {
         // Obtain the heap lock and hold it for the entire method to avoid race conditions.
         let heap_guard = vmar.process_vm.heap().lock();
 
-        let new_vmar = VmarHandle::new(ProcessVm::fork_from(&vmar.process_vm, &heap_guard));
+        let new_vmar = VmarHandle::new_with_owner(
+            ProcessVm::fork_from(&vmar.process_vm, &heap_guard),
+            vmar.user_memory_owner().clone(),
+        );
 
         {
             let inner = vmar.inner.read();

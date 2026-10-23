@@ -158,20 +158,39 @@ pub enum Errno {
 #[derive(Clone, Copy, Debug)]
 pub struct Error {
     errno: Errno,
+    user_frame_limit: bool,
     #[expect(dead_code)]
     msg: Option<&'static str>,
 }
 
 impl Error {
     pub const fn new(errno: Errno) -> Self {
-        Error { errno, msg: None }
+        Error {
+            errno,
+            msg: None,
+            user_frame_limit: false,
+        }
     }
 
     pub const fn with_message(errno: Errno, msg: &'static str) -> Self {
         Error {
             errno,
             msg: Some(msg),
+            user_frame_limit: false,
         }
+    }
+
+    /// Internal provenance retained while an admission failure unwinds VM locks.
+    pub(crate) const fn user_frame_limit() -> Self {
+        Self {
+            errno: Errno::ENOMEM,
+            msg: Some("workload family user-frame limit reached"),
+            user_frame_limit: true,
+        }
+    }
+
+    pub(crate) const fn is_user_frame_limit(&self) -> bool {
+        self.user_frame_limit
     }
 
     pub const fn error(&self) -> Errno {

@@ -33,22 +33,22 @@ use crate::{
     sched::{AtomicNice, Nice},
     thread::{AsThread, Thread},
     time::clocks::ProfClock,
-    vm::vmar::Vmar,
+    vm::{user_memory::UserMemoryOwner, vmar::Vmar},
 };
 
-mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 mod control_lock;
+mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use control_lock::KernelControlBackend;
-#[cfg(feature = "g1d-trusted-control")]
-mod trusted_control;
 mod init_proc;
 mod job_control;
 mod process_group;
 mod session;
 mod terminal;
 mod timer_manager;
+#[cfg(feature = "g1d-trusted-control")]
+mod trusted_control;
 
 use atomic_integer_wrapper::define_atomic_version_of_integer_like_type;
 pub(crate) use image::ProcessImageKey;
@@ -96,6 +96,7 @@ pub struct Process {
     pid: Pid,
 
     vmar: Mutex<Option<Arc<Vmar>>>,
+    user_memory_owner: UserMemoryOwner,
     /// Wait for child status changed
     children_wait_queue: WaitQueue,
     pub(super) pidfile_pollee: Pollee,
@@ -258,6 +259,7 @@ impl Process {
 
             Self {
                 pid,
+                user_memory_owner: vmar.user_memory_owner().clone(),
                 vmar: Mutex::new(Some(vmar)),
                 children_wait_queue,
                 pidfile_pollee: Pollee::new(),
@@ -305,6 +307,10 @@ impl Process {
     }
 
     // *********** Basic structures ***********
+
+    pub(crate) fn user_memory_owner(&self) -> &UserMemoryOwner {
+        &self.user_memory_owner
+    }
 
     pub fn pid(&self) -> u32 {
         self.pid
