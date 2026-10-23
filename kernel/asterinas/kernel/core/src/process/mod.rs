@@ -31,7 +31,8 @@ pub(crate) use clone::{CloneArgs, CloneFlags, clone_child};
 pub(crate) use credentials::{Credentials, Gid, Uid};
 pub(crate) use execve::do_execve;
 pub(crate) use kill::{
-    kill, kill_all, kill_group, kill_owned, kill_process_via_thread, tgkill, tgkill_owned,
+    kill, kill_all, kill_all_with, kill_group, kill_group_with, kill_owned, kill_owned_with,
+    kill_process_via_thread, tgkill, tgkill_owned, tgkill_owned_with,
 };
 pub use namespace::user_ns::UserNamespace;
 pub(crate) use namespace::{

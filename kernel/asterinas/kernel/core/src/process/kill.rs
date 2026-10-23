@@ -29,9 +29,23 @@ pub(crate) fn kill(pid: Pid, signal: Option<Box<dyn Signal>>, ctx: &Context) -> 
 
 /// Same permission checks as `kill`, retaining the prepared signal owner.
 pub(crate) fn kill_owned(pid: Pid, signal: Option<OwnedSignal>, ctx: &Context) -> Result<()> {
+    kill_owned_with(pid, None, || Ok(signal), ctx)
+}
+
+/// Resolves the original target before validating a user-supplied signal.
+/// This preserves ESRCH before EINVAL without a second target lookup.
+pub(crate) fn kill_owned_with(
+    pid: Pid,
+    expected_process: Option<&Arc<Process>>,
+    prepare: impl FnOnce() -> Result<Option<OwnedSignal>>,
+    ctx: &Context,
+) -> Result<()> {
     // Fast path: If the signal is sent to self, we can skip most checks.
     if pid == ctx.process.pid() {
-        let Some(signal) = signal else {
+        if expected_process.is_some_and(|process| !Arc::ptr_eq(process, &ctx.process)) {
+            return_errno!(Errno::ESRCH);
+        }
+        let Some(signal) = prepare()? else {
             return Ok(());
         };
 
@@ -44,12 +58,20 @@ pub(crate) fn kill_owned(pid: Pid, signal: Option<OwnedSignal>, ctx: &Context) -
         return kill_process(ctx.process.as_ref(), Some(signal), ctx);
     }
 
-    // Slow path
-    let process = pid_table::pid_table_mut()
-        .get_process(pid)
-        .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target process does not exist"))?;
-
-    kill_process(&process, signal, ctx)
+    // Linux resolves PIDTYPE_PID, including a nonleader TID, then sends to
+    // that task's shared process queue. Pin both owners at the lookup cut.
+    let (thread, process) = {
+        let table = pid_table::pid_table_mut();
+        let thread = table
+            .get_thread(pid)
+            .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target thread does not exist"))?;
+        let process = thread.as_posix_thread().unwrap().process();
+        (thread, process)
+    };
+    if expected_process.is_some_and(|expected| !Arc::ptr_eq(expected, &process)) {
+        return_errno!(Errno::ESRCH);
+    }
+    kill_process_via_thread(thread.as_posix_thread().unwrap(), prepare()?, ctx)
 }
 
 /// Sends a signal to all processes in a group, using the current process
@@ -65,20 +87,44 @@ pub(crate) fn kill_group<S: Signal + Clone>(
     signal: Option<S>,
     ctx: &Context,
 ) -> Result<()> {
-    let process_group = pid_table::pid_table_mut()
-        .get_process_group(&pgid)
-        .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target group does not exist"))?;
+    kill_group_with(pgid, None, || Ok(signal.clone().map(OwnedSignal::new)), ctx)
+}
+
+/// Prepares a signal only after resolving an original group member.
+pub(crate) fn kill_group_with(
+    pgid: Pgid,
+    expected_process: Option<&Arc<Process>>,
+    mut prepare: impl FnMut() -> Result<Option<OwnedSignal>>,
+    ctx: &Context,
+) -> Result<()> {
+    let process_group = {
+        let table = pid_table::pid_table_mut();
+        if let Some(expected) = expected_process {
+            let actual = table.get_process(expected.pid());
+            if !actual.is_some_and(|actual| Arc::ptr_eq(&actual, expected)) {
+                return_errno!(Errno::ESRCH);
+            }
+        }
+        table
+            .get_process_group(&pgid)
+            .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target group does not exist"))?
+    };
 
     let mut result = Ok(());
 
     let inner = process_group.lock();
+    let mut any_target = false;
     for process in inner.iter() {
-        let res = kill_process(&process, signal.clone().map(OwnedSignal::new), ctx);
+        any_target = true;
+        let res = prepare().and_then(|signal| kill_process(&process, signal, ctx));
         if res.is_err_and(|err| err.error() != Errno::EPERM) {
             result = res;
         }
     }
 
+    if !any_target {
+        return_errno!(Errno::ESRCH);
+    }
     result
 }
 
@@ -105,21 +151,33 @@ pub(crate) fn tgkill_owned(
     signal: Option<OwnedSignal>,
     ctx: &Context,
 ) -> Result<()> {
-    let thread = pid_table::pid_table_mut()
-        .get_thread(tid)
-        .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target thread does not exist"))?;
-    let target_posix_thread = thread.as_posix_thread().unwrap();
+    tgkill_owned_with(tid, tgid, None, || Ok(signal), ctx)
+}
 
-    if let Some(tgid) = tgid {
-        // Check the TGID
-        let pid = target_posix_thread.process().pid();
-        if pid != tgid {
-            return_errno_with_message!(
-                Errno::ESRCH,
-                "the combination of the TGID and the TID is not valid"
-            );
-        }
+/// Resolves one held Thread/Process pair before signal validation.
+pub(crate) fn tgkill_owned_with(
+    tid: Tid,
+    tgid: Option<Pid>,
+    expected_process: Option<&Arc<Process>>,
+    prepare: impl FnOnce() -> Result<Option<OwnedSignal>>,
+    ctx: &Context,
+) -> Result<()> {
+    let (thread, process) = {
+        let table = pid_table::pid_table_mut();
+        let thread = table
+            .get_thread(tid)
+            .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target thread does not exist"))?;
+        let process = thread.as_posix_thread().unwrap().process();
+        (thread, process)
+    };
+    if expected_process.is_some_and(|expected| !Arc::ptr_eq(expected, &process)) {
+        return_errno!(Errno::ESRCH);
     }
+    if tgid.is_some_and(|tgid| tgid != process.pid()) {
+        return_errno_with_message!(Errno::ESRCH, "the TGID and TID do not match");
+    }
+    let signal = prepare()?;
+    let target_posix_thread = thread.as_posix_thread().unwrap();
 
     // Check permission
     let signum = signal.as_ref().map(|signal| signal.num());
@@ -144,19 +202,32 @@ pub(crate) fn tgkill_owned(
 /// The credentials of the current process will be checked to determine
 /// if it is authorized to send the signal to the target group.
 pub(crate) fn kill_all<S: Signal + Clone>(signal: Option<S>, ctx: &Context) -> Result<()> {
+    kill_all_with(|| Ok(signal.clone().map(OwnedSignal::new)), ctx)
+}
+
+/// Prepares only for a live eligible process under the original membership lock.
+pub(crate) fn kill_all_with(
+    mut prepare: impl FnMut() -> Result<Option<OwnedSignal>>,
+    ctx: &Context,
+) -> Result<()> {
     let mut result = Ok(());
+    let mut any_target = false;
 
     for process in pid_table::pid_table_mut().iter_processes() {
         if Arc::ptr_eq(&ctx.process, &process) || process.is_init_process() {
             continue;
         }
 
-        let res = kill_process(&process, signal.clone().map(OwnedSignal::new), ctx);
+        any_target = true;
+        let res = prepare().and_then(|signal| kill_process(&process, signal, ctx));
         if res.is_err_and(|err| err.error() != Errno::EPERM) {
             result = res;
         }
     }
 
+    if !any_target {
+        return_errno!(Errno::ESRCH);
+    }
     result
 }
 
