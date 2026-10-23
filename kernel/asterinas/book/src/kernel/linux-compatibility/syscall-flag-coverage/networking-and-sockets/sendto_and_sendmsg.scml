@@ -9,6 +9,22 @@ struct msg_hdr = {
     ..
 };
 
+// AF_UNIX SCM_RIGHTS accepts acyclic ownership only (ELOOP on a cycle).
+// At most 253 descriptors; graph exhaustion returns ENOBUFS.
+struct unix_rights_cmsg = {
+    cmsg_level = SOL_SOCKET,
+    cmsg_type = SCM_RIGHTS,
+    ..
+};
+
+// A connected UNIX socket may have no destination address.
+struct msg_hdr = {
+    msg_control = [ <unix_rights_cmsg> ],
+    ..
+};
+
+// UNIX datagram/seqpacket queues also have a 128-message limit, including
+// empty messages; a nonblocking full queue returns EAGAIN.
 struct mmsg_hdr = {
     hdr = <msg_hdr>,
     msg_len
