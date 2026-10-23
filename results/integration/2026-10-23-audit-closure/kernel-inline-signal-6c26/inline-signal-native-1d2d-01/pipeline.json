@@ -1,0 +1,113 @@
+{
+  "schema": "trillionnium.native-kernel-integration.v1",
+  "source_head": "1d2d20c4228354a56593386f9505976ecc8ff9c7",
+  "source_tree": "4f10e5a8370e8690bc5382e4cf03491f222c501d",
+  "commands": [
+    {
+      "stage": "original-four-suites",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-original-full-ipc.py",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-console-fixture",
+        "--head",
+        "1d2d20c4228354a56593386f9505976ecc8ff9c7",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-1d2d-01/full"
+      ],
+      "outer_deadline_seconds": 15000,
+      "exit_code": 0
+    },
+    {
+      "stage": "original-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "1d2d20c4228354a56593386f9505976ecc8ff9c7",
+        "--expected-source-tree",
+        "4f10e5a8370e8690bc5382e4cf03491f222c501d",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-joint-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-1d2d-01/ordinary"
+      ],
+      "outer_deadline_seconds": 7200,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-sgid30",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-native-sgid-probe.py",
+        "--ordinary",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-1d2d-01/ordinary",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-console-fixture",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-1d2d-01/sgid30"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-ownership12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-inline-signal-ownership-1d2d.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-proc-privileges12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_proc_process_privileges.py",
+        "--kernel",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-1d2d-01/ordinary/product-kernel.elf",
+        "--ordinary-receipt",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-1d2d-01/ordinary/result.json",
+        "--expected-receipt-sha256",
+        "819640f70eb8c67334d03df7c5282978c9d380d7691b1c9021a1f6178f51555a",
+        "--initramfs",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-console-fixture/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-1d2d-01/proc-privileges12"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-inline-signal10",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-inline-signal-probe-1d2d.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 1
+    }
+  ],
+  "passed": false,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "elapsed_seconds": 673.076,
+  "source_checkout_clean": true
+}
