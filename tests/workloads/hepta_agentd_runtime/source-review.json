@@ -1,212 +1,74 @@
 {
   "desktop": {
-    "head": "2da18c78cedc831b88d5e8e28e653b58f001cf20",
-    "tree": "0838e8adcc78256ceb6e8777f5afeb04cf8b6091"
+    "head": "7d8906ef9fbb5f3af4e6bb0843b79ac666394833",
+    "tree": "ca4b875cdb553291a99f4a550eb0b2bd6649de8c"
   },
   "hepta": {
-    "head": "0689cd115e92e6c01f982e1e1987bf945e0c2719",
-    "tree": "21b6d0b41fba0e38b140f3a91b8ba0370edea085"
+    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
   },
   "schema": "hepta.native-original-runtime-source-review.v1",
-  "scope": "Reviewed source pair for a freshly built ordinary kernel, original registry/supervisor and observer. The retained c5/6d archive profile is independent; this source review is not an execution receipt.",
+  "scope": "Reviewed integration source identities for an actual ordinary kernel build with UDP, exec argument, family user-frame, stopped-stack and readonly fixes, plus original Hepta owners and the Oct 23 recovery/issuer/composition stack. Selected-file provenance and clean Git checks are not execution or production authority receipts.",
   "source_files": [
     {
-      "git_blob": "60595420f4bf42089b5745830ac611df1c7ec2c2",
-      "path": "codex-rs/hepta-agentd/src/main.rs",
-      "repository": "hepta",
-      "sha256": "00f3134561b2f5773c1f114fba897e369db9f2c4f28192086596a37bf93ba319"
-    },
-    {
-      "git_blob": "afb9cac35db1c57d58edb3b31c6beee31bab2560",
-      "path": "codex-rs/hepta-agentd/src/config.rs",
-      "repository": "hepta",
-      "sha256": "354d6ffd820362b55928c0736a438e69d2608186b70bd25ce039fb45b2f55587"
-    },
-    {
-      "git_blob": "7f7241d8d7b1ad978cd6a07db785f3b0e4af612d",
-      "path": "codex-rs/hepta-agentd/src/runtime.rs",
-      "repository": "hepta",
-      "sha256": "b2eb80954a210d2f21ce93d40926b84f13d4859a6145c429ae0ec28b59ea5e41"
-    },
-    {
-      "git_blob": "0a17007f64bbbded6b8acfe9c1a79e7023b0054f",
-      "path": "codex-rs/hepta-agentd/src/state.rs",
-      "repository": "hepta",
-      "sha256": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a"
-    },
-    {
-      "git_blob": "8780d98cfebd3b1f2b6061c843b7cbe7fcf30dc0",
-      "path": "codex-rs/hepta-agentd/src/lib.rs",
-      "repository": "hepta",
-      "sha256": "bc233db96502f18d8d97fc12c63ba6ef9e7c1f7be7b4c78bd987ca65b1b1b54a"
-    },
-    {
-      "git_blob": "b17115eb5cffff5f890f34a786534c588d0d3aa5",
-      "path": "codex-rs/hepta-fleet/src/registry.rs",
-      "repository": "hepta",
-      "sha256": "714b160817bf07b71d11af569a6849769395df00b3769988898e7aff29880753"
-    },
-    {
-      "git_blob": "4e8ab6ced19748d22b543a6dbded5d9942ea463c",
-      "path": "codex-rs/hepta-fleet/src/model.rs",
-      "repository": "hepta",
-      "sha256": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e"
-    },
-    {
-      "git_blob": "d02b9b9b02af2b03f3904277f5028e1fb52672b4",
-      "path": "codex-rs/hepta-supervisor/src/unix.rs",
-      "repository": "hepta",
-      "sha256": "6d25f074cf050bc94b39a60634ac42a7c2a73fd096aab931ce3846a5577fba99"
-    },
-    {
-      "git_blob": "f854f1a0c40024a5fe01ea42b5139d8c77bfc778",
-      "path": "codex-rs/hepta-supervisor/src/supervisor.rs",
-      "repository": "hepta",
-      "sha256": "98ce7286ce2b9680bfb2838ec14e969c2333d7818c7ed14711263a08003e0b48"
-    },
-    {
-      "git_blob": "f33f7ea8141a65a8efbd1ee14fcae49833da6252",
-      "path": "codex-rs/hepta-supervisor/src/tick.rs",
-      "repository": "hepta",
-      "sha256": "41a6deb682fa12fd2c8220dd69df00ae08e3c1cf4823d1bcd673bb0bf4864975"
-    },
-    {
-      "git_blob": "290a1c2d0324868c649df6945b73ea1b74a85c1d",
-      "path": "codex-rs/hepta-supervisor/src/driver.rs",
-      "repository": "hepta",
-      "sha256": "aa6349e8b868ed07e0271f6c4045a2e98099dd6a81880eb06c79f4290d18a32b"
-    },
-    {
-      "git_blob": "30d3a88e199578ace3e2fb0387e86d0c467e3806",
-      "path": "codex-rs/hepta-paths/src/fleet.rs",
-      "repository": "hepta",
-      "sha256": "b2e9e821ec1bfc76a959b1fbd2cc971b7c45c47539eb2db80b6a1b86f731b9b1"
-    },
-    {
-      "git_blob": "64ac78157aeb3ee155ce971ee70cdc6c2d1d5f03",
-      "path": "codex-rs/hepta-paths/src/lib.rs",
-      "repository": "hepta",
-      "sha256": "b665da8b86a1d9f9b93b4c438e597090e7041d1dcf7f16d64405b5e5c3e97188"
-    },
-    {
-      "git_blob": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
-      "path": "tests/integration/hepta/original_agentd_probe.rs",
+      "git_blob": "7dd467280ef2141d30572757345ee787703ff5ea",
+      "path": "kernel/asterinas/kernel/comps/drm/src/gem/shmem.rs",
       "repository": "desktop",
-      "sha256": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c"
+      "sha256": "e258a3394b47e688a1923741dc4bb30873e68fd4c7b0ede318e5a6b0c372b672"
     },
     {
-      "git_blob": "d1149f58b3a0067e167054ff89cf276ccfd40f91",
-      "path": "tests/integration/hepta/original_session_probe.rs",
+      "git_blob": "538ae9e49d0b657c021d2b94ab3f27b82bfd5690",
+      "path": "kernel/asterinas/kernel/core/src/error.rs",
       "repository": "desktop",
-      "sha256": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5"
+      "sha256": "00497f8085b631d759e0619854049f4bf3147e4290f3efd9ac9574bb3c1a0a91"
     },
     {
-      "git_blob": "b6d48c43b62f749e281c08810352014608406258",
-      "path": "tests/integration/hepta/run_original_agentd.py",
+      "git_blob": "35ead8c712f69604bad3947d00fd9ddf78a20960",
+      "path": "kernel/asterinas/kernel/core/src/fs/file/inode_handle.rs",
       "repository": "desktop",
-      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+      "sha256": "1443627be55bfd5cf57f0af3d04b15da2d5713771826560146e5caefe86fc232"
     },
     {
-      "git_blob": "3b31dd8cbc51c5527d28dd35f98d68de838cb5d5",
-      "path": "tests/workloads/hepta_agentd_abi/cpio_codec.py",
+      "git_blob": "b68cce8cce58ba1309246657e14a16672bdbe2ad",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs",
       "repository": "desktop",
-      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+      "sha256": "791221600f12817f17c06d9652d475a574e3a5afdf059065890fc660624f4666"
     },
     {
-      "git_blob": "0be14ffcedfda978c1ea7dbdf8d31a44d2e3060a",
-      "path": "services/hepta-os/Cargo.toml",
+      "git_blob": "951447c690b7f8905e669bf04db9afd7cde5caba",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/permission_tests.rs",
       "repository": "desktop",
-      "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b"
+      "sha256": "7d91ac5c708cbea2fa4f6db9ebad0f153c95f3a75acd73a5750766202d51ccb7"
     },
     {
-      "git_blob": "e423f6e549fe60e8496ec159463dbc1c324c256c",
-      "path": "services/hepta-os/Cargo.lock",
+      "git_blob": "3dd4dec5e6eedfbd19b59978422589dbdc530009",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs",
       "repository": "desktop",
-      "sha256": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175"
+      "sha256": "4cc39dcd44062841760c762e56628c4042bc605d0d0347ca3505236cb099c68a"
     },
     {
-      "git_blob": "3ad1475511aede466456cd5a1d3749ccb87c0f2f",
-      "path": "services/hepta-os/src/bin/hepta-observe.rs",
+      "git_blob": "917318293bd941a31b2639094a06021fea5cbc4d",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs/permission_tests.rs",
       "repository": "desktop",
-      "sha256": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7"
+      "sha256": "1addee8dfb9ffb796bfe54c692fb32ed84cb94b3a1b9d2882fba8f2dc3202690"
     },
     {
-      "git_blob": "60a32f5af8e8d3b7bcd6b68b9bd7e1f8dec9c79a",
-      "path": "services/hepta-os/src/client.rs",
+      "git_blob": "7a6b9367fe4c3ca3b73d9c44446ea36fb794d182",
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/inode.rs",
       "repository": "desktop",
-      "sha256": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8"
+      "sha256": "6178bc88330ba7d27ce5701c9d28b8088f3fedad061ada9b075ac9491150e274"
     },
     {
-      "git_blob": "b39b712b2daa058ef16ee85c235ce3a8359ddf3c",
-      "path": "services/hepta-os/src/wire.rs",
+      "git_blob": "5f72a47307ea5851e3ca8602a0f5c11c9bfd264d",
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/permission_attrs.rs",
       "repository": "desktop",
-      "sha256": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c"
+      "sha256": "81a0032665b3f8e0a4c62feab1d0853e7aa2f628a552064a46a0574ca6d9dc8a"
     },
     {
-      "git_blob": "3cfec133e72bb5f6797999fd52d66b6268bb4c1a",
-      "path": "services/hepta-os/src/lib.rs",
+      "git_blob": "ceed294b71146054258e80be65f061fbf1a2eefa",
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/path/mod.rs",
       "repository": "desktop",
-      "sha256": "7080b717b3a3e86018dcf97bf816f9849da5f570291c5825ac0dcca867903903"
-    },
-    {
-      "git_blob": "993f89c2cf5ccd9345ad16f17b482d45656c338b",
-      "path": "tests/workloads/hepta_agentd_abi/README.md",
-      "repository": "desktop",
-      "sha256": "67b6e38b78971b9b6a3f93ed57b89ac01463285f474c15c6cbeeb2aae2ccb771"
-    },
-    {
-      "git_blob": "be05914e7c5d5b315147f127ebe695dec7649585",
-      "path": "tests/workloads/hepta_agentd_abi/agentd_abi_probe.c",
-      "repository": "desktop",
-      "sha256": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427"
-    },
-    {
-      "git_blob": "eae1f2c553a57183f938e62a0585001c161abed8",
-      "path": "tests/workloads/hepta_agentd_abi/run_agentd_abi.py",
-      "repository": "desktop",
-      "sha256": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c"
-    },
-    {
-      "git_blob": "7a0abc1c998b6161711a6506d5a4cc0f10c27da5",
-      "path": "tests/workloads/hepta_agentd_abi/source-review.json",
-      "repository": "desktop",
-      "sha256": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
-    },
-    {
-      "git_blob": "0e7e5bfdf39559dae838097adedfe53a83a45321",
-      "path": "tests/workloads/hepta_agentd_abi/test_agentd_abi.py",
-      "repository": "desktop",
-      "sha256": "9b87b8b3e54e3c2bc3dc0141a2c8982907aa5316b26cb78ffd7dd50a09277e71"
-    },
-    {
-      "git_blob": "caebd3c13516704713967dbdbb31c1d7c797751e",
-      "path": "support/build/kernel.sh",
-      "repository": "desktop",
-      "sha256": "627ccc5a367ae6b8f585d3d7d50969160dd2f098b40608a6ac6be93d0fbc4ef0"
-    },
-    {
-      "git_blob": "727a1a322b52a3581cc0f255a258f0dc38ef2a52",
-      "path": "support/build/minimal.mk",
-      "repository": "desktop",
-      "sha256": "59ad6337dc4618986108e7c178f3b2977859cf2d301c2f732c0b6468bc5ebb8b"
-    },
-    {
-      "git_blob": "936bec872749bcbaf5bf689c06fb4848c4ff8ce5",
-      "path": "support/build/verify-source.py",
-      "repository": "desktop",
-      "sha256": "7694187410670e9429084dc4479d406ee00ae6c4ff0ff7fe38f7fc527c4b3228"
-    },
-    {
-      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
-      "path": "support/build/check-boot.py",
-      "repository": "desktop",
-      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
-    },
-    {
-      "git_blob": "7e5d23fb3532907d914c59fe61357521641b645f",
-      "path": "support/build/record-qemu.py",
-      "repository": "desktop",
-      "sha256": "7aaf72cf6b39b5320f46a3bdae5dd2bd30902d79294f9b568fdba5fcb146121b"
+      "sha256": "eb6030eb1fdb921a298bff961ddb66ea2652c01a81779dd6e61a932eeac395cc"
     },
     {
       "git_blob": "7963e0ffedf36c034b32596167ec3e9190ec0489",
@@ -227,6 +89,138 @@
       "sha256": "92323bcb6cc809ea48232c94eda160bda5129b931616c0994b11e472c2bd4617"
     },
     {
+      "git_blob": "5b1d2ba8f17b13c7ad2e07dc0e58a50f174700d1",
+      "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+      "repository": "desktop",
+      "sha256": "5848f6965e16960959a861b23522e52db87de0fd0629ef7b2b750e3e0dedc1de"
+    },
+    {
+      "git_blob": "3f83c187c69ac491a2155edc4ceba504945df850",
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "repository": "desktop",
+      "sha256": "b59625d431ac69c3d3657178d08048f92a54e66fce09eb9aa3f6e3c8ed17c355"
+    },
+    {
+      "git_blob": "6de6df87d42c8162364093a0472e2a37a8226108",
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs",
+      "repository": "desktop",
+      "sha256": "5f17a07ab204bf3800ab7001e9a40ff47ef5b4d0f863b464c5c98f8c637da18f"
+    },
+    {
+      "git_blob": "1ca2215cf4fdbb048548def56664b6484438a855",
+      "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "repository": "desktop",
+      "sha256": "c6a333cc699eae283009d7aeebb45c1d01cfed4d9d711a71164c7b2aeb1f0f10"
+    },
+    {
+      "git_blob": "e2c4bd53525683a63699c70e95afe8bb2075431d",
+      "path": "kernel/asterinas/kernel/core/src/process/process_vm/init_stack/mod.rs",
+      "repository": "desktop",
+      "sha256": "a440391e7b591e66b7ef5ef9daacd9fc4c9f0515e0a1cedca07692825ad134da"
+    },
+    {
+      "git_blob": "846c947fdda16597f723b7e0cb9b600d5e4efa44",
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/arg_budget.rs",
+      "repository": "desktop",
+      "sha256": "40e538d452bcd3413de2ed114a0d3969f7f6682b6b3a1364ec8a7cdd3bc1b674"
+    },
+    {
+      "git_blob": "524c86ecfb63d69e68052c3e7b0c3afed83ff634",
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs",
+      "repository": "desktop",
+      "sha256": "a9665ff343bc0aedc9858f314d39425a2a43c46a277c9b12d5f71e1b81c6bf4a"
+    },
+    {
+      "git_blob": "e254b2234de78f16f715e7e3d2ea0ef07bf977e1",
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+      "repository": "desktop",
+      "sha256": "4bf79f32ed8869f876a1944602a42f5275a2343506e9eead724f6d5a9fcedf85"
+    },
+    {
+      "git_blob": "58051aded356464cf131318673345b95d5902734",
+      "path": "kernel/asterinas/kernel/core/src/syscall/mmap.rs",
+      "repository": "desktop",
+      "sha256": "bd9004078bf15cab0da17b58d139aae7b02198d403274e831beff59c03985818"
+    },
+    {
+      "git_blob": "704a6b2441a8771ecfab070a064a4b572e9ae0f4",
+      "path": "kernel/asterinas/kernel/core/src/syscall/utimens.rs",
+      "repository": "desktop",
+      "sha256": "db8486793dbf116a721c33cb8c38e8eefbc3feebbb7388447138a8860a552616"
+    },
+    {
+      "git_blob": "e3683cf41d6b0536c8134011b9af74d7755d542d",
+      "path": "kernel/asterinas/kernel/core/src/thread/exception.rs",
+      "repository": "desktop",
+      "sha256": "4e895794d546aee22bcd0a115092007db8852364c3001930aa368b0a30816ce8"
+    },
+    {
+      "git_blob": "12cc005fd26a3f36adbdd754febfad65978da581",
+      "path": "kernel/asterinas/kernel/core/src/thread/kernel_thread.rs",
+      "repository": "desktop",
+      "sha256": "eeba050c2ac1a4feac8f32e4ee2fa8deccfd43921e0188cd90bb12f633414b8e"
+    },
+    {
+      "git_blob": "b82b147be62d995b77e05a26c2e064fa2effbc3f",
+      "path": "kernel/asterinas/kernel/core/src/vm/mod.rs",
+      "repository": "desktop",
+      "sha256": "6ee07eacde8c98a6ded33248581f5e0f8aa8930f2855652fa15baa944846dfc6"
+    },
+    {
+      "git_blob": "4eda96f12e7dd83e4e4c5814af55d095f69929a8",
+      "path": "kernel/asterinas/kernel/core/src/vm/page_cache/cache_page.rs",
+      "repository": "desktop",
+      "sha256": "d7d85a0e3ac16a62363bf26c9186d69350263ed4aa3c367eb949c168196bfc7f"
+    },
+    {
+      "git_blob": "c421130b7334a0651609df9b632196a45bd4ec42",
+      "path": "kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs",
+      "repository": "desktop",
+      "sha256": "db08c24d2be1bbfba93114a6e7c8c1545df92e9e85515db5c912787209f2a28d"
+    },
+    {
+      "git_blob": "0ae09f5d7f6dcb92c20605dd834fb600af7db535",
+      "path": "kernel/asterinas/kernel/core/src/vm/page_cache/vmo/options.rs",
+      "repository": "desktop",
+      "sha256": "d06763a7d5b643083b3ca7ff67198c68879545917c701af524f63378ae9fe25c"
+    },
+    {
+      "git_blob": "392412894939d003e48c7d6a3417c85a37656bfc",
+      "path": "kernel/asterinas/kernel/core/src/vm/user_memory.rs",
+      "repository": "desktop",
+      "sha256": "2dce8a0d7b82959f2e6d9ebead371a24ce0001cbb52e367ef9c65917dd9e755a"
+    },
+    {
+      "git_blob": "a723586e0299fe0b1e73e5b87efd8e3d8e49d9ab",
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/handle.rs",
+      "repository": "desktop",
+      "sha256": "395dd948e8558f329a160c42d7f48161513adb1bf1f32c63bd03910b4ebd386d"
+    },
+    {
+      "git_blob": "6c6ed8a187c665e94b010a013d8caf1da3d5eea7",
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
+      "repository": "desktop",
+      "sha256": "b93554d238e1fd8386540dd70872f108a14353f8d827a3b86833ec59015927ba"
+    },
+    {
+      "git_blob": "bed32673e1967543ea5ca5a8c66bfd6b28257606",
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/fork.rs",
+      "repository": "desktop",
+      "sha256": "143b9194f90edcb1d80313337f1ceeda7c9b39c2915b4194e684713b9308bea1"
+    },
+    {
+      "git_blob": "84f886706891e11b57a7a13c4aefbe01dffab739",
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs",
+      "repository": "desktop",
+      "sha256": "30b2bd7bd8f7a947a26cb6fee8980f5261dccba61c16ed536ac2de422e2db592"
+    },
+    {
+      "git_blob": "8d7ea4912d03bf7fa04a4c5573a68832f02cea41",
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/page_fault.rs",
+      "repository": "desktop",
+      "sha256": "00bdd15130f7efa6d213489682c8e293d14b6120ab6474ac32065f9a10f696a5"
+    },
+    {
       "git_blob": "b6e0dbc9109ff974708a494f6bad954d957c8663",
       "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs",
       "repository": "desktop",
@@ -243,6 +237,282 @@
       "path": "kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs",
       "repository": "desktop",
       "sha256": "916ac51629738be3f23c71d510a292e7903bb0d5db8e56cec5d60df165540ef0"
+    },
+    {
+      "git_blob": "a06fa9bbb09e8791b37aae2a9dcd02fa689b8d61",
+      "path": "kernel/asterinas/test/initramfs/src/regression/network/run_test.sh",
+      "repository": "desktop",
+      "sha256": "17b229cdff20a9169b5afb253b9dc708a67621eec37b554c02237fac228959a9"
+    },
+    {
+      "git_blob": "39b047ced519f98e191cb0587477975db3ba187a",
+      "path": "kernel/asterinas/test/initramfs/src/regression/network/udp_local_error.c",
+      "repository": "desktop",
+      "sha256": "e438e1242fe5be5e5886d05936a43666299504e20747ed37d5694d93def3f3e0"
+    },
+    {
+      "git_blob": "0b5b44dcaf6614df7135cbbb5001bb45a986b5d0",
+      "path": "kernel/asterinas/test/initramfs/src/regression/process/execve/execve_args.c",
+      "repository": "desktop",
+      "sha256": "4799622e147863ccce600f981c9f9bc8922bf917f73d983d41e30144e52f14ee"
+    },
+    {
+      "git_blob": "55afd4f44fe519a5f4cc1ce2de974fb3303332a6",
+      "path": "kernel/asterinas/test/initramfs/src/regression/process/run_test.sh",
+      "repository": "desktop",
+      "sha256": "e012246fd9b24e2e8554c617d29d3a126952bf5a4744244c8c471f4fc21aea70"
+    },
+    {
+      "git_blob": "e423f6e549fe60e8496ec159463dbc1c324c256c",
+      "path": "services/hepta-os/Cargo.lock",
+      "repository": "desktop",
+      "sha256": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175"
+    },
+    {
+      "git_blob": "0be14ffcedfda978c1ea7dbdf8d31a44d2e3060a",
+      "path": "services/hepta-os/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b"
+    },
+    {
+      "git_blob": "3ad1475511aede466456cd5a1d3749ccb87c0f2f",
+      "path": "services/hepta-os/src/bin/hepta-observe.rs",
+      "repository": "desktop",
+      "sha256": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7"
+    },
+    {
+      "git_blob": "60a32f5af8e8d3b7bcd6b68b9bd7e1f8dec9c79a",
+      "path": "services/hepta-os/src/client.rs",
+      "repository": "desktop",
+      "sha256": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8"
+    },
+    {
+      "git_blob": "3cfec133e72bb5f6797999fd52d66b6268bb4c1a",
+      "path": "services/hepta-os/src/lib.rs",
+      "repository": "desktop",
+      "sha256": "7080b717b3a3e86018dcf97bf816f9849da5f570291c5825ac0dcca867903903"
+    },
+    {
+      "git_blob": "b39b712b2daa058ef16ee85c235ce3a8359ddf3c",
+      "path": "services/hepta-os/src/wire.rs",
+      "repository": "desktop",
+      "sha256": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c"
+    },
+    {
+      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
+      "path": "support/build/check-boot.py",
+      "repository": "desktop",
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
+    },
+    {
+      "git_blob": "caebd3c13516704713967dbdbb31c1d7c797751e",
+      "path": "support/build/kernel.sh",
+      "repository": "desktop",
+      "sha256": "627ccc5a367ae6b8f585d3d7d50969160dd2f098b40608a6ac6be93d0fbc4ef0"
+    },
+    {
+      "git_blob": "727a1a322b52a3581cc0f255a258f0dc38ef2a52",
+      "path": "support/build/minimal.mk",
+      "repository": "desktop",
+      "sha256": "59ad6337dc4618986108e7c178f3b2977859cf2d301c2f732c0b6468bc5ebb8b"
+    },
+    {
+      "git_blob": "7e5d23fb3532907d914c59fe61357521641b645f",
+      "path": "support/build/record-qemu.py",
+      "repository": "desktop",
+      "sha256": "7aaf72cf6b39b5320f46a3bdae5dd2bd30902d79294f9b568fdba5fcb146121b"
+    },
+    {
+      "git_blob": "936bec872749bcbaf5bf689c06fb4848c4ff8ce5",
+      "path": "support/build/verify-source.py",
+      "repository": "desktop",
+      "sha256": "7694187410670e9429084dc4479d406ee00ae6c4ff0ff7fe38f7fc527c4b3228"
+    },
+    {
+      "git_blob": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
+      "path": "tests/integration/hepta/original_agentd_probe.rs",
+      "repository": "desktop",
+      "sha256": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c"
+    },
+    {
+      "git_blob": "d1149f58b3a0067e167054ff89cf276ccfd40f91",
+      "path": "tests/integration/hepta/original_session_probe.rs",
+      "repository": "desktop",
+      "sha256": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5"
+    },
+    {
+      "git_blob": "b6d48c43b62f749e281c08810352014608406258",
+      "path": "tests/integration/hepta/run_original_agentd.py",
+      "repository": "desktop",
+      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+    },
+    {
+      "git_blob": "993f89c2cf5ccd9345ad16f17b482d45656c338b",
+      "path": "tests/workloads/hepta_agentd_abi/README.md",
+      "repository": "desktop",
+      "sha256": "67b6e38b78971b9b6a3f93ed57b89ac01463285f474c15c6cbeeb2aae2ccb771"
+    },
+    {
+      "git_blob": "be05914e7c5d5b315147f127ebe695dec7649585",
+      "path": "tests/workloads/hepta_agentd_abi/agentd_abi_probe.c",
+      "repository": "desktop",
+      "sha256": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427"
+    },
+    {
+      "git_blob": "3b31dd8cbc51c5527d28dd35f98d68de838cb5d5",
+      "path": "tests/workloads/hepta_agentd_abi/cpio_codec.py",
+      "repository": "desktop",
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+    },
+    {
+      "git_blob": "eae1f2c553a57183f938e62a0585001c161abed8",
+      "path": "tests/workloads/hepta_agentd_abi/run_agentd_abi.py",
+      "repository": "desktop",
+      "sha256": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c"
+    },
+    {
+      "git_blob": "7a0abc1c998b6161711a6506d5a4cc0f10c27da5",
+      "path": "tests/workloads/hepta_agentd_abi/source-review.json",
+      "repository": "desktop",
+      "sha256": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
+    },
+    {
+      "git_blob": "0e7e5bfdf39559dae838097adedfe53a83a45321",
+      "path": "tests/workloads/hepta_agentd_abi/test_agentd_abi.py",
+      "repository": "desktop",
+      "sha256": "9b87b8b3e54e3c2bc3dc0141a2c8982907aa5316b26cb78ffd7dd50a09277e71"
+    },
+    {
+      "git_blob": "58ae370892b9a12004e636c5c461c11a22c68633",
+      "path": "codex-rs/hepta-agentd/src/config.rs",
+      "repository": "hepta",
+      "sha256": "a5e08e510c106ec795b06c06cec144e8b67a7650b75a442d236162570d23fc4f"
+    },
+    {
+      "git_blob": "01ccc1398e49fdd01cfdb48cff2b62b4d25e8119",
+      "path": "codex-rs/hepta-agentd/src/final_use_issuer.rs",
+      "repository": "hepta",
+      "sha256": "4a4c14308918a753087e0adc97ce4cd7f494a873a77ac214bb5bc5c369773380"
+    },
+    {
+      "git_blob": "074e3fa53b1ba0bb4523dc827eef02ad8a5bfaa4",
+      "path": "codex-rs/hepta-agentd/src/grant_provider_worker.rs",
+      "repository": "hepta",
+      "sha256": "df0550f88a57cc2899eed33dc3bfa38a46871bd9849ace01db4e9c210f365388"
+    },
+    {
+      "git_blob": "5e3c5fba361c30071afec7c969f5720b624bb662",
+      "path": "codex-rs/hepta-agentd/src/lib.rs",
+      "repository": "hepta",
+      "sha256": "17d994df31d925b82b312dd66c41def5714c286d67aed853f8b540edd3530009"
+    },
+    {
+      "git_blob": "60595420f4bf42089b5745830ac611df1c7ec2c2",
+      "path": "codex-rs/hepta-agentd/src/main.rs",
+      "repository": "hepta",
+      "sha256": "00f3134561b2f5773c1f114fba897e369db9f2c4f28192086596a37bf93ba319"
+    },
+    {
+      "git_blob": "5fca295975820a2ab10308b82eaf0bf7d31e6f7a",
+      "path": "codex-rs/hepta-agentd/src/production_authority.rs",
+      "repository": "hepta",
+      "sha256": "30ecb92c79ec9a0718d54a59bace10f8f6568cd2927abf926117c406ec996374"
+    },
+    {
+      "git_blob": "1eea5d16451b2d776987eaf913c6f7a5ef195b9d",
+      "path": "codex-rs/hepta-agentd/src/production_composition.rs",
+      "repository": "hepta",
+      "sha256": "c34dc7bcbc2a6d625054d018f07eb6eca3e3382fea635a2b03133520551eaa95"
+    },
+    {
+      "git_blob": "f881d7c4d20a189d781977da09237f8c82dc4012",
+      "path": "codex-rs/hepta-agentd/src/production_writer_host.rs",
+      "repository": "hepta",
+      "sha256": "9cbf7ebd1be6c93bbee336c56a020861f85e295778683a729aa8eceaddbd1ecb"
+    },
+    {
+      "git_blob": "7f7241d8d7b1ad978cd6a07db785f3b0e4af612d",
+      "path": "codex-rs/hepta-agentd/src/runtime.rs",
+      "repository": "hepta",
+      "sha256": "b2eb80954a210d2f21ce93d40926b84f13d4859a6145c429ae0ec28b59ea5e41"
+    },
+    {
+      "git_blob": "0a17007f64bbbded6b8acfe9c1a79e7023b0054f",
+      "path": "codex-rs/hepta-agentd/src/state.rs",
+      "repository": "hepta",
+      "sha256": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a"
+    },
+    {
+      "git_blob": "4e8ab6ced19748d22b543a6dbded5d9942ea463c",
+      "path": "codex-rs/hepta-fleet/src/model.rs",
+      "repository": "hepta",
+      "sha256": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e"
+    },
+    {
+      "git_blob": "b17115eb5cffff5f890f34a786534c588d0d3aa5",
+      "path": "codex-rs/hepta-fleet/src/registry.rs",
+      "repository": "hepta",
+      "sha256": "714b160817bf07b71d11af569a6849769395df00b3769988898e7aff29880753"
+    },
+    {
+      "git_blob": "7e3ea376f749ea270a1507d9603607d162f85799",
+      "path": "codex-rs/hepta-memory/src/production_hos2.rs",
+      "repository": "hepta",
+      "sha256": "dad3d8f409364c3ae2b0203c1967d363a298dfc6d1c4b9161c31684e4f239f28"
+    },
+    {
+      "git_blob": "459e0402ca95dfcfca717f0e80d5c23c9716c26f",
+      "path": "codex-rs/hepta-memory/src/production_hos2_owner.rs",
+      "repository": "hepta",
+      "sha256": "3ca6597e9161f61bdbe084f0c86b0a8815a5e1e8b44a9958012175565cc143c2"
+    },
+    {
+      "git_blob": "1e2b49fba38bdf10a0a451c7f241522178bbe369",
+      "path": "codex-rs/hepta-memory/src/production_notes_owner.rs",
+      "repository": "hepta",
+      "sha256": "5f9af75b787fae99397c0dfdb14af2d055e3fc7e92a51019d8143b36ef8eab48"
+    },
+    {
+      "git_blob": "9b0e30030df87549b2837733bfebf0403c238eca",
+      "path": "codex-rs/hepta-memory/src/production_writer.rs",
+      "repository": "hepta",
+      "sha256": "fb0bcfa6f1cb6d84ae5dcb91903faa859ebca6b2de71ddb822140acbf819cac6"
+    },
+    {
+      "git_blob": "30d3a88e199578ace3e2fb0387e86d0c467e3806",
+      "path": "codex-rs/hepta-paths/src/fleet.rs",
+      "repository": "hepta",
+      "sha256": "b2e9e821ec1bfc76a959b1fbd2cc971b7c45c47539eb2db80b6a1b86f731b9b1"
+    },
+    {
+      "git_blob": "64ac78157aeb3ee155ce971ee70cdc6c2d1d5f03",
+      "path": "codex-rs/hepta-paths/src/lib.rs",
+      "repository": "hepta",
+      "sha256": "b665da8b86a1d9f9b93b4c438e597090e7041d1dcf7f16d64405b5e5c3e97188"
+    },
+    {
+      "git_blob": "290a1c2d0324868c649df6945b73ea1b74a85c1d",
+      "path": "codex-rs/hepta-supervisor/src/driver.rs",
+      "repository": "hepta",
+      "sha256": "aa6349e8b868ed07e0271f6c4045a2e98099dd6a81880eb06c79f4290d18a32b"
+    },
+    {
+      "git_blob": "f854f1a0c40024a5fe01ea42b5139d8c77bfc778",
+      "path": "codex-rs/hepta-supervisor/src/supervisor.rs",
+      "repository": "hepta",
+      "sha256": "98ce7286ce2b9680bfb2838ec14e969c2333d7818c7ed14711263a08003e0b48"
+    },
+    {
+      "git_blob": "f33f7ea8141a65a8efbd1ee14fcae49833da6252",
+      "path": "codex-rs/hepta-supervisor/src/tick.rs",
+      "repository": "hepta",
+      "sha256": "41a6deb682fa12fd2c8220dd69df00ae08e3c1cf4823d1bcd673bb0bf4864975"
+    },
+    {
+      "git_blob": "d02b9b9b02af2b03f3904277f5028e1fb52672b4",
+      "path": "codex-rs/hepta-supervisor/src/unix.rs",
+      "repository": "hepta",
+      "sha256": "6d25f074cf050bc94b39a60634ac42a7c2a73fd096aab931ce3846a5577fba99"
     }
   ]
 }

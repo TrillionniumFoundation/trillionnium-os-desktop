@@ -43,6 +43,8 @@ def retain_build(args, roots, output, report):
                "--expected-source-head", gate.DESKTOP["head"],
                "--expected-source-tree", gate.DESKTOP["tree"],
                "--timeout", "120", "--output", str(qualification)]
+    if args.target_dir is not None:
+        command.extend(["--target-dir", str(args.target_dir.absolute())])
     environment = {
         **gate.abi.ENV, "HOME": str(Path.home()),
         "PATH": str(args.cargo_home.resolve(strict=True) / "bin") + ":/usr/bin:/bin:/usr/sbin:/sbin",
@@ -55,8 +57,26 @@ def retain_build(args, roots, output, report):
     report["command"] = command
     report["environment_keys"] = sorted(environment)
     helper = preparation.original_helper(roots["desktop"])
+    # OSDK_LOCAL_DEV embeds its source/OSTD directory. An installed binary
+    # built in another checkout is not interchangeable even at the same version.
+    cargo = args.cargo_home.resolve(strict=True) / "bin/cargo"
+    gate.require(cargo.is_file(), "Cargo Rustup proxy required in cargo-home/bin")
+    osdk_command = [str(cargo), "+nightly-2026-07-21", "install", "--locked", "--force",
+                    "cargo-osdk", "--path", str(roots["desktop"] / "kernel/asterinas/osdk")]
+    report["osdk_command"] = osdk_command
+    preparation.original_call(helper, "bounded_command", osdk_command,
+                              roots["desktop"] / "kernel/asterinas",
+                              {**environment, "OSDK_LOCAL_DEV": "1",
+                               "CARGO_TARGET_DIR": str(output / "osdk-target")},
+                              output / "osdk-build.log", 7200)
+    osdk = args.cargo_home.resolve(strict=True) / "bin/cargo-osdk"
+    gate.require(osdk.is_file() and not osdk.is_symlink(), "source-built OSDK binary missing")
+    osdk_identity = {"path": str(osdk), "sha256": gate.sha(osdk), "command": osdk_command,
+                     "source": gate.DESKTOP, "local_development_source": True}
+    preparation.verify_sources(roots)
     preparation.original_call(helper, "bounded_command", command, roots["desktop"], environment,
                               output / "build-and-boot.log", 7200)
+    gate.require(gate.sha(osdk) == osdk_identity["sha256"], "OSDK changed during qualification")
     candidate = gate.json_value((qualification / "result.json").read_bytes())
     gate.require(candidate.get("passed") is True and candidate.get("stage") == "complete"
                  and candidate.get("source_inputs_unchanged") is True,
@@ -92,7 +112,8 @@ def retain_build(args, roots, output, report):
         "schema": "hepta.native-original-runtime-build.v1", "sources": gate.SOURCES,
         "build_sources": {"desktop": gate.DESKTOP}, "kernel_profile": "ordinary-os",
         "built": True, "source_clean": True, "binary_sha256": {"kernel": gate.sha(output / "kernel.elf")},
-        "commands": [command], "source_files": reviewed,
+        "commands": [osdk_command, command], "source_files": reviewed,
+        "build_tools": {"cargo_osdk": osdk_identity},
         "source_review_sha256": args.expected_source_review_sha256,
         "ordinary_boot": boot, "ordinary_queryabi": candidate,
         "source_file_count": len(snapshots[0]["files"]),
@@ -124,6 +145,7 @@ def main(argv=None):
     parser.add_argument("--rustup-home", type=Path, default=Path.home() / ".rustup")
     parser.add_argument("--vdso", type=Path, required=True)
     parser.add_argument("--jobs", type=int, choices=range(1, 9), default=2)
+    parser.add_argument("--target-dir", type=Path, help="original Cargo target cache; source checks remain mandatory")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     report = {"schema": "hepta.native-original-kernel-build-result.v1", "built": False,

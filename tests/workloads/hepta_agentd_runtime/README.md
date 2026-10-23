@@ -14,12 +14,13 @@ those fields false even when its lifecycle oracle passes.
 ## Current fresh-build profile
 
 The current `source-review.json` selects Desktop
-`2da18c78cedc831b88d5e8e28e653b58f001cf20` / tree
-`0838e8adcc78256ceb6e8777f5afeb04cf8b6091` and Hepta
-`0689cd115e92e6c01f982e1e1987bf945e0c2719` / tree
-`21b6d0b41fba0e38b140f3a91b8ba0370edea085`. It includes the UDP stop fix
-and the original-owner integration onto the current convergence line. The
-39 selected source identities are a review input, not a runtime receipt.
+`7d8906ef9fbb5f3af4e6bb0843b79ac666394833` / tree
+`ca4b875cdb553291a99f4a550eb0b2bd6649de8c` and Hepta
+`b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` / tree
+`b035a577969cb503d7c09620694a6b6c54178c97`. It includes the UDP, exec
+argument, family user-frame, initial-stack and readonly fixes and the Oct 23
+original-owner recovery/issuer/composition stack. The 84 selected source
+identities are a review input, not a runtime receipt.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source
@@ -27,12 +28,17 @@ review. It retains the original command, pinned toolchain gate, raw QEMU
 record, serial bytes, all three boot binaries and complete tracked-source
 snapshots. It creates `kernel-build.json` only after successful build, boot,
 QueryAbi checks, live artifact verification and unchanged clean sources.
+The builder first force-builds the original locked OSDK in the same reviewed
+checkout and records its binary hash. Local-development OSDK embeds a source
+directory; a binary built in another checkout is not reused by version alone.
 No provider credentials or trusted-image flags are inherited. A failed build
 retains a failure result and never produces a success receipt.
 
 The `--execute` flag is required; without it the builder performs no build or
 filesystem mutation. Pass canonical clean source checkouts, the pinned VDSO,
-and a fresh output directory outside both checkouts. The resulting receipt
+and a fresh output directory outside both checkouts. An optional `--target-dir`
+passes a Cargo build cache to the unchanged original qualification runner;
+it never skips source checks, build commands, live boot or QueryAbi. The resulting receipt
 and kernel are inputs to the existing `prepare_inputs.py`, followed by the
 existing explicit `run_agentd_runtime.py --execute` guest run.
 

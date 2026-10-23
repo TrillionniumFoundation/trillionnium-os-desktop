@@ -22,8 +22,8 @@ jobs:
       run:
         shell: bash
     env:
-      DESKTOP_SOURCE_PIN: 2da18c78cedc831b88d5e8e28e653b58f001cf20
-      HEPTA_SOURCE_PIN: 0689cd115e92e6c01f982e1e1987bf945e0c2719
+      DESKTOP_SOURCE_PIN: 7d8906ef9fbb5f3af4e6bb0843b79ac666394833
+      HEPTA_SOURCE_PIN: b3d3f2d4b01f123d7ac17575c27fb54d00094f7f
       GIT_TERMINAL_PROMPT: "0"
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
@@ -66,6 +66,11 @@ jobs:
               qemu-system-x86 e2fsprogs clang lld busybox-static
             rustup toolchain install 1.95.0 --profile minimal
             rustup toolchain install nightly-2026-07-21 --profile minimal --component rust-src,rustc-dev,llvm-tools-preview --target x86_64-unknown-none
+            rustup_binary=$(command -v rustup)
+            mkdir -p "$CARGO_HOME/bin"
+            for proxy in rustup cargo rustc rustdoc; do
+              ln -s "$rustup_binary" "$CARGO_HOME/bin/$proxy"
+            done
             rustup run 1.95.0 rustc -Vv
             rustup run 1.95.0 cargo -Vv
             qemu-system-x86_64 --version
@@ -112,6 +117,7 @@ jobs:
             --hepta-source "$F1_CI_ROOT/hepta-source" \
             --expected-source-review-sha256 "$review_sha" \
             --cargo-home "$CARGO_HOME" --rustup-home "$RUSTUP_HOME" \
+            --target-dir "$F1_CI_ROOT/kernel-target" \
             --vdso "$F1_CI_ROOT/linux-vdso" --output "$F1_CI_ROOT/kernel-inputs" \
             2>&1 | tee "$F1_CI_ROOT/logs/kernel-build-and-boot.log"
 
