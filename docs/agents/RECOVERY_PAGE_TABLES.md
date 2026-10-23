@@ -10,9 +10,12 @@ heap, IPC buffer, handle slot or durable request budget is installed here.
 `VmSpace::try_new_from(&PhysicalReserve)` allocates its root from the explicitly
 supplied partition. `VmSpace::recovery_cursor(..., &PhysicalReserve)` borrows
 authority for subsequent mapping operations. No token is stored in `VmSpace`,
-the page table, its frames or mapped user data. A root and later branches may
-use different explicitly supplied tokens; destruction returns each physical
-page to its original allocator partition.
+the page table, its frames or mapped user data. Destruction returns each
+physical page to its original allocator partition. The default allocator
+admits only one active extent, including a closed extent with outstanding
+frames; this API does not expand that limit. A new token can be admitted only
+after the old partition's final refund. A stale token cannot allocate from the
+new partition even if the physical addresses are reused.
 
 Ordinary `VmSpace::new`, cursors, mapping, copying and allocation retain their
 original interfaces and behavior, including panic contracts. They cannot
@@ -68,8 +71,9 @@ The new tests require:
   root allocation outside the reserved extent.
 - Failure at every missing-page depth, repeated attempts, unchanged PTEs and
   cursor address, the same returned input frame, and exact immediate refund.
-- Separate root, branch and data partitions; real VM aliases retaining all
-  owners; original partition refunds only after their final references drop.
+- Single-extent root, branch and data owners; closed aliases preventing new
+  reserve admission; stale-token root/map rejection after turnover; real VM
+  aliases retaining all owners and exact final-reference refunds.
 - Closed-token mapping of a prepared leaf, rejected new growth, and ordinary
   cursor growth without consuming or inheriting reserve authority.
 - Conflict panics preserving the original mapping, correct lock release on

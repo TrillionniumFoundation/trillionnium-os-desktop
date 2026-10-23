@@ -91,44 +91,65 @@ fn recovery_mapping_failure_at_each_missing_level_preserves_input_and_tree() {
 
 #[ktest]
 fn recovery_mapping_uses_only_selected_token_and_refunds_last_vm_owner() {
-    let roots = PhysicalReserve::new(1).unwrap();
-    let branches = PhysicalReserve::new(PagingConsts::NR_LEVELS as usize - 1).unwrap();
-    let data_pages = PhysicalReserve::new(1).unwrap();
-    let vm = Arc::new(VmSpace::try_new_from(&roots).unwrap());
+    // The original allocator admits only one live extent. Closing it cannot
+    // admit its successor until its original final physical owner drops.
+    let old = PhysicalReserve::new(1).unwrap();
+    let old_vm = VmSpace::try_new_from(&old).unwrap();
+    old.close();
+    assert!(matches!(PhysicalReserve::new(1), Err(Error::NoMemory)));
+    drop(old_vm);
+    assert!(old.snapshot().is_none());
+
+    let reserve = PhysicalReserve::new(PagingConsts::NR_LEVELS as usize + 1).unwrap();
+    assert_ne!(old.identity(), reserve.identity());
+    assert!(matches!(VmSpace::try_new_from(&old), Err(Error::NoMemory)));
+    assert_eq!(reserve.snapshot().unwrap().allocated, 0);
+    let vm = Arc::new(VmSpace::try_new_from(&reserve).unwrap());
     let alias = vm.clone();
     let data: UFrame = FrameAllocOptions::new()
-        .alloc_frame_from(&data_pages)
+        .alloc_frame_from(&reserve)
         .unwrap()
         .into();
+    let before = reserve.snapshot().unwrap();
+    assert_eq!(before.allocated, 2 * PAGE_SIZE);
+    {
+        let guard = disable_preempt();
+        let mut cursor = vm.recovery_cursor(&guard, &(0..PAGE_SIZE), &old).unwrap();
+        let (error, returned) = cursor.try_map(data.clone(), property()).unwrap_err();
+        assert_eq!(error, Error::NoMemory);
+        assert_eq!(returned.paddr(), data.paddr());
+        assert_eq!(cursor.virt_addr(), 0);
+        assert!(cursor.query().unwrap().1.is_none());
+        assert_eq!(reserve.snapshot().unwrap(), before);
+    }
+    old.close();
+    assert_eq!(reserve.snapshot().unwrap(), before);
     {
         let guard = disable_preempt();
         let mut cursor = vm
-            .recovery_cursor(&guard, &(0..PAGE_SIZE), &branches)
+            .recovery_cursor(&guard, &(0..PAGE_SIZE), &reserve)
             .unwrap();
         cursor.try_map(data.clone(), property()).unwrap();
         assert_eq!(cursor.virt_addr(), PAGE_SIZE);
         assert_mapping(&mut cursor, 0, &data);
     }
-    assert_eq!(roots.snapshot().unwrap().allocated, PAGE_SIZE);
-    let branch_bytes = (PagingConsts::NR_LEVELS as usize - 1) * PAGE_SIZE;
-    assert_eq!(branches.snapshot().unwrap().allocated, branch_bytes);
-    assert_eq!(data_pages.snapshot().unwrap().allocated, PAGE_SIZE);
+    let allocated = (PagingConsts::NR_LEVELS as usize + 1) * PAGE_SIZE;
+    assert_eq!(reserve.snapshot().unwrap().allocated, allocated);
     assert_eq!(data.reference_count(), 2);
-    roots.close();
-    branches.close();
-    data_pages.close();
+    reserve.close();
     drop(vm);
     // A real VM alias retains the actual root, branch and mapped-frame owners.
-    assert_eq!(roots.snapshot().unwrap().allocated, PAGE_SIZE);
-    assert_eq!(branches.snapshot().unwrap().allocated, branch_bytes);
+    assert_eq!(reserve.snapshot().unwrap().allocated, allocated);
     assert_eq!(data.reference_count(), 2);
+    assert!(matches!(PhysicalReserve::new(1), Err(Error::NoMemory)));
     drop(alias);
-    assert!(roots.snapshot().is_none());
-    assert!(branches.snapshot().is_none());
-    assert_eq!(data_pages.snapshot().unwrap().allocated, PAGE_SIZE);
+    assert_eq!(reserve.snapshot().unwrap().allocated, PAGE_SIZE);
     assert_eq!(data.reference_count(), 1);
+    assert!(matches!(PhysicalReserve::new(1), Err(Error::NoMemory)));
     drop(data);
-    assert!(data_pages.snapshot().is_none());
+    assert!(reserve.snapshot().is_none());
+    let next = PhysicalReserve::new(1).unwrap();
+    assert_eq!(next.snapshot().unwrap().allocated, 0);
 }
 
 #[ktest]
