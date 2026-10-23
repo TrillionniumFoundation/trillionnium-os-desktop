@@ -15,6 +15,12 @@
 
 ## 如何使用与更新
 
+后续实现以 [当前逐源状态](../../STATUS.md) 为准；本手册的清单、静态数值与
+下列专项问题描述保留原 `10dae5ea` 审计基线。后续严格 runner 已增加独立
+`aster-mlsdisk`，实际原四套记录包含它，不能把旧“三 crate”描述当作当前白名单。
+RamFs/Ext2 的 [setgid 创建合同与原生验收](../../agents/INODE_SETGID_CREATION.md)
+记录了新的共同属性接口、锁顺序、权限检查和未闭合边界。
+
 先找到下表的 crate，阅读其 manifest、入口源码与列出的关键子模块；在修改前遵守 [内核 AGENTS](../../../kernel/asterinas/AGENTS.md) 和 [编码规范](../../../kernel/asterinas/book/src/to-contribute/coding-guidelines/README.md)。默认工具链为 `nightly-2026-07-21`；原 [Makefile](../../../kernel/asterinas/Makefile) 的 `check`、`test`、`ktest` 分别管理源码质量、non-default 宿主测试、default-member 内核测试。架构 cfg、宏展开和运行 profile 会改变实际测试分母。
 
 每个条目的静态测试属性数仅是读取 `src/**/*.rs` 中 `#[ktest]`/`#[test]` 的观察，不包括 doctest、宏生成的全部用例、目标条件展开或 src 之外的集成测试；它既不能用作 native gate 的分母，也不能证明“没有测试”。真实分母必须以最终源码生成的测试清单和实际完整运行日志为准。
