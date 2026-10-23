@@ -4,7 +4,9 @@
 
 本仓库以 Asterinas 派生 Rust 内核、HOS2 控制接口、Hepta 原用户态 owner 和 Rust 桌面构成 organ 开发主线。当前可复核范围包括固定 x86_64/QEMU 内核实验、Linux host 上的 Rust UI/Notes 目的端，以及各自固定来源的兼容/持久性测试。完整生产 G2、Asterinas 上的 Hepta/桌面、GPU/VMM 与手机仍有明确缺口；以 [A–G 当前状态和固定证据](STATUS.md) 为准。
 
-**根 README 保持 0 字节。** 这是 [source gate](../support/build/verify-source.py) 的当前约束，本页承担项目阅读入口。`docs/agents` 的分工提示不能代替下面实际模块手册，历史测试数字也不代表当前整合 tree 已通过。
+根 [README](../README.md) 提供项目导航；source gate 继续核验固定上游输入，根 README 以受版本管理的普通文件保留。`docs/agents` 的分工提示不能代替下面实际模块手册，历史测试数字也不代表当前整合 tree 已通过。
+
+2026-10-23：新增 [UI workspace](../ui/README.md)、[core](../ui/core/README.md)、[Session](../ui/session/README.md)、[Shell](../ui/shell/README.md)、[app-window](../ui/app-window/README.md)、[broker](../ui/broker/README.md) 和 [HOS2 codec](../libs/os-abi/README.md) 的就近开发入口，分别绑定源码、技术契约、构建命令和资格边界。模块手册的补齐不推进生产授权、原生 F1/G2 或硬件状态。
 
 ### 从这里开始
 

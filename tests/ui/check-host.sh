@@ -5,7 +5,7 @@ set -euo pipefail
 # Many validation probes use Python assert: -O must never disable blockers.
 export PYTHONOPTIMIZE=0
 cd "$(dirname "$0")/../.."
-test "$(wc -c < README.md)" -eq 0
+test -f README.md && test ! -L README.md
 
 # Even when compilation fails before fmt, preserve the exact-source
 # formatter diagnosis and review patch on a GitHub-hosted runner.
