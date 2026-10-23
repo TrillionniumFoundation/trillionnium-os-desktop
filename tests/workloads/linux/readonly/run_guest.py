@@ -39,6 +39,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--expect-failure', action='store_true')
     parser.add_argument('--retained-map-reproducer', action='store_true')
+    parser.add_argument('--legacy-remount', action='store_true', help='historical pre-policy regression only')
     parser.add_argument('--timeout', type=int, default=120)
     args = parser.parse_args()
     out = args.output.resolve()
@@ -56,7 +57,8 @@ def main():
     original = args.initramfs.read_bytes()
     entries = unpack(gzip.decompress(original))
     boot = b'echo "TRILLIONNIUM_A01_BOOT_OK"'
-    mode = '--disposable-guest-retained-map' if args.retained_map_reproducer else '--disposable-guest'
+    mode = ('--disposable-guest-retained-map' if args.retained_map_reproducer else
+            '--disposable-guest-legacy-remount' if args.legacy_remount else '--disposable-guest')
     invocation = (f'if /bin/readonly-probe {mode}; then\n'.encode() +
                   b'  echo RO_PROBE_EXIT=0\nelse\n  echo RO_PROBE_EXIT=$?\nfi\n')
     patched, found = [], 0
@@ -88,6 +90,13 @@ def main():
     cp = subprocess.run(format_argv, capture_output=True, timeout=30)
     (out / 'format.log').write_bytes(cp.stdout + cp.stderr)
     require(cp.returncode == 0, 'formatting fresh regular-file disk failed')
+    # Construct special-file inodes inside the regular-file image, never on the host.
+    for command in ('mknod null c 1 3', 'set_inode_field null mode 020666',
+                    'mknod fifo p', 'set_inode_field fifo mode 010666'):
+        cp = subprocess.run(['debugfs', '-w', '-R', command, str(image)], capture_output=True, timeout=30)
+        with (out / 'format.log').open('ab') as log:
+            log.write((command + '\n').encode() + cp.stdout + cp.stderr)
+        require(cp.returncode == 0, 'special-file image construction failed')
     image_before = sha(image)
     argv = ['qemu-system-x86_64', '-kernel', str(out / 'kernel.elf'),
             '-initrd', str(out / 'initramfs.cpio.gz'), '-bios', str(out / 'bios.bin'),
@@ -114,7 +123,7 @@ def main():
                  r'^RO_CASE name=(\S+) pass=([01]) actual=(-?\d+) errno=(\d+)$', clean, re.M)]
     complete = re.findall(r'^RO_COMPLETE cases=(\d+) failures=(\d+)$', clean, re.M)
     valid = (code == 33 and not timeout and len(complete) == 1 and
-             len(cases) == int(complete[0][0]) and len(cases) == (1 if args.retained_map_reproducer else 68) and
+             len(cases) == int(complete[0][0]) and len(cases) == (1 if args.retained_map_reproducer else 68 if args.legacy_remount else 57) and
              len({case['name'] for case in cases}) == len(cases) and
              sum(not case['passed'] for case in cases) == int(complete[0][1]) and
              clean.count('TRILLIONNIUM_A01_BOOT_OK') == 1)
@@ -128,9 +137,10 @@ def main():
                   compile_argv=compile_argv, format_argv=format_argv, qemu_argv=argv,
                   qemu_version=subprocess.check_output(['qemu-system-x86_64', '--version'], text=True),
                   qemu_exit=code, timed_out=timeout, elapsed_seconds=time.monotonic() - began,
-                  guest_complete=valid, passed=passed, disk_unchanged=disk_unchanged, expected_failure=args.expect_failure, retained_map_reproducer=args.retained_map_reproducer, cases=cases,
-                  scope=('known live-remount retained-mapping gap' if args.retained_map_reproducer else
-                         'initial readonly ext2 and subsequent syscall gates after serial bind remount; not concurrent remount or retained mappings'))
+                  guest_complete=valid, passed=passed, disk_unchanged=disk_unchanged, expected_failure=args.expect_failure, retained_map_reproducer=args.retained_map_reproducer, legacy_remount=args.legacy_remount, cases=cases,
+                  scope=('retained mapping remount must reject without false success' if args.retained_map_reproducer else
+                         'historical serial remount syscall gates only' if args.legacy_remount else
+                         'initial readonly ext2 and fail-closed live remount policy'))
     (out / 'result.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps({k: report[k] for k in ('kernel_sha256', 'guest_complete', 'passed', 'qemu_exit')}, indent=2))
     for case in cases:

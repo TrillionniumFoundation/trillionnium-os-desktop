@@ -104,7 +104,7 @@ static int retained_mapping_reproducer(void)
     int r = mount(NULL, "/rw", NULL, MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
     int e = errno;
     if (r == -1) {
-        check("remount_retained_mapping_safe", e == EBUSY, r, e);
+        check("remount_retained_mapping_safe", e == EBUSY || e == EOPNOTSUPP, r, e);
     } else {
         p[0] = 'X';
         char actual = 0;
@@ -123,7 +123,8 @@ int main(int argc, char **argv)
     if (argc != 2 || access("/.hepta-disposable-guest", F_OK) != 0) return 64;
     if (strcmp(argv[1], "--disposable-guest-retained-map") == 0)
         return retained_mapping_reproducer();
-    if (strcmp(argv[1], "--disposable-guest") != 0) return 64;
+    int legacy = strcmp(argv[1], "--disposable-guest-legacy-remount") == 0;
+    if (!legacy && strcmp(argv[1], "--disposable-guest") != 0) return 64;
     setup(mkdir("/ro", 0755) == 0, "mkdir ro");
     setup(mkdir("/rw", 0755) == 0, "mkdir rw");
     setup(mkdir("/alias", 0755) == 0, "mkdir alias");
@@ -152,8 +153,17 @@ int main(int argc, char **argv)
     content_unchanged(rd, "initial_ro_content_unchanged");
     close(rd);
     setup(mount("/ro", "/alias", NULL, MS_BIND, NULL) == 0, "bind readonly superblock");
-    setup(mount(NULL, "/alias", NULL, MS_REMOUNT | MS_BIND, NULL) == 0,
-          "clear alias readonly mount flag");
+    if (legacy) {
+        setup(mount(NULL, "/alias", NULL, MS_REMOUNT | MS_BIND, NULL) == 0,
+              "clear alias readonly mount flag");
+    } else {
+        OK("readonly_same_policy_remount", mount(NULL, "/ro", NULL,
+            MS_REMOUNT | MS_BIND | MS_RDONLY | MS_NOEXEC, NULL));
+        ERR("readonly_superblock_cannot_be_weakened", mount(NULL, "/ro", NULL,
+            MS_REMOUNT | MS_NOSUID, NULL), EOPNOTSUPP);
+        ERR("readonly_alias_cannot_be_weakened", mount(NULL, "/alias", NULL,
+            MS_REMOUNT | MS_BIND | MS_NOEXEC, NULL), EOPNOTSUPP);
+    }
     OPEN_ERR("open_readonly_superblock_alias", open("/alias/seed", O_RDWR), EROFS);
     ERR("readonly_superblock_alias_truncate", truncate("/alias/seed", 0), EROFS);
     setup(umount("/alias") == 0, "unmount readonly alias");
@@ -204,8 +214,27 @@ int main(int argc, char **argv)
     setup(mount("/rw", "/alias", NULL, MS_BIND, NULL) == 0, "bind alias");
     fd = open("/alias/seed", O_RDWR);
     setup(fd >= 0, "open alias before ro");
-    /* Existing implementation allows this transition. This verifies subsequent
-       syscall gates; it does not certify concurrent remount or retained mappings. */
+    if (!legacy) {
+        ERR("live_readonly_transition_rejected", mount(NULL, "/alias", NULL,
+            MS_REMOUNT | MS_BIND | MS_RDONLY | MS_NOEXEC, NULL), EOPNOTSUPP);
+        OK("rejected_remount_fd_write", write(fd, "!", 1));
+        OK("rejected_remount_fd_pwrite", pwrite(fd, "!", 1, 7));
+        OK("rejected_remount_fd_ftruncate", ftruncate(fd, 4096));
+        close(fd);
+        int special = open("/ro/null", O_WRONLY);
+        check("ro_device_open", special >= 0, special, errno);
+        if (special >= 0) { OK("ro_device_write", write(special, "x", 1)); close(special); }
+        special = open("/ro/fifo", O_RDWR | O_NONBLOCK);
+        check("ro_fifo_open", special >= 0, special, errno);
+        if (special >= 0) { OK("ro_fifo_write", write(special, "x", 1)); close(special); }
+        fd = open("/rw/seed", O_RDWR);
+        check("rw_alias_open", fd >= 0, fd, errno);
+        if (fd >= 0) { OK("rw_alias_write", pwrite(fd, "!", 1, 7)); close(fd); }
+        printf("RO_COMPLETE cases=%d failures=%d\n", cases, failures);
+        return failures ? 1 : 0;
+    }
+    /* Historical mode only: subsequent syscall gates on the earlier kernel that
+       still allowed this transition. It does not certify retained mappings. */
     setup(mount(NULL, "/alias", NULL, MS_REMOUNT | MS_BIND | MS_RDONLY, NULL) == 0,
           "bind remount ro");
     ERR("remount_fd_futimens", futimens(fd, NULL), EROFS);
