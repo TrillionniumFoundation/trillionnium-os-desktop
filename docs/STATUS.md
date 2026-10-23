@@ -1,16 +1,21 @@
 # 当前状态
 
-## 2026-10-23 审计后实施候选
+## 2026-10-23 审计后实施候选（持续验收）
 
-本节记录审计后的实施进度，不改变下方历史运行的来源身份。当前本地集成候选保留 #247 的模块手册与 README 门禁迁移、#254 的 UDP 错误修复、#253 的原生原 owner 生命周期门禁。远端 main 尚未因此取得新组合运行资格。
+当前 Desktop 与 Hepta 集成修改分别发布于草稿 [#257](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/257) 与 [#3452](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3452)。main 未合并；下表每个实测结果只属于列出的固定源码，不给后续文档提交、分支或生产环境转授资格。
 
-| 审计项 | 当前进度 | 下一完成条件 |
+| 审计项 | 实际进度与来源 | 仍需完成 |
 | --- | --- | --- |
-| 跨仓来源 | 最新 Hepta convergence 与原 Organ 候选已在独立集成线合并，原 owning-package 测试进行中。 | 固定完整 pair、原包及所需 CI 通过后合入主线。 |
-| 模块文档 | #247 的就近手册及 README 门禁迁移已进入本地候选；ABI 62、规格 40、source-profile 19 项 host 回归通过。 | 当前整合代码的完整相关门禁和远端发布。 |
-| 原生 daemon / G2 | 已保留原生命周期 fixture 和严格 runner，并接入 UDP stop 修复。 | 从新源码构建 ordinary ELF，实际运行原 daemon，再完成原 store crash/restart、最终 exec 角色与持久 K↔D。 |
-| 只读写入 / Session | 独立修复与验收进行中。 | 原始正反测试、规定工具链及组合回归。 |
-| 总资源 / 恢复 / 生产 / 设备 | 继续开放。 | 真实 memory/reserve/watchdog/pause、原生产输入及具体设备完成条件，不能由 host 模型或文档替代。 |
+| 跨仓与文档 | 原 v2 owner、模块手册、来源与生产输入检查已进入集成线；source-profile 23 项 host 回归通过。 | 最终固定完整 pair、所需原包及远端 CI，不能以排队或 skipped 为通过。 |
+| 原生内核 / 原 store | `7d8906ef` ordinary 构建、启动、18 项 QueryAbi 标记通过；同核原 CognitiveStore 实际 SIGKILL/WAL 恢复及双进程 CAS 共10项通过。 | 原 Agentd/app-server 生命周期、生产 writer lock、认证 current cut、真正持久 K↔D 与 G2。 |
+| 原 daemon 输入 | `b3d3f2d4` 原 `dev-small --no-default-features` Agentd 已在原3600秒截止内构建；fixture 准备仍在进行。 | 当前 ET_DYN/PT_INTERP、约315MiB映像不满足原静态恢复 manifest；实际静态发布构建、最终 exec 角色必须另验。 |
+| 栈与 watchdog | 修正原栈目标 owner 后 `0610c554` 全 core286通过；`96070876` 全 core **292/292**，53个必需全名、零 failed/filtered/soft-skip、QEMU33，[原始串口/构建/身份](../results/integration/2026-10-23-audit-closure/core-960/publication.json) 已保留。 | 同源五次独立启动的实际硬件 tick 恢复门禁；可信用户暂停、PT/heap/IPC 与完整全局恢复仍开放。预留帧候选另有异常构造的 owner 退款缺陷，未合入。 |
+| 只读保护 | `7d8906ef` 初始只读68项与 timestamp DAC76项通过；旧保留可写 mmap 的真实失败证明 remount 缺口。实现已拒绝未支持的只读状态转换。 | 新 ordinary ELF 的 remount/保留映射与原正反用例正在验收。 |
+| Session / Notes | 规定 Rust1.88 的50项 Session、Clippy/fmt、完整 UI host gate与实际 private-FD bootstrap通过；Hepta `64026376` 原 memory305项通过，真实 Notes 丢回复恢复通过（GUI 原 retry一次已如实保留）。 | 最新组合远端 CI；这些 Linux host 结果不代表 Asterinas 桌面或生产授予。 |
+| 虚拟化与手机 | 同一原 OSTD ELF 在真实 KVM 下222/222、无软跳过，实际执行VMX/EPT。POCKET4手机已被ADB识别，原始DEX测试的196项host与12项离线profile通过。 | 手机处于锁屏/息屏时实际门禁在安装前拒绝，待人手解锁；GPU/reset、ARM BSP、Asterinas手机与mobile Organ仍开放。 |
+| 生产与依赖 | 生产7项部署权威输入仍未配置。已读取原GitHub依赖告警并对当前锁逐项映射；当前npm两包仍涉及3条critical，兼容补丁处理中。 | 不用模拟密钥/clock/frontier或文档声明代替真实权威；默认分支告警数量不等于当前集成分支的适用数量。 |
+
+完整失败记录保留：早期全 core284/286的RCU断言，watchdog首次编译失败，以及`0caf27bb` full core290/292的两个真实父进程通知失败，均未被成功复测覆盖。当前已测的292项修正使用原parent/children/Waiter与真实Process.stop/resume；普通计费和生产等待通知没有为测试放宽。
 
 ## 2026-10-23 接续：G1-d root-workload 负控的截止时间修复
 
