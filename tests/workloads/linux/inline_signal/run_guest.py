@@ -44,7 +44,7 @@ def main():
     require(',' not in str(out), 'output path must not contain QEMU option separator')
     out.mkdir(parents=True)
     source = Path(__file__).with_name('probe.c')
-    compile_argv = ['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', '-static',
+    compile_argv = ['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', '-static', '-pthread',
                     str(source), '-o', str(out / 'probe.elf')]
     cp = subprocess.run(compile_argv, capture_output=True, timeout=90)
     (out / 'compile.log').write_bytes(cp.stdout + cp.stderr)

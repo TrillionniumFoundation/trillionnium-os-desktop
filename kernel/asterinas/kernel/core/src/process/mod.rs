@@ -30,7 +30,9 @@ mod wait;
 pub(crate) use clone::{CloneArgs, CloneFlags, clone_child};
 pub(crate) use credentials::{Credentials, Gid, Uid};
 pub(crate) use execve::do_execve;
-pub(crate) use kill::{kill, kill_all, kill_group, kill_owned, tgkill, tgkill_owned};
+pub(crate) use kill::{
+    kill, kill_all, kill_group, kill_owned, kill_process_via_thread, tgkill, tgkill_owned,
+};
 pub use namespace::user_ns::UserNamespace;
 pub(crate) use namespace::{
     nsproxy::{ContextSetNsAdminApi, NsProxy, NsProxyBuilder, check_unsupported_ns_flags},

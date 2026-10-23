@@ -1,9 +1,14 @@
 # Original signal ownership syscall regression
 
-The static `probe.c` exercises ten mandatory bounded cases on real syscalls:
+The static `probe.c` exercises fourteen mandatory bounded cases on real syscalls:
 SA_SIGINFO code/address for a PROT_NONE fault and a genuinely unmapped address; kill, tgkill, process-group and
 pidfd SIGKILL with actual wait/reap; denied sends between different UIDs; original
 RT FIFO/value; signalfd number/code; and ptrace fault siginfo then delivery/reap.
+Four additional rt_sigqueueinfo cases preserve copy/code/target/signal error
+ordering, permission-only signal zero, payload fields with argument-derived
+signo, actual cross-UID denial despite forged metadata, and a real nonleader
+pthread TID delivering to the shared process queue. The original ten cases and
+their assertions remain mandatory.
 Every child belongs to this probe. Parent-death signals, a 30-second process
 alarm and child alarms bound cleanup. No global memory exhaustion, kernel panic
 or allocator fault flag is used. PIDFD/raw siginfo and ordinary RT remain the

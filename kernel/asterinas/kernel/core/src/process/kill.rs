@@ -161,9 +161,20 @@ pub(crate) fn kill_all<S: Signal + Clone>(signal: Option<S>, ctx: &Context) -> R
 }
 
 fn kill_process(process: &Process, signal: Option<OwnedSignal>, ctx: &Context) -> Result<()> {
-    let signum = signal.as_ref().map(|signal| signal.num());
     let target_main_thread = process.main_thread();
-    check_signal_perm(target_main_thread.as_posix_thread().unwrap(), ctx, signum)?;
+    kill_process_via_thread(target_main_thread.as_posix_thread().unwrap(), signal, ctx)
+}
+
+/// Checks the selected thread's actual credentials and sends to its process.
+/// The caller must retain its Process while resolving and using the thread.
+pub(crate) fn kill_process_via_thread(
+    target: &PosixThread,
+    signal: Option<OwnedSignal>,
+    ctx: &Context,
+) -> Result<()> {
+    let process = target.process();
+    let signum = signal.as_ref().map(|signal| signal.num());
+    check_signal_perm(target, ctx, signum)?;
 
     if let Some(signal) = signal {
         process.enqueue_owned_signal(signal);

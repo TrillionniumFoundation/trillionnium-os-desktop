@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 #define _GNU_SOURCE
 #include <errno.h>
+#include <limits.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -188,6 +190,106 @@ static void ptrace_fault(void)
     status = reap(pid); require(WIFSIGNALED(status) && WTERMSIG(status) == SIGSEGV, "trace fault reap");
     require(munmap(page, 4096) == 0, "unmap trace page"); pass("ptrace_fault_owner");
 }
+static void queue_error(pid_t pid, int sig, siginfo_t *info, int expected, const char *why)
+{
+    errno = 0;
+    require(syscall(SYS_rt_sigqueueinfo, pid, sig, info) == -1 && errno == expected, why);
+}
+static void queue_arguments(void)
+{
+    siginfo_t info = { .si_code = SI_QUEUE };
+    /* These are only queries or invalid sends, never a process-group broadcast. */
+    queue_error(0, 0, NULL, EFAULT, "queue copy before target");
+    queue_error(getpid(), -1, NULL, EFAULT, "queue copy before signal");
+    queue_error(0, 0, &info, ESRCH, "queue zero PID is not a group");
+    queue_error(-1, 0, &info, ESRCH, "queue negative PID is not broadcast");
+    queue_error(INT_MAX, -1, &info, ESRCH, "queue target before invalid signal");
+    for (int i = 0; i < 3; ++i) {
+        const int invalid[] = { -1, 65, 256 };
+        queue_error(getpid(), invalid[i], &info, EINVAL, "queue full signed signal range");
+    }
+    info.si_code = SI_USER;
+    queue_error(INT_MAX, -1, &info, EPERM, "queue code before target/signal");
+    info.si_code = SI_TKILL;
+    queue_error(0, 0, &info, EPERM, "queue tkill code before target");
+    require(syscall(SYS_rt_sigqueueinfo, getpid(), 0, &info) == 0, "queue self code signal zero");
+    pass("rt_queue_argument_contract");
+}
+static void queue_payload_and_zero(void)
+{
+    sigset_t mask, original, pending;
+    sigemptyset(&mask); sigaddset(&mask, SIGRTMIN);
+    require(sigprocmask(SIG_BLOCK, &mask, &original) == 0, "queue payload mask");
+    siginfo_t info = { .si_signo = SIGUSR2, .si_code = SI_QUEUE };
+    info.si_pid = 12345; info.si_uid = 4567; info.si_value.sival_int = 44;
+    require(syscall(SYS_rt_sigqueueinfo, getpid(), 0, &info) == 0, "queue permission-only zero");
+    require(sigpending(&pending) == 0 && sigismember(&pending, SIGRTMIN) == 0 &&
+            sigismember(&pending, SIGUSR2) == 0, "queue zero does not publish");
+    require(syscall(SYS_rt_sigqueueinfo, getpid(), SIGRTMIN, &info) == 0, "queue raw payload");
+    struct timespec limit = { .tv_sec = 1 }; siginfo_t got;
+    require(sigtimedwait(&mask, &got, &limit) == SIGRTMIN && got.si_signo == SIGRTMIN &&
+            got.si_code == SI_QUEUE && got.si_pid == 12345 && got.si_uid == 4567 &&
+            got.si_value.sival_int == 44, "queue signo comes from argument and retains data");
+    require(sigprocmask(SIG_SETMASK, &original, NULL) == 0, "queue restore mask");
+    pass("rt_queue_payload_and_zero");
+}
+static void queue_actual_credentials(void)
+{
+    int fds[2]; require(pipe(fds) == 0, "queue credentials ready pipe");
+    pid_t target = child();
+    if (target == 0) {
+        close(fds[0]); require(setgid(60001) == 0 && setuid(60001) == 0, "queue target identity");
+        require(write(fds[1], "R", 1) == 1, "queue target ready"); close(fds[1]);
+        for (;;) pause();
+    }
+    close(fds[1]); char ready;
+    require(read(fds[0], &ready, 1) == 1 && ready == 'R', "queue target ready read"); close(fds[0]);
+    siginfo_t info = { .si_code = SI_USER };
+    queue_error(target, 0, &info, EPERM, "queue root cannot forge code to another task");
+    pid_t sender = child();
+    if (sender == 0) {
+        require(setgid(60002) == 0 && setuid(60002) == 0, "queue sender identity");
+        info.si_code = SI_QUEUE; info.si_pid = target; info.si_uid = 60001;
+        queue_error(target, SIGRTMIN, &info, EPERM, "queue payload UID grants no authority");
+        queue_error(target, 0, &info, EPERM, "queue zero requires original permission");
+        queue_error(target, 256, &info, EINVAL, "queue invalid signal before credentials");
+        _exit(0);
+    }
+    int status = reap(sender); require(WIFEXITED(status) && WEXITSTATUS(status) == 0, "queue sender exit");
+    require(kill(target, 0) == 0 && kill(target, SIGKILL) == 0, "queue target survived forged metadata"); killed(target);
+    pass("rt_queue_actual_credentials");
+}
+struct queue_thread_pipes { int ready[2]; int release[2]; };
+static void *queue_thread(void *opaque)
+{
+    struct queue_thread_pipes *pipes = opaque;
+    pid_t tid = (pid_t)syscall(SYS_gettid);
+    require(write(pipes->ready[1], &tid, sizeof(tid)) == sizeof(tid), "queue thread ready");
+    char released;
+    require(read(pipes->release[0], &released, 1) == 1, "queue thread release");
+    return NULL;
+}
+static void queue_nonleader_shared_pending(void)
+{
+    sigset_t mask, original; sigemptyset(&mask); sigaddset(&mask, SIGRTMIN);
+    require(sigprocmask(SIG_BLOCK, &mask, &original) == 0, "queue thread mask");
+    struct queue_thread_pipes pipes;
+    require(pipe(pipes.ready) == 0 && pipe(pipes.release) == 0, "queue thread pipes");
+    pthread_t thread; require(pthread_create(&thread, NULL, queue_thread, &pipes) == 0, "queue pthread create");
+    pid_t tid;
+    require(read(pipes.ready[0], &tid, sizeof(tid)) == sizeof(tid) && tid != getpid(), "queue nonleader TID");
+    siginfo_t info = { .si_code = SI_USER };
+    queue_error(tid, 0, &info, EPERM, "queue same process is not current TID code exception");
+    info.si_code = SI_QUEUE; info.si_pid = getpid(); info.si_uid = getuid(); info.si_value.sival_int = 91;
+    require(syscall(SYS_rt_sigqueueinfo, tid, SIGRTMIN, &info) == 0, "queue via nonleader TID");
+    struct timespec limit = { .tv_sec = 1 }; siginfo_t got;
+    require(sigtimedwait(&mask, &got, &limit) == SIGRTMIN && got.si_value.sival_int == 91,
+            "queue via TID reaches process shared pending");
+    require(write(pipes.release[1], "R", 1) == 1 && pthread_join(thread, NULL) == 0, "queue thread join");
+    close(pipes.ready[0]); close(pipes.ready[1]); close(pipes.release[0]); close(pipes.release[1]);
+    require(sigprocmask(SIG_SETMASK, &original, NULL) == 0, "queue thread restore mask");
+    pass("rt_queue_nonleader_shared_pending");
+}
 int main(int argc, char **argv)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -199,5 +301,7 @@ int main(int argc, char **argv)
     fault_information(1); fault_information(0);
     for (int mode = 0; mode < 4; ++mode) fatal_send(mode);
     permission_denial(); realtime_and_signalfd(); ptrace_fault();
-    alarm(0); marker("INLINE_SIGNAL_COMPLETE cases=10\n"); return 0;
+    queue_arguments(); queue_payload_and_zero(); queue_actual_credentials();
+    queue_nonleader_shared_pending();
+    alarm(0); marker("INLINE_SIGNAL_COMPLETE cases=14\n"); return 0;
 }

@@ -122,3 +122,39 @@ console table through the original `component_init` and `Once`, following the
 existing time/device component test setup. Repeated or concurrent calls retain
 the same table and existing devices. The helper exists only under `cfg(ktest)`;
 production initialization, quota diagnostics and all assertions are unchanged.
+
+## Separate queued-signal syscall gap
+
+Frozen `1d2d20c4` passed core 353, OSTD 230, allocator 20, MLSDisk 15,
+ordinary boot/QueryAbi 18 and the same-ELF SGID 30, Unix ownership 12 and
+Groups/NoNewPrivs 12 checks. Its signal probe passed the first seven cases,
+then `sigqueue` reached missing syscall 129 and returned ENOSYS. Raw QEMU 33
+did not turn probe exit 1 into success. The complete source, ELF and failed
+serial remain retained; neither ten-case completion nor whole-slice native
+qualification is claimed for that source.
+
+The new `rt_sigqueueinfo` handler follows [Linux v6.17 signal.c](https://github.com/torvalds/linux/blob/v6.17/kernel/signal.c)
+and the [Linux syscall contract](https://man7.org/linux/man-pages/man2/rt_sigqueueinfo.2.html).
+It copies siginfo first, including for signal zero, and takes the delivered
+signal number from the syscall argument. Noncurrent-TID sends reject nonnegative
+codes and SI_TKILL before target lookup, even for root. Zero/negative PIDs do not
+mean a process group. The original PID table resolves a real Thread and retains
+its Process while locked; a nonleader TID therefore reaches that process's
+shared pending queue. Full signed signal validation follows lookup; negative,
+65 and 256 cannot truncate into another signal. Zero performs only the original
+permission check and never enqueues.
+
+The original credential/capability/SIGCONT check and process enqueue are shared
+with `kill_process`. Payload PID/UID remain data, never authorization. A single
+held Thread/Process pair spans validation and dispatch; it is not re-looked-up
+after potential PID reuse. RawSignal keeps its dynamic Box and the original RT
+FIFO; this adds no reserve, shadow signal queue or pending receipt.
+
+The original core 353 / 114 required inventory is unchanged. Four added syscall
+cases make the strict probe fourteen, including an actual pthread nonleader
+target, real dropped-UID sender, forged data fields, zero not publishing, and
+negative errno ordering. Linux reference results are separate from native
+qualification. `rt_tgsigqueueinfo`, compat ABI qualification, unknown siginfo
+layout expansion/E2BIG parity, RT allocation failure and RLIMIT_SIGPENDING
+accounting are not implemented or qualified by this small slice. Native
+qualification of the combined queued-signal correction is pending.
