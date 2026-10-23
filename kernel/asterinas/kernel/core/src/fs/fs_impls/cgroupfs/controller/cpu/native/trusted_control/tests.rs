@@ -456,7 +456,10 @@ fn native_watchdog_preserves_zero_job_stop_and_recovery_owned_budgets() {
                 Some(DeliveryStatus::Ok));
         }
         fixture.managers[0].revoke_at(Some(100));
-        if kind == 1 { fixture.process.as_ref().unwrap().stop(SigNum::from_u8(19)); }
+        let parent = (kind == 1).then(|| test_util::UnstartedParent::new(fixture.process.as_ref().unwrap()));
+        if let Some(parent) = &parent {
+            assert_parent_woken_by(parent.process(), || fixture.process.as_ref().unwrap().stop(SigNum::from_u8(19)));
+        }
         if kind == 2 {
             assert_eq!(fixture.execute(1, 1, 2, MAX_INITIAL_CAP_NS, Some(101)).unwrap().status, Some(DeliveryStatus::Ok));
         }
@@ -469,12 +472,14 @@ fn native_watchdog_preserves_zero_job_stop_and_recovery_owned_budgets() {
         assert_eq!(fixture.revision(), revision);
         assert_eq!(fixture.process.as_ref().unwrap().is_stopped(), kind == 1);
         if kind == 1 {
-            // A later actual SIGCONT may change POSIX state, but cannot renew
+            // A later original POSIX resume may change state, but cannot renew
             // or retroactively turn the terminal timer refusal into success.
-            fixture.process.as_ref().unwrap().resume();
+            assert_parent_woken_by(parent.as_ref().unwrap().process(), || fixture.process.as_ref().unwrap().resume());
             watchdog_tick(&fixture, Some(101 + WATCHDOG_DELAY_NS));
             assert_eq!(fixture.budget(), before);
             assert_eq!(fixture.revision(), revision);
+            test_util::mark_zombie(fixture.process.as_ref().unwrap());
+            parent.as_ref().unwrap().detach_zombie_child();
         }
     }
 }
@@ -537,21 +542,36 @@ fn native_watchdog_observes_original_status_without_retaining_process() {
     aster_time::init_for_ktest();
     aster_systree::init_for_ktest();
     let (process, task) = test_util::new_unstarted_process();
+    let parent = test_util::UnstartedParent::new(&process);
     let weak = Arc::downgrade(&process);
     let observer = process.status_observer();
     assert!(!observer.is_stopped());
     assert!(!observer.is_zombie());
-    process.stop(SigNum::from_u8(19));
+    assert_parent_woken_by(parent.process(), || process.stop(SigNum::from_u8(19)));
     assert!(observer.is_stopped());
-    process.resume();
+    assert_parent_woken_by(parent.process(), || process.resume());
     assert!(!observer.is_stopped());
     test_util::mark_zombie(&process);
+    parent.detach_zombie_child();
     drop(task);
     drop(process);
     // In particular, a permanent timer must not delay Process::Drop/pidfile
     // HUP or retain the VMAR/TaskSet by pinning the entire Process.
     assert!(weak.upgrade().is_none());
     assert!(observer.is_zombie());
+    // Keep the actual parent alive until after the child's Process is gone.
+    drop(parent);
+}
+
+fn assert_parent_woken_by(parent: &Process, transition: impl FnOnce()) {
+    let (waiter, waker) = ostd::sync::Waiter::new_pair();
+    parent.children_wait_queue().enqueue(waker.clone());
+    transition();
+    // The waiter is still alive: false proves the original parent notification
+    // already woke it, rather than being closed by dropping the test waiter.
+    assert!(!waker.wake_up());
+    assert_eq!(parent.children_wait_queue().wake_all(), 0);
+    drop(waiter);
 }
 
 #[ktest]

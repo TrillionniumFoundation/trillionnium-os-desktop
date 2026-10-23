@@ -12,7 +12,11 @@ use super::{
 };
 use crate::{
     fs::{cgroupfs::CgroupMembership, pseudofs::SockFs},
-    prelude::*, sched::Nice, thread::AsThread, time::clocks, util::random,
+    prelude::*,
+    sched::Nice,
+    thread::AsThread,
+    time::clocks,
+    util::random,
     vm::vmar::VmarHandle,
 };
 
@@ -83,5 +87,76 @@ pub(crate) fn mark_zombie(process: &Process) {
     if !process.status().is_zombie() {
         process.status().set_zombie();
         membership.hide_zombie_process(process);
+    }
+}
+
+/// A real, unscheduled parent for lifecycle tests that call Process::stop/resume.
+///
+/// Holds both original parent/child links while notifications are exercised.
+/// These fixtures have no PID-table entries; detaching the zombie below releases
+/// the original children-map owner, but does not claim syscall wait/reap coverage.
+pub(crate) struct UnstartedParent {
+    process: Arc<Process>,
+    _task: Arc<Task>,
+    child_pid: super::Pid,
+}
+
+impl UnstartedParent {
+    pub(crate) fn new(child: &Arc<Process>) -> Self {
+        let (process, task) = new_unstarted_process();
+        {
+            // Same order as parent publication: children -> child's parent.
+            let mut children = process.children().lock();
+            let mut parent = child.parent().lock();
+            assert!(parent.process().upgrade().is_none());
+            assert!(
+                children
+                    .as_mut()
+                    .unwrap()
+                    .insert(child.pid(), child.clone())
+                    .is_none()
+            );
+            parent.set_process(&process);
+        }
+        Self {
+            process,
+            _task: task,
+            child_pid: child.pid(),
+        }
+    }
+
+    pub(crate) fn process(&self) -> &Process {
+        &self.process
+    }
+
+    pub(crate) fn detach_zombie_child(&self) {
+        let child = self
+            .process
+            .children()
+            .lock()
+            .as_mut()
+            .unwrap()
+            .remove(&self.child_pid)
+            .unwrap();
+        assert!(child.status().is_zombie());
+        drop(child);
+    }
+}
+
+impl Drop for UnstartedParent {
+    fn drop(&mut self) {
+        // Also clean up after an assertion unwinds. Release the children lock
+        // before the membership transaction in mark_zombie.
+        let child = self
+            .process
+            .children()
+            .lock()
+            .as_mut()
+            .unwrap()
+            .remove(&self.child_pid);
+        if let Some(child) = child {
+            mark_zombie(&child);
+        }
+        mark_zombie(&self.process);
     }
 }
