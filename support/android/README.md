@@ -2,6 +2,18 @@
 
 This is support/android/README.md. The repository ROOT README.md stays 0 bytes.
 
+## Android device organ adapter
+
+The separate [Digitalis/Droidloom device adapter](DEVICE_ORGAN.md) provides
+bounded, pinned host observation of the existing `pocket4` Android 17 / SDK 37
+cell, plus pure construction of exact semantic intents. Its CLI permits only
+`qualify` and `observe`; effect dispatch and original production owner integration
+remain `NOT_CONFIGURED`. It uses the original operator-selected host and helper,
+keeps ADB disabled, and never treats a timeout as permission to replay.
+The development contract, source pins, tests, and required receiver/owner work
+are documented together. These capabilities are separate from the Android 15
+AOSP/Cuttlefish and Android-on-Asterinas qualification below.
+
 ## Current checkpoint — 2026-10-17 commit-bound source audit
 
 `generate_kernel_source_audit.py` now resolves `--project-ref` once and reads
