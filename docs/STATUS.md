@@ -145,7 +145,7 @@ C5 完整 runner 的 crash/restart 子门禁保留同一 Session，观察 socket
 
 B 的 source profile 工具已通过19项真实临时 Git 仓库回归，覆盖错误 pin、脏工作树、隐藏改动、golden不一致、缺失原 owner、非祖先与浅历史未知等拒绝路径。工具只检查来源；这19项没有生成或验收真实跨仓发布组合。所有输出固定 `production.activation=disabled`、`effects_authorized=false`，生产 grant provider、受保护 clock、外部 frontier、可信 keyring、revocation head、恢复 writer 和当前授权 cut 七项保持未配置，不能用清单字符串启用效果。
 
-项目入口使用 [INDEX](INDEX.md)。根 README 维持 0 字节，这是 [现有 source gate](../support/build/verify-source.py) 的显式约束；本次不改变该基线契约。以下旧正文完整保留，其中“当前”“下一片”“未完成”及计数均只描述各段固定源码和原记录时间。
+项目入口使用 [README](../README.md) 与 [INDEX](INDEX.md)。2026-10-23 已补根 README 项目导航，并移除与上游源码完整性无关的空文件约束；[source gate](../support/build/verify-source.py) 仍检查全部118项固定上游输入。以下旧正文中的 README 0字节、计数及“当前”“下一片”“未完成”均只描述各段固定源码和原记录时间。
 
 ## 历史状态记录（保留原文）
 
