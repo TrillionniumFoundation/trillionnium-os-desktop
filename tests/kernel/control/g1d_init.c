@@ -45,6 +45,11 @@
 #define WORKLOAD_ID 60001U
 #define WORKLOAD_SECUREBITS 195
 #define WORKLOAD_AS_BYTES UINT64_C(268435456)
+/* Recovery must outlast the manager's startup wait. The old-root control stops
+ * the workload before its first heartbeat; only the manager diagnoses that
+ * expected failure, without an unrelated recovery IPC timeout racing it. */
+#define WORKLOAD_STARTUP_TIMEOUT_NS UINT64_C(30000000000)
+#define IPC_TIMEOUT_NS (WORKLOAD_STARTUP_TIMEOUT_NS + UINT64_C(10000000000))
 
 enum { OK = 0, INVALID = 1, DENIED = 2, STALE = 3, REVOKED = 4,
        CONFLICT = 5, EXHAUSTED = 6, UNSUPPORTED = 7, UNKNOWN = 8,
@@ -317,7 +322,7 @@ static int read_message(const char *name, struct message *message) {
     return 1;
 }
 static struct message await_message(const char *name, uint64_t id) {
-    uint64_t deadline = now_ns() + UINT64_C(20000000000);
+    uint64_t deadline = now_ns() + IPC_TIMEOUT_NS;
     struct message message;
     while (now_ns() < deadline) {
         if (read_message(name, &message)) {
@@ -771,7 +776,7 @@ static void start_workload_and_recovery(void) {
     struct message ready={.magic=IPC_MAGIC};
     publish_message("ready",&ready);
     (void)await_message("recovery-ready",0);
-    uint64_t deadline=now_ns()+UINT64_C(30000000000);
+    uint64_t deadline=now_ns()+WORKLOAD_STARTUP_TIMEOUT_NS;
     int reserved=0;
     while (heartbeat()==0 && now_ns()<deadline) {
         if (!reserved && pids_saturated()==WORKLOAD_PIDS_MAX) {

@@ -396,6 +396,19 @@ class RootWorkloadNegativeTests(unittest.TestCase):
             line = next(line for line in raw.splitlines() if line.startswith(label))
             self.assertFalse(self.verdict(raw.replace(line + b"\n", b"", 1) + line + b"\n"))
 
+    def test_recovery_timeout_never_qualifies_the_root_mutation(self):
+        raw = root_serial()
+        manager_failure = next(line for line in raw.splitlines()
+                               if line.startswith(b"G1D_FAIL at=workload_really_running "))
+        timeout = b"G1D_FAIL at=ipc_timeout line=329 errno=2 pid=3 role=3\n"
+        # An unrelated recovery timeout before PID 1 diagnoses the absent
+        # heartbeat must remain inadmissible even with the intended unsafe
+        # observations. The probe must fix its deadline order instead.
+        self.assertFalse(self.verdict(raw.replace(manager_failure + b"\n",
+                                                 timeout + manager_failure + b"\n", 1)))
+        self.assertFalse(self.verdict(raw + timeout))
+        self.assertFalse(self.verdict(raw.replace(manager_failure + b"\n", timeout, 1)))
+
     def test_frozen_source_mutation_cannot_change_probe_or_gate(self):
         original = b"before\n" + negative.BEFORE + b"after\n"
         changed = negative.mutation(original)
