@@ -138,12 +138,12 @@ int main(int argc, char **argv)
         if (!end || *end || !request_number) return 2;
         uint8_t request[HEADER], response[QUERY_RESPONSE] = {0}, transport[TRANSPORT] = {0};
         query(request);
-        w64(transport, (uintptr_t)request); w32(transport + 8, sizeof(request));
-        w64(transport + 16, (uintptr_t)response); w32(transport + 24, sizeof(response));
+        w64(transport, (uintptr_t)request); w64(transport + 8, (uintptr_t)response);
+        w32(transport + 16, sizeof(request)); w32(transport + 20, sizeof(response));
         fd = open("/dev/hepta-control", O_RDWR | O_CLOEXEC);
         int ok = fd >= 0 && ioctl(fd, request_number, transport) == 0 && check_query(response, sizeof(response)) == 0;
         if (fd >= 0) close(fd);
-        result("hos2_same_boot", ok && memcmp(response + 40, identity, 16) == 0);
+        result("hos2_same_boot", ok && memcmp(response + HEADER, identity, 16) == 0);
     }
     uuid[36] = 0;
     printf("BOOT_ID_UUID=%s\nBOOT_ID_COMPLETE cases=%u failures=%u\n", uuid, cases, failures);
