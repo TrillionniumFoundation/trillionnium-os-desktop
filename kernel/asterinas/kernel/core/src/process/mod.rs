@@ -18,6 +18,8 @@ pub(crate) mod rlimit;
 pub mod signal;
 mod stats;
 mod status;
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+pub(crate) use status::ProcessStatusObserver;
 pub(crate) mod sync;
 pub(crate) mod task_set;
 mod term_status;

@@ -8,19 +8,26 @@ pause intent, SMP, production devices or durable Hepta delivery.
 
 The sealed, stopped bootstrap registers one original OSTD hardware-timer
 callback before any role's first instruction. Its captures retain the actual
-manager binding and workload Process. Registration allocates once; the tick
+manager binding and a read-only handle to the original Process status allocation.
+They do not retain the workload Process, VMAR or TaskSet and do not delay
+Process destruction or pidfile HUP. Registration allocates once; the tick
 allocates nothing, does not block, does not print, and does no userspace copy.
 
-The callback settles the current local running interval under the existing
-runqueue lock, then acquires the original CPU owner's bandwidth lock. The
+The callback first checks the fixed deadline and terminal state under the
+original bandwidth lock. A healthy, not-yet-due or terminal tick never takes
+the runqueue lock or advances accounting. Only a possible restoration releases
+that lock, settles the current local running interval under the existing
+runqueue lock, then reacquires the original CPU owner's bandwidth lock and
+revalidates the entire policy before applying. The
 Process job-stop check reads the original atomic status while local interrupts
 are disabled. No image, TaskSet or Process lock is nested under the runqueue.
-The watchdog never calls resume or sends SIGCONT. Its immutable Process
-reference is bounded to this one boot; it is not a new job-control state owner.
+The watchdog never calls resume or sends SIGCONT. The shared observer points at the original status, not a copied
+job-control flag. Ordinary builds keep their embedded Process status; only the
+G1-d/ktest configuration uses this shared original allocation.
 
 The CPU owner already holds the two canonical grants, current quota, accounting,
-resource identity and revision. The watchdog adds only one registration flag,
-a weak reference for diagnostics, and a bounded immutable terminal result. It
+resource identity and revision. The watchdog adds one registration flag, a bounded diagnostic tick counter,
+a read-only original-status reference, and one immutable terminal result. It
 uses `NativeResourceState::apply` under the same owner lock to restore the
 immutable pre-delegation cap. The resulting receipt is copied from that original
 apply; it does not mint a D request or claim a durable Hepta commit.
@@ -53,7 +60,8 @@ The existing `cpu.stat` includes bounded `hepta_*` fields only on the admitted
 owner. These are diagnostic observations, not authorization or an HOS2 ABI
 extension. `hepta_job_stopped` reads the original Process status after the CPU
 lock is released; its observation is not atomic with the saved historical
-receipt. `hepta_job_stop_available=0` means that Process no longer exists.
+receipt. `hepta_job_stop_available=0` means no live original status is available
+(the workload has become zombie or no observer was bound).
 `hepta_user_pause_intent_available=0` explicitly records the absent trusted
 user-intent ingress. `ReadUsage.user_paused` stays false and is not synthesized
 from POSIX stop or a caller's label; the present wire response has no such bit.
@@ -74,6 +82,7 @@ resource revision or UsageSnapshot event sequence. Reads do not mutate any CPU b
 The new owner ktests use real cgroups, Process status, native resource metadata
 and original D cores with explicit clock-cut fixtures. They cover healthy and
 first-close boundaries, one-use receipt replay, consumption/debt preservation,
+original-status observation without Process retention, no-settlement poll admission,
 zero quota, real job stop, explicit resume, competing recovery, normal lease
 expiry, unknown/backward clock and a late tick. These fault-cut fixtures are
 not physical clock-failure evidence.

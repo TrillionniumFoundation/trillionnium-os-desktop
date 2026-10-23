@@ -104,7 +104,11 @@ pub struct Process {
     // Mutable Part
     /// The threads
     tasks: Mutex<TaskSet>,
-    /// Process status
+    /// The sole mutable process status. G1-d shares a read-only observer of
+    /// this same allocation; it must not pin Process destruction to a timer.
+    #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+    status: Arc<ProcessStatus>,
+    #[cfg(not(any(ktest, feature = "g1d-trusted-control")))]
     status: ProcessStatus,
     /// Parent process
     pub(super) parent: ParentProcess,
@@ -264,6 +268,9 @@ impl Process {
                 children_wait_queue,
                 pidfile_pollee: Pollee::new(),
                 tasks: Mutex::new(TaskSet::new()),
+                #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+                status: Arc::new(ProcessStatus::default()),
+                #[cfg(not(any(ktest, feature = "g1d-trusted-control")))]
                 status: ProcessStatus::default(),
                 parent: ParentProcess::new(Weak::new()),
                 children: Mutex::new(Some(BTreeMap::new())),
@@ -712,6 +719,11 @@ impl Process {
     /// Returns a reference to the process status.
     pub(crate) fn status(&self) -> &ProcessStatus {
         &self.status
+    }
+
+    #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+    pub(crate) fn status_observer(&self) -> crate::process::ProcessStatusObserver {
+        crate::process::ProcessStatusObserver::new(self.status.clone())
     }
 
     /// Stops the process.

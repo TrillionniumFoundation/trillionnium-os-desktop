@@ -389,14 +389,14 @@ fn native_bounded_history_retirement_never_reexecutes_an_old_cpu_delivery() {
 // separate native probe must qualify the physical timer and image-close path.
 fn watchdog_tick(fixture: &Fixture, now: Option<u64>) {
     let _irq = disable_local();
-    fixture.managers[0].watchdog_tick_at(now, fixture.process.as_ref().unwrap());
+    fixture.managers[0].watchdog_tick_at(now, &fixture.process.as_ref().unwrap().status_observer());
 }
 
 fn arm_watchdog_fixture(fixture: &Fixture) {
     with_state(&fixture.owner, |state| {
         let watchdog = &mut state.trusted_management.as_mut().unwrap().watchdog;
         watchdog.armed = true;
-        watchdog.workload = Arc::downgrade(fixture.process.as_ref().unwrap());
+        watchdog.workload = Some(fixture.process.as_ref().unwrap().status_observer());
     });
 }
 
@@ -529,4 +529,47 @@ fn native_watchdog_fenced_or_bad_accounting_never_restores() {
         let expected = if fault { WatchdogOutcome::Closed } else { WatchdogOutcome::AccountingFault };
         assert_eq!(with_state(&fixture.owner, |state| state.trusted_management.as_ref().unwrap().watchdog.terminal.unwrap().0), expected);
     }
+}
+
+#[ktest]
+fn native_watchdog_observes_original_status_without_retaining_process() {
+    use crate::process::signal::sig_num::SigNum;
+    aster_time::init_for_ktest();
+    aster_systree::init_for_ktest();
+    let (process, task) = test_util::new_unstarted_process();
+    let weak = Arc::downgrade(&process);
+    let observer = process.status_observer();
+    assert!(!observer.is_stopped());
+    assert!(!observer.is_zombie());
+    process.stop(SigNum::from_u8(19));
+    assert!(observer.is_stopped());
+    process.resume();
+    assert!(!observer.is_stopped());
+    test_util::mark_zombie(&process);
+    drop(task);
+    drop(process);
+    // In particular, a permanent timer must not delay Process::Drop/pidfile
+    // HUP or retain the VMAR/TaskSet by pinning the entire Process.
+    assert!(weak.upgrade().is_none());
+    assert!(observer.is_zombie());
+}
+
+#[ktest]
+fn native_watchdog_poll_admission_never_settles_or_changes_budget() {
+    use super::watchdog::WATCHDOG_DELAY_NS;
+    let fixture = Fixture::new("g1d-watchdog-poll");
+    arm_watchdog_fixture(&fixture);
+    assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+    let before = fixture.budget();
+    with_state(&fixture.owner, |state| {
+        assert!(!state.watchdog_ready(Some(100 + WATCHDOG_DELAY_NS), 10, false, true));
+        assert_eq!(state.max, before);
+    });
+    fixture.managers[0].revoke_at(Some(100 + WATCHDOG_DELAY_NS));
+    with_state(&fixture.owner, |state| {
+        assert!(!state.watchdog_ready(Some(99 + 2 * WATCHDOG_DELAY_NS), 10, false, true));
+        assert!(state.watchdog_ready(Some(100 + 2 * WATCHDOG_DELAY_NS), 10, false, true));
+        assert_eq!(state.max, before);
+        assert_eq!(state.native.as_ref().unwrap().revision(), 2);
+    });
 }

@@ -7,12 +7,10 @@
 //! Registration allocates before any role runs; a tick allocates nothing, does
 //! not wait, does not print, and never calls Process::resume or sends SIGCONT.
 
-use alloc::sync::Weak;
-
 use os_control::NativeResourceReceipt;
 
 use super::*;
-use crate::process::Process;
+use crate::process::{Process, ProcessStatusObserver};
 
 /// Immutable boot policy, strictly inside the existing recovery grace period.
 pub(super) const WATCHDOG_DELAY_NS: u64 = 5_000_000_000;
@@ -48,8 +46,8 @@ pub(super) struct WatchdogState {
     pub(super) armed: bool,
     // Diagnostic callback count only; never a UsageSnapshot event sequence.
     ticks: u64,
-    // An identity reference only. Process::status remains the sole stop owner.
-    pub(super) workload: Weak<Process>,
+    // Read-only view of the original status; never a second stop-state owner.
+    pub(super) workload: Option<ProcessStatusObserver>,
     pub(super) terminal: Option<(WatchdogOutcome, Option<u64>)>,
 }
 
@@ -58,7 +56,7 @@ impl WatchdogState {
         Self {
             armed: false,
             ticks: 0,
-            workload: Weak::new(),
+            workload: None,
             terminal: None,
         }
     }
@@ -66,7 +64,7 @@ impl WatchdogState {
 
 impl NativeCpuManager {
     /// Only the stopped, sealed bootstrap calls this once for the manager.
-    /// The immutable timer capture pins exactly the already-bound workload;
+    /// The timer observes the original status without keeping Process alive;
     /// caller-supplied booleans, PIDs and labels cannot establish pause intent.
     pub(crate) fn arm_watchdog(
         self: &Arc<Self>,
@@ -78,6 +76,8 @@ impl NativeCpuManager {
             return_errno_with_message!(Errno::EOPNOTSUPP, "watchdog requires the fixed N0 manager")
         }
         let manager = self.clone();
+        let status = workload.status_observer();
+        drop(workload);
         let _irq = ostd::irq::disable_local();
         {
             let control = self.observer.owner.inner.as_ref().unwrap().control()?;
@@ -89,21 +89,60 @@ impl NativeCpuManager {
             if policy.watchdog.armed {
                 return_errno_with_message!(Errno::EALREADY, "watchdog already registered")
             }
-            policy.watchdog.workload = Arc::downgrade(&workload);
+            policy.watchdog.workload = Some(status.clone());
             policy.watchdog.armed = true;
         }
         // OSTD's existing interrupt callback list is allocated here, not on
         // expiry (unlike TimerManager's Vec/Arc expiry machinery). This one
         // immutable registration lasts for the fixed qualification boot.
         ostd::timer::register_callback_on_cpu(move || {
-            crate::sched::with_current_cpu_bandwidth_settled(|now| {
-                manager.watchdog_tick_at(now, &workload);
-            });
+            manager.watchdog_timer_tick(&status);
         });
         Ok(())
     }
 
-    pub(super) fn watchdog_tick_at(&self, now: Option<u64>, workload: &Process) {
+    fn watchdog_timer_tick(&self, workload: &ProcessStatusObserver) {
+        let now = aster_time::try_read_monotonic_sample().and_then(|sample| sample.checked_nanos());
+        let current = self.observer.node.controller().cpu.read();
+        if !Arc::ptr_eq(&current.get(), &self.observer.owner) {
+            return;
+        }
+        let Some(control) = self
+            .observer
+            .owner
+            .inner
+            .as_ref()
+            .and_then(|cpu| cpu.control.as_ref())
+        else {
+            return;
+        };
+        {
+            // A healthy/not-yet-due/terminal tick needs no second runqueue
+            // settlement. Release this owner lock before acquiring the
+            // runqueue; the final path revalidates everything after settling.
+            let mut state = control.max.lock();
+            let Some(policy) = state.trusted_management.as_mut() else {
+                return;
+            };
+            if !policy.watchdog.armed {
+                return;
+            }
+            policy.watchdog.ticks = policy.watchdog.ticks.saturating_add(1);
+            if !state.watchdog_ready(
+                now,
+                self.issued_ns,
+                workload.is_stopped(),
+                !workload.is_zombie(),
+            ) {
+                return;
+            }
+        }
+        crate::sched::with_current_cpu_bandwidth_settled(|now| {
+            self.watchdog_tick_at(now, workload)
+        });
+    }
+
+    pub(super) fn watchdog_tick_at(&self, now: Option<u64>, workload: &ProcessStatusObserver) {
         let current = self.observer.node.controller().cpu.read();
         if !Arc::ptr_eq(&current.get(), &self.observer.owner) {
             return;
@@ -121,7 +160,7 @@ impl NativeCpuManager {
         // between this original atomic observation and the CPU-owner check.
         // No Process/TaskSet/image lock is acquired while holding the runqueue.
         let stopped = workload.is_stopped();
-        let alive = !workload.status().is_zombie();
+        let alive = !workload.is_zombie();
         control
             .max
             .lock()
@@ -130,16 +169,21 @@ impl NativeCpuManager {
 }
 
 impl CpuBandwidthState {
-    fn watchdog_tick(&mut self, now: Option<u64>, issued: u64, stopped: bool, alive: bool) {
-        let Some(policy) = self.trusted_management.as_mut() else {
-            return;
+    pub(super) fn watchdog_ready(
+        &mut self,
+        now: Option<u64>,
+        issued: u64,
+        stopped: bool,
+        alive: bool,
+    ) -> bool {
+        let Some(policy) = self.trusted_management.as_ref() else {
+            return false;
         };
         if !policy.watchdog.armed {
-            return;
+            return false;
         }
-        policy.watchdog.ticks = policy.watchdog.ticks.saturating_add(1);
         if policy.watchdog.terminal.is_some() {
-            return;
+            return false;
         }
         let finish = |state: &mut Self, outcome| {
             state.trusted_management.as_mut().unwrap().watchdog.terminal = Some((outcome, now));
@@ -147,51 +191,60 @@ impl CpuBandwidthState {
         if self.is_detached || !alive || self.native.as_ref().is_none_or(|state| state.is_fenced())
         {
             finish(self, WatchdogOutcome::Closed);
-            return;
+            return false;
         }
         let Some(now) = now.filter(|now| *now >= issued && *now >= self.max.last_observed_ns)
         else {
             finish(self, WatchdogOutcome::ClockUnavailable);
-            return;
+            return false;
         };
         let cut = match policy.manager_closed {
             ManagerClosure::At(cut) => cut.min(policy.manager_expires_ns),
             ManagerClosure::ClockUnavailable => {
                 finish(self, WatchdogOutcome::ClockUnavailable);
-                return;
+                return false;
             }
             ManagerClosure::Open if policy.grants[0].is_revoked() => {
                 finish(self, WatchdogOutcome::ClockUnavailable);
-                return;
+                return false;
             }
-            ManagerClosure::Open if now < policy.manager_expires_ns => return,
+            ManagerClosure::Open if now < policy.manager_expires_ns => return false,
             ManagerClosure::Open => policy.manager_expires_ns,
         };
         // prepare_pair validated expiry + grace. Earlier first-close cuts
         // can only shorten both endpoints; duplicate revocation cannot renew.
         if now < cut {
             finish(self, WatchdogOutcome::ClockUnavailable);
-            return;
+            return false;
         }
         if now < cut + WATCHDOG_DELAY_NS {
-            return;
+            return false;
         }
         if now >= cut + RECOVERY_GRACE_NS {
             finish(self, WatchdogOutcome::Expired);
-            return;
+            return false;
         }
         if stopped {
             finish(self, WatchdogOutcome::JobStopped);
-            return;
+            return false;
         }
         if !policy.recovery_budget_allowed(self.max.quota_ns(), policy.restore_cap_ns) {
             finish(self, WatchdogOutcome::Ineligible);
+            return false;
+        }
+        true
+    }
+
+    fn watchdog_tick(&mut self, now: Option<u64>, issued: u64, stopped: bool, alive: bool) {
+        if !self.watchdog_ready(now, issued, stopped, alive) {
             return;
         }
+        let now = now.unwrap(); // Admitted by watchdog_ready under this same owner lock.
         let usage = match self.sample_usage(now) {
             Ok(usage) => usage,
             Err(_) => {
-                finish(self, WatchdogOutcome::AccountingFault);
+                self.trusted_management.as_mut().unwrap().watchdog.terminal =
+                    Some((WatchdogOutcome::AccountingFault, Some(now)));
                 return;
             }
         };
@@ -247,10 +300,12 @@ impl CpuController {
                 policy.watchdog.ticks,
             )
         };
-        let workload = workload.upgrade();
-        let stopped = workload.as_ref().map(|process| process.is_stopped());
-        // Capture the original status then drop the Process outside all CPU
-        // locks. Neither observation is represented as trusted user intent.
+        let stopped = workload
+            .as_ref()
+            .filter(|status| !status.is_zombie())
+            .map(|status| status.is_stopped());
+        // This is a view of the original status allocation, not a Process
+        // reference. Neither observation is represented as trusted user intent.
         drop(workload);
         writeln!(printer, "hepta_watchdog_armed {}", u8::from(armed))?;
         writeln!(printer, "hepta_watchdog_ticks {}", ticks)?;
