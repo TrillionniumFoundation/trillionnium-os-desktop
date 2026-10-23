@@ -1,0 +1,50 @@
+{
+  "head": "458f9b1086ed7535658ae5e4e9392d3eb88f459d",
+  "tree": "f67d00514eafbd03ed66a0877667b63f2804a94f",
+  "cargo_home": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/cargo-kernel-e",
+  "rustup_home": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/rustup-kernel",
+  "steps": [
+    [
+      "positive",
+      [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_g1d_guest.py",
+        "--expected-source-head",
+        "458f9b1086ed7535658ae5e4e9392d3eb88f459d",
+        "--expected-source-tree",
+        "f67d00514eafbd03ed66a0877667b63f2804a94f",
+        "--target-dir",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/t-pids-closure-positive-20261023",
+        "--output",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/e-pids-closure-positive-20261023",
+        "--timeout",
+        "120"
+      ]
+    ],
+    [
+      "root-negative",
+      [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_g1d_workload_negative.py",
+        "--expected-source-head",
+        "458f9b1086ed7535658ae5e4e9392d3eb88f459d",
+        "--expected-source-tree",
+        "f67d00514eafbd03ed66a0877667b63f2804a94f",
+        "--positive-guest",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/e-pids-closure-positive-20261023",
+        "--source-worktree",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-pids-closure-root-negative-20261023",
+        "--target-dir",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/t-pids-closure-root-negative-20261023",
+        "--output",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/e-pids-closure-root-negative-20261023",
+        "--timeout",
+        "120"
+      ]
+    ]
+  ]
+}

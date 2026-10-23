@@ -1,0 +1,13 @@
+diff --git a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
+index 6ebd3499..4b254641 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
+@@ -99,7 +99,7 @@ pub(super) fn spawn(
+         } else {
+             Box::new(crate::fs::init_console_file_table)
+         };
+-        let credentials = if index == 1 { workload_credentials()? } else { Credentials::new_root() };
++        let credentials = if index == 1 { Credentials::new_root() } else { Credentials::new_root() };
+         prepared.push(prepare_role(allocation, fs.clone(), &snapshot, &abs_path,
+             argv.clone(), envp.clone(), page, credentials, startup)?);
+     }
