@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 303  # Retained 295 plus eight IPC physical-frame owner regressions.
+MINIMUM_CORE_TESTS = 313  # Retained 303 plus ten hierarchical physical-frame regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -106,7 +106,23 @@ IPC_FRAME_CORE_TESTS = (
     "aster_core::net::socket::unix::stream::init::memory_tests::denied_connection_keeps_original_bound_and_shutdown_state",
     "aster_core::net::socket::unix::stream::socket::memory_tests::unix_socketpair_denial_preserves_current_family_without_endpoints",
 )
-REQUIRED_CORE_TESTS = (*IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+HIERARCHICAL_MEMORY_CORE_TESTS = (
+    "aster_core::fs::pipe::common::test::pipe_and_fifo_backing_obey_hierarchical_limit_with_unlimited_family",
+    *tuple("aster_core::vm::user_memory::hierarchy::tests::" + suffix for suffix in (
+        "hierarchical_frame_admission_refunds_family_and_every_ancestor_once",
+        "disabled_domains_keep_live_charges_and_deleted_identity_cannot_escape",
+        "physical_allocator_error_rolls_back_complete_hierarchical_precharge",
+        "concurrent_sibling_allocators_cannot_both_cross_ancestor_limit",
+        "explicit_vmar_fault_owner_overrides_loader_fallback_without_recharging_shared_pages",
+        "unix_stream_and_seqpacket_partial_buffer_admission_refund_ancestor",
+    )),
+    *tuple("aster_core::fs::fs_impls::cgroupfs::controller::memory::tests::" + suffix for suffix in (
+        "memory_files_round_bytes_reject_lowering_and_bound_depth_before_publication",
+        "migration_changes_only_future_allocations_and_failed_target_preserves_membership",
+        "fork_has_independent_binding_and_clone_vm_processes_cannot_split_membership",
+    )),
+)
+REQUIRED_CORE_TESTS = (*HIERARCHICAL_MEMORY_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (

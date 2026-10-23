@@ -33,7 +33,10 @@ use crate::{
     sched::{AtomicNice, Nice},
     thread::{AsThread, Thread},
     time::clocks::ProfClock,
-    vm::{user_memory::UserMemoryOwner, vmar::Vmar},
+    vm::{
+        user_memory::{ProcessMemoryOwner, UserMemoryOwner},
+        vmar::Vmar,
+    },
 };
 
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
@@ -96,7 +99,7 @@ pub struct Process {
     pid: Pid,
 
     vmar: Mutex<Option<Arc<Vmar>>>,
-    user_memory_owner: UserMemoryOwner,
+    user_memory_owner: ProcessMemoryOwner,
     /// Wait for child status changed
     children_wait_queue: WaitQueue,
     pub(super) pidfile_pollee: Pollee,
@@ -263,7 +266,7 @@ impl Process {
 
             Self {
                 pid,
-                user_memory_owner: vmar.user_memory_owner().clone(),
+                user_memory_owner: ProcessMemoryOwner::new(vmar.user_memory_owner().clone()),
                 vmar: Mutex::new(Some(vmar)),
                 children_wait_queue,
                 pidfile_pollee: Pollee::new(),
@@ -316,7 +319,7 @@ impl Process {
     // *********** Basic structures ***********
 
     pub(crate) fn user_memory_owner(&self) -> &UserMemoryOwner {
-        &self.user_memory_owner
+        self.user_memory_owner.owner()
     }
 
     pub fn pid(&self) -> u32 {

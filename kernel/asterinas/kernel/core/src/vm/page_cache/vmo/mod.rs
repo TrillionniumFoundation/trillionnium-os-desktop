@@ -296,9 +296,16 @@ impl Vmo {
     /// For anonymous VMOs the page is zero-filled on first access.
     /// For VMOs with a backend this may perform synchronous I/O.
     pub(crate) fn commit_on(&self, page_idx: usize, map_mode: VmoMapMode) -> Result<()> {
-        self.commit_on_for_owner(page_idx, map_mode, &current_owner())
+        self.commit_on_for_owner(
+            page_idx,
+            map_mode,
+            &self.memory_owner.clone().or_else(current_owner),
+        )
     }
 
+    /// An explicit VMAR fault owner overrides the stopped-loader fallback.
+    /// This matters after fork and migration: existing frames keep their old
+    /// token, while new faults belong to the initiating address space.
     pub(crate) fn commit_on_for_owner(
         &self,
         page_idx: usize,
@@ -334,7 +341,7 @@ impl Vmo {
             return Ok(page.clone());
         }
 
-        let new_page = CachePage::alloc_zero(&self.memory_owner.clone().or_else(|| owner.clone()))?;
+        let new_page = CachePage::alloc_zero(&owner.clone().or_else(|| self.memory_owner.clone()))?;
         cursor.store(new_page.clone());
         Ok(new_page)
     }
@@ -365,7 +372,11 @@ impl Vmo {
         offset: usize,
         map_mode: VmoMapMode,
     ) -> Result<(CachePage, VmoMapMode), VmoCommitError> {
-        self.try_commit_page_for_owner(offset, map_mode, &current_owner())
+        self.try_commit_page_for_owner(
+            offset,
+            map_mode,
+            &self.memory_owner.clone().or_else(current_owner),
+        )
     }
 
     pub(crate) fn try_commit_page_for_owner(
@@ -811,7 +822,7 @@ impl Vmo {
         pages.clear();
         let range = (start_idx * PAGE_SIZE)..(end_idx * PAGE_SIZE);
         let mut current_range = range.clone();
-        let owner = current_owner();
+        let owner = self.memory_owner.clone().or_else(current_owner);
 
         'retry: loop {
             let mut operate =
@@ -1102,7 +1113,7 @@ impl<'a> BackedVmo<'a> {
 
         // The page is within the file bounds - need to allocate a cache page.
         let uninit_page =
-            CachePage::alloc_uninit(&self.memory_owner.clone().or_else(|| owner.clone()))?;
+            CachePage::alloc_uninit(&owner.clone().or_else(|| self.memory_owner.clone()))?;
         cursor.store(uninit_page.clone());
         drop(locked_pages);
 

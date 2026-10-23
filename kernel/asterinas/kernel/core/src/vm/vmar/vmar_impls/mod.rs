@@ -30,7 +30,10 @@ use super::{
 use crate::{
     prelude::*,
     process::{INIT_STACK_SIZE, Process, ProcessVm, ResourceType},
-    vm::{page_cache::Vmo, user_memory::UserMemoryOwner},
+    vm::{
+        page_cache::Vmo,
+        user_memory::{UserMemoryAccount, UserMemoryOwner},
+    },
 };
 
 /// The upper bound for allocations under the `MAP_32BIT` mmap flag.
@@ -50,7 +53,7 @@ pub(crate) struct Vmar {
     rss_counters: [PerCpuCounter; NUM_RSS_COUNTERS],
     /// The process VM
     process_vm: ProcessVm,
-    /// Immutable owner inherited by fork and exec; independent of cgroup files.
+    /// Stable allocation binding; fork gets a new binding with the same family budget.
     user_memory_owner: UserMemoryOwner,
     /// The number of handles that this `Vmar` has (see [`super::VmarHandle`])
     num_handles: AtomicUsize,
@@ -63,6 +66,8 @@ impl Vmar {
     ///
     /// This method should only be invoked by [`super::VmarHandle`].
     pub(super) fn new(process_vm: ProcessVm, user_memory_owner: UserMemoryOwner) -> Arc<Self> {
+        let user_memory_owner =
+            Some(user_memory_owner.unwrap_or_else(|| UserMemoryAccount::new(usize::MAX)));
         let inner = VmarInner::new();
         let vm_space = VmSpace::new();
         let rss_counters = array::from_fn(|_| PerCpuCounter::new());

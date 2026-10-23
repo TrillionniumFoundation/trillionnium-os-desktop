@@ -54,8 +54,21 @@ pub(crate) fn new_unstarted_process_with_threads(count: usize) -> (Arc<Process>,
     clocks::init_for_ktest();
     random::init();
 
-    let pid = allocate_posix_tid();
     let vmar = VmarHandle::new(ProcessVm::new(SockFs::new_path()));
+    build_unstarted_process(count, vmar)
+}
+
+/// Uses the real Process constructor with a caller-owned original VMAR. Tests
+/// can exercise distinct CLONE_VM Process leases without faking lease counts.
+pub(crate) fn new_unstarted_process_in_vmar(vmar: VmarHandle) -> (Arc<Process>, Arc<Task>) {
+    let (process, mut tasks) = build_unstarted_process(1, vmar);
+    (process, tasks.pop().unwrap())
+}
+
+fn build_unstarted_process(count: usize, vmar: VmarHandle) -> (Arc<Process>, Vec<Arc<Task>>) {
+    clocks::init_for_ktest();
+    random::init();
+    let pid = allocate_posix_tid();
     let process = Process::new(
         pid,
         vmar.clone_arc(),

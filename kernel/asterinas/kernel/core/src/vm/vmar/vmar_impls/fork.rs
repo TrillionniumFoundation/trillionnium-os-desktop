@@ -21,7 +21,9 @@ impl Vmar {
 
         let new_vmar = VmarHandle::new_with_owner(
             ProcessVm::fork_from(&vmar.process_vm, &heap_guard),
-            vmar.user_memory_owner().clone(),
+            vmar.user_memory_owner()
+                .as_ref()
+                .map(|owner| owner.fork_binding()),
         );
 
         {

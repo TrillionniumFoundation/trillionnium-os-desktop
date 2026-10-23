@@ -38,13 +38,23 @@ fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> 
             && let Some(owner) = vmar.user_memory_owner()
             && owner.report_denial()
         {
-            println!(
-                "[hepta-user-memory] denied pid={} address={} current_pages={} limit_pages={}",
-                crate::process::Process::current().map_or(0, |process| process.pid()),
-                page_fault_info.address(),
-                owner.current_pages(),
-                owner.limit_pages()
-            );
+            if e.is_cgroup_frame_limit() {
+                // Do not mislabel a hierarchical denial as a family cap, or
+                // report a later (possibly migrated) domain snapshot as its cause.
+                println!(
+                    "[hepta-cgroup-memory] denied pid={} address={}",
+                    crate::process::Process::current().map_or(0, |process| process.pid()),
+                    page_fault_info.address(),
+                );
+            } else {
+                println!(
+                    "[hepta-user-memory] denied pid={} address={} current_pages={} limit_pages={}",
+                    crate::process::Process::current().map_or(0, |process| process.pid()),
+                    page_fault_info.address(),
+                    owner.current_pages(),
+                    owner.limit_pages()
+                );
+            }
         }
         warn!(
             "page fault handler failed: info: {:#x?}, err: {:?}",
