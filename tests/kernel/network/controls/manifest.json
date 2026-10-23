@@ -1,0 +1,44 @@
+{
+  "compiled": false,
+  "meaning": {
+    "aux-zero-progress": "Restore the missing zero-read exit, and bound observation to three actual unchanged iterations. Must report the exact marker, 13-byte credential-only case and ELOOP; no arbitrary timeout/panic qualifies.",
+    "race-fixed": "Positive scheduling control: real peer publishes data and closes after an empty length observation; early snapshot must return EAGAIN then drain all bytes.",
+    "race-stale": "Same scheduling control, with only the fast snapshot moved after the empty-length observation. Must show a real race-window marker and exact premature-EOF syscall failure, with producer reaped successfully."
+  },
+  "native_executed": false,
+  "positive_source_sha256": {
+    "kernel/asterinas/kernel/core/src/fs/utils/endpoint.rs": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs": "a331c8596416d56127eccd7beaa232dcb25bec5763648d322f6be5d697a904d3",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs": "3458b0b5a9023c26b396d73e61c13c69affcf98fe23c46fc4ca5793b75db1933"
+  },
+  "schema": "asterinas.unix-stream-controls.v1",
+  "variants": {
+    "aux-zero-progress": {
+      "changed_paths": [
+        "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
+      ],
+      "endpoint_sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+      "patch_sha256": "d9eb294d03b16df8bc8749f1927d87e2fe63a29399518d868a7c2ec03c5387e5",
+      "source_bytes": 15990,
+      "source_sha256": "c578aa3d6d2a05bc78c8100b24b39343eb8c21d9cda580e1092e6114983581e4"
+    },
+    "race-fixed": {
+      "changed_paths": [
+        "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
+      ],
+      "endpoint_sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+      "patch_sha256": "d262cc32b91f9b1bbdb494db6048c8a6f8a67229b465260d23fc4ddbf44e9a2a",
+      "source_bytes": 15869,
+      "source_sha256": "aac591b80a071aeb14d7ad337f538c7906b7a03bd64fe9ba44e26d92c9891348"
+    },
+    "race-stale": {
+      "changed_paths": [
+        "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs"
+      ],
+      "endpoint_sha256": "07e67a10fad1eb4cf84f56d37834e677da1ca03354cf22fb208e0d91ecb308ba",
+      "patch_sha256": "3fadd31c117b5a2f4732a592e7261eccbef94b5652b171a48207551d20e3f544",
+      "source_bytes": 15782,
+      "source_sha256": "b80f1157bb9cbcb513ff6231fa72693268741b34e2fd1763df34a627a5736b0e"
+    }
+  }
+}

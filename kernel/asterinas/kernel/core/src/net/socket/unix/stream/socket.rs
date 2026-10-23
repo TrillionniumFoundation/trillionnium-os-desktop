@@ -9,6 +9,7 @@ use super::{
     listener::{Backlog, Listener, get_backlog},
 };
 use crate::{
+    dispatch_ioctl,
     events::IoEvents,
     fs::{
         file::{FileCommon, FileLike},
@@ -34,7 +35,7 @@ use crate::{
         Gid,
         signal::{PollHandle, Pollable, Pollee},
     },
-    util::{MultiRead, MultiWrite, net::SockType},
+    util::{MultiRead, MultiWrite, ioctl::RawIoctl, net::SockType},
 };
 
 pub(crate) struct UnixStreamSocket {
@@ -319,6 +320,27 @@ impl SocketPrivate for UnixStreamSocket {
     fn is_nonblocking(&self) -> bool {
         self.common.is_nonblocking()
     }
+
+    fn protocol_ioctl(&self, raw_ioctl: RawIoctl) -> Result<i32> {
+        use crate::util::ioctl::common_defs::GetNumBytesToRead;
+
+        dispatch_ioctl!(match raw_ioctl {
+            cmd @ GetNumBytesToRead => {
+                let bytes_to_read = match self.state.read().as_ref() {
+                    State::Init(_) => 0,
+                    State::Listen(_) => {
+                        return_errno_with_message!(Errno::EINVAL, "the socket is listening")
+                    }
+                    State::Connected(connected) => connected.bytes_to_read(),
+                };
+                // Both socket types share a bounded receive ring. Sequence
+                // packets report all queued bytes, including later packets.
+                cmd.write(&(bytes_to_read as i32))?;
+                Ok(0)
+            }
+            _ => return_errno_with_message!(Errno::ENOTTY, "the socket ioctl command is unknown"),
+        })
+    }
 }
 
 impl Socket for UnixStreamSocket {
@@ -521,14 +543,19 @@ impl Socket for UnixStreamSocket {
         flags: RecvFlags,
     ) -> Result<(RecvOutput, MessageHeader)> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - RecvFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
-        let (output, control_messages) =
+        // MSG_DONTWAIT applies to this operation without changing the shared
+        // file description's blocking mode or receive timeout.
+        let (output, control_messages) = if flags.contains(RecvFlags::MSG_DONTWAIT) {
+            self.try_recv(writer, flags)
+        } else {
             self.block_on(IoEvents::IN, self.timeouts.recv_timeout(), || {
                 self.try_recv(writer, flags)
-            })?;
+            })
+        }?;
 
         let message_header = MessageHeader::new(None, control_messages);
 
