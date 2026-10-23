@@ -705,8 +705,8 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
 
     /// Syncs all the data managed by `TxLogStore` for persistence.
     pub(crate) fn sync(&self) -> Result<()> {
-        self.raw_log_store.sync().unwrap();
-        self.journal.lock().flush().unwrap();
+        self.raw_log_store.sync()?;
+        self.journal.lock().flush()?;
 
         self.raw_disk.flush()
     }
