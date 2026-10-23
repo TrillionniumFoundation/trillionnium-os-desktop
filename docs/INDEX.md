@@ -1,5 +1,7 @@
 # 开发与技术文档入口
 
+2026-10-23 内核细分入口：[57 个 workspace crate 的开发与技术手册](modules/kernel-workspace/README.md)，按 `10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd` 逐项列出源码、状态 owner、验证入口和未完成项；11/57 同目录有 Markdown 的存在性统计与实际文档/运行资格分别报告。
+
 ## 2026-10-23 全量施工与当前阻塞
 
 [#245 已合入主线、各 P0/P1 候选和逐模块执行绑定](agents/ORGAN_EXECUTION_2026_10_23.md) 记录本轮真实结果，包括最终 source/tree、原始 CI 产物、issuer/Session/F1 接合和仍未取得的生产及设备证据。下面 2026-10-22 的组合数字保持其原执行范围；新候选不继承旧整树通过。

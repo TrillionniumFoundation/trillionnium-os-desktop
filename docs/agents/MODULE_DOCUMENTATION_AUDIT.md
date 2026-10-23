@@ -1,5 +1,7 @@
 # 模块文档覆盖审计（2026-10-22）
 
+2026-10-23 补充：[57 个内核 workspace crate 手册](../modules/kernel-workspace/README.md) 已按 `10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd` 逐包补充职责/API、owner、开发入口和具体未验证项，并附 manifest/源码 hash 清单。新手册是文档覆盖补齐，不转授运行资格；以下历史审计的源码、统计和结论保持其原时点。
+
 原始清点实际观察的是本地提交 `b2b3e862bf568dab39bd8331be7def145f770408`，tree `7389c0a3f982983087953f75de7042fc058be088`。公开等价提交为 [`85d394f99c73ad3194d57c876712ac01b59d90ca`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/85d394f99c73ad3194d57c876712ac01b59d90ca)；发布时已核对 GitHub commit 元数据，两者具有相同 tree。两种提交身份见 [published-equivalence.json](../../results/integration/2026-10-22-module-docs/published-equivalence.json)，原始输入哈希与审计记录继续保留本地观察身份。复核应使用公开提交，本审计快照不升级到后来的 #240 合并提交。源码及机器清单中的路径相对仓库根；本次导航修正及其文件检查单独记录，不改变原运行证据的来源身份。
 
 **结论：A00–A10 都有可定位的技术内容与开发／验证入口；不能据此说每个实际 crate 都有独立、完整的开发手册和技术手册。** UI 与不少内核 crate 使用共享手册、上游书籍及源码 API 注释。文档文件、脚本和 workflow 存在，不等于对应实现已经可运行或通过验收。
