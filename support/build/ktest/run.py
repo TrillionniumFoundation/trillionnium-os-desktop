@@ -16,6 +16,22 @@ TOOLCHAIN = "nightly-2026-07-21"
 CRATES = {"ostd": "ostd", "aster-core": "kernel/core"}
 
 
+def clean_source_identity(project):
+    """Pin a complete committed source tree for the opt-in qualification."""
+    status = subprocess.check_output(
+        ["git", "status", "--porcelain", "--untracked-files=no"], cwd=project, text=True)
+    if status:
+        raise SystemExit("g1c post-exec ktests require a committed, unchanged tracked source tree")
+    untracked = subprocess.check_output(
+        ["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=project).decode().split("\0")
+    source_prefixes = ("kernel/asterinas/", "libs/", "support/build/")
+    if any(name.startswith(source_prefixes) and name.endswith((".rs", ".py", ".toml", ".lock"))
+           for name in untracked):
+        raise SystemExit("g1c post-exec ktests refuse untracked build/test source inputs")
+    return {"head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=project, text=True).strip(),
+            "tree": subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], cwd=project, text=True).strip()}
+
+
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -33,9 +49,21 @@ def main():
     parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
     parser.add_argument("--permission-attr-smp", action="store_true",
                         help="run the fixed permission transaction regressions with exactly two CPUs")
+    parser.add_argument("--g1c-postexec-observe", action="store_true",
+                        help="run the complete one-CPU core suite with g1c and all post-exec fence regressions")
+    parser.add_argument("--trusted-initial-elf", type=Path,
+                        help="reviewed static ELF to freeze for --g1c-postexec-observe; never a role credential")
     parser.add_argument("--skip-osdk-install", action="store_true",
                         help="reuse an already source-built OSDK carrying the explicit-lock patch")
     args = parser.parse_args()
+    if args.g1c_postexec_observe:
+        if args.permission_attr_smp or args.crate not in (None, ["aster-core"]) or args.test_name is not None:
+            parser.error("--g1c-postexec-observe requires the complete aster-core suite on one CPU")
+        if args.trusted_initial_elf is None:
+            parser.error("--g1c-postexec-observe requires --trusted-initial-elf")
+        args.crate = ["aster-core"]
+    elif args.trusted_initial_elf is not None:
+        parser.error("--trusted-initial-elf is only valid with --g1c-postexec-observe")
     if args.permission_attr_smp:
         if args.crate not in (None, ["aster-core"]) or args.test_name is not None:
             parser.error("--permission-attr-smp fixes the crate and complete test-name suffix")
@@ -44,6 +72,8 @@ def main():
     profile = "permission-attr-smp" if args.permission_attr_smp else "default"
     vcpus = 2 if args.permission_attr_smp else 1
     features = ["permission-attr-smp-ktest"] if args.permission_attr_smp else []
+    if args.g1c_postexec_observe:
+        profile, features = "g1c-postexec-observe", ["g1c-trusted-observe"]
     here = Path(__file__).resolve().parent
     project = here.parents[2]
     upstream = project / "kernel/asterinas"
@@ -75,10 +105,24 @@ def main():
         raise SystemExit("another kernel build/test is using this workspace")
     # Keep the shared inode in place. Closing the descriptor releases its lock.
     with lock:
+        source_identity = clean_source_identity(project) if args.g1c_postexec_observe else None
         verify = [sys.executable, "-I", str(project / "support/build/verify-source.py")]
         if run(verify, project, env, output / "source-inputs.json"):
             raise SystemExit(f"source verification failed; see {output}")
         commands = []
+        trusted_manifest = None
+        if args.g1c_postexec_observe:
+            command = [sys.executable, "-I", str(project / "support/build/prepare-trusted-image.py"),
+                       "--input", str(args.trusted_initial_elf.resolve(strict=True)),
+                       "--output", str(output / "trusted-initial.elf"),
+                       "--manifest", str(output / "trusted-initial-manifest.json"),
+                       "--profile", "g1c-trusted-observe"]
+            commands.append({"argv": command, "cwd": str(project)})
+            (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
+            if run(command, project, env, output / "trusted-initial-prepare.log"):
+                raise SystemExit(f"trusted initial ELF preparation failed; see {output}")
+            env["HEPTA_TRUSTED_INITIAL_ELF"] = str(output / "trusted-initial.elf")
+            trusted_manifest = json.loads((output / "trusted-initial-manifest.json").read_text())
         if not args.skip_osdk_install:
             command = ["cargo", f"+{TOOLCHAIN}", "install", "--locked", "cargo-osdk", "--path", "osdk"]
             commands.append({"argv": command, "cwd": str(upstream)})
@@ -104,6 +148,10 @@ def main():
                        "cargo_build_jobs": env["CARGO_BUILD_JOBS"], "test_name": args.test_name,
                        "ktest_profile": profile, "vcpus": vcpus, "features": features,
                        "osdk_install_skipped": args.skip_osdk_install}
+        if args.g1c_postexec_observe:
+            environment.update(source_identity=source_identity, trusted_initial=trusted_manifest,
+                               qualification="kernel-object-tests-only", native_sealed_launch_qualified=False,
+                               g2_qualified=False)
         (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
         env["CARGO_TARGET_DIR"] = str(upstream / "target")
         results = []
@@ -136,6 +184,10 @@ def main():
                 raise SystemExit(f"{crate}: generated lock differs from the fixed test-base lock")
             if args.permission_attr_smp:
                 checker = [sys.executable, "-I", str(here / "check-permission-smp.py"), str(target / "guests")]
+            elif args.g1c_postexec_observe:
+                checker = [sys.executable, "-I", str(here / "check-g1c-postexec.py"), str(target / "guests"),
+                           "--environment", str(output / "environment.json"),
+                           "--commands", str(output / "commands.json")]
             else:
                 checker = [sys.executable, "-I", str(here / "check.py"), str(target / "guests"), "--crate", crate]
             if args.test_name and not args.permission_attr_smp:
@@ -143,6 +195,8 @@ def main():
             if run(checker, project, env, target / "result.json"):
                 raise SystemExit(f"{crate}: guest evidence rejected; see {target / 'result.json'}")
             results.append(json.loads((target / "result.json").read_text()))
+        if args.g1c_postexec_observe and clean_source_identity(project) != source_identity:
+            raise SystemExit("source identity changed during g1c post-exec ktests")
         (output / "result.json").write_text(json.dumps({"passed": True, "crates": results}, indent=2) + "\n")
     print(f"PASS: real kernel-mode tests; evidence: {output}")
 

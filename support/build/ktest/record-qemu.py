@@ -18,11 +18,13 @@ def digest(path):
 def main():
     requested = sys.argv[1:]
     profile = os.environ.get("A01_KTEST_PROFILE", "default")
-    if profile not in ("default", "permission-attr-smp"):
+    if profile not in ("default", "permission-attr-smp", "g1c-postexec-observe"):
         raise SystemExit("unknown fixed kernel-test profile")
     vcpus = 2 if profile == "permission-attr-smp" else 1
     if profile == "permission-attr-smp" and os.environ["A01_KTEST_CRATE"] != "aster-core":
         raise SystemExit("the permission SMP profile is restricted to aster-core")
+    if profile == "g1c-postexec-observe" and os.environ["A01_KTEST_CRATE"] != "aster-core":
+        raise SystemExit("the g1c post-exec profile is restricted to aster-core")
     directory = Path(os.environ["A01_KTEST_GUESTS"]).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     index = 1

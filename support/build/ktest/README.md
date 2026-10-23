@@ -75,3 +75,68 @@ because the upstream test-kernel dependency also depends on OSTD.
 
 No test result is claimed by adding these entry points. Consult actual saved
 guest evidence for the completed, failed or filtered tests of each invocation.
+
+## Complete g1c post-exec object regressions
+
+After committing the reviewed candidate, the explicit one-CPU profile compiles
+`aster-core` with `g1c-trusted-observe` and runs the complete core suite. Ordinary
+`run.py` does not select that Cargo feature from `HEPTA_G1C_TRUSTED_OBSERVE`.
+The profile rejects `--test-name`, other crates and `--permission-attr-smp`.
+It also rejects changed tracked source or untracked Rust/build/test inputs, and
+records the exact commit/tree before and after execution.
+
+The feature has a compile-time `include_bytes!(env!("HEPTA_TRUSTED_INITIAL_ELF"))`
+input. Compile the already tracked G1-c probe into a fresh directory outside the
+source tree, using the same command as the existing native G1-c runner:
+
+```sh
+mkdir /absolute/fresh/g1c-ktest-input
+cc -std=c11 -O2 -Wall -Wextra -Werror -pthread -static -no-pie \
+  -Wl,-z,noexecstack,-z,separate-code \
+  tests/kernel/control/g1c_init.c \
+  -o /absolute/fresh/g1c-ktest-input/g1c-init
+
+python3 -I support/build/ktest/run.py --crate aster-core \
+  --g1c-postexec-observe \
+  --trusted-initial-elf /absolute/fresh/g1c-ktest-input/g1c-init \
+  --skip-osdk-install \
+  --output /absolute/fresh/g1c-postexec-ktest-output
+```
+
+Use the existing prepared Cargo cache and fixed test-base lock. Set `CARGO_HOME`
+to that cache and `VDSO_LIBRARY_DIR` to the existing directory containing
+`vdso_x86_64.so` when they are outside this checkout. The pinned toolchain remains
+`nightly-2026-07-21`; the wrapper selects it itself. `--skip-osdk-install` is valid
+only for the original source-built OSDK carrying the existing explicit-lock
+patch. Kernel/OSDK builds sharing a target or installed OSDK must be serialized.
+
+The wrapper uses the unchanged `prepare-trusted-image.py` to freeze the input
+into its fresh output as mode 0444, records its SHA-256, and passes that absolute
+copy to rustc. The input must be a nonempty little-endian x86_64 static ET_EXEC
+within the existing 8 MiB bound. The existing kernel remains responsible for
+full ELF and mapping validation. Kernel tests have their own entry point: they
+do not boot or authorize this probe, and need no userspace initramfs.
+
+`check-g1c-postexec.py` first calls the unmodified `check.py::check_guest` with
+`allow_filtered=False`. Thus the original complete-core lower bound, every
+retained required test, serial digest, raw exit 33, no timeout, no failures,
+and completion markers remain mandatory. It then requires all five external
+fence and eleven recipient/transaction tests exactly once without soft skips,
+and a minimum equal to the original bound plus these sixteen additions. It
+also verifies the fixed recorded Cargo command, source/feature identity,
+frozen ELF and actual QEMU profile. It never treats a filtered subset as full
+core qualification.
+
+The checker has synthetic host negative controls, which can be run without
+QEMU. Their output is not kernel pass evidence:
+
+```sh
+python3 -I support/build/ktest/test-g1c-postexec-check.py
+python3 -I -O support/build/ktest/test-g1c-postexec-check.py
+```
+
+The result explicitly states `qualification=kernel-object-tests-only`,
+`native_sealed_launch_qualified=false`, and `g2_qualified=false`. A full pass
+still does not establish a sealed original Supervisor launch, userspace fd
+handoff, a production FinalUse authority, or an original CPU grant/read. Those
+require a separate native integration gate under the original owners.
