@@ -11,6 +11,23 @@ It does not complete F1, native production G2, durable crash recovery, aggregate
 memory isolation, SMP qualification, or hardware acceptance. The report keeps
 those fields false even when its lifecycle oracle passes.
 
+## Executed fixed-source lifecycle (2026-10-23)
+
+The original unchanged b3 library fixture executed eight checks in the actual
+7d Asterinas-derived ordinary guest: Starting, Running, bounded capabilities
+and events, missing-run read, same-process draining, restart, rejection of an
+old spawn, and controlled stop. PID changed 26 to 206 and spawn 1 to 5; QEMU
+returned 33 without timeout and all inputs remained unchanged. The exact
+[result and raw serial](../../../results/integration/2026-10-23-audit-closure/native-runtime-7d-b3/publication.json)
+bind the full source identities and actual binaries.
+
+The earlier cold preparation deadline, final clean-status deadline and formal
+60-second Running-readiness failure remain retained. A separate diagnostic run
+is not qualification. This success covers the original read-only lifecycle
+only: no model turn, objective submission, device effect, production grant,
+writer lock, authenticated cut, durable CPU K↔D or complete F1/G2 was executed.
+It does not qualify later integrated source trees.
+
 ## Current fresh-build profile
 
 The current `source-review.json` selects Desktop

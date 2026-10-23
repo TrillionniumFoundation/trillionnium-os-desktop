@@ -7,13 +7,13 @@
 | 审计项 | 实际进度与来源 | 仍需完成 |
 | --- | --- | --- |
 | 跨仓与文档 | 原 v2 owner、模块手册、来源与生产输入检查已进入集成线；source-profile 23 项 host 回归通过。 | 最终固定完整 pair、所需原包及远端 CI，不能以排队或 skipped 为通过。 |
-| 原生内核 / 原 store | `7d8906ef` ordinary 构建、启动、18 项 QueryAbi 标记通过；同核原 CognitiveStore 实际 SIGKILL/WAL 恢复及双进程 CAS 共10项通过。 | 原 Agentd/app-server 生命周期、生产 writer lock、认证 current cut、真正持久 K↔D 与 G2。 |
-| 原 daemon 输入 | `b3d3f2d4` 原 `dev-small --no-default-features` Agentd 已在原3600秒截止内构建；fixture 准备仍在进行。 | 当前 ET_DYN/PT_INTERP、约315MiB映像不满足原静态恢复 manifest；实际静态发布构建、最终 exec 角色必须另验。 |
-| 栈与 watchdog | 修正原栈目标 owner 后 `0610c554` 全 core286通过；`96070876` 全 core **292/292**，53个必需全名、零 failed/filtered/soft-skip、QEMU33，[原始串口/构建/身份](../results/integration/2026-10-23-audit-closure/core-960/publication.json) 已保留。 | 同源五次独立启动的实际硬件 tick 恢复门禁；可信用户暂停、PT/heap/IPC 与完整全局恢复仍开放。预留帧候选另有异常构造的 owner 退款缺陷，未合入。 |
+| 原生内核 / 原 store | `7d8906ef` ordinary 构建、启动、18项 QueryAbi；同核原 CognitiveStore 实际 SIGKILL/WAL恢复及双进程CAS共10项通过。原 `b3d3f2d4` Agentd未改生命周期fixture实测8/8、QEMU33、输入不变，[原始记录](../results/integration/2026-10-23-audit-closure/native-runtime-7d-b3/publication.json)已发布。 | 生产 writer lock、认证current cut、真正持久K↔D与G2，及最终同源组合仍需另验。 |
+| 原 daemon 输入 | 原准备03成功；首次冷构建3600秒和第二次最终git状态30秒截止失败均保留。原生命周期第一次60秒Running等待失败，第二次正式未改fixture通过8项（PID26→206、spawn1→5）。 | 原dev-small ET_DYN/PT_INTERP、约315MiB不满足静态恢复manifest；默认生产feature的真实静态release仍在构建。实际依赖图未发现Agentd主进程V8，不能用独立code-mode host推断主进程不可seal。 |
+| 栈与 watchdog | `96070876` fullcore292/292、53必需名通过；同源五boot4通过，zero打印标记后父进程wait4仍超时，按失败保留。零额度fatal清理修复已合入；`f89023ac` OSTD224报告通过（原TCG VMX软跳过3）、allocator20全通过并实耗尽127114普通帧后仍可取保留页，[原记录](../results/integration/2026-10-23-audit-closure/reserve-fatal-f890/publication.json)已保留。 | f890 core292/295，3新增测试的parentless init身份误设已修；页表单extent测试前提也已修。固定`10dae5ea`完整229/20/295正在执行，之后实际6boot。可信暂停、heap/IPC、全局恢复仍开放。 |
 | 只读保护 | `96070876` 新 ordinary ELF/18项 QueryAbi通过；同ELF实际只读57、remount37、timestamp DAC76及保留可写mmap1项全部通过，零失败/timeout，四次QEMU33，[原始记录](../results/integration/2026-10-23-audit-closure/readonly-960/publication.json)保留。 | 运行中切换只读状态明确EOPNOTSUPP，在sync/callback/flags/topology变更前拒绝；功能尚不支持。最终组合CI仍需通过，旧7d映射写入失败记录保留。 |
 | Session / Notes | 规定 Rust1.88 的50项 Session、Clippy/fmt、完整 UI host gate与实际 private-FD bootstrap通过；Hepta `64026376` 原 memory305项通过，真实 Notes 丢回复恢复通过（GUI 原 retry一次已如实保留）。 | 最新组合远端 CI；这些 Linux host 结果不代表 Asterinas 桌面或生产授予。 |
-| 虚拟化与手机 | 同一原 OSTD ELF 在真实 KVM 下222/222、无软跳过，实际执行VMX/EPT。POCKET4手机已被ADB识别，原始DEX测试的196项host与12项离线profile通过。 | 手机处于锁屏/息屏时实际门禁在安装前拒绝，待人手解锁；GPU/reset、ARM BSP、Asterinas手机与mobile Organ仍开放。 |
-| 生产与依赖 | 生产7项部署权威输入仍未配置。已读取原GitHub依赖告警并对当前锁逐项映射；当前npm两包仍涉及3条critical，兼容补丁处理中。 | 不用模拟密钥/clock/frontier或文档声明代替真实权威；默认分支告警数量不等于当前集成分支的适用数量。 |
+| 虚拟化与手机 | 原OSTD同ELF真实KVM222/222无软跳过、VMX/EPT执行。POCKET4手机在用户授权下正常唤醒/解锁；`f89023ac`新APK实测输入、保存、强停、重开读回和限定清理全部通过，196项host在普通/优化模式各通过，[去设备标识报告](../results/integration/2026-10-23-audit-closure/mobile-app-f890/acceptance.json)已保留。额外只读截图确认控件可见。 | 实机是现有Android17/Linux6.6.82，应用smoke不授予Asterinas/Hepta Organ资格。Binder/seccomp/MAC、GPU/reset、ARM BSP、原生手机仍开放。 |
+| 生产与依赖 | 生产7项真实权威输入未配置。隔离Hepta依赖候选已有gix38测试、Python131测试和JS45正常SDK测试通过（各原截止，Python38原skip）；JS安装/构建/lint通过，3critical与npm39high的锁图已修。 | Rama/实际DNS和Rust1.96迁移、原MCP完整互操作及最终workspace/CI尚未通过。早期b3全workspace进程已结束但无最终摘要，按中断不完整保留，不能继续报running或pass。无模拟密钥/clock/frontier。 |
 
 完整失败记录保留：早期全 core284/286的RCU断言，watchdog首次编译失败，以及`0caf27bb` full core290/292的两个真实父进程通知失败，均未被成功复测覆盖。当前已测的292项修正使用原parent/children/Waiter与真实Process.stop/resume；普通计费和生产等待通知没有为测试放宽。
 
