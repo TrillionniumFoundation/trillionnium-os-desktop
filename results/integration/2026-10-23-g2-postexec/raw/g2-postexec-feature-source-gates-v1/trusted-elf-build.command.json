@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "cc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pthread",
+    "-static",
+    "-no-pie",
+    "-Wl,-z,noexecstack,-z,separate-code",
+    "tests/kernel/control/g1c_init.c",
+    "-o",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/g2-postexec-feature-source-gates-v1/g1c-init"
+  ],
+  "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-g2-postexec-closure-20261023",
+  "deadline_seconds": 90
+}

@@ -1,0 +1,948 @@
+diff --git a/kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs b/kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs
+index 3695d48..0ed1475 100644
+--- a/kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs
++++ b/kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs
+@@ -110,6 +110,15 @@ impl Device for HeptaControlDevice {
+     }
+ }
+ 
++/// Extract a recipient from the actual per-open file, without using the fd
++/// on behalf of its owner. The existing ioctl caller/image checks are intact.
++#[cfg(feature = "g1c-trusted-observe")]
++pub(crate) fn control_session_recipient(file: &dyn crate::fs::file::FileLike) -> Result<crate::process::ControlSessionRecipient> {
++    let session = file.as_inode_handle_or_err()?.downcast_open_file::<HeptaControlFile>()?
++        .ok_or_else(|| Error::with_message(Errno::EINVAL, "not an open HOS2 control session"))?;
++    session.recipient()
++}
++
+ struct HeptaControlFile {
+     space_id: [u8; 16],
+     process: Weak<Process>,
+@@ -117,6 +126,14 @@ struct HeptaControlFile {
+ }
+ 
+ impl HeptaControlFile {
++    #[cfg(feature = "g1c-trusted-observe")]
++    fn recipient(&self) -> Result<crate::process::ControlSessionRecipient> {
++        let process = self.process.upgrade().ok_or_else(|| {
++            Error::with_message(Errno::ESTALE, "HOS2 recipient process ended")
++        })?;
++        crate::process::ControlSessionRecipient::capture(process, self.image_key)
++    }
++
+     /// Verify the current caller is the exact process image that opened this
+     /// file. Fork has another Process allocation; irreversible exec or exit
+     /// closes the old image before teardown. Neither can reuse an inherited fd.
+@@ -124,16 +141,52 @@ impl HeptaControlFile {
+         let current = Process::current().ok_or_else(|| {
+             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
+         })?;
++        self.check_owner_session(&current)
++    }
++
++    fn check_owner_session(&self, current: &Arc<Process>) -> Result<()> {
+         let Some(owner) = self.process.upgrade() else {
+             return_errno_with_message!(Errno::EPERM, "HOS2 control process lifetime ended")
+         };
+-        if !Arc::ptr_eq(&owner, &current) {
++        if !Arc::ptr_eq(&owner, current) {
+             return_errno_with_message!(Errno::EPERM, "HOS2 control fd belongs to another process")
+         }
+         current.check_hepta_capspace_session(self.image_key)
+     }
+ }
+ 
++/// Real per-open object for unscheduled Process tests. No fd-table transfer,
++/// userspace ioctl, observation slot, or production launcher is fabricated.
++#[cfg(all(ktest, feature = "g1c-trusted-observe"))]
++pub(crate) fn test_control_session_recipient(process: Arc<Process>, key: ProcessImageKey) -> Result<crate::process::ControlSessionRecipient> {
++    HeptaControlFile {
++        space_id: [0; 16],
++        process: Arc::downgrade(&process),
++        image_key: key,
++    }.recipient()
++}
++
++#[cfg(all(ktest, feature = "g1c-trusted-observe"))]
++mod recipient_tests {
++    use ostd::prelude::ktest;
++    use super::*;
++    use crate::process::test_util;
++
++    #[ktest]
++    fn actual_control_file_rejects_a_foreign_caller_and_an_ended_recipient() {
++        let (owner, _owner_task) = test_util::new_unstarted_process();
++        let key = owner.hepta_capspace_session().unwrap();
++        let file = HeptaControlFile { space_id: [0; 16], process: Arc::downgrade(&owner), image_key: key };
++        let (broker, _broker_task) = test_util::new_unstarted_process();
++        assert!(file.recipient().is_ok());
++        assert_eq!(file.check_owner_session(&broker).unwrap_err().error(), Errno::EPERM);
++        assert!(file.check_owner_session(&owner).is_ok());
++        drop(owner);
++        assert_eq!(file.recipient().err().unwrap().error(), Errno::ESTALE);
++        assert_eq!(file.check_owner_session(&broker).unwrap_err().error(), Errno::EPERM);
++    }
++}
++
+ impl Pollable for HeptaControlFile {
+     fn poll(&self, mask: IoEvents, _poller: Option<&mut PollHandle>) -> IoEvents {
+         mask & (IoEvents::IN | IoEvents::OUT)
+@@ -248,12 +301,6 @@ impl PerOpenFileOps for HeptaControlFile {
+                 let process = self.process.upgrade().ok_or_else(|| {
+                     Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
+                 })?;
+-                #[cfg(feature = "g1d-trusted-control")]
+-                let result = match process.dispatch_hepta_control(self.image_key, &request) {
+-                    Ok((revision, payload)) => (Status::Ok, revision, payload),
+-                    Err(status) => (status, 0, ResponsePayload::Empty),
+-                };
+-                #[cfg(not(feature = "g1d-trusted-control"))]
+                 let result =
+                 match process.read_hepta_initial_usage(
+                     self.image_key, request.target_slot, request.target_generation,
+@@ -268,6 +315,13 @@ impl PerOpenFileOps for HeptaControlFile {
+                         event_sequence: usage.event_sequence,
+                         dropped_events: usage.dropped_events,
+                     })),
++                    #[cfg(feature = "g1d-trusted-control")]
++                    Err(Status::PermissionDenied) => {
++                        match process.dispatch_hepta_control(self.image_key, &request) {
++                            Ok((revision, payload)) => (Status::Ok, revision, payload),
++                            Err(status) => (status, 0, ResponsePayload::Empty),
++                        }
++                    }
+                     Err(status) => (status, 0, ResponsePayload::Empty),
+                 };
+                 result
+diff --git a/kernel/asterinas/kernel/core/src/device/misc/mod.rs b/kernel/asterinas/kernel/core/src/device/misc/mod.rs
+index 0790666..6dc4583 100644
+--- a/kernel/asterinas/kernel/core/src/device/misc/mod.rs
++++ b/kernel/asterinas/kernel/core/src/device/misc/mod.rs
+@@ -11,6 +11,10 @@ use super::registry::char::{MajorIdOwner, acquire_major};
+ 
+ mod hwrng;
+ mod hepta_control;
++#[cfg(feature = "g1c-trusted-observe")]
++pub(crate) use hepta_control::control_session_recipient;
++#[cfg(all(ktest, feature = "g1c-trusted-observe"))]
++pub(crate) use hepta_control::test_control_session_recipient;
+ #[cfg(feature = "g1d-trusted-control")]
+ pub(crate) use hepta_control::{boot_id as hepta_boot_id, image_space_id as hepta_image_space_id};
+ #[cfg(all(target_arch = "x86_64", feature = "cvm_guest"))]
+diff --git a/kernel/asterinas/kernel/core/src/process/mod.rs b/kernel/asterinas/kernel/core/src/process/mod.rs
+index d17caec..ce131a6 100644
+--- a/kernel/asterinas/kernel/core/src/process/mod.rs
++++ b/kernel/asterinas/kernel/core/src/process/mod.rs
+@@ -36,6 +36,8 @@ pub(crate) use namespace::{
+ };
+ pub(crate) use pid_file::PidFile;
+ pub use process::Process;
++#[cfg(feature = "g1c-trusted-observe")]
++pub(crate) use process::{ControlSessionRecipient, ObserveLaunchAuthority};
+ #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+ pub(crate) use process::KernelControlBackend;
+ pub(crate) use process::{
+diff --git a/kernel/asterinas/kernel/core/src/process/process/image.rs b/kernel/asterinas/kernel/core/src/process/process/image.rs
+index c292357..22e450b 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/image.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/image.rs
+@@ -11,6 +11,8 @@
+ use core::sync::atomic::{AtomicU64, Ordering};
+ 
+ use super::Process;
++#[cfg(feature = "g1c-trusted-observe")]
++use super::postexec_observe::ObserveIssuer;
+ #[cfg(feature = "g1d-trusted-control")]
+ use super::trusted_control::TrustedControlSlots;
+ use crate::prelude::*;
+@@ -37,10 +39,35 @@ fn check_initial_observe_lease(issued_ns: u64, expires_ns: u64, sample_ns: u64)
+ /// lease and scope have no userspace constructor; slot/generation are merely
+ /// discovery. Closing this image removes the only authority record.
+ #[cfg(feature = "g1c-trusted-observe")]
+-struct InitialObserveGrant {
++pub(super) struct InitialObserveGrant {
+     observer: Arc<NativeCpuObserver>,
+     issued_ns: u64,
+     expires_ns: u64,
++    issuer: Option<ObserveIssuer>,
++}
++
++#[cfg(feature = "g1c-trusted-observe")]
++impl InitialObserveGrant {
++    pub(super) fn for_launch(observer: Arc<NativeCpuObserver>, issued_ns: u64, expires_ns: u64, issuer: ObserveIssuer) -> Self {
++        Self { observer, issued_ns, expires_ns, issuer: Some(issuer) }
++    }
++}
++
++/// A checked slot reservation borrowing the actual image state. No authority
++/// is installed until the external Process and VMAR fences are committed.
++#[cfg(feature = "g1c-trusted-observe")]
++pub(super) struct PreparedPostexecObserve<'a> {
++    slot: &'a mut Option<InitialObserveGrant>,
++    grant: Option<InitialObserveGrant>,
++}
++
++#[cfg(feature = "g1c-trusted-observe")]
++impl PreparedPostexecObserve<'_> {
++    pub(super) fn commit(self) {
++        if let Some(grant) = self.grant {
++            *self.slot = Some(grant);
++        }
++    }
+ }
+ 
+ /// Never reuse a boot-local HOS2 process-image namespace, including after PID
+@@ -85,6 +112,8 @@ pub(super) struct ProcessImageState {
+     first_run: FirstRun,
+     #[cfg(feature = "g1c-trusted-observe")]
+     initial_observe: Option<InitialObserveGrant>,
++    #[cfg(feature = "g1c-trusted-observe")]
++    observe_launcher: bool,
+     #[cfg(feature = "g1d-trusted-control")]
+     initial_control: Option<Arc<TrustedControlSlots>>,
+ }
+@@ -98,6 +127,8 @@ impl ProcessImageState {
+             first_run: FirstRun::Unprepared,
+             #[cfg(feature = "g1c-trusted-observe")]
+             initial_observe: None,
++            #[cfg(feature = "g1c-trusted-observe")]
++            observe_launcher: false,
+             #[cfg(feature = "g1d-trusted-control")]
+             initial_control: None,
+         }
+@@ -138,7 +169,7 @@ impl ProcessImageState {
+ 
+     fn begin_close(&mut self) {
+         #[cfg(feature = "g1c-trusted-observe")]
+-        { self.initial_observe = None; }
++        { self.initial_observe = None; self.observe_launcher = false; }
+         if self.phase == ImagePhase::Live {
+             self.phase = ImagePhase::Closing;
+         }
+@@ -146,7 +177,7 @@ impl ProcessImageState {
+ 
+     fn close(&mut self) {
+         #[cfg(feature = "g1c-trusted-observe")]
+-        { self.initial_observe = None; }
++        { self.initial_observe = None; self.observe_launcher = false; }
+         self.phase = ImagePhase::Closed;
+     }
+ 
+@@ -161,7 +192,7 @@ impl ProcessImageState {
+         // error nor a later open may make its old namespace live again.
+         self.phase = ImagePhase::Closed;
+         #[cfg(feature = "g1c-trusted-observe")]
+-        { self.initial_observe = None; }
++        { self.initial_observe = None; self.observe_launcher = false; }
+         let next = self
+             .epoch
+             .checked_add(1)
+@@ -218,16 +249,81 @@ impl ProcessImageState {
+         issued_ns: u64,
+     ) -> Result<()> {
+         self.check_session(key)?;
+-        if self.first_run != FirstRun::Prepared || self.initial_observe.is_some() {
++        if self.first_run != FirstRun::Prepared || self.initial_observe.is_some() || self.observe_launcher {
+             return_errno_with_message!(Errno::ESTALE, "initial observe slot cannot be reactivated")
+         }
+         let expires_ns = issued_ns.checked_add(300_000_000_000).ok_or_else(|| {
+             Error::with_message(Errno::EOVERFLOW, "initial observe lease overflow")
+         })?;
+-        self.initial_observe = Some(InitialObserveGrant { observer, issued_ns, expires_ns });
++        self.initial_observe = Some(InitialObserveGrant { observer, issued_ns, expires_ns, issuer: None });
++        Ok(())
++    }
++
++    #[cfg(feature = "g1c-trusted-observe")]
++    pub(super) fn arm_initial_observe_launcher(&mut self, key: ProcessImageKey) -> Result<()> {
++        self.check_session(key)?;
++        if self.first_run != FirstRun::Prepared || self.observe_launcher || self.initial_observe.is_some() {
++            return_errno_with_message!(Errno::ESTALE, "observe launcher is not a fresh initial image");
++        }
++        #[cfg(feature = "g1d-trusted-control")]
++        if self.initial_control.is_some() {
++            return_errno_with_message!(Errno::EPERM, "control role is not an observe launcher");
++        }
++        self.observe_launcher = true;
+         Ok(())
+     }
+ 
++    #[cfg(feature = "g1c-trusted-observe")]
++    pub(super) fn check_observe_launcher(&self, key: ProcessImageKey) -> Result<()> {
++        self.check_session(key)?;
++        if !self.observe_launcher || self.first_run != FirstRun::Started {
++            return_errno_with_message!(Errno::EPERM, "image has no live observe launch authority");
++        }
++        Ok(())
++    }
++
++    #[cfg(feature = "g1c-trusted-observe")]
++    pub(super) fn postexec_observe_session(&mut self) -> Result<ProcessImageKey> {
++        if self.first_run != FirstRun::Started || self.epoch == 0 {
++            return_errno_with_message!(Errno::ESTALE, "observe recipient has not completed exec");
++        }
++        self.session(&NEXT_HEPTA_CAPSPACE_NONCE)
++    }
++
++    #[cfg(feature = "g1c-trusted-observe")]
++    pub(super) fn check_postexec_observe_recipient(&self, key: ProcessImageKey) -> Result<()> {
++        self.check_session(key)?;
++        if self.first_run != FirstRun::Started || self.epoch == 0 || self.observe_launcher {
++            return_errno_with_message!(Errno::ESTALE, "invalid post-exec observe recipient");
++        }
++        #[cfg(feature = "g1d-trusted-control")]
++        if self.initial_control.is_some() {
++            return_errno_with_message!(Errno::EPERM, "post-exec observe cannot replace control slots");
++        }
++        Ok(())
++    }
++
++    #[cfg(feature = "g1c-trusted-observe")]
++    pub(super) fn prepare_postexec_observer(&mut self, key: ProcessImageKey, grant: InitialObserveGrant, already_installed: bool) -> Result<PreparedPostexecObserve<'_>> {
++        self.check_postexec_observe_recipient(key)?;
++        if already_installed {
++            let Some(existing) = self.initial_observe.as_ref() else {
++                return_errno_with_message!(Errno::ESTALE, "installed observe slot no longer exists");
++            };
++            if !Arc::ptr_eq(&existing.observer, &grant.observer)
++                || existing.issued_ns != grant.issued_ns || existing.expires_ns != grant.expires_ns
++                || !existing.issuer.as_ref().zip(grant.issuer.as_ref()).is_some_and(|(a, b)| a.same_issuer(b))
++            {
++                return_errno_with_message!(Errno::ESTALE, "observe retry does not match installed slot");
++            }
++            return Ok(PreparedPostexecObserve { slot: &mut self.initial_observe, grant: None });
++        }
++        if self.initial_observe.is_some() {
++            return_errno_with_message!(Errno::ESTALE, "observe slot cannot be overwritten");
++        }
++        Ok(PreparedPostexecObserve { slot: &mut self.initial_observe, grant: Some(grant) })
++    }
++
+     #[cfg(feature = "g1c-trusted-observe")]
+     fn initial_observer(&self, key: ProcessImageKey, slot: u64, generation: u64)
+         -> core::result::Result<&InitialObserveGrant, Status>
+@@ -248,7 +344,7 @@ impl ProcessImageState {
+     ) -> Result<()> {
+         self.check_session(key)?;
+         if self.first_run != FirstRun::Prepared || self.initial_control.is_some()
+-            || self.initial_observe.is_some() || !slots.belongs_to(key)
++            || self.initial_observe.is_some() || self.observe_launcher || !slots.belongs_to(key)
+         {
+             return_errno_with_message!(Errno::ESTALE, "initial control binding cannot be activated")
+         }
+@@ -275,13 +371,13 @@ impl Process {
+     /// image's registers or data through another Process, even as Linux root.
+     #[cfg(feature = "g1c-trusted-observe")]
+     pub(crate) fn has_initial_observe_authority(&self) -> bool {
+-        // A post-exec recipient's external-control fence is deliberately
+-        // Process-lifetime, even after exec removes its image-scoped grant.
++        // Unlike the image grant, this external-control fence deliberately
++        // survives later execs of the same Process allocation.
+         if self.external_control_fence().is_fenced() {
+             return true;
+         }
+         let image = self.hepta_image.lock();
+-        let has_authority = image.initial_observe.is_some();
++        let has_authority = image.initial_observe.is_some() || image.observe_launcher;
+         #[cfg(feature = "g1d-trusted-control")]
+         let has_authority = has_authority || image.initial_control.is_some();
+         image.phase == ImagePhase::Live && has_authority
+@@ -299,11 +395,14 @@ impl Process {
+         slot: u64,
+         generation: u64,
+     ) -> core::result::Result<os_control::UsageSnapshot, Status> {
+-        let (observer, issued_ns, expires_ns) = {
++        let (observer, issued_ns, expires_ns, issuer) = {
+             let image = self.hepta_image.lock();
+             let grant = image.initial_observer(key, slot, generation)?;
+-            (grant.observer.clone(), grant.issued_ns, grant.expires_ns)
++            (grant.observer.clone(), grant.issued_ns, grant.expires_ns, grant.issuer.clone())
+         };
++        if let Some(issuer) = issuer.as_ref() {
++            issuer.check().map_err(|_| Status::Revoked)?;
++        }
+         let usage = observer.read_usage_during(issued_ns, expires_ns).map_err(|error| match error {
+             CpuUsageError::Unbound | CpuUsageError::Closed | CpuUsageError::Expired => Status::Revoked,
+             CpuUsageError::Indeterminate | CpuUsageError::ClockUnavailable
+@@ -315,6 +414,12 @@ impl Process {
+             return Err(Status::StaleHandle);
+         }
+         check_initial_observe_lease(grant.issued_ns, grant.expires_ns, usage.sample_boottime_ns)?;
++        drop(image);
++        // Never take the issuer image lock while holding the recipient image.
++        // A closed issuer/image cannot become live again with the same key.
++        if let Some(issuer) = issuer.as_ref() {
++            issuer.check().map_err(|_| Status::Revoked)?;
++        }
+         Ok(usage)
+     }
+ 
+diff --git a/kernel/asterinas/kernel/core/src/process/process/init_proc.rs b/kernel/asterinas/kernel/core/src/process/process/init_proc.rs
+index e56dced..a4209c8 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/init_proc.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/init_proc.rs
+@@ -48,7 +48,44 @@ struct PreparedInitialProcess {
+     consumed: bool,
+ }
+ 
++/// Consumed only by the internal post-exec observe authority constructor.
++/// No userspace bytes, PID, uid, or ELF digest can construct this token.
++#[cfg(feature = "g1c-trusted-observe")]
++pub(super) struct SealedObserveLauncher {
++    process: Arc<Process>,
++    key: ProcessImageKey,
++}
++
++#[cfg(feature = "g1c-trusted-observe")]
++impl SealedObserveLauncher {
++    pub(super) fn into_parts(self) -> (Arc<Process>, ProcessImageKey) {
++        (self.process, self.key)
++    }
++}
++
+ impl PreparedInitialProcess {
++    /// Explicit boot-plan seam; existing G1-c/G1-d profiles never call it.
++    /// The observer is the original workload owner's read-only pin. Attaching
++    /// a recipient must never call NativeCpuObserver::prepare or reset policy.
++    #[cfg(feature = "g1c-trusted-observe")]
++    fn prepare_observe_launcher(
++        &self,
++        loaded: LoadedInitialImage,
++        entry: Vaddr,
++        observer: Arc<NativeCpuObserver>,
++        issued_ns: u64,
++    ) -> Result<super::ObserveLaunchAuthority> {
++        loaded.consume(&self.vmar, entry)?;
++        with_initial_image(&self.process, &self.vmar, &self.task, |image| {
++            image.arm_initial_observe_launcher(self.key)
++        })?;
++        super::ObserveLaunchAuthority::from_sealed_initial(
++            SealedObserveLauncher { process: self.process.clone(), key: self.key },
++            observer,
++            issued_ns,
++        )
++    }
++
+     #[cfg(feature = "g1d-trusted-control")]
+     fn activate_control(
+         &self,
+diff --git a/kernel/asterinas/kernel/core/src/process/process/mod.rs b/kernel/asterinas/kernel/core/src/process/process/mod.rs
+index 244fa59..537db4e 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/mod.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/mod.rs
+@@ -37,6 +37,10 @@ use crate::{
+ };
+ 
+ mod image;
++#[cfg(feature = "g1c-trusted-observe")]
++mod postexec_observe;
++#[cfg(feature = "g1c-trusted-observe")]
++pub(crate) use postexec_observe::{ControlSessionRecipient, ObserveLaunchAuthority};
+ #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+ mod control_lock;
+ #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+diff --git a/kernel/asterinas/kernel/core/src/process/process/postexec_observe.rs b/kernel/asterinas/kernel/core/src/process/process/postexec_observe.rs
+new file mode 100644
+index 0000000..955bdd5
+--- /dev/null
++++ b/kernel/asterinas/kernel/core/src/process/process/postexec_observe.rs
+@@ -0,0 +1,277 @@
++// SPDX-License-Identifier: MPL-2.0
++
++//! Internal, single-child observation handoff. There is deliberately no device
++//! ioctl or default boot caller in this first slice. A future endpoint must use
++//! its kernel caller and real pidfd/control-file objects, never userspace PIDs
++//! or an asserted image key. This is not a management or history capability.
++
++use super::{Process, ProcessImageKey, image::InitialObserveGrant, init_proc::SealedObserveLauncher};
++use crate::{
++    fs::cgroupfs::NativeCpuObserver,
++    prelude::*,
++    process::{PidFile, posix_thread::AsPosixThread, task_set::TaskSet},
++    thread::AsThread,
++    vm::vmar::Vmar,
++};
++
++/// An identity selector, not an authorization credential. The issuer can mint
++/// only one launch for its globally non-reused, boot-local image nonce.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(crate) struct ObserveLaunchNonce(u64);
++
++/// A snapshot of the owner of an actual open HOS2 session. Capturing or passing
++/// it does not authorize a read, and does not make that fd usable by its broker.
++pub(crate) struct ControlSessionRecipient {
++    process: Arc<Process>,
++    key: ProcessImageKey,
++}
++
++impl ControlSessionRecipient {
++    pub(crate) fn capture(process: Arc<Process>, key: ProcessImageKey) -> Result<Self> {
++        process.check_hepta_capspace_session(key)?;
++        Ok(Self { process, key })
++    }
++}
++
++#[derive(Clone)]
++pub(super) struct ObserveIssuer {
++    process: Weak<Process>,
++    key: ProcessImageKey,
++}
++
++impl ObserveIssuer {
++    pub(super) fn same_issuer(&self, other: &Self) -> bool {
++        self.key == other.key && Weak::ptr_eq(&self.process, &other.process)
++    }
++
++    pub(super) fn check(&self) -> Result<()> {
++        let process = self.process.upgrade().ok_or_else(|| {
++            Error::with_message(Errno::ESTALE, "observe launch issuer ended")
++        })?;
++        let result = process.hepta_image.lock().check_observe_launcher(self.key);
++        result
++    }
++}
++
++/// Non-Clone boot-plan authority for one observe-only child. Its only production
++/// constructor consumes the explicit sealed-initial launcher token. Neither a
++/// NativeCpuObserver pin nor a parent relationship can construct this authority.
++pub(crate) struct ObserveLaunchAuthority {
++    binding: LaunchBinding,
++    observer: Arc<NativeCpuObserver>,
++    issued_ns: u64,
++    expires_ns: u64,
++}
++
++impl ObserveLaunchAuthority {
++    pub(super) fn from_sealed_initial(
++        sealed: SealedObserveLauncher,
++        observer: Arc<NativeCpuObserver>,
++        issued_ns: u64,
++    ) -> Result<Self> {
++        let expires_ns = issued_ns.checked_add(300_000_000_000).ok_or_else(|| {
++            Error::with_message(Errno::EOVERFLOW, "observe launch lease overflow")
++        })?;
++        let (process, key) = sealed.into_parts();
++        Ok(Self {
++            binding: LaunchBinding::new(process, key),
++            observer,
++            issued_ns,
++            expires_ns,
++        })
++    }
++
++    /// Bind the one ticket to the Supervisor's actual child allocation and its
++    /// current post-exec image. The caller is obtained from the kernel context.
++    /// Consuming this value prevents rebinding a failed launch to another child.
++    pub(crate) fn bind_child(self, caller: &Arc<Process>, pidfd: &PidFile) -> Result<BoundObserveLaunch> {
++        let child = self.binding.bind_child(caller, pidfd)?;
++        Ok(BoundObserveLaunch {
++            binding: self.binding,
++            child,
++            observer: self.observer,
++            issued_ns: self.issued_ns,
++            expires_ns: self.expires_ns,
++            installed: false,
++        })
++    }
++}
++
++struct LaunchBinding {
++    supervisor: Arc<Process>,
++    supervisor_key: ProcessImageKey,
++    nonce: ObserveLaunchNonce,
++}
++
++struct ChildImage {
++    process: Arc<Process>,
++    key: ProcessImageKey,
++}
++
++impl LaunchBinding {
++    fn new(supervisor: Arc<Process>, supervisor_key: ProcessImageKey) -> Self {
++        Self { supervisor, supervisor_key, nonce: ObserveLaunchNonce(supervisor_key.nonce()) }
++    }
++
++    fn bind_child(&self, caller: &Arc<Process>, pidfd: &PidFile) -> Result<ChildImage> {
++        if !Arc::ptr_eq(caller, &self.supervisor) {
++            return_errno_with_message!(Errno::EPERM, "observe launcher belongs to another process");
++        }
++        let child = pidfd.process_opt().ok_or_else(|| {
++            Error::with_message(Errno::ESTALE, "observe launch child ended")
++        })?;
++        let key = self.with_child_relationship(&child, || {
++            let issuer_image = self.supervisor.hepta_image.lock();
++            issuer_image.check_observe_launcher(self.supervisor_key)?;
++            child.hepta_image.lock().postexec_observe_session()
++        })?;
++        Ok(ChildImage { process: child, key })
++    }
++
++    /// Preserve the existing parent.children -> child.parent hierarchy while
++    /// inspecting the actual allocation; PID reuse or reparenting cannot swap
++    /// the recipient. Callers acquire VMAR/TaskSet before either image mutex.
++    fn with_child_relationship<T>(
++        &self,
++        child: &Arc<Process>,
++        action: impl FnOnce() -> Result<T>,
++    ) -> Result<T> {
++        if Arc::ptr_eq(child, &self.supervisor) {
++            return_errno_with_message!(Errno::EPERM, "observe launch cannot target its issuer");
++        }
++        let children = self.supervisor.children.lock();
++        if !children.as_ref().and_then(|children| children.get(&child.pid()))
++            .is_some_and(|registered| Arc::ptr_eq(registered, child))
++        {
++            return_errno_with_message!(Errno::EPERM, "observe recipient is not the registered child");
++        }
++        let parent = child.parent.lock();
++        if !parent.process().upgrade().is_some_and(|parent| Arc::ptr_eq(&parent, &self.supervisor)) {
++            return_errno_with_message!(Errno::EPERM, "observe launch parent changed");
++        }
++        action()
++    }
++
++    fn with_recipient<T>(
++        &self,
++        child: &ChildImage,
++        nonce: ObserveLaunchNonce,
++        recipient: &ControlSessionRecipient,
++        action: impl FnOnce(&mut super::image::ProcessImageState, &Vmar, &TaskSet) -> Result<T>,
++    ) -> Result<T> {
++        self.check_recipient(child, nonce, recipient)?;
++        self.with_child_relationship(&child.process, || {
++            // Existing VMAR -> TaskSet -> image lifecycle order. In particular,
++            // never hold an image mutex while waiting for a VMAR or task set.
++            let current_vmar = child.process.vmar.lock();
++            let vmar = current_vmar.as_ref().ok_or_else(|| {
++                Error::with_message(Errno::ESTALE, "observe recipient VMAR ended")
++            })?;
++            let tasks = child.process.tasks().lock();
++            if tasks.as_slice().is_empty() || tasks.has_exited_main()
++                || tasks.has_exited_group() || tasks.in_execve()
++                || child.process.status().is_zombie()
++            {
++                return_errno_with_message!(Errno::ESTALE, "observe recipient lifecycle changed");
++            }
++            for task in tasks.as_slice() {
++                let Some(thread) = task.as_posix_thread() else {
++                    return_errno_with_message!(Errno::ESTALE, "observe recipient has a foreign task");
++                };
++                if task.as_thread().unwrap().is_exited()
++                    || !thread.weak_process().upgrade()
++                        .is_some_and(|owner| Arc::ptr_eq(&owner, &child.process))
++                {
++                    return_errno_with_message!(Errno::ESTALE, "observe recipient task ended or changed owner");
++                }
++            }
++            let issuer_image = self.supervisor.hepta_image.lock();
++            issuer_image.check_observe_launcher(self.supervisor_key)?;
++            let mut image = child.process.hepta_image.lock();
++            image.check_postexec_observe_recipient(child.key)?;
++            action(&mut image, vmar, &tasks)
++        })
++    }
++
++    fn check_recipient(&self, child: &ChildImage, nonce: ObserveLaunchNonce, recipient: &ControlSessionRecipient) -> Result<()> {
++        if nonce != self.nonce || !Arc::ptr_eq(&child.process, &recipient.process) {
++            return_errno_with_message!(Errno::EPERM, "observe launch nonce or child does not match");
++        }
++        if child.key != recipient.key {
++            return_errno_with_message!(Errno::ESTALE, "observe launch recipient image changed");
++        }
++        Ok(())
++    }
++}
++
++/// One in-memory capability transaction, retained for exact reply-loss retry.
++/// It has no durable journal, D namespace, mutable CPU policy, manage or ACK
++/// right. Capacity is one child for the entire sealed issuer image lifetime.
++pub(crate) struct BoundObserveLaunch {
++    binding: LaunchBinding,
++    child: ChildImage,
++    observer: Arc<NativeCpuObserver>,
++    issued_ns: u64,
++    expires_ns: u64,
++    installed: bool,
++}
++
++impl BoundObserveLaunch {
++    pub(crate) fn nonce(&self) -> ObserveLaunchNonce {
++        self.binding.nonce
++    }
++
++    /// Only an exact repeat can succeed after installation. Every call checks
++    /// both live images and the original parent/child relation; a stale ticket
++    /// cannot install into a second exec image, even if the PID is unchanged.
++    pub(crate) fn install(
++        &mut self,
++        caller: &Arc<Process>,
++        nonce: ObserveLaunchNonce,
++        recipient: &ControlSessionRecipient,
++    ) -> Result<()> {
++        if !Arc::ptr_eq(caller, &self.binding.supervisor) {
++            return_errno_with_message!(Errno::EPERM, "observe launcher belongs to another process");
++        }
++        let grant = InitialObserveGrant::for_launch(
++            self.observer.clone(), self.issued_ns, self.expires_ns,
++            ObserveIssuer { process: Arc::downgrade(&self.binding.supervisor), key: self.binding.supervisor_key },
++        );
++        self.binding.with_recipient(&self.child, nonce, recipient, |image, vmar, tasks| {
++            // All caller/child/image/slot checks precede irreversible changes.
++            // The borrowed reservation makes final slot installation infallible.
++            let slot = image.prepare_postexec_observer(self.child.key, grant, self.installed)?;
++            commit_external_fences(&self.child.process, vmar, tasks)?;
++            slot.commit();
++            Ok(())
++        })?;
++        self.installed = true;
++        Ok(())
++    }
++}
++
++/// Called only with the recipient VMAR, TaskSet and both live images locked.
++/// Admission counters cover existing ptrace references and alien-copy/clone
++/// work; no gate mutex is held by that work while it faults or copies memory.
++/// Rejecting any preparation leaves both fences and the image slot unchanged.
++fn commit_external_fences(process: &Process, vmar: &Vmar, tasks: &TaskSet) -> Result<()> {
++    // Check before inspecting tracer state: an in-flight ptrace read/write may
++    // already hold that state while waiting for our outer VMAR lock.
++    let process_fence = process.external_control_fence().prepare_fence()?;
++    let vmar_fence = vmar.prepare_external_write_fence()?;
++    if tasks.as_slice().iter().any(|task| {
++        task.as_posix_thread().unwrap().tracer().is_some()
++    }) {
++        return_errno_with_message!(Errno::EPERM, "observe recipient has an existing tracer");
++    }
++    // Process protection deliberately lasts until Process destruction, including
++    // later execs. The VMAR fence lasts for this VMAR. The observation grant
++    // itself remains image-local and is revoked by exec/exit as before.
++    process_fence.commit();
++    vmar_fence.commit();
++    Ok(())
++}
++
++#[cfg(ktest)]
++#[path = "postexec_observe_tests.rs"]
++mod tests;
+diff --git a/kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs b/kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs
+new file mode 100644
+index 0000000..7a3c2c3
+--- /dev/null
++++ b/kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs
+@@ -0,0 +1,216 @@
++// SPDX-License-Identifier: MPL-2.0
++
++//! Real Process/pidfd lifecycle admission checks. These fixtures do not consume
++//! a loader seal, schedule userspace, mint production authority, or claim an
++//! observed CPU read. The protection checks use the actual installation helper
++//! and real VMAR/TaskSet/ptrace objects. The separate native gate must cover
++//! the sealed issuer and actual original-CPU observation boundaries.
++
++use ostd::{prelude::ktest, task::Task};
++
++use super::*;
++use crate::{device::misc::test_control_session_recipient, process::test_util};
++
++fn launcher() -> (LaunchBinding, Arc<Task>) {
++    let (process, task) = test_util::new_unstarted_process();
++    let key = {
++        let mut image = process.hepta_image.lock();
++        let key = image.prepare_initial().unwrap();
++        image.arm_initial_observe_launcher(key).unwrap();
++        image.consume_initial(key).unwrap();
++        key
++    };
++    (LaunchBinding::new(process, key), task)
++}
++
++fn child_of(parent: &Arc<Process>) -> (Arc<Process>, Arc<Task>) {
++    let (child, task) = test_util::new_unstarted_process();
++    let mut children = parent.children.lock();
++    child.parent.lock().set_process(parent);
++    children.as_mut().unwrap().insert(child.pid(), child.clone());
++    drop(children);
++    child.hepta_image.lock().claim_unprepared_run().unwrap();
++    (child, task)
++}
++
++fn complete_exec(child: &Process) -> ProcessImageKey {
++    child.begin_hepta_image_close();
++    child.commit_hepta_exec_image().unwrap();
++    child.hepta_capspace_session().unwrap()
++}
++
++fn admit(binding: &LaunchBinding, child: &ChildImage, recipient: &ControlSessionRecipient) -> Result<()> {
++    binding.with_recipient(child, binding.nonce, recipient, |_, _, _| Ok(()))
++}
++
++fn protect(binding: &LaunchBinding, child: &ChildImage, recipient: &ControlSessionRecipient) -> Result<()> {
++    binding.with_recipient(child, binding.nonce, recipient, |_, vmar, tasks| {
++        commit_external_fences(&child.process, vmar, tasks)
++    })
++}
++
++#[track_caller]
++fn assert_error(result: Result<()>, expected: Errno) {
++    assert_eq!(result.unwrap_err().error(), expected);
++}
++
++#[ktest]
++fn postexec_child_requires_its_original_pidfd_and_live_image() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let pidfd = PidFile::new(child.clone(), false);
++    let expected = binding.bind_child(&binding.supervisor, &pidfd).unwrap();
++    let recipient = test_control_session_recipient(child.clone(), key).unwrap();
++    assert!(admit(&binding, &expected, &recipient).is_ok());
++    // Identity admission alone installs no slot and grants no usage access.
++    assert!(!child.has_initial_observe_authority());
++    assert_eq!(child.read_hepta_initial_usage(key, 1, 1).unwrap_err(), crate::hos2_os_abi::Status::PermissionDenied);
++}
++
++#[ktest]
++fn foreign_caller_and_nonchild_pidfd_cannot_bind_a_launch() {
++    let (binding, _parent_task) = launcher();
++    let (stranger, _stranger_task) = test_util::new_unstarted_process();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    complete_exec(&child);
++    let pidfd = PidFile::new(child, false);
++    assert_eq!(binding.bind_child(&stranger, &pidfd).err().unwrap().error(), Errno::EPERM);
++    let foreign_pidfd = PidFile::new(stranger, false);
++    assert_eq!(binding.bind_child(&binding.supervisor, &foreign_pidfd).err().unwrap().error(), Errno::EPERM);
++}
++
++#[ktest]
++fn fork_image_before_exec_cannot_receive_a_launch() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let pidfd = PidFile::new(child, false);
++    assert_eq!(binding.bind_child(&binding.supervisor, &pidfd).err().unwrap().error(), Errno::ESTALE);
++}
++
++#[ktest]
++fn sibling_control_fd_and_wrong_nonce_cannot_replace_bound_child() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let recipient = test_control_session_recipient(child, key).unwrap();
++    let (sibling, _sibling_task) = child_of(&binding.supervisor);
++    let sibling_key = complete_exec(&sibling);
++    let sibling_fd = test_control_session_recipient(sibling, sibling_key).unwrap();
++    assert_error(admit(&binding, &expected, &sibling_fd), Errno::EPERM);
++    assert_error(binding.with_recipient(&expected, ObserveLaunchNonce(0), &recipient, |_, _, _| Ok(())), Errno::EPERM);
++}
++
++#[ktest]
++fn child_exec_between_pidfd_binding_and_fd_handoff_fences_both_sessions() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let old_key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let old_fd = test_control_session_recipient(child.clone(), old_key).unwrap();
++    let new_key = complete_exec(&child);
++    let new_fd = test_control_session_recipient(child, new_key).unwrap();
++    assert_error(admit(&binding, &expected, &old_fd), Errno::ESTALE);
++    assert_error(admit(&binding, &expected, &new_fd), Errno::ESTALE);
++}
++
++#[ktest]
++fn child_exit_and_supervisor_exec_fail_the_pending_handoff() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let recipient = test_control_session_recipient(child.clone(), key).unwrap();
++    child.begin_hepta_image_close();
++    assert_error(admit(&binding, &expected, &recipient), Errno::ESTALE);
++
++    let (binding, _parent_task2) = launcher();
++    let (child, _child_task2) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let recipient = test_control_session_recipient(child, key).unwrap();
++    complete_exec(&binding.supervisor);
++    assert_error(admit(&binding, &expected, &recipient), Errno::ESTALE);
++}
++
++#[ktest]
++fn reparenting_and_a_second_issuer_claim_fail_closed() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let recipient = test_control_session_recipient(child.clone(), key).unwrap();
++    let (other_parent, _other_task) = test_util::new_unstarted_process();
++    child.parent.lock().set_process(&other_parent);
++    assert_error(admit(&binding, &expected, &recipient), Errno::EPERM);
++    assert_error(binding.supervisor.hepta_image.lock().arm_initial_observe_launcher(binding.supervisor_key), Errno::ESTALE);
++}
++
++#[ktest]
++fn invalid_recipient_never_reaches_the_irreversible_protection_step() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let recipient = test_control_session_recipient(child.clone(), key).unwrap();
++    let mut reached_protection = false;
++    assert_error(binding.with_recipient(&expected, ObserveLaunchNonce(0), &recipient, |_, vmar, tasks| {
++        reached_protection = true;
++        commit_external_fences(&child, vmar, tasks)
++    }), Errno::EPERM);
++    assert!(!reached_protection);
++    assert!(!child.external_control_fence().is_fenced());
++    assert!(child.lock_vmar().unwrap().enter_external_mutation().is_ok());
++}
++
++#[ktest]
++fn an_existing_real_tracer_is_rejected_before_either_fence_commits() {
++    let (binding, parent_task) = launcher();
++    let (child, child_task) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let recipient = test_control_session_recipient(child.clone(), key).unwrap();
++    let tracer_thread = parent_task.as_thread().unwrap();
++    let tracer = tracer_thread.as_posix_thread().unwrap();
++    let tracee_thread = child_task.as_thread().unwrap().clone();
++    tracer.attach_to(tracer_thread, tracee_thread.clone()).unwrap();
++    assert_error(protect(&binding, &expected, &recipient), Errno::EPERM);
++    assert!(!child.external_control_fence().is_fenced());
++    assert!(child.lock_vmar().unwrap().enter_external_mutation().is_ok());
++    tracer.clear_tracees();
++    protect(&binding, &expected, &recipient).unwrap();
++    // An already captured thread reference still reaches the real set_tracer
++    // gate. Detaching the former tracer did not grant a replacement bypass.
++    assert_eq!(tracer.attach_to(tracer_thread, tracee_thread).unwrap_err().error(), Errno::EPERM);
++    // Protection alone grants no observer: no fake CPU pin is used by fixtures.
++    assert_eq!(child.read_hepta_initial_usage(key, 1, 1).unwrap_err(), crate::hos2_os_abi::Status::PermissionDenied);
++}
++
++#[ktest]
++fn either_inflight_owner_rejects_installation_without_fencing_the_other() {
++    let (binding, _parent_task) = launcher();
++    let (child, _child_task) = child_of(&binding.supervisor);
++    let key = complete_exec(&child);
++    let expected = binding.bind_child(&binding.supervisor, &PidFile::new(child.clone(), false)).unwrap();
++    let recipient = test_control_session_recipient(child.clone(), key).unwrap();
++    let vmar = child.vmar.lock().as_ref().unwrap().clone();
++    let trace_access = child.external_control_fence().enter().unwrap();
++    assert_error(protect(&binding, &expected, &recipient), Errno::EBUSY);
++    assert!(!child.external_control_fence().is_fenced());
++    assert!(vmar.enter_external_mutation().is_ok());
++    drop(trace_access);
++    let alien_write = vmar.enter_external_mutation().unwrap();
++    assert_error(protect(&binding, &expected, &recipient), Errno::EBUSY);
++    assert!(!child.external_control_fence().is_fenced());
++    drop(alien_write);
++    protect(&binding, &expected, &recipient).unwrap();
++    assert!(child.external_control_fence().is_fenced());
++    assert_eq!(vmar.enter_external_mutation().err().unwrap().error(), Errno::EPERM);
++    // Repeating this exact protection transaction is idempotent. This does
++    // not create or extend an observation lease, manage right, or history right.
++    protect(&binding, &expected, &recipient).unwrap();
++    complete_exec(&child);
++    assert_error(protect(&binding, &expected, &recipient), Errno::ESTALE);
++    assert!(child.external_control_fence().is_fenced());
++}

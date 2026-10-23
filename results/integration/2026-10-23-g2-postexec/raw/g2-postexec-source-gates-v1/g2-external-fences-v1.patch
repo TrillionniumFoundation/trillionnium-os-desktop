@@ -1,0 +1,564 @@
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs
+index 1dbc74e..0d8dd80 100644
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs
+@@ -134,3 +134,31 @@ impl PerOpenFileOps for MemFileHandle {
+         true
+     }
+ }
++
++#[cfg(ktest)]
++mod tests {
++    use ostd::prelude::ktest;
++    use super::*;
++    use crate::{process::test_util, vm::{page_cache::VmoOptions, perms::VmPerms, vmar::VmarMapOffset}};
++
++    #[ktest]
++    fn an_already_open_mem_handle_cannot_write_after_its_vmar_is_fenced() {
++        let (process, _task) = test_util::new_unstarted_process();
++        let base = 0x400000;
++        let ram = VmoOptions::new(PAGE_SIZE).alloc().unwrap();
++        process.lock_vmar().unwrap().new_map(PAGE_SIZE, VmPerms::READ | VmPerms::WRITE)
++            .vmo(ram).offset(VmarMapOffset::FixedNoReplace(base)).build().unwrap();
++        test_util::with_registered_process(&process, |entry| {
++            // The same concrete per-open handle and original VMAR snapshot
++            // used by MemFileOps::open, retained across the protection change.
++            let handle = MemFileHandle(TidDirOps::new(entry), process.lock_vmar().snapshot());
++            assert_eq!(handle.write_at(base, &mut VmReader::from(&[0x33u8][..]).to_fallible(), StatusFlags::empty()).unwrap(), 1);
++            process.lock_vmar().unwrap().prepare_external_write_fence().unwrap().commit();
++            let error = handle.write_at(base, &mut VmReader::from(&[0x77u8][..]).to_fallible(), StatusFlags::empty()).unwrap_err();
++            assert_eq!(error.error(), Errno::EIO);
++            let mut value = [0u8; 1];
++            assert_eq!(handle.read_at(base, &mut VmWriter::from(&mut value[..]).to_fallible(), StatusFlags::empty()).unwrap(), 1);
++            assert_eq!(value, [0x33]);
++        });
++    }
++}
+diff --git a/kernel/asterinas/kernel/core/src/process/clone.rs b/kernel/asterinas/kernel/core/src/process/clone.rs
+index 0a90440..be109b9 100644
+--- a/kernel/asterinas/kernel/core/src/process/clone.rs
++++ b/kernel/asterinas/kernel/core/src/process/clone.rs
+@@ -297,6 +297,15 @@ impl CloneFlags {
+ ///
+ /// FIXME: currently, the child process or thread will be scheduled to run at once,
+ /// but this may not be the expected behavior.
++#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++fn external_vm_share_admission(vmar: &Vmar, flags: CloneFlags) -> Result<Option<crate::util::external_mutation::ExternalMutation<'_>>> {
++    if flags.contains(CloneFlags::CLONE_VM) && !flags.contains(CloneFlags::CLONE_THREAD) {
++        Ok(Some(vmar.enter_external_mutation()?))
++    } else {
++        Ok(None)
++    }
++}
++
+ pub(crate) fn clone_child(
+     ctx: &Context,
+     parent_context: &UserContext,
+@@ -304,6 +313,14 @@ pub(crate) fn clone_child(
+ ) -> Result<Tid> {
+     clone_args.check(ctx)?;
+ 
++    // A foreign CLONE_VM alias (including vfork) must be fully constructed
++    // before a new image can be protected. Keep only an admission counter,
++    // never its mutex, through handle creation, task publication and errors.
++    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++    let shared_vmar = ctx.thread_local.vmar().borrow().as_ref().unwrap().clone_arc();
++    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++    let _external_share = external_vm_share_admission(&shared_vmar, clone_args.flags)?;
++
+     if clone_args.flags.contains(CloneFlags::CLONE_THREAD) {
+         let child_task = clone_child_task(ctx, parent_context, clone_args)?;
+         let child_thread = child_task.as_thread().unwrap();
+@@ -930,3 +947,34 @@ fn clone_parent(clone_flags: CloneFlags, current: &Arc<Process>) -> Cow<'_, Arc<
+         Cow::Borrowed(current)
+     }
+ }
++
++#[cfg(ktest)]
++mod external_share_tests {
++    use ostd::prelude::ktest;
++    use super::*;
++    use crate::{fs::pseudofs::SockFs, process::ProcessVm};
++
++    #[ktest]
++    fn shared_clone_and_vfork_admission_cannot_race_the_single_handle_fence() {
++        let vmar = VmarHandle::new(ProcessVm::new(SockFs::new_path()));
++        for flags in [CloneFlags::CLONE_VM, CloneFlags::CLONE_VM | CloneFlags::CLONE_VFORK] {
++            let admission = external_vm_share_admission(&vmar, flags).unwrap();
++            // The allocation has not gained its second handle yet.
++            assert_eq!(vmar.prepare_external_write_fence().err().unwrap().error(), Errno::EBUSY);
++            let shared = clone_vmar(&vmar, flags);
++            drop(admission);
++            // After admission ends, the actual live handle still blocks it.
++            assert_eq!(vmar.prepare_external_write_fence().err().unwrap().error(), Errno::EBUSY);
++            drop(shared);
++        }
++        vmar.prepare_external_write_fence().unwrap().commit();
++        assert_eq!(external_vm_share_admission(&vmar, CloneFlags::CLONE_VM).err().unwrap().error(), Errno::EPERM);
++        assert_eq!(external_vm_share_admission(&vmar, CloneFlags::CLONE_VM | CloneFlags::CLONE_VFORK).err().unwrap().error(), Errno::EPERM);
++        let thread_flags = CloneFlags::CLONE_VM | CloneFlags::CLONE_THREAD;
++        assert!(external_vm_share_admission(&vmar, thread_flags).unwrap().is_none());
++        let same_process_thread = clone_vmar(&vmar, thread_flags);
++        assert!(vmar.has_multiple_handles());
++        assert!(vmar.prepare_external_write_fence().unwrap().is_fenced());
++        drop(same_process_thread);
++    }
++}
+diff --git a/kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs b/kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs
+index ceee54e..a995ffd 100644
+--- a/kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs
++++ b/kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs
+@@ -48,6 +48,10 @@ impl PosixThread {
+     ///
+     /// Returns `EPERM` if this thread is already being traced.
+     fn set_tracer(&self, tracer: Weak<Thread>) -> Result<()> {
++        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++        let process = self.process();
++        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++        let _external_access = process.external_control_fence().enter()?;
+         let status = self.tracee_status.call_once(TraceeStatus::new);
+         status.set_tracer(tracer)
+     }
+@@ -138,9 +142,7 @@ impl PosixThread {
+     ///
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     pub(crate) fn ptrace_continue(&self, request: PtraceContRequest, ctx: &Context) -> Result<()> {
+-        let status = self.get_tracee_status()?;
+-
+-        status.resume(request, ctx)?;
++        self.with_ptrace_access(|status| status.resume(request, ctx))?;
+         self.wake_signalled_waker();
+ 
+         Ok(())
+@@ -153,8 +155,7 @@ impl PosixThread {
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     #[cfg(target_arch = "x86_64")]
+     pub(crate) fn ptrace_get_regs(&self) -> Result<arch_ptrace::CUserRegsStruct> {
+-        let status = self.get_tracee_status()?;
+-        status.get_regs()
++        self.with_ptrace_access(TraceeStatus::get_regs)
+     }
+ 
+     /// Sets the general-purpose registers of this thread for ptrace.
+@@ -164,8 +165,7 @@ impl PosixThread {
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     #[cfg(target_arch = "x86_64")]
+     pub(crate) fn ptrace_set_regs(&self, regs: arch_ptrace::CUserRegsStruct) -> Result<()> {
+-        let status = self.get_tracee_status()?;
+-        status.set_regs(regs)
++        self.with_ptrace_access(|status| status.set_regs(regs))
+     }
+ 
+     /// Reads one word in the tracee's USER area.
+@@ -175,8 +175,7 @@ impl PosixThread {
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     #[cfg(target_arch = "x86_64")]
+     pub(crate) fn ptrace_peek_user(&self, offset: usize) -> Result<usize> {
+-        let status = self.get_tracee_status()?;
+-        status.peek_user(offset)
++        self.with_ptrace_access(|status| status.peek_user(offset))
+     }
+ 
+     /// Writes one word in the tracee's USER area.
+@@ -186,8 +185,7 @@ impl PosixThread {
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     #[cfg(target_arch = "x86_64")]
+     pub(crate) fn ptrace_poke_user(&self, offset: usize, value: usize) -> Result<()> {
+-        let status = self.get_tracee_status()?;
+-        status.poke_user(offset, value)
++        self.with_ptrace_access(|status| status.poke_user(offset, value))
+     }
+ 
+     /// Reads one word from the tracee's memory.
+@@ -196,8 +194,7 @@ impl PosixThread {
+     ///
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     pub(crate) fn ptrace_peek_data(&self, addr: usize) -> Result<usize> {
+-        let status = self.get_tracee_status()?;
+-        status.peek_data(self.weak_process(), addr)
++        self.with_ptrace_access(|status| status.peek_data(self.weak_process(), addr))
+     }
+ 
+     /// Writes one word to the tracee's memory.
+@@ -206,8 +203,7 @@ impl PosixThread {
+     ///
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     pub(crate) fn ptrace_poke_data(&self, addr: usize, value: usize) -> Result<()> {
+-        let status = self.get_tracee_status()?;
+-        status.poke_data(self.weak_process(), addr, value)
++        self.with_ptrace_access(|status| status.poke_data(self.weak_process(), addr, value))
+     }
+ 
+     /// Sets ptrace options for this thread.
+@@ -216,8 +212,7 @@ impl PosixThread {
+     ///
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     pub(crate) fn ptrace_set_options(&self, options: PtraceOptions) -> Result<()> {
+-        let status = self.get_tracee_status()?;
+-        status.set_options(options)
++        self.with_ptrace_access(|status| status.set_options(options))
+     }
+ 
+     /// Gets the event of the last ptrace-stop,
+@@ -227,8 +222,7 @@ impl PosixThread {
+     ///
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     pub(crate) fn ptrace_get_event(&self) -> Result<Option<PtraceEvent>> {
+-        let status = self.get_tracee_status()?;
+-        status.get_event()
++        self.with_ptrace_access(TraceeStatus::get_event)
+     }
+ 
+     /// Gets the signal info of this thread for ptrace.
+@@ -237,8 +231,18 @@ impl PosixThread {
+     ///
+     /// Returns `ESRCH` if this thread is not ptrace-stopped.
+     pub(crate) fn ptrace_get_siginfo(&self) -> Result<siginfo_t> {
+-        let status = self.get_tracee_status()?;
+-        status.get_siginfo()
++        self.with_ptrace_access(TraceeStatus::get_siginfo)
++    }
++
++    /// Includes read/peek operations: they can hold tracee state before the
++    /// VMAR lock. The grant path rejects their in-flight admission before it
++    /// inspects tracer state, avoiding a VMAR <-> tracee-state lock cycle.
++    fn with_ptrace_access<T>(&self, action: impl FnOnce(&TraceeStatus) -> Result<T>) -> Result<T> {
++        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++        let process = self.process();
++        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++        let _external_access = process.external_control_fence().enter()?;
++        action(self.get_tracee_status()?)
+     }
+ 
+     /// Returns the tracee status of this thread if it has ever been traced.
+@@ -825,3 +829,29 @@ impl TraceeState {
+         self.orig_syscall_ret = Self::NOT_A_SYSCALL;
+     }
+ }
++
++#[cfg(ktest)]
++mod external_fence_tests {
++    use ostd::prelude::ktest;
++    use super::*;
++    use crate::{process::test_util, thread::AsThread};
++
++    #[ktest]
++    fn a_captured_tracee_reference_cannot_mutate_after_process_fencing_or_exec() {
++        let (process, task) = test_util::new_unstarted_process();
++        let captured = task.as_thread().unwrap().as_posix_thread().unwrap();
++        let status = captured.tracee_status.call_once(TraceeStatus::new);
++        status.is_stopped.store(true, Ordering::Relaxed);
++        captured.ptrace_set_options(PtraceOptions::PTRACE_O_TRACEEXEC).unwrap();
++        captured.with_ptrace_access(|_| {
++            assert_eq!(process.external_control_fence().prepare_fence().err().unwrap().error(), Errno::EBUSY);
++            Ok(())
++        }).unwrap();
++        process.external_control_fence().prepare_fence().unwrap().commit();
++        assert_eq!(captured.ptrace_set_options(PtraceOptions::PTRACE_O_TRACEFORK).unwrap_err().error(), Errno::EPERM);
++        assert_eq!(status.state.lock().options, PtraceOptions::PTRACE_O_TRACEEXEC);
++        process.begin_hepta_image_close();
++        process.commit_hepta_exec_image().unwrap();
++        assert_eq!(captured.ptrace_set_options(PtraceOptions::empty()).unwrap_err().error(), Errno::EPERM);
++    }
++}
+diff --git a/kernel/asterinas/kernel/core/src/process/process/image.rs b/kernel/asterinas/kernel/core/src/process/process/image.rs
+index a019106..c292357 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/image.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/image.rs
+@@ -275,6 +275,11 @@ impl Process {
+     /// image's registers or data through another Process, even as Linux root.
+     #[cfg(feature = "g1c-trusted-observe")]
+     pub(crate) fn has_initial_observe_authority(&self) -> bool {
++        // A post-exec recipient's external-control fence is deliberately
++        // Process-lifetime, even after exec removes its image-scoped grant.
++        if self.external_control_fence().is_fenced() {
++            return true;
++        }
+         let image = self.hepta_image.lock();
+         let has_authority = image.initial_observe.is_some();
+         #[cfg(feature = "g1d-trusted-control")]
+diff --git a/kernel/asterinas/kernel/core/src/process/process/mod.rs b/kernel/asterinas/kernel/core/src/process/process/mod.rs
+index 2c13438..244fa59 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/mod.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/mod.rs
+@@ -164,6 +164,12 @@ pub struct Process {
+     /// never acquire an outer lock or enter resource-accounting critical sections.
+     hepta_image: Mutex<ProcessImageState>,
+ 
++    /// Once committed, external ptrace access remains fenced for this Process
++    /// allocation, including later exec images. Only the HOS2 grant is image-
++    /// scoped. This state is never reset by exec or inherited by fork.
++    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++    hepta_external_control: crate::util::external_mutation::ExternalMutationFence,
++
+     // Namespaces
+     /// The user namespace
+     user_ns: Mutex<Arc<UserNamespace>>,
+@@ -281,6 +287,8 @@ impl Process {
+                 timer_manager,
+                 start_time: Jiffies::elapsed(),
+                 hepta_image: Mutex::new(ProcessImageState::new()),
++                #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++                hepta_external_control: crate::util::external_mutation::ExternalMutationFence::new(),
+                 user_ns: Mutex::new(user_ns),
+             }
+         })
+@@ -347,6 +355,11 @@ impl Process {
+ 
+     // *********** Parent and child ***********
+ 
++    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++    pub(crate) fn external_control_fence(&self) -> &crate::util::external_mutation::ExternalMutationFence {
++        &self.hepta_external_control
++    }
++
+     pub(crate) fn parent(&self) -> &ParentProcess {
+         &self.parent
+     }
+diff --git a/kernel/asterinas/kernel/core/src/process/test_util.rs b/kernel/asterinas/kernel/core/src/process/test_util.rs
+index f164e1b..063dd72 100644
+--- a/kernel/asterinas/kernel/core/src/process/test_util.rs
++++ b/kernel/asterinas/kernel/core/src/process/test_util.rs
+@@ -85,3 +85,21 @@ pub(crate) fn mark_zombie(process: &Process) {
+         membership.hide_zombie_process(process);
+     }
+ }
++
++/// Temporarily publishes a real Process/PidEntry for per-open procfs tests.
++/// The original PID table remains the only registry; cleanup removes the entry.
++pub(crate) fn with_registered_process<T>(process: &Arc<Process>, run: impl FnOnce(Arc<super::pid_table::PidEntry>) -> T) -> T {
++    struct Registration<'a>(&'a Arc<Process>);
++    impl Drop for Registration<'_> {
++        fn drop(&mut self) {
++            super::pid_table::pid_table_mut().remove_process(self.0.pid());
++        }
++    }
++    let entry = {
++        let mut table = super::pid_table::pid_table_mut();
++        table.insert_process(process.pid(), process);
++        table.get_entry(process.pid()).unwrap()
++    };
++    let _registration = Registration(process);
++    run(entry)
++}
+diff --git a/kernel/asterinas/kernel/core/src/util/external_mutation.rs b/kernel/asterinas/kernel/core/src/util/external_mutation.rs
+new file mode 100644
+index 0000000..3990570
+--- /dev/null
++++ b/kernel/asterinas/kernel/core/src/util/external_mutation.rs
+@@ -0,0 +1,100 @@
++// SPDX-License-Identifier: MPL-2.0
++
++//! Admission for external access to one existing Process or VMAR owner.
++//! This is not an authority issuer or a journal. A committed fence is permanent
++//! for that owner allocation; ordinary exec must not silently reopen it.
++
++use crate::prelude::*;
++
++pub(crate) struct ExternalMutationFence {
++    state: Mutex<State>,
++}
++
++struct State {
++    fenced: bool,
++    active: u32,
++}
++
++impl ExternalMutationFence {
++    pub(crate) fn new() -> Self {
++        Self { state: Mutex::new(State { fenced: false, active: 0 }) }
++    }
++
++    /// The returned admission holds only a counter, never the mutex. Its
++    /// lifetime covers the actual ptrace/alien-write/shared-clone operation,
++    /// including faults, user copies and cleanup on every error path.
++    pub(crate) fn enter(&self) -> Result<ExternalMutation<'_>> {
++        let mut state = self.state.lock();
++        if state.fenced {
++            return_errno_with_message!(Errno::EPERM, "external access owner is fenced");
++        }
++        state.active = state.active.checked_add(1).ok_or_else(|| {
++            Error::with_message(Errno::EOVERFLOW, "external access admission exhausted")
++        })?;
++        Ok(ExternalMutation { owner: self })
++    }
++
++    /// Reject in-flight work, then keep new admissions out while the caller
++    /// validates all remaining owners. Dropping an uncommitted preparation
++    /// changes nothing. Do not perform I/O or user copies while holding it.
++    pub(crate) fn prepare_fence(&self) -> Result<PreparedExternalFence<'_>> {
++        let state = self.state.lock();
++        if state.active != 0 {
++            return_errno_with_message!(Errno::EBUSY, "external access is in flight");
++        }
++        Ok(PreparedExternalFence { state })
++    }
++
++    pub(crate) fn is_fenced(&self) -> bool {
++        self.state.lock().fenced
++    }
++}
++
++pub(crate) struct ExternalMutation<'a> {
++    owner: &'a ExternalMutationFence,
++}
++
++impl Drop for ExternalMutation<'_> {
++    fn drop(&mut self) {
++        let mut state = self.owner.state.lock();
++        debug_assert!(state.active != 0);
++        state.active -= 1;
++    }
++}
++
++pub(crate) struct PreparedExternalFence<'a> {
++    state: MutexGuard<'a, State>,
++}
++
++impl PreparedExternalFence<'_> {
++    pub(crate) fn is_fenced(&self) -> bool {
++        self.state.fenced
++    }
++
++    /// The caller commits only after all identity, tracer, alias and other
++    /// in-flight checks have succeeded. There is intentionally no unseal API.
++    pub(crate) fn commit(mut self) {
++        self.state.fenced = true;
++    }
++}
++
++#[cfg(ktest)]
++mod tests {
++    use ostd::prelude::ktest;
++
++    use super::*;
++
++    #[ktest]
++    fn in_flight_admission_rejects_fence_without_closing_the_owner() {
++        let owner = ExternalMutationFence::new();
++        let active = owner.enter().unwrap();
++        assert_eq!(owner.prepare_fence().err().unwrap().error(), Errno::EBUSY);
++        assert!(!owner.is_fenced());
++        drop(active);
++        let prepared = owner.prepare_fence().unwrap();
++        drop(prepared);
++        assert!(owner.enter().is_ok());
++        owner.prepare_fence().unwrap().commit();
++        assert_eq!(owner.enter().err().unwrap().error(), Errno::EPERM);
++    }
++}
+diff --git a/kernel/asterinas/kernel/core/src/util/mod.rs b/kernel/asterinas/kernel/core/src/util/mod.rs
+index 392249f..2279abf 100644
+--- a/kernel/asterinas/kernel/core/src/util/mod.rs
++++ b/kernel/asterinas/kernel/core/src/util/mod.rs
+@@ -1,6 +1,8 @@
+ // SPDX-License-Identifier: MPL-2.0
+ 
+ mod copy_compact;
++#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++pub(crate) mod external_mutation;
+ pub mod ioctl;
+ mod iovec;
+ pub(crate) mod net;
+diff --git a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/access_alien.rs b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/access_alien.rs
+index 2e1c8cb..d20f2eb 100644
+--- a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/access_alien.rs
++++ b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/access_alien.rs
+@@ -114,6 +114,15 @@ impl Vmar {
+     where
+         F: FnMut(UFrame, usize) -> Result<usize, (ostd::Error, usize)>,
+     {
++        // Cover both write_alien and fill_zeros_alien at the shared write
++        // entry. A stale proc-mem VMAR pin cannot bypass this check. Admission
++        // keeps only a counter while faults and user copies run below.
++        #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++        let _external_write = if required_page_flags.contains(PageFlags::W) {
++            Some(self.enter_external_mutation().map_err(|error| (error, 0))?)
++        } else {
++            None
++        };
+         if len == 0 {
+             return Ok(0);
+         }
+@@ -190,3 +199,33 @@ impl Vmar {
+         }
+     }
+ }
++
++#[cfg(ktest)]
++mod external_fence_tests {
++    use ostd::prelude::ktest;
++    use super::*;
++    use crate::{process::test_util, vm::{page_cache::VmoOptions, perms::VmPerms, vmar::VmarMapOffset}};
++
++    #[ktest]
++    fn actual_alien_write_admission_blocks_fencing_until_the_copy_finishes() {
++        let (process, _task) = test_util::new_unstarted_process();
++        let vmar_guard = process.lock_vmar();
++        let vmar = vmar_guard.as_ref().unwrap();
++        let base = 0x400000;
++        let ram = VmoOptions::new(PAGE_SIZE).alloc().unwrap();
++        vmar.new_map(PAGE_SIZE, VmPerms::READ | VmPerms::WRITE)
++            .vmo(ram).offset(VmarMapOffset::FixedNoReplace(base)).build().unwrap();
++        let mut reader = VmReader::from(&[0x33u8][..]).to_fallible();
++        assert_eq!(vmar.access_alien(base, 1, PageFlags::W, |frame, _| {
++            assert_eq!(vmar.prepare_external_write_fence().err().unwrap().error(), Errno::EBUSY);
++            frame.writer().write_fallible(&mut reader)
++        }).unwrap(), 1);
++        vmar.prepare_external_write_fence().unwrap().commit();
++        let (error, changed) = vmar.fill_zeros_alien(base, 1).unwrap_err();
++        assert_eq!(error.error(), Errno::EPERM);
++        assert_eq!(changed, 0);
++        let mut value = [0u8; 1];
++        vmar.read_alien(base, &mut VmWriter::from(&mut value[..]).to_fallible()).unwrap();
++        assert_eq!(value, [0x33]);
++    }
++}
+diff --git a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs
+index 39ccebc..5dd683e 100644
+--- a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs
++++ b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs
+@@ -52,6 +52,10 @@ pub(crate) struct Vmar {
+     process_vm: ProcessVm,
+     /// The number of handles that this `Vmar` has (see [`super::VmarHandle`])
+     num_handles: AtomicUsize,
++    /// Serializes irreversible post-exec protection with actual alien writes
++    /// and cross-Process shared-VMAR construction, not with normal own writes.
++    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++    external_mutation: crate::util::external_mutation::ExternalMutationFence,
+     /// Weak self reference
+     weak_self: Weak<Self>,
+ }
+@@ -70,6 +74,8 @@ impl Vmar {
+             rss_counters,
+             process_vm,
+             num_handles: AtomicUsize::new(1),
++            #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++            external_mutation: crate::util::external_mutation::ExternalMutationFence::new(),
+             weak_self: weak_self.clone(),
+         })
+     }
+@@ -94,6 +100,23 @@ impl Vmar {
+         &self.process_vm
+     }
+ 
++    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++    pub(crate) fn enter_external_mutation(&self) -> Result<crate::util::external_mutation::ExternalMutation<'_>> {
++        self.external_mutation.enter()
++    }
++
++    /// An initial handoff requires one POSIX-thread handle. Arc/Weak snapshots
++    /// held by proc-mem files or caches are not handles and are not counted.
++    /// An exact retry after fencing can coexist with the owner's own threads.
++    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
++    pub(crate) fn prepare_external_write_fence(&self) -> Result<crate::util::external_mutation::PreparedExternalFence<'_>> {
++        let prepared = self.external_mutation.prepare_fence()?;
++        if !prepared.is_fenced() && self.has_multiple_handles() {
++            return_errno_with_message!(Errno::EBUSY, "observe handoff requires an unshared single-thread VMAR");
++        }
++        Ok(prepared)
++    }
++
+     /// Returns whether this VMAR has multiple handles.
+     pub(crate) fn has_multiple_handles(&self) -> bool {
+         self.num_handles.load(Ordering::Relaxed) > 1

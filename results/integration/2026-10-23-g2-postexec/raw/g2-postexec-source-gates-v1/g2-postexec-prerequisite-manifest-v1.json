@@ -1,0 +1,146 @@
+{
+  "schema": "hepta-g2-postexec-prerequisite-source-review-v1",
+  "desktop_base": "cfe28e3efb5e025d58a9d663d1dd6a681c224892",
+  "hepta_reference": "0adaca4375fdfefe0fbae7f1cb7f25c437360c6e",
+  "hepta_tree": "ea0efaf5806349291f67aff19c26d455df9da98b",
+  "patch_application_order": [
+    {
+      "file": "g2-external-fences-v1.patch",
+      "sha256": "58092ce658c72ae01f9e8f124fc858a384f7f0cc0b4ad7a05a1e23b6e5226dc3",
+      "bytes": 25363
+    },
+    {
+      "file": "g2-postexec-observe-v1.patch",
+      "sha256": "1f5230314fda05da4eea1a2fb02ed6a56548d58bb0de76eaba1fdcb51ff6c463",
+      "bytes": 44031
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "base_git_blob": "3695d48307b6b5369842d3a8fcbb0a2de132d12e",
+      "result_git_blob": "0ed1475d2ca317e28ea1a40878d2397f922ea700",
+      "result_sha256": "fcfd69548ed35387221d0b6c4f12b30944e1eea0d6dafae1aca191e553b98afb",
+      "bytes": 16023
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/device/misc/mod.rs",
+      "base_git_blob": "0790666b8baeef4ed02307ee1a19bc8380fbccb8",
+      "result_git_blob": "6dc4583320b74b6f1788fae3afa306d76aae2d17",
+      "result_sha256": "28236b8a28c000fe6f17cadf780a97a9705c400ae2c3fa4cece24649335b79b7",
+      "bytes": 1022
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "base_git_blob": "1dbc74e045c38e53da8d9e056231e798e06b54e5",
+      "result_git_blob": "0d8dd80f06ab26bd62da2f1397e26f074e7f77db",
+      "result_sha256": "c5dfe401f99e3254515d9239e1bcf2a53586718d7473fa1ce7d8d1c69548abe7",
+      "bytes": 5605
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+      "base_git_blob": "0a904400d6b6a1bbfc41b9a7913bf8d2c54a9f19",
+      "result_git_blob": "be109b94bc0ca5ea604d70805275f31cac422564",
+      "result_sha256": "8a8abd76b6795d5fd17622b4dfd48078c44fdc1810f4ca90c6d891259843d929",
+      "bytes": 34664
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/mod.rs",
+      "base_git_blob": "d17caeccc7e7d344bc14257a9ac2e3ceb256e96c",
+      "result_git_blob": "ce131a6e188155e26c481f4dea2b983a7150361a",
+      "result_sha256": "9bf3785a15247d6434add5b708f52378e98111e38f86a817a8578172f3c3c45e",
+      "bytes": 1913
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs",
+      "base_git_blob": "ceee54e50be5d04fceb9cdd92f2cb39eb4d7db91",
+      "result_git_blob": "a995ffdf0bd7ebbb9e02dd2deff75ea51a22bfbf",
+      "result_sha256": "1b22c44deaab6009d0adb0f572541bf89a0b9e0b70641d38681e8d4f36df63a8",
+      "bytes": 29203
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "base_git_blob": "a019106a9cc55e0be5a547c9417afdf2f3b6d87e",
+      "result_git_blob": "22e450bcbf6e5c9c3a1b446e5acde07fcab31177",
+      "result_sha256": "92b02dd70d577e0c056aa97ddc221f5532c876db91b76b4a7d27929ef526f070",
+      "bytes": 25935
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "base_git_blob": "e56dced02ade1d220bd99a4f7721362441c0fb64",
+      "result_git_blob": "a4209c86b95c152b5d8dbbb60dd0c896208b337c",
+      "result_sha256": "3d7d2c97fadfdb29cc706462df2f390c1ee145f548156ed2ef8adf42e23857eb",
+      "bytes": 17815
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "base_git_blob": "2c134384e3a788a49f0e85df356a5bb68d7f0cee",
+      "result_git_blob": "537db4eda704d1d91f1c8228c15a1d6b9df4b9c4",
+      "result_sha256": "1b0c34e4f5189c8e637694d9f15446be3fba190775e63965a7f12005492ca853",
+      "bytes": 32947
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/postexec_observe.rs",
+      "base_git_blob": null,
+      "result_git_blob": "955bdd502e7795fa5ddab73dc56adf032ddc66dc",
+      "result_sha256": "d6c93f6b6bfb59de62ae4045c96a240a6706b6d8fde986ed2b7483ae362232cf",
+      "bytes": 11559
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs",
+      "base_git_blob": null,
+      "result_git_blob": "7a3c2c39d3be9180e058d6aafeb4bdc8d5f7629f",
+      "result_sha256": "491b09326b16698c236af3a4ecee0988217bf0c6571322d82ae948c5fd78cbc0",
+      "bytes": 10699
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "base_git_blob": "f164e1b7f1a58fe93bd313b6e2638b2fdd10a33f",
+      "result_git_blob": "063dd72eb772e5556d77e74ea315d9cce8868a5b",
+      "result_sha256": "8e6d2eaf9f718571ee6f3c29e70686949695e84e8e5def81f544a8cceb28717a",
+      "bytes": 3851
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/util/external_mutation.rs",
+      "base_git_blob": null,
+      "result_git_blob": "399057096a06d038be0fe7729058546da2f2015e",
+      "result_sha256": "a5c87e862d82b759a72bfe7f82d1cea3839db690af5c10ade416e3da7b6d27e0",
+      "bytes": 3185
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/util/mod.rs",
+      "base_git_blob": "392249f854afdb46c2fb4a445d43ef34cef3a75e",
+      "result_git_blob": "2279abfb45e4ac9d40f9d98d19a09fa5db889bc5",
+      "result_sha256": "9da0d4c4083d33a4269e26ab10a4355078a4c480f7a7460befd6598375f6a2c6",
+      "bytes": 417
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/access_alien.rs",
+      "base_git_blob": "2e1c8cb939315db2772452f29e783cc6f8e8595a",
+      "result_git_blob": "d20f2eb0e642ab7a474a385bd7997325f5e2d046",
+      "result_sha256": "7caa691e32ad5e67d22b5831d168ebb2015dd08eef5b7a642d832e23eac6d361",
+      "bytes": 8972
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs",
+      "base_git_blob": "39ccebc6116b20b1ea17384c4637a48a0cbab692",
+      "result_git_blob": "5dd683e0eaddcfd5d4368858df460886395e3f9f",
+      "result_sha256": "47fb1318fbfa726ccd724605f5d9454f9b2b9a7d63519ec059a7d54d9247dd39",
+      "bytes": 21037
+    }
+  ],
+  "local_checks": {
+    "patch_application_to_exact_sparse_base": "passed",
+    "result_bytes_match_authoring_tree": "passed",
+    "git_diff_check": "passed",
+    "rust_compile": "not_run",
+    "kernel_ktest": "not_run",
+    "native_observe_grant_and_read": "not_run"
+  },
+  "enabled_by_default": false,
+  "new_uapi": false,
+  "production_issuer_created": false,
+  "history_owner_changed": false,
+  "cpu_or_memory_policy_changed": false,
+  "g2_closed": false
+}

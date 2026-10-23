@@ -1,0 +1,543 @@
+diff --git a/support/build/ktest/README.md b/support/build/ktest/README.md
+index 29d70ed..70a6809 100644
+--- a/support/build/ktest/README.md
++++ b/support/build/ktest/README.md
+@@ -75,3 +75,68 @@ because the upstream test-kernel dependency also depends on OSTD.
+ 
+ No test result is claimed by adding these entry points. Consult actual saved
+ guest evidence for the completed, failed or filtered tests of each invocation.
++
++## Complete g1c post-exec object regressions
++
++After committing the reviewed candidate, the explicit one-CPU profile compiles
++`aster-core` with `g1c-trusted-observe` and runs the complete core suite. Ordinary
++`run.py` does not select that Cargo feature from `HEPTA_G1C_TRUSTED_OBSERVE`.
++The profile rejects `--test-name`, other crates and `--permission-attr-smp`.
++It also rejects changed tracked source or untracked Rust/build/test inputs, and
++records the exact commit/tree before and after execution.
++
++The feature has a compile-time `include_bytes!(env!("HEPTA_TRUSTED_INITIAL_ELF"))`
++input. Compile the already tracked G1-c probe into a fresh directory outside the
++source tree, using the same command as the existing native G1-c runner:
++
++```sh
++mkdir /absolute/fresh/g1c-ktest-input
++cc -std=c11 -O2 -Wall -Wextra -Werror -pthread -static -no-pie \
++  -Wl,-z,noexecstack,-z,separate-code \
++  tests/kernel/control/g1c_init.c \
++  -o /absolute/fresh/g1c-ktest-input/g1c-init
++
++python3 -I support/build/ktest/run.py --crate aster-core \
++  --g1c-postexec-observe \
++  --trusted-initial-elf /absolute/fresh/g1c-ktest-input/g1c-init \
++  --skip-osdk-install \
++  --output /absolute/fresh/g1c-postexec-ktest-output
++```
++
++Use the existing prepared Cargo cache and fixed test-base lock. Set `CARGO_HOME`
++to that cache and `VDSO_LIBRARY_DIR` to the existing directory containing
++`vdso_x86_64.so` when they are outside this checkout. The pinned toolchain remains
++`nightly-2026-07-21`; the wrapper selects it itself. `--skip-osdk-install` is valid
++only for the original source-built OSDK carrying the existing explicit-lock
++patch. Kernel/OSDK builds sharing a target or installed OSDK must be serialized.
++
++The wrapper uses the unchanged `prepare-trusted-image.py` to freeze the input
++into its fresh output as mode 0444, records its SHA-256, and passes that absolute
++copy to rustc. The input must be a nonempty little-endian x86_64 static ET_EXEC
++within the existing 8 MiB bound. The existing kernel remains responsible for
++full ELF and mapping validation. Kernel tests have their own entry point: they
++do not boot or authorize this probe, and need no userspace initramfs.
++
++`check-g1c-postexec.py` first calls the unmodified `check.py::check_guest` with
++`allow_filtered=False`. Thus the original complete-core lower bound, every
++retained required test, serial digest, raw exit 33, no timeout, no failures,
++and completion markers remain mandatory. It then requires all five external
++fence and eleven recipient/transaction tests exactly once without soft skips,
++and a minimum equal to the original bound plus these sixteen additions. It
++also verifies the fixed recorded Cargo command, source/feature identity,
++frozen ELF and actual QEMU profile. It never treats a filtered subset as full
++core qualification.
++
++The checker has synthetic host negative controls, which can be run without
++QEMU. Their output is not kernel pass evidence:
++
++```sh
++python3 -I support/build/ktest/test-g1c-postexec-check.py
++python3 -I -O support/build/ktest/test-g1c-postexec-check.py
++```
++
++The result explicitly states `qualification=kernel-object-tests-only`,
++`native_sealed_launch_qualified=false`, and `g2_qualified=false`. A full pass
++still does not establish a sealed original Supervisor launch, userspace fd
++handoff, a production FinalUse authority, or an original CPU grant/read. Those
++require a separate native integration gate under the original owners.
+diff --git a/support/build/ktest/check-g1c-postexec.py b/support/build/ktest/check-g1c-postexec.py
+new file mode 100644
+index 0000000..5b85954
+--- /dev/null
++++ b/support/build/ktest/check-g1c-postexec.py
+@@ -0,0 +1,139 @@
++#!/usr/bin/env python3
++"""Add the g1c post-exec object tests to the complete original core oracle.
++
++This is kernel-object qualification. It does not establish a sealed native
++Supervisor launch, a production issuer, or a successful original-CPU grant/read.
++"""
++import argparse
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import re
++import stat
++
++
++def load_original_checker():
++    path = Path(__file__).with_name("check.py")
++    spec = importlib.util.spec_from_file_location("original_core_ktest_check", path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++original = load_original_checker()
++PROFILE = "g1c-postexec-observe"
++FEATURES = ["g1c-trusted-observe"]
++FENCE_TESTS = (
++    "aster_core::util::external_mutation::tests::in_flight_admission_rejects_fence_without_closing_the_owner",
++    "aster_core::fs::fs_impls::procfs::pid::task::mem::tests::an_already_open_mem_handle_cannot_write_after_its_vmar_is_fenced",
++    "aster_core::process::posix_thread::ptrace::external_fence_tests::a_captured_tracee_reference_cannot_mutate_after_process_fencing_or_exec",
++    "aster_core::vm::vmar::vmar_impls::access_alien::external_fence_tests::actual_alien_write_admission_blocks_fencing_until_the_copy_finishes",
++    "aster_core::process::clone::external_share_tests::shared_clone_and_vfork_admission_cannot_race_the_single_handle_fence",
++)
++RECIPIENT_TESTS = tuple(
++    "aster_core::process::process::postexec_observe::tests::" + name for name in (
++        "postexec_child_requires_its_original_pidfd_and_live_image",
++        "foreign_caller_and_nonchild_pidfd_cannot_bind_a_launch",
++        "fork_image_before_exec_cannot_receive_a_launch",
++        "sibling_control_fd_and_wrong_nonce_cannot_replace_bound_child",
++        "child_exec_between_pidfd_binding_and_fd_handoff_fences_both_sessions",
++        "child_exit_and_supervisor_exec_fail_the_pending_handoff",
++        "reparenting_and_a_second_issuer_claim_fail_closed",
++        "invalid_recipient_never_reaches_the_irreversible_protection_step",
++        "an_existing_real_tracer_is_rejected_before_either_fence_commits",
++        "either_inflight_owner_rejects_installation_without_fencing_the_other",
++    )
++) + ("aster_core::device::misc::hepta_control::recipient_tests::actual_control_file_rejects_a_foreign_caller_and_an_ended_recipient",)
++REQUIRED_ADDITIONAL_TESTS = FENCE_TESTS + RECIPIENT_TESTS
++
++
++def require(condition, message):
++    if not condition:
++        raise ValueError(message)
++
++
++def check_environment(environment_path, commands_path):
++    environment = json.loads(environment_path.read_text())
++    commands = json.loads(commands_path.read_text())
++    require(environment.get("ktest_profile") == PROFILE and environment.get("vcpus") == 1,
++            "wrong fixed g1c kernel-test profile")
++    require(environment.get("features") == FEATURES and environment.get("test_name") is None,
++            "g1c kernel tests require the exact feature and no test filter")
++    require(environment.get("toolchain") == "nightly-2026-07-21" and environment.get("git_status") == "",
++            "g1c source/toolchain identity is not a clean fixed candidate")
++    source = environment.get("source_identity", {})
++    require(source.get("head") == environment.get("git_head")
++            and all(re.fullmatch(r"[0-9a-f]{40}", source.get(key, "")) for key in ("head", "tree")),
++            "missing complete committed source identity")
++    require(environment.get("qualification") == "kernel-object-tests-only"
++            and environment.get("native_sealed_launch_qualified") is False
++            and environment.get("g2_qualified") is False,
++            "kernel-object evidence must not claim native/production G2")
++    tests = [entry for entry in commands if entry.get("argv", [])[2:4] == ["osdk", "test"]]
++    require(len(tests) == 1, "expected exactly one complete aster-core invocation")
++    argv = tests[0]["argv"]
++    require(argv[:4] == ["cargo", "+nightly-2026-07-21", "osdk", "test"]
++            and Path(tests[0]["cwd"]).parts[-2:] == ("kernel", "core")
++            and argv[4:] == ["--release", "--boot-method=vmm-direct", "--grub-boot-protocol=multiboot",
++                             "--qemu-exe=" + str(Path(__file__).resolve().with_name("record-qemu.py")),
++                             "--kcmd-args=loglevel=error", "--kcmd-args=earlycon",
++                             "--kcmd-args=console=ttyS0", "--features=g1c-trusted-observe"],
++            "complete core command differs from the fixed unfiltered feature invocation")
++    manifest = environment.get("trusted_initial", {})
++    embedded = environment_path.resolve().parent / "trusted-initial.elf"
++    require(manifest.get("profile") == FEATURES[0] and manifest.get("embedded_input") == str(embedded),
++            "trusted ELF manifest is not bound to this output directory")
++    require(embedded.is_file() and not embedded.is_symlink()
++            and stat.S_IMODE(embedded.stat().st_mode) == 0o444,
++            "trusted ELF is not the frozen read-only regular input")
++    data = embedded.read_bytes()
++    require(20 <= len(data) <= 8 * 1024 * 1024 and len(data) == manifest.get("bytes")
++            and hashlib.sha256(data).hexdigest() == manifest.get("sha256")
++            and data[:7] == b"\x7fELF\x02\x01\x01" and data[16:20] == b"\x02\x00\x3e\x00",
++            "frozen trusted ELF identity changed")
++    return {"source_identity": source, "trusted_initial_sha256": manifest["sha256"]}
++
++
++def check_guest(guest):
++    # Preserve every current and future retained default-core assertion.
++    result = original.check_guest(guest, "aster-core", allow_filtered=False)
++    qemu = json.loads((guest / "qemu.json").read_text())
++    require(qemu.get("ktest_profile") == PROFILE
++            and qemu.get("profile") == {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
++                                        "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False},
++            "guest was not run under the fixed one-CPU g1c profile")
++    serial = original.ANSI.sub("", (guest / "serial.log").read_text(errors="replace")).replace("\r", "")
++    headers = list(original.HEAD.finditer(serial))
++    header = next(item for item in headers if item[2] == "aster-core")
++    end = next((other.start() for other in headers if other.start() > header.start()), len(serial))
++    section = serial[header.end():end]
++    starts = re.findall(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE)
++    for name in REQUIRED_ADDITIONAL_TESTS:
++        require(starts.count(name) == 1, "missing or repeated additional g1c test: " + name)
++        block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
++        require("[skipped:" not in block, "additional g1c test was soft-skipped: " + name)
++    require(result["passed"] >= original.MINIMUM_CORE_TESTS + len(REQUIRED_ADDITIONAL_TESTS),
++            "g1c complete gate shrank below the original core minimum plus all additions")
++    return {**result, "required_additional_tests": list(REQUIRED_ADDITIONAL_TESTS),
++            "ktest_profile": PROFILE, "qualification": "kernel-object-tests-only",
++            "native_sealed_launch_qualified": False, "g2_qualified": False}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("directory", type=Path)
++    parser.add_argument("--environment", type=Path, required=True)
++    parser.add_argument("--commands", type=Path, required=True)
++    args = parser.parse_args()
++    identity = check_environment(args.environment, args.commands)
++    guests = sorted(args.directory.glob("guest-*"))
++    require(bool(guests), "no real QEMU guest records found")
++    results = [check_guest(guest) for guest in guests]
++    print(json.dumps({"passed": True, **identity, "guests": results,
++                      "qualification": "kernel-object-tests-only", "native_sealed_launch_qualified": False,
++                      "g2_qualified": False}, indent=2))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/support/build/ktest/record-qemu.py b/support/build/ktest/record-qemu.py
+index 66d9ffd..0621e5b 100755
+--- a/support/build/ktest/record-qemu.py
++++ b/support/build/ktest/record-qemu.py
+@@ -18,11 +18,13 @@ def digest(path):
+ def main():
+     requested = sys.argv[1:]
+     profile = os.environ.get("A01_KTEST_PROFILE", "default")
+-    if profile not in ("default", "permission-attr-smp"):
++    if profile not in ("default", "permission-attr-smp", "g1c-postexec-observe"):
+         raise SystemExit("unknown fixed kernel-test profile")
+     vcpus = 2 if profile == "permission-attr-smp" else 1
+     if profile == "permission-attr-smp" and os.environ["A01_KTEST_CRATE"] != "aster-core":
+         raise SystemExit("the permission SMP profile is restricted to aster-core")
++    if profile == "g1c-postexec-observe" and os.environ["A01_KTEST_CRATE"] != "aster-core":
++        raise SystemExit("the g1c post-exec profile is restricted to aster-core")
+     directory = Path(os.environ["A01_KTEST_GUESTS"]).resolve()
+     directory.mkdir(parents=True, exist_ok=True)
+     index = 1
+diff --git a/support/build/ktest/run.py b/support/build/ktest/run.py
+index 374cde5..218e500 100755
+--- a/support/build/ktest/run.py
++++ b/support/build/ktest/run.py
+@@ -16,6 +16,22 @@ TOOLCHAIN = "nightly-2026-07-21"
+ CRATES = {"ostd": "ostd", "aster-core": "kernel/core"}
+ 
+ 
++def clean_source_identity(project):
++    """Pin a complete committed source tree for the opt-in qualification."""
++    status = subprocess.check_output(
++        ["git", "status", "--porcelain", "--untracked-files=no"], cwd=project, text=True)
++    if status:
++        raise SystemExit("g1c post-exec ktests require a committed, unchanged tracked source tree")
++    untracked = subprocess.check_output(
++        ["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=project).decode().split("\0")
++    source_prefixes = ("kernel/asterinas/", "libs/", "support/build/")
++    if any(name.startswith(source_prefixes) and name.endswith((".rs", ".py", ".toml", ".lock"))
++           for name in untracked):
++        raise SystemExit("g1c post-exec ktests refuse untracked build/test source inputs")
++    return {"head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=project, text=True).strip(),
++            "tree": subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], cwd=project, text=True).strip()}
++
++
+ def digest(path):
+     return hashlib.sha256(path.read_bytes()).hexdigest()
+ 
+@@ -33,9 +49,21 @@ def main():
+     parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
+     parser.add_argument("--permission-attr-smp", action="store_true",
+                         help="run the fixed permission transaction regressions with exactly two CPUs")
++    parser.add_argument("--g1c-postexec-observe", action="store_true",
++                        help="run the complete one-CPU core suite with g1c and all post-exec fence regressions")
++    parser.add_argument("--trusted-initial-elf", type=Path,
++                        help="reviewed static ELF to freeze for --g1c-postexec-observe; never a role credential")
+     parser.add_argument("--skip-osdk-install", action="store_true",
+                         help="reuse an already source-built OSDK carrying the explicit-lock patch")
+     args = parser.parse_args()
++    if args.g1c_postexec_observe:
++        if args.permission_attr_smp or args.crate not in (None, ["aster-core"]) or args.test_name is not None:
++            parser.error("--g1c-postexec-observe requires the complete aster-core suite on one CPU")
++        if args.trusted_initial_elf is None:
++            parser.error("--g1c-postexec-observe requires --trusted-initial-elf")
++        args.crate = ["aster-core"]
++    elif args.trusted_initial_elf is not None:
++        parser.error("--trusted-initial-elf is only valid with --g1c-postexec-observe")
+     if args.permission_attr_smp:
+         if args.crate not in (None, ["aster-core"]) or args.test_name is not None:
+             parser.error("--permission-attr-smp fixes the crate and complete test-name suffix")
+@@ -44,6 +72,8 @@ def main():
+     profile = "permission-attr-smp" if args.permission_attr_smp else "default"
+     vcpus = 2 if args.permission_attr_smp else 1
+     features = ["permission-attr-smp-ktest"] if args.permission_attr_smp else []
++    if args.g1c_postexec_observe:
++        profile, features = "g1c-postexec-observe", ["g1c-trusted-observe"]
+     here = Path(__file__).resolve().parent
+     project = here.parents[2]
+     upstream = project / "kernel/asterinas"
+@@ -75,10 +105,24 @@ def main():
+         raise SystemExit("another kernel build/test is using this workspace")
+     # Keep the shared inode in place. Closing the descriptor releases its lock.
+     with lock:
++        source_identity = clean_source_identity(project) if args.g1c_postexec_observe else None
+         verify = [sys.executable, "-I", str(project / "support/build/verify-source.py")]
+         if run(verify, project, env, output / "source-inputs.json"):
+             raise SystemExit(f"source verification failed; see {output}")
+         commands = []
++        trusted_manifest = None
++        if args.g1c_postexec_observe:
++            command = [sys.executable, "-I", str(project / "support/build/prepare-trusted-image.py"),
++                       "--input", str(args.trusted_initial_elf.resolve(strict=True)),
++                       "--output", str(output / "trusted-initial.elf"),
++                       "--manifest", str(output / "trusted-initial-manifest.json"),
++                       "--profile", "g1c-trusted-observe"]
++            commands.append({"argv": command, "cwd": str(project)})
++            (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
++            if run(command, project, env, output / "trusted-initial-prepare.log"):
++                raise SystemExit(f"trusted initial ELF preparation failed; see {output}")
++            env["HEPTA_TRUSTED_INITIAL_ELF"] = str(output / "trusted-initial.elf")
++            trusted_manifest = json.loads((output / "trusted-initial-manifest.json").read_text())
+         if not args.skip_osdk_install:
+             command = ["cargo", f"+{TOOLCHAIN}", "install", "--locked", "cargo-osdk", "--path", "osdk"]
+             commands.append({"argv": command, "cwd": str(upstream)})
+@@ -104,6 +148,10 @@ def main():
+                        "cargo_build_jobs": env["CARGO_BUILD_JOBS"], "test_name": args.test_name,
+                        "ktest_profile": profile, "vcpus": vcpus, "features": features,
+                        "osdk_install_skipped": args.skip_osdk_install}
++        if args.g1c_postexec_observe:
++            environment.update(source_identity=source_identity, trusted_initial=trusted_manifest,
++                               qualification="kernel-object-tests-only", native_sealed_launch_qualified=False,
++                               g2_qualified=False)
+         (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
+         env["CARGO_TARGET_DIR"] = str(upstream / "target")
+         results = []
+@@ -136,6 +184,10 @@ def main():
+                 raise SystemExit(f"{crate}: generated lock differs from the fixed test-base lock")
+             if args.permission_attr_smp:
+                 checker = [sys.executable, "-I", str(here / "check-permission-smp.py"), str(target / "guests")]
++            elif args.g1c_postexec_observe:
++                checker = [sys.executable, "-I", str(here / "check-g1c-postexec.py"), str(target / "guests"),
++                           "--environment", str(output / "environment.json"),
++                           "--commands", str(output / "commands.json")]
+             else:
+                 checker = [sys.executable, "-I", str(here / "check.py"), str(target / "guests"), "--crate", crate]
+             if args.test_name and not args.permission_attr_smp:
+@@ -143,6 +195,8 @@ def main():
+             if run(checker, project, env, target / "result.json"):
+                 raise SystemExit(f"{crate}: guest evidence rejected; see {target / 'result.json'}")
+             results.append(json.loads((target / "result.json").read_text()))
++        if args.g1c_postexec_observe and clean_source_identity(project) != source_identity:
++            raise SystemExit("source identity changed during g1c post-exec ktests")
+         (output / "result.json").write_text(json.dumps({"passed": True, "crates": results}, indent=2) + "\n")
+     print(f"PASS: real kernel-mode tests; evidence: {output}")
+ 
+diff --git a/support/build/ktest/test-g1c-postexec-check.py b/support/build/ktest/test-g1c-postexec-check.py
+new file mode 100644
+index 0000000..d82af67
+--- /dev/null
++++ b/support/build/ktest/test-g1c-postexec-check.py
+@@ -0,0 +1,186 @@
++#!/usr/bin/env python3
++"""Synthetic host regressions for the additional oracle, not kernel evidence."""
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import unittest
++
++
++HERE = Path(__file__).resolve().parent
++spec = importlib.util.spec_from_file_location("g1c_postexec_check", HERE / "check-g1c-postexec.py")
++check = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(check)
++
++
++class SyntheticCheckerTests(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        self.guest = self.root / "guest-001"
++        self.guest.mkdir()
++        self.names = list(check.original.REQUIRED_CORE_TESTS) + list(check.REQUIRED_ADDITIONAL_TESTS)
++        minimum = check.original.MINIMUM_CORE_TESTS + len(check.REQUIRED_ADDITIONAL_TESTS)
++        self.names += [f"aster_core::synthetic_fixture::retained_{i}" for i in range(minimum - len(self.names))]
++        self.qemu = {"crate": "aster-core", "raw_exit_code": 33, "timed_out": False,
++                     "ktest_profile": check.PROFILE,
++                     "profile": {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
++                                 "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False}}
++        self.write_guest()
++
++    def write_guest(self, skipped=None, filtered=0):
++        lines = [f"[ktest runner] running {len(self.names) + filtered} tests in 1 crates",
++                 f'running {len(self.names) + filtered} tests in crate "aster-core"']
++        lines += [f"test {name} ... " + ("[skipped: synthetic negative] " if name == skipped else "") + "ok"
++                  for name in self.names]
++        lines += [f"test result: ok. {len(self.names)} passed; 0 failed; {filtered} filtered out.",
++                  "[ktest runner] All crates tested."]
++        raw = ("\n".join(lines) + "\n").encode()
++        (self.guest / "serial.log").write_bytes(raw)
++        self.qemu["serial_sha256"] = hashlib.sha256(raw).hexdigest()
++        (self.guest / "qemu.json").write_text(json.dumps(self.qemu))
++
++    def reject(self):
++        with self.assertRaises(ValueError):
++            check.check_guest(self.guest)
++
++    def test_complete_synthetic_record_preserves_original_and_additional_requirements(self):
++        result = check.check_guest(self.guest)
++        self.assertEqual(result["required_core_tests"], list(check.original.REQUIRED_CORE_TESTS))
++        self.assertEqual(result["required_additional_tests"], list(check.REQUIRED_ADDITIONAL_TESTS))
++        self.assertIs(result["native_sealed_launch_qualified"], False)
++        self.assertIs(result["g2_qualified"], False)
++
++    def test_missing_original_test_still_fails(self):
++        self.names[0] = "aster_core::synthetic_fixture::replacement"
++        self.write_guest()
++        self.reject()
++
++    def test_each_missing_additional_test_fails_even_with_same_pass_count(self):
++        for name in check.REQUIRED_ADDITIONAL_TESTS:
++            with self.subTest(name=name):
++                index = self.names.index(name)
++                self.names[index] = "aster_core::synthetic_fixture::replacement"
++                self.write_guest()
++                self.reject()
++                self.names[index] = name
++
++    def test_duplicated_additional_test_fails(self):
++        self.names[-1] = check.REQUIRED_ADDITIONAL_TESTS[0]
++        self.write_guest()
++        self.reject()
++
++    def test_soft_skipped_additional_test_fails(self):
++        self.write_guest(skipped=check.REQUIRED_ADDITIONAL_TESTS[-1])
++        self.reject()
++
++    def test_retained_minimum_is_not_replaced_by_only_required_names(self):
++        self.names.pop()
++        self.write_guest()
++        self.reject()
++
++    def test_filtered_full_core_fails(self):
++        self.write_guest(filtered=1)
++        self.reject()
++
++    def test_wrong_profile_fails(self):
++        self.qemu["ktest_profile"] = "default"
++        self.write_guest()
++        self.reject()
++
++    def test_two_cpu_profile_fails(self):
++        self.qemu["profile"]["vcpus"] = 2
++        self.write_guest()
++        self.reject()
++
++    def test_raw_failure_and_timeout_remain_failures(self):
++        self.qemu["raw_exit_code"] = 1
++        self.write_guest()
++        self.reject()
++        self.qemu["raw_exit_code"], self.qemu["timed_out"] = 33, True
++        self.write_guest()
++        self.reject()
++
++    def test_changed_serial_hash_remains_a_failure(self):
++        with (self.guest / "serial.log").open("ab") as stream:
++            stream.write(b"changed\n")
++        self.reject()
++
++    def write_environment(self):
++        # This short ELF-shaped payload tests only the recorded input identity.
++        # It is never compiled, loaded, booted, or claimed as a trusted image.
++        data = bytearray(64)
++        data[:7], data[16:20] = b"\x7fELF\x02\x01\x01", b"\x02\x00\x3e\x00"
++        embedded = self.root / "trusted-initial.elf"
++        embedded.write_bytes(data)
++        embedded.chmod(0o444)
++        environment = {"ktest_profile": check.PROFILE, "vcpus": 1, "features": check.FEATURES,
++                       "test_name": None, "toolchain": "nightly-2026-07-21", "git_status": "",
++                       "git_head": "a" * 40, "source_identity": {"head": "a" * 40, "tree": "b" * 40},
++                       "qualification": "kernel-object-tests-only", "native_sealed_launch_qualified": False,
++                       "g2_qualified": False, "trusted_initial": {"profile": check.FEATURES[0],
++                           "embedded_input": str(embedded), "bytes": len(data),
++                           "sha256": hashlib.sha256(data).hexdigest()}}
++        command = ["cargo", "+nightly-2026-07-21", "osdk", "test", "--release", "--boot-method=vmm-direct",
++                   "--grub-boot-protocol=multiboot", "--qemu-exe=" + str(HERE / "record-qemu.py"),
++                   "--kcmd-args=loglevel=error", "--kcmd-args=earlycon", "--kcmd-args=console=ttyS0",
++                   "--features=g1c-trusted-observe"]
++        self.environment = environment
++        self.commands = [{"argv": command, "cwd": str(self.root / "kernel/core")}]
++        self.environment_path, self.commands_path = self.root / "environment.json", self.root / "commands.json"
++        self.save_environment()
++
++    def save_environment(self):
++        self.environment_path.write_text(json.dumps(self.environment))
++        self.commands_path.write_text(json.dumps(self.commands))
++
++    def test_exact_recorded_feature_and_frozen_input_are_required(self):
++        self.write_environment()
++        check.check_environment(self.environment_path, self.commands_path)
++        self.environment["features"] = []
++        self.save_environment()
++        with self.assertRaises(ValueError):
++            check.check_environment(self.environment_path, self.commands_path)
++
++    def test_command_filter_cannot_be_hidden_by_an_empty_environment_filter(self):
++        self.write_environment()
++        self.commands[0]["argv"].append("postexec_observe")
++        self.save_environment()
++        with self.assertRaises(ValueError):
++            check.check_environment(self.environment_path, self.commands_path)
++
++    def test_changed_frozen_input_is_rejected(self):
++        self.write_environment()
++        embedded = self.root / "trusted-initial.elf"
++        embedded.chmod(0o644)
++        embedded.write_bytes(b"changed")
++        embedded.chmod(0o444)
++        with self.assertRaises(ValueError):
++            check.check_environment(self.environment_path, self.commands_path)
++
++    def test_dirty_or_production_claiming_evidence_is_rejected(self):
++        self.write_environment()
++        for key, value in (("git_status", " M kernel.rs\n"), ("g2_qualified", True)):
++            with self.subTest(key=key):
++                previous = self.environment[key]
++                self.environment[key] = value
++                self.save_environment()
++                with self.assertRaises(ValueError):
++                    check.check_environment(self.environment_path, self.commands_path)
++                self.environment[key] = previous
++
++    def test_runner_rejects_filter_and_smp_before_any_build(self):
++        for option in (["--test-name", "postexec_observe"], ["--permission-attr-smp"]):
++            result = subprocess.run([sys.executable, "-I", str(HERE / "run.py"),
++                                     "--g1c-postexec-observe", "--trusted-initial-elf", "/not-opened", *option],
++                                    capture_output=True, timeout=5, check=False)
++            self.assertEqual(result.returncode, 2)
++            self.assertIn(b"complete aster-core suite", result.stderr)
++
++
++if __name__ == "__main__":
++    unittest.main()

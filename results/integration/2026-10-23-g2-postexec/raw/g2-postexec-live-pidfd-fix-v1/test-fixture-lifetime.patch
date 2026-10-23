@@ -1,0 +1,36 @@
+diff --git a/kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs b/kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs
+index 6b137c01..38c18f50 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/postexec_observe_tests.rs
+@@ -93,7 +93,12 @@ fn foreign_caller_and_nonchild_pidfd_cannot_bind_a_launch() {
+         binding.bind_child(&stranger, &pidfd).err().unwrap().error(),
+         Errno::EPERM
+     );
+-    let foreign_pidfd = PidFile::new(stranger, false);
++    let foreign_pidfd = PidFile::new(stranger.clone(), false);
++    assert!(
++        foreign_pidfd
++            .process_opt()
++            .is_some_and(|process| Arc::ptr_eq(&process, &stranger))
++    );
+     assert_eq!(
+         binding
+             .bind_child(&binding.supervisor, &foreign_pidfd)
+@@ -102,6 +107,17 @@ fn foreign_caller_and_nonchild_pidfd_cannot_bind_a_launch() {
+             .error(),
+         Errno::EPERM
+     );
++    // Keep the live non-child rejection distinct from a genuinely expired pidfd.
++    drop(stranger);
++    assert!(foreign_pidfd.process_opt().is_none());
++    assert_eq!(
++        binding
++            .bind_child(&binding.supervisor, &foreign_pidfd)
++            .err()
++            .unwrap()
++            .error(),
++        Errno::ESTALE
++    );
+ }
+ 
+ #[ktest]

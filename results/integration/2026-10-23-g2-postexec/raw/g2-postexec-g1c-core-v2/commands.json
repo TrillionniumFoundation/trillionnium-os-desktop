@@ -1,0 +1,36 @@
+[
+  {
+    "argv": [
+      "/usr/bin/python3",
+      "-I",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-g2-postexec-closure-20261023/support/build/prepare-trusted-image.py",
+      "--input",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/g2-postexec-feature-source-gates-v1/g1c-init",
+      "--output",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/g2-postexec-g1c-core-v2/trusted-initial.elf",
+      "--manifest",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/g2-postexec-g1c-core-v2/trusted-initial-manifest.json",
+      "--profile",
+      "g1c-trusted-observe"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-g2-postexec-closure-20261023"
+  },
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-g2-postexec-closure-20261023/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0",
+      "--features=g1c-trusted-observe"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-g2-postexec-closure-20261023/kernel/asterinas/kernel/core",
+    "lock_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+  }
+]
