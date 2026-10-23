@@ -1,5 +1,17 @@
 # A10 test matrix and provenance
 
+## X11 presentation observation
+
+The actual `smoke-x11.sh` gate observes one Shell and three independently
+launched application windows as `IsViewable` on its private authenticated Xvfb.
+The egui first-layout marker may precede X11 mapping, so the gate polls the
+server under a bounded 15-second presentation deadline, including after Shell
+restart. Layout alone never passes this check. A permanently unmapped window
+still fails; failure retains the last tree, server report and owned logs when
+an evidence directory was requested. CI installs Xvfb and its inspection tools
+so this Linux-host gate actually executes. It does not qualify physical GPU,
+Wayland, IME or Asterinas graphics.
+
 ## Current chat workspace source
 
 The R7 Rust [chat workspace contract](../../support/ui/CHAT_WORKSPACE.md)
