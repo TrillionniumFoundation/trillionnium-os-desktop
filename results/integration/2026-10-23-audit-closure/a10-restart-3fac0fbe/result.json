@@ -1,0 +1,98 @@
+{
+  "schema": "a10.original-workflow-local.v1",
+  "source_head": "3fac0fbe9ed0ae22fc6117e1aa089bd4e3a50a92",
+  "source_tree": "28b34e8fd88ea95e187016f6387a514a787a9b09",
+  "temp_directory": "/data/a10t.s4t5r0xf",
+  "umask": "0077",
+  "target_cache_reused": true,
+  "cold_build_claimed": false,
+  "earlier_failure_retained": [
+    "ui-efd62111-01: two SUN_LEN fixture failures",
+    "ui-efd62111-02: cross-UID fixture blocked by private temp ancestor",
+    "ui-efd62111-03: all eleven steps exit0, final cleanliness fails on generated pyc; fixed in current workflow"
+  ],
+  "temporary_parent_mode": "0711; cross-UID fixture traversal only",
+  "workflow_sha256": "a33dc7db66e9d2604a527649a1b45e55fbbdbe1d404845109be04ff19e11f506",
+  "workflow_run_bodies_modified": false,
+  "original_job_minutes": 45,
+  "rust_toolchain": "1.88.0",
+  "x11_pixels_required": true,
+  "passed": true,
+  "started_at_utc": "2026-10-23T16:34:38.557078+00:00",
+  "steps": [
+    {
+      "name": "Compile and test Rust binaries and validate rustfmt",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\nbash tests/ui/check-host.sh 2>&1 | tee \"$RUNNER_TEMP/a10/host-check.log\"\n",
+      "index": 0,
+      "exit_code": 0
+    },
+    {
+      "name": "Test original Objective Session retention and one-shot transport adapter",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\ncargo test --manifest-path ui/Cargo.toml -p trill-session --all-targets \\\n  --features objective-submission --locked --offline \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/objective-session-tests.log\"\ncargo clippy --manifest-path ui/Cargo.toml -p trill-session --all-targets \\\n  --features objective-submission --locked --offline -- -D warnings \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/objective-session-clippy.log\"\n",
+      "index": 1,
+      "exit_code": 0
+    },
+    {
+      "name": "Exercise native AccessKit AT-SPI discovery and semantic actions",
+      "original_run": "set -euo pipefail\nbash tests/ui/accesskit-smoke.sh 2>&1 | tee \"$RUNNER_TEMP/a10/accesskit.log\"\n",
+      "index": 2,
+      "exit_code": 0
+    },
+    {
+      "name": "Run true Linux-host first-frame and lifecycle tests under headless Weston",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\nexport A10_HEADLESS_LOG_DIR=\"$RUNNER_TEMP/a10/wayland\"\nbash tests/ui/headless-weston.sh 2>&1 | tee \"$RUNNER_TEMP/a10/headless.log\"\n",
+      "index": 3,
+      "exit_code": 0
+    },
+    {
+      "name": "Verify original shared presenter source and default-off candidate",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\npython3 -I -B tests/ui/test_shared_presenter_source.py \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/shared-presenter-source-tests.log\"\npython3 -I -B tests/ui/test_wire_compatibility.py \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/wire-compatibility-tests.log\"\ncargo metadata --manifest-path ui/Cargo.toml --locked --format-version 1 \\\n  --features trill-shell/hepta-shared-presenter \\\n  --filter-platform x86_64-unknown-linux-gnu \\\n  > \"$RUNNER_TEMP/a10/shared-presenter-metadata.json\"\npython3 -I -B tests/ui/verify_shared_presenter.py \\\n  --metadata \"$RUNNER_TEMP/a10/shared-presenter-metadata.json\" \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/shared-presenter-source.log\"\n",
+      "index": 4,
+      "exit_code": 0
+    },
+    {
+      "name": "Test original shared packages and real egui edit transactions",
+      "original_run": "set -euo pipefail\ncargo test --manifest-path ui/Cargo.toml --all-targets --locked \\\n  -p hepta-control-core -p hepta-robrix-ui -p trill-ui-core -p trill-shell \\\n  --no-default-features --features trill-shell/hepta-shared-presenter \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/shared-presenter-tests.log\"\ncargo clippy --manifest-path ui/Cargo.toml --all-targets --locked \\\n  -p trill-ui-core -p trill-shell \\\n  --features trill-shell/hepta-shared-presenter -- -D warnings \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/shared-presenter-clippy.log\"\ncargo run --quiet --manifest-path ui/Cargo.toml --locked \\\n  -p trill-ui-core --example wire_compatibility --no-default-features \\\n  > \"$RUNNER_TEMP/a10/shared-presenter-wire-default.json\"\ncmp tests/ui/wire-compatibility-aligned-v1.json \"$RUNNER_TEMP/a10/shared-presenter-wire-default.json\"\npython3 -I -B tests/ui/verify_wire_compatibility.py \\\n  --original tests/ui/wire-compatibility-v1.json \\\n  --candidate \"$RUNNER_TEMP/a10/shared-presenter-wire-default.json\" \\\n  | tee \"$RUNNER_TEMP/a10/wire-default-compatibility.json\"\ncargo run --quiet --manifest-path ui/Cargo.toml --locked \\\n  -p trill-ui-core --example wire_compatibility \\\n  --features hepta-shared-presenter \\\n  > \"$RUNNER_TEMP/a10/shared-presenter-wire.json\"\ncmp tests/ui/wire-compatibility-aligned-v1.json \"$RUNNER_TEMP/a10/shared-presenter-wire.json\"\npython3 -I -B tests/ui/verify_wire_compatibility.py \\\n  --original tests/ui/wire-compatibility-v1.json \\\n  --candidate \"$RUNNER_TEMP/a10/shared-presenter-wire.json\" \\\n  | tee \"$RUNNER_TEMP/a10/wire-candidate-compatibility.json\"\npython3 -I -B tests/ui/verify_shared_presenter.py \\\n  --metadata \"$RUNNER_TEMP/a10/shared-presenter-metadata.json\" \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/shared-presenter-source-after-tests.log\"\n",
+      "index": 5,
+      "exit_code": 0
+    },
+    {
+      "name": "Enforce Rust 1.88 UI workspace and all-target Clippy warnings",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\ncargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets \\\n  --locked --offline -- -D warnings 2>&1 | tee \"$RUNNER_TEMP/a10/clippy.log\"\ncargo clippy --manifest-path services/hepta-os/Cargo.toml --all-targets \\\n  --locked --offline --features objective-transport -- -D warnings \\\n  2>&1 | tee \"$RUNNER_TEMP/a10/objective-transport-clippy.log\"\n",
+      "index": 6,
+      "exit_code": 0
+    },
+    {
+      "name": "Test original-Agentd gate cleanup with disposable Linux children",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\npython3 -B -m unittest discover -s tests/integration/hepta \\\n  -p 'test_original_process_guard.py' -v 2>&1 | tee \"$RUNNER_TEMP/a10/process-guard.log\"\n",
+      "index": 7,
+      "exit_code": 0
+    },
+    {
+      "name": "Test original Shell capture contracts with disposable Linux children",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\npython3 -B -m unittest discover -s tests/ui \\\n  -p 'test_original_hepta_shell.py' -v 2>&1 | tee \"$RUNNER_TEMP/a10/original-shell-contracts.log\"\n",
+      "index": 8,
+      "exit_code": 0
+    },
+    {
+      "name": "Test original Objective Shell phase and peer identity contracts",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\npython3 -B -m unittest discover -s tests/ui \\\n  -p 'test_original_objective_shell.py' -v 2>&1 | tee \"$RUNNER_TEMP/a10/original-objective-shell-contracts.log\"\n",
+      "index": 9,
+      "exit_code": 0
+    },
+    {
+      "name": "Enforce committed UI dependency lock after attempting real tests",
+      "original_run": "set -euo pipefail\nif [[ ! -s ui/Cargo.lock ]] || ! git ls-files --error-unmatch ui/Cargo.lock >/dev/null 2>&1; then\n  echo 'A10 Cargo.lock is absent/untracked: host success is not reproducible.' >&2\n  exit 1\nfi\ngit diff --exit-code HEAD -- ui/Cargo.lock\nsha256sum ui/Cargo.lock\ncargo metadata --manifest-path ui/Cargo.toml --locked --offline --format-version 1 >/dev/null\n",
+      "index": 10,
+      "exit_code": 0
+    }
+  ],
+  "g2_qualified": false,
+  "production_authority": false,
+  "source_hash_scope": "UI, hepta-os, support/ui, tests/ui, os-abi and A10 workflow; complete Git HEAD/tree and clean status also checked, not an all-repository blob scan.",
+  "stage": "Enforce committed UI dependency lock after attempting real tests",
+  "tested_source_bytes_unchanged": true,
+  "git_source_unchanged": true,
+  "finished_at_utc": "2026-10-23T16:38:42.668570+00:00",
+  "elapsed_seconds": 244.111
+}
