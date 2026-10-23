@@ -655,68 +655,76 @@ pub(crate) trait Inode: Any + FileOps + Send + Sync {
     ///
     /// Similar to Linux, using "fsuid" here allows setting filesystem permissions
     /// without changing the "normal" uids for other tasks.
-    fn check_permission(&self, mut perm: Permission) -> Result<()> {
-        let Some(task) = Task::current() else {
-            return Ok(());
-        };
-        let Some(posix_thread) = task.as_posix_thread() else {
-            return Ok(());
-        };
+    fn check_permission(&self, perm: Permission) -> Result<()> {
+        check_inode_permission(self, perm)
+    }
+}
 
-        let creds = posix_thread.credentials();
-        let metadata = self.metadata()?;
-        let mode = metadata.mode;
+/// The default inode DAC check, also used before procfs-specific exceptions.
+pub(crate) fn check_inode_permission<I: Inode + ?Sized>(
+    inode: &I,
+    mut perm: Permission,
+) -> Result<()> {
+    let Some(task) = Task::current() else {
+        return Ok(());
+    };
+    let Some(posix_thread) = task.as_posix_thread() else {
+        return Ok(());
+    };
 
-        // With DAC_OVERRIDE capability, the user can bypass some permission checks.
-        if has_dac_override_capability(&task, posix_thread) {
-            if metadata.type_ == InodeType::Dir {
-                // DACs are overridable for directories, including the search permission
-                // even when the directory has no execute bits set.
-                perm -= Permission::MAY_READ | Permission::MAY_WRITE | Permission::MAY_EXEC;
-            } else {
-                // Read/write DACs are always overridable.
-                perm -= Permission::MAY_READ | Permission::MAY_WRITE;
+    let creds = posix_thread.credentials();
+    let metadata = inode.metadata()?;
+    let mode = metadata.mode;
 
-                // Executable DACs are overridable when there is at least one exec bit set.
-                if perm.may_exec() {
-                    if mode.is_owner_executable()
-                        || mode.is_group_executable()
-                        || mode.is_other_executable()
-                    {
-                        perm -= Permission::MAY_EXEC;
-                    } else {
-                        return_errno_with_message!(
-                            Errno::EACCES,
-                            "root execute permission denied: no execute bits set"
-                        );
-                    }
+    // With DAC_OVERRIDE capability, the user can bypass some permission checks.
+    if has_dac_override_capability(&task, posix_thread) {
+        if metadata.type_ == InodeType::Dir {
+            // DACs are overridable for directories, including the search permission
+            // even when the directory has no execute bits set.
+            perm -= Permission::MAY_READ | Permission::MAY_WRITE | Permission::MAY_EXEC;
+        } else {
+            // Read/write DACs are always overridable.
+            perm -= Permission::MAY_READ | Permission::MAY_WRITE;
+
+            // Executable DACs are overridable when there is at least one exec bit set.
+            if perm.may_exec() {
+                if mode.is_owner_executable()
+                    || mode.is_group_executable()
+                    || mode.is_other_executable()
+                {
+                    perm -= Permission::MAY_EXEC;
+                } else {
+                    return_errno_with_message!(
+                        Errno::EACCES,
+                        "root execute permission denied: no execute bits set"
+                    );
                 }
             }
         }
-
-        if metadata.uid == creds.fsuid() {
-            if (perm.may_read() && !mode.is_owner_readable())
-                || (perm.may_write() && !mode.is_owner_writable())
-                || (perm.may_exec() && !mode.is_owner_executable())
-            {
-                return_errno_with_message!(Errno::EACCES, "owner permission check failed");
-            }
-        } else if metadata.gid == creds.fsgid() {
-            if (perm.may_read() && !mode.is_group_readable())
-                || (perm.may_write() && !mode.is_group_writable())
-                || (perm.may_exec() && !mode.is_group_executable())
-            {
-                return_errno_with_message!(Errno::EACCES, "group permission check failed");
-            }
-        } else if (perm.may_read() && !mode.is_other_readable())
-            || (perm.may_write() && !mode.is_other_writable())
-            || (perm.may_exec() && !mode.is_other_executable())
-        {
-            return_errno_with_message!(Errno::EACCES, "other permission check failed");
-        }
-
-        Ok(())
     }
+
+    if metadata.uid == creds.fsuid() {
+        if (perm.may_read() && !mode.is_owner_readable())
+            || (perm.may_write() && !mode.is_owner_writable())
+            || (perm.may_exec() && !mode.is_owner_executable())
+        {
+            return_errno_with_message!(Errno::EACCES, "owner permission check failed");
+        }
+    } else if metadata.gid == creds.fsgid() {
+        if (perm.may_read() && !mode.is_group_readable())
+            || (perm.may_write() && !mode.is_group_writable())
+            || (perm.may_exec() && !mode.is_group_executable())
+        {
+            return_errno_with_message!(Errno::EACCES, "group permission check failed");
+        }
+    } else if (perm.may_read() && !mode.is_other_readable())
+        || (perm.may_write() && !mode.is_other_writable())
+        || (perm.may_exec() && !mode.is_other_executable())
+    {
+        return_errno_with_message!(Errno::EACCES, "other permission check failed");
+    }
+
+    Ok(())
 }
 
 fn has_dac_override_capability(task: &CurrentTask, posix_thread: &PosixThread) -> bool {

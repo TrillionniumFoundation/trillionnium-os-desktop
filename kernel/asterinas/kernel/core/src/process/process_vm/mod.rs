@@ -67,6 +67,9 @@ use crate::{
 
 /// The process user space virtual memory
 pub(crate) struct ProcessVm {
+    /// Access policy of this memory image, shared by every CLONE_VM process.
+    /// Lock order: Process VMAR -> this lock -> target resource locks.
+    dumpable: Mutex<bool>,
     /// The initial portion of the main stack of a process.
     init_stack: InitStack,
     /// The user heap
@@ -86,6 +89,7 @@ impl ProcessVm {
     /// Creates a new `ProcessVm` without mapping anything.
     pub(crate) fn new(executable_path: Path) -> Self {
         Self {
+            dumpable: Mutex::new(true),
             init_stack: InitStack::new(),
             heap: Heap::new_uninitialized(),
             code_range: SpinLock::new(0..0),
@@ -97,8 +101,9 @@ impl ProcessVm {
     }
 
     /// Creates a new `ProcessVm` with identical contents of an existing one.
-    pub(crate) fn fork_from(process_vm: &Self, heap_guard: &LockedHeap) -> Self {
+    pub(crate) fn fork_from(process_vm: &Self, heap_guard: &LockedHeap, dumpable: bool) -> Self {
         Self {
+            dumpable: Mutex::new(dumpable),
             init_stack: process_vm.init_stack.clone(),
             heap: Heap::fork_from(heap_guard),
             code_range: SpinLock::new(process_vm.code_range.lock().clone()),
@@ -107,6 +112,11 @@ impl ProcessVm {
             #[cfg(any(target_arch = "riscv64", target_arch = "aarch64"))]
             vdso_base: AtomicUsize::new(process_vm.vdso_base.load(Ordering::Relaxed)),
         }
+    }
+
+    /// Locks the security policy and credential-publication boundary of this image.
+    pub(crate) fn dumpable(&self) -> &Mutex<bool> {
+        &self.dumpable
     }
 
     /// Returns the initial portion of the main stack of a process.
@@ -187,6 +197,7 @@ impl ProcessVm {
 /// [`Process`]: super::process::Process
 /// [`Process::lock_vmar`]: super::process::Process::lock_vmar
 pub(crate) struct ProcessVmarGuard<'a> {
+    process: &'a super::Process,
     inner: MutexGuard<'a, Option<Arc<Vmar>>>,
 }
 
@@ -220,8 +231,16 @@ impl<'a> ProcessVmarGuard<'a> {
     /// This method should only used by [`Process::lock_vmar`].
     ///
     /// [`Process::lock_vmar`]: super::process::Process::lock_vmar
-    pub(super) fn new(inner: MutexGuard<'a, Option<Arc<Vmar>>>) -> Self {
-        Self { inner }
+    pub(super) fn new(
+        process: &'a super::Process,
+        inner: MutexGuard<'a, Option<Arc<Vmar>>>,
+    ) -> Self {
+        Self { process, inner }
+    }
+
+    /// Checks which process's image publication this guard protects.
+    pub(crate) fn belongs_to(&self, process: &super::Process) -> bool {
+        core::ptr::eq(self.process, process)
     }
 
     /// Unwraps and returns a reference to the process VMAR.

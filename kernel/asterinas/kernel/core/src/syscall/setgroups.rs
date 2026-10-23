@@ -33,8 +33,7 @@ pub(super) fn sys_setgroups(
         new_groups.insert(gid);
     }
 
-    let credentials = ctx.credentials_mut();
-    *credentials.groups_mut() = new_groups;
+    ctx.with_credentials_mut(|credentials| *credentials.groups_mut() = new_groups);
 
     Ok(SyscallReturn::Return(0))
 }
