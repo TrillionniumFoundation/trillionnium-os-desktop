@@ -154,3 +154,14 @@ commit, tested tree, raw guest result and evidence descendant must be recorded
 after execution. These receipts never set `memory_max`, `global_physical_reserve`,
 `oom_killer`, `smp_qualification`, `hardware_qualification`, `hepta_durability`
 or `production_ready` to true.
+
+The stopped-stack tests keep a strict zero-after-final-release assertion.
+`drop(VmarHandle)` first destroys the mapping/VMO, whose XArray detaches nodes
+through RCU; those nodes can still hold real charged frames. The tests verify
+that the final VMAR weak reference no longer upgrades, queue an original
+`RcuDrop` completion witness after the detach callbacks, and pass bounded real
+scheduler quiescent states before checking zero. The witness never mutates the
+account. Production frame lifetime/refund logic is unchanged. The initial
+7d8906ef core run exposed the two premature zero assertions (284/286); the
+corrected assertions require a fresh native run and do not turn that run into
+a pass.

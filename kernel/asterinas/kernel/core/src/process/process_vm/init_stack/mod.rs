@@ -469,7 +469,11 @@ impl InitStackReader<'_> {
 
 #[cfg(ktest)]
 mod tests {
-    use ostd::prelude::ktest;
+    use ostd::{
+        prelude::ktest,
+        sync::RcuDrop,
+        task::{Task, TaskOptions},
+    };
 
     use super::*;
     use crate::{
@@ -494,6 +498,42 @@ mod tests {
         (vmar, account)
     }
 
+    struct GraceWitness(Arc<core::sync::atomic::AtomicBool>);
+
+    impl Drop for GraceWitness {
+        fn drop(&mut self) {
+            self.0.store(true, Ordering::Release);
+        }
+    }
+
+    fn drop_stopped_image_after_rcu(vmar: VmarHandle, account: &UserMemoryAccount) {
+        let weak = vmar.clone_weak();
+        drop(vmar);
+        assert!(weak.upgrade().is_none());
+
+        // VMO pages live in an XArray. Its Drop detaches the nodes through
+        // RcuOption::update(None); the real frames stay charged until those
+        // RCU callbacks drop their last references. Never refund them early.
+        // Queue this witness after all detach callbacks, then pass actual
+        // scheduler quiescent states just as xarray's no_leakage test does.
+        let completed = Arc::new(core::sync::atomic::AtomicBool::new(false));
+        drop(RcuDrop::new(GraceWitness(completed.clone())));
+        let _ = TaskOptions::new(|| {}).data(()).spawn();
+        for _ in 0..128 {
+            Task::yield_now();
+            if completed.load(Ordering::Acquire) {
+                break;
+            }
+        }
+        assert!(
+            completed.load(Ordering::Acquire),
+            "RCU grace did not complete"
+        );
+        // The witness only establishes completion; it never changes account
+        // state. A remaining live frame or a leak still fails this exact zero.
+        assert_eq!(account.current_pages(), 0);
+    }
+
     #[ktest]
     fn stopped_initial_stack_charges_its_destination_without_a_current_process() {
         let (vmar, account) = stopped_image(2);
@@ -506,9 +546,7 @@ mod tests {
         assert!(Process::current().is_none());
         assert!(current_owner().is_none());
 
-        // Clearing the final owner handle releases the real mapping/VMO pages.
-        drop(vmar);
-        assert_eq!(account.current_pages(), 0);
+        drop_stopped_image_after_rcu(vmar, &account);
     }
 
     #[ktest]
@@ -523,7 +561,6 @@ mod tests {
         // The failed image still holds its first committed physical page;
         // an admission error must not refund a page that remains live.
         assert_eq!(account.current_pages(), 1);
-        drop(vmar);
-        assert_eq!(account.current_pages(), 0);
+        drop_stopped_image_after_rcu(vmar, &account);
     }
 }
