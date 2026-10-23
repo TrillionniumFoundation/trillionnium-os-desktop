@@ -2,7 +2,7 @@
 
 This slice closes an observed capability-ceiling gap in the original alien-access
 owner. It does not add a new authorization ledger or a new ptrace implementation.
-Native qualification of this candidate is pending; prior results belong to their
+Exact native qualification is recorded below; every result belongs to its
 recorded source and ELF.
 
 ## Reproduced condition
@@ -81,5 +81,37 @@ marker-only rewrites of the actual old failure.
 
 Full user namespaces, ptrace attach, process_vm_readv, general exec/capability
 parity, kernel heap/PT accounting and global recovery remain outside this slice.
-The independently queued SCM_CREDENTIALS sender-validation review is also open;
-this fix must not be used as evidence for that socket credential mechanism.
+The original SCM_CREDENTIALS path separately checks the supplied tuple against
+the actual sender in AuxiliaryData::from_control before publication. Reading only
+CredMessage::read_from would miss that gate and is not evidence of a spoofing
+bypass. Socket credential lifetime and wider Linux credential semantics are not
+qualified by this process-access fix.
+
+## Exact native qualification
+
+Source `4aabde6accaa37a09020d852bfcc8559faea4ab6` (tree
+`77b73bd4413fb26dfd5dc3e0d2b938a95979a898`) passed the original unfiltered core
+363/363 (124 mandatory names), OSTD 230, allocator 20 and MLSDisk 15 suites. All
+four guests returned raw status 33; only OSTD's three original TCG VMX soft skips
+remain. The three new owner tests actually ran, including the blocked credential
+reader and final denied result after the parent revoked its permitted capability.
+
+The fresh ordinary kernel passed 18 boot/QueryAbi checks. That same retained ELF
+passed SGID 30, Unix ownership 12, proc Groups/NoNewPrivs 12, memfd 4, signal 22,
+dumpability lifecycle 164, stat 54, TRACEME 15 and supplementary DAC 6. The
+unchanged Linux-referenced commoncap binary then passed all 16 operations in
+0.870 seconds: extra target permission was denied on all eight paths, dropping
+that permission restored all eight reads, and the owned child was reaped. Its
+actual UID 60001/caps0/NNP observer and both target capability sets were verified.
+The old `690a7bb3` failure remains a separate retained result.
+
+The full pipeline completed in 581.185 seconds with tracked source bytes
+unchanged. Kernel SHA-256 is
+`751ccb357f05d2607119a344aaf191c115ae8b02916181d7b22595b1a8a8734c`;
+the new commoncap raw serial SHA-256 is
+`1b2f160e52d2c439674cb9c52c2da51a9348106b4152beec6a481d0a346e57cf`.
+The [receipt](../../results/integration/2026-10-23-audit-closure/commoncap-4aab.json)
+records all source/ELF/raw identities, the original Linux and native negative,
+84 host tests, 118 source checks, successful Clippy compilation with 113 existing
+warnings, and four strict checker tests. The original 512 MiB, deadlines,
+profiles, complete denominators and negative assertions were not relaxed.
