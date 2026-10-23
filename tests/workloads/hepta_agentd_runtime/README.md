@@ -14,13 +14,24 @@ those fields false even when its lifecycle oracle passes.
 ## Current fresh-build profile
 
 The current `source-review.json` selects Desktop
-`7d8906ef9fbb5f3af4e6bb0843b79ac666394833` / tree
-`ca4b875cdb553291a99f4a550eb0b2bd6649de8c` and Hepta
+`ce8378b71c426e6f5e0227b65624895cb81212cd` / tree
+`8fe94570ea0ad5d63c44c6c02e5872fa532abcca` and Hepta
 `b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` / tree
 `b035a577969cb503d7c09620694a6b6c54178c97`. It includes the UDP, exec
-argument, family user-frame, initial-stack and readonly fixes and the Oct 23
-original-owner recovery/issuer/composition stack. The 84 selected source
-identities are a review input, not a runtime receipt.
+argument, family user-frame, initial-stack, readonly and unsupported live
+readonly-transition rejection fixes and the Oct 23 original-owner
+recovery/issuer/composition stack. All 84 previous selections are retained
+unchanged; the mount transition implementation and the two readonly/remount
+probe and runner pairs bring the selection to 89 source identities. They are
+review inputs. This profile does not claim that the 57-case readonly or
+37-case remount guest regressions have executed.
+
+The previous `7d8906ef9fbb5f3af4e6bb0843b79ac666394833` profile predates the
+live-transition rejection. Its kernel and lifecycle receipts cannot qualify
+this source pair. The workflow checkout pin and this manifest must advance
+together; the existing exact source, clean-tree and build-receipt checks stay
+mandatory. Hepta's source identity and the separate retained archive profile
+are unchanged.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source

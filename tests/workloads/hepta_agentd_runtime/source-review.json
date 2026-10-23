@@ -1,14 +1,14 @@
 {
   "desktop": {
-    "head": "7d8906ef9fbb5f3af4e6bb0843b79ac666394833",
-    "tree": "ca4b875cdb553291a99f4a550eb0b2bd6649de8c"
+    "head": "ce8378b71c426e6f5e0227b65624895cb81212cd",
+    "tree": "8fe94570ea0ad5d63c44c6c02e5872fa532abcca"
   },
   "hepta": {
     "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
     "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
   },
   "schema": "hepta.native-original-runtime-source-review.v1",
-  "scope": "Reviewed integration source identities for an actual ordinary kernel build with UDP, exec argument, family user-frame, stopped-stack and readonly fixes, plus original Hepta owners and the Oct 23 recovery/issuer/composition stack. Selected-file provenance and clean Git checks are not execution or production authority receipts.",
+  "scope": "Reviewed integration source identities for an actual ordinary kernel build with UDP, exec argument, family user-frame, stopped-stack, readonly and rejected unsupported live-readonly-transition fixes, plus original Hepta owners and the Oct 23 recovery/issuer/composition stack. The readonly/remount probe and runner identities are selected source inputs, not evidence that those probes ran. Selected-file provenance and clean Git checks are not execution or production authority receipts.",
   "source_files": [
     {
       "git_blob": "7dd467280ef2141d30572757345ee787703ff5ea",
@@ -69,6 +69,12 @@
       "path": "kernel/asterinas/kernel/core/src/fs/vfs/path/mod.rs",
       "repository": "desktop",
       "sha256": "eb6030eb1fdb921a298bff961ddb66ea2652c01a81779dd6e61a932eeac395cc"
+    },
+    {
+      "git_blob": "5aed932b44d673f2271b54aa45bf720d8183c16f",
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/path/mount.rs",
+      "repository": "desktop",
+      "sha256": "ea3c153b8a913a5d3073b3d299ae90873f75491b5dff522dd2e59af7a3dcb1bb"
     },
     {
       "git_blob": "7963e0ffedf36c034b32596167ec3e9190ec0489",
@@ -381,6 +387,30 @@
       "path": "tests/workloads/hepta_agentd_abi/test_agentd_abi.py",
       "repository": "desktop",
       "sha256": "9b87b8b3e54e3c2bc3dc0141a2c8982907aa5316b26cb78ffd7dd50a09277e71"
+    },
+    {
+      "git_blob": "aaef98a22dc4b9f1995a8f8bca87bce9319c0f34",
+      "path": "tests/workloads/linux/readonly/readonly_probe.c",
+      "repository": "desktop",
+      "sha256": "d67a7d4a390652779a8ae63ab8db9a2d7286cb984318c5ecca1d5ce883ecdc9e"
+    },
+    {
+      "git_blob": "1c95357f20310967daebb62275be660139d824d3",
+      "path": "tests/workloads/linux/readonly/run_guest.py",
+      "repository": "desktop",
+      "sha256": "38d1848dbfff450c54ed213f60c778a509c01f3b5af8d57c1d6e21353420b9c6"
+    },
+    {
+      "git_blob": "f0ea97a13411ebf8902ad26e52d9381f06202529",
+      "path": "tests/workloads/linux/remount/remount_probe.c",
+      "repository": "desktop",
+      "sha256": "c824bbfd8bcfe348ded733fe74c7a70467c0684d899a90fa1ebc1670904d0e6b"
+    },
+    {
+      "git_blob": "fd14ef01f780320e9e8a55fae74e8cd224946b92",
+      "path": "tests/workloads/linux/remount/run_guest.py",
+      "repository": "desktop",
+      "sha256": "b1e8e81dcff4b646f6e9ef6b84da16e48f6a2d11aacac9ca4eb99385108f7ff8"
     },
     {
       "git_blob": "58ae370892b9a12004e636c5c461c11a22c68633",
