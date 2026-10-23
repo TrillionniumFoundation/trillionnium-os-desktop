@@ -1,4 +1,4 @@
-#[path = "../../ui/activation_policy.rs"]
+#[path = "../../../ui/activation_policy.rs"]
 mod policy;
 
 #[test]
