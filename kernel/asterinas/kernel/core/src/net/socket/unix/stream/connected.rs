@@ -283,7 +283,8 @@ impl Connected {
 
             let ctrl_msgs = aux_data.data.generate_control(behavior, is_pass_cred);
             if behavior.will_consume_data() {
-                let remaining_aux_count = all_aux.len() - (aux_pos - 1);
+                let previous_aux_count = all_aux.len();
+                let remaining_aux_count = previous_aux_count - (aux_pos - 1);
                 all_aux.retain_back(remaining_aux_count);
                 let consume_len = read_tot_len + trunc_len;
                 if (all_aux.front().unwrap().end - read_base).0 <= consume_len {
@@ -294,6 +295,11 @@ impl Connected {
                 peer_end
                     .has_aux
                     .store(!all_aux.is_empty(), Ordering::Relaxed);
+                if all_aux.len() < previous_aux_count {
+                    // Zero-length packets free a message slot without moving
+                    // the byte head. Wake the original blocking sender too.
+                    self.inner.notify_read();
+                }
             }
             ctrl_msgs
         } else {
@@ -346,6 +352,15 @@ impl Connected {
         }
 
         let mut all_aux = this_end.all_aux.lock();
+        // Empty seqpackets consume no ring-buffer bytes, but still own one
+        // message boundary and auxiliary metadata. Bound that original queue
+        // independently of byte capacity, before consuming any caller state.
+        if is_seqpacket && all_aux.len() >= UNIX_SEQPACKET_MAX_QUEUED_MESSAGES {
+            return_errno_with_message!(Errno::EAGAIN, "the ancillary queue has no message slots");
+        }
+        all_aux
+            .try_reserve(1)
+            .map_err(|_| Error::new(Errno::ENOMEM))?;
 
         // No matter we succeed later or not, set the flag first to ensure that the auxiliary
         // data are always visible to `try_recv`.
@@ -418,15 +433,19 @@ impl Connected {
         self.inner.this_end().is_pass_cred.load(Ordering::Relaxed)
     }
 
-    pub(super) fn check_io_events(&self) -> IoEvents {
+    pub(super) fn check_io_events(&self, is_seqpacket: bool) -> IoEvents {
         let this_end = self.inner.this_end();
         let mut events = IoEvents::empty();
 
-        if !this_end.reader.lock().is_empty() {
+        if !this_end.reader.lock().is_empty()
+            || (is_seqpacket && !self.inner.peer_end().all_aux.lock().is_empty())
+        {
             events |= IoEvents::IN;
         }
 
-        if !this_end.writer.lock().is_full() {
+        let has_message_slot =
+            !is_seqpacket || this_end.all_aux.lock().len() < UNIX_SEQPACKET_MAX_QUEUED_MESSAGES;
+        if has_message_slot && !this_end.writer.lock().is_full() {
             events |= IoEvents::OUT;
         }
 
@@ -474,6 +493,12 @@ struct RangedAuxiliaryData {
 }
 
 pub(in crate::net) const UNIX_STREAM_DEFAULT_BUF_SIZE: usize = 65536;
+
+// Local bounded-metadata policy, independent of the unchanged 64-KiB byte ring.
+const UNIX_SEQPACKET_MAX_QUEUED_MESSAGES: usize = 128;
+
+#[cfg(ktest)]
+mod queue_tests;
 
 #[cfg(ktest)]
 mod memory_tests {

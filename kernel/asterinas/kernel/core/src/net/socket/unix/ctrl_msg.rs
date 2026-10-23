@@ -29,6 +29,11 @@ enum Message {
 }
 
 impl UnixControlMessage {
+    #[cfg(ktest)]
+    pub(super) fn from_files_for_test(files: Vec<Arc<dyn FileLike>>) -> Self {
+        Self(Message::Files(FileMessage { files }))
+    }
+
     pub(crate) fn read_from(
         header: &CControlHeader,
         reader: &mut VmReader,

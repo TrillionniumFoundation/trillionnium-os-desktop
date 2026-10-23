@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 324  # Retained 321 plus three original queue-bound regressions.
+MINIMUM_CORE_TESTS = 327  # Retained 324 plus three seqpacket queue-bound regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -137,7 +137,12 @@ DATAGRAM_FRAME_CORE_TESTS = tuple("aster_core::net::socket::unix::datagram::mess
     'migration_and_receiver_close_refund_captured_domains_with_retained_queue',
     'empty_payload_and_original_byte_capacity_preserve_datagram_boundaries',
 ))
-REQUIRED_CORE_TESTS = (*DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+SEQPACKET_QUEUE_CORE_TESTS = tuple("aster_core::net::socket::unix::stream::connected::queue_tests::" + suffix for suffix in (
+    "empty_seqpackets_bound_original_aux_queue_and_peek_keeps_slot",
+    "full_aux_queue_rejects_before_reader_or_control_consumption",
+    "blocked_seqpacket_sender_wakes_on_empty_receive_and_peer_close",
+))
+REQUIRED_CORE_TESTS = (*SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (

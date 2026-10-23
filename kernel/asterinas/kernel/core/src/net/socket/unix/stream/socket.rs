@@ -56,7 +56,7 @@ enum State {
 }
 
 impl State {
-    pub(self) fn check_io_events(&self) -> IoEvents {
+    pub(self) fn check_io_events(&self, is_seqpacket: bool) -> IoEvents {
         let mut events = IoEvents::empty();
 
         let is_read_shutdown = self.is_read_shutdown();
@@ -83,7 +83,7 @@ impl State {
         events |= match self {
             State::Init(init) => init.check_io_events(),
             State::Listen(listener) => listener.check_io_events(),
-            State::Connected(connected) => connected.check_io_events(),
+            State::Connected(connected) => connected.check_io_events(is_seqpacket),
         };
 
         events
@@ -317,8 +317,9 @@ pub(super) const SHUT_WRITE_EVENTS: IoEvents = IoEvents::OUT.union(IoEvents::HUP
 
 impl Pollable for UnixStreamSocket {
     fn poll(&self, mask: IoEvents, poller: Option<&mut PollHandle>) -> IoEvents {
-        self.pollee
-            .poll_with(mask, poller, || self.state.read().check_io_events())
+        self.pollee.poll_with(mask, poller, || {
+            self.state.read().check_io_events(self.is_seqpacket())
+        })
     }
 }
 

@@ -14,6 +14,18 @@ pub(super) struct SocketCred<R = ReadOp> {
 }
 
 impl SocketCred<ReadOp> {
+    // Snapshot real original credentials for endpoint-only kernel tests. This
+    // helper neither installs a current caller nor grants an operation permit.
+    #[cfg(ktest)]
+    pub(super) fn from_posix_thread_for_test(
+        thread: &crate::process::posix_thread::PosixThread,
+    ) -> Self {
+        Self {
+            pid: thread.process().pid(),
+            cred: thread.credentials(),
+        }
+    }
+
     pub(super) fn new_current() -> Self {
         let pid = current!().pid();
         let cred = current_thread!().as_posix_thread().unwrap().credentials();
