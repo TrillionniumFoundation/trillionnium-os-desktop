@@ -18,6 +18,7 @@ fi
 ./cpu_affinity/cpu_affinity
 
 ./execve/execve
+./execve/execve_args
 ./execve/execve_comm
 ./execve/execve_err
 ./execve/execve_memfd
