@@ -18,6 +18,76 @@ use crate::{
 };
 
 #[ktest]
+fn setgid_ext2_creation_inherits_group_and_directory_bit_before_persistent_publication() {
+    let (fixture, root) = default_fixture();
+    root.set_gid(60001).unwrap();
+    root.set_mode(InodeMode::from_bits_truncate(0o2777))
+        .unwrap();
+    let file = root
+        .create(
+            "sgid-file",
+            InodeType::File,
+            FilePerm::from_bits_truncate(0o640),
+        )
+        .unwrap();
+    let socket = root
+        .create(
+            "sgid-socket",
+            InodeType::Socket,
+            FilePerm::from_bits_truncate(0o660),
+        )
+        .unwrap();
+    let directory = root
+        .create(
+            "sgid-dir",
+            InodeType::Dir,
+            FilePerm::from_bits_truncate(0o750),
+        )
+        .unwrap();
+    let nested = directory
+        .create(
+            "nested",
+            InodeType::File,
+            FilePerm::from_bits_truncate(0o600),
+        )
+        .unwrap();
+    assert_eq!(directory.metadata().mode.bits(), 0o2750);
+    let ids = [file.ino(), socket.ino(), directory.ino(), nested.ino()];
+    for item in [&file, &socket, &directory, &nested] {
+        assert_eq!(item.gid(), 60001);
+        assert_eq!(item.uid(), u32::from(crate::fs::utils::current_fs_ids().0));
+    }
+    fixture.ext2.sync_all().unwrap();
+    let reopened = Ext2::open(
+        fixture.disk.clone() as Arc<dyn BlockDevice>,
+        FsFlags::empty(),
+        None,
+    )
+    .unwrap();
+    for ino in ids {
+        assert_eq!(reopened.read_inode(ino).unwrap().gid(), 60001);
+    }
+    assert_eq!(
+        reopened
+            .read_inode(directory.ino())
+            .unwrap()
+            .metadata()
+            .mode
+            .bits(),
+        0o2750
+    );
+    root.set_mode(InodeMode::from_bits_truncate(0o777)).unwrap();
+    let plain = root
+        .create(
+            "plain",
+            InodeType::File,
+            FilePerm::from_bits_truncate(0o640),
+        )
+        .unwrap();
+    assert_eq!(plain.gid(), u32::from(crate::fs::utils::current_fs_ids().1));
+}
+
+#[ktest]
 fn permission_ext2_reject_then_commit() {
     let (fixture, root) = default_fixture();
     let file = create_file(&root, "permission");
