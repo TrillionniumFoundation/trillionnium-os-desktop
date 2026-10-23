@@ -1,6 +1,6 @@
 # 当前能力、源码与验收边界
 
-本实施线在内核/证据检查点 `c4623788` 上接入 UI/Session 检查点 `6b16d38a`，来自 PR #257。内核原生验收固定在独立源码 `0187bd578f6786c40c812c13976e4889a1aba835` / tree `335007e4f94114c6a26506d9448faf0d43c4245c`；早期 `9ec0874c` 状态继续保留。当前组合已在`f3d54e5b`完成原A10十一项Linux-host执行体，内核`0187bd57`另完成完整四套、ordinary/Linux32和原runtime/store；仍未完成生产统一验收。下列每项结果只属于其明确来源，不给本次合并、远端 main 或部署环境转授资格。
+本实施线来自 PR #257。最新内核固定源码 `bad289e73b7890735580a4b09d8c1466a257c7f2` / tree `19efa0d8089d153c2560faa4c2d3a5c82a871042` 已通过[原完整四套与同ELF原生组合](../results/integration/2026-10-23-audit-closure/kernel-ancillary-bad289/publication.json)：core344/required105、allocator20、ML15、OSTD229（原TCG软跳3），ordinary18、SGID30、Unix通道12、进程权限状态12。较早的 `0187bd57` / tree `335007e4f94114c6a26506d9448faf0d43c4245c` 另有Linux32和原runtime/store；`f3d54e5b` 有原A10十一项Linux-host执行体。早期 `c4623788`、UI/Session `6b16d38a` 和 `9ec0874c` 记录继续保留。仍未完成生产统一验收；各项结果只属于其明确来源，不给后续分支、远端 main 或部署环境转授资格。
 
 **当前没有完整生产控制、完整原生 F1/G2、通用桌面控制或手机产品资格。** 文档与源码门禁通过只能关闭对应工程问题；不能把单个 host、guest 或设备场景的成功扩展为产品验收。
 
