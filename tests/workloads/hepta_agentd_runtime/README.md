@@ -31,6 +31,12 @@ QueryAbi checks, live artifact verification and unchanged clean sources.
 The builder first force-builds the original locked OSDK in the same reviewed
 checkout and records its binary hash. Local-development OSDK embeds a source
 directory; a binary built in another checkout is not reused by version alone.
+The builder also freezes `source-built-cargo-osdk` read-only and retains its
+exact `osdk-build.log` identity before kernel qualification. `osdk-freeze.json`
+binds those bytes/log to the source and command; it explicitly grants no kernel
+qualification. All three retained files are checked again after the build,
+and their identities are embedded in the successful kernel receipt. A failure
+can therefore retain the original tool without inventing a successful kernel.
 No provider credentials or trusted-image flags are inherited. A failed build
 retains a failure result and never produces a success receipt.
 

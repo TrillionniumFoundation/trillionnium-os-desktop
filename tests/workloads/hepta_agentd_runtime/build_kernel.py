@@ -24,6 +24,42 @@ def checked_boot(source, directory):
     return module.check_boot(directory, live_artifacts=True)
 
 
+def freeze_osdk(osdk, output, identity):
+    """Retain exact build bytes/log; this copy does not execute or rebuild OSDK."""
+    gate.pinned(osdk, identity["sha256"], 512 * 1024**2)
+    log = output / "osdk-build.log"
+    gate.require(log.is_file() and not log.is_symlink() and 0 < log.stat().st_size <= 16 * 1024**2,
+                 "bounded original OSDK build log required")
+    binary = output / "source-built-cargo-osdk"
+    metadata = output / "osdk-freeze.json"
+    gate.require(not binary.exists() and not binary.is_symlink()
+                 and not metadata.exists() and not metadata.is_symlink(), "OSDK freeze output must be new")
+    shutil.copyfile(osdk, binary)
+    binary.chmod(0o444)
+    gate.pinned(binary, identity["sha256"], 512 * 1024**2)
+    gate.require(gate.sha(osdk) == identity["sha256"], "OSDK changed during freezing")
+    binary_record = {"path": binary.name, "sha256": gate.sha(binary), "bytes": binary.stat().st_size}
+    log_record = {"path": log.name, "sha256": gate.sha(log), "bytes": log.stat().st_size}
+    gate.save(metadata, {
+        "schema": "hepta.source-built-osdk-freeze.v1", "source": identity["source"],
+        "command": identity["command"], "local_development_source": True,
+        "binary": binary_record, "build_log": log_record,
+        "copied_after_source_build": True, "build_executed_in_this_copy": False,
+        "kernel_qualification_implied": False,
+    })
+    return {**identity, "retained_binary": binary_record, "retained_build_log": log_record,
+            "freeze_receipt": {"path": metadata.name, "sha256": gate.sha(metadata), "bytes": metadata.stat().st_size}}
+
+
+def verify_frozen_osdk(output, identity):
+    for key, limit in (("retained_binary", 512 * 1024**2), ("retained_build_log", 16 * 1024**2),
+                       ("freeze_receipt", 1024 * 1024)):
+        record = identity[key]
+        path = output / record["path"]
+        gate.pinned(path, record["sha256"], limit)
+        gate.require(path.stat().st_size == record["bytes"], "retained OSDK evidence size changed")
+
+
 def retain_build(args, roots, output, report):
     review_path = HERE / "source-review.json"
     gate.pinned(review_path, args.expected_source_review_sha256, 1024 * 1024)
@@ -73,10 +109,15 @@ def retain_build(args, roots, output, report):
     gate.require(osdk.is_file() and not osdk.is_symlink(), "source-built OSDK binary missing")
     osdk_identity = {"path": str(osdk), "sha256": gate.sha(osdk), "command": osdk_command,
                      "source": gate.DESKTOP, "local_development_source": True}
+    osdk_identity = freeze_osdk(osdk, output, osdk_identity)
+    # Preserve the tool even if subsequent kernel qualification fails. The
+    # separate freeze receipt never claims successful kernel build/boot.
+    report["osdk_frozen"] = osdk_identity
     preparation.verify_sources(roots)
     preparation.original_call(helper, "bounded_command", command, roots["desktop"], environment,
                               output / "build-and-boot.log", 7200)
     gate.require(gate.sha(osdk) == osdk_identity["sha256"], "OSDK changed during qualification")
+    verify_frozen_osdk(output, osdk_identity)
     candidate = gate.json_value((qualification / "result.json").read_bytes())
     gate.require(candidate.get("passed") is True and candidate.get("stage") == "complete"
                  and candidate.get("source_inputs_unchanged") is True,

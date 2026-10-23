@@ -14,6 +14,72 @@ import prepare_inputs
 import run_agentd_runtime as gate
 
 
+class OsdkFreezeTests(unittest.TestCase):
+    def inputs(self, root):
+        tool = root / "installed-cargo-osdk"
+        tool.write_bytes(b"inert host fixture, never executable")
+        tool.chmod(0o600)
+        output = root / "evidence"
+        output.mkdir()
+        (output / "osdk-build.log").write_bytes(b"controlled original build log\n")
+        identity = {"path": str(tool), "sha256": gate.sha(tool), "command": ["cargo", "install", "--locked"],
+                    "source": copy.deepcopy(gate.DESKTOP), "local_development_source": True}
+        return tool, output, identity
+
+    def test_freeze_retains_binary_exact_log_and_separate_nonqualification_receipt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tool, output, identity = self.inputs(root)
+            with patch.object(build_kernel.subprocess, "run") as execute:
+                frozen = build_kernel.freeze_osdk(tool, output, identity)
+            execute.assert_not_called()
+            self.assertEqual((output / "source-built-cargo-osdk").read_bytes(), tool.read_bytes())
+            self.assertEqual((output / "source-built-cargo-osdk").stat().st_mode & 0o777, 0o444)
+            self.assertEqual(frozen["retained_build_log"]["sha256"], gate.sha(output / "osdk-build.log"))
+            metadata = json.loads((output / "osdk-freeze.json").read_text())
+            self.assertFalse(metadata["build_executed_in_this_copy"])
+            self.assertFalse(metadata["kernel_qualification_implied"])
+            self.assertEqual(metadata["source"], identity["source"])
+            build_kernel.verify_frozen_osdk(output, frozen)
+            self.assertFalse((output / "kernel-build.json").exists())
+
+    def test_changed_or_symlink_source_and_missing_exact_log_rejected(self):
+        for mode in ("changed", "symlink", "missing-log", "symlink-log", "empty-log"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                tool, output, identity = self.inputs(Path(directory))
+                if mode == "changed": tool.write_bytes(b"different")
+                if mode == "symlink":
+                    alias = tool.with_name("alias")
+                    alias.symlink_to(tool)
+                    tool = alias
+                if mode in ("missing-log", "symlink-log"):
+                    (output / "osdk-build.log").unlink()
+                    if mode == "symlink-log": (output / "osdk-build.log").symlink_to(tool)
+                if mode == "empty-log": (output / "osdk-build.log").write_bytes(b"")
+                with self.assertRaises(ValueError): build_kernel.freeze_osdk(tool, output, identity)
+                self.assertFalse((output / "osdk-freeze.json").exists())
+
+    def test_existing_or_redirected_output_is_never_overwritten(self):
+        for name in ("source-built-cargo-osdk", "osdk-freeze.json"):
+            for symlink in (False, True):
+                with self.subTest(name=name, symlink=symlink), tempfile.TemporaryDirectory() as directory:
+                    tool, output, identity = self.inputs(Path(directory))
+                    if symlink: (output / name).symlink_to(tool)
+                    else: (output / name).write_bytes(b"existing")
+                    original = tool.read_bytes()
+                    with self.assertRaises(ValueError): build_kernel.freeze_osdk(tool, output, identity)
+                    self.assertEqual(tool.read_bytes(), original)
+
+    def test_any_retained_binary_log_or_receipt_change_is_rejected(self):
+        for name in ("source-built-cargo-osdk", "osdk-build.log", "osdk-freeze.json"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                tool, output, identity = self.inputs(Path(directory))
+                frozen = build_kernel.freeze_osdk(tool, output, identity)
+                (output / name).chmod(0o600)
+                (output / name).write_bytes(b"changed")
+                with self.assertRaises(ValueError): build_kernel.verify_frozen_osdk(output, frozen)
+
+
 class FreshBuildBoundaryTests(unittest.TestCase):
     def arguments(self, root):
         return ["--desktop-source", str(root / "desktop"), "--hepta-source", str(root / "hepta"),
