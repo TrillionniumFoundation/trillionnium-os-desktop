@@ -157,6 +157,9 @@ mod tests {
     fn actual_vmar_permission_denial_reports_access_error_without_reclassifying_other_failures() {
         crate::time::clocks::init_for_ktest();
         crate::util::random::init();
+        // The genuine quota-denial path emits through the original console.
+        // Standalone aster-core tests do not run component bootstrap.
+        aster_console::init_for_ktest();
         let account = UserMemoryAccount::new(0);
         let vmar =
             VmarHandle::new_with_owner(ProcessVm::new(SockFs::new_path()), Some(account.clone()));

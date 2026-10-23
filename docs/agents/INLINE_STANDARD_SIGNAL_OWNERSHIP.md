@@ -113,3 +113,12 @@ Only the original VmMapping permission check emits PermissionDenied; device,
 VMO, page-table and quota errors emit Other. No errno, string or later lookup
 is used to infer the reason. The same negative assertions remain, and the
 syscall probe adds a tenth unmapped-address case requiring SEGV_MAPERR.
+
+The next frozen source `ce94ea48` passed the permission and absent-mapping
+assertions but failed in the same test's genuine quota-denial diagnostic:
+standalone aster-core tests had not bootstrapped the console component.
+It remains a failed 352/353 run (raw 65). The fixture now initializes the real
+console table through the original `component_init` and `Once`, following the
+existing time/device component test setup. Repeated or concurrent calls retain
+the same table and existing devices. The helper exists only under `cfg(ktest)`;
+production initialization, quota diagnostics and all assertions are unchanged.

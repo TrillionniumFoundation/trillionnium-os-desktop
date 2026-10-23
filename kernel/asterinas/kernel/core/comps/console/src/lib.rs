@@ -62,6 +62,13 @@ fn component_init() -> Result<(), ComponentInitError> {
     Ok(())
 }
 
+/// Initializes the original console table for standalone kernel tests.
+/// The same `Once` as production preserves any already registered devices.
+#[cfg(ktest)]
+pub fn init_for_ktest() {
+    component_init().unwrap();
+}
+
 #[derive(Debug)]
 struct Component {
     console_device_table: SpinLock<BTreeMap<String, Arc<dyn AnyConsoleDevice>>, LocalIrqDisabled>,
