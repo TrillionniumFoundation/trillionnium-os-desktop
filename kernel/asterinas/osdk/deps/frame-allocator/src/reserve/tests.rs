@@ -16,7 +16,7 @@ use ostd::{
     impl_frame_meta_for, irq,
     mm::{
         Frame, FrameAllocOptions, HasPaddr, HasSize, PAGE_SIZE, Segment, Split, UniqueFrame,
-        frame::{GlobalFrameAllocator, PhysicalReserve},
+        frame::{GlobalFrameAllocator, PhysicalReserve, meta::GetFrameError},
     },
     prelude::ktest,
     sync::SpinLock,
@@ -157,20 +157,120 @@ fn reserve_fragmentation_alignment_and_failed_allocation_refund() {
 fn reserve_metadata_construction_unwind_refunds_prefix_and_raw_tail() {
     let token = PhysicalReserve::new(8).unwrap();
     let start = token.snapshot().unwrap().start;
+    for failure_index in [0, 3, 7] {
+        let outcome = ostd::panic::catch_unwind(|| {
+            let _segment = options().alloc_segment_from_with(&token, 8, |paddr| {
+                if paddr == start + failure_index * PAGE_SIZE {
+                    // Inject the same unwinding mechanism as the ktest harness,
+                    // without printing a misleading unexpected-panic diagnostic.
+                    ostd::panic::begin_panic(alloc::boxed::Box::new("metadata failure"));
+                }
+            });
+        });
+        assert!(outcome.is_err());
+        assert_eq!(token.snapshot().unwrap().allocated, 0);
+        let full = options().alloc_segment_from(&token, 8).unwrap();
+        assert_eq!(full.paddr(), start);
+        drop(full);
+    }
+}
+
+#[ktest]
+fn reserve_metadata_callback_cannot_retain_current_or_future_raw_frames() {
+    for future in [false, true] {
+        let token = PhysicalReserve::new(8).unwrap();
+        let start = token.snapshot().unwrap().start;
+        let mut held = None;
+        let mut rejected = false;
+        let outcome = ostd::panic::catch_unwind(|| {
+            let _segment = options().alloc_segment_from_with(&token, 8, |paddr| {
+                if paddr == start + 3 * PAGE_SIZE {
+                    let target = if future { start + 6 * PAGE_SIZE } else { paddr };
+                    match Frame::from_unused(target, ()) {
+                        Ok(frame) => held = Some(frame),
+                        Err(GetFrameError::Unique) => rejected = true,
+                        Err(other) => panic!("unexpected callback claim result: {other:?}"),
+                    }
+                    assert!(matches!(
+                        Frame::from_in_use(target),
+                        Err(GetFrameError::Unique)
+                    ));
+                    assert!(matches!(
+                        UniqueFrame::from_unused(target, ()),
+                        Err(GetFrameError::Unique)
+                    ));
+                    ostd::panic::begin_panic(alloc::boxed::Box::new("retained frame attempt"));
+                }
+            });
+        });
+        assert!(outcome.is_err());
+        // Before the fix `held` survives while raw-tail cleanup reports zero.
+        // A live frame must never be returned by that cleanup or token close.
+        if held.is_some() {
+            assert!(token.snapshot().unwrap().allocated >= PAGE_SIZE);
+        }
+        assert!(rejected);
+        assert!(held.is_none());
+        assert_eq!(token.snapshot().unwrap().allocated, 0);
+        token.close();
+        assert!(token.snapshot().is_none());
+    }
+}
+
+#[ktest]
+fn reserve_metadata_callback_cannot_claim_then_drop_raw_frame() {
+    let token = PhysicalReserve::new(8).unwrap();
+    let start = token.snapshot().unwrap().start;
+    let mut rejected = false;
     let outcome = ostd::panic::catch_unwind(|| {
         let _segment = options().alloc_segment_from_with(&token, 8, |paddr| {
             if paddr == start + 3 * PAGE_SIZE {
-                // Inject the same unwinding mechanism as the ktest harness,
-                // without printing a misleading unexpected-panic diagnostic.
-                ostd::panic::begin_panic(alloc::boxed::Box::new("metadata failure"));
+                match Frame::from_unused(paddr, ()) {
+                    // This is the ABA counterexample to looking for UNUSED
+                    // during cleanup: dropping a captured frame already calls
+                    // the original allocator before the callback unwinds.
+                    Ok(frame) => drop(frame),
+                    Err(GetFrameError::Unique) => rejected = true,
+                    Err(other) => panic!("unexpected callback claim result: {other:?}"),
+                }
+                ostd::panic::begin_panic(alloc::boxed::Box::new("claim then drop attempt"));
             }
         });
     });
     assert!(outcome.is_err());
+    assert!(rejected);
     assert_eq!(token.snapshot().unwrap().allocated, 0);
     let full = options().alloc_segment_from(&token, 8).unwrap();
     assert_eq!(full.paddr(), start);
     drop(full);
+}
+
+#[ktest]
+fn reserve_metadata_unwind_preserves_published_prefix_alias_until_final_drop() {
+    let token = PhysicalReserve::new(8).unwrap();
+    let start = token.snapshot().unwrap().start;
+    let mut held: Option<Frame<()>> = None;
+    let outcome = ostd::panic::catch_unwind(|| {
+        let _segment = options().alloc_segment_from_with(&token, 8, |paddr| {
+            if paddr == start + 3 * PAGE_SIZE {
+                // This page is already committed. Its real shared alias is
+                // permitted; only its final owner can refund its allocation.
+                held = Some(Frame::try_from(Frame::from_in_use(start).unwrap()).unwrap());
+                ostd::panic::begin_panic(alloc::boxed::Box::new("prefix alias retained"));
+            }
+        });
+    });
+    assert!(outcome.is_err());
+    assert_eq!(held.as_ref().unwrap().paddr(), start);
+    assert_eq!(held.as_ref().unwrap().reference_count(), 1);
+    assert_eq!(token.snapshot().unwrap().allocated, PAGE_SIZE);
+    token.close();
+    let closed = token.snapshot().unwrap();
+    assert!(closed.closed);
+    assert_eq!(closed.allocated, PAGE_SIZE);
+    assert!(options().alloc_frame_from(&token).is_err());
+    drop(held);
+    assert!(token.snapshot().is_none());
 }
 
 #[ktest]

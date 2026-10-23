@@ -98,8 +98,9 @@ ordinary allocator path; the explicit G1-d feature forwards `physical-reserve`.
 The source verifier derives only these two exact feature additions from the
 original manifests; it still rejects other manifest changes.
 
-The gate fixes all 17 test names: all nine original allocator tests and all
-eight reserve regressions. Every name must appear exactly once, terminate with
+The gate fixes all 20 test names: all nine original allocator tests, eight
+initial reserve regressions and three callback-ownership regressions. Every
+name must appear exactly once, terminate with
 its own `ok`, and precede the single complete target summary. Filtering,
 soft-skipping even one original test, replacing names while keeping a count,
 or shrinking the denominator fails. It also verifies the recorder's actual
@@ -118,12 +119,21 @@ N0 concurrent-holder tests establish task interleavings, not simultaneous SMP
 qualification.
 
 `allocator_exhaustion.global_recovery_guarantee` remains **false** even after
-these 17 tests pass. This mechanism gate does not establish production recovery
+these 20 tests pass. This mechanism gate does not establish production recovery
 admission, VMAR/page-table/IPC budgets, or a complete Hepta recovery path.
 The host tests under `support/build/tests/` mutate synthetic logs to test
 rejection; their success is not a guest pass. Hashes and command records bind
 captured artifacts and logs within a retained run; they are not cryptographic
 attestation against a host able to rewrite all evidence.
+
+The separate full OSTD run must also execute
+`ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner`
+once without soft-skipping, while preserving the 222-test baseline (223 total
+with this regression). This test checks failed preclaim of a real physical
+extent: only acquired original owners are released; a busy page and unclaimed
+tail retain their separate ownership. A successful allocator-only invocation
+does not execute this OSTD test because the original OSDK crate whitelist is
+preserved.
 
 The preparation reports include the original seed tree/blob/SHA256, working
 root-lock SHA256 and resolved feature sets. Disabling generated

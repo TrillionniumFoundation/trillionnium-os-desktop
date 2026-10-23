@@ -90,6 +90,10 @@ TIMESTAMP_CORE_TESTS = (
 REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
+REQUIRED_OSTD_TESTS = (
+    "ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner",
+)
+MINIMUM_OSTD_TESTS = 223  # Retain all 222 existing tests plus the owner regression.
 
 # A separate third crate preserves all nine original allocator tests. Changes
 # to this exact inventory require review, not a smaller denominator at runtime.
@@ -109,6 +113,9 @@ RESERVE_ALLOCATOR_TESTS = tuple("osdk_frame_allocator::reserve::tests::" + suffi
     "reserve_refunds_original_owner_after_aliases_and_repurpose",
     "reserve_fragmentation_alignment_and_failed_allocation_refund",
     "reserve_metadata_construction_unwind_refunds_prefix_and_raw_tail",
+    "reserve_metadata_callback_cannot_retain_current_or_future_raw_frames",
+    "reserve_metadata_callback_cannot_claim_then_drop_raw_frame",
+    "reserve_metadata_unwind_preserves_published_prefix_alias_until_final_drop",
     "reserve_raw_subranges_and_typed_frames_share_original_refund",
     "reserve_concurrent_holders_close_and_final_refund",
     "reserve_concurrent_creation_publishes_only_one_extent",
@@ -171,7 +178,7 @@ def check_allocator_tests(qemu, serial, section, summary, starts, declared, allo
     if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
         raise ValueError("allocator target sequence must finish before the runner completion marker")
     if declared != len(REQUIRED_ALLOCATOR_TESTS) or sorted(starts) != sorted(REQUIRED_ALLOCATOR_TESTS):
-        raise ValueError("allocator requires every retained and reserve test exactly once (17 total)")
+        raise ValueError("allocator requires every retained and reserve test exactly once (20 total)")
     if "[skipped:" in serial.lower():
         raise ValueError("allocator suite cannot pass with any soft-skipped test")
     records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
@@ -261,6 +268,15 @@ def check_guest(guest, crate, allow_filtered=False):
     skips = re.findall(r"\[skipped: ([^\]]+)\]", section)
     if len(skips) >= passed:
         raise ValueError("no target test exercised beyond reported soft skips")
+    if crate == "ostd" and not allow_filtered:
+        for name in REQUIRED_OSTD_TESTS:
+            if starts.count(name) != 1:
+                raise ValueError("missing or repeated required OSTD test: " + name)
+            block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
+            if "[skipped:" in block:
+                raise ValueError("required OSTD test was soft-skipped: " + name)
+        if passed < MINIMUM_OSTD_TESTS:
+            raise ValueError("complete OSTD gate shrank below the retained 222 tests plus owner regression")
     return {"crate": crate, "declared": declared, "passed": passed, "failed": failed,
             "filtered": filtered, "soft_skipped": len(skips), "soft_skip_reasons": skips,
             "exercised_passed_lower_bound": passed - len(skips),
@@ -269,6 +285,7 @@ def check_guest(guest, crate, allow_filtered=False):
             "required_core_tests": list(REQUIRED_CORE_TESTS) if crate == "aster-core" and not allow_filtered else [],
             "required_allocator_tests": list(REQUIRED_ALLOCATOR_TESTS) if crate == "osdk-frame-allocator" else [],
             "allocator_exhaustion": allocator_exhaustion,
+            "required_ostd_tests": list(REQUIRED_OSTD_TESTS) if crate == "ostd" and not allow_filtered else [],
             "raw_qemu_exit": 33, "guest": guest.name}
 
 

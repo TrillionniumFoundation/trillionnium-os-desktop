@@ -73,11 +73,11 @@ class AllocatorEvidenceTests(unittest.TestCase):
     def check(self, allow_filtered=False):
         return CHECK["check_guest"](self.guest, CRATE, allow_filtered)
 
-    def test_complete_inventory_preserves_nine_original_and_eight_added_tests(self):
-        self.assertEqual((len(BASELINE), len(RESERVE), len(NAMES)), (9, 8, 17))
+    def test_complete_inventory_preserves_nine_original_and_eleven_added_tests(self):
+        self.assertEqual((len(BASELINE), len(RESERVE), len(NAMES)), (9, 11, 20))
         self.evidence()
         result = self.check()
-        self.assertEqual((result["passed"], result["filtered"], result["soft_skipped"]), (17, 0, 0))
+        self.assertEqual((result["passed"], result["filtered"], result["soft_skipped"]), (20, 0, 0))
         self.assertEqual(result["required_allocator_tests"], list(NAMES))
         self.assertEqual(result["allocator_exhaustion"]["ordinary_frames"], 90000)
         self.assertIs(result["allocator_exhaustion"]["global_recovery_guarantee"], False)
@@ -118,7 +118,7 @@ class AllocatorEvidenceTests(unittest.TestCase):
         self.evidence()
         with self.assertRaisesRegex(ValueError, "never permits filtered"):
             self.check(allow_filtered=True)
-        filtered = serial_log().replace(b"17 tests in crate", b"18 tests in crate").replace(
+        filtered = serial_log().replace(b"20 tests in crate", b"21 tests in crate").replace(
             b"0 filtered out", b"1 filtered out")
         self.evidence(filtered)
         with self.assertRaisesRegex(ValueError, "unexpected filtered"):

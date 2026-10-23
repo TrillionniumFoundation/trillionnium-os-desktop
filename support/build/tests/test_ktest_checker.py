@@ -16,9 +16,11 @@ CHECKER_MODULE = runpy.run_path(str(CHECKER))
 check_guest = CHECKER_MODULE["check_guest"]
 REQUIRED_CORE_TESTS = CHECKER_MODULE["REQUIRED_CORE_TESTS"]
 MINIMUM_CORE_TESTS = CHECKER_MODULE["MINIMUM_CORE_TESTS"]
+REQUIRED_OSTD_TESTS = CHECKER_MODULE["REQUIRED_OSTD_TESTS"]
+MINIMUM_OSTD_TESTS = CHECKER_MODULE["MINIMUM_OSTD_TESTS"]
 
 
-def serial_log(passed=2, failed=0, filtered=0, skips=0):
+def serial_log(passed=MINIMUM_OSTD_TESTS, failed=0, filtered=0, skips=0):
     declared = passed + failed + filtered
     lines = [
         f"[ktest runner] running {declared} tests in 1 crates",
@@ -27,7 +29,8 @@ def serial_log(passed=2, failed=0, filtered=0, skips=0):
     for index in range(passed + failed):
         skip = " [skipped: VMX unavailable]" if index < skips else ""
         status = "ok" if index < passed else "FAILED"
-        lines.append(f"test ostd::fixture::case_{index} ...{skip} \x1b[32m{status}\x1b[0m")
+        name = REQUIRED_OSTD_TESTS[0] if index == passed + failed - 1 else f"ostd::fixture::case_{index}"
+        lines.append(f"test {name} ...{skip} \x1b[32m{status}\x1b[0m")
     status = "ok" if not failed else "FAILED"
     lines.extend((
         f"test result: {status}. {passed} passed; {failed} failed; {filtered} filtered out.",
@@ -67,10 +70,25 @@ class KtestCheckerTests(unittest.TestCase):
     def test_valid_guest_requires_nonempty_own_crate_results(self):
         self.evidence()
         result = check_guest(self.guest, "ostd")
-        self.assertEqual(result["declared"], 2)
-        self.assertEqual(result["passed"], 2)
+        self.assertEqual(result["declared"], MINIMUM_OSTD_TESTS)
+        self.assertEqual(result["passed"], MINIMUM_OSTD_TESTS)
         self.assertEqual(result["soft_skipped"], 0)
-        self.assertEqual(result["exercised_passed_lower_bound"], 2)
+        self.assertEqual(result["exercised_passed_lower_bound"], MINIMUM_OSTD_TESTS)
+
+    def test_complete_ostd_requires_busy_claim_regression_without_soft_skip(self):
+        name = REQUIRED_OSTD_TESTS[0].encode()
+        for serial in (serial_log().replace(name, b"ostd::fixture::unrelated"),
+                       serial_log().replace(name + b" ...", name + b" ... [skipped: fixture]")):
+            self.evidence(serial)
+            with self.assertRaisesRegex(ValueError, "required OSTD test"):
+                check_guest(self.guest, "ostd")
+
+    def test_ostd_owner_regression_cannot_replace_the_retained_baseline(self):
+        self.assertEqual(MINIMUM_OSTD_TESTS, 223)
+        for count in (1, 222):
+            self.evidence(serial_log(passed=count))
+            with self.assertRaisesRegex(ValueError, "OSTD gate shrank"):
+                check_guest(self.guest, "ostd")
 
     def test_serial_tampering_is_rejected_before_parsing(self):
         self.evidence()
@@ -121,11 +139,11 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertEqual((result["passed"], result["filtered"]), (1, 1))
 
     def test_soft_skip_counts_preserve_exercised_lower_bound(self):
-        self.evidence(serial_log(passed=3, skips=2))
+        self.evidence(serial_log(passed=MINIMUM_OSTD_TESTS, skips=2))
         result = check_guest(self.guest, "ostd")
         self.assertEqual(result["soft_skipped"], 2)
         self.assertEqual(result["soft_skip_reasons"], ["VMX unavailable"] * 2)
-        self.assertEqual(result["exercised_passed_lower_bound"], 1)
+        self.assertEqual(result["exercised_passed_lower_bound"], MINIMUM_OSTD_TESTS - 2)
 
     def test_all_soft_skipped_is_not_exercised_success(self):
         self.evidence(serial_log(passed=2, skips=2))

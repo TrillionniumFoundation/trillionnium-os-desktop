@@ -38,10 +38,29 @@ references remain valid. Only after the final physical frame refund does the
 entire extent return to the original ordinary cache/pool. Repeated closure or a
 stale token cannot affect a later incarnation.
 
-Segment construction now has two disjoint RAII owners: the original Segment
-owns its successfully initialized prefix, and the allocating call owns its raw
-uninitialized tail. If a metadata constructor unwinds, each refunds its own
-portion through the original allocator. This also repairs that failure path for
+Segment construction first claims every allocated page as an original
+`UniqueFrame<()>`, before exposing any physical address to the metadata callback.
+An internal contiguous-range owner retains these handles without using heap
+memory. Each page is removed from that range into a local `UniqueFrame` before
+calling the callback, then repurposed and transferred to the original Segment.
+Current and future pages cannot be claimed through `Frame::from_unused` or
+`Frame::from_in_use`; a legitimate alias to an already published prefix retains
+its normal reference-counted lifetime. If initial claiming encounters a busy
+page, it releases only the prefix it actually acquired, never the external
+owner or unclaimed raw tail. A busy page violates the allocator's unused-extent
+contract and causes allocation initialization to fail.
+
+The former raw-tail cleanup was incorrect: a callback could claim a page and
+retain it, or claim and drop it before unwinding, causing early or duplicate
+refunds. Checking its reference count during cleanup would also accept the
+claim/drop ABA case. The new cleanup never infers ownership from a later
+reference-count observation and never unconditionally deallocates a raw tail.
+
+Segment construction has disjoint original RAII owners: the Segment owns its
+successfully initialized prefix, the local `UniqueFrame` owns the current page,
+and the pending range owns the remaining unique frames. If a metadata constructor
+unwinds, each drops its own handles through the original allocator. This also
+repairs that failure path for
 ordinary segment allocations. Length multiplication and Layout construction are
 checked before physical withdrawal.
 
@@ -61,10 +80,11 @@ partition or its deallocation lock; the trait hooks default to rejection.
 
 ## Tests and evidence boundary
 
-Eight `osdk-frame-allocator` kernel tests use the installed original allocator and
+Eleven `osdk-frame-allocator` kernel tests use the installed original allocator and
 real OSTD frame metadata. They cover admission/replay/stale authority, shared and
 repurposed final references, real fragmentation/alignment/failed requests,
-metadata-constructor unwind, partial raw and typed refunds, concurrent holders
+metadata-constructor unwind, retained/claim-then-drop callback attempts, valid
+published-prefix aliases, partial raw and typed refunds, concurrent holders
 racing closure, competing reserve creation, and actual exhaustion of the ordinary allocation interfaces.
 
 The exhaustion fixture requires N0, preallocates all its bookkeeping, then holds
@@ -93,7 +113,8 @@ Candidate host verification used pinned `nightly-2026-07-21` and a separate targ
 reserve features; `RUSTFLAGS="--cfg ktest" cargo clippy -p osdk-frame-allocator
 --features physical-reserve --target x86_64-unknown-none -- -D warnings` checks all
 eight real test bodies and the feature implementation. Formatting and diff checks
-also pass. These are compile/lint results, not a native execution receipt.
+also pass. These are compile/lint results from the initial eight-test candidate,
+not a native execution receipt or a result for the later ownership repair.
 
 The allocator suite must be run from `kernel/asterinas/osdk/deps/frame-allocator`
 with the source-matched `cargo osdk test` and the prepared N0 test boot settings;
@@ -105,8 +126,12 @@ The maintained execution entry is now
 `python3 -I support/build/ktest/run.py --crate osdk-frame-allocator --output DIR`,
 after preparing its distinct test-base lock with
 `support/build/ktest/prepare-locks.py --crate osdk-frame-allocator`.
-It retains the nine original allocator tests and all eight new tests as an
-explicit 17-test inventory. Filtering, soft skips, missing or repeated names,
+It retains the nine original allocator tests, the first eight reserve tests and
+the three initialization-owner regressions as an explicit 20-test inventory.
+The complete OSTD gate additionally requires
+`allocation_claim_rejects_busy_page_without_refunding_its_owner`, which uses
+real reserve/frame owners to check rollback after the third page is busy.
+Filtering, soft skips, missing or repeated names,
 inconsistent raw QEMU status, and exhaustion receipts outside the successful
 test are rejected. The separate OSTD and core suites remain required. See the
 [kernel-test execution guide](../../support/build/ktest/README.md) for commands,

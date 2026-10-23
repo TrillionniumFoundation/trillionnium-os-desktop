@@ -10,7 +10,12 @@ use core::{
 
 use align_ext::AlignExt;
 
-use super::{Frame, meta::AnyFrameMeta, segment::Segment};
+use super::{
+    Frame,
+    meta::{AnyFrameMeta, GetFrameError},
+    segment::Segment,
+    unique::UniqueFrame,
+};
 use crate::{
     boot::memory_region::MemoryRegionType,
     error::Error,
@@ -189,6 +194,11 @@ impl FrameAllocOptions {
 
     /// Allocates a contiguous range of frames with additional metadata.
     ///
+    /// All frames are uniquely owned before `metadata_fn` runs. The callback
+    /// cannot acquire the current or remaining frames by physical address.
+    /// On unwinding, owned frames are released through their original metadata
+    /// owners; shared aliases to an already committed prefix remain valid.
+    ///
     /// The returned [`Segment`] contains at least one frame. The method returns
     /// an error if the number of frames is zero.
     pub fn alloc_segment_with<M: AnyFrameMeta, F>(
@@ -212,6 +222,9 @@ impl FrameAllocOptions {
     }
 
     /// Allocates contiguous frames with metadata from a physical reserve.
+    ///
+    /// The callback has the same ownership restrictions as
+    /// [`Self::alloc_segment_with`].
     pub fn alloc_segment_from_with<M: AnyFrameMeta, F>(
         &self,
         reserve: &PhysicalReserve,
@@ -227,7 +240,7 @@ impl FrameAllocOptions {
     fn alloc_segment_in<M: AnyFrameMeta, F>(
         &self,
         nframes: usize,
-        metadata_fn: F,
+        mut metadata_fn: F,
         reserve: Option<&PhysicalReserve>,
     ) -> Result<Segment<M>>
     where
@@ -240,15 +253,17 @@ impl FrameAllocOptions {
             None => allocator.alloc(layout),
         }
         .ok_or(Error::NoMemory)?;
-        let mut tail = UninitializedAllocation {
-            start,
-            end: start + layout.size(),
-        };
-        let segment =
-            Segment::from_unused_with_progress(start..tail.end, metadata_fn, |committed_end| {
-                tail.start = committed_end
-            })
-            .unwrap();
+        // Own every frame through its original metadata slot before exposing
+        // any physical address to the callback. Otherwise the callback could
+        // claim (and even drop) a current/future frame before raw-tail cleanup.
+        let mut pending = ClaimedAllocation::new(start..start + layout.size()).unwrap();
+        let first = pending.next().unwrap();
+        let metadata = metadata_fn(first.paddr());
+        let mut segment = Segment::from(Frame::from(first.repurpose(metadata)));
+        for frame in pending {
+            let metadata = metadata_fn(frame.paddr());
+            segment.append(Frame::from(frame.repurpose(metadata)));
+        }
 
         if self.zeroed {
             let addr = paddr_to_vaddr(segment.paddr()) as *mut u8;
@@ -260,19 +275,79 @@ impl FrameAllocOptions {
     }
 }
 
-// Owns only the part of a raw allocator result not yet represented by frame
-// metadata. Segment owns the committed prefix and refunds it independently.
-struct UninitializedAllocation {
-    start: Paddr,
-    end: Paddr,
+// Every page in this range is an owned, forgotten UniqueFrame<()> acquired
+// through the original metadata-slot CAS. No user callback runs during claim.
+// An empty range is valid here: unlike Segment, it carries no metadata type
+// inferred from a first frame. Keeping the owners in a range avoids heap use
+// inside frame allocation, including when ordinary allocation is exhausted.
+struct ClaimedAllocation {
+    range: Range<Paddr>,
 }
 
-impl Drop for UninitializedAllocation {
+impl ClaimedAllocation {
+    fn new(range: Range<Paddr>) -> core::result::Result<Self, GetFrameError> {
+        let mut owned = Self {
+            range: range.start..range.start,
+        };
+        for paddr in range.step_by(PAGE_SIZE) {
+            let frame = UniqueFrame::from_unused(paddr, ())?;
+            let _ = frame.into_raw();
+            owned.range.end = paddr + PAGE_SIZE;
+        }
+        // A conflicting metadata owner means the allocator did not return a
+        // wholly unused extent. On that error only the successfully acquired
+        // prefix is ours to drop, never the busy page or unclaimed tail.
+        Ok(owned)
+    }
+}
+
+impl Iterator for ClaimedAllocation {
+    type Item = UniqueFrame<()>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.range.is_empty() {
+            return None;
+        }
+        let paddr = self.range.start;
+        self.range.start += PAGE_SIZE;
+        // SAFETY: `new` forgot exactly one UniqueFrame<()> for each page in
+        // the range. Removing this page before restoring its handle transfers
+        // that sole owner to the caller, so unwinding cannot restore it twice.
+        Some(unsafe { UniqueFrame::from_raw(paddr) })
+    }
+}
+
+impl Drop for ClaimedAllocation {
     fn drop(&mut self) {
-        if self.start < self.end {
-            get_global_frame_allocator().dealloc(self.start, self.end - self.start);
+        for frame in self.by_ref() {
+            drop(frame);
         }
     }
+}
+
+#[cfg(ktest)]
+#[ktest]
+fn allocation_claim_rejects_busy_page_without_refunding_its_owner() {
+    let reserve = PhysicalReserve::new(4).unwrap();
+    let layout = Layout::from_size_align(4 * PAGE_SIZE, PAGE_SIZE).unwrap();
+    let start = get_global_frame_allocator()
+        .alloc_reserved(&reserve, layout)
+        .unwrap();
+    let held = Frame::from_unused(start + 2 * PAGE_SIZE, ()).unwrap();
+    assert!(matches!(
+        ClaimedAllocation::new(start..start + layout.size()),
+        Err(GetFrameError::InUse)
+    ));
+    assert_eq!(held.reference_count(), 1);
+    assert_eq!(reserve.snapshot().unwrap().allocated, 2 * PAGE_SIZE);
+    // The caller still owns the unclaimed raw tail; the failed claim cannot
+    // refund it on the caller's behalf. Return it through a real frame owner.
+    drop(Frame::from_unused(start + 3 * PAGE_SIZE, ()).unwrap());
+    assert_eq!(reserve.snapshot().unwrap().allocated, PAGE_SIZE);
+    reserve.close();
+    assert_eq!(reserve.snapshot().unwrap().allocated, PAGE_SIZE);
+    drop(held);
+    assert!(reserve.snapshot().is_none());
 }
 
 #[cfg(ktest)]
