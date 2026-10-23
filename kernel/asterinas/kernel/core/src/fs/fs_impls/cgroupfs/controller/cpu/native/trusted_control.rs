@@ -16,6 +16,9 @@ use os_control::{
 use super::*;
 use crate::fs::cgroupfs::CgroupSysNode;
 
+mod watchdog;
+use watchdog::WatchdogState;
+
 pub(crate) const MAX_INITIAL_CAP_NS: u64 = 50_000_000;
 pub(crate) const INITIAL_LEASE_NS: u64 = 300_000_000_000;
 pub(crate) const RECOVERY_GRACE_NS: u64 = 30_000_000_000;
@@ -38,7 +41,8 @@ enum ManagerClosure {
 }
 
 /// Policy and canonical delegations live under the original bandwidth lock.
-/// No delivery result, current revision or current budget is duplicated here.
+/// No D delivery result, current revision or current budget is duplicated here.
+/// The watchdog retains only its immutable owner-produced effect receipt.
 /// The restore cap is an immutable pre-delegation limit, not a mutable quota.
 pub(super) struct TrustedCpuManagement {
     grants: [ManagementGrantState; 2],
@@ -47,6 +51,7 @@ pub(super) struct TrustedCpuManagement {
     manager_closed: ManagerClosure,
     budget_cause: BudgetCause,
     recovery_consumed: bool,
+    watchdog: WatchdogState,
 }
 
 impl TrustedCpuManagement {
@@ -155,7 +160,7 @@ impl NativeCpuManager {
             state.trusted_management = Some(TrustedCpuManagement {
                 grants, manager_expires_ns: expires_ns, restore_cap_ns: state.max.quota_ns(),
                 manager_closed: ManagerClosure::Open, budget_cause: BudgetCause::Bootstrap,
-                recovery_consumed: false,
+                recovery_consumed: false, watchdog: WatchdogState::new(),
             });
         }
         drop(_membership);

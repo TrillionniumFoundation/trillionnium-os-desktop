@@ -384,3 +384,149 @@ fn native_bounded_history_retirement_never_reexecutes_an_old_cpu_delivery() {
     assert_eq!(fixture.budget(), before);
     assert_eq!(fixture.revision(), 1026);
 }
+
+// The production IRQ wrapper and real owner, with explicit fault cuts. The
+// separate native probe must qualify the physical timer and image-close path.
+fn watchdog_tick(fixture: &Fixture, now: Option<u64>) {
+    let _irq = disable_local();
+    fixture.managers[0].watchdog_tick_at(now, fixture.process.as_ref().unwrap());
+}
+
+fn arm_watchdog_fixture(fixture: &Fixture) {
+    with_state(&fixture.owner, |state| {
+        let watchdog = &mut state.trusted_management.as_mut().unwrap().watchdog;
+        watchdog.armed = true;
+        watchdog.workload = Arc::downgrade(fixture.process.as_ref().unwrap());
+    });
+}
+
+#[ktest]
+fn native_watchdog_first_close_deadline_restores_once_with_original_receipt() {
+    use super::watchdog::{WATCHDOG_DELAY_NS, WatchdogOutcome};
+    let fixture = Fixture::new("g1d-watchdog-once");
+    arm_watchdog_fixture(&fixture);
+    assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+    watchdog_tick(&fixture, Some(100 + WATCHDOG_DELAY_NS));
+    assert_eq!(fixture.revision(), 2); // Healthy manager must retain authority.
+    fixture.managers[0].revoke_at(Some(100 + WATCHDOG_DELAY_NS));
+    fixture.managers[0].revoke_at(Some(200 + WATCHDOG_DELAY_NS));
+    let due = 100 + 2 * WATCHDOG_DELAY_NS;
+    watchdog_tick(&fixture, Some(due - 1));
+    assert_eq!(fixture.budget().quota_ns(), 1001);
+    with_state(&fixture.owner, |state| {
+        // Same-window consumed CPU and positive debt survive the restoration.
+        state.max.window_start_ns = due / CPU_PERIOD_NS * CPU_PERIOD_NS;
+        state.max.used_ns = 70;
+        state.max.cumulative_ns = 70;
+        state.max.carry_debt_ns = 23;
+    });
+    watchdog_tick(&fixture, Some(due));
+    let terminal = with_state(&fixture.owner, |state| state.trusted_management.as_ref().unwrap().watchdog.terminal.unwrap());
+    let WatchdogOutcome::Restored(receipt) = terminal.0 else { panic!("missing native watchdog receipt"); };
+    assert_eq!((receipt.previous_revision(), receipt.revision(), receipt.effective_boottime_ns(),
+                receipt.consumed_at_apply_ns()), (2, 3, due, 70));
+    assert_eq!(receipt.stable_object_id(), fixture.managers[0].observer.target.stable_object_id());
+    assert_eq!(fixture.budget().quota_ns(), MAX_INITIAL_CAP_NS);
+    let before = fixture.budget();
+    assert_eq!((before.used_ns, before.carry_debt_ns), (70, 23));
+    for tick in [Some(due), Some(due + 1), Some(due + RECOVERY_GRACE_NS), None] {
+        watchdog_tick(&fixture, tick);
+        assert_eq!(fixture.revision(), 3);
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(with_state(&fixture.owner, |state| state.trusted_management.as_ref().unwrap().watchdog.terminal), Some(terminal));
+    }
+    // The timer consumes the original one-use recovery allowance. D is not
+    // fabricated for the kernel effect, and a user retry has no second effect.
+    let rejected = fixture.execute(1, 1, 3, MAX_INITIAL_CAP_NS, Some(due + 1)).unwrap();
+    assert_eq!(rejected.status, Some(DeliveryStatus::PermissionDenied));
+    assert_eq!(fixture.execute(1, 1, 3, MAX_INITIAL_CAP_NS, Some(due + 2)).unwrap(), rejected);
+    assert_eq!(fixture.revision(), 3);
+}
+
+#[ktest]
+fn native_watchdog_preserves_zero_job_stop_and_recovery_owned_budgets() {
+    use super::watchdog::{WATCHDOG_DELAY_NS, WatchdogOutcome};
+    use crate::process::signal::sig_num::SigNum;
+    for (name, kind) in [("g1d-watchdog-zero", 0), ("g1d-watchdog-stopped", 1),
+        ("g1d-watchdog-recovered", 2), ("g1d-watchdog-initial", 3)] {
+        let fixture = Fixture::new(name);
+        arm_watchdog_fixture(&fixture);
+        if kind < 3 {
+            assert_eq!(fixture.execute(0, 1, 1, if kind == 0 { 0 } else { 1001 }, Some(100)).unwrap().status,
+                Some(DeliveryStatus::Ok));
+        }
+        fixture.managers[0].revoke_at(Some(100));
+        if kind == 1 { fixture.process.as_ref().unwrap().stop(SigNum::from_u8(19)); }
+        if kind == 2 {
+            assert_eq!(fixture.execute(1, 1, 2, MAX_INITIAL_CAP_NS, Some(101)).unwrap().status, Some(DeliveryStatus::Ok));
+        }
+        let before = fixture.budget();
+        let revision = fixture.revision();
+        watchdog_tick(&fixture, Some(100 + WATCHDOG_DELAY_NS));
+        let expected = if kind == 1 { WatchdogOutcome::JobStopped } else { WatchdogOutcome::Ineligible };
+        assert_eq!(with_state(&fixture.owner, |state| state.trusted_management.as_ref().unwrap().watchdog.terminal.unwrap().0), expected);
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(fixture.revision(), revision);
+        assert_eq!(fixture.process.as_ref().unwrap().is_stopped(), kind == 1);
+        if kind == 1 {
+            // A later actual SIGCONT may change POSIX state, but cannot renew
+            // or retroactively turn the terminal timer refusal into success.
+            fixture.process.as_ref().unwrap().resume();
+            watchdog_tick(&fixture, Some(101 + WATCHDOG_DELAY_NS));
+            assert_eq!(fixture.budget(), before);
+            assert_eq!(fixture.revision(), revision);
+        }
+    }
+}
+
+#[ktest]
+fn native_watchdog_expiry_clock_fault_and_late_tick_fail_closed() {
+    use super::watchdog::{WATCHDOG_DELAY_NS, WatchdogOutcome};
+    for (name, cut, tick, expected) in [
+        ("g1d-watchdog-unknown", Some(100), None, WatchdogOutcome::ClockUnavailable),
+        ("g1d-watchdog-rollback", Some(100), Some(99), WatchdogOutcome::ClockUnavailable),
+        ("g1d-watchdog-close-clock", None, Some(100 + WATCHDOG_DELAY_NS), WatchdogOutcome::ClockUnavailable),
+        ("g1d-watchdog-late", Some(100), Some(100 + RECOVERY_GRACE_NS), WatchdogOutcome::Expired),
+    ] {
+        let fixture = Fixture::new(name);
+        arm_watchdog_fixture(&fixture);
+        assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+        fixture.managers[0].revoke_at(cut);
+        let before = fixture.budget();
+        watchdog_tick(&fixture, tick);
+        assert_eq!(with_state(&fixture.owner, |state| state.trusted_management.as_ref().unwrap().watchdog.terminal.unwrap().0), expected);
+        watchdog_tick(&fixture, Some(100 + WATCHDOG_DELAY_NS));
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(fixture.revision(), 2);
+    }
+    // No exit notification is needed after the immutable normal lease expires.
+    let fixture = Fixture::new("g1d-watchdog-lease");
+    arm_watchdog_fixture(&fixture);
+    assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+    let due = 10 + INITIAL_LEASE_NS + WATCHDOG_DELAY_NS;
+    watchdog_tick(&fixture, Some(due - 1));
+    assert_eq!(fixture.revision(), 2);
+    watchdog_tick(&fixture, Some(due));
+    assert_eq!(fixture.revision(), 3);
+    assert_eq!(fixture.budget().quota_ns(), MAX_INITIAL_CAP_NS);
+}
+
+#[ktest]
+fn native_watchdog_fenced_or_bad_accounting_never_restores() {
+    use super::watchdog::{WATCHDOG_DELAY_NS, WatchdogOutcome};
+    for (name, fault) in [("g1d-watchdog-accounting", false), ("g1d-watchdog-detached", true)] {
+        let fixture = Fixture::new(name);
+        arm_watchdog_fixture(&fixture);
+        assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+        fixture.managers[0].revoke_at(Some(100));
+        with_state(&fixture.owner, |state| {
+            if fault { state.detach(); } else { state.max.accounting_fault = true; }
+        });
+        let before = fixture.budget();
+        watchdog_tick(&fixture, Some(100 + WATCHDOG_DELAY_NS));
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(fixture.revision(), 2);
+        let expected = if fault { WatchdogOutcome::Closed } else { WatchdogOutcome::AccountingFault };
+        assert_eq!(with_state(&fixture.owner, |state| state.trusted_management.as_ref().unwrap().watchdog.terminal.unwrap().0), expected);
+    }
+}

@@ -147,6 +147,9 @@ pub(super) fn spawn(
         [PublisherId::new(spaces[0]), PublisherId::new(spaces[1])],
         issued,
     )?;
+    // Allocate and register the fixed independent timer before any role can
+    // execute. It retains this exact workload for read-only job-stop checks.
+    managers[0].arm_watchdog(workload.process.clone())?;
     let [manager_slots, recovery_slots] =
         TrustedControlSlots::prepare_pair(managers, [manager.key, recovery.key])?;
     // Each private token is consumed against its actual final VMAR/entry.

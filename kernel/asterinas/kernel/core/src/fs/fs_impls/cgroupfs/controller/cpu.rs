@@ -414,6 +414,9 @@ impl CpuController {
             writeln!(printer, "burst_usec 0")?;
         }
 
+        #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+        self.read_watchdog_stat(printer)?;
+
         Ok(printer.bytes_written())
     }
 

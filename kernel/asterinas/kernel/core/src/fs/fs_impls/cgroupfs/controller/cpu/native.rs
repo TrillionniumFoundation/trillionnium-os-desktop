@@ -156,8 +156,9 @@ impl CpuBandwidthState {
             window_consumed_ns: max.used_ns,
             active_cap_ns: max.quota_ns(),
             active_period_ns: max.period_ns(),
-            // This slice has no native event producer or explicit pause owner.
-            // Configuration revisions and timer ticks are not event sequences.
+            // No trusted user-intent ingress exists yet. POSIX job stop is
+            // observed separately by the watchdog, never promoted to user
+            // intent. Configuration revisions and ticks are not event sequences.
             event_sequence: 0,
             dropped_events: 0,
             user_paused: false,
