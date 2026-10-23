@@ -79,7 +79,7 @@ uses actual SA_SIGINFO faults, kill/tgkill/group/pidfd wait/reap, denied cross-U
 signals, RT FIFO, signalfd reads and ptrace fault inspection/continuation. Linux
 reference results are only a behavioral reference. Native qualification must
 bind a newly built ordinary ELF and all source snapshots to this exact source.
-Native qualification of this new signal slice is pending.
+Native qualification is bound to the exact combined source below.
 
 ## Separate access-error classification correction
 
@@ -157,4 +157,40 @@ negative errno ordering. Linux reference results are separate from native
 qualification. `rt_tgsigqueueinfo`, compat ABI qualification, unknown siginfo
 layout expansion/E2BIG parity, RT allocation failure and RLIMIT_SIGPENDING
 accounting are not implemented or qualified by this small slice. Native
-qualification of the combined queued-signal correction is pending.
+qualification of the combined queued-signal correction is bound to the exact
+source below.
+
+## Source-bound native qualification
+
+Combined source `6c26e3aeefde05c120944e278299b4925612f3c8`, tree
+`6c84a0663441dcbf9629fc2da8f857265baa5fe1`, passed the original complete core
+353 / 114 required names, OSTD 230, allocator 20 and MLSDisk 15 suites. All four
+raw QEMU exits were 33. OSTD retains the three original TCG VMX skips; the other
+three suites have no skips. The source-matched ordinary kernel passed its 18
+boot/QueryAbi checks and, on that same ELF, SGID 30, Unix ownership 12, proc
+Groups/NoNewPrivs 12, memfd metadata/seals 4 and the fourteen strict signal
+syscall cases. The latter include actual nonleader-TID delivery to shared
+pending, payload-only PID/UID, a real cross-UID denial, and strict errno order.
+Full tracked
+source snapshots were unchanged. The original memory, deadlines, inventories
+and negative checks were retained.
+
+[The exact receipt](../../results/integration/2026-10-23-audit-closure/inline-signal-6c26.json)
+binds all kernel/serial/source hashes and retains both rejected old-kernel
+classification baselines. Linux reference success is recorded separately.
+The missing-RT-syscall failure from `1d2d20c4` is retained separately; its
+partial native probe is not retroactively a pass. The combined source also
+uses the original zero-link inode constructor for detached memfd files and
+preserves original seal and attribute checks.
+
+These results do not qualify global memory pressure, all signal producers,
+complete signalfd information fields or whole-kernel recovery.
+
+An independent, unchanged Root handoff C binary also passed on the same
+ordinary ELF under the original 512 MiB KVM profile: Root-created regular
+memfd, zero links, mode 0400 and four seals; actual UID 60001 with no
+capabilities and NoNewPrivs read the exact content, while write, truncate,
+seal modification and ownership change were denied. The same binary had
+rejected the old `d5a21bb7` kernel because it reported one link. Both receipts
+and the Linux reference remain separate in the linked record. This qualifies
+the component handoff, not a production loader or full Root service.
