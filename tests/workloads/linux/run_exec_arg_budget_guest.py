@@ -170,7 +170,7 @@ def main(argv=None):
         version = subprocess.check_output([binary, '--version'], timeout=10).decode()
         require(version.startswith('QEMU emulator version 8.2.2 '), 'unreviewed QEMU version')
         command = [binary, '-kernel', str(out / 'kernel.elf'), '-initrd', str(out / 'initramfs.cpio.gz'),
-                   '-append', 'earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --',
+                   '-append', 'earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --',
                    '-machine', 'q35', '-accel', 'tcg', '-cpu', 'max', '-bios', str(out / 'bios.bin'),
                    '-m', '512M', '-smp', '1', '-nodefaults', '-no-user-config', '-no-reboot',
                    '-nographic', '-display', 'none', '-monitor', 'none', '-serial', 'stdio',
