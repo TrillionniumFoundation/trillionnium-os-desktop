@@ -120,10 +120,13 @@ the positive receipt. Never merge the 128 MiB counterfactual into the product.
 
 ## Kernel tests
 
-Six new real kernel tests cover: reservation rollback/overflow, final shared
+Eight real kernel tests cover: reservation rollback/overflow, final shared
 frame release, independent owners, contiguous all-or-nothing admission, VMO
-alias ownership, and COW data plus per-physical-page refund. The existing
-wrapper supports a complete test-name suffix (not a substring):
+alias ownership, COW data plus per-physical-page refund, and stopped initial
+stack admission plus failed-image release without a current Process. The
+stack VMO fixes its account from the destination VMAR before the writer commits
+pages; an empty ambient kernel-task owner cannot bypass that account. The
+existing wrapper supports a complete test-name suffix (not a substring):
 
 ```sh
 python3 -I support/build/ktest/run.py --crate aster-core --skip-osdk-install \
@@ -134,9 +137,15 @@ The other suffixes are `shared_frame_charges_once_until_last_reference`,
 `independent_owners_do_not_consume_each_others_allowance`,
 `contiguous_limit_is_admitted_before_any_page`,
 `shared_vmo_aliases_keep_one_physical_charge`, and
-`cow_charges_the_copy_and_refunds_each_physical_page`. A single full
-`--crate aster-core` invocation also covers them without six separate links.
-Report the actual guest counts and any filtering from its saved receipts.
+`cow_charges_the_copy_and_refunds_each_physical_page`. The stack regressions are
+`stopped_initial_stack_charges_its_destination_without_a_current_process` and
+`rejected_stopped_initial_stack_refunds_its_pages_when_the_image_is_dropped`.
+A single full `--crate aster-core` invocation also covers them without separate
+links. Report the actual guest counts and any filtering from its saved receipts.
+
+The archived 281-test run predates these two stack regressions. Their source
+addition is not a native pass; rerun the kernel suite and pressure/recovery gate
+against the integrated source before extending the qualification record.
 
 ## Qualification status
 

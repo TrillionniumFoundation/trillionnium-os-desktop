@@ -181,7 +181,11 @@ impl InitStack {
         self.set_uninitialized();
 
         let vmo = {
-            let vmo_options = VmoOptions::new(self.max_size);
+            // The stopped initial image is loaded by a kernel task without a
+            // current Process. Charge stack writes to their destination VMAR,
+            // as for the trusted ELF and boot-page VMOs (Desktop PR #252).
+            let vmo_options =
+                VmoOptions::new(self.max_size).memory_owner(vmar.user_memory_owner().clone());
             vmo_options.alloc()?
         };
         let vmar_map_options = {
@@ -460,5 +464,66 @@ impl InitStackReader<'_> {
         let bytes_read = self.vmar.read_alien(read_at, writer)?;
 
         Ok(bytes_read)
+    }
+}
+
+#[cfg(ktest)]
+mod tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::{
+        fs::pseudofs::SockFs,
+        process::{Process, ProcessVm},
+        util::random,
+        vm::{
+            user_memory::{UserMemoryAccount, current_owner},
+            vmar::VmarHandle,
+        },
+    };
+
+    fn stopped_image(limit_pages: usize) -> (VmarHandle, Arc<UserMemoryAccount>) {
+        // PR #252 regression: the real boot loader has no ambient process or
+        // attached-VMAR account from which VMO writes could infer ownership.
+        assert!(Process::current().is_none());
+        assert!(current_owner().is_none());
+        random::init();
+        let account = UserMemoryAccount::new(limit_pages);
+        let vmar =
+            VmarHandle::new_with_owner(ProcessVm::new(SockFs::new_path()), Some(account.clone()));
+        (vmar, account)
+    }
+
+    #[ktest]
+    fn stopped_initial_stack_charges_its_destination_without_a_current_process() {
+        let (vmar, account) = stopped_image(2);
+        // NUL plus this page-sized argument commits two actual stack pages.
+        let argument = CString::new(vec![b'a'; PAGE_SIZE]).unwrap();
+        vmar.process_vm()
+            .map_and_write_init_stack(&vmar, vec![argument], Vec::new(), AuxVec::new())
+            .unwrap();
+        assert_eq!(account.current_pages(), 2);
+        assert!(Process::current().is_none());
+        assert!(current_owner().is_none());
+
+        // Clearing the final owner handle releases the real mapping/VMO pages.
+        drop(vmar);
+        assert_eq!(account.current_pages(), 0);
+    }
+
+    #[ktest]
+    fn rejected_stopped_initial_stack_refunds_its_pages_when_the_image_is_dropped() {
+        let (vmar, account) = stopped_image(1);
+        let argument = CString::new(vec![b'a'; 2 * PAGE_SIZE]).unwrap();
+        let error = vmar
+            .process_vm()
+            .map_and_write_init_stack(&vmar, vec![argument], Vec::new(), AuxVec::new())
+            .unwrap_err();
+        assert!(error.is_user_frame_limit());
+        // The failed image still holds its first committed physical page;
+        // an admission error must not refund a page that remains live.
+        assert_eq!(account.current_pages(), 1);
+        drop(vmar);
+        assert_eq!(account.current_pages(), 0);
     }
 }
