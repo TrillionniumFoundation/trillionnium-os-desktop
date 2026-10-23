@@ -72,6 +72,13 @@ impl ActivationGuard {
         self.policy.composing()
     }
 
+    // This shared adapter is also compiled by app-window, whose editors do not
+    // yet use the optional original-Hepta composer transaction.
+    #[allow(dead_code)]
+    pub fn ime_confirmation_fenced(&self) -> bool {
+        self.permission.ime_confirmation_fenced()
+    }
+
     pub fn activated(&self, response: &egui::Response) -> bool {
         if !response.enabled() || !response.clicked() {
             return false;
