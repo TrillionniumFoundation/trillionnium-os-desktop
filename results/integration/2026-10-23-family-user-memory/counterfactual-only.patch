@@ -1,0 +1,13 @@
+diff --git a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
+index 6de6df87..1cce314e 100644
+--- a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
+@@ -36,7 +36,7 @@ const WORKLOAD_ID: u32 = 60001;
+ const WORKLOAD_AS_BYTES: u64 = 256 * 1024 * 1024;
+ // Aggregate user-data frames, including the stopped initial image. This is
+ // separate from virtual-address admission and is not a global memory reserve.
+-const WORKLOAD_USER_PAGES: usize = 64 * 1024 * 1024 / PAGE_SIZE;
++const WORKLOAD_USER_PAGES: usize = 128 * 1024 * 1024 / PAGE_SIZE;
+ 
+ pub(super) fn spawn(
+     path_resolver: PathResolver,
