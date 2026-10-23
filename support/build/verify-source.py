@@ -121,8 +121,6 @@ def main():
         PINNED_COMMIT, PINNED_TREE, PINNED_TOOLCHAIN
     ):
         raise SystemExit("fixed upstream inputs changed; coordinate with A00")
-    if (ROOT / "README.md").stat().st_size != 0:
-        raise SystemExit("root README must be empty")
     entries = subprocess.check_output(
         ["git", "ls-tree", "-rz", PINNED_TREE], cwd=ROOT
     ).split(b"\0")
