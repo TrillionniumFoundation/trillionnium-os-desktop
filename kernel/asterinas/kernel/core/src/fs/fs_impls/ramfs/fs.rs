@@ -46,6 +46,9 @@ use crate::{
 #[cfg(ktest)]
 mod permission_tests;
 
+#[cfg(ktest)]
+mod sgid_tests;
+
 #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
 mod permission_smp_tests;
 
@@ -957,7 +960,7 @@ impl RamInode {
         }
 
         let fs = self.fs.upgrade().unwrap();
-        let (uid, gid) = utils::current_fs_ids();
+        let (uid, gid, mode) = self.child_owner_and_mode(type_, mode);
         let new_inode = match type_ {
             InodeType::File => RamInode::new_file(&fs, mode, uid, gid, to_be_revalidated),
             InodeType::Socket => RamInode::new_socket(&fs, mode, uid, gid, to_be_revalidated),
@@ -1008,7 +1011,12 @@ impl RamInode {
             return_errno_with_message!(Errno::EEXIST, "entry exists");
         }
 
-        let (uid, gid) = utils::current_fs_ids();
+        let inode_type = match type_ {
+            MknodType::NamedPipe => InodeType::NamedPipe,
+            MknodType::CharDevice(_) => InodeType::CharDevice,
+            MknodType::BlockDevice(_) => InodeType::BlockDevice,
+        };
+        let (uid, gid, mode) = self.child_owner_and_mode(inode_type, mode);
         let new_inode = match type_ {
             MknodType::CharDevice(dev_id) | MknodType::BlockDevice(dev_id) => {
                 let dev_type = type_.device_type().unwrap();
@@ -1037,6 +1045,16 @@ impl RamInode {
 
         self.metadata.lock().inc_size();
         Ok(new_inode)
+    }
+
+    /// Capture the parent's group and setgid bit together before allocating or
+    /// publishing the new inode. This does not change the caller's credentials.
+    fn child_owner_and_mode(&self, type_: InodeType, mode: InodeMode) -> (Uid, Gid, InodeMode) {
+        let (parent_mode, parent_gid) = {
+            let metadata = self.metadata.lock();
+            (metadata.mode, metadata.gid)
+        };
+        utils::child_creation_attrs(parent_mode, parent_gid, type_, mode)
     }
 
     fn resize_impl(&self, new_size: usize) -> Result<()> {
@@ -1303,7 +1321,7 @@ impl Inode for RamInode {
         }
 
         let fs = self.fs.upgrade().unwrap();
-        let (uid, gid) = utils::current_fs_ids();
+        let (uid, gid, mode) = self.child_owner_and_mode(InodeType::File, mode);
         Ok(RamInode::new_tmpfile(
             &fs,
             mode,

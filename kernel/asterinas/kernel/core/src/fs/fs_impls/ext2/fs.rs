@@ -36,7 +36,9 @@ use crate::{
         ext2::utils,
         vfs::file_system::{AtomicFsFlags, FsEventSubscriberStats, FsFlags},
     },
-    process::{Gid, UserNamespace, credentials::capabilities::CapSet, posix_thread::AsPosixThread},
+    process::{
+        Gid, Uid, UserNamespace, credentials::capabilities::CapSet, posix_thread::AsPosixThread,
+    },
     security::lsm::hooks as lsm_hooks,
     thread::Thread,
 };
@@ -385,6 +387,8 @@ impl Ext2 {
         parent_ino: Ext2Ino,
         inode_type: InodeType,
         perm: FilePerm,
+        uid: Uid,
+        gid: Gid,
     ) -> Result<Arc<Inode>> {
         if inode_type == InodeType::Unknown {
             return_errno_with_message!(Errno::EINVAL, "cannot create inode with unknown type");
@@ -392,22 +396,17 @@ impl Ext2 {
 
         let ino = self.alloc_ino(parent_ino, inode_type)?;
         let link_count = if inode_type.is_directory() { 2 } else { 1 };
-        let (uid, gid) = Thread::current()
-            .and_then(|thread| {
-                thread
-                    .as_posix_thread()
-                    .map(|posix_thread| posix_thread.credentials())
-            })
-            .map(|credentials| {
-                (
-                    u32::from(credentials.fsuid()),
-                    u32::from(credentials.fsgid()),
-                )
-            })
-            .unwrap_or((0, 0));
         let now = utils::now();
         let generation = self.next_generation.fetch_add(1, Ordering::Relaxed);
-        let inode_desc = InodeDesc::new(inode_type, perm, uid, gid, link_count, generation, now);
+        let inode_desc = InodeDesc::new(
+            inode_type,
+            perm,
+            uid.into(),
+            gid.into(),
+            link_count,
+            generation,
+            now,
+        );
         let raw_inode = RawInode::from(&inode_desc);
 
         let block_group = self
@@ -631,7 +630,10 @@ impl Ext2 {
     fn sync_metadata(&self) -> Result<()> {
         let mut sb_guard = self.super_block.write();
 
-        let any_group_dirty = self.block_groups.iter().any(|group| group.is_metadata_dirty());
+        let any_group_dirty = self
+            .block_groups
+            .iter()
+            .any(|group| group.is_metadata_dirty());
         if !sb_guard.is_dirty() && !any_group_dirty {
             return Ok(());
         }
@@ -726,9 +728,7 @@ mod test {
                 RawInodeBuilder, assert_errno, create_file, default_fixture, make_valid_group_desc,
                 make_valid_super_block,
             },
-            vfs::{
-                file_system::FileSystem as FileSystemTrait, inode::Inode as InodeTrait,
-            },
+            vfs::{file_system::FileSystem as FileSystemTrait, inode::Inode as InodeTrait},
         },
         time::clocks,
     };
@@ -772,16 +772,22 @@ mod test {
         fn enqueue(&self, bio: SubmittedBio) -> core::result::Result<(), BioEnqueueError> {
             if bio.type_() == BioType::Write {
                 let offset = bio.sid_range().start.to_raw() as usize * SECTOR_SIZE;
-                if let Some(index) = self.metadata_offsets.iter().position(|value| *value == offset) {
+                if let Some(index) = self
+                    .metadata_offsets
+                    .iter()
+                    .position(|value| *value == offset)
+                {
                     self.observed[index].fetch_add(1, Ordering::Relaxed);
                     let owner = self.owner.read().upgrade().unwrap();
                     if owner.super_block.try_write().is_some() {
                         self.unguarded.fetch_add(1, Ordering::Relaxed);
                     }
                 }
-                if self.fail_offset.compare_exchange(
-                    offset, usize::MAX, Ordering::Relaxed, Ordering::Relaxed,
-                ).is_ok() {
+                if self
+                    .fail_offset
+                    .compare_exchange(offset, usize::MAX, Ordering::Relaxed, Ordering::Relaxed)
+                    .is_ok()
+                {
                     bio.complete(BioStatus::IoError);
                     return Ok(());
                 }
@@ -807,7 +813,8 @@ mod test {
         let mut fixture = Ext2FixtureBuilder::new(1, 256)
             .with_free_blocks(64, 64)
             .with_free_inodes(1000, 1000)
-            .build().unwrap();
+            .build()
+            .unwrap();
         let device = Arc::new(AllocationSyncDisk {
             inner: fixture.disk.clone(),
             owner: RwMutex::new(Weak::new()),
@@ -828,12 +835,20 @@ mod test {
 
     fn assert_synced_allocation(fixture: &Ext2Fixture, inodes: &[Ext2Ino], blocks: &[Ext2Bid]) {
         let group = fixture.ext2.block_group(0);
-        let desc = fixture.disk.segment().read_val::<RawBlockGroup>(
-            Bid::new(fixture.sb.group_descriptors_bid(0) as u64).to_offset(),
-        ).unwrap();
+        let desc = fixture
+            .disk
+            .segment()
+            .read_val::<RawBlockGroup>(
+                Bid::new(fixture.sb.group_descriptors_bid(0) as u64).to_offset(),
+            )
+            .unwrap();
         assert_eq!(desc.free_blocks_count, group.free_blocks_count());
         assert_eq!(desc.free_inodes_count, group.free_inodes_count());
-        let sb = fixture.disk.segment().read_val::<RawSuperBlock>(SUPER_BLOCK_OFFSET).unwrap();
+        let sb = fixture
+            .disk
+            .segment()
+            .read_val::<RawSuperBlock>(SUPER_BLOCK_OFFSET)
+            .unwrap();
         assert_eq!(sb.free_blocks_count, u32::from(desc.free_blocks_count));
         assert_eq!(sb.free_inodes_count, u32::from(desc.free_inodes_count));
         let reopened = Ext2::open(fixture.disk.clone(), FsFlags::empty(), None).unwrap();
@@ -843,9 +858,11 @@ mod test {
         }
         let metadata = reopened_group.metadata();
         for bid in blocks {
-            assert!(metadata.block_bitmap.is_allocated(
-                (*bid - reopened_group.first_block()).try_into().unwrap(),
-            ));
+            assert!(
+                metadata
+                    .block_bitmap
+                    .is_allocated((*bid - reopened_group.first_block()).try_into().unwrap(),)
+            );
         }
         assert!(!fixture.ext2.super_block().is_dirty());
         assert!(!group.is_metadata_dirty());
@@ -862,7 +879,9 @@ mod test {
             // Another allocator is allowed to run once this scope returns.
             let sb = fs.super_block.write();
             for group in &fs.block_groups {
-                group.sync_metadata(&fs.group_descriptors_segment, &sb).unwrap();
+                group
+                    .sync_metadata(&fs.group_descriptors_segment, &sb)
+                    .unwrap();
             }
         }
         let second_ino = fs.alloc_ino(ROOT_INO, InodeType::File).unwrap();
@@ -874,15 +893,27 @@ mod test {
         // allocation. It must restage the current descriptor, not commit the
         // older segment and clear the sole superblock dirty flag.
         fs.sync_metadata().unwrap();
-        assert_synced_allocation(&fixture, &[first_ino, second_ino], &[first_block, second_block]);
+        assert_synced_allocation(
+            &fixture,
+            &[first_ino, second_ino],
+            &[first_block, second_block],
+        );
 
         let third_ino = fs.alloc_ino(ROOT_INO, InodeType::File).unwrap();
         let third_block = fs.alloc_blocks(1, 0).unwrap().start;
         fs.sync_allocation_metadata().unwrap();
-        assert_synced_allocation(&fixture, &[first_ino, second_ino, third_ino],
-            &[first_block, second_block, third_block]);
+        assert_synced_allocation(
+            &fixture,
+            &[first_ino, second_ino, third_ino],
+            &[first_block, second_block, third_block],
+        );
         assert_eq!(device.unguarded.load(Ordering::Relaxed), 0);
-        assert!(device.observed.iter().all(|count| count.load(Ordering::Relaxed) >= 2));
+        assert!(
+            device
+                .observed
+                .iter()
+                .all(|count| count.load(Ordering::Relaxed) >= 2)
+        );
     }
 
     #[ktest]
@@ -895,7 +926,9 @@ mod test {
             let fs = &fixture.ext2;
             let ino = fs.alloc_ino(ROOT_INO, InodeType::File).unwrap();
             let block = fs.alloc_blocks(1, 0).unwrap().start;
-            device.fail_offset.store(device.metadata_offsets[failing_index], Ordering::Relaxed);
+            device
+                .fail_offset
+                .store(device.metadata_offsets[failing_index], Ordering::Relaxed);
             assert_errno!(fs.sync_allocation_metadata(), Errno::EIO);
             assert_eq!(device.fail_offset.load(Ordering::Relaxed), usize::MAX);
             assert!(fs.super_block().is_dirty());
@@ -908,7 +941,12 @@ mod test {
             fs.sync_allocation_metadata().unwrap();
             assert_synced_allocation(&fixture, &[ino], &[block]);
             assert_eq!(device.unguarded.load(Ordering::Relaxed), 0);
-            assert!(device.observed.iter().all(|count| count.load(Ordering::Relaxed) >= 1));
+            assert!(
+                device
+                    .observed
+                    .iter()
+                    .all(|count| count.load(Ordering::Relaxed) >= 1)
+            );
         }
     }
 
@@ -1025,7 +1063,10 @@ mod test {
             assert_eq!(fresh_file.ino(), ino);
             assert_eq!(fresh_file.file_size(), payload.len());
             let actual = FileSystemTrait::sb(reopened.as_ref());
-            assert_eq!((actual.bfree, actual.ffree), (expected.bfree, expected.ffree));
+            assert_eq!(
+                (actual.bfree, actual.ffree),
+                (expected.bfree, expected.ffree)
+            );
 
             // A new allocation must not reuse the persisted file's inode or
             // blocks. Read the old data only after the new file is written.
