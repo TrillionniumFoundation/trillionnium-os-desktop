@@ -2,8 +2,9 @@
 
 This Linux host library connects Desktop's existing `ObjectiveSubmission` state
 machine to Hepta's original `ProductionObjectiveSender` capability. It is a
-trusted embedding component, not a renderer command, issuer, database owner or
-background worker. The standalone Shell's Send action remains unavailable.
+trusted embedding component. Its typed host accepts bounded user intentions
+through an injected original authority. It provides no issuer or database owner.
+An unconfigured standalone Session remains unavailable.
 
 ## Sources and ownership
 
@@ -18,7 +19,7 @@ background worker. The standalone Shell's Send action remains unavailable.
 | One bounded submission or history socket call | `services/hepta-os::objective` |
 | View projection and concrete capability adaptation | This crate's `lib.rs`, `owner.rs`, `receipt.rs` and `recovery.rs` |
 
-There is no second SQLite database, file ledger, request queue, scheduler,
+There is no second SQLite database, file ledger or scheduler,
 authority store, model call or device executor in this crate. A checkpoint
 implementation is a required generic capability; the library supplies no
 production default. A test verifier or echo checkpoint cannot qualify a
@@ -73,7 +74,7 @@ are private to the adapter; the public view contains metadata only.
    history query.
 5. `cancel_before_send` consumes only this unused local opportunity. It does not
    cancel an admitted or running Hepta Objective. Cancellation after start needs
-   the original RunCancel owner, which is outside this slice.
+   the original RunCancel owner. The optional typed host below invokes that owner.
 6. After restart, enumerate retained requests with the original sender's bounded
    `retained_page` API. Pass an unchanged returned request to `recover_unknown`.
    It creates no submission transport and no sending or local cancellation
@@ -174,7 +175,66 @@ such until the final pinned Git dependency graph is executed.
 
 This slice does not itself supply the seven independent production inputs, the
 original authority service's operation handler, a protected checkpoint service,
-RunCancel integration, a Shell command, model execution, Notes readback/revocation,
+a Shell command, model execution, Notes readback/revocation,
 crash/power-loss qualification or real-device evidence. Those gates require their
 own original-owner execution records. Enabling renderer Send before those
 contracts are assembled and validated would overstate this library's scope.
+
+
+## Typed Session integration
+
+`TypedObjectiveHost<A>` takes the original multithread runtime and an
+`ObjectiveHostAuthority` implementation from the deployment. The authority
+supplies the existing writer's sender capability, current original peer and
+signed original ingress. Its `run_id` must deterministically bind the persistent
+trust namespace and client intent ID. Status or duplicate Submit first scans the
+original sender's bounded retained pages. A retained run only recovers and reads
+history; it never receives another issue/send opportunity, including after host
+restart. The first request's text remains authoritative for a reused ID.
+
+`ObjectiveWorker::spawn` runs that host on one blocking worker with an eight-item
+queue and at most 128 disposable observation entries. A private authenticated
+socket server calls `request` to return immediately, allowing Session's bounded
+IPC budget to remain responsive. The cache is not a ledger; original-owner
+retention is the sole recovery source. A full queue reports Capacity and never
+falls back to a direct operation. See `ui/session/OBJECTIVE_BRIDGE.md` for framing.
+
+Availability queries the actual Agentd capabilities and requires
+`objective.start` major 1. Submit, history, RunStatus and RunCancel bind the
+expected original UID/PID and owner/generation. Cancel reads a fresh original
+run revision; the renderer never supplies it. Run and cancellation observations
+are not device-effect receipts, and absence of a run does not mean non-admission.
+`observed_unix_ms` describes view freshness only. UI must expire cached readiness.
+
+The deployment must provide a genuine issuer, protected clock, live verifier,
+independent durable current-cut checkpoint and existing writer. Tests in
+`typed_host.rs` use the real original sender and SQLite owner with explicitly
+synthetic socket replies. They verify replay fencing, recovery and cancellation
+revision selection; they do not qualify production authority or real Agentd.
+
+## Literal Notes compiler
+
+The named “Write note via Hepta” action treats the submitted UTF-8 text as the
+exact content of one Notes document. `compile_notes_intent` calls the original
+`notes_operation_intent` validator, then binds that operation's semantic digest
+into the original structured Objective source. This binds payload, trusted
+subject and policy generation, current Notes incarnation and expected revision.
+No text is interpreted as model instructions, shell commands or network access.
+The original Notes bounds still apply: 4096 text bytes and 8192 payload bytes.
+
+The trusted deployment supplies `NotesIntentContext`, including the actual
+current target/revision, operation identity, principal scope, protected time and
+deadline. `notes_admission_profile_json` registers the same finite literal
+normalization for a persistent principal scope and genuine issuer identity.
+The registration must be installed in the original Objective owner. The
+compiler grants no signing, admission or effect authority. The deployment must
+retain the returned exact payload and `OperationIntentV1` through the original
+`prepare_operation` before original final-use dispatch.
+
+`tests/notes_intent.rs` executes the original strict decoders and original
+`admit_and_compile_objective_v1` against this profile. It checks that changing
+content or predecessor changes the original operation identity and that literal
+Chinese text survives without reinterpretation. The test authentication context
+is explicitly synthetic; it does not replace the production issuer or qualify
+a real document write. Notes currently provides an in-memory document; neither
+this compiler nor admission establishes persistent document storage.

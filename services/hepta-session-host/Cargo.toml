@@ -10,16 +10,21 @@ publish = false
 resolver = "2"
 
 [dependencies]
-codex-hepta-memory = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "db91f9ec316ba1472e7adf97f8415949de012469" }
+codex-hepta-objective = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "ed3d5e440a05520003f7c109b68f55c810e2e236" }
+codex-hepta-operations = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "ed3d5e440a05520003f7c109b68f55c810e2e236" }
+codex-hepta-types = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "ed3d5e440a05520003f7c109b68f55c810e2e236" }
+codex-hepta-agent-protocol = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "ed3d5e440a05520003f7c109b68f55c810e2e236" }
+trill-ui-core = { path = "../../ui/core" }
+codex-hepta-memory = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "ed3d5e440a05520003f7c109b68f55c810e2e236" }
 hepta-os-observer = { path = "../hepta-os", features = ["objective-history"] }
 trill-session = { path = "../../ui/session", features = ["objective-submission"] }
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.151"
-tokio = { version = "=1.52.3", features = ["rt-multi-thread", "time"] }
+tokio = { version = "=1.52.3", features = ["rt-multi-thread", "time", "net", "io-util", "fs"] }
 
 [dev-dependencies]
-codex-hepta-contracts = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "db91f9ec316ba1472e7adf97f8415949de012469" }
-codex-hepta-paths = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "db91f9ec316ba1472e7adf97f8415949de012469" }
+codex-hepta-contracts = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "ed3d5e440a05520003f7c109b68f55c810e2e236" }
+codex-hepta-paths = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "ed3d5e440a05520003f7c109b68f55c810e2e236" }
 tempfile = "3.23.0"
 
 [profile.dev-small]

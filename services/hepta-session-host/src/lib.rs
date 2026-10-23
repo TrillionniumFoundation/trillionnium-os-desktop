@@ -1,13 +1,22 @@
 //! Trusted Session composition over the original Hepta durable Objective owner.
 //!
 //! Linux host library only. It neither owns a database nor supplies authority,
-//! signing, checkpoint persistence, a background runtime, or a renderer command.
+//! signing, checkpoint persistence or a background async runtime. The optional
+//! typed host worker accepts narrow user intentions through injected authority.
 
 #![forbid(unsafe_code)]
+#![recursion_limit = "512"]
 
+mod control;
+pub mod notes_intent;
 mod owner;
 mod receipt;
 mod recovery;
+mod typed;
+mod worker;
+pub use trill_ui_core::objective::{ObjectiveHostIssue, ObjectiveIntent};
+pub use typed::{ObjectiveHostAuthority, TypedObjectiveHost};
+pub use worker::ObjectiveWorker;
 
 use codex_hepta_memory::{
     ObjectiveSenderCheckpoint, ObjectiveSenderIdentity, ObjectiveSenderOrigin,

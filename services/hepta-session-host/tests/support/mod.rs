@@ -78,7 +78,7 @@ pub struct Fixture {
     pub verifier: Arc<TestOnlyVerifier>,
     pub origin: ObjectiveSenderOrigin,
     pub original: String,
-    listener: UnixListener,
+    pub listener: UnixListener,
     _root: TempDir,
 }
 
