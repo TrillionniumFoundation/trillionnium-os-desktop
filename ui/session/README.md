@@ -9,12 +9,14 @@ table or infer task completion from a window.
 [main.rs](src/main.rs) owns spawn, kill requests, wait/reap, Session generation
 and finite task retention. [hepta.rs](src/hepta.rs) manages the explicitly
 configured read-only observer. [notes_bootstrap.rs](src/notes_bootstrap.rs)
-handles the trusted parent's private Notes bootstrap.
+handles the trusted parent's private Notes bootstrap v2, including separate effect and recovery descriptors. [deadline.rs](src/deadline.rs) supplies one monotonic deadline across partial reads and response writes.
 
 The socket is under an absolute private XDG_RUNTIME_DIR. Both peers check
 kernel-reported UID; same-UID hostile processes remain outside this prototype's
 trust boundary. A Session restart creates a new generation. Detached tasks
 must not be represented as reattached or successfully cancelled.
+
+An accepted connection has one 500 ms I/O allowance; partial progress does not renew it. The owner loop reaps exited children around every connection. This bounds transport occupancy, not Linux scheduling or process-creation time. A lost response after dispatch leaves the real action outcome intact and requires a fresh snapshot. The startup advisory lock protects competing Session starters; it is not a credential.
 
 Standalone Session does not install a production Hepta effect owner. The
 private Notes bootstrap is separate from public Snapshot/Launch/Cancel.

@@ -35,6 +35,10 @@ jobs:
         with:
           # The archive pair must be checked against the exact before/base tree.
           fetch-depth: 0
+      - name: Check README navigation and immutable-source regression controls
+        run: |
+          python3 -I support/build/tests/test_source_readme.py
+          python3 -I -O support/build/tests/test_source_readme.py
       - name: Check immutable source pins and regular project README
         run: |
           test -f README.md && test ! -L README.md

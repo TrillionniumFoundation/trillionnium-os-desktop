@@ -15,9 +15,15 @@ Evicting local presentation state cannot retire original owner history.
 An opaque handle does not grant authority; original operation identity,
 authorization and durable outcome remain owned by Hepta.
 
-Notes framing/correlation failures poison the channel. A timeout after a
-possible write is indeterminate, not a safe retry. Independent readback and
-original-owner reconciliation are distinct from transport success.
+Notes framing/correlation failures poison the effect stream. A timeout after a
+possible write is indeterminate, not a safe retry. The separately inherited
+recovery datagram channel supports bounded observation and exact receipt
+acknowledgement after that stream has closed. Only the original owner may
+acknowledge its retained result after durable reconciliation; observing an app
+receipt does not itself establish a durable Hepta terminal. Bootstrap v2 requires
+both descriptors and rejects the historical v1 handoff. See the
+[Notes contract](../../support/ui/NOTES_ORGAN.md) for the finite outstanding
+receipt and failure bounds; this channel is not a new grant or effect retry path.
 
 ## Development
 

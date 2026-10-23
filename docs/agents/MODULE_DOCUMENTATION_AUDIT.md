@@ -100,4 +100,4 @@ Asterinas 主内核 workspace 有 **57** 个显式成员，其中 **11** 个有 
 | [audit-validation.json](../../results/integration/2026-10-22-module-docs/audit-validation.json) | 原只读清点检查结果 |
 | [doc-corrections.patch.gz](../../results/integration/2026-10-22-module-docs/doc-corrections.patch.gz) / [manifest](../../results/integration/2026-10-22-module-docs/doc-corrections-manifest.json) | 三份历史范围指引的原始补丁（无损 gzip）和准备阶段校验；本次已应用，原正文保持不变 |
 
-2026-10-23：根 [README.md](../../README.md) 已加入项目与模块导航，`verify-source.py` 保留全部 118 项上游输入核验，移除了与上游完整性无关的空 README 限制。详细阅读入口仍为 [docs/INDEX.md](../INDEX.md)。本次没有为缺少独立手册的 crate 生成空模板，也没有把文档存在记成产品完成。
+2026-10-23：根 [README.md](../../README.md) 已加入项目与模块导航，`verify-source.py` 保留全部 118 项上游输入核验，移除了与上游完整性无关的空 README 限制。详细阅读入口为 [docs/INDEX.md](../INDEX.md) 和 [当前能力表](../CURRENT_CAPABILITIES.md)；本表中的无同目录手册统计仍只绑定10-22冻结源码，后续七份UI/ABI入口不回填该清单。本次没有为缺少独立手册的 crate 生成空模板，也没有把文档存在记成产品完成。
