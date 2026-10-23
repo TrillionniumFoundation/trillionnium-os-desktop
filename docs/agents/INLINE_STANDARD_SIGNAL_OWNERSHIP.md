@@ -79,3 +79,22 @@ signals, RT FIFO, signalfd reads and ptrace fault inspection/continuation. Linux
 reference results are only a behavioral reference. Native qualification must
 bind a newly built ordinary ELF and all source snapshots to this exact source.
 Native qualification of this new signal slice is pending.
+
+## Separate access-error classification correction
+
+The new strict syscall probe on the retained pre-change `d5a21bb7` ordinary ELF
+found a pre-existing classification error: a PROT_NONE VMA returned real VMAR
+`EACCES`, but x86's absent PTE selected `SEGV_MAPERR`. The baseline observed
+SIGSEGV 11, code 1 and the exact fault address; Linux returned `SEGV_ACCERR` 2.
+Both baseline failures remain retained; the probe's code/address assertions
+were not weakened.
+
+A separate correction preserves the actual VMAR error through the common fault
+handler. Only its `EACCES` permission result selects the existing
+`FaultSignal(SIGSEGV, SEGV_ACCERR, address)`. Original user-space/VMAR guards drop
+before enqueue. Other errors retain their original architecture classification,
+and the kernel-copy fault callback still returns its original unit error.
+A sixth real core regression uses original VMA permission denial, absent mapping
+and zero-page quota denial to check that boundary. The combined inventory is
+353 core tests / 114 required names. This does not classify allocation failure
+as an access violation or change the existing quota-failure signal policy.

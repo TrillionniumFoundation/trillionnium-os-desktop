@@ -8,7 +8,10 @@ use ostd::{arch::cpu::context::UserContext, task::Task};
 
 use crate::{
     prelude::*,
-    process::signal::signals::{OwnedSignal, fault::FaultSignal},
+    process::signal::{
+        constants::{SEGV_ACCERR, SIGSEGV},
+        signals::{OwnedSignal, fault::FaultSignal},
+    },
     thread::kernel_thread::AsKernelThread,
     vm::vmar::{PageFaultInfo, Vmar},
 };
@@ -16,12 +19,20 @@ use crate::{
 pub(super) fn handle_exception(ctx: &Context, user_ctx: &UserContext, exception: CpuException) {
     debug!("handle exception: {:#x?}", exception);
 
-    if let Ok(page_fault_info) = PageFaultInfo::try_from(&exception) {
+    let permission_signal = if let Ok(page_fault_info) = PageFaultInfo::try_from(&exception) {
         let user_space = ctx.user_space();
-        let vmar = user_space.vmar();
-        if handle_page_fault_from_vmar(vmar, &page_fault_info).is_ok() {
-            return;
+        match handle_page_fault_from_vmar(user_space.vmar(), &page_fault_info) {
+            Ok(()) => return,
+            Err(error) => permission_fault_signal(&error, &page_fault_info),
         }
+    } else {
+        None
+    };
+    // Release the original user-space/VMAR guards before taking signal locks.
+    if let Some(signal) = permission_signal {
+        ctx.posix_thread
+            .enqueue_owned_signal(OwnedSignal::new(signal));
+        return;
     }
 
     // We cannot handle most exceptions. Send a fault signal to the current thread before returning
@@ -29,8 +40,16 @@ pub(super) fn handle_exception(ctx: &Context, user_ctx: &UserContext, exception:
     generate_fault_signal(exception, ctx, user_ctx);
 }
 
+/// A denied VMA permission is an access error even when demand paging has not
+/// installed a PTE yet. Hardware "present" bits alone cannot classify that case.
+/// Other VMAR failures retain the existing architecture-specific signal policy.
+fn permission_fault_signal(error: &Error, info: &PageFaultInfo) -> Option<FaultSignal> {
+    (error.error() == Errno::EACCES)
+        .then(|| FaultSignal::new(SIGSEGV, SEGV_ACCERR, Some(info.address() as u64)))
+}
+
 /// Handles the page fault occurs in the VMAR.
-fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> Result<(), ()> {
+fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> Result<()> {
     if let Err(e) = vmar.handle_page_fault(page_fault_info) {
         // The handler has released its VMAR, page-table and VMO locks. This
         // diagnostic is evidence of the exact admission cause, not an OOM kill.
@@ -60,7 +79,7 @@ fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> 
             "page fault handler failed: info: {:#x?}, err: {:?}",
             page_fault_info, e
         );
-        return Err(());
+        return Err(e);
     }
     Ok(())
 }
@@ -105,12 +124,61 @@ pub(super) fn page_fault_handler(info: &CpuException) -> Result<(), ()> {
         }
 
         let user_space = CurrentUserSpace::new(thread_local);
-        handle_page_fault_from_vmar(user_space.vmar(), &page_fault_info)
+        handle_page_fault_from_vmar(user_space.vmar(), &page_fault_info).map_err(|_| ())
     } else {
         let vmar = task
             .as_kernel_thread()
             .and_then(|kernel_thread| kernel_thread.vmar())
             .ok_or(())?;
-        handle_page_fault_from_vmar(vmar, &page_fault_info)
+        handle_page_fault_from_vmar(vmar, &page_fault_info).map_err(|_| ())
+    }
+}
+
+#[cfg(ktest)]
+mod tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::{
+        fs::pseudofs::SockFs,
+        process::{ProcessVm, signal::signals::Signal},
+        vm::{
+            perms::VmPerms,
+            user_memory::UserMemoryAccount,
+            vmar::{VmarHandle, VmarMapOffset},
+        },
+    };
+
+    #[ktest]
+    fn actual_vmar_permission_denial_reports_access_error_without_reclassifying_other_failures() {
+        crate::time::clocks::init_for_ktest();
+        crate::util::random::init();
+        let account = UserMemoryAccount::new(0);
+        let vmar =
+            VmarHandle::new_with_owner(ProcessVm::new(SockFs::new_path()), Some(account.clone()));
+        let address = 0x4000_0000;
+        vmar.new_map(PAGE_SIZE, VmPerms::empty())
+            .offset(VmarMapOffset::FixedNoReplace(address))
+            .build()
+            .unwrap();
+        let info = PageFaultInfo::new(address, VmPerms::WRITE);
+        let error = handle_page_fault_from_vmar(&vmar, &info).unwrap_err();
+        assert_eq!(error.error(), Errno::EACCES);
+        let signal = permission_fault_signal(&error, &info).unwrap();
+        assert_eq!(signal.num(), SIGSEGV);
+        assert_eq!(signal.to_info().si_code, SEGV_ACCERR);
+        assert_eq!(signal.to_info().si_addr(), address);
+
+        let absent = PageFaultInfo::new(address + PAGE_SIZE, VmPerms::WRITE);
+        let error = handle_page_fault_from_vmar(&vmar, &absent).unwrap_err();
+        assert!(permission_fault_signal(&error, &absent).is_none());
+        vmar.new_map(PAGE_SIZE, VmPerms::READ | VmPerms::WRITE)
+            .offset(VmarMapOffset::FixedNoReplace(address + PAGE_SIZE))
+            .build()
+            .unwrap();
+        let error = handle_page_fault_from_vmar(&vmar, &absent).unwrap_err();
+        assert!(error.is_user_frame_limit());
+        assert!(permission_fault_signal(&error, &absent).is_none());
+        assert_eq!(account.current_pages(), 0);
     }
 }

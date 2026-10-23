@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 352  # Retained 347 plus five original signal-owner regressions.
+MINIMUM_CORE_TESTS = 353  # Retained 352 plus actual VMAR signal classification regression.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -171,6 +171,7 @@ ORDINARY_FAULT_CORE_TESTS = tuple("aster_core::vm::vmar::fault_allocation_tests:
     "fault_around_keeps_successful_prefix_and_charges_only_original_vmo_frame",
 ))
 INLINE_SIGNAL_CORE_TESTS = (
+    "aster_core::thread::exception::tests::actual_vmar_permission_denial_reports_access_error_without_reclassifying_other_failures",
     *("aster_core::process::signal::owned_tests::" + suffix for suffix in (
         "inline_fault_preserves_first_info_mask_and_original_priority",
         "dynamic_realtime_keeps_original_fifo_and_drops_each_owner_once",
