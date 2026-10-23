@@ -43,7 +43,7 @@ in place with the same explicit authority rules.
 
 This is not complete low-memory recovery: ordinary non-fault cursor queries can
 still preallocate; VMAR/map metadata, root creation, fork, device mapping,
-huge-page splitting, TLB retention vectors and `Box<FaultSignal>` can still use
+huge-page splitting, TLB retention vectors and remaining dynamic signal metadata can still use
 infallible allocation. Page-table frames are not charged to `memory.max` by this
 slice. Kernel heap coverage and global recovery remain open.
 
@@ -94,3 +94,44 @@ test assertion. Both failure and final result hashes are linked in the
 The actual zero-account rejection and original allocating-cursor comparison
 qualify the admission ordering. They do not prove small physical page-table
 allocation failure under memory pressure, nor whole-kernel OOM recovery.
+
+## Real ordinary 4 KiB allocation-failure regression (pending qualification)
+
+The new `physical_page_table_nomemory_keeps_original_vmar_and_refunds_private_nodes`
+core test retains the original N0, 512 MiB and guest deadline. Its VMAR, root
+table, existing sentinel mapping, committed VMO page, family/ancestor accounts
+and fixed-capacity vector all exist before pressure. The second VMA is in a
+different x86 root slot, requiring three new child tables. A VMO read fault
+uses its already committed original page; it does not first allocate user data,
+perform COW or backend I/O. Its private locks take their uncontended fast paths.
+
+The test holds real ordinary frames through `FrameAllocOptions` until allocation
+fails. It then runs three cuts with zero, one and two ordinary frames available,
+returning those frames by dropping original owners. Each actual `Vmar` fault must
+return non-quota `ENOMEM`, preserve both PTE observations and RSS/ancestor counts,
+and return exactly the one or two unpublished child-table frames to that same
+allocator. After releasing pressure, the same fault must succeed using the
+original VMO page. Actual final-reference destruction and an RCU grace period
+verify the original data charges return once.
+
+All observations are stored on the stack while IRQs are disabled. No test
+assertion, formatting, log, task switch, vector growth or VMAR destruction occurs
+until held frames are released. The original `loglevel=error` suppresses the
+fault-path debug formatting. `Frame` metadata occupies boot-created 64-byte
+`MetaSlot`s; `Frame<()>` has an empty drop hook, while unpublished empty PT nodes
+refund directly through the original allocator. No heap metadata is allocated
+by these frame allocation/refund paths. The original pending-node transaction
+is a fixed stack array and the untouched TLB flusher does not grow its empty
+retention vector.
+
+This means the original ordinary 4 KiB allocation path actually returns
+`NoMemory`, not that every physical free byte is zero: its empty local cache
+refills in batches of eight pages, and unavailable fragments/other-size caches
+may remain. No free counter, quota flag or injected allocation failure is used
+to manufacture a cut. Fixed bookkeeping overflow invalidates the test.
+
+The complete core inventory becomes 360 with 121 required names; all earlier
+tests remain. OSTD 230, allocator 20 and MLSDisk 15 are unchanged. Qualification
+of this new source is pending. This test does not qualify activated-table/TLB
+removal, SMP, arbitrary syscall heap exhaustion, page-table resource charging,
+physical recovery authority or whole-kernel recovery.

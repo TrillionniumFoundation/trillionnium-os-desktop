@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 359  # Retained 353 plus six original image/credential boundary regressions.
+MINIMUM_CORE_TESTS = 360  # Retained 359 plus one real ordinary PT allocation-failure regression.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -166,6 +166,7 @@ SETGID_CREATION_CORE_TESTS = (
     "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::setgid_ext2_creation_inherits_group_and_directory_bit_before_persistent_publication",
 )
 ORDINARY_FAULT_CORE_TESTS = tuple("aster_core::vm::vmar::fault_allocation_tests::" + suffix for suffix in (
+    "physical_page_table_nomemory_keeps_original_vmar_and_refunds_private_nodes",
     "denied_anonymous_and_vmo_faults_leave_original_empty_page_table_ranges",
     "ordinary_fault_and_cow_keep_old_mapping_on_quota_denial_and_refund_last_frame",
     "fault_around_keeps_successful_prefix_and_charges_only_original_vmo_frame",
