@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "command": [
+    "sudo",
+    "-n",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-v3-stat/stat-probe"
+  ],
+  "timeout_seconds": 25,
+  "source_dir": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-v3-stat",
+  "source_sha256": "88e0568833bc7835d9435b29165ab9fcc42611fcf8bb718acc07852dd3045022",
+  "binary_sha256": "3a08fe53b7f20974b085c280fb3078009af6c2fb3fa7d5667cdac2339d4f84df",
+  "compile_command": [
+    "gcc",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "-fno-pie",
+    "-no-pie",
+    "stat_probe.c",
+    "-o",
+    "stat-probe"
+  ],
+  "compile_exit": 0,
+  "kernel": "7.0.0-38-generic",
+  "only_one_owned_child": true,
+  "status": "complete",
+  "exit": 0,
+  "seconds": 0.016489777015522122,
+  "inputs_unchanged": true,
+  "raw_sha256": "9212146a512378c3160225c35dc222b1a3c1c284c8dcca494517336d23da2020",
+  "observations": 54,
+  "failed_observations": [],
+  "summaries": [
+    {
+      "summary": true,
+      "violations": 0,
+      "all_children_reaped": true
+    }
+  ]
+}

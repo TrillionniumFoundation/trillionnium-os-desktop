@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "scope": "owned child/process lifecycle only; no production processes or injection",
+  "original_artifact_manifest_sha256": "47d6a6daf9ba93289b1459dbbb6bb6166bf8ba3443791c48e3d9dcf774af82ad",
+  "original_audit_summary_sha256": "75f262bd9ee15cc4f41e6c5d1107f60a0ada28cbde6b5430dfff8c1001d7394e",
+  "original_artifacts_unchanged": true,
+  "original_artifacts_checked": 14,
+  "first_linux_v1": {
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-linux-reference-01.json",
+    "exit": 42,
+    "reason": "fixture assumed reset0 but host readonly fs.suid_dumpable is2; original source and logs retained",
+    "retained_sources": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-v1-reference"
+  },
+  "linux_v2": {
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-linux-reference-02.json",
+    "exit": 0,
+    "observations": 165,
+    "seconds": 0.16584932699333876,
+    "reset_policy": 2,
+    "actual_uid": 60001,
+    "actual_permitted_effective_caps": 0,
+    "actual_nnp": 1,
+    "all_children_reaped": true,
+    "fixtures": 15
+  },
+  "linux_stat_v3": {
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-linux-stat-reference-03.json",
+    "exit": 0,
+    "observations": 54,
+    "seconds": 0.016489777015522122,
+    "all_children_reaped": true
+  },
+  "native_v2_negative": {
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-v2-6c26-negative-01/result.json",
+    "expected_negative_reproduced": true,
+    "raw_qemu_exit": 33,
+    "probe_exit": 42,
+    "failed_observations": 43,
+    "seconds": 1.4204391799867153,
+    "all_children_reaped": true
+  },
+  "native_stat_negative": {
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-stat-0252-negative-01/result.json",
+    "expected_negative_reproduced": true,
+    "raw_qemu_exit": 33,
+    "probe_exit": 42,
+    "failed_observations": 21,
+    "sensitive_field_disclosures": 20,
+    "seconds": 1.821921012015082,
+    "all_children_reaped": true
+  },
+  "stat_source_blob_identity": {
+    "d4f0a759f4629266cc490df6a1d786671ce7479d": {
+      "exit": 0,
+      "sha256": "532c125a5cb58a968e96c443dd414497c22c409c146a1522db5139774dfcd5f1"
+    },
+    "02521c15edbd8b2308248f28fcecf285b863a4c6": {
+      "exit": 0,
+      "sha256": "532c125a5cb58a968e96c443dd414497c22c409c146a1522db5139774dfcd5f1"
+    },
+    "6c26e3aeefde05c120944e278299b4925612f3c8": {
+      "exit": 0,
+      "sha256": "532c125a5cb58a968e96c443dd414497c22c409c146a1522db5139774dfcd5f1"
+    }
+  },
+  "linux_old_fds": {
+    "maps": "0 bytes after exec",
+    "mem": "0 bytes after exec",
+    "environ": "0 bytes after exec",
+    "auxv": "Linux retained368B original snapshot; oracle accepts empty or exactly original bytes only; new image prohibited"
+  },
+  "oracle_limits": [
+    "No PTRACE_ATTACH or process_vm_readv positive requirements; prior unsupported results remain distinct",
+    "No setuid/chmod fixture, host policy edit, privileged target inspection or production process access",
+    "Both native runs disposable prebuilt ordinary kernel, original120s/512MiB/KVM/smp1, no SDK/build",
+    "No proof of all sameUID capabilities isolated; kernel agent owns actual fix/new positive",
+    "Root credential fixture setup is separate from actual UID60001 cap0/NNP cross-child observer",
+    "Host fs.suid_dumpable2 only observed, never changed; guest explicitpolicy0 matches existing fixed Asterinas policy"
+  ],
+  "official_sources": [
+    "https://raw.githubusercontent.com/torvalds/linux/v7.0/kernel/cred.c",
+    "https://raw.githubusercontent.com/torvalds/linux/v7.0/fs/exec.c",
+    "https://raw.githubusercontent.com/torvalds/linux/v7.0/fs/proc/base.c",
+    "https://raw.githubusercontent.com/torvalds/linux/v7.0/fs/proc/array.c",
+    "https://man7.org/linux/man-pages/man2/PR_SET_DUMPABLE.2const.html",
+    "https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html"
+  ],
+  "production_isolation_qualified": false,
+  "kernel_modified": false,
+  "strict_checker": {
+    "module": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle_checker.py",
+    "api": [
+      "check_lifecycle(raw,code,timed_out)",
+      "check_stat(raw,code,timed_out)",
+      "check(raw,code,timed_out)"
+    ],
+    "v2_observation_count": {
+      "sysctl_present": 165,
+      "sysctl_absent": 164
+    },
+    "v3_observations": 54,
+    "actual_guest_success_qualification": false,
+    "host_tests": 5,
+    "mutations_rejected": 58,
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-checker-tests-01.json"
+  }
+}
