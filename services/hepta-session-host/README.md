@@ -214,6 +214,18 @@ run revision; the renderer never supplies it. Run and cancellation observations
 are not device-effect receipts, and absence of a run does not mean non-admission.
 `observed_unix_ms` describes view freshness only. UI must expire cached readiness.
 
+Availability also reads bounded original `retained_page` records for navigation
+after Shell process death. The deployment's pure `retained_client_intent_id`
+mapping reads its original canonical source `requestId`, returns None for other
+producers, and performs no signing, preparation or delivery. The host validates
+each ID, original owner/spawn and the exact `run_id(id)` round trip. Only IDs and
+traversal completeness cross the UI boundary; raw signed requests stay private.
+At most 128 IDs and 64 original pages are considered under one asynchronous
+deadline. A partial traversal cannot advertise Ready. This is a live keyset
+traversal, not a frozen global history snapshot. New recovery scans begin again
+at Beginning. Tests verify that a fresh host recovers the IDs without creating
+an original observation, permission or additional wire submission.
+
 The deployment must provide a genuine issuer, protected clock, live verifier,
 independent durable current-cut checkpoint and existing writer. Tests in
 `typed_host.rs` use the real original sender and SQLite owner with explicitly

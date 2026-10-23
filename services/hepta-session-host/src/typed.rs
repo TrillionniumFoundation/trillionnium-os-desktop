@@ -21,6 +21,13 @@ pub trait ObjectiveHostAuthority: Send {
     fn sender(&self) -> Result<ProductionObjectiveSender<Self::Checkpoint>, ObjectiveHostIssue>;
     fn current_origin(&mut self) -> Result<ObjectiveSenderOrigin, ObjectiveHostIssue>;
     fn run_id(&self, client_intent_id: &str) -> Result<String, ObjectiveHostIssue>;
+    /// Pure projection of the original source request ID, restricted to this
+    /// deployment's UI profile. Return None for a different original producer.
+    /// This must never sign, prepare, submit or create a parallel ID ledger.
+    fn retained_client_intent_id(
+        &self,
+        request: &ObjectiveSenderRequest,
+    ) -> Result<Option<String>, ObjectiveHostIssue>;
     fn issue(
         &mut self,
         intent: &ObjectiveIntent,
@@ -90,6 +97,18 @@ impl<A: ObjectiveHostAuthority> TypedObjectiveHost<A> {
                 .any(|capability| capability.id == "objective.start" && capability.major == 1)
             {
                 return Err(ObjectiveHostIssue::Unavailable);
+            }
+            let retained = crate::retained::collect(
+                &self.authority,
+                &sender,
+                &origin,
+                &self.runtime,
+                self.deadline,
+            )?;
+            let complete = retained.complete;
+            view.retained_intents = Some(retained);
+            if !complete {
+                return Err(ObjectiveHostIssue::Capacity);
             }
             view.stage = ObjectiveStage::Ready;
             return Ok(());

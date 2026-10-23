@@ -92,6 +92,12 @@ impl ObjectiveBridge {
                 if view.client_intent_id.as_deref() != command.client_intent_id() {
                     return Err(ObjectiveHostIssue::IdentityMismatch);
                 }
+                if let Some(retained) = &view.retained_intents {
+                    retained.validate()?;
+                    if !matches!(command, ObjectiveCommand::Availability {}) {
+                        return Err(ObjectiveHostIssue::IdentityMismatch);
+                    }
+                }
                 Ok(view)
             })
             .await

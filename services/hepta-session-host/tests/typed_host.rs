@@ -38,6 +38,13 @@ impl ObjectiveHostAuthority for Authority {
     fn run_id(&self, _: &str) -> Result<String, ObjectiveHostIssue> {
         Ok("test-only-original-run".into())
     }
+    fn retained_client_intent_id(
+        &self,
+        _: &codex_hepta_memory::ObjectiveSenderRequest,
+    ) -> Result<Option<String>, ObjectiveHostIssue> {
+        // Explicit test fixture mapping; production reads its canonical source.
+        Ok(Some("intent-1".into()))
+    }
     fn issue(
         &mut self,
         _: &ObjectiveIntent,
@@ -215,4 +222,43 @@ fn readiness_requires_the_original_objective_capability_without_issuing() {
     }
     assert_eq!(issued.load(Ordering::SeqCst), 0);
     assert!(fixture.retained().is_empty());
+}
+
+#[test]
+fn fresh_host_recovers_navigation_from_original_owner_without_a_new_send() {
+    let fixture = Fixture::new();
+    let issued = Arc::new(AtomicUsize::new(0));
+    drop(fixture.prepare().unwrap());
+    let retained = fixture.retained();
+    assert_eq!(retained.len(), 1);
+    let events = fixture
+        .snapshot(retained.into_iter().next().unwrap())
+        .observations
+        .len();
+    let server = serve(
+        &fixture,
+        vec![json!({"schema_version":2,"request_id":19,
+        "agent_id":fixture.origin.agent_id.as_str(),"spawn_generation":1,"current_generation":2,
+        "payload":{"type":"capabilities","schema_version":1,
+            "capabilities":[{"id":"objective.start","major":1,"minor":0}]}})],
+    );
+    let view = host(&fixture, &issued).handle(ObjectiveCommand::Availability {});
+    assert_eq!(view.stage, ObjectiveStage::Ready);
+    let recovery = view.retained_intents.unwrap();
+    assert!(recovery.complete);
+    assert_eq!(recovery.client_intent_ids, ["intent-1"]);
+    let wire = server.join().unwrap();
+    assert_eq!(wire.len(), 1);
+    assert_eq!(wire[0]["method"]["type"], "capabilities");
+    assert_eq!(issued.load(Ordering::SeqCst), 0);
+    let retained = fixture.retained();
+    assert_eq!(retained.len(), 1);
+    assert_eq!(
+        fixture
+            .snapshot(retained.into_iter().next().unwrap())
+            .observations
+            .len(),
+        events
+    );
+    fixture.assert_no_connection();
 }

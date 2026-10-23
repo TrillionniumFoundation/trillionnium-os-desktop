@@ -100,6 +100,34 @@ pub struct ObjectiveRunObservation {
     pub terminal_observed: bool,
 }
 
+/// Navigation IDs read from the original owner's retained requests. No signed
+/// request, admission, sending permission or effect result is projected here.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ObjectiveRetainedIntents {
+    pub client_intent_ids: Vec<String>,
+    pub complete: bool,
+}
+
+impl ObjectiveRetainedIntents {
+    pub fn validate(&self) -> Result<(), ObjectiveHostIssue> {
+        if self.client_intent_ids.len() > MAX_OBJECTIVE_VIEWS {
+            return Err(ObjectiveHostIssue::Capacity);
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        for id in &self.client_intent_ids {
+            ObjectiveCommand::Status {
+                client_intent_id: id.clone(),
+            }
+            .validate()?;
+            if !seen.insert(id) {
+                return Err(ObjectiveHostIssue::IdentityMismatch);
+            }
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ObjectiveCancellation {
@@ -125,6 +153,8 @@ pub struct ObjectiveObservation {
     pub run: Option<ObjectiveRunObservation>,
     pub cancellation: ObjectiveCancellation,
     pub issue: Option<ObjectiveHostIssue>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub retained_intents: Option<ObjectiveRetainedIntents>,
 }
 
 impl ObjectiveObservation {
@@ -138,6 +168,7 @@ impl ObjectiveObservation {
             run: None,
             cancellation: ObjectiveCancellation::NotRequested,
             issue: None,
+            retained_intents: None,
         }
     }
 }
@@ -166,5 +197,35 @@ mod tests {
             },
         };
         assert_eq!(invalid.validate(), Err(ObjectiveHostIssue::InvalidIntent));
+    }
+
+    #[test]
+    fn navigation_recovery_rejects_duplicate_foreign_and_excessive_ids() {
+        let valid = ObjectiveRetainedIntents {
+            client_intent_ids: vec!["old-intent".into()],
+            complete: true,
+        };
+        assert_eq!(valid.validate(), Ok(()));
+        for ids in [
+            vec!["one".into(), "one".into()],
+            vec!["../owner".into()],
+            (0..=MAX_OBJECTIVE_VIEWS)
+                .map(|n| format!("id-{n}"))
+                .collect(),
+        ] {
+            assert!(ObjectiveRetainedIntents {
+                client_intent_ids: ids,
+                complete: false
+            }
+            .validate()
+            .is_err());
+        }
+        let old = ObjectiveObservation::new(None, ObjectiveStage::Unavailable);
+        let json = serde_json::to_string(&old).unwrap();
+        assert!(!json.contains("retained_intents"));
+        assert_eq!(
+            serde_json::from_str::<ObjectiveObservation>(&json).unwrap(),
+            old
+        );
     }
 }

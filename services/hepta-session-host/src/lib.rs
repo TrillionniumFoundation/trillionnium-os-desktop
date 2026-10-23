@@ -12,6 +12,7 @@ pub mod notes_intent;
 mod owner;
 mod receipt;
 mod recovery;
+mod retained;
 mod typed;
 mod worker;
 pub use trill_ui_core::objective::{ObjectiveHostIssue, ObjectiveIntent};
