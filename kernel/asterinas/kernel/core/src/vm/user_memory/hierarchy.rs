@@ -184,7 +184,7 @@ pub(crate) fn test_leaf(max: usize) -> Arc<MemoryDomain> {
 #[cfg(ktest)]
 mod tests;
 
-/// Completes real XArray RCU destruction for physical-owner regressions.
+/// Completes real deferred destruction for physical-owner and CPU-lease tests.
 #[cfg(ktest)]
 pub(crate) fn test_wait_for_rcu_refunds() {
     tests::grace();

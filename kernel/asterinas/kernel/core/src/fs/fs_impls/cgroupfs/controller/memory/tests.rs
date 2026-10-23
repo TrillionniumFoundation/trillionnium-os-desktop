@@ -74,6 +74,11 @@ fn cleanup(process: Arc<Process>, task: Arc<Task>) {
     CgroupMembership::write_lock().move_process_to_root(&process);
     task.as_posix_thread().unwrap().set_cpu_cgroup(None);
     drop((task, process));
+    // PosixThread::set_cpu_cgroup publishes through RcuOption. Even this
+    // unstarted task can leave CpuCgroupLease references queued for a grace
+    // period after migration. Wait for the original RCU destructor queue,
+    // without weakening mark_as_dead's final CPU-owner protection below.
+    crate::vm::user_memory::hierarchy::test_wait_for_rcu_refunds();
 }
 
 #[ktest]

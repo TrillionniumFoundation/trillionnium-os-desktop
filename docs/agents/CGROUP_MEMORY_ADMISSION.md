@@ -196,3 +196,26 @@ for every suite. No filtered/soft-skipped substitute, unchanged ELF from 0187,
 or synthetic host fixture qualifies this source. Ordinary integrated native
 Hepta workloads and user-level cgroup/mmap/IPC stress remain further acceptance
 work; this document does not claim they have run.
+
+### First native execution and deferred-owner teardown
+
+The full unfiltered four-crate run at `5015b949258cc0ec07aafc68f388c1085ed2796b`
+(the memory slice plus the boot-ID slice) passed OSTD 229 and allocator 20, then
+failed strictly in core before a complete result. QEMU returned raw 0, which the
+original checker rejected; MLSDisk was not run. This is not a passing core run.
+The failed ELF and complete original logs remain frozen separately.
+
+A private debugger session using that same retained ELF stopped at the first
+`panic_fmt` in the migration test. Its original `Location` is `memory/tests.rs:169`:
+`mark_as_dead` rejected deletion because the cgroup still held deferred CPU
+accounting leases. The migration's quota assertions had completed. Clearing an
+unstarted task's original `RcuOption<CpuCgroupLease>` queues the old owner until
+RCU grace; dropping the Process and Task alone is not a grace-period barrier.
+A subsequent fixture-unwind panic obscured this first error and exhausted the
+unwinder stack. The repair waits on the existing real `RcuDrop` witness and a
+bounded original task yield after releasing the test Process/Task, before the
+unchanged strict deletion checks. It does not clear lease counters, bypass
+`mark_as_dead`, change a quota assertion, or alter the guest deadline.
+
+The repaired source must complete a fresh source-bound full run before claiming
+core 316 / required 77, OSTD 229, allocator 20 and MLSDisk 15 qualification.
