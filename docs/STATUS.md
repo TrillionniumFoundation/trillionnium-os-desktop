@@ -1,5 +1,17 @@
 # 当前状态
 
+## 2026-10-23 审计后实施候选
+
+本节记录审计后的实施进度，不改变下方历史运行的来源身份。当前本地集成候选保留 #247 的模块手册与 README 门禁迁移、#254 的 UDP 错误修复、#253 的原生原 owner 生命周期门禁。远端 main 尚未因此取得新组合运行资格。
+
+| 审计项 | 当前进度 | 下一完成条件 |
+| --- | --- | --- |
+| 跨仓来源 | 最新 Hepta convergence 与原 Organ 候选已在独立集成线合并，原 owning-package 测试进行中。 | 固定完整 pair、原包及所需 CI 通过后合入主线。 |
+| 模块文档 | #247 的就近手册及 README 门禁迁移已进入本地候选；ABI 62、规格 40、source-profile 19 项 host 回归通过。 | 当前整合代码的完整相关门禁和远端发布。 |
+| 原生 daemon / G2 | 已保留原生命周期 fixture 和严格 runner，并接入 UDP stop 修复。 | 从新源码构建 ordinary ELF，实际运行原 daemon，再完成原 store crash/restart、最终 exec 角色与持久 K↔D。 |
+| 只读写入 / Session | 独立修复与验收进行中。 | 原始正反测试、规定工具链及组合回归。 |
+| 总资源 / 恢复 / 生产 / 设备 | 继续开放。 | 真实 memory/reserve/watchdog/pause、原生产输入及具体设备完成条件，不能由 host 模型或文档替代。 |
+
 ## 2026-10-23 接续：G1-d root-workload 负控的截止时间修复
 
 原 CI 失败来自 manager 的 30 秒 startup 等待与 recovery 的 20 秒 IPC 等待不一致；修复为共享 startup 常量加 10 秒 recovery 余量，严格负控 oracle 保持不变。固定已测源码 `458f9b1086ed7535658ae5e4e9392d3eb88f459d` / tree `f67d00514eafbd03ed66a0877667b63f2804a94f` 已完成原正向与 root-workload 负向共六 boot，24 项针对性 host 测试通过。负控只出现预期的 privilege-boundary 和 missing-workload 两条失败，无额外 IPC timeout。
