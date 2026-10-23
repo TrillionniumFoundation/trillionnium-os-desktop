@@ -75,6 +75,7 @@ pub enum ObjectiveStage {
     SubmitUnknown,
     Refused,
     Admitted,
+    Abstained,
     Conflict,
 }
 
