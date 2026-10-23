@@ -46,6 +46,8 @@ impl WatchdogOutcome {
 
 pub(super) struct WatchdogState {
     pub(super) armed: bool,
+    // Diagnostic callback count only; never a UsageSnapshot event sequence.
+    ticks: u64,
     // An identity reference only. Process::status remains the sole stop owner.
     pub(super) workload: Weak<Process>,
     pub(super) terminal: Option<(WatchdogOutcome, Option<u64>)>,
@@ -55,6 +57,7 @@ impl WatchdogState {
     pub(super) fn new() -> Self {
         Self {
             armed: false,
+            ticks: 0,
             workload: Weak::new(),
             terminal: None,
         }
@@ -128,10 +131,14 @@ impl NativeCpuManager {
 
 impl CpuBandwidthState {
     fn watchdog_tick(&mut self, now: Option<u64>, issued: u64, stopped: bool, alive: bool) {
-        let Some(policy) = self.trusted_management.as_ref() else {
+        let Some(policy) = self.trusted_management.as_mut() else {
             return;
         };
-        if !policy.watchdog.armed || policy.watchdog.terminal.is_some() {
+        if !policy.watchdog.armed {
+            return;
+        }
+        policy.watchdog.ticks = policy.watchdog.ticks.saturating_add(1);
+        if policy.watchdog.terminal.is_some() {
             return;
         }
         let finish = |state: &mut Self, outcome| {
@@ -223,7 +230,7 @@ impl CpuController {
         let Some(control) = &self.control else {
             return Ok(());
         };
-        let (armed, terminal, workload, cut) = {
+        let (armed, terminal, workload, cut, ticks) = {
             let state = control.max.lock();
             let Some(policy) = state.trusted_management.as_ref() else {
                 return Ok(());
@@ -237,6 +244,7 @@ impl CpuController {
                     ManagerClosure::Open => Some(policy.manager_expires_ns),
                     ManagerClosure::ClockUnavailable => None,
                 },
+                policy.watchdog.ticks,
             )
         };
         let workload = workload.upgrade();
@@ -245,6 +253,7 @@ impl CpuController {
         // locks. Neither observation is represented as trusted user intent.
         drop(workload);
         writeln!(printer, "hepta_watchdog_armed {}", u8::from(armed))?;
+        writeln!(printer, "hepta_watchdog_ticks {}", ticks)?;
         writeln!(
             printer,
             "hepta_watchdog_due_ns {}",

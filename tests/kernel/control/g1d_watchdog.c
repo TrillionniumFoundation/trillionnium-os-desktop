@@ -24,7 +24,7 @@ static void watchdog_leaf(void) {
 }
 struct watchdog_stat {
     uint64_t armed, due, expires, status, evaluated, available, stopped, pause_available;
-    uint64_t stable_low, stable_high, previous, revision, effective, consumed;
+    uint64_t stable_low, stable_high, previous, revision, effective, consumed, ticks;
     unsigned mask;
 };
 static struct watchdog_stat watchdog_read(void) {
@@ -40,10 +40,10 @@ static struct watchdog_stat watchdog_read(void) {
         "hepta_watchdog_status", "hepta_watchdog_evaluated_ns", "hepta_job_stop_available",
         "hepta_job_stopped", "hepta_user_pause_intent_available", "hepta_watchdog_stable_id_low",
         "hepta_watchdog_stable_id_high", "hepta_watchdog_previous_revision", "hepta_watchdog_revision",
-        "hepta_watchdog_effective_ns", "hepta_watchdog_consumed_ns"};
+        "hepta_watchdog_effective_ns", "hepta_watchdog_consumed_ns", "hepta_watchdog_ticks"};
     uint64_t *values[] = {&stat.armed, &stat.due, &stat.expires, &stat.status, &stat.evaluated,
         &stat.available, &stat.stopped, &stat.pause_available, &stat.stable_low, &stat.stable_high,
-        &stat.previous, &stat.revision, &stat.effective, &stat.consumed};
+        &stat.previous, &stat.revision, &stat.effective, &stat.consumed, &stat.ticks};
     char *save, *line = strtok_r(buffer, "\n", &save);
     while (line) {
         char key[80], tail; uint64_t value;
@@ -54,10 +54,10 @@ static struct watchdog_stat watchdog_read(void) {
         }
         line = strtok_r(NULL, "\n", &save);
     }
-    CHECK((stat.mask & 255U) == 255U && stat.armed == 1 && stat.available == 1 && stat.pause_available == 0,
+    CHECK((stat.mask & 16639U) == 16639U && stat.armed == 1 && stat.ticks > 0 && stat.available == 1 && stat.pause_available == 0,
           "watchdog_required_fields");
     CHECK(stat.due > 0 && stat.expires == stat.due + UINT64_C(25000000000), "watchdog_fixed_deadline");
-    CHECK(stat.mask == (stat.status == 1 ? 16383U : 255U), "watchdog_receipt_presence");
+    CHECK(stat.mask == (stat.status == 1 ? 32767U : 16639U), "watchdog_receipt_presence");
     return stat;
 }
 static void watchdog_wait_until(uint64_t deadline) {
@@ -143,9 +143,13 @@ static void watchdog_recovery(const char *kind) {
     }
     sleep_ms(300);
     struct watchdog_stat repeated = watchdog_read();
-    CHECK(memcmp(&final, &repeated, sizeof final) == 0 && usage_read(control_fd, cap).revision == revision,
+    uint64_t later_ticks = repeated.ticks;
+    repeated.ticks = final.ticks;
+    CHECK(later_ticks > final.ticks && memcmp(&final, &repeated, sizeof final) == 0 &&
+          usage_read(control_fd, cap).revision == revision,
           "watchdog_repeated_ticks_immutable");
-    record("G1DW_REPEAT ticks_at_least=300 unchanged_receipt=1 unchanged_revision=1");
+    record("G1DW_REPEAT before_ticks=%" PRIu64 " after_ticks=%" PRIu64 " unchanged_receipt=1 unchanged_revision=1",
+           final.ticks, later_ticks);
     if (!strcmp(kind, "stopped")) {
         CHECK(kill(workload_pid, SIGCONT) == 0, "watchdog_explicit_continue");
         sleep_ms(300);

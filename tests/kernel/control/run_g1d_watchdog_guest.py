@@ -29,7 +29,7 @@ RESULT = re.compile(r"^G1DW_RESULT case=([a-z]+) status=([0-9]+) cap=([0-9]+) re
 RECEIPT = re.compile(r"^G1DW_RECEIPT previous=([0-9]+) revision=([0-9]+) effective=([0-9]+) "
                      r"consumed=([0-9]+) stable_low=([0-9]+) stable_high=([0-9]+)$")
 CLOSE = re.compile(r"^G1DW_MANAGER_CLOSE case=([a-z]+) original_revision=([0-9]+) failure=exec_revoke$")
-REPEAT = "G1DW_REPEAT ticks_at_least=300 unchanged_receipt=1 unchanged_revision=1"
+REPEAT = re.compile(r"^G1DW_REPEAT before_ticks=([0-9]+) after_ticks=([0-9]+) unchanged_receipt=1 unchanged_revision=1$")
 ONE_USE = "G1DW_ONE_USE denied=2 exact_replay=1 manager_next_D=not_seen"
 CONTINUE = "G1DW_EXPLICIT_CONTINUE signal=18 original_jobstop_cleared=1 budget_unchanged=1"
 
@@ -40,8 +40,8 @@ def evaluate(raw, code, timed_out, probe_info, kind):
     lines = text.splitlines()
     records = lambda pattern: control.records(lines, pattern)
     complete = f"G1DW_COMPLETE case={kind} timer=true original_owner=true durable=false reserve=false"
-    allowed = (REPEAT, ONE_USE, CONTINUE, complete)
-    patterns = (RESULT, RECEIPT, CLOSE, control.BOOT, control.APPLY, control.COMMITTED,
+    allowed = (ONE_USE, CONTINUE, complete)
+    patterns = (RESULT, RECEIPT, CLOSE, REPEAT, control.BOOT, control.APPLY, control.COMMITTED,
                 control.ROLE_COMMITTED, control.ACTIVATED)
     unknown = [line for line in lines if any(tag in line for tag in ("G1D_", "G1DW_", "[hepta-g1d]"))
                and line not in allowed and not any(pattern.fullmatch(line) for pattern in patterns)]
@@ -96,9 +96,12 @@ def evaluate(raw, code, timed_out, probe_info, kind):
             effect &= not receipts
         effect &= (not closes if kind == "healthy" else len(closes) == 1 and closes[0][1][1] == kind
                    and int(closes[0][1][2]) == original + 1 and applications[0][0] < closes[0][0] < results[0][0])
-    markers = (lines.count(complete) == 1 and lines.count(REPEAT) == (0 if kind == "healthy" else 1)
+    repeats = records(REPEAT)
+    markers = (lines.count(complete) == 1 and len(repeats) == (0 if kind == "healthy" else 1)
                and lines.count(ONE_USE) == (1 if kind == "restore" else 0)
                and lines.count(CONTINUE) == (1 if kind == "stopped" else 0))
+    if repeats:
+        markers &= len(repeats) == 1 and 0 < int(repeats[0][1][1]) < int(repeats[0][1][2]) < 1 << 64
     if len(results) == 1 and lines.count(complete) == 1:
         markers &= results[0][0] < lines.index(complete)
     return {"passed": bool(type(code) is int and code == 33 and timed_out is False and clean and manifest and effect and markers),

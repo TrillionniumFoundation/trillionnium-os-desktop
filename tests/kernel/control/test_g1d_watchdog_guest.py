@@ -35,7 +35,7 @@ def transcript(kind):
     if kind == "restore":
         lines.extend(["G1DW_RECEIPT previous=2 revision=3 effective=7000000100 consumed=0 stable_low=2 stable_high=1", gate.ONE_USE])
     if kind != "healthy":
-        lines.append(gate.REPEAT)
+        lines.append("G1DW_REPEAT before_ticks=5000 after_ticks=5300 unchanged_receipt=1 unchanged_revision=1")
     if kind == "stopped":
         lines.append(gate.CONTINUE)
     status, cap, revision, stopped = {"restore": (1, 50_000_000, 3, 0), "healthy": (0, 25_000_000, 2, 0),
@@ -80,13 +80,16 @@ class OracleTests(unittest.TestCase):
 
     def test_duplicate_markers_and_new_authority_claim_are_rejected(self):
         raw = transcript("restore")
-        for extra in (gate.REPEAT, gate.ONE_USE, "G1DW_CLAIM trusted_user_pause=true", "G1D_BOOT role=1 pid=1 manager=1 workload=2 recovery=3 version=2 bytes=192"):
+        for extra in ("G1DW_REPEAT before_ticks=5000 after_ticks=5300 unchanged_receipt=1 unchanged_revision=1", gate.ONE_USE, "G1DW_CLAIM trusted_user_pause=true", "G1D_BOOT role=1 pid=1 manager=1 workload=2 recovery=3 version=2 bytes=192"):
             self.assertFalse(self.evaluate(raw + b"\n" + extra.encode()))
 
     def test_zero_or_stopped_must_not_be_restored(self):
         for kind in ("zero", "stopped"):
             self.assertFalse(self.evaluate(transcript("restore"), kind))
             self.assertFalse(self.evaluate(transcript(kind).replace(b"revision=2 due=", b"revision=3 due="), kind))
+
+    def test_no_real_followup_tick_cannot_pass(self):
+        self.assertFalse(self.evaluate(transcript("restore").replace(b"after_ticks=5300", b"after_ticks=5000")))
 
     def test_automatic_recovery_has_no_recovery_request(self):
         raw = transcript("restore").replace(gate.ONE_USE.encode(), apply(3, 2, 50_000_000).encode() + b"\n" + gate.ONE_USE.encode())

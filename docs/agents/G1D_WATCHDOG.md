@@ -64,7 +64,10 @@ from POSIX stop or a caller's label; the present wire response has no such bit.
 close cut is unavailable. `evaluated_ns` is the terminal observation time (zero
 when unavailable). Only status 1 includes the original receipt's stable ID
 (low/high 64 bits), previous/current revision, effective time and consumed CPU.
-No error result fabricates success fields. Reads do not mutate any CPU budget.
+No error result fabricates success fields. The saturating `hepta_watchdog_ticks`
+counts real callback entries under the original owner lock so the native probe
+can distinguish a repeated callback from elapsed wall time alone. It is not a
+resource revision or UsageSnapshot event sequence. Reads do not mutate any CPU budget.
 
 ## Validation
 
