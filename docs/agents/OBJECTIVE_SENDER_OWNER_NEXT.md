@@ -1,14 +1,20 @@
-# Objective sender：原持久 owner 的下一片实施设计
+# Objective sender：原持久 owner 的历史设计与实施索引
 
-**状态：下一片设计，尚未实现或验收。** 本文说明如何在现有 Hepta owner 内补齐 Objective 发送前的持久保留、唯一发送许可和恢复查询。它没有新增生产 API、数据库迁移、issuer、发送入口或通过记录，也不把 Session 接口、host 单测、接收端入队或一次 SQLite commit 记作生产恢复完成。
+**状态：历史设计已有后续代码与有限执行，完整生产接合仍未验收。** 本文保留实施前的审查基线和设计要求；下文的“缺少”“提议”“待执行”均属于当时基线，不能作为当前实现状态清单。
 
-## 1. 固定审查基线与当前缺口
+截至 2026-10-23，原 CognitiveStore / ProductionDurableWriter sender 已在 [Hepta #3444](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3444) 实现，已执行的 sender 核心源码 pin 为 `db91f9ec316ba1472e7adf97f8415949de012469`；原开发/技术文档见 [hepta-memory/OBJECTIVE_SENDER.md](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/db91f9ec316ba1472e7adf97f8415949de012469/codex-rs/hepta-memory/OBJECTIVE_SENDER.md)。它包含 migration 0017、永久 duplicate fence、同事务 checked observation 和 acknowledged recovery snapshot。最终原 memory 库为 322 passed、8 skipped，原 Agentd bridge owning-package 尚未执行。
+
+具体 Desktop host 已在 [#256](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/256) 接合 #255 原 Session，源码为 `bf0a0a0a582d7c93c191488e762c12bd6d75561a`；[开发、构造与运行边界](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/bf0a0a0a582d7c93c191488e762c12bd6d75561a/services/hepta-session-host/README.md) 及 [完整执行证据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/8aab02dced7590516d62808c506e491c6eeb453d/services/hepta-session-host/evidence/2026-10-23-original-owner) 已发布。最终 14 项原 owner/socket 测试通过；恢复调用的单处负控产生 3 项预期 ACK 失败，精确恢复后 14 项再次通过。
+
+独立生产 current-cut checkpoint、可信旧 schema 升级、原签名 Objective、原 RunCancel、七项生产输入与设备/原生执行仍未闭合，产品 Send 保持关闭。最新 source/profile、已执行子集和 blocker 统一以 [本轮执行记录](ORGAN_EXECUTION_2026_10_23.md) 为准；本页的历史设计、单测或一次 SQLite commit 都不转授生产恢复资格。
+
+## 1. 固定审查基线与历史缺口
 
 原 Hepta 源码固定为 [6d6097da843f5831dfaf9cee3530da512d072a15](https://github.com/TrillionniumFoundation/hepta-private-ci/tree/6d6097da843f5831dfaf9cee3530da512d072a15)，tree 为 f722fbe5f24275c324089be720559a40901105f3。下文的 Hepta 文件行号均属于这个提交；实施时必须重新绑定实际候选 head/tree，不能沿用本页的历史源码身份或通过数字。
 
 Desktop [#255](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/255) 的候选固定为 [940313d876481c6effc14ad783444e9e7b9d275a](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/940313d876481c6effc14ad783444e9e7b9d275a)，tree 为 2e94a12b8500ddca1d775712f0ffa7fbe86046d8。其 [OriginalObjectiveRequestOwner 端口](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/940313d876481c6effc14ad783444e9e7b9d275a/ui/session/src/objective_submission.rs#L34-L92) 要求保留原 bytes、身份和观察，但**不提供 production 实现**。其实现文件 Git blob 为 9b32303afffc2ecfb8395bc4b34b166d7f905f97。
 
-当前准确结论：
+在上述历史基线时的结论：
 
 - 原 Hepta 已有排他 CognitiveStore、生产 writer、原事务、append-only event/outbox、精确 current-cut 恢复和独立 RunStart journal。
 - 原 AgentdClient 的 ObjectiveStart 直接进入 socket 发送，没有 sender retain-before-send 调用。
@@ -122,7 +128,7 @@ RunStartAnchor 由原 journal 的 sequence 与 chain_digest 组成。ObjectiveSt
 
 ## 8. 最小正反与崩溃验收矩阵
 
-以下均为**待执行的验收要求**。测试中允许明确标注的 fixture issuer/target 来检查有限代码路径，但它们不能成为生产信任来源，也不能替代真实 original-owner 与 native 资格。
+以下为**设计时列出的验收要求**，已执行的具体子集见页首与本轮执行记录，不能将整表标记为通过。测试中允许明确标注的 fixture issuer/target 来检查有限代码路径，但它们不能成为生产信任来源，也不能替代真实 original-owner 与 native 资格。
 
 | 场景 / 注入点 | 期望结果 | 不可省略的见证 |
 | --- | --- | --- |
