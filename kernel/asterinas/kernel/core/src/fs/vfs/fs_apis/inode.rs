@@ -398,12 +398,14 @@ pub(crate) trait Inode: Any + FileOps + Send + Sync {
     /// Returns the inode type.
     fn type_(&self) -> InodeType;
 
-    /// Attempts permission checks and mode/owner/group/ctime changes in one
+    /// Attempts permission checks and mode/owner/group/timestamp changes in one
     /// critical section held by the inode's actual metadata owner.
     ///
     /// `Some` means the backend implements the complete request, including its
     /// special restrictions, with no partial updates on error. `None` explicitly
-    /// opts into the VFS's legacy split-lock path: it is not an atomicity guarantee.
+    /// opts into the VFS's legacy split-lock path for chmod/chown only: it is not
+    /// an atomicity guarantee. User timestamp requests fail with EOPNOTSUPP
+    /// rather than use a split authorization/update sequence.
     /// Wrappers must preserve their own restrictions and external-writer contract;
     /// forwarding to a backing inode alone is not sufficient for that guarantee.
     fn try_permission_attr_transaction(

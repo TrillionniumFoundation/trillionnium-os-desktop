@@ -5,7 +5,10 @@ use ostd::prelude::ktest;
 use super::*;
 use crate::{
     fs::{
-        ext2::{Ext2, test_utils::{create_file, default_fixture}},
+        ext2::{
+            Ext2,
+            test_utils::{create_file, default_fixture},
+        },
         vfs::{
             file_system::FsFlags,
             permission_attrs::{PermissionAttrOp, PermissionAttrRequest},
@@ -20,33 +23,90 @@ fn permission_ext2_reject_then_commit() {
     let file = create_file(&root, "permission");
     file.set_uid(1000).unwrap();
     file.set_gid(2000).unwrap();
-    file.set_mode(InodeMode::from_bits_truncate(0o6755)).unwrap();
+    file.set_mode(InodeMode::from_bits_truncate(0o6755))
+        .unwrap();
     let before = file.metadata();
     let operation = PermissionAttrOp::Chown {
         uid: Some(Uid::new(1002)),
         gid: Some(Gid::new(2002)),
     };
-    let request = |caps| PermissionAttrRequest::for_test(
-        operation, Uid::new(1001), Gid::new(2000), BTreeSet::new(), caps,
-    );
-    let error = file.permission_attr_transaction(&request(CapSet::CHOWN)).unwrap_err();
+    let request = |caps| {
+        PermissionAttrRequest::for_test(
+            operation,
+            Uid::new(1001),
+            Gid::new(2000),
+            BTreeSet::new(),
+            caps,
+        )
+    };
+    let error = file
+        .permission_attr_transaction(&request(CapSet::CHOWN))
+        .unwrap_err();
     assert_eq!(error.error(), Errno::EPERM);
     let denied = file.metadata();
     assert_eq!(denied.uid, before.uid);
     assert_eq!(denied.gid, before.gid);
     assert_eq!(denied.mode, before.mode);
     assert_eq!(denied.last_meta_change_at, before.last_meta_change_at);
-    file.permission_attr_transaction(&request(CapSet::CHOWN | CapSet::FOWNER)).unwrap();
+    file.permission_attr_transaction(&request(CapSet::CHOWN | CapSet::FOWNER))
+        .unwrap();
     let after = file.metadata();
     assert_eq!(after.uid, Uid::new(1002));
     assert_eq!(after.gid, Gid::new(2002));
     assert_eq!(after.mode.bits(), 0o755);
     // Exercise the real ext2 writeback path after the one-lock update.
     fixture.ext2.sync_all().unwrap();
-    let reopened = Ext2::open(fixture.disk.clone() as Arc<dyn BlockDevice>, FsFlags::empty(), None)
-        .unwrap();
+    let reopened = Ext2::open(
+        fixture.disk.clone() as Arc<dyn BlockDevice>,
+        FsFlags::empty(),
+        None,
+    )
+    .unwrap();
     let persisted = reopened.read_inode(file.ino()).unwrap().metadata();
     assert_eq!(persisted.uid, after.uid);
     assert_eq!(persisted.gid, after.gid);
     assert_eq!(persisted.mode, after.mode);
+}
+
+#[ktest]
+fn utimes_ext2_denial_is_unchanged_and_success_is_persistent() {
+    let (fixture, root) = default_fixture();
+    let file = create_file(&root, "utimes");
+    file.set_uid(1000).unwrap();
+    file.set_gid(2000).unwrap();
+    file.set_mode(InodeMode::from_bits_truncate(0o666)).unwrap();
+    let operation = PermissionAttrOp::Utimes {
+        atime: Some(Duration::from_secs(123)),
+        mtime: Some(Duration::from_secs(456)),
+        now_only: false,
+    };
+    let request = |uid| {
+        PermissionAttrRequest::for_test(
+            operation,
+            Uid::new(uid),
+            Gid::new(2000),
+            BTreeSet::new(),
+            CapSet::empty(),
+        )
+    };
+    let before = file.metadata();
+    let error = file
+        .permission_attr_transaction(&request(1001))
+        .unwrap_err();
+    assert_eq!(error.error(), Errno::EPERM);
+    let denied = file.metadata();
+    assert_eq!(denied.last_access_at, before.last_access_at);
+    assert_eq!(denied.last_modify_at, before.last_modify_at);
+    assert_eq!(denied.last_meta_change_at, before.last_meta_change_at);
+    file.permission_attr_transaction(&request(1000)).unwrap();
+    fixture.ext2.sync_all().unwrap();
+    let reopened = Ext2::open(
+        fixture.disk.clone() as Arc<dyn BlockDevice>,
+        FsFlags::empty(),
+        None,
+    )
+    .unwrap();
+    let persisted = reopened.read_inode(file.ino()).unwrap().metadata();
+    assert_eq!(persisted.last_access_at, Duration::from_secs(123));
+    assert_eq!(persisted.last_modify_at, Duration::from_secs(456));
 }

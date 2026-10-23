@@ -123,41 +123,40 @@ struct Utimbuf {
     modtime: i64,
 }
 
-fn vfs_utimes(path: &Path, times: Option<TimeSpecPair>) -> Result<SyscallReturn> {
-    let (atime, mtime, ctime) = match times {
+fn vfs_utimes(path: &Path, times: Option<TimeSpecPair>, ctx: &Context) -> Result<SyscallReturn> {
+    let (atime, mtime, now_only) = match times {
         Some(times) => {
             if !times.atime.is_valid() || !times.mtime.is_valid() {
                 return_errno_with_message!(Errno::EINVAL, "invalid time")
             }
             let now = RealTimeCoarseClock::get().read_time();
             let atime = if times.atime.is_utime_omit() {
-                path.atime()
+                None
             } else if times.atime.is_utime_now() {
-                now
+                Some(now)
             } else {
-                Duration::try_from(times.atime)?
+                Some(Duration::try_from(times.atime)?)
             };
             let mtime = if times.mtime.is_utime_omit() {
-                path.mtime()
+                None
             } else if times.mtime.is_utime_now() {
-                now
+                Some(now)
             } else {
-                Duration::try_from(times.mtime)?
+                Some(Duration::try_from(times.mtime)?)
             };
-            (atime, mtime, now)
+            (
+                atime,
+                mtime,
+                times.atime.is_utime_now() && times.mtime.is_utime_now(),
+            )
         }
         None => {
             let now = RealTimeCoarseClock::get().read_time();
-            (now, now, now)
+            (Some(now), Some(now), true)
         }
     };
 
-    path.check_mount_writable()?;
-
-    // Update times
-    path.set_atime(atime);
-    path.set_mtime(mtime);
-    path.set_ctime(ctime);
+    path.set_times(atime, mtime, now_only, ctx)?;
     fs::vfs::notify::on_attr_change(path);
     Ok(SyscallReturn::Return(0))
 }
@@ -210,7 +209,7 @@ fn do_utimes(
         file.path().clone()
     };
 
-    vfs_utimes(&path, times)
+    vfs_utimes(&path, times, ctx)
 }
 
 // Sets the access and modification times for a file,

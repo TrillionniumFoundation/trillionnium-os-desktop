@@ -31,8 +31,7 @@ use crate::{
             },
             path::{Dentry, is_dot, is_dot_or_dotdot, is_dotdot},
             permission_attrs::{
-                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy,
-                PermissionModePolicy,
+                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy, PermissionModePolicy,
             },
             registry::{FsCreationCtx, FsProperties, FsType},
             xattr::{XattrName, XattrNamespace, XattrSetFlags},
@@ -91,11 +90,7 @@ impl RamFs {
             sb,
             root: Arc::new_cyclic(|weak_root| RamInode {
                 inner: Inner::new_dir(weak_root.clone(), weak_root.clone()),
-                metadata: SpinLock::new(InodeMeta::new_dir(
-                    mkmod!(a+rx, u+w),
-                    root_uid,
-                    root_gid,
-                )),
+                metadata: SpinLock::new(InodeMeta::new_dir(mkmod!(a+rx, u+w), root_uid, root_gid)),
                 ino: ROOT_INO,
                 typ: InodeType::Dir,
                 dir_revalidation_policy: revalidation_policy,
@@ -561,6 +556,12 @@ impl RamInode {
         }
         if let Some(gid) = update.gid {
             metadata.gid = gid;
+        }
+        if let Some(atime) = update.atime {
+            metadata.set_atime(atime);
+        }
+        if let Some(mtime) = update.mtime {
+            metadata.set_mtime(mtime);
         }
         if let Some(ctime) = update.ctime(PermissionCtimePolicy::OnAttributeChange) {
             metadata.set_ctime(ctime);

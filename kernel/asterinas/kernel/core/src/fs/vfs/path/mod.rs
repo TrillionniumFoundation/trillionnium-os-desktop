@@ -984,8 +984,6 @@ impl Path {
     pub(crate) fn size(&self) -> usize;
     pub(crate) fn owner(&self) -> Result<Uid>;
     pub(crate) fn group(&self) -> Result<Gid>;
-    pub(crate) fn atime(&self) -> Duration;
-    pub(crate) fn mtime(&self) -> Duration;
     pub(crate) fn ctime(&self) -> Duration;
     pub(crate) fn list_xattr(
         &self,
@@ -1005,16 +1003,36 @@ impl Path {
         self.inode().set_group(&self.dentry, gid)
     }
 
-    pub(crate) fn set_atime(&self, time: Duration) {
-        self.inode().set_atime(&self.dentry, time)
-    }
-
-    pub(crate) fn set_mtime(&self, time: Duration) {
-        self.inode().set_mtime(&self.dentry, time)
-    }
-
     pub(crate) fn set_ctime(&self, time: Duration) {
         self.inode().set_ctime(&self.dentry, time)
+    }
+
+    /// Authorizes and changes user-requested timestamps under the inode owner lock.
+    pub(crate) fn set_times(
+        &self,
+        atime: Option<Duration>,
+        mtime: Option<Duration>,
+        now_only: bool,
+        ctx: &Context,
+    ) -> Result<()> {
+        self.check_mount_writable()?;
+        PermissionAttrRequest::run_for_context(
+            PermissionAttrOp::Utimes {
+                atime,
+                mtime,
+                now_only,
+            },
+            &self.dentry,
+            ctx,
+        )
+        .unwrap_or_else(|| {
+            // A split check/set fallback would race a concurrent owner change.
+            // Unported filesystem owners must implement a serialized transaction.
+            Err(Error::with_message(
+                Errno::EOPNOTSUPP,
+                "atomic timestamp authorization unsupported",
+            ))
+        })
     }
 
     /// Resizes the file.
