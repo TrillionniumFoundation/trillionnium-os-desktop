@@ -20,6 +20,9 @@ use crate::{
 fn with_sender(owner: Arc<UserMemoryAccount>, test: impl FnOnce(Arc<Vmar>) + Send + 'static) {
     crate::time::clocks::init_for_ktest();
     crate::util::random::init();
+    // Install the original scheduler activation and user-fault hooks before
+    // spawning the associated VMAR, as the original kernel-thread suite does.
+    crate::thread::init();
     let vmar = VmarHandle::new_with_owner(ProcessVm::new(SockFs::new_path()), Some(owner.clone()));
     let worker_vmar = vmar.clone_arc();
     let complete = Arc::new(AtomicBool::new(false));
