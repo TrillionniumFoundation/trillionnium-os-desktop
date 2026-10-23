@@ -13,7 +13,10 @@ mod dir_entry;
 
 use self::dir_entry::{DOT_BYTE, DOT_DOT_BYTE, DirBlockView, DirEntryFileType, DirEntryHeader};
 use super::{super::Ext2, FileFlags, FilePerm, Inode, InodeInner, MAX_LINK_COUNT};
-use crate::fs::ext2::{prelude::*, utils};
+use crate::fs::{
+    ext2::{prelude::*, utils},
+    file::InodeMode,
+};
 
 /// Information about a candidate directory entry slot.
 #[derive(Clone, Copy, Debug)]

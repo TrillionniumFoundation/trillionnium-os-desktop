@@ -6,7 +6,7 @@ use super::*;
 use crate::{
     fs::{
         ext2::{
-            Ext2,
+            Ext2, FilePerm,
             test_utils::{create_file, default_fixture},
         },
         vfs::{
