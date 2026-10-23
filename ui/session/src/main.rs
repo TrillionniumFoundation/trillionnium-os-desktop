@@ -1310,6 +1310,73 @@ mod tests {
         drop(incomplete);
     }
 
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn response_backpressure_still_refreshes_child_exit_and_releases_owner() {
+        use std::os::fd::AsRawFd;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let Response::Task { task, .. } = session.launch(Workspace::Build, AppKind::Calculator)
+        else {
+            panic!("expected owned child");
+        };
+        // Replace only this test-owned child with a short process that exits
+        // during the blocked response; the completed original is reaped first.
+        session.children.get_mut(&task.id).unwrap().wait().unwrap();
+        session.children.insert(
+            task.id,
+            Command::new("/bin/sleep").arg("0.05").spawn().unwrap(),
+        );
+        for id in 2..26 {
+            let mut padding = task.clone();
+            padding.id = id;
+            padding.detail = "x".repeat(1000);
+            session.tasks.insert(id, padding);
+        }
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        let buffer_bytes: libc::c_int = 4096;
+        assert_eq!(
+            unsafe {
+                libc::setsockopt(
+                    stream.as_raw_fd(),
+                    libc::SOL_SOCKET,
+                    libc::SO_SNDBUF,
+                    (&buffer_bytes as *const libc::c_int).cast(),
+                    std::mem::size_of_val(&buffer_bytes) as libc::socklen_t,
+                )
+            },
+            0
+        );
+        write_frame(&mut peer, &Request::Snapshot).unwrap();
+        let started = Instant::now();
+        assert!(
+            serve_connection_until(stream, &mut session, started + Duration::from_millis(150))
+                .is_err()
+        );
+        assert!(started.elapsed() < Duration::from_secs(1));
+        assert_eq!(session.tasks[&task.id].state, TaskState::Completed);
+        assert!(
+            session.children.is_empty(),
+            "response failure must reap an unrelated child"
+        );
+        // Trim artificial response padding before proving the next client can
+        // observe the same live owner without restarting it or closing peer.
+        session.tasks.retain(|id, _| *id == task.id);
+        let (mut next, stream) = UnixStream::pair().unwrap();
+        write_frame(&mut next, &Request::Snapshot).unwrap();
+        serve_connection(stream, &mut session).unwrap();
+        let response: Response = serde_json::from_slice(&read_frame(&mut next).unwrap()).unwrap();
+        let Response::Snapshot {
+            tasks,
+            session_instance,
+            ..
+        } = response
+        else {
+            panic!("next snapshot");
+        };
+        assert_eq!(session_instance, session.instance);
+        assert_eq!(tasks[0].state, TaskState::Completed);
+    }
+
     #[test]
     fn first_frame_requires_exact_child_pipe_signal() {
         let (sender, receiver) = mpsc::channel();

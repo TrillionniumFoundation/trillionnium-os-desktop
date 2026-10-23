@@ -110,4 +110,94 @@ mod tests {
             io::ErrorKind::TimedOut
         );
     }
+
+    #[test]
+    fn successful_fragment_reads_cannot_extend_the_frame_deadline() {
+        use std::sync::{
+            atomic::{AtomicBool, Ordering},
+            Arc,
+        };
+
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        peer.set_write_timeout(Some(Duration::from_millis(100)))
+            .unwrap();
+        let stopped = Arc::new(AtomicBool::new(false));
+        let sender_stopped = stopped.clone();
+        let sender = std::thread::spawn(move || {
+            let stop_at = Instant::now() + Duration::from_secs(1);
+            while !sender_stopped.load(Ordering::Relaxed) && Instant::now() < stop_at {
+                if peer.write_all(b" ").is_err() {
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            }
+        });
+        let started = Instant::now();
+        let mut stream = DeadlineStream::new(stream, started + Duration::from_millis(120));
+        let result = trill_ui_core::read_frame(&mut stream);
+        stopped.store(true, Ordering::Relaxed);
+        sender.join().unwrap();
+        assert!(
+            result.is_err(),
+            "an unterminated drip must never become a request"
+        );
+        assert!(
+            started.elapsed() < Duration::from_secs(1),
+            "partial reads renewed the budget"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn successful_partial_writes_cannot_extend_the_response_deadline() {
+        use std::os::fd::AsRawFd;
+        use std::sync::{
+            atomic::{AtomicBool, Ordering},
+            Arc,
+        };
+
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        let buffer_bytes: libc::c_int = 4096;
+        // A deliberately small real kernel send buffer makes a bounded frame
+        // encounter backpressure even while the peer slowly consumes bytes.
+        let result = unsafe {
+            libc::setsockopt(
+                stream.as_raw_fd(),
+                libc::SOL_SOCKET,
+                libc::SO_SNDBUF,
+                (&buffer_bytes as *const libc::c_int).cast(),
+                std::mem::size_of_val(&buffer_bytes) as libc::socklen_t,
+            )
+        };
+        assert_eq!(result, 0, "{}", io::Error::last_os_error());
+        peer.set_read_timeout(Some(Duration::from_millis(100)))
+            .unwrap();
+        let stopped = Arc::new(AtomicBool::new(false));
+        let reader_stopped = stopped.clone();
+        let reader = std::thread::spawn(move || {
+            let mut received = 0;
+            while !reader_stopped.load(Ordering::Relaxed) {
+                match peer.read(&mut [0; 512]) {
+                    Ok(0) | Err(_) => break,
+                    Ok(count) => received += count,
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            }
+            received
+        });
+        let started = Instant::now();
+        let mut stream = DeadlineStream::new(stream, started + Duration::from_millis(120));
+        let result = stream.write_all(&vec![b'x'; trill_ui_core::MAX_FRAME]);
+        stopped.store(true, Ordering::Relaxed);
+        let received = reader.join().unwrap();
+        assert!(
+            result.is_err(),
+            "slow consumption must not extend a response budget"
+        );
+        assert!(received < trill_ui_core::MAX_FRAME);
+        assert!(
+            started.elapsed() < Duration::from_secs(1),
+            "partial writes renewed the budget"
+        );
+    }
 }
