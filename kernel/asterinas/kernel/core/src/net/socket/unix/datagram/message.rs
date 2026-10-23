@@ -5,7 +5,10 @@ use core::{
     time::Duration,
 };
 
-use ostd::sync::WaitQueue;
+use ostd::{
+    mm::{Infallible, Segment, io::util::HasVmReaderWriter},
+    sync::WaitQueue,
+};
 use spin::Once;
 
 use crate::{
@@ -21,6 +24,7 @@ use crate::{
     prelude::*,
     process::signal::Pollee,
     util::{MultiRead, MultiWrite},
+    vm::user_memory::{UserPageMeta, alloc_user_segment, current_owner},
 };
 
 pub(super) struct MessageQueue {
@@ -38,9 +42,48 @@ struct Inner {
 }
 
 struct Message {
-    bytes: Vec<u8>,
+    bytes: MessagePayload,
     aux: AuxiliaryData,
     src: UnixSocketAddr,
+}
+
+/// The sending initiator owns the physical payload until its last frame drops.
+/// Queue handles and MSG_PEEK never allocate a second payload or second charge.
+/// Descriptor/queue heap objects are deliberately outside this page account.
+struct MessagePayload {
+    frames: Option<Segment<UserPageMeta>>,
+    len: usize,
+}
+
+impl MessagePayload {
+    fn copy_from(reader: &mut dyn MultiRead, len: usize) -> Result<Self> {
+        let frames = if len == 0 {
+            None
+        } else {
+            let frames = alloc_user_segment(&current_owner(), len.div_ceil(PAGE_SIZE))?;
+            // Admission and the real allocation both precede the user copy.
+            // A copy fault drops the unpublished Segment through its original
+            // frame metadata, refunding family and the captured ancestor chain.
+            reader.read(frames.writer().limit(len))?;
+            Some(frames)
+        };
+        Ok(Self { frames, len })
+    }
+
+    fn len(&self) -> usize {
+        self.len
+    }
+
+    fn reader(&self) -> VmReader<'_, Infallible> {
+        let mut reader = match &self.frames {
+            Some(frames) => frames.reader(),
+            None => VmReader::from(&[][..]),
+        };
+        // The allocator does not zero page padding. Never expose bytes beyond
+        // the successfully copied datagram, including during a truncated peek.
+        reader.limit(self.len);
+        reader
+    }
 }
 
 impl MessageQueue {
@@ -77,8 +120,7 @@ impl MessageQueue {
         }
 
         let msg = {
-            let mut bytes = vec![0; len];
-            reader.read(&mut VmWriter::from(bytes.as_mut_slice()))?;
+            let bytes = MessagePayload::copy_from(reader, len)?;
 
             let mut aux = core::mem::take(aux_data);
             if self.is_pass_cred.load(Ordering::Relaxed)
@@ -192,7 +234,7 @@ impl MessageReceiver {
         };
 
         let message_len = msg.bytes.len();
-        let len = writer.write(&mut VmReader::from(msg.bytes.as_slice()))?;
+        let len = writer.write(&mut msg.bytes.reader())?;
 
         let is_pass_cred = self.queue.is_pass_cred.load(Ordering::Relaxed);
         let src = msg.src.clone();
@@ -299,3 +341,6 @@ impl QueueTable {
 }
 
 pub(in crate::net) const UNIX_DATAGRAM_DEFAULT_BUF_SIZE: usize = 65536;
+
+#[cfg(ktest)]
+mod tests;

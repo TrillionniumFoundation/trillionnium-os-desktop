@@ -135,7 +135,8 @@ Existing committed VMO pages are never recharged. The exact selection lives in
 | Unix stream/seqpacket payloads | Original two typed ring-buffer Segments from the connecting initiator. Second-direction failure refunds the first; no endpoint is published. |
 | Ordinary page-table pages | Original OSTD PageTable/VmSpace owners; not charged by this controller. Explicit PhysicalReserve PT APIs remain separate. |
 | Kernel heap/slab and object/FD/backlog allocations | Original heap/slab owners; not made fallible or attributed here. A slab page may serve several requesters and cannot be charged once per requester. |
-| Ancillary data, datagrams, TCP/IP packets, other TTY/device rings | Separate original buffer owners; still open. |
+| Unix datagram payloads | The subsequent [datagram physical-payload slice](UNIX_DATAGRAM_FRAME_ACCOUNT.md) adds original Frame attribution; its own execution status is separate from the 2c7 receipt below. |
+| Ancillary data, TCP/IP packets, other TTY/device rings | Separate original buffer owners; still open. |
 | Recovery bootstrap, heap, IPC and durable I/O | No unified fallible recovery transaction is supplied. `global_recovery_guarantee = false`. |
 
 The [IPC physical-owner handbook](IPC_PHYSICAL_FRAME_ACCOUNT.md) explains the
