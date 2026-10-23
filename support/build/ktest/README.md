@@ -161,7 +161,7 @@ guest evidence for the completed, failed or filtered tests of each invocation.
 The experimental MLSDisk workspace component has a separate original-OSDK
 suite. It is not assembled into the ordinary core image. Its native suite
 retains the one original `write_sync_read` test and adds three device-flush
-regressions, for **four** exact native tests. The 34 `#[test]` declarations in
+regressions and seven entropy/transaction regressions, for **11** exact native tests. The 34 `#[test]` declarations in
 old host-style modules are not additional executed kernel tests.
 
 ```sh
@@ -177,7 +177,7 @@ report records metadata only, without fetch, install, build or guest execution.
 The standard prepare command can subsequently prefetch this exact audited lock.
 The real OSDK-generated test-base lock must match it byte for byte at execution.
 
-The checker requires the original success test and all three new exact names
+The checker requires the original success test and all ten added exact names
 once each, each with its own terminal `ok`, zero failures/filters/soft skips,
 ordered runner completion, unchanged serial hash, and actual default N0
 q35/TCG/one-CPU/512-MiB invocation with raw QEMU exit 33 and no timeout. Missing,
@@ -187,6 +187,8 @@ existing complete core/OSTD/frame-allocator gates remain independent.
 These are real native Bio paths on the original Frame-backed MemoryDisk with
 injected device errors; they do not establish physical-media durability or
 power-loss recovery. The report explicitly retains
-`mlsdisk_media_durability_qualified=false`. The entropy/key, asynchronous
-cross-I/O locking and broader append/compaction error-handling gaps are listed
-in [the implementation contract](../../../docs/agents/MLSDISK_FLUSH_PROPAGATION.md).
+`mlsdisk_media_durability_qualified=false`. The fallible entropy API and transaction ordering are detailed in the
+[entropy contract](../../../docs/agents/MLSDISK_ENTROPY_FAILURE.md). Asynchronous
+cross-I/O locking and broader persistence/recovery gaps remain open. The
+[flush contract](../../../docs/agents/MLSDISK_FLUSH_PROPAGATION.md) records the
+preceding four-test slice; its inventory is historical, not the current total.

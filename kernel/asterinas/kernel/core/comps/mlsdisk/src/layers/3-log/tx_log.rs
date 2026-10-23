@@ -152,7 +152,7 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
                 compaction_policy,
             )?))
         };
-        Self::register_commit_handler_for_journal(&journal, &tx_provider);
+        Self::register_precommit_handler_for_journal(&journal, &tx_provider);
 
         let chunk_alloc = ChunkAlloc::new(nchunks, tx_provider.clone());
         let raw_log_store = RawLogStore::new(log_store_area, tx_provider.clone(), chunk_alloc);
@@ -187,12 +187,16 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
         (log_store_nblocks, journal_nblocks) // TBD
     }
 
-    fn register_commit_handler_for_journal(
+    fn register_precommit_handler_for_journal(
         journal: &Arc<Mutex<Journal<D>>>,
         tx_provider: &Arc<TxProvider>,
     ) {
         let journal = journal.clone();
-        tx_provider.register_commit_handler({
+        // Register this before any other precommit handler. TxProvider runs
+        // precommit handlers in reverse registration order, so journal commit
+        // is the final fallible step before the original non-failing commit
+        // handlers publish their state.
+        tx_provider.register_precommit_handler({
             move |current: CurrentTx<'_>| {
                 let mut journal = journal.lock();
                 current.data_with(|tx_log_edit: &TxLogStoreEdit| {
@@ -213,7 +217,7 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
                     }
                     journal.add(AllEdit::from_chunk_edit(chunk_edit));
                 });
-                journal.commit();
+                journal.commit()
             }
         });
     }
@@ -240,7 +244,7 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
                 compaction_policy,
             )?))
         };
-        Self::register_commit_handler_for_journal(&journal, &tx_provider);
+        Self::register_precommit_handler_for_journal(&journal, &tx_provider);
 
         let AllState {
             chunk_alloc,
@@ -330,6 +334,20 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
                 let mut state = state.lock();
                 Self::apply_log_caches(&mut state, &mut current);
                 Self::do_lazy_deletion(&mut state, &current);
+            }
+        });
+
+        // A failed precommit must not retain caches for unpublished logs.
+        // The original chunk allocator's abort handler releases their blocks.
+        tx_provider.register_abort_handler({
+            let state = new_self.state.clone();
+            move |current: CurrentTx<'_>| {
+                current.data_with(|edit: &TxLogStoreEdit| {
+                    let mut state = state.lock();
+                    for id in edit.iter_created_logs() {
+                        state.log_caches.remove(id);
+                    }
+                });
             }
         });
 
@@ -441,6 +459,8 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
     ///
     /// This method must be called within a TX. Otherwise, this method panics.
     pub(crate) fn create_log(&self, bucket: &str) -> Result<Arc<TxLog<D>>> {
+        // Acquire entropy before allocating or publishing any log/cache state.
+        let key = Key::random()?;
         let raw_log = self.raw_log_store.create_log()?;
         let log_id = raw_log.id();
 
@@ -449,7 +469,6 @@ impl<D: BlockSet + 'static> TxLogStore<D> {
             .lock()
             .log_caches
             .insert(log_id, log_cache.clone());
-        let key = Key::random();
         let crypto_log = CryptoLog::new(raw_log, key, log_cache);
 
         let mut current_tx = self.tx_provider.current();
@@ -1366,7 +1385,7 @@ mod tests {
         let nblocks = 4 * CHUNK_NBLOCKS;
         let mem_disk = MemDisk::create(nblocks)?;
         let disk = mem_disk.clone();
-        let root_key = Key::random();
+        let root_key = Key::random().unwrap();
         let tx_log_store = TxLogStore::format(mem_disk, root_key.clone())?;
         let bucket = "TEST";
         let content = 5_u8;
@@ -1445,7 +1464,8 @@ mod tests {
 
     #[test]
     fn tx_log_deletion() -> Result<()> {
-        let tx_log_store = TxLogStore::format(MemDisk::create(4 * CHUNK_NBLOCKS)?, Key::random())?;
+        let tx_log_store =
+            TxLogStore::format(MemDisk::create(4 * CHUNK_NBLOCKS)?, Key::random().unwrap())?;
 
         let mut tx = tx_log_store.new_tx();
         let content = 5_u8;
@@ -1492,5 +1512,68 @@ mod tests {
             res.expect_err("result must be NotFound");
         });
         tx.commit()
+    }
+}
+
+#[cfg(ktest)]
+mod entropy_tests {
+    use alloc::vec;
+
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::{RawDisk, os::entropy_test::EntropyCut, test::MemoryDisk};
+
+    #[ktest]
+    fn journal_entropy_failure_aborts_before_log_publication() {
+        let raw = RawDisk::new(Arc::new(MemoryDisk::new(64 * 1024)));
+        let store = TxLogStore::format(raw, Key::random().unwrap()).unwrap();
+        let mut buffer = Buf::alloc(1).unwrap();
+        buffer.as_mut_slice().fill(0x63);
+        let accepted = "a".repeat(2700);
+        let rejected = "b".repeat(2700);
+
+        let tx = store.new_tx();
+        let log = tx.context(|| store.create_log(&accepted)).unwrap();
+        tx.context(|| log.append(buffer.as_ref())).unwrap();
+        let accepted_id = log.id();
+        tx.commit().unwrap();
+        drop(log);
+
+        let tx = store.new_tx();
+        let log = tx.context(|| store.create_log(&rejected)).unwrap();
+        tx.context(|| log.append(buffer.as_ref())).unwrap();
+        let rejected_id = log.id();
+        // Finish the data nodes through the original CryptoLog before the cut.
+        // Precommit then only needs two entropy words for a fresh root IV;
+        // the next request is the full journal buffer's IV.
+        tx.context(|| log.inner_log.crypto_log.flush()).unwrap();
+        let cut = EntropyCut::after(2);
+        assert_eq!(tx.commit().unwrap_err().errno(), OsSpecUnknown);
+        drop(cut);
+        drop(log);
+
+        let state = store.state.lock();
+        assert!(state.persistent.contains_log(accepted_id));
+        assert!(!state.persistent.contains_log(rejected_id));
+        assert!(!state.log_caches.contains_key(&rejected_id));
+        drop(state);
+        let journal = store.journal.lock();
+        assert!(journal.state().tx_log_store.contains_log(accepted_id));
+        assert!(!journal.state().tx_log_store.contains_log(rejected_id));
+        drop(journal);
+        store.sync().unwrap();
+        let tx = store.new_tx();
+        assert_eq!(
+            tx.context(|| store.list_logs_in(&accepted)).unwrap(),
+            vec![accepted_id]
+        );
+        assert_eq!(
+            tx.context(|| store.list_logs_in(&rejected))
+                .unwrap_err()
+                .errno(),
+            NotFound
+        );
+        tx.abort();
     }
 }

@@ -478,7 +478,7 @@ impl<L: BlockLog> MhtStorage<L> {
         node: &Arc<MhtNode>,
     ) -> Result<RootMhtMeta> {
         let mut crypt_buf = self.crypt_buf.lock();
-        let iv = Iv::random();
+        let iv = Iv::random()?;
         let mac = Aead::new().encrypt(
             node.as_bytes(),
             root_key,
@@ -500,16 +500,20 @@ impl<L: BlockLog> MhtStorage<L> {
         for (i, node) in nodes.iter().enumerate() {
             let plain = node.as_bytes();
             let cipher = &mut cipher_buf.as_mut_slice()[i * BLOCK_SIZE..(i + 1) * BLOCK_SIZE];
-            let key = Key::random();
+            let key = Key::random()?;
             let mac = Aead::new().encrypt(plain, &key, &Iv::new_zeroed(), &[], cipher)?;
 
             let pos = start_pos + i;
             node_entries.push(MhtNodeEntry { pos, key, mac });
-            self.node_cache.put(pos, node.clone());
         }
 
         let append_pos = self.block_log.append(cipher_buf.as_ref())?;
         debug_assert_eq!(start_pos, append_pos);
+        // Publishing cache entries before all keys and the append succeed can
+        // expose nodes for an append aborted by an entropy or I/O error.
+        for (index, node) in nodes.iter().enumerate() {
+            self.node_cache.put(start_pos + index, node.clone());
+        }
         Ok(node_entries)
     }
 
@@ -524,7 +528,7 @@ impl<L: BlockLog> MhtStorage<L> {
         let start_pos = self.block_log.nblocks() as BlockId;
         for (i, node) in nodes.iter().enumerate() {
             let cipher = &mut cipher_buf.as_mut_slice()[i * BLOCK_SIZE..(i + 1) * BLOCK_SIZE];
-            let key = Key::random();
+            let key = Key::random()?;
             let mac = Aead::new().encrypt(&node.0, &key, &Iv::new_zeroed(), &[], cipher)?;
 
             let pos = start_pos + i;
@@ -1121,7 +1125,7 @@ mod tests {
 
     fn create_crypto_log() -> Result<CryptoLog<MemLog>> {
         let mem_log = MemLog::create(64 * 1024)?;
-        let key = Key::random();
+        let key = Key::random().unwrap();
         let cache = Arc::new(NoCache {});
         Ok(CryptoLog::new(mem_log, key, cache))
     }

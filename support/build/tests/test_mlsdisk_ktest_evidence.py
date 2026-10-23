@@ -52,10 +52,10 @@ class MlsDiskEvidenceTests(unittest.TestCase):
     def check(self, allow_filtered=False):
         return CHECK["check_guest"](self.guest, CRATE, allow_filtered)
 
-    def test_complete_four_native_tests_do_not_claim_physical_durability(self):
+    def test_complete_native_tests_do_not_claim_physical_durability(self):
         self.evidence()
         result = self.check()
-        self.assertEqual((result["declared"], result["passed"], result["filtered"], result["soft_skipped"]), (4, 4, 0, 0))
+        self.assertEqual((result["declared"], result["passed"], result["filtered"], result["soft_skipped"]), (11, 11, 0, 0))
         self.assertEqual(result["required_mlsdisk_tests"], list(NAMES))
         self.assertIs(result["mlsdisk_media_durability_qualified"], False)
 
@@ -67,8 +67,13 @@ class MlsDiskEvidenceTests(unittest.TestCase):
             text = path.read_text()
             found = re.findall(r"#\[ktest\]\s+fn (\w+)\(", text)
             if found:
-                self.assertEqual(path, source / "lib.rs", "review every new native test module")
-                names.extend("aster_mlsdisk::test::" + name for name in found)
+                modules = {
+                    source / "lib.rs": "aster_mlsdisk::test::",
+                    source / "os/mod.rs": "aster_mlsdisk::os::entropy_test::",
+                    source / "layers/3-log/tx_log.rs": "aster_mlsdisk::layers::log::tx_log::entropy_tests::",
+                }
+                self.assertIn(path, modules, "review every new native test module")
+                names.extend(modules[path] + name for name in found)
             host_tests += len(re.findall(r"#\[test\]\s+fn \w+\(", text))
         self.assertEqual(set(names), set(NAMES))
         self.assertEqual(len(names), len(NAMES))
@@ -89,7 +94,7 @@ class MlsDiskEvidenceTests(unittest.TestCase):
         self.evidence()
         with self.assertRaisesRegex(ValueError, "never permits filtered"):
             self.check(allow_filtered=True)
-        filtered = serial_log().replace(b"4 tests in crate", b"5 tests in crate").replace(
+        filtered = serial_log().replace(b"11 tests in crate", b"12 tests in crate").replace(
             b"0 filtered out", b"1 filtered out")
         self.evidence(filtered)
         with self.assertRaisesRegex(ValueError, "unexpected filtered"):
