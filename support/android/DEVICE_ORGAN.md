@@ -45,8 +45,17 @@ operator; it does not learn a trusted pin from the same untrusted response it
 is about to accept. A changed helper requires source review and an explicit
 profile update.
 
-Both files must be regular, root-owned, executable, non-symlink files without
-group/world write permission. They are measured before and after each call.
+Both files must be regular, executable, non-symlink files without group/world
+write permission. The privileged helper must remain owned by root. Droidloom's
+owner UID is a separate explicit pin: root by default, or the current original
+operator UID. The actual 2026-10-23 deployment has Droidloom owned by UID 1000,
+the original operator, and the helper owned by UID 0; both modes are 0755. Supply
+`--droidloomctl-owner-uid 1000` for that measured deployment. A different user or
+an invalid UID is rejected before invocation. The initial root-default probe
+correctly rejected this user-owned Droidloom file without any transport attempt;
+its failed receipt is retained. No ownership or permission change is required.
+Both tools are measured before and after each call, and receipts record the
+configured tool owners and the actual operator UID.
 These measurements do not attest the interpreter, sudo policy, every library,
 Android framework, or hardware. The host administrator remains trusted. The
 `pocket4` target binding comes from the original Runtime job record, not from a
@@ -57,6 +66,7 @@ From an isolated checkout or an exact two-file transfer on that selected host:
 ```sh
 python3 support/android/device_organ.py \
   --droidloomctl-sha256 aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376 \
+  --droidloomctl-owner-uid 1000 \
   qualify
 ```
 
@@ -81,6 +91,7 @@ An explicitly requested window observation uses:
 ```sh
 python3 support/android/device_organ.py \
   --droidloomctl-sha256 aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376 \
+  --droidloomctl-owner-uid 1000 \
   observe --package org.example.notes
 ```
 

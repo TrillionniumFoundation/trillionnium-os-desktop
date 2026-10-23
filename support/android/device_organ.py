@@ -8,6 +8,7 @@ device mutation, issues authority, retries a helper call, or stores a ledger.
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -91,11 +92,15 @@ def capabilities():
 class AndroidDeviceAdapter:
     """Host I/O client for one reviewed helper; no effect-capable public method."""
 
-    def __init__(self, droidloomctl_sha256, *, timeout_seconds=55):
+    def __init__(self, droidloomctl_sha256, *, droidloomctl_owner_uid=0, timeout_seconds=55):
         require(type(timeout_seconds) in (int, float) and 0 < timeout_seconds <= 60,
                 "INVALID_TIMEOUT")
+        require(type(droidloomctl_owner_uid) is int and 0 <= droidloomctl_owner_uid < 1 << 32,
+                "INVALID_TOOL_OWNER")
+        require(droidloomctl_owner_uid in (0, os.geteuid()), "TOOL_OWNER_OUTSIDE_OPERATOR")
         self.helper = PinnedTool(HELPER_PATH, REVIEWED_HELPER_SHA256)
-        self.control = PinnedTool(CTL_PATH, digest(droidloomctl_sha256))
+        self.control = PinnedTool(CTL_PATH, digest(droidloomctl_sha256),
+                                  owner_uid=droidloomctl_owner_uid)
         self.timeout_seconds = timeout_seconds
 
     def _invoke(self, tool, argv, request=b""):
@@ -183,8 +188,10 @@ class AndroidDeviceAdapter:
             "observed_unix_ms": time.time_ns() // 1_000_000,
             "qualified": all(checks.values()), "checks": checks,
             "identity": identity, "identity_sha256": hash_json(identity),
-            "helper": {"path": HELPER_PATH, "sha256": REVIEWED_HELPER_SHA256},
-            "droidloomctl": {"path": CTL_PATH, "sha256": self.control.sha256},
+            "helper": {"path": HELPER_PATH, "sha256": REVIEWED_HELPER_SHA256, "owner_uid": 0},
+            "droidloomctl": {"path": CTL_PATH, "sha256": self.control.sha256,
+                            "owner_uid": self.control.owner_uid},
+            "runtime_operator_uid": os.geteuid(),
             "helper_status_reply_sha256": status_sha256,
             "capabilities": capabilities(),
             "ui_observation_executed": False, "device_mutation_attempts": 0,
@@ -357,6 +364,8 @@ def prepare_semantic_intent(observation, operation_id, action, selector, value=N
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--droidloomctl-sha256", required=True)
+    parser.add_argument("--droidloomctl-owner-uid", type=int, default=0,
+                        help="explicit tool-owner pin; root or the current original operator UID")
     parser.add_argument("--timeout-seconds", type=float, default=55)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("qualify")
@@ -364,7 +373,9 @@ def main(argv=None):
     observe.add_argument("--package", required=True)
     args = parser.parse_args(argv)
     try:
-        adapter = AndroidDeviceAdapter(args.droidloomctl_sha256, timeout_seconds=args.timeout_seconds)
+        adapter = AndroidDeviceAdapter(args.droidloomctl_sha256,
+                                       droidloomctl_owner_uid=args.droidloomctl_owner_uid,
+                                       timeout_seconds=args.timeout_seconds)
         result = adapter.qualify() if args.command == "qualify" else adapter.observe(args.package)
         code = 0 if result.get("qualified", True) else 3
     except AdapterError as error:

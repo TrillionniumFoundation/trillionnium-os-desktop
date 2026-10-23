@@ -59,6 +59,22 @@ class DeviceOrganTests(unittest.TestCase):
     def make_adapter(self):
         return adapter.AndroidDeviceAdapter("e" * 64, timeout_seconds=2)
 
+    def test_explicit_control_owner_is_root_or_original_operator(self):
+        with patch.object(adapter.os, "geteuid", return_value=1000), \
+                patch.object(adapter, "run_bounded") as run:
+            self.assertEqual(self.make_adapter().control.owner_uid, 0)
+            client = adapter.AndroidDeviceAdapter("e" * 64, droidloomctl_owner_uid=1000)
+            self.assertEqual(client.control.owner_uid, 1000)
+            self.assertEqual(client.helper.owner_uid, 0)
+            for uid in (-1, True, "1000", 1 << 32):
+                with self.subTest(uid=uid), self.assertRaises(adapter.AdapterError) as failed:
+                    adapter.AndroidDeviceAdapter("e" * 64, droidloomctl_owner_uid=uid)
+                self.assertEqual(failed.exception.code, "INVALID_TOOL_OWNER")
+            with self.assertRaises(adapter.AdapterError) as failed:
+                adapter.AndroidDeviceAdapter("e" * 64, droidloomctl_owner_uid=1001)
+            self.assertEqual(failed.exception.code, "TOOL_OWNER_OUTSIDE_OPERATOR")
+            run.assert_not_called()
+
     def test_identity_probe_executes_only_two_fixed_read_commands(self):
         calls = []
         replies = [process_reply({"state": "running", "message": "Android is ready", "host_pid": 101}),
@@ -304,6 +320,10 @@ else:
             digest = hashlib.sha256(source.read_bytes()).hexdigest()
             pin = transport.PinnedTool(str(source), digest, owner_uid=os.getuid())
             self.assertEqual(pin.measure()["sha256"], digest)
+            self.assertEqual(pin.measure()["owner_uid"], os.getuid())
+            with self.assertRaises(transport.AdapterError) as failed:
+                transport.PinnedTool(str(source), digest, owner_uid=os.getuid() + 1).measure()
+            self.assertEqual(failed.exception.code, "UNTRUSTED_TOOL_FILE")
             source.write_bytes(b"#!/usr/bin/python3\nprint('changed')\n")
             with self.assertRaises(transport.AdapterError) as failed:
                 pin.measure()

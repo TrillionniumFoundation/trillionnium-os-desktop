@@ -92,6 +92,8 @@ class PinnedTool:
         Hashes before and after an invocation are source measurements; they are
         not hardware attestation or proof of every transitive dependency.
         """
+        if type(self.owner_uid) is not int or not 0 <= self.owner_uid < 1 << 32:
+            raise AdapterError("INVALID_TOOL_OWNER")
         if not isinstance(self.sha256, str) or len(self.sha256) != 64:
             raise AdapterError("INVALID_TOOL_PIN")
         if any(c not in "0123456789abcdef" for c in self.sha256):
@@ -119,7 +121,8 @@ class PinnedTool:
         identity = lambda s: (s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns)
         if identity(before) != identity(after) or digest.hexdigest() != self.sha256:
             raise AdapterError("TOOL_PIN_MISMATCH")
-        return {"path": self.path, "sha256": self.sha256, "bytes": before.st_size}
+        return {"path": self.path, "sha256": self.sha256, "bytes": before.st_size,
+                "owner_uid": before.st_uid, "mode": stat.S_IMODE(before.st_mode)}
 
 
 @dataclass(frozen=True)
