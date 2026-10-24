@@ -2,6 +2,7 @@
 """Real IBus/XIM pinyin through the owned Makepad window, never injected IME events."""
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -73,7 +74,10 @@ def local_text(path):
 
 def run(args, report):
     xid = int(args.window_id, 0)
-    assert int(subprocess.check_output(["xdotool", "getwindowpid", args.window_id], text=True)) == args.pid
+    spec = importlib.util.spec_from_file_location("original_xres_owner", args.x11_owner_helper.resolve(strict=True))
+    owner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(owner)
+    report["x11_owner"] = owner.require_window_pid(xid, args.pid)
     Atspi.init()
     desktop = Atspi.get_desktop(0)
     app = until(lambda: next((desktop.get_child_at_index(i) for i in range(desktop.get_child_count())
@@ -99,6 +103,7 @@ def run(args, report):
         report["checks"].append({"name": name, "passed": True, **details})
 
     def key(name):
+        owner.require_window_pid(xid, args.pid)
         assert int(subprocess.check_output(["xdotool", "getwindowfocus"], text=True)) == xid
         subprocess.run(["xdotool", "key", "--clearmodifiers", name], check=True, timeout=5)
         report["input"].append({"kind": "XTEST_key", "key": name})
@@ -127,6 +132,7 @@ def run(args, report):
         assert observed_engine == args.engine
         report["engine"] = observed_engine
         settle(0.4)
+        owner.require_window_pid(xid, args.pid)
         assert int(subprocess.check_output(["xdotool", "getwindowfocus"], text=True)) == xid
         # This is the only text input in the IME sample. Expected Chinese below
         # is never passed to an input API or clipboard.
@@ -196,6 +202,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pid", type=int, required=True)
     parser.add_argument("--window-id", required=True)
+    parser.add_argument("--x11-owner-helper", type=Path, required=True)
     parser.add_argument("--engine", default="libpinyin")
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)

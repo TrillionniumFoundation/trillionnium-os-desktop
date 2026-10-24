@@ -87,6 +87,7 @@ def run(args):
             if profile.get("native_ui_feature") != "native-clipboard-sdk":
                 raise RuntimeError("PasteText qualification requires the explicit clipboard SDK feature/source bundle")
         smoke = (args.hepta_source / "apps/hepta-control-ui/test/native-accessibility-smoke.py").resolve(strict=True)
+        owner_helper = (args.hepta_source / "apps/hepta-control-ui/test/x11_client_owner.py").resolve(strict=True)
         editable = None
         if args.atomic_editable_text:
             editable = (args.hepta_source / "apps/hepta-control-ui/test/native-editable-text-smoke.py").resolve(strict=True)
@@ -96,6 +97,7 @@ def run(args):
         provenance = {"shell": {"path": str(shell), "bytes": shell.stat().st_size, "sha256": digest(shell)},
                       "resource_inventory_sha256": digest(resources / "NATIVE-ASSETS.json"),
                       "original_atspi_script": {"path": str(smoke), "sha256": digest(smoke)},
+                      "original_xres_helper": {"path": str(owner_helper), "sha256": digest(owner_helper)},
                       "harness_files": {path.name: digest(path) for path in HERE.glob("*.py")},
                       "build_source_identity_verified": False}
         if editable is not None:
@@ -235,13 +237,20 @@ def run(args):
 
         def window():
             alive(shell_group)
-            found = command("owned-window", ["xdotool", "search", "--onlyvisible", "--pid", str(shell_group.process.pid)], required=False)
-            ids = found.stdout.decode().split()
-            return ids[0] if found.returncode == 0 and len(ids) == 1 else None
+            found = command("owned-window", [sys.executable, "-B", str(owner_helper),
+                "--pid", str(shell_group.process.pid), "--find-visible"], required=False)
+            alive(shell_group)
+            if found.returncode not in (0, 1):
+                raise RuntimeError("Server-side XRes window ownership query failed")
+            observation = json.loads(found.stdout)
+            if found.returncode == 0 and observation["matched"]:
+                report["window"] = observation["window"]
+                return str(observation["window"]["xid"])
+            return None
         xid = until(window, "Exactly one original Makepad window did not appear", timeout=30)
-        if int(command("owned-window-pid", ["xdotool", "getwindowpid", xid]).stdout) != shell_group.process.pid:
-            raise RuntimeError("Window PID does not match the owned Shell")
-        report["window"] = {"pid": shell_group.process.pid, "xid": xid}
+        command("owned-window-pid", [sys.executable, "-B", str(owner_helper),
+                "--pid", str(shell_group.process.pid), "--window-id", xid])
+        alive(shell_group)
         command("owned-window-properties", ["xprop", "-id", xid, "WM_CLASS", "_NET_WM_PID", "WM_NAME"])
         command("owned-window-focus", ["xdotool", "windowfocus", "--sync", xid])
         save()
@@ -259,7 +268,8 @@ def run(args):
                 raise RuntimeError("Original atomic EditableText methods did not pass")
             report["atomic_editable_text_methods_passed"] = True
         stage("original-real-ibus", [sys.executable, "-B", str(HERE / "ibus_client.py"), "--pid", str(shell_group.process.pid),
-              "--window-id", xid, "--engine", args.engine, "--state", str(private / "state"), "--output", str(output)]
+              "--window-id", xid, "--x11-owner-helper", str(owner_helper),
+              "--engine", args.engine, "--state", str(private / "state"), "--output", str(output)]
               + (["--atomic-editable-text"] if editable is not None else []), 90)
         ime = json.loads((output / "ibus-receipt.json").read_bytes())
         if ime.get("passed") is not True:

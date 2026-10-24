@@ -82,7 +82,12 @@ fn exact_original_is_durable_before_connect_and_one_socket_send_is_never_rearmed
     assert_eq!(fixture.snapshot(retained[0].clone()).observations.len(), 1);
     assert!(submission.submit_once().is_err());
     assert!(submission.cancel_before_send().is_err());
-    assert!(fixture.prepare().is_err());
+    assert!(matches!(
+        fixture.prepare(),
+        Err(HostError::Submission(SubmissionAdapterError::Owner(
+            RequestOwnerIssue::AlreadyRetained
+        )))
+    ));
     fixture.assert_no_connection();
 }
 
@@ -123,6 +128,8 @@ fn checkpoint_refusal_or_timeout_after_commit_never_rearms_a_fresh_prepare() {
                 RequestOwnerIssue::PersistenceUnknown
             )))
         ));
+        assert_eq!(fixture.checkpoint.calls.load(Ordering::SeqCst), 1);
+        assert!(fixture.writer.checkpoint_fenced());
         fixture.assert_no_connection();
         // The real original SQL commit exists even though the independent test
         // checkpoint refused or its future timed out. Recovery is observation-only.
@@ -133,10 +140,25 @@ fn checkpoint_refusal_or_timeout_after_commit_never_rearms_a_fresh_prepare() {
         assert!(matches!(
             fixture.prepare(),
             Err(HostError::Submission(SubmissionAdapterError::Owner(
-                RequestOwnerIssue::AlreadyRetained
+                RequestOwnerIssue::Refused
             )))
         ));
         let mut recovered = fixture.recover(retained[0].clone());
+        // The original read/ACK can settle retained evidence, but it cannot
+        // reopen the generation fenced by the failed checkpoint exchange.
+        assert!(fixture.writer.checkpoint_fenced());
+        assert!(matches!(
+            fixture.prepare(),
+            Err(HostError::Submission(SubmissionAdapterError::Owner(
+                RequestOwnerIssue::Refused
+            )))
+        ));
+        let retained_after_read_ack = fixture.retained();
+        assert_eq!(retained_after_read_ack.len(), 1);
+        assert_eq!(
+            retained_after_read_ack[0].exact_original(),
+            fixture.original.as_bytes()
+        );
         assert!(recovered.submit_once().is_err());
         assert!(recovered.cancel_before_send().is_err());
         fixture.assert_no_connection();
@@ -166,33 +188,59 @@ fn live_revocation_after_prepare_consumes_permission_without_connect_or_local_ca
 }
 
 #[test]
-fn admission_receipt_ack_failure_retries_only_the_same_owner_record_without_connecting() {
-    let fixture = Fixture::new();
-    let mut submission = fixture.prepare().unwrap();
-    let checkpoint = Arc::clone(&fixture.checkpoint);
-    let server = fixture.serve_with(Some(fixture.admitted()), move || {
-        checkpoint.mode.store(REFUSE, Ordering::SeqCst);
-    });
-    persistence_unknown(submission.submit_once());
-    server.join().unwrap();
-    let view = submission.view();
-    assert!(matches!(
-        view.observed_submission,
-        Some(SubmissionStatus::Admitted(_))
-    ));
-    assert!(!view.submission_recorded);
-    let request = fixture.retained().pop().unwrap();
-    assert_eq!(fixture.snapshot(request.clone()).observations.len(), 1);
-    assert!(submission.submit_once().is_err());
-    fixture.checkpoint.mode.store(ACCEPT, Ordering::SeqCst);
-    submission.retain_observed_submission().unwrap();
-    assert!(submission.view().submission_recorded);
-    assert_eq!(
-        fixture.snapshot(request).observations.len(),
-        1,
-        "idempotent original receipt handoff"
-    );
-    fixture.assert_no_connection();
+fn admission_receipt_ack_failure_requires_read_ack_without_unfencing_or_connecting() {
+    for mode in [REFUSE, HOLD] {
+        let fixture = Fixture::new();
+        let mut submission = fixture.prepare().unwrap();
+        let checkpoint = Arc::clone(&fixture.checkpoint);
+        let server = fixture.serve_with(Some(fixture.admitted()), move || {
+            checkpoint.mode.store(mode, Ordering::SeqCst);
+        });
+        persistence_unknown(submission.submit_once());
+        server.join().unwrap();
+        assert_eq!(fixture.checkpoint.calls.load(Ordering::SeqCst), 2);
+        assert!(fixture.writer.checkpoint_fenced());
+        let view = submission.view();
+        assert!(matches!(
+            view.observed_submission,
+            Some(SubmissionStatus::Admitted(_))
+        ));
+        assert!(!view.submission_recorded);
+        let request = fixture.retained().pop().unwrap();
+        assert_eq!(fixture.snapshot(request.clone()).observations.len(), 1);
+        assert!(submission.submit_once().is_err());
+        fixture.checkpoint.mode.store(ACCEPT, Ordering::SeqCst);
+        // An observation write retry is still a mutation. Even an exact retry
+        // must not bypass the original owner's permanent checkpoint fence.
+        assert_eq!(
+            submission.retain_observed_submission(),
+            Err(HostError::Submission(SubmissionAdapterError::Owner(
+                RequestOwnerIssue::Refused
+            )))
+        );
+        assert!(!submission.view().submission_recorded);
+        let mut recovered = fixture.recover(request.clone());
+        assert!(recovered.view().submission_recorded);
+        assert_eq!(
+            recovered.view().observed_submission,
+            view.observed_submission
+        );
+        assert!(fixture.writer.checkpoint_fenced());
+        assert_eq!(
+            submission.retain_observed_submission(),
+            Err(HostError::Submission(SubmissionAdapterError::Owner(
+                RequestOwnerIssue::Refused
+            )))
+        );
+        assert!(recovered.submit_once().is_err());
+        assert!(recovered.cancel_before_send().is_err());
+        assert_eq!(
+            fixture.snapshot(request).observations.len(),
+            1,
+            "read acknowledgement preserves the one original receipt"
+        );
+        fixture.assert_no_connection();
+    }
 }
 
 fn recovery_still_requires_ack(

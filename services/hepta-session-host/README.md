@@ -30,7 +30,7 @@ not route model chat through the finite literal Notes compiler below.
 | Original writer, lease, authority and live verifier | `AgentdConfig::original_objective_sender` and the installed `AgentdProductionWriterHost` |
 | Exact request, permanent send fence and append-only observations | `codex-hepta-memory::ProductionObjectiveSender`, in the original CognitiveStore |
 | Independent durable, current recovery cut | Embedding's `ObjectiveSenderCheckpoint` implementation |
-| One local sending opportunity and receipt-only retry | `ui/session::objective_submission::ObjectiveSubmission` |
+| One local sending opportunity and observation handoff while the original writer remains writable | `ui/session::objective_submission::ObjectiveSubmission` |
 | One bounded submission or history socket call | `services/hepta-os::objective` |
 | View projection and concrete capability adaptation | This crate's `lib.rs`, `owner.rs`, `receipt.rs` and `recovery.rs` |
 
@@ -86,7 +86,9 @@ are private to the adapter; the public view contains metadata only.
    observation only in memory, or committed without a known independent ACK.
 4. `retain_observed_submission` and `retain_observed_history` repeat only the
    immutable observation handoff. They never resubmit the Objective or rerun a
-   history query.
+   history query. They remain write operations and are refused after an original
+   checkpoint failure has permanently fenced this owner generation. Changing a
+   checkpoint provider back to accepting does not reopen that generation.
 5. `cancel_before_send` consumes only this unused local opportunity. It does not
    cancel an admitted or running Hepta Objective. Cancellation after start needs
    the original RunCancel owner. The optional typed host below invokes that owner.
@@ -98,6 +100,9 @@ are private to the adapter; the public view contains metadata only.
    share the original write transaction. A local committed row whose independent
    ACK failed cannot become confirmed merely by constructing a new facade.
    While that ACK remains unavailable, recovery returns `PersistenceUnknown`.
+   This read-only recovery can settle an already committed observation in a
+   fenced generation. A successful read ACK neither clears the writer fence nor
+   permits another observation write, fresh preparation, send or cancellation.
 7. `reconcile_once` performs an explicit original history query against an
    independently supplied current trusted endpoint for the same agent. It leaves
    the original request and historical generation unchanged.
@@ -131,8 +136,12 @@ transaction through `retain_observation_checked`. The callback only projects
 bounded retained metadata and compares the original publication; it performs no
 I/O, waiting or store re-entry. Two recovered facades using this adapter therefore
 cannot both retain contradictory first publications after separate stale reads.
-An exact observation retry is checked again and re-acknowledged without another
-event. The original generic observation API still treats payloads as opaque;
+While the owner remains writable, an exact observation retry is checked again
+and re-acknowledged without another event. After a checkpoint refusal, timeout
+or cancelled exchange, recover the unchanged original request with
+`recover_unknown` and obtain its independent read ACK instead; the permanently
+fenced generation cannot perform that write retry. The original generic
+observation API still treats payloads as opaque;
 other trusted publication writers must use the same checked invariant if they
 participate in this host's observation format.
 
@@ -176,7 +185,8 @@ resource pressure requires it. This profile is not native-kernel, real-device or
 production-input qualification.
 
 Required tests use the real original writer/store and disposable Unix sockets.
-They must cover retention before connect, lost replies, receipt-only retry,
+They must cover retention before connect, lost replies, immutable observation
+handoff while writable and independent read ACK after checkpoint fencing,
 revocation before send, checkpoint failure after commit, duplicate fencing,
 retained enumeration and recovery without a new send, canonical body matching,
 contradictory publication rejection, local cancellation and invalid runtime

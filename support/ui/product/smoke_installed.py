@@ -70,12 +70,15 @@ def main():
     parser.add_argument("--expected-desktop", required=True)
     parser.add_argument("--expected-upgrade-desktop", help="defaults to the same build commit")
     parser.add_argument("--expected-hepta", required=True)
+    parser.add_argument("--hepta-source", required=True, type=Path,
+                        help="original test-helper checkout; independent of the compiled package pin")
     parser.add_argument("--evidence", required=True, type=Path, help="new absolute private directory")
     parser.add_argument("--unit-dir", type=Path, default=Path.home() / ".config/systemd/user")
     parser.add_argument("--renderer", choices=("makepad",), default="makepad")
     parser.add_argument("--makepad-resources", type=Path, help="prepared original bundle, if first package has none")
     parser.add_argument("--cjk-font", type=Path)
     options = parser.parse_args()
+    owner_helper = (options.hepta_source / "apps/hepta-control-ui/test/x11_client_owner.py").resolve(strict=True)
     output = options.evidence
     require(output.is_absolute() and not output.exists(), "evidence must be a new absolute directory")
     require(options.unit_dir.is_absolute(), "unit directory must be absolute")
@@ -148,6 +151,8 @@ def main():
               "excluded_host_lane_names": sorted(excluded_lanes),
               "harness_sha256": desktop.digest(Path(__file__).read_bytes()),
               "identity_gate_sha256": desktop.digest(Path(acceptance_identity.__file__).read_bytes()),
+              "original_xres_helper": {"path": str(owner_helper),
+                                       "sha256": desktop.digest(owner_helper.read_bytes())},
               "production_authority_verified": False, "physical_input_verified": False,
               "checks": {}, "screenshots": [], "commands": []}
     running = []
@@ -179,12 +184,6 @@ def main():
                 "--unit-dir", options.unit_dir, "--unit-name", unit,
                 "--applications-dir", integration.parent, "--config", config]
 
-    def visible():
-        result = subprocess.run(["xdotool", "search", "--onlyvisible", "--name", "."],
-                                env=env, capture_output=True, timeout=3)
-        require(result.returncode in (0, 1), "private X display query failed")
-        return set(result.stdout.decode().split())
-
     def read_snapshot(label):
         result = command(label, [launcher, "doctor", "--live"])
         value = json.loads(result.stdout)
@@ -199,7 +198,6 @@ def main():
 
     def start_shell(label):
         require(manager_lanes() <= excluded_lanes, "user manager added an unisolated host lane during qualification")
-        before = visible()
         log = (output / (label + ".log")).open("wb")
         process = subprocess.Popen([str(launcher), "run"], env=env, stdout=log, stderr=subprocess.STDOUT,
                                    start_new_session=True)
@@ -208,9 +206,16 @@ def main():
         deadline = time.monotonic() + 25
         while time.monotonic() < deadline:
             require(process.poll() is None, label + " exited before mapping a native window")
-            appeared = visible() - before
-            if len(appeared) == 1:
-                xid = next(iter(appeared))
+            found = command(label + "-xres-owner", [sys.executable, "-B", owner_helper,
+                            "--pid", process.pid, "--find-visible"], check=False, timeout=8)
+            require(process.poll() is None, label + " exited during XRes ownership query")
+            require(found.returncode in (0, 1), "original XRes window-owner query failed")
+            observation = json.loads(found.stdout)
+            if found.returncode == 0 and observation["matched"]:
+                window = observation["window"]
+                require(window["pid"] == process.pid, "XRes returned a foreign window owner")
+                xid = window["xid"]
+                report["checks"][label + "-window-owner"] = window
                 break
             time.sleep(0.1)
         else:
@@ -227,6 +232,9 @@ def main():
         return process, int(xid)
 
     def close_shell(label, process, window):
+        require(process.poll() is None, label + " exited before its normal window close")
+        command(label + "-close-owner", [sys.executable, "-B", owner_helper,
+                "--pid", process.pid, "--window-id", window])
         # Deliver the normal WM_DELETE_WINDOW lifecycle; do not SIGTERM a
         # successful recovery test before its renderer has queued final state.
         class Client(C.Structure):
