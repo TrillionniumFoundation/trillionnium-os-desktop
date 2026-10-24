@@ -3,7 +3,7 @@
 The producer is the reviewed original Root/Host entry. Root serializes actual
 owner responses after they return. The parser rejects legacy read-only probes,
 unknown schemas, rewritten K/D payloads and current-cap substitutions for old D.
-Neither scenario qualifies grant renewal, repeated recovery or a power loss.
+The finite scenarios do not qualify grant renewal, repeated recovery or a power loss.
 """
 import hashlib
 import json
@@ -12,6 +12,8 @@ import re
 
 PREFIX = "HEPTA_G2_EVIDENCE_V1 "
 SCENARIOS = ("steady-state-v1", "manager-exit-after-terminal-v1")
+COPYOUT_SCENARIOS = ("lost-copyout-live-v1", "manager-exit-before-terminal-v1")
+SUPPORTED_SCENARIOS = SCENARIOS + COPYOUT_SCENARIOS
 PERIOD_NS = 100_000_000
 CAP_NS = 50_000_000
 LEASE_NS = 300_000_000_000
@@ -233,7 +235,7 @@ def checkpoint(value, expected_peer, agent_id):
 
 def parse(raw, scenario, nonce):
     require(type(raw) is bytes and len(raw) <= MAX_SERIAL_BYTES, "serial evidence exceeds the original bound")
-    require(scenario in SCENARIOS, "unsupported original-owner scenario")
+    require(scenario in SUPPORTED_SCENARIOS, "unsupported original-owner scenario")
     digest(nonce, "fresh host nonce")
     decoded = raw.decode("utf-8", errors="strict").replace("\r\n", "\n")
     require(not any(marker in decoded.lower() for marker in ("kernel panic", "panicked at", "fatal exception", "g2_fail")),
@@ -555,6 +557,7 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
                     "nonzero budget did not run the actual workload")
         last_usage = second
 
+    copyout_flags = {}
     if scenario == "steady-state-v1":
         for name, cap in (("lower", 25_000_000), ("pause", 0), ("resume", CAP_NS)):
             prepared(name, "manager", cap)
@@ -562,7 +565,7 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
             source_terminal(name, "manager")
             acknowledge(name, "manager")
             window(name, "manager", cap, operations[name]["observation"]["revision"])
-    else:
+    elif scenario == "manager-exit-after-terminal-v1":
         prepared("pending-retirement", "manager", 25_000_000)
         native_result("pending-retirement", "applied")
         source_terminal("pending-retirement", "manager")
@@ -630,15 +633,40 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
         acknowledge("used-recovery-allowance", "recovery")
         window("used-recovery-allowance", "recovery", CAP_NS, second["hepta_watchdog_revision"])
 
+    elif scenario in COPYOUT_SCENARIOS:
+        from types import SimpleNamespace
+        import native_owner_copyout
+
+        def retain_usage(sample):
+            nonlocal last_usage
+            last_usage = sample
+
+        def retain_adoption(current):
+            nonlocal adopted
+            adopted = current
+
+        # These are the same parsed raw events, original owner identities and
+        # evidence checks. The extension cannot replace or synthesize an event.
+        copyout_flags = native_owner_copyout.run(
+            scenario,
+            SimpleNamespace(take=take, role_pids=role_pids, boot_id=boot_id, spaces=spaces,
+                            peers=peers, state=state, owners=owners, currents=currents,
+                            materials=materials, frontiers=frontiers, operations=operations,
+                            prepared=prepared, owner_ready=owner_ready, acknowledge=acknowledge,
+                            window=window, retain_usage=retain_usage, retain_adoption=retain_adoption),
+        )
+    else:
+        raise ValueError("unsupported original-owner scenario")
+
     complete = obj(take("complete"), ("root_pid", "operation_count", "final_owner_pid", "final_current_token"), "finite owner-cycle completion")
-    final_role = "manager" if scenario == "steady-state-v1" else "recovery"
+    final_role = "manager" if scenario in ("steady-state-v1", "lost-copyout-live-v1") else "recovery"
     require(type(complete["root_pid"]) is int and complete["root_pid"] == 1
             and type(complete["operation_count"]) is int and complete["operation_count"] == len(operations)
             and type(complete["final_owner_pid"]) is int and complete["final_owner_pid"] == role_pids[final_role]
             and complete["final_current_token"] == currents[final_role]["token"] and cursor == len(values)
             and all(operation.get("retired") is True for operation in operations.values()),
             "finite owner cycle has missing, unexpected or unretired observations")
-    return {"passed": True, "scenario": scenario, "nonce": nonce, "actual_role_pids": role_pids,
+    result = {"passed": True, "scenario": scenario, "nonce": nonce, "actual_role_pids": role_pids,
             "event_count": len(events), "operation_count": len(operations), "original_native_owner_cycle_verified": True,
             "same_boot_authenticated_successor_verified": scenario == "manager-exit-after-terminal-v1",
             "source_terminal_before_retirement_verified": True, "bounded_cpu_control_verified": True,
@@ -646,3 +674,5 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
             "grant_renewal_verified": False, "repeated_recovery_verified": False, "after_effect_crash_verified": False,
             "cross_boot_unknown_preservation_verified": False, "power_loss_verified": False,
             "unbounded_persistent_cpu_verified": False, "production_ready": False, "g2_complete": False}
+    result.update(copyout_flags)
+    return result

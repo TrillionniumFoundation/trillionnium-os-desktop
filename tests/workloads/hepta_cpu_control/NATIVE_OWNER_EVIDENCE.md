@@ -4,7 +4,8 @@ The reviewed Root entry is the single serializer. It emits a record only after
 the named original API or actual process/CPU observation returns. Host writers,
 the workload and Recovery must not independently print interleaved envelopes.
 The code remains the authority for exact fields and numeric bounds; see
-`native_owner_evidence.py`. Extra envelope or payload fields fail admission.
+`native_owner_evidence.py` and `native_owner_copyout.py`. Extra envelope or
+payload fields fail admission.
 
 ## Plan and envelope
 
@@ -94,7 +95,9 @@ the authority epoch and revocation revision may stay fixed. In these finite
 scenarios the original revocation heads do not change, the Notes frontier is
 untouched, and each new Device dispatch must advance its claimed state. The
 Recovery owner's first two frontiers must exactly equal the Manager's final
-`source_terminal` frontiers, before any new effect. Reconciliation cannot
+`source_terminal` frontiers in the after-terminal case, or the independently
+captured `copyout_boundary` frontiers in the before-terminal case, before any
+new effect. Reconciliation cannot
 consume another nonce. Comparing only epochs/revisions would miss a rollback
 of the claimed nonce set and is insufficient.
 
@@ -167,10 +170,112 @@ original terminal and retire normally without an additional CPU effect.
 Record its `prepared`, `native_result`, `source_terminal`, `history_ack` and
 `usage_window`, then `complete`.
 
+## Lost copyout with the original writer still live
+
+`lost-copyout-live-v1` prepares exactly one original operation named
+`lost-copyout-live`, requesting 25 ms in the unchanged 100 ms period. After the
+common prefix its sequence is:
+
+1. `prepared` with the exact original first K/D and canonical payload.
+2. `copyout_indeterminate` with `operation`, `pid`, `occurrence_key`, the full
+   original `ProductionDispatchReceipt` as `receipt`, actual `before` and
+   `after` usage, and `copyout` descriptor observation.
+3. `copyout_reconciled` with `operation`, `pid`, `occurrence_key`,
+   `request_json`, the original `ProductionOutcomeReceipt` as `receipt`,
+   `terminal_json`, actual `usage`, original `before_state`,
+   `before_payload_json`, `reconciled_count` and `copyout`.
+4. Original `source_terminal`, `history_ack`, `usage_window`, then `complete`
+   with operation count one.
+
+The dispatch receipt must preserve state and target disposition Indeterminate,
+no target receipt, the original nonempty error reason and event ID, and
+`external_effect: false`. Its complete original dispatch request retains the
+original namespace, lease, topic, K/idempotency key, payload bytes and digest,
+subject, destination, policy generation, exact native slot scope digest,
+semantic and operation digests and the original absent predecessor. The
+provider error string is a diagnostic. Actual ioctl return/errno and complete
+frame identity establish the selected response loss.
+
+Every `copyout` observation has exactly `install_ioctl_count`,
+`selected_ioctl_count`, `efault_count`, `armed`, and `last`. A non-null `last`
+has exactly `install_ioctl_count`, `selected_ioctl_count`, `efault_count`,
+`request_sha256` as the original 32-byte array, `request_bytes`,
+`response_capacity`, `syscall_return` and `errno`. The Manager must retain
+counts 1/1/1, unarmed, and the same exact diagnostic: full 96-byte Install frame,
+original response capacity 128, actual return -1 and EFAULT 14. The independent
+wire checker hashes comparison bytes only; it never submits them. Boot and
+CapSpace identity are separately tied to the actual Manager process and the
+immutable original request, because the Install frame itself omits those IDs.
+
+The original observer must recover the one earlier Applied revision. Before
+and after usage bracket its effective time and retain the accounting window.
+Reconciliation cannot increment Install count or change the saved diagnostic.
+Its complete original outcome and terminal event ID must match
+`source_terminal`, and its original Current must precede history retirement.
+
+## Manager exit after effect and before source terminal
+
+`manager-exit-before-terminal-v1` prepares exactly one operation named
+`lost-before-terminal`, also requesting 25 ms. Its ordered suffix is:
+
+1. `prepared`.
+2. `copyout_boundary` containing `operation`, `pid`, `occurrence_key`,
+   `request_json`, `payload_sha256`, actual `before` usage, the actual
+   `diagnostic` above, `observed_boottime_ns`, `pending_until_boottime_ns`,
+   complete independent `current`, physical `material_sha256`, and both full
+   `device_frontier` and `notes_frontier` DTOs.
+3. Original `manager_retired`, additionally containing actual
+   `kill_boottime_ns` sampled after the successful held-pidfd SIGKILL syscall.
+4. Original `watchdog`, `local_lease_retired`, `material_adopted`, and Recovery
+   `owner_ready`.
+5. `copyout_recovery_startup`: actual `pid`, `occurrence_key`, `capture_point`
+   equal to `original_recovery_before_monitor`, `captured`, and `copyout`.
+   `captured` is exactly one original row with `occurrence_key`, `topic`,
+   canonical `payload_json` and `state: "indeterminate"`.
+6. `copyout_reconciled` with the same fields as the live case.
+7. Original `source_terminal`, `history_ack`, `usage_window`, and `complete`
+   with operation count one.
+
+The callback's positive BOOTTIME window is at most two seconds. The actual
+kill completion must satisfy `observed <= kill < pending_until`; the original
+pidfd readiness and signal-9 exit observation must name the same old lifetime.
+Root retains the actual Current already containing the prepared Unknown, the
+verified physical material, and the consumed Device/untouched Notes frontiers.
+The original Supervisor and Root perform actual local-lease expiry, reaping,
+canonical Current adoption and recovery. The early retained-row observation
+comes from the protected original writer factory before target/monitor startup.
+It cannot be replaced by a later live database query or a producer label.
+
+The new Recovery descriptor must have counts 0/0/0, unarmed and null `last`
+both before and after reconciliation. It observes old Manager D without an
+Install. The recovered old Applied receipt retains the earlier revision,
+stable CPU and effective time. The independent five-second watchdog has its
+own later revision and immutable receipt; its restored current cap is never
+used as old D's result. Both original consumer frontiers survive unchanged
+through observer-only recovery.
+
+The background monitor remains enabled in both cases. The serialized single-K
+transition permits exactly `(before_state, reconciled_count)` of
+`(indeterminate, 1)` or `(committed, 0)`. If it already retained the terminal
+before Recovery `owner_ready`, `source_terminal` may name that same exact
+Current and original event ID. The oracle does not demand another terminal
+append or interpret a later Current as the earlier Unknown. A first-time
+reconciliation must reach a later original Current; a changed or regressed
+publisher, writer binding, event ID or retained frontier is rejected.
+
 ## Remaining acceptance work
 
-The two schemas above are finite, independently named subcases. A successful
-record always leaves full G2, unbounded CPU control, grant renewal, repeated
-recovery, after-effect/before-terminal crash, cross-boot recovery and power-loss
-flags false. Implement those paths in the original owners, review the new
-source pair and add actual cases; do not widen this schema to infer them.
+These are four finite, independently named gates. Adding this schema or passing
+its host parser tests conveys no native qualification. Only the reviewed
+original Rust entry's actual source-bound guest transcript can set the named
+lost-copyout or before-terminal-crash result flag. The two earlier scenarios
+retain their original checks and do not inherit either new scope.
+
+Every result still leaves full G2, unbounded CPU control, grant renewal,
+repeated recovery, cross-boot Unknown preservation, power loss and production
+readiness false. Multiple fresh Process generations and an actual same-boot
+control interval beyond the initial 300-second Manager grant require separate
+original producer events and strict gates. The sum of multiple finite boots'
+wall times is not that evidence. Cross-boot reuse must preserve the original
+store and unknown outcomes without redispatch. No old receipt, reset store,
+extended initial grant or substitute executable can close those paths.

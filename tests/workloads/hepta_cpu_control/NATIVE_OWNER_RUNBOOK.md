@@ -15,6 +15,9 @@ Process ktests are separate evidence and cannot pass this gate.
 | `native_owner_inputs.py` | Verify the frozen source review, complete source snapshots, actual original build records, embedded ELF, exact-source OSDK and retained product kernel. |
 | `run_native_owner.py` | Freeze inputs, make fresh ext2 state, run two loader controls and the requested native owner scenarios, retain complete raw evidence. |
 | `native_owner_evidence.py` | Check original K/D bytes, complete Root Current receipts, actual process boundaries, CPU accounting and the ordered source/recovery events. |
+| `native_owner_copyout.py` | Check the two actual response-loss scenarios against complete original receipts, callback/exit timing, early Unknown recovery and unchanged descriptor Install counts. |
+| `native_owner_fault_wire.py` | Independently compare the complete original Install frame hash without executing or generating a guest operation. |
+| `test_native_owner_copyout.py` | Exercise inert adversarial DTOs for the two response-loss gates; these records never qualify execution. |
 | `test_native_owner_evidence.py` | Reject altered, missing, reordered, relabelled and semantically contradictory inert records. These are parser tests, not native execution. |
 | `test_native_owner_runner.py` | Exercise actual bounded subprocess output, timeout, input mutation, exact ext2 formatting/preimage retention and source-review parsing. |
 | `NATIVE_OWNER_EVIDENCE.md` | Define the finite acceptance plan and original-entry evidence protocol. |
@@ -140,9 +143,11 @@ python3 -I -B tests/workloads/hepta_cpu_control/run_native_owner.py \
 ```
 
 Without `--execute`, the command performs no input inspection or execution and
-returns an explicit disabled record. The default run includes both scenarios;
-`--scenario steady-state-v1` selects only that named finite scope. Both altered
-ELF loader controls always run against the same product kernel. The byte-change
+returns an explicit disabled record. The default run includes all four scenarios:
+`steady-state-v1`, `manager-exit-after-terminal-v1`, `lost-copyout-live-v1`, and
+`manager-exit-before-terminal-v1`. Repeat `--scenario` to select particular
+named finite scopes; a partial selection cannot establish an unselected scope.
+Both altered ELF loader controls always run against the same product kernel. The byte-change
 and truncation must be rejected before any of the four images or roles resume.
 
 The guest uses the original N0 TCG/q35/max profile, one CPU, 512 MiB, no network,
@@ -172,15 +177,30 @@ Manager exit and independently authenticated successor in the same boot. It
 keeps the original 5-second watchdog, its immutable receipt, the original
 30-second recovery grace and the original single restoration allowance.
 
-Neither result completes all G2 work. The result flags remain false for:
+`lost-copyout-live-v1` additionally requires a real original FileTransport
+EFAULT with one Install, an original returned Indeterminate receipt, and
+observer-only source-terminal/Current/prefix recovery. The separate
+`manager-exit-before-terminal-v1` gate requires actual SIGKILL within the held
+callback's two-second window, original Supervisor/material recovery, an early
+factory-before-monitor Indeterminate row and zero Recovery Installs. Its old D
+result remains distinct from the independent watchdog receipt. Both have
+exactly one original prepared operation; the monitor remains enabled.
 
-- Lost response after the actual effect but before a durable original terminal.
+These gates are acceptance code, not evidence that either original guest case
+has run. Adding them does not transfer a host, kernel or previous-source pass
+to the current original Rust entry. Every execution still requires the complete
+reviewed source pair, successful original build and static bounds, fresh
+retained guest evidence and the exact finite scope's own result.
+
+None of the four finite results completes all G2 work. Flags remain false for:
+
 - Reboot with the same original store, old-boot D refusal and Unknown preservation
   without redispatch. The original Root adoption and publisher-retirement APIs
   currently require the same boot; this must be addressed in those owners.
 - Native grant renewal beyond the original finite 300-second grant, authenticated
   RootSession lifetime renewal and repeated native role replacement after the
-  one Manager/Recovery pair is consumed.
+  one Manager/Recovery pair is consumed. The current per-boot deadline remains
+  at most 120 seconds; adding four boots' wall times cannot prove this scope.
 - Host power loss, hardware behavior and production readiness.
 
 Complete these through the original owners and add actual source-bound cases.

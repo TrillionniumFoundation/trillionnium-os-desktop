@@ -265,10 +265,10 @@ def execute(args, report):
     changed[-1] ^= 1
     controls = [("manifest-byte-mismatch", bytes(changed)), ("truncated-snapshot", owner[:-1])]
     report["controls"], report["scenarios"] = {}, {}
-    selected = args.scenario or list(oracle.SCENARIOS)
+    selected = args.scenario or list(oracle.SUPPORTED_SCENARIOS)
     require(len(set(selected)) == len(selected), "scenario selection repeats a boot")
     for name, actual_owner in controls + [(name, owner) for name in selected]:
-        is_control = name not in oracle.SCENARIOS
+        is_control = name not in oracle.SUPPORTED_SCENARIOS
         directory = output / name
         directory.mkdir(mode=0o700)
         nonce = os.urandom(32).hex()
@@ -326,7 +326,15 @@ def execute(args, report):
     report.update(passed=passed, stage="complete", source_inputs_unchanged=True, same_product_kernel_all_boots=True,
                   original_native_owner_cycle_verified=passed,
                   bounded_steady_state_verified=passed and "steady-state-v1" in selected,
-                  same_boot_authenticated_successor_verified=passed and "manager-exit-after-terminal-v1" in selected)
+                  same_boot_authenticated_successor_verified=passed and any(
+                      value.get("same_boot_authenticated_successor_verified") is True
+                      for value in report["scenarios"].values()),
+                  lost_copyout_live_verified=passed and report["scenarios"].get(
+                      "lost-copyout-live-v1", {}).get("lost_copyout_live_verified") is True,
+                  after_effect_crash_verified=passed and report["scenarios"].get(
+                      "manager-exit-before-terminal-v1", {}).get("after_effect_crash_verified") is True,
+                  recovered_unknown_without_install_verified=passed and report["scenarios"].get(
+                      "manager-exit-before-terminal-v1", {}).get("recovered_unknown_without_install_verified") is True)
 
 
 def main(argv=None):
@@ -340,12 +348,13 @@ def main(argv=None):
     parser.add_argument("--mkfs", default="mkfs.ext2")
     parser.add_argument("--bios", type=Path, default=Path("/usr/share/seabios/bios-256k.bin"))
     parser.add_argument("--timeout", type=int, default=120)
-    parser.add_argument("--scenario", choices=oracle.SCENARIOS, action="append")
+    parser.add_argument("--scenario", choices=oracle.SUPPORTED_SCENARIOS, action="append")
     args = parser.parse_args(argv)
     report = {"schema": "hepta.native-original-owner-result.v1", "passed": False, "stage": "source_admission",
               "native_execution_attempted": False, "original_native_owner_cycle_verified": False,
               "bounded_steady_state_verified": False, "same_boot_authenticated_successor_verified": False,
-              "after_effect_crash_verified": False, "cross_boot_unknown_preservation_verified": False,
+              "after_effect_crash_verified": False, "lost_copyout_live_verified": False,
+              "recovered_unknown_without_install_verified": False, "cross_boot_unknown_preservation_verified": False,
               "grant_renewal_verified": False, "repeated_recovery_verified": False,
               "unbounded_persistent_cpu_verified": False, "power_loss_verified": False,
               "hardware_qualification": False, "production_ready": False, "g2_complete": False,
