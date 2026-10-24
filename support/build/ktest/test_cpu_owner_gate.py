@@ -41,19 +41,41 @@ class CpuOwnerGateTests(unittest.TestCase):
             "timed_out": False, "crate": "aster-core",
         }))
 
-    def test_retains_all_previous_names_and_adds_three(self):
-        self.assertEqual(CHECKER.MINIMUM_CORE_TESTS, 368)
-        self.assertEqual(len(CHECKER.REQUIRED_CORE_TESTS), 129)
+    def test_retains_all_previous_names_and_adds_eight(self):
+        self.assertEqual(CHECKER.MINIMUM_CORE_TESTS, 373)
+        self.assertEqual(len(CHECKER.REQUIRED_CORE_TESTS), 134)
         retained = [name for name in CHECKER.REQUIRED_CORE_TESTS
-                    if name not in CHECKER.CPU_OWNER_CONTINUITY_TESTS]
+                    if name not in (*CHECKER.CPU_OWNER_CONTINUITY_TESTS, *CHECKER.CPU_SUCCESSOR_TESTS)]
         self.assertEqual(len(retained), 126)
         digest = hashlib.sha256(json.dumps(retained, separators=(",", ":")).encode()).hexdigest()
         self.assertEqual(digest, "57a8097d6d45abd2629a9fa5f1cd4749473d5ea8ef0756bdc6d235a382fb0500")
 
+    def test_every_successor_case_is_mandatory(self):
+        self.assertEqual(len(CHECKER.CPU_SUCCESSOR_TESTS), 5)
+        for target in CHECKER.CPU_SUCCESSOR_TESTS:
+            with self.subTest(target=target):
+                self.write([name if name != target else "aster_core::inert::replacement"
+                            for name in self.names])
+                with self.assertRaisesRegex(ValueError, "required core"):
+                    CHECKER.check_guest(self.guest, "aster-core", False)
+
+    def test_every_successor_case_needs_own_terminal_without_skip(self):
+        for target in CHECKER.CPU_SUCCESSOR_TESTS:
+            for block in ("\n diagnostics", " FAILED", "\n [skipped: feature]\n ok"):
+                with self.subTest(target=target, block=block):
+                    self.write(changed={target: block})
+                    with self.assertRaises(ValueError):
+                        CHECKER.check_guest(self.guest, "aster-core", False)
+
+    def test_previous_368_denominator_is_rejected(self):
+        self.write(self.names[:368])
+        with self.assertRaisesRegex(ValueError, "shrank"):
+            CHECKER.check_guest(self.guest, "aster-core", False)
+
     def test_complete_new_inventory(self):
         self.write()
         result = CHECKER.check_guest(self.guest, "aster-core", False)
-        self.assertEqual(result["passed"], 368)
+        self.assertEqual(result["passed"], 373)
         self.assertEqual(result["required_core_tests"], list(CHECKER.REQUIRED_CORE_TESTS))
 
     def test_missing_or_repeated_new_test(self):

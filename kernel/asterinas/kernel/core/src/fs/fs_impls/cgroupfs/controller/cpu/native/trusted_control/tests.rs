@@ -1223,3 +1223,216 @@ fn native_watchdog_registration_is_bounded_across_owner_policy_replacements() {
     assert_eq!(fixture.revision(), 1);
     assert_eq!(fixture.budget().quota_ns(), MAX_INITIAL_CAP_NS);
 }
+
+// These exercise the actual successor prepare/commit API on the original CPU
+// owner. Process retirement and frozen-image publication have separate tests;
+// this layer never invents a D frontier or changes the original namespaces.
+fn prepare_cpu_successor(
+    fixture: &Fixture,
+    issued: u64,
+    generation: u64,
+) -> super::successor::PreparedCpuSuccessor {
+    let id = u128::from(fixture.process.as_ref().unwrap().pid()) << 64;
+    super::successor::PreparedCpuSuccessor::prepare(
+        fixture.managers.clone(),
+        [
+            PublisherId::from_u128(id | (1_000 + 2 * u128::from(generation))),
+            PublisherId::from_u128(id | (1_001 + 2 * u128::from(generation))),
+        ],
+        issued,
+    )
+    .unwrap()
+}
+
+#[ktest]
+fn native_successor_preparation_and_drop_do_not_publish_authority() {
+    let fixture = Fixture::new("g2-successor-drop");
+    arm_watchdog_fixture(&fixture);
+    let before = fixture.budget();
+    let plan = prepare_cpu_successor(&fixture, 100, 0);
+    let fresh = plan.managers();
+    let weak = Arc::downgrade(&fresh[0]);
+    {
+        let _irq = disable_local();
+        assert_eq!(
+            fresh[0].read_usage_at(Some(100)),
+            Err(CpuUsageError::Closed)
+        );
+        assert_eq!(
+            fresh[1].read_usage_at(Some(100)),
+            Err(CpuUsageError::Closed)
+        );
+    }
+    drop(fresh);
+    drop(plan);
+    assert!(weak.upgrade().is_none());
+    assert_eq!(fixture.budget(), before);
+    assert_eq!(fixture.revision(), 1);
+    assert_eq!(fixture.cores[0].next_sequence(), 1);
+    assert_eq!(fixture.cores[1].next_sequence(), 1);
+    with_state(&fixture.owner, |state| {
+        let policy = state.trusted_management.as_ref().unwrap();
+        assert!(!policy.grants[0].is_revoked());
+        assert!(!policy.grants[1].is_revoked());
+        assert!(policy.grants[0].owns_snapshot(fixture.managers[0].delegation()));
+    });
+}
+
+#[ktest]
+fn native_successor_requires_both_exact_predecessor_delegations_closed() {
+    let fixture = Fixture::new("g2-successor-fence");
+    arm_watchdog_fixture(&fixture);
+    let mut plan = prepare_cpu_successor(&fixture, 100, 0);
+    let before = fixture.budget();
+    assert_eq!(
+        plan.commit_at(Some(100)).err().unwrap().error(),
+        Errno::EBUSY
+    );
+    fixture.managers[0].revoke_at(Some(90));
+    assert_eq!(
+        plan.commit_at(Some(100)).err().unwrap().error(),
+        Errno::EBUSY
+    );
+    assert_eq!(fixture.budget(), before);
+    assert_eq!(fixture.revision(), 1);
+    fixture.managers[1].revoke_at(Some(90));
+    drop(plan.commit_at(Some(100)).unwrap());
+    let fresh = plan.managers();
+    with_state(&fixture.owner, |state| {
+        let policy = state.trusted_management.as_ref().unwrap();
+        assert!(policy.grants[0].owns_snapshot(fresh[0].delegation()));
+        assert!(policy.grants[1].owns_snapshot(fresh[1].delegation()));
+        assert!(!policy.grants[0].is_revoked());
+        assert!(!policy.grants[1].is_revoked());
+    });
+}
+
+#[ktest]
+fn native_successor_preserves_cpu_debt_revision_and_original_delivery_history() {
+    let fixture = Fixture::new("g2-successor-preserve");
+    arm_watchdog_fixture(&fixture);
+    with_state(&fixture.owner, |state| {
+        state.max.used_ns = 500;
+        state.max.cumulative_ns = 500;
+        state.max.carry_debt_ns = 20;
+    });
+    let first = fixture.execute(0, 1, 1, 1001, Some(1_000)).unwrap();
+    assert_eq!(first.status, Some(DeliveryStatus::Ok));
+    let before = fixture.budget();
+    let old_expiry = fixture.managers[0].delegation().expires_at_ns();
+    fixture.managers[0].revoke_at(Some(1_000));
+    fixture.managers[1].revoke_at(Some(1_000));
+    let mut plan = prepare_cpu_successor(&fixture, 2_000, 0);
+    drop(plan.commit_at(Some(2_000)).unwrap());
+    let fresh = plan.managers();
+    assert_eq!(fresh[0].delegation().issued_at_ns(), 2_000);
+    assert_eq!(
+        fresh[0].delegation().expires_at_ns(),
+        2_000 + INITIAL_LEASE_NS
+    );
+    assert_eq!(fixture.managers[0].delegation().expires_at_ns(), old_expiry);
+    assert_eq!(fixture.budget(), before);
+    assert_eq!(fixture.revision(), 2);
+    assert_eq!(fixture.cores[0].next_sequence(), 2);
+    assert_eq!(fixture.cores[0].retired_through(), 0);
+    assert_eq!(
+        fixture.cores[0]
+            .query_delivery(&fixture.cores[0].delivery_view(), 1)
+            .unwrap(),
+        first
+    );
+    {
+        let _irq = disable_local();
+        let usage = fresh[0].read_usage_at(Some(2_001)).unwrap();
+        assert_eq!(usage.active_cap_ns, 1001);
+        assert_eq!(usage.revision, 2);
+        assert_eq!(
+            fixture.managers[0].read_usage_at(Some(2_001)),
+            Err(CpuUsageError::Closed)
+        );
+    }
+    let after_read = fixture.budget();
+    fixture.managers[0].revoke_at(None);
+    fixture.managers[1].revoke_at(None);
+    watchdog_tick(&fixture, Some(2_000 + super::watchdog::WATCHDOG_DELAY_NS));
+    assert_eq!(fixture.budget(), after_read);
+    assert_eq!(fixture.revision(), 2);
+    with_state(&fixture.owner, |state| {
+        let policy = state.trusted_management.as_ref().unwrap();
+        assert!(!policy.grants[0].is_revoked());
+        assert!(!policy.grants[1].is_revoked());
+        assert!(policy.watchdog.terminal.is_none());
+        assert!(matches!(policy.budget_cause, BudgetCause::Manager));
+    });
+}
+
+#[ktest]
+fn native_successor_failed_or_stale_commit_leaves_current_policy_intact() {
+    let fixture = Fixture::new("g2-successor-rollback");
+    arm_watchdog_fixture(&fixture);
+    fixture.managers[0].revoke_at(Some(90));
+    fixture.managers[1].revoke_at(Some(90));
+    let mut plan = prepare_cpu_successor(&fixture, 100, 0);
+    let mut stale = prepare_cpu_successor(&fixture, 100, 1);
+    let before = fixture.budget();
+    for now in [None, Some(99), Some(100 + INITIAL_LEASE_NS)] {
+        assert_eq!(plan.commit_at(now).err().unwrap().error(), Errno::ESTALE);
+        with_state(&fixture.owner, |state| {
+            assert!(
+                state.trusted_management.as_ref().unwrap().grants[0]
+                    .owns_snapshot(fixture.managers[0].delegation())
+            );
+        });
+        assert_eq!(fixture.budget(), before);
+    }
+    drop(plan.commit_at(Some(100)).unwrap());
+    let fresh = plan.managers();
+    assert_eq!(
+        stale.commit_at(Some(101)).err().unwrap().error(),
+        Errno::EBUSY
+    );
+    assert_eq!(
+        plan.commit_at(Some(101)).err().unwrap().error(),
+        Errno::ESTALE
+    );
+    with_state(&fixture.owner, |state| {
+        let policy = state.trusted_management.as_ref().unwrap();
+        assert!(policy.grants[0].owns_snapshot(fresh[0].delegation()));
+        assert!(!policy.grants[0].is_revoked());
+    });
+    assert_eq!(fixture.budget(), before);
+    assert_eq!(fixture.revision(), 1);
+}
+
+#[ktest]
+fn native_successor_generations_keep_one_watchdog_registration_and_bounded_origins() {
+    let mut fixture = Fixture::new("g2-successor-bounded");
+    arm_watchdog_fixture(&fixture);
+    let before = fixture.budget();
+    for generation in 0..128u64 {
+        let issued = 100 + generation * (INITIAL_LEASE_NS + 1);
+        fixture.managers[0].revoke_at(Some(issued));
+        fixture.managers[1].revoke_at(Some(issued));
+        let old = Arc::downgrade(&fixture.managers[0]);
+        let mut plan = prepare_cpu_successor(&fixture, issued + 1, generation);
+        drop(plan.commit_at(Some(issued + 1)).unwrap());
+        fixture.managers = plan.managers();
+        drop(plan);
+        assert!(old.upgrade().is_none());
+        with_state(&fixture.owner, |state| {
+            assert!(state.watchdog_registered);
+            assert_eq!(
+                state
+                    .arm_watchdog(
+                        fixture.managers[0].delegation(),
+                        fixture.process.as_ref().unwrap().status_observer()
+                    )
+                    .unwrap_err()
+                    .error(),
+                Errno::EALREADY
+            );
+        });
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(fixture.revision(), 1);
+    }
+}

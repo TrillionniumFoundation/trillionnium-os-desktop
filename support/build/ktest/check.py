@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 368  # Retained 365 plus three original CPU-owner continuity regressions.
+MINIMUM_CORE_TESTS = 373  # Retained 368 plus five original-owner successor regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -201,7 +201,14 @@ CPU_OWNER_CONTINUITY_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controll
     "native_delayed_watchdog_cut_cannot_mutate_a_replacement_policy",
     "native_watchdog_registration_is_bounded_across_owner_policy_replacements",
 ))
-REQUIRED_CORE_TESTS = (*CPU_OWNER_CONTINUITY_TESTS, *SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+CPU_SUCCESSOR_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::" + suffix for suffix in (
+    'native_successor_preparation_and_drop_do_not_publish_authority',
+    'native_successor_requires_both_exact_predecessor_delegations_closed',
+    'native_successor_preserves_cpu_debt_revision_and_original_delivery_history',
+    'native_successor_failed_or_stale_commit_leaves_current_policy_intact',
+    'native_successor_generations_keep_one_watchdog_registration_and_bounded_origins',
+))
+REQUIRED_CORE_TESTS = (*CPU_SUCCESSOR_TESTS, *CPU_OWNER_CONTINUITY_TESTS, *SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (
@@ -418,7 +425,7 @@ def check_guest(guest, crate, allow_filtered=False):
                 raise ValueError("required core test was soft-skipped: " + name)
         records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
         for index, record in enumerate(records):
-            if record[1] not in CPU_OWNER_CONTINUITY_TESTS:
+            if record[1] not in (*CPU_OWNER_CONTINUITY_TESTS, *CPU_SUCCESSOR_TESTS):
                 continue
             end = records[index + 1].start() if index + 1 < len(records) else summary.start()
             if record.end() >= end or end > summary.start():

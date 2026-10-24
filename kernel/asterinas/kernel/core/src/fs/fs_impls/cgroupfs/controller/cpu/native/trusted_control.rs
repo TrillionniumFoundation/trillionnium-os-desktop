@@ -20,6 +20,9 @@ use crate::fs::cgroupfs::CgroupSysNode;
 mod watchdog;
 use watchdog::WatchdogState;
 
+#[cfg(any(ktest, feature = "g2-trusted-daemon"))]
+mod successor;
+
 pub(crate) const MAX_INITIAL_CAP_NS: u64 = 50_000_000;
 pub(crate) const INITIAL_LEASE_NS: u64 = 300_000_000_000;
 pub(crate) const RECOVERY_GRACE_NS: u64 = 30_000_000_000;
