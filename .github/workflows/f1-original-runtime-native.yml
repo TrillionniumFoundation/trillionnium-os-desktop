@@ -7,6 +7,10 @@ on:
       - "tests/workloads/hepta_agentd_abi/**"
       - "tests/integration/hepta/**"
       - "services/hepta-os/**"
+      - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - "support/build/**"
       - ".github/workflows/f1-original-runtime-native.yml"
   workflow_dispatch:
 
@@ -22,8 +26,6 @@ jobs:
       run:
         shell: bash
     env:
-      DESKTOP_SOURCE_PIN: 7d8906ef9fbb5f3af4e6bb0843b79ac666394833
-      HEPTA_SOURCE_PIN: b3d3f2d4b01f123d7ac17575c27fb54d00094f7f
       GIT_TERMINAL_PROMPT: "0"
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
@@ -32,6 +34,26 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
           persist-credentials: false
+
+      - name: Resolve the reviewed original source pair
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYCODE'
+          import json, os, re
+          from pathlib import Path
+          review = json.loads(Path("tests/workloads/hepta_agentd_runtime/source-review.json").read_bytes())
+          if review.get("schema") != "hepta.native-original-runtime-source-review.v1":
+              raise SystemExit("unexpected original runtime source-review schema")
+          pins = []
+          for name in ("desktop", "hepta"):
+              source = review[name]
+              for field in ("head", "tree"):
+                  if not isinstance(source[field], str) or re.fullmatch(r"[0-9a-f]{40}", source[field]) is None:
+                      raise SystemExit("invalid reviewed " + name + " " + field)
+              pins.append(name.upper() + "_SOURCE_PIN=" + source["head"])
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as output:
+              output.write("\n".join(pins) + "\n")
+          PYCODE
 
       - name: Allocate isolated native evidence and cache directories
         run: |
