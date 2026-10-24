@@ -20,6 +20,7 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "docs/agents/handoffs/A05_READUSAGE_CONTRACT.md"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -42,6 +43,7 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "docs/agents/handoffs/A05_READUSAGE_CONTRACT.md"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -321,6 +323,8 @@ jobs:
             --output "${RUNNER_TEMP}/a04-full-linux" \
             > "$checks/reference-stage.stdout.log" 2> "$checks/reference-stage.stderr.log"
 
+      - name: Verify A05 ReadUsage fail-closed source contract
+        run: python3 -I -B -m unittest discover -s tests/kernel/control -p 'test_readusage_contract.py' -v
       - name: Build ordinary G1 product and verify QueryAbi with all four disabled operations
         shell: bash
         run: |
