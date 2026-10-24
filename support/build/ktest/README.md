@@ -202,3 +202,27 @@ native tests. Native evidence is required separately; broader persistence/recove
 gaps remain open. The
 [flush contract](../../../docs/agents/MLSDISK_FLUSH_PROPAGATION.md) records the
 preceding four-test slice; its inventory is historical, not the current total.
+
+## G2 initial Root Process-state gate
+
+The separate `--g2-initial-root` option enables only the explicit
+`g2-trusted-daemon` feature and preserves the complete original unfiltered
+core suite, one-CPU N0 machine and fixed lock. `check-g2.py` first uses the
+unchanged original core inventory (365 baseline, 126 required names), then
+requires each of the three new Root Process-state tests to terminate once
+with its own exercised success. A changed feature, filter, machine, missing
+test, soft skip, mutable compile input or changed lock is rejected.
+
+`HEPTA_TRUSTED_INITIAL_ELF` and `--trusted-initial-sha256` are both required.
+This bounded static ELF is copied read-only into the run evidence only for
+compiling the trusted profile. The ktests do not execute that userspace ELF
+and do not qualify an original Hepta entry, durable CPU effect or recovery.
+Use the complete original four-crate invocation separately for the ordinary
+configuration; its inventories remain unchanged.
+
+```sh
+HEPTA_TRUSTED_INITIAL_ELF=/absolute/pinned/compile-input.elf \
+python3 -I -B support/build/ktest/run.py --g2-initial-root \
+  --crate aster-core --trusted-initial-sha256 FULL_SHA256 \
+  --skip-osdk-install --output /absolute/new/g2-process-evidence
+```

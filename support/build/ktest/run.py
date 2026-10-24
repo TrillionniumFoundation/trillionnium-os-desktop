@@ -35,9 +35,22 @@ def main():
     parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
     parser.add_argument("--permission-attr-smp", action="store_true",
                         help="run the fixed permission transaction regressions with exactly two CPUs")
+    parser.add_argument("--g2-initial-root", action="store_true",
+                        help="run the complete original N0 core suite plus the three G2 Process-state tests")
+    parser.add_argument("--trusted-initial-sha256",
+                        help="explicit digest of HEPTA_TRUSTED_INITIAL_ELF, used only to compile G2 ktests")
     parser.add_argument("--skip-osdk-install", action="store_true",
                         help="reuse an already source-built OSDK carrying the explicit-lock patch")
     args = parser.parse_args()
+    if args.g2_initial_root:
+        if args.permission_attr_smp or args.crate not in (None, ["aster-core"]) or args.test_name is not None:
+            parser.error("--g2-initial-root requires the complete aster-core N0 suite without filtering or SMP")
+        if not args.trusted_initial_sha256 or len(args.trusted_initial_sha256) != 64 or any(
+                byte not in "0123456789abcdef" for byte in args.trusted_initial_sha256):
+            parser.error("--g2-initial-root requires --trusted-initial-sha256")
+        args.crate = ["aster-core"]
+    elif args.trusted_initial_sha256:
+        parser.error("--trusted-initial-sha256 is only valid with --g2-initial-root")
     if args.permission_attr_smp:
         if args.crate not in (None, ["aster-core"]) or args.test_name is not None:
             parser.error("--permission-attr-smp fixes the crate and complete test-name suffix")
@@ -49,7 +62,8 @@ def main():
                 parser.error(f"{crate} requires its complete unfiltered default N0 suite")
     profile = "permission-attr-smp" if args.permission_attr_smp else "default"
     vcpus = 2 if args.permission_attr_smp else 1
-    features = ["permission-attr-smp-ktest"] if args.permission_attr_smp else []
+    features = (["g2-trusted-daemon"] if args.g2_initial_root else
+                ["permission-attr-smp-ktest"] if args.permission_attr_smp else [])
     here = Path(__file__).resolve().parent
     project = here.parents[2]
     upstream = project / "kernel/asterinas"
@@ -75,6 +89,28 @@ def main():
     else:
         prefix = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ-ktest-")
         output = Path(tempfile.mkdtemp(prefix=prefix, dir=parent_output))
+    trusted = None
+    if args.g2_initial_root:
+        supplied = env.get("HEPTA_TRUSTED_INITIAL_ELF")
+        if not supplied:
+            raise SystemExit("G2 Process ktests require HEPTA_TRUSTED_INITIAL_ELF as a compilation input")
+        source = Path(supplied)
+        if (not source.is_absolute() or not source.is_file() or source.is_symlink()
+                or source.resolve(strict=True) != source or not 0 < source.stat().st_size <= 8 * 1024**2
+                or digest(source) != args.trusted_initial_sha256):
+            raise SystemExit("G2 ktest input must be a canonical pinned ELF within the original 8 MiB bound")
+        content = source.read_bytes()
+        if content[:7] != b"\x7fELF\x02\x01\x01" or content[16:20] != b"\x02\x00\x3e\x00":
+            raise SystemExit("G2 ktest compilation input must be original x86_64 static ET_EXEC")
+        frozen = output / "ktest-trusted-initial.elf"
+        with frozen.open("xb") as stream:
+            stream.write(content)
+        frozen.chmod(0o444)
+        if digest(source) != args.trusted_initial_sha256 or digest(frozen) != args.trusted_initial_sha256:
+            raise SystemExit("G2 ktest compilation input changed while freezing")
+        env["HEPTA_TRUSTED_INITIAL_ELF"] = str(frozen)
+        trusted = {"source_path": str(source), "path": str(frozen), "sha256": args.trusted_initial_sha256,
+                   "bytes": len(content), "compilation_input_only": True, "native_entry_execution_claimed": False}
     lock = (project / "support/build/out-kernel.lock").open("a")
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -110,7 +146,8 @@ def main():
                        "osdk_sha256": digest(osdk), "vdso_sha256": digest(Path(env["VDSO_LIBRARY_DIR"]) / "vdso_x86_64.so"),
                        "cargo_build_jobs": env["CARGO_BUILD_JOBS"], "test_name": args.test_name,
                        "ktest_profile": profile, "vcpus": vcpus, "features": features,
-                       "osdk_install_skipped": args.skip_osdk_install}
+                       "osdk_install_skipped": args.skip_osdk_install,
+                       "g2_initial_root": args.g2_initial_root, "ktest_trusted_initial": trusted}
         (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
         env["CARGO_TARGET_DIR"] = str(upstream / "target")
         results = []
@@ -141,7 +178,11 @@ def main():
                 raise SystemExit(f"{crate}: OSDK failed ({code}); retained evidence: {target}")
             if not generated.is_file() or digest(generated) != digest(lock_path):
                 raise SystemExit(f"{crate}: generated lock differs from the fixed test-base lock")
-            if args.permission_attr_smp:
+            if args.g2_initial_root:
+                if digest(Path(trusted["path"])) != trusted["sha256"]:
+                    raise SystemExit("G2 ktest compilation input changed during the actual build")
+                checker = [sys.executable, "-I", str(here / "check-g2.py"), str(target / "guests")]
+            elif args.permission_attr_smp:
                 checker = [sys.executable, "-I", str(here / "check-permission-smp.py"), str(target / "guests")]
             else:
                 checker = [sys.executable, "-I", str(here / "check.py"), str(target / "guests"), "--crate", crate]
