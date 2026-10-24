@@ -442,16 +442,54 @@ def install(package, prefix, paths, activity_probe=require_stopped):
     manifest = verify_package(package)
     package, prefix = Path(package), Path(prefix)
     with install_lock(prefix):
-        old = read_json(prefix / "installation.json") if (prefix / "installation.json").exists() else None
-        if old:
-            require(old["paths"] == paths, "Upgrade must retain installation paths")
         activity_probe(paths["unit_name"])
         generated = integrations(prefix, paths)
+        record_path = prefix / "installation.json"
+        pending_path = prefix / "installation.pending.json"
+        old = read_json(record_path) if record_path.exists() or record_path.is_symlink() else None
+        previous = current_release(prefix)
+        previous_name = previous.name if previous else None
+        pending = None
+        if pending_path.exists() or pending_path.is_symlink():
+            info = pending_path.lstat()
+            require(stat.S_ISREG(info.st_mode) and info.st_uid == os.geteuid()
+                    and stat.S_IMODE(info.st_mode) == 0o600, "Invalid pending installation file")
+            pending = read_json(pending_path)
+            require(isinstance(pending, dict) and set(pending) == {
+                "schema_version", "package_sha256", "paths", "previous_current", "previous_record", "record"
+            } and pending["schema_version"] == 1, "Unknown pending installation schema")
+            require(pending["package_sha256"] == digest(json_bytes(manifest))
+                    and pending["paths"] == paths,
+                    "An interrupted installation must be resumed with the same package and paths")
+            require(old in (pending["previous_record"], pending["record"]),
+                    "Installation record changed during interrupted installation")
+            require(previous_name in (pending["previous_current"], manifest["release_id"]),
+                    "Current release changed during interrupted installation")
+            old = pending["previous_record"]
+            previous_name = pending["previous_current"]
+        if old is not None:
+            require(isinstance(old, dict) and set(old) == {
+                "schema_version", "paths", "previous_release", "integration_sha256"
+            } and old["schema_version"] == 1, "Unknown installation record")
+            require(old["paths"] == paths, "Upgrade must retain installation paths")
+            require(isinstance(old["integration_sha256"], dict)
+                    and set(old["integration_sha256"]) == set(generated),
+                    "Unexpected managed integration path")
+        require(previous_name is None or isinstance(previous_name, str) and RELEASE.fullmatch(previous_name),
+                "Invalid previous current release")
+        record = {"schema_version": 1, "paths": paths,
+                  "previous_release": previous_name if previous_name != manifest["release_id"]
+                  else (old or {}).get("previous_release"),
+                  "integration_sha256": {name: digest(value[0]) for name, value in generated.items()}}
+        if pending is not None:
+            require(pending["record"] == record, "Pending installation does not match generated integrations")
         for filename, (data, _mode) in generated.items():
             path = Path(filename)
             if path.exists() or path.is_symlink():
-                require(old is not None and filename in old["integration_sha256"]
-                        and digest(regular_bytes(path)) == old["integration_sha256"][filename],
+                allowed = {(old or {}).get("integration_sha256", {}).get(filename)}
+                if pending is not None:
+                    allowed.add(digest(data))
+                require(digest(regular_bytes(path)) in allowed,
                         f"Refusing to overwrite modified/unmanaged integration: {path}")
         releases = private_dir(prefix / "releases")
         release = releases / manifest["release_id"]
@@ -461,9 +499,9 @@ def install(package, prefix, paths, activity_probe=require_stopped):
             stage = Path(tempfile.mkdtemp(prefix=".new-", dir=releases))
             try:
                 (stage / "bin").mkdir(mode=0o700)
-                for name, record in manifest["files"].items():
+                for name, file_record in manifest["files"].items():
                     (stage / name).parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-                    atomic_write(stage / name, regular_bytes(package / name), record["mode"])
+                    atomic_write(stage / name, regular_bytes(package / name), file_record["mode"])
                 atomic_write(stage / "manifest.json", json_bytes(manifest), 0o644)
                 verify_package(stage)
                 for directory in sorted((p for p in stage.rglob("*") if p.is_dir()),
@@ -481,6 +519,14 @@ def install(package, prefix, paths, activity_probe=require_stopped):
             atomic_write(config, json_bytes(default_config()))
         else:
             load_config(config)
+        if pending is None:
+            # Persist ownership before the first integration becomes visible.
+            # Resume accepts only the original bytes or this exact package's
+            # generated bytes, never an arbitrary preexisting launcher.
+            pending = {"schema_version": 1, "package_sha256": digest(json_bytes(manifest)),
+                       "paths": paths, "previous_current": previous_name,
+                       "previous_record": old, "record": record}
+            atomic_write(pending_path, json_bytes(pending))
         for filename, (data, mode) in generated.items():
             path = Path(filename)
             path.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
@@ -489,12 +535,10 @@ def install(package, prefix, paths, activity_probe=require_stopped):
                     and not stat.S_IMODE(info.st_mode) & 0o022,
                     f"Integration directory must be real, owned and not writable by others: {path.parent}")
             atomic_write(path, data, mode)
-        previous = current_release(prefix)
-        record = {"schema_version": 1, "paths": paths,
-                  "previous_release": previous.name if previous and previous != release else (old or {}).get("previous_release"),
-                  "integration_sha256": {name: digest(value[0]) for name, value in generated.items()}}
-        atomic_write(prefix / "installation.json", json_bytes(record))
+        atomic_write(record_path, json_bytes(record))
         switch_release(prefix, release.name)
+        pending_path.unlink()
+        fsync_dir(prefix)
     return {"installed_release": release.name, "previous_release": record["previous_release"],
             "configuration": str(config), "user_data_changed": False}
 
@@ -542,6 +586,9 @@ def load_config(path):
 
 
 def installed(prefix):
+    pending = Path(prefix) / "installation.pending.json"
+    require(not pending.exists() and not pending.is_symlink(),
+            "Installation is incomplete; rerun install with the same package and paths")
     record = read_json(Path(prefix) / "installation.json")
     require(set(record) == {"schema_version", "paths", "previous_release", "integration_sha256"}
             and record["schema_version"] == 1, "Unknown installation record")
