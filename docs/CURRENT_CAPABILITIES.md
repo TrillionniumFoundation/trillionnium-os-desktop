@@ -1,8 +1,10 @@
 # 当前能力、源码与验收边界
 
-本实施线来自 PR #257。最新已归档内核源码为 `22e0a19f8ab95f730e0fedd85462157ed3d9a10e` / tree `9cbd2a0762b42a63cb2c718746773d6555c46460`，其[原完整四套与同 ELF 原生组合](../results/integration/2026-10-23-audit-closure/kernel-socket-22e0/publication.json)通过：core365/required126、allocator20、ML15、OSTD230（原 TCG 软跳3）；ordinary18、SGID30、Unix 身份/凭证及附属组等场景使用同一普通内核 ELF。该收据仍明确保留 `MSG_DONTWAIT` 缺陷、生产授权与持久 CPU G2 未完成，不能因总测试通过而覆盖这些缺口。
+本实施线来自 PR #257。最新已归档内核源码为 `556615fc9368c35539fbd1829f386ab55996dd47` / tree `97ba9c49ed6c613e7255d3b7d6bc8a7e1f230a1b`，其[原完整四套与同 ELF socket 正反验收](../results/integration/2026-10-24-asterinas-integration/kernel-unix-dontwait/publication.json)通过：core365/required126、allocator20、ML15、OSTD230报告通过（原 TCG 软跳3，实际执行227）；同 ordinary ELF 的18项 QueryAbi 与33项 Unix 非阻塞检查通过。同一个 Linux 静态探针在旧 `74ffd05d` 内核准确复现四处延迟 EAGAIN、其余29项通过，负控明确 `product_passed=false`。本源码的 `MSG_DONTWAIT` 缺陷已实际闭合；生产授权、完整原生 Hepta F1/G2 与持久恢复继续独立验收。原 `22e0a19f` 的身份/凭证、附属组等历史组合保留，不冒充本轮重复执行。
 
 较早 `d5a21bb7` 的[缺页准入与 fallible 页表组合](../results/integration/2026-10-23-audit-closure/kernel-vmar-d5a21/publication.json)及其[首次 fixture 失败](../results/integration/2026-10-23-audit-closure/kernel-vmar-689c-failure/publication.json)继续保留。`0187bd57` / Hepta `b3d3f2d4` 另有原 daemon/store 和 Linux32 实测，`f3d54e5b` 有原 A10 十一项 Linux-host 执行体。每项结果只属于其明确来源，不给后续分支、远端 main 或部署环境转授资格。F1 CI 的源码选择现由同一份 `source-review.json` 提供，已修复旧 workflow pin 与 review 不一致；[68 项 host 回归和真实环境输出核对](../results/integration/2026-10-24-asterinas-integration/f1-source-pair/validation.json)只证明来源选择修复。
+
+原生输入门禁现绑定 compiler manifest 与显式 V8 配对归档，并对 store 缓存执行跨进程独占锁；[runtime89/store27项实际 host 回归](../results/integration/2026-10-24-asterinas-integration/native-cache-profile/result.json)通过。普通 F1 拒绝所有可信 G1/G2 profile；这些输入检查不转授 guest 资格。
 
 **当前没有完整生产控制、完整原生 F1/G2、通用桌面控制或手机产品资格。** 文档与源码门禁通过只能关闭对应工程问题；不能把单个 host、guest 或设备场景的成功扩展为产品验收。
 

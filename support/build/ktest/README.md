@@ -49,6 +49,13 @@ corresponding fixed test-base lock. The installed downstream OSDK lock patch
 copies it into the generated workspace and passes `--locked` to Cargo. The
 runner checks the resulting generated lock against the selected input again.
 `--skip-osdk-install` can reuse the already source-built patched OSDK.
+Reuse is valid only when that OSDK was built from the same exact checkout path.
+OSDK embeds local dependency paths at compilation; a binary from another
+worktree can select incompatible path identities even at the same source
+revision. Reinstall from the actual test checkout in a dedicated Cargo home
+and retain its source path and binary digest before using this option.
+The [retained failed and corrected runs](../../../results/integration/2026-10-24-asterinas-integration/kernel-unix-dontwait/README.md)
+show this failure and the subsequent actual four-suite execution.
 
 No upstream OSDK manifest is rewritten. The original upstream manifest expands
 its ordinary test arguments, and `record-qemu.py` records those requested
