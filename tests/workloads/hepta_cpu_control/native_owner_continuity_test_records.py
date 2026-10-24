@@ -75,9 +75,9 @@ class ContinuityRecords(InertRecords):
                           "destination_id": "cognitive.owner:" + self.agent,
                           "scope_sha256": list(bytes.fromhex(sha("inert-writer-scope"))), "payload_sha256": list(bytes.fromhex(payload))}
         root = {"schema_version": 1, "lease_id": "native-cpu-root-installation" if self.local_generation == 1
-                else "native-cpu-root-writer-" + str(self.local_generation), "authority_epoch": 7, "revision": 1,
+                else "native-cpu.root." + self.linux_boot + "." + str(self.spawn), "authority_epoch": 7, "revision": 1,
                 "binding": root_binding, "issued_at_unix_ms": now, "expires_at_unix_ms": now + 120_000}
-        lease = {"schema_version": 1, "lease_id": "native-cpu-writer-" + str(self.local_generation), "authority_epoch": 7,
+        lease = {"schema_version": 1, "lease_id": "native-cpu.writer." + self.linux_boot + "." + str(self.spawn), "authority_epoch": 7,
                  "revision": 1, "binding": writer_binding, "issued_at_unix_ms": now, "expires_at_unix_ms": now + 20_000}
         writer = {"registered_agent_id": self.agent, "spawn_generation": self.spawn, "owner_epoch": 10 + self.local_generation,
                   "local_lease_id": "original-writer", "local_lease_generation": self.local_generation, "authority_lease": lease}

@@ -29,6 +29,15 @@ grant-bound fencing digests; signature/current-authority verification remains
 the original Host/RootSession's responsibility, bound by the compiled source
 review and actual execution. An unprovided key is not reconstructed or assumed.
 
+The cold-open-capable original entry names every writer authority lease
+`native-cpu.writer.<actual Root boot UUID>.<Supervisor spawn generation>` and
+every successor Root lease `native-cpu.root.<actual UUID>.<spawn generation>`.
+The initial Root keeps `native-cpu-root-installation`. The oracle binds these
+names to the actual Root peer and complete registered writer; local writer
+generation is not substituted for Supervisor spawn, and older ID spellings
+are rejected. Lease duration, signature, scope, payload and uniqueness checks
+remain unchanged. This naming check alone supplies no cross-boot evidence.
+
 The initial real ReadUsage sample is no earlier than the initial kernel grant
 issue cut. Its checked sum with 330 seconds is therefore a conservative bound
 beyond both initial finite grants. Only a subsequent Applied receipt on the

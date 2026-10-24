@@ -1,10 +1,12 @@
 """Inert transcript rejection tests; these never execute or qualify Hepta."""
 import copy
+import hashlib
 import json
 import struct
 import unittest
 
 import native_owner_evidence as evidence
+import native_owner_continuity_types as types
 import native_owner_state_observations as disk
 from native_owner_continuity_test_records import ContinuityRecords
 from native_owner_successor_wire import initial_expiry_upper_bound, retirement_receipt
@@ -81,6 +83,43 @@ class OriginalContinuityOracleTests(unittest.TestCase):
             if case == "missing-image": next(iter(records.kernel_before.values())).pop(0)
             with self.subTest(case=case), self.assertRaises(ValueError):
                 records.evaluate()
+
+    def test_original_root_lease_id_requires_actual_boot_and_supervisor_spawn(self):
+        for case in ("legacy", "another-boot", "local-generation", "initial-replaced"):
+            records = ContinuityRecords("successor-renewal-v1")
+            owner = records.event("continuity_owner", 2 if case != "initial-replaced" else 0)
+            if case == "legacy":
+                selected = "native-cpu-root-writer-" + str(owner["writer"]["local_lease_generation"])
+            elif case == "another-boot":
+                selected = "native-cpu.root.00000000-0000-0000-0000-000000000001." + str(owner["writer"]["spawn_generation"])
+            elif case == "local-generation":
+                self.assertNotEqual(owner["writer"]["local_lease_generation"], owner["writer"]["spawn_generation"])
+                selected = "native-cpu.root." + records.linux_boot + "." + str(owner["writer"]["local_lease_generation"])
+            else:
+                selected = "native-cpu.root." + records.linux_boot + "." + str(owner["writer"]["spawn_generation"])
+            owner["root_lease"]["lease_id"] = selected
+            with self.subTest(case=case), self.assertRaisesRegex(ValueError, "lease was reused or silently extended"):
+                records.evaluate()
+
+    def test_consistently_bound_old_writer_lease_id_is_still_rejected(self):
+        class LegacyWriterRecords(ContinuityRecords):
+            def authority(self, previous):
+                value = super().authority(previous)
+                lease = value["writer"]["authority_lease"]
+                lease["lease_id"] = "native-cpu-writer-" + str(self.local_generation)
+                # Keep all inert proof/Current digests self-consistent, so the
+                # rejection specifically exercises the actual lease identity.
+                proof = value["proof"]
+                proof["claims"]["authority_lease_sha256"] = types.sha(lease)
+                proof_hash = types.sha(proof)
+                value["binding"]["authority_grant_digest"] = proof_hash
+                value["binding"]["fencing_token_digest"] = hashlib.sha256(hashlib.sha256(
+                    b"hepta:production-authority-token-grant:v2\0"
+                    + proof_hash.encode() + proof["signature_hex"].encode()).digest()).hexdigest()
+                return value
+
+        with self.assertRaisesRegex(ValueError, "lease was reused or silently extended"):
+            LegacyWriterRecords("successor-renewal-v1").evaluate()
 
     def test_history_only_has_no_usage_or_effect_and_preserves_the_old_delivery(self):
         for case in ("usage", "handle", "old-terminal", "no-expiry", "live", "unreaped", "wrong-fault", "watchdog-cut"):

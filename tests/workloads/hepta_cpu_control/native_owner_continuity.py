@@ -119,10 +119,11 @@ class Continuity:
         current = base.checkpoint(value["current"], peer, self.agent)
         auth = types.authority(value["root_lease"], value["writer"], value["writer_proof"], current, self.agent)
         writer, root = auth["writer"], auth["root"]
+        lease_suffix = self.c.peers["root"]["boot_id"] + "." + str(writer["spawn_generation"])
         expected_root_id = ("native-cpu-root-installation" if initial
-                            else "native-cpu-root-writer-" + str(writer["local_lease_generation"]))
+                            else "native-cpu.root." + lease_suffix)
         base.require(root["lease_id"] == expected_root_id
-                     and writer["authority_lease"]["lease_id"] == "native-cpu-writer-" + str(writer["local_lease_generation"])
+                     and writer["authority_lease"]["lease_id"] == "native-cpu.writer." + lease_suffix
                      and root["lease_id"] not in self.seen_root_leases
                      and writer["authority_lease"]["lease_id"] not in self.seen_writer_leases,
                      "a prior finite original lease was reused or silently extended")
