@@ -137,10 +137,15 @@ def check_guest(guest, control=None, kernel_path=None):
         require(len(positions) == 1 and positions[0] + 1 < len(requested),
                 "OSDK kernel input is missing or repeated: " + option)
         value = requested[positions[0] + 1]
-        expected_argv.extend((option, value))
         if option != "-append":
-            require(str(Path(value).resolve()) == artifacts[option]["path"],
+            # The recorder invokes the exact canonical artifact it hashes,
+            # while preserving OSDK's original (possibly symlinked) request.
+            # Require both provenance and the complete actual argv to agree;
+            # an unresolved invocation spelling is not accepted as equivalent.
+            value = str(Path(value).resolve())
+            require(value == artifacts[option]["path"],
                     "recorded kernel input path differs: " + option)
+        expected_argv.extend((option, value))
     expected_argv.extend(("-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", artifacts["-bios"]["path"],
                           "-m", "512M", "-smp", "2", "-nodefaults", "-no-user-config", "-no-reboot",
                           "-nographic", "-display", "none", "-monitor", "none", "-serial", "chardev:serial",
