@@ -9,6 +9,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 import prepare_native_sdk
+import preedit_source
 from product import native_sdk
 
 ACCESSKIT_REVISION = "405d578cdfd8496ee79020d24cfaac8c29a8a48f"
@@ -68,7 +69,7 @@ def original_bytes(path, record, url, offline, mirrors=()):
 
 def package(metadata, destination, offline=False, liberation_source=None,
             sdk_source_profile=None, sdk_original_metadata=None, sdk_cargo_config=None, metadata_bytes=None,
-            asset_cache=None):
+            asset_cache=None, sdk_helper_repo=None):
     selected = {}
     for name in ("hepta-robrix-ui", "hepta-control-core", "makepad-widgets"):
         candidates = [entry for entry in metadata["packages"] if entry["name"] == name]
@@ -87,20 +88,31 @@ def package(metadata, destination, offline=False, liberation_source=None,
     if ui["id"] not in nodes:
         raise ValueError("Resource preparation requires full Cargo metadata with resolved features")
     clipboard_feature = "native-clipboard-sdk" in nodes[ui["id"]].get("features", [])
+    preedit_feature = any(entry["name"] == "trill-shell"
+        and "hepta-native-preedit-sdk" in nodes.get(entry["id"], {}).get("features", [])
+        for entry in metadata["packages"])
+    if clipboard_feature and preedit_feature:
+        raise ValueError("Clipboard and preedit are separate SDK candidates")
     original_source = "git+" + native_sdk.UPSTREAM + "?rev=" + native_sdk.REVISION + "#" + native_sdk.REVISION
     if sdk.get("source") == original_source:
-        if clipboard_feature:
-            raise ValueError("Native clipboard feature requires the exact verified prepared SDK source")
-        if any((sdk_source_profile, sdk_original_metadata, sdk_cargo_config)):
+        if clipboard_feature or preedit_feature:
+            raise ValueError("Native SDK candidate feature requires the exact verified prepared SDK source")
+        if any((sdk_source_profile, sdk_original_metadata, sdk_cargo_config, sdk_helper_repo)):
             raise ValueError("Patch evidence cannot be attached to unmodified original SDK resolution")
         sdk_source = original_source
     elif sdk.get("source") is None:
-        if not clipboard_feature:
-            raise ValueError("Prepared SDK requires the explicit native-clipboard-sdk feature")
-        sdk_files, sdk_identity = prepare_native_sdk.prepare(
-            metadata_bytes or json.dumps(metadata).encode(), ui_root, sdk_root,
-            sdk_source_profile, sdk_original_metadata, sdk_cargo_config)
-        sdk_source = native_sdk.SOURCE_ID
+        if preedit_feature:
+            sdk_files, sdk_identity = preedit_source.prepare_files(
+                metadata_bytes or json.dumps(metadata).encode(), sdk_root.parent,
+                sdk_source_profile, sdk_original_metadata, sdk_cargo_config, sdk_helper_repo)
+            sdk_source = native_sdk.PREEDIT_SOURCE_ID
+        else:
+            if not clipboard_feature or sdk_helper_repo is not None:
+                raise ValueError("Prepared SDK requires one explicit SDK candidate feature")
+            sdk_files, sdk_identity = prepare_native_sdk.prepare(
+                metadata_bytes or json.dumps(metadata).encode(), ui_root, sdk_root,
+                sdk_source_profile, sdk_original_metadata, sdk_cargo_config)
+            sdk_source = native_sdk.SOURCE_ID
     else:
         raise ValueError("Makepad must resolve to the original pinned SDK or its exact verified prepared source")
     vendor, accessibility_sources = original_accesskit(metadata, ui_root, ui.get("source"))
@@ -179,7 +191,7 @@ def package(metadata, destination, offline=False, liberation_source=None,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--metadata", required=True, type=Path,
-                        help="Full metadata: trill-shell/hepta-native-makepad baseline, or explicit trill-shell/hepta-native-clipboard-sdk candidate")
+                        help="Full metadata for the exact baseline, clipboard, or callback-preedit native feature")
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--liberation-source", type=Path,
@@ -189,8 +201,9 @@ if __name__ == "__main__":
     parser.add_argument("--sdk-source-profile", type=Path, help="Exact post-resolution original SDK source receipt")
     parser.add_argument("--sdk-original-metadata", type=Path, help="Complete native metadata before the SDK source override")
     parser.add_argument("--sdk-cargo-config", type=Path, help="Exact generated all-crate SDK override TOML")
+    parser.add_argument("--sdk-helper-repo", type=Path, help="Frozen preedit source-tool checkout; never a Cargo-cache edit")
     options = parser.parse_args()
     print(json.dumps(package(json.loads(options.metadata.read_text()), options.output.absolute(),
                              options.offline, options.liberation_source, options.sdk_source_profile,
                              options.sdk_original_metadata, options.sdk_cargo_config, options.metadata.read_bytes(),
-                             options.asset_cache)))
+                             options.asset_cache, options.sdk_helper_repo)))

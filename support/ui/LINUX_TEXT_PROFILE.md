@@ -7,6 +7,11 @@ bundle. Its reviewable inputs are in `linux-text-profile.json`. The first
 device profile is x86_64 Linux with X11; native Asterinas and Android have
 their own build and execution gates.
 
+The separate [callback-preedit candidate](PREEDIT_TEXT_PROFILE.md) is selected
+only with `--profile preedit-callbacks`. It has its own compiled feature,
+61-file notice/resource contract, frozen source-tool inputs and mandatory
+actual packaged-window gate. Omitting `--profile` preserves this baseline.
+
 ## Build and source identity
 
 Use clean Desktop and original Hepta checkouts. Supply full commits and trees;

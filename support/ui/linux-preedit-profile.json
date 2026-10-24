@@ -1,0 +1,25 @@
+{
+  "schema": "trill.linux-text-build-profile.v1",
+  "name": "linux-x86_64-makepad-preedit-text-candidate",
+  "target": "x86_64-unknown-linux-gnu",
+  "toolchain": "1.96.0",
+  "cargo_feature": "trill-shell/hepta-native-preedit-sdk",
+  "renderer": "makepad",
+  "display": "x11",
+  "makepad_repository": "https://github.com/kevinaboos/makepad",
+  "makepad_commit": "337566c8b25d47f7e4fff6a202157b65bf183330",
+  "resource_files": 61,
+  "sdk_profile": "preedit-callbacks",
+  "hepta_commit": "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9",
+  "hepta_tree": "cf53a7c0e7ad57772238b614b673d176386ddfe5",
+  "sdk_helper": {
+    "commit": "aa6a86e19ac097cb238b948c89249c4c8c564886",
+    "tree": "f5dd73632235e48f9c51a5de579719af84d37ece",
+    "files": {
+      "prepare-native-clipboard-sdk.py": "9f95e04ad1c365a553d182b85d28fb016b918506e43a059833c259330802f9c1",
+      "verify-native-clipboard-sdk.py": "8a9c1b508eddb7e44e133780721d48c3df597d4150ce653d16ab23d665329334"
+    }
+  },
+  "required_runtime_gate": "same-packaged-ELF-real-IBus-AT-SPI-callback-XID-and-owned-cleanup",
+  "production_authority": "existing_original_root_registration_required"
+}
