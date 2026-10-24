@@ -1,4 +1,4 @@
-"""Strict identity contract for the separately qualified original SDK candidate.
+"""Strict identity contracts for separately qualified original SDK candidates.
 
 This validates retained source evidence and package bytes. It does not certify
 compilation, rendering, accessibility or execution authority.
@@ -17,6 +17,14 @@ PATCHES = [{"file": "native-clipboard-read.patch", "bytes": 19919,
            {"file": "sdk-num-traits-path.patch", "bytes": 521,
             "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"}]
 SOURCE_ID = "prepared+" + UPSTREAM + "#" + TREE
+PREEDIT_TREE = "073cc6739391265f96c4ff18c1b95898a2bda98d"
+PREEDIT_SOURCE_ID = "prepared+" + UPSTREAM + "#" + PREEDIT_TREE
+PREEDIT_MANIFEST_SHA256 = "54139273177ccc2f19684f9a7d23ac2fda3d4fa789bd880b5a4e340ee0ad11e3"
+PREEDIT_PATCHES = [
+    {"file": "native-preedit-callbacks.patch", "bytes": 5421,
+     "sha256": "b7de43140473c249dca3f07ca6d1d3195fb43a54ef96a205324ee5a0291c28c0"},
+    {"file": "sdk-num-traits-path.patch", "bytes": 521,
+     "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"}]
 NOTICE_NAMES = {"LICENSE-MIT", "MANIFEST.json", "native-clipboard-read.patch",
                 "sdk-num-traits-path.patch", "README.md"}
 NOTICE_PATHS = {"dependency-notices/makepad/" + name for name in NOTICE_NAMES}
@@ -33,14 +41,30 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def contract(profile=None):
+    """Select one named immutable candidate; the historical default is unchanged."""
+    require(profile in (None, "clipboard", "preedit-callbacks"), "Unknown named SDK candidate")
+    if profile == "preedit-callbacks":
+        names = {"LICENSE-MIT", "MANIFEST.json", "native-preedit-callbacks.patch",
+                 "sdk-num-traits-path.patch", "README.md"}
+        return {"tree": PREEDIT_TREE, "manifest": PREEDIT_MANIFEST_SHA256, "patches": PREEDIT_PATCHES,
+                "feature": "native-presentation", "names": names, "source": PREEDIT_SOURCE_ID}
+    return {"tree": TREE, "manifest": MANIFEST_SHA256, "patches": PATCHES,
+            "feature": "native-clipboard-sdk", "names": NOTICE_NAMES, "source": SOURCE_ID}
+
+
 def validate_profile(profile):
+    selected = contract(profile.get("sdk_profile"))
     require(profile.get("schema") == "hepta.verified-original-sdk-source.v1"
-            and profile.get("native_ui_feature") == "native-clipboard-sdk"
+            and profile.get("native_ui_feature") == selected["feature"]
             and profile.get("upstream_repository") == UPSTREAM
             and profile.get("upstream_commit") == REVISION
-            and profile.get("patched_tree") == TREE
-            and profile.get("manifest_sha256") == MANIFEST_SHA256
-            and profile.get("patches") == PATCHES, "Unknown original SDK source or patch profile")
+            and profile.get("patched_tree") == selected["tree"]
+            and profile.get("manifest_sha256") == selected["manifest"]
+            and profile.get("patches") == selected["patches"], "Unknown original SDK source or patch profile")
+    if profile.get("sdk_profile") == "preedit-callbacks":
+        require(profile.get("upstream_tree") == "c6e18be7754f9634492ec5251bac3e8b4f7e09b7",
+                "Preedit SDK upstream full tree differs")
     require(all(profile.get(name) is True for name in (
         "source_tree_verified", "all_sdk_packages_same_tree", "dependency_edges_verified"))
             and profile.get("effects_authority") is False,
@@ -70,24 +94,27 @@ def validate_profile(profile):
         if name in required:
             require(manifest == required.pop(name), "SDK foundational crate has a substituted manifest")
     require(not required and any(name == "unicode-segmentation" for name, _ in seen), "Required SDK packages are missing")
+    return selected
 
 
 def validate_notice_inventory(notices):
     """Bind every reviewed patch before either preparing or packaging its bytes."""
+    selected = contract(notices.get("sdkProfile"))
     require(notices.get("schema") == "hepta.native-sdk-notices.v1"
             and notices.get("upstreamRepository") == UPSTREAM
             and notices.get("upstreamRevision") == REVISION
-            and notices.get("patchedTree") == TREE
-            and notices.get("sourceManifestSha256") == MANIFEST_SHA256,
+            and notices.get("patchedTree") == selected["tree"]
+            and notices.get("sourceManifestSha256") == selected["manifest"],
             "SDK notice inventory does not identify the reviewed original patch")
     files = notices.get("files", [])
-    require(len(files) == len(NOTICE_NAMES)
-            and {entry["path"] for entry in files} == NOTICE_PATHS, "Incomplete SDK source and patch notices")
+    require(len(files) == len(selected["names"])
+            and {entry["path"] for entry in files} == {"dependency-notices/makepad/" + name for name in selected["names"]},
+            "Incomplete SDK source and patch notices")
     by_path = {entry["path"]: entry for entry in files}
-    require(by_path["dependency-notices/makepad/MANIFEST.json"]["sha256"] == MANIFEST_SHA256
+    require(by_path["dependency-notices/makepad/MANIFEST.json"]["sha256"] == selected["manifest"]
             and by_path["dependency-notices/makepad/LICENSE-MIT"]["sha256"] == LICENSE_SHA256,
             "Original SDK license or patch identity differs")
-    for patch in PATCHES:
+    for patch in selected["patches"]:
         entry = by_path["dependency-notices/makepad/" + patch["file"]]
         require(entry["sha256"] == patch["sha256"] and entry["bytes"] == patch["bytes"],
                 "Original SDK license or patch identity differs")
@@ -96,7 +123,7 @@ def validate_notice_inventory(notices):
 
 def bundle_records(root, bundle, read_json, regular_bytes, expected_profile=None, bind_binary=False):
     """Return additional records after verifying the fixed SDK/source contract."""
-    if bundle.get("makepadSource") != SOURCE_ID:
+    if bundle.get("makepadSource") not in (SOURCE_ID, PREEDIT_SOURCE_ID):
         require(not any(key in bundle for key in ("sdkSourceProfileSha256", "sdkNoticeInventorySha256", "sdkNotices")),
                 "SDK patch evidence attached to an unrelated SDK source")
         require(expected_profile is None, "Binary SDK patch profile does not match the resource bundle")
@@ -108,8 +135,10 @@ def bundle_records(root, bundle, read_json, regular_bytes, expected_profile=None
     require(bundle.get("sdkNoticeInventorySha256") == sha(notice_bytes)
             and bundle.get("sdkSourceProfileSha256") == sha(profile_bytes), "SDK notice/source inventory hash mismatch")
     files = validate_notice_inventory(notices)
-    require(bundle.get("sdkNotices") == len(NOTICE_NAMES), "Incomplete SDK source and patch notices")
-    validate_profile(profile)
+    selected = validate_profile(profile)
+    require(bundle.get("makepadSource") == selected["source"]
+            and notices.get("patchedTree") == selected["tree"]
+            and bundle.get("sdkNotices") == len(selected["names"]), "Incomplete or mixed SDK source and patch notices")
     if bind_binary or expected_profile is not None:
         require(expected_profile == profile, "Resource SDK profile differs from the binary source profile")
     return [(entry["path"], entry) for entry in files] + [

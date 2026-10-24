@@ -5,7 +5,21 @@ use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 use std::io::Read;
 use std::path::{Component, Path};
+#[cfg(not(feature = "hepta-native-preedit-sdk"))]
 use trill_ui_core::shared_chat::native_presentation::NATIVE_SDK_NOTICE_MANIFEST_JSON;
+#[cfg(feature = "hepta-native-preedit-sdk")]
+const NATIVE_SDK_NOTICE_MANIFEST_JSON: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../support/ui/preedit-sdk/NATIVE-SDK-PATCH.json"
+));
+#[cfg(feature = "hepta-native-preedit-sdk")]
+const SDK_PATCH: &str = "native-preedit-callbacks.patch";
+#[cfg(feature = "hepta-native-preedit-sdk")]
+const SDK_UI_FEATURE: &str = "native-presentation";
+#[cfg(not(feature = "hepta-native-preedit-sdk"))]
+const SDK_PATCH: &str = "native-clipboard-read.patch";
+#[cfg(not(feature = "hepta-native-preedit-sdk"))]
+const SDK_UI_FEATURE: &str = "native-clipboard-sdk";
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -21,6 +35,10 @@ struct Inventory {
 #[derive(Deserialize)]
 struct Profile {
     schema: String,
+    #[serde(default)]
+    sdk_profile: Option<String>,
+    #[serde(default)]
+    upstream_tree: Option<String>,
     native_ui_feature: String,
     upstream_repository: String,
     upstream_commit: String,
@@ -73,7 +91,7 @@ pub(super) fn verify(root: &Path) -> Result<(), String> {
     let expected_files: BTreeSet<_> = [
         "LICENSE-MIT",
         "MANIFEST.json",
-        "native-clipboard-read.patch",
+        SDK_PATCH,
         "sdk-num-traits-path.patch",
         "README.md",
     ]
@@ -124,7 +142,7 @@ pub(super) fn verify(root: &Path) -> Result<(), String> {
     let profile: Profile =
         serde_json::from_slice(&profile_bytes).map_err(|error| error.to_string())?;
     if profile.schema != "hepta.verified-original-sdk-source.v1"
-        || profile.native_ui_feature != "native-clipboard-sdk"
+        || profile.native_ui_feature != SDK_UI_FEATURE
         || profile.upstream_repository != inventory.upstream_repository
         || profile.upstream_commit != inventory.upstream_revision
         || profile.patched_tree != inventory.patched_tree
@@ -136,6 +154,17 @@ pub(super) fn verify(root: &Path) -> Result<(), String> {
         || !(5..=256).contains(&profile.resolved_packages.len())
     {
         return Err("SDK source was not verified against the original prepared tree".into());
+    }
+    if cfg!(feature = "hepta-native-preedit-sdk")
+        && (profile.sdk_profile.as_deref() != Some("preedit-callbacks")
+            || profile.upstream_tree.as_deref() != Some("c6e18be7754f9634492ec5251bac3e8b4f7e09b7"))
+    {
+        return Err("Preedit source profile differs from its compiled contract".into());
+    }
+    if !cfg!(feature = "hepta-native-preedit-sdk")
+        && profile.sdk_profile.as_deref().is_some_and(|name| name != "clipboard")
+    {
+        return Err("Clipboard source profile differs from its compiled contract".into());
     }
     let mut identities = BTreeSet::new();
     for package in &profile.resolved_packages {

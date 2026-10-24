@@ -10,6 +10,8 @@ default = []
 hepta-shared-presenter = ["trill-ui-core/hepta-shared-presenter"]
 hepta-native-makepad = ["hepta-shared-presenter", "trill-ui-core/hepta-native-makepad", "dep:hepta-session-host"]
 hepta-native-clipboard-sdk = ["hepta-native-makepad", "trill-ui-core/hepta-native-clipboard-sdk"]
+# Independent original-SDK preedit candidate; does not advertise PasteText.
+hepta-native-preedit-sdk = ["hepta-native-makepad"]
 
 [dependencies]
 trill-ui-core.workspace = true

@@ -185,7 +185,8 @@ def native_resource_files(root, expected_hepta=None, expected_sdk=None):
     require(inventory["schema"] == "hepta.native-embedded-assets.v1"
             and inventory["makepadRevision"] == sdk
             and bundle["makepadSource"] in (
-                "git+" + native_sdk.UPSTREAM + "?rev=" + sdk + "#" + sdk, native_sdk.SOURCE_ID)
+                "git+" + native_sdk.UPSTREAM + "?rev=" + sdk + "#" + sdk,
+                native_sdk.SOURCE_ID, native_sdk.PREEDIT_SOURCE_ID)
             and re.search(r"#[0-9a-f]{40}\Z", bundle["heptaSource"]), "Unpinned Makepad resource sources")
     require(len(inventory["assets"]) == bundle["assets"] == 29
             and len(inventory["noticeFileSha256"]) == bundle["notices"] == 15,
