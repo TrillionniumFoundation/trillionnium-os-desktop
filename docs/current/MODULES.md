@@ -30,7 +30,7 @@ is a feature of `hepta-session-host`, not a second package.
 The [UI workspace guide](../../ui/README.md) lists the five UI members and
 the explicit default egui and original Makepad feature builds. The Linux host
 product source currently selects Rust 1.96.0 and Hepta
-`22e87e0dd6560a7b925e716a33011378ae07a9a2`. The kernel retains its independent
+`717778d928c747ebc43108af823178edb52a7af7`. The kernel retains its independent
 nightly. [SOURCES](../SOURCES.md) and the actual manifests own those identities.
 
 ## Test packages and support components

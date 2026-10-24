@@ -43,11 +43,18 @@ every shipped file digest and `effects_authorized: false`.
 ## Linux host entry point
 
 The current product candidate pins the original Hepta UI/core, host packages
-and Hepta-carried patches to [Hepta `22e87e0dd6560a7b925e716a33011378ae07a9a2`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/22e87e0dd6560a7b925e716a33011378ae07a9a2),
-tree `7e376f5d3509cf38e13b513ca2b87d9eecd7dc47`, and uses Rust 1.96.0.
+and Hepta-carried patches to [Hepta `717778d928c747ebc43108af823178edb52a7af7`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/717778d928c747ebc43108af823178edb52a7af7),
+tree `bf6bb3653d08aa6838bb48307877118998e3d89d`, and uses Rust 1.96.0.
 The UI Cargo root explicitly patches all four original AccessKit crates to this
 same source. `services/hepta-os` remains a local protocol/transport crate; it
 does not acquire a fictitious Hepta Git dependency.
+
+This isolated candidate adds the reviewed X11 focus/preedit SDK patch. Its UI
+lock retains the canonical path-SDK graph; the UI and host locks currently
+replace only the Hepta source revision. Actual `cargo metadata --locked` with
+the selected all-SDK config, the new resource bundle, build and window gates
+remain pending for this pair. Earlier receipts retain their original source
+and do not qualify this revision.
 
 The [latest scoped component executions](results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
 cover the original text thread, Legacy history, client/protocol and default
@@ -59,10 +66,10 @@ final source profile must additionally bind the complete Desktop commit/tree,
 actual Cargo-generated locks, features, binary hashes and execution receipts.
 
 The original runtime contracts are pinned beside their owners:
-[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/22e87e0dd6560a7b925e716a33011378ae07a9a2/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
-[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/22e87e0dd6560a7b925e716a33011378ae07a9a2/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
-[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/22e87e0dd6560a7b925e716a33011378ae07a9a2/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
-and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/22e87e0dd6560a7b925e716a33011378ae07a9a2/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
+[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/717778d928c747ebc43108af823178edb52a7af7/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
+[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/717778d928c747ebc43108af823178edb52a7af7/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
+[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/717778d928c747ebc43108af823178edb52a7af7/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
+and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/717778d928c747ebc43108af823178edb52a7af7/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
 
 Use the [product guide](support/ui/PRODUCT.md) to wrap verified native binaries
 and install them for the current user. The generated `trillionnium-desktop`
@@ -76,7 +83,7 @@ Makepad additionally needs its original verified resources and feature build.
 The normal `trill-shell/hepta-native-makepad` feature uses original SDK
 `337566c8` and its 54-file resource bundle without an external SDK override.
 The separate `trill-shell/hepta-native-clipboard-sdk` candidate requires the
-reviewed all-crate SDK override, an independent candidate lock and its 61-file
+reviewed all-crate SDK override, an independent candidate lock and its 62-file
 bundle. Only that feature advertises request-scoped native PasteText. The
 43 native UI and 54 AccessKit scoped tests concern the default original SDK;
 they do not qualify the clipboard candidate. See the [profile procedure](support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate)

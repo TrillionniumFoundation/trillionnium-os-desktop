@@ -9,16 +9,18 @@ import re
 
 UPSTREAM = "https://github.com/kevinaboos/makepad"
 REVISION = "337566c8b25d47f7e4fff6a202157b65bf183330"
-TREE = "e5ae930cc6a0a528719673deff44ec2830f4bdfa"
-MANIFEST_SHA256 = "cd511d5c0862ce720f596285f17aa2e4e3d133f3c45b76bcaa5a5d962d005f73"
+TREE = "ceb83c36b474eb55336cb69b430ff9d898cb51f6"
+MANIFEST_SHA256 = "bf3eb835f02b19609c6a51ef8276d46120cab7bd991d8844afc0aa113e1ebee4"
 LICENSE_SHA256 = "3855d73a873244ec424ac5781d5d8fc8e2a789ff9d2f1cb804bec585a64ea88f"
 PATCHES = [{"file": "native-clipboard-read.patch", "bytes": 19919,
             "sha256": "0edf1c0f806fec15ce29f03670e722d3eda4ec3943911537874087e8a8d4fa1f"},
            {"file": "sdk-num-traits-path.patch", "bytes": 521,
-            "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"}]
+            "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"},
+           {"file": "native-ime-preedit.patch", "bytes": 6920,
+            "sha256": "11c5eacffca25eaf9aace39fdbf583e51cc8cd8ed3cbb1ebb9e29bb955a328a0"}]
 SOURCE_ID = "prepared+" + UPSTREAM + "#" + TREE
 NOTICE_NAMES = {"LICENSE-MIT", "MANIFEST.json", "native-clipboard-read.patch",
-                "sdk-num-traits-path.patch", "README.md"}
+                "sdk-num-traits-path.patch", "native-ime-preedit.patch", "README.md"}
 NOTICE_PATHS = {"dependency-notices/makepad/" + name for name in NOTICE_NAMES}
 REQUIRED = {"makepad-widgets": "widgets/Cargo.toml", "makepad-draw": "draw/Cargo.toml",
             "makepad-platform": "platform/Cargo.toml", "makepad-script": "platform/script/Cargo.toml"}
