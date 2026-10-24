@@ -38,7 +38,7 @@ def check(data, exit_code, timed_out=False, *, guest=False):
         if records == RECORDS + [SUMMARY] and markers == [EXIT] and lines.count(BOOT) == 1:
             if not (lines.index(SUMMARY) < lines.index(EXIT) < lines.index(BOOT)):
                 errors.append("probe/exit/boot ordering changed")
-        if b"[hepta-g2]" in data or b"[hepta-g1d] initial roles activated" in data:
+        if any(prefix in data for prefix in (b"[hepta-g1c]", b"[hepta-g1d]", b"[hepta-g2]")):
             errors.append("ordinary kernel required for this ABI preflight")
         if exit_code != 33:
             errors.append("ordinary QEMU must exit 33")

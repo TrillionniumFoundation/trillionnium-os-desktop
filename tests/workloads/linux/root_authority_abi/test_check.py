@@ -54,7 +54,8 @@ class RootAbiOracleTests(unittest.TestCase):
             self.assertFalse(CHECKER.check(modified, 33, guest=True)["passed"])
 
     def test_trusted_profile_not_ordinary(self):
-        self.assertFalse(CHECKER.check(b"[hepta-g2] initial roles activated\n" + GUEST, 33, guest=True)["passed"])
+        for prefix in (b"[hepta-g1c]", b"[hepta-g1d]", b"[hepta-g2]"):
+            self.assertFalse(CHECKER.check(prefix + b" initial control activated\n" + GUEST, 33, guest=True)["passed"])
 
 
 if __name__ == "__main__":
