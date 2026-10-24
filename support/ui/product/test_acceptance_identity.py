@@ -85,6 +85,9 @@ class AcceptanceIdentityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="tr-run-") as scratch:
             root = Path(scratch) / "r"
             root.mkdir(mode=0o755)
+            # The original operator uses umask 077; make the rejected fixture's
+            # actual mode explicit instead of relying on mkdir's requested mode.
+            root.chmod(0o755)
             with self.assertRaisesRegex(RuntimeError, "0700"):
                 identity.runtime_root_identity(root)
             root.chmod(0o700)
