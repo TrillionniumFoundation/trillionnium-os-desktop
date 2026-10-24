@@ -39,7 +39,8 @@ step retains its logs and a failed receipt; it cannot produce a passing receipt.
 
 `build-receipt.json` binds both source identities, the profile, lock digests,
 resolved package features, commands and exit codes, compiler, built binary
-hashes, resources and final package hash. The source profile remains
+hashes, the distinct `packaged_binaries` after GNU `strip --strip-unneeded`,
+resources and final package hash. The source profile remains
 production-disabled. A build receipt is separate from owned-window,
 installed-systemd, authenticated model and physical-device acceptance.
 
@@ -54,7 +55,9 @@ change `renderer` explicitly for those installations.
 
 Use [PRODUCT](PRODUCT.md) for installation and interruption recovery and
 [NATIVE_MAKEPAD](NATIVE_MAKEPAD.md) for the actual X11/IBus/AT-SPI test. Pass the
-new `build-receipt.json` to that harness's `--build-receipt` option. The baseline
+new `build-receipt.json` to that harness's `--build-receipt` option.
+Use `--packaged-binary` when its `--shell` is the extracted or installed package
+ELF; omit that flag for the original Cargo build output. The baseline
 SDK's native `PasteText` remains unavailable; keyboard paste and real IME are
 qualified by their respective input paths.
 

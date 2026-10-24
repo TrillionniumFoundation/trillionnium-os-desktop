@@ -33,6 +33,17 @@ def digest(path):
     return result.hexdigest()
 
 
+def verify_build_binary(build, shell, *, packaged=False):
+    """Bind the chosen actual ELF to its explicit build or package artifact."""
+    kind = "packaged_binaries" if packaged else "binaries"
+    entry = build.get(kind, {}).get("trill-shell", {})
+    if (build.get("status") != "passed" or build.get("exit_code") != 0
+            or entry.get("sha256") != digest(shell)
+            or entry.get("bytes") != shell.stat().st_size):
+        raise RuntimeError("Actual ELF does not match the successful " + kind + " receipt")
+    return kind
+
+
 def until(probe, description, timeout=15):
     deadline = time.monotonic() + timeout
     error = None
@@ -104,10 +115,8 @@ def run(args):
             provenance["original_atomic_editable_text_script"] = {"path": str(editable), "sha256": digest(editable)}
         if args.build_receipt is not None:
             build = json.loads(args.build_receipt.read_bytes())
-            entry = build["binaries"]["trill-shell"]
-            if (build.get("status") != "passed" or build.get("exit_code") != 0
-                    or entry["sha256"] != digest(shell) or entry["bytes"] != shell.stat().st_size):
-                raise RuntimeError("Actual ELF does not match the supplied successful build receipt")
+            provenance["build_artifact_kind"] = verify_build_binary(
+                build, shell, packaged=args.packaged_binary)
             provenance["build_source_identity_verified"] = True
             provenance["build_receipt_sha256"] = digest(args.build_receipt)
             provenance["source_commit"] = build["source_commit"]
@@ -323,6 +332,8 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--engine", default="libpinyin")
     parser.add_argument("--build-receipt", type=Path)
+    parser.add_argument("--packaged-binary", action="store_true",
+                        help="Bind the installed/packaged ELF to packaged_binaries in the build receipt")
     parser.add_argument("--atomic-editable-text", action="store_true",
                         help="Require the original five atomic EditableText methods; full paste/Orca remain unqualified")
     parser.add_argument("--request-scoped-paste", action="store_true",
@@ -330,6 +341,8 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
     if arguments.request_scoped_paste and not arguments.atomic_editable_text:
         parser.error("--request-scoped-paste requires --atomic-editable-text")
+    if arguments.packaged_binary and arguments.build_receipt is None:
+        parser.error("--packaged-binary requires --build-receipt")
     def interrupted(_signal, _frame):
         raise KeyboardInterrupt("Qualification interrupted; cleaning only owned children")
     signal.signal(signal.SIGTERM, interrupted)

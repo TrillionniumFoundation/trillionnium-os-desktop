@@ -69,6 +69,13 @@ an existing successful receipt containing `status: "passed"`, `exit_code: 0`,
 that input, runtime behavior can pass while `build_source_identity_verified`
 remains false; a hash alone does not prove which source produced a binary.
 
+When testing an extracted or installed distribution ELF, also supply
+`--packaged-binary`. This selects the receipt's distinct `packaged_binaries`
+hashes after the recorded GNU strip transformation. The default checks the
+unmodified Cargo output in `binaries`. Neither path accepts the other artifact
+by its filename, source label or file size alone. The build retains both hashes
+so actual package acceptance can be distinguished from build-output acceptance.
+
 The harness creates its own authenticated Xvfb, D-Bus, AT-SPI and IBus processes.
 All XDG runtime/config/cache/data/state paths are new private directories with
 short Unix socket paths. It compiles only a private copy of installed GSettings

@@ -59,7 +59,11 @@ for name in trill-session trill-shell trill-app-window trill-ctl trill-notes-rec
     src="${CARGO_TARGET_DIR:-ui/target}/$profile/$name"
     [[ -f "$src" && -x "$src" ]] || { echo "Missing built Rust program: $src" >&2; exit 1; }
     install -m 0755 -- "$src" "$bundle/$name"
-    strip --strip-debug -- "$bundle/$name"
+    # The native text graph includes the original Agentd/App Server crates.
+    # Retaining every static symbol makes even debug=0 exceed the installer's
+    # existing 128 MiB single-file bound. Keep runtime-required symbols while
+    # removing debug/static symbol tables from the distribution copy only.
+    strip --strip-unneeded -- "$bundle/$name"
 done
 {
     printf 'A10 Rust Linux-host executable evidence (NOT target kernel)\n'
@@ -67,6 +71,7 @@ done
     printf 'Source commit: %s\n' "$source_commit"
     printf 'Source tree: %s\n' "$source_tree"
     printf 'Cargo build profile: %s\n' "$profile"
+    printf 'Distribution transform: GNU strip --strip-unneeded (build inputs retained)\n'
     if [[ -n "$sdk_receipt_sha" ]]; then
         printf 'Makepad source profile SHA256: %s\n' "$sdk_receipt_sha"
     fi

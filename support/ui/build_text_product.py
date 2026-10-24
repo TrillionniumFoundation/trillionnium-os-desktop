@@ -173,6 +173,8 @@ def build(args):
         receipt["package"] = desktop.pack(output / "host-archive/a10-linux-host-binaries.tar.gz",
             args.desktop_commit, output / "source-profile.json", package, resources)
         receipt["package"]["sha256"] = digest(package)
+        receipt["packaged_binaries"] = receipt["package"]["binaries"]
+        receipt["distribution_transform"] = "GNU strip --strip-unneeded"
         config = desktop.default_config()
         config["renderer"] = profile["renderer"]
         desktop.atomic_write(output / "linux-text-config.json", desktop.json_bytes(config))

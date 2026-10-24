@@ -17,6 +17,13 @@ build and retain the command logs and binary hashes alongside the package;
 the commit label alone cannot prove which source produced pre-existing binaries.
 It reads `debug` binaries by default. Set `TRILL_UI_BUILD_PROFILE=release` for
 an actual `cargo build --release`; `CARGO_TARGET_DIR` must match the build.
+The helper applies GNU `strip --strip-unneeded` to distribution copies and
+retains the original build outputs. Runtime-required symbols remain. The native
+text debug ELF exceeded the existing 128 MiB per-file installer bound when only
+debug symbols were removed; stripping unused static symbols keeps that bound
+unchanged. Both raw and packaged hashes belong in the build receipt. Test the
+packaged Shell with `qualify.py --packaged-binary --build-receipt ...` before
+claiming acceptance of the installed bytes.
 Wrap that artifact with the new lifecycle entry point:
 
 ```sh

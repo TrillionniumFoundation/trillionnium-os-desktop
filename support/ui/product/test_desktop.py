@@ -64,6 +64,16 @@ class ProductTests(unittest.TestCase):
     def install(self, package=None):
         return desktop.install(package or self.package, self.prefix, self.paths, lambda _unit: None)
 
+    def test_pack_receipt_binds_the_actual_distribution_elfs(self):
+        output = self.root / "receipt-product.tar.gz"
+        result = desktop.pack(self.make_archive("a" * 40, b"distribution bytes"),
+                              "a" * 40, self.root / "profile.json", output)
+        self.assertEqual(set(result["binaries"]), set(desktop.PROGRAMS))
+        with tarfile.open(output) as archive:
+            for name, record in result["binaries"].items():
+                data = archive.extractfile("trillionnium-desktop/bin/" + name).read()
+                self.assertEqual(record, {"sha256": desktop.digest(data), "bytes": len(data)})
+
     def resource_fixture(self):
         resources = self.root / "resources"
         resources.mkdir()

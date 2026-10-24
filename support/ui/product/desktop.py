@@ -359,7 +359,9 @@ def pack(archive, expected_desktop, profile_path, output, makepad_resources=None
     atomic_write(output.with_name(output.name + ".sha256"),
                  (digest(regular_bytes(output, MAX_BUNDLE)) + "  " + output.name + "\n").encode(), 0o644)
     return {"package": str(output), "release_id": release_id, "desktop_commit": expected_desktop,
-            "hepta_commit": hepta, "effects_authorized": False}
+            "hepta_commit": hepta, "effects_authorized": False,
+            "binaries": {name: {key: files["bin/" + name][key] for key in ("sha256", "bytes")}
+                         for name in PROGRAMS}}
 
 
 def systemctl(*args, check=True):
