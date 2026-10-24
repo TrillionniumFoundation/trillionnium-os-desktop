@@ -11,6 +11,8 @@
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use super::Process;
+#[cfg(feature = "g2-trusted-daemon")]
+use super::init_proc::trusted_launcher::TrustedLauncher;
 #[cfg(feature = "g1d-trusted-control")]
 use super::trusted_control::TrustedControlSlots;
 #[cfg(feature = "g1c-trusted-observe")]
@@ -92,6 +94,8 @@ pub(super) struct ProcessImageState {
     /// contains no CPU, history, delegation or process-launch capability.
     #[cfg(feature = "g2-trusted-daemon")]
     initial_root: bool,
+    #[cfg(feature = "g2-trusted-daemon")]
+    initial_launcher: Option<Arc<TrustedLauncher>>,
 }
 
 impl ProcessImageState {
@@ -107,6 +111,8 @@ impl ProcessImageState {
             initial_control: None,
             #[cfg(feature = "g2-trusted-daemon")]
             initial_root: false,
+            #[cfg(feature = "g2-trusted-daemon")]
+            initial_launcher: None,
         }
     }
 
@@ -235,6 +241,22 @@ impl ProcessImageState {
         }
     }
 
+    /// Used only by the private, never-published successor preparation.
+    /// Claiming first run does not publish an image; a later owner-commit
+    /// failure must close it too. A stale token still cannot close a new epoch.
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn cancel_unpublished_initial(&mut self, key: ProcessImageKey) -> bool {
+        if matches!(self.first_run, FirstRun::Prepared | FirstRun::Started)
+            && self.epoch == key.epoch
+            && self.nonce == key.nonce
+        {
+            self.close();
+            true
+        } else {
+            false
+        }
+    }
+
     #[cfg(feature = "g1c-trusted-observe")]
     pub(super) fn activate_initial_observer(
         &mut self,
@@ -313,6 +335,50 @@ impl ProcessImageState {
         }
         self.initial_root = true;
         Ok(())
+    }
+
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn activate_initial_launcher(
+        &mut self,
+        key: ProcessImageKey,
+        launcher: Arc<TrustedLauncher>,
+    ) -> Result<()> {
+        self.check_session(key)?;
+        if !self.initial_root
+            || self.first_run != FirstRun::Prepared
+            || self.initial_launcher.is_some()
+            || !launcher.belongs_to(key)
+        {
+            return_errno_with_message!(
+                Errno::EPERM,
+                "native launcher requires the stopped original Root image"
+            )
+        }
+        self.initial_launcher = Some(launcher);
+        Ok(())
+    }
+
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn initial_launcher(&self, key: ProcessImageKey) -> Result<&Arc<TrustedLauncher>> {
+        self.check_session(key)?;
+        if !self.initial_root {
+            return_errno_with_message!(
+                Errno::EPERM,
+                "native launcher requires the original Root image"
+            )
+        }
+        self.initial_launcher.as_ref().ok_or_else(|| {
+            Error::with_message(Errno::EPERM, "original Root has no native launcher")
+        })
+    }
+
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn closing_launcher(&self) -> Option<Arc<TrustedLauncher>> {
+        if self.phase == ImagePhase::Live {
+            None
+        } else {
+            self.initial_launcher.clone()
+        }
     }
 
     #[cfg(feature = "g1d-trusted-control")]
@@ -423,6 +489,13 @@ impl Process {
             if let Some(slots) = slots {
                 slots.revoke_after_image_close();
             }
+            #[cfg(feature = "g2-trusted-daemon")]
+            {
+                let launcher = self.hepta_image.lock().initial_launcher.take();
+                if let Some(launcher) = launcher {
+                    launcher.close();
+                }
+            }
         }
     }
 
@@ -434,6 +507,15 @@ impl Process {
         #[cfg(feature = "g1d-trusted-control")]
         {
             self.revoke_closing_hepta_control();
+            #[cfg(feature = "g2-trusted-daemon")]
+            let launcher = {
+                let mut image = self.hepta_image.lock();
+                if image.phase == ImagePhase::Closing {
+                    image.initial_launcher.take()
+                } else {
+                    None
+                }
+            };
             let (result, slots) = {
                 let mut image = self.hepta_image.lock();
                 let slots = if image.phase == ImagePhase::Closing {
@@ -446,6 +528,8 @@ impl Process {
             // Namespace and resource pins may have meaningful destructors.
             // Release them after the image lock, including on epoch overflow.
             drop(slots);
+            #[cfg(feature = "g2-trusted-daemon")]
+            drop(launcher);
             result
         }
     }

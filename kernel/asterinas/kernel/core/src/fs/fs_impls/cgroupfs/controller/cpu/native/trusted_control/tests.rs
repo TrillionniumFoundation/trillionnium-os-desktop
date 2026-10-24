@@ -1436,3 +1436,102 @@ fn native_successor_generations_keep_one_watchdog_registration_and_bounded_origi
         assert_eq!(fixture.revision(), 1);
     }
 }
+
+#[cfg(feature = "g2-trusted-daemon")]
+#[ktest]
+fn native_successor_commit_retains_the_watchdog_receipt_from_its_final_owner_cut() {
+    use super::{
+        successor::CpuPolicyRetirement,
+        watchdog::{WATCHDOG_DELAY_NS, WatchdogOutcome},
+    };
+    {
+        let fixture = Fixture::new("g2-successor-watchdog-cut");
+        arm_watchdog_fixture(&fixture);
+        let first = fixture.execute(0, 1, 1, 1_001, Some(100)).unwrap();
+        assert_eq!(first.status, Some(DeliveryStatus::Ok));
+        fixture.managers[0].revoke_at(Some(100));
+        fixture.managers[1].revoke_at(Some(100));
+        let mut plan = prepare_cpu_successor(&fixture, 200, 0);
+        with_state(&fixture.owner, |state| {
+            assert!(
+                state
+                    .trusted_management
+                    .as_ref()
+                    .unwrap()
+                    .watchdog
+                    .terminal
+                    .is_none()
+            );
+        });
+        // The real owner watchdog fires AFTER preparation and BEFORE commit.
+        // An earlier userspace stat snapshot would have missed this effect.
+        let due = 100 + WATCHDOG_DELAY_NS;
+        watchdog_tick(&fixture, Some(due));
+        let original = with_state(&fixture.owner, |state| {
+            match state
+                .trusted_management
+                .as_ref()
+                .unwrap()
+                .watchdog
+                .terminal
+                .unwrap()
+            {
+                (WatchdogOutcome::Restored(receipt), Some(time)) => {
+                    assert_eq!(time, due);
+                    receipt
+                }
+                _ => panic!("actual owner watchdog did not restore"),
+            }
+        });
+        let before = fixture.budget();
+        let old_policy = plan.commit_at(Some(due + 1)).unwrap();
+        let retirement = CpuPolicyRetirement::from_retired(&old_policy);
+        drop(old_policy);
+        assert_eq!(retirement.status_code(), 1);
+        assert_eq!(retirement.evaluated_ns(), Some(due));
+        assert_eq!(retirement.resource_receipt(), Some(original));
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(fixture.revision(), original.revision());
+        assert_eq!(
+            fixture.cores[0]
+                .query_delivery(&fixture.cores[0].delivery_view(), 1)
+                .unwrap(),
+            first
+        );
+        with_state(&fixture.owner, |state| {
+            assert!(
+                state
+                    .trusted_management
+                    .as_ref()
+                    .unwrap()
+                    .watchdog
+                    .terminal
+                    .is_none()
+            );
+        });
+        // A delayed callback from the previous policy cannot mutate either
+        // the new owner policy or the already moved immutable evidence.
+        watchdog_tick(&fixture, Some(due + 2));
+        assert_eq!(retirement.resource_receipt(), Some(original));
+        assert_eq!(fixture.budget(), before);
+    }
+    for (name, missing_clock) in [
+        ("g2-successor-watchdog-untriggered", false),
+        ("g2-successor-watchdog-no-clock", true),
+    ] {
+        let fixture = Fixture::new(name);
+        arm_watchdog_fixture(&fixture);
+        fixture.managers[0].revoke_at(Some(100));
+        fixture.managers[1].revoke_at(Some(100));
+        let mut plan = prepare_cpu_successor(&fixture, 200, 0);
+        if missing_clock {
+            watchdog_tick(&fixture, None);
+        }
+        let old_policy = plan.commit_at(Some(200)).unwrap();
+        let retirement = CpuPolicyRetirement::from_retired(&old_policy);
+        drop(old_policy);
+        assert_eq!(retirement.status_code(), if missing_clock { 5 } else { 0 });
+        assert_eq!(retirement.evaluated_ns(), None);
+        assert_eq!(retirement.resource_receipt(), None);
+    }
+}

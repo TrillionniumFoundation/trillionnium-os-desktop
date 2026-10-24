@@ -27,7 +27,7 @@ class G2CoreEvidenceTests(unittest.TestCase):
         self.names = [*checker.original.REQUIRED_CORE_TESTS]
         self.names.extend("aster_core::inert::test_" + str(index)
                           for index in range(checker.original.MINIMUM_CORE_TESTS - len(self.names)))
-        self.names.extend(checker.G2_TESTS)
+        self.names.extend(checker.G2_REQUIRED_TESTS)
         self.write_serial()
         image = self.root / "ktest-trusted-initial.elf"
         image.write_bytes(b"inert compilation input, never executable")
@@ -49,13 +49,15 @@ class G2CoreEvidenceTests(unittest.TestCase):
             "cwd": str(self.project / "kernel/asterinas/kernel/core"), "lock_sha256": lock_sha}]
         self.write_build()
 
-    def write_serial(self, blocks=None):
+    def write_serial(self, blocks=None, after_summary=()):
         if blocks is None:
             blocks = [(name, " ok") for name in self.names]
-        serial = ("[ktest runner] running " + str(len(blocks)) + " tests in 1 crates\n"
-                  + 'running ' + str(len(blocks)) + ' tests in crate "aster-core"\n'
+        count = len(blocks) + len(after_summary)
+        serial = ("[ktest runner] running " + str(count) + " tests in 1 crates\n"
+                  + 'running ' + str(count) + ' tests in crate "aster-core"\n'
                   + "".join("test " + name + " ..." + block + "\n" for name, block in blocks)
-                  + f"test result: ok. {len(blocks)} passed; 0 failed; 0 filtered out.\n"
+                  + f"test result: ok. {count} passed; 0 failed; 0 filtered out.\n"
+                  + "".join("test " + name + " ..." + block + "\n" for name, block in after_summary)
                   + "[ktest runner] All crates tested.\n")
         (self.guest / "serial.log").write_text(serial)
         bios = "/usr/share/seabios/bios-256k.bin"
@@ -80,13 +82,18 @@ class G2CoreEvidenceTests(unittest.TestCase):
         (self.root / "environment.json").write_text(json.dumps(self.environment))
         (self.root / "commands.json").write_text(json.dumps(self.commands))
 
-    def test_original_inventory_plus_three_complete_tests(self):
+    def test_original_inventory_plus_root_three_and_successor_eleven_complete_tests(self):
         checker.check_build(self.guests)
         result = checker.check_guest(self.guest)
-        self.assertEqual(result["passed"], checker.original.MINIMUM_CORE_TESTS + 3)
-        self.assertGreaterEqual(result["passed"], 371)
+        self.assertEqual(result["passed"], checker.original.MINIMUM_CORE_TESTS + 14)
+        self.assertGreaterEqual(result["passed"], 387)
         self.assertEqual(result["required_core_tests"], list(checker.original.REQUIRED_CORE_TESTS))
+        self.assertGreaterEqual(len(result["required_core_tests"]), 134)
+        self.assertEqual(result["required_g2_process_tests"], list(checker.G2_TESTS))
         self.assertEqual(result["g2_process_tests_exercised"], 3)
+        self.assertEqual(result["required_g2_successor_tests"], list(checker.G2_SUCCESSOR_TESTS))
+        self.assertEqual(result["g2_successor_tests_exercised"], 11)
+        self.assertEqual(result["g2_total_additional_tests_exercised"], 14)
         self.assertFalse(result["actual_native_owner_verified"])
         self.assertFalse(result["g2_complete"])
 
@@ -97,27 +104,74 @@ class G2CoreEvidenceTests(unittest.TestCase):
             with self.subTest(name=name), self.assertRaisesRegex(ValueError, "required core"):
                 checker.check_guest(self.guest)
 
+    def test_all_five_original_cpu_successor_tests_remain_mandatory_under_g2(self):
+        for name in checker.CPU_SUCCESSOR_TESTS:
+            self.write_serial([(candidate, " ok") for candidate in self.names if candidate != name]
+                              + [("aster_core::inert::replacement", " ok")])
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "required core"):
+                checker.check_guest(self.guest)
+
     def test_stale_original_checker_cannot_admit_the_new_g2_inventory(self):
         original_minimum = checker.original.MINIMUM_CORE_TESTS
         original_required = checker.original.REQUIRED_CORE_TESTS
         try:
-            checker.original.MINIMUM_CORE_TESTS = 365
-            with self.assertRaisesRegex(ValueError, "368-test core gate"):
-                checker.check_guest(self.guest)
+            for minimum in (365, 368, 372):
+                checker.original.MINIMUM_CORE_TESTS = minimum
+                with self.subTest(minimum=minimum), self.assertRaisesRegex(ValueError, "373-test core gate"):
+                    checker.check_guest(self.guest)
             checker.original.MINIMUM_CORE_TESTS = original_minimum
-            checker.original.REQUIRED_CORE_TESTS = tuple(name for name in original_required
-                                                        if name != checker.CONTINUITY_TESTS[0])
-            with self.assertRaisesRegex(ValueError, "368-test core gate"):
+            checker.original.REQUIRED_CORE_TESTS = original_required[:-1]
+            with self.assertRaisesRegex(ValueError, "373-test core gate"):
                 checker.check_guest(self.guest)
+            for missing in (*checker.CONTINUITY_TESTS, *checker.CPU_SUCCESSOR_TESTS):
+                checker.original.REQUIRED_CORE_TESTS = tuple(
+                    "aster_core::inert::replacement" if name == missing else name for name in original_required)
+                with self.subTest(missing=missing), self.assertRaisesRegex(ValueError, "373-test core gate"):
+                    checker.check_guest(self.guest)
         finally:
             checker.original.MINIMUM_CORE_TESTS = original_minimum
             checker.original.REQUIRED_CORE_TESTS = original_required
 
-    def test_missing_or_repeated_new_test_cannot_hide_in_summary(self):
-        for names in (self.names[:-1], self.names[:-1] + [checker.G2_TESTS[0]]):
-            self.write_serial([(name, " ok") for name in names])
-            with self.subTest(names=names[-3:]), self.assertRaises(ValueError):
+    def test_all_three_root_tests_remain_individually_required(self):
+        for index, name in enumerate(checker.G2_TESTS):
+            for replacement in ("aster_core::inert::replacement", checker.G2_TESTS[(index + 1) % 3]):
+                self.write_serial([(replacement if candidate == name else candidate, " ok") for candidate in self.names])
+                with self.subTest(name=name, replacement=replacement), self.assertRaisesRegex(ValueError, "missing or repeated"):
+                    checker.check_guest(self.guest)
+
+    def test_each_successor_test_cannot_be_replaced_by_an_inert_test(self):
+        for name in checker.G2_SUCCESSOR_TESTS:
+            self.write_serial([("aster_core::inert::replacement" if candidate == name else candidate, " ok")
+                               for candidate in self.names])
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "missing or repeated"):
                 checker.check_guest(self.guest)
+
+    def test_each_successor_test_cannot_be_repeated_even_with_the_same_total(self):
+        inert = next(name for name in self.names if name.startswith("aster_core::inert::"))
+        for name in checker.G2_SUCCESSOR_TESTS:
+            self.write_serial([(candidate, " ok") for candidate in self.names if candidate != inert] + [(name, " ok")])
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "missing or repeated"):
+                checker.check_guest(self.guest)
+
+    def test_each_successor_test_needs_its_own_terminal_ok_without_soft_skip(self):
+        for name in checker.G2_SUCCESSOR_TESTS:
+            for block in ("\n [skipped: unsupported]\n ok", "\n diagnostics only", " FAILED"):
+                self.write_serial([(candidate, block if candidate == name else " ok") for candidate in self.names])
+                with self.subTest(name=name, block=block), self.assertRaisesRegex(ValueError, "terminal ok"):
+                    checker.check_guest(self.guest)
+
+    def test_all_g2_test_terminals_must_precede_the_completed_summary(self):
+        for name in checker.G2_REQUIRED_TESTS:
+            self.write_serial([(candidate, " ok") for candidate in self.names if candidate != name],
+                              after_summary=((name, " ok"),))
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                checker.check_guest(self.guest)
+
+    def test_whole_core_cannot_shrink_below_its_baseline_plus_fourteen(self):
+        inert = next(name for name in self.names if name.startswith("aster_core::inert::"))
+        self.write_serial([(name, " ok") for name in self.names if name != inert])
+        with self.assertRaisesRegex(ValueError, "Root3 and successor11"):
+            checker.check_guest(self.guest)
 
     def test_new_test_must_have_its_own_terminal_ok_and_no_soft_skip(self):
         for block in ("\n [skipped: unsupported] \n ok", "\n diagnostics only", " FAILED"):
@@ -126,7 +180,9 @@ class G2CoreEvidenceTests(unittest.TestCase):
                 checker.check_guest(self.guest)
 
     def test_original_required_test_remains_required(self):
-        self.write_serial([(name, " ok") for name in self.names if name != checker.original.REQUIRED_CORE_TESTS[0]]
+        original_name = next(name for name in checker.original.REQUIRED_CORE_TESTS
+                             if name not in (*checker.CONTINUITY_TESTS, *checker.CPU_SUCCESSOR_TESTS))
+        self.write_serial([(name, " ok") for name in self.names if name != original_name]
                           + [("aster_core::inert::replacement", " ok")])
         with self.assertRaisesRegex(ValueError, "required core"):
             checker.check_guest(self.guest)

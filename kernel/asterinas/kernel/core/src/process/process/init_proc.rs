@@ -24,6 +24,8 @@ use crate::{
 
 #[cfg(feature = "g2-trusted-daemon")]
 mod trusted_daemon;
+#[cfg(feature = "g2-trusted-daemon")]
+pub(super) mod trusted_launcher;
 #[cfg(feature = "g1d-trusted-control")]
 mod trusted_roles;
 

@@ -36,7 +36,7 @@ def main():
     parser.add_argument("--permission-attr-smp", action="store_true",
                         help="run the fixed permission transaction regressions with exactly two CPUs")
     parser.add_argument("--g2-initial-root", action="store_true",
-                        help="run the complete original N0 core suite plus the three G2 Process-state tests")
+                        help="run the complete original N0 core suite plus all required G2 Root, successor and launcher tests")
     parser.add_argument("--trusted-initial-sha256",
                         help="explicit digest of HEPTA_TRUSTED_INITIAL_ELF, used only to compile G2 ktests")
     parser.add_argument("--skip-osdk-install", action="store_true",

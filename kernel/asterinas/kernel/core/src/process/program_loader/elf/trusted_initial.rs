@@ -67,6 +67,15 @@ pub(in crate::process) struct TrustedInitialSnapshot {
 }
 
 impl TrustedInitialSnapshot {
+    /// Exercise the real loader and memory admission with the same immutable
+    /// compile-time bytes used by this explicit feature's native boot.
+    #[cfg(all(ktest, feature = "g2-trusted-daemon"))]
+    pub(in crate::process) fn frozen_manifest_for_ktest() -> Self {
+        Self {
+            bytes: EXPECTED_ELF.to_vec(),
+        }
+    }
+
     pub(in crate::process) fn read(file: Arc<dyn FileLike>) -> Result<Self> {
         if EXPECTED_ELF.is_empty() || EXPECTED_ELF.len() > MAX_FILE_BYTES {
             return_errno_with_message!(

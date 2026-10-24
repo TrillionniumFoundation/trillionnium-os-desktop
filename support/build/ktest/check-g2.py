@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Preserve the whole original core gate and add three G2 Process regressions.
+"""Preserve the whole original core gate and all G2 Process regressions.
 
 This qualifies kernel Process-state tests only. The embedded ELF is a bounded
 compilation input; these ktests neither boot it nor qualify a Hepta owner.
+The original three Root tests and eleven successor/launcher tests are mandatory.
 """
 import argparse
 import hashlib
@@ -29,6 +30,31 @@ CONTINUITY_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::n
     "native_delayed_watchdog_cut_cannot_mutate_a_replacement_policy",
     "native_watchdog_registration_is_bounded_across_owner_policy_replacements",
 ))
+CPU_SUCCESSOR_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::" + name for name in (
+    "native_successor_preparation_and_drop_do_not_publish_authority",
+    "native_successor_requires_both_exact_predecessor_delegations_closed",
+    "native_successor_preserves_cpu_debt_revision_and_original_delivery_history",
+    "native_successor_failed_or_stale_commit_leaves_current_policy_intact",
+    "native_successor_generations_keep_one_watchdog_registration_and_bounded_origins",
+))
+G2_SUCCESSOR_TESTS = (
+    *("aster_core::process::process::init_proc::trusted_launcher::tests::" + name for name in (
+        "native_successor_claim_failure_closes_all_unpublished_images",
+        "native_successor_cancelled_token_cannot_close_a_newer_image",
+        "native_successor_reap_gate_requires_release_of_the_actual_child_allocation",
+        "native_successor_generation_replays_only_the_last_successful_transaction",
+        "native_successor_history_page_has_fresh_local_space_and_no_effect_handles",
+        "native_successor_launcher_refuses_ordinary_marker_only_and_ended_images",
+        "native_successor_image_allocation_failure_never_publishes_a_process",
+    )),
+    *("aster_core::process::process::trusted_control::successor_tests::" + name for name in (
+        "native_successor_requires_retirement_of_both_original_history_frontiers",
+        "native_successor_empty_lost_history_is_not_a_retirement_proof",
+        "native_history_only_image_retains_original_owners_without_effect_namespace",
+    )),
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_successor_commit_retains_the_watchdog_receipt_from_its_final_owner_cut",
+)
+G2_REQUIRED_TESTS = (*G2_TESTS, *G2_SUCCESSOR_TESTS)
 
 
 def require(condition, message):
@@ -88,10 +114,13 @@ def check_build(directory):
 
 def check_guest(guest):
     # The original checker owns the complete baseline and its required CPU
-    # continuity tests. A stale checker must not qualify a newer G2 product.
-    require(original.MINIMUM_CORE_TESTS >= 368
-            and all(name in original.REQUIRED_CORE_TESTS for name in CONTINUITY_TESTS),
-            "G2 requires the original 368-test core gate with all three CPU continuity regressions")
+    # continuity/successor tests. A stale checker must not qualify a newer G2
+    # product; the old 365/368-test gates cannot be paired with this extension.
+    required = original.REQUIRED_CORE_TESTS
+    require(type(original.MINIMUM_CORE_TESTS) is int and original.MINIMUM_CORE_TESTS >= 373
+            and len(required) >= 134 and len(set(required)) == len(required)
+            and all(required.count(name) == 1 for name in (*CONTINUITY_TESTS, *CPU_SUCCESSOR_TESTS)),
+            "G2 requires the original 373-test core gate with at least 134 required names, CPU continuity3 and successor5")
     result = original.check_guest(guest, "aster-core", False)
     qemu = json.loads((guest / "qemu.json").read_text())
     original.check_fixed_n0_profile(qemu, "G2 original Process-state tests")
@@ -102,7 +131,7 @@ def check_guest(guest):
     section = serial[header.end():end]
     summary = next(original.SUMMARY.finditer(section))
     records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
-    for name in G2_TESTS:
+    for name in G2_REQUIRED_TESTS:
         matches = [(index, item) for index, item in enumerate(records) if item[1] == name]
         require(len(matches) == 1, "missing or repeated actual G2 Process test: " + name)
         index, record = matches[0]
@@ -111,9 +140,12 @@ def check_guest(guest):
         block = section[record.end():boundary].rstrip("\n")
         require("[skipped:" not in block and re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block) is not None,
                 "G2 Process test lacks its own exercised terminal ok: " + name)
-    require(result["passed"] >= original.MINIMUM_CORE_TESTS + len(G2_TESTS),
-            "G2 core shrank the preserved whole-core baseline plus three new tests")
+    require(result["passed"] >= original.MINIMUM_CORE_TESTS + len(G2_REQUIRED_TESTS),
+            "G2 core shrank the preserved whole-core baseline plus Root3 and successor11 tests")
     return {**result, "required_g2_process_tests": list(G2_TESTS), "g2_process_tests_exercised": len(G2_TESTS),
+            "required_g2_successor_tests": list(G2_SUCCESSOR_TESTS),
+            "g2_successor_tests_exercised": len(G2_SUCCESSOR_TESTS),
+            "g2_total_additional_tests_exercised": len(G2_REQUIRED_TESTS),
             "original_core_inventory_preserved": True, "actual_native_owner_verified": False, "g2_complete": False}
 
 

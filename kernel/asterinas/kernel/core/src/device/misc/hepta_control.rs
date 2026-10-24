@@ -36,6 +36,9 @@ use crate::{
 // _IOWR('H', 2, sizeof(Transport32)).  This number is test-only until A00
 // assigns a public ioctl. It does not silently reuse the old HOS1 command.
 const EXPERIMENTAL_HOS2_IOCTL: u32 = 0xC020_4802;
+// A private frozen-Root lifecycle endpoint; never a public HOS2 opcode.
+#[cfg(feature = "g2-trusted-daemon")]
+const EXPERIMENTAL_NATIVE_LAUNCH_IOCTL: u32 = 0xC080_4803;
 // Fixed experimental HOS2 operations have at most 40 input payload bytes.
 // Accept a bounded snapshot for known but disabled opcodes, so that
 // unsupported operations produce EOPNOTSUPP rather than an invented ENOTTY.
@@ -160,6 +163,21 @@ impl PerOpenFileOps for HeptaControlFile {
     }
 
     fn ioctl(&self, _path: &Path, raw_ioctl: RawIoctl) -> Result<i32> {
+        #[cfg(feature = "g2-trusted-daemon")]
+        if raw_ioctl.cmd() == EXPERIMENTAL_NATIVE_LAUNCH_IOCTL {
+            self.check_session()?;
+            let mut input = [0u8; 128];
+            current_userspace!().read_bytes(raw_ioctl.arg(), &mut input)?;
+            let process = self
+                .process
+                .upgrade()
+                .ok_or_else(|| Error::new(Errno::ESTALE))?;
+            let output = process.dispatch_hepta_launcher(self.image_key, &input)?;
+            // Publication can precede an EFAULT here. The same expected
+            // generation replays its saved receipt without another child.
+            current_userspace!().write_bytes(raw_ioctl.arg(), &output)?;
+            return Ok(0);
+        }
         if raw_ioctl.cmd() != EXPERIMENTAL_HOS2_IOCTL {
             return_errno_with_message!(Errno::ENOTTY, "not a recognized HOS2 ioctl")
         }

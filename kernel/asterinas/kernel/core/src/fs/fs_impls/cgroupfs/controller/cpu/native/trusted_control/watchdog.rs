@@ -29,7 +29,7 @@ pub(super) enum WatchdogOutcome {
 }
 
 impl WatchdogOutcome {
-    fn code(self) -> u8 {
+    pub(super) fn code(self) -> u8 {
         match self {
             Self::Restored(_) => 1,
             Self::Ineligible => 2,

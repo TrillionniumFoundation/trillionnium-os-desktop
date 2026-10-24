@@ -35,13 +35,43 @@ struct HistorySlot {
     ack: Option<KernelHistoryOwner>,
 }
 
+/// Exactly two retained original namespaces, independent of any ended
+/// Process. The caller must fence and reap every image that can reserve into
+/// them BEFORE checking the frontier. No counter or terminal is copied here.
+#[cfg(feature = "g2-trusted-daemon")]
+#[derive(Clone)]
+pub(super) struct RetainedHistories {
+    slots: [Arc<HistorySlot>; 2],
+}
+
+#[cfg(feature = "g2-trusted-daemon")]
+impl RetainedHistories {
+    pub(super) fn spaces(&self) -> [[u8; 16]; 2] {
+        self.slots
+            .each_ref()
+            .map(|history| history.core.identity().cap_space_id().bytes())
+    }
+
+    pub(super) fn fully_retired(&self) -> bool {
+        self.slots.iter().all(|history| {
+            let next = history.core.next_sequence();
+            history.core.retired_through().checked_add(1) == Some(next)
+                // Even an empty lost namespace is not a valid retirement
+                // proof. Query the original view; do not infer health from
+                // equal copied counters or turn HistoryLost into NotSeen.
+                && history.core.query_delivery(&history.view, next)
+                    .is_ok_and(|observation| observation.state == DeliveryState::NotSeen)
+        })
+    }
+}
+
 /// The G1-d/G2 slots. Constructors are reachable only from the sealed,
 /// stopped bootstrap transaction; later exec/fork allocate none of them.
 pub(super) struct TrustedControlSlots {
     key: ProcessImageKey,
     operation_gate: Mutex<()>,
-    manager: Arc<NativeCpuManager>,
-    core: KernelCore,
+    manager: Option<Arc<NativeCpuManager>>,
+    core: Option<KernelCore>,
     manager_history: Arc<HistorySlot>,
     recovery_history: Option<Arc<HistorySlot>>,
     retirement_domain: [u8; 8],
@@ -113,8 +143,8 @@ impl TrustedControlSlots {
             Arc::new(Self {
                 key: keys[0],
                 operation_gate: Mutex::new(()),
-                manager,
-                core: manager_core,
+                manager: Some(manager),
+                core: Some(manager_core),
                 manager_history,
                 recovery_history: None,
                 retirement_domain,
@@ -122,13 +152,53 @@ impl TrustedControlSlots {
             Arc::new(Self {
                 key: keys[1],
                 operation_gate: Mutex::new(()),
-                manager: recovery,
-                core: recovery_core,
+                manager: Some(recovery),
+                core: Some(recovery_core),
                 manager_history: retained,
                 recovery_history: Some(own),
                 retirement_domain,
             }),
         ])
+    }
+
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn retained_histories(&self) -> Result<RetainedHistories> {
+        let recovery = self.recovery_history.as_ref().ok_or_else(|| {
+            Error::with_message(
+                Errno::EPERM,
+                "only the original recovery owner retains both histories",
+            )
+        })?;
+        if self.retirement_domain != *b"HOS2OWN1"
+            || self.manager_history.ack.is_none()
+            || recovery.ack.is_none()
+        {
+            return_errno_with_message!(
+                Errno::EPERM,
+                "successor requires the original history owners"
+            )
+        }
+        Ok(RetainedHistories {
+            slots: [self.manager_history.clone(), recovery.clone()],
+        })
+    }
+
+    /// A fresh final image may drain these SAME two original namespaces. It
+    /// receives no NativeGrant, resource slot, effect namespace or D allocator.
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn prepare_history_only(
+        key: ProcessImageKey,
+        histories: &RetainedHistories,
+    ) -> Arc<Self> {
+        Arc::new(Self {
+            key,
+            operation_gate: Mutex::new(()),
+            manager: None,
+            core: None,
+            manager_history: histories.slots[0].clone(),
+            recovery_history: Some(histories.slots[1].clone()),
+            retirement_domain: *b"HOS2OWN1",
+        })
     }
 
     pub(super) fn belongs_to(&self, key: ProcessImageKey) -> bool {
@@ -137,7 +207,9 @@ impl TrustedControlSlots {
 
     pub(super) fn revoke_after_image_close(&self) {
         let _gate = self.operation_gate.lock();
-        self.manager.revoke();
+        if let Some(manager) = &self.manager {
+            manager.revoke();
+        }
     }
 
     fn install(
@@ -145,29 +217,29 @@ impl TrustedControlSlots {
         request: &wire::Request,
         payload: wire::InstallBudgetRequest,
     ) -> NativeResult {
+        let manager = self.manager.as_ref().ok_or(Status::PermissionDenied)?;
+        let core = self.core.as_ref().ok_or(Status::PermissionDenied)?;
         if request.target_slot != 2 || request.target_generation != 1 {
             return Err(Status::StaleHandle);
         }
         let sequence = u64::from_le_bytes(request.request_id[..8].try_into().unwrap());
         let native = NativeDeliveryRequest::from_wire(
             sequence,
-            self.manager.grant(),
+            manager.grant(),
             payload.expected_revision,
             payload.cap_ns,
             request.target_slot,
             request.target_generation,
         )
         .map_err(delivery_error)?;
-        let observation = match self
-            .core
-            .reserve_native_or_get(native, self.manager.publisher())
+        let observation = match core
+            .reserve_native_or_get(native, manager.publisher())
             .map_err(delivery_error)?
         {
             ReserveAttemptWith::Existing(observation) => observation,
-            ReserveAttemptWith::Reserved(token) => self
-                .manager
-                .execute(&self.core, &token)
-                .map_err(delivery_error)?,
+            ReserveAttemptWith::Reserved(token) => {
+                manager.execute(core, &token).map_err(delivery_error)?
+            }
         };
         install_observation(observation)
     }
@@ -204,7 +276,8 @@ impl TrustedControlSlots {
                 if request.target_slot != 1 || request.target_generation != 1 {
                     return Err(Status::StaleHandle);
                 }
-                let usage = self.manager.read_usage().map_err(|error| match error {
+                let manager = self.manager.as_ref().ok_or(Status::PermissionDenied)?;
+                let usage = manager.read_usage().map_err(|error| match error {
                     CpuUsageError::Unbound | CpuUsageError::Closed | CpuUsageError::Expired => {
                         Status::Revoked
                     }
@@ -289,6 +362,13 @@ impl Process {
         if let Some(slots) = slots {
             slots.revoke_after_image_close();
         }
+        #[cfg(feature = "g2-trusted-daemon")]
+        {
+            let launcher = self.hepta_image.lock().closing_launcher();
+            if let Some(launcher) = launcher {
+                launcher.close();
+            }
+        }
     }
 }
 
@@ -362,3 +442,6 @@ fn query_observation(observation: DeliveryObservation) -> NativeResult {
         }),
     ))
 }
+
+#[cfg(all(ktest, feature = "g2-trusted-daemon"))]
+mod successor_tests;

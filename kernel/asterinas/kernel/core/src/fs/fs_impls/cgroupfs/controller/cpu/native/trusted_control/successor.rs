@@ -8,8 +8,39 @@
 
 use alloc::vec::Vec;
 
-use super::*;
+use super::{watchdog::WatchdogOutcome, *};
 use crate::prelude::{Errno, Error};
+
+/// The original immutable watchdog terminal moved out at policy replacement.
+/// It contains only Copy values, never a manager, grant origin or D namespace.
+/// None records a policy that had not fired at this exact owner cut.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) struct CpuPolicyRetirement {
+    terminal: Option<(WatchdogOutcome, Option<u64>)>,
+}
+
+impl CpuPolicyRetirement {
+    pub(super) fn from_retired(policy: &TrustedCpuManagement) -> Self {
+        Self {
+            terminal: policy.watchdog.terminal,
+        }
+    }
+
+    pub(crate) fn status_code(self) -> u8 {
+        self.terminal.map_or(0, |(outcome, _)| outcome.code())
+    }
+
+    pub(crate) fn evaluated_ns(self) -> Option<u64> {
+        self.terminal.and_then(|(_, time)| time)
+    }
+
+    pub(crate) fn resource_receipt(self) -> Option<os_control::NativeResourceReceipt> {
+        match self.terminal {
+            Some((WatchdogOutcome::Restored(receipt), _)) => Some(receipt),
+            _ => None,
+        }
+    }
+}
 
 /// All fallible preparation precedes owner publication. Dropping an uncommitted
 /// plan destroys only its fresh snapshots; no previous owner state changes.
@@ -109,7 +140,7 @@ impl PreparedCpuSuccessor {
     /// Publish only after the original Process transaction has prepared every
     /// image, slot and parent relation. This does not revive any old snapshot.
     #[cfg(feature = "g2-trusted-daemon")]
-    pub(crate) fn commit(mut self) -> crate::prelude::Result<()> {
+    pub(crate) fn commit(mut self) -> crate::prelude::Result<CpuPolicyRetirement> {
         if ostd::cpu::all_cpus().count() != 1 {
             return Err(Error::with_message(
                 Errno::EOPNOTSUPP,
@@ -119,10 +150,14 @@ impl PreparedCpuSuccessor {
         let _membership = CgroupMembership::write_lock();
         let retired = crate::sched::with_current_cpu_bandwidth_settled(|now| self.commit_at(now))?;
         drop(_membership);
+        // commit_at moved this entire old policy out under the same CpuMax
+        // lock that published its replacement. No old tick can mutate it,
+        // including one that fired after preparation but before that cut.
+        let receipt = CpuPolicyRetirement::from_retired(&retired);
         // Destruction of old origin/status references is outside bandwidth,
         // runqueue and membership locks, just as all new allocation was.
         drop(retired);
-        Ok(())
+        Ok(receipt)
     }
 
     pub(super) fn commit_at(

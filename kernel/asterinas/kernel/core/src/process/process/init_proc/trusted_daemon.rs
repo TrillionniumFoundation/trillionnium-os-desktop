@@ -145,7 +145,6 @@ pub(super) fn spawn(
             startup,
         )?);
     }
-    drop(snapshot);
     let (mut recovery, recovery_image, recovery_entry) = prepared.pop().unwrap();
     let (mut workload, workload_image, workload_entry) = prepared.pop().unwrap();
     let (mut manager, manager_image, manager_entry) = prepared.pop().unwrap();
@@ -157,9 +156,30 @@ pub(super) fn spawn(
         issued,
     )?;
     managers[0].arm_watchdog(workload.process.clone())?;
-    let [manager_slots, recovery_slots] =
-        TrustedControlSlots::prepare_original_owner_pair(managers, [manager.key, recovery.key])?;
+    let [manager_slots, recovery_slots] = TrustedControlSlots::prepare_original_owner_pair(
+        managers.clone(),
+        [manager.key, recovery.key],
+    )?;
+    let histories = recovery_slots.retained_histories()?;
+    let launcher = super::trusted_launcher::TrustedLauncher::new(
+        &root,
+        &manager,
+        &workload,
+        &recovery,
+        managers,
+        histories,
+        snapshot,
+        fs,
+        executable_path,
+        abs_path,
+        argv,
+        envp,
+    );
     root.activate_root(root_image, root_entry)?;
+    root.process
+        .hepta_image
+        .lock()
+        .activate_initial_launcher(root.key, launcher)?;
     manager.activate_control(manager_image, manager_entry, manager_slots)?;
     workload_image.consume(&workload.vmar, workload_entry)?;
     recovery.activate_control(recovery_image, recovery_entry, recovery_slots)?;
