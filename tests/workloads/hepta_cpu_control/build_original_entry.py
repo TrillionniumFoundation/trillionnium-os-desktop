@@ -237,7 +237,10 @@ def execute(args, report):
     cargo = args.toolchain_bin / "cargo"
     try:
         with target_lease(args.target_cache) as lease:
-            report["target_cache"] = {**lease, "cache_reused": True, "cold_build_claimed": False}
+            cache_had_artifacts = any(
+                path.name != ".hepta-native-userspace.lock" for path in args.target_cache.iterdir())
+            report["target_cache"] = {**lease, "cache_reused": cache_had_artifacts,
+                                     "cold_build_claimed": False}
             # Metadata selects a real target; it never generates a replacement root package.
             metadata_command = [cargo, "metadata", "--manifest-path", "codex-rs/Cargo.toml", "--locked", "--offline",
                                 "--no-deps", "--format-version", "1"]
