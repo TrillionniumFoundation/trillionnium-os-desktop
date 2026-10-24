@@ -254,9 +254,11 @@ pub enum NotesProtocolError {
     Receipt,
 }
 
-/// App-owned state, used on the egui thread. The one retained applied receipt
+/// App-owned state, serialized by the application worker. The one retained applied receipt
 /// cannot be overwritten until the original durable writer acknowledges that
-/// exact receipt. Capacity is one; a restarted process is still Unknown.
+/// exact receipt. Capacity is one. Persistence is supplied by NotesStore;
+/// the in-memory model alone does not confer crash recovery.
+#[derive(Clone)]
 pub struct NotesDocument {
     target: NotesTargetIdentity,
     text: String,
@@ -352,6 +354,34 @@ impl NotesDocument {
     /// deliberately has no fallback to apply_exact, so replace_note cannot
     /// mutate the document even if sent by a misbehaving peer.
     pub fn recovery_exact(&mut self, raw: &[u8]) -> Result<Vec<u8>, NotesProtocolError> {
+        use crate::notes_recovery::{NotesRead, NotesReadAction};
+        if let Ok(query) = NotesRead::parse_exact(raw) {
+            if query.target != self.target {
+                return Err(NotesProtocolError::Target);
+            }
+            let response = match query.action {
+                NotesReadAction::ReadDocumentState => serde_json::json!({
+                    "schema_version": NOTES_SCHEMA_VERSION,
+                    "action": "document_state",
+                    "target": self.target,
+                    "request_id": query.request_id,
+                    "revision": self.revision,
+                    "text_sha256": sha256_hex(self.text.as_bytes()),
+                    "receipt_pending": self.last_applied.is_some(),
+                }),
+                // A new application incarnation does not discover or adopt
+                // another incarnation's receipt from directory names. Its
+                // old retained owner may attach a separate recovery process.
+                NotesReadAction::ReadPreviousReceipt => serde_json::json!({
+                    "schema_version": NOTES_SCHEMA_VERSION,
+                    "action": "previous_receipt",
+                    "target": self.target,
+                    "request_id": query.request_id,
+                    "pending_receipt": null,
+                }),
+            };
+            return serde_json::to_vec(&response).map_err(|_| NotesProtocolError::Receipt);
+        }
         if let Ok(query) = NotesObserve::parse_exact(raw) {
             return serde_json::to_vec(&self.observe(&query)?)
                 .map_err(|_| NotesProtocolError::Receipt);
@@ -593,3 +623,6 @@ mod tests {
 #[cfg(test)]
 #[path = "notes_recovery_tests.rs"]
 mod recovery_tests;
+
+#[path = "notes_checkpoint.rs"]
+mod checkpoint;
