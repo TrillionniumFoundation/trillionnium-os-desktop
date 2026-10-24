@@ -5,6 +5,7 @@ use super::*;
 use std::io::{Read, Write};
 use std::sync::mpsc;
 use trill_ui_core::notes_bootstrap::{NotesBootstrapAckAction, NOTES_BOOTSTRAP_SCHEMA_VERSION};
+use trill_ui_core::notes_startup::{NotesStartupActivation, NotesStartupReservation};
 
 fn target() -> NotesTargetIdentity {
     NotesTargetIdentity {
@@ -66,6 +67,57 @@ fn one_private_datagram_transfers_the_exact_endpoint_with_cloexec() {
     let mut bytes = [0u8; 17];
     app.read_exact(&mut bytes).unwrap();
     assert_eq!(&bytes, b"physical endpoint");
+}
+
+#[test]
+fn staged_startup_keeps_descriptors_until_activation_then_starts_original_two_second_offer() {
+    let (session, parent) = UnixDatagram::pair().unwrap();
+    let (endpoint, mut app) = UnixStream::pair().unwrap();
+    let (recovery, _recovery_app) = UnixDatagram::pair().unwrap();
+    let fixture = std::thread::spawn(move || {
+        // This parser refuses and closes any ancillary rights: reservation
+        // must contain metadata only, before the original descriptor transfer.
+        let raw = receive_ack(&parent, Instant::now() + Duration::from_secs(3)).unwrap();
+        let reservation = NotesStartupReservation::parse_exact(&raw).unwrap();
+        assert_eq!(reservation.target, target());
+        // Real wall time beyond the old ACK bound demonstrates that its clock
+        // has not begun during the distinct, bounded startup reservation.
+        std::thread::sleep(DEADLINE + Duration::from_millis(100));
+        parent.send(&serde_json::to_vec(&NotesStartupActivation::from_reservation(&reservation)).unwrap()).unwrap();
+        let (offer, fd) = receive_offer(&parent);
+        assert_eq!(offer.target, reservation.target);
+        parent.send(&ack(&offer, NotesBootstrapStatus::Attached)).unwrap();
+        let mut effect = UnixStream::from(fd);
+        effect.write_all(b"after activation").unwrap();
+        effect
+    });
+    NotesBootstrap::from_private_channel(session).unwrap()
+        .with_root_startup_reservation().offer(target(), endpoint, recovery).unwrap();
+    let _original_effect = fixture.join().unwrap();
+    let mut bytes = [0u8; 16];
+    app.read_exact(&mut bytes).unwrap();
+    assert_eq!(&bytes, b"after activation");
+}
+
+#[test]
+fn staged_wrong_nonce_never_transfers_endpoints_and_closes_the_initial_application_channel() {
+    let (session, parent) = UnixDatagram::pair().unwrap();
+    let (endpoint, mut app) = UnixStream::pair().unwrap();
+    let (recovery, _recovery_app) = UnixDatagram::pair().unwrap();
+    let fixture = std::thread::spawn(move || {
+        let raw = receive_ack(&parent, Instant::now() + Duration::from_secs(3)).unwrap();
+        let reservation = NotesStartupReservation::parse_exact(&raw).unwrap();
+        let mut activation = NotesStartupActivation::from_reservation(&reservation);
+        activation.nonce.replace_range(..1, if activation.nonce.starts_with('a') { "b" } else { "a" });
+        parent.send(&serde_json::to_vec(&activation).unwrap()).unwrap();
+        parent.set_read_timeout(Some(Duration::from_millis(100))).unwrap();
+        assert!(parent.recv(&mut [0u8; NOTES_BOOTSTRAP_MAX_BYTES + 1]).is_err());
+    });
+    assert!(NotesBootstrap::from_private_channel(session).unwrap()
+        .with_root_startup_reservation().offer(target(), endpoint, recovery).is_err());
+    app.set_read_timeout(Some(Duration::from_secs(1))).unwrap();
+    assert_eq!(app.read(&mut [0u8; 1]).unwrap(), 0);
+    fixture.join().unwrap();
 }
 
 #[test]

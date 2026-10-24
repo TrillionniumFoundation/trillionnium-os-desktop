@@ -4,6 +4,7 @@ pub mod conversation;
 pub mod hepta;
 pub mod notes;
 pub mod notes_bootstrap;
+pub mod notes_startup;
 #[cfg(target_os = "linux")]
 pub mod notes_private_unix;
 pub mod notes_recovery;

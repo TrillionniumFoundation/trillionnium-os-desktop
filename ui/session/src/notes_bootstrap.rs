@@ -14,9 +14,11 @@ use trill_ui_core::notes_bootstrap::{
 };
 
 const DEADLINE: Duration = Duration::from_secs(2);
+const RESERVATION_DEADLINE: Duration = Duration::from_secs(30);
 
 pub struct NotesBootstrap {
     channel: UnixDatagram,
+    staged: bool,
 }
 
 impl NotesBootstrap {
@@ -36,7 +38,14 @@ impl NotesBootstrap {
             ));
         }
         channel.set_nonblocking(false)?;
-        Ok(Self { channel })
+        Ok(Self { channel, staged: false })
+    }
+
+    /// Only the explicit trusted-parent startup mode selects this barrier.
+    /// Ordinary Session IPC and the old direct bootstrap never enable it.
+    pub fn with_root_startup_reservation(mut self) -> Self {
+        self.staged = true;
+        self
     }
 
     /// Consume this one-shot bootstrap and the fresh endpoint. On success the
@@ -72,6 +81,9 @@ impl NotesBootstrap {
         if raw.is_empty() || raw.len() > NOTES_BOOTSTRAP_MAX_BYTES {
             return Err(invalid("Notes bootstrap offer bound"));
         }
+        if self.staged {
+            self.reserve_startup(&offer.target)?;
+        }
         let deadline = Instant::now() + DEADLINE;
         trill_ui_core::notes_private_unix::send_channels(
             &self.channel,
@@ -92,6 +104,26 @@ impl NotesBootstrap {
                 "original production host rejected Notes attachment",
             )),
         }
+    }
+
+    fn reserve_startup(&self, target: &NotesTargetIdentity) -> io::Result<()> {
+        use std::io::Read;
+        use trill_ui_core::notes_startup::{NotesStartupActivation, NotesStartupReservation};
+        let deadline = Instant::now() + RESERVATION_DEADLINE;
+        let mut nonce = [0u8; 16];
+        std::fs::File::open("/dev/urandom")?.read_exact(&mut nonce)?;
+        let nonce = nonce.iter().map(|byte| format!("{byte:02x}")).collect();
+        let reservation = NotesStartupReservation::new(target.clone(), nonce).map_err(invalid)?;
+        let raw = serde_json::to_vec(&reservation).map_err(io::Error::other)?;
+        self.channel.set_write_timeout(Some(remaining(deadline)?))?;
+        // Metadata only: both effect/recovery descriptors remain held locally
+        // until the exact activation below. This is never an Attached ACK.
+        if self.channel.send(&raw)? != raw.len() { return Err(invalid("Notes reservation was not sent atomically")); }
+        let response = receive_ack(&self.channel, deadline)?;
+        let activation = NotesStartupActivation::parse_exact(&response).map_err(invalid)?;
+        if !activation.matches(&reservation) { return Err(invalid("Notes activation differs from actual reservation")); }
+        remaining(deadline)?;
+        Ok(())
     }
 }
 

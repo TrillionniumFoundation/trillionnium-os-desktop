@@ -793,16 +793,20 @@ fn serve_request(stream: &mut deadline::DeadlineStream, session: &mut Session) -
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum NotesBootstrapMode { None, Direct, Reserved }
+
 fn notes_bootstrap_requested(
     args: impl IntoIterator<Item = std::ffi::OsString>,
-) -> io::Result<bool> {
+) -> io::Result<NotesBootstrapMode> {
     let mut args = args.into_iter();
     match args.next() {
-        None => Ok(false),
-        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => Ok(true),
+        None => Ok(NotesBootstrapMode::None),
+        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Direct),
+        Some(flag) if flag == "--notes-root-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Reserved),
         _ => Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "expected no arguments or --notes-bootstrap-stdin",
+            "expected no arguments, --notes-bootstrap-stdin or --notes-root-bootstrap-stdin",
         )),
     }
 }
@@ -810,13 +814,13 @@ fn notes_bootstrap_requested(
 fn main() -> io::Result<()> {
     let requested = notes_bootstrap_requested(std::env::args_os().skip(1))?;
     #[cfg(target_os = "linux")]
-    let notes_bootstrap = if requested {
-        Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?)
-    } else {
-        None
+    let notes_bootstrap = match requested {
+        NotesBootstrapMode::None => None,
+        NotesBootstrapMode::Direct => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?),
+        NotesBootstrapMode::Reserved => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?.with_root_startup_reservation()),
     };
     #[cfg(not(target_os = "linux"))]
-    if requested {
+    if requested != NotesBootstrapMode::None {
         return Err(io::Error::new(
             io::ErrorKind::Unsupported,
             "Notes bootstrap requires Linux",
@@ -895,8 +899,9 @@ mod tests {
     #[test]
     fn notes_bootstrap_is_explicit_startup_and_never_a_public_request() {
         use std::ffi::OsString;
-        assert!(!notes_bootstrap_requested(Vec::<OsString>::new()).unwrap());
-        assert!(notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap());
+        assert_eq!(notes_bootstrap_requested(Vec::<OsString>::new()).unwrap(), NotesBootstrapMode::None);
+        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Direct);
+        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Reserved);
         assert!(notes_bootstrap_requested([
             OsString::from("--notes-bootstrap-stdin"),
             OsString::from("extra")
@@ -906,6 +911,7 @@ mod tests {
         for request in [
             br#"{"type":"notes_bootstrap","fd":0}"#.as_slice(),
             br#"{"type":"offer_notes_target","target":{"task_id":1}}"#.as_slice(),
+            br#"{"type":"notes_target_reserved","target":{"task_id":1},"nonce":"0000"}"#.as_slice(),
         ] {
             assert!(parse_host_request(request).is_err());
         }
