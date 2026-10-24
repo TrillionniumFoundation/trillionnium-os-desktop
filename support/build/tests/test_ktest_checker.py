@@ -177,8 +177,8 @@ class KtestCheckerTests(unittest.TestCase):
         self.assertIn("no real QEMU guest records", result.stdout)
 
     def test_complete_core_requires_all_named_regressions_exactly_once(self):
-        self.assertEqual(len(REQUIRED_CORE_TESTS), 136)
-        self.assertEqual(MINIMUM_CORE_TESTS, 375)
+        self.assertEqual(len(REQUIRED_CORE_TESTS), 138)
+        self.assertEqual(MINIMUM_CORE_TESTS, 377)
         baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(239))
         names = (*baseline, *REQUIRED_CORE_TESTS)
         self.evidence(core_serial(names), crate="aster-core")

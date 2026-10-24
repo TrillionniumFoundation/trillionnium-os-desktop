@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 375  # Retained 373 plus two original-RNG entropy regressions.
+MINIMUM_CORE_TESTS = 377  # Retained 375 plus two real CPU-weight attribute regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -129,6 +129,10 @@ BOOT_ID_CORE_TESTS = (
     "aster_core::util::random::tests::trusted_entropy_requires_original_initialized_hardware_seed",
     "aster_core::util::random::tests::entropy_seed_requires_every_word_before_publication",
 )
+CPU_WEIGHT_CONFIG_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::" + suffix for suffix in (
+    "valid_cpu_weight_write_reports_unsupported_without_claiming_policy",
+    "invalid_or_inactive_cpu_weight_write_keeps_original_error_and_readback",
+))
 DATAGRAM_FRAME_CORE_TESTS = tuple("aster_core::net::socket::unix::datagram::message::tests::" + suffix for suffix in (
     'empty_message_slots_are_bounded_and_only_consumption_reopens_capacity',
     'message_slot_backpressure_precedes_new_payload_charge_and_reader_consumption',
@@ -210,7 +214,7 @@ CPU_SUCCESSOR_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu
     'native_successor_failed_or_stale_commit_leaves_current_policy_intact',
     'native_successor_generations_keep_one_watchdog_registration_and_bounded_origins',
 ))
-REQUIRED_CORE_TESTS = (*CPU_SUCCESSOR_TESTS, *CPU_OWNER_CONTINUITY_TESTS, *SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+REQUIRED_CORE_TESTS = (*CPU_WEIGHT_CONFIG_TESTS, *CPU_SUCCESSOR_TESTS, *CPU_OWNER_CONTINUITY_TESTS, *SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (

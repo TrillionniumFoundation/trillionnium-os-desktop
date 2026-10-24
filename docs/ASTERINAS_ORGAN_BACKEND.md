@@ -1,5 +1,11 @@
 # Asterinas 后端：organ 边界与实际验证
 
+当前实现更新：下文的 CPU 配置反例与原运行记录属于其固定历史源码。后续 `cpu.max`
+已接真实调度计费/资格/节流路径；`cpu.weight` 仍无 group-weight 调度，当前
+[写合同](agents/CPU_WEIGHT_UNSUPPORTED.md)明确返回 `EOPNOTSUPP` 并保持读值 `100`，
+不再接受只存值的假策略成功。`memory.max` 也已有[原层级用户数据/选定IPC帧准入](agents/CGROUP_MEMORY_ADMISSION.md)，
+不是完整回收/OOM。历史反例不应继续用来描述这些后续实现，也不转授其新执行资格。
+
 日期：2026-10-16。此变更保留 Asterinas/OSTD 主线，不新建 HOS3，不复制 Hepta organ 宿主或持久账本。本页是本轮新增的事实与接合要求，不能把当前 PR 的产物提前算入 main。
 
 ## 1. 确定的架构边界

@@ -72,6 +72,11 @@
 
 ## 尚未取得的产品资格
 
+当前 CPU 权重合同已收紧：原 `cpu.weight` 没有 group-weight 调度实现，因此合法写明确
+返回 `EOPNOTSUPP`，非法输入保留原错误，读保持中性默认 `100`；详见
+[真实属性边界与回归要求](agents/CPU_WEIGHT_UNSUPPORTED.md)。这项修复不将权重执行、
+SMP公平性或完整恢复保留标为完成；新增测试必须按最终源码保留实际 guest 证据。
+
 | 资格 | 本检查点状态 | 完成条件 |
 | --- | --- | --- |
 | 生产授权与效果 | 未通过 | 原 provider、protected clock、external frontier、keyring、revocation、recovered writer、current-cut 按实际部署装配并执行；source manifest始终保留 `production.activation: disabled` / `effects_authorized: false`。 |
