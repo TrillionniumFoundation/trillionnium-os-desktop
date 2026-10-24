@@ -90,7 +90,7 @@ def run(args, report):
         return until(lambda: named("Message / 消息"), "Original composer is missing")
 
     def value():
-        return editor().get_text_iface().get_text(0, -1)
+        return Atspi.Text.get_text(editor(), 0, -1)
 
     def selected_room():
         # AT-SPI translations differ between versions; state and original role
