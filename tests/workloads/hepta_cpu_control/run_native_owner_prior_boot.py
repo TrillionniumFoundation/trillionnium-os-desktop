@@ -198,6 +198,7 @@ def execute(args, report):
                   "stopped forensic copy was changed or used as a second boot input")
     e.require(inputs.sha(campaign / "state-before.raw") == formatted["before_sha256"], "retained pristine ext2 preimage changed")
     report.update(passed=True, stage="complete", source_inputs_unchanged=True, same_product_kernel_all_boots=True,
+                  activation_witness_files_verified=True,
                   actual_first_vm_sigkill_verified=True, same_physical_disk_reboot_verified=True,
                   original_cold_authority_factory_verified=True, original_finaluse_claims_preserved=True,
                   cross_boot_unknown_preservation_verified=True, old_boot_observer_refusal_without_ioctl_verified=True,
@@ -227,6 +228,7 @@ def main(argv=None):
               "stage": "source_admission", "native_execution_attempted": False,
               "same_original_disk_descriptor_verified": False, "same_physical_disk_reboot_verified": False,
               "cross_boot_unknown_preservation_verified": False, "old_boot_observer_refusal_without_ioctl_verified": False,
+              "activation_witness_files_verified": False,
               "new_boot_original_effect_window_verified": False, "graceful_owner_release_verified": False,
               "unresolved_pending_handoff_verified": False, "kill_within_guest_callback_window_proven": False,
               "power_loss_verified": False, "unbounded_persistent_cpu_verified": False,

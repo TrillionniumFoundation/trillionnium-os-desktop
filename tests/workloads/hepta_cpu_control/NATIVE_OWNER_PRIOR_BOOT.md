@@ -106,6 +106,18 @@ token from the first boot must match the actual previous head. New writer
 generation, publisher epoch and adoption counter follow the original factory;
 the runner does not synthesize any of them.
 
+The recovered writer's lease now also commits to its original checkpoint
+activation witness: complete candidate, whole previous token, exact material
+anchor digest, and the actual new Root and publisher lifetimes. The second
+transcript reconstructs that exact commitment from the actual authority DTO;
+it accepts no older payload form. The independent stopped-disk reader opens
+the hash-derived original witness and its Root-private lock in
+`protected-source/authority/checkpoint`, checks complete saved payload bytes,
+and hashes the original predecessor material. A directory scan never chooses
+the candidate. The fresh first boot has no recovered activation witness.
+These checks supplement, and do not replace, the original key/highwater,
+complete registry, full head and DB/WAL checks described below.
+
 Before the normal monitor starts, the original writer captures the real old
 retained operation. Its K, D and canonical request are unchanged and its state
 is Indeterminate. A dedicated original command then invokes the real device
@@ -212,6 +224,7 @@ outer bound; this campaign retains 120 seconds per boot.
 | `boot-2/qemu.json`, `serial.log` | The same inherited raw inode, a genuinely new native boot, full original observation/effect transcript and raw 33 |
 | `boot-{1,2}/stopped-state.raw` | Hashed copies made only after real QEMU exit; `execution_input=false` |
 | `boot-{1,2}/physical/` | Actual read-only debugfs commands, complete stdout/stderr hashes, Root pin/Current/clock/registry/issuer/consumer identities and original observation bytes |
+| `physical/result.json` activation witness section | Exact recovered candidate, whole previous token and actual Root/peer commitment, original saved witness/lock and retained predecessor material bytes |
 | `physical/retained-sqlite/`, `physical/active-sqlite/` under each boot | Private actual DB/WAL extractions, complete source hash-chain and operation/claim observations; a late terminal in WAL is rejected |
 | `result.json` and each boot's result | Scoped campaign result; per-transcript and per-disk readers alone keep `passed=false` and native qualification false |
 

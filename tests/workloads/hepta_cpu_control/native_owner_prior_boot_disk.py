@@ -299,6 +299,9 @@ def verify(image, expected_sha256, tool, tool_identity, transcript, output, prev
         consumers = authority.consumers(disk, expected_frontiers, transcript["installation"], transcript["phase"],
                                         None if fresh else previous["consumers"])
         root = authority.root_authority(disk, transcript, None if fresh else previous["root_authority"])
+        import native_owner_activation_witness_disk as activation_witness
+        activation_files = activation_witness.verify_open(disk, transcript["activation_witnesses_expected"])
+        activation_witness.accept_expected(transcript, activation_files)
         preservation = None
         if not fresh:
             preservation = store.preserved_unknown(previous["live_database"], live)
@@ -314,6 +317,7 @@ def verify(image, expected_sha256, tool, tool_identity, transcript, output, prev
                   "image": str(image), "image_sha256": expected_sha256, "installation": pin,
                   "saved_observation": observation, "material_database": material, "live_database": live,
                   "consumers": consumers, "root_authority": root, "old_rows_preserved": preservation,
+                  "activation_witnesses": activation_files, "activation_witness_files_verified": True,
                   "readonly_extraction": True, "debugfs": tool_identity, "command_count": len(disk.commands),
                   "original_shm_used_as_sqlite_input": False, "native_execution_verified": False,
                   "power_loss_verified": False, "kill_within_guest_callback_window_proven": False}

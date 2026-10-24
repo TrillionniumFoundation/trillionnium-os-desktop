@@ -36,7 +36,16 @@ The initial Root keeps `native-cpu-root-installation`. The oracle binds these
 names to the actual Root peer and complete registered writer; local writer
 generation is not substituted for Supervisor spawn, and older ID spellings
 are rejected. Lease duration, signature, scope, payload and uniqueness checks
-remain unchanged. This naming check alone supplies no cross-boot evidence.
+remain enforced. This naming check alone supplies no cross-boot evidence.
+
+Each recovered writer additionally uses the original checkpoint activation
+preparation. Its finite lease payload commits to the complete candidate (only
+the output digest field is zeroed for hashing), whole predecessor token,
+retained physical-cut digest, and actual Root and publisher lifetimes. The
+earlier cut/spawn/local-generation payload is rejected, with no fallback.
+The complete original candidate and its independently saved Root observation
+must agree. See `NATIVE_OWNER_ACTIVATION.md` for the exact commitment and the
+additional physical checks shared with single-crash and prior-boot recovery.
 
 The initial real ReadUsage sample is no earlier than the initial kernel grant
 issue cut. Its checked sum with 330 seconds is therefore a conservative bound
@@ -97,10 +106,17 @@ raw ext2 disk using read-only `debugfs` and independently checks:
 
 The physical path is
 `/state/hepta-native/protected-source/authority/native-launch-observations`.
-Only those bounded observations and lock metadata are extracted; private
-issuer keys and unrelated authority stores are not needed. Manager and
+These bounded observations and lock metadata are extracted; private
+issuer keys are never read. Manager and
 Recovery can report the same immutable launch observation; it is verified
 once as the same actual inode/file, not counted as another launch.
+
+The runner also reads every original activation preparation from the actual
+checkpoint directory and hashes the exact predecessor material. Its complete
+candidate commitment and physical file must match the actual owner chain.
+All expected witness records and locks are required; an unsigned extra
+candidate, missing file or replaced material fails. Output is retained in
+`checkpoint-activation-witnesses/` alongside the launch-observation evidence.
 
 Every debugfs command records its exact argv, selected binary hash, exit,
 elapsed time, stdout/stderr bytes and hashes. Missing paths can produce exit
@@ -109,7 +125,7 @@ The whole state disk and actual tool hashes must be unchanged across read-only
 extraction. Raw outputs, extracted file bytes and `root-launch-observations/`
 `result.json` remain in each scenario's retained directory.
 
-Only after both gates pass does the runner set the corresponding finite
+Only after transcript, launch files and activation witnesses pass does the runner set the corresponding finite
 `grant_renewal_verified` or `history_only_recovery_verified` field. Unbounded
 persistent control, cross-boot Unknown preservation, host power loss, complete
 G2 and production readiness remain false. Normal repeated handoffs do not
@@ -138,7 +154,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
 ```
 
 The gate includes the original 19 transcript and 10 runner tests, the earlier
-9 copyout tests, 8 additional continuity parser tests and 4 real private ext2
+9 copyout tests, 10 additional continuity parser tests and 4 real private ext2
 extraction tests. Complete synthetic records in
 `native_owner_continuity_test_records.py` are inert test input. They neither
 launch an owner nor produce native qualification evidence. The ext2 tests use

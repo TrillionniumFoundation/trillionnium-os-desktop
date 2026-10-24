@@ -8,6 +8,7 @@ import hashlib
 
 import native_owner_evidence as base
 import native_owner_continuity_types as types
+import native_owner_activation_witness as witness
 from native_owner_continuity_kernel import Launches
 from native_owner_successor_wire import initial_bootstrap, initial_expiry_upper_bound, launch_receipt, successor_bootstrap
 
@@ -40,6 +41,15 @@ class Continuity:
         self.observed_watchdog = None
         self.retirements = []
         self.root_binding = None
+        self.activation_witnesses = []
+
+    def successor_generations(self, previous):
+        """Default original installed-owner transition, unchanged for six cases."""
+        binding = previous["head"]["writer_binding"]
+        return binding["generation"] + 1, binding["owner_epoch"] + 1
+
+    def activation_predecessor(self, previous):
+        return previous
 
     def sample(self, value, role, expected_revision=None, expected_cap=None):
         current = base.usage(value, self.c.boot_id, self.c.spaces[role])
@@ -142,14 +152,15 @@ class Continuity:
             base.require(self.previous is not None and self.adoption is not None, "original predecessor release/crash material is missing")
             previous = self.c.currents[self.previous["role"]]
             old_binding = previous["head"]["writer_binding"]
+            local_generation, owner_epoch = self.successor_generations(previous)
             base.checkpoint(self.adoption, peer, self.agent)
             base.require(current["head"]["publisher_epoch"] == self.adoption["head"]["publisher_epoch"]
                          and current["head"]["counter"] >= self.adoption["head"]["counter"]
                          and current["head"]["writer_binding"] == self.adoption["head"]["writer_binding"]
                          and current["head"]["last_current"]["schema_digest"] == previous["head"]["last_current"]["schema_digest"]
                          and writer["local_lease_id"] == old_binding["lease_id"]
-                         and writer["local_lease_generation"] == old_binding["generation"] + 1
-                         and writer["owner_epoch"] == old_binding["owner_epoch"] + 1
+                         and writer["local_lease_generation"] == local_generation
+                         and writer["owner_epoch"] == owner_epoch
                          and writer["authority_lease"]["authority_epoch"] == old_binding["authority_epoch"]
                          and auth["proof_sha256"] != old_binding["authority_grant_digest"]
                          and writer["spawn_generation"] == self.last_lifecycle_generation + 1
@@ -163,10 +174,9 @@ class Continuity:
                              and writer["authority_lease"]["binding"]["scope_sha256"]
                                  == old_auth["writer"]["authority_lease"]["binding"]["scope_sha256"],
                              "canonical original issuer, sequence or writer scope was reset")
-            predecessor_cut = base.ordered(previous["head"]["last_current"], base.CUT_KEYS, "canonical original predecessor cut")
-            payload = types.sha([predecessor_cut, writer["spawn_generation"], writer["local_lease_generation"]])
-            base.require(bytes(writer["authority_lease"]["binding"]["payload_sha256"]).hex() == payload,
-                         "successor writer lease does not bind the exact original cut and two original generations")
+            self.activation_witnesses.append(witness.expectation(
+                writer, self.activation_predecessor(previous), self.c.peers["root"], peer,
+                self.c.materials[self.previous["role"]]))
         if self.root_binding is None:
             self.root_binding = root["binding"]
         original_root_scope = hashlib.sha256(b"hepta.hos2.cpu-budget.scope.v1\0" + bytes(self.c.boot_id)
@@ -300,6 +310,7 @@ def run(scenario, context, markers):
     return {**flags, "passed": False, "continuity_transcript_verified": True,
             "original_native_owner_cycle_verified": False, "same_boot_authenticated_successor_verified": False,
             "root_launch_files_verified": False, "root_launch_observations_expected": observations,
+            "activation_witness_files_verified": False, "activation_witnesses_expected": continuity.activation_witnesses,
             "initial_role_pids": continuity.initial_pids, "actual_owner_processes": continuity.owner_processes,
             "actual_policy_retirements": continuity.retirements,
             "grant_renewal_verified": False, "repeated_recovery_verified": False,

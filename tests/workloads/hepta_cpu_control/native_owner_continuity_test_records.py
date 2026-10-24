@@ -11,6 +11,7 @@ import struct
 
 import native_owner_evidence as e
 import native_owner_continuity_types as t
+import native_owner_activation_witness as witness
 from native_owner_root_observation import launch_observation_id
 from test_native_owner_evidence import ELF, InertRecords, NONCE, sha
 
@@ -81,6 +82,10 @@ class ContinuityRecords(InertRecords):
                  "revision": 1, "binding": writer_binding, "issued_at_unix_ms": now, "expires_at_unix_ms": now + 20_000}
         writer = {"registered_agent_id": self.agent, "spawn_generation": self.spawn, "owner_epoch": 10 + self.local_generation,
                   "local_lease_id": "original-writer", "local_lease_generation": self.local_generation, "authority_lease": lease}
+        if previous is not None:
+            preparing_root = {"uid": 0, "pid": 1, "boot_id": self.linux_boot, "process_start_ticks": 21}
+            selected_peer = getattr(self, "authority_peer", self.peer("manager"))
+            lease["binding"]["payload_sha256"] = list(bytes.fromhex(witness.commitment(writer, previous, preparing_root, selected_peer)))
         claims = {"schema_version": 1, "issuer_id": "inert-original-issuer", "sequence": self.local_generation, **writer,
                   "authority_lease_sha256": t.sha(lease)}
         proof = {"claims": claims, "signature_hex": "ab" * 64}
@@ -236,6 +241,7 @@ class ContinuityRecords(InertRecords):
         previous_material = self.material[self.active_role]
         self.spawn = self.last_lifecycle + 1
         self.local_generation += 1
+        self.authority_peer = self.peer(role)
         self.authorities[role] = self.authority(previous)
         adopted = self.new_current(role, previous["head"]["publisher_epoch"] + 1, previous["head"]["counter"] + 1,
                                    previous["head"]["last_current"]["state_digest"])

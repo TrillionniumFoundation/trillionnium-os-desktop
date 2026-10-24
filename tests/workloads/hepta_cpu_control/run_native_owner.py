@@ -236,7 +236,7 @@ def execute(args, report):
     selected = args.scenario or list(oracle.SUPPORTED_SCENARIOS)
     require(len(set(selected)) == len(selected), "scenario selection repeats a boot")
     debugfs, debugfs_identity = None, None
-    if any(name in oracle.CONTINUITY_SCENARIOS for name in selected):
+    if any(name not in ("steady-state-v1", "lost-copyout-live-v1") for name in selected):
         debugfs, debugfs_identity = tool(args.debugfs)
     output = args.output
     require(output.is_absolute() and output.parent.is_dir() and output.parent.resolve(strict=True) == output.parent
@@ -318,6 +318,13 @@ def execute(args, report):
                     observed["root_launch_observations_expected"], directory / "root-launch-observations")
                 result["retained_root_observations"] = physical
                 native_owner_state_observations.accept_retained_observations(observed, physical)
+            if not is_control and observed["activation_witnesses_expected"]:
+                import native_owner_activation_witness_disk
+                witnesses = native_owner_activation_witness_disk.verify(
+                    directory / "state.raw", debugfs, debugfs_identity, result["state"]["after_sha256"],
+                    observed["activation_witnesses_expected"], directory / "checkpoint-activation-witnesses")
+                native_owner_activation_witness_disk.accept_expected(observed, witnesses)
+                result["retained_activation_witnesses"] = witnesses
             result.update(observed)
         except (OSError, ValueError, TypeError, KeyError, UnicodeError, subprocess.SubprocessError) as error:
             result.update(passed=False, error=f"{type(error).__name__}: {error}")
@@ -343,6 +350,9 @@ def execute(args, report):
         require(inputs.sha(Path(artifact["path"])) == artifact["sha256"], "retained actual artifact changed")
     passed = all(value["passed"] is True for group in (report["controls"], report["scenarios"]) for value in group.values())
     report.update(passed=passed, stage="complete", source_inputs_unchanged=True, same_product_kernel_all_boots=True,
+                  selected_activation_witness_files_verified=passed and all(
+                      not value.get("activation_witnesses_expected") or value.get("activation_witness_files_verified") is True
+                      for value in report["scenarios"].values()),
                   original_native_owner_cycle_verified=passed,
                   bounded_steady_state_verified=passed and "steady-state-v1" in selected,
                   same_boot_authenticated_successor_verified=passed and any(
@@ -381,6 +391,7 @@ def main(argv=None):
               "recovered_unknown_without_install_verified": False, "cross_boot_unknown_preservation_verified": False,
               "grant_renewal_verified": False, "history_only_recovery_verified": False, "repeated_recovery_verified": False,
               "unbounded_persistent_cpu_verified": False, "power_loss_verified": False,
+              "selected_activation_witness_files_verified": False,
               "hardware_qualification": False, "production_ready": False, "g2_complete": False,
               "started_at_utc": datetime.now(timezone.utc).isoformat()}
     if not args.execute:

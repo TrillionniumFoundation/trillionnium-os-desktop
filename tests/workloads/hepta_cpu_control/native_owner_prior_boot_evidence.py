@@ -8,6 +8,7 @@ import hashlib
 
 import native_owner_evidence as e
 import native_owner_prior_boot_types as t
+import native_owner_activation_witness as witness
 import native_owner_prior_boot_store as store
 
 
@@ -49,6 +50,10 @@ class PriorBootTranscript:
                       kill_within_guest_callback_window_proven=False,
                       cross_boot_unknown_preservation_verified=False, power_loss_verified=False,
                       original_native_owner_cycle_verified=False, g2_complete=False, production_ready=False)
+        result["activation_witnesses_expected"] = [] if self.phase == "fresh" else [witness.expectation(
+            result["complete_event"]["authority"]["writer"], self.previous["cut_current"], s.peers["root"],
+            s.peers["manager"], self.previous["cut_material_sha256"])]
+        result["activation_witness_files_verified"] = False
         return result
 
     def prepared(self, name):

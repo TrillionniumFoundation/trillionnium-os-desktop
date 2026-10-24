@@ -239,9 +239,10 @@ def parse(raw, scenario, nonce):
     return _parse(raw, scenario, nonce, False)
 
 
-def _parse(raw, scenario, nonce, prior_boot):
+def _parse(raw, scenario, nonce, prior_boot, activation=False):
     require(type(raw) is bytes and len(raw) <= MAX_SERIAL_BYTES, "serial evidence exceeds the original bound")
-    require(scenario in SUPPORTED_SCENARIOS or (prior_boot and scenario == "prior-boot-unknown-v1"),
+    require(scenario in SUPPORTED_SCENARIOS or (prior_boot and scenario == "prior-boot-unknown-v1")
+            or (activation and scenario in ("activation-after-proof-v1", "activation-after-material-v1")),
             "unsupported original-owner scenario")
     digest(nonce, "fresh host nonce")
     decoded = raw.decode("utf-8", errors="strict").replace("\r\n", "\n")
@@ -301,18 +302,22 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
     return _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, None)
 
 
-def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, prior_boot):
+def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, prior_boot, activation=None):
     expected_exit = 33
     if prior_boot is not None:
         from native_owner_prior_boot_evidence import PriorBootTranscript
         require(type(prior_boot) is PriorBootTranscript and scenario == "prior-boot-unknown-v1",
                 "only the separate actual two-boot oracle can consume this transcript")
         expected_exit = -9 if prior_boot.phase == "fresh" else 33
+    if activation is not None:
+        from native_owner_activation_evidence import ActivationTranscript
+        require(prior_boot is None and type(activation) is ActivationTranscript and scenario == activation.scenario,
+                "only the separate actual partial-activation oracle can consume this transcript")
     require(type(code) is int and code == expected_exit and timed_out is False and excessive is False,
             "QEMU must finish the bounded actual boot with the original success exit")
-    lines, events = _parse(raw, scenario, nonce, prior_boot is not None)
+    lines, events = _parse(raw, scenario, nonce, prior_boot is not None, activation is not None)
     successor_markers = []
-    if scenario in CONTINUITY_SCENARIOS:
+    if scenario in CONTINUITY_SCENARIOS or activation is not None:
         from native_owner_continuity_kernel import kernel_records
         initial, successor_markers = kernel_records(lines, events, elf_info)
         activated = [initial]
@@ -693,7 +698,7 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
                             prepared=prepared, owner_ready=owner_ready, acknowledge=acknowledge,
                             window=window, retain_usage=retain_usage, retain_adoption=retain_adoption),
         )
-    elif scenario in CONTINUITY_SCENARIOS:
+    elif scenario in CONTINUITY_SCENARIOS or activation is not None:
         from types import SimpleNamespace
         import native_owner_continuity
 
@@ -713,7 +718,8 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
 
         # Every object is populated by the same actual transcript. No extension
         # manufactures an owner_ready event or changes the four earlier cases.
-        copyout_flags = native_owner_continuity.run(
+        read_continuation = native_owner_continuity.run if activation is None else activation.run
+        copyout_flags = read_continuation(
             scenario,
             SimpleNamespace(take=take, peek=peek, next_line=next_line, current_usage=current_usage,
                             retain_usage=retain_usage, role_pids=role_pids, boot_id=boot_id, spaces=spaces,
@@ -728,7 +734,8 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
         raise ValueError("unsupported original-owner scenario")
 
     complete = obj(take("complete"), ("root_pid", "operation_count", "final_owner_pid", "final_current_token"), "finite owner-cycle completion")
-    final_role = "manager" if scenario in ("steady-state-v1", "lost-copyout-live-v1") + CONTINUITY_SCENARIOS else "recovery"
+    final_role = "manager" if (activation is not None or
+                              scenario in ("steady-state-v1", "lost-copyout-live-v1") + CONTINUITY_SCENARIOS) else "recovery"
     require(type(complete["root_pid"]) is int and complete["root_pid"] == 1
             and type(complete["operation_count"]) is int and complete["operation_count"] == len(operations)
             and type(complete["final_owner_pid"]) is int and complete["final_owner_pid"] == role_pids[final_role]
@@ -744,4 +751,14 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
             "cross_boot_unknown_preservation_verified": False, "power_loss_verified": False,
             "unbounded_persistent_cpu_verified": False, "production_ready": False, "g2_complete": False}
     result.update(copyout_flags)
+    if "activation_witnesses_expected" not in result:
+        result["activation_witnesses_expected"] = []
+        if scenario in ("manager-exit-after-terminal-v1", "manager-exit-before-terminal-v1"):
+            import native_owner_activation_witness
+            adoptions = [value["payload"] for value in values if value["event"] == "material_adopted"]
+            require(len(adoptions) == 1, "the original fixed crash must have exactly one physical successor")
+            actual = adoptions[0]
+            result["activation_witnesses_expected"] = [native_owner_activation_witness.pending_final_canonical(
+                actual["previous"], peers["root"], peers["recovery"], actual["material_sha256"], owners["recovery"])]
+    result["activation_witness_files_verified"] = False
     return result
