@@ -20,6 +20,8 @@ not issue grants, sign requests, own a durable effect journal, or implement HOS2
 - [notes_checkpoint.rs](src/notes_checkpoint.rs) and [notes_store.rs](src/notes_store.rs):
   application-owned durable document/receipt validation, incarnation locking
   and synchronized storage; see [Notes durability](../../support/ui/NOTES_DURABILITY.md).
+  The saved-document catalogue offers bounded text selections; explicit restore
+  creates a local edit in a new target and does not rebind the original receipts.
 
 ## Invariants to preserve
 

@@ -12,6 +12,7 @@ use std::time::{Duration, Instant};
 use trill_ui_core::notes::{
     NotesTargetIdentity, MAX_NOTES_REQUEST_BYTES, MAX_NOTES_RESPONSE_BYTES,
 };
+use trill_ui_core::notes_store::{SavedNotesDocument, SavedNotesListing};
 
 #[path = "notes_worker.rs"]
 mod worker;
@@ -35,6 +36,10 @@ pub struct NotesAppChannel {
     deferred_edit: Option<(u64, String)>,
     notice: Option<&'static str>,
     frozen: bool,
+    saved_documents: SavedNotesListing,
+    pending_list: Option<u64>,
+    pending_restore: Option<u64>,
+    list_error: Option<&'static str>,
 }
 
 impl NotesAppChannel {
@@ -77,6 +82,10 @@ impl NotesAppChannel {
             deferred_edit: None,
             notice: None,
             frozen: false,
+            saved_documents: SavedNotesListing::default(),
+            pending_list: None,
+            pending_restore: None,
+            list_error: None,
         })
     }
 
@@ -97,9 +106,32 @@ impl NotesAppChannel {
             self.version = value.version;
             self.revision = value.revision;
             self.frozen = value.storage_failed;
+            if let Some((_, result)) = value.saved_documents.as_ref()
+                .filter(|(id, _)| self.pending_list == Some(*id))
+            {
+                self.pending_list = None;
+                match result {
+                    Ok(listing) => {
+                        self.saved_documents = listing.clone();
+                        self.list_error = None;
+                    }
+                    Err(_) => self.list_error = Some("无法读取已保存笔记；原文件保持不变。"),
+                }
+            }
+            let restored = value.restore_result.as_ref()
+                .filter(|(id, _)| self.pending_restore == Some(*id))
+                .map(|(_, result)| result.is_ok());
+            if restored.is_some() {
+                self.pending_restore = None;
+            }
             if self.frozen {
                 self.notice = Some("保存结果未知；保留当前编辑，需要独立恢复。");
                 self.deferred_edit = None;
+            } else if let Some(accepted) = restored {
+                self.text = value.text;
+                self.notice = if accepted { None } else {
+                    Some("未恢复：文档已变化、仍在使用或无法读取。请刷新后选择，或新建笔记。")
+                };
             } else if let Some((_, accepted, revision)) = value
                 .local_result
                 .filter(|(id, _, _)| self.pending_edit == Some(*id))
@@ -133,7 +165,9 @@ impl NotesAppChannel {
     }
 
     pub fn local_edit(&mut self, text: String) -> bool {
-        if self.frozen || text.len() > trill_ui_core::notes::MAX_NOTES_TEXT_BYTES {
+        if self.frozen || self.pending_restore.is_some()
+            || text.len() > trill_ui_core::notes::MAX_NOTES_TEXT_BYTES
+        {
             return false;
         }
         self.notice = None;
@@ -143,12 +177,82 @@ impl NotesAppChannel {
         true
     }
 
+    pub fn has_document_storage(&self) -> bool {
+        self.worker.durable
+    }
+
+    pub fn restore_pending(&self) -> bool {
+        self.pending_restore.is_some()
+    }
+
+    pub fn can_restore_saved(&self) -> bool {
+        self.worker.durable && !self.frozen && self.revision == 0 && self.text.is_empty()
+            && self.pending_edit.is_none() && self.deferred_edit.is_none()
+            && self.pending_restore.is_none()
+    }
+
+    pub fn saved_documents(&self) -> &SavedNotesListing {
+        &self.saved_documents
+    }
+
+    pub fn saved_list_pending(&self) -> bool {
+        self.pending_list.is_some()
+    }
+
+    pub fn saved_list_error(&self) -> Option<&'static str> {
+        self.list_error
+    }
+
+    pub fn refresh_saved_documents(&mut self) {
+        if !self.worker.durable || self.pending_list.is_some() {
+            return;
+        }
+        let Some(id) = self.next_request_id() else { return; };
+        match self.worker.sender.try_send(worker::Command::ListSaved { id }) {
+            Ok(()) => {
+                self.pending_list = Some(id);
+                self.list_error = None;
+            }
+            Err(_) => self.list_error = Some("笔记读取暂不可用，请稍后刷新。"),
+        }
+    }
+
+    pub fn restore_saved_document(&mut self, source: SavedNotesDocument) -> bool {
+        if !self.can_restore_saved() {
+            return false;
+        }
+        let Some(id) = self.next_request_id() else { return false; };
+        match self.worker.sender.try_send(worker::Command::RestoreSaved {
+            id, revision: self.revision, source,
+        }) {
+            Ok(()) => {
+                self.pending_restore = Some(id);
+                self.notice = None;
+                true
+            }
+            Err(_) => {
+                self.notice = Some("保存通道暂不可用；尚未开始恢复，请稍后重试。");
+                false
+            }
+        }
+    }
+
+    fn next_request_id(&mut self) -> Option<u64> {
+        let next = self.next_edit.checked_add(1)?;
+        let id = self.next_edit;
+        self.next_edit = next;
+        Some(id)
+    }
+
     pub fn storage_status(&self) -> &'static str {
         if let Some(notice) = self.notice {
             return notice;
         }
         if self.pending_edit.is_some() || self.deferred_edit.is_some() {
             return "正在保存编辑……";
+        }
+        if self.pending_restore.is_some() {
+            return "正在打开已保存笔记的副本……";
         }
         if self.worker.durable {
             "已保存到本机；旧操作可独立回读。"

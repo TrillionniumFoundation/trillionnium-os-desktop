@@ -13,12 +13,63 @@ not a second Hepta operation ledger. The original production writer retains
 authorization, operation identity, policy generation and durable terminality.
 
 A newly launched application gets a new target identity and a fresh document.
-It cannot adopt an old effect capability by opening a file. Restoring old text
-into the normal workspace remains separate work. Hepta's explicit predecessor
-composition now attaches an old recovery helper to its original retained source
-operation; final trusted deployment inputs and evidence must match the two-repo
-source pair. No production readiness or
-whole-machine recovery is implied by these application changes.
+The user can explicitly open saved text as a copy in that new document; the old
+effect capability, revision domain, pending receipt and retirement acknowledgement
+are never adopted. Hepta's explicit predecessor composition attaches an old
+recovery helper to its original retained source operation independently of this
+local document action. Final trusted deployment inputs and evidence must match
+the two-repo source pair. No production readiness or whole-machine recovery is
+implied by these application changes.
+
+## Reopen a saved user document
+
+Launch a new Notes window through the existing Session, select **打开已保存笔记**
+(open saved notes), then **打开副本** (open a copy). No terminal command or old
+target identity needs to be entered. The picker shows a bounded first-line
+preview and save age for closed, valid documents in this account's configured
+Notes directory. These workspaces are local presentation groups, not separate
+security containers. Empty windows that were never edited are omitted.
+
+The application worker scans at most 4096 directory entries and returns at most
+64 saved documents, sorted by checkpoint modification time. A truncated list
+is labelled as such; it does not claim to enumerate the complete archive. Live
+applications/recovery helpers retain their locks, and locked, malformed,
+incomplete, symlinked or improperly owned entries are unavailable. Closing an
+old window and refreshing can make its saved document available. No original
+checkpoint is repaired, retired, deleted or rewritten by this picker.
+
+Selection only describes source text; it grants no external effect authority.
+On explicit open, the worker obtains the old incarnation lock again, validates
+the complete bounded checkpoint, and compares the selected revision and text
+digest. It accepts the copy only while the current document is still fresh
+(`revision == 0`, empty text, a different target). Any intervening local or Hepta
+edit makes the operation fail instead of overwriting that edit. The new model
+is constructed with the current target, then receives only the saved UTF-8 text
+as a local edit using the existing durable commit path. An empty saved text is
+a local no-op; a nonempty copy starts at revision 1. Source receipts remain with
+their original target and can still be independently reconciled/retired.
+
+The picker and restore run on the existing bounded worker queue; Draw does not
+scan files or wait for fsync. Editing is disabled while an accepted restore is
+pending. A changed/busy source leaves the current document unchanged; a failed
+destination write freezes that incarnation under the existing storage-ambiguity
+rule. There is no automatic restore or retry. Abrupt process death can still
+lose edits after the last successful checkpoint; the save status distinguishes
+pending edits from completed local persistence.
+
+The targeted regression commands are:
+
+```sh
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-core --test notes_store --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-app-window --locked notes_organ::worker::tests
+```
+
+They exercise text-only import/new identity, unchanged original checkpoint and
+receipt, old effect rejection, stale selections, live/symlink custody, bounded
+UTF-8 previews, failed destination writes, actual restoring-process SIGKILL and
+an intervening original effect on the worker queue. They do not by themselves
+qualify a real compositor window, physical power failure, or production Hepta
+authorization.
 
 ## Implementation and invariants
 

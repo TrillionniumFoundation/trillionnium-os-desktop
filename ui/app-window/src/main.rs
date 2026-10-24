@@ -15,6 +15,7 @@ struct ClientWindow {
     task_id: u64,
     notes: String,
     notes_organ: Option<notes_organ::NotesAppChannel>,
+    notes_browser: bool,
     left: String,
     right: String,
     result: String,
@@ -45,8 +46,20 @@ impl eframe::App for ClientWindow {
             ui.separator();
             match self.kind {
                 AppKind::Notes => {
-                    let label = ui.label("Notes / 笔记 · try composing Chinese with your host IME");
-                    let editor = ui.add(
+                    let label = ui.horizontal(|ui| {
+                        let label = ui.label("Notes / 笔记 · try composing Chinese with your host IME");
+                        if let Some(organ) = &mut self.notes_organ {
+                            if organ.has_document_storage()
+                                && self.activation.activated(&ui.button("打开已保存笔记"))
+                            {
+                                self.notes_browser = true;
+                                organ.refresh_saved_documents();
+                            }
+                        }
+                        label
+                    }).inner;
+                    let editor = ui.add_enabled(
+                        !self.notes_organ.as_ref().is_some_and(|organ| organ.restore_pending()),
                         egui::TextEdit::multiline(&mut self.notes)
                             .id(egui::Id::new("notes-editor"))
                             .desired_rows(17)
@@ -101,6 +114,7 @@ impl eframe::App for ClientWindow {
                 AppKind::Terminal => self.restricted_terminal(ui, ctx),
             }
         });
+        self.show_saved_notes(ctx);
         // Signal only AFTER the first UI layout has completed successfully,
         // not on process spawn or before building the widget tree.
         // This still does not attest that a compositor presented the frame.
@@ -141,6 +155,70 @@ fn command_is_safe_for_log(command: &str) -> bool {
 
 impl ClientWindow {
     const MAX_TERMINAL_LINES: usize = 256;
+
+    fn show_saved_notes(&mut self, ctx: &egui::Context) {
+        if !self.notes_browser {
+            return;
+        }
+        let Some(organ) = &mut self.notes_organ else { return; };
+        let mut open = true;
+        let mut selected = None;
+        egui::Window::new("打开已保存笔记")
+            .id(egui::Id::new("notes-saved-documents"))
+            .open(&mut open)
+            .default_width(540.0)
+            .show(ctx, |ui| {
+                ui.label("选择之前保存的笔记，在当前空白窗口打开副本。原笔记保持不变。");
+                if !organ.can_restore_saved() {
+                    ui.label("当前窗口已编辑或暂不可用。请在桌面新建笔记窗口后打开副本。");
+                }
+                if self.activation.activated(&ui.add_enabled(
+                    !organ.saved_list_pending(), egui::Button::new("刷新列表"),
+                )) {
+                    organ.refresh_saved_documents();
+                }
+                if organ.saved_list_pending() {
+                    ui.label("正在读取已保存笔记……");
+                }
+                if let Some(message) = organ.saved_list_error() {
+                    ui.colored_label(egui::Color32::YELLOW, message);
+                }
+                let listing = organ.saved_documents();
+                if listing.unavailable > 0 {
+                    ui.small(format!("{} 份笔记正在使用或无法读取；关闭旧窗口后可刷新。", listing.unavailable));
+                }
+                if listing.truncated {
+                    ui.small("列表达到上限；较早的笔记可能未列出。");
+                }
+                if listing.documents.is_empty() && !organ.saved_list_pending() {
+                    ui.label("暂无可打开的已保存笔记。");
+                }
+                egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
+                    for document in &listing.documents {
+                        ui.push_id(document.target.destination_id(), |ui| {
+                            ui.horizontal(|ui| {
+                                if self.activation.activated(&ui.add_enabled(
+                                    organ.can_restore_saved(), egui::Button::new("打开副本"),
+                                )) {
+                                    selected = Some(document.clone());
+                                }
+                                ui.vertical(|ui| {
+                                    ui.label(if document.preview.is_empty() { "空白笔记" } else { &document.preview });
+                                    ui.small(saved_notes_age(document.saved_unix_ms));
+                                });
+                            });
+                        });
+                        ui.separator();
+                    }
+                });
+            });
+        if let Some(document) = selected {
+            if organ.restore_saved_document(document) {
+                open = false;
+            }
+        }
+        self.notes_browser = open;
+    }
 
     fn terminal_line(&mut self, line: impl Into<String>) {
         if self.terminal_output.len() >= Self::MAX_TERMINAL_LINES {
@@ -289,6 +367,16 @@ impl ClientWindow {
     }
 }
 
+fn saved_notes_age(saved_unix_ms: u64) -> String {
+    let elapsed = trill_ui_core::unix_ms().saturating_sub(saved_unix_ms) / 1000;
+    match elapsed {
+        0..=59 => "刚刚保存".to_owned(),
+        60..=3599 => format!("{} 分钟前保存", elapsed / 60),
+        3600..=86399 => format!("{} 小时前保存", elapsed / 3600),
+        _ => format!("{} 天前保存", elapsed / 86400),
+    }
+}
+
 fn parse_kind(value: &str) -> Result<AppKind, String> {
     match value {
         "notes" => Ok(AppKind::Notes),
@@ -378,6 +466,7 @@ fn main() -> eframe::Result {
                 task_id,
                 notes: String::new(),
                 notes_organ,
+                notes_browser: false,
                 left: String::new(),
                 right: String::new(),
                 result: String::new(),
@@ -407,6 +496,7 @@ mod tests {
             task_id: 1,
             notes: String::new(),
             notes_organ: None,
+            notes_browser: false,
             left: "4".into(),
             right: "0".into(),
             result: String::new(),
@@ -433,6 +523,7 @@ mod tests {
             task_id: 9,
             notes: String::new(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -486,6 +577,7 @@ mod tests {
             task_id: 17,
             notes: String::new(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -612,6 +704,7 @@ mod tests {
             task_id: 12,
             notes: String::new(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -658,6 +751,7 @@ mod tests {
             task_id: 10,
             notes: String::new(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -706,6 +800,7 @@ mod tests {
             task_id: 11,
             notes: String::new(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),

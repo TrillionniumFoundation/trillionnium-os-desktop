@@ -20,6 +20,14 @@ compositor pixels, and neither marker nor process exit publishes a Hepta
 durable terminal result. A lost reply can follow a real mutation; do not
 automatically replay a timed-out request.
 
+When durable storage is enabled, **打开已保存笔记** opens the local document
+picker. **打开副本** explicitly copies a closed document's text into a new,
+unedited target. The worker rechecks the source revision/digest and current
+revision, persists through the original store, and never imports an old effect
+or retirement receipt. File scanning and synchronization stay off Draw. See
+[reopen and recovery rules](../../support/ui/NOTES_DURABILITY.md#reopen-a-saved-user-document)
+for the bounded catalogue, lock/custody checks and race/failure behavior.
+
 The Terminal is an explicit built-in command allowlist; it does not execute
 arbitrary user shell commands. Preserve that boundary when adding commands.
 
