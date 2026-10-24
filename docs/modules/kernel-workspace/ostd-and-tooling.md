@@ -22,7 +22,7 @@
 
 **状态、所有权与失败边界。** slab/cache 拥有对象槽与底层页；普通 Vec/Arc 等 heap 分配走这里，不因某进程有 PhysicalReserve token 就自动使用预留。统计是观测，不是可兑现恢复预算。
 
-**开发与回归。** 修改 size-class、对齐或 per-CPU 分配时覆盖跨 CPU free、最后对象、超大 layout 和分配失败；审查 allocator 锁内递归分配。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 修改 size-class、对齐或 per-CPU 分配时覆盖跨 CPU free、最后对象、超大 layout 和分配失败；审查 allocator 锁内递归分配。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 尚无显式恢复 heap token/fallible IPC 全链；不能用物理 reserve 测试推定任何 Box/Vec 在 OOM 下仍成功。 当前 `src/**/*.rs` 的静态测试属性声明：`ktest=2`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -34,7 +34,7 @@
 
 **状态、所有权与失败边界。** runner 拥有测试遍历和结果汇总；crate/test whitelist 会改变分母。串口 ok/最终 marker 之外还必须核对真实 QEMU 退出状态、超时、完整名称和软跳过。
 
-**开发与回归。** 改 runner 必须做 host 反伪造测试并运行真实 guest；新增 suite 保留原 suite，不得用过滤/缺失测试冒充完整通过。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 改 runner 必须做 host 反伪造测试并运行真实 guest；新增 suite 保留原 suite，不得用过滤/缺失测试冒充完整通过。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 它只证明所选架构/profile/测试；TCG VMX 软跳过不是 VMX 成功，程序 COMPLETE 后卡死也不算通过。 当前 `src/**/*.rs` 的静态测试属性声明：`ktest=8`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 

@@ -10,7 +10,7 @@
 
 **状态、所有权与失败边界。** 接口、socket table 和 socket 状态是协议栈 owner；设备 I/O 通过 device 层接入，时间由适配接口供给。协议状态正确性不等于进程权限或跨租户网络隔离。
 
-**开发与回归。** 修改分派/端口复用/重传时同时检查 iface、socket_table 与 TCP 状态，验证包边界、超时、连接关闭和资源回收。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 修改分派/端口复用/重传时同时检查 iface、socket_table 与 TCP 状态，验证包边界、超时、连接关闭和资源回收。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 现有源码测试声明不能证明 TCP 互通、拥塞性能或恶意包压力；需真实网络 namespace/进程上下文中的 Linux API 和网络故障测试。 当前 `src/**/*.rs` 的静态测试属性声明：`ktest=7`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -22,7 +22,7 @@
 
 **状态、所有权与失败边界。** 仅拥有 wire 类型与编码/解码验证；连接、请求 ID 生命周期、daemon 信任和实际文件权限归 transport/调用方。POD 结构不自动证明未信任 reply 有效。
 
-**开发与回归。** 新增 operation 同步请求、回复、长度、对齐和错误码；检查 short reply、未知 flag、变长数据与版本协商。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 新增 operation 同步请求、回复、长度、对齐和错误码；检查 short reply、未知 flag、变长数据与版本协商。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需真实 virtio-fs/FUSE server 互通及坏 reply 的端到端拒绝；协议定义不能证明挂载或持久性。 当前 `src/**/*.rs` 的静态测试属性声明：`0`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -58,7 +58,7 @@
 
 **状态、所有权与失败边界。** 没有统一资源 owner；各子模块对借用、范围、引用或 per-CPU 聚合有独立合同。安全指针也不赋予访问对象的业务权限。
 
-**开发与回归。** 按改动的子模块维护边界/溢出/容量/并发测试，修改 SafePtr 或 Slice 时追踪 VM I/O 的底层错误传播；不要因工具库名统一放宽行为。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 按改动的子模块维护边界/溢出/容量/并发测试，修改 SafePtr 或 Slice 时追踪 VM I/O 的底层错误传播；不要因工具库名统一放宽行为。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需要逐消费者验证：计数器汇总不等于原子账目快照，容器容量/分配失败不等于恢复 reserve。 当前 `src/**/*.rs` 的静态测试属性声明：`ktest=11`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -94,7 +94,7 @@
 
 **状态、所有权与失败边界。** DeviceId 是值类型；实际编号唯一性和注册回收归设备模型/driver，编码本身不分配设备或授予访问权。
 
-**开发与回归。** 变更布局要对照现有 mknod/stat ABI，覆盖最大编号、跨高低位和 round-trip；禁止只改编码而遗漏消费者。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 变更布局要对照现有 mknod/stat ABI，覆盖最大编号、跨高低位和 round-trip；禁止只改编码而遗漏消费者。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需真实用户态节点/stat 互通；没有证明所有 driver 的设备号分配都不冲突。 当前 `src/**/*.rs` 的静态测试属性声明：`0`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -106,7 +106,7 @@
 
 **状态、所有权与失败边界。** DmaSegment Drop 归还池；源码要求 pool 活得更久，否则 segment Drop 会 panic。方向、coherence、同步和 device 完成顺序须由调用方遵守，通常使 pool 为静态寿命。
 
-**开发与回归。** 变更水位/回收/arena 时覆盖空池扩容、最后 segment 归还及持有未完成 DMA 的 teardown；跨 CPU 同时检查 BottomHalfDisabled 锁。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 变更水位/回收/arena 时覆盖空池扩容、最后 segment 归还及持有未完成 DMA 的 teardown；跨 CPU 同时检查 BottomHalfDisabled 锁。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需实体非一致性 DMA 和 IOMMU 测试；内存分配正常不证明设备已停止访问，不构成恢复专用预留池。 当前 `src/**/*.rs` 的静态测试属性声明：`ktest=8`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -118,7 +118,7 @@
 
 **状态、所有权与失败边界。** 只在 riscv64/loongarch64/aarch64 编译主体；IRQ 扩展限 RISC-V/ARM。IoMem/IrqLine 资源经 OSTD 取得，设备树描述不自动可信。
 
-**开发与回归。** 更改 reg/interrupt 解析时覆盖父地址/大小 cell、区间溢出、缺属性与架构 IRQ 编码，使用对应目标的 build/boot。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 更改 reg/interrupt 解析时覆盖父地址/大小 cell、区间溢出、缺属性与架构 IRQ 编码，使用对应目标的 build/boot。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** x86 默认测试不能覆盖该 crate 实现；仍需真实板级 DTB、MMIO 冲突和 IRQ 接线验证。 当前 `src/**/*.rs` 的静态测试属性声明：`0`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -130,7 +130,7 @@
 
 **状态、所有权与失败边界。** completion Arc 通常由 submitter 与 driver 同持；IoBatch 只记录对象，不跟踪 readiness，len 不是剩余未完成数。底层 wait 的终止与错误语义归实现。
 
-**开发与回归。** 修改 batch 时覆盖空批、混合同步/异步、多个错误和重复等待；确保调用方只为真正异步操作插入记录。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 修改 batch 时覆盖空批、混合同步/异步、多个错误和重复等待；确保调用方只为真正异步操作插入记录。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需要底层设备故障/取消时 wait 不永久阻塞的实际测试；此抽象自身不提供超时或持久化保证。 当前 `src/**/*.rs` 的静态测试属性声明：`0`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -178,7 +178,7 @@
 
 **状态、所有权与失败边界。** split 通过 Arc 共享 ring，Producer 与 Consumer 分别独占写/读角色；不是 MPMC。构造路径对乘法/分配使用 unwrap，不能当成已可返回 NoMemory 的恢复 IPC。
 
-**开发与回归。** 修改 head/tail 的 Acquire/Release 或批量提交时覆盖环绕、满/空和跨线程可见性；不要复制 producer 或暴露并行写者。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 修改 head/tail 的 Acquire/Release 或批量提交时覆盖环绕、满/空和跨线程可见性；不要复制 producer 或暴露并行写者。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需真实跨核长时间环绕/并发测试，以及恢复 IPC 的 fallible 分配设计；现有 ktest 不给它自动授予 reserve。 当前 `src/**/*.rs` 的静态测试属性声明：`ktest=3`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -190,7 +190,7 @@
 
 **状态、所有权与失败边界。** allocator 自身拥有 ID 可用集合，调用者拥有实际对象；ID 被归还前必须保证旧引用不会误命中新对象。
 
-**开发与回归。** 修改区间或复用策略时覆盖空区间、u32 边界、耗尽、重复释放与碎片；调用处单独设计锁和 generation。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 修改区间或复用策略时覆盖空区间、u32 边界、耗尽、重复释放与碎片；调用处单独设计锁和 generation。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需消费者的并发/ABA 防护；本库的 ID 可复用不构成 capability 不可伪造证明。 当前 `src/**/*.rs` 的静态测试属性声明：`test=7`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。
 
@@ -238,6 +238,6 @@
 
 **状态、所有权与失败边界。** LockedXArray 管写锁，移除节点/最终引用的释放可能延后至 RCU grace。drop(vmar) 后即时计数不为零不能直接判漏，也不能跳过最终退款断言。
 
-**开发与回归。** 修改节点/游标/mark 时覆盖插入、替换、删除、遍历和并发读；涉及 Frame/VMO account 必须等待真实 RCU 完成再核对末引用退款。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 目前只接受 core/OSTD/frame-allocator 三 crate，不能把本 crate 填入其 `--crate`。
+**开发与回归。** 修改节点/游标/mark 时覆盖插入、替换、删除、遍历和并发读；涉及 Frame/VMO account 必须等待真实 RCU 完成再核对末引用退款。 原工作区 `make ktest` 覆盖 default-members；定向开发可从此 crate 目录使用原 `cargo osdk test`。项目严格封装 runner 当前接受 core/OSTD/frame-allocator/MLSDisk 四个指定 crate；本条其余组件仍须使用自己的原 OSDK 入口。
 
 **实际覆盖与待验证。** 需 SMP 读写压力、grace 有界性与实际消费者生命周期测试；单任务 ktest 不能证明所有引用都及时回收。 当前 `src/**/*.rs` 的静态测试属性声明：`ktest=20`；它不计宏展开、跨架构 cfg 或 doctest，不是 native 分母或通过数。本次仅文档校验，未执行该 crate 的编译/测试。

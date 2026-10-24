@@ -1,5 +1,12 @@
 # G1-d aggregate user-data frame boundary
 
+This page specifies the original fixed 64 MiB G1-d probe. The later
+[cgroup memory controller](../../../docs/agents/CGROUP_MEMORY_ADMISSION.md)
+adds `memory.max`, `memory.current` and `memory.events` over the original
+hierarchical user-data/selected IPC frame owner. The original probe's exclusions
+below describe that probe's fixed scope; they do not negate the later controller.
+Neither path implements complete Linux kernel-memory accounting or OOM recovery.
+
 The fixed trusted workload receives one immutable account of **16,384 physical
 user-data pages (64 MiB at 4 KiB/page)** before its stopped initial image is
 loaded. Its descendants retain that same account across fork, threads and exec.

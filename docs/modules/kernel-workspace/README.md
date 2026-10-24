@@ -15,6 +15,8 @@
 
 ## 如何使用与更新
 
+运行命令与已闭合问题在本轮按当前源码校正；`inventory.json` 的静态清单、计数及哈希仍保留原 `10dae5ea` 身份，未将旧快照改写成当前执行证明。当前运行边界见 [能力表](../../CURRENT_CAPABILITIES.md)。
+
 后续实现以 [当前逐源状态](../../STATUS.md) 为准；本手册的清单、静态数值与
 下列专项问题描述保留原 `10dae5ea` 审计基线。后续严格 runner 已增加独立
 `aster-mlsdisk`，实际原四套记录包含它，不能把旧“三 crate”描述当作当前白名单。
@@ -25,7 +27,7 @@ RamFs/Ext2 的 [setgid 创建合同与原生验收](../../agents/INODE_SETGID_CR
 
 每个条目的静态测试属性数仅是读取 `src/**/*.rs` 中 `#[ktest]`/`#[test]` 的观察，不包括 doctest、宏生成的全部用例、目标条件展开或 src 之外的集成测试；它既不能用作 native gate 的分母，也不能证明“没有测试”。真实分母必须以最终源码生成的测试清单和实际完整运行日志为准。
 
-本项目 [严格 native 门禁](../../../support/build/ktest/README.md) 目前单独支持 `aster-core`、`ostd`、`osdk-frame-allocator` 三 crate，保留各自原 OSDK/test-base 锁、完整测试名称、真实 QEMU raw exit 33、零失败/零过滤和超时记录。其他 default-member 的原入口是 `make ktest` 或从该 crate 目录运行原 `cargo osdk test`；不能给严格封装 runner 填它不支持的 crate 名。不要以一次全 core 测试替代所有独立设备组件套件。
+本项目 [严格 native 门禁](../../../support/build/ktest/README.md) 当前单独支持 `aster-core`、`ostd`、`osdk-frame-allocator`、`aster-mlsdisk` 四个 crate，保留各自原 OSDK/test-base 锁、完整测试名称、真实 QEMU raw exit 33、零失败/零过滤和超时记录。其他 default-member 的原入口是 `make ktest` 或从该 crate 目录运行原 `cargo osdk test`；不能给严格封装 runner 填它不支持的 crate 名。不要以一次全 core 测试替代所有独立设备组件套件。
 
 每次交付必须另行记录 source commit、实际 features/profile/架构、工具版本、输入与 ELF hash、完整分母、失败/过滤/软跳过和 raw 退出；源码注释、Rust 类型安全、宿主单测、QEMU 运行、真实设备运行是不同层次的证据。TCG 下未运行的 VMX/EPT 路径应继续列为未验证。这里不复制旧成功数给新基线；新 PT、fatal cleanup 等变更须由父级本轮冻结源独立验收。
 
@@ -37,7 +39,7 @@ RamFs/Ext2 的 [setgid 创建合同与原生验收](../../agents/INODE_SETGID_CR
 
 - aster-core/OSTD/allocator 还要把物理预留、fallible 页表、上层 VMAR/heap/IPC、可信恢复 admission 接成同一真实路径；目前不得宣称全局恢复保证。
 - DRM/simpledrm/framebuffer/input、NVMe/PCI/virtio、FDT/时钟等仍需逐平台、逐设备真实验证矩阵和失败恢复手册，不能由 x86 QEMU N0 扩展到桌面显卡或移动 BSP。
-- MLSDisk 的底层 flush no-op 与公开 sync 错误 panic、随机 key/create 初始化属于具体未修复问题；普通 kernel/core 当前未链接它，但独立组件和公开 API 的持久性合同仍有缺口，详见 [专项](kernel-components.md#mlsdisk-专项真实持久化与装配边界)。
+- MLSDisk 的底层 Flush BIO、公开 sync 错误传播与熵失败处理已有后续实现和原生15项记录；不再把旧基线缺陷列为当前未修复。随机 key/create 初始化、密钥持久管理、真实介质与重启恢复仍未完成；普通 kernel/core 未链接该实验组件，详见 [专项](kernel-components.md#mlsdisk-专项真实持久化与装配边界)。
 - 编译期权利、POD、系统树和设备注册只解决各自局部问题，不提供 Hepta 生产 grant、用户暂停意图、durable K/D 或完整设备控制能力。
 
 新增 API 必须同时更新对应条目、源码注释和具体正反测试。修改现有行为应先明确原 owner 与失败回滚；不允许用复制资源账、放宽 gate、跳过失败用例或无条件返回成功来补“完成度”。
