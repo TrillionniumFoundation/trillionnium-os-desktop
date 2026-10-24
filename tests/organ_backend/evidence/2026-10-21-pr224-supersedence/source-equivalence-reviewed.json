@@ -1,0 +1,705 @@
+{
+  "schema": "os.pr224-current-main-equivalence-review.v1",
+  "old_commit": "49e5582db15493eed60d62fb16b4c85fc7408307",
+  "old_tree": "62ec286c44deb7b37001dd091e9adce3caef9186",
+  "current_commit": "22a3284a14069f79c784e6bf33bb3c6035b9765f",
+  "current_tree": "4f2fe03e4a7847e9ef3273dac4474a6691da7db4",
+  "comparison": {
+    "complete_recursive_trees": true,
+    "truncated": false,
+    "old_tracked_blobs": 7531,
+    "current_tracked_blobs": 7531,
+    "all_tree_differing_paths": 12,
+    "all_tree_identical_blob_and_mode": 7519,
+    "pr224_paths": 59,
+    "pr224_identical_blob_and_mode": 48,
+    "pr224_differing_paths": 11
+  },
+  "pr224_files": [
+    {
+      "path": ".github/workflows/a06-kernel.yml",
+      "pr_status": "modified",
+      "old_sha": "c80463a8a60a5003175f4a49d7ae200584e38812",
+      "current_sha": "c80463a8a60a5003175f4a49d7ae200584e38812",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "docs/EXFAT_PERMISSION_MODE.md",
+      "pr_status": "added",
+      "old_sha": "4aed9c62e5ce77927cf264f0820f523f4d9eef0b",
+      "current_sha": "fb03baecb928f54d5b3943bcce1461bb1e19c36d",
+      "identical": false,
+      "review": {
+        "finding": "Main updates combined 262/265/24 gates and actual negative-helper source test; #224 retains formatter-failure provenance absent from main. No executable behavior is lost. Keep main's exact formatter policy, and record actual later execution in a separate documentation update.",
+        "action": "documentation provenance can be retained separately; do not restore obsolete candidate status"
+      }
+    },
+    {
+      "path": "docs/INODE_PERMISSION_TRANSACTIONS.md",
+      "pr_status": "added",
+      "old_sha": "17fa537548860c86a419c65aeabe5789200e3a1e",
+      "current_sha": "19dbe562d59cacbf59628c2107e0a7a4ab93e5bd",
+      "identical": false,
+      "review": {
+        "finding": "Main retains the same transaction/SMP gates. #224 uniquely explains the early-console leading newline and records failed #219 run39420405333 artifact12266890959. The production newline and equivalent SeaBIOS/CRLF regression are present in main.",
+        "action": "optional historical provenance in documentation; no production fix to replay"
+      }
+    },
+    {
+      "path": "docs/agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+      "pr_status": "modified",
+      "old_sha": "645de346ecadb3cc5b16c4066707723d82535a7e",
+      "current_sha": "a0fec41f34c09335a51caf94d25c4a1fc287ab26",
+      "identical": false,
+      "review": {
+        "finding": "Main corrects stale 252/255/14 descriptions to combined full262/SMP265/24 required names.",
+        "action": "keep main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/Cargo.toml",
+      "pr_status": "modified",
+      "old_sha": "3a6da6da28b082d9b03d791db7b6a279960be9b7",
+      "current_sha": "3a6da6da28b082d9b03d791db7b6a279960be9b7",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/devpts/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "cd7f0b47396e98c8b9652672513e1911c75c3b9d",
+      "current_sha": "cd7f0b47396e98c8b9652672513e1911c75c3b9d",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/devpts/ptmx.rs",
+      "pr_status": "modified",
+      "old_sha": "133334fbbac6774b30ce8b56475616dc2cc61736",
+      "current_sha": "133334fbbac6774b30ce8b56475616dc2cc61736",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/devpts/slave.rs",
+      "pr_status": "modified",
+      "old_sha": "1fdb6990e62623e28bc61309c7d42ed4a6e5b089",
+      "current_sha": "1fdb6990e62623e28bc61309c7d42ed4a6e5b089",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode.rs",
+      "pr_status": "modified",
+      "old_sha": "5bf8a718eb5e0c7a61c7030ca2f48f7fd816e40b",
+      "current_sha": "5bf8a718eb5e0c7a61c7030ca2f48f7fd816e40b",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode/permission_mode_tests.rs",
+      "pr_status": "added",
+      "old_sha": "70fe8a38950ada571421884da8df5fb50f1f005c",
+      "current_sha": "70fe8a38950ada571421884da8df5fb50f1f005c",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/impl_for_vfs/inode.rs",
+      "pr_status": "modified",
+      "old_sha": "98927b72a3f3b30d82439d9b55fffe608cd796da",
+      "current_sha": "98927b72a3f3b30d82439d9b55fffe608cd796da",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs",
+      "pr_status": "modified",
+      "old_sha": "4e6cb5d6ebe94b747bdefa3fe35251d978fb10f6",
+      "current_sha": "4e6cb5d6ebe94b747bdefa3fe35251d978fb10f6",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/permission_tests.rs",
+      "pr_status": "added",
+      "old_sha": "3b693e36e607cd6587f7cfcc76e7c6f42b1fe29c",
+      "current_sha": "3b693e36e607cd6587f7cfcc76e7c6f42b1fe29c",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/overlayfs/inode/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "a16eb522cc1f31342a59109e7fe890f031879ec7",
+      "current_sha": "a16eb522cc1f31342a59109e7fe890f031879ec7",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/template/dir.rs",
+      "pr_status": "modified",
+      "old_sha": "88e506a04b24ea0939191699d736344ac5a5c3fe",
+      "current_sha": "88e506a04b24ea0939191699d736344ac5a5c3fe",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/template/file.rs",
+      "pr_status": "modified",
+      "old_sha": "1660d8a02b404e89b81d96c05bc7b57ca3bf9fe9",
+      "current_sha": "1660d8a02b404e89b81d96c05bc7b57ca3bf9fe9",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/template/sym.rs",
+      "pr_status": "modified",
+      "old_sha": "6823a5eb0c9882248ac79d813e724b2e523c0a91",
+      "current_sha": "6823a5eb0c9882248ac79d813e724b2e523c0a91",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/pseudofs/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "7ab6a39678f644c01ad51e970a64f0a7fcd9a87b",
+      "current_sha": "7ab6a39678f644c01ad51e970a64f0a7fcd9a87b",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/pseudofs/nsfs.rs",
+      "pr_status": "modified",
+      "old_sha": "278a53e9170dfab4d04cde18ba790cbb1e9e545b",
+      "current_sha": "278a53e9170dfab4d04cde18ba790cbb1e9e545b",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs",
+      "pr_status": "modified",
+      "old_sha": "d20e33414f0af72a53078c6b0b550be41983cc39",
+      "current_sha": "d20e33414f0af72a53078c6b0b550be41983cc39",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs/permission_smp_tests.rs",
+      "pr_status": "added",
+      "old_sha": "37e72a5decfa340b2d099c7cf1cc5ce6df7b9186",
+      "current_sha": "37e72a5decfa340b2d099c7cf1cc5ce6df7b9186",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs/permission_tests.rs",
+      "pr_status": "added",
+      "old_sha": "7f5ce8c0ef4bce78f006f0ad432d80423394876f",
+      "current_sha": "7f5ce8c0ef4bce78f006f0ad432d80423394876f",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd.rs",
+      "pr_status": "modified",
+      "old_sha": "492f9ba9c012caad35c59cbf3946aa1ea5d91cff",
+      "current_sha": "492f9ba9c012caad35c59cbf3946aa1ea5d91cff",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd/permission_smp_tests.rs",
+      "pr_status": "added",
+      "old_sha": "4b21f9ed6ef5981de8e9c165e824c1ca8a4dd0f7",
+      "current_sha": "4b21f9ed6ef5981de8e9c165e824c1ca8a4dd0f7",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd/permission_tests.rs",
+      "pr_status": "added",
+      "old_sha": "152e7d47836fdd2f00006234af0d62b601e29158",
+      "current_sha": "152e7d47836fdd2f00006234af0d62b601e29158",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/virtiofs/inode/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "affd34b77e24325909872b629a09fe83f3fdb455",
+      "current_sha": "affd34b77e24325909872b629a09fe83f3fdb455",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/pipe/anon_pipe.rs",
+      "pr_status": "modified",
+      "old_sha": "d653dba8aac926d6abd499bc4264eb3749eff27d",
+      "current_sha": "d653dba8aac926d6abd499bc4264eb3749eff27d",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/utils/systree_inode.rs",
+      "pr_status": "modified",
+      "old_sha": "f8f7e5d2c50d1de8478dad54079da8ee98f0dec5",
+      "current_sha": "f8f7e5d2c50d1de8478dad54079da8ee98f0dec5",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/inode.rs",
+      "pr_status": "modified",
+      "old_sha": "e82451243bd17280e63f790c1df5da09e23afccf",
+      "current_sha": "e82451243bd17280e63f790c1df5da09e23afccf",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "747cf42d9e5969eaa28404b9d0c65d57f8576f58",
+      "current_sha": "747cf42d9e5969eaa28404b9d0c65d57f8576f58",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/permission_attrs.rs",
+      "pr_status": "added",
+      "old_sha": "93c0a607f88dad702832b978ff9f6d2e1f254ecd",
+      "current_sha": "93c0a607f88dad702832b978ff9f6d2e1f254ecd",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/permission_attrs/smp_support.rs",
+      "pr_status": "added",
+      "old_sha": "bf46c465d85d4e1ab5d054a950eea2b6a9c89d42",
+      "current_sha": "bf46c465d85d4e1ab5d054a950eea2b6a9c89d42",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/xattr.rs",
+      "pr_status": "modified",
+      "old_sha": "cd87cccd0f99866df21a578780498eb47b496b82",
+      "current_sha": "cd87cccd0f99866df21a578780498eb47b496b82",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "ba8d9cb37e969d0839aa7f7598bd60e6abb91037",
+      "current_sha": "ba8d9cb37e969d0839aa7f7598bd60e6abb91037",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/vfs/path/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "885ffad67acce0206551f8c63aa48da838aac866",
+      "current_sha": "885ffad67acce0206551f8c63aa48da838aac866",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/lib.rs",
+      "pr_status": "modified",
+      "old_sha": "c1e9df2a6629627b9ad0e8a83f02b2bab3f9688e",
+      "current_sha": "c1e9df2a6629627b9ad0e8a83f02b2bab3f9688e",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/permission_smp_ktest.rs",
+      "pr_status": "added",
+      "old_sha": "5a083afed9d16ec0724d70a8016e327373f4f919",
+      "current_sha": "6115b226dbfaa6d27faeaa1327148602282bd441",
+      "identical": false,
+      "review": {
+        "finding": "Only two comments differ. The exact leading newline bootstrap emission is unchanged.",
+        "action": "equivalent executable source"
+      }
+    },
+    {
+      "path": "kernel/asterinas/osdk/deps/test-kernel/Cargo.toml",
+      "pr_status": "modified",
+      "old_sha": "153c700609bad1fb19b1e4812de354d6fdeb5b5b",
+      "current_sha": "153c700609bad1fb19b1e4812de354d6fdeb5b5b",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/osdk/deps/test-kernel/src/lib.rs",
+      "pr_status": "modified",
+      "old_sha": "b80b72df4e2b5c9d91340d2a48f25f3b504f9c3b",
+      "current_sha": "b80b72df4e2b5c9d91340d2a48f25f3b504f9c3b",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/base_crate/mod.rs",
+      "pr_status": "modified",
+      "old_sha": "6afab7329edef25c4152ccd24b19489c515bc402",
+      "current_sha": "6afab7329edef25c4152ccd24b19489c515bc402",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/commands/test.rs",
+      "pr_status": "modified",
+      "old_sha": "5b83560330d62c9f47ac79239e0acc36a3ae7c91",
+      "current_sha": "5b83560330d62c9f47ac79239e0acc36a3ae7c91",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "support/build/ktest/check-permission-smp.py",
+      "pr_status": "added",
+      "old_sha": "c2809b11645926df868d454534bcff684c8599cf",
+      "current_sha": "b23200be1cdef63e0318202ec2504a8996a93554",
+      "identical": false,
+      "review": {
+        "finding": "Comment wording only; compiled minimum265, selected3 tests, exact failures and raw QEMU exits unchanged.",
+        "action": "equivalent executable source"
+      }
+    },
+    {
+      "path": "support/build/ktest/check.py",
+      "pr_status": "modified",
+      "old_sha": "e73eed0e76af74f247d5ddcc089d62c991b66668",
+      "current_sha": "cb1d320f3899748f08c8ea83b6f5fd9f854646ee",
+      "identical": false,
+      "review": {
+        "finding": "Main factors the same24 names into permission/trusted-profile/ExFAT groups; minimum262 unchanged. It adds a redundant strict soft-skip rejection, not a gate relaxation.",
+        "action": "keep main"
+      }
+    },
+    {
+      "path": "support/build/ktest/prepare-locks.py",
+      "pr_status": "modified",
+      "old_sha": "5f12f41f1a7541bd7c21a5dc2ea706f4c4d6ffb0",
+      "current_sha": "5f12f41f1a7541bd7c21a5dc2ea706f4c4d6ffb0",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "support/build/ktest/record-qemu.py",
+      "pr_status": "modified",
+      "old_sha": "66d9ffd3d6257f20e1d9c6ead370005782b5e5f9",
+      "current_sha": "66d9ffd3d6257f20e1d9c6ead370005782b5e5f9",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "support/build/ktest/run.py",
+      "pr_status": "modified",
+      "old_sha": "374cde5067545dad491d0fd760e476c538158678",
+      "current_sha": "374cde5067545dad491d0fd760e476c538158678",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "support/build/tests/test_ktest_checker.py",
+      "pr_status": "modified",
+      "old_sha": "48f138034e17bc577b2da2eff07d89cd084ec2bf",
+      "current_sha": "48f138034e17bc577b2da2eff07d89cd084ec2bf",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "support/build/verify-source.py",
+      "pr_status": "modified",
+      "old_sha": "319b071a6d19d89d6999217d2153a85d713e4f2c",
+      "current_sha": "43e28eaffff96c16a31ad8999468cc0c5cd74dab",
+      "identical": false,
+      "review": {
+        "finding": "Module docstring only; enumerated exact G1c/G1d/permission-SMP Cargo source derivatives unchanged.",
+        "action": "equivalent executable source"
+      }
+    },
+    {
+      "path": "tests/organ_backend/exfat_synthesized_setid_negative.patch",
+      "pr_status": "added",
+      "old_sha": "43316fffea163c0f2b166410d37a612ca8dd2de7",
+      "current_sha": "43316fffea163c0f2b166410d37a612ca8dd2de7",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "tests/organ_backend/permission_attr_memfd_release_seal_negative.patch",
+      "pr_status": "added",
+      "old_sha": "52737da9a53f93a6e157c191c3f869b3bdf034d8",
+      "current_sha": "52737da9a53f93a6e157c191c3f869b3bdf034d8",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "tests/organ_backend/permission_attr_ramfs_split_lock_negative.patch",
+      "pr_status": "added",
+      "old_sha": "59c6d2b1ed1c4c9cab6b10a4dcaea9aa79726b06",
+      "current_sha": "59c6d2b1ed1c4c9cab6b10a4dcaea9aa79726b06",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "tests/organ_backend/run_permission_attr_smp.py",
+      "pr_status": "added",
+      "old_sha": "be875202e55144f3789b4174b039b2051f274504",
+      "current_sha": "be875202e55144f3789b4174b039b2051f274504",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "tests/organ_backend/test_permission_attr_smp.py",
+      "pr_status": "added",
+      "old_sha": "35999c812dc697811900ab10bd3317111675d1c2",
+      "current_sha": "d24ea59c470525e41902adc70963c22009ee791f",
+      "identical": false,
+      "review": {
+        "finding": "Main includes equivalent SeaBIOS-concatenation rejection plus CRLF acceptance for all3 controls. One explicit assertion of g1d-trusted-control => aster-core/g1d-trusted-control is absent. Current production feature forwarding is identical. Denominator cases differ but both include261/262 and24-name omission.",
+        "action": "carry the unique2-line G1d forwarding assertion on current main before closing #224"
+      }
+    },
+    {
+      "path": "tests/spec/test_a06_kernel_output_contract.py",
+      "pr_status": "modified",
+      "old_sha": "6a0d07147e9a30419f91f791b2c094f114342a21",
+      "current_sha": "6a0d07147e9a30419f91f791b2c094f114342a21",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "tests/workloads/linux/exfat_mode_evidence.py",
+      "pr_status": "added",
+      "old_sha": "12577f68fe1df9d120660d7bb1a92d57644dc5f6",
+      "current_sha": "12577f68fe1df9d120660d7bb1a92d57644dc5f6",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "tests/workloads/linux/exfat_mode_probe.c",
+      "pr_status": "added",
+      "old_sha": "0e0765107eb5a67f7a257037362ab386600a97ee",
+      "current_sha": "a17d2fa76efed9345c9045fff3b19cb67bd4ab1f",
+      "identical": false,
+      "review": {
+        "finding": "Main supersedes #224's printf with bounded1024-byte snprintf and one successful write; EINTR retries occur only after negative return, short writes/EIO and truncation/EOVERFLOW fail, and both callers check result. No weakening of measured identity fields.",
+        "action": "keep improved main producer; add real C short/error/truncation/EINTR tests separately"
+      }
+    },
+    {
+      "path": "tests/workloads/linux/run_exfat_mode_guest.py",
+      "pr_status": "added",
+      "old_sha": "08cd7b1d223c01ce2aa048852d1224eb63164fac",
+      "current_sha": "80aa7de425576582f878eca73c6f76194bc501f9",
+      "identical": false,
+      "review": {
+        "finding": "Main accepts only mkfs.exfat -V exact1.2.2 banner, exit1, empty stderr; #224 also accepted well-formed other versions with exit0. Real formatting still requires exit0. Main additionally preserves git-status before unchanged strict source snapshot.",
+        "action": "keep stricter main policy"
+      }
+    },
+    {
+      "path": "tests/workloads/linux/run_exfat_mode_negative.py",
+      "pr_status": "added",
+      "old_sha": "55b37b346a692a0c6509827ebcc6018b70b1c9cf",
+      "current_sha": "55b37b346a692a0c6509827ebcc6018b70b1c9cf",
+      "identical": true,
+      "review": {
+        "finding": "Git blob and mode exactly identical",
+        "action": "already present in main"
+      }
+    },
+    {
+      "path": "tests/workloads/linux/test_exfat_mode_guest.py",
+      "pr_status": "added",
+      "old_sha": "35722d03c4c7cab4efc1d930ce8b2ebda78d366a",
+      "current_sha": "b033f6407fbae8b18d099a4041b13783fed3c77f",
+      "identical": false,
+      "review": {
+        "finding": "Main preserves all original observation and owned-input tests, strengthens the real-source frozen-patch test with one-path git-diff verification. #224 real-child formatter regression was replaced by mocked exact-policy tests. Existing PR230 adc7260 now restores real-child prepare/logging and failed-format tests without altering policy. C producer short/error/truncation regression remains unimplemented as of main22a.",
+        "action": "review/integrate existing #230 instead of copying old tests; add only missing C regressions"
+      }
+    }
+  ],
+  "additional_main_change": {
+    "finding": "Main corrects stale full255/17 description to full262/24; this path is outside #224's original59 files.",
+    "action": "keep main"
+  },
+  "qualification": {
+    "main22a": {
+      "run": 39590054181,
+      "job": 119188464418,
+      "conclusion": "failure",
+      "blocker": "Linux ExFAT mount errno19 before observations",
+      "guest_and_old_mode_negative": "not executed",
+      "host_kernel": "6.17.0-1022-azure"
+    },
+    "pr225": {
+      "head": "47141400acd8f6c26d4069dba1d08206980493e7",
+      "tree": "be450c1800b2d7983bd6f5127823eb105e883e9d",
+      "run": 39569111993,
+      "job": 119118562629,
+      "linux": "5pass/process0",
+      "guest": "5pass/QEMU33",
+      "old_mode": "4fail1pass/QEMU33 with measured privilege transition",
+      "host_kernel": "7.0.0-1017-azure"
+    },
+    "pr227": {
+      "head": "9aa5dddaa89b8493524d5e9b289b1ecc7532d9b0",
+      "tree": "4f2fe03e4a7847e9ef3273dac4474a6691da7db4",
+      "run": 39584067194,
+      "job": 119168497405,
+      "linux": "5pass/process0",
+      "guest": "5pass/QEMU33",
+      "old_mode": "4fail1pass/QEMU33 with measured privilege transition",
+      "host_kernel": "7.0.0-1017-azure"
+    }
+  },
+  "evidence_scope": "Remote Git full recursive blob/mode comparison; all12 text diffs read; raw jobs and selected artifact member receipts/output inspected. This review did not redownload or rehash complete ZIPs, disks, ELFs, or all source snapshots from those ZIPs.",
+  "recommendation": "Do not merge stale #224. Main already contains its production changes. Retain missing G1d forwarding assertion and useful independent producer regression on current main; existing #230 supplies real-child formatter coverage. Root decides superseded closure after reviewing this mapping. #231 addresses a separate current-main environment failure and still needs exact-head original complete native CI."
+}
