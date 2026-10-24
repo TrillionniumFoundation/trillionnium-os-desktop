@@ -3,6 +3,12 @@
 This is an executable Rust GUI prototype under the Linux host compositor.
 It is NOT booted under Asterinas, NOT native HOS2, and NOT a full compositor.
 
+For the explicit original Makepad/text combination, use
+[LINUX_TEXT_PROFILE](LINUX_TEXT_PROFILE.md). Its build entry checks the resolved
+native feature, original Root/Agentd adapter dependencies, both clean source
+identities, locks and all 54 baseline resource files before packaging the five
+executables. The build receipt and actual window/deployment receipts are separate.
+
 The integrated Linux product and its blocking host workflow use Rust
 **1.96.0**, including the original Agentd dependency graph. Earlier Rust 1.88
 receipts retain their original source scope. The Asterinas kernel keeps its

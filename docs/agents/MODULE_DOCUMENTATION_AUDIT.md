@@ -1,5 +1,7 @@
 # 模块文档覆盖审计（2026-10-22）
 
+2026-10-24 当前清单：57 个内核成员的 [schema 2 机器清单](../modules/kernel-workspace/inventory.json) 已重新读取原 manifest、入口和所有 Git 跟踪的 Rust 源码；固定 source/tree 以清单字段为准。[更新与核对命令](../modules/kernel-workspace/README.md#如何使用与更新) 同时保护原历史清单字节。Linux 文本产品新增 [显式构建 profile 与技术入口](../../support/ui/LINUX_TEXT_PROFILE.md)，把实际 native features、原 SDK、工具链、锁、资源和两仓身份记录在同一构建收据。本文下方原清点仍保留其原始日期与范围。
+
 2026-10-23 补充：[57 个内核 workspace crate 手册](../modules/kernel-workspace/README.md) 已按 `10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd` 逐包补充职责/API、owner、开发入口和具体未验证项，并附 manifest/源码 hash 清单。新手册是文档覆盖补齐，不转授运行资格；以下历史审计的源码、统计和结论保持其原时点。
 
 原始清点实际观察的是本地提交 `b2b3e862bf568dab39bd8331be7def145f770408`，tree `7389c0a3f982983087953f75de7042fc058be088`。公开等价提交为 [`85d394f99c73ad3194d57c876712ac01b59d90ca`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/85d394f99c73ad3194d57c876712ac01b59d90ca)；发布时已核对 GitHub commit 元数据，两者具有相同 tree。两种提交身份见 [published-equivalence.json](../../results/integration/2026-10-22-module-docs/published-equivalence.json)，原始输入哈希与审计记录继续保留本地观察身份。复核应使用公开提交，本审计快照不升级到后来的 #240 合并提交。源码及机器清单中的路径相对仓库根；本次导航修正及其文件检查单独记录，不改变原运行证据的来源身份。
