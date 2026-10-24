@@ -13,6 +13,8 @@ mod owner;
 mod receipt;
 mod recovery;
 mod retained;
+#[cfg(feature = "native-text")]
+pub mod text;
 mod typed;
 mod worker;
 pub use trill_ui_core::objective::{ObjectiveHostIssue, ObjectiveIntent};

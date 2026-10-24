@@ -17,23 +17,28 @@ not issue grants, sign requests, own a durable effect journal, or implement HOS2
 - [notes_recovery.rs](src/notes_recovery.rs) and
   [notes_private_unix.rs](src/notes_private_unix.rs): separately inherited
   recovery datagrams, exact acknowledgement and private descriptor checks.
+- [notes_checkpoint.rs](src/notes_checkpoint.rs) and [notes_store.rs](src/notes_store.rs):
+  application-owned durable document/receipt validation, incarnation locking
+  and synchronized storage; see [Notes durability](../../support/ui/NOTES_DURABILITY.md).
 
 ## Invariants to preserve
 
-Public host IPC is Snapshot/Launch/Cancel. A workspace label or same-UID peer
-is not an A05 capability. Cancellation requests do not prove the task has
-stopped; a stale observation cannot become a new successful observation.
+Public host IPC includes Snapshot/Launch/Cancel and the separately configured
+[typed Objective bridge](../session/OBJECTIVE_BRIDGE.md). A workspace label or
+same-UID peer is not an A05 capability. Cancellation requests do not prove the
+task has stopped; a stale observation cannot become a new successful observation.
 Keep operation outcome publication with the original Hepta owner.
 
 Wire changes affect all workspace consumers. Check old/new Session/Shell
 behavior, frame bounds, identity and unknown outcomes rather than changing
-only the renderer. Notes replies describe an in-memory document mutation,
-not user-file persistence.
+only the renderer. Notes' temporary in-memory mode and explicit durable store
+have separate persistence boundaries; an application reply alone does not
+establish the original Hepta writer's durable terminal state.
 
 ## Development
 
 ```sh
-RUSTUP_TOOLCHAIN=1.88.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-core --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-core --locked
 ```
 
 See [workspace setup](../README.md), [integration contracts](../../support/ui/INTEGRATION_CONTRACTS.md),

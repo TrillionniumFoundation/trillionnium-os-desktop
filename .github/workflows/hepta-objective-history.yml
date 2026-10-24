@@ -51,9 +51,9 @@ jobs:
         run: |
           set -euo pipefail
           {
-            rustup toolchain install 1.88.0 --profile minimal --component rustfmt --component clippy
-            rustup run 1.88.0 rustc -Vv
-            rustup run 1.88.0 cargo -Vv
+            rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
+            rustup run 1.96.0 rustc -Vv
+            rustup run 1.96.0 cargo -Vv
             uname -m
           } 2>&1 | tee "$HEPTA_HISTORY_CI_ROOT/logs/toolchain.log"
 
@@ -95,7 +95,7 @@ jobs:
                        "tests/integration/hepta/test_objective_history_contracts.py"]:
               require(Path(path).stat().st_size > 0, "history_source_missing: " + path)
           (root / "identity/before.json").write_text(json.dumps(before, indent=2) + "\n")
-          cargo = ["rustup", "run", "1.88.0", "cargo"]
+          cargo = ["rustup", "run", "1.96.0", "cargo"]
           manifest = ["--manifest-path", "services/hepta-os/Cargo.toml"]
           commands = [
               ("test", cargo + ["test", *manifest, "--locked", "--features", "objective-history"]),
@@ -273,11 +273,11 @@ jobs:
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
               build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils
             rustup toolchain install 1.95.0 --profile minimal
-            rustup toolchain install 1.88.0 --profile minimal
+            rustup toolchain install 1.96.0 --profile minimal
             rustup run 1.95.0 rustc -Vv
             rustup run 1.95.0 cargo -Vv
-            rustup run 1.88.0 rustc -Vv
-            rustup run 1.88.0 cargo -Vv
+            rustup run 1.96.0 rustc -Vv
+            rustup run 1.96.0 cargo -Vv
             cc --version
             cmake --version
             pkg-config --modversion openssl libcap
@@ -310,7 +310,7 @@ jobs:
                ["rustup", "run", "1.95.0", "cargo", "build", "--locked", "--profile", "dev-small",
                 "--no-default-features", "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd", "-j1"]),
               ("desktop-clis", Path.cwd(), root / "desktop-target",
-               ["rustup", "run", "1.88.0", "cargo", "build", "--locked", "--manifest-path",
+               ["rustup", "run", "1.96.0", "cargo", "build", "--locked", "--manifest-path",
                 "services/hepta-os/Cargo.toml", "--features", "objective-history", "--bins", "-j1"]),
           ]
           receipt = {"started_at_utc": now(), "desktop_commit": os.environ["DESKTOP_SHA"],

@@ -1,0 +1,33 @@
+    Updating git repository `https://github.com/TrillionniumFoundation/hepta-private-ci`
+    Updating crates.io index
+    Updating git repository `https://github.com/kevinaboos/makepad`
+warning: skipping duplicate package `bitflags v2.10.0 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/bitflags/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/bitflags/Cargo.toml
+
+    Updating git repository `https://github.com/helix-editor/nucleo.git`
+    Updating git repository `https://github.com/dzbarsky/rules_rust`
+warning: skipping duplicate package `cfg-if v1.0.4 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/cfg-if/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/cfg-if/Cargo.toml
+
+    Updating git repository `https://github.com/openai-oss-forks/tungstenite-rs`
+error: failed to select a version for `tokio`.
+    ... required by package `zbus v6.0.0`
+    ... which satisfies dependency `zbus = "^6"` of package `zbus-secret-service-keyring-store v1.0.1 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a56628a69505fa8128efdef1df20811aa3889412#a56628a6)`
+    ... which satisfies dependency `zbus-secret-service-keyring-store = "^1"` of package `keyring v4.2.0`
+    ... which satisfies dependency `keyring = "^4.2"` of package `codex-keyring-store v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a56628a69505fa8128efdef1df20811aa3889412#a56628a6)`
+    ... which satisfies git dependency `codex-keyring-store` of package `codex-login v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a56628a69505fa8128efdef1df20811aa3889412#a56628a6)`
+    ... which satisfies git dependency `codex-login` of package `codex-app-server v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a56628a69505fa8128efdef1df20811aa3889412#a56628a6)`
+    ... which satisfies git dependency `codex-app-server` of package `codex-hepta-agentd v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a56628a69505fa8128efdef1df20811aa3889412#a56628a6)`
+    ... which satisfies git dependency `codex-hepta-agentd` of package `hepta-session-host v0.1.0 (/data/trillionnium-desktop-product-20261024-integration/desktop/services/hepta-session-host)`
+    ... which satisfies path dependency `hepta-session-host` (locked to 0.1.0) of package `trill-shell v0.1.0 (/data/trillionnium-desktop-product-20261024-integration/desktop/ui/shell)`
+versions that meet the requirements `^1.53.3` are: 1.54.1, 1.53.3
+
+all possible versions conflict with previously selected packages
+
+  previously selected package `tokio v1.52.3`
+    ... which satisfies dependency `tokio = "=1.52.3"` of package `hepta-session-host v0.1.0 (/data/trillionnium-desktop-product-20261024-integration/desktop/services/hepta-session-host)`
+    ... which satisfies path dependency `hepta-session-host` (locked to 0.1.0) of package `trill-shell v0.1.0 (/data/trillionnium-desktop-product-20261024-integration/desktop/ui/shell)`
+
+failed to select a version for `tokio` which could resolve this conflict

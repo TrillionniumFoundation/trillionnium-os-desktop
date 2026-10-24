@@ -172,7 +172,7 @@ character; an oversized snapshot is refused rather than partially emitted.
 
 ## Explicit candidate gates
 
-Use the A10 Rust 1.88.0 toolchain. Run from the repository root:
+Use the integrated product Rust 1.96.0 toolchain. Run from the repository root:
 
 ```sh
 python3 -I tests/ui/test_shared_presenter_source.py

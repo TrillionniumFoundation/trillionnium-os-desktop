@@ -8,6 +8,19 @@
 
 [路线](ROADMAP.md) 给出下一条依赖；[10-23执行记录](agents/ORGAN_EXECUTION_2026_10_23.md) 和 [Objective owner设计交接](agents/OBJECTIVE_SENDER_OWNER_NEXT.md) 是各自固定时点的资料。开放PR的代码和手册不是当前整合版本的运行证明。
 
+[当前原生 organ 跨仓 source map](SOURCES.md#hepta-native-organ)固定 Hepta `7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9`，逐项链接原 Root/Agentd、Makepad/ChatWorkspace、Notes、Android、AccessKit 与独立 SDK 候选的开发及技术合同。[v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)与完整产品门禁分开；默认原 SDK 与 clipboard 候选的 feature/lock/bundle 不混用。
+
+### 本轮原生 organ 模块交接
+
+[开发与技术交接映射](agents/NATIVE_ORGAN_MODULE_HANDOFF.md) 将本轮原文本会话、安装/升级、v4 草稿、Notes 持久恢复、Makepad 输入和 Android 严格 receiver 对应到真实源码、构建/测试入口与原 owner。直接入口如下；此处不新增运行资格：
+
+- [原文本 adapter 与同 thread 恢复](../services/hepta-session-host/TEXT_SESSION.md)
+- [安装、诊断、升级、回滚、卸载及真实两包验收](../support/ui/PRODUCT.md)
+- [草稿源码与恢复契约](../ui/shell/README.md#ownership-and-code-map)
+- [Notes 文档持久性与旧 incarnation 恢复](../support/ui/NOTES_DURABILITY.md)
+- [原 Makepad 输入、资源与辅助技术](../support/ui/NATIVE_MAKEPAD.md)
+- [Android 原 helper/runner 严格绑定、构建与签名门禁](../support/android/receiver/README.md)
+
 ## 模块入口与支持边界
 
 本仓库以 Asterinas 派生 Rust 内核、HOS2 控制接口、Hepta 原用户态 owner 和 Rust 桌面构成 organ 开发主线。当前可复核范围包括固定 x86_64/QEMU 内核实验、Linux host 上的 Rust UI/Notes 目的端，以及各自固定来源的兼容/持久性测试。完整生产 G2、Asterinas 上的 Hepta/桌面、GPU/VMM 与手机仍有明确缺口；以 [当前能力表](CURRENT_CAPABILITIES.md) 及其固定证据为准。
@@ -18,7 +31,7 @@
 
 ### 从这里开始
 
-先读 [PROJECT](PROJECT.md) 的目标和 profile、[ARCHITECTURE](ARCHITECTURE.md) 的唯一 owner/接合方式，再按 [当前能力表](CURRENT_CAPABILITIES.md) 区分已测分支与整合候选。进入代码前使用各模块构建手册中的固定工具链、依赖和验收命令。内核采用 Asterinas 固定来源及 `nightly-2026-07-21`；UI 的阻断 host gate 使用 Rust 1.88.0。C 初版保留的 Rust 1.95.0 运行是独立证据，不能替代 1.88 门禁。
+先读 [PROJECT](PROJECT.md) 的目标和 profile、[ARCHITECTURE](ARCHITECTURE.md) 的唯一 owner/接合方式，再按 [当前能力表](CURRENT_CAPABILITIES.md) 区分已测分支与整合候选。进入代码前使用各模块构建手册中的固定工具链、依赖和验收命令。内核采用 Asterinas 固定来源及 `nightly-2026-07-21`；当前 UI/原 Hepta 接合按 [RUN](../support/ui/RUN.md) 使用 Rust 1.96.0。历史 1.88/1.95 运行保留各自源码身份，不替代当前组合门禁。
 
 三种内核启动范围须分开：ordinary 产品仅 QueryAbi；G1-c 固定受信映像另有 ReadUsage；G1-d 的五操作只在明确开启的三角色实验 profile 内成立。Notes 正常 Session 启动仍默认不注册原 owner；显式 private bootstrap 的 offer/ACK 也不自产生 FinalUse 授权或持久结果。
 

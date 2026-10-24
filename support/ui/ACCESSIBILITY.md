@@ -15,11 +15,11 @@ Hepta owners still decide whether an operation is allowed.
 
 ## Reproduce
 
-Use Rust 1.88 and the committed UI lockfile:
+Use Rust 1.96 and the committed UI lockfile:
 
 ```sh
-cargo +1.88.0 test --manifest-path ui/Cargo.toml --workspace --locked
-cargo +1.88.0 build --manifest-path ui/Cargo.toml --locked -p trill-app-window
+cargo +1.96.0 test --manifest-path ui/Cargo.toml --workspace --locked
+cargo +1.96.0 build --manifest-path ui/Cargo.toml --locked -p trill-app-window
 bash tests/ui/accesskit-smoke.sh
 ```
 
@@ -30,10 +30,20 @@ it explicitly focuses only that process window; the production focus guard
 is retained. It discovers the real native button
 role/name and labelled edit fields through AT-SPI, activates `+` without
 pointer coordinates, and requires the actual Calculator validation result for
-empty inputs. The pinned AT-SPI adapter does not implement EditableText
-SetText; the gate does not claim semantic text insertion. It cleans up only its own processes.
+empty inputs. This egui Calculator smoke neither performs nor validates
+semantic EditableText SetText; its assertions cover the observed text/focus
+interfaces, semantic button action and empty-input result. It cleans up only
+its own processes.
 `A10_APP_WINDOW_BINARY` can select an already built exact binary; otherwise
 `${CARGO_TARGET_DIR:-ui/target}/debug/trill-app-window` is used.
+
+The shared patched AccessKit source includes the five atomic EditableText
+methods described in the [original Makepad contract](NATIVE_MAKEPAD.md#atomic-editabletext-and-the-remaining-native-paste-boundary).
+An actual node exposes those methods only when its renderer publishes the
+required actions; source presence does not show that this egui Calculator
+implements or passes semantic text editing. Makepad's five-method test and its
+separate candidate `PasteText` feature have their own binary, resource and real
+D-Bus qualification requirements in that contract.
 
 The egui tests separately exercise actual `AccessKitActionRequest` dispatch
 and real TreeUpdate nodes, including IME and disabled-button refusal. The

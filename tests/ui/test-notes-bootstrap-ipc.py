@@ -51,12 +51,14 @@ def owned_children(proc, app):
 
 
 @contextlib.contextmanager
-def launched(binary_dir):
+def launched(binary_dir, notes_state_dir=None):
     with tempfile.TemporaryDirectory(prefix="trill-private-bootstrap-") as directory:
         root = Path(directory)
         runtime = root / "runtime"
         runtime.mkdir(mode=0o700)
         env = os.environ.copy()
+        if notes_state_dir is not None:
+            env["TRILL_NOTES_STATE_DIR"] = str(notes_state_dir)
         # Preserve only the exact compositor selected by the owned test
         # harness when the Session receives its separate private runtime.
         display = env.get("WAYLAND_DISPLAY")

@@ -1,9 +1,12 @@
 # First Linux Notes destination
 
 This slice provides real, bounded Linux socketpair I/O to the existing native
-Rust Notes application. Its operation is **replace the in-memory text of one
-identified Notes document, subject to a revision comparison**. The document is
-not saved to a user file. This is a small destination adapter, not a compositor,
+Rust Notes application. Its operation is **replace the text of one identified
+Notes document, subject to a revision comparison**. The explicitly configured
+durable mode synchronizes application data before replying; without
+`TRILL_NOTES_STATE_DIR`, the existing temporary mode remains. The
+[durability and process-recovery manual](NOTES_DURABILITY.md) specifies storage,
+crash handling, helper startup and the actual companion probe. This is a small destination adapter, not a compositor,
 global keyboard controller, mobile device port, or an Asterinas desktop.
 
 The standalone Session keeps each new destination private and reports
@@ -23,8 +26,10 @@ grant provider; normal Session launch performs no registration.
 | `ui/core/src/notes_recovery.rs` | Strict exact receipt retirement request and idempotent response |
 | `ui/core/src/notes_private_unix.rs` | Ordered effect-stream/recovery-datagram descriptor handoff and descriptor validation |
 | `ui/broker/src/notes.rs` | Private Linux destination handle, synchronous exact-byte I/O, conservative unknown outcomes |
-| `ui/app-window/src/notes_organ.rs` | Inherited stdin receiver, bounded handoff to the egui thread |
-| `ui/app-window/src/main.rs` | Notes update, user-edit revision changes, layout-only witness |
+| `ui/app-window/src/notes_organ.rs` | Inherited stdin receiver, bounded worker handoff and presentation projection |
+| `ui/app-window/src/notes_worker.rs` | Serialize local revision-CAS edits, effects, receipt retirement and optional durable storage off Draw |
+| `ui/core/src/notes_store.rs` | Durable document/receipt store and exclusive incarnation ownership |
+| `ui/app-window/src/main.rs` | Notes presentation, user-edit requests and layout-only witness |
 | `ui/session/src/main.rs` | Existing child-process owner creates and retains private handles |
 | `ui/core/src/notes_bootstrap.rs` | Strict one-time descriptor handoff request and acknowledgement schema |
 | `ui/session/src/notes_bootstrap.rs` | Linux inherited datagram sender, SCM_RIGHTS and bounded acknowledgement |
@@ -190,7 +195,7 @@ trill.notes.predecessor.v1\0{session_instance}\0{task_id}\0{incarnation}\0{expec
 
 `NotesTargetIdentity::predecessor_sha256` supplies this derivation. The original
 production adapter compares it with the durable semantic expectation. The app
-compares the same identity and revision on the GUI thread when applying. Local
+compares the same identity and revision on the application worker when applying. Local
 edits increment that same revision, preventing a request with an old expectation
 from silently overwriting an intervening user edit.
 
@@ -214,8 +219,9 @@ same receipt without repeating the mutation. A conflicting payload for that
 retained operation is refused. If another operation targets the current revision
 while this receipt remains pending, it receives `not_applied: receipt_pending`;
 the existing receipt is never overwritten to make room. Local edits retain the
-pending receipt. This bounded volatile state is not durable history and cannot
-make unknown operations retryable.
+pending receipt. The durable mode stores it with the document and last retirement
+identity; temporary mode retains it in memory. Neither supplies a second Hepta
+history or makes an unknown operation retryable.
 
 ## Failure and observation semantics
 
@@ -234,11 +240,13 @@ calling the document mutation method. Every query/reply matches the exact
 incarnation, operation id and original raw payload SHA-256. Stale datagrams
 are discarded within a total deadline; no effect is replayed.
 
-The app has a bounded two-slot GUI handoff shared by both lanes. Expired
+The app has a bounded four-slot application-worker handoff shared by both lanes
+and local edits. Expired
 handoffs are discarded before document mutation; a timed-out recovery request
-cannot create an unbounded queue. The GUI thread serializes external and local edits.
-An applied reply means its in-memory document changed; the original production
-owner still owns durable outcome publication.
+cannot create an unbounded queue. The worker serializes external and local edits.
+In durable mode it synchronizes the changed state before an applied reply;
+storage failure freezes further writes with an unknown result. The original
+production owner still owns durable outcome publication.
 
 
 ### Durable original-owner receipt retirement
@@ -263,13 +271,13 @@ capacity. A late ACK for the prior receipt cannot erase the next pending receipt
 The source remains committed even if retirement fails; its reconciliation pass
 retries the latest exact retirement for that incarnation without dispatching text.
 
-This recovery covers a retained live application and an original writer reopened
-against its authenticated source store while its private recovery endpoint remains
-available. It does not restore descriptors after a whole Agentd process exits,
-reconnect to an app by path, persist the Notes document, or recover volatile app
-receipts after an app/Session restart. A new incarnation cannot answer the old
-operation; those cases stay unknown or unavailable. Production authority and the
-seven original trust inputs remain external requirements.
+The live channel covers a retained application and an original writer reopened
+against its authenticated source store. After the old application is reaped,
+the explicit [durable recovery helper](NOTES_DURABILITY.md#recovery-process-contract)
+can observe and retire the exact old stored receipt through a new private pair.
+It does not reconstruct an effect descriptor or make a new incarnation answer
+the old operation. Temporary-mode receipts cannot survive application exit.
+Production authority and the seven original trust inputs remain external requirements.
 
 After constructing a changed widget layout, the app writes
 `TRILL_NOTES_LAYOUT_V1:{revision}:{text_sha256}` to owned stdout. This is an

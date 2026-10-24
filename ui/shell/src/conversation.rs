@@ -2,6 +2,7 @@
 //! saved or imported quotes cannot create tasks, submit objectives or renew age.
 
 use eframe::egui::{self, RichText};
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use trill_ui_core::conversation::{
     resolve_hepta_runtime, resolve_host_task, ContextRef, HostTaskKey, LocalDraft,
@@ -11,7 +12,8 @@ use trill_ui_core::hepta::HeptaProjection;
 use trill_ui_core::observation::{freshness_failure, FreshnessFailure};
 use trill_ui_core::{TaskRecord, Workspace};
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum WorkspaceTab {
     #[default]
     Tasks,
@@ -50,6 +52,18 @@ pub struct Composer {
 }
 
 impl Composer {
+    #[cfg(feature = "hepta-native-makepad")]
+    pub(super) fn native_workspace(&self) -> &trill_ui_core::shared_chat::ChatWorkspace {
+        self.shared.native_workspace()
+    }
+
+    #[cfg(feature = "hepta-native-makepad")]
+    pub(super) fn native_workspace_mut(
+        &mut self,
+    ) -> &mut trill_ui_core::shared_chat::ChatWorkspace {
+        self.shared.native_workspace_mut()
+    }
+
     pub fn text(&self) -> &str {
         #[cfg(feature = "hepta-shared-presenter")]
         {
@@ -188,7 +202,150 @@ pub struct DraftBook {
     tabs: [WorkspaceTab; 3],
 }
 
+/// Local UI recovery only. Context references retain their historical source
+/// identities; this file cannot create a live task, owner, grant or delivery.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DraftCheckpoint {
+    version: u32,
+    drafts: Vec<LocalDraft>,
+    workspaces: [WorkspaceCheckpoint; 3],
+    active_workspace: Workspace,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WorkspaceCheckpoint {
+    workspace: Workspace,
+    rooms: Vec<String>,
+    active_room: usize,
+    contexts: Vec<ContextRef>,
+    tab: WorkspaceTab,
+    #[cfg(feature = "hepta-shared-presenter")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    local_archive: Option<trill_ui_core::shared_chat::LocalDraftArchive>,
+    #[cfg(not(feature = "hepta-shared-presenter"))]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    local_archive: Option<serde_json::Value>,
+}
+
+impl DraftCheckpoint {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if !matches!(self.version, 3 | 4) || self.drafts.len() > MAX_LOCAL_DRAFTS {
+            return Err("Unsupported or invalid local checkpoint");
+        }
+        for draft in &self.drafts {
+            draft.validate()?;
+        }
+        for (workspace, entry) in Workspace::ALL.into_iter().zip(&self.workspaces) {
+            if entry.workspace != workspace || entry.contexts.len() > MAX_DRAFT_CONTEXTS {
+                return Err("Invalid workspace checkpoint");
+            }
+            if let Some(archive) = &entry.local_archive {
+                if self.version != 4 || !entry.rooms.is_empty() || entry.active_room != 0 {
+                    return Err("Checkpoint mixes legacy rooms with a partition archive");
+                }
+                #[cfg(feature = "hepta-shared-presenter")]
+                archive.validate()?;
+                #[cfg(not(feature = "hepta-shared-presenter"))]
+                {
+                    let _ = archive;
+                    return Err(
+                        "Checkpoint needs the original shared composer feature; file preserved",
+                    );
+                }
+            } else {
+                if entry.rooms.is_empty()
+                    || entry.rooms.len() > 16
+                    || entry.active_room >= entry.rooms.len()
+                {
+                    return Err("Invalid legacy room checkpoint");
+                }
+                #[cfg(not(feature = "hepta-shared-presenter"))]
+                if entry.rooms.len() != 1 || entry.active_room != 0 {
+                    return Err(
+                        "Checkpoint needs the original shared composer feature; file preserved",
+                    );
+                }
+                for text in &entry.rooms {
+                    if text.len() > trill_ui_core::conversation::MAX_DRAFT_BYTES
+                        || text.contains('\0')
+                    {
+                        return Err(
+                            "Checkpoint text exceeds 16 KiB or contains NUL; previous file kept",
+                        );
+                    }
+                }
+            }
+            for (index, reference) in entry.contexts.iter().enumerate() {
+                reference.validate(workspace)?;
+                if entry.contexts[..index]
+                    .iter()
+                    .any(|old| old.same_source(reference))
+                {
+                    return Err("Duplicate checkpoint context");
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
 impl DraftBook {
+    pub fn checkpoint(&self, active_workspace: Workspace) -> Result<DraftCheckpoint, &'static str> {
+        let mut entries = Vec::with_capacity(3);
+        for workspace in Workspace::ALL {
+            let composer = self.composer(workspace);
+            #[cfg(feature = "hepta-shared-presenter")]
+            let (rooms, active_room, local_archive) =
+                (Vec::new(), 0, Some(composer.shared.export_local_archive()?));
+            #[cfg(not(feature = "hepta-shared-presenter"))]
+            let (rooms, active_room, local_archive) = (vec![composer.text().to_owned()], 0, None);
+            entries.push(WorkspaceCheckpoint {
+                workspace,
+                rooms,
+                active_room,
+                contexts: composer.contexts.clone(),
+                tab: self.tab(workspace),
+                local_archive,
+            });
+        }
+        let snapshot = DraftCheckpoint {
+            version: 4,
+            drafts: self.drafts.clone(),
+            workspaces: entries.try_into().map_err(|_| "Missing workspace")?,
+            active_workspace,
+        };
+        snapshot.validate()?;
+        Ok(snapshot)
+    }
+
+    pub fn from_checkpoint(snapshot: DraftCheckpoint) -> Result<(Self, Workspace), &'static str> {
+        snapshot.validate()?;
+        let mut restored = Self::default();
+        for entry in snapshot.workspaces {
+            let composer = restored.composer_mut(entry.workspace);
+            #[cfg(feature = "hepta-shared-presenter")]
+            {
+                if let Some(archive) = entry.local_archive {
+                    composer.shared.restore_local_archive(archive)?;
+                } else {
+                    composer
+                        .shared
+                        .restore_local_rooms(&entry.rooms, entry.active_room)?;
+                }
+            }
+            #[cfg(not(feature = "hepta-shared-presenter"))]
+            {
+                composer.text = entry.rooms[0].clone();
+            }
+            composer.contexts = entry.contexts;
+            restored.tabs[workspace_index(entry.workspace)] = entry.tab;
+        }
+        restored.drafts = snapshot.drafts;
+        Ok((restored, snapshot.active_workspace))
+    }
+
     pub fn composer(&self, workspace: Workspace) -> &Composer {
         &self.composers[workspace_index(workspace)]
     }
@@ -722,7 +879,7 @@ impl super::Desktop {
             if self.activation.activated(&ui.add_enabled(!self.drafts.composer(self.workspace).text().trim().is_empty(), egui::Button::new("Save local draft")))
             {
                 match self.drafts.save(self.workspace) {
-                    Ok(()) => self.notice("Draft and context references stored in Shell memory. Not executed or sent to Hepta."),
+                    Ok(()) => self.notice("Local draft saved. Automatic recovery status is separate from Hepta submission."),
                     Err(message) => self.notice(message),
                 }
             }
@@ -744,7 +901,7 @@ impl super::Desktop {
         });
         ui.small("Explicit export saves all workspaces as private plaintext, including references. Import requires every composer and draft history to be empty; legacy text is assigned to the selected workspace.");
         ui.small(
-            "Without export, closing Shell discards local drafts. App lifetimes belong to Session.",
+            "Automatic local recovery follows the configured recovery status. Explicit export remains a separate backup. App lifetimes belong to Session.",
         );
     }
 
@@ -791,6 +948,150 @@ mod tests {
     use trill_ui_core::conversation::MAX_DRAFT_BYTES;
     use trill_ui_core::{AppKind, TaskState};
     const INSTANCE: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+    #[test]
+    fn checkpoint_roundtrips_saved_and_unsaved_workspaces_with_historical_context() {
+        let mut book = DraftBook::default();
+        for workspace in Workspace::ALL {
+            book.composer_mut(workspace)
+                .edit(format!("saved {} 中文", workspace.code()));
+            book.save(workspace).unwrap();
+            book.composer_mut(workspace)
+                .edit(format!("unsaved {} 📝", workspace.code()));
+            let task = TaskRecord::new(7, workspace, AppKind::Notes);
+            book.attach(workspace, ContextRef::host_task(INSTANCE, &task, 10_000))
+                .unwrap();
+        }
+        book.set_tab(Workspace::Research, WorkspaceTab::Console);
+        let expected = book.checkpoint(Workspace::Research).unwrap();
+        let bytes = serde_json::to_vec(&expected).unwrap();
+        let (restored, workspace) =
+            DraftBook::from_checkpoint(serde_json::from_slice(&bytes).unwrap()).unwrap();
+        assert_eq!(workspace, Workspace::Research);
+        assert_eq!(restored.checkpoint(workspace).unwrap(), expected);
+        assert_eq!(restored.drafts.len(), 3);
+        assert_eq!(restored.composer(Workspace::Build).contexts.len(), 1);
+    }
+
+    #[test]
+    fn invalid_checkpoint_is_rejected_as_a_whole() {
+        let good = DraftBook::default()
+            .checkpoint(Workspace::Personal)
+            .unwrap();
+        let mut bad = good.clone();
+        bad.workspaces[1].rooms = vec!["x".repeat(MAX_DRAFT_BYTES + 1)];
+        assert!(DraftBook::from_checkpoint(bad).is_err());
+        let mut bad = good.clone();
+        bad.workspaces[1].workspace = Workspace::Build;
+        assert!(DraftBook::from_checkpoint(bad).is_err());
+        let mut bad = good.clone();
+        bad.version = 5;
+        assert!(DraftBook::from_checkpoint(bad).is_err());
+        let mut bad = good;
+        bad.workspaces[0].rooms = vec!["bad\0text".into()];
+        assert!(DraftBook::from_checkpoint(bad).is_err());
+    }
+
+    #[test]
+    fn v3_checkpoint_migrates_all_workspace_text_and_selection() {
+        let mut legacy = DraftBook::default().checkpoint(Workspace::Build).unwrap();
+        legacy.version = 3;
+        for entry in &mut legacy.workspaces {
+            entry.local_archive = None;
+            entry.rooms = vec![format!("legacy {} 中文", entry.workspace.code())];
+            entry.active_room = 0;
+            #[cfg(feature = "hepta-shared-presenter")]
+            {
+                entry
+                    .rooms
+                    .push(format!("selected {} 📝", entry.workspace.code()));
+                entry.active_room = 1;
+            }
+        }
+        legacy.workspaces[1].tab = WorkspaceTab::Console;
+        let (restored, active) = DraftBook::from_checkpoint(legacy.clone()).unwrap();
+        assert_eq!(active, Workspace::Build);
+        for entry in &legacy.workspaces {
+            assert_eq!(
+                restored.composer(entry.workspace).text(),
+                entry.rooms[entry.active_room]
+            );
+        }
+        assert_eq!(restored.tab(Workspace::Research), WorkspaceTab::Console);
+        let upgraded = restored.checkpoint(active).unwrap();
+        assert_eq!(upgraded.version, 4);
+        let (reopened, active) = DraftBook::from_checkpoint(upgraded.clone()).unwrap();
+        assert_eq!(reopened.checkpoint(active).unwrap(), upgraded);
+    }
+
+    #[cfg(feature = "hepta-shared-presenter")]
+    #[test]
+    fn checkpoint_keeps_parked_local_text_without_activating_its_principal() {
+        let mut snapshot = DraftBook::default()
+            .checkpoint(Workspace::Research)
+            .unwrap();
+        snapshot.workspaces[1].local_archive = Some(
+            serde_json::from_value(serde_json::json!({
+                "version": 1,
+                "partitions": [
+                    {"principal": null, "rooms": ["anonymous"], "active": 0},
+                    {"principal": "account-A", "rooms": ["first", "私人第二间"], "active": 1}
+                ]
+            }))
+            .unwrap(),
+        );
+        let (restored, workspace) = DraftBook::from_checkpoint(snapshot.clone()).unwrap();
+        let view = restored.composer(workspace).shared.presentation(100);
+        assert_eq!(view.rooms.len(), 1);
+        assert_eq!(view.composer.text, "anonymous");
+        assert!(view.timeline.messages.is_empty());
+        assert!(view.composer.delivery.is_none());
+        assert_eq!(restored.checkpoint(workspace).unwrap(), snapshot);
+    }
+
+    #[cfg(feature = "hepta-shared-presenter")]
+    #[test]
+    fn original_shared_composer_recovers_every_local_room_without_history() {
+        let mut book = DraftBook::default();
+        book.composer_mut(Workspace::Personal)
+            .shared
+            .restore_local_rooms(&["first".into(), "第二间".into(), "third".into()], 1)
+            .unwrap();
+        let expected = book.checkpoint(Workspace::Personal).unwrap();
+        let (restored, workspace) = DraftBook::from_checkpoint(expected.clone()).unwrap();
+        let view = restored.composer(workspace).shared.presentation(100);
+        assert_eq!(view.rooms.len(), 3);
+        assert_eq!(view.composer.text, "第二间");
+        assert!(view.timeline.messages.is_empty());
+        assert!(view.composer.delivery.is_none());
+        assert_eq!(restored.checkpoint(workspace).unwrap(), expected);
+        book.observe_composition(Workspace::Personal, true);
+        assert!(book.checkpoint(Workspace::Personal).is_err());
+    }
+
+    #[cfg(not(feature = "hepta-shared-presenter"))]
+    #[test]
+    fn plain_renderer_cannot_silently_truncate_a_shared_multiroom_checkpoint() {
+        let mut snapshot = DraftBook::default()
+            .checkpoint(Workspace::Personal)
+            .unwrap();
+        snapshot.workspaces[0].rooms.push("another room".into());
+        assert!(DraftBook::from_checkpoint(snapshot).is_err());
+    }
+
+    #[cfg(not(feature = "hepta-shared-presenter"))]
+    #[test]
+    fn plain_renderer_refuses_partition_archives_without_losing_their_data() {
+        let mut snapshot = DraftBook::default()
+            .checkpoint(Workspace::Personal)
+            .unwrap();
+        snapshot.workspaces[0].rooms.clear();
+        snapshot.workspaces[0].local_archive = Some(serde_json::json!({
+            "version": 1,
+            "partitions": [{"principal": null, "rooms": ["keep me"], "active": 0}]
+        }));
+        assert!(DraftBook::from_checkpoint(snapshot).is_err());
+    }
 
     #[test]
     fn workspace_switch_keeps_unsent_text_and_context_separate() {

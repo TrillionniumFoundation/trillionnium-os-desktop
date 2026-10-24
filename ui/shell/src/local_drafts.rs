@@ -1,10 +1,14 @@
-//! User-opt-in local plain-text draft snapshot, never a Hepta task ledger.
+//! Local plain-text export and automatic composer recovery, never a task ledger.
 //! A security namespace, encryption or file-portal authority is NOT provided.
+use crate::conversation::DraftCheckpoint;
 use serde::{Deserialize, Serialize};
 use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::{self, Read, Write};
-use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
+use std::os::fd::AsRawFd;
+use std::os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Condvar, Mutex};
+use std::thread::{self, JoinHandle};
 use trill_ui_core::conversation::{LocalDraft, MAX_LOCAL_DRAFTS};
 use trill_ui_core::Workspace;
 
@@ -12,8 +16,13 @@ const VERSION: u32 = 1;
 const MAX_ENTRIES: usize = 127;
 const MAX_ENTRY_BYTES: usize = 16 * 1024;
 const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
+// All five original partitions in three workspaces plus 127 local captures,
+// including JSON's worst-case escaping, remain bounded under this ceiling.
+const MAX_RECOVERY_FILE_BYTES: u64 = 64 * 1024 * 1024;
 const FILE_NAME: &str = "local-drafts-v1.json";
 const CONTEXT_FILE_NAME: &str = "local-context-drafts-v2.json";
+const RECOVERY_FILE_NAME: &str = "workspace-checkpoint-v4.json";
+const LEGACY_RECOVERY_FILE_NAME: &str = "workspace-checkpoint-v3.json";
 // Linux O_NOFOLLOW ensures a raced file-to-symlink replacement is refused
 // by the kernel during open, not merely by an earlier path metadata check.
 #[cfg(target_os = "linux")]
@@ -126,14 +135,32 @@ pub fn state_dir() -> io::Result<PathBuf> {
 }
 
 fn ensure_private_dir(dir: &Path) -> io::Result<()> {
-    let mut builder = DirBuilder::new();
-    builder.recursive(true).mode(0o700);
-    builder.create(dir)?;
+    fn create_durable(path: &Path) -> io::Result<()> {
+        match fs::symlink_metadata(path) {
+            Ok(_) => return Ok(()),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error),
+        }
+        let parent = path
+            .parent()
+            .ok_or_else(|| invalid("Missing state parent"))?;
+        create_durable(parent)?;
+        match DirBuilder::new().mode(0o700).create(path) {
+            Ok(()) => File::open(parent)?.sync_all()?,
+            Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
+            Err(error) => return Err(error),
+        }
+        Ok(())
+    }
+    create_durable(dir)?;
     let meta = fs::symlink_metadata(dir)?;
-    if !meta.is_dir() || meta.permissions().mode() & 0o777 != 0o700 {
+    if !meta.is_dir()
+        || meta.permissions().mode() & 0o777 != 0o700
+        || meta.uid() != trill_ui_core::host_peer::current_effective_uid()
+    {
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
-            "Draft directory must be real and 0700",
+            "Draft directory must be user-owned, real and 0700",
         ));
     }
     Ok(())
@@ -150,9 +177,17 @@ fn save_at(dir: &Path, drafts: &[String]) -> io::Result<PathBuf> {
     save_payload(dir, FILE_NAME, &payload)
 }
 
+fn file_limit(name: &str) -> u64 {
+    if name == RECOVERY_FILE_NAME {
+        MAX_RECOVERY_FILE_BYTES
+    } else {
+        MAX_FILE_BYTES
+    }
+}
+
 fn save_payload(dir: &Path, name: &str, payload: &[u8]) -> io::Result<PathBuf> {
-    if payload.len() as u64 > MAX_FILE_BYTES {
-        return Err(invalid("Draft snapshot exceeds 4 MiB"));
+    if payload.len() as u64 > file_limit(name) {
+        return Err(invalid("Draft snapshot exceeds its bounded file limit"));
     }
     ensure_private_dir(dir)?;
     let target = dir.join(name);
@@ -160,7 +195,10 @@ fn save_payload(dir: &Path, name: &str, payload: &[u8]) -> io::Result<PathBuf> {
         Ok(meta) => {
             // Do not silently replace an existing backup whose visibility
             // has changed. Explicitly reject directory, symlink and 0644.
-            if !meta.file_type().is_file() || meta.permissions().mode() & 0o777 != 0o600 {
+            if !meta.file_type().is_file()
+                || meta.permissions().mode() & 0o777 != 0o600
+                || meta.uid() != trill_ui_core::host_peer::current_effective_uid()
+            {
                 return Err(io::Error::new(
                     io::ErrorKind::PermissionDenied,
                     "Existing draft snapshot must be a private 0600 regular file",
@@ -229,7 +267,10 @@ pub fn load_at(dir: &Path) -> io::Result<Vec<String>> {
 fn load_payload(dir: &Path, name: &str) -> io::Result<Vec<u8>> {
     // Loading never creates or modifies directories; user must first export.
     let dir_meta = fs::symlink_metadata(dir)?;
-    if !dir_meta.file_type().is_dir() || dir_meta.permissions().mode() & 0o777 != 0o700 {
+    if !dir_meta.file_type().is_dir()
+        || dir_meta.permissions().mode() & 0o777 != 0o700
+        || dir_meta.uid() != trill_ui_core::host_peer::current_effective_uid()
+    {
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
             "Draft directory is not private",
@@ -255,26 +296,218 @@ fn load_payload(dir: &Path, name: &str) -> io::Result<Vec<u8>> {
     }
     let opened = options.open(&target)?;
     let meta = opened.metadata()?;
-    if !meta.file_type().is_file() || meta.permissions().mode() & 0o777 != 0o600 {
+    if !meta.file_type().is_file()
+        || meta.permissions().mode() & 0o777 != 0o600
+        || meta.uid() != trill_ui_core::host_peer::current_effective_uid()
+    {
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
             "Draft snapshot must be 0600 regular file",
         ));
     }
-    if meta.len() > MAX_FILE_BYTES {
+    let limit = file_limit(name);
+    if meta.len() > limit {
         return Err(invalid("Draft snapshot is oversized"));
     }
     let mut bytes = Vec::new();
-    opened.take(MAX_FILE_BYTES + 1).read_to_end(&mut bytes)?;
-    if bytes.len() as u64 > MAX_FILE_BYTES {
+    opened.take(limit + 1).read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > limit {
         return Err(invalid("Draft snapshot grew too large while reading"));
     }
     Ok(bytes)
 }
 
+#[derive(Default)]
+struct PendingRecovery {
+    latest: Option<Vec<u8>>,
+    completion: Option<Result<(), String>>,
+    stopping: bool,
+}
+
+/// One writer per user state directory, with a bounded latest-value mailbox.
+/// The worker owns the flock until its final rename/fsync has completed. GUI
+/// frames only serialize/queue; they never wait on the filesystem or fsync.
+pub struct Recovery {
+    pending: Arc<(Mutex<PendingRecovery>, Condvar)>,
+    worker: Option<JoinHandle<io::Result<()>>>,
+    last_queued: Option<Vec<u8>>,
+}
+
+impl Recovery {
+    pub fn enabled() -> bool {
+        std::env::var_os("TRILL_UI_DRAFT_RECOVERY").as_deref() != Some(std::ffi::OsStr::new("0"))
+    }
+
+    /// Missing files start empty. Corrupt/unsupported/insecure files return an
+    /// error without starting a writer, so a default book cannot overwrite them.
+    pub fn open() -> io::Result<(Self, Option<DraftCheckpoint>)> {
+        Self::open_at(&state_dir()?)
+    }
+
+    pub fn open_at(dir: &Path) -> io::Result<(Self, Option<DraftCheckpoint>)> {
+        ensure_private_dir(dir)?;
+        let mut options = OpenOptions::new();
+        options
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .mode(0o600);
+        #[cfg(target_os = "linux")]
+        options.custom_flags(LINUX_O_NOFOLLOW | LINUX_O_NONBLOCK);
+        let lock = options.open(dir.join(".workspace-checkpoint.lock"))?;
+        let meta = lock.metadata()?;
+        if !meta.is_file()
+            || meta.permissions().mode() & 0o777 != 0o600
+            || meta.uid() != trill_ui_core::host_peer::current_effective_uid()
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Invalid recovery lock",
+            ));
+        }
+        // SAFETY: lock is an open regular-file descriptor owned by this object.
+        if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+            return Err(io::Error::new(io::ErrorKind::WouldBlock,
+                "Another Shell owns local draft recovery; this window will not overwrite its checkpoint"));
+        }
+        let (bytes, legacy) = match load_payload(dir, RECOVERY_FILE_NAME) {
+            Ok(bytes) => (Some(bytes), false),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                match load_payload(dir, LEGACY_RECOVERY_FILE_NAME) {
+                    Ok(bytes) => (Some(bytes), true),
+                    Err(error) if error.kind() == io::ErrorKind::NotFound => (None, false),
+                    Err(error) => return Err(error),
+                }
+            }
+            Err(error) => return Err(error),
+        };
+        let snapshot = bytes
+            .as_deref()
+            .map(|data| -> io::Result<DraftCheckpoint> {
+                let checkpoint: DraftCheckpoint =
+                    serde_json::from_slice(data).map_err(io::Error::other)?;
+                checkpoint.validate().map_err(invalid)?;
+                Ok(checkpoint)
+            })
+            .transpose()?;
+        let pending = Arc::new((Mutex::new(PendingRecovery::default()), Condvar::new()));
+        let mailbox = pending.clone();
+        let dir = dir.to_owned();
+        let worker = thread::Builder::new()
+            .name("local-draft-recovery".into())
+            .spawn(move || {
+                let _lock = lock;
+                let mut last_result = Ok(());
+                loop {
+                    let (mutex, changed) = &*mailbox;
+                    let mut state = mutex
+                        .lock()
+                        .map_err(|_| io::Error::other("Recovery mailbox poisoned"))?;
+                    while state.latest.is_none() && !state.stopping {
+                        state = changed
+                            .wait(state)
+                            .map_err(|_| io::Error::other("Recovery mailbox poisoned"))?;
+                    }
+                    let Some(payload) = state.latest.take() else {
+                        break;
+                    };
+                    drop(state);
+                    last_result = save_payload(&dir, RECOVERY_FILE_NAME, &payload).map(|_| ());
+                    let result = last_result
+                        .as_ref()
+                        .map(|_| ())
+                        .map_err(ToString::to_string);
+                    mutex
+                        .lock()
+                        .map_err(|_| io::Error::other("Recovery mailbox poisoned"))?
+                        .completion = Some(result);
+                }
+                last_result
+            })?;
+        Ok((
+            Self {
+                pending,
+                worker: Some(worker),
+                last_queued: if legacy { None } else { bytes },
+            },
+            snapshot,
+        ))
+    }
+
+    /// Coalesce changes while a write is in progress. Only the complete latest
+    /// local snapshot is queued; no thread can publish a partially edited book.
+    pub fn queue(&mut self, snapshot: &DraftCheckpoint) -> io::Result<()> {
+        snapshot.validate().map_err(invalid)?;
+        let bytes = serde_json::to_vec(snapshot).map_err(io::Error::other)?;
+        if bytes.len() as u64 > MAX_RECOVERY_FILE_BYTES {
+            return Err(invalid(
+                "Recovery checkpoint exceeds 64 MiB; previous file kept",
+            ));
+        }
+        if self.last_queued.as_ref() == Some(&bytes) {
+            return Ok(());
+        }
+        let (mutex, changed) = &*self.pending;
+        let mut state = mutex
+            .lock()
+            .map_err(|_| io::Error::other("Recovery mailbox poisoned"))?;
+        if state.stopping || self.worker.is_none() {
+            return Err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "Recovery worker stopped",
+            ));
+        }
+        state.latest = Some(bytes.clone());
+        self.last_queued = Some(bytes);
+        changed.notify_one();
+        Ok(())
+    }
+
+    /// A failed save is visible to the renderer. No text or context is logged.
+    pub fn poll(&mut self) -> Option<Result<(), String>> {
+        let result = match self.pending.0.lock() {
+            Ok(mut state) => state.completion.take(),
+            Err(_) => Some(Err("Recovery mailbox poisoned".into())),
+        };
+        if result.as_ref().is_some_and(Result::is_err) {
+            self.last_queued = None;
+        }
+        result
+    }
+
+    /// Normal shutdown drains the latest queued snapshot and reports fsync
+    /// failure. Abrupt SIGKILL can lose only edits after the last completed save.
+    pub fn finish(&mut self) -> io::Result<()> {
+        let Some(worker) = self.worker.take() else {
+            return Ok(());
+        };
+        let (mutex, changed) = &*self.pending;
+        {
+            let mut state = mutex
+                .lock()
+                .map_err(|_| io::Error::other("Recovery mailbox poisoned"))?;
+            state.stopping = true;
+            changed.notify_one();
+        }
+        worker
+            .join()
+            .map_err(|_| io::Error::other("Recovery worker panicked"))?
+    }
+}
+
+impl Drop for Recovery {
+    fn drop(&mut self) {
+        if let Err(error) = self.finish() {
+            eprintln!("Local draft recovery shutdown: {error}");
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::conversation::DraftBook;
     use std::os::unix::fs::symlink;
 
     struct Fixture(PathBuf);
@@ -302,6 +535,133 @@ mod tests {
         fn drop(&mut self) {
             let _ = fs::remove_dir_all(&self.0);
         }
+    }
+
+    #[test]
+    fn recovery_keeps_all_workspaces_and_drains_latest_before_unlock() {
+        let fixture = Fixture::new("automatic");
+        let (mut recovery, initial) = Recovery::open_at(&fixture.0).unwrap();
+        assert!(initial.is_none());
+        let mut book = DraftBook::default();
+        for workspace in Workspace::ALL {
+            book.composer_mut(workspace)
+                .edit(format!("draft {} 中文", workspace.code()));
+        }
+        recovery
+            .queue(&book.checkpoint(Workspace::Research).unwrap())
+            .unwrap();
+        book.composer_mut(Workspace::Build)
+            .edit("latest unsaved composer".into());
+        let expected = book.checkpoint(Workspace::Build).unwrap();
+        recovery.queue(&expected).unwrap();
+        assert!(
+            matches!(Recovery::open_at(&fixture.0), Err(e) if e.kind() == io::ErrorKind::WouldBlock)
+        );
+        recovery.finish().unwrap();
+        let (mut reopened, checkpoint) = Recovery::open_at(&fixture.0).unwrap();
+        assert_eq!(checkpoint, Some(expected));
+        reopened.finish().unwrap();
+    }
+
+    #[test]
+    fn corrupt_or_newer_recovery_never_starts_an_empty_writer() {
+        let fixture = Fixture::new("corrupt-recovery");
+        for bytes in [b"not json".as_slice(), b"{\"version\":99}".as_slice()] {
+            save_payload(&fixture.0, RECOVERY_FILE_NAME, bytes).unwrap();
+            assert!(Recovery::open_at(&fixture.0).is_err());
+            assert_eq!(load_payload(&fixture.0, RECOVERY_FILE_NAME).unwrap(), bytes);
+        }
+    }
+
+    #[test]
+    fn legacy_recovery_upgrades_to_new_file_and_preserves_original_bytes() {
+        let fixture = Fixture::new("legacy-recovery");
+        let mut legacy = serde_json::to_value(
+            DraftBook::default()
+                .checkpoint(Workspace::Research)
+                .unwrap(),
+        )
+        .unwrap();
+        legacy["version"] = serde_json::json!(3);
+        for entry in legacy["workspaces"].as_array_mut().unwrap() {
+            entry.as_object_mut().unwrap().remove("local_archive");
+            entry["rooms"] = serde_json::json!(["legacy composer 中文"]);
+            entry["active_room"] = serde_json::json!(0);
+        }
+        let old_bytes = serde_json::to_vec_pretty(&legacy).unwrap();
+        save_payload(&fixture.0, LEGACY_RECOVERY_FILE_NAME, &old_bytes).unwrap();
+        let (mut recovery, loaded) = Recovery::open_at(&fixture.0).unwrap();
+        let (book, active) = DraftBook::from_checkpoint(loaded.unwrap()).unwrap();
+        assert_eq!(active, Workspace::Research);
+        assert_eq!(book.composer(active).text(), "legacy composer 中文");
+        let upgraded = book.checkpoint(active).unwrap();
+        recovery.queue(&upgraded).unwrap();
+        recovery.finish().unwrap();
+        assert_eq!(
+            load_payload(&fixture.0, LEGACY_RECOVERY_FILE_NAME).unwrap(),
+            old_bytes
+        );
+        let bytes = load_payload(&fixture.0, RECOVERY_FILE_NAME).unwrap();
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&bytes).unwrap()["version"],
+            4
+        );
+        let (mut reopened, loaded) = Recovery::open_at(&fixture.0).unwrap();
+        assert_eq!(loaded, Some(upgraded));
+        reopened.finish().unwrap();
+        // A corrupt newest file must never resurrect an older draft and start
+        // a writer over the damaged bytes, even if an intact v3 is present.
+        save_payload(&fixture.0, RECOVERY_FILE_NAME, b"damaged newest checkpoint").unwrap();
+        assert!(Recovery::open_at(&fixture.0).is_err());
+        assert_eq!(
+            load_payload(&fixture.0, RECOVERY_FILE_NAME).unwrap(),
+            b"damaged newest checkpoint"
+        );
+        assert_eq!(
+            load_payload(&fixture.0, LEGACY_RECOVERY_FILE_NAME).unwrap(),
+            old_bytes
+        );
+    }
+
+    #[test]
+    fn recovery_write_failure_is_reported_without_removing_prior_bytes() {
+        let fixture = Fixture::new("recovery-error");
+        let (mut recovery, _) = Recovery::open_at(&fixture.0).unwrap();
+        let protected = fixture.0.join(RECOVERY_FILE_NAME);
+        fs::write(&protected, b"preserve inaccessible checkpoint").unwrap();
+        fs::set_permissions(&protected, fs::Permissions::from_mode(0o644)).unwrap();
+        recovery
+            .queue(
+                &DraftBook::default()
+                    .checkpoint(Workspace::Personal)
+                    .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(
+            recovery.finish().unwrap_err().kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert!(matches!(recovery.poll(), Some(Err(_))));
+        assert_eq!(
+            fs::read(protected).unwrap(),
+            b"preserve inaccessible checkpoint"
+        );
+    }
+
+    #[test]
+    fn recovery_rejects_lock_symlink_and_snapshot_fifo_without_blocking() {
+        let fixture = Fixture::new("recovery-special");
+        let target = fixture.0.join("target");
+        fs::write(&target, b"keep").unwrap();
+        symlink(&target, fixture.0.join(".workspace-checkpoint.lock")).unwrap();
+        assert!(Recovery::open_at(&fixture.0).is_err());
+        assert_eq!(fs::read(target).unwrap(), b"keep");
+        fs::remove_file(fixture.0.join(".workspace-checkpoint.lock")).unwrap();
+        let path =
+            std::ffi::CString::new(fixture.0.join(RECOVERY_FILE_NAME).to_str().unwrap()).unwrap();
+        // SAFETY: path is NUL terminated and only creates this test's FIFO.
+        assert_eq!(unsafe { libc::mkfifo(path.as_ptr(), 0o600) }, 0);
+        assert!(Recovery::open_at(&fixture.0).is_err());
     }
 
     #[test]

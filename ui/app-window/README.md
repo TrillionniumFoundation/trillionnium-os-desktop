@@ -7,10 +7,15 @@ Session normally launches it with the app kind, workspace and task identity.
 
 [main.rs](src/main.rs) owns the egui event loop and local app actions.
 [notes_organ.rs](src/notes_organ.rs) connects the private target channel to the
-GUI thread. The GUI thread serializes local and external Notes edits.
+bounded application worker in [notes_worker.rs](src/notes_worker.rs). That worker
+serializes local and external Notes edits and storage; Draw consumes its
+bounded projection without waiting for filesystem synchronization.
 
-The Notes effect replaces one identified in-memory document subject to its
-revision. It does not save a user file. A layout marker is separate from
+The Notes effect replaces one identified document subject to its revision.
+`TRILL_NOTES_STATE_DIR` selects the original durable store; without it, the
+explicit temporary mode remains. [Notes durability](../../support/ui/NOTES_DURABILITY.md)
+specifies private storage, failure freezing and the recovery-only
+[trill-notes-recovery](src/bin/trill-notes-recovery.rs) helper. A layout marker is separate from
 compositor pixels, and neither marker nor process exit publishes a Hepta
 durable terminal result. A lost reply can follow a real mutation; do not
 automatically replay a timed-out request.
@@ -21,7 +26,7 @@ arbitrary user shell commands. Preserve that boundary when adding commands.
 ## Development and validation
 
 ```sh
-RUSTUP_TOOLCHAIN=1.88.0 cargo test --manifest-path ui/Cargo.toml -p trill-app-window --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-app-window --locked
 ```
 
 Launch apps through Session and trill-ctl as described in

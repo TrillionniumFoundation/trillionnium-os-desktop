@@ -4,6 +4,7 @@
 set -euo pipefail
 # Many validation probes use Python assert: -O must never disable blockers.
 export PYTHONOPTIMIZE=0
+export PYTHONDONTWRITEBYTECODE=1
 cd "$(dirname "$0")/../.."
 test -f README.md && test ! -L README.md
 
@@ -70,6 +71,8 @@ bash tests/ui/test-zombie-liveness.sh
 # This real Linux ELF fixture verifies the artifact packager's fail-closed
 # behavior independently of Rust compilation. It does not count as GUI smoke.
 bash tests/ui/test-package-host-binaries.sh
+python3 -m unittest discover -s support/ui/product -p 'test_*.py'
+python3 -O -m unittest discover -s support/ui/product -p 'test_*.py'
 # Fetch every package recorded in the lockfile, including target-specific
 # entries that are not compiled by the Linux host build. The CI lock gate
 # intentionally runs `cargo metadata --offline` after the real tests; without

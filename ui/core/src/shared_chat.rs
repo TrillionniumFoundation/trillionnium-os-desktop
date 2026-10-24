@@ -1,16 +1,21 @@
 //! Default-off Desktop adapter to the exact Hepta #3067 shared presenter.
 //!
-//! `SharedComposer` contains the sole active draft. It exposes no mutable
-//! `ChatWorkspace`, owner installation, signed-envelope, history or I/O API.
+//! `SharedComposer` contains the sole active draft. The native feature borrows
+//! that same workspace for the original App; this grants no owner or I/O API.
 //! Desktop's existing Session task/context observations remain separate. Saving
 //! an immutable local archive does not turn it into an observed chat message.
 
-use hepta_control_core::chat::ChatWorkspace;
+pub use hepta_control_core::chat::ChatWorkspace;
 pub use hepta_control_core::chat::ComposeStatus;
+pub use hepta_control_core::chat::LocalDraftArchive;
+#[cfg(feature = "hepta-native-makepad")]
+pub use hepta_control_core::chat::WorkspaceTab as NativeWorkspaceTab;
 use hepta_robrix_ui::presentation::{
     apply_action, project, PresentationAction, PresentationCommand, TimelineWindow,
 };
 pub use hepta_robrix_ui::presentation::{ActionResult, ChatPresentation, RoomKey};
+#[cfg(feature = "hepta-native-makepad")]
+pub use hepta_robrix_ui::{makepad_widgets, native_presentation};
 
 #[derive(Default)]
 pub struct SharedComposer {
@@ -18,6 +23,82 @@ pub struct SharedComposer {
 }
 
 impl SharedComposer {
+    /// Includes the original owner's parked local text partitions. The archive
+    /// contains no authority, and restoration never activates a named account.
+    pub fn export_local_archive(&self) -> Result<LocalDraftArchive, &'static str> {
+        self.workspace.archive_local_drafts()
+    }
+
+    pub fn restore_local_archive(
+        &mut self,
+        archive: LocalDraftArchive,
+    ) -> Result<(), &'static str> {
+        self.workspace = ChatWorkspace::from_local_draft_archive(archive)?;
+        Ok(())
+    }
+
+    /// The original renderer borrows this sole owner; it must never copy the
+    /// draft or use a task observation to install chat authority.
+    #[cfg(feature = "hepta-native-makepad")]
+    pub fn native_workspace(&self) -> &ChatWorkspace {
+        &self.workspace
+    }
+
+    #[cfg(feature = "hepta-native-makepad")]
+    pub fn native_workspace_mut(&mut self) -> &mut ChatWorkspace {
+        &mut self.workspace
+    }
+
+    /// Snapshot every local room, not the selected editor alone. Room keys,
+    /// owners, delivery attempts and observed history are never persisted here.
+    pub fn export_local_rooms(&self) -> Result<(Vec<String>, usize), &'static str> {
+        if self.workspace.composing {
+            return Err("IME composition is active; checkpoint deferred");
+        }
+        let mut active = None;
+        let mut rooms = Vec::new();
+        for (id, draft) in self.workspace.drafts() {
+            if id == self.workspace.active_id() {
+                active = Some(rooms.len());
+            }
+            rooms.push(draft.text.clone());
+        }
+        Ok((rooms, active.ok_or("Missing active local room")?))
+    }
+
+    /// Restore into a fresh original workspace using its own validated edits.
+    /// Only local text survives restart; no owner or timeline is reconstituted.
+    pub fn restore_local_rooms(
+        &mut self,
+        rooms: &[String],
+        active: usize,
+    ) -> Result<(), &'static str> {
+        if rooms.is_empty()
+            || rooms.len() > hepta_control_core::chat::MAX_LOCAL_DRAFTS
+            || active >= rooms.len()
+        {
+            return Err("Invalid local room checkpoint");
+        }
+        let mut restored = ChatWorkspace::default();
+        let mut selected = None;
+        for (index, text) in rooms.iter().enumerate() {
+            if index != 0 && !restored.new_draft() {
+                return Err("Original composer refused a restored room");
+            }
+            if !restored.edit(text.clone()) {
+                return Err("Original composer refused restored text");
+            }
+            if index == active {
+                selected = Some(restored.active_id());
+            }
+        }
+        if !restored.select(selected.ok_or("Missing restored active room")?) {
+            return Err("Original composer refused restored selection");
+        }
+        self.workspace = restored;
+        Ok(())
+    }
+
     pub fn text(&self) -> &str {
         &self.workspace.draft().text
     }
@@ -189,5 +270,46 @@ mod tests {
         assert!(view.composer.delivery.is_none());
         assert!(view.timeline.messages.is_empty());
         assert_eq!(view.timeline.thread_id, None);
+    }
+
+    #[test]
+    fn history_bound_draft_recovers_as_local_text_without_history_or_authority() {
+        use hepta_control_core::chat_timeline::{History, ViewFence};
+        let mut draft = SharedComposer::default();
+        draft.edit(draft.source(), "尚未提交的中文".into());
+        let ticket = draft
+            .workspace
+            .begin_history(
+                0,
+                "observed-thread",
+                ViewFence {
+                    owner_session: "observed-session".into(),
+                    generation: 1,
+                },
+            )
+            .unwrap();
+        draft
+            .workspace
+            .receive_history(
+                &ticket,
+                History {
+                    thread_id: "observed-thread".into(),
+                    title: "Observed title".into(),
+                    revision: 1,
+                    event_sequence: 0,
+                    messages: vec![],
+                },
+            )
+            .unwrap();
+        assert!(draft.workspace.has_history(0));
+        let (rooms, active) = draft.export_local_rooms().unwrap();
+        let mut restored = SharedComposer::default();
+        restored.restore_local_rooms(&rooms, active).unwrap();
+        assert_eq!(restored.text(), "尚未提交的中文");
+        assert!(restored.workspace.timeline().is_none());
+        assert_eq!(
+            restored.request_send(restored.source()),
+            ActionResult::SendUnavailable
+        );
     }
 }
