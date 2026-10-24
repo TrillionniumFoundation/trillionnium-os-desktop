@@ -160,7 +160,9 @@ impl ClientWindow {
         if !self.notes_browser {
             return;
         }
-        let Some(organ) = &mut self.notes_organ else { return; };
+        let Some(organ) = &mut self.notes_organ else {
+            return;
+        };
         let mut open = true;
         let mut selected = None;
         egui::Window::new("打开已保存笔记")
@@ -172,9 +174,9 @@ impl ClientWindow {
                 if !organ.can_restore_saved() {
                     ui.label("当前窗口已编辑或暂不可用。请在桌面新建笔记窗口后打开副本。");
                 }
-                if self.activation.activated(&ui.add_enabled(
-                    !organ.saved_list_pending(), egui::Button::new("刷新列表"),
-                )) {
+                if self.activation.activated(
+                    &ui.add_enabled(!organ.saved_list_pending(), egui::Button::new("刷新列表")),
+                ) {
                     organ.refresh_saved_documents();
                 }
                 if organ.saved_list_pending() {
@@ -185,7 +187,10 @@ impl ClientWindow {
                 }
                 let listing = organ.saved_documents();
                 if listing.unavailable > 0 {
-                    ui.small(format!("{} 份笔记正在使用或无法读取；关闭旧窗口后可刷新。", listing.unavailable));
+                    ui.small(format!(
+                        "{} 份笔记正在使用或无法读取；关闭旧窗口后可刷新。",
+                        listing.unavailable
+                    ));
                 }
                 if listing.truncated {
                     ui.small("列表达到上限；较早的笔记可能未列出。");
@@ -193,24 +198,31 @@ impl ClientWindow {
                 if listing.documents.is_empty() && !organ.saved_list_pending() {
                     ui.label("暂无可打开的已保存笔记。");
                 }
-                egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
-                    for document in &listing.documents {
-                        ui.push_id(document.target.destination_id(), |ui| {
-                            ui.horizontal(|ui| {
-                                if self.activation.activated(&ui.add_enabled(
-                                    organ.can_restore_saved(), egui::Button::new("打开副本"),
-                                )) {
-                                    selected = Some(document.clone());
-                                }
-                                ui.vertical(|ui| {
-                                    ui.label(if document.preview.is_empty() { "空白笔记" } else { &document.preview });
-                                    ui.small(saved_notes_age(document.saved_unix_ms));
+                egui::ScrollArea::vertical()
+                    .max_height(320.0)
+                    .show(ui, |ui| {
+                        for document in &listing.documents {
+                            ui.push_id(document.target.destination_id(), |ui| {
+                                ui.horizontal(|ui| {
+                                    if self.activation.activated(&ui.add_enabled(
+                                        organ.can_restore_saved(),
+                                        egui::Button::new("打开副本"),
+                                    )) {
+                                        selected = Some(document.clone());
+                                    }
+                                    ui.vertical(|ui| {
+                                        ui.label(if document.preview.is_empty() {
+                                            "空白笔记"
+                                        } else {
+                                            &document.preview
+                                        });
+                                        ui.small(saved_notes_age(document.saved_unix_ms));
+                                    });
                                 });
                             });
-                        });
-                        ui.separator();
-                    }
-                });
+                            ui.separator();
+                        }
+                    });
             });
         if let Some(document) = selected {
             if organ.restore_saved_document(document) {

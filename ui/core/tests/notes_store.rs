@@ -87,7 +87,8 @@ fn read_state(store: &mut NotesStore, identity: &NotesTargetIdentity) -> serde_j
     let raw = serde_json::to_vec(&serde_json::json!({
         "schema_version": 1, "action": "read_document_state", "target": identity,
         "request_id": "e".repeat(32),
-    })).unwrap();
+    }))
+    .unwrap();
     serde_json::from_slice(&store.recovery_exact(&raw).unwrap()).unwrap()
 }
 
@@ -96,7 +97,9 @@ fn saved_text_opens_under_new_identity_without_receipts_or_old_effect_capability
     let root = Directory::new();
     let mut original = NotesStore::create(&root.0, target()).unwrap();
     let original_receipt = original.apply_exact(&request()).unwrap();
-    original.local_edit("用户继续编辑的笔记\n第二行".into()).unwrap();
+    original
+        .local_edit("用户继续编辑的笔记\n第二行".into())
+        .unwrap();
     drop(original);
     let old_path = document_directory(&root).join("document.json");
     let old_bytes = fs::read(&old_path).unwrap();
@@ -111,18 +114,32 @@ fn saved_text_opens_under_new_identity_without_receipts_or_old_effect_capability
     assert_eq!(reopened.text(), "用户继续编辑的笔记\n第二行");
     assert_eq!(reopened.revision(), 1);
     let state = read_state(&mut reopened, &reopened_target());
-    assert_eq!(state["target"], serde_json::to_value(reopened_target()).unwrap());
+    assert_eq!(
+        state["target"],
+        serde_json::to_value(reopened_target()).unwrap()
+    );
     assert_eq!(state["receipt_pending"], false);
-    assert!(matches!(reopened.apply_exact(&request()).unwrap().result,
-        NotesResult::NotApplied { reason: NotesNotAppliedReason::TargetMismatch, .. }));
+    assert!(matches!(
+        reopened.apply_exact(&request()).unwrap().result,
+        NotesResult::NotApplied {
+            reason: NotesNotAppliedReason::TargetMismatch,
+            ..
+        }
+    ));
     assert!(reopened.recovery_exact(&query()).is_err());
     assert_eq!(fs::read(&old_path).unwrap(), old_bytes);
     drop(reopened);
     let mut saved_copy = NotesStore::recover(&root.0, &reopened_target()).unwrap();
     assert_eq!(saved_copy.text(), "用户继续编辑的笔记\n第二行");
-    assert_eq!(read_state(&mut saved_copy, &reopened_target())["receipt_pending"], false);
+    assert_eq!(
+        read_state(&mut saved_copy, &reopened_target())["receipt_pending"],
+        false
+    );
     let mut original_recovery = NotesStore::recover(&root.0, &target()).unwrap();
-    assert_eq!(NotesResponse::parse_exact(&original_recovery.recovery_exact(&query()).unwrap()).unwrap(), original_receipt);
+    assert_eq!(
+        NotesResponse::parse_exact(&original_recovery.recovery_exact(&query()).unwrap()).unwrap(),
+        original_receipt
+    );
 }
 
 #[test]
@@ -132,17 +149,24 @@ fn changed_source_and_intervening_current_edits_are_not_overwritten() {
     original.local_edit("first saved text".into()).unwrap();
     drop(original);
     let mut reopened = NotesStore::create(&root.0, reopened_target()).unwrap();
-    let selected = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
+    let selected = NotesStore::saved_documents(&root.0, &reopened_target())
+        .unwrap()
+        .documents
+        .remove(0);
     // A valid but newer source snapshot replaces the one displayed by the picker.
     let path = document_directory(&root).join("document.json");
-    let mut newer = NotesDocument::restore_checkpoint(&fs::read(&path).unwrap(), &target()).unwrap();
+    let mut newer =
+        NotesDocument::restore_checkpoint(&fs::read(&path).unwrap(), &target()).unwrap();
     newer.local_edit("changed after selection".into()).unwrap();
     fs::write(&path, newer.checkpoint().unwrap()).unwrap();
     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
     assert_eq!(reopened.text(), "");
     assert_eq!(reopened.revision(), 0);
     assert!(!reopened.is_frozen());
-    let refreshed = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
+    let refreshed = NotesStore::saved_documents(&root.0, &reopened_target())
+        .unwrap()
+        .documents
+        .remove(0);
     reopened.local_edit("keep my new edits".into()).unwrap();
     assert!(reopened.restore_saved_text(&root.0, &refreshed, 0).is_err());
     assert!(reopened.restore_saved_text(&root.0, &refreshed, 1).is_err());
@@ -157,7 +181,10 @@ fn saved_picker_and_restore_refuse_locked_or_symlinked_sources() {
     original.local_edit("private saved text".into()).unwrap();
     drop(original);
     let mut reopened = NotesStore::create(&root.0, reopened_target()).unwrap();
-    let selected = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
+    let selected = NotesStore::saved_documents(&root.0, &reopened_target())
+        .unwrap()
+        .documents
+        .remove(0);
     let original_owner = NotesStore::recover(&root.0, &target()).unwrap();
     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
     let busy = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap();
@@ -170,7 +197,10 @@ fn saved_picker_and_restore_refuse_locked_or_symlinked_sources() {
     let before = fs::read(&outside).unwrap();
     symlink(&outside, &path).unwrap();
     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
-    assert!(NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.is_empty());
+    assert!(NotesStore::saved_documents(&root.0, &reopened_target())
+        .unwrap()
+        .documents
+        .is_empty());
     assert_eq!(fs::read(&outside).unwrap(), before);
     assert_eq!(reopened.revision(), 0);
     assert!(!reopened.is_frozen());
@@ -185,8 +215,14 @@ fn failed_restore_write_freezes_only_the_new_incarnation_and_retains_original() 
     let old_path = document_directory(&root).join("document.json");
     let old_bytes = fs::read(&old_path).unwrap();
     let mut reopened = NotesStore::create(&root.0, reopened_target()).unwrap();
-    let selected = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
-    let next = root.0.join(format!("{}-2-{}", "c".repeat(32), "d".repeat(32))).join("next.json");
+    let selected = NotesStore::saved_documents(&root.0, &reopened_target())
+        .unwrap()
+        .documents
+        .remove(0);
+    let next = root
+        .0
+        .join(format!("{}-2-{}", "c".repeat(32), "d".repeat(32)))
+        .join("next.json");
     symlink(&old_path, next).unwrap();
     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
     assert!(reopened.is_frozen());
@@ -196,7 +232,10 @@ fn failed_restore_write_freezes_only_the_new_incarnation_and_retains_original() 
     let mut recovered = NotesStore::recover(&root.0, &reopened_target()).unwrap();
     assert_eq!(recovered.text(), "");
     assert_eq!(recovered.revision(), 0);
-    assert_eq!(read_state(&mut recovered, &reopened_target())["receipt_pending"], false);
+    assert_eq!(
+        read_state(&mut recovered, &reopened_target())["receipt_pending"],
+        false
+    );
 }
 
 #[test]
@@ -204,16 +243,22 @@ fn saved_picker_is_bounded_and_keeps_utf8_previews_intact() {
     let root = Directory::new();
     for index in 1..=MAX_SAVED_NOTES + 1 {
         let identity = NotesTargetIdentity {
-            session_instance: "a".repeat(32), task_id: index as u64,
+            session_instance: "a".repeat(32),
+            task_id: index as u64,
             incarnation: format!("{index:032x}"),
         };
         let mut original = NotesStore::create(&root.0, identity).unwrap();
-        original.local_edit(format!("{} {index}", "中".repeat(100))).unwrap();
+        original
+            .local_edit(format!("{} {index}", "中".repeat(100)))
+            .unwrap();
     }
     let listing = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap();
     assert!(listing.truncated);
     assert_eq!(listing.documents.len(), MAX_SAVED_NOTES);
-    assert!(listing.documents.iter().all(|entry| entry.preview == "中".repeat(80)));
+    assert!(listing
+        .documents
+        .iter()
+        .all(|entry| entry.preview == "中".repeat(80)));
     assert_eq!(listing.unavailable, 0);
 }
 
@@ -226,8 +271,11 @@ fn restored_copy_survives_process_death_while_original_receipt_remains_recoverab
     let mut child = Command::new(std::env::current_exe().unwrap())
         .args(["--exact", "restore_then_wait_fixture", "--nocapture"])
         .env("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT", &root.0)
-        .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped())
-        .spawn().unwrap();
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
     let output = child.stdout.take().unwrap();
     let (send, receive) = mpsc::channel();
     let reader = std::thread::spawn(move || {
@@ -242,23 +290,37 @@ fn restored_copy_survives_process_death_while_original_receipt_remains_recoverab
     let _ = child.kill();
     let status = child.wait().unwrap();
     reader.join().unwrap();
-    assert!(committed.is_ok(), "restoring child did not persist within the deadline");
+    assert!(
+        committed.is_ok(),
+        "restoring child did not persist within the deadline"
+    );
     assert!(!status.success());
     let mut restored = NotesStore::recover(&root.0, &reopened_target()).unwrap();
     assert_eq!(restored.text(), "重启后仍可核对的原始效果");
     assert_eq!(restored.revision(), 1);
-    assert_eq!(read_state(&mut restored, &reopened_target())["receipt_pending"], false);
+    assert_eq!(
+        read_state(&mut restored, &reopened_target())["receipt_pending"],
+        false
+    );
     assert!(restored.apply_exact(&request()).is_err());
     let mut original = NotesStore::recover(&root.0, &target()).unwrap();
-    assert_eq!(NotesResponse::parse_exact(&original.recovery_exact(&query()).unwrap()).unwrap(), receipt);
+    assert_eq!(
+        NotesResponse::parse_exact(&original.recovery_exact(&query()).unwrap()).unwrap(),
+        receipt
+    );
 }
 
 #[test]
 fn restore_then_wait_fixture() {
-    let Some(root) = std::env::var_os("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT") else { return; };
+    let Some(root) = std::env::var_os("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT") else {
+        return;
+    };
     let root = PathBuf::from(root);
     let mut copy = NotesStore::create(&root, reopened_target()).unwrap();
-    let selected = NotesStore::saved_documents(&root, &reopened_target()).unwrap().documents.remove(0);
+    let selected = NotesStore::saved_documents(&root, &reopened_target())
+        .unwrap()
+        .documents
+        .remove(0);
     copy.restore_saved_text(&root, &selected, 0).unwrap();
     println!("NOTES_RESTORED_BEFORE_EXIT");
     std::io::stdout().flush().unwrap();

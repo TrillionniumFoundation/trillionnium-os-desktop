@@ -135,13 +135,23 @@ impl NotesStore {
             }
             let result = Self::recover(root, &target).and_then(|store| {
                 let file = open_file(&store.directory, "document.json", libc::O_RDONLY)?;
-                let saved = file.metadata()?.modified()?.duration_since(UNIX_EPOCH)
+                let saved = file
+                    .metadata()?
+                    .modified()?
+                    .duration_since(UNIX_EPOCH)
                     .map_err(io::Error::other)?;
                 Ok(SavedNotesDocument {
                     target,
                     revision: store.revision(),
                     text_sha256: sha256_hex(store.text().as_bytes()),
-                    preview: store.text().lines().next().unwrap_or("").chars().take(80).collect(),
+                    preview: store
+                        .text()
+                        .lines()
+                        .next()
+                        .unwrap_or("")
+                        .chars()
+                        .take(80)
+                        .collect(),
                     saved_unix_ms: u64::try_from(saved.as_millis()).unwrap_or(u64::MAX),
                 })
             });
@@ -153,8 +163,11 @@ impl NotesStore {
             }
         }
         listing.documents.sort_by(|left, right| {
-            right.saved_unix_ms.cmp(&left.saved_unix_ms)
-                .then_with(|| left.target.destination_id().cmp(&right.target.destination_id()))
+            right.saved_unix_ms.cmp(&left.saved_unix_ms).then_with(|| {
+                left.target
+                    .destination_id()
+                    .cmp(&right.target.destination_id())
+            })
         });
         if listing.documents.len() > MAX_SAVED_NOTES {
             listing.documents.truncate(MAX_SAVED_NOTES);
@@ -175,22 +188,30 @@ impl NotesStore {
         expected_revision: u64,
     ) -> io::Result<()> {
         self.require_application()?;
-        if expected_revision != 0 || self.document.revision() != expected_revision
-            || !self.document.text().is_empty() || &source.target == self.document.target()
+        if expected_revision != 0
+            || self.document.revision() != expected_revision
+            || !self.document.text().is_empty()
+            || &source.target == self.document.target()
         {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput,
-                "Saved Notes can only be opened in a new, unedited incarnation"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Saved Notes can only be opened in a new, unedited incarnation",
+            ));
         }
         let previous = Self::recover(root, &source.target)?;
         if previous.revision() != source.revision
             || sha256_hex(previous.text().as_bytes()) != source.text_sha256
         {
-            return Err(io::Error::new(io::ErrorKind::InvalidData,
-                "Saved Notes changed after selection; refresh the document list"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Saved Notes changed after selection; refresh the document list",
+            ));
         }
         // Start from a fresh model instead of cloning the old checkpoint.
-        let mut next = NotesDocument::new(self.document.target().clone()).map_err(protocol_error)?;
-        next.local_edit(previous.text().to_owned()).map_err(protocol_error)?;
+        let mut next =
+            NotesDocument::new(self.document.target().clone()).map_err(protocol_error)?;
+        next.local_edit(previous.text().to_owned())
+            .map_err(protocol_error)?;
         self.commit(next)
     }
 
@@ -346,8 +367,13 @@ fn identity_from_directory(name: &std::ffi::OsStr) -> Option<NotesTargetIdentity
         task_id: parts.next()?.parse().ok()?,
         incarnation: parts.next()?.to_owned(),
     };
-    if parts.next().is_some() || target.validate().is_err()
-        || name != format!("{}-{}-{}", target.session_instance, target.task_id, target.incarnation)
+    if parts.next().is_some()
+        || target.validate().is_err()
+        || name
+            != format!(
+                "{}-{}-{}",
+                target.session_instance, target.task_id, target.incarnation
+            )
     {
         return None;
     }

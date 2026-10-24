@@ -17,7 +17,9 @@ pub(super) enum Command {
         revision: u64,
         text: String,
     },
-    ListSaved { id: u64 },
+    ListSaved {
+        id: u64,
+    },
     RestoreSaved {
         id: u64,
         revision: u64,
@@ -141,14 +143,21 @@ fn run(
                 None
             }
             Command::ListSaved { id } => {
-                let result = root.as_ref()
+                let result = root
+                    .as_ref()
                     .ok_or_else(|| "Temporary Notes have no saved document directory".to_owned())
-                    .and_then(|root| NotesStore::saved_documents(root, document.target())
-                        .map_err(|error| error.to_string()));
+                    .and_then(|root| {
+                        NotesStore::saved_documents(root, document.target())
+                            .map_err(|error| error.to_string())
+                    });
                 projection.saved_documents = Some((id, result));
                 None
             }
-            Command::RestoreSaved { id, revision, source } => {
+            Command::RestoreSaved {
+                id,
+                revision,
+                source,
+            } => {
                 let result = match (&mut document, root.as_ref()) {
                     (Document::Durable(store), Some(root)) => store
                         .restore_saved_text(root, &source, revision)

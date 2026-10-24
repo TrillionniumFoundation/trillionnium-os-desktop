@@ -106,7 +106,9 @@ impl NotesAppChannel {
             self.version = value.version;
             self.revision = value.revision;
             self.frozen = value.storage_failed;
-            if let Some((_, result)) = value.saved_documents.as_ref()
+            if let Some((_, result)) = value
+                .saved_documents
+                .as_ref()
                 .filter(|(id, _)| self.pending_list == Some(*id))
             {
                 self.pending_list = None;
@@ -118,7 +120,9 @@ impl NotesAppChannel {
                     Err(_) => self.list_error = Some("无法读取已保存笔记；原文件保持不变。"),
                 }
             }
-            let restored = value.restore_result.as_ref()
+            let restored = value
+                .restore_result
+                .as_ref()
                 .filter(|(id, _)| self.pending_restore == Some(*id))
                 .map(|(_, result)| result.is_ok());
             if restored.is_some() {
@@ -129,7 +133,9 @@ impl NotesAppChannel {
                 self.deferred_edit = None;
             } else if let Some(accepted) = restored {
                 self.text = value.text;
-                self.notice = if accepted { None } else {
+                self.notice = if accepted {
+                    None
+                } else {
                     Some("未恢复：文档已变化、仍在使用或无法读取。请刷新后选择，或新建笔记。")
                 };
             } else if let Some((_, accepted, revision)) = value
@@ -165,7 +171,8 @@ impl NotesAppChannel {
     }
 
     pub fn local_edit(&mut self, text: String) -> bool {
-        if self.frozen || self.pending_restore.is_some()
+        if self.frozen
+            || self.pending_restore.is_some()
             || text.len() > trill_ui_core::notes::MAX_NOTES_TEXT_BYTES
         {
             return false;
@@ -186,8 +193,12 @@ impl NotesAppChannel {
     }
 
     pub fn can_restore_saved(&self) -> bool {
-        self.worker.durable && !self.frozen && self.revision == 0 && self.text.is_empty()
-            && self.pending_edit.is_none() && self.deferred_edit.is_none()
+        self.worker.durable
+            && !self.frozen
+            && self.revision == 0
+            && self.text.is_empty()
+            && self.pending_edit.is_none()
+            && self.deferred_edit.is_none()
             && self.pending_restore.is_none()
     }
 
@@ -207,8 +218,14 @@ impl NotesAppChannel {
         if !self.worker.durable || self.pending_list.is_some() {
             return;
         }
-        let Some(id) = self.next_request_id() else { return; };
-        match self.worker.sender.try_send(worker::Command::ListSaved { id }) {
+        let Some(id) = self.next_request_id() else {
+            return;
+        };
+        match self
+            .worker
+            .sender
+            .try_send(worker::Command::ListSaved { id })
+        {
             Ok(()) => {
                 self.pending_list = Some(id);
                 self.list_error = None;
@@ -221,9 +238,13 @@ impl NotesAppChannel {
         if !self.can_restore_saved() {
             return false;
         }
-        let Some(id) = self.next_request_id() else { return false; };
+        let Some(id) = self.next_request_id() else {
+            return false;
+        };
         match self.worker.sender.try_send(worker::Command::RestoreSaved {
-            id, revision: self.revision, source,
+            id,
+            revision: self.revision,
+            source,
         }) {
             Ok(()) => {
                 self.pending_restore = Some(id);
