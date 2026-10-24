@@ -15,11 +15,11 @@ Objective/Notes path remains documented in [README](README.md).
 | [src/text_tests.rs](src/text_tests.rs) | Presentation fixtures for recovered identity, unchanged local drafts, stale connections and separate approval permission |
 | [Shell native_makepad.rs](../../ui/shell/src/native_makepad.rs) | Borrow the current original workspace, poll outside Draw, queue Send/Stop/history/approval and wake the native event loop |
 | [Shell native_text_config.rs](../../ui/shell/src/native_text_config.rs) | Validate the two original Root endpoint hints without accepting a principal or route override |
-| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
+| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/22e87e0dd6560a7b925e716a33011378ae07a9a2/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
 
 The cross-repository link is fixed at the current Cargo source
-`7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9`, tree
-`cf53a7c0e7ad57772238b614b673d176386ddfe5`. The
+`22e87e0dd6560a7b925e716a33011378ae07a9a2`, tree
+`7e376f5d3509cf38e13b513ca2b87d9eecd7dc47`. The
 [source profile](../../docs/agents/ORGAN_RELEASE_PROFILE.md) must also bind the
 complete Desktop commit, actual generated locks and feature build. The latest
 [eight original text integrations](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
@@ -66,6 +66,23 @@ original timeline observations. Approval has its own permission and waits for
 the original callback resolution. Stop requests original cancellation and waits
 for the owner outcome. Neither enqueue success nor a transport write is a
 terminal or device-effect receipt.
+
+Original user messages from other App Server clients may include images, local
+images, audio, local audio, skills or mentions. These parts use fixed inert type
+labels; their URLs, paths, encoded payloads and names are not resolved or
+expanded. Original Chinese text, item IDs and turn IDs remain intact. An
+unknown content variant is explicitly unsupported, and observing an attachment
+does not add attachment input or execution permission. Such history must not
+keep the initial-history barrier closed for a subsequent plain-text message.
+
+History bypasses the 32 KiB Root signature frame: the worker reads the original
+App Server and delivers a bounded in-memory history event. Agentd reduces a
+full page from 16 turns to one when it exceeds 256 KiB overall, 32 KiB per item
+or the item-count bound; an individually oversized turn becomes original
+`NotLoaded` metadata with a notice and its original pagination cursor. The
+original WebSocket still has a 128 MiB message bound before this reduction can
+run. A response larger than that bound can fail at transport and is not covered
+by the text projection's attachment labels or by the smaller-item regression.
 
 All events are fenced by the physical connection and original room/owner.
 Refresh reconnects to the same original route and retains signed identities;

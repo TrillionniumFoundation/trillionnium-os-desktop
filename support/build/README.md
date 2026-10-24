@@ -1,5 +1,10 @@
 # A01: fixed Asterinas source build and QEMU smoke
 
+> **Current entry — 2026-10-24:** Use the [foundation guide](../../docs/current/FOUNDATION.md)
+> for the ordinary/G1-c/G1-d/G2 profile boundaries and source checks. The strict
+> native runner defaults to four complete suites: OSTD, core, frame allocator
+> and MLSDisk. The historical result counts below retain their original scope.
+
 > **Reading note — 2026-10-22:** The core141 result, the G1-a-only build-input
 > description, and the “not changed” / “untested” handoff statements below retain
 > the early A01 checkpoint; they are not the current whole-project status.
@@ -67,12 +72,15 @@ when a signal arrives immediately after the atomic link operation.
 ## Kernel-mode regression tests
 
 ```sh
-# Runs both full crate test sets inside separate QEMU guests.
+# Prepare the four fixed test-base locks, then run all four complete suites.
+python3 -I support/build/ktest/prepare-locks.py
 python3 -I support/build/ktest/run.py
 
 # Or run a single crate.
 python3 -I support/build/ktest/run.py --crate ostd
 python3 -I support/build/ktest/run.py --crate aster-core
+python3 -I support/build/ktest/run.py --crate osdk-frame-allocator
+python3 -I support/build/ktest/run.py --crate aster-mlsdisk
 ```
 
 These use the same fixed CPU, memory and firmware profile. They build real
