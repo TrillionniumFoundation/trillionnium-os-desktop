@@ -10,7 +10,7 @@
 
 ## 2026-10-24 Linux 产品集成增量
 
-当前 UI、Session host 和原 Hepta 依赖补丁统一指向已发布 [Hepta `52456c309f64ee80e7e377f774445c5dfe0523c9`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/52456c309f64ee80e7e377f774445c5dfe0523c9)，完整 tree 为 `9d0949a72d064cc2222859780c6ccd9a22c8e575`，产品工具链为 Rust 1.96.0。UI 根显式将 `accesskit`、`accesskit_consumer`、`accesskit_atspi_common`、`accesskit_unix` 四包固定到相同 Hepta SHA，避免依赖 workspace 的 patch 不向上继承。`services/hepta-os` 是本地 wire/transport crate，没有虚构新增 Hepta Git pin。完整 Desktop HEAD/tree、真实 Cargo 解析生成的锁和 features 仍由最终 source-profile 及构建收据绑定。
+当前 UI、Session host 和原 Hepta 依赖补丁统一指向已发布 [Hepta `bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9)，完整 tree 为 `f71e4e0fbe92eec2c7f1326b3d77a3a9f5a06999`，产品工具链为 Rust 1.96.0。UI 根显式将 `accesskit`、`accesskit_consumer`、`accesskit_atspi_common`、`accesskit_unix` 四包固定到相同 Hepta SHA，避免依赖 workspace 的 patch 不向上继承。`services/hepta-os` 是本地 wire/transport crate，没有虚构新增 Hepta Git pin。完整 Desktop HEAD/tree、真实 Cargo 解析生成的锁和 features 仍由最终 source-profile 及构建收据绑定。
 
 原始 [v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)保留每次实际输入、命令、完整日志和退出码；下面计数只表示对应包/过滤范围，不合并计算为整仓通过。v8/v9 的原编译失败、文本失败和资源测试 panic 继续保存在[各自历史档案](../results/integration/2026-10-24-original-owner-product/text-native-v8-v9/README.md)，未被后续结果覆盖。
 

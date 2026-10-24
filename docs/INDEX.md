@@ -8,7 +8,7 @@
 
 [路线](ROADMAP.md) 给出下一条依赖；[10-23执行记录](agents/ORGAN_EXECUTION_2026_10_23.md) 和 [Objective owner设计交接](agents/OBJECTIVE_SENDER_OWNER_NEXT.md) 是各自固定时点的资料。开放PR的代码和手册不是当前整合版本的运行证明。
 
-[当前原生 organ 跨仓 source map](SOURCES.md#hepta-native-organ)固定 Hepta `52456c309f64ee80e7e377f774445c5dfe0523c9`，逐项链接原 Root/Agentd、Makepad/ChatWorkspace、Notes、Android、AccessKit 与独立 SDK 候选的开发及技术合同。[v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)与完整产品门禁分开；默认原 SDK 与 clipboard 候选的 feature/lock/bundle 不混用。
+[当前原生 organ 跨仓 source map](SOURCES.md#hepta-native-organ)固定 Hepta `bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9`，逐项链接原 Root/Agentd、Makepad/ChatWorkspace、Notes、Android、AccessKit 与独立 SDK 候选的开发及技术合同。[v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)与完整产品门禁分开；默认原 SDK 与 clipboard 候选的 feature/lock/bundle 不混用。
 
 ### 本轮原生 organ 模块交接
 

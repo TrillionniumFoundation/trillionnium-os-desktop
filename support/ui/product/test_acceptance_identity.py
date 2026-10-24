@@ -13,6 +13,39 @@ import desktop
 
 
 class AcceptanceIdentityTests(unittest.TestCase):
+    def test_runtime_root_is_private_and_its_identity_detects_replacement(self):
+        with tempfile.TemporaryDirectory(prefix="tr-run-") as scratch:
+            root = Path(scratch) / "r"
+            root.mkdir(mode=0o700)
+            first = identity.runtime_root_identity(root)
+            self.assertEqual(first["session_socket"], str(root / "trillionnium-ui/session.sock"))
+            self.assertLessEqual(first["session_socket_bytes"], 107)
+            self.assertEqual(list(root.iterdir()), [])
+            root.rename(Path(scratch) / "retained")
+            root.mkdir(mode=0o700)
+            self.assertNotEqual(identity.runtime_root_identity(root), first)
+
+    def test_runtime_root_rejects_shared_or_aliased_directories(self):
+        with tempfile.TemporaryDirectory(prefix="tr-run-") as scratch:
+            root = Path(scratch) / "r"
+            root.mkdir(mode=0o755)
+            with self.assertRaisesRegex(RuntimeError, "0700"):
+                identity.runtime_root_identity(root)
+            root.chmod(0o700)
+            alias = Path(scratch) / "alias"
+            alias.symlink_to(root, target_is_directory=True)
+            with self.assertRaisesRegex(RuntimeError, "canonical directory"):
+                identity.runtime_root_identity(alias)
+
+    def test_runtime_root_reserves_space_for_temporary_bus_names(self):
+        with tempfile.TemporaryDirectory(prefix="tr-run-") as scratch:
+            count = 70 - len(os.fsencode(scratch)) - 1
+            root = Path(scratch) / ("r" * count)
+            root.mkdir(mode=0o700)
+            self.assertLessEqual(len(os.fsencode(desktop.session_socket_path(root))), 107)
+            with self.assertRaisesRegex(desktop.ProductError, "Temporary bus socket budget.*at most 107 bytes"):
+                identity.runtime_root_identity(root)
+
     def test_external_manifest_pin_rejects_before_installation_or_binary_execution(self):
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)

@@ -233,6 +233,14 @@ draft text or runtime payloads. Missing display or user bus is actionable;
 installation cannot manufacture a graphical login. Read process diagnostics
 with `journalctl --user -u trillionnium-desktop-session.service`.
 
+Linux pathname Unix sockets allow 107 filesystem-encoded bytes before the
+terminating NUL. The Session endpoint adds `/trillionnium-ui/session.sock` to
+`XDG_RUNTIME_DIR`; the complete path must fit. Chat and observer socket paths
+have the same limit. The launcher checks the encoded byte count before opening
+the socket and reports the actual length and limit. A long installation prefix
+or ordinary configuration filename does not need to become the runtime socket
+directory. Use a separate short, user-owned `0700` runtime directory.
+
 For isolated acceptance, `install` accepts `--prefix`, `--bin-dir`,
 `--applications-dir`, `--unit-dir`, `--config` and a dedicated
 `--unit-name trillionnium-desktop-<test-name>-session.service`. The unit must be
@@ -302,6 +310,7 @@ complete original resource bundle; the first package may use an explicitly
 verified external original bundle. For example:
 
 ```sh
+mkdir -m 0700 /tmp/trill-install-example-UNIQUE
 python3 -B support/ui/product/smoke_installed.py \
   --package /absolute/extracted-first/trillionnium-desktop \
   --upgrade-package /absolute/extracted-next/trillionnium-desktop \
@@ -310,9 +319,27 @@ python3 -B support/ui/product/smoke_installed.py \
   --expected-desktop <first-full-Desktop-commit> \
   --expected-upgrade-desktop <next-full-Desktop-commit> \
   --expected-hepta <full-Hepta-commit> \
+  --hepta-source /absolute/fixed-original-test-helper-checkout \
   --renderer makepad --makepad-resources /absolute/prepared-original-bundle \
+  --runtime-root /tmp/trill-install-example-UNIQUE \
   --evidence /absolute/new-install-acceptance-directory
 ```
+
+`--runtime-root` is required and must already exist as an empty, canonical,
+user-owned `0700` directory. Choose a new short path for each attempt. The harness
+checks the full Session endpoint and reserves space for a 32-character temporary
+bus name under its private `TMPDIR`. Its temporary XDG runtime/state/config/cache/
+data paths live under this root; evidence, package installation and the explicit
+product configuration remain at their caller-selected paths. The original user
+manager bus stays unchanged. A dedicated unit drop-in passes only these private
+temporary paths to this test's Session and application children; it never imports
+environment into the user manager.
+
+The caller owns the short root. The harness records its device/inode and final
+retained-state hashes, and leaves that directory and synthetic state available
+after uninstall for inspection. It does not recursively remove or reuse it.
+Existing owned-process, exact-unit/drop-in cleanup and cleanup-failure gates
+continue to apply. Changing the runtime root's identity fails acceptance.
 
 The two releases may share the same verified Rust binary build if the real
 packaging change is adding the complete original resource bundle; their

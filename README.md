@@ -42,8 +42,8 @@ every shipped file digest and `effects_authorized: false`.
 ## Linux host entry point
 
 The current product candidate pins the original Hepta UI/core, host packages
-and Hepta-carried patches to [Hepta `52456c309f64ee80e7e377f774445c5dfe0523c9`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/52456c309f64ee80e7e377f774445c5dfe0523c9),
-tree `9d0949a72d064cc2222859780c6ccd9a22c8e575`, and uses Rust 1.96.0.
+and Hepta-carried patches to [Hepta `bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9),
+tree `f71e4e0fbe92eec2c7f1326b3d77a3a9f5a06999`, and uses Rust 1.96.0.
 The UI Cargo root explicitly patches all four original AccessKit crates to this
 same source. `services/hepta-os` remains a local protocol/transport crate; it
 does not acquire a fictitious Hepta Git dependency.
@@ -58,10 +58,10 @@ final source profile must additionally bind the complete Desktop commit/tree,
 actual Cargo-generated locks, features, binary hashes and execution receipts.
 
 The original runtime contracts are pinned beside their owners:
-[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/52456c309f64ee80e7e377f774445c5dfe0523c9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
-[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/52456c309f64ee80e7e377f774445c5dfe0523c9/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
-[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/52456c309f64ee80e7e377f774445c5dfe0523c9/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
-and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/52456c309f64ee80e7e377f774445c5dfe0523c9/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
+[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
+[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
+[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
+and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
 
 Use the [product guide](support/ui/PRODUCT.md) to wrap verified native binaries
 and install them for the current user. The generated `trillionnium-desktop`

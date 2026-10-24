@@ -73,6 +73,8 @@ def main():
     parser.add_argument("--hepta-source", required=True, type=Path,
                         help="original test-helper checkout; independent of the compiled package pin")
     parser.add_argument("--evidence", required=True, type=Path, help="new absolute private directory")
+    parser.add_argument("--runtime-root", required=True, type=Path,
+                        help="caller-created empty user-owned 0700 short directory for private XDG/TMP paths")
     parser.add_argument("--unit-dir", type=Path, default=Path.home() / ".config/systemd/user")
     parser.add_argument("--renderer", choices=("makepad",), default="makepad")
     parser.add_argument("--makepad-resources", type=Path, help="prepared original bundle, if first package has none")
@@ -82,6 +84,10 @@ def main():
     output = options.evidence
     require(output.is_absolute() and not output.exists(), "evidence must be a new absolute directory")
     require(options.unit_dir.is_absolute(), "unit directory must be absolute")
+    runtime = options.runtime_root
+    runtime_identity = acceptance_identity.runtime_root_identity(runtime)
+    require(not any(runtime.iterdir()), "--runtime-root must be empty; use a new private directory for each attempt")
+    require(not output.resolve().is_relative_to(runtime), "evidence must be outside --runtime-root")
     first = acceptance_identity.pinned_package(options.package, options.expected_manifest_sha256)
     second = acceptance_identity.pinned_package(options.upgrade_package, options.expected_upgrade_manifest_sha256)
     for manifest, expected in ((first, options.expected_desktop),
@@ -120,10 +126,16 @@ def main():
         return acceptance_identity.manager_lane_names(raw)
     excluded_lanes = (acceptance_identity.KNOWN_EXECUTION_LANES | manager_lanes()
                       | {key for key in manager_environment if key.startswith(acceptance_identity.LANE_PREFIXES)})
-    dropin_bytes = ("[Service]\nUnsetEnvironment=" + " ".join(sorted(excluded_lanes)) + "\n").encode()
+    private_environment = {"XDG_CONFIG_HOME": str(runtime / "config"),
+                           "XDG_CACHE_HOME": str(runtime / "cache"), "XDG_DATA_HOME": str(runtime / "data"),
+                           "TMPDIR": str(runtime / "tmp")}
+    dropin_bytes = ("[Service]\nUnsetEnvironment=" + " ".join(sorted(excluded_lanes))
+                   + "\nEnvironment=" + " ".join(desktop.systemd_quote(key + "=" + value)
+                                                   for key, value in sorted(private_environment.items())) + "\n").encode()
     output.mkdir(mode=0o700, parents=True)
-    prefix, runtime, state = output / "installation", output / "runtime", output / "state"
-    runtime.mkdir(mode=0o700)
+    prefix, state = output / "installation", runtime / "state"
+    for directory in private_environment.values():
+        Path(directory).mkdir(mode=0o700)
     state.mkdir(mode=0o700)
     draft_dir = state / "trillionnium-ui"
     draft_dir.mkdir(mode=0o700)
@@ -138,6 +150,7 @@ def main():
     launcher = output / "bin/trillionnium-desktop"
     integration = output / "applications/trillionnium-desktop.desktop"
     env = acceptance_identity.isolated_environment(manager_environment)
+    env.update(private_environment)
     env.update({"XDG_RUNTIME_DIR": str(runtime), "XDG_STATE_HOME": str(state),
                 "WINIT_UNIX_BACKEND": "x11", "LIBGL_ALWAYS_SOFTWARE": "1",
                 "LP_NUM_THREADS": "2", "MESA_SHADER_CACHE_DISABLE": "true"})
@@ -153,6 +166,8 @@ def main():
               "identity_gate_sha256": desktop.digest(Path(acceptance_identity.__file__).read_bytes()),
               "original_xres_helper": {"path": str(owner_helper),
                                        "sha256": desktop.digest(owner_helper.read_bytes())},
+              "runtime_root_identity": runtime_identity,
+              "private_xdg_environment": dict(private_environment, XDG_RUNTIME_DIR=str(runtime), XDG_STATE_HOME=str(state)),
               "production_authority_verified": False, "physical_input_verified": False,
               "checks": {}, "screenshots": [], "commands": []}
     running = []
@@ -197,6 +212,8 @@ def main():
         return value["live_session"]["session_instance"]
 
     def start_shell(label):
+        require(acceptance_identity.runtime_root_identity(runtime) == runtime_identity,
+                "caller-owned --runtime-root identity changed")
         require(manager_lanes() <= excluded_lanes, "user manager added an unisolated host lane during qualification")
         log = (output / (label + ".log")).open("wb")
         process = subprocess.Popen([str(launcher), "run"], env=env, stdout=log, stderr=subprocess.STDOUT,
@@ -377,6 +394,9 @@ def main():
         require(config.read_bytes() == config_bytes and content_hashes() == before_uninstall
                 and retained.read_bytes() == b"disposable acceptance user data\n", "uninstall deleted user data")
         report["checks"]["uninstall_preserved_config_and_state"] = True
+        report["retained_state_sha256"] = before_uninstall
+        require(acceptance_identity.runtime_root_identity(runtime) == runtime_identity,
+                "caller-owned --runtime-root identity changed")
         report["status"] = "passed"
     except Exception as error:
         report["status"] = "failed"

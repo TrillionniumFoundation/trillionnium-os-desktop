@@ -51,6 +51,21 @@ def require(condition, message):
         raise ProductError(message)
 
 
+def unix_socket_path(path, label):
+    value = os.fspath(path)
+    require(isinstance(value, str) and Path(value).is_absolute() and "\x00" not in value,
+            f"{label} must be an absolute pathname without NUL")
+    length = len(os.fsencode(value))
+    require(length <= 107,
+            f"{label} is {length} bytes; Linux AF_UNIX pathnames allow at most 107 bytes "
+            "(108 including the terminating NUL). Choose a shorter socket path or XDG_RUNTIME_DIR.")
+    return value
+
+
+def session_socket_path(runtime):
+    return unix_socket_path(Path(runtime) / "trillionnium-ui/session.sock", "Session socket from XDG_RUNTIME_DIR")
+
+
 def digest(data):
     return hashlib.sha256(data).hexdigest()
 
@@ -362,10 +377,11 @@ def require_stopped(unit=UNIT):
             "Session is active; close applications, then run trillionnium-desktop stop before changing releases")
     runtime = os.environ.get("XDG_RUNTIME_DIR")
     if runtime:
+        endpoint = session_socket_path(runtime)
         probe = socket.socket(socket.AF_UNIX)
         probe.settimeout(0.5)
         try:
-            probe.connect(str(Path(runtime) / "trillionnium-ui/session.sock"))
+            probe.connect(endpoint)
         except (FileNotFoundError, ConnectionRefusedError):
             pass
         else:
@@ -511,11 +527,13 @@ def load_config(path):
         require(isinstance(chat, dict) and set(chat) == {"socket", "root_pid"}, "Incomplete chat lane configuration")
         require(isinstance(chat["socket"], str) and Path(chat["socket"]).is_absolute()
                 and not any(ord(char) < 32 for char in chat["socket"]), "Chat socket must be an absolute path")
+        unix_socket_path(chat["socket"], "Chat socket")
         require(type(chat["root_pid"]) is int and 0 < chat["root_pid"] < 2**31, "Invalid chat Root PID")
     observer = cfg["observer"]
     if observer is not None:
         require(isinstance(observer, dict) and set(observer) == {"socket", "agent_id", "spawn_generation", "peer_uid", "run_id"}, "Incomplete observer configuration")
         require(isinstance(observer["socket"], str) and Path(observer["socket"]).is_absolute(), "Observer socket must be absolute")
+        unix_socket_path(observer["socket"], "Observer socket")
         require(isinstance(observer["agent_id"], str) and re.fullmatch(r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}", observer["agent_id"]), "Invalid observer agent id")
         require(type(observer["spawn_generation"]) is int and 0 < observer["spawn_generation"] < 2**64, "Invalid observer generation")
         require(type(observer["peer_uid"]) is int and 0 <= observer["peer_uid"] < 2**32, "Invalid observer UID")
@@ -539,6 +557,7 @@ def runtime_environment(cfg, prepare_state=True, release=None):
     env = dict(os.environ)
     runtime = env.get("XDG_RUNTIME_DIR")
     require(runtime and Path(runtime).is_absolute(), "Run inside an existing user graphical session (XDG_RUNTIME_DIR is missing)")
+    session_socket_path(runtime)
     info = Path(runtime).lstat()
     require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.geteuid()
             and stat.S_IMODE(info.st_mode) == 0o700, "XDG_RUNTIME_DIR must be owned by this user and 0700")
@@ -555,8 +574,10 @@ def runtime_environment(cfg, prepare_state=True, release=None):
     require((chat_socket is None) == (chat_pid is None), "Chat requires both TRILL_UI_CHAT_SOCKET and TRILL_UI_CHAT_ROOT_PID")
     if chat_socket is not None:
         require(Path(chat_socket).is_absolute() and not any(ord(char) < 32 for char in chat_socket), "Chat socket must be an absolute path")
+        unix_socket_path(chat_socket, "Chat socket")
         require(chat_pid.isascii() and chat_pid.isdigit() and 0 < int(chat_pid) < 2**31, "Invalid chat Root PID")
     if cfg["observer"]:
+        unix_socket_path(cfg["observer"]["socket"], "Observer socket")
         for key, field in zip(OBSERVER_ENV, ("socket", "agent_id", "spawn_generation", "peer_uid", "run_id")):
             if cfg["observer"][field] is not None:
                 env[key] = str(cfg["observer"][field])
@@ -585,12 +606,13 @@ def runtime_environment(cfg, prepare_state=True, release=None):
 
 def require_owned_session(env, unit):
     """A same-UID listener alone is insufficient to identify our installed unit."""
+    endpoint = session_socket_path(env["XDG_RUNTIME_DIR"])
     state = systemctl("show", unit, "--property=MainPID", "--value")
     require(state.stdout.strip().isdigit() and int(state.stdout.strip()) > 0,
             "Installed Session service has no live MainPID")
     with socket.socket(socket.AF_UNIX) as peer:
         peer.settimeout(0.5)
-        peer.connect(str(Path(env["XDG_RUNTIME_DIR"]) / "trillionnium-ui/session.sock"))
+        peer.connect(endpoint)
         pid, uid, _gid = struct.unpack("3i", peer.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))
     require(pid == int(state.stdout.strip()) and uid == os.geteuid(),
             "Session socket is not owned by the installed user service")

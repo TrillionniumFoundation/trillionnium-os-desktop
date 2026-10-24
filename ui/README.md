@@ -8,8 +8,8 @@ native windows. Each Asterinas display/input or mobile target requires its own
 execution evidence.
 
 The original UI/core, Agentd host dependencies and all four original AccessKit
-patches resolve from Hepta `52456c309f64ee80e7e377f774445c5dfe0523c9`
-(tree `9d0949a72d064cc2222859780c6ccd9a22c8e575`). The patch entries live in
+patches resolve from Hepta `bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9`
+(tree `f71e4e0fbe92eec2c7f1326b3d77a3a9f5a06999`). The patch entries live in
 this workspace's Cargo root because Cargo does not inherit dependency-workspace
 patches. The [fixed source map](../docs/SOURCES.md#hepta-native-organ) links the
 same original modules and their development contracts.

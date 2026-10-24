@@ -344,6 +344,51 @@ class ProductTests(unittest.TestCase):
             with self.assertRaisesRegex(desktop.ProductError, "not owned"):
                 desktop.require_owned_session({"XDG_RUNTIME_DIR": str(self.root)}, desktop.UNIT)
 
+    def test_unix_socket_boundary_is_measured_in_filesystem_bytes(self):
+        padding = 107 - len(os.fsencode(self.root)) - 1
+        endpoint = self.root / ("x" * padding)
+        self.assertEqual(desktop.unix_socket_path(endpoint, "Test socket"), str(endpoint))
+        with desktop.socket.socket(desktop.socket.AF_UNIX) as listener:
+            listener.bind(str(endpoint))
+        with self.assertRaisesRegex(desktop.ProductError, "108 bytes.*at most 107 bytes"):
+            desktop.unix_socket_path(str(endpoint) + "x", "Test socket")
+        with self.assertRaisesRegex(desktop.ProductError, "109 bytes.*at most 107 bytes"):
+            desktop.unix_socket_path("/" + "界" * 36, "Test socket")
+
+    def test_long_runtime_is_rejected_before_session_socket_connect(self):
+        runtime = "/" + "r" * 95
+        inactive = types.SimpleNamespace(returncode=0, stdout="inactive\n")
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": runtime}), \
+                patch.object(desktop, "systemctl", return_value=inactive), \
+                patch.object(desktop.socket, "socket") as socket_factory:
+            with self.assertRaisesRegex(desktop.ProductError, "Session socket from XDG_RUNTIME_DIR.*at most 107 bytes"):
+                desktop.require_stopped()
+            socket_factory.assert_not_called()
+
+    def test_configured_chat_and_observer_paths_get_clear_length_errors(self):
+        path = self.root / "socket-config.json"
+        for field, value, label in (
+                ("chat", {"socket": "/" + "s" * 107, "root_pid": 123}, "Chat socket"),
+                ("observer", {"socket": "/" + "s" * 107,
+                              "agent_id": "00000000-0000-0000-0000-000000000001",
+                              "spawn_generation": 1, "peer_uid": os.geteuid(), "run_id": None}, "Observer socket")):
+            with self.subTest(field=field):
+                cfg = desktop.default_config()
+                cfg[field] = value
+                desktop.atomic_write(path, desktop.json_bytes(cfg))
+                with self.assertRaisesRegex(desktop.ProductError, label + ".*108 bytes.*at most 107 bytes"):
+                    desktop.load_config(path)
+
+    def test_inherited_chat_socket_limit_is_checked_before_creating_state(self):
+        runtime = self.root / "runtime"
+        runtime.mkdir(mode=0o700)
+        state = self.root / "unused-state"
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(runtime), "XDG_STATE_HOME": str(state),
+                                     "TRILL_UI_CHAT_SOCKET": "/" + "s" * 107, "TRILL_UI_CHAT_ROOT_PID": "123"}):
+            with self.assertRaisesRegex(desktop.ProductError, "Chat socket.*at most 107 bytes"):
+                desktop.runtime_environment(desktop.default_config())
+        self.assertFalse(state.exists())
+
     def test_control_characters_cannot_inject_unit_directives(self):
         paths = dict(self.paths, bin_dir=str(self.root / "bad\nExecStart=unexpected"))
         with self.assertRaisesRegex(desktop.ProductError, "control characters"):

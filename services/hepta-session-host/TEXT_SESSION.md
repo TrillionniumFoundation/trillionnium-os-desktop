@@ -15,11 +15,11 @@ Objective/Notes path remains documented in [README](README.md).
 | [src/text_tests.rs](src/text_tests.rs) | Presentation fixtures for recovered identity, unchanged local drafts, stale connections and separate approval permission |
 | [Shell native_makepad.rs](../../ui/shell/src/native_makepad.rs) | Borrow the current original workspace, poll outside Draw, queue Send/Stop/history/approval and wake the native event loop |
 | [Shell native_text_config.rs](../../ui/shell/src/native_text_config.rs) | Validate the two original Root endpoint hints without accepting a principal or route override |
-| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/52456c309f64ee80e7e377f774445c5dfe0523c9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
+| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
 
 The cross-repository link is fixed at the current Cargo source
-`52456c309f64ee80e7e377f774445c5dfe0523c9`, tree
-`9d0949a72d064cc2222859780c6ccd9a22c8e575`. The
+`bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9`, tree
+`f71e4e0fbe92eec2c7f1326b3d77a3a9f5a06999`. The
 [source profile](../../docs/agents/ORGAN_RELEASE_PROFILE.md) must also bind the
 complete Desktop commit, actual generated locks and feature build. The latest
 [eight original text integrations](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)

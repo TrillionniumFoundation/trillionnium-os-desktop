@@ -24,6 +24,23 @@ def require(value, message):
         raise RuntimeError(message)
 
 
+def runtime_root_identity(path):
+    """Check the caller's short private root without creating or deleting it."""
+    path = Path(path)
+    require(path.is_absolute() and path.resolve(strict=True) == path,
+            "--runtime-root must be an existing absolute canonical directory")
+    info = path.lstat()
+    require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.geteuid()
+            and stat.S_IMODE(info.st_mode) == 0o700,
+            "--runtime-root must be a real user-owned 0700 directory")
+    socket_path = desktop.session_socket_path(path)
+    # Reserve room for a temporary bus name beneath the private TMPDIR too.
+    # The real user-manager bus remains the inherited, unchanged endpoint.
+    desktop.unix_socket_path(path / "tmp" / ("dbus-" + "x" * 32), "Temporary bus socket budget under --runtime-root")
+    return {"path": str(path), "device": info.st_dev, "inode": info.st_ino,
+            "session_socket": socket_path, "session_socket_bytes": len(os.fsencode(socket_path))}
+
+
 def pinned_package(package, manifest_sha256):
     require(re.fullmatch("[0-9a-f]{64}", manifest_sha256) is not None,
             "expected manifest pin must be 64 lowercase hex characters")
