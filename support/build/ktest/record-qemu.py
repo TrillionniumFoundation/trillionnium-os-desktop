@@ -51,11 +51,15 @@ def main():
         if not positions:
             continue
         value = requested[positions[0] + 1]
-        command.extend((option, value))
         if option != "-append":
             path = Path(value).resolve()
+            # Invoke the exact path whose bytes are recorded. OSDK's target may
+            # be a symlink to an isolated build cache; retain its requested
+            # spelling separately, without making the actual receipt ambiguous.
+            value = str(path)
             artifacts[option] = {"path": str(path), "size": path.stat().st_size,
                                  "sha256": digest(path)}
+        command.extend((option, value))
     firmware = Path("/usr/share/seabios/bios-256k.bin")
     artifacts["-bios"] = {"path": str(firmware), "size": firmware.stat().st_size,
                            "sha256": digest(firmware)}
