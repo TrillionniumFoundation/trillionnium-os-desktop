@@ -7,6 +7,8 @@ export PYTHONOPTIMIZE=0
 export PYTHONDONTWRITEBYTECODE=1
 cd "$(dirname "$0")/../.."
 test -f README.md && test ! -L README.md
+python3 -B tests/ui/verify_product_source.py
+python3 -B tests/ui/test_product_source.py
 
 # Even when compilation fails before fmt, preserve the exact-source
 # formatter diagnosis and review patch on a GitHub-hosted runner.

@@ -3,6 +3,7 @@
 mod activation;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
+mod notes_input;
 mod notes_organ;
 use eframe::egui::{self, RichText};
 use std::io::Write;
@@ -14,6 +15,7 @@ struct ClientWindow {
     workspace: Workspace,
     task_id: u64,
     notes: String,
+    notes_input: notes_input::NotesInput,
     notes_organ: Option<notes_organ::NotesAppChannel>,
     left: String,
     right: String,
@@ -32,7 +34,11 @@ impl eframe::App for ClientWindow {
         self.terminal_preedit_active = self.activation.composing();
         let mut notes_updated = false;
         if let Some(organ) = &mut self.notes_organ {
-            if organ.poll() {
+            let preserve = self
+                .notes_input
+                .begin(ctx, &mut self.notes, organ.revision());
+            let updated = organ.poll();
+            if !preserve && (updated || self.notes_input.cancelled()) {
                 self.notes = organ.text().to_owned();
                 notes_updated = true;
             }
@@ -45,21 +51,61 @@ impl eframe::App for ClientWindow {
             ui.separator();
             match self.kind {
                 AppKind::Notes => {
+                    if let Some(organ) = &mut self.notes_organ {
+                        if organ.is_durable() {
+                            ui.collapsing("重新打开已保存的笔记", |ui| {
+                                let ready = !organ.saved_notes_loading() && !self.notes_input.composing();
+                                if self.activation.activated(&ui.add_enabled(ready, egui::Button::new("刷新已保存的笔记"))) {
+                                    organ.refresh_saved_notes();
+                                }
+                                if organ.saved_notes_loading() { ui.small("正在读取已保存的笔记……"); }
+                                if !organ.can_reopen() { ui.small("请在新的空白笔记窗口中打开旧笔记，当前编辑会保留。"); }
+                                let mut reopen = None;
+                                let can_reopen = organ.can_reopen() && !self.notes_input.composing();
+                                egui::ScrollArea::vertical().id_salt("saved-notes").max_height(136.0).show_rows(ui, 24.0, organ.saved_notes().len(), |ui, rows| {
+                                    for index in rows {
+                                        let note = &organ.saved_notes()[index];
+                                        let preview = if note.preview.trim().is_empty() { "空白笔记" } else { &note.preview };
+                                        if self.activation.activated(&ui.add_enabled(can_reopen, egui::Button::new(format!("打开：{preview} · 修订 {}", note.revision)))) { reopen = Some(index); }
+                                    }
+                                });
+                                if let Some(index) = reopen { organ.reopen_saved_note(index); }
+                                if organ.unavailable_saved_notes() > 0 { ui.small(format!("{} 份笔记仍在使用或暂时不可读取，文件已保留。", organ.unavailable_saved_notes())); }
+                                if let Some(message) = organ.saved_notice() { ui.small(message); }
+                                ui.small("按最近保存时间排序。打开后可在此继续编辑，原笔记保留。");
+                            });
+                        }
+                    }
                     let label = ui.label("Notes / 笔记 · try composing Chinese with your host IME");
-                    let editor = ui.add(
+                    let editor = ui.add_enabled(
+                        self.notes_organ.as_ref().is_none_or(|organ| organ.can_edit()),
                         egui::TextEdit::multiline(&mut self.notes)
-                            .id(egui::Id::new("notes-editor"))
+                            .id(egui::Id::new(notes_input::EDITOR_ID))
                             .desired_rows(17)
                             .desired_width(f32::INFINITY)
                             .hint_text("中文输入、候选词、焦点测试……"),
                     ).labelled_by(label.id);
                     if let Some(organ) = &mut self.notes_organ {
-                        if editor.changed() && !organ.local_edit(self.notes.clone()) {
-                            self.notes = organ.text().to_owned();
+                        if let Some((revision, text)) = self.notes_input.finish(ctx, &mut self.notes, editor.changed()) {
+                            if !organ.local_edit_at(revision, text) { self.notes = organ.text().to_owned(); }
                         }
                         ui.small(format!("Document revision: {} · private Notes destination", organ.revision()));
                         ui.small("External edits require the original Hepta owner. This document is limited to 4096 UTF-8 bytes.");
                         ui.small(organ.storage_status());
+                        if organ.has_conflict() {
+                            ui.horizontal(|ui| {
+                                let ready = !self.notes_input.composing();
+                                if self.activation.activated(&ui.add_enabled(ready, egui::Button::new("确认保留我的编辑"))) {
+                                    organ.keep_local_after_conflict();
+                                }
+                                if self.activation.activated(&ui.add_enabled(ready, egui::Button::new("放弃未保存编辑，加载已保存内容"))) {
+                                    organ.discard_local_after_conflict();
+                                    self.notes = organ.text().to_owned();
+                                }
+                            });
+                        }
+                        if self.notes_input.composing() { ui.small("输入法组词中；确认后的文字才会保存。"); }
+                        if let Some(notice) = self.notes_input.notice() { ui.small(notice); }
                     }
                     ui.small(if editor.has_focus() {
                         "Keyboard focus: NOTES editor (IME target)"
@@ -377,6 +423,7 @@ fn main() -> eframe::Result {
                 workspace,
                 task_id,
                 notes: String::new(),
+                notes_input: notes_input::NotesInput::default(),
                 notes_organ,
                 left: String::new(),
                 right: String::new(),
@@ -406,6 +453,7 @@ mod tests {
             workspace: Workspace::Personal,
             task_id: 1,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             left: "4".into(),
             right: "0".into(),
@@ -432,6 +480,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 9,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             left: String::new(),
             right: String::new(),
@@ -485,6 +534,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 17,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             left: String::new(),
             right: String::new(),
@@ -611,6 +661,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 12,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             left: String::new(),
             right: String::new(),
@@ -657,6 +708,7 @@ mod tests {
             workspace: Workspace::Build,
             task_id: 10,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             left: String::new(),
             right: String::new(),
@@ -705,6 +757,7 @@ mod tests {
             workspace: Workspace::Personal,
             task_id: 11,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             left: String::new(),
             right: String::new(),

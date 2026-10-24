@@ -315,7 +315,8 @@ def prepare_semantic_intent(observation, operation_id, action, selector, value=N
     The current helper drops window/hash fields for semantic actions. Therefore
     this adapter intentionally has no path from this intent to helper execution.
     """
-    require(isinstance(observation, dict) and observation.get("schema_version") == 1
+    require(isinstance(observation, dict) and type(observation.get("schema_version")) is int
+            and observation["schema_version"] == 1
             and observation.get("device_ref") == DEVICE_REF, "INVALID_OBSERVATION")
     require(observation.get("helper_sha256") == REVIEWED_HELPER_SHA256, "UNREVIEWED_HELPER")
     require(observation.get("authority") == "none", "OBSERVATION_IS_NOT_AUTHORITY")

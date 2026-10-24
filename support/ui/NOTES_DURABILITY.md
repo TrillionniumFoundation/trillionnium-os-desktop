@@ -13,8 +13,12 @@ not a second Hepta operation ledger. The original production writer retains
 authorization, operation identity, policy generation and durable terminality.
 
 A newly launched application gets a new target identity and a fresh document.
-It cannot adopt an old effect capability by opening a file. Restoring old text
-into the normal workspace remains separate work. Hepta's explicit predecessor
+It cannot adopt an old effect capability by opening a file. The ordinary Notes
+window now provides **重新打开已保存的笔记** and **刷新已保存的笔记**. Choose an entry
+in a new, unchanged empty Notes window to copy its saved text and continue
+editing. This uses the same application state directory and worker. The old
+incarnation and its pending/retired receipt remain intact; the new window saves
+only the text under its own target and local revision. Hepta's explicit predecessor
 composition now attaches an old recovery helper to its original retained source
 operation; final trusted deployment inputs and evidence must match the two-repo
 source pair. No production readiness or
@@ -27,8 +31,10 @@ whole-machine recovery is implied by these application changes.
 | `ui/core/src/notes.rs` | Exact effect bytes, revision CAS, one pending receipt, independent observations and exact retirement |
 | `ui/core/src/notes_checkpoint.rs` | Bounded versioned snapshot validation; rejects a different Session, task or incarnation, inconsistent content digests and malformed receipts |
 | `ui/core/src/notes_store.rs` | Private directory/file custody, exclusive incarnation lock, atomic replacement and file/directory synchronization |
+| `ui/core/src/notes_catalog.rs` | Bounded, read-only discovery of the existing checkpoints and complete-snapshot selection fencing; no new catalog file or ledger |
 | `ui/app-window/src/notes_worker.rs` | One bounded background worker serializes application state and storage; Draw never waits for filesystem synchronization |
 | `ui/app-window/src/notes_organ.rs` | Existing private effect/recovery channels plus a bounded presentation projection; local typing is coalesced and revision checked |
+| `ui/app-window/src/notes_input.rs` | Original egui editor transaction: preedit stays transient, committed input retains its starting CAS revision, rejected oversized replacement preserves text/selection/undo |
 | `ui/app-window/src/bin/trill-notes-recovery.rs` | Separate process exposing only the original incarnation's observation and exact retirement over an inherited private datagram pair |
 
 Each incarnation lives under
@@ -53,7 +59,51 @@ recovery must read the original persisted state after the old owner exits.
 Local edits use the same revision domain as external effects. If an external
 effect wins while a local edit is queued, the stale local edit is rejected and
 the unsaved draft remains visible with a conflict notice. It is not silently
-reapplied against a newer revision. The worker queue and unsent edit are bounded.
+reapplied against a newer revision, including when the user continues typing.
+The user can explicitly select **确认保留我的编辑** to submit that draft against
+the latest observed revision, or **放弃未保存编辑，加载已保存内容** to load the saved
+text without writing. Concurrent changes still fail the worker's revision CAS.
+The worker queue and unsent edit are bounded.
+
+## Reopen a note in the ordinary UI
+
+Open a new Notes window from the existing Shell, expand **重新打开已保存的笔记**,
+and select **刷新已保存的笔记**. The list shows the first 48 displayable characters
+and revision of each closed, noninitial checkpoint, newest first. Select **打开**
+on the desired note. Current text or any earlier local/external revision disables
+replacement; use a new Notes window instead of discarding an active document.
+The editor is briefly disabled while the existing worker performs that request.
+
+The list is a transient projection of existing `document.json` files. It uses
+the store's already-open directory descriptor, an independent `openat(".")`
+directory cursor and validated identity components. A root path replacement
+cannot redirect a running application's discovery. It never follows links or
+creates a missing source lock. Enumeration refuses more than 1024 directory
+entries rather than returning a falsely complete list. Each source still obeys
+the 16 KiB snapshot bound. Live/locked, corrupt and custody-invalid checkpoints
+remain untouched and are counted as unavailable. Close the original window or
+wait for its actual supervisor-confirmed exit before refreshing. A recovery
+helper can also temporarily hold the original lock.
+
+Opening reacquires the original incarnation lock and checks the entire selected
+checkpoint's digest and revision. A source modified or retired since listing
+requires a refresh. The same worker serializes this action with new-window local
+edits and external effects; if a new-window effect wins first, reopening refuses
+without overwriting it. The copied text is an ordinary local edit, never a saved
+request replay, predecessor grant, receipt acknowledgement or original-owner
+terminal result. Old effects remain independently reconcilable through the
+unchanged recovery helper. If the new save fails, the new store freezes and the
+old bytes are retained for independent recovery.
+
+The locked egui 0.31 editor mutates its visible text during IME `Preedit` and
+`Commit`. Notes therefore keeps preedit out of the worker and checkpoint. Empty
+preedit can precede a later commit, so it does not rebase the saved revision.
+Cancellation restores the committed editor text and selection. A final commit
+uses its original revision; a concurrent external update leaves that local
+commit visible but unsaved with the existing conflict notice. A complete input
+over 4096 UTF-8 bytes is refused atomically with its prior selection and undo
+history preserved. These are application editor guarantees; synthetic native
+widget tests do not qualify actual OS IME candidate positioning or physical input.
 
 ## Original Hepta observation contract
 

@@ -13,6 +13,10 @@ use std::os::fd::{AsRawFd, FromRawFd};
 use std::os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt};
 use std::path::Path;
 
+#[path = "notes_catalog.rs"]
+mod catalog;
+pub use catalog::{SavedNote, SavedNotes};
+
 const MAX_CHECKPOINT_BYTES: u64 = 16 * 1024;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -25,6 +29,7 @@ enum Mode {
 /// freeze the instance because a failed sync can have an uncertain outcome.
 /// The caller must then close it and recover from the original on-disk state.
 pub struct NotesStore {
+    root_directory: File,
     directory: File,
     _lock: File,
     document: NotesDocument,
@@ -37,9 +42,10 @@ impl NotesStore {
     /// including a partially created directory left by a crashed predecessor.
     pub fn create(root: &Path, target: NotesTargetIdentity) -> io::Result<Self> {
         let document = NotesDocument::new(target.clone()).map_err(protocol_error)?;
-        let directory = open_directory(root, &target, Mode::Application)?;
+        let (root_directory, directory) = open_directory(root, &target, Mode::Application)?;
         let lock = lock_directory(&directory)?;
         let mut store = Self {
+            root_directory,
             directory,
             _lock: lock,
             document,
@@ -55,13 +61,14 @@ impl NotesStore {
     /// application or another recovery process retains the same exclusive lock.
     pub fn recover(root: &Path, target: &NotesTargetIdentity) -> io::Result<Self> {
         target.validate().map_err(protocol_error)?;
-        let directory = open_directory(root, target, Mode::RecoveryOnly)?;
+        let (root_directory, directory) = open_directory(root, target, Mode::RecoveryOnly)?;
         let lock = lock_directory(&directory)?;
         let file = open_file(&directory, "document.json", libc::O_RDONLY)?;
         let mut raw = Vec::new();
         file.take(MAX_CHECKPOINT_BYTES + 1).read_to_end(&mut raw)?;
         let document = NotesDocument::restore_checkpoint(&raw, target).map_err(protocol_error)?;
         Ok(Self {
+            root_directory,
             directory,
             _lock: lock,
             document,
@@ -80,6 +87,42 @@ impl NotesStore {
 
     pub fn is_frozen(&self) -> bool {
         self.frozen
+    }
+
+    /// List closed notes in this store's already-open private state directory.
+    /// This projection contains no effect receipt or reusable authority.
+    pub fn saved_notes(&self) -> io::Result<SavedNotes> {
+        self.require_application()?;
+        catalog::list(&self.root_directory, self.document.target())
+    }
+
+    /// Explicitly copy a selected saved text into this fresh incarnation.
+    /// The predecessor remains untouched, including any pending receipt. A
+    /// new local revision is saved under this application's original target.
+    pub fn reopen_text(&mut self, source: &SavedNote, expected_revision: u64) -> io::Result<()> {
+        self.require_application()?;
+        if expected_revision != 0
+            || self.document.revision() != expected_revision
+            || !self.document.text().is_empty()
+            || self.document.target() == &source.target
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "reopen requires this fresh, unchanged empty note",
+            ));
+        }
+        let saved = catalog::read(&self.root_directory, &source.target)?;
+        if saved.reference.checkpoint_sha256 != source.checkpoint_sha256
+            || saved.reference.revision != source.revision
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "saved note changed; refresh before reopening",
+            ));
+        }
+        // Do not restore_checkpoint into this live application: that would
+        // import the predecessor's target, revision and effect receipts.
+        self.local_edit(saved.text)
     }
 
     /// Return Applied only after the text and original receipt are durable.
@@ -166,7 +209,11 @@ fn private_directory(file: &File) -> io::Result<()> {
     Ok(())
 }
 
-fn open_directory(root: &Path, target: &NotesTargetIdentity, mode: Mode) -> io::Result<File> {
+fn open_directory(
+    root: &Path,
+    target: &NotesTargetIdentity,
+    mode: Mode,
+) -> io::Result<(File, File)> {
     if !root.is_absolute() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -194,12 +241,18 @@ fn open_directory(root: &Path, target: &NotesTargetIdentity, mode: Mode) -> io::
         .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
         .open(root)?;
     private_directory(&parent)?;
+    let directory = open_incarnation(&parent, target, mode == Mode::Application)?;
+    Ok((parent, directory))
+}
+
+fn open_incarnation(parent: &File, target: &NotesTargetIdentity, create: bool) -> io::Result<File> {
+    target.validate().map_err(protocol_error)?;
     // Every component is derived from a validated, bounded typed identity.
     let name = CString::new(format!(
         "{}-{}-{}",
         target.session_instance, target.task_id, target.incarnation
     ))?;
-    if mode == Mode::Application {
+    if create {
         let result = unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o700) };
         if result != 0 {
             return Err(io::Error::last_os_error());

@@ -6,12 +6,44 @@ behavior requires a fixed-nightly source build and QEMU guest verification.
 from pathlib import Path
 import unittest
 
+from rust_source_contract import block_after, positions, replace_once, require_sequence, rust_tokens
+
 
 ROOT = Path(__file__).resolve().parents[2]
 PROCESS = ROOT / "kernel/asterinas/kernel/core/src/process/process/mod.rs"
 IMAGE = PROCESS.with_name("image.rs")
 DEVICE = ROOT / "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs"
 GUEST = ROOT / "tests/kernel/control/queryabi_guest.c"
+BOOT_IDENTITY = ROOT / "kernel/asterinas/kernel/core/src/util/boot_identity.rs"
+
+
+def check_device_identity(source):
+    tokens = rust_tokens(source)
+    value = block_after(tokens, "fn process_session_id(")
+    if len(positions(value, "process.hepta_capspace_session()?")) != 1:
+        raise AssertionError("open must take exactly one locked Process image key")
+    require_sequence(value, "let key = process.hepta_capspace_session()?;",
+                     "original Process image owner")
+    require_sequence(value, "Ok((image_space_id(key), key))", "one key for fd and wire identity")
+    # procfs and HOS2 now intentionally share the canonical boot identity owner.
+    # Pin that delegation as well as the full-width nonce; an arbitrary helper
+    # called boot_id() must not satisfy the identity boundary on its own.
+    boot = block_after(tokens, "fn boot_id(")
+    if boot != rust_tokens("boot_identity::boot_id()"):
+        raise AssertionError("HOS2 must use the canonical shared boot identity")
+    identity = block_after(tokens, "fn image_space_id(")
+    require_sequence(identity, "id[..8].copy_from_slice(&boot_id()[..8]);", "boot namespace")
+    require_sequence(identity, "id[8..].copy_from_slice(&key.nonce().to_le_bytes());",
+                     "full u64 image nonce")
+    for method in (value, identity):
+        if positions(method, "start_time()") or positions(method, "as u32"):
+            raise AssertionError("PID/time truncation cannot replace the image nonce")
+    require_sequence(tokens, "let (space_id, image_key) = process_session_id(&process)?;",
+                     "open binds the authoritative key")
+    session = block_after(tokens, "fn check_session(")
+    require_sequence(session, "if !Arc::ptr_eq(&owner, &current)", "exact Process allocation")
+    require_sequence(session, "current.check_hepta_capspace_session(self.image_key)",
+                     "current image epoch and nonce")
 
 
 class CapSpaceIdentityContract(unittest.TestCase):
@@ -50,26 +82,44 @@ class CapSpaceIdentityContract(unittest.TestCase):
         self.assertIn("self.nonce = 0", commit)
 
     def test_open_uses_one_locked_image_key_and_no_truncated_ticks(self):
-        source = DEVICE.read_text()
-        value = source.split("fn process_session_id(", 1)[1].split("\n}", 1)[0]
-        self.assertEqual(value.count("process.hepta_capspace_session()?"), 1)
-        self.assertIn("let key = process.hepta_capspace_session()?", value)
-        self.assertIn("Ok((image_space_id(key), key))", value)
-        identity = source.split("fn image_space_id(key: ProcessImageKey)", 1)[1].split("\n}", 1)[0]
-        self.assertIn("id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8])", identity)
-        self.assertIn("id[8..].copy_from_slice(&key.nonce().to_le_bytes())", identity)
-        for method in (value, identity):
-            self.assertNotIn("start_time()", method)
-            self.assertNotIn("as u32", method)
-        self.assertIn("let (space_id, image_key) = process_session_id(&process)?", source)
-        self.assertIn("Arc::ptr_eq(&owner, &current)", source)
-        self.assertIn("current.check_hepta_capspace_session(self.image_key)", source)
+        check_device_identity(DEVICE.read_text())
         image = IMAGE.read_text()
         self.assertIn("self.hepta_image.lock().check_session(key)", image)
         check = image.split("fn check_session(", 1)[1].split("fn begin_close(", 1)[0]
         for condition in ("self.phase != ImagePhase::Live", "self.nonce == 0",
                           "self.epoch != key.epoch", "self.nonce != key.nonce"):
             self.assertIn(condition, check)
+
+    def test_shared_boot_owner_is_once_initialized_with_uuid_layout(self):
+        tokens = rust_tokens(BOOT_IDENTITY.read_text())
+        require_sequence(tokens, "static BOOT_ID: Once<[u8; 16]> = Once::new();",
+                         "one stable boot owner")
+        boot = block_after(tokens, "fn boot_id(")
+        require_sequence(boot, "*BOOT_ID.call_once(||", "stable repeated observations")
+        require_sequence(boot, "super::random::getrandom(&mut id);", "boot identity entropy")
+        require_sequence(boot, "id[6] = (id[6] & 0x0f) | 0x40;", "UUID version")
+        require_sequence(boot, "id[8] = (id[8] & 0x3f) | 0x80;", "UUID variant")
+
+    def test_identity_guards_ignore_layout_but_reject_real_source_mutations(self):
+        source = DEVICE.read_text()
+        tokens = rust_tokens(source)
+        check_device_identity("\n".join(tokens))
+        changes = (
+            ("boot_identity::boot_id()", "[0; 16]"),
+            ("&boot_id()[..8]", "&[0; 8]"),
+            ("&key.nonce().to_le_bytes()", "&(key.nonce() as u32).to_le_bytes()"),
+            ("let key = process.hepta_capspace_session()?;",
+             "let key = process.hepta_capspace_session()?; process.hepta_capspace_session()?;"),
+            ("if !Arc::ptr_eq(&owner, &current)", "if false"),
+            ("current.check_hepta_capspace_session(self.image_key)", "Ok(())"),
+        )
+        for before, after in changes:
+            with self.subTest(boundary=before):
+                self.assertEqual(len(positions(tokens, before)), 1)
+                # Retain the removed text in a comment: it cannot fool the guard.
+                mutant = " ".join(replace_once(tokens, before, after)) + " /* " + before + " */"
+                with self.assertRaises(AssertionError):
+                    check_device_identity(mutant)
 
     def test_guest_asserts_fresh_child_and_exec_images_do_not_reuse_id(self):
         source = GUEST.read_text()
