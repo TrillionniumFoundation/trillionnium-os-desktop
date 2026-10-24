@@ -325,6 +325,26 @@ python3 -B support/ui/product/smoke_installed.py \
   --evidence /absolute/new-install-acceptance-directory
 ```
 
+The product and test-helper sources have separate roles. `--expected-hepta`
+checks the source pin in both real package manifests and their original resource
+bundles; the pinned build manifests bind the actual product ELF bytes.
+`--hepta-source` supplies the original
+`apps/hepta-control-ui/test/x11_client_owner.py` used by this harness and may name
+a different reviewed Hepta checkout. Its selection does not rebuild, repin or
+relabel the installed product. Keep that helper checkout's complete commit/tree
+with the evidence. The report records the harness SHA256 and the exact original
+XRes helper path/SHA256 separately from the package and live process identities.
+
+Window selection requires `libX11.so.6`, `libXRes.so.1` and a private X server
+with XRes 1.2 `QueryClientIds` / `LocalClientPID`. The original helper maps
+visible windows to the retained child PID through the server. A missing match
+cannot advance startup; two visible windows belonging to the child are rejected.
+Missing or ambiguous XRes ownership fails acceptance. Titles, classes and
+client-written `_NET_WM_PID` do not establish ownership and are never a fallback.
+These checks complement the live pidfd/executable checks below; they do not
+establish product build provenance or physical input qualification. See the
+[native harness contract](NATIVE_MAKEPAD.md#run-the-owned-window-qualification).
+
 `--runtime-root` is required and must already exist as an empty, canonical,
 user-owned `0700` directory. Choose a new short path for each attempt. The harness
 checks the full Session endpoint and reserves space for a 32-character temporary

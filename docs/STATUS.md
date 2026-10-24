@@ -4,9 +4,9 @@
 
 ## 2026-10-24 Linux host 当前来源与 scoped 验收
 
-当前 Cargo 集成来源为 Hepta `bdc27a1cd4ac57f5a78366fcd5aa898c565a7ba9` / tree `f71e4e0fbe92eec2c7f1326b3d77a3a9f5a06999`，对应[固定跨仓入口](SOURCES.md#hepta-native-organ)。[v10/v11 独立原始收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)记录 Agentd 349 pass/34 ignored、文本8/8、Legacy3/3（1015 unselected）、client29/29、协议306 pass/1 ignored，以及默认原 SDK native UI43/43、AccessKit54/54。ignored 与 unselected 不计通过；它们不是完整两仓或生产产品验收。
+当前 Cargo 集成来源为 Hepta `7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9` / tree `cf53a7c0e7ad57772238b614b673d176386ddfe5`，对应[固定跨仓入口](SOURCES.md#hepta-native-organ)。[v10/v11 独立原始收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)记录 Agentd 349 pass/34 ignored、文本8/8、Legacy3/3（1015 unselected）、client29/29、协议306 pass/1 ignored，以及默认原 SDK native UI43/43、AccessKit54/54。ignored 与 unselected 不计通过；它们不是完整两仓或生产产品验收。
 
-默认 `hepta-native-makepad` 保持原 SDK/54 文件资源；独立 `hepta-native-clipboard-sdk` 使用固定全 crate override、独立锁和60文件 bundle，候选不继承默认测试资格。最终 Desktop 完整 workspace、release、真实窗口、安装后生产与 Android 同 signer 签名仍待各自执行，见[当前能力](CURRENT_CAPABILITIES.md)。v8/v9 失败和其余历史 pin/收据不改写。
+默认 `hepta-native-makepad` 保持原 SDK/54 文件资源；独立 `hepta-native-clipboard-sdk` 绑定 `native-clipboard-read.patch` 与 `sdk-num-traits-path.patch` 两份精确补丁，使用固定全 crate override、独立锁和61文件 bundle，候选不继承默认测试资格。最终 Desktop 完整 workspace、release、真实窗口、安装后生产与 Android 同 signer 签名仍待各自执行，见[当前能力](CURRENT_CAPABILITIES.md)。v8/v9 失败和其余历史 pin/收据不改写。
 
 ## 2026-10-23 审计后实施候选（持续验收）
 

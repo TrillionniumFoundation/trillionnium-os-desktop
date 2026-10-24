@@ -37,6 +37,11 @@ private bus. It requires the real `libpinyin` engine
 by default; use `--engine` only for an installed engine that accepts the same
 `nihao` → `你好` sample.
 
+The window-owner helper additionally loads `libX11.so.6` and `libXRes.so.1`.
+The private X server must expose XRes protocol version 1.2 or later, including
+`QueryClientIds` with `LocalClientPID`. Library presence alone does not prove
+that server capability; the helper checks it on the private display at runtime.
+
 After building the actual Shell and preparing its verified native resources,
 choose a new output directory whose parent exists:
 
@@ -49,10 +54,16 @@ choose a new output directory whose parent exists:
   --output /absolute/new-native-ui-receipt
 ```
 
-The Hepta checkout must contain the current
-`apps/hepta-control-ui/test/native-accessibility-smoke.py`. The harness hashes
-that exact script, its own files, the actual ELF, the original child cleanup
-guard, and the packaged asset inventory. `--build-receipt` additionally verifies
+`--hepta-source` selects the original test-helper checkout. It must contain
+`apps/hepta-control-ui/test/native-accessibility-smoke.py` and
+`apps/hepta-control-ui/test/x11_client_owner.py`; `--atomic-editable-text` also
+uses `native-editable-text-smoke.py` from that directory. This harness source
+may differ from the Hepta source that produced the frozen product ELF. Keep
+the helper checkout's complete commit/tree with the run's provenance; the
+harness records the exact helper hashes separately from the actual ELF, its
+own files, the original child cleanup guard, and the packaged asset inventory.
+Selecting a newer reviewed helper does not rebuild or repin the product.
+`--build-receipt` additionally verifies
 an existing successful receipt containing `status: "passed"`, `exit_code: 0`,
 `source_commit`, `source_tree`, and `binaries.trill-shell.{sha256,bytes}`. Without
 that input, runtime behavior can pass while `build_source_identity_verified`
@@ -66,9 +77,16 @@ its own X display. It never passes `--replace`, inherits an existing user bus,
 sets a human principal, or starts Agentd/Root/Session. A missing Session is a
 local observation failure and does not prevent this input test.
 
-Every input target is matched to the Shell process's X11 window PID. The test
-first proves that the display rejects a client without its cookie. Cleanup
-reuses the repository's waitable-child identity guard, retaining the original
+Every input target is bound to the retained Shell child through the original
+`x11_client_owner.py` helper. It enumerates visible windows, then obtains each
+resource's client PID from the X server using XRes `LocalClientPID`. Only one
+visible window belonging to that child may be selected; multiple matching
+windows are rejected. A missing match remains unavailable within the existing
+startup deadline, and absent or ambiguous XRes ownership fails qualification.
+Window titles, classes and client-written `_NET_WM_PID` are not ownership
+evidence, and there is no fallback to them when the original SDK omits that
+property. The test first proves that the display rejects a client without its
+cookie. Cleanup reuses the repository's waitable-child identity guard, retaining the original
 child until process-group signals finish. Only owned groups are signalled.
 Private cookies and IBus state are removed after the run; receipts retain
 synthetic draft outputs, logs and unmodified screenshots.
