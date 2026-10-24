@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 373  # Retained 368 plus five original-owner successor regressions.
+MINIMUM_CORE_TESTS = 375  # Retained 373 plus two original-RNG entropy regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -126,6 +126,8 @@ BOOT_ID_CORE_TESTS = (
     "aster_core::util::boot_identity::tests::boot_identity_is_stable_and_has_uuid_v4_layout",
     "aster_core::fs::fs_impls::procfs::sys::kernel::random::tests::proc_boot_id_partial_reads_preserve_the_same_uuid",
     "aster_core::fs::fs_impls::procfs::sys::kernel::random::tests::proc_boot_id_rejects_mutation",
+    "aster_core::util::random::tests::trusted_entropy_requires_original_initialized_hardware_seed",
+    "aster_core::util::random::tests::entropy_seed_requires_every_word_before_publication",
 )
 DATAGRAM_FRAME_CORE_TESTS = tuple("aster_core::net::socket::unix::datagram::message::tests::" + suffix for suffix in (
     'empty_message_slots_are_bounded_and_only_consumption_reopens_capacity',

@@ -13,7 +13,7 @@ Process ktests are separate evidence and cannot pass this gate.
 | --- | --- |
 | `build_original_entry.py` | Build the original locked/default-feature release target, perform its original packaging and enforce the original static ELF bounds. |
 | `native_owner_inputs.py` | Verify the frozen source review, complete source snapshots, actual original build records, embedded ELF, exact-source OSDK and retained product kernel. |
-| `run_native_owner.py` | Freeze inputs, make fresh ext2 state, run two loader controls and the requested native owner scenarios, retain complete raw evidence. |
+| `run_native_owner.py` | Freeze inputs, make fresh ext2 state, run two loader controls, an entropy-readiness control and the requested native owner scenarios, retain complete raw evidence. |
 | `native_owner_evidence.py` | Check original K/D bytes, complete Root Current receipts, actual process boundaries, CPU accounting and the ordered source/recovery events. |
 | `test_native_owner_evidence.py` | Reject altered, missing, reordered, relabelled and semantically contradictory inert records. These are parser tests, not native execution. |
 | `test_native_owner_runner.py` | Exercise actual bounded subprocess output, timeout, input mutation, exact ext2 formatting/preimage retention and source-review parsing. |
@@ -144,8 +144,14 @@ returns an explicit disabled record. The default run includes both scenarios;
 `--scenario steady-state-v1` selects only that named finite scope. Both altered
 ELF loader controls always run against the same product kernel. The byte-change
 and truncation must be rejected before any of the four images or roles resume.
+The third mandatory control uses the **unaltered** original owner and same
+product kernel with `-cpu max,-rdrand`. It must observe the original timestamp
+fallback, exactly one `entropy-not-ready` rejection and raw exit 65, with no
+committed image, activated role or owner output. The actual CPU argument and
+profile are retained. A claimed negative marker from an ordinary `max` run,
+timeout, success exit, absent fallback or any role execution fails this control.
 
-The guest uses the original N0 TCG/q35/max profile, one CPU, 512 MiB, no network,
+Positive guests use the original N0 TCG/q35/max profile, one CPU, 512 MiB, no network,
 the pinned original SeaBIOS, and a deadline of at most 120 seconds per boot.
 The runner freezes the original static entry at `/test/hepta-g2-owner`. Root
 alone can read the mode-0400 `/test/hepta-g2-run.json`; that file contains only

@@ -2,6 +2,9 @@
 
 //! One boot identity shared by procfs and the original HOS2 wire owner.
 //! This public UUID is not an authorization token or an anti-rollback device.
+//! Diagnostic boots may use the upstream insecure entropy fallback. G2 checks
+//! this same RNG's seed provenance before any trusted role or CapSpace creation;
+//! a nonzero UUID or its layout alone never proves trusted entropy readiness.
 
 use spin::Once;
 

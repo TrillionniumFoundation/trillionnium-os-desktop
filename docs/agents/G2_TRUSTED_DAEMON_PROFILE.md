@@ -8,6 +8,17 @@ three-process qualification and its read-only manager history remain separate.
 
 ## Actual processes and authority
 
+Before reading the trusted image or allocating any role PID, CapSpace or grant,
+G2 requires the original kernel RNG to have a complete hardware seed. The
+generator and immutable provenance share the same `Once`; no second RNG,
+identity owner or caller-supplied readiness flag is introduced. An uninitialized
+RNG, the upstream timestamp fallback, or an unqualified device-tree seed returns
+`EAGAIN` and records `entropy-not-ready`. Ordinary diagnostic boots retain the
+upstream fallback and do not gain a trusted-session claim from a valid UUID.
+The current x86 path uses OSTD's bounded RDRAND interface; it trusts the selected
+CPU/hypervisor entropy provider and does not certify arbitrary hardware, VM
+clones/resume, an unimplemented virtio-rng seed path or reseeding.
+
 `HEPTA_G2_TRUSTED_DAEMON=1` selects Cargo feature `g2-trusted-daemon`. The same
 reviewed static ELF is read once, compared byte for byte with the kernel's
 embedded input and loaded into four private, sealed VMARs. The original limits

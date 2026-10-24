@@ -44,6 +44,12 @@ pub(super) fn spawn(
     argv: Vec<CString>,
     envp: Vec<CString>,
 ) -> Result<Arc<Process>> {
+    // Refuse before snapshot loading, PID/CapSpace allocation or any role and
+    // grant preparation. The diagnostic RNG remains usable by ordinary boots.
+    if let Err(error) = crate::util::random::require_trusted_entropy() {
+        println!("[hepta-g2] rejected trusted startup: entropy-not-ready");
+        return Err(error);
+    }
     let fs = ThreadFsInfo::new(path_resolver);
     let abs_path = fs
         .resolver()
