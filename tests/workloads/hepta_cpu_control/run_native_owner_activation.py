@@ -123,7 +123,8 @@ def execute(args, report):
                     observed["root_launch_observations_expected"], directory / "root-launch-observations")
                 result["retained_root_observations"] = physical
                 activation_files = witness_files.verify(state, debugfs, debugfs_identity, result["state"]["after_sha256"],
-                    observed["activation_witnesses_expected"], directory / "checkpoint-activation-witnesses")
+                    observed["activation_witnesses_expected"], observed["genesis_initial_expected"],
+                    directory / "checkpoint-activation-witnesses")
                 result["retained_activation_witnesses"] = activation_files
                 accept_actual_observations(observed, physical, activation_files)
                 result.update(observed)

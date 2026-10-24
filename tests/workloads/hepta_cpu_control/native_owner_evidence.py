@@ -239,10 +239,11 @@ def parse(raw, scenario, nonce):
     return _parse(raw, scenario, nonce, False)
 
 
-def _parse(raw, scenario, nonce, prior_boot, activation=False):
+def _parse(raw, scenario, nonce, prior_boot, activation=False, genesis=False):
     require(type(raw) is bytes and len(raw) <= MAX_SERIAL_BYTES, "serial evidence exceeds the original bound")
     require(scenario in SUPPORTED_SCENARIOS or (prior_boot and scenario == "prior-boot-unknown-v1")
-            or (activation and scenario in ("activation-after-proof-v1", "activation-after-material-v1")),
+            or (activation and scenario in ("activation-after-proof-v1", "activation-after-material-v1"))
+            or (genesis and scenario in ("original-genesis-before-writer-v1", "original-genesis-writer-reserved-v1", "original-genesis-before-head-v1")),
             "unsupported original-owner scenario")
     digest(nonce, "fresh host nonce")
     decoded = raw.decode("utf-8", errors="strict").replace("\r\n", "\n")
@@ -302,7 +303,7 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
     return _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, None)
 
 
-def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, prior_boot, activation=None):
+def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, prior_boot, activation=None, genesis=None):
     expected_exit = 33
     if prior_boot is not None:
         from native_owner_prior_boot_evidence import PriorBootTranscript
@@ -313,9 +314,14 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
         from native_owner_activation_evidence import ActivationTranscript
         require(prior_boot is None and type(activation) is ActivationTranscript and scenario == activation.scenario,
                 "only the separate actual partial-activation oracle can consume this transcript")
+    if genesis is not None:
+        from native_owner_genesis_evidence import GenesisTranscript
+        require(prior_boot is None and activation is None and type(genesis) is GenesisTranscript
+                and scenario == genesis.scenario,
+                "only the separate original no-head recovery oracle can consume this transcript")
     require(type(code) is int and code == expected_exit and timed_out is False and excessive is False,
             "QEMU must finish the bounded actual boot with the original success exit")
-    lines, events = _parse(raw, scenario, nonce, prior_boot is not None, activation is not None)
+    lines, events = _parse(raw, scenario, nonce, prior_boot is not None, activation is not None, genesis is not None)
     successor_markers = []
     if scenario in CONTINUITY_SCENARIOS or activation is not None:
         from native_owner_continuity_kernel import kernel_records
@@ -346,6 +352,8 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
 
     if prior_boot is not None:
         prior_boot.begin(take)
+    if genesis is not None:
+        genesis.begin(take)
 
     roles = obj(take("roles"), ("bootstrap_version", "bootstrap_bytes", "native_boot_id", "manager_space", "recovery_space",
                                 "linux_boot_id", "processes"), "roles")
@@ -459,6 +467,10 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
         return payload
 
     owner_ready("manager")
+    # Retain the complete actual initial observation before later owners or
+    # namespaces change. This is an evidence selector, never an authority.
+    genesis_initial = json_value(canonical({"root": peers["root"], "peer": peers["manager"],
+        "native_boot_id": boot_id, "spaces": spaces, "owner": owners["manager"]}))
 
     def prepared(name, role, cap):
         value = obj(take("prepared"), ("operation", "pid", "occurrence_key", "request_json", "payload_sha256"), "original immutable outbox")
@@ -589,6 +601,17 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
                     "nonzero budget did not run the actual workload")
         last_usage = second
 
+    if genesis is not None:
+        from types import SimpleNamespace
+        result = genesis.finish(SimpleNamespace(
+            take=take, role_pids=role_pids, boot_id=boot_id, linux_boot=linux_boot, spaces=spaces,
+            peers=peers, state=state, owners=owners, currents=currents, materials=materials,
+            frontiers=frontiers, operations=operations, prepared=prepared,
+            native_result=native_result, source_terminal=source_terminal,
+            acknowledge=acknowledge, window=window))
+        require(cursor == len(values), "actual no-head recovery contains a later or unexpected owner event")
+        result.update(raw_serial_sha256=hashlib.sha256(raw).hexdigest(), event_count=len(values))
+        return result
     copyout_flags = {}
     if prior_boot is not None:
         from types import SimpleNamespace
@@ -599,7 +622,10 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
             native_result=native_result, source_terminal=source_terminal,
             acknowledge=acknowledge, window=window))
         require(cursor == len(values), "actual prior-boot stream contains a later or unexpected owner event")
-        result.update(raw_serial_sha256=hashlib.sha256(raw).hexdigest(), event_count=len(values))
+        result.update(raw_serial_sha256=hashlib.sha256(raw).hexdigest(), event_count=len(values),
+                      genesis_initial_expected=genesis_initial if prior_boot.phase == "fresh"
+                          else prior_boot.previous["genesis_initial_expected"],
+                      genesis_first_writer_files_verified=False)
         return result
     if scenario == "steady-state-v1":
         for name, cap in (("lower", 25_000_000), ("pause", 0), ("resume", CAP_NS)):
@@ -761,4 +787,6 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
             result["activation_witnesses_expected"] = [native_owner_activation_witness.pending_final_canonical(
                 actual["previous"], peers["root"], peers["recovery"], actual["material_sha256"], owners["recovery"])]
     result["activation_witness_files_verified"] = False
+    result["genesis_initial_expected"] = genesis_initial
+    result["genesis_first_writer_files_verified"] = False
     return result

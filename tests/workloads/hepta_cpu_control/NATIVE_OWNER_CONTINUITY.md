@@ -160,3 +160,20 @@ extraction tests. Complete synthetic records in
 launch an owner nor produce native qualification evidence. The ext2 tests use
 private synthetic disks; `-w` appears only while constructing/mutating those
 test inputs. The production extractor never opens a disk for writing.
+
+## Current-source first writer custody
+
+Every current-source native case also verifies the fixed original
+`checkpoint-genesis-first-writer-v1.<Agent>` observation, its complete
+sequence-one proof, original Genesis record and exact GenesisActivation
+commitment. The original initial owner proof SHA and Current select those
+files. Later canonical writers and pruned Registry rows cannot replace this
+historical lookup. Steady-state and live lost-copyout cases require these
+physical files even when they have no later activation witness. The prior-boot
+runner preserves all three records and locks across the same disk reboot.
+
+See `NATIVE_OWNER_GENESIS.md` for the exact inventory, current first-payload
+contract and independent three-cut runner. The former first-writer cut-only
+payload is rejected for this source; earlier case semantics are preserved.
+The three additional no-head cases, original component tests and host parser
+checks do not qualify any other native scenario or a different source pair.

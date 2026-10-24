@@ -12,6 +12,8 @@ import native_owner_evidence as e
 import native_owner_inputs as inputs
 import native_owner_prior_boot_authority as authority
 import native_owner_prior_boot_types as fixed
+import native_owner_genesis_first as first_writer
+from native_owner_genesis_test_records import GenesisRecords
 from native_owner_activation_test_records import ActivationRecords
 import test_native_owner_prior_boot_disk as disk_fixture
 
@@ -94,10 +96,36 @@ class ActualActivationWitnessDiskTests(unittest.TestCase):
             source.write_bytes(e.canonical(wrapper).encode())
             self.install(source, witness.DIRECTORY + "/" + value["filename"])
             self.install(empty, witness.DIRECTORY + "/" + value["filename"] + ".lock")
+        # These are additional inert file-reader inputs, not the transcript
+        # above or native qualification. The actual runner requires both.
+        initial = GenesisRecords(scenario="original-genesis-before-head-v1")
+        checked = initial.evaluate()
+        state = checked["observed_installation"]
+        proof = checked["first_writer_proof"]
+        candidate = checked["first_candidate"]
+        initial.authorities = {"manager": initial.authority(None)}
+        initial.authorities["manager"]["binding"].update(authority_grant_digest=types.sha(proof),
+            fencing_token_digest=hashlib.sha256(hashlib.sha256(b"hepta:production-authority-token-grant:v2\0"
+                + types.sha(proof).encode() + proof["signature_hex"].encode()).digest()).hexdigest(),
+            expires_at_unix_seconds=proof["claims"]["authority_lease"]["expires_at_unix_ms"] // 1000)
+        current = initial.new_current("manager", 1, 2, "ab" * 32)
+        self.initial = {"root": state["root"], "peer": candidate["peer"], "native_boot_id": state["kernel_boot"],
+            "spaces": checked["spaces"], "owner": {"role": "manager", "pid": 2, "agent_id": fixed.AGENT,
+                "spawn_generation": 1, "issuer_key_sha256": hashlib.sha256(bytes([19] * 32)).hexdigest(),
+                "writer_proof_sha256": types.sha(proof), "current": current}}
+        values = [checked["saved_genesis"], first_writer.expectation(proof, checked["saved_genesis"]),
+                  checked["genesis_activations_expected"][0]]
+        for value in values:
+            payload = e.canonical(value["payload"])
+            wrapper = {"schema_version": 1, "observation_id": value["observation_id"], "payload": list(payload.encode())}
+            source = self.root / value["filename"]
+            source.write_bytes(e.canonical(wrapper).encode())
+            self.install(source, witness.DIRECTORY + "/" + value["filename"])
+            self.install(empty, witness.DIRECTORY + "/" + value["filename"] + ".lock")
 
     def verify(self, label):
         return physical.verify(self.image, self.tool, self.tool_identity, inputs.sha(self.image),
-                               self.expected, self.root / label)
+                               self.expected, self.initial, self.root / label)
 
     def test_actual_same_inode_readonly_record_lock_material_and_raw_outputs(self):
         before = inputs.sha(self.image)
@@ -133,6 +161,41 @@ class ActualActivationWitnessDiskTests(unittest.TestCase):
         self.mutate("rm " + path)
         with self.assertRaisesRegex(ValueError, "missing, unexpected"):
             self.verify("actual-absence-refusal")
+
+    def test_fixed_first_signature_is_required_even_without_a_running_successor(self):
+        self.expected = []
+        # Remove the two independently installed running activation records;
+        # the first signature/Genesis/first-candidate files remain mandatory.
+        for value in self.records.evaluate()["activation_witnesses_expected"]:
+            for suffix in ("", ".lock"):
+                path = disk_fixture.physical.Disk.physical(witness.DIRECTORY + "/" + value["filename"] + suffix)
+                self.mutate("rm " + path)
+        result = self.verify("first-only")
+        self.assertTrue(result["genesis_first_writer_files_verified"])
+        self.assertEqual(result["actual_files"], [])
+        self.mutate("rm " + disk_fixture.physical.Disk.physical(witness.DIRECTORY + "/" + first_writer.filename()))
+        with self.assertRaises(ValueError): self.verify("missing-fixed-first")
+
+    def test_another_well_formed_first_signature_cannot_replace_actual_current_binding(self):
+        path = witness.DIRECTORY + "/" + first_writer.filename()
+        source = self.root / first_writer.filename()
+        wrapper = json.loads(source.read_bytes())
+        payload = json.loads(bytes(wrapper["payload"]))
+        payload["proof"]["signature_hex"] = "cd" * 64
+        wrapper["payload"] = list(e.canonical(payload).encode())
+        changed = self.root / "inert-changed-first-proof"
+        changed.write_bytes(e.canonical(wrapper).encode())
+        self.mutate("rm " + disk_fixture.physical.Disk.physical(path))
+        self.install(changed, path)
+        with self.assertRaisesRegex(ValueError, "initial owner proof"):
+            self.verify("changed-first-proof")
+
+    def test_extra_genesis_observation_is_not_accepted_as_an_unbounded_inventory(self):
+        source = self.root / "unrelated-inert-observation"
+        source.write_bytes(b"not an original saved observation")
+        self.install(source, witness.DIRECTORY + "/observation-v1-" + "ab" * 32 + ".json")
+        with self.assertRaisesRegex(ValueError, "missing, unexpected"):
+            self.verify("extra-inventory")
 
     def test_old_crash_candidate_is_selected_only_by_exact_physical_canonical_proof(self):
         candidate = self.records.authorities["recovery"]["writer"]

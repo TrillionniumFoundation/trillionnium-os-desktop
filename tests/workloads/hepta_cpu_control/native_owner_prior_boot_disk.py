@@ -300,12 +300,20 @@ def verify(image, expected_sha256, tool, tool_identity, transcript, output, prev
                                         None if fresh else previous["consumers"])
         root = authority.root_authority(disk, transcript, None if fresh else previous["root_authority"])
         import native_owner_activation_witness_disk as activation_witness
-        activation_files = activation_witness.verify_open(disk, transcript["activation_witnesses_expected"])
+        activation_files = activation_witness.verify_open(disk, transcript["activation_witnesses_expected"],
+                                                         transcript["genesis_initial_expected"])
         activation_witness.accept_expected(transcript, activation_files)
         preservation = None
         if not fresh:
             preservation = store.preserved_unknown(previous["live_database"], live)
             store.preserved_unknown(previous["material_database"], material)
+            initial_before = previous["activation_witnesses"]["first_writer"]
+            initial_after = activation_files["first_writer"]
+            for kind in ("genesis", "first_signature", "activation"):
+                for part in ("record", "lock"):
+                    before, after = initial_before[kind][part], initial_after[kind][part]
+                    e.require(before["sha256"] == after["sha256"] and before["inode"] == after["inode"],
+                              "same-disk recovery rewrote the original first signature/genesis/activation custody")
             e.require(pin["file"]["sha256"] == previous["installation"]["file"]["sha256"]
                       and pin["file"]["inode"] == previous["installation"]["file"]["inode"]
                       and observation["record"]["sha256"] == previous["saved_observation"]["record"]["sha256"]

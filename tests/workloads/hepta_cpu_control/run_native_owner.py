@@ -235,9 +235,9 @@ def execute(args, report):
     mkfs, mkfs_identity = tool(args.mkfs)
     selected = args.scenario or list(oracle.SUPPORTED_SCENARIOS)
     require(len(set(selected)) == len(selected), "scenario selection repeats a boot")
-    debugfs, debugfs_identity = None, None
-    if any(name not in ("steady-state-v1", "lost-copyout-live-v1") for name in selected):
-        debugfs, debugfs_identity = tool(args.debugfs)
+    # Every current-source scenario retains the original sequence-one
+    # proof/Genesis preparation, including cases without a later successor.
+    debugfs, debugfs_identity = tool(args.debugfs)
     output = args.output
     require(output.is_absolute() and output.parent.is_dir() and output.parent.resolve(strict=True) == output.parent
             and not output.exists() and not output.is_symlink() and "," not in str(output), "new canonical comma-free output required")
@@ -318,11 +318,12 @@ def execute(args, report):
                     observed["root_launch_observations_expected"], directory / "root-launch-observations")
                 result["retained_root_observations"] = physical
                 native_owner_state_observations.accept_retained_observations(observed, physical)
-            if not is_control and observed["activation_witnesses_expected"]:
+            if not is_control:
                 import native_owner_activation_witness_disk
                 witnesses = native_owner_activation_witness_disk.verify(
                     directory / "state.raw", debugfs, debugfs_identity, result["state"]["after_sha256"],
-                    observed["activation_witnesses_expected"], directory / "checkpoint-activation-witnesses")
+                    observed["activation_witnesses_expected"], observed["genesis_initial_expected"],
+                    directory / "checkpoint-activation-witnesses")
                 native_owner_activation_witness_disk.accept_expected(observed, witnesses)
                 result["retained_activation_witnesses"] = witnesses
             result.update(observed)
@@ -351,7 +352,8 @@ def execute(args, report):
     passed = all(value["passed"] is True for group in (report["controls"], report["scenarios"]) for value in group.values())
     report.update(passed=passed, stage="complete", source_inputs_unchanged=True, same_product_kernel_all_boots=True,
                   selected_activation_witness_files_verified=passed and all(
-                      not value.get("activation_witnesses_expected") or value.get("activation_witness_files_verified") is True
+                      value.get("activation_witness_files_verified") is True
+                      and value.get("genesis_first_writer_files_verified") is True
                       for value in report["scenarios"].values()),
                   original_native_owner_cycle_verified=passed,
                   bounded_steady_state_verified=passed and "steady-state-v1" in selected,

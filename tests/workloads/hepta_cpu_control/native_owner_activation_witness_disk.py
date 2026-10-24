@@ -10,6 +10,7 @@ from pathlib import Path
 import native_owner_activation_witness as witness
 import native_owner_continuity_types as types
 import native_owner_evidence as e
+import native_owner_genesis_first as first_writer
 import native_owner_prior_boot_authority as authority
 import native_owner_prior_boot_disk as physical
 import native_owner_prior_boot_types as fixed
@@ -55,7 +56,7 @@ def resolve_final_canonical(disk, pending):
                     "private_key_bytes_read_or_exported": False}
 
 
-def verify_open(disk, expected):
+def verify_open(disk, expected, initial):
     e.require(type(expected) is list and len(expected) <= 256, "bounded original activation witness list required")
     pending = [value for value in expected if value.get("selection") == "exact-final-canonical-proof"]
     e.require(not pending or len(expected) == len(pending) == 1,
@@ -68,12 +69,14 @@ def verify_open(disk, expected):
         e.require(value.get("selection") == "complete-transcript-candidate", "unknown witness authority selector")
         resolved.append(value)
     parent = disk.directory(witness.DIRECTORY, 0, 0o700)
+    first_files = first_writer.verify_open(disk, initial)
     entries = disk.entries(witness.DIRECTORY)
     names = [value["filename"] for value in resolved]
-    e.require(len(names) == len(set(names)), "one original saved activation was counted twice")
+    all_names = names + first_files["filenames"]
+    e.require(len(all_names) == len(set(all_names)), "one original saved activation was counted twice")
     original_frontier = authority.frontier_name("root-cognitive-checkpoint-v1")
     e.require(set(entries) == {".", "..", original_frontier, original_frontier + ".lock",
-                               *names, *(name + ".lock" for name in names)},
+                               *all_names, *(name + ".lock" for name in all_names)},
               "original checkpoint directory contains missing, unexpected or unsigned activation records")
     disk.regular(witness.DIRECTORY + "/" + original_frontier, 0, 0o600, 65536, 1)
     disk.regular(witness.DIRECTORY + "/" + original_frontier + ".lock", 0, 0o600, 0)
@@ -98,13 +101,14 @@ def verify_open(disk, expected):
     return {"schema": "hepta.original-checkpoint-activation-files.v1", "passed": True,
             "readonly_extraction": True, "directory": parent, "actual_files": actual,
             "canonical_selections": selections, "original_activation_commitment_version": 1,
+            "first_writer": first_files, "genesis_first_writer_files_verified": True,
             "private_key_bytes_read_or_exported": False, "native_execution_verified": False,
             "g2_complete": False, "production_ready": False}
 
 
-def verify(image, tool, tool_identity, expected_sha256, expected, output):
+def verify(image, tool, tool_identity, expected_sha256, expected, initial, output):
     with physical.Disk(image, expected_sha256, tool, tool_identity, output) as disk:
-        result = verify_open(disk, expected)
+        result = verify_open(disk, expected, initial)
         result.update(state_path=str(image), state_sha256=expected_sha256, tool=tool_identity, command_count=len(disk.commands))
     original.save(Path(output) / "result.json", result)
     return result
@@ -112,7 +116,11 @@ def verify(image, tool, tool_identity, expected_sha256, expected, output):
 
 def accept_expected(transcript, files):
     e.require(files.get("passed") is True and files.get("readonly_extraction") is True
-              and transcript.get("activation_witness_files_verified") is False,
+              and transcript.get("activation_witness_files_verified") is False
+              and transcript.get("genesis_first_writer_files_verified") is False
+              and files.get("genesis_first_writer_files_verified") is True
+              and files["first_writer"]["first_signature"]["proof_sha256"]
+                  == transcript["genesis_initial_expected"]["owner"]["writer_proof_sha256"],
               "actual original retained witness files must be independently verified once")
     expected = transcript["activation_witnesses_expected"]
     e.require(len(files["actual_files"]) == len(expected), "retained witness count differs from actual original activations")
@@ -125,3 +133,4 @@ def accept_expected(transcript, files):
                   and files["canonical_selections"][0]["writer_proof_sha256"] == expected[0]["owner"]["writer_proof_sha256"],
                   "physical witness was not selected by this exact actual final original canonical proof")
     transcript["activation_witness_files_verified"] = True
+    transcript["genesis_first_writer_files_verified"] = True
