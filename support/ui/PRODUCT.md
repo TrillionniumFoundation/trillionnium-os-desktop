@@ -59,21 +59,30 @@ false; no native clipboard request is queued.
 
 The separate `trill-shell/hepta-native-clipboard-sdk` feature forwards through
 `trill-ui-core` to the original UI's `native-clipboard-sdk`. Only this feature
-compiles the new SDK API, advertises PasteText and requires the 61-file candidate
+compiles the new SDK API, advertises PasteText and requires the 62-file candidate
 bundle at startup. A candidate resource bundle does not enable the feature in a
 baseline binary.
 
 The request-scoped PasteText candidate is a separate source profile. It accepts
-only original SDK `337566c8b25d47f7e4fff6a202157b65bf183330` plus its two reviewed
-patches and complete prepared tree `e5ae930cc6a0a528719673deff44ec2830f4bdfa`.
-`native-clipboard-read.patch` retains its original bytes. The additional
+only original SDK `337566c8b25d47f7e4fff6a202157b65bf183330` plus its three reviewed
+patches and complete prepared tree `ceb83c36b474eb55336cb69b430ff9d898cb51f6`.
+`native-clipboard-read.patch` retains its original bytes. The unchanged
 `sdk-num-traits-path.patch` makes the two original `makepad-half`/`naga` path
 dependencies select the same `num-traits` 0.2.20 manifest resolved by original
 Git SDK discovery, at `libs/rapier/vendor/num-traits/Cargo.toml`. It does not
-substitute the adjacent Vulkan 0.2.19 copy. Both patches, their exact bytes,
-and the new full-tree manifest must match the fixed product contract. The
+substitute the adjacent Vulkan 0.2.19 copy. `native-ime-preedit.patch` removes
+synthetic focus from X11 visibility events and prefers callback preedit. Its
+callback caret update sends `XNSpotLocation` without `XNArea`, which libX11
+1.8.7 does not support for that style, and never replaces a live callback XIC
+when placement fails. Position/Nothing remain creation fallbacks; full
+composition qualification still requires the original callback guard and
+actual candidate placement evidence. All three patches, their exact bytes,
+and the full-tree manifest must match the fixed product contract. The
 earlier clipboard-only `f9efec87` profile is retained in its historical evidence;
-it is not accepted as this complete candidate profile.
+it is not accepted as this complete candidate profile. The preceding two-patch
+`e5ae930c` profile likewise keeps its original receipts and cannot inherit this
+IME fix or a later window result. The six source notices include the new patch;
+fonts and other dependency resources retain their existing contracts.
 Arbitrary path dependencies and mixed SDK crate sources are refused. The Hepta
 helpers `prepare-native-clipboard-sdk.py` and `verify-native-clipboard-sdk.py`
 generate the all-crate Cargo override and verify the actual dependency edges.
@@ -186,11 +195,12 @@ outside that source checkout. The helper keeps its clean-source gate and does
 not infer successful compilation or qualification from the receipt.
 
 The bundle retains all original fonts and six AccessKit notices, then adds
-`NATIVE-SDK-PATCH.json`, `NATIVE-SDK-SOURCE.json` and five original SDK license,
-manifest, two patch and provenance files. The preparer and installer bind the
-bytes and SHA256 of each patch independently, including `sdk-num-traits-path.patch`;
+`NATIVE-SDK-PATCH.json`, `NATIVE-SDK-SOURCE.json` and six original SDK license,
+manifest, three patch and provenance files. The preparer and installer bind the
+bytes and SHA256 of each patch independently, including `sdk-num-traits-path.patch`
+and `native-ime-preedit.patch`;
 a self-consistent replacement notice cannot authorize a different source change.
-The installer checks all 61 actual files;
+The installer checks all 62 actual files;
 startup checks the SDK notice contract against the compiled original UI
 constant. The qualification harness's `--atomic-editable-text
 --request-scoped-paste` additionally requires native PasteText readback and an

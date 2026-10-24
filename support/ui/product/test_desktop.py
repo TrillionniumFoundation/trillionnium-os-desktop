@@ -184,7 +184,7 @@ class ProductTests(unittest.TestCase):
 
     def test_prepared_sdk_sources_and_patch_notices_are_bound_to_binary_profile(self):
         resources, profile = self.patched_resource_fixture()
-        self.assertEqual(len(desktop.native_resource_files(resources, "b" * 40, profile)), 61)
+        self.assertEqual(len(desktop.native_resource_files(resources, "b" * 40, profile)), 62)
         profile_hash = desktop.digest((resources / "NATIVE-SDK-SOURCE.json").read_bytes())
         archive = self.make_archive("a" * 40, b"SDK structural fixture", sdk_profile_sha=profile_hash)
         output = self.root / "sdk-product.tar.gz"
@@ -251,34 +251,53 @@ class ProductTests(unittest.TestCase):
                 finally:
                     path.write_bytes(original)
 
-    def test_second_sdk_patch_cannot_be_redeclared_by_a_self_consistent_notice(self):
+    def test_each_sdk_patch_cannot_be_redeclared_by_a_self_consistent_notice(self):
         resources, profile = self.patched_resource_fixture()
-        path = "dependency-notices/makepad/sdk-num-traits-path.patch"
-        changed = b"different source change with a self-consistent inventory"
-        (resources / path).write_bytes(changed)
-        notices = desktop.read_json(resources / "NATIVE-SDK-PATCH.json")
-        entry = next(entry for entry in notices["files"] if entry["path"] == path)
-        entry.update(bytes=len(changed), sha256=desktop.digest(changed))
-        raw = desktop.json_bytes(notices)
-        (resources / "NATIVE-SDK-PATCH.json").write_bytes(raw)
-        bundle = desktop.read_json(resources / "bundle.json")
-        bundle["sdkNoticeInventorySha256"] = desktop.digest(raw)
-        (resources / "bundle.json").write_bytes(desktop.json_bytes(bundle))
-        with self.assertRaisesRegex(desktop.ProductError, "Original SDK license or patch identity differs"):
-            desktop.native_resource_files(resources, "b" * 40, profile)
+        original_notices = desktop.read_json(resources / "NATIVE-SDK-PATCH.json")
+        for patch_record in desktop.native_sdk.PATCHES:
+            with self.subTest(patch=patch_record["file"]):
+                path = "dependency-notices/makepad/" + patch_record["file"]
+                original = (resources / path).read_bytes()
+                try:
+                    changed = b"different source change with a self-consistent inventory"
+                    (resources / path).write_bytes(changed)
+                    notices = copy.deepcopy(original_notices)
+                    entry = next(entry for entry in notices["files"] if entry["path"] == path)
+                    entry.update(bytes=len(changed), sha256=desktop.digest(changed))
+                    raw = desktop.json_bytes(notices)
+                    (resources / "NATIVE-SDK-PATCH.json").write_bytes(raw)
+                    bundle = desktop.read_json(resources / "bundle.json")
+                    bundle["sdkNoticeInventorySha256"] = desktop.digest(raw)
+                    (resources / "bundle.json").write_bytes(desktop.json_bytes(bundle))
+                    with self.assertRaisesRegex(desktop.ProductError, "Original SDK license or patch identity differs"):
+                        desktop.native_resource_files(resources, "b" * 40, profile)
+                finally:
+                    (resources / path).write_bytes(original)
 
-    def test_sdk_closure_patch_is_required_in_the_complete_notice_set(self):
+    def test_each_sdk_patch_is_required_in_the_complete_notice_set(self):
         resources, profile = self.patched_resource_fixture()
-        notices = desktop.read_json(resources / "NATIVE-SDK-PATCH.json")
-        notices["files"] = [entry for entry in notices["files"]
-                            if entry["path"] != "dependency-notices/makepad/sdk-num-traits-path.patch"]
-        raw = desktop.json_bytes(notices)
-        (resources / "NATIVE-SDK-PATCH.json").write_bytes(raw)
-        bundle = desktop.read_json(resources / "bundle.json")
-        bundle.update(sdkNotices=len(notices["files"]), sdkNoticeInventorySha256=desktop.digest(raw))
-        (resources / "bundle.json").write_bytes(desktop.json_bytes(bundle))
-        with self.assertRaisesRegex(desktop.ProductError, "Incomplete SDK source and patch notices"):
-            desktop.native_resource_files(resources, "b" * 40, profile)
+        original_notices = desktop.read_json(resources / "NATIVE-SDK-PATCH.json")
+        for patch_record in desktop.native_sdk.PATCHES:
+            with self.subTest(patch=patch_record["file"]):
+                notices = copy.deepcopy(original_notices)
+                notices["files"] = [entry for entry in notices["files"]
+                                    if entry["path"] != "dependency-notices/makepad/" + patch_record["file"]]
+                raw = desktop.json_bytes(notices)
+                (resources / "NATIVE-SDK-PATCH.json").write_bytes(raw)
+                bundle = desktop.read_json(resources / "bundle.json")
+                bundle.update(sdkNotices=len(notices["files"]), sdkNoticeInventorySha256=desktop.digest(raw))
+                (resources / "bundle.json").write_bytes(desktop.json_bytes(bundle))
+                with self.assertRaisesRegex(desktop.ProductError, "Incomplete SDK source and patch notices"):
+                    desktop.native_resource_files(resources, "b" * 40, profile)
+
+    def test_prior_two_patch_sdk_profile_cannot_claim_the_preedit_fix(self):
+        _resources, profile = self.patched_resource_fixture()
+        old = copy.deepcopy(profile)
+        old.update(patched_tree="e5ae930cc6a0a528719673deff44ec2830f4bdfa",
+                   manifest_sha256="cd511d5c0862ce720f596285f17aa2e4e3d133f3c45b76bcaa5a5d962d005f73",
+                   patches=old["patches"][:2])
+        with self.assertRaisesRegex(ValueError, "Unknown original SDK source or patch profile"):
+            desktop.native_sdk.validate_profile(old)
 
     def test_old_clipboard_only_sdk_profile_is_not_the_reviewed_closure_profile(self):
         _resources, profile = self.patched_resource_fixture()
