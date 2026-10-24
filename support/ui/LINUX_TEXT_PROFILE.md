@@ -25,7 +25,8 @@ python3 -B support/ui/build_text_product.py \
 
 Release is the default. `--build-profile debug` is an explicit development
 variant. `--offline` applies to Cargo and the original resource preparer;
-`--liberation-source` may supply the exact existing font source archive. All
+`--liberation-source` may supply the exact existing font source archive, and
+`--asset-cache` may read an existing original resource bundle by logical path. All
 resource lengths and digests remain checked. This entry does not select the
 independent clipboard SDK candidate or an arbitrary dependency override.
 

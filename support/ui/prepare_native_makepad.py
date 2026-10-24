@@ -67,7 +67,8 @@ def original_bytes(path, record, url, offline, mirrors=()):
 
 
 def package(metadata, destination, offline=False, liberation_source=None,
-            sdk_source_profile=None, sdk_original_metadata=None, sdk_cargo_config=None, metadata_bytes=None):
+            sdk_source_profile=None, sdk_original_metadata=None, sdk_cargo_config=None, metadata_bytes=None,
+            asset_cache=None):
     selected = {}
     for name in ("hepta-robrix-ui", "hepta-control-core", "makepad-widgets"):
         candidates = [entry for entry in metadata["packages"] if entry["name"] == name]
@@ -130,7 +131,14 @@ def package(metadata, destination, offline=False, liberation_source=None,
             logical = entry["logical"]
             package_name, relative = logical.split("/", 1)
             source = {"makepad_widgets": sdk_root, "hepta_robrix_ui": ui_root}[package_name] / relative
-            data = original_bytes(source, entry, font_urls.get(logical), offline)
+            # A retained original bundle can supply missing download-only fonts
+            # without modifying a Cargo checkout. Every cached byte still has
+            # to match this source's original inventory; invalid cache is fatal.
+            cached = asset_cache / logical if asset_cache is not None else None
+            if cached is not None and cached.is_file():
+                data = original_bytes(cached, entry, None, True)
+            else:
+                data = original_bytes(source, entry, font_urls.get(logical), offline)
             target = stage / logical
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
@@ -176,10 +184,13 @@ if __name__ == "__main__":
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--liberation-source", type=Path,
                         help="Existing exact source archive; the pinned size and SHA-256 remain mandatory")
+    parser.add_argument("--asset-cache", type=Path,
+                        help="Read original assets by logical path from an existing bundle; all pinned hashes remain mandatory")
     parser.add_argument("--sdk-source-profile", type=Path, help="Exact post-resolution original SDK source receipt")
     parser.add_argument("--sdk-original-metadata", type=Path, help="Complete native metadata before the SDK source override")
     parser.add_argument("--sdk-cargo-config", type=Path, help="Exact generated all-crate SDK override TOML")
     options = parser.parse_args()
     print(json.dumps(package(json.loads(options.metadata.read_text()), options.output.absolute(),
                              options.offline, options.liberation_source, options.sdk_source_profile,
-                             options.sdk_original_metadata, options.sdk_cargo_config, options.metadata.read_bytes())))
+                             options.sdk_original_metadata, options.sdk_cargo_config, options.metadata.read_bytes(),
+                             options.asset_cache)))

@@ -153,6 +153,8 @@ def build(args):
             command.append("--offline")
         if args.liberation_source:
             command.extend(["--liberation-source", str(Path(args.liberation_source).resolve(strict=True))])
+        if args.asset_cache:
+            command.extend(["--asset-cache", str(Path(args.asset_cache).resolve(strict=True))])
         run("native-resources", command)
         resource_files = desktop.native_resource_files(resources, args.hepta_commit)
         require(len(resource_files) == profile["resource_files"], "Resource inventory differs from this exact profile")
@@ -192,6 +194,7 @@ def main():
     parser.add_argument("--build-profile", choices=("debug", "release"), default="release")
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--liberation-source")
+    parser.add_argument("--asset-cache")
     try:
         return build(parser.parse_args())
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, source_profile.ProfileError, desktop.ProductError) as error:
