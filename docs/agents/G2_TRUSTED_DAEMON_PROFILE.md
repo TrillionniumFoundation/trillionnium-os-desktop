@@ -19,7 +19,12 @@ The current x86 path uses OSTD's bounded RDRAND interface; it trusts the selecte
 CPU/hypervisor entropy provider and does not certify arbitrary hardware, VM
 clones/resume, an unimplemented virtio-rng seed path or reseeding.
 
-`HEPTA_G2_TRUSTED_DAEMON=1` selects Cargo feature `g2-trusted-daemon`. The same
+`HEPTA_G2_TRUSTED_DAEMON=1` selects Cargo feature `g2-trusted-daemon`. The final
+`minimal.mk` override forwards this feature explicitly into the actual OSDK
+build argv and retains that command in `kernel.log`; upstream `FEATURES`
+alone is insufficient because the overlay replaces `CARGO_OSDK_BUILD_ARGS`.
+The overlay independently rejects mixed G1-c/G1-d/G2 selections and invalid
+flag values. The ordinary build still selects no trusted profile. The same
 reviewed static ELF is read once, compared byte for byte with the kernel's
 embedded input and loaded into four private, sealed VMARs. The original limits
 remain 8 MiB of file bytes and 16 MiB of page-aligned LOAD mappings, with no

@@ -20,32 +20,63 @@ class G1dBuildProfileTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
 
-    def make_flags(self, observe, control):
+    def make_flags(self, observe, control, daemon=0):
         return subprocess.run(
             ["make", "--no-print-directory", "-f", str(BUILD / "minimal.mk"),
              "CARGO_OSDK=fixture-osdk", f"HEPTA_G1C_TRUSTED_OBSERVE={observe}",
              f"HEPTA_G1D_TRUSTED_CONTROL={control}",
+             f"HEPTA_G2_TRUSTED_DAEMON={daemon}",
              "--eval=print-g1d-flags:;@printf '%s\\n' '$(CARGO_OSDK_BUILD_ARGS)'",
              "print-g1d-flags"],
             capture_output=True, text=True, timeout=10,
         )
 
     def test_only_the_selected_profile_reaches_the_osdk_argv(self):
-        for observe, control, feature in ((0, 0, None), (1, 0, "g1c-trusted-observe"),
-                                           (0, 1, "g1d-trusted-control")):
-            with self.subTest(observe=observe, control=control):
-                result = self.make_flags(observe, control)
+        for observe, control, daemon, feature in (
+                (0, 0, 0, None), (1, 0, 0, "g1c-trusted-observe"),
+                (0, 1, 0, "g1d-trusted-control"), (0, 0, 1, "g2-trusted-daemon")):
+            with self.subTest(observe=observe, control=control, daemon=daemon):
+                result = self.make_flags(observe, control, daemon)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 features = [arg for arg in result.stdout.split() if arg.startswith("--features=")]
                 self.assertEqual(features, [f"--features={feature}"] if feature else [])
                 self.assertIn("--boot-method=vmm-direct", result.stdout)
 
     def test_make_rejects_ambiguous_or_invalid_profile_flags(self):
-        for observe, control in ((1, 1), (0, 2), ("invalid", 0)):
-            with self.subTest(observe=observe, control=control):
-                result = self.make_flags(observe, control)
+        for observe, control, daemon in (
+                (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 1, 1),
+                (0, 2, 0), ("invalid", 0, 0), (0, 0, 2), (0, 0, "invalid")):
+            with self.subTest(observe=observe, control=control, daemon=daemon):
+                result = self.make_flags(observe, control, daemon)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("profile", result.stderr)
+
+    def test_g2_kernel_recipe_passes_selected_feature_to_actual_cargo_invocation(self):
+        (self.root / "kernel").mkdir()
+        capture = self.root / "osdk-argv.json"
+        cargo = self.root / "cargo"
+        cargo.write_text(
+            f"#!{sys.executable}\n"
+            "import json, os, pathlib, sys\n"
+            "pathlib.Path(os.environ['OSDK_ARGV_CAPTURE']).write_text(json.dumps(sys.argv[1:]))\n"
+        )
+        cargo.chmod(0o755)
+        result = subprocess.run(
+            ["make", "--no-print-directory", "--always-make", "-f", str(BUILD / "minimal.mk"),
+             "CARGO_OSDK=fixture-osdk", "HEPTA_G1C_TRUSTED_OBSERVE=0",
+             "HEPTA_G1D_TRUSTED_CONTROL=0", "HEPTA_G2_TRUSTED_DAEMON=1",
+             "FEATURES=g2-trusted-daemon", "kernel"],
+            cwd=self.root,
+            env={**os.environ, "PATH": str(self.root) + os.pathsep + os.environ["PATH"],
+                 "OSDK_ARGV_CAPTURE": str(capture)},
+            capture_output=True, text=True, timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        argv = json.loads(capture.read_text())
+        self.assertEqual(argv[:2], ["osdk", "build"])
+        self.assertEqual([arg for arg in argv if arg.startswith("--features=")],
+                         ["--features=g2-trusted-daemon"])
+        self.assertIn("--features=g2-trusted-daemon", result.stdout)
 
     def test_manifest_binds_the_independent_roles_to_one_frozen_input(self):
         source = self.root / "reviewed.elf"
