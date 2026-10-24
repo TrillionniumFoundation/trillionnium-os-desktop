@@ -265,6 +265,21 @@ revision selection; they do not qualify production authority or real Agentd.
 
 ## Literal Notes compiler
 
+The source/profile encoder is now shared with the original Hepta
+`codex-hepta-objective` owner, through `literal_notes_source_json_v1` and
+`literal_notes_admission_profile_json_v1`. The schema and normalization bytes
+remain the original finite Notes contract. Desktop keeps only UI validation and
+original Notes payload/operation construction; Agentd can use that same compiler
+inside its one production writer process without depending on Desktop.
+
+**Integration requirement:** this wrapper requires the combined Hepta companion
+containing the shared compiler change (`b0b78be161addb9d574dc359f3e6f757e35021bf`
+or its integrated equivalent). It must be selected through the single frozen
+Hepta source profile and all existing Hepta dependency pins/locks updated
+together before building this candidate. The historical `7ea3df4` baseline does
+not contain this API. This change does not claim that baseline compiled the new
+wrapper or that the production Notes UI submission gate has passed.
+
 The named “Write note via Hepta” action treats the submitted UTF-8 text as the
 exact content of one Notes document. `compile_notes_intent` calls the original
 `notes_operation_intent` validator, then binds that operation's semantic digest
