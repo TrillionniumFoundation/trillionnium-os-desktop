@@ -283,6 +283,10 @@ impl NotesDocument {
         &self.text
     }
 
+    pub fn target(&self) -> &NotesTargetIdentity {
+        &self.target
+    }
+
     pub fn revision(&self) -> u64 {
         self.revision
     }

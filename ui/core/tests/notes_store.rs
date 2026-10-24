@@ -257,3 +257,128 @@ fn persist_then_wait_fixture() {
     let _ = std::io::stdin().read(&mut one);
     drop(store);
 }
+
+fn fresh_target() -> NotesTargetIdentity {
+    NotesTargetIdentity {
+        session_instance: "c".repeat(32),
+        task_id: 2,
+        incarnation: "d".repeat(32),
+    }
+}
+
+#[test]
+fn ordinary_reopen_copies_only_text_and_preserves_old_effect_reconciliation() {
+    let root = Directory::new();
+    let mut old = NotesStore::create(&root.0, target()).unwrap();
+    let original_receipt = old.apply_exact(&request()).unwrap();
+    old.local_edit("要继续编辑的中文笔记\nsecond line".into())
+        .unwrap();
+    drop(old);
+    let old_path = document_directory(&root).join("document.json");
+    let original_bytes = fs::read(&old_path).unwrap();
+    let mut current = NotesStore::create(&root.0, fresh_target()).unwrap();
+    let saved = current.saved_notes().unwrap();
+    assert_eq!(saved.entries.len(), 1);
+    assert_eq!(saved.entries[0].revision, 2);
+    // Refresh starts from the same original root, with an independent cursor.
+    assert_eq!(current.saved_notes().unwrap().entries, saved.entries);
+    current.reopen_text(&saved.entries[0], 0).unwrap();
+    assert_eq!(current.text(), "要继续编辑的中文笔记\nsecond line");
+    assert_eq!(current.revision(), 1);
+    let query_new = serde_json::to_vec(&serde_json::json!({
+        "schema_version":1, "action":"read_document_state", "target":fresh_target(),
+        "request_id":"e".repeat(32),
+    }))
+    .unwrap();
+    let state: serde_json::Value =
+        serde_json::from_slice(&current.recovery_exact(&query_new).unwrap()).unwrap();
+    assert_eq!(
+        state["target"],
+        serde_json::to_value(fresh_target()).unwrap()
+    );
+    assert_eq!(state["receipt_pending"], false);
+    assert!(matches!(
+        current.apply_exact(&request()).unwrap().result,
+        NotesResult::NotApplied {
+            reason: NotesNotAppliedReason::TargetMismatch,
+            ..
+        }
+    ));
+    current.local_edit("新窗口继续编辑".into()).unwrap();
+    assert_eq!(current.revision(), 2);
+    assert_eq!(fs::read(&old_path).unwrap(), original_bytes);
+    let mut recovery = NotesStore::recover(&root.0, &target()).unwrap();
+    assert_eq!(
+        NotesResponse::parse_exact(&recovery.recovery_exact(&query()).unwrap()).unwrap(),
+        original_receipt
+    );
+    drop(current);
+    let reopened = NotesStore::recover(&root.0, &fresh_target()).unwrap();
+    assert_eq!(reopened.text(), "新窗口继续编辑");
+    assert_eq!(reopened.revision(), 2);
+}
+
+#[test]
+fn reopening_refuses_live_changed_or_already_edited_documents() {
+    let root = Directory::new();
+    let mut old = NotesStore::create(&root.0, target()).unwrap();
+    let receipt = old.apply_exact(&request()).unwrap();
+    let mut current = NotesStore::create(&root.0, fresh_target()).unwrap();
+    let live = current.saved_notes().unwrap();
+    assert!(live.entries.is_empty());
+    assert_eq!(live.unavailable, 1);
+    drop(old);
+    let selected = current.saved_notes().unwrap().entries.remove(0);
+    let mut recovery = NotesStore::recover(&root.0, &target()).unwrap();
+    assert!(current.reopen_text(&selected, 0).is_err());
+    let ack = serde_json::to_vec(&NotesAcknowledge {
+        schema_version: 1,
+        action: NotesAcknowledgeAction::AcknowledgeTerminal,
+        target: target(),
+        operation_id: receipt.operation_id.clone(),
+        payload_sha256: receipt.payload_sha256.clone(),
+        receipt_sha256: sha256_hex(&serde_json::to_vec(&receipt).unwrap()),
+    })
+    .unwrap();
+    recovery.recovery_exact(&ack).unwrap();
+    drop(recovery);
+    // Even a receipt-only change invalidates the selected complete checkpoint.
+    assert!(current.reopen_text(&selected, 0).is_err());
+    assert_eq!(current.revision(), 0);
+    let refreshed = current.saved_notes().unwrap().entries.remove(0);
+    current.local_edit("keep this current edit".into()).unwrap();
+    assert!(current.reopen_text(&refreshed, 0).is_err());
+    assert!(current.reopen_text(&refreshed, 1).is_err());
+    assert_eq!(current.text(), "keep this current edit");
+    assert_eq!(current.revision(), 1);
+}
+
+#[test]
+fn saved_note_custody_and_failed_destination_save_preserve_original_bytes() {
+    let root = Directory::new();
+    let mut old = NotesStore::create(&root.0, target()).unwrap();
+    old.local_edit("retained source text".into()).unwrap();
+    drop(old);
+    let original_path = document_directory(&root).join("document.json");
+    let original_bytes = fs::read(&original_path).unwrap();
+    let mut current = NotesStore::create(&root.0, fresh_target()).unwrap();
+    let selected = current.saved_notes().unwrap().entries.remove(0);
+    fs::set_permissions(&original_path, fs::Permissions::from_mode(0o644)).unwrap();
+    assert!(current.saved_notes().unwrap().entries.is_empty());
+    assert!(current.reopen_text(&selected, 0).is_err());
+    fs::set_permissions(&original_path, fs::Permissions::from_mode(0o600)).unwrap();
+    let foreign = root.0.join("foreign");
+    fs::write(&foreign, b"keep foreign file").unwrap();
+    let current_directory = root
+        .0
+        .join(format!("{}-2-{}", "c".repeat(32), "d".repeat(32)));
+    symlink(&foreign, current_directory.join("next.json")).unwrap();
+    assert!(current.reopen_text(&selected, 0).is_err());
+    assert!(current.is_frozen());
+    assert_eq!(fs::read(&original_path).unwrap(), original_bytes);
+    assert_eq!(fs::read(&foreign).unwrap(), b"keep foreign file");
+    assert_eq!(current.revision(), 0);
+    assert!(current
+        .local_edit("cannot retry after uncertainty".into())
+        .is_err());
+}
