@@ -1,0 +1,63 @@
+{
+  "scope": "actual Python host checks of source, cache lease and ordinary profile admission; no guest execution",
+  "passed": true,
+  "base": "4f89a594464ac76d3215534cfd8786d83058e6a9",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_agentd_runtime",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.9290566049749032
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_cognitive_store",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.8197363369399682
+    }
+  ],
+  "files": [
+    {
+      "path": "tests/workloads/hepta_cognitive_store/prepare_inputs.py",
+      "sha256": "7efe62b9928872474b99fc7b2d93bb56d6ab0d0b380fa294d7cf557bf59ab4c7"
+    },
+    {
+      "path": "tests/workloads/hepta_cognitive_store/test_store_target_cache.py",
+      "sha256": "99de3d0ec9b39cbd26170b09a40012d7f007a9114fcc61ebbc8f152523eb4b0e"
+    },
+    {
+      "path": "tests/workloads/hepta_agentd_runtime/build_kernel.py",
+      "sha256": "ef246d2174c59f8cf4927a96d23ed71fd3cd9ca4cd2ecb1fbbb38b45951207f4"
+    },
+    {
+      "path": "tests/workloads/hepta_agentd_runtime/kernel_profile.py",
+      "sha256": "fb8693be2b04ddb83870354070dd2acf32da8322b3e506109d57bcf460760f5b"
+    },
+    {
+      "path": "tests/workloads/hepta_agentd_runtime/test_kernel_profile.py",
+      "sha256": "41b89e6b1c4b644198732bcea715b1bcc953ec0e347d9d351a6380dbe63120a9"
+    }
+  ]
+}

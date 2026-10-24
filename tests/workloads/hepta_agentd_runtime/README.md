@@ -183,6 +183,10 @@ repository identity. A new source tree requires a new review; there is no
 | `test_target_cache.py` | Check explicit cache selection, real process lease exclusion/release, retained failure evidence and unchanged original build commands/deadlines. |
 | `test_kernel_import.py` | Reject wrong or incomplete CI metadata, untrusted archives, changed source snapshots, ktest images, and failed original builds. |
 | `test_kernel_build.py` | Check disabled mode, pre-build source rejection, failed-build receipts and retained/current profile separation. |
+| `reviewed_toolchain.py` | Bind the exact compiler channel and original manifest bytes to the current review. |
+| `dependency_artifacts.py` | Validate and freeze the explicit V8 archive/bindings pair without ambient overrides. |
+| `test_dependency_artifacts.py` | Reject incomplete, replaced or changed supplier inputs using actual temporary files. |
+| `kernel_profile.py` | Reject trusted G1/G2 profiles in both fresh and retained ordinary kernel evidence. |
 | `source-review.json` | Fixed reviewed source identities and scope. |
 | `retained-source-review.json` | Independent historical archive identities; never updated to relabel old binaries. |
 | `.github/workflows/f1-original-runtime-host.yml` | Run host tests and compile the guest launcher. This workflow never qualifies native runtime. |

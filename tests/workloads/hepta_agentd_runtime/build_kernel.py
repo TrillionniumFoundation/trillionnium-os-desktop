@@ -14,6 +14,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import prepare_inputs as preparation
 import run_agentd_runtime as gate
+from kernel_profile import require_ordinary_command
 
 
 def checked_boot(source, directory):
@@ -130,10 +131,7 @@ def retain_build(args, roots, output, report):
     boot = checked_boot(roots["desktop"], product)
     qemu = gate.json_value((product / "qemu.json").read_bytes())
     raw_command = (product / "command.sh").read_text()
-    gate.require("HEPTA_TRUSTED_INITIAL_ELF" not in raw_command
-                 and "g1c-trusted-observe" not in raw_command
-                 and "g1d-trusted-control" not in raw_command,
-                 "ordinary build must not select a trusted test image")
+    require_ordinary_command(raw_command)
     kernel = Path(qemu["artifacts"]["-kernel"]["path"])
     if not kernel.is_absolute():
         kernel = Path(qemu["cwd"]) / kernel

@@ -5,6 +5,7 @@ The default performs source preflight only. --execute performs offline builds;
 no daemon, model, provider, or store process is launched by this preparer.
 """
 import argparse
+from contextlib import nullcontext
 import importlib.util
 import json
 import os
@@ -120,6 +121,41 @@ def verify_lock(source, runner):
     return {"shared_package_identities_checked": len(resolved - {root}), "omitted_patch": omission}
 
 
+def runtime_cache_helpers():
+    """Use the original runtime's real lease and identity checks unchanged."""
+    path = HERE.parent / "hepta_agentd_runtime/prepare_inputs.py"
+    spec = importlib.util.spec_from_file_location("original_store_target_cache_helpers", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def cargo_target(args, source, out):
+    reused = args.target is not None
+    target = args.target.absolute() if reused else out / "target"
+    info = {"path": str(target), "exclusive_lease_acquired": False}
+    if reused:
+        require(target.is_dir() and not target.is_symlink() and target.resolve(strict=True) == target,
+                "store target cache must be an existing canonical directory")
+        for protected in (source, ROOT, out.resolve()):
+            protected = protected.resolve()
+            require(not target.is_relative_to(protected) and not protected.is_relative_to(target),
+                    "store target cache must be separate from source, harness and output")
+        metadata = target.stat()
+        info.update(device=metadata.st_dev, inode=metadata.st_ino, contents_authenticated=False)
+    return target, {
+        "mode": "explicit-existing-cache" if reused else "new-output-target",
+        "cache_reused": reused, "cold_build_claimed": False,
+        "lease_policy": "nonblocking-exclusive-flock-through-freeze" if reused else "private-new-output",
+        "targets": {"store": info},
+    }
+
+
+def verify_target_cache(target, record, helpers):
+    if record["cache_reused"]:
+        helpers.verify_target_caches({"store": target}, record)
+
+
 def build(args, source, out, review, report):
     require(not out.exists() and not out.is_symlink(), "output must be new")
     require(not out.resolve().is_relative_to(source), "output must be outside original source")
@@ -127,7 +163,7 @@ def build(args, source, out, review, report):
     channel = toolchain.verify_manifest(source, review)
     tool_bin = Path(subprocess.check_output(["rustup", "which", "--toolchain", channel, "cargo"], text=True).strip()).parent
     cargo, rustc = tool_bin / "cargo", tool_bin / "rustc"
-    target = args.target.absolute() if args.target else out / "target"
+    target, target_record = cargo_target(args, source, out)
     environment = HELPER.build_environment(target)
     environment.update(PATH=str(tool_bin) + ":/usr/bin:/bin", RUSTC=str(rustc),
                        CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_DEV_SMALL_DEBUG="0")
@@ -138,7 +174,17 @@ def build(args, source, out, review, report):
         versions[name] = {"path": str(path), "sha256": sha(path), "version": version}
     out.mkdir(mode=0o700)
     report["output_created"] = True
+    report["cargo_targets"] = target_record
     environment.update(dependency_artifacts.freeze(report["dependency_artifacts"], out))
+    helpers = runtime_cache_helpers() if target_record["cache_reused"] else None
+    lease = (helpers.target_cache_lease(target, target_record["targets"]["store"])
+             if helpers is not None else nullcontext())
+    with lease:
+        build_store(source, out, review, report, target, environment, versions, helpers)
+
+
+def build_store(source, out, review, report, target, environment, versions, helpers):
+    cargo = Path(versions["cargo"]["path"])
     runner = out / "runner"
     omission = prepare_runner(source, runner)
     commands = [
@@ -149,9 +195,11 @@ def build(args, source, out, review, report):
     ]
     lock_digest = None
     for name, arguments in commands:
+        verify_target_cache(target, report["cargo_targets"], helpers)
         command = [str(cargo), *arguments]
         report["commands"].append(command)
         HELPER.bounded_command(command, runner, environment, out / (name + ".log"), 3600)
+        verify_target_cache(target, report["cargo_targets"], helpers)
         report["lock_validation"] = verify_lock(source, runner)
         if lock_digest is None:
             lock_digest = sha(runner / "Cargo.lock")
@@ -159,9 +207,12 @@ def build(args, source, out, review, report):
     require(verify_source(source) == review, "original source changed during build")
     require(sha(runner / "src/main.rs") == sha(HERE / "store_probe.rs"), "fixture source changed during build")
     dependency_artifacts.verify_frozen(report["dependency_artifacts"])
+    verify_target_cache(target, report["cargo_targets"], helpers)
     binary = out / NAME
     shutil.copyfile(target / "dev-small" / NAME, binary)
     binary.chmod(0o555)
+    require(sha(binary) == sha(target / "dev-small" / NAME), "store binary changed while freezing")
+    verify_target_cache(target, report["cargo_targets"], helpers)
     report.update(built=True, source_clean=True, source=review, toolchains=versions,
                   original_cargo_lock_sha256=sha(source / "codex-rs/Cargo.lock"),
                   resolved_cargo_lock_sha256=lock_digest, fixture_patch_omission=omission,
@@ -179,6 +230,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.execute and args.output is None:
         parser.error("--execute requires --output")
+    if args.target is not None and not args.execute:
+        parser.error("--target requires --execute")
     report = {"schema": "hepta.original-cognitive-store-build.v1", "built": False,
               "runtime_executed": False, "commands": []}
     out = args.output.absolute() if args.output else None

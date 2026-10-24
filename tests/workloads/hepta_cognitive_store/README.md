@@ -69,6 +69,17 @@ package version, source or checksum drift. Provider credentials and inherited
 RUSTFLAGS never enter the build or runtime child environment. No network
 fetching is performed by this lane.
 
+An explicit `--target` requires `--execute` and an existing canonical cache
+directory separate from the compiled source, harness and output. The builder
+uses the original runtime's nonblocking exclusive flock and rejects a busy
+cache, symlink or changed directory/lease identity. The lease remains held
+through resolution, build, Clippy and freezing the actual executable. Failure
+releases it without rewriting an earlier attempt. `build.json` records the
+actual target, directory and lease identities; cache reuse does not authenticate
+preexisting cache contents. Without `--target`, each new build output owns a
+private target. `test_store_target_cache.py` exercises actual file locks in two
+processes and verifies alias, overlap and failure cleanup behavior.
+
 The native runner requires an actual ordinary OS kernel, its successful clean
 build receipt and the explicitly reviewed Desktop source tree. It does not
 build a kernel and does not infer the latest tree from a running worktree:
