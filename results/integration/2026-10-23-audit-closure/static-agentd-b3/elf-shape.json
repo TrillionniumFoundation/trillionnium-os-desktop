@@ -1,0 +1,296 @@
+{
+  "schema": "hepta.original-agentd-static-elf-shape.v1",
+  "source": {
+    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+  },
+  "build_receipt": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/result.json",
+    "bytes": 6751,
+    "sha256": "324a1a643e8b149c0dc0b92153211afde35fecd844a3ae3d5d1f31fe2377360c"
+  },
+  "original_release_packaging": {
+    "command": [
+      "/bin/bash",
+      "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/.github/scripts/archive-release-symbols-and-strip-binaries.sh",
+      "--target",
+      "x86_64-unknown-linux-gnu",
+      "--artifact-name",
+      "hepta-static-b3-feasibility",
+      "--release-dir",
+      "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/packaged",
+      "--archive-dir",
+      "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/symbols-dist",
+      "--binaries",
+      "codex-hepta-agentd"
+    ],
+    "environment": {
+      "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "RUNNER_TEMP": "/data/hepta-static-release-b3-tmp.ab0163dl"
+    },
+    "script": {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/.github/scripts/archive-release-symbols-and-strip-binaries.sh",
+      "bytes": 2976,
+      "sha256": "f287c1e7cf3d6119e3914138367bb37427f048a5074d5ff38e37963db5d7ea7b"
+    },
+    "returncode": 0,
+    "log": {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/original-release-packaging.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "objcopy": {
+      "path": "/usr/bin/x86_64-linux-gnu-objcopy",
+      "bytes": 166536,
+      "sha256": "9276e918e3c26d3aa7ef9dd2232cd8ac692f03d3c1f270bfa5144a2b5492b713"
+    },
+    "strip": {
+      "path": "/usr/bin/x86_64-linux-gnu-strip",
+      "bytes": 166568,
+      "sha256": "0d980587ada7ab12193f39271f060d5663aa2f289b0e80d2a0274ce7306e4e42"
+    }
+  },
+  "unstripped": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/codex-hepta-agentd.unstripped",
+    "bytes": 1062042728,
+    "sha256": "017452e9cba95c1b0b378b67ab0e5e37dc0018aa82edbaeaf5a4c75d7adc17ad",
+    "elf_type": 2,
+    "elf_type_name": "ET_EXEC",
+    "machine": 62,
+    "entry": 46776320,
+    "program_headers": 10,
+    "pt_interp": [],
+    "dt_needed_count": 0,
+    "dynamic_entries": [],
+    "gnu_stack": [
+      {
+        "flags": 6,
+        "memory_bytes": 0
+      }
+    ],
+    "loads": [
+      {
+        "flags": 4,
+        "offset": 0,
+        "virtual_address": 2097152,
+        "file_bytes": 44673688,
+        "memory_bytes": 44673688,
+        "alignment": 4096,
+        "page_start": 2097152,
+        "page_end": 46772224,
+        "page_bytes": 44675072
+      },
+      {
+        "flags": 5,
+        "offset": 44675072,
+        "virtual_address": 46776320,
+        "file_bytes": 172162976,
+        "memory_bytes": 172162976,
+        "alignment": 4096,
+        "page_start": 46776320,
+        "page_end": 218939392,
+        "page_bytes": 172163072
+      },
+      {
+        "flags": 6,
+        "offset": 216838048,
+        "virtual_address": 218943392,
+        "file_bytes": 456824,
+        "memory_bytes": 458848,
+        "alignment": 4096,
+        "page_start": 218939392,
+        "page_end": 219402240,
+        "page_bytes": 462848
+      },
+      {
+        "flags": 6,
+        "offset": 217294912,
+        "virtual_address": 219404352,
+        "file_bytes": 170208,
+        "memory_bytes": 234440,
+        "alignment": 4096,
+        "page_start": 219402240,
+        "page_end": 219639808,
+        "page_bytes": 237568
+      }
+    ],
+    "page_aligned_load_bytes": 217538560,
+    "writable_page_aligned_load_bytes": 700416,
+    "load_pages": 53110,
+    "writable_load_pages": 171,
+    "static_et_exec_no_interp_or_needed": true,
+    "bounds": {
+      "file_8mib": false,
+      "mapped_16mib": false,
+      "eager_load_bytes_within_64mib_user_frames_necessary_only": false,
+      "load_bytes_within_256mib_as_necessary_only": true,
+      "writable_load_bytes_within_64mib_data_necessary_only": true
+    },
+    "original_host_structural_check": {
+      "source": {
+        "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/desktop-native-source/tests/kernel/control/run_g1c_guest.py",
+        "bytes": 25177,
+        "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1"
+      },
+      "accepted": false,
+      "refusal": "static initial ELF size out of bounds",
+      "not_kernel_runtime_admission": true
+    }
+  },
+  "packaged": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/packaged/codex-hepta-agentd",
+    "bytes": 217477496,
+    "sha256": "96e5d096af75e2537deec16ca585a0238a05a04495e37ae5e4afd3734d18e7c1",
+    "elf_type": 2,
+    "elf_type_name": "ET_EXEC",
+    "machine": 62,
+    "entry": 46776320,
+    "program_headers": 10,
+    "pt_interp": [],
+    "dt_needed_count": 0,
+    "dynamic_entries": [],
+    "gnu_stack": [
+      {
+        "flags": 6,
+        "memory_bytes": 0
+      }
+    ],
+    "loads": [
+      {
+        "flags": 4,
+        "offset": 0,
+        "virtual_address": 2097152,
+        "file_bytes": 44673688,
+        "memory_bytes": 44673688,
+        "alignment": 4096,
+        "page_start": 2097152,
+        "page_end": 46772224,
+        "page_bytes": 44675072
+      },
+      {
+        "flags": 5,
+        "offset": 44675072,
+        "virtual_address": 46776320,
+        "file_bytes": 172162976,
+        "memory_bytes": 172162976,
+        "alignment": 4096,
+        "page_start": 46776320,
+        "page_end": 218939392,
+        "page_bytes": 172163072
+      },
+      {
+        "flags": 6,
+        "offset": 216838048,
+        "virtual_address": 218943392,
+        "file_bytes": 456824,
+        "memory_bytes": 458848,
+        "alignment": 4096,
+        "page_start": 218939392,
+        "page_end": 219402240,
+        "page_bytes": 462848
+      },
+      {
+        "flags": 6,
+        "offset": 217294912,
+        "virtual_address": 219404352,
+        "file_bytes": 170208,
+        "memory_bytes": 234440,
+        "alignment": 4096,
+        "page_start": 219402240,
+        "page_end": 219639808,
+        "page_bytes": 237568
+      }
+    ],
+    "page_aligned_load_bytes": 217538560,
+    "writable_page_aligned_load_bytes": 700416,
+    "load_pages": 53110,
+    "writable_load_pages": 171,
+    "static_et_exec_no_interp_or_needed": true,
+    "bounds": {
+      "file_8mib": false,
+      "mapped_16mib": false,
+      "eager_load_bytes_within_64mib_user_frames_necessary_only": false,
+      "load_bytes_within_256mib_as_necessary_only": true,
+      "writable_load_bytes_within_64mib_data_necessary_only": true
+    },
+    "original_host_structural_check": {
+      "source": {
+        "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/desktop-native-source/tests/kernel/control/run_g1c_guest.py",
+        "bytes": 25177,
+        "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1"
+      },
+      "accepted": false,
+      "refusal": "static initial ELF size out of bounds",
+      "not_kernel_runtime_admission": true
+    }
+  },
+  "binary_executed": false,
+  "kernel_built_or_booted": false,
+  "native_role_admission_verified": false,
+  "bootstrap_entry_present_or_tested": false,
+  "production_authority": false,
+  "f1_completed": false,
+  "g2_completed": false,
+  "limits_changed": false,
+  "qualification_scope": "Host actual original static release linking and ELF inspection only; AS/data comparisons are necessary conditions and do not establish live resource usage.",
+  "initial_tools_and_system_static_archives_unchanged": [
+    {
+      "path": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "bytes": 42185192,
+      "sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66"
+    },
+    {
+      "path": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "bytes": 644784,
+      "sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6"
+    },
+    {
+      "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "bytes": 1023032,
+      "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+    },
+    {
+      "path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+      "bytes": 1359128,
+      "sha256": "e9ceb054c12207970f2726dfc07e9a66b411602748628baf27399f02a9bbb31b"
+    },
+    {
+      "path": "/usr/bin/x86_64-linux-gnu-ar",
+      "bytes": 55792,
+      "sha256": "6452af2eea333b8c65e1adb92964fc8f97863ab003fa13f9d12bff5345cd7dbe"
+    },
+    {
+      "path": "/usr/bin/pkgconf",
+      "bytes": 45168,
+      "sha256": "7e8152db1b0c7e49d47b4b82a70dc9997b557951c5d4d938b0e7f208ce9eb10b"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libc.a",
+      "bytes": 6136944,
+      "sha256": "a40c7eae7581f977b65eddb81cbc799213a695749e039d966db55bdee4ac9621"
+    },
+    {
+      "path": "/usr/lib/gcc/x86_64-linux-gnu/13/libstdc++.a",
+      "bytes": 6583910,
+      "sha256": "1f5a271fb1917b827ddcc3f65be5bf9bb4ab86be8de6acb6566aa638e92f602c"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libcap.a",
+      "bytes": 56650,
+      "sha256": "0e635425dd8186c44ccd5bb4363d5bf37d66595f4caa40046bd602c2981eff5b"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libssl.a",
+      "bytes": 1241282,
+      "sha256": "8c64c9a98224daf8b5f0b58285adb8276e8037bdc5daa198b8e015fb54db6c40"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypto.a",
+      "bytes": 10023278,
+      "sha256": "9dffa9e77b1cb29b890e473cf9ee379818cb57a576c7ef476356cd4d5a433bcd"
+    }
+  ],
+  "finished_at_utc": "2026-10-23T13:31:47.956142+00:00"
+}

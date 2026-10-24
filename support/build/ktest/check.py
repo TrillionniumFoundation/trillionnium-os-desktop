@@ -17,12 +17,15 @@ PERMISSION_TESTS = {
     "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error",
 }
 
-# The default core gate keeps its 238-test baseline, five permission tests,
+# The default core gate keeps its 239-test baseline, five permission tests,
 # all twenty-one G1-c/G1-d regressions, two ExFAT tests and three ext2
-# durability regressions, plus five initial-readonly atime/sync regressions.
+# durability regressions, five initial-readonly atime/sync regressions, six
+# physical user-frame regressions, two stopped-stack, three timestamp and six
+# independent watchdog owner/lifecycle regressions, plus three fatal-cleanup
+# regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 274
+MINIMUM_CORE_TESTS = 373  # Retained 368 plus five original-owner successor regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -62,8 +65,314 @@ EXT2_READONLY_ATIME_TESTS = (
     "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::writable_reads_persist_atime",
     "aster_core::fs::fs_impls::ext2::inode::attrs::readonly_atime_tests::readonly_flag_does_not_discard_preexisting_dirty_data",
 )
-REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
-                       *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS)
+USER_MEMORY_CORE_TESTS = (
+    "aster_core::vm::user_memory::tests::exact_limit_and_unconsumed_reservation_refund",
+    "aster_core::vm::user_memory::tests::shared_frame_charges_once_until_last_reference",
+    "aster_core::vm::user_memory::tests::independent_owners_do_not_consume_each_others_allowance",
+    "aster_core::vm::page_cache::vmo::options::test::contiguous_limit_is_admitted_before_any_page",
+    "aster_core::vm::page_cache::vmo::options::test::shared_vmo_aliases_keep_one_physical_charge",
+    "aster_core::vm::vmar::vm_mapping::user_memory_tests::cow_charges_the_copy_and_refunds_each_physical_page",
+    "aster_core::process::process_vm::init_stack::tests::stopped_initial_stack_charges_its_destination_without_a_current_process",
+    "aster_core::process::process_vm::init_stack::tests::rejected_stopped_initial_stack_refunds_its_pages_when_the_image_is_dropped",
+)
+WATCHDOG_CORE_TESTS = (
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_first_close_deadline_restores_once_with_original_receipt",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_preserves_zero_job_stop_and_recovery_owned_budgets",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_expiry_clock_fault_and_late_tick_fail_closed",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_fenced_or_bad_accounting_never_restores",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_observes_original_status_without_retaining_process",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_watchdog_poll_admission_never_settles_or_changes_budget",
+)
+TIMESTAMP_CORE_TESTS = (
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::utimes_checks_current_owner_through_alias_without_partial_update",
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::utimes_omit_preserves_newer_alias_timestamp",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::utimes_ext2_denial_is_unchanged_and_success_is_persistent",
+)
+FATAL_CLEANUP_CORE_TESTS = tuple(
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::" + suffix
+    for suffix in (
+        "zero_quota_thread_sigkill_resumes_only_fatal_cleanup_with_original_debit",
+        "zero_quota_process_sigkill_resumes_only_fatal_cleanup_with_original_debit",
+        "fatal_receipts_follow_original_signal_queues_without_constructor_inheritance",
+    )
+)
+IPC_FRAME_CORE_TESTS = (
+    "aster_core::util::ring_buffer::test::ipc_buffer_charges_original_pages_until_last_segment_alias",
+    "aster_core::util::ring_buffer::test::ipc_buffer_rejected_layout_and_allocator_failure_refund_owner",
+    "aster_core::fs::pipe::common::test::pipe_production_capacity_uses_current_family_and_refunds_last_endpoint",
+    "aster_core::fs::pipe::common::test::fifo_shared_opens_keep_first_owner_without_double_charge",
+    "aster_core::fs::pipe::common::test::pipe_denial_publishes_no_object_or_open_counts",
+    "aster_core::net::socket::unix::stream::connected::memory_tests::unix_pair_admits_both_directions_or_refunds_the_first",
+    "aster_core::net::socket::unix::stream::init::memory_tests::denied_connection_keeps_original_bound_and_shutdown_state",
+    "aster_core::net::socket::unix::stream::socket::memory_tests::unix_socketpair_denial_preserves_current_family_without_endpoints",
+)
+HIERARCHICAL_MEMORY_CORE_TESTS = (
+    "aster_core::fs::pipe::common::test::pipe_and_fifo_backing_obey_hierarchical_limit_with_unlimited_family",
+    *tuple("aster_core::vm::user_memory::hierarchy::tests::" + suffix for suffix in (
+        "hierarchical_frame_admission_refunds_family_and_every_ancestor_once",
+        "disabled_domains_keep_live_charges_and_deleted_identity_cannot_escape",
+        "physical_allocator_error_rolls_back_complete_hierarchical_precharge",
+        "concurrent_sibling_allocators_cannot_both_cross_ancestor_limit",
+        "explicit_vmar_fault_owner_overrides_loader_fallback_without_recharging_shared_pages",
+        "unix_stream_and_seqpacket_partial_buffer_admission_refund_ancestor",
+    )),
+    *tuple("aster_core::fs::fs_impls::cgroupfs::controller::memory::tests::" + suffix for suffix in (
+        "memory_files_round_bytes_reject_lowering_and_bound_depth_before_publication",
+        "migration_changes_only_future_allocations_and_failed_target_preserves_membership",
+        "fork_has_independent_binding_and_clone_vm_processes_cannot_split_membership",
+    )),
+)
+BOOT_ID_CORE_TESTS = (
+    "aster_core::util::boot_identity::tests::boot_identity_is_stable_and_has_uuid_v4_layout",
+    "aster_core::fs::fs_impls::procfs::sys::kernel::random::tests::proc_boot_id_partial_reads_preserve_the_same_uuid",
+    "aster_core::fs::fs_impls::procfs::sys::kernel::random::tests::proc_boot_id_rejects_mutation",
+)
+DATAGRAM_FRAME_CORE_TESTS = tuple("aster_core::net::socket::unix::datagram::message::tests::" + suffix for suffix in (
+    'empty_message_slots_are_bounded_and_only_consumption_reopens_capacity',
+    'message_slot_backpressure_precedes_new_payload_charge_and_reader_consumption',
+    'blocked_empty_sender_retries_after_consume_and_returns_refused_after_close',
+    'payload_peek_truncation_and_alias_keep_original_physical_charge',
+    'ancestor_quota_denial_does_not_consume_reader_or_publish_datagram',
+    'actual_user_copy_fault_refunds_unpublished_pages_and_preserves_receive',
+    'migration_and_receiver_close_refund_captured_domains_with_retained_queue',
+    'empty_payload_and_original_byte_capacity_preserve_datagram_boundaries',
+))
+SEQPACKET_QUEUE_CORE_TESTS = tuple("aster_core::net::socket::unix::stream::connected::queue_tests::" + suffix for suffix in (
+    "empty_seqpackets_bound_original_aux_queue_and_peek_keeps_slot",
+    "full_aux_queue_rejects_before_reader_or_control_consumption",
+    "blocked_seqpacket_sender_wakes_on_empty_receive_and_peer_close",
+))
+UNIX_OWNERSHIP_CORE_TESTS = (
+    "aster_core::net::socket::unix::ownership::tests::real_graph_aliases_keep_edges_until_final_lease_and_reject_stale_generation",
+    "aster_core::net::socket::unix::ownership::tests::actual_node_capacity_fails_closed_and_refunds_registration",
+    "aster_core::net::socket::unix::ownership::tests::actual_edge_capacity_rolls_back_unpublished_batch_and_duplicate_reference",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::regular_pipe_eventfd_rights_preserve_real_owners_through_peek_and_receive",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::self_cross_and_future_datagram_connection_cycles_reject_before_copy",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::real_peek_and_received_control_aliases_keep_original_owner_admission",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::original_notes_socket_types_transfer_acyclically_on_stream_and_seqpacket",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::shared_stream_pair_rejects_either_endpoint_and_cross_transport_back_edge",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::concurrent_opposite_real_socket_sends_admit_only_one_edge",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::stream_full_failure_refunds_edge_and_partial_write_keeps_real_prefix_owner",
+    "aster_core::net::socket::unix::datagram::message::tests::failed_real_user_copy_and_frame_quota_refund_unpublished_socket_edges",
+    "aster_core::events::epoll::file::unix_rights_tests::queued_epoll_watching_receiver_keeps_no_strong_socket_back_edge",
+)
+ANCILLARY_ALLOCATION_CORE_TESTS = (
+    "aster_core::net::socket::util::message_header::allocation_tests::failed_ancillary_reservation_keeps_original_frame_and_last_reference_refund",
+    "aster_core::net::socket::util::message_header::allocation_tests::control_input_growth_retains_original_message_limit_and_empty_behavior",
+    "aster_core::net::socket::unix::ctrl_msg::ownership_tests::multisegment_rights_merge_preserves_order_and_rejects_excess_without_publication",
+)
+SETGID_CREATION_CORE_TESTS = (
+    "aster_core::fs::fs_impls::ramfs::fs::sgid_tests::setgid_parent_group_reaches_real_socket_file_directory_fifo_symlink_and_tmpfile",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::setgid_ext2_creation_inherits_group_and_directory_bit_before_persistent_publication",
+)
+ORDINARY_FAULT_CORE_TESTS = tuple("aster_core::vm::vmar::fault_allocation_tests::" + suffix for suffix in (
+    "physical_page_table_nomemory_keeps_original_vmar_and_refunds_private_nodes",
+    "denied_anonymous_and_vmo_faults_leave_original_empty_page_table_ranges",
+    "ordinary_fault_and_cow_keep_old_mapping_on_quota_denial_and_refund_last_frame",
+    "fault_around_keeps_successful_prefix_and_charges_only_original_vmo_frame",
+))
+INLINE_SIGNAL_CORE_TESTS = (
+    "aster_core::thread::exception::tests::actual_vmar_permission_denial_reports_access_error_without_reclassifying_other_failures",
+    *("aster_core::process::signal::owned_tests::" + suffix for suffix in (
+        "inline_fault_preserves_first_info_mask_and_original_priority",
+        "dynamic_realtime_keeps_original_fifo_and_drops_each_owner_once",
+        "inline_user_kill_keeps_siginfo_and_irreversible_original_receipt",
+        "inline_signal_wakes_original_thread_and_process_without_retaining_them",
+    )),
+    "aster_core::process::posix_thread::ptrace::util::inline_owner_tests::ptrace_stop_requeue_keeps_inline_owner_and_dynamic_injection_origin",
+)
+DUMPABILITY_CORE_TESTS = tuple("aster_core::process::posix_thread::credentials_edit::tests::" + suffix for suffix in (
+    "alien_capture_commoncap_selects_effective_or_permitted_under_original_image_guard",
+    "commoncap_consent_preserves_distinct_identity_policy_and_real_ptrace_exception",
+    "traceme_parent_capability_snapshot_waits_for_original_credential_publication",
+    "dumpability_shares_original_vm_but_fork_and_new_image_are_independent",
+    "credential_transaction_preserves_dumpability_on_noop_query_and_denial",
+    "credential_transaction_resets_each_effective_and_filesystem_id_change",
+    "credential_transaction_preserves_capability_drop_and_resets_permitted_gain",
+    "alien_capture_respects_dumpability_same_group_and_original_capability",
+    "shared_vm_credential_writer_waits_for_real_alien_capture",
+))
+SOCKET_CREDENTIAL_CORE_TESTS = tuple("aster_core::net::socket::unix::cred::tests::" + suffix for suffix in (
+    "socket_identity_captures_distinct_real_effective_ids_without_live_credential_alias",
+    "socket_group_snapshot_shares_original_immutable_owner_across_fork_replace_and_last_alias",
+))
+CPU_OWNER_CONTINUITY_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::" + suffix for suffix in (
+    "native_late_image_close_cannot_revoke_replacement_delegations",
+    "native_delayed_watchdog_cut_cannot_mutate_a_replacement_policy",
+    "native_watchdog_registration_is_bounded_across_owner_policy_replacements",
+))
+CPU_SUCCESSOR_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::" + suffix for suffix in (
+    'native_successor_preparation_and_drop_do_not_publish_authority',
+    'native_successor_requires_both_exact_predecessor_delegations_closed',
+    'native_successor_preserves_cpu_debt_revision_and_original_delivery_history',
+    'native_successor_failed_or_stale_commit_leaves_current_policy_intact',
+    'native_successor_generations_keep_one_watchdog_registration_and_bounded_origins',
+))
+REQUIRED_CORE_TESTS = (*CPU_SUCCESSOR_TESTS, *CPU_OWNER_CONTINUITY_TESTS, *SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+                       *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
+                       *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
+RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (
+    "recovery_root_uses_explicit_reserve_and_closed_root_fails",
+    "recovery_mapping_failure_at_each_missing_level_preserves_input_and_tree",
+    "recovery_mapping_uses_only_selected_token_and_refunds_last_vm_owner",
+    "recovery_mapping_does_not_authorize_ordinary_or_closed_growth",
+    "recovery_mapping_rejects_conflict_without_replacing_original_frame",
+))
+REQUIRED_OSTD_TESTS = (
+    "ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner",
+    "ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code",
+    *RECOVERY_PAGE_TABLE_TESTS,
+    "ostd::mm::vm_space::recovery_tests::ordinary_no_prealloc_cursor_retains_holes_and_maps_without_reserve_authority",
+)
+MINIMUM_OSTD_TESTS = 230  # Retained 229 plus ordinary no-preallocation regression.
+
+# A separate third crate preserves all nine original allocator tests. Changes
+# to this exact inventory require review, not a smaller denominator at runtime.
+BASELINE_ALLOCATOR_TESTS = tuple("osdk_frame_allocator::" + suffix for suffix in (
+    "chunk::test::greater_order_of_works",
+    "chunk::test::lesser_order_of_works",
+    "chunk::test::max_order_from_works",
+    "chunk::test::split_to_chunks_works",
+    "chunk::test::split_to_order_works",
+    "chunk::test::free_chunk_ops",
+    "set::test::buddy_set_insert_alloc",
+    "smp_counter::test::per_cpu_counter",
+    "test::frame_allocator_alloc_layout_match",
+))
+RESERVE_ALLOCATOR_TESTS = tuple("osdk_frame_allocator::reserve::tests::" + suffix for suffix in (
+    "reserve_admission_and_stale_authority",
+    "reserve_refunds_original_owner_after_aliases_and_repurpose",
+    "reserve_fragmentation_alignment_and_failed_allocation_refund",
+    "reserve_metadata_construction_unwind_refunds_prefix_and_raw_tail",
+    "reserve_metadata_callback_cannot_retain_current_or_future_raw_frames",
+    "reserve_metadata_callback_cannot_claim_then_drop_raw_frame",
+    "reserve_metadata_unwind_preserves_published_prefix_alias_until_final_drop",
+    "reserve_raw_subranges_and_typed_frames_share_original_refund",
+    "reserve_concurrent_holders_close_and_final_refund",
+    "reserve_concurrent_creation_publishes_only_one_extent",
+    "reserve_survives_actual_ordinary_allocator_exhaustion_n0",
+))
+REQUIRED_ALLOCATOR_TESTS = (*BASELINE_ALLOCATOR_TESTS, *RESERVE_ALLOCATOR_TESTS)
+EXHAUSTION_MARKER = re.compile(
+    r"PHYSICAL_RESERVE_EXHAUSTION ordinary_frames=([0-9]+) reserve_start=(0x[0-9a-f]+) "
+    r"reserve_pages=64 ordinary_denied=true reserved_succeeded=true "
+    r"returned_to_original_owner=true global_recovery_guarantee=false"
+)
+
+
+def check_fixed_n0_profile(qemu, suite):
+    """Require the recorder's actual default N0 invocation, not a profile label."""
+    if type(qemu.get("raw_exit_code")) is not int or qemu.get("timed_out") is not False:
+        raise ValueError(f"{suite} requires an explicit raw QEMU exit and no timeout")
+    expected = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
+                "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False}
+    if (qemu.get("ktest_profile") != "default" or qemu.get("profile") != expected
+            or "test_name" not in qemu or qemu["test_name"] is not None):
+        raise ValueError(f"{suite} requires the complete unfiltered default N0 profile")
+    argv = qemu.get("argv", [])
+    artifacts = qemu.get("artifacts", {})
+    if not isinstance(argv, list) or not argv:
+        raise ValueError(f"{suite} QEMU invocation is missing")
+    expected_argv = [argv[0]]
+    for option in ("-kernel", "-initrd", "-append"):
+        if option == "-initrd" and option not in argv:
+            continue
+        if argv.count(option) != 1 or argv.index(option) + 1 >= len(argv):
+            raise ValueError(f"{suite} QEMU invocation has missing or repeated boot arguments")
+        value = argv[argv.index(option) + 1]
+        expected_argv.extend((option, value))
+        if option != "-append" and artifacts.get(option, {}).get("path") != value:
+            raise ValueError(f"{suite} QEMU boot artifact path does not match the invocation")
+    firmware = artifacts.get("-bios", {}).get("path")
+    if firmware != "/usr/share/seabios/bios-256k.bin" or argv.count("-chardev") != 1:
+        raise ValueError(f"{suite} QEMU firmware or serial record is missing")
+    serial_index = argv.index("-chardev") + 1
+    if serial_index >= len(argv) or not re.fullmatch(r"stdio,id=serial,signal=off,logfile=.+/serial\.log", argv[serial_index]):
+        raise ValueError(f"{suite} QEMU serial capture differs from the fixed profile")
+    expected_argv.extend(("-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", firmware,
+                          "-m", "512M", "-smp", "1", "-nodefaults", "-no-user-config", "-no-reboot",
+                          "-nographic", "-display", "none", "-monitor", "none", "-serial", "chardev:serial",
+                          "-chardev", argv[serial_index], "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"))
+    if argv != expected_argv:
+        raise ValueError(f"{suite} actual QEMU invocation differs from the fixed N0 profile")
+    for option in ("-kernel", "-bios", *(("-initrd",) if "-initrd" in argv else ())):
+        artifact = artifacts.get(option, {})
+        if (not re.fullmatch(r"[0-9a-f]{64}", artifact.get("sha256", ""))
+                or type(artifact.get("size")) is not int or artifact["size"] <= 0):
+            raise ValueError(f"{suite} boot artifact hash/size evidence is missing")
+
+
+def check_allocator_tests(qemu, serial, section, summary, starts, declared, allow_filtered):
+    if allow_filtered:
+        raise ValueError("allocator gate never permits filtered qualification")
+    check_fixed_n0_profile(qemu, "allocator")
+    if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
+        raise ValueError("allocator target sequence must finish before the runner completion marker")
+    if declared != len(REQUIRED_ALLOCATOR_TESTS) or sorted(starts) != sorted(REQUIRED_ALLOCATOR_TESTS):
+        raise ValueError("allocator requires every retained and reserve test exactly once (20 total)")
+    if "[skipped:" in serial.lower():
+        raise ValueError("allocator suite cannot pass with any soft-skipped test")
+    records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
+    blocks = {}
+    for index, record in enumerate(records):
+        end = records[index + 1].start() if index + 1 < len(records) else summary.start()
+        if record.end() >= end or end > summary.start():
+            raise ValueError("allocator per-test result appears outside the target test sequence")
+        block = section[record.end():end].rstrip("\n")
+        if not re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block):
+            raise ValueError("allocator named test lacks its own terminal ok result")
+        blocks[record[1]] = block
+    exhaustion = blocks[RESERVE_ALLOCATOR_TESTS[-1]]
+    markers = list(EXHAUSTION_MARKER.finditer(exhaustion))
+    if serial.count("PHYSICAL_RESERVE_EXHAUSTION") != 1 or len(markers) != 1:
+        raise ValueError("allocator exhaustion marker must occur once inside its successful named test")
+    marker = markers[0]
+    if (exhaustion[:marker.start()].strip() or exhaustion[marker.end():].strip() != "ok"
+            or int(marker[1]) <= 64 or int(marker[2], 16) == 0 or int(marker[2], 16) % 4096):
+        raise ValueError("allocator exhaustion receipt has inconsistent counts, extent or completion")
+    return {"ordinary_frames": int(marker[1]), "reserve_start": marker[2], "reserve_pages": 64,
+            "ordinary_denied": True, "reserved_succeeded": True,
+            "returned_to_original_owner": True, "global_recovery_guarantee": False}
+
+
+REQUIRED_MLSDISK_TESTS = tuple("aster_mlsdisk::test::" + name for name in (
+    "write_sync_read",
+    "raw_disk_flush_submits_and_reports_terminal_failure",
+    "mlsdisk_sync_returns_device_flush_error",
+    "mlsdisk_flush_bio_completes_with_io_error",
+    "entropy_failure_prevents_blob_and_chain_publication",
+    "entropy_failure_keeps_buffered_disk_data_for_retry",
+    "entropy_failure_aborts_original_log_transaction",
+    "entropy_failure_does_not_apply_current_journal_edit",
+    "delayed_bio_completes_after_original_task_parks",
+    "transaction_callbacks_sleep_and_defer_reentrant_registration",
+    "final_store_owner_releases_real_disk_between_full_runs",
+    "frame_backed_disk_handles_noncontiguous_cross_page_bios",
+)) + (
+    "aster_mlsdisk::os::entropy_test::entropy_fill_reports_partial_failure_and_exact_word_count",
+    "aster_mlsdisk::os::entropy_test::entropy_cut_is_task_scoped_and_restored_on_drop",
+    "aster_mlsdisk::layers::log::tx_log::entropy_tests::journal_entropy_failure_aborts_before_log_publication",
+)
+
+
+def check_mlsdisk_tests(qemu, serial, section, summary, starts, declared, allow_filtered):
+    if allow_filtered:
+        raise ValueError("mlsdisk gate never permits filtered qualification")
+    check_fixed_n0_profile(qemu, "mlsdisk")
+    if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
+        raise ValueError("mlsdisk target sequence must finish before the runner completion marker")
+    if declared != len(REQUIRED_MLSDISK_TESTS) or sorted(starts) != sorted(REQUIRED_MLSDISK_TESTS):
+        raise ValueError("mlsdisk requires every original, flush, entropy and async-owner test exactly once (15 total)")
+    if "[skipped:" in serial.lower():
+        raise ValueError("mlsdisk suite cannot pass with any soft-skipped test")
+    records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
+    for index, record in enumerate(records):
+        end = records[index + 1].start() if index + 1 < len(records) else summary.start()
+        if record.end() >= end or end > summary.start():
+            raise ValueError("mlsdisk per-test result appears outside the target test sequence")
+        block = section[record.end():end].rstrip("\n")
+        if not re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block):
+            raise ValueError("mlsdisk named test lacks its own terminal ok result")
 
 
 def check_guest(guest, crate, allow_filtered=False):
@@ -100,6 +409,12 @@ def check_guest(guest, crate, allow_filtered=False):
     starts = re.findall(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE)
     if len(starts) != passed + failed or any(not name.startswith(crate.replace('-', '_') + '::') for name in starts):
         raise ValueError("per-test starts do not match the target summary")
+    allocator_exhaustion = None
+    if crate == "osdk-frame-allocator":
+        allocator_exhaustion = check_allocator_tests(
+            qemu, serial, section, summary, starts, declared, allow_filtered)
+    if crate == "aster-mlsdisk":
+        check_mlsdisk_tests(qemu, serial, section, summary, starts, declared, allow_filtered)
     if crate == "aster-core" and not allow_filtered:
         missing = [name for name in REQUIRED_CORE_TESTS if starts.count(name) != 1]
         if missing:
@@ -108,6 +423,16 @@ def check_guest(guest, crate, allow_filtered=False):
             block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
             if "[skipped:" in block:
                 raise ValueError("required core test was soft-skipped: " + name)
+        records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
+        for index, record in enumerate(records):
+            if record[1] not in (*CPU_OWNER_CONTINUITY_TESTS, *CPU_SUCCESSOR_TESTS):
+                continue
+            end = records[index + 1].start() if index + 1 < len(records) else summary.start()
+            if record.end() >= end or end > summary.start():
+                raise ValueError("CPU owner test lies outside the completed target sequence")
+            block = section[record.end():end].rstrip("\n")
+            if not re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block):
+                raise ValueError("CPU owner test lacks its own terminal ok: " + record[1])
         if passed < MINIMUM_CORE_TESTS:
             raise ValueError("complete core gate shrank below the retained baseline plus regressions")
         for name in REQUIRED_CORE_TESTS:
@@ -126,12 +451,26 @@ def check_guest(guest, crate, allow_filtered=False):
     skips = re.findall(r"\[skipped: ([^\]]+)\]", section)
     if len(skips) >= passed:
         raise ValueError("no target test exercised beyond reported soft skips")
+    if crate == "ostd" and not allow_filtered:
+        for name in REQUIRED_OSTD_TESTS:
+            if starts.count(name) != 1:
+                raise ValueError("missing or repeated required OSTD test: " + name)
+            block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
+            if "[skipped:" in block:
+                raise ValueError("required OSTD test was soft-skipped: " + name)
+        if passed < MINIMUM_OSTD_TESTS:
+            raise ValueError("complete OSTD gate shrank below the retained 224 tests plus five recovery page-table regressions")
     return {"crate": crate, "declared": declared, "passed": passed, "failed": failed,
             "filtered": filtered, "soft_skipped": len(skips), "soft_skip_reasons": skips,
             "exercised_passed_lower_bound": passed - len(skips),
             "observed_test_starts": len(starts),
             "required_permission_tests": sorted(PERMISSION_TESTS) if crate == "aster-core" and not allow_filtered else [],
             "required_core_tests": list(REQUIRED_CORE_TESTS) if crate == "aster-core" and not allow_filtered else [],
+            "required_allocator_tests": list(REQUIRED_ALLOCATOR_TESTS) if crate == "osdk-frame-allocator" else [],
+            "allocator_exhaustion": allocator_exhaustion,
+            "required_mlsdisk_tests": list(REQUIRED_MLSDISK_TESTS) if crate == "aster-mlsdisk" else [],
+            "mlsdisk_media_durability_qualified": False if crate == "aster-mlsdisk" else None,
+            "required_ostd_tests": list(REQUIRED_OSTD_TESTS) if crate == "ostd" and not allow_filtered else [],
             "raw_qemu_exit": 33, "guest": guest.name}
 
 

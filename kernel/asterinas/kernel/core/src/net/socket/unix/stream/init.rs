@@ -5,7 +5,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use aster_rights::ReadOp;
 
 use super::{
-    connected::Connected,
+    connected::{Buffers, Connected},
     listener::Listener,
     socket::{SHUT_READ_EVENTS, SHUT_WRITE_EVENTS},
 };
@@ -16,6 +16,7 @@ use crate::{
         unix::{
             addr::{UnixSocketAddr, UnixSocketAddrBound},
             cred::SocketCred,
+            ownership::{Lease, Node},
         },
         util::SockShutdownCmd,
     },
@@ -54,17 +55,31 @@ impl Init {
         peer_addr: UnixSocketAddrBound,
         pollee: Pollee,
         peer_cred: SocketCred,
-    ) -> (Connected, Connected) {
+        owner: &Node,
+        peer_owner: &Node,
+    ) -> Result<(Connected, Connected), (Error, Self)> {
+        let (init, buffers) = self.prepare_buffers()?;
+        let edges = (|| {
+            Ok((
+                Lease::single(owner, &buffers.ownership)?,
+                Lease::single(peer_owner, &buffers.ownership)?,
+            ))
+        })();
+        let (edge, peer_edge) = match edges {
+            Ok(edges) => edges,
+            Err(error) => return Err((error, init)),
+        };
         let Init {
             addr,
             is_read_shutdown,
             is_write_shutdown,
-        } = self;
+        } = init;
 
         pollee.invalidate();
 
         let cred = SocketCred::<ReadOp>::new_current();
-        let (this_conn, peer_conn) = Connected::new_pair(
+        let (mut this_conn, mut peer_conn) = Connected::new_pair(
+            buffers,
             addr,
             Some(peer_addr),
             EndpointState::new(pollee, is_read_shutdown.into_inner()),
@@ -73,7 +88,18 @@ impl Init {
             peer_cred,
         );
 
-        (this_conn, peer_conn)
+        this_conn.publish_owner(edge);
+        peer_conn.publish_owner(peer_edge);
+        Ok((this_conn, peer_conn))
+    }
+
+    /// Preserve the original bound/half-closed state if frame admission fails.
+    fn prepare_buffers(self) -> Result<(Self, Buffers), (Error, Self)> {
+        let owner = crate::vm::user_memory::current_owner();
+        match Buffers::new(&owner) {
+            Ok(buffers) => Ok((self, buffers)),
+            Err(err) => Err((err, self)),
+        }
     }
 
     pub(super) fn listen(
@@ -81,7 +107,23 @@ impl Init {
         backlog: usize,
         pollee: Pollee,
         is_seqpacket: bool,
+        owner: &Node,
     ) -> Result<Listener, (Error, Self)> {
+        if self.addr.is_none() {
+            return Err((
+                Error::with_message(Errno::EINVAL, "the socket is not bound"),
+                self,
+            ));
+        }
+        let admission = (|| {
+            let node = Node::new()?;
+            let edge = Lease::single(owner, &node)?;
+            Ok((node, edge))
+        })();
+        let (node, edge) = match admission {
+            Ok(pair) => pair,
+            Err(error) => return Err((error, self)),
+        };
         let Some(addr) = self.addr else {
             return Err((
                 Error::with_message(Errno::EINVAL, "the socket is not bound"),
@@ -98,6 +140,7 @@ impl Init {
             self.is_write_shutdown.into_inner(),
             pollee,
             is_seqpacket,
+            (node, edge),
         ))
     }
 
@@ -129,5 +172,39 @@ impl Init {
         // According to the Linux implementation, we always have `IoEvents::HUP` and
         // `IoEvents::HUP` in this state.
         IoEvents::OUT | IoEvents::HUP
+    }
+}
+
+#[cfg(ktest)]
+mod memory_tests {
+    use ostd::prelude::*;
+
+    use super::*;
+    use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
+
+    #[ktest]
+    fn denied_connection_keeps_original_bound_and_shutdown_state() {
+        let account = UserMemoryAccount::new(31);
+        let observed = account.clone();
+        test_with_current_owner(Some(account.clone()), move || {
+            let name =
+                UnixSocketAddr::Abstract(Arc::from(&b"ipc-frame-account-denied-connect"[..]));
+            let mut init = Init::new();
+            init.bind(name.clone()).unwrap();
+            let bound = init.addr.as_ref().unwrap().to_key();
+            init.is_read_shutdown.store(true, Ordering::Relaxed);
+            init.is_write_shutdown.store(true, Ordering::Relaxed);
+            let (error, init) = init.prepare_buffers().err().unwrap();
+            assert!(error.is_user_frame_limit());
+            assert_eq!(observed.current_pages(), 0);
+            assert_eq!(init.addr.as_ref().unwrap().to_key(), bound);
+            assert!(init.is_read_shutdown.load(Ordering::Relaxed));
+            assert!(init.is_write_shutdown.load(Ordering::Relaxed));
+            assert_eq!(name.connect().unwrap(), bound);
+            drop(bound);
+            drop(init);
+            assert!(name.connect().is_err());
+        });
+        assert_eq!(account.current_pages(), 0);
     }
 }

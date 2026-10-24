@@ -1,0 +1,988 @@
+diff --git a/tests/kernel/control/G1D_USER_MEMORY.md b/tests/kernel/control/G1D_USER_MEMORY.md
+new file mode 100644
+--- /dev/null
++++ b/tests/kernel/control/G1D_USER_MEMORY.md
+@@ -0,0 +1,147 @@
++# G1-d aggregate user-data frame boundary
++
++The fixed trusted workload receives one immutable account of **16,384 physical
++user-data pages (64 MiB at 4 KiB/page)** before its stopped initial image is
++loaded. Its descendants retain that same account across fork, threads and exec.
++The manager and recovery roles do not consume this workload allowance.
++
++This boundary is separate from the existing 256 MiB per-process virtual-address
++limit. It does not implement `memory.max`, a full Linux memory controller,
++reclaim, an OOM killer or guaranteed recovery reserves. Kernel slab allocations,
++page tables, socket buffers, filesystem metadata, kernel stacks and device MMIO
++remain outside this account. A malicious workload can still exhaust resources
++outside the implemented boundary. General cgroup migration/reparenting and SMP
++stress are not qualified by this test.
++
++## Ownership and failure behavior
++
++| Path | Admission and lifetime |
++| --- | --- |
++| Private anonymous faults | Reserve one page before the physical allocator; retain the token in frame metadata. |
++| Anonymous or file COW | Reserve a new physical page; existing shared references retain their original single charge. |
++| Anonymous and backed VMO pages | Charge the actual new-page initiator, including buffered file I/O; an already cached shared page is not charged again. |
++| Stopped trusted ELF/boot/stack loading | Use the destination VMAR's explicit owner even when no userspace process is current. |
++| Contiguous VMO allocation | Reserve the entire page count before the physical segment allocation. |
++| DRM GEM shmem allocation | Reserve the entire page count before allocating the handle vector or user-visible frames. |
++| Fork/exec | Preserve the account identity; exec admits its new pages while the old image still exists. A failed load refunds new physical frames as they are released. |
++| Physical release | Refund only at the final physical-frame reference. VMO/file cache ownership can outlive a process. Unmapping one shared alias is not a refund. |
++
++Admission is a checked atomic update. Tokens are linear and are stored in
++physical-frame metadata; cloning a frame handle does not clone its charge.
++Allocator failures, partial device-vector allocation and unused contiguous
++reservations refund their tokens. No logging, sleeping or process/cgroup lock
++occurs inside reservation/refund operations.
++
++Quota denial retains `ENOMEM` with private kernel provenance while VM locks
++unwind. Existing fault behavior is preserved: a fallible kernel copy to a user
++buffer can report `EFAULT`; an ordinary unresolved userspace fault uses the
++existing signal path. This patch does not call that behavior an OOM kill.
++After locks are released, the fault handler emits at most 16 diagnostic records
++per account containing the actual fault PID, address, current page count and
++limit. The native oracle requires those exact records rather than treating an
++arbitrary `EFAULT`, crash or timeout as proof of a memory boundary.
++
++## Native gate
++
++`g1d_user_memory.c` reuses the existing sealed G1-d bootstrap and HOS2 request,
++response, history and readback functions. The original full G1-d scenario is
++compiled under an unused entry point. This probe performs only these bounded
++operations in a disposable N0 guest:
++
++1. The unprivileged workload starts a fork holder of 18 MiB, a fork/exec holder
++   of 18 MiB, and a third allocating child. All mappings are below each
++   process's 256 MiB address-space limit. The third child reaches the shared
++   64 MiB physical-page allowance before its own 64 MiB mapping is filled.
++2. With all allocated pages still alive, the same child exercises a new
++   anonymous page, shared-anonymous VMO page, COW page and file-mapped page.
++   Their fallible copies return `EFAULT` with four matching kernel quota-cause
++   records. A separate new file-cache write returns `ENOMEM`.
++3. The manager installs a real CPU cap of zero for the controlled family and
++   reads the saved terminal result. The separate recovery process allocates
++   and touches 16 pages, uses its own recovery grant to restore the CPU cap,
++   and the manager reads the resulting revision and resource state.
++4. Only after that effect and readback does the workload release/reap one
++   18 MiB holder. The allocating child retries the same five operations at
++   their original mappings/offsets; all succeed. The parent's original COW
++   byte remains unchanged. The remaining children are reaped and the test file
++   is truncated before completion.
++
++The recovery allocation is evidence of progress under this bounded user-data
++pressure. It is not a proof that recovery has reserved physical pages or can
++survive every kernel-memory exhaustion path. Existing manager/recovery files
++coordinate the fixed fixture; they do not confer HOS2 authority.
++
++The runner uses the existing product build wrapper, exact clean Git head/tree,
++fixed generated lock (204 packages), pinned SeaBIOS and the actual frozen ELF
++manifest. It performs one additional QEMU boot with `loglevel=warn`, retaining
++the raw serial, commands, build logs, manifests, input hashes and receipts. It
++does not run the unrelated altered-initial-image boots. New or malformed
++records, missing observations, wrong PID/address/limit bindings, nonterminal
++history, wrong revision order, a panic, timeout or non-33 QEMU exit all fail.
++
++From the committed isolated checkout, using the existing pinned toolchain and
++source-built cargo-osdk:
++
++```sh
++python3 -I tests/kernel/control/test_g1d_user_memory_guest.py -v
++python3 -I tests/kernel/control/run_g1d_user_memory_guest.py \
++  --expected-source-head <actual-40-hex-head> \
++  --expected-source-tree <actual-40-hex-tree> \
++  --output <fresh-outside-checkout-evidence-directory> \
++  --target-dir <fresh-outside-checkout-target-directory> \
++  --timeout 240
++```
++
++Set `RUSTUP_HOME`, `CARGO_HOME` and `VDSO_LIBRARY_DIR` to the existing pinned
++build environment. `VDSO_LIBRARY_DIR` must contain `vdso_x86_64.so`. The build
++runner records and validates actual source/build inputs; a host compilation or
++host fixture test is never a native guest pass.
++
++## Bounded counterfactual
++
++After a passing positive boot, create a separate clean counterfactual checkout
++and apply `controls/user-memory-128m.patch`. It changes only the fixed account
++limit to 128 MiB; it does not remove charging, change the probe, alter the
++oracle or modify authority rules. With the original 64 MiB acceptance boundary
++absent, the two 18 MiB holders and all 64 MiB of the third child's mapping fit.
++
++Run the same runner with the counterfactual checkout's exact committed
++head/tree, fresh output/target paths, and `--expect-no-limit`. Acceptance requires
++the two real holders, the real fork/exec identity, a complete 64 MiB third
++allocation and exactly one manager `memory_aggregate_limit` failure. No quota
++fault, unrelated failure, timeout, panic, recovery claim or completion record
++is allowed. The unchanged positive oracle must reject the same raw bytes.
++
++The `G1DM_NO_LIMIT` name means no effective 64 MiB family limit in this bounded
++probe, not unlimited system memory. A passing counterfactual receipt sets
++`counterfactual_only=true` and keeps both product qualification fields false.
++Preserve its source diff, compiler/probe hashes and full native evidence beside
++the positive receipt. Never merge the 128 MiB counterfactual into the product.
++
++## Kernel tests
++
++Six new real kernel tests cover: reservation rollback/overflow, final shared
++frame release, independent owners, contiguous all-or-nothing admission, VMO
++alias ownership, and COW data plus per-physical-page refund. The existing
++wrapper supports a complete test-name suffix (not a substring):
++
++```sh
++python3 -I support/build/ktest/run.py --crate aster-core --skip-osdk-install \
++  --test-name exact_limit_and_unconsumed_reservation_refund --output <fresh-directory>
++```
++
++The other suffixes are `shared_frame_charges_once_until_last_reference`,
++`independent_owners_do_not_consume_each_others_allowance`,
++`contiguous_limit_is_admitted_before_any_page`,
++`shared_vmo_aliases_keep_one_physical_charge`, and
++`cow_charges_the_copy_and_refunds_each_physical_page`. A single full
++`--crate aster-core` invocation also covers them without six separate links.
++Report the actual guest counts and any filtering from its saved receipts.
++
++## Qualification status
++
++Adding this code and these tests does not assert a native result. The source
++commit, tested tree, raw guest result and evidence descendant must be recorded
++after execution. These receipts never set `memory_max`, `global_physical_reserve`,
++`oom_killer`, `smp_qualification`, `hardware_qualification`, `hepta_durability`
++or `production_ready` to true.
+diff --git a/tests/kernel/control/controls/user-memory-128m.patch b/tests/kernel/control/controls/user-memory-128m.patch
+new file mode 100644
+--- /dev/null
++++ b/tests/kernel/control/controls/user-memory-128m.patch
+@@ -0,0 +1,11 @@
++diff --git a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
++--- a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
+++++ b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
++@@ -37,6 +37,6 @@ const WORKLOAD_AS_BYTES: u64 = 256 * 1024 * 1024;
++ // Aggregate user-data frames, including the stopped initial image. This is
++ // separate from virtual-address admission and is not a global memory reserve.
++-const WORKLOAD_USER_PAGES: usize = 64 * 1024 * 1024 / PAGE_SIZE;
+++const WORKLOAD_USER_PAGES: usize = 128 * 1024 * 1024 / PAGE_SIZE;
++ 
++ pub(super) fn spawn(
++     path_resolver: PathResolver,
+diff --git a/tests/kernel/control/g1d_user_memory.c b/tests/kernel/control/g1d_user_memory.c
+new file mode 100644
+--- /dev/null
++++ b/tests/kernel/control/g1d_user_memory.c
+@@ -0,0 +1,364 @@
++/* SPDX-License-Identifier: MPL-2.0 */
++/* Reuse the actual sealed-role bootstrap, HOS2 ABI and exact history reader.
++ * The legacy entry point is compiled but never used by this bounded probe. */
++#define main legacy_g1d_main
++#include "g1d_init.c"
++#undef main
++
++#define MEMORY_STATUS IPC_DIR "/memory-status"
++#define MEMORY_FILE IPC_DIR "/memory-file"
++#define MEMORY_LIMIT_PAGES 16384U
++#define MEMORY_HOLDER_PAGES 4608U
++#define MEMORY_TIMEOUT_NS UINT64_C(120000000000)
++#define MEMORY_MAGIC UINT64_C(0x4731444D454D3031)
++
++struct memory_report {
++    uint64_t magic, state, pid, pages, address;
++    int64_t direct_errno, shared_errno, cow_errno, file_errno, write_errno;
++};
++struct memory_status {
++    uint64_t magic, state, fork_pid, exec_pid, saturator_pid, saturated_pages, address;
++};
++static int memory_commands[3][2], memory_replies[3][2];
++static int memory_zero = -1, memory_file = -1, memory_status_fd = -1;
++static unsigned char *memory_cow;
++
++static void memory_io(int fd, void *data, size_t size, int writing) {
++    unsigned char *bytes = data;
++    while (size) {
++        ssize_t count = writing ? write(fd, bytes, size) : read(fd, bytes, size);
++        if (count < 0 && errno == EINTR) continue;
++        CHECK(count > 0, "memory_pipe_io");
++        bytes += count; size -= (size_t)count;
++    }
++}
++
++__attribute__((noinline)) static void memory_warm_stack(void) {
++    volatile unsigned char pages[64 * 1024];
++    for (size_t i = 0; i < sizeof pages; i += PAGE_BYTES) pages[i] = 37;
++    pages[sizeof pages - 1] = 19;
++    __asm__ __volatile__("" : : "r"(pages) : "memory");
++}
++
++static unsigned char *memory_map(size_t pages, int shared, int fd) {
++    int flags = shared ? MAP_SHARED : MAP_PRIVATE;
++    if (fd < 0) flags |= MAP_ANONYMOUS;
++    void *address = mmap(NULL, pages * PAGE_BYTES, PROT_READ | PROT_WRITE, flags, fd, 0);
++    CHECK(address != MAP_FAILED, "memory_map");
++    return address;
++}
++
++static int memory_touch(unsigned char *address) {
++    errno = 0;
++    ssize_t count = read(memory_zero, address, 1);
++    if (count == 1) return 0;
++    CHECK(count == -1, "memory_touch_result");
++    return errno;
++}
++
++static void memory_publish(const struct memory_status *status) {
++    CHECK(pwrite(memory_status_fd, status, sizeof *status, 0) == (ssize_t)sizeof *status,
++          "memory_status_write");
++}
++
++static void memory_wait_release(void) {
++    uint64_t deadline = now_ns() + MEMORY_TIMEOUT_NS;
++    unsigned char release = 0;
++    while (now_ns() < deadline) {
++        CHECK(pread(memory_status_fd, &release, 1, 256) == 1, "memory_release_read");
++        if (release == 1) return;
++        CHECK(release == 0, "memory_release_value");
++        sleep_ms(5);
++    }
++    failure("memory_release_timeout", __LINE__);
++}
++
++static _Noreturn void memory_worker(unsigned kind, int command, int reply) {
++    memory_warm_stack();
++    unsigned char action;
++    memory_io(command, &action, 1, 0);
++    CHECK(action == 'A', "memory_worker_start");
++    memory_warm_stack();
++    if (memory_zero < 0) memory_zero = open("/dev/zero", O_RDONLY);
++    CHECK(memory_zero >= 0, "memory_zero_open");
++    size_t pages = kind == 2 ? MEMORY_LIMIT_PAGES : MEMORY_HOLDER_PAGES;
++    unsigned char *region = memory_map(pages, 0, -1);
++    unsigned char *shared = NULL, *file_map = NULL;
++    if (kind == 2) {
++        shared = memory_map(1, 1, -1);
++        file_map = memory_map(2, 1, memory_file);
++    }
++    struct memory_report result = {.magic = MEMORY_MAGIC, .pid = (uint64_t)getpid()};
++    for (size_t page = 0; page < pages; ++page) {
++        int error = memory_touch(region + page * PAGE_BYTES);
++        if (error != 0) {
++            CHECK(kind == 2 && error == EFAULT, "memory_holder_admission");
++            result.direct_errno = error;
++            result.address = (uintptr_t)(region + page * PAGE_BYTES);
++            break;
++        }
++        result.pages++;
++    }
++    if (kind != 2) {
++        CHECK(result.pages == MEMORY_HOLDER_PAGES, "memory_holder_pages");
++        record("G1DM_HOLDER kind=%s pid=%ld parent=%ld pages=%u",
++               kind == 0 ? "fork" : "exec", (long)getpid(), (long)getppid(), MEMORY_HOLDER_PAGES);
++        result.state = 1;
++    } else if (result.pages == MEMORY_LIMIT_PAGES) {
++        /* A precise old/no-owner negative. Keep the pages resident until the
++         * manager receives this report; no timeout or generic crash qualifies. */
++        result.state = 3;
++        record("G1DM_NO_LIMIT pid=%ld pages=%u held_pages=%u", (long)getpid(),
++               MEMORY_LIMIT_PAGES, 2 * MEMORY_HOLDER_PAGES);
++    } else {
++        result.state = 1;
++        result.shared_errno = memory_touch(shared);
++        result.cow_errno = memory_touch(memory_cow);
++        result.file_errno = memory_touch(file_map);
++        unsigned char byte = 0;
++        errno = 0;
++        CHECK(pwrite(memory_file, &byte, 1, PAGE_BYTES) == -1, "memory_file_write_limit");
++        result.write_errno = errno;
++        CHECK(result.shared_errno == EFAULT && result.cow_errno == EFAULT &&
++              result.file_errno == EFAULT && result.write_errno == ENOMEM,
++              "memory_path_admission");
++        CHECK(*memory_cow == 109, "memory_cow_denied_preserved");
++        record("G1DM_DENIALS pid=%ld address=%" PRIu64 " pages=%" PRIu64
++               " shared_address=%" PRIuPTR " cow_address=%" PRIuPTR " file_address=%" PRIuPTR
++               " direct_errno=14 shared_errno=14 cow_errno=14 file_errno=14 write_errno=12",
++               (long)getpid(), result.address, result.pages,
++               (uintptr_t)shared, (uintptr_t)memory_cow, (uintptr_t)file_map);
++    }
++    memory_io(reply, &result, sizeof result, 1);
++    memory_io(command, &action, 1, 0);
++    if (kind == 2 && result.state == 1) {
++        CHECK(action == 'T', "memory_retry_command");
++        CHECK(memory_touch((unsigned char *)(uintptr_t)result.address) == 0 &&
++              memory_touch(shared) == 0 && memory_touch(memory_cow) == 0 &&
++              memory_touch(file_map) == 0, "memory_refund_retry_same_mappings");
++        unsigned char byte = 83;
++        CHECK(pwrite(memory_file, &byte, 1, PAGE_BYTES) == 1 && file_map[PAGE_BYTES] == 83,
++              "memory_file_refund_retry");
++        CHECK(*memory_cow == 0, "memory_cow_retry_changed_only_child");
++        record("G1DM_RETRY pid=%ld address=%" PRIu64
++               " same_mappings=1 anonymous=1 shared=1 cow=1 file_fault=1 file_write=1",
++               (long)getpid(), result.address);
++        result.state = 2;
++        memory_io(reply, &result, sizeof result, 1);
++        CHECK(munmap(shared, PAGE_BYTES) == 0 && munmap(file_map, 2 * PAGE_BYTES) == 0,
++              "memory_extra_unmap");
++    } else CHECK(action == 'R', "memory_release_command");
++    CHECK(munmap(region, pages * PAGE_BYTES) == 0, "memory_holder_unmap");
++    _exit(0);
++}
++
++static _Noreturn void memory_exec_worker(int argc, char **argv) {
++    CHECK(argc == 4 && getauxval(AT_HEPTA_BOOT) == 0 && getuid() == WORKLOAD_ID &&
++          geteuid() == WORKLOAD_ID && prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) == 1,
++          "memory_exec_identity");
++    role = 2;
++    char *end;
++    long command = strtol(argv[2], &end, 10);
++    CHECK(*end == 0 && command >= 3 && command <= INT_MAX, "memory_exec_command_fd");
++    long reply = strtol(argv[3], &end, 10);
++    CHECK(*end == 0 && reply >= 3 && reply <= INT_MAX && command != reply, "memory_exec_reply_fd");
++    record("G1DM_EXEC_CHILD pid=%ld parent=%ld uid=60001 no_boot=1", (long)getpid(), (long)getppid());
++    memory_worker(1, (int)command, (int)reply);
++}
++
++static void memory_reap(pid_t child) {
++    int status;
++    CHECK(waitpid(child, &status, 0) == child && WIFEXITED(status) && WEXITSTATUS(status) == 0,
++          "memory_child_exit");
++}
++
++static _Noreturn void memory_workload(void) {
++    wait_ready();
++    CHECK(getuid() == WORKLOAD_ID && geteuid() == WORKLOAD_ID, "memory_workload_uid");
++    memory_status_fd = open(MEMORY_STATUS, O_RDWR);
++    memory_file = open(MEMORY_FILE, O_RDWR);
++    memory_zero = open("/dev/zero", O_RDONLY);
++    CHECK(memory_status_fd >= 0 && memory_file >= 0 && memory_zero >= 0, "memory_workload_fds");
++    memory_cow = memory_map(1, 0, -1);
++    *memory_cow = 109;
++    for (unsigned i = 0; i < 3; ++i)
++        CHECK(pipe(memory_commands[i]) == 0 && pipe(memory_replies[i]) == 0, "memory_pipes");
++    pid_t children[3];
++    struct memory_report reports[3] = {{0}};
++    memory_warm_stack();
++    for (unsigned i = 0; i < 3; ++i) {
++        children[i] = fork();
++        CHECK(children[i] >= 0, "memory_fork");
++        if (children[i] == 0) {
++            if (i == 1) {
++                char command[24], reply[24];
++                CHECK(snprintf(command, sizeof command, "%d", memory_commands[i][0]) > 0 &&
++                      snprintf(reply, sizeof reply, "%d", memory_replies[i][1]) > 0, "memory_exec_args");
++                char *args[] = {"/test/g1d-init", "--memory-exec-holder", command, reply, NULL};
++                execv(args[0], args);
++                failure("memory_exec_returned", __LINE__);
++            }
++            memory_worker(i, memory_commands[i][0], memory_replies[i][1]);
++        }
++        /* All future parent stack writes must be private before the last
++         * child consumes the account. There is no pressure-time heap use. */
++        memory_warm_stack();
++        /* The reply destination is in this caller frame, above the warm-up
++         * frame. Force its COW before authorizing this child to allocate. */
++        volatile unsigned char *reply_bytes = (volatile unsigned char *)&reports[i];
++        for (size_t j = 0; j < sizeof reports[i]; ++j) reply_bytes[j] = 0;
++        unsigned char action = 'A';
++        memory_io(memory_commands[i][1], &action, 1, 1);
++        memory_io(memory_replies[i][0], &reports[i], sizeof reports[i], 0);
++        CHECK(reports[i].magic == MEMORY_MAGIC && reports[i].pid == (uint64_t)children[i] &&
++              (reports[i].state == 1 || (i == 2 && reports[i].state == 3)), "memory_report_binding");
++    }
++    struct memory_status status = {.magic = MEMORY_MAGIC, .state = reports[2].state,
++        .fork_pid = (uint64_t)children[0], .exec_pid = (uint64_t)children[1],
++        .saturator_pid = (uint64_t)children[2], .saturated_pages = reports[2].pages,
++        .address = reports[2].address};
++    if (status.state == 1) {
++        CHECK(status.saturated_pages >= 4096 &&
++              status.saturated_pages + 2 * MEMORY_HOLDER_PAGES < MEMORY_LIMIT_PAGES,
++              "memory_family_not_per_process");
++        record("G1DM_SATURATED pid=%ld fork_pid=%ld exec_pid=%ld saturator_pid=%ld"
++               " holder_pages=%u saturator_pages=%" PRIu64 " limit_pages=%u",
++               (long)getpid(), (long)children[0], (long)children[1], (long)children[2],
++               MEMORY_HOLDER_PAGES, status.saturated_pages, MEMORY_LIMIT_PAGES);
++    }
++    memory_publish(&status);
++    memory_wait_release();
++    unsigned char action = 'R';
++    memory_io(memory_commands[0][1], &action, 1, 1);
++    memory_reap(children[0]);
++    action = status.state == 1 ? 'T' : 'R';
++    memory_io(memory_commands[2][1], &action, 1, 1);
++    if (status.state == 1) {
++        struct memory_report retried;
++        memory_io(memory_replies[2][0], &retried, sizeof retried, 0);
++        CHECK(retried.magic == MEMORY_MAGIC && retried.pid == status.saturator_pid &&
++              retried.state == 2 && retried.address == status.address, "memory_retry_binding");
++    }
++    memory_reap(children[2]);
++    action = 'R';
++    memory_io(memory_commands[1][1], &action, 1, 1);
++    memory_reap(children[1]);
++    CHECK(*memory_cow == 109, "memory_cow_parent_unchanged");
++    CHECK(ftruncate(memory_file, 0) == 0, "memory_file_refund_cleanup");
++    if (status.state == 1) record("G1DM_REFUND family_children_reaped=3 parent_cow_unchanged=1 file_truncated=1");
++    status.state = 2;
++    memory_publish(&status);
++    _exit(0);
++}
++
++static _Noreturn void memory_recovery(void) {
++    wait_ready();
++    control_fd = open_control(1);
++    query(control_fd, own_space);
++    CHECK(memcmp(own_space, recovery_space, 16) == 0, "memory_recovery_space");
++    struct message ready = {.magic = IPC_MAGIC};
++    publish_message("recovery-ready", &ready);
++    uint64_t last = 0;
++    for (;;) {
++        struct message command;
++        uint64_t deadline = now_ns() + MEMORY_TIMEOUT_NS;
++        for (;;) {
++            if (read_message("command", &command) && command.id == last + 1) break;
++            CHECK(now_ns() < deadline, "memory_recovery_timeout");
++            sleep_ms(2);
++        }
++        last = command.id;
++        if (command.action == REC_STOP) {
++            publish_message("reply", &command);
++            _exit(0);
++        }
++        CHECK(command.action == REC_INSTALL && last == 1, "memory_recovery_command");
++        /* This is a finite observation of a separate role's allocation,
++         * never a claim that physical recovery reserves exist. */
++        memory_zero = open("/dev/zero", O_RDONLY);
++        CHECK(memory_zero >= 0, "memory_recovery_zero");
++        unsigned char *pages = memory_map(16, 0, -1);
++        for (unsigned i = 0; i < 16; ++i)
++            CHECK(memory_touch(pages + i * PAGE_BYTES) == 0, "memory_recovery_allocation");
++        record("G1DM_RECOVERY_ALLOC role=3 pid=%ld pages=16 workload_at_limit=1 physical_reserve=false",
++               (long)getpid());
++        struct usage before = usage_read(control_fd, 0);
++        CHECK(before.revision == command.a && command.b == 0, "memory_recovery_revision");
++        struct usage after = install_ok(1, before, MAX_CAP_NS, command.response, 1);
++        CHECK(after.revision == before.revision + 1, "memory_recovery_applied");
++        CHECK(munmap(pages, 16 * PAGE_BYTES) == 0, "memory_recovery_unmap");
++        publish_message("reply", &command);
++    }
++}
++
++static _Noreturn void memory_manager(void) {
++    CHECK(mount("none", "/dev", "devtmpfs", 0, NULL) == 0, "memory_mount_dev");
++    CHECK(mount("none", "/proc", "proc", 0, NULL) == 0, "memory_mount_proc");
++    CHECK(mount("none", "/sys", "sysfs", 0, NULL) == 0, "memory_mount_sys");
++    CHECK(mount("none", "/sys/fs/cgroup", "cgroup2", 0, NULL) == 0, "memory_mount_cgroup");
++    CHECK(mkdir(IPC_DIR, 0755) == 0, "memory_ipc_directory");
++    unsigned char initialized[PAGE_BYTES] = {0};
++    write_file(MEMORY_STATUS, initialized, sizeof initialized);
++    write_file(MEMORY_FILE, "", 0);
++    CHECK(chown(MEMORY_STATUS, WORKLOAD_ID, WORKLOAD_ID) == 0 &&
++          chown(MEMORY_FILE, WORKLOAD_ID, WORKLOAD_ID) == 0, "memory_ipc_owner");
++    memory_status_fd = open(MEMORY_STATUS, O_RDWR);
++    memory_file = open(MEMORY_FILE, O_RDWR);
++    CHECK(memory_status_fd >= 0 && memory_file >= 0 && ftruncate(memory_file, 2 * PAGE_BYTES) == 0,
++          "memory_ipc_prepare");
++    struct message ready = {.magic = IPC_MAGIC};
++    publish_message("ready", &ready);
++    (void)await_message("recovery-ready", 0);
++    struct memory_status status = {0};
++    uint64_t deadline = now_ns() + MEMORY_TIMEOUT_NS;
++    while (status.state == 0 && now_ns() < deadline) {
++        CHECK(pread(memory_status_fd, &status, sizeof status, 0) == (ssize_t)sizeof status,
++              "memory_manager_status");
++        if (status.state == 0) sleep_ms(5);
++    }
++    CHECK(status.magic == MEMORY_MAGIC && status.state != 0, "memory_workload_report_timeout");
++    CHECK(status.state != 3, "memory_aggregate_limit");
++    CHECK(status.state == 1, "memory_workload_saturated");
++    control_fd = open_control(1);
++    query(control_fd, own_space);
++    CHECK(memcmp(own_space, manager_space, 16) == 0, "memory_manager_space");
++    struct usage initial = usage_read(control_fd, MAX_CAP_NS);
++    unsigned char applied[128], history_bytes[128];
++    struct usage stopped = install_ok(1, initial, 0, applied, 1);
++    sleep_ms(25);
++    struct usage still_stopped = usage_read(control_fd, 0);
++    CHECK(still_stopped.revision == stopped.revision &&
++          still_stopped.cumulative == stopped.cumulative, "memory_stopped_cpu");
++    history(control_fd, manager_history_slot, manager_history_gen, manager_space, 1, 0, OK, history_bytes);
++    history_terminal(history_bytes, 1, OK, applied);
++    struct message restored = recovery_command(REC_INSTALL, stopped.revision, 0, OK);
++    struct usage after = usage_read(control_fd, MAX_CAP_NS);
++    CHECK(after.revision == initial.revision + 2 && get64(restored.response + 56) == after.revision,
++          "memory_actual_recovery_readback");
++    record("G1DM_RECOVERY_READBACK initial=%" PRIu64 " stopped=%" PRIu64 " recovered=%" PRIu64
++           " stopped_total=%" PRIu64 " paused_total=%" PRIu64
++           " cap=50000000 manager_history_terminal=1", initial.revision, stopped.revision, after.revision,
++           stopped.cumulative, still_stopped.cumulative);
++    unsigned char release = 1;
++    CHECK(pwrite(memory_status_fd, &release, 1, 256) == 1, "memory_manager_release");
++    memory_reap(workload_pid);
++    CHECK(pread(memory_status_fd, &status, sizeof status, 0) == (ssize_t)sizeof status && status.state == 2,
++          "memory_workload_complete");
++    (void)recovery_command(REC_STOP, 0, 0, OK);
++    memory_reap(recovery_pid);
++    record("G1DM_COMPLETE aggregate_user_frames=true fork_exec=true recovery=true memory_max=false physical_reserve=false hardware=false");
++    sync();
++    reboot(RB_POWER_OFF);
++    failure("memory_poweroff_returned", __LINE__);
++    _exit(121);
++}
++
++int main(int argc, char **argv) {
++    setvbuf(stdout, NULL, _IONBF, 0);
++    if (argc > 1 && strcmp(argv[1], "--memory-exec-holder") == 0) memory_exec_worker(argc, argv);
++    CHECK(argc == 1, "memory_initial_argc");
++    bootstrap();
++    if (role == 1) memory_manager();
++    if (role == 2) memory_workload();
++    memory_recovery();
++}
+diff --git a/tests/kernel/control/run_g1d_user_memory_guest.py b/tests/kernel/control/run_g1d_user_memory_guest.py
+new file mode 100644
+--- /dev/null
++++ b/tests/kernel/control/run_g1d_user_memory_guest.py
+@@ -0,0 +1,294 @@
++#!/usr/bin/env python3
++"""Bounded native G1-d family user-frame admission and separate-role recovery.
++
++This gate does not qualify memory.max, global physical reserves, OOM killing,
++SMP, hardware or durable Hepta delivery. --expect-no-limit is a counterfactual
++negative only; its passing receipt never sets product qualification fields.
++"""
++import argparse
++import json
++import os
++from pathlib import Path
++import re
++import shutil
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++import run_g1d_guest as control
++
++ROOT = Path(__file__).resolve().parents[3]
++ordinary, replay = control.ordinary, control.replay
++require, digest, save_json = control.require, control.digest, control.save_json
++LIMIT_PAGES = 16384
++HOLDER_PAGES = 4608
++COMPLETE = ("G1DM_COMPLETE aggregate_user_frames=true fork_exec=true recovery=true "
++            "memory_max=false physical_reserve=false hardware=false")
++REFUND = "G1DM_REFUND family_children_reaped=3 parent_cow_unchanged=1 file_truncated=1"
++HOLDER = re.compile(r"^G1DM_HOLDER kind=(fork|exec) pid=([0-9]+) parent=([0-9]+) pages=4608$")
++EXEC = re.compile(r"^G1DM_EXEC_CHILD pid=([0-9]+) parent=([0-9]+) uid=60001 no_boot=1$")
++DENIALS = re.compile(r"^G1DM_DENIALS pid=([0-9]+) address=([0-9]+) pages=([0-9]+) "
++                    r"shared_address=([0-9]+) cow_address=([0-9]+) file_address=([0-9]+) "
++                    r"direct_errno=14 shared_errno=14 cow_errno=14 file_errno=14 write_errno=12$")
++SATURATED = re.compile(r"^G1DM_SATURATED pid=([0-9]+) fork_pid=([0-9]+) exec_pid=([0-9]+) "
++                      r"saturator_pid=([0-9]+) holder_pages=4608 saturator_pages=([0-9]+) limit_pages=16384$")
++FAULT = re.compile(r"^\[hepta-user-memory\] denied pid=([0-9]+) address=([0-9]+) "
++                   r"current_pages=16384 limit_pages=16384$")
++ALLOC = re.compile(r"^G1DM_RECOVERY_ALLOC role=3 pid=([0-9]+) pages=16 workload_at_limit=1 physical_reserve=false$")
++READBACK = re.compile(r"^G1DM_RECOVERY_READBACK initial=([0-9]+) stopped=([0-9]+) recovered=([0-9]+) "
++                      r"stopped_total=([0-9]+) paused_total=([0-9]+) "
++                      r"cap=50000000 manager_history_terminal=1$")
++RETRY = re.compile(r"^G1DM_RETRY pid=([0-9]+) address=([0-9]+) same_mappings=1 "
++                   r"anonymous=1 shared=1 cow=1 file_fault=1 file_write=1$")
++NO_LIMIT = re.compile(r"^G1DM_NO_LIMIT pid=([0-9]+) pages=16384 held_pages=9216$")
++FAILURE = re.compile(r"^G1D_FAIL at=([a-z_]+) line=([0-9]+) errno=([0-9]+) pid=([0-9]+) role=([123])$")
++PATTERNS = (HOLDER, EXEC, DENIALS, SATURATED, FAULT, ALLOC, READBACK, RETRY, NO_LIMIT,
++            FAILURE, control.BOOT, control.APPLY, control.COMMITTED, control.ROLE_COMMITTED, control.ACTIVATED)
++
++
++def evaluate(raw, code, timed_out, probe_info, expect_no_limit=False):
++    require(len(raw) <= replay.MAX_SERIAL_BYTES, "memory serial exceeds evidence bound")
++    text = ordinary.boot_check.ANSI.sub("", raw.decode(errors="replace"))
++    lines = text.splitlines()
++    records = lambda pattern: control.records(lines, pattern)
++    unknown = [line for line in lines
++               if any(token in line for token in ("G1DM_", "G1D_", "[hepta-g1d]", "[hepta-user-memory]"))
++               and line not in (COMPLETE, REFUND)
++               and not any(pattern.fullmatch(line) for pattern in PATTERNS)]
++    clean = not unknown and not any(marker in text for marker in
++        (*ordinary.boot_check.FATAL_PANICS, "Kernel panic", "rejected initial image"))
++    images, roles, activation, boots = (records(pattern) for pattern in
++        (control.COMMITTED, control.ROLE_COMMITTED, control.ACTIVATED, control.BOOT))
++    pids = tuple(map(int, activation[0][1].groups())) if len(activation) == 1 else ()
++    manifest = (len(images) == len(roles) == len(boots) == 3 and len(pids) == 3
++                and pids[0] == 1 and len(set(pids)) == 3 and all(1 < pid < 1 << 31 for pid in pids[1:])
++                and all(int(match[1]) == probe_info["bytes"] and int(match[2], 16) == probe_info["entry"]
++                        for _, match in images)
++                and [tuple(map(int, match.groups())) for _, match in roles] == list(zip((1, 2, 3), pids))
++                and {int(match[1]) for _, match in boots} == {1, 2, 3}
++                and all(int(match[2]) == pids[int(match[1]) - 1]
++                        and tuple(map(int, match.groups()[2:])) == pids for _, match in boots))
++    if manifest:
++        manifest = (all(images[i][0] < roles[i][0] for i in range(3))
++                    and max(index for index, _ in images + roles) < activation[0][0]
++                    < min(index for index, _ in boots))
++    boot_indices = {int(match[1]): index for index, match in boots}
++    holders, executed, denied, saturation, faults, allocated, readback, retry, failures, no_limit = (
++        records(pattern) for pattern in (HOLDER, EXEC, DENIALS, SATURATED, FAULT, ALLOC, READBACK,
++                                        RETRY, FAILURE, NO_LIMIT))
++    holder_ok = (manifest and len(holders) == 2 and [match[1] for _, match in holders] == ["fork", "exec"]
++                 and all(int(match[3]) == pids[1] and 1 < int(match[2]) < 1 << 31
++                         and int(match[2]) not in pids for _, match in holders)
++                 and len(executed) == 1 and int(executed[0][1][1]) == int(holders[1][1][2])
++                 and int(executed[0][1][2]) == pids[1]
++                 and int(holders[0][1][2]) != int(holders[1][1][2])
++                 and boot_indices[2] < holders[0][0]
++                 and holders[0][0] < executed[0][0] < holders[1][0])
++    aggregate = False
++    path_admission = False
++    if holder_ok and len(denied) == len(saturation) == 1:
++        d, s = denied[0][1], saturation[0][1]
++        sat_pid, address, pages, shared, cow, file_address = map(int, d.groups())
++        children = (int(holders[0][1][2]), int(holders[1][1][2]), sat_pid)
++        aggregate = (int(s[1]) == pids[1] and tuple(map(int, s.groups()[1:4])) == children
++                     and len(set((*pids, *children))) == 6 and 1 < sat_pid < 1 << 31
++                     and int(s[5]) == pages and 4096 <= pages < LIMIT_PAGES - 2 * HOLDER_PAGES
++                     and holders[1][0] < denied[0][0] < saturation[0][0])
++        addresses = (address, shared, cow, file_address)
++        path_admission = (aggregate and len(set(addresses)) == 4
++                          and all(4096 <= value < 1 << 47 and value % 4096 == 0 for value in addresses)
++                          and len(faults) == 4
++                          and [(int(match[1]), int(match[2])) for _, match in faults]
++                          == [(sat_pid, value) for value in addresses]
++                          and holders[1][0] < faults[0][0] < faults[-1][0] < denied[0][0])
++    applications = [dict(zip(control.APPLY_KEYS, map(int, match.groups())))
++                    for _, match in records(control.APPLY)]
++    control_ok = False
++    if path_admission and len(allocated) == len(readback) == 1 and len(applications) == 2:
++        before, stopped, recovered, stopped_total, paused_total = map(int, readback[0][1].groups())
++        control_ok = (int(allocated[0][1][1]) == pids[2] and before > 0
++                      and stopped == before + 1 and recovered == before + 2
++                      and [(item["role"], item["sequence"], item["cap"], item["previous"], item["revision"])
++                           for item in applications]
++                      == [(1, 1, 0, before, stopped), (3, 1, 50_000_000, stopped, recovered)])
++        for item in applications:
++            control_ok &= (all(0 <= value < 1 << 64 for value in item.values())
++                           and 0 < item["before_sample"] <= item["effective"] <= item["after_sample"]
++                           and item["before_total"] <= item["after_total"]
++                           and item["consumed"] <= item["effective"] % control.PERIOD_NS)
++            for prefix in ("before", "after"):
++                sample, total, start, used = (item[prefix + "_" + key]
++                                              for key in ("sample", "total", "start", "used"))
++                control_ok &= (start == sample // control.PERIOD_NS * control.PERIOD_NS
++                               and used <= total <= sample and used <= sample % control.PERIOD_NS
++                               and total - used <= start)
++            if item["effective"] // control.PERIOD_NS * control.PERIOD_NS == item["before_start"]:
++                control_ok &= item["consumed"] >= item["before_used"]
++            if item["effective"] // control.PERIOD_NS * control.PERIOD_NS == item["after_start"]:
++                control_ok &= item["after_used"] >= item["consumed"]
++        control_ok &= (0 < stopped_total == paused_total == applications[0]["after_total"]
++                       == applications[1]["before_total"]
++                       and applications[1]["before_sample"] >= applications[0]["after_sample"])
++    refund_ok = (control_ok and len(retry) == 1 and retry[0][1].groups() == denied[0][1].groups()[:2]
++                 and lines.count(REFUND) == lines.count(COMPLETE) == 1)
++    ordered = False
++    if refund_ok:
++        apply_indices = [index for index, _ in records(control.APPLY)]
++        indices = [saturation[0][0], apply_indices[0], allocated[0][0], apply_indices[1],
++                   readback[0][0], retry[0][0], lines.index(REFUND), lines.index(COMPLETE)]
++        ordered = all(left < right for left, right in zip(indices, indices[1:]))
++        ordered &= boot_indices[1] < apply_indices[0] and boot_indices[3] < allocated[0][0]
++    exited = type(code) is int and code == 33 and timed_out is False
++    positive = bool(exited and clean and manifest and path_admission and control_ok and refund_ok and ordered
++                    and not failures and not no_limit)
++    negative = (exited and clean and holder_ok and len(no_limit) == len(failures) == 1
++                and not denied and not saturation and not faults and not allocated and not readback
++                and not retry and not applications and REFUND not in lines and COMPLETE not in lines)
++    if negative:
++        failure = failures[0][1]
++        negative = (failure[1] == "memory_aggregate_limit" and int(failure[2]) > 0
++                    and (int(failure[4]), int(failure[5])) == (pids[0], 1)
++                    and 1 < int(no_limit[0][1][1]) < 1 << 31
++                    and int(no_limit[0][1][1]) not in (*pids, int(holders[0][1][2]), int(holders[1][1][2]))
++                    and holders[1][0] < no_limit[0][0] < failures[0][0]
++                    and boot_indices[1] < failures[0][0] and boot_indices[3] < failures[0][0]
++                    and not positive)
++    return {"passed": bool(negative if expect_no_limit else positive),
++            "counterfactual_only": bool(expect_no_limit), "positive_oracle_passed": positive,
++            "exact_no_limit_negative": bool(negative), "manifest_verified_before_any_resume": bool(manifest),
++            "family_aggregate_observed": bool(aggregate), "four_fault_causes_and_file_write_bound": bool(path_admission),
++            "independent_recovery_effect_and_readback": bool(control_ok), "same_mapping_retry_after_refund": bool(refund_ok),
++            "observations_ordered": bool(ordered), "unknown_records": unknown,
++            "failure_records": [match.group(0) for _, match in failures],
++            "qemu_exit": code, "timed_out": timed_out, "raw_serial_sha256": digest(raw), "raw_serial_size": len(raw)}
++
++
++def boot(args, output, kernel, bios, initramfs, binary):
++    directory = output / "exact"
++    directory.mkdir(mode=0o700)
++    (directory / "initramfs.cpio.gz").write_bytes(initramfs)
++    argv = [binary, "-kernel", str(output / "product-kernel.elf"), "-initrd", str(directory / "initramfs.cpio.gz"),
++            "-append", "earlycon console=ttyS0 loglevel=warn rdinit=/test/g1d-init SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
++            "-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", str(output / "bios.bin"),
++            "-m", "512M", "-smp", "1", "-nodefaults", "-no-user-config", "-no-reboot", "-nographic",
++            "-display", "none", "-monitor", "none", "-serial", "stdio", "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]
++    evidence = {"argv": argv, "kernel_sha256": digest(kernel), "bios_sha256": digest(bios),
++                "initramfs_sha256": digest(initramfs), "qemu_sha256": digest(Path(binary).read_bytes()),
++                "qemu_exit": None, "timed_out": False}
++    save_json(directory / "qemu.json", evidence)
++    started = time.monotonic()
++    with (directory / "serial.log").open("xb") as serial:
++        try:
++            evidence["qemu_exit"] = subprocess.run(argv, stdin=subprocess.DEVNULL, stdout=serial,
++                stderr=subprocess.STDOUT, timeout=args.timeout, check=False).returncode
++        except subprocess.TimeoutExpired:
++            evidence["timed_out"] = True
++    evidence["elapsed_seconds"] = round(time.monotonic() - started, 3)
++    raw = (directory / "serial.log").read_bytes()
++    save_json(directory / "qemu.json", evidence)
++    require((output / "product-kernel.elf").read_bytes() == kernel and (output / "bios.bin").read_bytes() == bios
++            and (directory / "initramfs.cpio.gz").read_bytes() == initramfs, "boot inputs changed")
++    return raw, evidence
++
++
++def run(args, output, result):
++    (output / "git-status-porcelain.txt").write_bytes(subprocess.check_output(
++        ["git", "status", "--porcelain", "--untracked-files=all"], cwd=ROOT))
++    snapshot = ordinary.source_snapshot(ROOT, args.expected_source_head, args.expected_source_tree)
++    for name in ("tests/kernel/control/g1d_user_memory.c", "tests/kernel/control/run_g1d_user_memory_guest.py",
++                 "tests/kernel/control/g1d_init.c", "tests/kernel/control/g1d_pids.c", "tests/kernel/control/run_g1d_guest.py",
++                 "tests/kernel/control/run_g1c_guest.py", "support/build/prepare-trusted-image.py"):
++        require(name in snapshot["files"], "untracked execution input")
++    save_json(output / "source-before.json", snapshot)
++    result.update(source_head=snapshot["head"], source_tree=snapshot["tree"], stage="compile_initial_elf")
++    compiler = [args.cc, "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-static", "-no-pie", "-pthread",
++                "-Wl,-z,noexecstack,-z,separate-code", str(ROOT / "tests/kernel/control/g1d_user_memory.c"),
++                "-o", str(output / "g1d-init")]
++    built = subprocess.run(compiler, capture_output=True, timeout=90, check=False)
++    (output / "compile.log").write_bytes(built.stdout + built.stderr)
++    result.update(compiler_command=compiler, compile_exit=built.returncode)
++    require(built.returncode == 0, "native probe compilation failed")
++    probe = (output / "g1d-init").read_bytes()
++    probe_info = control.inspect_probe_elf(probe)
++    save_json(output / "probe.json", probe_info)
++    target = args.target_dir.absolute()
++    require(not target.exists() and not target.is_symlink(), "target must be fresh")
++    require(not target.resolve().is_relative_to(ROOT.resolve()), "target must be outside source")
++    build_dir = output / "kernel-build"
++    env = dict(os.environ)
++    for name in ("RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER",
++                 "CARGO_TARGET_DIR", "HEPTA_TRUSTED_INITIAL_ELF", "HEPTA_G1C_TRUSTED_OBSERVE",
++                 "HEPTA_G1D_TRUSTED_CONTROL", "FEATURES"):
++        env.pop(name, None)
++    env.update(A01_RUN_DIR=str(build_dir), A01_SMP="1", CARGO_TARGET_DIR=str(target),
++               HEPTA_G1D_TRUSTED_CONTROL="1", HEPTA_TRUSTED_INITIAL_ELF=str(output / "g1d-init"))
++    result.update(stage="build_profile", product_configuration="ActionChoice::Run; g1d-trusted-control; no --cfg ktest")
++    save_json(output / "result.json", result)
++    with (output / "build-wrapper.log").open("xb") as log:
++        built = subprocess.run([str(ROOT / "support/build/kernel.sh"), "kernel"], cwd=ROOT, env=env,
++                               stdout=log, stderr=subprocess.STDOUT, timeout=1800, check=False)
++    result["build_wrapper_exit"] = built.returncode
++    after = ordinary.source_snapshot(ROOT, args.expected_source_head, args.expected_source_tree)
++    save_json(output / "source-after-build.json", after)
++    require(after == snapshot and built.returncode == 0, "kernel build failed or source changed")
++    kernel, original, lock_hash, manifest = control.verify_build(build_dir, snapshot, target, probe)
++    bios = replay.read_pinned_file(args.bios, replay.SEABIOS_SHA, 2 * 1024 * 1024)
++    binary = shutil.which(args.qemu)
++    require(binary is not None, "QEMU unavailable")
++    result.update(stage="guest", kernel_elf_sha256=digest(kernel), probe_sha256=digest(probe),
++                  original_initramfs_sha256=digest(original), bios_sha256=digest(bios),
++                  generated_lock_sha256=lock_hash, generated_package_count=204, trusted_manifest=manifest,
++                  qemu_version=subprocess.check_output([binary, "--version"], text=True).strip(),
++                  qemu_sha256=digest(Path(binary).read_bytes()))
++    (output / "product-kernel.elf").write_bytes(kernel)
++    (output / "bios.bin").write_bytes(bios)
++    save_json(output / "result.json", result)
++    raw, evidence = boot(args, output, kernel, bios, control.build_initramfs(original, probe), binary)
++    verdict = evaluate(raw, evidence["qemu_exit"], evidence["timed_out"], probe_info, args.expect_no_limit)
++    result["guest"] = {**evidence, **verdict}
++    save_json(output / "exact/result.json", result["guest"])
++    final = ordinary.source_snapshot(ROOT, args.expected_source_head, args.expected_source_tree)
++    save_json(output / "source-after-guest.json", final)
++    require(final == snapshot and (output / "g1d-init").read_bytes() == probe
++            and (build_dir / "trusted-initial.elf").read_bytes() == probe
++            and digest(Path(binary).read_bytes()) == result["qemu_sha256"], "execution inputs changed")
++    result.update(stage="complete", passed=verdict["passed"], source_inputs_unchanged=True,
++                  aggregate_user_frames=verdict["passed"] and not args.expect_no_limit,
++                  native_recovery_under_capped_user_pressure=verdict["passed"] and not args.expect_no_limit)
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--expected-source-head", required=True)
++    parser.add_argument("--expected-source-tree", required=True)
++    parser.add_argument("--output", type=Path, required=True)
++    parser.add_argument("--target-dir", type=Path, required=True)
++    parser.add_argument("--bios", type=Path, default=Path("/usr/share/seabios/bios-256k.bin"))
++    parser.add_argument("--qemu", default="qemu-system-x86_64")
++    parser.add_argument("--cc", default="cc")
++    parser.add_argument("--timeout", type=int, default=240)
++    parser.add_argument("--expect-no-limit", action="store_true")
++    args = parser.parse_args(argv)
++    require(1 <= args.timeout <= 600, "guest timeout must be 1..600 seconds")
++    output = args.output.absolute()
++    require(not output.exists() and not output.is_symlink(), "output must be new")
++    require(not output.resolve().is_relative_to(ROOT.resolve()), "evidence must be outside source")
++    output.mkdir(mode=0o700, parents=True)
++    result = {"schema": "g1d.family-user-frames.v1", "stage": "source_admission", "passed": False,
++              "counterfactual_only": args.expect_no_limit, "aggregate_user_frames": False,
++              "native_recovery_under_capped_user_pressure": False, "memory_max": False,
++              "global_physical_reserve": False, "oom_killer": False, "smp_qualification": False,
++              "hardware_qualification": False, "hepta_durability": False, "production_ready": False}
++    try:
++        run(args, output, result)
++    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
++        result.update(passed=False, error=f"{type(error).__name__}: {error}")
++    save_json(output / "result.json", result)
++    print(json.dumps({"passed": result["passed"], "stage": result["stage"], "output": str(output)}, sort_keys=True))
++    return 0 if result["passed"] else 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/kernel/control/test_g1d_user_memory_guest.py b/tests/kernel/control/test_g1d_user_memory_guest.py
+new file mode 100644
+--- /dev/null
++++ b/tests/kernel/control/test_g1d_user_memory_guest.py
+@@ -0,0 +1,147 @@
++#!/usr/bin/env python3
++"""Adversarial host-oracle tests; fixture bytes never qualify a native guest."""
++import importlib.util
++from pathlib import Path
++import unittest
++
++SPEC = importlib.util.spec_from_file_location("memory_guest", Path(__file__).with_name("run_g1d_user_memory_guest.py"))
++memory = importlib.util.module_from_spec(SPEC)
++SPEC.loader.exec_module(memory)
++INFO = {"bytes": 8192, "entry": 0x401000}
++
++
++def apply(role, cap, previous, sample, before, after):
++    return (f"G1D_APPLY role={role} sequence=1 cap={cap} previous={previous} revision={previous + 1} "
++            f"effective={sample + 5000} consumed={before} before_sample={sample} before_total={before} "
++            f"before_start=0 before_used={before} after_sample={sample + 10000} after_total={after} "
++            f"after_start=0 after_used={after}")
++
++
++def prefix():
++    lines = ["[hepta-g1d] trusted initial image committed: bytes=8192 entry=0x401000"] * 3
++    lines += [f"[hepta-g1d] trusted role committed: role={role} pid={role}" for role in (1, 2, 3)]
++    lines += ["[hepta-g1d] initial control activated: manager=1 workload=2 recovery=3 "
++              "cap_ns=50000000 period_ns=100000000 lease_ns=300000000000 hepta_durability=false"]
++    lines += [f"G1D_BOOT role={role} pid={role} manager=1 workload=2 recovery=3 version=2 bytes=192"
++              for role in (1, 2, 3)]
++    lines += ["G1DM_HOLDER kind=fork pid=4 parent=2 pages=4608",
++              "G1DM_EXEC_CHILD pid=5 parent=2 uid=60001 no_boot=1",
++              "G1DM_HOLDER kind=exec pid=5 parent=2 pages=4608"]
++    return lines
++
++
++def valid():
++    lines = prefix()
++    lines += [f"[hepta-user-memory] denied pid=6 address={address} current_pages=16384 limit_pages=16384"
++              for address in (1073741824, 1342177280, 1610612736, 1879048192)]
++    lines += ["G1DM_DENIALS pid=6 address=1073741824 pages=6000 shared_address=1342177280 "
++              "cow_address=1610612736 file_address=1879048192 "
++              "direct_errno=14 shared_errno=14 cow_errno=14 file_errno=14 write_errno=12",
++              "G1DM_SATURATED pid=2 fork_pid=4 exec_pid=5 saturator_pid=6 holder_pages=4608 saturator_pages=6000 limit_pages=16384",
++              apply(1, 0, 1, 10000000, 1000, 1100),
++              "G1DM_RECOVERY_ALLOC role=3 pid=3 pages=16 workload_at_limit=1 physical_reserve=false",
++              apply(3, 50000000, 2, 20000000, 1100, 1200),
++              "G1DM_RECOVERY_READBACK initial=1 stopped=2 recovered=3 stopped_total=1100 paused_total=1100 cap=50000000 manager_history_terminal=1",
++              "G1DM_RETRY pid=6 address=1073741824 same_mappings=1 anonymous=1 shared=1 cow=1 file_fault=1 file_write=1",
++              memory.REFUND, memory.COMPLETE]
++    return lines
++
++
++def negative():
++    return prefix() + ["G1DM_NO_LIMIT pid=6 pages=16384 held_pages=9216",
++                       "G1D_FAIL at=memory_aggregate_limit line=350 errno=0 pid=1 role=1"]
++
++
++def verdict(lines, code=33, timed_out=False, counterfactual=False):
++    return memory.evaluate(("\n".join(lines) + "\n").encode(), code, timed_out, INFO, counterfactual)
++
++
++class MemoryOracleTests(unittest.TestCase):
++    def test_complete_positive_and_exact_negative_are_separate(self):
++        result = verdict(valid())
++        self.assertTrue(result["passed"], result)
++        self.assertFalse(result["counterfactual_only"])
++        self.assertFalse(verdict(negative())["passed"])
++        result = verdict(negative(), counterfactual=True)
++        self.assertTrue(result["passed"], result)
++        self.assertFalse(result["positive_oracle_passed"])
++        self.assertFalse(verdict(valid(), counterfactual=True)["passed"])
++
++    def test_every_required_observation_is_mandatory(self):
++        lines = valid()
++        for index, omitted in enumerate(lines):
++            with self.subTest(omitted=omitted):
++                self.assertFalse(verdict(lines[:index] + lines[index + 1:])["passed"])
++
++    def test_duplicate_records_do_not_qualify(self):
++        lines = valid()
++        for index, duplicate in enumerate(lines):
++            with self.subTest(duplicate=duplicate):
++                self.assertFalse(verdict(lines[:index] + [duplicate] + lines[index:])["passed"])
++
++    def test_faults_must_be_exact_owner_address_and_full_limit(self):
++        originals = valid()
++        cases = [("denied pid=6", "denied pid=4"), ("address=1073741824 current", "address=1073745920 current"),
++                 ("current_pages=16384", "current_pages=16383"), ("limit_pages=16384", "limit_pages=32768"),
++                 ("shared_errno=14", "shared_errno=12"), ("write_errno=12", "write_errno=14")]
++        for before, after in cases:
++            with self.subTest(replacement=(before, after)):
++                self.assertFalse(verdict([line.replace(before, after) for line in originals])["passed"])
++
++    def test_family_and_exec_identity_cannot_be_substituted(self):
++        for before, after in [("parent=2", "parent=3"), ("exec_pid=5", "exec_pid=4"),
++                              ("saturator_pid=6", "saturator_pid=3"), ("uid=60001", "uid=0"),
++                              ("no_boot=1", "no_boot=0"), ("pages=6000", "pages=9000"),
++                              ("saturator_pages=6000", "saturator_pages=100")]:
++            with self.subTest(replacement=(before, after)):
++                self.assertFalse(verdict([line.replace(before, after) for line in valid()])["passed"])
++
++    def test_recovery_requires_actual_independent_effect_and_readback(self):
++        for before, after in [("role=3 pid=3 pages=16", "role=3 pid=2 pages=16"),
++                              ("G1D_APPLY role=3", "G1D_APPLY role=1"), ("recovered=3", "recovered=2"),
++                              ("paused_total=1100", "paused_total=1101"),
++                              ("previous=2 revision=3", "previous=1 revision=2"),
++                              ("manager_history_terminal=1", "manager_history_terminal=0")]:
++            with self.subTest(replacement=(before, after)):
++                self.assertFalse(verdict([line.replace(before, after) for line in valid()])["passed"])
++
++    def test_refund_requires_same_address_and_event_order(self):
++        lines = valid()
++        for index, line in enumerate(lines):
++            if line.startswith("G1DM_RETRY"):
++                changed = lines.copy()
++                changed[index] = line.replace("address=1073741824", "address=1073745920")
++                self.assertFalse(verdict(changed)["passed"])
++                changed = lines.copy()
++                changed.insert(13, changed.pop(index))
++                self.assertFalse(verdict(changed)["passed"])
++        changed = lines.copy()
++        a, b = next(i for i, line in enumerate(changed) if line.startswith("G1DM_RECOVERY_ALLOC")), -1
++        changed[a], changed[b] = changed[b], changed[a]
++        self.assertFalse(verdict(changed)["passed"])
++
++    def test_timeout_crash_unknown_or_malformed_record_is_failure(self):
++        for code, timeout in [(0, False), (1, False), (None, True), (33, True), (True, False)]:
++            with self.subTest(code=code, timeout=timeout):
++                self.assertFalse(verdict(valid(), code, timeout)["passed"])
++                self.assertFalse(verdict(negative(), code, timeout, True)["passed"])
++        for extra in ["Kernel panic", "panicked at marker", "G1DM_UNKNOWN synthetic=true",
++                      "SYS_WRITE G1DM_COMPLETE malformed", "G1D_FAIL at=other line=1 errno=12 pid=6 role=2",
++                      "[hepta-user-memory] denied pid=7 address=4096 current_pages=16384 limit_pages=16384"]:
++            with self.subTest(extra=extra):
++                self.assertFalse(verdict(valid() + [extra])["passed"])
++                self.assertFalse(verdict(negative() + [extra], counterfactual=True)["passed"])
++
++    def test_negative_rejects_any_other_failure_or_quota_outcome(self):
++        for before, after in [("memory_aggregate_limit", "memory_workload_report_timeout"),
++                              ("pid=1 role=1", "pid=2 role=2"), ("pages=16384", "pages=16383"),
++                              ("held_pages=9216", "held_pages=4608")]:
++            with self.subTest(replacement=(before, after)):
++                self.assertFalse(verdict([line.replace(before, after) for line in negative()], counterfactual=True)["passed"])
++        for line in valid()[13:]:
++            with self.subTest(extra=line):
++                self.assertFalse(verdict(negative() + [line], counterfactual=True)["passed"])
++
++
++if __name__ == "__main__":
++    unittest.main()

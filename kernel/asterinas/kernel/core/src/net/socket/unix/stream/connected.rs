@@ -12,7 +12,11 @@ use crate::{
     fs::utils::{Endpoint, EndpointState},
     net::socket::{
         unix::{
-            UnixSocketAddr, addr::UnixSocketAddrBound, cred::SocketCred, ctrl_msg::AuxiliaryData,
+            UnixSocketAddr,
+            addr::UnixSocketAddrBound,
+            cred::SocketCred,
+            ctrl_msg::AuxiliaryData,
+            ownership::{Lease, Node},
         },
         util::{ControlMessage, RecvFlags, RecvOutput, SockShutdownCmd},
     },
@@ -20,19 +24,42 @@ use crate::{
     process::signal::Pollee,
     util::{
         MultiRead, MultiWrite,
-        ring_buffer::{ProducerU8Ext, RbConsumer, RbProducer, RingBuffer, RingBufferU8Ext},
+        ring_buffer::{
+            ProducerU8Ext, RingBufferU8Ext, UserRbConsumer, UserRbProducer, UserRingBuffer,
+            new_user_ring_buffer,
+        },
     },
 };
+
+/// Both directions are admitted before any socket state or backlog is changed.
+/// Failure of the second allocation drops and refunds the first original segment.
+pub(super) struct Buffers {
+    outgoing: UserRingBuffer,
+    incoming: UserRingBuffer,
+    pub(super) ownership: Node,
+}
+
+impl Buffers {
+    pub(super) fn new(owner: &crate::vm::user_memory::UserMemoryOwner) -> Result<Self> {
+        Ok(Self {
+            outgoing: new_user_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE, owner)?,
+            incoming: new_user_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE, owner)?,
+            ownership: Node::new()?,
+        })
+    }
+}
 
 pub(super) struct Connected {
     // `addr` should be dropped as soon as the socket file is closed,
     // so it must not belong to `Inner`.
     addr: Option<UnixSocketAddrBound>,
     inner: Endpoint<Inner>,
+    ownership: Option<Lease>,
 }
 
 impl Connected {
     pub(super) fn new_pair(
+        buffers: Buffers,
         addr: Option<UnixSocketAddrBound>,
         peer_addr: Option<UnixSocketAddrBound>,
         state: EndpointState,
@@ -40,8 +67,9 @@ impl Connected {
         cred: SocketCred,
         peer_cred: SocketCred,
     ) -> (Connected, Connected) {
-        let (this_writer, peer_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
-        let (peer_writer, this_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
+        let ownership = buffers.ownership;
+        let (this_writer, peer_reader) = buffers.outgoing.split();
+        let (peer_writer, this_reader) = buffers.incoming.split();
 
         let this_inner = Inner {
             addr: Once::new(),
@@ -52,6 +80,7 @@ impl Connected {
             has_aux: AtomicBool::new(false),
             is_pass_cred: AtomicBool::new(false),
             cred,
+            ownership: ownership.clone(),
         };
         let peer_inner = Inner {
             addr: Once::new(),
@@ -62,6 +91,7 @@ impl Connected {
             has_aux: AtomicBool::new(false),
             is_pass_cred: AtomicBool::new(false),
             cred: peer_cred,
+            ownership,
         };
 
         if let Some(addr) = addr.as_ref() {
@@ -76,13 +106,23 @@ impl Connected {
         let this = Connected {
             addr,
             inner: this_inner,
+            ownership: None,
         };
         let peer = Connected {
             addr: peer_addr,
             inner: peer_inner,
+            ownership: None,
         };
 
         (this, peer)
+    }
+
+    pub(super) fn prepare_owner(&self, owner: &Node) -> Result<Lease> {
+        Lease::single(owner, &self.inner.this_end().ownership)
+    }
+
+    pub(super) fn publish_owner(&mut self, ownership: Lease) {
+        self.ownership = Some(ownership);
     }
 
     pub(super) fn addr(&self) -> Option<&UnixSocketAddrBound> {
@@ -263,7 +303,8 @@ impl Connected {
 
             let ctrl_msgs = aux_data.data.generate_control(behavior, is_pass_cred);
             if behavior.will_consume_data() {
-                let remaining_aux_count = all_aux.len() - (aux_pos - 1);
+                let previous_aux_count = all_aux.len();
+                let remaining_aux_count = previous_aux_count - (aux_pos - 1);
                 all_aux.retain_back(remaining_aux_count);
                 let consume_len = read_tot_len + trunc_len;
                 if (all_aux.front().unwrap().end - read_base).0 <= consume_len {
@@ -274,6 +315,11 @@ impl Connected {
                 peer_end
                     .has_aux
                     .store(!all_aux.is_empty(), Ordering::Relaxed);
+                if all_aux.len() < previous_aux_count {
+                    // Zero-length packets free a message slot without moving
+                    // the byte head. Wake the original blocking sender too.
+                    self.inner.notify_read();
+                }
             }
             ctrl_msgs
         } else {
@@ -326,6 +372,17 @@ impl Connected {
         }
 
         let mut all_aux = this_end.all_aux.lock();
+        // Empty seqpackets consume no ring-buffer bytes, but still own one
+        // message boundary and auxiliary metadata. Bound that original queue
+        // independently of byte capacity, before consuming any caller state.
+        if is_seqpacket && all_aux.len() >= UNIX_SEQPACKET_MAX_QUEUED_MESSAGES {
+            return_errno_with_message!(Errno::EAGAIN, "the ancillary queue has no message slots");
+        }
+        all_aux
+            .try_reserve(1)
+            .map_err(|_| Error::new(Errno::ENOMEM))?;
+
+        let ownership = aux_data.prepare_ownership(&this_end.ownership)?;
 
         // No matter we succeed later or not, set the flag first to ensure that the auxiliary
         // data are always visible to `try_recv`.
@@ -355,6 +412,8 @@ impl Connected {
         if need_pass_cred {
             aux_data.fill_cred();
         }
+
+        aux_data.publish_ownership(ownership);
 
         // Store the auxiliary data.
         let aux_range = RangedAuxiliaryData {
@@ -398,15 +457,19 @@ impl Connected {
         self.inner.this_end().is_pass_cred.load(Ordering::Relaxed)
     }
 
-    pub(super) fn check_io_events(&self) -> IoEvents {
+    pub(super) fn check_io_events(&self, is_seqpacket: bool) -> IoEvents {
         let this_end = self.inner.this_end();
         let mut events = IoEvents::empty();
 
-        if !this_end.reader.lock().is_empty() {
+        if !this_end.reader.lock().is_empty()
+            || (is_seqpacket && !self.inner.peer_end().all_aux.lock().is_empty())
+        {
             events |= IoEvents::IN;
         }
 
-        if !this_end.writer.lock().is_full() {
+        let has_message_slot =
+            !is_seqpacket || this_end.all_aux.lock().len() < UNIX_SEQPACKET_MAX_QUEUED_MESSAGES;
+        if has_message_slot && !this_end.writer.lock().is_full() {
             events |= IoEvents::OUT;
         }
 
@@ -433,12 +496,13 @@ struct Inner {
     addr: Once<UnixSocketAddr>,
     state: EndpointState,
     // Lock order: `reader` -> `all_aux` & `all_aux` -> `writer`
-    reader: Mutex<RbConsumer<u8>>,
-    writer: Mutex<RbProducer<u8>>,
+    reader: Mutex<UserRbConsumer>,
+    writer: Mutex<UserRbProducer>,
     all_aux: Mutex<VecDeque<RangedAuxiliaryData>>,
     has_aux: AtomicBool,
     is_pass_cred: AtomicBool,
     cred: SocketCred,
+    ownership: Node,
 }
 
 impl AsRef<EndpointState> for Inner {
@@ -454,3 +518,45 @@ struct RangedAuxiliaryData {
 }
 
 pub(in crate::net) const UNIX_STREAM_DEFAULT_BUF_SIZE: usize = 65536;
+
+// Local bounded-metadata policy, independent of the unchanged 64-KiB byte ring.
+const UNIX_SEQPACKET_MAX_QUEUED_MESSAGES: usize = 128;
+
+#[cfg(ktest)]
+mod queue_tests;
+
+#[cfg(ktest)]
+mod memory_tests {
+    use ostd::prelude::*;
+
+    use super::*;
+    use crate::vm::user_memory::UserMemoryAccount;
+
+    #[ktest]
+    fn unix_pair_admits_both_directions_or_refunds_the_first() {
+        for pages in [0, 15, 16, 31] {
+            let account = UserMemoryAccount::new(pages);
+            assert!(
+                Buffers::new(&Some(account.clone()))
+                    .err()
+                    .unwrap()
+                    .is_user_frame_limit()
+            );
+            assert_eq!(account.current_pages(), 0);
+        }
+        let account = UserMemoryAccount::new(32);
+        let buffers = Buffers::new(&Some(account.clone())).unwrap();
+        assert_eq!(account.current_pages(), 32);
+        let (mut writer, mut reader) = buffers.outgoing.split();
+        assert!(writer.push_slice(&[1, 2, 3]).is_some());
+        let mut bytes = [0; 3];
+        assert!(reader.pop_slice(&mut bytes).is_some());
+        assert_eq!(bytes, [1, 2, 3]);
+        drop(writer);
+        assert_eq!(account.current_pages(), 32);
+        drop(reader);
+        assert_eq!(account.current_pages(), 16);
+        drop(buffers.incoming);
+        assert_eq!(account.current_pages(), 0);
+    }
+}

@@ -5,7 +5,14 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 
+[features]
+default = []
+# Trusted embedding API only. The standalone Session/Shell installs no issuer
+# or durable request owner and gains no Objective command by enabling this.
+objective-submission = ["hepta-os-observer/objective-history"]
+
 [dependencies]
+tokio = { version = "=1.52.3", features = ["rt", "time", "net", "io-util", "fs"] }
 trill-ui-core.workspace = true
 trill-ui-broker.workspace = true
 serde_json.workspace = true

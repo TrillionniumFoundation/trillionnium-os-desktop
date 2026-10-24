@@ -5,7 +5,10 @@ use core::{
     time::Duration,
 };
 
-use ostd::sync::WaitQueue;
+use ostd::{
+    mm::{Infallible, Segment, io::util::HasVmReaderWriter},
+    sync::WaitQueue,
+};
 use spin::Once;
 
 use crate::{
@@ -15,12 +18,14 @@ use crate::{
             UnixSocketAddr,
             addr::{UnixSocketAddrBound, UnixSocketAddrKey},
             ctrl_msg::AuxiliaryData,
+            ownership::{Lease, Node},
         },
         util::{ControlMessage, RecvFlags, RecvOutput},
     },
     prelude::*,
     process::signal::Pollee,
     util::{MultiRead, MultiWrite},
+    vm::user_memory::{UserPageMeta, alloc_user_segment, current_owner},
 };
 
 pub(super) struct MessageQueue {
@@ -29,6 +34,7 @@ pub(super) struct MessageQueue {
     is_pass_cred: AtomicBool,
     pollee: Pollee,
     send_wait_queue: WaitQueue,
+    pub(super) ownership: Node,
 }
 
 struct Inner {
@@ -38,9 +44,48 @@ struct Inner {
 }
 
 struct Message {
-    bytes: Vec<u8>,
+    bytes: MessagePayload,
     aux: AuxiliaryData,
     src: UnixSocketAddr,
+}
+
+/// The sending initiator owns the physical payload until its last frame drops.
+/// Queue handles and MSG_PEEK never allocate a second payload or second charge.
+/// Descriptor/queue heap objects are deliberately outside this page account.
+struct MessagePayload {
+    frames: Option<Segment<UserPageMeta>>,
+    len: usize,
+}
+
+impl MessagePayload {
+    fn copy_from(reader: &mut dyn MultiRead, len: usize) -> Result<Self> {
+        let frames = if len == 0 {
+            None
+        } else {
+            let frames = alloc_user_segment(&current_owner(), len.div_ceil(PAGE_SIZE))?;
+            // Admission and the real allocation both precede the user copy.
+            // A copy fault drops the unpublished Segment through its original
+            // frame metadata, refunding family and the captured ancestor chain.
+            reader.read(frames.writer().limit(len))?;
+            Some(frames)
+        };
+        Ok(Self { frames, len })
+    }
+
+    fn len(&self) -> usize {
+        self.len
+    }
+
+    fn reader(&self) -> VmReader<'_, Infallible> {
+        let mut reader = match &self.frames {
+            Some(frames) => frames.reader(),
+            None => VmReader::from(&[][..]),
+        };
+        // The allocator does not zero page padding. Never expose bytes beyond
+        // the successfully copied datagram, including during a truncated peek.
+        reader.limit(self.len);
+        reader
+    }
 }
 
 impl MessageQueue {
@@ -69,6 +114,9 @@ impl MessageQueue {
         if len > UNIX_DATAGRAM_DEFAULT_BUF_SIZE {
             return_errno_with_message!(Errno::EMSGSIZE, "the message is too large");
         }
+        if inner.messages.len() >= UNIX_DATAGRAM_MAX_QUEUED_MESSAGES {
+            return_errno_with_message!(Errno::EAGAIN, "the receive queue has no message slots");
+        }
         if UNIX_DATAGRAM_DEFAULT_BUF_SIZE - inner.total_length < len {
             return_errno_with_message!(
                 Errno::EAGAIN,
@@ -76,11 +124,20 @@ impl MessageQueue {
             );
         }
 
+        // Queue metadata is still ordinary heap memory. Bound its cardinality
+        // and make this allocation fail before the user reader/auxiliary owner
+        // is consumed; it is not charged as fictitious physical payload pages.
+        inner
+            .messages
+            .try_reserve(1)
+            .map_err(|_| Error::new(Errno::ENOMEM))?;
+
+        let ownership = aux_data.prepare_ownership(&self.ownership)?;
         let msg = {
-            let mut bytes = vec![0; len];
-            reader.read(&mut VmWriter::from(bytes.as_mut_slice()))?;
+            let bytes = MessagePayload::copy_from(reader, len)?;
 
             let mut aux = core::mem::take(aux_data);
+            aux.publish_ownership(ownership);
             if self.is_pass_cred.load(Ordering::Relaxed)
                 || source.queue.is_pass_cred.load(Ordering::Relaxed)
             {
@@ -132,10 +189,15 @@ pub(super) struct MessageReceiver {
     // so it must not belong to `MessageQueue`.
     addr: SpinLock<Option<UnixSocketAddrBound>>,
     queue: Arc<MessageQueue>,
+    _ownership: Lease,
+    pub(super) ownership: Node,
 }
 
 impl MessageReceiver {
-    pub(super) fn new() -> MessageReceiver {
+    pub(super) fn new() -> Result<MessageReceiver> {
+        let ownership = Node::new()?;
+        let queue_node = Node::new()?;
+        let edge = Lease::single(&ownership, &queue_node)?;
         let inner = Inner {
             messages: VecDeque::new(),
             total_length: 0,
@@ -148,12 +210,15 @@ impl MessageReceiver {
             is_pass_cred: AtomicBool::new(false),
             pollee: Pollee::new(),
             send_wait_queue: WaitQueue::new(),
+            ownership: queue_node,
         };
 
-        Self {
+        Ok(Self {
             addr: SpinLock::new(None),
             queue: Arc::new(queue),
-        }
+            _ownership: edge,
+            ownership,
+        })
     }
 
     pub(super) fn bind(&self, addr_to_bind: UnixSocketAddr) -> Result<()> {
@@ -192,7 +257,7 @@ impl MessageReceiver {
         };
 
         let message_len = msg.bytes.len();
-        let len = writer.write(&mut VmReader::from(msg.bytes.as_slice()))?;
+        let len = writer.write(&mut msg.bytes.reader())?;
 
         let is_pass_cred = self.queue.is_pass_cred.load(Ordering::Relaxed);
         let src = msg.src.clone();
@@ -299,3 +364,12 @@ impl QueueTable {
 }
 
 pub(in crate::net) const UNIX_DATAGRAM_DEFAULT_BUF_SIZE: usize = 65536;
+
+// Independent of payload bytes: even an empty datagram owns a queue entry and
+// may retain ancillary objects. The existing blocking sender path treats this
+// finite slot limit as ordinary receive-queue backpressure, including for a
+// connected socket pair. This is an explicit local bound, not Linux sysctl parity.
+const UNIX_DATAGRAM_MAX_QUEUED_MESSAGES: usize = 128;
+
+#[cfg(ktest)]
+mod tests;

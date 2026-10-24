@@ -16,7 +16,10 @@ use crate::{
         TermStatus,
         exit::{drop_after, exit_process},
         pid_table,
-        signal::{constants::SIGKILL, signals::kernel::KernelSignal},
+        signal::{
+            constants::SIGKILL,
+            signals::{OwnedSignal, kernel::KernelSignal},
+        },
         task_set::TaskSet,
     },
     thread::{AsThread, Tid},
@@ -156,7 +159,7 @@ pub(in crate::process) fn sigkill_other_threads(current_task: &Task, task_set: &
         }
         task.as_posix_thread()
             .unwrap()
-            .enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+            .enqueue_owned_signal(OwnedSignal::new(KernelSignal::new(SIGKILL)));
     }
 }
 

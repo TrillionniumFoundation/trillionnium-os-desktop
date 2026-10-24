@@ -1,0 +1,21 @@
+{
+  "linux_reference": true,
+  "native_qualification": false,
+  "passed": false,
+  "exit_code": 1,
+  "cause": "glibc sigtimedwait normalizes SI_TKILL to SI_USER; raw-kernel observer correction preserves kernel assertion",
+  "files": {
+    "source": {
+      "path": "/data/asterinas-audit-build.8tdrjboi/signal-bounds-linux-20-failed-probe.c",
+      "sha256": "7f89fe4593054d9b5a5c0db65ee7a49fd2b6e04f4ed472aefcfc999dafb51e2b"
+    },
+    "binary": {
+      "path": "/data/asterinas-audit-build.8tdrjboi/signal-bounds-linux-20.elf",
+      "sha256": "1c3133668647d4374bfbe0c98e93435cf5dd95ff32c2f4608424b369b70ad63e"
+    },
+    "log": {
+      "path": "/data/asterinas-audit-build.8tdrjboi/signal-bounds-linux-20.log",
+      "sha256": "bda0c5e5aa5fcbd9cdb43abc46d94cfb32c5ecfdca52ecdabde8de85e1a59619"
+    }
+  }
+}

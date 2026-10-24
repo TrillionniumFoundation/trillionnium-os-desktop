@@ -9,7 +9,7 @@
 
 use std::io::{self, Read, Write};
 use std::net::Shutdown;
-use std::os::unix::net::UnixStream;
+use std::os::unix::net::{UnixDatagram, UnixStream};
 use std::sync::{Mutex, TryLockError};
 use std::time::{Duration, Instant};
 
@@ -73,9 +73,15 @@ struct Channel {
     contacted: bool,
 }
 
+struct RecoveryChannel {
+    socket: UnixDatagram,
+    contacted: bool,
+}
+
 pub struct NotesTarget {
     identity: NotesTargetIdentity,
     channel: Mutex<Channel>,
+    recovery: Option<Mutex<RecoveryChannel>>,
 }
 
 impl NotesTarget {
@@ -99,12 +105,62 @@ impl NotesTarget {
         stream.set_nonblocking(false)?;
         Ok(Self {
             identity,
+            recovery: None,
             channel: Mutex::new(Channel {
                 stream,
                 poisoned: false,
                 contacted: false,
             }),
         })
+    }
+
+    /// Both streams are created in the same trusted Session bootstrap. The
+    /// recovery stream must reach the application's restricted recovery lane.
+    pub fn from_private_channels(
+        effect: UnixStream,
+        recovery: UnixDatagram,
+        identity: NotesTargetIdentity,
+    ) -> io::Result<Self> {
+        if !recovery.local_addr()?.is_unnamed() || !recovery.peer_addr()?.is_unnamed() {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "Notes recovery requires a private datagram pair",
+            ));
+        }
+        recovery.set_nonblocking(false)?;
+        let recovery = Mutex::new(RecoveryChannel {
+            socket: recovery,
+            contacted: false,
+        });
+        let mut target = Self::from_private_channel(effect, identity)?;
+        target.recovery = Some(recovery);
+        Ok(target)
+    }
+
+    pub fn into_initial_endpoints(
+        mut self,
+    ) -> io::Result<(NotesTargetIdentity, UnixStream, UnixDatagram)> {
+        let recovery = self
+            .recovery
+            .take()
+            .ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Notes recovery endpoint is absent",
+                )
+            })?
+            .into_inner()
+            .map_err(|_| {
+                io::Error::new(io::ErrorKind::BrokenPipe, "Notes recovery was poisoned")
+            })?;
+        if recovery.contacted {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Notes bootstrap requires unused endpoints",
+            ));
+        }
+        let (identity, effect) = self.into_initial_endpoint()?;
+        Ok((identity, effect, recovery.socket))
     }
 
     pub fn identity(&self) -> &NotesTargetIdentity {
@@ -213,29 +269,52 @@ impl NotesTarget {
         if query.validate().is_err() {
             return NotesObservation::Unavailable;
         }
-        let Ok(mut channel) = self.channel.try_lock() else {
+        let Some(recovery) = self.recovery.as_ref() else {
             return NotesObservation::Unavailable;
         };
-        if channel.poisoned {
+        let Ok(mut channel) = recovery.try_lock() else {
             return NotesObservation::Unavailable;
-        }
+        };
         let Ok(raw) = serde_json::to_vec(&query) else {
             return NotesObservation::Unavailable;
         };
         channel.contacted = true;
-        match exchange_exact(&mut channel.stream, &raw) {
-            Ok(response) if response.matches(&self.identity, operation_id, payload_sha256) => {
-                match response.result {
-                    NotesResult::Applied { .. } => NotesObservation::Applied(response),
-                    NotesResult::Unknown { .. } => NotesObservation::Unknown,
-                    NotesResult::NotApplied { .. } => NotesObservation::Unknown,
-                }
-            }
-            _ => {
-                poison(&mut channel);
-                NotesObservation::Unavailable
-            }
+        let deadline = Instant::now() + NOTES_IO_DEADLINE;
+        if channel
+            .socket
+            .set_write_timeout(Some(NOTES_IO_DEADLINE))
+            .is_err()
+            || channel.socket.send(&raw).ok() != Some(raw.len())
+        {
+            return NotesObservation::Unavailable;
         }
+        // Late datagrams must be matched to the complete immutable request.
+        // Neither timeout nor a stale reply invalidates the effect stream.
+        let mut bytes = [0_u8; MAX_NOTES_RESPONSE_BYTES + 1];
+        for _ in 0..16 {
+            let Ok(left) = remaining(deadline) else {
+                return NotesObservation::Unavailable;
+            };
+            if channel.socket.set_read_timeout(Some(left)).is_err() {
+                return NotesObservation::Unavailable;
+            }
+            let Ok(length) = channel.socket.recv(&mut bytes) else {
+                return NotesObservation::Unavailable;
+            };
+            let Ok(response) = NotesResponse::parse_exact(&bytes[..length]) else {
+                continue;
+            };
+            if !response.matches(&self.identity, operation_id, payload_sha256) {
+                continue;
+            }
+            return match response.result {
+                NotesResult::Applied { .. } => NotesObservation::Applied(response),
+                NotesResult::Unknown { .. } | NotesResult::NotApplied { .. } => {
+                    NotesObservation::Unknown
+                }
+            };
+        }
+        NotesObservation::Unavailable
     }
 }
 

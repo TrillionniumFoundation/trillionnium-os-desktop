@@ -1,3 +1,5 @@
+// AF_UNIX persistent-owner cycles return ELOOP; graph exhaustion returns ENOBUFS.
+// A rejected datagram reconnection preserves the old peer.
 struct sockaddr = {
     sa_family = AF_INET | AF_UNIX | AF_NETLINK | AF_VSOCK,
     ..

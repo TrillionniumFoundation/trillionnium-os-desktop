@@ -1,0 +1,1165 @@
+diff --git a/kernel/asterinas/kernel/comps/drm/src/gem/shmem.rs b/kernel/asterinas/kernel/comps/drm/src/gem/shmem.rs
+--- a/kernel/asterinas/kernel/comps/drm/src/gem/shmem.rs
++++ b/kernel/asterinas/kernel/comps/drm/src/gem/shmem.rs
+@@ -1,9 +1,9 @@
+ // SPDX-License-Identifier: MPL-2.0
+ 
+-use alloc::{boxed::Box, sync::Arc, vec::Vec};
++use alloc::{boxed::Box, sync::Arc};
+ 
+-use aster_core::{fs::file::MappedObject, prelude::*, vm::vmar::MapHandle};
+-use ostd::mm::{FrameAllocOptions, PAGE_SIZE, UFrame, VmIo};
++use aster_core::{fs::file::MappedObject, prelude::*, vm::{vmar::MapHandle, user_memory::allocate_user_frames}};
++use ostd::mm::{PAGE_SIZE, UFrame, VmIo};
+ 
+ use crate::gem::object::{DrmGemObject, DrmGemObjectBackend};
+ 
+@@ -51,11 +51,7 @@
+     /// Creates a shmem-backed GEM object with a page-aligned size.
+     pub fn new_object(size: usize) -> Result<Arc<DrmGemObject>> {
+         let page_count = size / PAGE_SIZE;
+-        let mut pages = Vec::<UFrame>::with_capacity(page_count);
+-
+-        for _ in 0..page_count {
+-            pages.push(FrameAllocOptions::new().alloc_frame()?.into());
+-        }
++        let pages = allocate_user_frames(page_count)?;
+         let backend = Arc::new(Self {
+             pages: pages.into(),
+         });
+diff --git a/kernel/asterinas/kernel/core/src/error.rs b/kernel/asterinas/kernel/core/src/error.rs
+--- a/kernel/asterinas/kernel/core/src/error.rs
++++ b/kernel/asterinas/kernel/core/src/error.rs
+@@ -158,20 +158,32 @@
+ #[derive(Clone, Copy, Debug)]
+ pub struct Error {
+     errno: Errno,
++    user_frame_limit: bool,
+     #[expect(dead_code)]
+     msg: Option<&'static str>,
+ }
+ 
+ impl Error {
+     pub const fn new(errno: Errno) -> Self {
+-        Error { errno, msg: None }
++        Error { errno, msg: None, user_frame_limit: false }
+     }
+ 
+     pub const fn with_message(errno: Errno, msg: &'static str) -> Self {
+         Error {
+             errno,
+             msg: Some(msg),
+-        }
++            user_frame_limit: false,
++        }
++    }
++
++    /// Internal provenance retained while an admission failure unwinds VM locks.
++    pub(crate) const fn user_frame_limit() -> Self {
++        Self { errno: Errno::ENOMEM, msg: Some("workload family user-frame limit reached"),
++            user_frame_limit: true }
++    }
++
++    pub(crate) const fn is_user_frame_limit(&self) -> bool {
++        self.user_frame_limit
+     }
+ 
+     pub const fn error(&self) -> Errno {
+diff --git a/kernel/asterinas/kernel/core/src/process/execve.rs b/kernel/asterinas/kernel/core/src/process/execve.rs
+--- a/kernel/asterinas/kernel/core/src/process/execve.rs
++++ b/kernel/asterinas/kernel/core/src/process/execve.rs
+@@ -70,7 +70,8 @@
+         ProgramToLoad::from_executable(executable, &path_resolver, argv, envp, stack_limit_bytes)?;
+     let exec_cred = prepare_exec_cred(program_to_load.elf_path(), ctx)?;
+ 
+-    let new_vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
++    let new_vmar = VmarHandle::new_with_owner(
++        ProcessVm::new(executable_path.clone()), ctx.process.user_memory_owner().clone());
+     let elf_load_info = program_to_load.load_to_vmar(&new_vmar, &path_resolver)?;
+ 
+     // Ensure no other thread is concurrently performing exit_group or execve.
+diff --git a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
+--- a/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs
+@@ -34,6 +34,9 @@
+ const BOOT_PAGE_BYTES: u64 = 192;
+ const WORKLOAD_ID: u32 = 60001;
+ const WORKLOAD_AS_BYTES: u64 = 256 * 1024 * 1024;
++// Aggregate user-data frames, including the stopped initial image. This is
++// separate from virtual-address admission and is not a global memory reserve.
++const WORKLOAD_USER_PAGES: usize = 64 * 1024 * 1024 / PAGE_SIZE;
+ 
+ pub(super) fn spawn(
+     path_resolver: PathResolver,
+@@ -51,8 +54,9 @@
+     // snapshot, and the compiled manifest is not replaced for negative boots.
+     let snapshot = executable.snapshot_trusted_initial()?;
+     let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+-    let workload = allocate_initial_process(&executable_path,
+-        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES));
++    let workload = allocate_initial_process_with_owner(&executable_path,
++        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES),
++        Some(crate::vm::user_memory::UserMemoryAccount::new(WORKLOAD_USER_PAGES)));
+     let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+     let keys = [manager.0.hepta_capspace_session()?, workload.0.hepta_capspace_session()?,
+         recovery.0.hepta_capspace_session()?];
+diff --git a/kernel/asterinas/kernel/core/src/process/process/init_proc.rs b/kernel/asterinas/kernel/core/src/process/process/init_proc.rs
+--- a/kernel/asterinas/kernel/core/src/process/process/init_proc.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/init_proc.rs
+@@ -217,8 +217,16 @@
+     executable_path: &Path,
+     resource_limits: ResourceLimits,
+ ) -> (Arc<Process>, VmarHandle) {
++    allocate_initial_process_with_owner(executable_path, resource_limits, None)
++}
++
++fn allocate_initial_process_with_owner(
++    executable_path: &Path,
++    resource_limits: ResourceLimits,
++    owner: crate::vm::user_memory::UserMemoryOwner,
++) -> (Arc<Process>, VmarHandle) {
+     let pid = allocate_posix_tid();
+-    let vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
++    let vmar = VmarHandle::new_with_owner(ProcessVm::new(executable_path.clone()), owner);
+     let nice = Nice::default();
+     let oom_score_adj = 0;
+     let sig_dispositions = Arc::new(Mutex::new(SigDispositions::default()));
+diff --git a/kernel/asterinas/kernel/core/src/process/process/mod.rs b/kernel/asterinas/kernel/core/src/process/process/mod.rs
+--- a/kernel/asterinas/kernel/core/src/process/process/mod.rs
++++ b/kernel/asterinas/kernel/core/src/process/process/mod.rs
+@@ -33,7 +33,7 @@
+     sched::{AtomicNice, Nice},
+     thread::{AsThread, Thread},
+     time::clocks::ProfClock,
+-    vm::vmar::Vmar,
++    vm::{vmar::Vmar, user_memory::UserMemoryOwner},
+ };
+ 
+ mod image;
+@@ -96,6 +96,7 @@
+     pid: Pid,
+ 
+     vmar: Mutex<Option<Arc<Vmar>>>,
++    user_memory_owner: UserMemoryOwner,
+     /// Wait for child status changed
+     children_wait_queue: WaitQueue,
+     pub(super) pidfile_pollee: Pollee,
+@@ -258,6 +259,7 @@
+ 
+             Self {
+                 pid,
++                user_memory_owner: vmar.user_memory_owner().clone(),
+                 vmar: Mutex::new(Some(vmar)),
+                 children_wait_queue,
+                 pidfile_pollee: Pollee::new(),
+@@ -306,6 +308,10 @@
+ 
+     // *********** Basic structures ***********
+ 
++    pub(crate) fn user_memory_owner(&self) -> &UserMemoryOwner {
++        &self.user_memory_owner
++    }
++
+     pub fn pid(&self) -> u32 {
+         self.pid
+     }
+diff --git a/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs b/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs
+--- a/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs
++++ b/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs
+@@ -155,7 +155,7 @@
+                 let source = file_range.start.align_down(PAGE_SIZE)..file_range.end;
+                 expected[..source.len()].copy_from_slice(&snapshot[source]);
+             }
+-            let ram = VmoOptions::new(range.len()).alloc()?;
++            let ram = VmoOptions::new(range.len()).memory_owner(vmar.user_memory_owner().clone()).alloc()?;
+             ram.write(0, &mut VmReader::from(expected.as_slice()).to_fallible())?;
+             vmar.new_map(range.len(), segment.vm_perms())
+                 .vmo(ram)
+@@ -230,7 +230,7 @@
+ }
+ 
+ fn map_boot_page(vmar: &Vmar, bytes: &[u8]) -> Result<Vaddr> {
+-    let ram = VmoOptions::new(PAGE_SIZE).alloc()?;
++    let ram = VmoOptions::new(PAGE_SIZE).memory_owner(vmar.user_memory_owner().clone()).alloc()?;
+     ram.write(0, &mut VmReader::from(bytes).to_fallible())?;
+     let addr = vmar.new_map(PAGE_SIZE, VmPerms::READ).vmo(ram).build()?;
+     Ok(addr)
+diff --git a/kernel/asterinas/kernel/core/src/thread/exception.rs b/kernel/asterinas/kernel/core/src/thread/exception.rs
+--- a/kernel/asterinas/kernel/core/src/thread/exception.rs
++++ b/kernel/asterinas/kernel/core/src/thread/exception.rs
+@@ -32,6 +32,16 @@
+ /// Handles the page fault occurs in the VMAR.
+ fn handle_page_fault_from_vmar(vmar: &Vmar, page_fault_info: &PageFaultInfo) -> Result<(), ()> {
+     if let Err(e) = vmar.handle_page_fault(page_fault_info) {
++        // The handler has released its VMAR, page-table and VMO locks. This
++        // diagnostic is evidence of the exact admission cause, not an OOM kill.
++        if e.is_user_frame_limit()
++            && let Some(owner) = vmar.user_memory_owner()
++            && owner.report_denial()
++        {
++            println!("[hepta-user-memory] denied pid={} address={} current_pages={} limit_pages={}",
++                crate::process::Process::current().map_or(0, |process| process.pid()),
++                page_fault_info.address(), owner.current_pages(), owner.limit_pages());
++        }
+         warn!(
+             "page fault handler failed: info: {:#x?}, err: {:?}",
+             page_fault_info, e
+diff --git a/kernel/asterinas/kernel/core/src/thread/kernel_thread.rs b/kernel/asterinas/kernel/core/src/thread/kernel_thread.rs
+--- a/kernel/asterinas/kernel/core/src/thread/kernel_thread.rs
++++ b/kernel/asterinas/kernel/core/src/thread/kernel_thread.rs
+@@ -40,6 +40,11 @@
+     fn as_kernel_thread(&self) -> Option<&KernelThread> {
+         self.as_thread()?.as_kernel_thread()
+     }
++}
++
++/// Gets the immutable owner of a kernel thread explicitly attached to a VMAR.
++pub(crate) fn current_user_memory_owner() -> crate::vm::user_memory::UserMemoryOwner {
++    Task::current()?.as_kernel_thread()?.vmar()?.user_memory_owner().clone()
+ }
+ 
+ /// Options to create or spawn a new kernel thread.
+diff --git a/kernel/asterinas/kernel/core/src/vm/mod.rs b/kernel/asterinas/kernel/core/src/vm/mod.rs
+--- a/kernel/asterinas/kernel/core/src/vm/mod.rs
++++ b/kernel/asterinas/kernel/core/src/vm/mod.rs
+@@ -15,6 +15,7 @@
+ pub mod page_cache;
+ pub(crate) mod perms;
+ pub mod vmar;
++pub mod user_memory;
+ 
+ #[ostd::global_frame_allocator]
+ static FRAME_ALLOCATOR: FrameAllocator = FrameAllocator;
+diff --git a/kernel/asterinas/kernel/core/src/vm/page_cache/cache_page.rs b/kernel/asterinas/kernel/core/src/vm/page_cache/cache_page.rs
+--- a/kernel/asterinas/kernel/core/src/vm/page_cache/cache_page.rs
++++ b/kernel/asterinas/kernel/core/src/vm/page_cache/cache_page.rs
+@@ -13,7 +13,7 @@
+     sync::WaitQueue,
+ };
+ 
+-use crate::prelude::*;
++use crate::{prelude::*, vm::user_memory::{UserMemoryOwner, UserMemoryReservation, UserPageCharge}};
+ 
+ /// The state of a page in the page cache.
+ #[repr(u8)]
+@@ -88,6 +88,7 @@
+     /// cleared without the page lock only from the BIO completion callback after
+     /// the VMO writeback path has handed off the writeback state.
+     is_writing_back: AtomicBool,
++    _charge: Option<UserPageCharge>,
+     // TODO: Add a reverse mapping from the page to VMO for eviction.
+ }
+ 
+@@ -97,7 +98,14 @@
+             state: AtomicPageState::new(PageState::Uninit),
+             lock: AtomicBool::new(false),
+             is_writing_back: AtomicBool::new(false),
+-        }
++            _charge: None,
++        }
++    }
++}
++
++impl CachePageMeta {
++    pub(crate) fn with_charge(charge: Option<UserPageCharge>) -> Self {
++        Self { _charge: charge, ..Default::default() }
+     }
+ }
+ 
+@@ -152,8 +160,9 @@
+     }
+ 
+     /// Allocates a new cache page which content and state are uninitialized.
+-    fn alloc_uninit() -> Result<CachePage> {
+-        let meta = CachePageMeta::default();
++    fn alloc_uninit(owner: &UserMemoryOwner) -> Result<CachePage> {
++        let mut reservation = UserMemoryReservation::new(owner, 1)?;
++        let meta = CachePageMeta::with_charge(reservation.take_page());
+         let page = FrameAllocOptions::new()
+             .zeroed(false)
+             .alloc_frame_with(meta)?;
+@@ -161,10 +170,11 @@
+     }
+ 
+     /// Allocates a new zeroed cache page with the up-to-date state.
+-    fn alloc_zero() -> Result<CachePage> {
++    fn alloc_zero(owner: &UserMemoryOwner) -> Result<CachePage> {
++        let mut reservation = UserMemoryReservation::new(owner, 1)?;
+         let meta = CachePageMeta {
+             state: AtomicPageState::new(PageState::UpToDate),
+-            ..Default::default()
++            ..CachePageMeta::with_charge(reservation.take_page())
+         };
+         let page = FrameAllocOptions::new()
+             .zeroed(true)
+diff --git a/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs b/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs
+--- a/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs
++++ b/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs
+@@ -34,6 +34,7 @@
+     vm::{
+         page_cache::{CachePage, CachePageExt, PageCacheBackend, PageRun, cache_page::PageState},
+         vmar::Rmap,
++        user_memory::{UserMemoryOwner, current_owner},
+     },
+ };
+ 
+@@ -114,6 +115,8 @@
+ /// handed off. Anonymous VMOs stay `UpToDate` in steady state once a page is
+ /// committed.
+ pub struct Vmo {
++    /// Explicit owner only for stopped initial images; normal pages use their initiator.
++    pub(super) memory_owner: UserMemoryOwner,
+     /// The backend that provides disk I/O operations, if any.
+     //
+     // TODO: Using `Weak` here is to avoid circular references in exfat file systems.
+@@ -293,20 +296,25 @@
+     /// For anonymous VMOs the page is zero-filled on first access.
+     /// For VMOs with a backend this may perform synchronous I/O.
+     pub(crate) fn commit_on(&self, page_idx: usize, map_mode: VmoMapMode) -> Result<()> {
+-        let page = self.commit_on_internal(page_idx, CommitMode::Read)?;
++        self.commit_on_for_owner(page_idx, map_mode, &current_owner())
++    }
++
++    pub(crate) fn commit_on_for_owner(&self, page_idx: usize, map_mode: VmoMapMode,
++        owner: &UserMemoryOwner) -> Result<()> {
++        let page = self.commit_on_internal(page_idx, CommitMode::Read, owner)?;
+         map_mode.ensure(page);
+         Ok(())
+     }
+ 
+-    fn commit_on_internal(&self, page_idx: usize, commit_mode: CommitMode) -> Result<CachePage> {
++    fn commit_on_internal(&self, page_idx: usize, commit_mode: CommitMode, owner: &UserMemoryOwner) -> Result<CachePage> {
+         if let Some(backed_vmo) = self.as_backed_vmo() {
+-            return backed_vmo.commit_on_internal(page_idx, commit_mode);
+-        }
+-
+-        self.commit_on_anonymous(page_idx)
+-    }
+-
+-    fn commit_on_anonymous(&self, page_idx: usize) -> Result<CachePage> {
++            return backed_vmo.commit_on_internal(page_idx, commit_mode, owner);
++        }
++
++        self.commit_on_anonymous(page_idx, owner)
++    }
++
++    fn commit_on_anonymous(&self, page_idx: usize, owner: &UserMemoryOwner) -> Result<CachePage> {
+         let mut locked_pages = self.pages.lock();
+         if page_idx >= self.size().div_ceil(PAGE_SIZE) {
+             return_errno_with_message!(Errno::EINVAL, "the offset is outside the VMO");
+@@ -317,7 +325,7 @@
+             return Ok(page.clone());
+         }
+ 
+-        let new_page = CachePage::alloc_zero()?;
++        let new_page = CachePage::alloc_zero(&self.memory_owner.clone().or_else(|| owner.clone()))?;
+         cursor.store(new_page.clone());
+         Ok(new_page)
+     }
+@@ -348,6 +356,11 @@
+         offset: usize,
+         map_mode: VmoMapMode,
+     ) -> Result<(CachePage, VmoMapMode), VmoCommitError> {
++        self.try_commit_page_for_owner(offset, map_mode, &current_owner())
++    }
++
++    pub(crate) fn try_commit_page_for_owner(&self, offset: usize, map_mode: VmoMapMode,
++        owner: &UserMemoryOwner) -> Result<(CachePage, VmoMapMode), VmoCommitError> {
+         let page_idx = offset / PAGE_SIZE;
+         if offset >= self.size() {
+             return Err(VmoCommitError::Err(Error::with_message(
+@@ -360,7 +373,7 @@
+             let guard = disable_preempt();
+             let mut cursor = self.pages.cursor(&guard, page_idx as u64);
+             // `VmoMapMode::try_ensure` checks if the page has been initialized.
+-            self.try_commit_with_cursor(&mut cursor, CommitMode::Overwrite)?
++            self.try_commit_with_cursor(&mut cursor, CommitMode::Overwrite, owner)?
+         };
+         let mode = map_mode.try_ensure(page_idx, &page)?;
+         Ok((page, mode))
+@@ -370,6 +383,7 @@
+         &self,
+         cursor: &mut Cursor<'_, CachePage>,
+         commit_mode: CommitMode,
++        owner: &UserMemoryOwner,
+     ) -> Result<(usize, CachePage), VmoCommitError> {
+         if let Some(backed_vmo) = self.as_backed_vmo() {
+             return backed_vmo.try_commit_with_cursor(cursor, commit_mode);
+@@ -381,7 +395,7 @@
+         // Need to commit. Only Anonymous VMOs can reach here, because VMOs
+         // with a backend will return `Err` if the page is not loaded.
+         let index = cursor.index() as usize;
+-        let page = self.commit_on_anonymous(index)?;
++        let page = self.commit_on_anonymous(index, owner)?;
+         Ok((index, page))
+     }
+ 
+@@ -401,6 +415,7 @@
+         range: &Range<usize>,
+         mut operate: F,
+         map_mode: VmoMapMode,
++        owner: &UserMemoryOwner,
+     ) -> Result<(), VmoCommitError>
+     where
+         F: FnMut(
+@@ -419,6 +434,7 @@
+             },
+             // `VmoMapMode::try_ensure` checks if the page has been initialized.
+             CommitMode::Overwrite,
++            owner,
+         )
+     }
+ 
+@@ -427,6 +443,7 @@
+         range: &Range<usize>,
+         mut operate: F,
+         commit_mode: CommitMode,
++        owner: &UserMemoryOwner,
+     ) -> Result<(), VmoCommitError>
+     where
+         F: FnMut(
+@@ -444,7 +461,7 @@
+         let guard = disable_preempt();
+         let mut cursor = self.pages.cursor(&guard, page_idx_range.start as u64);
+         for _ in page_idx_range {
+-            let mut commit_fn = || self.try_commit_with_cursor(&mut cursor, commit_mode);
++            let mut commit_fn = || self.try_commit_with_cursor(&mut cursor, commit_mode, owner);
+             operate(&mut commit_fn)?;
+             cursor.next();
+         }
+@@ -781,6 +798,7 @@
+         pages.clear();
+         let range = (start_idx * PAGE_SIZE)..(end_idx * PAGE_SIZE);
+         let mut current_range = range.clone();
++        let owner = current_owner();
+ 
+         'retry: loop {
+             let mut operate =
+@@ -789,10 +807,10 @@
+                     pages.push((idx, page));
+                     Ok(())
+                 };
+-            match self.try_operate_on_range_internal(&current_range, &mut operate, commit_mode) {
++            match self.try_operate_on_range_internal(&current_range, &mut operate, commit_mode, &owner) {
+                 Ok(()) => break 'retry,
+                 Err(err) => {
+-                    let (idx, page) = self.handle_commit_error(err, commit_mode)?;
++                    let (idx, page) = self.handle_commit_error(err, commit_mode, &owner)?;
+                     pages.push((idx, page));
+                     current_range.start = (idx + 1) * PAGE_SIZE;
+                     if current_range.start >= range.end {
+@@ -812,11 +830,12 @@
+         &self,
+         err: VmoCommitError,
+         commit_mode: CommitMode,
++        owner: &UserMemoryOwner,
+     ) -> Result<(usize, CachePage)> {
+         match err {
+             VmoCommitError::Err(e) => Err(e),
+             VmoCommitError::NeedIo { index } => {
+-                Ok((index, self.commit_on_internal(index, commit_mode)?))
++                Ok((index, self.commit_on_internal(index, commit_mode, owner)?))
+             }
+             VmoCommitError::WaitUntilInit { index, page } => {
+                 page.ensure_init(|locked_page| {
+@@ -1038,7 +1057,7 @@
+     }
+ 
+     /// Commits a page at the given index for a VMO with a backend.
+-    fn commit_on_internal(&self, page_idx: usize, commit_mode: CommitMode) -> Result<CachePage> {
++    fn commit_on_internal(&self, page_idx: usize, commit_mode: CommitMode, owner: &UserMemoryOwner) -> Result<CachePage> {
+         let mut locked_pages = self.pages.lock();
+         if page_idx >= self.size().div_ceil(PAGE_SIZE) {
+             return_errno_with_message!(Errno::EINVAL, "the offset is outside the VMO");
+@@ -1059,7 +1078,7 @@
+         };
+ 
+         // The page is within the file bounds - need to allocate a cache page.
+-        let uninit_page = CachePage::alloc_uninit()?;
++        let uninit_page = CachePage::alloc_uninit(&self.memory_owner.clone().or_else(|| owner.clone()))?;
+         cursor.store(uninit_page.clone());
+         drop(locked_pages);
+ 
+diff --git a/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/options.rs b/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/options.rs
+--- a/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/options.rs
++++ b/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/options.rs
+@@ -14,6 +14,7 @@
+     vm::{
+         page_cache::{CachePage, CachePageMeta, PageCacheBackend},
+         vmar::Rmap,
++        user_memory::{UserMemoryOwner, UserMemoryReservation, current_owner},
+     },
+ };
+ 
+@@ -44,6 +45,7 @@
+     size: usize,
+     flags: VmoFlags,
+     backend: Option<Weak<dyn PageCacheBackend>>,
++    memory_owner: UserMemoryOwner,
+ }
+ 
+ impl VmoOptions {
+@@ -60,6 +62,7 @@
+             size,
+             flags: VmoFlags::empty(),
+             backend: None,
++            memory_owner: None,
+         }
+     }
+ 
+@@ -80,6 +83,13 @@
+     /// For more information about the flags, see `VmoFlags`.
+     pub(crate) fn flags(mut self, flags: VmoFlags) -> Self {
+         self.flags = flags;
++        self
++    }
++
++    /// Fixes the owner for a stopped initial image loaded by a kernel task.
++    /// Ordinary file VMOs leave this unset and charge each page's initiator.
++    pub(crate) fn memory_owner(mut self, owner: UserMemoryOwner) -> Self {
++        self.memory_owner = owner;
+         self
+     }
+ 
+@@ -97,9 +107,10 @@
+             size,
+             flags,
+             backend,
++            memory_owner,
+             ..
+         } = self;
+-        let vmo = alloc_vmo(size, flags, backend)?;
++        let vmo = alloc_vmo(size, flags, backend, memory_owner)?;
+         Ok(Arc::new(vmo))
+     }
+ }
+@@ -108,12 +119,17 @@
+     size: usize,
+     flags: VmoFlags,
+     backend: Option<Weak<dyn PageCacheBackend>>,
++    memory_owner: UserMemoryOwner,
+ ) -> Result<Vmo> {
+-    let size = size.align_up(PAGE_SIZE);
+-    let pages = committed_pages_if_continuous(flags, size)?;
++    let size = size.checked_add(PAGE_SIZE - 1)
++        .filter(|size| *size <= isize::MAX as usize)
++        .ok_or_else(|| Error::new(Errno::ENOMEM))?.align_down(PAGE_SIZE);
++    let owner = memory_owner.clone().or_else(current_owner);
++    let pages = committed_pages_if_continuous(flags, size, &owner)?;
+     let writable_mapping_status = WritableMappingStatus::default();
+     let rmap = Rmap::new();
+     Ok(Vmo {
++        memory_owner,
+         backend,
+         flags,
+         pages,
+@@ -123,12 +139,15 @@
+     })
+ }
+ 
+-fn committed_pages_if_continuous(flags: VmoFlags, size: usize) -> Result<XArray<CachePage>> {
++fn committed_pages_if_continuous(flags: VmoFlags, size: usize, owner: &UserMemoryOwner) -> Result<XArray<CachePage>> {
+     if flags.contains(VmoFlags::CONTIGUOUS) {
+         // if the vmo is continuous, we need to allocate frames for the vmo
+         let frames_num = size / PAGE_SIZE;
++        // Admit the entire physical segment before allocation. If the
++        // allocator fails, the untouched reservation refunds every page.
++        let mut reservation = UserMemoryReservation::new(owner, frames_num)?;
+         let segment: Segment<CachePageMeta> = FrameAllocOptions::new()
+-            .alloc_segment_with(frames_num, |_| CachePageMeta::default())?;
++            .alloc_segment_with(frames_num, |_| CachePageMeta::with_charge(reservation.take_page()))?;
+         let committed_pages = XArray::new();
+         let mut locked_pages = committed_pages.lock();
+         let mut cursor = locked_pages.cursor_mut(0);
+@@ -151,6 +170,43 @@
+     use super::*;
+ 
+     #[ktest]
++    fn contiguous_limit_is_admitted_before_any_page() {
++        let account = crate::vm::user_memory::UserMemoryAccount::new(2);
++        let error = VmoOptions::new(3 * PAGE_SIZE)
++            .flags(VmoFlags::CONTIGUOUS)
++            .memory_owner(Some(account.clone()))
++            .alloc().err().unwrap();
++        assert!(error.is_user_frame_limit());
++        assert_eq!(account.current_pages(), 0);
++        let vmo = VmoOptions::new(2 * PAGE_SIZE)
++            .flags(VmoFlags::CONTIGUOUS)
++            .memory_owner(Some(account.clone()))
++            .alloc().unwrap();
++        assert_eq!(account.current_pages(), 2);
++        assert_eq!(vmo.size(), 2 * PAGE_SIZE);
++    }
++
++    #[ktest]
++    fn shared_vmo_aliases_keep_one_physical_charge() {
++        use crate::vm::{page_cache::VmoMapMode, user_memory::UserMemoryAccount};
++        let account = UserMemoryAccount::new(2);
++        let vmo = VmoOptions::new(3 * PAGE_SIZE)
++            .memory_owner(Some(account.clone())).alloc().unwrap();
++        let (first, _) = vmo.try_commit_page(0, VmoMapMode::Private).unwrap();
++        let (alias, _) = vmo.try_commit_page(0, VmoMapMode::Private).unwrap();
++        assert_eq!(account.current_pages(), 1);
++        drop(first);
++        drop(alias);
++        assert_eq!(account.current_pages(), 1); // The VMO still owns the page.
++        let (second, _) = vmo.try_commit_page(PAGE_SIZE, VmoMapMode::Private).unwrap();
++        assert_eq!(account.current_pages(), 2);
++        let error = vmo.try_commit_page(2 * PAGE_SIZE, VmoMapMode::Private).err().unwrap();
++        assert!(error.pending_index().err().unwrap().is_user_frame_limit());
++        assert_eq!(account.current_pages(), 2);
++        drop(second);
++    }
++
++    #[ktest]
+     fn alloc_vmo() {
+         let vmo = VmoOptions::new(PAGE_SIZE).alloc().unwrap();
+         assert_eq!(vmo.size(), PAGE_SIZE);
+diff --git a/kernel/asterinas/kernel/core/src/vm/user_memory.rs b/kernel/asterinas/kernel/core/src/vm/user_memory.rs
+new file mode 100644
+--- /dev/null
++++ b/kernel/asterinas/kernel/core/src/vm/user_memory.rs
+@@ -0,0 +1,195 @@
++// SPDX-License-Identifier: MPL-2.0
++
++//! Physical user-data frame admission for the fixed G1-d workload family.
++//!
++//! A charge belongs to physical frame metadata, never to a mapping or a frame
++//! handle. Fork and shared mappings retain one charge; COW charges its new
++//! frame; the final physical-frame reference refunds it. This deliberately is
++//! not a cgroup memory controller: page tables, slabs, sockets and device MMIO
++//! are outside this account, and there is no reclaim, OOM killer or reserve.
++
++use core::sync::atomic::{AtomicUsize, Ordering};
++
++use ostd::{impl_untyped_frame_meta_for, mm::{Frame, FrameAllocOptions, UFrame}};
++
++use crate::{prelude::*, process::Process, thread::kernel_thread};
++
++pub(crate) type UserMemoryOwner = Option<Arc<UserMemoryAccount>>;
++
++/// One immutable admission limit shared by a workload and all its descendants.
++#[derive(Debug)]
++pub(crate) struct UserMemoryAccount {
++    limit_pages: usize,
++    current_pages: AtomicUsize,
++    denied: AtomicUsize,
++}
++
++impl UserMemoryAccount {
++    #[cfg_attr(not(any(ktest, feature = "g1d-trusted-control")), expect(dead_code))]
++    pub(crate) fn new(limit_pages: usize) -> Arc<Self> {
++        Arc::new(Self {
++            limit_pages,
++            current_pages: AtomicUsize::new(0),
++            denied: AtomicUsize::new(0),
++        })
++    }
++
++    pub(crate) fn limit_pages(&self) -> usize {
++        self.limit_pages
++    }
++
++    pub(crate) fn current_pages(&self) -> usize {
++        self.current_pages.load(Ordering::Acquire)
++    }
++
++    // All reservation operations are bounded, non-sleeping atomic operations.
++    // No logging, allocation, process lock or cgroup lock is allowed here.
++    fn reserve(&self, pages: usize) -> Result<()> {
++        self.current_pages
++            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
++                current.checked_add(pages).filter(|next| *next <= self.limit_pages)
++            })
++            .map(|_| ())
++            .map_err(|_| Error::user_frame_limit())
++    }
++
++    fn refund(&self, pages: usize) {
++        let previous = self.current_pages.fetch_sub(pages, Ordering::AcqRel);
++        debug_assert!(previous >= pages);
++    }
++
++    /// Limits diagnostics after returning from all VM/allocator locks.
++    pub(crate) fn report_denial(&self) -> bool {
++        self.denied.fetch_add(1, Ordering::Relaxed) < 16
++    }
++}
++
++/// A precharge for an allocation which has not yet produced all its frames.
++pub(crate) struct UserMemoryReservation {
++    owner: UserMemoryOwner,
++    remaining: usize,
++}
++
++impl UserMemoryReservation {
++    pub(crate) fn new(owner: &UserMemoryOwner, pages: usize) -> Result<Self> {
++        if let Some(account) = owner {
++            account.reserve(pages)?;
++        }
++        Ok(Self { owner: owner.clone(), remaining: pages })
++    }
++
++    pub(crate) fn take_page(&mut self) -> Option<UserPageCharge> {
++        assert!(self.remaining > 0);
++        self.remaining -= 1;
++        self.owner.as_ref().map(|owner| UserPageCharge(owner.clone()))
++    }
++}
++
++impl Drop for UserMemoryReservation {
++    fn drop(&mut self) {
++        if let Some(owner) = &self.owner {
++            owner.refund(self.remaining);
++        }
++    }
++}
++
++/// Linear token stored in frame metadata; intentionally not Clone.
++#[derive(Debug)]
++pub(crate) struct UserPageCharge(Arc<UserMemoryAccount>);
++
++impl Drop for UserPageCharge {
++    fn drop(&mut self) {
++        self.0.refund(1);
++    }
++}
++
++#[derive(Debug)]
++pub(crate) struct UserPageMeta {
++    _charge: Option<UserPageCharge>,
++}
++
++impl_untyped_frame_meta_for!(UserPageMeta);
++
++pub(crate) fn alloc_user_frame(owner: &UserMemoryOwner, zeroed: bool) -> Result<Frame<UserPageMeta>> {
++    let mut reservation = UserMemoryReservation::new(owner, 1)?;
++    let metadata = UserPageMeta { _charge: reservation.take_page() };
++    Ok(FrameAllocOptions::new().zeroed(zeroed).alloc_frame_with(metadata)?)
++}
++
++/// Allocates zeroed user-visible device RAM against the caller's family.
++///
++/// The complete frame count is admitted before allocating the handle vector or
++/// any physical frame. A partial allocator failure refunds all frames/tokens.
++pub fn allocate_user_frames(count: usize) -> Result<Vec<UFrame>> {
++    let mut reservation = UserMemoryReservation::new(&current_owner(), count)?;
++    let mut pages = Vec::new();
++    pages.try_reserve_exact(count).map_err(|_| Error::new(Errno::ENOMEM))?;
++    for _ in 0..count {
++        let metadata = UserPageMeta { _charge: reservation.take_page() };
++        pages.push(FrameAllocOptions::new().alloc_frame_with(metadata)?.into());
++    }
++    Ok(pages)
++}
++
++/// Allocation outside a VM fault (e.g. buffered file I/O) uses its initiator.
++/// The owner is immutable and reading it does not lock the process VMAR.
++pub(crate) fn current_owner() -> UserMemoryOwner {
++    if let Some(process) = Process::current() {
++        return process.user_memory_owner().clone();
++    }
++    kernel_thread::current_user_memory_owner()
++}
++
++#[cfg(ktest)]
++mod tests {
++    use ostd::prelude::*;
++
++    use super::*;
++
++    #[ktest]
++    fn exact_limit_and_unconsumed_reservation_refund() {
++        let account = UserMemoryAccount::new(2);
++        let owner = Some(account.clone());
++        let mut reservation = UserMemoryReservation::new(&owner, 2).unwrap();
++        assert_eq!(account.current_pages(), 2);
++        assert!(UserMemoryReservation::new(&owner, 1).err().unwrap().is_user_frame_limit());
++        let first = reservation.take_page();
++        drop(reservation);
++        assert_eq!(account.current_pages(), 1);
++        drop(first);
++        assert_eq!(account.current_pages(), 0);
++        assert!(UserMemoryReservation::new(&owner, usize::MAX).is_err());
++        assert_eq!(account.current_pages(), 0);
++    }
++
++    #[ktest]
++    fn shared_frame_charges_once_until_last_reference() {
++        let account = UserMemoryAccount::new(1);
++        let owner = Some(account.clone());
++        let page = alloc_user_frame(&owner, true).unwrap();
++        let shared: UFrame = page.clone().into();
++        assert_eq!(account.current_pages(), 1);
++        drop(page);
++        assert_eq!(account.current_pages(), 1);
++        assert!(alloc_user_frame(&owner, true).err().unwrap().is_user_frame_limit());
++        drop(shared);
++        assert_eq!(account.current_pages(), 0);
++        drop(alloc_user_frame(&owner, true).unwrap());
++        assert_eq!(account.current_pages(), 0);
++    }
++
++    #[ktest]
++    fn independent_owners_do_not_consume_each_others_allowance() {
++        let first = UserMemoryAccount::new(1);
++        let second = UserMemoryAccount::new(1);
++        let page = alloc_user_frame(&Some(first.clone()), true).unwrap();
++        let other = alloc_user_frame(&Some(second.clone()), true).unwrap();
++        assert_eq!(first.current_pages(), 1);
++        assert_eq!(second.current_pages(), 1);
++        drop(page);
++        assert_eq!(first.current_pages(), 0);
++        assert_eq!(second.current_pages(), 1);
++        drop(other);
++        assert_eq!(second.current_pages(), 0);
++    }
++}
+diff --git a/kernel/asterinas/kernel/core/src/vm/vmar/handle.rs b/kernel/asterinas/kernel/core/src/vm/vmar/handle.rs
+--- a/kernel/asterinas/kernel/core/src/vm/vmar/handle.rs
++++ b/kernel/asterinas/kernel/core/src/vm/vmar/handle.rs
+@@ -3,7 +3,7 @@
+ use alloc::sync::{Arc, Weak};
+ use core::ops::Deref;
+ 
+-use crate::{process::ProcessVm, vm::vmar::Vmar};
++use crate::{process::ProcessVm, vm::{vmar::Vmar, user_memory::UserMemoryOwner}};
+ 
+ /// A VMAR handle that is owned by a POSIX thread.
+ ///
+@@ -29,7 +29,11 @@
+ impl VmarHandle {
+     /// Creates a new handle that points to a new VMAR.
+     pub(crate) fn new(process_vm: ProcessVm) -> Self {
+-        Self(Vmar::new(process_vm))
++        Self::new_with_owner(process_vm, None)
++    }
++
++    pub(crate) fn new_with_owner(process_vm: ProcessVm, owner: UserMemoryOwner) -> Self {
++        Self(Vmar::new(process_vm, owner))
+     }
+ 
+     /// Clones a new handle.
+diff --git a/kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs b/kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs
+--- a/kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs
++++ b/kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs
+@@ -13,7 +13,7 @@
+ use ostd::{
+     io::IoMem,
+     mm::{
+-        CachePolicy, Frame, FrameAllocOptions, HasSize, PageFlags, PageProperty, UFrame, VmSpace,
++        CachePolicy, Frame, HasSize, PageFlags, PageProperty, UFrame, VmSpace,
+         io::util::HasVmReaderWriter, tlb::TlbFlushOp, vm_space::VmQueriedItem,
+     },
+     task::disable_preempt,
+@@ -33,6 +33,7 @@
+     vm::{
+         page_cache::{CachePage, Vmo, VmoCommitError, VmoMapMode},
+         perms::VmPerms,
++        user_memory::{UserMemoryOwner, UserPageMeta, alloc_user_frame},
+     },
+ };
+ 
+@@ -376,6 +377,7 @@
+         vm_space: &VmSpace,
+         page_fault_info: &PageFaultInfo,
+         rss_delta: &mut RssDelta,
++        owner: &UserMemoryOwner,
+     ) -> Result<()> {
+         self.check_perms_for_page_fault(page_fault_info)?;
+ 
+@@ -391,6 +393,7 @@
+                 page_aligned_addr,
+                 page_fault_info.required_perms,
+                 rss_delta,
++                owner,
+             );
+ 
+             // Errors caused by the "around" pages should be ignored, so here we
+@@ -424,6 +427,7 @@
+             page_aligned_addr,
+             page_fault_info.required_perms,
+             rss_delta,
++            owner,
+         )
+     }
+ 
+@@ -463,6 +467,7 @@
+         page_aligned_addr: Vaddr,
+         required_perms: VmPerms,
+         rss_delta: &mut RssDelta,
++        owner: &UserMemoryOwner,
+     ) -> Result<()> {
+         'retry: loop {
+             let preempt_guard = disable_preempt();
+@@ -489,12 +494,13 @@
+                         && let Err(err) = vmo.get_committed_frame(
+                             page_aligned_addr - self.map_to_addr,
+                             VmoMapMode::SharedWrite,
++                            owner,
+                         )
+                     {
+                         let index = err.pending_index()?;
+                         drop(cursor);
+                         drop(preempt_guard);
+-                        vmo.commit_on(index, VmoMapMode::SharedWrite)?;
++                        vmo.commit_on(index, VmoMapMode::SharedWrite, owner)?;
+                         continue 'retry;
+                     }
+ 
+@@ -513,7 +519,7 @@
+                         cursor.flusher().dispatch_tlb_flush();
+                     } else {
+                         // Perform COW if it is a write access to a private mapping.
+-                        let new_frame = duplicate_frame(&frame)?;
++                        let new_frame = duplicate_frame(&frame, owner)?;
+                         prop.flags |= new_flags;
+                         cursor.unmap(PAGE_SIZE);
+                         cursor.jump(va.start).unwrap();
+@@ -535,7 +541,7 @@
+                 }
+                 None => {
+                     // Map a new frame to the page fault address.
+-                    let (frame, is_readonly) = match self.prepare_page(page_aligned_addr, is_write)
++                    let (frame, is_readonly) = match self.prepare_page(page_aligned_addr, is_write, owner)
+                     {
+                         Ok((frame, is_readonly)) => (frame, is_readonly),
+                         Err(err) => {
+@@ -544,7 +550,7 @@
+                             drop(preempt_guard);
+                             self.vmo()
+                                 .unwrap()
+-                                .commit_on(index, self.vmo_map_mode_from_is_write(is_write))?;
++                                .commit_on(index, self.vmo_map_mode_from_is_write(is_write), owner)?;
+                             continue 'retry;
+                         }
+                     };
+@@ -579,6 +585,7 @@
+         &self,
+         page_aligned_addr: Vaddr,
+         is_write: bool,
++        owner: &UserMemoryOwner,
+     ) -> Result<(UFrame, bool), VmoCommitError> {
+         let mut is_readonly = false;
+ 
+@@ -586,7 +593,7 @@
+             MappedMemory::Vmo(vmo) => vmo,
+             MappedMemory::Anonymous => {
+                 // Anonymous mapping. Allocate a new frame.
+-                return Ok((FrameAllocOptions::new().alloc_frame()?.into(), is_readonly));
++                return Ok((alloc_user_frame(owner, true)?.into(), is_readonly));
+             }
+             MappedMemory::Device(_) => {
+                 // Device memory is populated when the memory mapping is created.
+@@ -600,14 +607,14 @@
+         let page_offset = page_aligned_addr - self.map_to_addr;
+         if !self.map_mode.is_shared() && page_offset >= vmo.valid_size() {
+             // The page index is outside the VMO. This is only allowed in private mapping.
+-            return Ok((FrameAllocOptions::new().alloc_frame()?.into(), is_readonly));
++            return Ok((alloc_user_frame(owner, true)?.into(), is_readonly));
+         }
+ 
+         let (page, mode) =
+-            vmo.get_committed_frame(page_offset, self.vmo_map_mode_from_is_write(is_write))?;
++            vmo.get_committed_frame(page_offset, self.vmo_map_mode_from_is_write(is_write), owner)?;
+         if !self.map_mode.is_shared() && is_write {
+             // Write access to private VMO-backed mapping. Performs COW directly.
+-            Ok((duplicate_frame(&page.into())?.into(), is_readonly))
++            Ok((duplicate_frame(&page.into(), owner)?.into(), is_readonly))
+         } else {
+             // Operations to shared mapping or read access to private VMO-backed mapping.
+             // If read access to private VMO-backed mapping triggers a page fault,
+@@ -635,6 +642,7 @@
+         page_aligned_addr: Vaddr,
+         required_perms: VmPerms,
+         mut rss_delta: &mut RssDelta,
++        owner: &UserMemoryOwner,
+     ) -> Result<()> {
+         const SURROUNDING_PAGE_NUM: usize = 16;
+         const SURROUNDING_PAGE_ADDR_MASK: usize = !(SURROUNDING_PAGE_NUM * PAGE_SIZE - 1);
+@@ -656,6 +664,7 @@
+                 page_aligned_addr,
+                 required_perms,
+                 rss_delta,
++                owner,
+             );
+         }
+ 
+@@ -693,12 +702,12 @@
+ 
+             let start_offset = start_addr - self.map_to_addr;
+             let end_offset = end_addr - self.map_to_addr;
+-            match vmo.try_operate_on_range(&(start_offset..end_offset), operate, mode) {
++            match vmo.try_operate_on_range(&(start_offset..end_offset), operate, mode, owner) {
+                 Ok(_) => return Ok(()),
+                 Err(err) => {
+                     let index = err.pending_index()?;
+                     drop(preempt_guard);
+-                    vmo.commit_on(index, mode)?;
++                    vmo.commit_on(index, mode, owner)?;
+                     start_addr = (index * PAGE_SIZE - vmo.offset()) + self.map_to_addr;
+                     continue 'retry;
+                 }
+@@ -971,18 +980,20 @@
+         &self,
+         page_offset: usize,
+         map_mode: VmoMapMode,
++        owner: &UserMemoryOwner,
+     ) -> Result<(CachePage, VmoMapMode), VmoCommitError> {
+         debug_assert!(page_offset.is_multiple_of(PAGE_SIZE));
+         self.vmo
+-            .try_commit_page(self.offset + page_offset, map_mode)
++            .try_commit_page_for_owner(self.offset + page_offset, map_mode, owner)
+     }
+ 
+     /// Commits a page at a specific page index.
+     ///
+     /// This method may involve I/O operations if the VMO needs to fetch
+     /// a page from the underlying page cache.
+-    pub(crate) fn commit_on(&self, page_idx: usize, map_mode: VmoMapMode) -> Result<()> {
+-        self.vmo.commit_on(page_idx, map_mode)
++    pub(crate) fn commit_on(&self, page_idx: usize, map_mode: VmoMapMode,
++        owner: &UserMemoryOwner) -> Result<()> {
++        self.vmo.commit_on_for_owner(page_idx, map_mode, owner)
+     }
+ 
+     /// Traverses the indices within a specified range of a VMO sequentially.
+@@ -997,6 +1008,7 @@
+         range: &Range<usize>,
+         operate: F,
+         map_mode: VmoMapMode,
++        owner: &UserMemoryOwner,
+     ) -> Result<(), VmoCommitError>
+     where
+         F: FnMut(
+@@ -1004,7 +1016,7 @@
+         ) -> Result<(), VmoCommitError>,
+     {
+         let range = self.offset + range.start..self.offset + range.end;
+-        self.vmo.try_operate_on_range(&range, operate, map_mode)
++        self.vmo.try_operate_on_range(&range, operate, map_mode, owner)
+     }
+ 
+     /// Gets a reference to the underlying VMO.
+@@ -1102,10 +1114,36 @@
+     })
+ }
+ 
+-fn duplicate_frame(src: &UFrame) -> Result<Frame<()>> {
+-    let new_frame = FrameAllocOptions::new().zeroed(false).alloc_frame()?;
++fn duplicate_frame(src: &UFrame, owner: &UserMemoryOwner) -> Result<Frame<UserPageMeta>> {
++    let new_frame = alloc_user_frame(owner, false)?;
+     new_frame.writer().write(&mut src.reader());
+     Ok(new_frame)
++}
++
++#[cfg(ktest)]
++mod user_memory_tests {
++    use ostd::{mm::VmIo, prelude::ktest};
++
++    use super::*;
++    use crate::vm::user_memory::UserMemoryAccount;
++
++    #[ktest]
++    fn cow_charges_the_copy_and_refunds_each_physical_page() {
++        let account = UserMemoryAccount::new(2);
++        let owner = Some(account.clone());
++        let original: UFrame = alloc_user_frame(&owner, true).unwrap().into();
++        original.write_bytes(0, &[91]).unwrap();
++        let copy = duplicate_frame(&original, &owner).unwrap();
++        let mut value = [0];
++        copy.read_bytes(0, &mut value).unwrap();
++        assert_eq!(value, [91]);
++        assert_eq!(account.current_pages(), 2);
++        assert!(duplicate_frame(&original, &owner).err().unwrap().is_user_frame_limit());
++        drop(original);
++        assert_eq!(account.current_pages(), 1);
++        drop(copy);
++        assert_eq!(account.current_pages(), 0);
++    }
+ }
+ 
+ /**************************** Device mappings ********************************/
+diff --git a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/fork.rs b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/fork.rs
+--- a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/fork.rs
++++ b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/fork.rs
+@@ -19,7 +19,10 @@
+         // Obtain the heap lock and hold it for the entire method to avoid race conditions.
+         let heap_guard = vmar.process_vm.heap().lock();
+ 
+-        let new_vmar = VmarHandle::new(ProcessVm::fork_from(&vmar.process_vm, &heap_guard));
++        let new_vmar = VmarHandle::new_with_owner(
++            ProcessVm::fork_from(&vmar.process_vm, &heap_guard),
++            vmar.user_memory_owner().clone(),
++        );
+ 
+         {
+             let inner = vmar.inner.read();
+diff --git a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs
+--- a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs
++++ b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs
+@@ -30,7 +30,7 @@
+ use crate::{
+     prelude::*,
+     process::{INIT_STACK_SIZE, Process, ProcessVm, ResourceType},
+-    vm::page_cache::Vmo,
++    vm::{page_cache::Vmo, user_memory::UserMemoryOwner},
+ };
+ 
+ /// The upper bound for allocations under the `MAP_32BIT` mmap flag.
+@@ -50,6 +50,8 @@
+     rss_counters: [PerCpuCounter; NUM_RSS_COUNTERS],
+     /// The process VM
+     process_vm: ProcessVm,
++    /// Immutable owner inherited by fork and exec; independent of cgroup files.
++    user_memory_owner: UserMemoryOwner,
+     /// The number of handles that this `Vmar` has (see [`super::VmarHandle`])
+     num_handles: AtomicUsize,
+     /// Weak self reference
+@@ -60,7 +62,7 @@
+     /// Creates a new VMAR.
+     ///
+     /// This method should only be invoked by [`super::VmarHandle`].
+-    pub(super) fn new(process_vm: ProcessVm) -> Arc<Self> {
++    pub(super) fn new(process_vm: ProcessVm, user_memory_owner: UserMemoryOwner) -> Arc<Self> {
+         let inner = VmarInner::new();
+         let vm_space = VmSpace::new();
+         let rss_counters = array::from_fn(|_| PerCpuCounter::new());
+@@ -69,9 +71,14 @@
+             vm_space: Arc::new(vm_space),
+             rss_counters,
+             process_vm,
++            user_memory_owner,
+             num_handles: AtomicUsize::new(1),
+             weak_self: weak_self.clone(),
+         })
++    }
++
++    pub(crate) fn user_memory_owner(&self) -> &UserMemoryOwner {
++        &self.user_memory_owner
+     }
+ 
+     /// Returns the current RSS count for the given RSS type.
+diff --git a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/page_fault.rs b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/page_fault.rs
+--- a/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/page_fault.rs
++++ b/kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/page_fault.rs
+@@ -14,7 +14,7 @@
+             debug_assert!(vm_mapping.range().contains(&address));
+ 
+             let mut rss_delta = RssDelta::new(self);
+-            return vm_mapping.handle_page_fault(&self.vm_space, page_fault_info, &mut rss_delta);
++            return vm_mapping.handle_page_fault(&self.vm_space, page_fault_info, &mut rss_delta, self.user_memory_owner());
+         }
+ 
+         return_errno_with_message!(
+@@ -55,6 +55,10 @@
+         }
+     }
+ 
++    pub(crate) fn address(&self) -> Vaddr {
++        self.address
++    }
++
+     /// Returns whether this page fault is forced.
+     pub(in vmar) fn is_forced(&self) -> bool {
+         self.is_forced

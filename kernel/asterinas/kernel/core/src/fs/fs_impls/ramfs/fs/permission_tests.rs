@@ -16,9 +16,11 @@ pub(super) fn new_aliases(mode: InodeMode) -> (Arc<RamFs>, Arc<Dentry>, Arc<Dent
     let fs = RamFs::new();
     let root = Dentry::new_root(fs.root_inode());
     let dir = root.as_dir_dentry_or_err().unwrap();
-    let file = dir.create_child("original", || {
-        dir.inode().create(&dir, "original", InodeType::File, mode)
-    }).unwrap();
+    let file = dir
+        .create_child("original", || {
+            dir.inode().create(&dir, "original", InodeType::File, mode)
+        })
+        .unwrap();
     file.inode().set_owner(&file, Uid::new(1000)).unwrap();
     file.inode().set_group(&file, Gid::new(2000)).unwrap();
     dir.link(&file, "alias").unwrap();
@@ -29,7 +31,11 @@ pub(super) fn new_aliases(mode: InodeMode) -> (Arc<RamFs>, Arc<Dentry>, Arc<Dent
     (fs, file, alias)
 }
 
-pub(super) fn request(operation: PermissionAttrOp, uid: u32, caps: CapSet) -> PermissionAttrRequest {
+pub(super) fn request(
+    operation: PermissionAttrOp,
+    uid: u32,
+    caps: CapSet,
+) -> PermissionAttrRequest {
     PermissionAttrRequest::for_test(
         operation,
         Uid::new(uid),
@@ -60,12 +66,19 @@ fn permission_rejection_has_no_partial_update() {
     // CAP_CHOWN authorizes IDs, but the non-owner also needs CAP_FOWNER
     // for the necessary set-ID clearing. A denial must precede every write.
     let denied = request(operation, 1001, CapSet::CHOWN);
-    let result = alias.inode().try_permission_attr_transaction(&alias, &denied).unwrap();
+    let result = alias
+        .inode()
+        .try_permission_attr_transaction(&alias, &denied)
+        .unwrap();
     assert_eq!(result.unwrap_err().error(), Errno::EPERM);
     assert_attributes_eq(&before, &file.inode().metadata().unwrap());
 
     let allowed = request(operation, 1001, CapSet::CHOWN | CapSet::FOWNER);
-    alias.inode().try_permission_attr_transaction(&alias, &allowed).unwrap().unwrap();
+    alias
+        .inode()
+        .try_permission_attr_transaction(&alias, &allowed)
+        .unwrap()
+        .unwrap();
     let after = file.inode().metadata().unwrap();
     assert_eq!(after.uid, Uid::new(1002));
     assert_eq!(after.gid, Gid::new(2002));
@@ -80,8 +93,19 @@ fn permission_noop_chown_updates_ctime() {
     // or depending on whether the coarse clock advances during this test.
     file.inode().set_ctime(&file, Duration::MAX);
     let before = file.inode().metadata().unwrap();
-    let noop = request(PermissionAttrOp::Chown { uid: None, gid: None }, 1001, CapSet::empty());
-    alias.inode().try_permission_attr_transaction(&alias, &noop).unwrap().unwrap();
+    let noop = request(
+        PermissionAttrOp::Chown {
+            uid: None,
+            gid: None,
+        },
+        1001,
+        CapSet::empty(),
+    );
+    alias
+        .inode()
+        .try_permission_attr_transaction(&alias, &noop)
+        .unwrap()
+        .unwrap();
     let after = file.inode().metadata().unwrap();
     assert_eq!(after.uid, before.uid);
     assert_eq!(after.gid, before.gid);
@@ -95,20 +119,87 @@ fn permission_noop_chown_updates_ctime() {
 fn permission_alias_observes_new_owner() {
     let (_fs, file, alias) = new_aliases(InodeMode::from_bits_truncate(0o4755));
     let chown = request(
-        PermissionAttrOp::Chown { uid: Some(Uid::new(1002)), gid: None },
+        PermissionAttrOp::Chown {
+            uid: Some(Uid::new(1002)),
+            gid: None,
+        },
         1001,
         CapSet::CHOWN | CapSet::FOWNER,
     );
-    alias.inode().try_permission_attr_transaction(&alias, &chown).unwrap().unwrap();
+    alias
+        .inode()
+        .try_permission_attr_transaction(&alias, &chown)
+        .unwrap()
+        .unwrap();
     let before = file.inode().metadata().unwrap();
     assert_eq!(before.uid, Uid::new(1002));
     assert_eq!(before.mode.bits(), 0o755);
     let chmod = PermissionAttrOp::Chmod(InodeMode::from_bits_truncate(0o4755));
     let old_owner = request(chmod, 1000, CapSet::empty());
-    let result = file.inode().try_permission_attr_transaction(&file, &old_owner).unwrap();
+    let result = file
+        .inode()
+        .try_permission_attr_transaction(&file, &old_owner)
+        .unwrap();
     assert_eq!(result.unwrap_err().error(), Errno::EPERM);
     assert_attributes_eq(&before, &alias.inode().metadata().unwrap());
     let new_owner = request(chmod, 1002, CapSet::empty());
-    alias.inode().try_permission_attr_transaction(&alias, &new_owner).unwrap().unwrap();
+    alias
+        .inode()
+        .try_permission_attr_transaction(&alias, &new_owner)
+        .unwrap()
+        .unwrap();
     assert_eq!(file.inode().mode().unwrap().bits(), 0o4755);
+}
+
+#[ktest]
+fn utimes_checks_current_owner_through_alias_without_partial_update() {
+    let (_fs, file, alias) = new_aliases(InodeMode::from_bits_truncate(0o666));
+    let stale_owner = request(
+        PermissionAttrOp::Utimes {
+            atime: Some(Duration::from_secs(41)),
+            mtime: Some(Duration::from_secs(42)),
+            now_only: false,
+        },
+        1000,
+        CapSet::empty(),
+    );
+    // The request captured the caller before ownership changed through an alias.
+    // Its decision must use the attributes locked at commit time.
+    alias.inode().set_owner(&alias, Uid::new(1002)).unwrap();
+    let before = file.inode().metadata().unwrap();
+    let error = file
+        .inode()
+        .try_permission_attr_transaction(&file, &stale_owner)
+        .unwrap()
+        .unwrap_err();
+    assert_eq!(error.error(), Errno::EPERM);
+    let after = alias.inode().metadata().unwrap();
+    assert_attributes_eq(&before, &after);
+    assert_eq!(after.last_access_at, before.last_access_at);
+    assert_eq!(after.last_modify_at, before.last_modify_at);
+}
+
+#[ktest]
+fn utimes_omit_preserves_newer_alias_timestamp() {
+    let (_fs, file, alias) = new_aliases(InodeMode::from_bits_truncate(0o0));
+    let request = request(
+        PermissionAttrOp::Utimes {
+            atime: Some(Duration::from_secs(41)),
+            mtime: None,
+            now_only: false,
+        },
+        1000,
+        CapSet::empty(),
+    );
+    let newer = Duration::from_secs(97);
+    alias.inode().set_mtime(&alias, newer);
+    alias.inode().set_ctime(&alias, Duration::MAX);
+    file.inode()
+        .try_permission_attr_transaction(&file, &request)
+        .unwrap()
+        .unwrap();
+    let after = alias.inode().metadata().unwrap();
+    assert_eq!(after.last_access_at, Duration::from_secs(41));
+    assert_eq!(after.last_modify_at, newer);
+    assert_ne!(after.last_meta_change_at, Duration::MAX);
 }

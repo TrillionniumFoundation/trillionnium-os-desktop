@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "command": [
+    "python3",
+    "-B",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/test_traceme_checker.py"
+  ],
+  "timeout_seconds": 30,
+  "input_sha256": {
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle_checker.py": "7705784eb658c94782c1c581d53a4518eaeee456d6df89afd929479b05e6c544",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme_checker.py": "f722b6b95d3aee2f5b7655a2227ffa737736cb12472ccb5f18b265dd305ab8e1",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/test_traceme_checker.py": "e9becb75c08d2c4c58f2810638687a388657e8cf150a05b93c4eda22a322edaa",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-linux-reference-01.jsonl": "d296b00ddd35ace855f3dc4d51c506e2e6d376ce2cc5a9be615ad19628a26d0e",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-native-0252-negative-01/serial.log": "1d9e1bd9ef376b815c2035d11f298207e6b3c24744d3b5e978805c358a74e5e8"
+  },
+  "status": "complete",
+  "synthetic_shapes_are_not_guest_qualification": true,
+  "exit": 0,
+  "seconds": 0.11512542504351586,
+  "inputs_unchanged": true,
+  "raw_sha256": "85d93df01bb35a265343c3dbdb34bf90a2df35d87d3589ec287c19fa35b2031c",
+  "summaries": [
+    {
+      "host_checker_tests": true,
+      "mutations_rejected": 24,
+      "mutation_names": [
+        "actual_timeout",
+        "timeout_not_marked",
+        "falsely_successful_exit",
+        "missing",
+        "duplicate",
+        "reordered",
+        "fake_reap",
+        "fake_reap_case",
+        "marker_only",
+        "raw_exit",
+        "timeout",
+        "lost_boot",
+        "duplicate_boot",
+        "wrong_exit",
+        "bad_uid",
+        "bad_caps",
+        "bad_nnp",
+        "fake_stop",
+        "fake_traceme",
+        "unknown_denial",
+        "leaked_dump0",
+        "bad_public_value",
+        "failed_continue",
+        "numeric_pass"
+      ],
+      "passed": true,
+      "synthetic_shapes_are_not_guest_qualification": true
+    }
+  ]
+}

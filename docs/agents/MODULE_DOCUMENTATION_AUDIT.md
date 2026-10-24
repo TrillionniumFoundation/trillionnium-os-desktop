@@ -1,5 +1,7 @@
 # 模块文档覆盖审计（2026-10-22）
 
+2026-10-23 补充：[57 个内核 workspace crate 手册](../modules/kernel-workspace/README.md) 已按 `10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd` 逐包补充职责/API、owner、开发入口和具体未验证项，并附 manifest/源码 hash 清单。新手册是文档覆盖补齐，不转授运行资格；以下历史审计的源码、统计和结论保持其原时点。
+
 原始清点实际观察的是本地提交 `b2b3e862bf568dab39bd8331be7def145f770408`，tree `7389c0a3f982983087953f75de7042fc058be088`。公开等价提交为 [`85d394f99c73ad3194d57c876712ac01b59d90ca`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/85d394f99c73ad3194d57c876712ac01b59d90ca)；发布时已核对 GitHub commit 元数据，两者具有相同 tree。两种提交身份见 [published-equivalence.json](../../results/integration/2026-10-22-module-docs/published-equivalence.json)，原始输入哈希与审计记录继续保留本地观察身份。复核应使用公开提交，本审计快照不升级到后来的 #240 合并提交。源码及机器清单中的路径相对仓库根；本次导航修正及其文件检查单独记录，不改变原运行证据的来源身份。
 
 **结论：A00–A10 都有可定位的技术内容与开发／验证入口；不能据此说每个实际 crate 都有独立、完整的开发手册和技术手册。** UI 与不少内核 crate 使用共享手册、上游书籍及源码 API 注释。文档文件、脚本和 workflow 存在，不等于对应实现已经可运行或通过验收。
@@ -100,4 +102,4 @@ Asterinas 主内核 workspace 有 **57** 个显式成员，其中 **11** 个有 
 | [audit-validation.json](../../results/integration/2026-10-22-module-docs/audit-validation.json) | 原只读清点检查结果 |
 | [doc-corrections.patch.gz](../../results/integration/2026-10-22-module-docs/doc-corrections.patch.gz) / [manifest](../../results/integration/2026-10-22-module-docs/doc-corrections-manifest.json) | 三份历史范围指引的原始补丁（无损 gzip）和准备阶段校验；本次已应用，原正文保持不变 |
 
-根 `README.md` 保持 0 字节，这是现有 `verify-source.py` 契约；项目阅读入口是 [docs/INDEX.md](../INDEX.md)。本次没有为缺少独立手册的 crate 生成空模板，也没有把文档存在记成产品完成。
+2026-10-23：根 [README.md](../../README.md) 已加入项目与模块导航，`verify-source.py` 保留全部 118 项上游输入核验，移除了与上游完整性无关的空 README 限制。详细阅读入口为 [docs/INDEX.md](../INDEX.md) 和 [当前能力表](../CURRENT_CAPABILITIES.md)；本表中的无同目录手册统计仍只绑定10-22冻结源码，后续七份UI/ABI入口不回填该清单。本次没有为缺少独立手册的 crate 生成空模板，也没有把文档存在记成产品完成。

@@ -1,0 +1,124 @@
+{
+  "schema": "trillionnium.native-kernel-integration.v1",
+  "source_head": "6c26e3aeefde05c120944e278299b4925612f3c8",
+  "source_tree": "6c84a0663441dcbf9629fc2da8f857265baa5fe1",
+  "commands": [
+    {
+      "stage": "original-four-suites",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-original-full-ipc.py",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-rtqueue",
+        "--head",
+        "6c26e3aeefde05c120944e278299b4925612f3c8",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/full"
+      ],
+      "outer_deadline_seconds": 15000,
+      "exit_code": 0
+    },
+    {
+      "stage": "original-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "6c26e3aeefde05c120944e278299b4925612f3c8",
+        "--expected-source-tree",
+        "6c84a0663441dcbf9629fc2da8f857265baa5fe1",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-joint-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary"
+      ],
+      "outer_deadline_seconds": 7200,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-sgid30",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-native-sgid-probe.py",
+        "--ordinary",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-rtqueue",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/sgid30"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-ownership12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-inline-signal-ownership-6c26.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-proc-privileges12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_proc_process_privileges.py",
+        "--kernel",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary/product-kernel.elf",
+        "--ordinary-receipt",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary/result.json",
+        "--expected-receipt-sha256",
+        "dddd4cb58a7d64517d4f95c3b119812ea88b5f73d95345b9fce6e2d7db23b93f",
+        "--initramfs",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-rtqueue/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/proc-privileges12"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-memfd4",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-inline-signal-memfd-6c26.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-inline-signal14",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-inline-signal-probe-6c26.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    }
+  ],
+  "passed": true,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "elapsed_seconds": 545.818,
+  "source_checkout_clean": true
+}

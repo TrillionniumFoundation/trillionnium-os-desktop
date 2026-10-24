@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and boot the one-line old-root workload control in a fresh worktree.
+"""Build and boot the exact old-root workload control in a fresh worktree.
 
 Only the production credential selection changes. The actual compiled C probe,
 guest runner, image verification and frozen dependencies remain identical to
@@ -20,6 +20,14 @@ ROOT, require, save, digest = guest.ROOT, guest.require, guest.save_json, guest.
 SOURCE = "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs"
 BEFORE = b"        let credentials = if index == 1 { workload_credentials()? } else { Credentials::new_root() };\n"
 AFTER = b"        let credentials = if index == 1 { Credentials::new_root() } else { Credentials::new_root() };\n"
+FORMATTED_BEFORE = b"""        let credentials = if index == 1 {
+            workload_credentials()?
+        } else {
+            Credentials::new_root()
+        };
+"""
+FORMATTED_AFTER = FORMATTED_BEFORE.replace(b"workload_credentials()?", b"Credentials::new_root()")
+SELECTIONS = ((BEFORE, AFTER), (FORMATTED_BEFORE, FORMATTED_AFTER))
 LOG_LIMIT = 64 * 1024 * 1024
 
 
@@ -30,8 +38,13 @@ def read(path, limit=LOG_LIMIT):
 
 
 def mutation(source):
-    require(source.count(BEFORE) == 1 and AFTER not in source, "credential selection is absent or ambiguous")
-    return source.replace(BEFORE, AFTER)
+    # PR #252 applies the pinned Rust formatter to this selection. Accept only
+    # those two exact layouts, still substituting precisely one expression.
+    require(sum(source.count(before) for before, _ in SELECTIONS) == 1
+            and not any(after in source for _, after in SELECTIONS),
+            "credential selection is absent or ambiguous")
+    before, after = next((before, after) for before, after in SELECTIONS if before in source)
+    return source.replace(before, after)
 
 
 def verify_delta(before, after, original, changed):

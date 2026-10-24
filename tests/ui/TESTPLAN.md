@@ -1,5 +1,17 @@
 # A10 test matrix and provenance
 
+## X11 presentation observation
+
+The actual `smoke-x11.sh` gate observes one Shell and three independently
+launched application windows as `IsViewable` on its private authenticated Xvfb.
+The egui first-layout marker may precede X11 mapping, so the gate polls the
+server under a bounded 15-second presentation deadline, including after Shell
+restart. Layout alone never passes this check. A permanently unmapped window
+still fails; failure retains the last tree, server report and owned logs when
+an evidence directory was requested. CI installs Xvfb and its inspection tools
+so this Linux-host gate actually executes. It does not qualify physical GPU,
+Wayland, IME or Asterinas graphics.
+
 ## Current chat workspace source
 
 The R7 Rust [chat workspace contract](../../support/ui/CHAT_WORKSPACE.md)
@@ -105,6 +117,26 @@ The same blocking host gate stages an actual Linux ELF binary archive only
 after all four Cargo suites and strict Rustfmt pass. The archive and its
 SHA256 contain four built Rust programs and their build/source provenance,
 not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
+
+## Session exchange deadline
+
+The ordinary `trill-session` unit suite exercises one shared monotonic budget
+across reads and response writes, expiry before launch dispatch, successful
+fragmented Snapshot framing, and an incomplete local request timing out
+before the next valid Snapshot observes an actually reaped `/bin/true` child.
+The timeout fixture writes one partial frame and then waits; it performs no
+retrying traffic or arbitrary command dispatch. Run it with:
+
+```sh
+cargo test --manifest-path ui/Cargo.toml -p trill-session --bin trill-session --locked
+```
+
+The server allowance is 500 ms for the complete I/O exchange. Its internal
+deadline seam gives the controlled timeout fixture a 100 ms allowance;
+deterministic clock arithmetic also checks that partial progress cannot reset
+the budget. Host scheduling delay is allowed in the test's elapsed-time
+assertion. These tests qualify local host transport and owned-process reaping,
+not the target kernel, GUI or original Hepta effects.
 
 ## Hepta observer gate
 

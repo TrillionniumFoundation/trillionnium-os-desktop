@@ -2,11 +2,20 @@
 
 //! The physical memory allocator.
 
-use core::{alloc::Layout, ops::Range};
+use core::{
+    alloc::Layout,
+    ops::Range,
+    sync::atomic::{AtomicU64, Ordering},
+};
 
 use align_ext::AlignExt;
 
-use super::{Frame, meta::AnyFrameMeta, segment::Segment};
+use super::{
+    Frame,
+    meta::{AnyFrameMeta, GetFrameError},
+    segment::Segment,
+    unique::UniqueFrame,
+};
 use crate::{
     boot::memory_region::MemoryRegionType,
     error::Error,
@@ -15,6 +24,92 @@ use crate::{
     prelude::*,
     util::ops::range_difference,
 };
+
+/// Explicit authority to allocate from a physical partition of the original allocator.
+///
+/// Creation withdraws real frames from ordinary allocation before returning this
+/// token. The allocator may reject the requested capacity or not support reserves.
+/// The token is not clonable or constructible from a numeric identity. An owner
+/// may explicitly share it with `Arc`; ordinary frame allocation never inherits it.
+///
+/// This is a kernel mechanism, not a user capability or a whole-system recovery
+/// guarantee. In particular, page tables, heap objects and IPC do not implicitly
+/// use this partition. Callers must separately authorize and bound those paths.
+#[derive(Debug)]
+pub struct PhysicalReserve {
+    identity: u64,
+}
+
+static NEXT_RESERVE_ID: AtomicU64 = AtomicU64::new(1);
+
+impl PhysicalReserve {
+    /// Withdraws `nframes` from the original allocator as one physical reserve.
+    ///
+    /// Returns `NoMemory` if the allocator cannot admit the reserve, including
+    /// when reserve support is disabled. A failed creation publishes no token.
+    pub fn new(nframes: usize) -> Result<Self> {
+        let layout = segment_layout(nframes)?;
+        let identity = NEXT_RESERVE_ID
+            .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+            .map_err(|_| Error::Overflow)?;
+        let token = Self { identity };
+        if !get_global_frame_allocator().create_reserve(&token, layout) {
+            return Err(Error::NoMemory);
+        }
+        Ok(token)
+    }
+
+    /// The stable incarnation used by the implementing allocator for comparison.
+    ///
+    /// Knowing this number does not construct authority: allocation hooks accept
+    /// the token itself. Identities never wrap or repeat during this boot.
+    pub fn identity(&self) -> u64 {
+        self.identity
+    }
+
+    /// Stops new allocations. Repeated calls are harmless.
+    ///
+    /// Existing frames remain valid. Their original final-reference destruction
+    /// refunds this partition; the original allocator returns the entire extent
+    /// to normal allocation only after the final outstanding frame is returned.
+    pub fn close(&self) {
+        get_global_frame_allocator().close_reserve(self);
+    }
+
+    /// Observes the original allocator's partition under its ownership lock.
+    ///
+    /// Returns `None` after the closed partition has been completely returned.
+    pub fn snapshot(&self) -> Option<PhysicalReserveSnapshot> {
+        get_global_frame_allocator().reserve_snapshot(self)
+    }
+}
+
+impl Drop for PhysicalReserve {
+    fn drop(&mut self) {
+        self.close();
+    }
+}
+
+/// A consistent observation of one physical reserve, not an admission counter.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PhysicalReserveSnapshot {
+    /// Start of the extent withdrawn from ordinary caches and pools.
+    pub start: Paddr,
+    /// Total size of this extent in bytes.
+    pub capacity: usize,
+    /// Outstanding bytes, including raw frames whose metadata is being initialized.
+    pub allocated: usize,
+    /// Whether new allocations have been permanently disabled.
+    pub closed: bool,
+}
+
+fn segment_layout(nframes: usize) -> Result<Layout> {
+    if nframes == 0 {
+        return Err(Error::InvalidArgs);
+    }
+    let size = nframes.checked_mul(PAGE_SIZE).ok_or(Error::Overflow)?;
+    Layout::from_size_align(size, PAGE_SIZE).map_err(|_| Error::InvalidArgs)
+}
 
 /// Options for allocating physical memory frames.
 pub struct FrameAllocOptions {
@@ -52,11 +147,36 @@ impl FrameAllocOptions {
 
     /// Allocates a single frame with additional metadata.
     pub fn alloc_frame_with<M: AnyFrameMeta>(&self, metadata: M) -> Result<Frame<M>> {
-        let single_layout = Layout::from_size_align(PAGE_SIZE, PAGE_SIZE).unwrap();
-        let frame = get_global_frame_allocator()
-            .alloc(single_layout)
-            .map(|paddr| Frame::from_unused(paddr, metadata).unwrap())
-            .ok_or(Error::NoMemory)?;
+        self.alloc_frame_in(metadata, None)
+    }
+
+    /// Allocates a frame using explicit physical-reserve authority.
+    pub fn alloc_frame_from(&self, reserve: &PhysicalReserve) -> Result<Frame<()>> {
+        self.alloc_frame_from_with(reserve, ())
+    }
+
+    /// Allocates a frame with metadata using explicit physical-reserve authority.
+    pub fn alloc_frame_from_with<M: AnyFrameMeta>(
+        &self,
+        reserve: &PhysicalReserve,
+        metadata: M,
+    ) -> Result<Frame<M>> {
+        self.alloc_frame_in(metadata, Some(reserve))
+    }
+
+    fn alloc_frame_in<M: AnyFrameMeta>(
+        &self,
+        metadata: M,
+        reserve: Option<&PhysicalReserve>,
+    ) -> Result<Frame<M>> {
+        let layout = Layout::from_size_align(PAGE_SIZE, PAGE_SIZE).unwrap();
+        let allocator = get_global_frame_allocator();
+        let paddr = match reserve {
+            Some(token) => allocator.alloc_reserved(token, layout),
+            None => allocator.alloc(layout),
+        }
+        .ok_or(Error::NoMemory)?;
+        let frame = Frame::from_unused(paddr, metadata).unwrap();
 
         if self.zeroed {
             let addr = paddr_to_vaddr(frame.paddr()) as *mut u8;
@@ -74,6 +194,11 @@ impl FrameAllocOptions {
 
     /// Allocates a contiguous range of frames with additional metadata.
     ///
+    /// All frames are uniquely owned before `metadata_fn` runs. The callback
+    /// cannot acquire the current or remaining frames by physical address.
+    /// On unwinding, owned frames are released through their original metadata
+    /// owners; shared aliases to an already committed prefix remain valid.
+    ///
     /// The returned [`Segment`] contains at least one frame. The method returns
     /// an error if the number of frames is zero.
     pub fn alloc_segment_with<M: AnyFrameMeta, F>(
@@ -84,25 +209,152 @@ impl FrameAllocOptions {
     where
         F: FnMut(Paddr) -> M,
     {
-        if nframes == 0 {
-            return Err(Error::InvalidArgs);
+        self.alloc_segment_in(nframes, metadata_fn, None)
+    }
+
+    /// Allocates contiguous frames using explicit physical-reserve authority.
+    pub fn alloc_segment_from(
+        &self,
+        reserve: &PhysicalReserve,
+        nframes: usize,
+    ) -> Result<Segment<()>> {
+        self.alloc_segment_from_with(reserve, nframes, |_| ())
+    }
+
+    /// Allocates contiguous frames with metadata from a physical reserve.
+    ///
+    /// The callback has the same ownership restrictions as
+    /// [`Self::alloc_segment_with`].
+    pub fn alloc_segment_from_with<M: AnyFrameMeta, F>(
+        &self,
+        reserve: &PhysicalReserve,
+        nframes: usize,
+        metadata_fn: F,
+    ) -> Result<Segment<M>>
+    where
+        F: FnMut(Paddr) -> M,
+    {
+        self.alloc_segment_in(nframes, metadata_fn, Some(reserve))
+    }
+
+    fn alloc_segment_in<M: AnyFrameMeta, F>(
+        &self,
+        nframes: usize,
+        mut metadata_fn: F,
+        reserve: Option<&PhysicalReserve>,
+    ) -> Result<Segment<M>>
+    where
+        F: FnMut(Paddr) -> M,
+    {
+        // Preserve the original ordinary API's panic for an impossible layout;
+        // its existing max_segment_creation test requires that contract. The
+        // explicit recovery API rejects overflow before withdrawing any frames.
+        let layout = if reserve.is_none() && nframes != 0 {
+            segment_layout(nframes).expect("invalid ordinary segment size")
+        } else {
+            segment_layout(nframes)?
+        };
+        let allocator = get_global_frame_allocator();
+        let start = match reserve {
+            Some(token) => allocator.alloc_reserved(token, layout),
+            None => allocator.alloc(layout),
         }
-        let layout = Layout::from_size_align(nframes * PAGE_SIZE, PAGE_SIZE).unwrap();
-        let segment = get_global_frame_allocator()
-            .alloc(layout)
-            .map(|start| {
-                Segment::from_unused(start..start + nframes * PAGE_SIZE, metadata_fn).unwrap()
-            })
-            .ok_or(Error::NoMemory)?;
+        .ok_or(Error::NoMemory)?;
+        // Own every frame through its original metadata slot before exposing
+        // any physical address to the callback. Otherwise the callback could
+        // claim (and even drop) a current/future frame before raw-tail cleanup.
+        let mut pending = ClaimedAllocation::new(start..start + layout.size()).unwrap();
+        let first = pending.next().unwrap();
+        let metadata = metadata_fn(first.paddr());
+        let mut segment = Segment::from(Frame::from(first.repurpose(metadata)));
+        for frame in pending {
+            let metadata = metadata_fn(frame.paddr());
+            segment.append(Frame::from(frame.repurpose(metadata)));
+        }
 
         if self.zeroed {
             let addr = paddr_to_vaddr(segment.paddr()) as *mut u8;
             // SAFETY: The newly allocated segment is guaranteed to be valid.
-            unsafe { core::ptr::write_bytes(addr, 0, nframes * PAGE_SIZE) }
+            unsafe { core::ptr::write_bytes(addr, 0, layout.size()) }
         }
 
         Ok(segment)
     }
+}
+
+// Every page in this range is an owned, forgotten UniqueFrame<()> acquired
+// through the original metadata-slot CAS. No user callback runs during claim.
+// An empty range is valid here: unlike Segment, it carries no metadata type
+// inferred from a first frame. Keeping the owners in a range avoids heap use
+// inside frame allocation, including when ordinary allocation is exhausted.
+struct ClaimedAllocation {
+    range: Range<Paddr>,
+}
+
+impl ClaimedAllocation {
+    fn new(range: Range<Paddr>) -> core::result::Result<Self, GetFrameError> {
+        let mut owned = Self {
+            range: range.start..range.start,
+        };
+        for paddr in range.step_by(PAGE_SIZE) {
+            let frame = UniqueFrame::from_unused(paddr, ())?;
+            let _ = frame.into_raw();
+            owned.range.end = paddr + PAGE_SIZE;
+        }
+        // A conflicting metadata owner means the allocator did not return a
+        // wholly unused extent. On that error only the successfully acquired
+        // prefix is ours to drop, never the busy page or unclaimed tail.
+        Ok(owned)
+    }
+}
+
+impl Iterator for ClaimedAllocation {
+    type Item = UniqueFrame<()>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.range.is_empty() {
+            return None;
+        }
+        let paddr = self.range.start;
+        self.range.start += PAGE_SIZE;
+        // SAFETY: `new` forgot exactly one UniqueFrame<()> for each page in
+        // the range. Removing this page before restoring its handle transfers
+        // that sole owner to the caller, so unwinding cannot restore it twice.
+        Some(unsafe { UniqueFrame::from_raw(paddr) })
+    }
+}
+
+impl Drop for ClaimedAllocation {
+    fn drop(&mut self) {
+        for frame in self.by_ref() {
+            drop(frame);
+        }
+    }
+}
+
+#[cfg(ktest)]
+#[ktest]
+fn allocation_claim_rejects_busy_page_without_refunding_its_owner() {
+    let reserve = PhysicalReserve::new(4).unwrap();
+    let layout = Layout::from_size_align(4 * PAGE_SIZE, PAGE_SIZE).unwrap();
+    let start = get_global_frame_allocator()
+        .alloc_reserved(&reserve, layout)
+        .unwrap();
+    let held = Frame::from_unused(start + 2 * PAGE_SIZE, ()).unwrap();
+    assert!(matches!(
+        ClaimedAllocation::new(start..start + layout.size()),
+        Err(GetFrameError::InUse)
+    ));
+    assert_eq!(held.reference_count(), 1);
+    assert_eq!(reserve.snapshot().unwrap().allocated, 2 * PAGE_SIZE);
+    // The caller still owns the unclaimed raw tail; the failed claim cannot
+    // refund it on the caller's behalf. Return it through a real frame owner.
+    drop(Frame::from_unused(start + 3 * PAGE_SIZE, ()).unwrap());
+    assert_eq!(reserve.snapshot().unwrap().allocated, PAGE_SIZE);
+    reserve.close();
+    assert_eq!(reserve.snapshot().unwrap().allocated, PAGE_SIZE);
+    drop(held);
+    assert!(reserve.snapshot().is_none());
 }
 
 #[cfg(ktest)]
@@ -153,12 +405,37 @@ pub trait GlobalFrameAllocator: Sync {
     /// allocated, they may be returned in any order with any number of calls.
     fn alloc(&self, layout: Layout) -> Option<Paddr>;
 
+    /// Admits a physical reserve for a newly minted opaque token.
+    ///
+    /// Implementors must atomically withdraw the extent from ordinary allocation
+    /// before success, reject repeated/closed identities, and never depend on
+    /// approximate free-memory counters. The default does not support reserves.
+    fn create_reserve(&self, _token: &PhysicalReserve, _layout: Layout) -> bool {
+        false
+    }
+
+    /// Allocates from an admitted, still-open reserve without ordinary fallback.
+    ///
+    /// Frames are returned through the original `dealloc` hook. Their physical
+    /// origin, not a caller-supplied refund label, determines the destination.
+    fn alloc_reserved(&self, _token: &PhysicalReserve, _layout: Layout) -> Option<Paddr> {
+        None
+    }
+
+    /// Permanently closes admission, returning the extent after its final refund.
+    fn close_reserve(&self, _token: &PhysicalReserve) {}
+
+    /// Observes the allocator-owned reserve, if its extent is still retained.
+    fn reserve_snapshot(&self, _token: &PhysicalReserve) -> Option<PhysicalReserveSnapshot> {
+        None
+    }
+
     /// Deallocates a contiguous range of frames.
     ///
     /// The caller guarantees that `addr` and `size` are both aligned to
     /// [`PAGE_SIZE`]. The deallocated memory should always be allocated by
-    /// [`GlobalFrameAllocator::alloc`]. However, if
-    /// [`GlobalFrameAllocator::alloc`] returns multiple frames, it is possible
+    /// [`GlobalFrameAllocator::alloc`] or [`GlobalFrameAllocator::alloc_reserved`].
+    /// If an allocation returns multiple frames, it is possible
     /// that some of them are deallocated before others. The deallocated memory
     /// must never overlap with any memory that is already deallocated or
     /// added, without being allocated in between.

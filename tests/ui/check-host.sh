@@ -5,7 +5,7 @@ set -euo pipefail
 # Many validation probes use Python assert: -O must never disable blockers.
 export PYTHONOPTIMIZE=0
 cd "$(dirname "$0")/../.."
-test "$(wc -c < README.md)" -eq 0
+test -f README.md && test ! -L README.md
 
 # Even when compilation fails before fmt, preserve the exact-source
 # formatter diagnosis and review patch on a GitHub-hosted runner.
@@ -43,6 +43,9 @@ capture_fmt_on_exit() {
             fi
             if [[ "$status" -eq 0 ]]; then status=1; fi
         fi
+    fi
+    if [[ "$status" -eq 0 ]]; then
+        printf 'A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).\n'
     fi
     exit "$status"
 }
@@ -151,5 +154,3 @@ if [[ -n "${RUNNER_TEMP:-}" ]]; then
     bash tests/ui/replay-packaged-host.sh         "$RUNNER_TEMP/a10/a10-linux-host-binaries.tar.gz" "$(git rev-parse HEAD)"
 fi
 # The EXIT hook still preserves a formatter patch on any earlier failure.
-
-printf 'A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).\n'

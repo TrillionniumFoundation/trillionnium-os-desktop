@@ -9,7 +9,7 @@ use crate::{
             SigNum,
             constants::SIGKILL,
             sig_mask::{SigMask, SigSet},
-            signals::Signal,
+            signals::{OwnedSignal, Signal},
         },
     },
 };
@@ -17,13 +17,13 @@ use crate::{
 /// A signal dequeued from either the thread or the process queue,
 /// carrying its origin so it can be correctly re-enqueued later.
 pub(crate) enum DequeuedSignal {
-    FromProcess(Box<dyn Signal>),
-    FromThread(Box<dyn Signal>),
+    FromProcess(OwnedSignal),
+    FromThread(OwnedSignal),
 }
 
 impl DequeuedSignal {
     /// Consumes the dequeued signal and returns the inner signal.
-    pub(crate) fn unwrap(self) -> Box<dyn Signal> {
+    pub(crate) fn unwrap(self) -> OwnedSignal {
         match self {
             Self::FromProcess(signal) | Self::FromThread(signal) => signal,
         }
@@ -44,7 +44,9 @@ impl DequeuedSignal {
     /// Replaces the inner signal with `new_signal`, preserving the origin.
     pub(in crate::process) fn set_signal(&mut self, new_signal: Box<dyn Signal>) {
         match self {
-            Self::FromProcess(signal) | Self::FromThread(signal) => *signal = new_signal,
+            Self::FromProcess(signal) | Self::FromThread(signal) => {
+                *signal = OwnedSignal::from_box(new_signal)
+            }
         }
     }
 }
@@ -63,6 +65,12 @@ pub(crate) trait HandlePendingSignal {
 
     /// Returns if a SIGKILL signal is pending.
     fn has_pending_sigkill(&self) -> bool;
+
+    /// Returns the original queue's irreversible SIGKILL receipt, including
+    /// after a sibling dequeues it or while the current task finishes exit.
+    /// Init retains the original immunity to default-action signals.
+    /// This observation never takes a sleeping signal-queue lock.
+    fn has_fatal_sigkill(&self) -> bool;
 
     /// Dequeues the next pending signal that is not masked by `mask`.
     ///
@@ -84,6 +92,12 @@ impl HandlePendingSignal for Context<'_> {
     fn has_pending_sigkill(&self) -> bool {
         self.posix_thread.sig_queues().has_pending_signal(SIGKILL)
             || self.process.sig_queues().has_pending_signal(SIGKILL)
+    }
+
+    fn has_fatal_sigkill(&self) -> bool {
+        !self.process.is_init_process()
+            && (self.posix_thread.sig_queues().has_received_sigkill()
+                || self.process.sig_queues().has_received_sigkill())
     }
 
     fn dequeue_signal(&self, mask: &SigMask) -> Option<DequeuedSignal> {
@@ -115,6 +129,13 @@ impl HandlePendingSignal for PosixThread {
             || self.process().sig_queues().has_pending_signal(SIGKILL)
     }
 
+    fn has_fatal_sigkill(&self) -> bool {
+        let process = self.process();
+        !process.is_init_process()
+            && (self.sig_queues().has_received_sigkill()
+                || process.sig_queues().has_received_sigkill())
+    }
+
     fn dequeue_signal(&self, mask: &SigMask) -> Option<DequeuedSignal> {
         self.sig_queues()
             .dequeue(mask)
@@ -129,6 +150,12 @@ impl HandlePendingSignal for PosixThread {
 }
 
 fn has_pending_signal(posix_thread: &PosixThread, process: &Process) -> bool {
+    if !process.is_init_process()
+        && (posix_thread.sig_queues().has_received_sigkill()
+            || process.sig_queues().has_received_sigkill())
+    {
+        return true;
+    }
     // Fast path: No signals are pending.
     if posix_thread.sig_queues().is_empty() && process.sig_queues().is_empty() {
         return false;

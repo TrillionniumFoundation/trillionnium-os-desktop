@@ -35,13 +35,13 @@ pub(super) fn sys_socket(
     let is_nonblocking = sock_flags.contains(SockFlags::SOCK_NONBLOCK);
     let file_like = match (domain, sock_type) {
         (CSocketAddrFamily::AF_UNIX, SockType::SOCK_STREAM) => {
-            UnixStreamSocket::new(is_nonblocking, sock_type) as Arc<dyn FileLike>
+            UnixStreamSocket::new(is_nonblocking, sock_type)? as Arc<dyn FileLike>
         }
         (CSocketAddrFamily::AF_UNIX, SockType::SOCK_SEQPACKET) => {
-            UnixStreamSocket::new(is_nonblocking, sock_type) as Arc<dyn FileLike>
+            UnixStreamSocket::new(is_nonblocking, sock_type)? as Arc<dyn FileLike>
         }
         (CSocketAddrFamily::AF_UNIX, SockType::SOCK_RAW | SockType::SOCK_DGRAM) => {
-            UnixDatagramSocket::new(is_nonblocking) as Arc<dyn FileLike>
+            UnixDatagramSocket::new(is_nonblocking)? as Arc<dyn FileLike>
         }
         (CSocketAddrFamily::AF_INET | CSocketAddrFamily::AF_INET6, SockType::SOCK_STREAM) => {
             let protocol = Protocol::try_from(protocol)?;

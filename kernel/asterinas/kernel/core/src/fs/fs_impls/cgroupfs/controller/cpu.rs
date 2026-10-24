@@ -3,16 +3,15 @@
 mod max_config;
 mod native;
 
-#[cfg(feature = "g1c-trusted-observe")]
-pub(crate) use native::{CpuUsageError, NativeCpuObserver};
-#[cfg(feature = "g1d-trusted-control")]
-pub(crate) use native::NativeCpuManager;
-
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicU32, Ordering};
 
 use aster_systree::{Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysPerms, SysStr};
 use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
+#[cfg(feature = "g1d-trusted-control")]
+pub(crate) use native::NativeCpuManager;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use native::{CpuUsageError, NativeCpuObserver};
 use os_control::CPU_PERIOD_NS;
 use ostd::{
     cpu::CpuId,
@@ -29,7 +28,7 @@ use crate::{
         CgroupMembership, CgroupNode,
         systree_node::{CgroupSysNode, CgroupSystem},
     },
-    process::{Process, posix_thread::AsPosixThread},
+    process::{Process, posix_thread::AsPosixThread, signal::HandlePendingSignal},
     thread::AsThread,
     util::ReadCString,
 };
@@ -414,6 +413,9 @@ impl CpuController {
             writeln!(printer, "burst_usec 0")?;
         }
 
+        #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+        self.read_watchdog_stat(printer)?;
+
         Ok(printer.bytes_written())
     }
 
@@ -649,7 +651,7 @@ pub(crate) fn task_cpu_eligible(task: &Task, now: Option<u64>) -> bool {
         return task.as_thread().is_some_and(|thread| thread.is_exited());
     };
     let guard = process.cgroup();
-    if let Some(group) = guard.get() {
+    let available = if let Some(group) = guard.get() {
         group
             .controller()
             .cpu
@@ -661,7 +663,14 @@ pub(crate) fn task_cpu_eligible(task: &Task, now: Option<u64>) -> bool {
             .cpu
             .read_with(&guard)
             .bandwidth_available_hierarchy(now)
-    }
+    };
+    // Only the original signal owner's irreversible SIGKILL receipt admits
+    // fatal kernel cleanup when bandwidth is unavailable. No quota, revision,
+    // consumed runtime or debt is changed here. The normal running-segment
+    // accounting still charges every cleanup interval to its retained owner.
+    // UserMode's IRQ-disabled pre-entry check observes the same receipt and
+    // returns KernelEvent before executing another user instruction.
+    available || thread.has_fatal_sigkill()
 }
 
 /// A running segment's reference to the original CPU accounting owner.

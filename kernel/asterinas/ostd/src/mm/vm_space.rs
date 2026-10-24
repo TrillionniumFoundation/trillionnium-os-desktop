@@ -8,6 +8,9 @@
 //! the page table cursor, providing efficient, powerful concurrent accesses
 //! to the page table.
 
+#[cfg(ktest)]
+mod recovery_tests;
+
 use core::{ops::Range, sync::atomic::Ordering};
 
 use super::{AnyUFrameMeta, PagingLevel, page_table::PageTableConfig};
@@ -20,7 +23,7 @@ use crate::{
     mm::{
         Frame, HasPaddrRange, PAGE_SIZE, PageProperty, PrivilegedPageFlags, UFrame, VmReader,
         VmWriter,
-        frame::FrameRef,
+        frame::{FrameRef, PhysicalReserve},
         io::Fallible,
         kspace::KERNEL_PAGE_TABLE,
         page_prop::{CachePolicy, PageFlags},
@@ -84,6 +87,48 @@ impl VmSpace {
         }
     }
 
+    /// Creates a VM address space with its root page from an explicit reserve.
+    ///
+    /// No reserve authority is retained by this VM space. Subsequent ordinary
+    /// cursors continue to use ordinary allocation. Use [`Self::recovery_cursor`]
+    /// with an explicit token for fallible reserved page-table growth.
+    ///
+    /// This reserves only physical page-table storage, not heap or IPC capacity.
+    /// CPU tracking uses inline storage up to 128 CPUs; larger systems require
+    /// fallible ordinary heap storage before allocating the root page.
+    pub fn try_new_from(reserve: &PhysicalReserve) -> Result<Self> {
+        let cpus = AtomicCpuSet::try_new_empty()?;
+        let pt = KERNEL_PAGE_TABLE
+            .get()
+            .unwrap()
+            .try_create_user_page_table_from(reserve)?;
+        Ok(Self {
+            pt,
+            cpus,
+            iomems: SpinLock::new(Vec::new()),
+        })
+    }
+
+    /// Locks a range for fallible user-frame mapping with explicit authority.
+    ///
+    /// Construction allocates no page-table or heap storage. It uses the
+    /// original root and range lock protocol, preserving serialization with
+    /// overlapping cursors. Holding the root can also delay creation of new
+    /// disjoint branches. The token is borrowed only by this cursor and is
+    /// never attached to mappings or inherited by copies.
+    /// I/O mappings, huge-page splitting and removal are not exposed here.
+    pub fn recovery_cursor<'a, G: AsAtomicModeGuard>(
+        &'a self,
+        guard: &'a G,
+        va: &Range<Vaddr>,
+        reserve: &'a PhysicalReserve,
+    ) -> Result<RecoveryCursor<'a>> {
+        Ok(RecoveryCursor {
+            pt_cursor: self.pt.cursor_mut_no_alloc(guard, va)?,
+            reserve,
+        })
+    }
+
     /// Gets an immutable cursor in the virtual address range.
     ///
     /// The cursor behaves like a lock guard, exclusively owning a sub-tree of
@@ -117,6 +162,35 @@ impl VmSpace {
     ) -> Result<CursorMut<'a>> {
         Ok(CursorMut {
             pt_cursor: self.pt.cursor_mut(guard, va)?,
+            flusher: TlbFlusher::new(&self.cpus, disable_preempt()),
+            vmspace: self,
+        })
+    }
+
+    /// Locks existing nodes for querying without allocating missing page tables.
+    /// An absent branch is represented by its full unmapped range.
+    pub fn cursor_no_prealloc<'a, G: AsAtomicModeGuard>(
+        &'a self,
+        guard: &'a G,
+        va: &Range<Vaddr>,
+    ) -> Result<Cursor<'a>> {
+        Ok(Cursor(self.pt.cursor_no_prealloc(guard, va)?))
+    }
+
+    /// Locks existing nodes without allocating missing page tables.
+    ///
+    /// An absent branch is locked at its parent, serializing creation there.
+    /// Existing branches retain the ordinary fine-grained locking protocol.
+    /// Use [`CursorMut::try_map`] to prepare missing nodes fallibly after user
+    /// frame admission. Other cursor operations retain their original behavior.
+    /// No recovery authority is acquired or inherited.
+    pub fn cursor_mut_no_prealloc<'a, G: AsAtomicModeGuard>(
+        &'a self,
+        guard: &'a G,
+        va: &Range<Vaddr>,
+    ) -> Result<CursorMut<'a>> {
+        Ok(CursorMut {
+            pt_cursor: self.pt.cursor_mut_no_prealloc(guard, va)?,
             flusher: TlbFlusher::new(&self.cpus, disable_preempt()),
             vmspace: self,
         })
@@ -317,6 +391,67 @@ pub struct CursorMut<'a> {
     vmspace: &'a VmSpace,
 }
 
+/// A bounded, fallible page-table mapping cursor with borrowed reserve authority.
+///
+/// It maps tracked user frames through the original page-table owners. It
+/// does not expose infallible mapping, I/O mapping, subtree transfer, or access
+/// to the underlying cursor. Dropping it releases the original range locks.
+pub struct RecoveryCursor<'a> {
+    pt_cursor: page_table::CursorMut<'a, UserPtConfig>,
+    reserve: &'a PhysicalReserve,
+}
+
+impl RecoveryCursor<'_> {
+    /// Queries the current mapping without allocating page-table nodes.
+    pub fn query(&mut self) -> Result<(Range<Vaddr>, Option<VmQueriedItem<'_>>)> {
+        let (range, item) = self.pt_cursor.query()?;
+        Ok((range, item.map(VmQueriedItem::from)))
+    }
+
+    /// Moves within the locked range without allocating page-table nodes.
+    /// Panics on an unaligned address, like [`CursorMut::jump`].
+    pub fn jump(&mut self, va: Vaddr) -> Result<()> {
+        self.pt_cursor.jump(va)?;
+        Ok(())
+    }
+
+    /// Gets the current virtual address.
+    pub fn virt_addr(&self) -> Vaddr {
+        self.pt_cursor.virt_addr()
+    }
+
+    /// Maps a frame, taking all missing page-table nodes from this reserve.
+    ///
+    /// On success advances to the next slot. On allocation failure returns the
+    /// original frame and error, preserves the cursor address and all mappings,
+    /// and refunds all unpublished page-table nodes. A closed/exhausted token
+    /// cannot allocate nodes and never falls back to the ordinary allocator.
+    /// Mapping an already prepared path needs no further reserve allocation.
+    ///
+    /// # Panics
+    ///
+    /// The same alignment, range and conflicting-mapping requirements as
+    /// [`CursorMut::map`] apply.
+    pub fn try_map(
+        &mut self,
+        frame: UFrame,
+        prop: PageProperty,
+    ) -> core::result::Result<(), (Error, UFrame)> {
+        let item = VmItem::new_tracked(frame, prop);
+        // SAFETY: Only a tracked user frame is mapped into user space. The
+        // page-table cursor owns the range and never overwrites a live mapping.
+        match unsafe { self.pt_cursor.try_map_from(self.reserve, item) } {
+            Ok(()) => Ok(()),
+            Err((error, item)) => {
+                let MappedItem::TrackedFrame(frame) = item.mapped_item else {
+                    unreachable!("recovery mapping only accepts tracked user frames")
+                };
+                Err((error, frame))
+            }
+        }
+    }
+}
+
 impl<'a> CursorMut<'a> {
     /// Queries the mapping at the current virtual address.
     ///
@@ -372,6 +507,30 @@ impl<'a> CursorMut<'a> {
 
         // SAFETY: It is safe to map untyped memory into the userspace.
         unsafe { self.pt_cursor.map(item) };
+    }
+
+    /// Maps a frame after fallibly acquiring every missing ordinary page-table node.
+    ///
+    /// On failure no PTE is published, the cursor address is unchanged, and the
+    /// original frame is returned. No reserve authority is used. The same range,
+    /// alignment and conflicting-mapping restrictions as [`Self::map`] apply.
+    pub fn try_map(
+        &mut self,
+        frame: UFrame,
+        prop: PageProperty,
+    ) -> core::result::Result<(), (Error, UFrame)> {
+        let item = VmItem::new_tracked(frame, prop);
+        // SAFETY: Only a tracked user frame is mapped into user space, under
+        // the original cursor's exclusive range lock, without overwriting.
+        match unsafe { self.pt_cursor.try_map(item) } {
+            Ok(()) => Ok(()),
+            Err((error, item)) => {
+                let MappedItem::TrackedFrame(frame) = item.mapped_item else {
+                    unreachable!("ordinary tracked mapping only accepts user frames")
+                };
+                Err((error, frame))
+            }
+        }
     }
 
     /// Maps a range of [`IoMem`] into the current slot.

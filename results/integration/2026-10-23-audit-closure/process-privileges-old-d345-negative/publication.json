@@ -1,0 +1,36 @@
+{
+  "schema": "trillionnium.source-bound-acceptance-publication.v1",
+  "raw_evidence_directory": "/data/asterinas-audit-build.8tdrjboi/proc-privileges-old-d345-negative-01",
+  "files": [
+    {
+      "raw": "compile.log",
+      "published": "compile.log.gz",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "compressed": true
+    },
+    {
+      "raw": "result.json",
+      "published": "result.json",
+      "raw_bytes": 2754,
+      "raw_sha256": "76a15243208e5ceeffb08446380f531f33a86e3aece71bdf44ef51875d5aa88f",
+      "published_sha256": "76a15243208e5ceeffb08446380f531f33a86e3aece71bdf44ef51875d5aa88f",
+      "compressed": false
+    },
+    {
+      "raw": "serial.log",
+      "published": "serial.log.gz",
+      "raw_bytes": 75521,
+      "raw_sha256": "ffbab68cafee7c49fc29169138e00510d49af4191829968520d619a2b8e15e77",
+      "published_sha256": "d9253699cdf8df486c747e24b0255c04f1682344d99bfa5bd71573441c394e75",
+      "compressed": true
+    }
+  ],
+  "selection": "Original text receipts, manifests and logs. ELF/initrd/targets remain in the recorded raw directory; retained receipts contain their actual hashes.",
+  "production_ready": false,
+  "g2_complete": false,
+  "passed": false,
+  "negative_control_matched": true,
+  "boundary": "Actual old d345 kernel lacks original NoNewPrivs status reporting. Positive verdict remains false; no later result is transferred."
+}

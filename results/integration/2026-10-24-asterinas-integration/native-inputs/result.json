@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "suite": "hepta_agentd_runtime",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_agentd_runtime",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "tests": 85,
+      "elapsed_seconds": 1.9950740919448435
+    },
+    {
+      "suite": "hepta_cognitive_store",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_cognitive_store",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "tests": 18,
+      "elapsed_seconds": 0.431714869919233
+    }
+  ],
+  "source_verification_exit": 0,
+  "scope": "actual host gate regression tests; no new native runtime qualification"
+}

@@ -13,12 +13,15 @@ use core::{
 };
 
 use inherit_methods_macro::inherit_methods;
-use ostd::mm::{FrameAllocOptions, PAGE_SIZE, Segment, VmIo, io::util::HasVmReaderWriter};
+use ostd::mm::{
+    AnyUFrameMeta, FrameAllocOptions, HasSize, PAGE_SIZE, Segment, VmIo,
+    io::util::HasVmReaderWriter,
+};
 use ostd_pod::Pod;
 
 /// A lock-free single-producer single-consumer (SPSC) FIFO ring buffer.
 ///
-/// This ring buffer is backed by a [`Segment<()>`] and provides non-blocking
+/// This ring buffer is backed by a [`Segment<M>`] (default metadata `()`) and provides non-blocking
 /// `push`/`pop` and `push_slice`/`pop_slice` operations for `T: Pod` items.
 /// It is designed for concurrent use where one thread produces items and
 /// another consumes them without requiring locks.
@@ -46,8 +49,8 @@ use ostd_pod::Pod;
 /// producer.push(42).unwrap();
 /// assert_eq!(consumer.pop(), Some(42));
 /// ```
-pub struct RingBuffer<T> {
-    segment: Segment<()>,
+pub struct RingBuffer<T, M: AnyUFrameMeta + ?Sized = ()> {
+    segment: Segment<M>,
     capacity: usize,
     tail: AtomicUsize,
     head: AtomicUsize,
@@ -59,7 +62,7 @@ pub struct RingBuffer<T> {
 /// A `Producer` has exclusive rights to push items into the ring buffer.
 /// It can be safely used from one thread while a [`Consumer`] operates
 /// on the same ring buffer from another thread.
-pub struct Producer<T, R: Deref<Target = RingBuffer<T>>> {
+pub struct Producer<T, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized = ()> {
     rb: R,
     phantom: PhantomData<T>,
 }
@@ -69,20 +72,18 @@ pub struct Producer<T, R: Deref<Target = RingBuffer<T>>> {
 /// A `Consumer` has exclusive rights to pop items from the ring buffer.
 /// It can be safely used from one thread while a [`Producer`] operates
 /// on the same ring buffer from another thread.
-pub struct Consumer<T, R: Deref<Target = RingBuffer<T>>> {
+pub struct Consumer<T, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized = ()> {
     rb: R,
     phantom: PhantomData<T>,
 }
 
 /// A producer backed by an `Arc<RingBuffer<T>>`.
-pub type RbProducer<T> = Producer<T, Arc<RingBuffer<T>>>;
+pub type RbProducer<T, M = ()> = Producer<T, Arc<RingBuffer<T, M>>, M>;
 
 /// A consumer backed by an `Arc<RingBuffer<T>>`.
-pub type RbConsumer<T> = Consumer<T, Arc<RingBuffer<T>>>;
+pub type RbConsumer<T, M = ()> = Consumer<T, Arc<RingBuffer<T, M>>, M>;
 
 impl<T> RingBuffer<T> {
-    const T_SIZE: usize = size_of::<T>();
-
     /// Creates a new ring buffer with the specified capacity.
     ///
     /// # Panics
@@ -103,20 +104,40 @@ impl<T> RingBuffer<T> {
             .alloc_segment(nframes)
             .unwrap();
 
-        Self {
+        Self::from_segment(capacity, segment).unwrap()
+    }
+}
+
+impl<T, M: AnyUFrameMeta + ?Sized> RingBuffer<T, M> {
+    const T_SIZE: usize = size_of::<T>();
+
+    /// Uses an existing untyped segment without replacing its frame metadata.
+    ///
+    /// `capacity` must be a power of two, items must have nonzero size, and the
+    /// segment must cover all items. Invalid input drops the supplied owner and
+    /// returns `InvalidArgs`. Splitting the buffer or cloning segment handles
+    /// preserves the original frame ownership and final-reference destructor.
+    pub fn from_segment(capacity: usize, segment: Segment<M>) -> Result<Self, ostd::Error> {
+        let bytes = capacity
+            .checked_mul(Self::T_SIZE)
+            .ok_or(ostd::Error::InvalidArgs)?;
+        if !capacity.is_power_of_two() || bytes == 0 || bytes > segment.size() {
+            return Err(ostd::Error::InvalidArgs);
+        }
+        Ok(Self {
             segment,
             capacity,
             tail: AtomicUsize::new(0),
             head: AtomicUsize::new(0),
             phantom: PhantomData,
-        }
+        })
     }
 
     /// Splits the ring buffer into a producer and consumer pair.
     ///
     /// The returned [`RbProducer`] and [`RbConsumer`] share ownership of the
     /// underlying buffer via `Arc` and can be used concurrently from different threads.
-    pub fn split(self) -> (RbProducer<T>, RbConsumer<T>) {
+    pub fn split(self) -> (RbProducer<T, M>, RbConsumer<T, M>) {
         let producer = Producer {
             rb: Arc::new(self),
             phantom: PhantomData,
@@ -136,7 +157,7 @@ impl<T> RingBuffer<T> {
     /// Returns a reference to the underlying memory segment.
     ///
     /// This is intended for advanced use cases that require direct memory access.
-    pub fn segment(&self) -> &Segment<()> {
+    pub fn segment(&self) -> &Segment<M> {
         &self.segment
     }
 
@@ -216,7 +237,7 @@ impl<T> RingBuffer<T> {
     }
 }
 
-impl RingBuffer<u8> {
+impl<M: AnyUFrameMeta + ?Sized> RingBuffer<u8, M> {
     /// Commits a read operation by advancing the head pointer.
     ///
     /// This method is intended for advanced use cases where the caller reads
@@ -236,7 +257,7 @@ impl RingBuffer<u8> {
     }
 }
 
-impl<T: Pod> RingBuffer<T> {
+impl<T: Pod, M: AnyUFrameMeta + ?Sized> RingBuffer<T, M> {
     /// Pushes a single item into the ring buffer.
     ///
     /// Returns `Some(())` on success, or `None` if the buffer is full.
@@ -286,7 +307,7 @@ impl<T: Pod> RingBuffer<T> {
     }
 }
 
-impl<T: Pod, R: Deref<Target = RingBuffer<T>>> Producer<T, R> {
+impl<T: Pod, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized> Producer<T, R, M> {
     const T_SIZE: usize = size_of::<T>();
 
     /// Pushes a single item into the ring buffer.
@@ -344,7 +365,7 @@ impl<T: Pod, R: Deref<Target = RingBuffer<T>>> Producer<T, R> {
 }
 
 #[inherit_methods(from = "self.rb")]
-impl<T, R: Deref<Target = RingBuffer<T>>> Producer<T, R> {
+impl<T, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized> Producer<T, R, M> {
     pub fn capacity(&self) -> usize;
     pub fn is_empty(&self) -> bool;
     pub fn is_full(&self) -> bool;
@@ -352,10 +373,10 @@ impl<T, R: Deref<Target = RingBuffer<T>>> Producer<T, R> {
     pub fn free_len(&self) -> usize;
     pub fn head(&self) -> Wrapping<usize>;
     pub fn tail(&self) -> Wrapping<usize>;
-    pub fn segment(&self) -> &Segment<()>;
+    pub fn segment(&self) -> &Segment<M>;
 }
 
-impl<T, R: Deref<Target = RingBuffer<T>>> Producer<T, R> {
+impl<T, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized> Producer<T, R, M> {
     /// Commits a write operation by advancing the tail pointer.
     ///
     /// This method is intended for advanced use cases where the caller writes
@@ -375,7 +396,7 @@ impl<T, R: Deref<Target = RingBuffer<T>>> Producer<T, R> {
     }
 }
 
-impl<T: Pod, R: Deref<Target = RingBuffer<T>>> Consumer<T, R> {
+impl<T: Pod, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized> Consumer<T, R, M> {
     const T_SIZE: usize = size_of::<T>();
 
     /// Pops a single item from the ring buffer.
@@ -454,7 +475,7 @@ impl<T: Pod, R: Deref<Target = RingBuffer<T>>> Consumer<T, R> {
 }
 
 #[inherit_methods(from = "self.rb")]
-impl<T, R: Deref<Target = RingBuffer<T>>> Consumer<T, R> {
+impl<T, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized> Consumer<T, R, M> {
     pub fn capacity(&self) -> usize;
     pub fn is_empty(&self) -> bool;
     pub fn is_full(&self) -> bool;
@@ -462,12 +483,12 @@ impl<T, R: Deref<Target = RingBuffer<T>>> Consumer<T, R> {
     pub fn free_len(&self) -> usize;
     pub fn head(&self) -> Wrapping<usize>;
     pub fn tail(&self) -> Wrapping<usize>;
-    pub fn segment(&self) -> &Segment<()>;
+    pub fn segment(&self) -> &Segment<M>;
 }
 
-impl<T, R: Deref<Target = RingBuffer<T>>> Consumer<T, R> {
+impl<T, R: Deref<Target = RingBuffer<T, M>>, M: AnyUFrameMeta + ?Sized> Consumer<T, R, M> {
     /// Returns the underlying ring buffer.
-    pub fn ring_buffer(&self) -> &RingBuffer<T> {
+    pub fn ring_buffer(&self) -> &RingBuffer<T, M> {
         &self.rb
     }
 

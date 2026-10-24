@@ -10,9 +10,9 @@
 //! spans the CPU mutation. Recovery views retain the same D namespace on exec.
 
 use os_control::{
-    BootId, CapSpaceId, ControlCoreWith, DeliveryError, DeliveryObservation,
-    DeliveryState, DeliveryViewWith, NativeDeliveryRequest,
-    OriginalOwnerAuthorityWith, OwnerId, ReserveAttemptWith,
+    BootId, CapSpaceId, ControlCoreWith, DeliveryError, DeliveryObservation, DeliveryState,
+    DeliveryViewWith, NativeDeliveryRequest, OriginalOwnerAuthorityWith, OwnerId,
+    ReserveAttemptWith,
 };
 use ostd::sync::Mutex;
 
@@ -35,85 +35,230 @@ struct HistorySlot {
     ack: Option<KernelHistoryOwner>,
 }
 
-/// The only G1-d slots. Constructors are reachable only from the sealed,
+/// Exactly two retained original namespaces, independent of any ended
+/// Process. The caller must fence and reap every image that can reserve into
+/// them BEFORE checking the frontier. No counter or terminal is copied here.
+#[cfg(feature = "g2-trusted-daemon")]
+#[derive(Clone)]
+pub(super) struct RetainedHistories {
+    slots: [Arc<HistorySlot>; 2],
+}
+
+#[cfg(feature = "g2-trusted-daemon")]
+impl RetainedHistories {
+    pub(super) fn spaces(&self) -> [[u8; 16]; 2] {
+        self.slots
+            .each_ref()
+            .map(|history| history.core.identity().cap_space_id().bytes())
+    }
+
+    pub(super) fn fully_retired(&self) -> bool {
+        self.slots.iter().all(|history| {
+            let next = history.core.next_sequence();
+            history.core.retired_through().checked_add(1) == Some(next)
+                // Even an empty lost namespace is not a valid retirement
+                // proof. Query the original view; do not infer health from
+                // equal copied counters or turn HistoryLost into NotSeen.
+                && history.core.query_delivery(&history.view, next)
+                    .is_ok_and(|observation| observation.state == DeliveryState::NotSeen)
+        })
+    }
+}
+
+/// The G1-d/G2 slots. Constructors are reachable only from the sealed,
 /// stopped bootstrap transaction; later exec/fork allocate none of them.
 pub(super) struct TrustedControlSlots {
     key: ProcessImageKey,
     operation_gate: Mutex<()>,
-    manager: Arc<NativeCpuManager>,
-    core: KernelCore,
+    manager: Option<Arc<NativeCpuManager>>,
+    core: Option<KernelCore>,
     manager_history: Arc<HistorySlot>,
     recovery_history: Option<Arc<HistorySlot>>,
+    retirement_domain: [u8; 8],
 }
 
 impl TrustedControlSlots {
+    #[cfg(not(feature = "g2-trusted-daemon"))]
     pub(super) fn prepare_pair(
         managers: [Arc<NativeCpuManager>; 2],
         keys: [ProcessImageKey; 2],
+    ) -> Result<[Arc<Self>; 2]> {
+        Self::prepare_pair_with_ack(managers, keys, false)
+    }
+
+    /// The separately frozen G2 owner retains the original history authority
+    /// for normal retirement as well as the independent recovery image. Its
+    /// original durable writer must construct a permit before every request.
+    /// This method does not attest SQLite durability or initialize a writer.
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn prepare_original_owner_pair(
+        managers: [Arc<NativeCpuManager>; 2],
+        keys: [ProcessImageKey; 2],
+    ) -> Result<[Arc<Self>; 2]> {
+        Self::prepare_pair_with_ack(managers, keys, true)
+    }
+
+    fn prepare_pair_with_ack(
+        managers: [Arc<NativeCpuManager>; 2],
+        keys: [ProcessImageKey; 2],
+        original_owner_ack: bool,
     ) -> Result<[Arc<Self>; 2]> {
         let boot = BootId::new(hepta_boot_id());
         let manager_space = CapSpaceId::new(hepta_image_space_id(keys[0]));
         let recovery_space = CapSpaceId::new(hepta_image_space_id(keys[1]));
         let owner = OwnerId::new(recovery_space.bytes());
-        let make_error = |_| Error::with_message(Errno::ENOMEM, "cannot create bounded native namespace");
-        let (manager_core, manager_ack) = KernelCore::with_original_owner(boot, manager_space, owner)
-            .map_err(make_error)?;
-        let (recovery_core, recovery_ack) = KernelCore::with_original_owner(boot, recovery_space, owner)
-            .map_err(make_error)?;
+        let make_error =
+            |_| Error::with_message(Errno::ENOMEM, "cannot create bounded native namespace");
+        let (manager_core, manager_ack) =
+            KernelCore::with_original_owner(boot, manager_space, owner).map_err(make_error)?;
+        let (recovery_core, recovery_ack) =
+            KernelCore::with_original_owner(boot, recovery_space, owner).map_err(make_error)?;
         let readonly = Arc::new(HistorySlot {
-            view: manager_core.delivery_view(), core: manager_core.clone(), ack: None,
+            view: manager_core.delivery_view(),
+            core: manager_core.clone(),
+            ack: None,
         });
         let retained = Arc::new(HistorySlot {
             view: manager_core.delivery_view_for(owner).map_err(make_error)?,
-            core: manager_core.clone(), ack: Some(manager_ack),
+            core: manager_core.clone(),
+            ack: Some(manager_ack),
         });
         let own = Arc::new(HistorySlot {
             view: recovery_core.delivery_view_for(owner).map_err(make_error)?,
-            core: recovery_core.clone(), ack: Some(recovery_ack),
+            core: recovery_core.clone(),
+            ack: Some(recovery_ack),
         });
         let [manager, recovery] = managers;
+        let manager_history = if original_owner_ack {
+            retained.clone()
+        } else {
+            readonly
+        };
+        let retirement_domain = if original_owner_ack {
+            *b"HOS2OWN1"
+        } else {
+            *b"G1DQUAL1"
+        };
         Ok([
-            Arc::new(Self { key: keys[0], operation_gate: Mutex::new(()), manager,
-                core: manager_core, manager_history: readonly, recovery_history: None }),
-            Arc::new(Self { key: keys[1], operation_gate: Mutex::new(()), manager: recovery,
-                core: recovery_core, manager_history: retained, recovery_history: Some(own) }),
+            Arc::new(Self {
+                key: keys[0],
+                operation_gate: Mutex::new(()),
+                manager: Some(manager),
+                core: Some(manager_core),
+                manager_history,
+                recovery_history: None,
+                retirement_domain,
+            }),
+            Arc::new(Self {
+                key: keys[1],
+                operation_gate: Mutex::new(()),
+                manager: Some(recovery),
+                core: Some(recovery_core),
+                manager_history: retained,
+                recovery_history: Some(own),
+                retirement_domain,
+            }),
         ])
     }
 
-    pub(super) fn belongs_to(&self, key: ProcessImageKey) -> bool { self.key == key }
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn retained_histories(&self) -> Result<RetainedHistories> {
+        let recovery = self.recovery_history.as_ref().ok_or_else(|| {
+            Error::with_message(
+                Errno::EPERM,
+                "only the original recovery owner retains both histories",
+            )
+        })?;
+        if self.retirement_domain != *b"HOS2OWN1"
+            || self.manager_history.ack.is_none()
+            || recovery.ack.is_none()
+        {
+            return_errno_with_message!(
+                Errno::EPERM,
+                "successor requires the original history owners"
+            )
+        }
+        Ok(RetainedHistories {
+            slots: [self.manager_history.clone(), recovery.clone()],
+        })
+    }
+
+    /// A fresh final image may drain these SAME two original namespaces. It
+    /// receives no NativeGrant, resource slot, effect namespace or D allocator.
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn prepare_history_only(
+        key: ProcessImageKey,
+        histories: &RetainedHistories,
+    ) -> Arc<Self> {
+        Arc::new(Self {
+            key,
+            operation_gate: Mutex::new(()),
+            manager: None,
+            core: None,
+            manager_history: histories.slots[0].clone(),
+            recovery_history: Some(histories.slots[1].clone()),
+            retirement_domain: *b"HOS2OWN1",
+        })
+    }
+
+    pub(super) fn belongs_to(&self, key: ProcessImageKey) -> bool {
+        self.key == key
+    }
 
     pub(super) fn revoke_after_image_close(&self) {
         let _gate = self.operation_gate.lock();
-        self.manager.revoke();
+        if let Some(manager) = &self.manager {
+            manager.revoke();
+        }
     }
 
-    fn install(&self, request: &wire::Request, payload: wire::InstallBudgetRequest) -> NativeResult {
+    fn install(
+        &self,
+        request: &wire::Request,
+        payload: wire::InstallBudgetRequest,
+    ) -> NativeResult {
+        let manager = self.manager.as_ref().ok_or(Status::PermissionDenied)?;
+        let core = self.core.as_ref().ok_or(Status::PermissionDenied)?;
         if request.target_slot != 2 || request.target_generation != 1 {
             return Err(Status::StaleHandle);
         }
         let sequence = u64::from_le_bytes(request.request_id[..8].try_into().unwrap());
         let native = NativeDeliveryRequest::from_wire(
-            sequence, self.manager.grant(), payload.expected_revision, payload.cap_ns,
-            request.target_slot, request.target_generation,
-        ).map_err(delivery_error)?;
-        let observation = match self.core.reserve_native_or_get(native, self.manager.publisher())
+            sequence,
+            manager.grant(),
+            payload.expected_revision,
+            payload.cap_ns,
+            request.target_slot,
+            request.target_generation,
+        )
+        .map_err(delivery_error)?;
+        let observation = match core
+            .reserve_native_or_get(native, manager.publisher())
             .map_err(delivery_error)?
         {
             ReserveAttemptWith::Existing(observation) => observation,
             ReserveAttemptWith::Reserved(token) => {
-                self.manager.execute(&self.core, &token).map_err(delivery_error)?
+                manager.execute(core, &token).map_err(delivery_error)?
             }
         };
         install_observation(observation)
     }
 
-    fn history(&self, slot: u64, generation: u64, payload: wire::DeliveryRequest)
-        -> core::result::Result<&HistorySlot, Status>
-    {
-        if generation != 1 { return Err(Status::StaleHandle); }
+    fn history(
+        &self,
+        slot: u64,
+        generation: u64,
+        payload: wire::DeliveryRequest,
+    ) -> core::result::Result<&HistorySlot, Status> {
+        if generation != 1 {
+            return Err(Status::StaleHandle);
+        }
         let history = match slot {
             3 => self.manager_history.as_ref(),
-            4 => self.recovery_history.as_deref().ok_or(Status::StaleHandle)?,
+            4 => self
+                .recovery_history
+                .as_deref()
+                .ok_or(Status::StaleHandle)?,
             _ => return Err(Status::StaleHandle),
         };
         let identity = history.core.identity();
@@ -131,44 +276,64 @@ impl TrustedControlSlots {
                 if request.target_slot != 1 || request.target_generation != 1 {
                     return Err(Status::StaleHandle);
                 }
-                let usage = self.manager.read_usage().map_err(|error| match error {
-                    CpuUsageError::Unbound | CpuUsageError::Closed | CpuUsageError::Expired => Status::Revoked,
+                let manager = self.manager.as_ref().ok_or(Status::PermissionDenied)?;
+                let usage = manager.read_usage().map_err(|error| match error {
+                    CpuUsageError::Unbound | CpuUsageError::Closed | CpuUsageError::Expired => {
+                        Status::Revoked
+                    }
                     _ => Status::Indeterminate,
                 })?;
-                Ok((usage.revision, ResponsePayload::ReadUsage(wire::ReadUsageResponse {
-                    sample_boottime_ns: usage.sample_boottime_ns,
-                    cumulative_cpu_ns: usage.cumulative_cpu_ns,
-                    window_start_ns: usage.window_start_ns,
-                    window_consumed_ns: usage.window_consumed_ns,
-                    active_cap_ns: usage.active_cap_ns,
-                    active_period_ns: usage.active_period_ns,
-                    event_sequence: usage.event_sequence,
-                    dropped_events: usage.dropped_events,
-                })))
+                Ok((
+                    usage.revision,
+                    ResponsePayload::ReadUsage(wire::ReadUsageResponse {
+                        sample_boottime_ns: usage.sample_boottime_ns,
+                        cumulative_cpu_ns: usage.cumulative_cpu_ns,
+                        window_start_ns: usage.window_start_ns,
+                        window_consumed_ns: usage.window_consumed_ns,
+                        active_cap_ns: usage.active_cap_ns,
+                        active_period_ns: usage.active_period_ns,
+                        event_sequence: usage.event_sequence,
+                        dropped_events: usage.dropped_events,
+                    }),
+                ))
             }
             wire::RequestPayload::InstallBudget(payload) => self.install(request, payload),
             wire::RequestPayload::QueryDelivery(payload) => {
-                let history = self.history(request.target_slot, request.target_generation, payload)?;
-                let observation = history.core.query_delivery(&history.view, payload.sequence)
+                let history =
+                    self.history(request.target_slot, request.target_generation, payload)?;
+                let observation = history
+                    .core
+                    .query_delivery(&history.view, payload.sequence)
                     .map_err(delivery_error)?;
                 query_observation(observation)
             }
             wire::RequestPayload::RetireThrough(payload) => {
-                let history = self.history(request.target_slot, request.target_generation, payload)?;
+                let history =
+                    self.history(request.target_slot, request.target_generation, payload)?;
                 let authority = history.ack.as_ref().ok_or(Status::PermissionDenied)?;
-                // This opt-in qualification image is the trusted ack holder.
-                // The tag records this exact namespace/frontier claim; it is
-                // explicitly NOT a Hepta SQLite durability or fsync receipt.
+                // The separately frozen initial image is the trusted ack
+                // holder. The tag records its exact namespace/frontier claim;
+                // it is NOT a Hepta SQLite durability or fsync receipt. G2
+                // must demonstrate the original writer's permit and durable
+                // terminal prefix before invoking this unchanged wire call.
                 let mut claim = [0u8; 32];
                 claim[..16].copy_from_slice(&payload.history_space);
                 claim[16..24].copy_from_slice(&payload.sequence.to_le_bytes());
-                claim[24..].copy_from_slice(b"G1DQUAL1");
-                let ack = authority.history_ack(payload.sequence, claim).map_err(delivery_error)?;
-                let receipt = history.core.retire_through(&history.view, ack, authority)
+                claim[24..].copy_from_slice(&self.retirement_domain);
+                let ack = authority
+                    .history_ack(payload.sequence, claim)
                     .map_err(delivery_error)?;
-                Ok((0, ResponsePayload::RetireThrough(wire::RetireThroughResponse {
-                    retired_through: receipt.retired_through, next_sequence: receipt.next_sequence,
-                })))
+                let receipt = history
+                    .core
+                    .retire_through(&history.view, ack, authority)
+                    .map_err(delivery_error)?;
+                Ok((
+                    0,
+                    ResponsePayload::RetireThrough(wire::RetireThroughResponse {
+                        retired_through: receipt.retired_through,
+                        next_sequence: receipt.next_sequence,
+                    }),
+                ))
             }
             wire::RequestPayload::QueryAbi => Err(Status::InvalidInput),
         }
@@ -178,9 +343,11 @@ impl TrustedControlSlots {
 impl Process {
     /// Resolve a real image slot, acquire its final-use gate, then recheck the
     /// image. Never keep the image lock while entering another owner.
-    pub(crate) fn dispatch_hepta_control(&self, key: ProcessImageKey, request: &wire::Request)
-        -> NativeResult
-    {
+    pub(crate) fn dispatch_hepta_control(
+        &self,
+        key: ProcessImageKey,
+        request: &wire::Request,
+    ) -> NativeResult {
         let slots = self.hepta_image.lock().initial_control(key)?.clone();
         let _gate = slots.operation_gate.lock();
         self.hepta_image.lock().initial_control(key)?;
@@ -192,28 +359,42 @@ impl Process {
     /// then the canonical owner lock fences future uses of this delegation.
     pub(in crate::process) fn revoke_closing_hepta_control(&self) {
         let slots = self.hepta_image.lock().closing_control();
-        if let Some(slots) = slots { slots.revoke_after_image_close(); }
+        if let Some(slots) = slots {
+            slots.revoke_after_image_close();
+        }
+        #[cfg(feature = "g2-trusted-daemon")]
+        {
+            let launcher = self.hepta_image.lock().closing_launcher();
+            if let Some(launcher) = launcher {
+                launcher.close();
+            }
+        }
     }
 }
 
 fn delivery_error(error: DeliveryError) -> Status {
     match error {
-        DeliveryError::InvalidSequence | DeliveryError::InvalidRequest
-            | DeliveryError::InvalidIdentity | DeliveryError::InvalidCapacity
-            | DeliveryError::InvalidAck => Status::InvalidInput,
+        DeliveryError::InvalidSequence
+        | DeliveryError::InvalidRequest
+        | DeliveryError::InvalidIdentity
+        | DeliveryError::InvalidCapacity
+        | DeliveryError::InvalidAck => Status::InvalidInput,
         DeliveryError::PermissionDenied => Status::PermissionDenied,
         DeliveryError::Conflict => Status::Conflict,
         DeliveryError::ResourceExhausted => Status::ResourceExhausted,
         DeliveryError::Busy | DeliveryError::PendingPrefix => Status::Busy,
         DeliveryError::OutOfOrder { .. } | DeliveryError::NotSeen => Status::OutOfOrder,
         DeliveryError::Retired => Status::Retired,
-        DeliveryError::HistoryLost | DeliveryError::TerminalImmutable
-            | DeliveryError::InvalidPublish => Status::Indeterminate,
+        DeliveryError::HistoryLost
+        | DeliveryError::TerminalImmutable
+        | DeliveryError::InvalidPublish => Status::Indeterminate,
     }
 }
 
 fn install_observation(observation: DeliveryObservation) -> NativeResult {
-    if observation.hos2_saved_status_code().is_none() { return Err(Status::Indeterminate); }
+    if observation.hos2_saved_status_code().is_none() {
+        return Err(Status::Indeterminate);
+    }
     if observation.state != DeliveryState::Terminal {
         return Err(match observation.state {
             DeliveryState::Reserved => Status::Busy,
@@ -223,26 +404,44 @@ fn install_observation(observation: DeliveryObservation) -> NativeResult {
     }
     let status = Status::from_u16(observation.status.ok_or(Status::Indeterminate)?.hos2_code())
         .map_err(|_| Status::Indeterminate)?;
-    if status != Status::Ok { return Err(status); }
-    Ok((observation.saved_revision.ok_or(Status::Indeterminate)?,
+    if status != Status::Ok {
+        return Err(status);
+    }
+    Ok((
+        observation.saved_revision.ok_or(Status::Indeterminate)?,
         ResponsePayload::InstallBudget(wire::InstallBudgetResponse {
             previous_revision: observation.previous_revision.ok_or(Status::Indeterminate)?,
             effective_boottime_ns: observation.effective_ns.ok_or(Status::Indeterminate)?,
             consumed_at_apply_ns: observation.consumed_ns.ok_or(Status::Indeterminate)?,
-        })))
+        }),
+    ))
 }
 
 fn query_observation(observation: DeliveryObservation) -> NativeResult {
-    let saved_status = Status::from_u16(observation.hos2_saved_status_code()
-        .ok_or(Status::Indeterminate)?).map_err(|_| Status::Indeterminate)?;
+    let saved_status = Status::from_u16(
+        observation
+            .hos2_saved_status_code()
+            .ok_or(Status::Indeterminate)?,
+    )
+    .map_err(|_| Status::Indeterminate)?;
     let state = wire::DeliveryState::from_u16(observation.state.hos2_code())
         .map_err(|_| Status::Indeterminate)?;
-    Ok((0, ResponsePayload::QueryDelivery(wire::QueryDeliveryResponse {
-        state, saved_status, sequence: observation.id.sequence(),
-        stable_object_id: observation.stable_object_id.map_or([0; 16], |id| id.bytes()),
-        saved_revision: observation.saved_revision.unwrap_or(0),
-        previous_revision: observation.previous_revision.unwrap_or(0),
-        effective_ns: observation.effective_ns.unwrap_or(0),
-        consumed_ns: observation.consumed_ns.unwrap_or(0),
-    })))
+    Ok((
+        0,
+        ResponsePayload::QueryDelivery(wire::QueryDeliveryResponse {
+            state,
+            saved_status,
+            sequence: observation.id.sequence(),
+            stable_object_id: observation
+                .stable_object_id
+                .map_or([0; 16], |id| id.bytes()),
+            saved_revision: observation.saved_revision.unwrap_or(0),
+            previous_revision: observation.previous_revision.unwrap_or(0),
+            effective_ns: observation.effective_ns.unwrap_or(0),
+            consumed_ns: observation.consumed_ns.unwrap_or(0),
+        }),
+    ))
 }
+
+#[cfg(all(ktest, feature = "g2-trusted-daemon"))]
+mod successor_tests;

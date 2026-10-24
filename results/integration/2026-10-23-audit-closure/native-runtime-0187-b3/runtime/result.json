@@ -1,0 +1,85 @@
+{
+  "candidate_source_sha256": {
+    "tests/workloads/hepta_agentd_abi/cpio_codec.py": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+    "tests/workloads/hepta_agentd_abi/run_agentd_abi.py": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c",
+    "tests/workloads/hepta_agentd_runtime/agentd_runtime_probe.c": "8ed829ba92b35ca38c18fbc280c69f2afb6052b27db939f10e65d1a7b663ecb3",
+    "tests/workloads/hepta_agentd_runtime/source-review.json": "aa4c83d45c0011784e30f7c81f743d689c9f3fb3ee87b65c3d0ba9c124bf2bb0"
+  },
+  "crash_durability_verified": false,
+  "evidence_directory_created": true,
+  "executed": true,
+  "execution_attempted": true,
+  "f1_completed": false,
+  "f_completed": false,
+  "finished_at_utc": "2026-10-23T16:11:10.321674+00:00",
+  "g2_completed": false,
+  "hardware_verified": false,
+  "initramfs_sha256": "80fb6c85cb41d9bdc019abce6ef2bdcf9a803c8ff1d8c16fe978245d29ff7c88",
+  "input_manifest_sha256": "e9e85b04a6b2692cfa1ff2cc06ced0e50f3ac927f690192e81800dd49842be98",
+  "input_source_attestation": "caller-retained build receipts; fixed reviewed source identities checked; not remote attestation",
+  "inputs_unchanged": true,
+  "kernel_sha256": "16d59287f0d228e0032520a36f876aecfeda9190d215eec61bce68bb03988c52",
+  "launcher_sha256": "1dd035e5f9ba06fa9c8a57b063016d5f5933c1c67022e941ec6cf46452f38ac8",
+  "nonce": "992d75b5bbbad63353a765d050135f25ffca5bcad968c37f5f05606506d47cb1",
+  "observed_lifecycle": {
+    "checks": [
+      "original_starting",
+      "original_running",
+      "bounded_capabilities_events",
+      "missing_run_read",
+      "same_process_draining",
+      "original_restart",
+      "old_spawn_rejected",
+      "controlled_stop"
+    ],
+    "new_pid": 206,
+    "new_spawn": 5,
+    "old_pid": 26,
+    "old_spawn": 1,
+    "record_count": 8
+  },
+  "original_owner_runtime_lifecycle_verified": true,
+  "passed": true,
+  "payload_sha256": "b79b84032abde183146a89c242f9235cdbcfbb86f5ca3ced3e56cf8f76fef2b0",
+  "production": false,
+  "qemu_exit": 33,
+  "qemu_started_at_utc": "2026-10-23T16:09:46.345754+00:00",
+  "runner_sha256": "12bbfd94fee5f0e57750d9e2305d4a9e2666e07ee25e549f4dfa98868f78bf81",
+  "schema": "hepta.native-original-runtime-result.v1",
+  "scope": "unchanged original registry/supervisor -> Agentd runtime -> original read-only lifecycle fixture",
+  "serial_excessive": false,
+  "serial_sha256": "38c6e6e5717f18a7ce1298f969bd7271a6302e27178daecb0ebd53c0f10cb60d",
+  "sources": {
+    "desktop": {
+      "head": "0187bd578f6786c40c812c13976e4889a1aba835",
+      "tree": "335007e4f94114c6a26506d9448faf0d43c4245c"
+    },
+    "hepta": {
+      "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+      "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+    }
+  },
+  "started_at_utc": "2026-10-23T16:09:24.613427+00:00",
+  "state_after_sha256": "99349173e64f0e8554d5761c050a5569be158edbc340ca4971ae345fd97e98c5",
+  "state_before_sha256": "6b9c69c4623f7c26831e059266c4fd320f6ee9b682a3ae42d9783d1cad044613",
+  "state_bytes": 268435456,
+  "timed_out": false,
+  "tool_identities": {
+    "cc": {
+      "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+    },
+    "mkfs": {
+      "path": "/usr/sbin/mke2fs",
+      "sha256": "07cd24ce58a410cc9cee93c55ae5ac95986df016c5907dc7a49b55389bd41ed2"
+    },
+    "qemu": {
+      "path": "/usr/bin/qemu-system-x86_64",
+      "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    },
+    "readelf": {
+      "path": "/usr/bin/x86_64-linux-gnu-readelf",
+      "sha256": "64c58e15274bbbb5153f31078e455e9e77ee5f51489e709bba5bb788ce9df2b0"
+    }
+  }
+}

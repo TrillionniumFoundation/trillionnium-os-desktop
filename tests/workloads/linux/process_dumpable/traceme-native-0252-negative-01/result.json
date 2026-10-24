@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "command": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/signal-bounds-native-0252-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-native-0252-negative-01/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-native-0252-negative-01/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "status": "complete",
+  "passed": false,
+  "expected_negative": true,
+  "original_kernel_receipt": "/data/asterinas-audit-build.8tdrjboi/signal-bounds-native-0252-01/ordinary/result.json",
+  "kernel_receipt_sha256": "f85a30e74ce0403658faa5b8938d403fe8c8e9aea6e2d55f455924a8fec8d01c",
+  "kernel_sha256": "202baef98b167989a85744f30290da3a85b9ce49d8e1e71c5acae662ed511014",
+  "kernel_source": "02521c15edbd8b2308248f28fcecf285b863a4c6",
+  "kernel_tree": "7def41fc2e4f043cc260f75abf68f617d7e7a9f5",
+  "probe_binary": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-v1/traceme-probe",
+  "probe_sha256": "115db6c3362c9778cb4d7e72502dbbccf1e32c5b6a895a0c1c370d25fa86390a",
+  "shape": {
+    "entry": 4202128,
+    "bytes": 799616,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4722688,
+        "file_end": 526765,
+        "entry_inside": true
+      },
+      {
+        "start": 4722688,
+        "end": 4878336,
+        "file_end": 684010,
+        "entry_inside": false
+      },
+      {
+        "start": 4878336,
+        "end": 4931584,
+        "file_end": 711360,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "115db6c3362c9778cb4d7e72502dbbccf1e32c5b6a895a0c1c370d25fa86390a"
+  },
+  "linux_receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-linux-reference-01.json",
+  "linux_receipt_sha256": "e5409aaf58e080349116d842820450ddbc7554f35c66defc9bb1a7e09a964ef5",
+  "original_initrd_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "injected_initrd_sha256": "d76dabdaea872e041bd8d42acc504b0e74d3bbb8efc94ba149ed8a11be980f0b",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "timeout_seconds": 120,
+  "memory_mib": 512,
+  "smp": 1,
+  "sdk_or_kernel_rebuilt": false,
+  "production_isolation_qualified": false,
+  "raw_qemu_exit": null,
+  "seconds": 120.031314930995,
+  "probe_exit_42": false,
+  "serial_sha256": "1d9e1bd9ef376b815c2035d11f298207e6b3c24744d3b5e978805c358a74e5e8",
+  "observations": [
+    {
+      "suite": "dumpable-traceme-v1",
+      "observer_uid": 60001,
+      "observer_gid": 60001,
+      "cap_eff": 0,
+      "cap_prm": 0,
+      "nnp": 1,
+      "own_child_only": true
+    }
+  ],
+  "failed_observations": [],
+  "summaries": [],
+  "expected_negative_reproduced": false,
+  "inputs_unchanged": true
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "trillionnium.native-unix-owner-source-bound.v1",
+  "source_head": "d5a21bb7e70a22cd022f4275ba2d22a6b726d233",
+  "source_tree": "799487b33846203ee7b79680adbf6c2f69476024",
+  "source_before_sha256": "2fd9cf9b67135fa2c7400af1edd740c52590af68ed93017332c9d56087c9134d",
+  "ordinary_receipt_sha256": "09f28362a8fd9b29152162922907b9b21a41807c4de2ccafe4c6bea1479442ef",
+  "kernel_sha256": "f22e596de885a901cda99d5115edd915a12b017f31c383327ea5179c6f6d8c8d",
+  "passed": true,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "argv": [
+    "python3",
+    "-I",
+    "-B",
+    "tests/workloads/linux/unix_ownership/run_guest.py",
+    "--kernel",
+    "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/ordinary/product-kernel.elf",
+    "--initramfs",
+    "/data/asterinas-audit-build.8tdrjboi/vmar-fallible-fault-fixed/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+    "--output",
+    "/data/asterinas-audit-build.8tdrjboi/vmar-fault-native-d5a2-01/ownership12"
+  ],
+  "exit_code": 0,
+  "guest_receipt_sha256": "c91adb87291a3a1465009297d8c5308ccdf1a13cff9554b0be401b8c5091a312",
+  "source_unchanged": true,
+  "source_after_sha256": "2fd9cf9b67135fa2c7400af1edd740c52590af68ed93017332c9d56087c9134d",
+  "elapsed_seconds": 5.907
+}

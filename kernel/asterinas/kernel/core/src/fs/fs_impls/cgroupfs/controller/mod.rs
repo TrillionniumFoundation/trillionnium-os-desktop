@@ -231,7 +231,8 @@ pub(crate) struct Controller {
 
     cpuset: Rcu<Arc<SubController<CpuSetController>>>,
     cpu: Rcu<Arc<SubController<CpuController>>>,
-    memory: Rcu<Arc<SubController<MemoryController>>>,
+    // Physical charges retain this identity across activation changes.
+    memory: Arc<SubController<MemoryController>>,
     pids: Rcu<Arc<SubController<PidsController>>>,
 }
 
@@ -240,14 +241,26 @@ impl Controller {
     pub(super) fn new(parent_controller: Option<&Controller>) -> Self {
         let cpuset_controller = Arc::new(SubController::new(parent_controller));
         let cpu_controller = Arc::new(SubController::new(parent_controller));
-        let memory_controller = Arc::new(SubController::new(parent_controller));
+        let memory_parent = parent_controller.map(|controller| controller.memory.clone());
+        let domain = if let Some(parent) = &memory_parent {
+            crate::vm::user_memory::hierarchy::MemoryDomain::child(
+                parent.inner.as_ref().unwrap().domain.clone(),
+            )
+            .expect("cgroup depth was checked before constructing the node")
+        } else {
+            crate::vm::user_memory::hierarchy::MemoryDomain::root()
+        };
+        let memory_controller = Arc::new(SubController {
+            inner: Some(MemoryController { domain }),
+            parent: memory_parent,
+        });
         let pids_controller = Arc::new(SubController::new(parent_controller));
 
         Self {
             active_set: AtomicSubCtrlSet::new(SubCtrlSet::empty()),
             cpuset: Rcu::new(cpuset_controller),
             cpu: Rcu::new(cpu_controller),
-            memory: Rcu::new(memory_controller),
+            memory: memory_controller,
             pids: Rcu::new(pids_controller),
         }
     }
@@ -342,7 +355,12 @@ impl Controller {
 
         active_set.add_type(ctrl_type);
         self.active_set.store(active_set, Ordering::Relaxed);
-        self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
+        if ctrl_type == SubCtrlType::Memory {
+            self.memory_domain()
+                .set_delegated(active_set.contains_type(ctrl_type));
+        } else {
+            self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
+        }
 
         Ok(())
     }
@@ -372,14 +390,21 @@ impl Controller {
             {
                 return Err(Error::InvalidOperation);
             }
-            if ctrl_type == SubCtrlType::Cpu && cgroup_child.controller().has_trusted_cpu_management() {
+            if ctrl_type == SubCtrlType::Cpu
+                && cgroup_child.controller().has_trusted_cpu_management()
+            {
                 return Err(Error::PermissionDenied);
             }
         }
 
         active_set.remove_type(ctrl_type);
         self.active_set.store(active_set, Ordering::Relaxed);
-        self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
+        if ctrl_type == SubCtrlType::Memory {
+            self.memory_domain()
+                .set_delegated(active_set.contains_type(ctrl_type));
+        } else {
+            self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
+        }
 
         Ok(())
     }
@@ -423,10 +448,7 @@ impl Controller {
                         child_node.controller().cpu.update(new_controller);
                     });
                 }
-                SubCtrlType::Memory => {
-                    let new_controller = Arc::new(SubController::new(Some(parent_controller)));
-                    child_node.controller().memory.update(new_controller);
-                }
+                SubCtrlType::Memory => unreachable!("memory identities are never replaced"),
                 SubCtrlType::Pids => {
                     let mut new_controller: SubController<PidsController> =
                         SubController::new(Some(parent_controller));
@@ -485,6 +507,10 @@ impl Controller {
 
     pub(super) fn active_set(&self) -> SubCtrlSet {
         self.active_set.load(Ordering::Relaxed)
+    }
+
+    pub(crate) fn memory_domain(&self) -> &Arc<crate::vm::user_memory::hierarchy::MemoryDomain> {
+        &self.memory.inner.as_ref().unwrap().domain
     }
 
     /// Closes the current CPU incarnation before its cgroup is marked dead.

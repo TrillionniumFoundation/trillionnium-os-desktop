@@ -4,7 +4,19 @@
 //!
 //! An alien thread is one outside the current thread's thread group (the process).
 
-use crate::{prelude::*, process::posix_thread::PosixThread, security::lsm::hooks as lsm_hooks};
+use crate::{
+    prelude::*,
+    process::{
+        credentials::capabilities::CapSet, posix_thread::PosixThread, process_vm::ProcessVmarGuard,
+    },
+    security::lsm::hooks as lsm_hooks,
+};
+
+/// Keeps the target image policy stable until the authorized resource is captured.
+#[must_use]
+pub(crate) struct AlienAccessGuard<'a> {
+    _dumpable: Option<MutexGuard<'a, bool>>,
+}
 
 impl PosixThread {
     /// Checks whether `accessor` may access resources of `self`.
@@ -12,18 +24,70 @@ impl PosixThread {
     /// NOTE: In Linux, the corresponding check is named `ptrace_may_access`,
     /// but not every call to it is actually related to `ptrace`.
     // Reference: <https://elixir.bootlin.com/linux/v6.16.5/source/kernel/ptrace.c#L276>.
-    pub(crate) fn check_alien_access_from(
+    pub(crate) fn check_alien_access_from<'a>(
+        &self,
+        accessor: &PosixThread,
+        mode: AlienAccessMode,
+        vmar: &'a ProcessVmarGuard<'_>,
+    ) -> Result<AlienAccessGuard<'a>> {
+        debug_assert!(vmar.belongs_to(&self.process()));
+        if Weak::ptr_eq(accessor.weak_process(), self.weak_process()) {
+            return Ok(AlienAccessGuard { _dumpable: None });
+        }
+
+        // The caller holds this target's VMAR guard. The shared image mutex
+        // also serializes credential publication by distinct CLONE_VM peers.
+        // Keep it through the original LSM checks and the caller's capture.
+        let dumpable = vmar
+            .as_ref()
+            .map(|vmar| vmar.process_vm().dumpable().lock());
+        if dumpable.as_ref().is_some_and(|dumpable| !**dumpable) {
+            let process = self.process();
+            let user_ns = process.user_ns().lock();
+            lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+                user_ns.as_ref(),
+                accessor,
+                CapSet::SYS_PTRACE,
+            ))?;
+        }
+        self.check_original_alien_access_from(accessor, mode)?;
+        Ok(AlienAccessGuard {
+            _dumpable: dumpable,
+        })
+    }
+
+    /// Checks voluntary TRACEME and captures the parent's original SYS_PTRACE bit.
+    /// The calling child owns its credentials; the independently running parent's
+    /// credentials are read under its VMAR/shared-image publication transaction.
+    /// No dumpability or ordinary UID check applies to this consent operation.
+    pub(crate) fn check_traceme_access_from(&self, accessor: &PosixThread) -> Result<bool> {
+        let parent = accessor.process();
+        let vmar = parent.lock_vmar();
+        let _credentials = vmar
+            .as_ref()
+            .map(|vmar| vmar.process_vm().dumpable().lock());
+        self.check_original_alien_access_from(accessor, AlienAccessMode::TRACEME)?;
+        let process = self.process();
+        let user_ns = process.user_ns().lock();
+        Ok(lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+            user_ns.as_ref(),
+            accessor,
+            CapSet::SYS_PTRACE,
+        ))
+        .is_ok())
+    }
+
+    fn check_original_alien_access_from(
         &self,
         accessor: &PosixThread,
         mode: AlienAccessMode,
     ) -> Result<()> {
-        if Weak::ptr_eq(accessor.weak_process(), self.weak_process()) {
-            return Ok(());
-        }
-
         #[cfg(feature = "g1c-trusted-observe")]
-        if mode.kind() == AlienAccessKind::Attach && self.process().has_initial_observe_authority() {
-            return_errno_with_message!(Errno::EPERM, "alien attachment to the trusted initial image is forbidden")
+        if mode.kind() != AlienAccessKind::Read && self.process().has_initial_observe_authority() {
+            return_errno_with_message!(
+                Errno::EPERM,
+                "alien attachment to the trusted initial image is forbidden"
+            )
         }
 
         lsm_hooks::on_alien_access(lsm_hooks::AlienAccessContext::new(accessor, self, mode))
@@ -42,6 +106,7 @@ pub(crate) enum CredsSource {
 pub(crate) enum AlienAccessKind {
     Read,
     Attach,
+    Traceme,
 }
 
 /// An alien access check mode.
@@ -52,8 +117,10 @@ pub(crate) struct AlienAccessMode {
 }
 
 impl AlienAccessMode {
+    /// Voluntary tracing, authorized by the actual parent's permitted set.
+    const TRACEME: Self = Self::new(AlienAccessKind::Traceme, CredsSource::RealCreds);
     /// Read-only alien access check using real credentials.
-    #[expect(dead_code)]
+    #[cfg_attr(not(ktest), expect(dead_code))]
     pub(crate) const READ_WITH_REAL_CREDS: Self =
         Self::new(AlienAccessKind::Read, CredsSource::RealCreds);
     /// Attach-level alien access check using real credentials.

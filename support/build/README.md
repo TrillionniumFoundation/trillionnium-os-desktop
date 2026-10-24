@@ -12,7 +12,7 @@ The single kernel source root is `kernel/asterinas/`. Its initial import is the
 complete Asterinas **v0.19.0**, commit
 `c4b7ed575b7b32773475b194d2ad41fb6d03765b`, tree
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
-and `LICENSE-MPL` are preserved. The project root README stays empty.
+and `LICENSE-MPL` are preserved. The project root README is a versioned regular file for project navigation; it must not be a symlink.
 
 ## Build and boot
 
@@ -94,7 +94,7 @@ python3 support/build/verify-source.py
 ```
 
 This checks the fixed commit/tree/toolchain contract, upstream Cargo manifests
-and locks, license, root Makefile/OSDK manifest, and the empty project README.
+and locks, license, root Makefile/OSDK manifest, and the regular-file type of the project README. README content may evolve without changing the pinned kernel inputs.
 The only build-input derivative is the explicitly enumerated G1-a local
 `os-control` dependency in the workspace/core manifests and working root lock.
 The checker derives these exact insertions from the pinned upstream Git blobs

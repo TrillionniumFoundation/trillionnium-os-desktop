@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "scope": "controlled only-one-owned-child; public read-only sentinel; no injection",
+  "original_dumpable_manifest_unchanged_sha256": "47d6a6daf9ba93289b1459dbbb6bb6166bf8ba3443791c48e3d9dcf774af82ad",
+  "lifecycle_v2_stat_manifest_unchanged_sha256": "a73e327abedcfe1eb7ae33de0132d22c6df71f6b0ee48e261e1bef928bd0e85a",
+  "source_dir": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-v1",
+  "linux_reference": {
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-linux-reference-01.json",
+    "exit": 0,
+    "seconds": 0.01640086609404534,
+    "observations": 15,
+    "all_children_reaped": true,
+    "peek_sequence": [
+      "EIO",
+      "exact public0x5341464544554d50",
+      "EIO"
+    ],
+    "uid": 60001,
+    "permitted_effective_caps": 0,
+    "nnp": 1
+  },
+  "original_0252_guest": {
+    "schema_version": 1,
+    "scope": "controlled only-one-owned-child; public read-only sentinel; no injection",
+    "raw_receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-native-0252-negative-01/result.json",
+    "raw_receipt_sha256": "d37782688a55c046fc88adb0ef62e3862d12c1463afaa10954d04d031f7cbf78",
+    "original_timeout_seconds": 120,
+    "raw_qemu_exit": null,
+    "timed_out": true,
+    "probe_parent_alarm_seconds": 25,
+    "guest_parent_sigalrm_observed": true,
+    "all_children_reaped_proven": false,
+    "expected_peek_gap_reproduced": false,
+    "source_lock_cycle": "sys_ptrace PTRACE_TRACEME keeps target ctx.process.parent mutex -> do_ptrace_attach -> target.check_alien_access_from ATTACH_REAL -> Yama default Relational1 with cap0 -> is_ancestor_of(targetProcess) locks same target.parent mutex",
+    "source_blobs_02521c15": {
+      "kernel/asterinas/kernel/core/src/syscall/ptrace.rs": "a160afd96db344e84fda0f4fcbd0d308d60237e0705923d82297265568fa1474",
+      "kernel/asterinas/kernel/core/src/security/lsm/modules/yama.rs": "e91c5cc30beee27716860643ecab9564b38a72748e879541437bde8ed6b4cc4e",
+      "kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs": "63f96ae41029402ac0c394d58a25fa049cd3875a0c18ded4cb25606764f7f877"
+    },
+    "standard_root_tests_gap": "CAP_SYS_PTRACE short-circuits Yama ancestry traversal, so existing Root ptrace tests cannot detect this nonprivileged lock reentry",
+    "runtime_limit": "Only permission header reached. Pre-existing TRACEME establish deadlock prevents observing subsequent PEEK semantics; no claim that non-dumpable read was actually reproduced on old guest. Disposable VM timed out, owned QEMU subprocess reaped by subprocess.run.",
+    "production_isolation_qualified": false
+  },
+  "strict_checker": {
+    "module": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme_checker.py",
+    "required_common_module": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle_checker.py",
+    "api": "check(raw,code,timed_out)",
+    "expected_complete_observations": 15,
+    "host_tests": 3,
+    "mutations_rejected": 24,
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-checker-tests-01.json",
+    "synthetic_shapes_are_not_guest_qualification": true
+  },
+  "official_sources": [
+    "https://raw.githubusercontent.com/torvalds/linux/v7.0/kernel/ptrace.c",
+    "https://man7.org/linux/man-pages/man2/ptrace.2.html"
+  ],
+  "kernel_changed": false,
+  "production_isolation_qualified": false
+}

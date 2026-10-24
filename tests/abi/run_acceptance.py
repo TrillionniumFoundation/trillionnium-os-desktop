@@ -353,8 +353,8 @@ def execute(args: argparse.Namespace, report: dict[str, Any], output: Path) -> N
     report.update(repo_root=str(repo), input_sha256=hashes,
                   fixture_sha256={name: value for name, value in hashes.items() if name.startswith("tests/golden/")},
                   original_inputs_unchanged=False, readme_bytes=len(before["README.md"]))
-    if before["README.md"]:
-        raise ValueError("root README.md must be zero bytes")
+    # README remains a regular, source-bound snapshot input. Its navigation
+    # content does not change the codec or immutable upstream toolchain pins.
     snapshot = output / "snapshot"
     snapshot_inputs(before, snapshot)
     report["snapshot_root"] = str(snapshot)

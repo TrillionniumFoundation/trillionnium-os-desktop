@@ -38,7 +38,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Verify A00 bootstrap versus A10 source diff and empty README
+      - name: Verify A00 bootstrap versus A10 source diff and regular README
         id: scope
         shell: bash
         env:
@@ -47,7 +47,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md
           if [[ -f ui/Cargo.toml ]]; then
             echo 'has_ui=true' >> "$GITHUB_OUTPUT"
             echo 'A10 Rust source exists; host build and Wayland tests are required.'
@@ -86,6 +86,7 @@ jobs:
     timeout-minutes: 45
     env:
       RUSTUP_TOOLCHAIN: '1.88.0'
+      A10_REQUIRE_X11_PIXELS: '1'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -100,7 +101,9 @@ jobs:
             pkg-config libwayland-dev libxkbcommon-dev \
             libgl1-mesa-dev libegl1-mesa-dev \
             libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxinerama-dev \
-            weston wayland-utils libgbm-dev libgl1-mesa-dri
+            weston wayland-utils libgbm-dev libgl1-mesa-dri \
+            xvfb xauth x11-utils xdotool scrot python3-pil \
+            at-spi2-core dbus-x11 python3-gi gir1.2-atspi-2.0
       - name: Record real host versions, not the pinned Asterinas kernel toolchain
         run: |
           set -euo pipefail
@@ -108,18 +111,78 @@ jobs:
           cargo -Vv
           weston --version
           cat /etc/os-release
-          test ! -s README.md
+          test -f README.md && test ! -L README.md
       - name: Compile and test Rust binaries and validate rustfmt
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/a10"
           bash tests/ui/check-host.sh 2>&1 | tee "$RUNNER_TEMP/a10/host-check.log"
+      - name: Test original Objective Session retention and one-shot transport adapter
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/a10"
+          cargo test --manifest-path ui/Cargo.toml -p trill-session --all-targets \
+            --features objective-submission --locked --offline \
+            2>&1 | tee "$RUNNER_TEMP/a10/objective-session-tests.log"
+          cargo clippy --manifest-path ui/Cargo.toml -p trill-session --all-targets \
+            --features objective-submission --locked --offline -- -D warnings \
+            2>&1 | tee "$RUNNER_TEMP/a10/objective-session-clippy.log"
+      - name: Exercise native AccessKit AT-SPI discovery and semantic actions
+        run: |
+          set -euo pipefail
+          bash tests/ui/accesskit-smoke.sh 2>&1 | tee "$RUNNER_TEMP/a10/accesskit.log"
       - name: Run true Linux-host first-frame and lifecycle tests under headless Weston
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/a10"
           export A10_HEADLESS_LOG_DIR="$RUNNER_TEMP/a10/wayland"
           bash tests/ui/headless-weston.sh 2>&1 | tee "$RUNNER_TEMP/a10/headless.log"
+      - name: Verify original shared presenter source and default-off candidate
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/a10"
+          python3 -I -B tests/ui/test_shared_presenter_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source-tests.log"
+          python3 -I -B tests/ui/test_wire_compatibility.py \
+            2>&1 | tee "$RUNNER_TEMP/a10/wire-compatibility-tests.log"
+          cargo metadata --manifest-path ui/Cargo.toml --locked --format-version 1 \
+            --features trill-shell/hepta-shared-presenter \
+            --filter-platform x86_64-unknown-linux-gnu \
+            > "$RUNNER_TEMP/a10/shared-presenter-metadata.json"
+          python3 -I -B tests/ui/verify_shared_presenter.py \
+            --metadata "$RUNNER_TEMP/a10/shared-presenter-metadata.json" \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source.log"
+      - name: Test original shared packages and real egui edit transactions
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path ui/Cargo.toml --all-targets --locked \
+            -p hepta-control-core -p hepta-robrix-ui -p trill-ui-core -p trill-shell \
+            --no-default-features --features trill-shell/hepta-shared-presenter \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-tests.log"
+          cargo clippy --manifest-path ui/Cargo.toml --all-targets --locked \
+            -p trill-ui-core -p trill-shell \
+            --features trill-shell/hepta-shared-presenter -- -D warnings \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-clippy.log"
+          cargo run --quiet --manifest-path ui/Cargo.toml --locked \
+            -p trill-ui-core --example wire_compatibility --no-default-features \
+            > "$RUNNER_TEMP/a10/shared-presenter-wire-default.json"
+          cmp tests/ui/wire-compatibility-aligned-v1.json "$RUNNER_TEMP/a10/shared-presenter-wire-default.json"
+          python3 -I -B tests/ui/verify_wire_compatibility.py \
+            --original tests/ui/wire-compatibility-v1.json \
+            --candidate "$RUNNER_TEMP/a10/shared-presenter-wire-default.json" \
+            | tee "$RUNNER_TEMP/a10/wire-default-compatibility.json"
+          cargo run --quiet --manifest-path ui/Cargo.toml --locked \
+            -p trill-ui-core --example wire_compatibility \
+            --features hepta-shared-presenter \
+            > "$RUNNER_TEMP/a10/shared-presenter-wire.json"
+          cmp tests/ui/wire-compatibility-aligned-v1.json "$RUNNER_TEMP/a10/shared-presenter-wire.json"
+          python3 -I -B tests/ui/verify_wire_compatibility.py \
+            --original tests/ui/wire-compatibility-v1.json \
+            --candidate "$RUNNER_TEMP/a10/shared-presenter-wire.json" \
+            | tee "$RUNNER_TEMP/a10/wire-candidate-compatibility.json"
+          python3 -I -B tests/ui/verify_shared_presenter.py \
+            --metadata "$RUNNER_TEMP/a10/shared-presenter-metadata.json" \
+            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source-after-tests.log"
       - name: Enforce Rust 1.88 UI workspace and all-target Clippy warnings
         run: |
           set -euo pipefail

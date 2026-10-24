@@ -344,7 +344,8 @@ class AcceptanceRunnerTests(unittest.TestCase):
             for relative in acceptance.SOURCE_ROOTS:
                 (repo / relative).mkdir(parents=True)
             (repo / "libs/os-abi/Cargo.toml").write_text("[package]\nname='fixture'\nversion='0.0.0'\n")
-            (repo / "README.md").write_bytes(b"")
+            readme = b"# Project navigation\n\nSee the pinned module guides.\n"
+            (repo / "README.md").write_bytes(readme)
             (repo / "support").mkdir()
             (repo / "support/upstream-lock.json").write_text('{"kernel":{"toolchain":"nightly-2026-07-21"}}')
             output = root / "evidence"
@@ -362,6 +363,9 @@ class AcceptanceRunnerTests(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertFalse(report["success"])
             self.assertTrue(report["original_inputs_unchanged"])
+            self.assertEqual(report["readme_bytes"], len(readme))
+            self.assertEqual(report["input_sha256"]["README.md"], acceptance.digest(readme))
+            self.assertEqual((repo / "README.md").read_bytes(), readme)
             self.assertEqual(report["not_executed"], list(acceptance.CHECK_NAMES))
             self.assertIn("no installation or fallback", report["errors"][0])
             self.assertFalse((repo / "libs/os-abi/Cargo.lock").exists())

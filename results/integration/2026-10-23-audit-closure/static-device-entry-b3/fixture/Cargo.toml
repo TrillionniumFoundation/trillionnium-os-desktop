@@ -1,0 +1,27 @@
+[package]
+name="hepta-native-device-entry"
+version="0.0.0"
+edition="2024"
+publish=false
+[workspace]
+resolver="2"
+[dependencies]
+codex-hepta-agentd={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/hepta-agentd"}
+libc="0.2.182"
+[patch."crates-io"]
+"i18n-config"={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/third_party/i18n-config-0.4.8"}
+"secret-service"={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/third_party/secret-service-6.0.0"}
+"zbus-secret-service-keyring-store"={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/third_party/zbus-secret-service-keyring-store-1.0.1"}
+"anymap2"={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/third_party/anymap2-compat"}
+"imbl"={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/third_party/imbl-6.1.0"}
+"matrix-sdk-sqlite"={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/third_party/matrix-sdk-sqlite-0.18.0"}
+"matrix-sdk-crypto"={"path"="/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs/third_party/matrix-sdk-crypto-0.18.0"}
+"crossterm"={"git"="https://github.com/openai-oss-forks/crossterm", "rev"="45fecb9508105988f42fe6ff0441783ed3717f92"}
+"tokio-tungstenite"={"git"="https://github.com/openai-oss-forks/tokio-tungstenite", "rev"="0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186"}
+"tungstenite"={"git"="https://github.com/openai-oss-forks/tungstenite-rs", "rev"="4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"}
+[profile.release]
+"lto"="thin"
+"debug"="line-tables-only"
+"split-debuginfo"="off"
+"strip"=false
+"codegen-units"=4

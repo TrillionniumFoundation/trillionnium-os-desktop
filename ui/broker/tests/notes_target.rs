@@ -5,7 +5,7 @@
 
 use std::io::{Read, Write};
 use std::net::Shutdown;
-use std::os::unix::net::UnixStream;
+use std::os::unix::net::{UnixDatagram, UnixStream};
 use trill_ui_broker::notes::{
     NotesDispatchBinding, NotesDispatchOutcome, NotesObservation, NotesTarget, NotesTargetRejection,
 };
@@ -69,7 +69,8 @@ fn respond(stream: &mut UnixStream, response: &NotesResponse) {
 #[test]
 fn real_private_channel_preserves_exact_payload_and_reads_independent_application_receipt() {
     let (parent, mut app) = UnixStream::pair().unwrap();
-    let target = NotesTarget::from_private_channel(parent, identity()).unwrap();
+    let (recovery, recovery_app) = UnixDatagram::pair().unwrap();
+    let target = NotesTarget::from_private_channels(parent, recovery, identity()).unwrap();
     let raw = payload("fixture-operation", 0, "Notes 中文");
     let expected = raw.clone();
     let fixture = std::thread::spawn(move || {
@@ -80,8 +81,12 @@ fn real_private_channel_preserves_exact_payload_and_reads_independent_applicatio
         respond(&mut app, &applied);
         assert_eq!(document.text(), "Notes 中文");
         // Observe is a separate read, not a repeat of the mutation.
-        let query = NotesObserve::parse_exact(&receive(&mut app)).unwrap();
-        respond(&mut app, &document.observe(&query).unwrap());
+        let mut buffer = [0_u8; 8192];
+        let length = recovery_app.recv(&mut buffer).unwrap();
+        let query = NotesObserve::parse_exact(&buffer[..length]).unwrap();
+        recovery_app
+            .send(&serde_json::to_vec(&document.observe(&query).unwrap()).unwrap())
+            .unwrap();
         assert_eq!(document.revision(), 1);
     });
     let NotesDispatchOutcome::Applied(receipt) = target.enter_exact(&raw, &binding(&raw)) else {

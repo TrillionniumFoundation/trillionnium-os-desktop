@@ -23,6 +23,7 @@ pub(super) fn lock_range<'rcu, C: PageTableConfig>(
     guard: &'rcu dyn InAtomicMode,
     va: &Range<Vaddr>,
     min_level: PagingLevel,
+    allocate_missing: bool,
 ) -> Cursor<'rcu, C> {
     // The re-try loop of finding the sub-tree root.
     //
@@ -31,7 +32,9 @@ pub(super) fn lock_range<'rcu, C: PageTableConfig>(
     // sub-tree will not see the current state and will not change the current
     // state, breaking serializability.
     let mut subtree_root = loop {
-        if let Some(subtree_root) = try_traverse_and_lock_subtree_root(pt, guard, va, min_level) {
+        if let Some(subtree_root) =
+            try_traverse_and_lock_subtree_root(pt, guard, va, min_level, allocate_missing)
+        {
             break subtree_root;
         }
     };
@@ -93,6 +96,7 @@ fn try_traverse_and_lock_subtree_root<'rcu, C: PageTableConfig>(
     guard: &'rcu dyn InAtomicMode,
     va: &Range<Vaddr>,
     min_level: PagingLevel,
+    allocate_missing: bool,
 ) -> Option<PageTableGuard<'rcu, C>> {
     let mut cur_node_guard: Option<PageTableGuard<C>> = None;
     let mut cur_pt_addr = pt.root.paddr();
@@ -143,6 +147,11 @@ fn try_traverse_and_lock_subtree_root<'rcu, C: PageTableConfig>(
                 break;
             }
             PteStateRef::Absent => {
+                if !allocate_missing {
+                    // The parent is live and locked. Claim its existing subtree
+                    // instead of allocating before the caller admits its frame.
+                    return Some(pt_guard);
+                }
                 let allocated_guard = cur_entry.alloc_if_none(guard).unwrap();
                 cur_pt_addr = allocated_guard.paddr();
                 cur_node_guard = Some(allocated_guard);

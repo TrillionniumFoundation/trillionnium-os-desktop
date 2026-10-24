@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::notes::NotesTargetIdentity;
 
 pub const NOTES_BOOTSTRAP_MAX_BYTES: usize = 1024;
-pub const NOTES_BOOTSTRAP_SCHEMA_VERSION: u16 = 1;
+pub const NOTES_BOOTSTRAP_SCHEMA_VERSION: u16 = 2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -14,8 +14,8 @@ pub enum NotesBootstrapOfferAction {
     OfferNotesTarget,
 }
 
-/// One datagram, accompanied by exactly one SCM_RIGHTS descriptor for the
-/// Notes effect UnixStream. Version 1 bootstraps only initial task 1.
+/// One datagram, accompanied by exactly two SCM_RIGHTS descriptors in effect-stream, recovery-datagram order.
+/// Version 2 bootstraps only initial task 1; version 1 is explicitly rejected.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct NotesBootstrapOffer {
@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn fixed_bootstrap_fixture_pins_the_initial_target_and_ack() {
         let fixture: serde_json::Value =
-            serde_json::from_str(include_str!("../../../tests/ui/notes-bootstrap-v1.json"))
+            serde_json::from_str(include_str!("../../../tests/ui/notes-bootstrap-v2.json"))
                 .unwrap();
         let offer =
             NotesBootstrapOffer::parse_exact(fixture["offer_utf8"].as_str().unwrap().as_bytes())

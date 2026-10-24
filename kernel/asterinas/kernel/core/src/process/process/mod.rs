@@ -16,7 +16,7 @@ use super::{
     signal::{
         sig_disposition::SigDispositions,
         sig_num::{AtomicSigNum, SigNum},
-        signals::Signal,
+        signals::{OwnedSignal, Signal},
     },
     status::ProcessStatus,
     task_set::TaskSet,
@@ -33,22 +33,25 @@ use crate::{
     sched::{AtomicNice, Nice},
     thread::{AsThread, Thread},
     time::clocks::ProfClock,
-    vm::vmar::Vmar,
+    vm::{
+        user_memory::{ProcessMemoryOwner, UserMemoryOwner},
+        vmar::Vmar,
+    },
 };
 
-mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 mod control_lock;
+mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use control_lock::KernelControlBackend;
-#[cfg(feature = "g1d-trusted-control")]
-mod trusted_control;
 mod init_proc;
 mod job_control;
 mod process_group;
 mod session;
 mod terminal;
 mod timer_manager;
+#[cfg(feature = "g1d-trusted-control")]
+mod trusted_control;
 
 use atomic_integer_wrapper::define_atomic_version_of_integer_like_type;
 pub(crate) use image::ProcessImageKey;
@@ -96,6 +99,7 @@ pub struct Process {
     pid: Pid,
 
     vmar: Mutex<Option<Arc<Vmar>>>,
+    user_memory_owner: ProcessMemoryOwner,
     /// Wait for child status changed
     children_wait_queue: WaitQueue,
     pub(super) pidfile_pollee: Pollee,
@@ -103,7 +107,11 @@ pub struct Process {
     // Mutable Part
     /// The threads
     tasks: Mutex<TaskSet>,
-    /// Process status
+    /// The sole mutable process status. G1-d shares a read-only observer of
+    /// this same allocation; it must not pin Process destruction to a timer.
+    #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+    status: Arc<ProcessStatus>,
+    #[cfg(not(any(ktest, feature = "g1d-trusted-control")))]
     status: ProcessStatus,
     /// Parent process
     pub(super) parent: ParentProcess,
@@ -258,10 +266,14 @@ impl Process {
 
             Self {
                 pid,
+                user_memory_owner: ProcessMemoryOwner::new(vmar.user_memory_owner().clone()),
                 vmar: Mutex::new(Some(vmar)),
                 children_wait_queue,
                 pidfile_pollee: Pollee::new(),
                 tasks: Mutex::new(TaskSet::new()),
+                #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+                status: Arc::new(ProcessStatus::default()),
+                #[cfg(not(any(ktest, feature = "g1d-trusted-control")))]
                 status: ProcessStatus::default(),
                 parent: ParentProcess::new(Weak::new()),
                 children: Mutex::new(Some(BTreeMap::new())),
@@ -305,6 +317,10 @@ impl Process {
     }
 
     // *********** Basic structures ***********
+
+    pub(crate) fn user_memory_owner(&self) -> &UserMemoryOwner {
+        self.user_memory_owner.owner()
+    }
 
     pub fn pid(&self) -> u32 {
         self.pid
@@ -639,7 +655,7 @@ impl Process {
     // ************** Virtual Memory *************
 
     pub(crate) fn lock_vmar(&self) -> ProcessVmarGuard<'_> {
-        ProcessVmarGuard::new(self.vmar.lock())
+        ProcessVmarGuard::new(self, self.vmar.lock())
     }
 
     // ****************** Signal ******************
@@ -658,11 +674,16 @@ impl Process {
     /// Therefore, unless the caller can ensure that there are no permission issues,
     /// this method should be used to enqueue kernel signals or fault signals.
     pub(crate) fn enqueue_signal(&self, signal: Box<dyn Signal>) {
+        self.enqueue_owned_signal(OwnedSignal::from_box(signal));
+    }
+
+    /// Same permission precondition and wake order as `enqueue_signal`.
+    pub(crate) fn enqueue_owned_signal(&self, signal: OwnedSignal) {
         if self.status.is_zombie() {
             return;
         }
 
-        self.sig_queues.enqueue(signal);
+        self.sig_queues.enqueue_owned(signal);
 
         for task in self.tasks.lock().as_slice() {
             let posix_thread = task.as_posix_thread().unwrap();
@@ -706,6 +727,11 @@ impl Process {
     /// Returns a reference to the process status.
     pub(crate) fn status(&self) -> &ProcessStatus {
         &self.status
+    }
+
+    #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+    pub(crate) fn status_observer(&self) -> crate::process::ProcessStatusObserver {
+        crate::process::ProcessStatusObserver::new(self.status.clone())
     }
 
     /// Stops the process.

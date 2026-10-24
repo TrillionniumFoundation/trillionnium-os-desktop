@@ -331,6 +331,33 @@ jobs:
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
 
+      - name: Verify all 43 local UDP checks on Linux and the same ordinary product
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-udp-checks"
+          mkdir "$checks"
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_udp_local_error_guest.py' -v \
+            > "$checks/runner-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_udp_local_error_guest.py' -v \
+            > "$checks/runner-tests-optimized.log" 2>&1
+          python3 -I -B tests/workloads/linux/run_udp_local_error_guest.py reference \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --cc /usr/bin/gcc-13 --output "${RUNNER_TEMP}/a06-udp-linux"
+          # The reference freezes this digest before Linux execution. The guest
+          # reads the retained ELF and original execution record; it never rebuilds.
+          read -r probe_sha probe_name < "${RUNNER_TEMP}/a06-udp-linux/probe.sha256"
+          test "$probe_name" = probe.elf
+          [[ "$probe_sha" =~ ^[0-9a-f]{64}$ ]]
+          python3 -I -B tests/workloads/linux/run_udp_local_error_guest.py guest \
+            --linux-reference "${RUNNER_TEMP}/a06-udp-linux" --expected-probe-sha256 "$probe_sha" \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --output "${RUNNER_TEMP}/a06-udp-guest"
+
       - name: Verify SQLite WAL after abrupt guest restart and reject an omitted COMMIT
         shell: bash
         run: |
@@ -583,6 +610,9 @@ jobs:
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a04-sqlite-restart
+            ${{ runner.temp }}/a06-udp-checks
+            ${{ runner.temp }}/a06-udp-linux
+            ${{ runner.temp }}/a06-udp-guest
             ${{ runner.temp }}/a06-owner-negative
             ${{ runner.temp }}/a06-clock-handoff-negative
             ${{ runner.temp }}/a06-permission-smp

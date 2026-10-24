@@ -53,7 +53,7 @@ use core::{
     sync::atomic::{AtomicUsize, Ordering},
 };
 
-pub use allocator::GlobalFrameAllocator;
+pub use allocator::{GlobalFrameAllocator, PhysicalReserve, PhysicalReserveSnapshot};
 use meta::{AnyFrameMeta, GetFrameError, MetaSlot, REF_COUNT_UNUSED, mapping};
 pub use segment::Segment;
 use untyped::{AnyUFrameMeta, UFrame};

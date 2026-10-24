@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "command": [
+    "sudo",
+    "-n",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-v1/traceme-probe"
+  ],
+  "timeout_seconds": 30,
+  "source_dir": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-v1",
+  "source_sha256": "7d596bf5fbc157ec05daee28f1dcc3f872cfe42019b35c370904b58debfe075a",
+  "binary_sha256": "115db6c3362c9778cb4d7e72502dbbccf1e32c5b6a895a0c1c370d25fa86390a",
+  "compile_command": [
+    "gcc",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "-fno-pie",
+    "-no-pie",
+    "traceme_probe.c",
+    "-o",
+    "traceme-probe"
+  ],
+  "compile_exit": 0,
+  "kernel": "7.0.0-38-generic",
+  "only_one_owned_child": true,
+  "no_child_memory_writes": true,
+  "status": "complete",
+  "exit": 0,
+  "seconds": 0.01640086609404534,
+  "inputs_unchanged": true,
+  "raw_sha256": "d296b00ddd35ace855f3dc4d51c506e2e6d376ce2cc5a9be615ad19628a26d0e",
+  "observations": [
+    {
+      "suite": "dumpable-traceme-v1",
+      "observer_uid": 60001,
+      "observer_gid": 60001,
+      "cap_eff": 0,
+      "cap_prm": 0,
+      "nnp": 1,
+      "own_child_only": true
+    },
+    {
+      "stage": 0,
+      "traceme_rc": 0,
+      "traceme_errno": 0,
+      "set_rc": 0,
+      "dumpable": 0,
+      "expected": 0,
+      "owned_child_stopped": true
+    },
+    {
+      "case": "exact_owned_child_stage_and_stop",
+      "passed": true
+    },
+    {
+      "stage": 0,
+      "operation": "peek_public_sentinel_only",
+      "rc": -1,
+      "errno": 5,
+      "denied_expected": true,
+      "passed": true
+    },
+    {
+      "stage": 0,
+      "operation": "continue_owned_child",
+      "rc": 0,
+      "errno": 0,
+      "passed": true
+    },
+    {
+      "stage": 1,
+      "traceme_rc": 0,
+      "traceme_errno": 0,
+      "set_rc": 0,
+      "dumpable": 1,
+      "expected": 1,
+      "owned_child_stopped": true
+    },
+    {
+      "case": "exact_owned_child_stage_and_stop",
+      "passed": true
+    },
+    {
+      "stage": 1,
+      "operation": "peek_public_sentinel_only",
+      "rc": 5999153441947340112,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true
+    },
+    {
+      "stage": 1,
+      "operation": "continue_owned_child",
+      "rc": 0,
+      "errno": 0,
+      "passed": true
+    },
+    {
+      "stage": 2,
+      "traceme_rc": 0,
+      "traceme_errno": 0,
+      "set_rc": 0,
+      "dumpable": 0,
+      "expected": 0,
+      "owned_child_stopped": true
+    },
+    {
+      "case": "exact_owned_child_stage_and_stop",
+      "passed": true
+    },
+    {
+      "stage": 2,
+      "operation": "peek_public_sentinel_only",
+      "rc": -1,
+      "errno": 5,
+      "denied_expected": true,
+      "passed": true
+    },
+    {
+      "stage": 2,
+      "operation": "continue_owned_child",
+      "rc": 0,
+      "errno": 0,
+      "passed": true
+    },
+    {
+      "case": "owned_child_reaped",
+      "passed": true
+    },
+    {
+      "summary": true,
+      "violations": 0,
+      "all_children_reaped": true,
+      "production_isolation_qualified": false
+    }
+  ],
+  "failed_observations": [],
+  "summaries": [
+    {
+      "summary": true,
+      "violations": 0,
+      "all_children_reaped": true,
+      "production_isolation_qualified": false
+    }
+  ]
+}

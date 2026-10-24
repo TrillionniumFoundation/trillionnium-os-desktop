@@ -434,6 +434,22 @@ class RootWorkloadNegativeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             negative.verify_delta(before, after, original, changed + b"other edit")
 
+    def test_formatted_credential_selection_and_current_source_remain_exact(self):
+        # PR #252 changed layout without changing the production credentials.
+        # Exercise the actual tracked source as well as both exact spellings.
+        for before, after in negative.SELECTIONS:
+            original = b"before\n" + before + b"after\n"
+            self.assertEqual(negative.mutation(original), b"before\n" + after + b"after\n")
+            for extra in (before, after, negative.BEFORE, negative.FORMATTED_BEFORE):
+                with self.assertRaises(ValueError):
+                    negative.mutation(original + extra)
+        path = negative.ROOT / negative.SOURCE
+        source = path.read_bytes()
+        changed = negative.mutation(source)
+        self.assertEqual(source.count(b"workload_credentials()?"), 1)
+        self.assertNotIn(b"workload_credentials()?", changed)
+        self.assertEqual(path.read_bytes(), source, "the control must not edit the production source")
+
 
 if __name__ == "__main__":
     unittest.main()
