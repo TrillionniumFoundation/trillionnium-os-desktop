@@ -1,6 +1,7 @@
 {
-  "schema_version": 1,
-  "source_commit": "10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd",
+  "schema_version": 2,
+  "source_commit": "4950d36cd767739f47ba06bde4479fc743e6533a",
+  "source_tree": "a3716e9e0aeded2116f854f69d6357aa0e57f588",
   "scope": "exact 57 explicit members of kernel/asterinas/Cargo.toml; excludes nested independent workspaces and evidence/results",
   "workspace_manifest": "kernel/asterinas/Cargo.toml",
   "workspace_manifest_sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
@@ -11,6 +12,11 @@
     "handbook_entries": 57
   },
   "source_hash_method": "SHA256 of sorted source-files lines: repository-relative path + NUL + SHA256(file bytes), joined by LF with terminal LF. Only tracked src/**/*.rs in each crate; root/manifest hashes separate. Static declarations are regex observations, not expanded tests or execution counts.",
+  "dependency_scope": "direct_dependencies lists manifest [dependencies] keys; target_dependencies lists [target.*.dependencies] keys. Neither field is an expanded Cargo graph or a runtime dependency claim.",
+  "historical_inventory": {
+    "path": "history/inventory-10dae5ea.json",
+    "sha256": "3a1b46def2f14f11fb3fdd12452858b8172f7c71f71e88023fd19009239e862e"
+  },
   "crates": [
     {
       "package": "osdk-frame-allocator",
@@ -31,13 +37,14 @@
         "ostd",
         "paste"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#osdk-frame-allocator",
       "source_file_count": 10,
       "source_files_sha256": "216bdd668e77ea396dbc6d94b26a73f88e34fa3f01d847faf1e98be60d2c7c37",
       "static_test_declarations": {
         "ktest": 20
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "osdk-heap-allocator",
@@ -56,13 +63,14 @@
         "log",
         "ostd"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#osdk-heap-allocator",
       "source_file_count": 6,
       "source_files_sha256": "6d1131f03fe10ce3cad658b3ff58e7a9f80f10db8f574be39e97c53c49edaed9",
       "static_test_declarations": {
         "ktest": 2
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "osdk-test-kernel",
@@ -83,13 +91,14 @@
         "ostd",
         "owo-colors"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#osdk-test-kernel",
       "source_file_count": 3,
       "source_files_sha256": "87f04cbdd97c00e5d11004968231424efab3d0e737fcf87c4e77d5cdcd35efff",
       "static_test_declarations": {
-        "ktest": 8
+        "ktest": 9
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "ostd",
@@ -133,13 +142,43 @@
         "spin",
         "zerocopy"
       ],
+      "target_dependencies": {
+        "x86_64-unknown-none": [
+          "acpi",
+          "bit_field",
+          "int-to-c-enum",
+          "linux-boot-params",
+          "multiboot2",
+          "tdx-guest",
+          "unwinding",
+          "volatile",
+          "x86",
+          "x86_64"
+        ],
+        "riscv64imac-unknown-none-elf": [
+          "bit_field",
+          "fdt",
+          "riscv",
+          "sbi-rt",
+          "unwinding"
+        ],
+        "loongarch64-unknown-none-softfloat": [
+          "fdt",
+          "loongArch64",
+          "unwinding"
+        ],
+        "aarch64-unknown-none-softfloat": [
+          "fdt",
+          "unwinding"
+        ]
+      },
       "handbook": "ostd-and-tooling.md#ostd",
       "source_file_count": 268,
-      "source_files_sha256": "f7746406f77e2e6a54c44e73995e806acddea94f58a7d3ae252d5b0967160bff",
+      "source_files_sha256": "4e4657b8b72df7a3f5d53ca8402563919e7fd01d652f42d162d6a0f29046a2b6",
       "static_test_declarations": {
         "ktest": 235
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "align_ext",
@@ -153,13 +192,14 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#align_ext",
       "source_file_count": 1,
       "source_files_sha256": "e6dd53edfdc8d60c5ef63522807fa8f566f4abc482e065dbf320a62c91fbe8de",
       "static_test_declarations": {
         "test": 2
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "id-alloc",
@@ -175,13 +215,14 @@
       "direct_dependencies": [
         "bitvec"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#id-alloc",
       "source_file_count": 1,
       "source_files_sha256": "d40cb6d546a7ebb12eb61622c0ecd5e67567ecdf2e6d9fd2772c682a4ce32966",
       "static_test_declarations": {
         "test": 1
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "int-to-c-enum",
@@ -206,11 +247,12 @@
       "direct_dependencies": [
         "int-to-c-enum-derive"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#int-to-c-enum",
       "source_file_count": 1,
       "source_files_sha256": "c7fd85679cb596bdcc988a52af69195f62acd574c46d05e99f97e97d806428be",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "int-to-c-enum-derive",
@@ -228,11 +270,12 @@
         "quote",
         "syn"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#int-to-c-enum-derive",
       "source_file_count": 1,
       "source_files_sha256": "890cc7d52a195ad2f7e8d5a7f8bb76379ab8f654aaebb730d036c44e94e73c79",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "linux-boot-params",
@@ -246,13 +289,14 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#linux-boot-params",
       "source_file_count": 1,
       "source_files_sha256": "82792be76d5553ddfdf21dead907cb67118a755d58e5ff5176f71265d59a2b62",
       "static_test_declarations": {
         "test": 4
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "linux-bzimage-builder",
@@ -275,11 +319,12 @@
         "xmas-elf",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#linux-bzimage-builder",
       "source_file_count": 4,
       "source_files_sha256": "d9428888d8cce36044607d446a18a95f60c16bc87987d1210aa3f96589a6a978",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "linux-bzimage-setup",
@@ -307,11 +352,21 @@
         "uart_16550",
         "xmas-elf"
       ],
+      "target_dependencies": {
+        "x86_64-unknown-none": [
+          "tdx-guest",
+          "uefi-raw",
+          "uefi"
+        ],
+        "x86_64-i386_pm-none": [
+          "uefi-raw"
+        ]
+      },
       "handbook": "ostd-and-tooling.md#linux-bzimage-setup",
       "source_file_count": 13,
       "source_files_sha256": "23952dc29e9a67db33f3caadb4753bd1d506bf4fc5e9a30ffcb528e5f1ce5929",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "ostd-macros",
@@ -330,13 +385,14 @@
         "rand",
         "syn"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#ostd-macros",
       "source_file_count": 1,
       "source_files_sha256": "400a466da51e3c03bf5680e0a3fffbff8c1c64a64dfd6f43b5adcba038748501",
       "static_test_declarations": {
-        "ktest": 3
+        "ktest": 4
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "ostd-pod",
@@ -364,13 +420,14 @@
         "padding-struct",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#ostd-pod",
       "source_file_count": 2,
       "source_files_sha256": "7a55f9333731266f2ac28d586d7f777a0f6b4aa68394ca370acd2819993a3f2e",
       "static_test_declarations": {
         "test": 13
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "ostd-pod-macros",
@@ -390,11 +447,12 @@
         "quote",
         "syn"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#ostd-pod-macros",
       "source_file_count": 3,
       "source_files_sha256": "ec05e5fd29abb71a4ca8dcc81b82e409adc1e4a8b8fea50df4508dd2fa127d6b",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "ostd-test",
@@ -408,13 +466,14 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#ostd-test",
       "source_file_count": 1,
       "source_files_sha256": "ab28f27b6696ad0084d9c12b3d2b9d981ae3a2883d998513447e2fb83ff09941",
       "static_test_declarations": {
-        "ktest": 5
+        "ktest": 7
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "padding-struct",
@@ -434,17 +493,18 @@
         "quote",
         "syn"
       ],
+      "target_dependencies": {},
       "handbook": "ostd-and-tooling.md#padding-struct",
       "source_file_count": 1,
       "source_files_sha256": "f213da43a61c0b88d0ecf25e765c948780701cea8af02f0685e9878246f19a5e",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "asterinas",
       "member": "kernel",
       "manifest": "kernel/asterinas/kernel/Cargo.toml",
-      "manifest_sha256": "793fbe82cd8cabd2d6047d5f5b4220ee16788aa46a51931f4f89a2752991ebe3",
+      "manifest_sha256": "7e52bf18cb1d6f6932bfc3d2127a8abd1fc405648b5d01a47877408cb800089c",
       "entry": "kernel/asterinas/kernel/src/lib.rs",
       "entry_sha256": "22b8e67184762d1b3c7e66a33f54974d314430c0cba287bcd65a0c93bb898567",
       "directory_markdown": [],
@@ -471,6 +531,9 @@
         ],
         "g1d-trusted-control": [
           "aster-core/g1d-trusted-control"
+        ],
+        "g2-trusted-daemon": [
+          "aster-core/g2-trusted-daemon"
         ]
       },
       "direct_dependencies": [
@@ -480,11 +543,16 @@
         "aster-simpledrm",
         "aster-uart"
       ],
+      "target_dependencies": {
+        "x86_64-unknown-none": [
+          "aster-i8042"
+        ]
+      },
       "handbook": "kernel-components.md#asterinas",
       "source_file_count": 1,
       "source_files_sha256": "656a028ffa00275f3f7ff03a9e0a5a6f92a785b31694cf0292f079f41225570d",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-drm",
@@ -512,11 +580,12 @@
         "spin",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-drm",
       "source_file_count": 27,
       "source_files_sha256": "550615b5fb921da260a950f791024e89b716d00fe58e7ab5b738133b3b99eb9f",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-i8042",
@@ -530,11 +599,22 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {
+        "x86_64-unknown-none": [
+          "aster-cmdline",
+          "aster-core",
+          "aster-input",
+          "bitflags",
+          "component",
+          "ostd",
+          "spin"
+        ]
+      },
       "handbook": "kernel-components.md#aster-i8042",
       "source_file_count": 5,
       "source_files_sha256": "133c4413ba883af99354f0b697aeb4f24498c04632b5086a64829ab0738b7600",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-simpledrm",
@@ -554,11 +634,12 @@
         "component",
         "ostd"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-simpledrm",
       "source_file_count": 1,
       "source_files_sha256": "09bebdc92ad899d1c32f6f35c32d4ff201e8e2b2ac74b57ebd1632d6a7934039",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-uart",
@@ -578,19 +659,29 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {
+        "riscv64imac-unknown-none-elf": [
+          "aster-util",
+          "fdt",
+          "fdt-util"
+        ],
+        "aarch64-unknown-none-softfloat": [
+          "fdt-util"
+        ]
+      },
       "handbook": "kernel-components.md#aster-uart",
       "source_file_count": 8,
       "source_files_sha256": "774af747af15b3c5cbbb0e0114ef46f9528e74277cb25f3b5efb131c94c6ce3f",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-core",
       "member": "kernel/core",
       "manifest": "kernel/asterinas/kernel/core/Cargo.toml",
-      "manifest_sha256": "618cf96993869809d29e8370fbe86db9a711b463cad847e84bd3ea9899fa5289",
+      "manifest_sha256": "882ed8ae6b868644218ac4b20c0e56a89537eb378d91d1dd5e3c80d5da6fff38",
       "entry": "kernel/asterinas/kernel/core/src/lib.rs",
-      "entry_sha256": "00aa62db00f37d4eeb7e70492d67d37a538b0a6106e27932d1d17549fccea437",
+      "entry_sha256": "f130837017e2bd89af730a62a3d753020122d62e41429fccb2bb9560bbfcedb9",
       "directory_markdown": [],
       "default_member": true,
       "proc_macro": false,
@@ -617,6 +708,9 @@
         "g1d-trusted-control": [
           "g1c-trusted-observe",
           "osdk-frame-allocator/physical-reserve"
+        ],
+        "g2-trusted-daemon": [
+          "g1d-trusted-control"
         ]
       },
       "direct_dependencies": [
@@ -680,13 +774,25 @@
         "xmas-elf",
         "zerocopy"
       ],
-      "handbook": "kernel-components.md#aster-core",
-      "source_file_count": 790,
-      "source_files_sha256": "df0c8fec030042c2ea7c93d736e45368350cce57dd973c334299615e5824096e",
-      "static_test_declarations": {
-        "ktest": 291
+      "target_dependencies": {
+        "x86_64-unknown-none": [
+          "tdx-guest",
+          "x86_64"
+        ],
+        "riscv64imac-unknown-none-elf": [
+          "riscv"
+        ],
+        "loongarch64-unknown-none-softfloat": [
+          "loongArch64"
+        ]
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "handbook": "kernel-components.md#aster-core",
+      "source_file_count": 814,
+      "source_files_sha256": "54a59e235a591017015789598a895a3f5d941860a473112c856f34d3be2637ea",
+      "static_test_declarations": {
+        "ktest": 383
+      },
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-block",
@@ -713,11 +819,12 @@
         "spin",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-block",
       "source_file_count": 8,
       "source_files_sha256": "e04c63149f4cda18891bf9468b28b8bb0451d70c34f0cff28afc9014f05af19d",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-cmdline",
@@ -736,13 +843,14 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-cmdline",
       "source_file_count": 6,
       "source_files_sha256": "55b073d4da8aae203b46ac8c919aa8c546c7af945c536e2f77c5e3518469d220",
       "static_test_declarations": {
         "ktest": 26
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-console",
@@ -750,7 +858,7 @@
       "manifest": "kernel/asterinas/kernel/core/comps/console/Cargo.toml",
       "manifest_sha256": "455d88958402268f051d0135ddd6e1fdbfb67c0862f8cee14cf5c5b2782dab65",
       "entry": "kernel/asterinas/kernel/core/comps/console/src/lib.rs",
-      "entry_sha256": "9f0c53fc8b4a91d458e4c1cc33c8ddfc247fea702a29241160fbd563d0d8d3f6",
+      "entry_sha256": "e7ba3d9c8bb140110f671df08384b6d352483cbf524870c60067f664afc2921a",
       "directory_markdown": [],
       "default_member": true,
       "proc_macro": false,
@@ -760,11 +868,12 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-console",
       "source_file_count": 1,
-      "source_files_sha256": "41732d0b307dcbbfe707100a73d090b0270d1436f677f4d734643f917ab34e78",
+      "source_files_sha256": "796d14e8316fc77dbeea36f1caa2de8bf743ee6594e1f2d2b9d60d9346de93d4",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-device",
@@ -785,13 +894,14 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-device",
       "source_file_count": 26,
       "source_files_sha256": "7a6f620b02774387fbe462a9a659b47673c1cf27f999b3ea24f20c1b05ff87f6",
       "static_test_declarations": {
         "ktest": 17
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-framebuffer",
@@ -813,13 +923,14 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-framebuffer",
       "source_file_count": 7,
       "source_files_sha256": "2e5893007ad3c942525d00363da1f9d56425f00d436912ad628b6bce6471df5c",
       "static_test_declarations": {
         "ktest": 3
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-input",
@@ -841,11 +952,12 @@
         "spin",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-input",
       "source_file_count": 5,
       "source_files_sha256": "c6362de762b8d2a665cdae50b4ea4e3e9e09be92299795c25998bd9fd007e944",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-logger",
@@ -871,11 +983,12 @@
         "ostd",
         "owo-colors"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-logger",
       "source_file_count": 3,
       "source_files_sha256": "2ac5cccf9d8b5219524c39fe547abc6c5320e88e6a47349685ce27044283943a",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-mlsdisk",
@@ -883,7 +996,7 @@
       "manifest": "kernel/asterinas/kernel/core/comps/mlsdisk/Cargo.toml",
       "manifest_sha256": "74e34cbb293fac7ef80d913440da54a72c645ab83c4773e1187981a657cee76e",
       "entry": "kernel/asterinas/kernel/core/comps/mlsdisk/src/lib.rs",
-      "entry_sha256": "e1817ebf4a272dcbd9944823f2e7b7d20053db6a9e2f04a165e00fd96d017b6a",
+      "entry_sha256": "546722111e5ca906c49da2a33ecd0ef3217d66d09d09e7b7d4c91eb6c8b53234",
       "directory_markdown": [],
       "default_member": true,
       "proc_macro": false,
@@ -905,14 +1018,15 @@
         "serde",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-mlsdisk",
       "source_file_count": 39,
-      "source_files_sha256": "be969bf6ef8113098980011ceeaf97b41f48f213af8045fd9aec173a4f374fa5",
+      "source_files_sha256": "4a7a5ee7a58c0e2928ce51e0cf57a30c24d1cd6a2b0fb6acb2bae0e569f7f903",
       "static_test_declarations": {
-        "ktest": 1,
+        "ktest": 15,
         "test": 34
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-network",
@@ -932,11 +1046,12 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-network",
       "source_file_count": 1,
       "source_files_sha256": "461b2f407dd56d88858164a64783063e117e6f6e0eaa111314790e3b555375e4",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-nvme",
@@ -961,13 +1076,14 @@
         "spin",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-nvme",
       "source_file_count": 15,
       "source_files_sha256": "4eed768fa896d7f3f86a4c1085da8fa150aedce590951eac794521ea3e512e3d",
       "static_test_declarations": {
         "ktest": 7
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-pci",
@@ -988,11 +1104,20 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {
+        "riscv64imac-unknown-none-elf": [
+          "fdt-util"
+        ],
+        "loongarch64-unknown-none-softfloat": [
+          "fdt",
+          "fdt-util"
+        ]
+      },
       "handbook": "kernel-components.md#aster-pci",
       "source_file_count": 12,
       "source_files_sha256": "3558799979fe2ef0cf2e575ee413467555187ede1bf2c2a11cded8a7c52080cf",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-softirq",
@@ -1012,6 +1137,7 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-softirq",
       "source_file_count": 5,
       "source_files_sha256": "57c570f67b700c072e4f0f052b3fe423b233b37b3978a2dc25572c9ed79c2398",
@@ -1019,7 +1145,7 @@
         "ktest": 5,
         "test": 1
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-systree",
@@ -1041,13 +1167,14 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-components.md#aster-systree",
       "source_file_count": 6,
       "source_files_sha256": "8fa9445f3b7588f92b1548d89a0929f46c4f127b0e59e660e38523da02bdf029",
       "static_test_declarations": {
         "ktest": 16
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-time",
@@ -1067,11 +1194,24 @@
         "ostd",
         "spin"
       ],
+      "target_dependencies": {
+        "riscv64imac-unknown-none-elf": [
+          "chrono",
+          "fdt-util"
+        ],
+        "loongarch64-unknown-none-softfloat": [
+          "fdt-util"
+        ],
+        "aarch64-unknown-none-softfloat": [
+          "chrono",
+          "fdt-util"
+        ]
+      },
       "handbook": "kernel-components.md#aster-time",
       "source_file_count": 8,
       "source_files_sha256": "12981977dc0534a6cc0f2c91d668a838a55f98e91884f2111665e6a39bb86b62",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-virtio",
@@ -1118,11 +1258,23 @@
         "typeflags-util",
         "zerocopy"
       ],
+      "target_dependencies": {
+        "x86_64-unknown-none": [
+          "aster-cmdline",
+          "tdx-guest"
+        ],
+        "riscv64imac-unknown-none-elf": [
+          "fdt-util"
+        ],
+        "aarch64-unknown-none-softfloat": [
+          "fdt-util"
+        ]
+      },
       "handbook": "kernel-components.md#aster-virtio",
       "source_file_count": 55,
       "source_files_sha256": "e63d5a35b9878574352868d162d80d07219c9d1aa032ee6d9d9e57d094df1d2d",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-bigtcp",
@@ -1149,13 +1301,14 @@
         "takeable",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#aster-bigtcp",
       "source_file_count": 40,
       "source_files_sha256": "30d9e930737443e6a11a9e9d3e8a76c7e8a094997a6cc1676cba72a346196e5b",
       "static_test_declarations": {
         "ktest": 7
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-fuse",
@@ -1177,11 +1330,12 @@
         "ostd-pod",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#aster-fuse",
       "source_file_count": 32,
       "source_files_sha256": "d0890482bf06c126f8daa0a2eb84f5cea5e784638a267fde13aadc144e122ac0",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-rights",
@@ -1199,11 +1353,12 @@
         "typeflags",
         "typeflags-util"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#aster-rights",
       "source_file_count": 1,
       "source_files_sha256": "bcbdff7b058911fc34fdf8026699acba5db776871194a720a522e70fbc57818b",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-rights-proc",
@@ -1221,11 +1376,12 @@
         "quote",
         "syn"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#aster-rights-proc",
       "source_file_count": 3,
       "source_files_sha256": "72ce3a02a61c517d37574b65ab9a981912a1ac5a2482694a50a1a5e48bd6d53c",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "aster-util",
@@ -1249,13 +1405,14 @@
         "typeflags-util",
         "zerocopy"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#aster-util",
       "source_file_count": 11,
       "source_files_sha256": "2444162183506bd003415b37574633ee904537bcbc84b13479bf2179174c4f35",
       "static_test_declarations": {
         "ktest": 11
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "atomic-integer-wrapper",
@@ -1273,11 +1430,12 @@
         "quote",
         "syn"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#atomic-integer-wrapper",
       "source_file_count": 1,
       "source_files_sha256": "6ae72f3d9a861c2e5aa156687421613446173c9bc76cd52da0f20b403aaf520f",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "cpio-decoder",
@@ -1294,13 +1452,14 @@
         "int-to-c-enum",
         "lending-iterator"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#cpio-decoder",
       "source_file_count": 3,
       "source_files_sha256": "dcc74c87e4021223b8220e1b84dff0e56901c439fd7c11682f04d89e78fd9bda",
       "static_test_declarations": {
         "test": 5
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "device-id",
@@ -1317,11 +1476,12 @@
         "aster-util",
         "spin"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#device-id",
       "source_file_count": 1,
       "source_files_sha256": "abc1f13f3324b2bba24a2ed6cf2978ca878d85c6c4546ec8d515966f789cfda8",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "dma-pool",
@@ -1340,13 +1500,14 @@
         "bitvec",
         "ostd"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#dma-pool",
       "source_file_count": 3,
       "source_files_sha256": "f4e56a71cb1a92097bb169a69ea7ac9cb60227468c6d088fcbbb0abf9c86434e",
       "static_test_declarations": {
         "ktest": 8
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "fdt-util",
@@ -1360,11 +1521,25 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {
+        "riscv64imac-unknown-none-elf": [
+          "fdt",
+          "ostd"
+        ],
+        "loongarch64-unknown-none-softfloat": [
+          "fdt",
+          "ostd"
+        ],
+        "aarch64-unknown-none-softfloat": [
+          "fdt",
+          "ostd"
+        ]
+      },
       "handbook": "kernel-libraries.md#fdt-util",
       "source_file_count": 3,
       "source_files_sha256": "2f6041bb2520256636397843aa30b9a2604d738dd17868890e4d0271cd12bcda",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "io-util",
@@ -1380,11 +1555,12 @@
       "direct_dependencies": [
         "smallvec"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#io-util",
       "source_file_count": 2,
       "source_files_sha256": "112b270319451a4bc96e1c0252d361dec50daab30fd29d1387e6f459297486b6",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "jhash",
@@ -1398,13 +1574,14 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#jhash",
       "source_file_count": 1,
       "source_files_sha256": "e1cfdb2afa59a3e6b4ef3d362f3a9cd2b5776da19c9e7548ae6d19970c39a638",
       "static_test_declarations": {
         "test": 5
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "keyable-arc",
@@ -1418,13 +1595,14 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#keyable-arc",
       "source_file_count": 1,
       "source_files_sha256": "048849b5fe9a00618cd3cb27833119944ffe15005b78c746aee2213b149bef5b",
       "static_test_declarations": {
         "test": 4
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "logo-ascii-art",
@@ -1447,11 +1625,12 @@
       "direct_dependencies": [
         "owo-colors"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#logo-ascii-art",
       "source_file_count": 2,
       "source_files_sha256": "714ef683139cac346fa3cc415c808e8e8032928a968efe64fc52d4bcb41091d0",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "ring-buffer",
@@ -1459,7 +1638,7 @@
       "manifest": "kernel/asterinas/kernel/libs/ring-buffer/Cargo.toml",
       "manifest_sha256": "2de67922368827fff2cc1465627d538e9fbc9ec88279d7a0c3454b44ae01b320",
       "entry": "kernel/asterinas/kernel/libs/ring-buffer/src/lib.rs",
-      "entry_sha256": "ebd4531d579581db03eac06df3f770e2d9b5ea332a9b8410610dc6dafef84820",
+      "entry_sha256": "0d2bf89bb2b2d302e133e8916cf85e3d360fa9dfbc3a5c6a112caf69e3719dda",
       "directory_markdown": [],
       "default_member": true,
       "proc_macro": false,
@@ -1469,13 +1648,14 @@
         "ostd",
         "ostd-pod"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#ring-buffer",
       "source_file_count": 2,
-      "source_files_sha256": "48d2e82387646e208bb3514e0c48d1ba61839730b84b9fbe17ab02f4908ab3d0",
+      "source_files_sha256": "5b9fb62f0117c1ac277e63dd8700d9fe78f101df264263eb5b82fedb5b5f37db",
       "static_test_declarations": {
         "ktest": 3
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "sparse-id-alloc",
@@ -1489,13 +1669,14 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#sparse-id-alloc",
       "source_file_count": 1,
       "source_files_sha256": "f039d30c96672256fb82ed29e7a82823ea04468b451fee9510b2e7895b6ba320",
       "static_test_declarations": {
         "test": 7
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "short-vis-path",
@@ -1515,13 +1696,14 @@
         "quote",
         "proc-macro2"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#short-vis-path",
       "source_file_count": 3,
       "source_files_sha256": "ba3cbd7ae40722c997eabe4e0a1c5eee2efad03509ce597d31050d478b6d6c32",
       "static_test_declarations": {
         "test": 5
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "typeflags",
@@ -1540,11 +1722,12 @@
         "quote",
         "syn"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#typeflags",
       "source_file_count": 4,
       "source_files_sha256": "4b810cfd0293c7ba566a3b7399bf33385b7860927eff803450dda690ec07954b",
       "static_test_declarations": {},
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "typeflags-util",
@@ -1558,13 +1741,14 @@
       "proc_macro": false,
       "features": {},
       "direct_dependencies": [],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#typeflags-util",
       "source_file_count": 7,
       "source_files_sha256": "490df05b5d6c0a45cbff49be8acdf57e5fffb3218322544d71b216989bd7a824",
       "static_test_declarations": {
         "test": 3
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     },
     {
       "package": "xarray",
@@ -1580,13 +1764,14 @@
       "direct_dependencies": [
         "ostd"
       ],
+      "target_dependencies": {},
       "handbook": "kernel-libraries.md#xarray",
       "source_file_count": 7,
       "source_files_sha256": "5266d0f7ba2956507b37d69b469cc81dfe69965189085e6680a91b99b632c02b",
       "static_test_declarations": {
         "ktest": 20
       },
-      "validation_status": "not_executed_by_this_documentation_change"
+      "validation_status": "static_source_snapshot_only"
     }
   ]
 }

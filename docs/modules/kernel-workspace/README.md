@@ -1,8 +1,8 @@
 # 57 个内核 workspace crate 的开发与技术手册
 
-本手册绑定源码 **`10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd`**。它补齐每个 crate 的职责、接口、状态所有权、错误边界、开发入口和具体待验证项；不把文档覆盖率计作运行完成率。本次改动仅编写、核对文档，没有执行编译、宿主 Rust 测试或 QEMU。
+本目录包含当前机器清单与逐 crate 手册。当前 [inventory.json](inventory.json) 绑定的源码 commit/tree 见文件中的 `source_commit`/`source_tree`；它重新读取全部 57 个成员的 manifest、入口及被 Git 跟踪的 Rust 源文件。分项手册最初基于 **`10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd`** 编写，保留各 crate 的职责、接口、状态所有权、错误边界、开发入口和具体待验证项。机器清单更新属于源码核对，不将文档覆盖率、静态测试声明或哈希计作运行完成率。
 
-范围来自 [原 workspace manifest](../../../kernel/asterinas/Cargo.toml) 的全部 **57 个显式 members**。其中 **11 个**目录已有 Markdown，**46 个**没有同目录 Markdown。这和最初审计 `39c1d84ebf854958f5829c0118b0c8b92a6b4926` 的存在性统计一致，但本手册重新读取上述新基线的 manifest、入口注释和相关实现。没有为 vendored 目录机械添加 README；集中手册按包名逐条索引。
+范围来自 [原 workspace manifest](../../../kernel/asterinas/Cargo.toml) 的全部 **57 个显式 members**。当前其中 **11 个**目录已有 Markdown，**46 个**没有同目录 Markdown；57 个包均有集中手册入口。这个存在性统计仍与最初审计 `39c1d84ebf854958f5829c0118b0c8b92a6b4926` 一致。没有为 vendored 目录机械添加 README；集中手册按包名逐条索引。
 
 | 分册 | 数量 | 维护范围 |
 | --- | ---: | --- |
@@ -15,10 +15,21 @@
 
 ## 如何使用与更新
 
-运行命令与已闭合问题在本轮按当前源码校正；`inventory.json` 的静态清单、计数及哈希仍保留原 `10dae5ea` 身份，未将旧快照改写成当前执行证明。当前运行边界见 [能力表](../../CURRENT_CAPABILITIES.md)。
+当前清单由 [源码清单工具](../../../support/build/kernel_workspace_inventory.py) 从显式指定的 Git commit 重建；未提交工作文件不会被归入该 commit。原 `10dae5ea` 清单按原字节保存在 [历史清单](history/inventory-10dae5ea.json)，其 SHA256 为 `3a1b46def2f14f11fb3fdd12452858b8172f7c71f71e88023fd19009239e862e`。工具同时核对这份历史文件未变化，不覆写旧执行证据。当前运行边界见 [能力表](../../CURRENT_CAPABILITIES.md)。
 
-后续实现以 [当前逐源状态](../../STATUS.md) 为准；本手册的清单、静态数值与
-下列专项问题描述保留原 `10dae5ea` 审计基线。后续严格 runner 已增加独立
+从仓库根目录运行：
+
+```bash
+# 先提交实现，再显式选择需要核对的源码身份。
+python3 -I -B support/build/kernel_workspace_inventory.py --source-ref HEAD
+# 按清单固定的 commit 重算并比较全部记录，同时核对历史快照。
+python3 -I -B support/build/kernel_workspace_inventory.py --check
+```
+
+Schema 2 增加原 tree 身份与按架构条件声明的依赖；`direct_dependencies` 只记录 manifest 的 `[dependencies]`，`target_dependencies` 记录 `[target.*.dependencies]`。二者均不代替 Cargo 实际展开的依赖图。`validation_status=static_source_snapshot_only` 明确表示本记录没有授予运行资格。
+
+后续实现以 [当前逐源状态](../../STATUS.md) 为准；分项手册正文中未另行更新的静态数值与
+专项问题描述保留原 `10dae5ea` 审计基线，当前机器清单独立重算。后续严格 runner 已增加独立
 `aster-mlsdisk`，实际原四套记录包含它，不能把旧“三 crate”描述当作当前白名单。
 RamFs/Ext2 的 [setgid 创建合同与原生验收](../../agents/INODE_SETGID_CREATION.md)
 记录了新的共同属性接口、锁顺序、权限检查和未闭合边界。
@@ -31,7 +42,7 @@ RamFs/Ext2 的 [setgid 创建合同与原生验收](../../agents/INODE_SETGID_CR
 
 每次交付必须另行记录 source commit、实际 features/profile/架构、工具版本、输入与 ELF hash、完整分母、失败/过滤/软跳过和 raw 退出；源码注释、Rust 类型安全、宿主单测、QEMU 运行、真实设备运行是不同层次的证据。TCG 下未运行的 VMX/EPT 路径应继续列为未验证。这里不复制旧成功数给新基线；新 PT、fatal cleanup 等变更须由父级本轮冻结源独立验收。
 
-文中仓库相对源码链接用于当前 checkout 导航；固定身份以清单的 `source_commit`、manifest/入口 hash 及 `source_files_sha256` 为准。若链接目标已变化，可用 `git show 10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd:<仓库相对路径>` 读回基线。源码摘要逐行由排序后的 `路径 + NUL + SHA256(文件字节)` 组成，行间 LF、末尾 LF；仅计该 crate 下被 Git 跟踪的 `src/**/*.rs`。这不是由可信第三方签名的执行证明。
+文中仓库相对源码链接用于当前 checkout 导航；固定身份以对应清单的 `source_commit`、manifest/入口 hash 及 `source_files_sha256` 为准。若链接目标已变化，可用 `git show <该清单的 source_commit>:<仓库相对路径>` 读回基线；历史正文仍可通过 `git show 10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd:<仓库相对路径>` 对照。源码摘要逐行由排序后的 `路径 + NUL + SHA256(文件字节)` 组成，行间 LF、末尾 LF；仅计该 crate 下被 Git 跟踪的 `src/**/*.rs`。这不是由可信第三方签名的执行证明。
 
 ## 仍需补齐的交付合同
 
