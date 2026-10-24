@@ -132,6 +132,165 @@ class InstallRecoveryTests(unittest.TestCase):
         self.assertEqual(desktop.current_release(fixture.prefix).name,
                          desktop.verify_package(second)["release_id"])
 
+    def test_interrupted_rollback_retries_the_original_target(self):
+        fixture = self.fixture()
+        fixture.install()
+        original = desktop.current_release(fixture.prefix).name
+        second = fixture.make_package("c" * 40, b"upgrade")
+        fixture.install(second)
+        upgraded = desktop.current_release(fixture.prefix).name
+        with patch.object(desktop, "switch_release", side_effect=OSError(errno.ENOSPC, "rollback cut")):
+            with self.assertRaisesRegex(OSError, "rollback cut"):
+                desktop.rollback(fixture.prefix, lambda _unit: None)
+        self.assertEqual(desktop.current_release(fixture.prefix).name, upgraded)
+        desktop.rollback(fixture.prefix, lambda _unit: None)
+        record, release, _manifest, _cfg = desktop.installed(fixture.prefix)
+        self.assertEqual(release.name, original)
+        self.assertEqual(record["previous_release"], upgraded)
+
+    def rollback_fixture(self):
+        fixture = self.fixture()
+        fixture.install()
+        original = desktop.current_release(fixture.prefix).name
+        fixture.install(fixture.make_package("c" * 40, b"upgrade"))
+        return fixture, original, desktop.current_release(fixture.prefix).name
+
+    def interrupt_rollback(self, fixture, boundary, after=False):
+        targets = {"intent": fixture.prefix / "rollback.pending.json",
+                   "record": fixture.prefix / "installation.json"}
+        real_write, real_switch, real_unlink = desktop.atomic_write, desktop.switch_release, Path.unlink
+
+        def write(path, *args, **kwargs):
+            if Path(path) != targets.get(boundary):
+                return real_write(path, *args, **kwargs)
+            if after:
+                real_write(path, *args, **kwargs)
+            raise OSError(errno.ENOSPC, "injected rollback boundary")
+
+        def switch(*args, **kwargs):
+            if after:
+                real_switch(*args, **kwargs)
+            raise OSError(errno.ENOSPC, "injected rollback boundary")
+
+        def unlink(path, *args, **kwargs):
+            if boundary == "cleanup" and path == targets["intent"]:
+                raise OSError(errno.ENOSPC, "injected rollback boundary")
+            return real_unlink(path, *args, **kwargs)
+
+        with patch.object(desktop, "atomic_write", side_effect=write), \
+                patch.object(desktop, "switch_release", side_effect=switch if boundary == "switch" else real_switch), \
+                patch.object(Path, "unlink", unlink):
+            with self.assertRaisesRegex(OSError, "injected rollback boundary"):
+                desktop.rollback(fixture.prefix, lambda _unit: None)
+
+    def test_rollback_recovery_retains_selection_across_record_and_switch_boundaries(self):
+        cuts = [(point, after) for point in ("intent", "record", "switch") for after in (False, True)]
+        cuts.append(("cleanup", False))
+        for boundary, after in cuts:
+            with self.subTest(boundary=boundary, after=after):
+                fixture, original, upgraded = self.rollback_fixture()
+                config = Path(fixture.paths["config"])
+                config_before = config.read_bytes()
+                self.interrupt_rollback(fixture, boundary, after)
+                pending = fixture.prefix / "rollback.pending.json"
+                if pending.exists():
+                    with self.assertRaisesRegex(desktop.ProductError, "Rollback is incomplete"):
+                        desktop.installed(fixture.prefix)
+                result = desktop.rollback(fixture.prefix, lambda _unit: None)
+                record, release, _manifest, _cfg = desktop.installed(fixture.prefix)
+                self.assertEqual(result["current_release"], original)
+                self.assertEqual(release.name, original)
+                self.assertEqual(record["previous_release"], upgraded)
+                self.assertEqual(config.read_bytes(), config_before)
+                self.assertFalse(pending.exists())
+
+    def test_pending_rollback_blocks_other_lifecycle_commands_before_service_actions(self):
+        fixture, _original, _upgraded = self.rollback_fixture()
+        self.interrupt_rollback(fixture, "record", after=True)
+        pending = fixture.prefix / "rollback.pending.json"
+        before = pending.read_bytes()
+        operations = (lambda: desktop.installed(fixture.prefix),
+                      lambda: desktop.run(fixture.prefix),
+                      lambda: desktop.run(fixture.prefix, session=True),
+                      lambda: fixture.install(),
+                      lambda: desktop.uninstall(fixture.prefix, lambda _unit: None))
+        with patch.object(desktop, "systemctl") as service:
+            for operation in operations:
+                with self.assertRaisesRegex(desktop.ProductError, "Rollback is incomplete"):
+                    operation()
+            service.assert_not_called()
+        self.assertEqual(pending.read_bytes(), before)
+
+    def test_rollback_resume_rejects_changed_record_current_and_user_integration(self):
+        for changed in ("record", "current", "integration"):
+            with self.subTest(changed=changed):
+                fixture, _original, _upgraded = self.rollback_fixture()
+                self.interrupt_rollback(fixture, "record", after=True)
+                pending = fixture.prefix / "rollback.pending.json"
+                intent = pending.read_bytes()
+                launcher = Path(fixture.paths["bin_dir"]) / "trillionnium-desktop"
+                if changed == "record":
+                    record_path = fixture.prefix / "installation.json"
+                    record = desktop.read_json(record_path)
+                    record["previous_release"] = "e" * 12 + "-" + "f" * 12
+                    desktop.atomic_write(record_path, desktop.json_bytes(record))
+                elif changed == "current":
+                    other = "e" * 12 + "-" + "f" * 12
+                    (fixture.prefix / "releases" / other).mkdir()
+                    desktop.switch_release(fixture.prefix, other)
+                else:
+                    launcher.write_bytes(launcher.read_bytes() + b"# preserve user change\n")
+                contents = launcher.read_bytes()
+                with self.assertRaisesRegex(desktop.ProductError, "changed during interrupted|Modified integration preserved"):
+                    desktop.rollback(fixture.prefix, lambda _unit: None)
+                self.assertEqual(pending.read_bytes(), intent)
+                self.assertEqual(launcher.read_bytes(), contents)
+
+    def test_rollback_resume_rejects_aliases_and_inconsistent_intent_without_mutation(self):
+        for changed in ("symlink", "hardlink", "record", "path"):
+            with self.subTest(changed=changed):
+                fixture, _original, upgraded = self.rollback_fixture()
+                self.interrupt_rollback(fixture, "record")
+                pending = fixture.prefix / "rollback.pending.json"
+                original = pending.read_bytes()
+                outside = fixture.root / "retain-intent.json"
+                if changed == "symlink":
+                    pending.rename(outside)
+                    pending.symlink_to(outside)
+                elif changed == "hardlink":
+                    outside.hardlink_to(pending)
+                else:
+                    intent = desktop.read_json(pending)
+                    if changed == "record":
+                        intent["record"]["previous_release"] = intent["after_release"]
+                    else:
+                        intent["record"]["integration_sha256"][str(outside)] = "a" * 64
+                    desktop.atomic_write(pending, desktop.json_bytes(intent))
+                before = pending.read_bytes()
+                with self.assertRaises(desktop.ProductError):
+                    desktop.rollback(fixture.prefix, lambda _unit: None)
+                self.assertEqual(pending.read_bytes(), before)
+                if outside.exists():
+                    self.assertEqual(outside.read_bytes(), original)
+                self.assertEqual(desktop.current_release(fixture.prefix).name, upgraded)
+
+    def test_active_session_blocks_rollback_before_intent_and_during_recovery(self):
+        fixture, _original, upgraded = self.rollback_fixture()
+
+        def active(_unit):
+            raise desktop.ProductError("Session active")
+
+        pending = fixture.prefix / "rollback.pending.json"
+        with self.assertRaisesRegex(desktop.ProductError, "Session active"):
+            desktop.rollback(fixture.prefix, active)
+        self.assertFalse(pending.exists())
+        self.interrupt_rollback(fixture, "record")
+        original = pending.read_bytes()
+        with self.assertRaisesRegex(desktop.ProductError, "Session active"):
+            desktop.rollback(fixture.prefix, active)
+        self.assertEqual(pending.read_bytes(), original)
+        self.assertEqual(desktop.current_release(fixture.prefix).name, upgraded)
+
 
 if __name__ == "__main__":
     unittest.main()

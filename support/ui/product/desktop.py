@@ -442,6 +442,7 @@ def install(package, prefix, paths, activity_probe=require_stopped):
     manifest = verify_package(package)
     package, prefix = Path(package), Path(prefix)
     with install_lock(prefix):
+        require_no_pending_rollback(prefix)
         activity_probe(paths["unit_name"])
         generated = integrations(prefix, paths)
         record_path = prefix / "installation.json"
@@ -585,15 +586,30 @@ def load_config(path):
     return cfg
 
 
+def require_no_pending_rollback(prefix):
+    pending = Path(prefix) / "rollback.pending.json"
+    require(not pending.exists() and not pending.is_symlink(),
+            "Rollback is incomplete; rerun rollback to complete the recorded target")
+
+
+def validate_installation_record(prefix, record):
+    require(isinstance(record, dict)
+            and set(record) == {"schema_version", "paths", "previous_release", "integration_sha256"}
+            and record["schema_version"] == 1, "Unknown installation record")
+    expected = integrations(prefix, record["paths"])
+    require(isinstance(record["integration_sha256"], dict)
+            and set(record["integration_sha256"]) == set(expected), "Unexpected managed integration path")
+    require(all(isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
+                for value in record["integration_sha256"].values()), "Invalid managed integration checksum")
+    return record
+
+
 def installed(prefix):
     pending = Path(prefix) / "installation.pending.json"
     require(not pending.exists() and not pending.is_symlink(),
             "Installation is incomplete; rerun install with the same package and paths")
-    record = read_json(Path(prefix) / "installation.json")
-    require(set(record) == {"schema_version", "paths", "previous_release", "integration_sha256"}
-            and record["schema_version"] == 1, "Unknown installation record")
-    expected = integrations(prefix, record["paths"])
-    require(set(record["integration_sha256"]) == set(expected), "Unexpected managed integration path")
+    require_no_pending_rollback(prefix)
+    record = validate_installation_record(prefix, read_json(Path(prefix) / "installation.json"))
     release = current_release(prefix)
     require(release is not None, "No installed current release")
     manifest = verify_package(release)
@@ -667,15 +683,64 @@ def require_owned_session(env, unit):
 
 
 def rollback(prefix, activity_probe=require_stopped):
+    prefix = Path(prefix)
     with install_lock(prefix):
-        record, release, _manifest, _cfg = installed(prefix)
+        installation = prefix / "installation.pending.json"
+        require(not installation.exists() and not installation.is_symlink(),
+                "Installation is incomplete; rerun install with the same package and paths")
+        pending_path = prefix / "rollback.pending.json"
+        pending = None
+        if pending_path.exists() or pending_path.is_symlink():
+            info = pending_path.lstat()
+            require(stat.S_ISREG(info.st_mode) and info.st_uid == os.geteuid()
+                    and info.st_nlink == 1 and stat.S_IMODE(info.st_mode) == 0o600,
+                    "Invalid pending rollback file")
+            pending = read_json(pending_path)
+            require(isinstance(pending, dict) and set(pending) == {
+                "schema_version", "before_release", "after_release", "previous_record", "record"
+            } and pending["schema_version"] == 1, "Unknown pending rollback schema")
+            before, previous = pending["before_release"], pending["after_release"]
+            require(isinstance(before, str) and RELEASE.fullmatch(before)
+                    and isinstance(previous, str) and RELEASE.fullmatch(previous)
+                    and before != previous, "Invalid pending rollback releases")
+            original = validate_installation_record(prefix, pending["previous_record"])
+            record = validate_installation_record(prefix, pending["record"])
+            require(original["previous_release"] == previous
+                    and record == dict(original, previous_release=before),
+                    "Pending rollback does not match its original target and records")
+            actual = validate_installation_record(prefix, read_json(prefix / "installation.json"))
+            require(actual in (original, record), "Installation record changed during interrupted rollback")
+            current = current_release(prefix)
+            require(current is not None and current.name in (before, previous),
+                    "Current release changed during interrupted rollback")
+            load_config(record["paths"]["config"])
+        else:
+            original, release, _manifest, _cfg = installed(prefix)
+            before, previous = release.name, original["previous_release"]
+            require(isinstance(previous, str) and RELEASE.fullmatch(previous) and previous != before,
+                    "No previous installed release")
+            record = dict(original, previous_release=before)
+        for release_id in (before, previous):
+            manifest = verify_package(prefix / "releases" / release_id)
+            require(manifest["release_id"] == release_id, "Rollback release identity mismatch")
+        # Rollback changes the selected release only. Never repair a user's
+        # modified launcher, service or desktop entry while recovering it.
+        for filename, checksum in record["integration_sha256"].items():
+            path = Path(filename)
+            if path.exists() or path.is_symlink():
+                require(digest(regular_bytes(path)) == checksum,
+                        f"Modified integration preserved; resolve it before rollback: {path}")
         activity_probe(record["paths"]["unit_name"])
-        previous = record["previous_release"]
-        require(previous and RELEASE.fullmatch(previous), "No previous installed release")
-        verify_package(Path(prefix) / "releases" / previous)
-        record["previous_release"] = release.name
-        atomic_write(Path(prefix) / "installation.json", json_bytes(record))
+        if pending is None:
+            # Fix the destination before updating either the record or symlink.
+            # Resumption must not reinterpret the already-updated previous_release.
+            pending = {"schema_version": 1, "before_release": before, "after_release": previous,
+                       "previous_record": original, "record": record}
+            atomic_write(pending_path, json_bytes(pending))
+        atomic_write(prefix / "installation.json", json_bytes(record))
         switch_release(prefix, previous)
+        pending_path.unlink()
+        fsync_dir(prefix)
         return {"current_release": previous, "user_data_changed": False}
 
 

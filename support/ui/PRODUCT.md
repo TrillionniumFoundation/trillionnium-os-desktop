@@ -270,6 +270,20 @@ removed and the prefix fsynced only after the installation record and release
 selection are durable. This resumes local installation work; it never replays
 Notes or Hepta effects.
 
+Rollback has its own private, synchronized `rollback.pending.json` intent. It
+records the original current release, the selected previous release and both
+installation records before changing either the record or `current`. An
+interrupted rollback is resumed by the same `rollback` command; it always keeps
+that recorded destination, including when the new record or release symlink was
+already written. Both release packages and the original managed paths/checksums
+are revalidated. A changed record, unrelated current release, aliased intent or
+user-edited integration is preserved and causes refusal. The Session must remain
+stopped. Startup, installation and uninstall refuse a pending rollback and ask
+for that recovery first. Only after the record and selected release are durable
+is the intent removed and the installation directory synchronized. A subsequent
+rollback after this completed operation is a new selection of the recorded
+previous release; the journal is not an execution-authority or effect receipt.
+
 Configuration and `$XDG_STATE_HOME/trillionnium-ui` (default
 `~/.local/state/trillionnium-ui`) remain outside immutable release directories.
 Upgrade and rollback do not rewrite draft, composer or Notes content. Local
