@@ -163,6 +163,28 @@ cargo +1.96.0 clippy --locked --manifest-path ui/Cargo.toml -p trill-ui-core -p 
 cargo +1.96.0 build --locked --manifest-path ui/Cargo.toml -p trill-session -p trill-app-window --bins
 ```
 
+The ordinary user path has a separate real-window fixture:
+
+```sh
+/usr/bin/python3 -B tests/ui/test-notes-reopen-window.py \
+  --binary-dir /absolute/matching-binary-directory \
+  --hepta-root /absolute/exact-pinned-hepta-checkout \
+  --font /absolute/real-host-CJK-font.ttc \
+  --output /absolute/new-notes-window-evidence
+```
+
+It requires Xvfb, `dbus-run-session`, `xdotool`, libX11/libXRes and system Python
+GI bindings for GTK/AT-SPI. It copies and hashes the supplied binaries, creates
+its own display/bus/state, verifies the Session-owned child and server-side XRes
+PID before input, pastes CJK/combining/emoji text through the actual clipboard,
+closes the original window through WM_DELETE_WINDOW, and uses the ordinary
+saved-note controls in a new window. Checkpoint readback and a separate recovery
+helper verify fresh identity/revisions and preservation of the old pending
+receipt. Its JSON, screenshots and logs remain in the new output directory.
+Synthetic keyboard/clipboard automation is not physical IME qualification;
+the fixture does not run a production Hepta authority or claim writer finality.
+Repeat it against the actual final binary hashes when claiming that source pair.
+
 Run `tests/ui/test-notes-crash-recovery.py <absolute-binary-directory>` only
 inside a task-owned Xvfb/Weston with `TRILL_NOTES_PROBE_ISOLATED=1`.
 It launches the real Session and Notes window, sends one complete effect frame,

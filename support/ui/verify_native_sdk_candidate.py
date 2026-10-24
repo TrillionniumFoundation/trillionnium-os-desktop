@@ -58,8 +58,12 @@ def ensure_stable(paths, expected):
 
 
 def cargo_commands(args, toolchain):
-    prefix = [args.cargo, "+" + toolchain, "--config", str(args.sdk_cargo_config)]
-    common = ["--manifest-path", str(args.source / "ui/Cargo.toml"), "--locked", "--features", FEATURE]
+    prefix = [args.cargo, "+" + toolchain]
+    # cargo-clippy is an external Cargo plugin: global options before its
+    # name are not forwarded to its nested `cargo check` (Cargo #11031).
+    # Keep --config after every subcommand, before Clippy's `--` separator.
+    common = ["--config", str(args.sdk_cargo_config), "--manifest-path", str(args.source / "ui/Cargo.toml"),
+              "--locked", "--features", FEATURE]
     if args.offline:
         common.append("--offline")
     compiled = [*common, "--workspace", "--profile", args.profile, "--target-dir", str(args.target_dir)]
@@ -103,6 +107,7 @@ def run(args, receipt):
     env["CARGO_TARGET_DIR"] = str(args.target_dir)
     env["CARGO_BUILD_JOBS"] = str(args.jobs)
     receipt.update(desktop=source, hepta=hepta, toolchain=toolchain, feature=FEATURE, profile=args.profile,
+                   source_commit=source["commit"], source_tree=source["tree"],
                    inputs_sha256=bound, target_dir=str(args.target_dir),
                    environment={key: env[key] for key in ("CARGO_TARGET_DIR", "CARGO_BUILD_JOBS", "RUSTUP_TOOLCHAIN", "RUSTFLAGS",
                                                          "CARGO_ENCODED_RUSTFLAGS", "CARGO_BUILD_TARGET", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER") if key in env})
@@ -147,7 +152,10 @@ def run(args, receipt):
         with path.open("rb") as binary:
             require(binary.read(4) == b"\x7fELF", f"built program is not a Linux ELF binary: {path}")
         binaries[name] = {"path": str(path), "bytes": path.stat().st_size, "sha256": sha(path)}
-    receipt.update(binary_sha256=binaries, compiled=True, passed=True)
+    # Keep the original native-window qualifier's build-receipt interface.
+    # These fields are set only after every actual command and final source /
+    # binary check succeeds; callers need not synthesize another receipt.
+    receipt.update(binaries=binaries, compiled=True, passed=True, status="passed", exit_code=0)
 
 
 def main():
@@ -171,12 +179,14 @@ def main():
     require(not args.output.is_relative_to(args.source), "evidence must stay outside the source checkout")
     args.output.mkdir(mode=0o700, parents=False, exist_ok=False)
     receipt = {"schema": "trillionnium.native-sdk-candidate-build.v1", "passed": False, "compiled": False,
+               "status": "running", "exit_code": None, "binaries": {},
                "runtime_qualified": False, "production_authority": False, "steps": [], "runner_sha256": sha(Path(__file__).resolve())}
     try:
         run(args, receipt)
         return 0
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         receipt["error"] = f"{type(error).__name__}: {error}"
+        receipt.update(status="failed", exit_code=1)
         return 1
     finally:
         (args.output / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")

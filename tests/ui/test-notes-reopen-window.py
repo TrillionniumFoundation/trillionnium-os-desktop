@@ -170,10 +170,10 @@ def run(args, result):
     # desktop user's settings. Set both properties before launching Notes.
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     for property_name in ("IsEnabled", "ScreenReaderEnabled"):
-        bus.call_sync("org.a11y.Bus", "/org/a11y/status", "org.freedesktop.DBus.Properties", "Set",
+        bus.call_sync("org.a11y.Bus", "/org/a11y/bus", "org.freedesktop.DBus.Properties", "Set",
                       GLib.Variant("(ssv)", ("org.a11y.Status", property_name, GLib.Variant("b", True))),
                       None, Gio.DBusCallFlags.NONE, 5000, None)
-    status = bus.call_sync("org.a11y.Bus", "/org/a11y/status", "org.freedesktop.DBus.Properties", "GetAll",
+    status = bus.call_sync("org.a11y.Bus", "/org/a11y/bus", "org.freedesktop.DBus.Properties", "GetAll",
                            GLib.Variant("(s)", ("org.a11y.Status",)), None, Gio.DBusCallFlags.NONE, 5000, None)
     result["owned_a11y_status"] = status.unpack()[0]
     require(all(result["owned_a11y_status"].get(key) is True for key in ("IsEnabled", "ScreenReaderEnabled")),
@@ -236,6 +236,11 @@ def run(args, result):
                 def click(pid, identity, window, node):
                     require(bootstrap.child_identity(pid) == identity, "Notes child identity changed before action")
                     owner.require_pid(window, pid)
+                    # Xvfb has no window manager to focus a newly opened
+                    # window. Keep the production ActivationGuard intact.
+                    subprocess.run(["xdotool", "windowfocus", "--sync", str(window)], check=True, timeout=4)
+                    require(node.get_component_iface().grab_focus(), "Notes control focus refused")
+                    wait_for(lambda: node.get_state_set().contains(Atspi.StateType.FOCUSED), "Notes control focused")
                     action = node.get_action_iface()
                     for index in range(action.get_n_actions()):
                         if action.get_action_name(index).lower() in {"click", "press", "activate"}:
@@ -313,6 +318,18 @@ def run(args, result):
                               new_checkpoint_sha256=digest(new_path), new_revision=edited["revision"])
                 clipboard.clear()
                 screenshot("03-continued-note.png")
+        except Exception:
+            try:
+                screenshot("failure-window.png")
+                if "app" in locals():
+                    tree = [{"name": node.get_name(), "role": node.get_role_name(),
+                             "enabled": node.get_state_set().contains(Atspi.StateType.ENABLED),
+                             "focused": node.get_state_set().contains(Atspi.StateType.FOCUSED)}
+                            for node in walk(app)]
+                    (args.output / "failure-atspi-tree.json").write_text(json.dumps(tree, ensure_ascii=False, indent=2) + "\n")
+            except Exception as error:
+                result["diagnostic_error"] = str(error)
+            raise
         finally:
             log = socket_path.parents[2] / "session.log"
             if log.is_file():
@@ -340,7 +357,9 @@ def main():
             shutil.copy2(source, pinned / name)
             require(digest(source) == digest(pinned / name), "binary changed during private snapshot")
         env = {key: value for key, value in os.environ.items()
-               if not key.startswith(("TRILL_", "DBUS_")) and key not in {"DISPLAY", "WAYLAND_DISPLAY", "NO_AT_BRIDGE"}}
+               if not key.startswith(("TRILL_", "DBUS_")) and key not in {
+                   "DISPLAY", "WAYLAND_DISPLAY", "NO_AT_BRIDGE", "AT_SPI_BUS_ADDRESS",
+                   "IBUS_ADDRESS", "SESSION_MANAGER", "XAUTHORITY"}}
         for variable, folder in (("XDG_RUNTIME_DIR", "runtime"), ("XDG_CONFIG_HOME", "config"), ("XDG_DATA_HOME", "data"), ("XDG_STATE_HOME", "state")):
             path = args.output / folder
             path.mkdir(mode=0o700)

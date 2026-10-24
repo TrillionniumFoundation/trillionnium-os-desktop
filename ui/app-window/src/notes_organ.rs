@@ -33,6 +33,7 @@ pub struct NotesAppChannel {
     text: String,
     saved_text: String,
     revision: u64,
+    accepted_local_revision: Option<(u64, u64)>,
     next_edit: u64,
     pending_edit: Option<u64>,
     deferred_edit: Option<(u64, String)>,
@@ -81,6 +82,7 @@ impl NotesAppChannel {
             text: String::new(),
             saved_text: String::new(),
             revision: 0,
+            accepted_local_revision: None,
             next_edit: 1,
             pending_edit: None,
             deferred_edit: None,
@@ -101,6 +103,7 @@ impl NotesAppChannel {
     pub fn poll(&mut self) -> bool {
         let before = self.text.clone();
         let revision_before = self.revision;
+        self.accepted_local_revision = None;
         let projection = self
             .worker
             .projection
@@ -151,6 +154,12 @@ impl NotesAppChannel {
                 .filter(|(id, _, _)| self.pending_edit == Some(*id))
             {
                 self.pending_edit = None;
+                if accepted {
+                    // This exact pending local edit was acknowledged by the
+                    // sole worker. A newer external observation is deliberately
+                    // not part of this transition and will still fail CAS.
+                    self.accepted_local_revision = Some((revision_before, revision));
+                }
                 if !accepted || (self.deferred_edit.is_some() && value.revision != revision) {
                     self.conflicted = true;
                     self.notice = Some("文档已被其他操作修改；当前编辑尚未保存。");
@@ -177,6 +186,10 @@ impl NotesAppChannel {
 
     pub fn revision(&self) -> u64 {
         self.revision
+    }
+
+    pub fn accepted_local_revision(&self) -> Option<(u64, u64)> {
+        self.accepted_local_revision
     }
 
     /// IME commits retain the revision observed before composition. An effect
@@ -480,6 +493,7 @@ mod editor_tests {
             text: "external effect".into(),
             saved_text: "external effect".into(),
             revision: 5,
+            accepted_local_revision: None,
             next_edit: 1,
             pending_edit: None,
             deferred_edit: None,
@@ -512,12 +526,30 @@ mod editor_tests {
         assert!(receiver.try_recv().is_err());
         channel.keep_local_after_conflict();
         assert!(!channel.has_conflict());
-        match receiver.try_recv().unwrap() {
-            worker::Command::LocalEdit { revision, text, .. } => {
+        let id = match receiver.try_recv().unwrap() {
+            worker::Command::LocalEdit { id, revision, text } => {
                 assert_eq!(revision, 6);
                 assert_eq!(text, "我的输入继续编辑");
+                id
             }
             _ => panic!("explicit conflict resolution must use the existing local CAS worker"),
-        }
+        };
+        *projection.lock().unwrap() = worker::Projection {
+            version: 2,
+            text: "external effect after the accepted local edit".into(),
+            revision: 8,
+            local_result: Some((id, true, 7)),
+            ..Default::default()
+        };
+        channel.poll();
+        assert_eq!(channel.accepted_local_revision(), Some((6, 7)));
+        assert_eq!(channel.revision(), 8);
+        // A composition may follow our acknowledged edit only to revision 7;
+        // it must not inherit the later external revision 8.
+        assert!(channel.local_edit_at(7, "组词确认".into()));
+        assert!(channel.has_conflict());
+        assert!(receiver.try_recv().is_err());
+        channel.poll();
+        assert_eq!(channel.accepted_local_revision(), None);
     }
 }

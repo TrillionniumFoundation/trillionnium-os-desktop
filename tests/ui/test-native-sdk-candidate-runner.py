@@ -1,16 +1,54 @@
 #!/usr/bin/env python3
 """The candidate runner must stop if any build step changes its bound inputs."""
 import json
+import importlib.util
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 
 RUNNER = Path(__file__).resolve().parents[2] / "support/ui/verify_native_sdk_candidate.py"
 
 
 class CandidateInputDrift(unittest.TestCase):
+    def test_real_cargo_external_plugin_receives_candidate_config(self):
+        cargo = shutil.which("cargo")
+        if cargo is None:
+            self.skipTest("requires the project's real Rust 1.96 Cargo installation")
+        # The actual Cargo frontend launches a harmless temporary external
+        # plugin. This exercises its argument forwarding, without compiling a
+        # Rust crate or substituting the compiler/production Clippy binary.
+        with tempfile.TemporaryDirectory(prefix="sdk-plugin-forwarding-") as folder:
+            root = Path(folder)
+            config = root / "candidate.toml"
+            config.write_text("# exact candidate config path fixture\n")
+            plugin = root / "cargo-candidate-config-fixture"
+            plugin.write_text(f"#!{sys.executable}\nimport json,sys\nprint(json.dumps(sys.argv))\n")
+            plugin.chmod(0o700)
+            sys.path.insert(0, str(RUNNER.parent))
+            try:
+                spec = importlib.util.spec_from_file_location("sdk_build_runner", RUNNER)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                args = SimpleNamespace(cargo=cargo, sdk_cargo_config=config, source=root, offline=True,
+                                       profile="release", target_dir=root / "target")
+                generated = dict(module.cargo_commands(args, "1.96.0"))["clippy"]
+            finally:
+                sys.path.pop(0)
+            generated[generated.index("clippy")] = "candidate-config-fixture"
+            env = dict(os.environ, PATH=str(root) + os.pathsep + os.environ["PATH"])
+            observed = json.loads(subprocess.check_output(generated, cwd=root, env=env, text=True, timeout=30))
+            self.assertEqual(observed[observed.index("--config") + 1], str(config))
+            # Reproduce the old historical invocation, on the same real Cargo.
+            # The outer --config is consumed; the plugin does not receive it.
+            old = [cargo, "+1.96.0", "--config", str(config), "candidate-config-fixture", "--locked"]
+            missing = json.loads(subprocess.check_output(old, cwd=root, env=env, text=True, timeout=30))
+            self.assertNotIn("--config", missing)
+
     def test_real_child_mutating_lock_or_config_cannot_reach_test_clippy_or_build(self):
         for changed in ("lock", "config"):
             with self.subTest(changed=changed), tempfile.TemporaryDirectory(prefix="sdk-input-drift-") as folder:
@@ -50,6 +88,9 @@ class CandidateInputDrift(unittest.TestCase):
                 self.assertIn("inputs changed", receipt["error"])
                 self.assertFalse(receipt["passed"])
                 self.assertFalse(receipt["compiled"])
+                self.assertEqual(receipt["status"], "failed")
+                self.assertEqual(receipt["exit_code"], result.returncode)
+                self.assertEqual(receipt["binaries"], {})
                 self.assertEqual([step["name"] for step in receipt["steps"]], ["metadata"])
                 invoked = json.loads((root / "invoked.json").read_text())
                 self.assertIn("--locked", invoked)

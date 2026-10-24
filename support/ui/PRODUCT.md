@@ -134,6 +134,20 @@ the exact candidate lock, a freshly verified SDK source profile, binary hashes
 and a separate build receipt. Its source profile still says `compiled: false`;
 the separate build receipt reports actual command success. Window, clipboard,
 IME and accessibility qualification remains a separate run on those binaries.
+The successful receipt directly supplies the existing native-window qualifier's
+`--build-receipt` contract: `status`, `exit_code`, `source_commit`, `source_tree`
+and `binaries` with each actual program's byte count and SHA-256. Use that exact
+receipt without rewriting it. `runtime_qualified` remains false until the
+separate window qualification succeeds and produces its own evidence.
+
+Put `--config` **after** the Cargo subcommand, especially
+`cargo +1.96.0 clippy --config /absolute/all-sdk-overrides.toml ... --locked`.
+Clippy is an external Cargo plugin; an outer `cargo --config ... clippy` can
+consume that configuration before invoking the plugin, whose inner Cargo then
+resolves a different graph. The canonical runner uses the forwarded position
+for every step. This distinction is covered by Cargo's original
+[external-plugin configuration issue](https://github.com/rust-lang/cargo/issues/11031)
+and a regression that invokes the real Cargo frontend with a temporary plugin.
 
 Pass the resulting SDK receipt and its inputs to the resource preparer:
 

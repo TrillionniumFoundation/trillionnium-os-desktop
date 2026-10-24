@@ -29,6 +29,12 @@ struct ClientWindow {
 }
 
 impl eframe::App for ClientWindow {
+    fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) {
+        if self.notes_organ.is_some() {
+            self.notes_input.raw_input_hook(ctx, raw);
+        }
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.activation.begin_frame(ctx);
         self.terminal_preedit_active = self.activation.composing();
@@ -38,6 +44,9 @@ impl eframe::App for ClientWindow {
                 .notes_input
                 .begin(ctx, &mut self.notes, organ.revision());
             let updated = organ.poll();
+            if let Some((from, to)) = organ.accepted_local_revision() {
+                self.notes_input.accept_local_revision(from, to);
+            }
             if !preserve && (updated || self.notes_input.cancelled()) {
                 self.notes = organ.text().to_owned();
                 notes_updated = true;
@@ -77,6 +86,9 @@ impl eframe::App for ClientWindow {
                         }
                     }
                     let label = ui.label("Notes / 笔记 · try composing Chinese with your host IME");
+                    if let Some(organ) = &self.notes_organ {
+                        self.notes_input.prepare_editor(ctx, &self.notes, organ.revision());
+                    }
                     let editor = ui.add_enabled(
                         self.notes_organ.as_ref().is_none_or(|organ| organ.can_edit()),
                         egui::TextEdit::multiline(&mut self.notes)
@@ -86,9 +98,10 @@ impl eframe::App for ClientWindow {
                             .hint_text("中文输入、候选词、焦点测试……"),
                     ).labelled_by(label.id);
                     if let Some(organ) = &mut self.notes_organ {
-                        if let Some((revision, text)) = self.notes_input.finish(ctx, &mut self.notes, editor.changed()) {
+                        if let Some((revision, text)) = self.notes_input.finish(ctx, &mut self.notes, editor.changed(), editor.lost_focus()) {
                             if !organ.local_edit_at(revision, text) { self.notes = organ.text().to_owned(); }
                         }
+                        if self.notes_input.cancelled() { self.notes = organ.text().to_owned(); }
                         ui.small(format!("Document revision: {} · private Notes destination", organ.revision()));
                         ui.small("External edits require the original Hepta owner. This document is limited to 4096 UTF-8 bytes.");
                         ui.small(organ.storage_status());
