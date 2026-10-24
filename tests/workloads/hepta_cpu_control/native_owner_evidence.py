@@ -236,8 +236,13 @@ def checkpoint(value, expected_peer, agent_id):
 
 
 def parse(raw, scenario, nonce):
+    return _parse(raw, scenario, nonce, False)
+
+
+def _parse(raw, scenario, nonce, prior_boot):
     require(type(raw) is bytes and len(raw) <= MAX_SERIAL_BYTES, "serial evidence exceeds the original bound")
-    require(scenario in SUPPORTED_SCENARIOS, "unsupported original-owner scenario")
+    require(scenario in SUPPORTED_SCENARIOS or (prior_boot and scenario == "prior-boot-unknown-v1"),
+            "unsupported original-owner scenario")
     digest(nonce, "fresh host nonce")
     decoded = raw.decode("utf-8", errors="strict").replace("\r\n", "\n")
     require(not any(marker in decoded.lower() for marker in ("kernel panic", "panicked at", "fatal exception", "g2_fail")),
@@ -293,9 +298,19 @@ def cpu_stat(raw):
 
 def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
     """Raise on any missing boundary; success has only the named finite scope."""
-    require(type(code) is int and code == 33 and timed_out is False and excessive is False,
+    return _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, None)
+
+
+def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, prior_boot):
+    expected_exit = 33
+    if prior_boot is not None:
+        from native_owner_prior_boot_evidence import PriorBootTranscript
+        require(type(prior_boot) is PriorBootTranscript and scenario == "prior-boot-unknown-v1",
+                "only the separate actual two-boot oracle can consume this transcript")
+        expected_exit = -9 if prior_boot.phase == "fresh" else 33
+    require(type(code) is int and code == expected_exit and timed_out is False and excessive is False,
             "QEMU must finish the bounded actual boot with the original success exit")
-    lines, events = parse(raw, scenario, nonce)
+    lines, events = _parse(raw, scenario, nonce, prior_boot is not None)
     successor_markers = []
     if scenario in CONTINUITY_SCENARIOS:
         from native_owner_continuity_kernel import kernel_records
@@ -323,6 +338,9 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
         value = values[cursor]["payload"]
         cursor += 1
         return value
+
+    if prior_boot is not None:
+        prior_boot.begin(take)
 
     roles = obj(take("roles"), ("bootstrap_version", "bootstrap_bytes", "native_boot_id", "manager_space", "recovery_space",
                                 "linux_boot_id", "processes"), "roles")
@@ -567,6 +585,17 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
         last_usage = second
 
     copyout_flags = {}
+    if prior_boot is not None:
+        from types import SimpleNamespace
+        result = prior_boot.finish(SimpleNamespace(
+            take=take, role_pids=role_pids, boot_id=boot_id, linux_boot=linux_boot, spaces=spaces,
+            peers=peers, state=state, owners=owners, currents=currents, materials=materials,
+            frontiers=frontiers, operations=operations, prepared=prepared,
+            native_result=native_result, source_terminal=source_terminal,
+            acknowledge=acknowledge, window=window))
+        require(cursor == len(values), "actual prior-boot stream contains a later or unexpected owner event")
+        result.update(raw_serial_sha256=hashlib.sha256(raw).hexdigest(), event_count=len(values))
+        return result
     if scenario == "steady-state-v1":
         for name, cap in (("lower", 25_000_000), ("pause", 0), ("resume", CAP_NS)):
             prepared(name, "manager", cap)
