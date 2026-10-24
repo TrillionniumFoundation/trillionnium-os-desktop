@@ -24,6 +24,11 @@ G2_TESTS = tuple("aster_core::process::process::image::tests::" + name for name 
     "frozen_root_exec_fences_old_image_without_reactivating_the_role",
     "cancelled_frozen_root_does_not_leave_live_process_protection",
 ))
+CONTINUITY_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::" + name for name in (
+    "native_late_image_close_cannot_revoke_replacement_delegations",
+    "native_delayed_watchdog_cut_cannot_mutate_a_replacement_policy",
+    "native_watchdog_registration_is_bounded_across_owner_policy_replacements",
+))
 
 
 def require(condition, message):
@@ -82,7 +87,11 @@ def check_build(directory):
 
 
 def check_guest(guest):
-    # The old inventory and minimum remain unmodified and are checked first.
+    # The original checker owns the complete baseline and its required CPU
+    # continuity tests. A stale checker must not qualify a newer G2 product.
+    require(original.MINIMUM_CORE_TESTS >= 368
+            and all(name in original.REQUIRED_CORE_TESTS for name in CONTINUITY_TESTS),
+            "G2 requires the original 368-test core gate with all three CPU continuity regressions")
     result = original.check_guest(guest, "aster-core", False)
     qemu = json.loads((guest / "qemu.json").read_text())
     original.check_fixed_n0_profile(qemu, "G2 original Process-state tests")

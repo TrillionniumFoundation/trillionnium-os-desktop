@@ -9,8 +9,9 @@
 
 use os_control::{
     ControlCoreWith, DeliveryError, DeliveryObservation, DeliveryStatus, LockBackend,
-    ManagementGrantConfig, ManagementGrantId, ManagementGrantState, NativeExecution,
-    NativeGrant, NativeResourceUpdate, PublishOutcome, PublisherId, ReserveTokenWith,
+    ManagementGrantConfig, ManagementGrantId, ManagementGrantSnapshot, ManagementGrantState,
+    NativeExecution, NativeGrant, NativeResourceUpdate, PublishOutcome, PublisherId,
+    ReserveTokenWith,
 };
 
 use super::*;
@@ -62,12 +63,18 @@ impl TrustedCpuManagement {
             return Err(DeliveryStatus::Revoked);
         }
         if index == 0 {
-            return if now < self.manager_expires_ns { Ok(false) } else { Err(DeliveryStatus::Revoked) };
+            return if now < self.manager_expires_ns {
+                Ok(false)
+            } else {
+                Err(DeliveryStatus::Revoked)
+            };
         }
         let cut = match self.manager_closed {
             ManagerClosure::At(cut) => cut.min(self.manager_expires_ns),
             ManagerClosure::ClockUnavailable => return Err(DeliveryStatus::Indeterminate),
-            ManagerClosure::Open if self.grants[0].is_revoked() => return Err(DeliveryStatus::Indeterminate),
+            ManagerClosure::Open if self.grants[0].is_revoked() => {
+                return Err(DeliveryStatus::Indeterminate);
+            }
             ManagerClosure::Open if now < self.manager_expires_ns => return Ok(false),
             ManagerClosure::Open => self.manager_expires_ns,
         };
@@ -83,13 +90,21 @@ impl TrustedCpuManagement {
     }
 
     fn recovery_budget_allowed(&self, current_cap: u64, requested_cap: u64) -> bool {
-        !self.recovery_consumed && self.budget_cause == BudgetCause::Manager
-            && current_cap > 0 && current_cap < self.restore_cap_ns && requested_cap == self.restore_cap_ns
+        !self.recovery_consumed
+            && self.budget_cause == BudgetCause::Manager
+            && current_cap > 0
+            && current_cap < self.restore_cap_ns
+            && requested_cap == self.restore_cap_ns
     }
 
     fn applied(&mut self, index: usize, cap: u64, recovering: bool) {
-        self.budget_cause = if cap == 0 { BudgetCause::UnclassifiedPause }
-            else if index == 0 { BudgetCause::Manager } else { BudgetCause::Recovery };
+        self.budget_cause = if cap == 0 {
+            BudgetCause::UnclassifiedPause
+        } else if index == 0 {
+            BudgetCause::Manager
+        } else {
+            BudgetCause::Recovery
+        };
         self.recovery_consumed |= recovering;
     }
 }
@@ -131,49 +146,91 @@ impl NativeCpuManager {
                 issued_at_ns: issued_ns,
                 expires_at_ns: end,
                 max_cap_ns: MAX_INITIAL_CAP_NS,
-            }).map_err(|_| Error::with_message(Errno::EINVAL, "invalid initial delegation"))
+            })
+            .map_err(|_| Error::with_message(Errno::EINVAL, "invalid initial delegation"))
         };
-        let grants = [make_state(publishers[0], expires_ns)?, make_state(publishers[1], recovery_expires_ns)?];
+        let grants = [
+            make_state(publishers[0], expires_ns)?,
+            make_state(publishers[1], recovery_expires_ns)?,
+        ];
         let mut snapshots = Vec::with_capacity(2);
         for state in &grants {
-            snapshots.push(NativeGrant::from_management(
-                observer.target.clone(), state.snapshot().unwrap(), Vec::new(),
-            ).map_err(|_| Error::with_message(Errno::EINVAL, "invalid initial CPU binding"))?);
+            snapshots.push(
+                NativeGrant::from_management(
+                    observer.target.clone(),
+                    state.snapshot().unwrap(),
+                    Vec::new(),
+                )
+                .map_err(|_| Error::with_message(Errno::EINVAL, "invalid initial CPU binding"))?,
+            );
         }
         // All allocation precedes the owner lock. Membership serialization
         // excludes replacing the owner while the bounded grants are installed.
         let _membership = CgroupMembership::write_lock();
-        if !Arc::ptr_eq(&observer.node.controller().cpu.read().get(), &observer.owner) {
+        if !Arc::ptr_eq(
+            &observer.node.controller().cpu.read().get(),
+            &observer.owner,
+        ) {
             return_errno_with_message!(Errno::ESTALE, "initial CPU owner was replaced")
         }
         {
             let control = observer.owner.inner.as_ref().unwrap().control()?;
             let mut state = control.max.lock();
-            if state.is_detached || state.trusted_management.is_some()
-                || state.native.as_ref().is_none_or(|native| native.is_fenced())
+            if state.is_detached
+                || state.trusted_management.is_some()
+                || state
+                    .native
+                    .as_ref()
+                    .is_none_or(|native| native.is_fenced())
             {
                 return_errno_with_message!(Errno::ESTALE, "initial CPU management is closed")
             }
-            if state.max.quota_ns() != MAX_INITIAL_CAP_NS || state.max.period_ns() != CPU_PERIOD_NS {
-                return_errno_with_message!(Errno::EINVAL, "initial recovery requires the prebound CPU limit")
+            if state.max.quota_ns() != MAX_INITIAL_CAP_NS || state.max.period_ns() != CPU_PERIOD_NS
+            {
+                return_errno_with_message!(
+                    Errno::EINVAL,
+                    "initial recovery requires the prebound CPU limit"
+                )
             }
             state.trusted_management = Some(TrustedCpuManagement {
-                grants, manager_expires_ns: expires_ns, restore_cap_ns: state.max.quota_ns(),
-                manager_closed: ManagerClosure::Open, budget_cause: BudgetCause::Bootstrap,
-                recovery_consumed: false, watchdog: WatchdogState::new(),
+                grants,
+                manager_expires_ns: expires_ns,
+                restore_cap_ns: state.max.quota_ns(),
+                manager_closed: ManagerClosure::Open,
+                budget_cause: BudgetCause::Bootstrap,
+                recovery_consumed: false,
+                watchdog: WatchdogState::new(),
             });
         }
         drop(_membership);
         let recovery = snapshots.pop().unwrap();
         let manager = snapshots.pop().unwrap();
         Ok([
-            Arc::new(Self { observer: observer.clone(), grant: manager, index: 0, issued_ns, expires_ns }),
-            Arc::new(Self { observer, grant: recovery, index: 1, issued_ns, expires_ns: recovery_expires_ns }),
+            Arc::new(Self {
+                observer: observer.clone(),
+                grant: manager,
+                index: 0,
+                issued_ns,
+                expires_ns,
+            }),
+            Arc::new(Self {
+                observer,
+                grant: recovery,
+                index: 1,
+                issued_ns,
+                expires_ns: recovery_expires_ns,
+            }),
         ])
     }
 
     pub(crate) fn grant(&self) -> NativeGrant {
         self.grant.clone()
+    }
+
+    fn delegation(&self) -> &ManagementGrantSnapshot {
+        self.grant
+            .management_snapshot()
+            .expect("native CPU management retains its original delegation snapshot")
     }
 
     pub(crate) fn publisher(&self) -> PublisherId {
@@ -187,19 +244,39 @@ impl NativeCpuManager {
         crate::sched::with_current_cpu_bandwidth_settled(|now| self.read_usage_at(now))
     }
 
-    fn read_usage_at(&self, now: Option<u64>) -> core::result::Result<UsageSnapshot, CpuUsageError> {
+    fn read_usage_at(
+        &self,
+        now: Option<u64>,
+    ) -> core::result::Result<UsageSnapshot, CpuUsageError> {
         let now = now.ok_or(CpuUsageError::ClockUnavailable)?;
-        if now < self.issued_ns { return Err(CpuUsageError::Indeterminate); }
-        if now >= self.expires_ns { return Err(CpuUsageError::Expired); }
+        if now < self.issued_ns {
+            return Err(CpuUsageError::Indeterminate);
+        }
+        if now >= self.expires_ns {
+            return Err(CpuUsageError::Expired);
+        }
         let current = self.observer.node.controller().cpu.read();
         if !Arc::ptr_eq(&current.get(), &self.observer.owner) {
             return Err(CpuUsageError::Closed);
         }
-        let control = self.observer.owner.inner.as_ref().and_then(|cpu| cpu.control.as_ref())
+        let control = self
+            .observer
+            .owner
+            .inner
+            .as_ref()
+            .and_then(|cpu| cpu.control.as_ref())
             .ok_or(CpuUsageError::Closed)?;
         let mut state = control.max.lock();
-        state.trusted_management.as_ref().ok_or(CpuUsageError::Closed)?
-            .recovery_phase(self.index, now).map_err(|status| match status {
+        let policy = state
+            .trusted_management
+            .as_ref()
+            .ok_or(CpuUsageError::Closed)?;
+        if !policy.grants[self.index].owns_snapshot(self.delegation()) {
+            return Err(CpuUsageError::Closed);
+        }
+        policy
+            .recovery_phase(self.index, now)
+            .map_err(|status| match status {
                 DeliveryStatus::Revoked => CpuUsageError::Expired,
                 _ => CpuUsageError::Indeterminate,
             })?;
@@ -218,17 +295,29 @@ impl NativeCpuManager {
     }
 
     fn revoke_at(&self, now: Option<u64>) {
-        if let Some(control) = self.observer.owner.inner.as_ref().and_then(|cpu| cpu.control.as_ref()) {
+        if let Some(control) = self
+            .observer
+            .owner
+            .inner
+            .as_ref()
+            .and_then(|cpu| cpu.control.as_ref())
+        {
             let mut state = control.max.lock();
-            let reliable_cut = now.filter(|cut| *cut >= self.issued_ns && *cut >= state.max.last_observed_ns);
+            let reliable_cut =
+                now.filter(|cut| *cut >= self.issued_ns && *cut >= state.max.last_observed_ns);
             if let Some(policy) = state.trusted_management.as_mut() {
+                if !policy.grants[self.index].owns_snapshot(self.delegation()) {
+                    return;
+                }
                 if self.index == 0 && !policy.grants[0].is_revoked() {
                     policy.manager_closed = match reliable_cut {
                         Some(cut) => ManagerClosure::At(cut),
                         None => ManagerClosure::ClockUnavailable,
                     };
                 }
-                policy.grants[self.index].revoke();
+                policy.grants[self.index]
+                    .revoke_for_snapshot(self.delegation())
+                    .unwrap();
             }
         }
     }
@@ -239,11 +328,16 @@ impl NativeCpuManager {
         token: &ReserveTokenWith<B>,
     ) -> core::result::Result<DeliveryObservation, DeliveryError> {
         core.execute_native_reserved::<SubController<CpuController>, _>(
-            token, self.publisher(), |execution| self.apply(execution),
+            token,
+            self.publisher(),
+            |execution| self.apply(execution),
         )
     }
 
-    fn apply(&self, execution: NativeExecution<'_, SubController<CpuController>>) -> PublishOutcome {
+    fn apply(
+        &self,
+        execution: NativeExecution<'_, SubController<CpuController>>,
+    ) -> PublishOutcome {
         let failure = |status| PublishOutcome::Failure { status };
         if ostd::cpu::all_cpus().count() != 1 {
             return failure(DeliveryStatus::Indeterminate);
@@ -259,7 +353,9 @@ impl NativeCpuManager {
         now: Option<u64>,
     ) -> PublishOutcome {
         let failure = |status| PublishOutcome::Failure { status };
-        let Some(now) = now else { return failure(DeliveryStatus::Indeterminate); };
+        let Some(now) = now else {
+            return failure(DeliveryStatus::Indeterminate);
+        };
         if now < self.issued_ns {
             return failure(DeliveryStatus::Indeterminate);
         }
@@ -272,7 +368,12 @@ impl NativeCpuManager {
         {
             return failure(DeliveryStatus::Revoked);
         }
-        let Some(control) = execution.owner().inner.as_ref().and_then(|cpu| cpu.control.as_ref()) else {
+        let Some(control) = execution
+            .owner()
+            .inner
+            .as_ref()
+            .and_then(|cpu| cpu.control.as_ref())
+        else {
             return failure(DeliveryStatus::Revoked);
         };
         let mut state = control.max.lock();
@@ -310,7 +411,9 @@ impl CpuBandwidthState {
             Ok(recovering) => recovering,
             Err(status) => return failure(status),
         };
-        if recovering && !policy.recovery_budget_allowed(self.max.quota_ns(), execution.binding().cap_ns) {
+        if recovering
+            && !policy.recovery_budget_allowed(self.max.quota_ns(), execution.binding().cap_ns)
+        {
             return failure(DeliveryStatus::PermissionDenied);
         }
         let usage = match self.sample_usage(now) {

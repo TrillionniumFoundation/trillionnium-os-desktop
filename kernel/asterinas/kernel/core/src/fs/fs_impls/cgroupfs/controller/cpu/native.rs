@@ -34,6 +34,10 @@ pub(super) struct CpuBandwidthState {
     is_detached: bool,
     #[cfg(any(ktest, feature = "g1d-trusted-control"))]
     trusted_management: Option<trusted_control::TrustedCpuManagement>,
+    // Registration belongs to this CPU owner, not a replaceable delegation.
+    // One stable timer callback may observe successive bounded policies.
+    #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+    watchdog_registered: bool,
 }
 
 /// Internal observation failures; this is not a new public HOS2 operation.
@@ -56,6 +60,8 @@ impl CpuBandwidthState {
             is_detached: false,
             #[cfg(any(ktest, feature = "g1d-trusted-control"))]
             trusted_management: None,
+            #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+            watchdog_registered: false,
         }
     }
 
@@ -189,7 +195,12 @@ impl Controller {
         #[cfg(any(ktest, feature = "g1d-trusted-control"))]
         {
             let cpu = self.cpu.read();
-            if let Some(control) = cpu.get().inner.as_ref().and_then(|cpu| cpu.control.as_ref()) {
+            if let Some(control) = cpu
+                .get()
+                .inner
+                .as_ref()
+                .and_then(|cpu| cpu.control.as_ref())
+            {
                 return control.max.lock().trusted_management.is_some();
             }
         }
@@ -309,9 +320,17 @@ impl NativeCpuObserver {
             return_errno_with_message!(Errno::EOPNOTSUPP, "trusted initial observation requires N0")
         }
         let root = CgroupSystem::singleton();
-        let controllers = if cfg!(feature = "g1d-trusted-control") { "+cpu +pids" } else { "+cpu" };
+        let controllers = if cfg!(feature = "g1d-trusted-control") {
+            "+cpu +pids"
+        } else {
+            "+cpu"
+        };
         root.store_attr("cgroup.subtree_control", controllers)?;
-        let prefix = if cfg!(feature = "g1d-trusted-control") { "hepta-g1d" } else { "hepta-g1c" };
+        let prefix = if cfg!(feature = "g1d-trusted-control") {
+            "hepta-g1d"
+        } else {
+            "hepta-g1c"
+        };
         let name = format!("{prefix}-{image_nonce}");
         let node = Arc::downcast::<CgroupNode>(root.create_child(&name)?)
             .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
@@ -331,22 +350,35 @@ impl NativeCpuObserver {
         let issued = crate::sched::with_current_cpu_bandwidth_settled(|now| {
             let now = now.ok_or(TreeError::ResourceUnavailable)?;
             let control = owner.inner.as_ref().ok_or(TreeError::IsDead)?.control()?;
-            control.max.lock().reconfigure_at(CpuMaxConfig {
-                quota_usec: 50_000,
-                period_usec: Some(100_000),
-            }, Some(now))?;
+            control.max.lock().reconfigure_at(
+                CpuMaxConfig {
+                    quota_usec: 50_000,
+                    period_usec: Some(100_000),
+                },
+                Some(now),
+            )?;
             Ok::<u64, TreeError>(now)
         })?;
         membership.move_process_to_node(process.clone(), &node)?;
         drop(membership);
-        Ok((Arc::new(Self { node, owner, target }), issued))
+        Ok((
+            Arc::new(Self {
+                node,
+                owner,
+                target,
+            }),
+            issued,
+        ))
     }
 
     #[cfg(ktest)]
     pub(crate) fn read_usage(&self) -> core::result::Result<UsageSnapshot, CpuUsageError> {
         use crate::fs::cgroupfs::CgroupSysNode;
 
-        let usage = self.node.controller().read_native_cpu_usage_for_owner(&self.owner)?;
+        let usage = self
+            .node
+            .controller()
+            .read_native_cpu_usage_for_owner(&self.owner)?;
         if usage.stable_object_id != self.target.stable_object_id() {
             return Err(CpuUsageError::Closed);
         }
@@ -364,9 +396,10 @@ impl NativeCpuObserver {
     ) -> core::result::Result<UsageSnapshot, CpuUsageError> {
         use crate::fs::cgroupfs::CgroupSysNode;
 
-        let usage = self.node.controller().read_native_cpu_usage_for_owner_during(
-            &self.owner, Some((issued_ns, expires_ns)),
-        )?;
+        let usage = self
+            .node
+            .controller()
+            .read_native_cpu_usage_for_owner_during(&self.owner, Some((issued_ns, expires_ns)))?;
         if usage.stable_object_id != self.target.stable_object_id() {
             return Err(CpuUsageError::Closed);
         }

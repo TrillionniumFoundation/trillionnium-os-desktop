@@ -84,10 +84,34 @@ class G2CoreEvidenceTests(unittest.TestCase):
         checker.check_build(self.guests)
         result = checker.check_guest(self.guest)
         self.assertEqual(result["passed"], checker.original.MINIMUM_CORE_TESTS + 3)
+        self.assertGreaterEqual(result["passed"], 371)
         self.assertEqual(result["required_core_tests"], list(checker.original.REQUIRED_CORE_TESTS))
         self.assertEqual(result["g2_process_tests_exercised"], 3)
         self.assertFalse(result["actual_native_owner_verified"])
         self.assertFalse(result["g2_complete"])
+
+    def test_all_three_cpu_continuity_tests_remain_mandatory_under_g2(self):
+        for name in checker.CONTINUITY_TESTS:
+            self.write_serial([(candidate, " ok") for candidate in self.names if candidate != name]
+                              + [("aster_core::inert::replacement", " ok")])
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "required core"):
+                checker.check_guest(self.guest)
+
+    def test_stale_original_checker_cannot_admit_the_new_g2_inventory(self):
+        original_minimum = checker.original.MINIMUM_CORE_TESTS
+        original_required = checker.original.REQUIRED_CORE_TESTS
+        try:
+            checker.original.MINIMUM_CORE_TESTS = 365
+            with self.assertRaisesRegex(ValueError, "368-test core gate"):
+                checker.check_guest(self.guest)
+            checker.original.MINIMUM_CORE_TESTS = original_minimum
+            checker.original.REQUIRED_CORE_TESTS = tuple(name for name in original_required
+                                                        if name != checker.CONTINUITY_TESTS[0])
+            with self.assertRaisesRegex(ValueError, "368-test core gate"):
+                checker.check_guest(self.guest)
+        finally:
+            checker.original.MINIMUM_CORE_TESTS = original_minimum
+            checker.original.REQUIRED_CORE_TESTS = original_required
 
     def test_missing_or_repeated_new_test_cannot_hide_in_summary(self):
         for names in (self.names[:-1], self.names[:-1] + [checker.G2_TESTS[0]]):

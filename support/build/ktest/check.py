@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 365  # Retained 363 plus two immutable socket-credential owner regressions.
+MINIMUM_CORE_TESTS = 368  # Retained 365 plus three original CPU-owner continuity regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -196,7 +196,12 @@ SOCKET_CREDENTIAL_CORE_TESTS = tuple("aster_core::net::socket::unix::cred::tests
     "socket_identity_captures_distinct_real_effective_ids_without_live_credential_alias",
     "socket_group_snapshot_shares_original_immutable_owner_across_fork_replace_and_last_alias",
 ))
-REQUIRED_CORE_TESTS = (*SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+CPU_OWNER_CONTINUITY_TESTS = tuple("aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::" + suffix for suffix in (
+    "native_late_image_close_cannot_revoke_replacement_delegations",
+    "native_delayed_watchdog_cut_cannot_mutate_a_replacement_policy",
+    "native_watchdog_registration_is_bounded_across_owner_policy_replacements",
+))
+REQUIRED_CORE_TESTS = (*CPU_OWNER_CONTINUITY_TESTS, *SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (
@@ -411,6 +416,16 @@ def check_guest(guest, crate, allow_filtered=False):
             block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
             if "[skipped:" in block:
                 raise ValueError("required core test was soft-skipped: " + name)
+        records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
+        for index, record in enumerate(records):
+            if record[1] not in CPU_OWNER_CONTINUITY_TESTS:
+                continue
+            end = records[index + 1].start() if index + 1 < len(records) else summary.start()
+            if record.end() >= end or end > summary.start():
+                raise ValueError("CPU owner test lies outside the completed target sequence")
+            block = section[record.end():end].rstrip("\n")
+            if not re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block):
+                raise ValueError("CPU owner test lacks its own terminal ok: " + record[1])
         if passed < MINIMUM_CORE_TESTS:
             raise ValueError("complete core gate shrank below the retained baseline plus regressions")
         for name in REQUIRED_CORE_TESTS:

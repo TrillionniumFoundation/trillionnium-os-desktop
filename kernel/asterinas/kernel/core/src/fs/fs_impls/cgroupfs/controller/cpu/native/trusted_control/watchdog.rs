@@ -44,6 +44,9 @@ impl WatchdogOutcome {
 
 pub(super) struct WatchdogState {
     pub(super) armed: bool,
+    // The original delegation selected when this policy was armed. Identity
+    // remains meaningful after revoke, but never supplies live authority.
+    pub(super) delegation: Option<ManagementGrantSnapshot>,
     // Diagnostic callback count only; never a UsageSnapshot event sequence.
     ticks: u64,
     // Read-only view of the original status; never a second stop-state owner.
@@ -55,6 +58,7 @@ impl WatchdogState {
     pub(super) fn new() -> Self {
         Self {
             armed: false,
+            delegation: None,
             ticks: 0,
             workload: None,
             terminal: None,
@@ -63,9 +67,9 @@ impl WatchdogState {
 }
 
 impl NativeCpuManager {
-    /// Only the stopped, sealed bootstrap calls this once for the manager.
-    /// The timer observes the original status without keeping Process alive;
-    /// caller-supplied booleans, PIDs and labels cannot establish pause intent.
+    /// Arm one finite policy on its exact canonical delegation. Registration
+    /// belongs to the CPU owner and is never repeated for a replacement policy.
+    /// The permanent callback retains no manager or delegation snapshot.
     pub(crate) fn arm_watchdog(
         self: &Arc<Self>,
         workload: Arc<Process>,
@@ -75,40 +79,40 @@ impl NativeCpuManager {
         if self.index != 0 || ostd::cpu::all_cpus().count() != 1 {
             return_errno_with_message!(Errno::EOPNOTSUPP, "watchdog requires the fixed N0 manager")
         }
-        let manager = self.clone();
         let status = workload.status_observer();
         drop(workload);
         let _irq = ostd::irq::disable_local();
-        {
+        let register = {
             let control = self.observer.owner.inner.as_ref().unwrap().control()?;
-            let mut state = control.max.lock();
-            let policy = state
-                .trusted_management
-                .as_mut()
-                .ok_or_else(|| Error::with_message(Errno::ESTALE, "watchdog owner is closed"))?;
-            if policy.watchdog.armed {
-                return_errno_with_message!(Errno::EALREADY, "watchdog already registered")
-            }
-            policy.watchdog.workload = Some(status.clone());
-            policy.watchdog.armed = true;
+            control.max.lock().arm_watchdog(self.delegation(), status)?
+        };
+        if register {
+            // This is the only registration for this actual CPU owner. Later
+            // bounded policies reuse it; no old manager, grant or history is
+            // pinned by the callback. Allocation occurs only at initial setup.
+            let observer = self.observer.clone();
+            ostd::timer::register_callback_on_cpu(move || {
+                observer.watchdog_timer_tick();
+            });
         }
-        // OSTD's existing interrupt callback list is allocated here, not on
-        // expiry (unlike TimerManager's Vec/Arc expiry machinery). This one
-        // immutable registration lasts for the fixed qualification boot.
-        ostd::timer::register_callback_on_cpu(move || {
-            manager.watchdog_timer_tick(&status);
-        });
         Ok(())
     }
 
-    fn watchdog_timer_tick(&self, workload: &ProcessStatusObserver) {
+    #[cfg(ktest)]
+    pub(super) fn watchdog_tick_at(&self, now: Option<u64>, workload: &ProcessStatusObserver) {
+        self.observer
+            .watchdog_tick_at(now, self.delegation(), workload);
+    }
+}
+
+impl NativeCpuObserver {
+    fn watchdog_timer_tick(&self) {
         let now = aster_time::try_read_monotonic_sample().and_then(|sample| sample.checked_nanos());
-        let current = self.observer.node.controller().cpu.read();
-        if !Arc::ptr_eq(&current.get(), &self.observer.owner) {
+        let current = self.node.controller().cpu.read();
+        if !Arc::ptr_eq(&current.get(), &self.owner) {
             return;
         }
         let Some(control) = self
-            .observer
             .owner
             .inner
             .as_ref()
@@ -116,10 +120,9 @@ impl NativeCpuManager {
         else {
             return;
         };
-        {
-            // A healthy/not-yet-due/terminal tick needs no second runqueue
-            // settlement. Release this owner lock before acquiring the
-            // runqueue; the final path revalidates everything after settling.
+        let (delegation, workload) = {
+            // Capture only immutable identity and the original status view.
+            // No Process/TaskSet lock, allocation or runqueue lock is taken.
             let mut state = control.max.lock();
             let Some(policy) = state.trusted_management.as_mut() else {
                 return;
@@ -127,28 +130,44 @@ impl NativeCpuManager {
             if !policy.watchdog.armed {
                 return;
             }
+            let Some(delegation) = policy.watchdog.delegation.clone() else {
+                return;
+            };
+            if !policy.grants[0].owns_snapshot(&delegation) {
+                return;
+            }
+            let Some(workload) = policy.watchdog.workload.clone() else {
+                return;
+            };
             policy.watchdog.ticks = policy.watchdog.ticks.saturating_add(1);
             if !state.watchdog_ready(
                 now,
-                self.issued_ns,
+                &delegation,
                 workload.is_stopped(),
                 !workload.is_zombie(),
             ) {
                 return;
             }
-        }
+            (delegation, workload)
+        };
+        // Recheck the same private origin after acquiring the settlement path.
+        // A replacement between these two owner-lock cuts makes this tick stale.
         crate::sched::with_current_cpu_bandwidth_settled(|now| {
-            self.watchdog_tick_at(now, workload)
+            self.watchdog_tick_at(now, &delegation, &workload)
         });
     }
 
-    pub(super) fn watchdog_tick_at(&self, now: Option<u64>, workload: &ProcessStatusObserver) {
-        let current = self.observer.node.controller().cpu.read();
-        if !Arc::ptr_eq(&current.get(), &self.observer.owner) {
+    pub(super) fn watchdog_tick_at(
+        &self,
+        now: Option<u64>,
+        delegation: &ManagementGrantSnapshot,
+        workload: &ProcessStatusObserver,
+    ) {
+        let current = self.node.controller().cpu.read();
+        if !Arc::ptr_eq(&current.get(), &self.owner) {
             return;
         }
         let Some(control) = self
-            .observer
             .owner
             .inner
             .as_ref()
@@ -158,28 +177,64 @@ impl NativeCpuManager {
         };
         // N0: IRQ exclusion prevents another task changing job-control state
         // between this original atomic observation and the CPU-owner check.
-        // No Process/TaskSet/image lock is acquired while holding the runqueue.
         let stopped = workload.is_stopped();
         let alive = !workload.is_zombie();
         control
             .max
             .lock()
-            .watchdog_tick(now, self.issued_ns, stopped, alive);
+            .watchdog_tick(now, delegation, stopped, alive);
     }
 }
 
 impl CpuBandwidthState {
+    /// Return whether this owner needs its one permanent callback. This flag
+    /// lives outside replaceable policy state and is changed under CpuMax's
+    /// original lock, so repeated generations cannot accumulate callbacks.
+    pub(super) fn arm_watchdog(
+        &mut self,
+        delegation: &ManagementGrantSnapshot,
+        workload: ProcessStatusObserver,
+    ) -> crate::prelude::Result<bool> {
+        use crate::prelude::*;
+
+        let policy = self
+            .trusted_management
+            .as_mut()
+            .ok_or_else(|| Error::with_message(Errno::ESTALE, "watchdog owner is closed"))?;
+        if self.is_detached
+            || !policy.grants[0].owns_snapshot(delegation)
+            || policy.grants[0].is_revoked()
+        {
+            return_errno_with_message!(Errno::ESTALE, "watchdog delegation is no longer current")
+        }
+        if policy.watchdog.armed {
+            return_errno_with_message!(
+                Errno::EALREADY,
+                "watchdog already armed for this delegation"
+            )
+        }
+        policy.watchdog.workload = Some(workload);
+        policy.watchdog.delegation = Some(delegation.clone());
+        policy.watchdog.armed = true;
+        let register = !self.watchdog_registered;
+        self.watchdog_registered = true;
+        Ok(register)
+    }
+
     pub(super) fn watchdog_ready(
         &mut self,
         now: Option<u64>,
-        issued: u64,
+        delegation: &ManagementGrantSnapshot,
         stopped: bool,
         alive: bool,
     ) -> bool {
         let Some(policy) = self.trusted_management.as_ref() else {
             return false;
         };
-        if !policy.watchdog.armed {
+        if !policy.watchdog.armed
+            || !policy.grants[0].owns_snapshot(delegation)
+            || policy.watchdog.delegation.as_ref() != Some(delegation)
+        {
             return false;
         }
         if policy.watchdog.terminal.is_some() {
@@ -193,7 +248,8 @@ impl CpuBandwidthState {
             finish(self, WatchdogOutcome::Closed);
             return false;
         }
-        let Some(now) = now.filter(|now| *now >= issued && *now >= self.max.last_observed_ns)
+        let Some(now) = now
+            .filter(|now| *now >= delegation.issued_at_ns() && *now >= self.max.last_observed_ns)
         else {
             finish(self, WatchdogOutcome::ClockUnavailable);
             return false;
@@ -235,8 +291,14 @@ impl CpuBandwidthState {
         true
     }
 
-    fn watchdog_tick(&mut self, now: Option<u64>, issued: u64, stopped: bool, alive: bool) {
-        if !self.watchdog_ready(now, issued, stopped, alive) {
+    fn watchdog_tick(
+        &mut self,
+        now: Option<u64>,
+        delegation: &ManagementGrantSnapshot,
+        stopped: bool,
+        alive: bool,
+    ) {
+        if !self.watchdog_ready(now, delegation, stopped, alive) {
             return;
         }
         let now = now.unwrap(); // Admitted by watchdog_ready under this same owner lock.
