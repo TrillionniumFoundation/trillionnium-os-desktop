@@ -30,7 +30,9 @@ fn valid_cpu_weight_write_reports_unsupported_without_claiming_policy() {
     assert_neutral_weight_readback(&controller);
     for input in ["1", "100\n", "250", "10000", " +250 "] {
         let mut reader = VmReader::from(input.as_bytes()).to_fallible();
-        let error = controller.write_attr("cpu.weight", &mut reader).unwrap_err();
+        let error = controller
+            .write_attr("cpu.weight", &mut reader)
+            .unwrap_err();
         assert!(matches!(&error, Error::OperationNotSupported));
         assert_eq!(KernelError::from(error).error(), Errno::EOPNOTSUPP);
         assert_neutral_weight_readback(&controller);
@@ -44,7 +46,9 @@ fn invalid_or_inactive_cpu_weight_write_keeps_original_error_and_readback() {
     let before = controller.control().unwrap().max.lock().max;
     for input in ["", "0", "10001", "-1", "4294967296", "not-a-weight", "1 2"] {
         let mut reader = VmReader::from(input.as_bytes()).to_fallible();
-        let error = controller.write_attr("cpu.weight", &mut reader).unwrap_err();
+        let error = controller
+            .write_attr("cpu.weight", &mut reader)
+            .unwrap_err();
         assert!(matches!(&error, Error::InvalidOperation));
         assert_eq!(KernelError::from(error).error(), Errno::EINVAL);
         assert_neutral_weight_readback(&controller);

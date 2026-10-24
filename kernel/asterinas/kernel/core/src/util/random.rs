@@ -140,7 +140,10 @@ mod tests {
             Some(SeedSource::Timestamp),
             Some(SeedSource::DeviceTree),
         ] {
-            assert_eq!(check_trusted_seed(source).unwrap_err().error(), Errno::EAGAIN);
+            assert_eq!(
+                check_trusted_seed(source).unwrap_err().error(),
+                Errno::EAGAIN
+            );
         }
         check_trusted_seed(Some(SeedSource::Hardware)).unwrap();
 
