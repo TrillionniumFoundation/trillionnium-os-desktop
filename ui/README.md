@@ -8,15 +8,15 @@ native windows. Each Asterinas display/input or mobile target requires its own
 execution evidence.
 
 The original UI/core, Agentd host dependencies and all four original AccessKit
-patches resolve from Hepta `22e87e0dd6560a7b925e716a33011378ae07a9a2`
-(tree `7e376f5d3509cf38e13b513ca2b87d9eecd7dc47`). The patch entries live in
+patches resolve from Hepta `717778d928c747ebc43108af823178edb52a7af7`
+(tree `bf6bb3653d08aa6838bb48307877118998e3d89d`). The patch entries live in
 this workspace's Cargo root because Cargo does not inherit dependency-workspace
 patches. The [fixed source map](../docs/SOURCES.md#hepta-native-organ) links the
 same original modules and their development contracts.
 
 Normal `hepta-native-makepad` keeps original SDK 337566c8 and the 54-file bundle.
 The separate `hepta-native-clipboard-sdk` feature requires the exact all-SDK
-override, a separate candidate worktree/lock and the 61-file bundle; only that
+override, a separate candidate worktree/lock and the 62-file bundle; only that
 candidate advertises native PasteText. See [the two profiles](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate).
 Latest original UI 43/43 and AccessKit 54/54 results are scoped default-SDK
 package tests, not a full Desktop workspace, release or real window result;

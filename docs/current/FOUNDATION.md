@@ -152,7 +152,7 @@ and recorded tool; a matching version from another worktree is insufficient.
 
 ## Independent Hepta native runtime line
 
-The product UI/source pair pins Hepta `22e87e0dd6560a7b925e716a33011378ae07a9a2`.
+The product UI/source pair pins Hepta `717778d928c747ebc43108af823178edb52a7af7`.
 The separate [F1 runtime source review](../../tests/workloads/hepta_agentd_runtime/source-review.json)
 currently selects Desktop `0187bd578f6786c40c812c13976e4889a1aba835` and
 Hepta `b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` with userspace Rust 1.95.0.
