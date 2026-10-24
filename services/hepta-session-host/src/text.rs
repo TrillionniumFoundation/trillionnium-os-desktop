@@ -365,10 +365,10 @@ impl TextChatAdapter {
                         now_ms,
                     )
                     .map_err(error)?;
-                if let Some(old) = self.intents.get(&reference.host_reference) {
-                    if old.text != reference.text {
-                        return Err("Original recovered text identity changed".into());
-                    }
+                if let Some(old) = self.intents.get(&reference.host_reference)
+                    && old.text != reference.text
+                {
+                    return Err("Original recovered text identity changed".into());
                 }
                 if self.signing.as_ref() == Some(&reference.host_reference) {
                     self.signing = None;
@@ -560,14 +560,13 @@ impl TextChatAdapter {
                     );
                     self.delivery(workspace, &view.message_id, status, now_ms)?;
                     self.admitted_draft(workspace, &view.message_id, admitted);
-                    if admitted {
-                        if let Some(intent) = self
+                    if admitted
+                        && let Some(intent) = self
                             .intents
                             .values()
                             .find(|intent| intent.message_id.as_ref() == Some(&view.message_id))
-                        {
-                            self.active.insert(intent.room, view.message_id.clone());
-                        }
+                    {
+                        self.active.insert(intent.room, view.message_id.clone());
                     }
                 } else if let Some(ticket) = self.tickets.remove(&view.message_id) {
                     workspace.delivery_unknown(&ticket).map_err(error)?;

@@ -24,7 +24,7 @@
 | 原 Hepta native UI 单包 | 43/43 passed | 默认原 SDK `337566c8`；不是 Desktop 完整 workspace 或真实窗口。 |
 | 原 AccessKit 保留源码包 | 54/54 passed | 默认原 SDK 组合；不授予候选 SDK 的 PasteText 或实际读屏资格。 |
 
-以上最后两项属于默认 `hepta-native-makepad` / 原 `native-presentation`，不是 `hepta-native-clipboard-sdk` 候选。默认 renderer 仍是 egui；显式 Makepad profile 复用原 Makepad/Robrix、唯一 ChatWorkspace、原 IME router 和上述 owner。默认 SDK 用原 Git 锁和 54 文件资源包，无需外部 SDK config；独立 clipboard feature 才引用新 API、宣告 `PasteText` 并要求固定 patch、全 crate override、独立候选锁及 60 文件资源包。原 SDK baseline 的 PasteText 返回 false 且不排队。两种源码/feature 错配由 preparer 拒绝；[候选流程与锁共存规则](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate)不修改主线默认 SDK pin。
+以上最后两项属于默认 `hepta-native-makepad` / 原 `native-presentation`，不是 `hepta-native-clipboard-sdk` 候选。默认 renderer 仍是 egui；显式 Makepad profile 复用原 Makepad/Robrix、唯一 ChatWorkspace、原 IME router 和上述 owner。默认 SDK 用原 Git 锁和 54 文件资源包，无需外部 SDK config；独立 clipboard feature 才引用新 API、宣告 `PasteText` 并要求两份精确 patch、全 crate override、独立候选锁及 61 文件资源包。新增路径补丁保持原 Git SDK 解析到的 `num-traits` 0.2.20 来源，原 clipboard 补丁字节不变。原 SDK baseline 的 PasteText 返回 false 且不排队。两种源码/feature 错配由 preparer 拒绝；[候选流程与锁共存规则](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate)不修改主线默认 SDK pin。
 
 | 产品项 | 已执行结果 | 仍须完成 |
 | --- | --- | --- |

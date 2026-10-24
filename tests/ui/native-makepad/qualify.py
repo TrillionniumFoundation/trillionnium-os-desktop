@@ -226,9 +226,15 @@ def run(args):
             names = listed.stdout.decode("utf-8").splitlines()
             if listed.returncode == 0 and args.engine in names:
                 report["private_bus_registered_engines"] = names
-                return True
+                # The engine registry and the XIM child become ready
+                # independently. Require both within this same existing
+                # startup deadline before opening the native editor.
+                selection = command("xim-selection-ready", ["xprop", "-root", "XIM_SERVERS"], required=False)
+                if selection.returncode == 0 and b"@server=ibus" in selection.stdout:
+                    report["private_xim_advertised"] = True
+                    return True
             return False
-        until(registered_engine, "Private IBus did not register the requested real Chinese engine")
+        until(registered_engine, "Private IBus engine and XIM selection did not become ready")
         command("initial-english-engine", ["ibus", "engine", "xkb:us::eng"])
         observed = command("xim-selection", ["xprop", "-root", "XIM_SERVERS"])
         if b"@server=ibus" not in observed.stdout:

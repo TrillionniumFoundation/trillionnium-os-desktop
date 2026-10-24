@@ -75,7 +75,7 @@ Makepad additionally needs its original verified resources and feature build.
 The normal `trill-shell/hepta-native-makepad` feature uses original SDK
 `337566c8` and its 54-file resource bundle without an external SDK override.
 The separate `trill-shell/hepta-native-clipboard-sdk` candidate requires the
-reviewed all-crate SDK override, an independent candidate lock and its 60-file
+reviewed all-crate SDK override, an independent candidate lock and its 61-file
 bundle. Only that feature advertises request-scoped native PasteText. The
 43 native UI and 54 AccessKit scoped tests concern the default original SDK;
 they do not qualify the clipboard candidate. See the [profile procedure](support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate)

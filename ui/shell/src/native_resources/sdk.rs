@@ -74,6 +74,7 @@ pub(super) fn verify(root: &Path) -> Result<(), String> {
         "LICENSE-MIT",
         "MANIFEST.json",
         "native-clipboard-read.patch",
+        "sdk-num-traits-path.patch",
         "README.md",
     ]
     .into_iter()
@@ -81,7 +82,7 @@ pub(super) fn verify(root: &Path) -> Result<(), String> {
     .collect();
     if inventory.schema != "hepta.native-sdk-notices.v1"
         || inventory.upstream_revision != "337566c8b25d47f7e4fff6a202157b65bf183330"
-        || inventory.files.len() != 4
+        || inventory.files.len() != 5
         || inventory
             .files
             .iter()
@@ -115,7 +116,7 @@ pub(super) fn verify(root: &Path) -> Result<(), String> {
             inventory.upstream_repository, inventory.patched_tree
         )
         || bundle.sdk_notice_inventory_sha256 != expected_digest
-        || bundle.sdk_notices != 4
+        || bundle.sdk_notices != 5
         || bundle.sdk_source_profile_sha256 != format!("{:x}", Sha256::digest(&profile_bytes))
     {
         return Err("SDK source evidence differs from its compiled contract".into());

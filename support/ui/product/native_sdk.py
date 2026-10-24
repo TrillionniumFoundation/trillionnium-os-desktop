@@ -9,13 +9,16 @@ import re
 
 UPSTREAM = "https://github.com/kevinaboos/makepad"
 REVISION = "337566c8b25d47f7e4fff6a202157b65bf183330"
-TREE = "f9efec87ff9d5690b8c9fd23ea0c8f3535a9d8eb"
-MANIFEST_SHA256 = "a7f36936a4101d85df78b30a7776ee85388fd004b7b8fccd0d1d3a460d859b3a"
+TREE = "e5ae930cc6a0a528719673deff44ec2830f4bdfa"
+MANIFEST_SHA256 = "cd511d5c0862ce720f596285f17aa2e4e3d133f3c45b76bcaa5a5d962d005f73"
 LICENSE_SHA256 = "3855d73a873244ec424ac5781d5d8fc8e2a789ff9d2f1cb804bec585a64ea88f"
 PATCHES = [{"file": "native-clipboard-read.patch", "bytes": 19919,
-            "sha256": "0edf1c0f806fec15ce29f03670e722d3eda4ec3943911537874087e8a8d4fa1f"}]
+            "sha256": "0edf1c0f806fec15ce29f03670e722d3eda4ec3943911537874087e8a8d4fa1f"},
+           {"file": "sdk-num-traits-path.patch", "bytes": 521,
+            "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"}]
 SOURCE_ID = "prepared+" + UPSTREAM + "#" + TREE
-NOTICE_NAMES = {"LICENSE-MIT", "MANIFEST.json", "native-clipboard-read.patch", "README.md"}
+NOTICE_NAMES = {"LICENSE-MIT", "MANIFEST.json", "native-clipboard-read.patch",
+                "sdk-num-traits-path.patch", "README.md"}
 NOTICE_PATHS = {"dependency-notices/makepad/" + name for name in NOTICE_NAMES}
 REQUIRED = {"makepad-widgets": "widgets/Cargo.toml", "makepad-draw": "draw/Cargo.toml",
             "makepad-platform": "platform/Cargo.toml", "makepad-script": "platform/script/Cargo.toml"}
@@ -69,6 +72,28 @@ def validate_profile(profile):
     require(not required and any(name == "unicode-segmentation" for name, _ in seen), "Required SDK packages are missing")
 
 
+def validate_notice_inventory(notices):
+    """Bind every reviewed patch before either preparing or packaging its bytes."""
+    require(notices.get("schema") == "hepta.native-sdk-notices.v1"
+            and notices.get("upstreamRepository") == UPSTREAM
+            and notices.get("upstreamRevision") == REVISION
+            and notices.get("patchedTree") == TREE
+            and notices.get("sourceManifestSha256") == MANIFEST_SHA256,
+            "SDK notice inventory does not identify the reviewed original patch")
+    files = notices.get("files", [])
+    require(len(files) == len(NOTICE_NAMES)
+            and {entry["path"] for entry in files} == NOTICE_PATHS, "Incomplete SDK source and patch notices")
+    by_path = {entry["path"]: entry for entry in files}
+    require(by_path["dependency-notices/makepad/MANIFEST.json"]["sha256"] == MANIFEST_SHA256
+            and by_path["dependency-notices/makepad/LICENSE-MIT"]["sha256"] == LICENSE_SHA256,
+            "Original SDK license or patch identity differs")
+    for patch in PATCHES:
+        entry = by_path["dependency-notices/makepad/" + patch["file"]]
+        require(entry["sha256"] == patch["sha256"] and entry["bytes"] == patch["bytes"],
+                "Original SDK license or patch identity differs")
+    return files
+
+
 def bundle_records(root, bundle, read_json, regular_bytes, expected_profile=None, bind_binary=False):
     """Return additional records after verifying the fixed SDK/source contract."""
     if bundle.get("makepadSource") != SOURCE_ID:
@@ -82,21 +107,8 @@ def bundle_records(root, bundle, read_json, regular_bytes, expected_profile=None
     profile = read_json(root / "NATIVE-SDK-SOURCE.json", 1024 * 1024)
     require(bundle.get("sdkNoticeInventorySha256") == sha(notice_bytes)
             and bundle.get("sdkSourceProfileSha256") == sha(profile_bytes), "SDK notice/source inventory hash mismatch")
-    require(notices.get("schema") == "hepta.native-sdk-notices.v1"
-            and notices.get("upstreamRepository") == UPSTREAM
-            and notices.get("upstreamRevision") == REVISION
-            and notices.get("patchedTree") == TREE
-            and notices.get("sourceManifestSha256") == MANIFEST_SHA256,
-            "SDK notice inventory does not identify the reviewed original patch")
-    files = notices.get("files", [])
-    require(len(files) == bundle.get("sdkNotices") == 4
-            and {entry["path"] for entry in files} == NOTICE_PATHS, "Incomplete SDK source and patch notices")
-    by_path = {entry["path"]: entry for entry in files}
-    require(by_path["dependency-notices/makepad/MANIFEST.json"]["sha256"] == MANIFEST_SHA256
-            and by_path["dependency-notices/makepad/native-clipboard-read.patch"]["sha256"] == PATCHES[0]["sha256"]
-            and by_path["dependency-notices/makepad/native-clipboard-read.patch"]["bytes"] == PATCHES[0]["bytes"]
-            and by_path["dependency-notices/makepad/LICENSE-MIT"]["sha256"] == LICENSE_SHA256,
-            "Original SDK license or patch identity differs")
+    files = validate_notice_inventory(notices)
+    require(bundle.get("sdkNotices") == len(NOTICE_NAMES), "Incomplete SDK source and patch notices")
     validate_profile(profile)
     if bind_binary or expected_profile is not None:
         require(expected_profile == profile, "Resource SDK profile differs from the binary source profile")

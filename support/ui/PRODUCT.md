@@ -59,13 +59,21 @@ false; no native clipboard request is queued.
 
 The separate `trill-shell/hepta-native-clipboard-sdk` feature forwards through
 `trill-ui-core` to the original UI's `native-clipboard-sdk`. Only this feature
-compiles the new SDK API, advertises PasteText and requires the 60-file candidate
+compiles the new SDK API, advertises PasteText and requires the 61-file candidate
 bundle at startup. A candidate resource bundle does not enable the feature in a
 baseline binary.
 
 The request-scoped PasteText candidate is a separate source profile. It accepts
-only original SDK `337566c8b25d47f7e4fff6a202157b65bf183330` plus its reviewed
-patch and complete prepared tree `f9efec87ff9d5690b8c9fd23ea0c8f3535a9d8eb`.
+only original SDK `337566c8b25d47f7e4fff6a202157b65bf183330` plus its two reviewed
+patches and complete prepared tree `e5ae930cc6a0a528719673deff44ec2830f4bdfa`.
+`native-clipboard-read.patch` retains its original bytes. The additional
+`sdk-num-traits-path.patch` makes the two original `makepad-half`/`naga` path
+dependencies select the same `num-traits` 0.2.20 manifest resolved by original
+Git SDK discovery, at `libs/rapier/vendor/num-traits/Cargo.toml`. It does not
+substitute the adjacent Vulkan 0.2.19 copy. Both patches, their exact bytes,
+and the new full-tree manifest must match the fixed product contract. The
+earlier clipboard-only `f9efec87` profile is retained in its historical evidence;
+it is not accepted as this complete candidate profile.
 Arbitrary path dependencies and mixed SDK crate sources are refused. The Hepta
 helpers `prepare-native-clipboard-sdk.py` and `verify-native-clipboard-sdk.py`
 generate the all-crate Cargo override and verify the actual dependency edges.
@@ -138,8 +146,11 @@ outside that source checkout. The helper keeps its clean-source gate and does
 not infer successful compilation or qualification from the receipt.
 
 The bundle retains all original fonts and six AccessKit notices, then adds
-`NATIVE-SDK-PATCH.json`, `NATIVE-SDK-SOURCE.json` and four original SDK license,
-manifest, patch and provenance files. The installer checks all 60 actual files;
+`NATIVE-SDK-PATCH.json`, `NATIVE-SDK-SOURCE.json` and five original SDK license,
+manifest, two patch and provenance files. The preparer and installer bind the
+bytes and SHA256 of each patch independently, including `sdk-num-traits-path.patch`;
+a self-consistent replacement notice cannot authorize a different source change.
+The installer checks all 61 actual files;
 startup checks the SDK notice contract against the compiled original UI
 constant. The qualification harness's `--atomic-editable-text
 --request-scoped-paste` additionally requires native PasteText readback and an

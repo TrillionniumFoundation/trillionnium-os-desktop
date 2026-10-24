@@ -16,7 +16,7 @@ same original modules and their development contracts.
 
 Normal `hepta-native-makepad` keeps original SDK 337566c8 and the 54-file bundle.
 The separate `hepta-native-clipboard-sdk` feature requires the exact all-SDK
-override, a separate candidate worktree/lock and the 60-file bundle; only that
+override, a separate candidate worktree/lock and the 61-file bundle; only that
 candidate advertises native PasteText. See [the two profiles](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate).
 Latest original UI 43/43 and AccessKit 54/54 results are scoped default-SDK
 package tests, not a full Desktop workspace, release or real window result;

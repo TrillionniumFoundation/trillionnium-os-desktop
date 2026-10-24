@@ -24,16 +24,9 @@ def prepare(metadata_bytes, ui_root, sdk_root, profile_path, original_metadata_p
     notice_path = hepta / "apps/hepta-native/resources/NATIVE-SDK-PATCH.json"
     notice_bytes = notice_path.read_bytes()
     notices = json.loads(notice_bytes)
-    if (notices.get("schema") != "hepta.native-sdk-notices.v1"
-            or notices.get("upstreamRepository") != native_sdk.UPSTREAM
-            or notices.get("upstreamRevision") != native_sdk.REVISION
-            or notices.get("patchedTree") != native_sdk.TREE
-            or notices.get("sourceManifestSha256") != native_sdk.MANIFEST_SHA256
-            or len(notices.get("files", [])) != 4
-            or {entry["path"] for entry in notices["files"]} != native_sdk.NOTICE_PATHS):
-        raise ValueError("Unexpected original SDK notice inventory")
+    notice_files = native_sdk.validate_notice_inventory(notices)
     files = {"NATIVE-SDK-PATCH.json": notice_bytes, "NATIVE-SDK-SOURCE.json": profile_bytes}
-    for entry in notices["files"]:
+    for entry in notice_files:
         name = entry["path"].removeprefix("dependency-notices/makepad/")
         data = (hepta / "third_party/makepad-patches" / name).read_bytes()
         if len(data) != entry["bytes"] or hashlib.sha256(data).hexdigest() != entry["sha256"]:
@@ -41,4 +34,4 @@ def prepare(metadata_bytes, ui_root, sdk_root, profile_path, original_metadata_p
         files[entry["path"]] = data
     return files, {"sdkSourceProfileSha256": hashlib.sha256(profile_bytes).hexdigest(),
                    "sdkNoticeInventorySha256": hashlib.sha256(notice_bytes).hexdigest(),
-                   "sdkNotices": 4}
+                   "sdkNotices": len(native_sdk.NOTICE_NAMES)}

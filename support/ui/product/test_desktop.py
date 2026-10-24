@@ -134,7 +134,7 @@ class ProductTests(unittest.TestCase):
         self.assertFalse(output.exists())
 
     def patched_resource_fixture(self):
-        # These structural file fixtures deliberately replace only the three
+        # These structural file fixtures deliberately replace only the reviewed
         # fixed byte hashes under test scope. They are never SDK build evidence.
         resources = self.resource_fixture()
         files = []
@@ -146,8 +146,8 @@ class ProductTests(unittest.TestCase):
             path.write_bytes(data)
             files.append({"path": relative, "bytes": len(data), "sha256": desktop.digest(data)})
         by_name = {entry["path"].rsplit("/", 1)[-1]: entry for entry in files}
-        patches = [{"file": "native-clipboard-read.patch", "bytes": by_name["native-clipboard-read.patch"]["bytes"],
-                    "sha256": by_name["native-clipboard-read.patch"]["sha256"]}]
+        patches = [{"file": patch["file"], "bytes": by_name[patch["file"]]["bytes"],
+                    "sha256": by_name[patch["file"]]["sha256"]} for patch in desktop.native_sdk.PATCHES]
         scoped = patch.multiple(desktop.native_sdk, MANIFEST_SHA256=by_name["MANIFEST.json"]["sha256"],
                                 LICENSE_SHA256=by_name["LICENSE-MIT"]["sha256"], PATCHES=patches)
         scoped.start()
@@ -173,7 +173,7 @@ class ProductTests(unittest.TestCase):
         (resources / "NATIVE-SDK-PATCH.json").write_bytes(notice_bytes)
         (resources / "NATIVE-SDK-SOURCE.json").write_bytes(profile_bytes)
         bundle = desktop.read_json(resources / "bundle.json")
-        bundle.update(makepadSource=sdk.SOURCE_ID, sdkNotices=4,
+        bundle.update(makepadSource=sdk.SOURCE_ID, sdkNotices=len(sdk.NOTICE_NAMES),
                       sdkNoticeInventorySha256=desktop.digest(notice_bytes),
                       sdkSourceProfileSha256=desktop.digest(profile_bytes))
         (resources / "bundle.json").write_bytes(desktop.json_bytes(bundle))
@@ -184,7 +184,7 @@ class ProductTests(unittest.TestCase):
 
     def test_prepared_sdk_sources_and_patch_notices_are_bound_to_binary_profile(self):
         resources, profile = self.patched_resource_fixture()
-        self.assertEqual(len(desktop.native_resource_files(resources, "b" * 40, profile)), 60)
+        self.assertEqual(len(desktop.native_resource_files(resources, "b" * 40, profile)), 61)
         profile_hash = desktop.digest((resources / "NATIVE-SDK-SOURCE.json").read_bytes())
         archive = self.make_archive("a" * 40, b"SDK structural fixture", sdk_profile_sha=profile_hash)
         output = self.root / "sdk-product.tar.gz"
@@ -238,11 +238,57 @@ class ProductTests(unittest.TestCase):
             with self.assertRaises(desktop.ProductError):
                 desktop.native_resource_files(resources)
 
-    def test_modified_sdk_patch_is_refused_even_with_a_valid_source_profile(self):
+    def test_modified_sdk_patches_are_refused_even_with_a_valid_source_profile(self):
         resources, profile = self.patched_resource_fixture()
-        (resources / "dependency-notices/makepad/native-clipboard-read.patch").write_bytes(b"changed")
-        with self.assertRaisesRegex(desktop.ProductError, "resource bytes mismatch"):
+        for patch_record in desktop.native_sdk.PATCHES:
+            with self.subTest(patch=patch_record["file"]):
+                path = resources / "dependency-notices/makepad" / patch_record["file"]
+                original = path.read_bytes()
+                try:
+                    path.write_bytes(b"changed")
+                    with self.assertRaisesRegex(desktop.ProductError, "resource bytes mismatch"):
+                        desktop.native_resource_files(resources, "b" * 40, profile)
+                finally:
+                    path.write_bytes(original)
+
+    def test_second_sdk_patch_cannot_be_redeclared_by_a_self_consistent_notice(self):
+        resources, profile = self.patched_resource_fixture()
+        path = "dependency-notices/makepad/sdk-num-traits-path.patch"
+        changed = b"different source change with a self-consistent inventory"
+        (resources / path).write_bytes(changed)
+        notices = desktop.read_json(resources / "NATIVE-SDK-PATCH.json")
+        entry = next(entry for entry in notices["files"] if entry["path"] == path)
+        entry.update(bytes=len(changed), sha256=desktop.digest(changed))
+        raw = desktop.json_bytes(notices)
+        (resources / "NATIVE-SDK-PATCH.json").write_bytes(raw)
+        bundle = desktop.read_json(resources / "bundle.json")
+        bundle["sdkNoticeInventorySha256"] = desktop.digest(raw)
+        (resources / "bundle.json").write_bytes(desktop.json_bytes(bundle))
+        with self.assertRaisesRegex(desktop.ProductError, "Original SDK license or patch identity differs"):
             desktop.native_resource_files(resources, "b" * 40, profile)
+
+    def test_sdk_closure_patch_is_required_in_the_complete_notice_set(self):
+        resources, profile = self.patched_resource_fixture()
+        notices = desktop.read_json(resources / "NATIVE-SDK-PATCH.json")
+        notices["files"] = [entry for entry in notices["files"]
+                            if entry["path"] != "dependency-notices/makepad/sdk-num-traits-path.patch"]
+        raw = desktop.json_bytes(notices)
+        (resources / "NATIVE-SDK-PATCH.json").write_bytes(raw)
+        bundle = desktop.read_json(resources / "bundle.json")
+        bundle.update(sdkNotices=len(notices["files"]), sdkNoticeInventorySha256=desktop.digest(raw))
+        (resources / "bundle.json").write_bytes(desktop.json_bytes(bundle))
+        with self.assertRaisesRegex(desktop.ProductError, "Incomplete SDK source and patch notices"):
+            desktop.native_resource_files(resources, "b" * 40, profile)
+
+    def test_old_clipboard_only_sdk_profile_is_not_the_reviewed_closure_profile(self):
+        _resources, profile = self.patched_resource_fixture()
+        old = copy.deepcopy(profile)
+        old.update(patched_tree="f9efec87ff9d5690b8c9fd23ea0c8f3535a9d8eb",
+                   manifest_sha256="a7f36936a4101d85df78b30a7776ee85388fd004b7b8fccd0d1d3a460d859b3a",
+                   patches=[{"file": "native-clipboard-read.patch", "bytes": 19919,
+                             "sha256": "0edf1c0f806fec15ce29f03670e722d3eda4ec3943911537874087e8a8d4fa1f"}])
+        with self.assertRaisesRegex(ValueError, "Unknown original SDK source or patch profile"):
+            desktop.native_sdk.validate_profile(old)
 
     def test_sdk_notice_path_escape_is_rejected_before_open(self):
         resources, _profile = self.patched_resource_fixture()

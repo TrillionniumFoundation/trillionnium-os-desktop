@@ -11,7 +11,7 @@ The baseline remains `trill-shell/hepta-native-makepad` with original SDK
 337566c8 and its 54-file bundle; no additional Cargo config is needed. The
 separate clipboard candidate is built with
 `--features trill-shell/hepta-native-clipboard-sdk` and the exact generated
-all-SDK `--config`, using its own worktree/lockfile and 60-file bundle. The full
+all-SDK `--config`, using its own worktree/lockfile and 61-file bundle. The full
 metadata/source/package procedure is in [PRODUCT](PRODUCT.md). Never combine
 the candidate feature with an unprepared SDK or merge its path lock into the
 baseline.
