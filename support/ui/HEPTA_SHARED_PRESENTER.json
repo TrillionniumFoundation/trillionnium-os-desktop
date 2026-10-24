@@ -1,15 +1,14 @@
 {
   "schema": "trillionnium.original-shared-presenter.v1",
   "repository": "TrillionniumFoundation/hepta-private-ci",
-  "pull_request": 3067,
-  "commit": "56630b12b8a4c69fff2c47b95b36d88a7389c39f",
-  "tree": "15ff893b92898185ea709e847b244e4d66ae2bf4",
+  "commit": "52456c309f64ee80e7e377f774445c5dfe0523c9",
+  "tree": "9d0949a72d064cc2222859780c6ccd9a22c8e575",
   "desktop_base": {
     "commit": "64736996d310d597ffba513ee109264cd5f5f83f",
     "tree": "363700005afb52d2ac88aab709c3e0d0f78bcc0a",
     "pull_request": 251
   },
-  "contract": "Direct original Git packages, no copied presenter/model. Default-off candidate. Existing Session/broker owns transport and task/context observations. SendUnavailable is unchanged. Makepad renderer is disabled.",
+  "contract": "Exact original Git packages at the current Desktop dependency pin. This shared-presenter-only gate keeps Makepad and the authenticated owner disabled; the full native-presentation baseline and explicit native-clipboard-sdk candidate have separate feature/source qualification.",
   "files": [
     {
       "path": "LICENSE",
@@ -25,15 +24,15 @@
     },
     {
       "path": "apps/hepta-control-ui/rust/Cargo.lock",
-      "git_blob": "5b035491f782063d2a114c54ab0a9868ab27f97b",
-      "sha256": "9fb1e6c648f6b7fe35e2655be9c2a2f360615050c264a0ce6fba6ef85664419f",
-      "bytes": 39319
+      "git_blob": "9f67bba876e4a6a0eb1a0f4b0233099fe12f833d",
+      "sha256": "f36f04937f028452bc94c5e54c5bf956366165a93cabf0f03695bc7a7276818d",
+      "bytes": 64892
     },
     {
       "path": "apps/hepta-control-ui/rust/Cargo.toml",
-      "git_blob": "7ee000995b3f1625a4b05a1692a821c4f3d7fba4",
-      "sha256": "a8f8785b15a066f02219150f35bd1ed53ed3e7bb4ab0174e2560fe4d21f0c45e",
-      "bytes": 532
+      "git_blob": "dfba027468d7b99bfea24913e1569ed77624a1a5",
+      "sha256": "d4731340e402680bfffbd0cfe6f5743ba980dc1c7205ad8dc376b002b0829b8a",
+      "bytes": 1073
     },
     {
       "path": "apps/hepta-control-ui/rust/core/Cargo.toml",
@@ -43,9 +42,9 @@
     },
     {
       "path": "apps/hepta-control-ui/rust/core/src/chat.rs",
-      "git_blob": "0c8b10d64c895e7376ee07172995137a319aef2b",
-      "sha256": "3f53bb9af20787ac406ef7db11059e2e6b88a8c903400bdf319a9eb559a21d82",
-      "bytes": 16079
+      "git_blob": "e121fd668bc2675ff26e5355ee5e9f45162d62d4",
+      "sha256": "260927262d58effe76aa63b57a2e1576df77e86e00b111381265ecd2e0a2d20d",
+      "bytes": 16211
     },
     {
       "path": "apps/hepta-control-ui/rust/core/src/chat/basic_tests.rs",
@@ -67,15 +66,15 @@
     },
     {
       "path": "apps/hepta-control-ui/rust/core/src/chat_owner.rs",
-      "git_blob": "9ad806f75401238c04502f1813fcace25e5b481f",
-      "sha256": "23389393e2d332b1fb0964e671eabe479f3726f31f8b46e6e77cdd65262b2dce",
-      "bytes": 22631
+      "git_blob": "4d732f91ff4e3157d2fdae115bf813f75234bffb",
+      "sha256": "b52e8db8fae2949650d35973e57f1d219f415b6e652b85fd7007199eb84b2e32",
+      "bytes": 23452
     },
     {
       "path": "apps/hepta-control-ui/rust/core/src/chat_owner_tests.rs",
-      "git_blob": "9823ed3ae2aa97d95535f2238333e0423c7f6456",
-      "sha256": "bf6059e8cd775f23fb63fffcc8a9515663e889c5632ab76e17872d1c6985110f",
-      "bytes": 16400
+      "git_blob": "f3d391e1549a4f9ca1f3a0512efbc770699a8817",
+      "sha256": "18098150a2ca4d6d2bc7f8c25eddab453a5e0cff0712a703b9a05819bc939ed4",
+      "bytes": 18961
     },
     {
       "path": "apps/hepta-control-ui/rust/core/src/chat_timeline.rs",
@@ -85,9 +84,9 @@
     },
     {
       "path": "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml",
-      "git_blob": "93c6358f34878287273452f9a860ea390a3a057a",
-      "sha256": "f71f5b262362c8695fc6587f093937f033c683778a07961ca5fd42eb1caf3700",
-      "bytes": 583
+      "git_blob": "e56bb0547f1c0a1c8b4b4cf8d001a53cfeed0e3f",
+      "sha256": "533a4af9311e5688b2bb9cec96e859c936a1c6c3564715afe692c4bcee965be4",
+      "bytes": 1153
     },
     {
       "path": "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt",
@@ -107,5 +106,6 @@
       "sha256": "6f3ea57649bf67ac2312ea16994afded3dac934f0a5aeac4ac5bf0bdc2db499f",
       "bytes": 22554
     }
-  ]
+  ],
+  "initial_pull_request": 3067
 }

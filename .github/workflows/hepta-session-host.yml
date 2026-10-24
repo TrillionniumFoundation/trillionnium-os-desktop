@@ -72,7 +72,7 @@ jobs:
             --locked --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
             > "$RUNNER_TEMP/hepta-session-host/metadata.json"
           python3 - <<'PY'
-          import json, os, pathlib, re, tomllib
+          import json, os, pathlib, re, subprocess, tomllib
           manifest = tomllib.loads(pathlib.Path('services/hepta-session-host/Cargo.toml').read_text())
           dependency = manifest['dependencies']['codex-hepta-memory']
           assert dependency['git'] == 'https://github.com/TrillionniumFoundation/hepta-private-ci'
@@ -87,7 +87,24 @@ jobs:
               assert owners[0]['source'] == expected, (name, owners[0]['source'])
           original_packages = [package for package in packages if (package.get('source') or '').startswith('git+' + dependency['git'])]
           assert original_packages and all(package['source'] == expected for package in original_packages)
-          assert not manifest.get('patch'), 'The host cannot substitute original owner packages.'
+          # Cargo root patches do not propagate from a Git dependency. Admit
+          # exactly the original pinned workspace's patch contract, preserving
+          # its external Git revisions and mapping its vendored paths back to
+          # that same immutable Hepta source. No owner-source override is added.
+          owner = next(package for package in packages if package['name'] == 'codex-hepta-memory')
+          upstream = pathlib.Path(owner['manifest_path']).resolve().parents[2]
+          assert subprocess.check_output(['git', '-C', str(upstream), 'rev-parse', 'HEAD'], text=True).strip() == revision
+          original_bytes = subprocess.check_output(['git', '-C', str(upstream), 'show', revision + ':codex-rs/Cargo.toml'])
+          assert (upstream / 'codex-rs/Cargo.toml').read_bytes() == original_bytes
+          expected_patches = tomllib.loads(original_bytes.decode())['patch']
+          for source, entries in expected_patches.items():
+              for name, patch in list(entries.items()):
+                  if 'path' in patch:
+                      path = pathlib.PurePosixPath(patch['path'])
+                      assert source == 'crates-io' and set(patch) == {'path'}
+                      assert not path.is_absolute() and '..' not in path.parts and path.parts[0] == 'third_party'
+                      entries[name] = {'git': dependency['git'], 'rev': revision}
+          assert manifest.get('patch') == expected_patches, 'The host must preserve exactly the original pinned patch sources.'
           print('Original owner commit:', revision)
           PY
       - name: Execute real original-writer and Unix-socket integration tests
