@@ -133,7 +133,7 @@ impl UnixDatagramSocket {
         reader: &mut dyn MultiRead,
         mut aux_data: AuxiliaryData,
         remote: Option<UnixSocketAddr>,
-        _flags: SendFlags,
+        flags: SendFlags,
         timeout: Option<Duration>,
     ) -> Result<usize> {
         if self.is_write_shutdown.load(Ordering::Relaxed) {
@@ -153,7 +153,7 @@ impl UnixDatagramSocket {
                 })?
         };
 
-        let res = if self.is_nonblocking() {
+        let res = if self.is_nonblocking() || flags.contains(SendFlags::MSG_DONTWAIT) {
             queue.try_send(reader, &mut aux_data, &self.local_receiver)
         } else {
             queue.block_send(timeout, || {
@@ -316,7 +316,7 @@ impl Socket for UnixDatagramSocket {
         flags: SendFlags,
     ) -> Result<usize> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - SendFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
@@ -347,14 +347,18 @@ impl Socket for UnixDatagramSocket {
         flags: RecvFlags,
     ) -> Result<(RecvOutput, MessageHeader)> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - RecvFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
-        let (output, control_messages, peer_addr) =
+        // Per-call nonblocking I/O must not alter the shared file description.
+        let (output, control_messages, peer_addr) = if flags.contains(RecvFlags::MSG_DONTWAIT) {
+            self.local_receiver.try_recv(writer, flags)
+        } else {
             self.block_on(IoEvents::IN, self.timeouts.recv_timeout(), || {
                 self.local_receiver.try_recv(writer, flags)
-            })?;
+            })
+        }?;
 
         let message_header = MessageHeader::new(Some(peer_addr.into()), control_messages);
 

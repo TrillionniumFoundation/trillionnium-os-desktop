@@ -572,7 +572,7 @@ impl Socket for UnixStreamSocket {
         flags: SendFlags,
     ) -> Result<usize> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - SendFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
@@ -598,9 +598,13 @@ impl Socket for UnixStreamSocket {
         }
         let mut auxiliary_data = AuxiliaryData::from_control(control_messages)?;
 
-        self.block_on(IoEvents::OUT, self.timeouts.send_timeout(), || {
+        if flags.contains(SendFlags::MSG_DONTWAIT) {
             self.try_send(reader, &mut auxiliary_data, flags)
-        })
+        } else {
+            self.block_on(IoEvents::OUT, self.timeouts.send_timeout(), || {
+                self.try_send(reader, &mut auxiliary_data, flags)
+            })
+        }
     }
 
     fn recvmsg(
