@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "crates": [
+    {
+      "passed": true,
+      "guests": [
+        {
+          "crate": "osdk-frame-allocator",
+          "declared": 20,
+          "passed": 20,
+          "failed": 0,
+          "filtered": 0,
+          "soft_skipped": 0,
+          "soft_skip_reasons": [],
+          "exercised_passed_lower_bound": 20,
+          "observed_test_starts": 20,
+          "required_permission_tests": [],
+          "required_core_tests": [],
+          "required_allocator_tests": [
+            "osdk_frame_allocator::chunk::test::greater_order_of_works",
+            "osdk_frame_allocator::chunk::test::lesser_order_of_works",
+            "osdk_frame_allocator::chunk::test::max_order_from_works",
+            "osdk_frame_allocator::chunk::test::split_to_chunks_works",
+            "osdk_frame_allocator::chunk::test::split_to_order_works",
+            "osdk_frame_allocator::chunk::test::free_chunk_ops",
+            "osdk_frame_allocator::set::test::buddy_set_insert_alloc",
+            "osdk_frame_allocator::smp_counter::test::per_cpu_counter",
+            "osdk_frame_allocator::test::frame_allocator_alloc_layout_match",
+            "osdk_frame_allocator::reserve::tests::reserve_admission_and_stale_authority",
+            "osdk_frame_allocator::reserve::tests::reserve_refunds_original_owner_after_aliases_and_repurpose",
+            "osdk_frame_allocator::reserve::tests::reserve_fragmentation_alignment_and_failed_allocation_refund",
+            "osdk_frame_allocator::reserve::tests::reserve_metadata_construction_unwind_refunds_prefix_and_raw_tail",
+            "osdk_frame_allocator::reserve::tests::reserve_metadata_callback_cannot_retain_current_or_future_raw_frames",
+            "osdk_frame_allocator::reserve::tests::reserve_metadata_callback_cannot_claim_then_drop_raw_frame",
+            "osdk_frame_allocator::reserve::tests::reserve_metadata_unwind_preserves_published_prefix_alias_until_final_drop",
+            "osdk_frame_allocator::reserve::tests::reserve_raw_subranges_and_typed_frames_share_original_refund",
+            "osdk_frame_allocator::reserve::tests::reserve_concurrent_holders_close_and_final_refund",
+            "osdk_frame_allocator::reserve::tests::reserve_concurrent_creation_publishes_only_one_extent",
+            "osdk_frame_allocator::reserve::tests::reserve_survives_actual_ordinary_allocator_exhaustion_n0"
+          ],
+          "allocator_exhaustion": {
+            "ordinary_frames": 127091,
+            "reserve_start": "0x10380000",
+            "reserve_pages": 64,
+            "ordinary_denied": true,
+            "reserved_succeeded": true,
+            "returned_to_original_owner": true,
+            "global_recovery_guarantee": false
+          },
+          "required_mlsdisk_tests": [],
+          "mlsdisk_media_durability_qualified": null,
+          "required_ostd_tests": [],
+          "raw_qemu_exit": 33,
+          "guest": "guest-001"
+        }
+      ]
+    }
+  ]
+}
