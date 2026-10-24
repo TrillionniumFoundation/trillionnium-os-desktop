@@ -4,7 +4,8 @@ The reviewed Root entry is the single serializer. It emits a record only after
 the named original API or actual process/CPU observation returns. Host writers,
 the workload and Recovery must not independently print interleaved envelopes.
 The code remains the authority for exact fields and numeric bounds; see
-`native_owner_evidence.py` and `native_owner_copyout.py`. Extra envelope or
+`native_owner_evidence.py`, `native_owner_copyout.py`, and the independent
+continuity modules described below. Extra envelope or
 payload fields fail admission.
 
 ## Plan and envelope
@@ -271,7 +272,7 @@ original Rust entry's actual source-bound guest transcript can set the named
 lost-copyout or before-terminal-crash result flag. The two earlier scenarios
 retain their original checks and do not inherit either new scope.
 
-Every result still leaves full G2, unbounded CPU control, grant renewal,
+Each of these four results still leaves full G2, unbounded CPU control, grant renewal,
 repeated recovery, cross-boot Unknown preservation, power loss and production
 readiness false. Multiple fresh Process generations and an actual same-boot
 control interval beyond the initial 300-second Manager grant require separate
@@ -279,3 +280,15 @@ original producer events and strict gates. The sum of multiple finite boots'
 wall times is not that evidence. Cross-boot reuse must preserve the original
 store and unknown outcomes without redispatch. No old receipt, reset store,
 extended initial grant or substitute executable can close those paths.
+
+## Original multi-generation continuity
+
+The additional `successor-renewal-v1` and
+`history-only-after-both-owner-exit-v1` gates are specified in
+[NATIVE_OWNER_CONTINUITY.md](NATIVE_OWNER_CONTINUITY.md). They preserve these
+earlier scenario checks and require independent read-only validation of the
+actual retained Root launch files. Only the renewal campaign has a 600-second
+outer execution deadline and 1024-event bound; individual authority lifetimes,
+8-MiB/16-MiB ELF limits and earlier 128-event/120-second bounds stay unchanged.
+Source reviews, real owner/kernel builds and actual guest execution remain
+separate mandatory gates. Host tests do not qualify native continuity.

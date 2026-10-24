@@ -3,7 +3,8 @@
 The producer is the reviewed original Root/Host entry. Root serializes actual
 owner responses after they return. The parser rejects legacy read-only probes,
 unknown schemas, rewritten K/D payloads and current-cap substitutions for old D.
-The finite scenarios do not qualify grant renewal, repeated recovery or a power loss.
+The four earlier scenarios keep their finite scopes. Continuity requires its
+separate retained-file gate; no scenario qualifies unbounded control or power loss.
 """
 import hashlib
 import json
@@ -13,7 +14,8 @@ import re
 PREFIX = "HEPTA_G2_EVIDENCE_V1 "
 SCENARIOS = ("steady-state-v1", "manager-exit-after-terminal-v1")
 COPYOUT_SCENARIOS = ("lost-copyout-live-v1", "manager-exit-before-terminal-v1")
-SUPPORTED_SCENARIOS = SCENARIOS + COPYOUT_SCENARIOS
+CONTINUITY_SCENARIOS = ("successor-renewal-v1", "history-only-after-both-owner-exit-v1")
+SUPPORTED_SCENARIOS = SCENARIOS + COPYOUT_SCENARIOS + CONTINUITY_SCENARIOS
 PERIOD_NS = 100_000_000
 CAP_NS = 50_000_000
 LEASE_NS = 300_000_000_000
@@ -258,7 +260,8 @@ def parse(raw, scenario, nonce):
             events.append((line_number, value))
         elif line.startswith(("G1D_", "G1C_", "[hepta-g1d]", "[hepta-g1c]")):
             raise ValueError("legacy role or read-only qualification cannot substitute for an original G2 owner")
-    require(1 <= len(events) <= MAX_EVENTS, "bounded original-owner event stream required")
+    event_limit = 1024 if scenario == "successor-renewal-v1" else MAX_EVENTS
+    require(1 <= len(events) <= event_limit, "bounded original-owner event stream required")
     return lines, events
 
 
@@ -293,14 +296,20 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
     require(type(code) is int and code == 33 and timed_out is False and excessive is False,
             "QEMU must finish the bounded actual boot with the original success exit")
     lines, events = parse(raw, scenario, nonce)
-    images = [(index, IMAGE.fullmatch(line)) for index, line in enumerate(lines) if IMAGE.fullmatch(line)]
-    activated = [(index, ACTIVATION.fullmatch(line)) for index, line in enumerate(lines) if ACTIVATION.fullmatch(line)]
-    require(len(images) == 4 and len(activated) == 1
-            and all(int(match[1]) == elf_info["bytes"] and int(match[2], 16) == elf_info["entry"] for _, match in images)
-            and max(index for index, _ in images) < activated[0][0] < events[0][0],
-            "all four original immutable images must commit before any actual role resumes")
-    require(not any(line.startswith("[hepta-g2]") and not IMAGE.fullmatch(line) and not ACTIVATION.fullmatch(line)
-                    for line in lines), "unknown kernel G2 record or loader rejection")
+    successor_markers = []
+    if scenario in CONTINUITY_SCENARIOS:
+        from native_owner_continuity_kernel import kernel_records
+        initial, successor_markers = kernel_records(lines, events, elf_info)
+        activated = [initial]
+    else:
+        images = [(index, IMAGE.fullmatch(line)) for index, line in enumerate(lines) if IMAGE.fullmatch(line)]
+        activated = [(index, ACTIVATION.fullmatch(line)) for index, line in enumerate(lines) if ACTIVATION.fullmatch(line)]
+        require(len(images) == 4 and len(activated) == 1
+                and all(int(match[1]) == elf_info["bytes"] and int(match[2], 16) == elf_info["entry"] for _, match in images)
+                and max(index for index, _ in images) < activated[0][0] < events[0][0],
+                "all four original immutable images must commit before any actual role resumes")
+        require(not any(line.startswith("[hepta-g2]") and not IMAGE.fullmatch(line) and not ACTIVATION.fullmatch(line)
+                        for line in lines), "unknown kernel G2 record or loader rejection")
     role_pids = dict(zip(ROLE_IDS, map(int, activated[0][1].groups())))
     require(role_pids["root"] == 1 and len(set(role_pids.values())) == 4
             and all(0 < pid < 1 << 31 for pid in role_pids.values()), "four distinct actual role Processes required")
@@ -655,11 +664,42 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
                             prepared=prepared, owner_ready=owner_ready, acknowledge=acknowledge,
                             window=window, retain_usage=retain_usage, retain_adoption=retain_adoption),
         )
+    elif scenario in CONTINUITY_SCENARIOS:
+        from types import SimpleNamespace
+        import native_owner_continuity
+
+        def peek():
+            return values[cursor]["event"] if cursor < len(values) else None
+
+        def next_line():
+            require(cursor < len(events), "original continuation ended before its required event")
+            return events[cursor][0]
+
+        def current_usage():
+            return last_usage
+
+        def retain_usage(sample):
+            nonlocal last_usage
+            last_usage = sample
+
+        # Every object is populated by the same actual transcript. No extension
+        # manufactures an owner_ready event or changes the four earlier cases.
+        copyout_flags = native_owner_continuity.run(
+            scenario,
+            SimpleNamespace(take=take, peek=peek, next_line=next_line, current_usage=current_usage,
+                            retain_usage=retain_usage, role_pids=role_pids, boot_id=boot_id, spaces=spaces,
+                            peers=peers, initial_peers={name: dict(peer) for name, peer in peers.items()},
+                            owners=owners, currents=currents, materials=materials, frontiers=frontiers,
+                            operations=operations, native_sequence=native_sequence, prepared=prepared,
+                            native_result=native_result, source_terminal=source_terminal,
+                            acknowledge=acknowledge, window=window),
+            successor_markers,
+        )
     else:
         raise ValueError("unsupported original-owner scenario")
 
     complete = obj(take("complete"), ("root_pid", "operation_count", "final_owner_pid", "final_current_token"), "finite owner-cycle completion")
-    final_role = "manager" if scenario in ("steady-state-v1", "lost-copyout-live-v1") else "recovery"
+    final_role = "manager" if scenario in ("steady-state-v1", "lost-copyout-live-v1") + CONTINUITY_SCENARIOS else "recovery"
     require(type(complete["root_pid"]) is int and complete["root_pid"] == 1
             and type(complete["operation_count"]) is int and complete["operation_count"] == len(operations)
             and type(complete["final_owner_pid"]) is int and complete["final_owner_pid"] == role_pids[final_role]

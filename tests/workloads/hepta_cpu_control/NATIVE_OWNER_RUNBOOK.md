@@ -17,6 +17,9 @@ Process ktests are separate evidence and cannot pass this gate.
 | `native_owner_evidence.py` | Check original K/D bytes, complete Root Current receipts, actual process boundaries, CPU accounting and the ordered source/recovery events. |
 | `native_owner_copyout.py` | Check the two actual response-loss scenarios against complete original receipts, callback/exit timing, early Unknown recovery and unchanged descriptor Install counts. |
 | `native_owner_fault_wire.py` | Independently compare the complete original Install frame hash without executing or generating a guest operation. |
+| `native_owner_continuity.py`, `native_owner_continuity_scenarios.py` | Check original multi-generation release/reap, finite renewal and history-only transitions through the same operation/Current/window gates. |
+| `native_owner_continuity_types.py`, `native_owner_successor_wire.py`, `native_owner_continuity_kernel.py` | Read complete original lease/proof/lifecycle DTOs and bind actual kernel bootstrap and immutable factory receipts. |
+| `native_owner_root_observation.py`, `native_owner_state_observations.py` | Independently check exact Root observation bytes and actual retained ext2 path/inode/permission identities using read-only debugfs. |
 | `test_native_owner_copyout.py` | Exercise inert adversarial DTOs for the two response-loss gates; these records never qualify execution. |
 | `test_native_owner_evidence.py` | Reject altered, missing, reordered, relabelled and semantically contradictory inert records. These are parser tests, not native execution. |
 | `test_native_owner_runner.py` | Exercise actual bounded subprocess output, timeout, input mutation, exact ext2 formatting/preimage retention and source-review parsing. |
@@ -143,15 +146,18 @@ python3 -I -B tests/workloads/hepta_cpu_control/run_native_owner.py \
 ```
 
 Without `--execute`, the command performs no input inspection or execution and
-returns an explicit disabled record. The default run includes all four scenarios:
-`steady-state-v1`, `manager-exit-after-terminal-v1`, `lost-copyout-live-v1`, and
-`manager-exit-before-terminal-v1`. Repeat `--scenario` to select particular
+returns an explicit disabled record. The default run includes all six scenarios:
+`steady-state-v1`, `manager-exit-after-terminal-v1`, `lost-copyout-live-v1`,
+`manager-exit-before-terminal-v1`, `successor-renewal-v1`, and
+`history-only-after-both-owner-exit-v1`. Repeat `--scenario` to select particular
 named finite scopes; a partial selection cannot establish an unselected scope.
 Both altered ELF loader controls always run against the same product kernel. The byte-change
 and truncation must be rejected before any of the four images or roles resume.
 
 The guest uses the original N0 TCG/q35/max profile, one CPU, 512 MiB, no network,
 the pinned original SeaBIOS, and a deadline of at most 120 seconds per boot.
+Only the renewal campaign has a separate 600-second outer deadline; all
+individual native and original authority lifetimes remain unchanged.
 The runner freezes the original static entry at `/test/hepta-g2-owner`. Root
 alone can read the mode-0400 `/test/hepta-g2-run.json`; that file contains only
 `schema_version`, `scenario` and a fresh host nonce. It grants no authority.
@@ -192,15 +198,14 @@ to the current original Rust entry. Every execution still requires the complete
 reviewed source pair, successful original build and static bounds, fresh
 retained guest evidence and the exact finite scope's own result.
 
-None of the four finite results completes all G2 work. Flags remain false for:
+None of these finite results completes all G2 work. Flags remain false for:
 
 - Reboot with the same original store, old-boot D refusal and Unknown preservation
-  without redispatch. The original Root adoption and publisher-retirement APIs
-  currently require the same boot; this must be addressed in those owners.
-- Native grant renewal beyond the original finite 300-second grant, authenticated
-  RootSession lifetime renewal and repeated native role replacement after the
-  one Manager/Recovery pair is consumed. The current per-boot deadline remains
-  at most 120 seconds; adding four boots' wall times cannot prove this scope.
+  without redispatch. This needs its own actual original owner and same-disk
+  two-boot gate.
+- Unbounded persistent control and repeated crash recovery. The named renewal
+  case only establishes its finite actual endpoint beyond both initial grants;
+  the four earlier cases cannot confer its separate qualification.
 - Host power loss, hardware behavior and production readiness.
 
 Complete these through the original owners and add actual source-bound cases.
@@ -217,3 +222,15 @@ python3 -B -m unittest discover \
 Parser fixtures explicitly remain inert. Bounded-I/O tests execute harmless
 local subprocesses and the real ext2 formatter on new temporary files. A green
 host suite is not a substitute for the source-bound QEMU executions above.
+
+## Original multi-generation continuity
+
+The additional `successor-renewal-v1` and
+`history-only-after-both-owner-exit-v1` gates are specified in
+[NATIVE_OWNER_CONTINUITY.md](NATIVE_OWNER_CONTINUITY.md). They preserve these
+earlier scenario checks and require independent read-only validation of the
+actual retained Root launch files. Only the renewal campaign has a 600-second
+outer execution deadline and 1024-event bound; individual authority lifetimes,
+8-MiB/16-MiB ELF limits and earlier 128-event/120-second bounds stay unchanged.
+Source reviews, real owner/kernel builds and actual guest execution remain
+separate mandatory gates. Host tests do not qualify native continuity.

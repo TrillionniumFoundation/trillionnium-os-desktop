@@ -233,6 +233,11 @@ def execute(args, report):
     bios = inputs.read(args.bios, 2 * 1024**2, replay.SEABIOS_SHA)
     qemu, qemu_identity = tool(args.qemu, args.expected_qemu_sha256)
     mkfs, mkfs_identity = tool(args.mkfs)
+    selected = args.scenario or list(oracle.SUPPORTED_SCENARIOS)
+    require(len(set(selected)) == len(selected), "scenario selection repeats a boot")
+    debugfs, debugfs_identity = None, None
+    if any(name in oracle.CONTINUITY_SCENARIOS for name in selected):
+        debugfs, debugfs_identity = tool(args.debugfs)
     output = args.output
     require(output.is_absolute() and output.parent.is_dir() and output.parent.resolve(strict=True) == output.parent
             and not output.exists() and not output.is_symlink() and "," not in str(output), "new canonical comma-free output required")
@@ -253,6 +258,8 @@ def execute(args, report):
                   kernel_pipeline_sha256=args.expected_kernel_pipeline_sha256,
                   input_attestation="caller-retained actual local build records and complete checked sources; not remote attestation",
                   tool_identities={"qemu": qemu_identity, "mkfs": mkfs_identity})
+    if debugfs_identity is not None:
+        report["tool_identities"]["debugfs"] = debugfs_identity
     report["retained_owner_build"] = retain_files(output / "owner-build", owner_files)
     report["retained_kernel_build"] = retain_files(output / "kernel-build-evidence", kernel_files)
     report["artifacts"] = {"owner": freeze_bytes(output / "original-owner.elf", owner),
@@ -260,13 +267,13 @@ def execute(args, report):
                            "base_initramfs": freeze_bytes(output / "base-initramfs.cpio.gz", base),
                            "bios": freeze_bytes(output / "bios.bin", bios),
                            "qemu_binary": freeze_bytes(output / "source-qemu-binary", qemu.read_bytes())}
+    if debugfs is not None:
+        report["artifacts"]["debugfs_binary"] = freeze_bytes(output / "source-debugfs-binary", debugfs.read_bytes())
     save(output / "result.json", report)
     changed = bytearray(owner)
     changed[-1] ^= 1
     controls = [("manifest-byte-mismatch", bytes(changed)), ("truncated-snapshot", owner[:-1])]
     report["controls"], report["scenarios"] = {}, {}
-    selected = args.scenario or list(oracle.SUPPORTED_SCENARIOS)
-    require(len(set(selected)) == len(selected), "scenario selection repeats a boot")
     for name, actual_owner in controls + [(name, owner) for name in selected]:
         is_control = name not in oracle.SUPPORTED_SCENARIOS
         directory = output / name
@@ -287,7 +294,10 @@ def execute(args, report):
         save(output / "result.json", report)
         argv = qemu_argv(qemu, output, directory, not is_control)
         report["native_execution_attempted"] = report["native_execution_attempted"] or not is_control
-        raw, record = run_qemu(argv, directory, args.timeout, qemu_identity)
+        # This one campaign's wall deadline never changes a finite Root/Host,
+        # writer, native grant, watchdog or original four-case deadline.
+        deadline = 600 if name == "successor-renewal-v1" else args.timeout
+        raw, record = run_qemu(argv, directory, deadline, qemu_identity)
         if not is_control:
             state = directory / "state.raw"
             result["state"]["after_sha256"] = inputs.sha(state)
@@ -301,8 +311,15 @@ def execute(args, report):
                 require(result["state"]["after_bytes"] == STATE_BYTES
                         and result["state"]["after_sha256"] != result["state"]["before_sha256"],
                         "the original native writer did not change its actual retained ext2 state")
+            if name in oracle.CONTINUITY_SCENARIOS:
+                import native_owner_state_observations
+                physical = native_owner_state_observations.verify(
+                    directory / "state.raw", debugfs, debugfs_identity, result["state"]["after_sha256"],
+                    observed["root_launch_observations_expected"], directory / "root-launch-observations")
+                result["retained_root_observations"] = physical
+                native_owner_state_observations.accept_retained_observations(observed, physical)
             result.update(observed)
-        except (ValueError, TypeError, KeyError, UnicodeError) as error:
+        except (OSError, ValueError, TypeError, KeyError, UnicodeError, subprocess.SubprocessError) as error:
             result.update(passed=False, error=f"{type(error).__name__}: {error}")
         result["actual_qemu_record_sha256"] = inputs.sha(directory / "qemu.json")
         result["raw_serial_sha256"] = inputs.sha(directory / "serial.log")
@@ -311,6 +328,8 @@ def execute(args, report):
         save(output / "result.json", report)
         require(inputs.sha(qemu) == qemu_identity["sha256"] and inputs.sha(mkfs) == mkfs_identity["sha256"],
                 "actual native runner tools changed between boots")
+        if debugfs is not None:
+            require(inputs.sha(debugfs) == debugfs_identity["sha256"], "actual read-only state tool changed between boots")
     after = inputs.source_snapshots(roots, review, builder)
     final_harness = builder.source_snapshot(ROOT, harness_head, harness_tree)
     save(output / "source-after.json", after)
@@ -334,7 +353,11 @@ def execute(args, report):
                   after_effect_crash_verified=passed and report["scenarios"].get(
                       "manager-exit-before-terminal-v1", {}).get("after_effect_crash_verified") is True,
                   recovered_unknown_without_install_verified=passed and report["scenarios"].get(
-                      "manager-exit-before-terminal-v1", {}).get("recovered_unknown_without_install_verified") is True)
+                      "manager-exit-before-terminal-v1", {}).get("recovered_unknown_without_install_verified") is True,
+                  grant_renewal_verified=passed and report["scenarios"].get(
+                      "successor-renewal-v1", {}).get("grant_renewal_verified") is True,
+                  history_only_recovery_verified=passed and report["scenarios"].get(
+                      "history-only-after-both-owner-exit-v1", {}).get("history_only_recovery_verified") is True)
 
 
 def main(argv=None):
@@ -346,6 +369,7 @@ def main(argv=None):
         parser.add_argument("--" + name)
     parser.add_argument("--qemu", default="qemu-system-x86_64")
     parser.add_argument("--mkfs", default="mkfs.ext2")
+    parser.add_argument("--debugfs", default="debugfs")
     parser.add_argument("--bios", type=Path, default=Path("/usr/share/seabios/bios-256k.bin"))
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--scenario", choices=oracle.SUPPORTED_SCENARIOS, action="append")
@@ -355,7 +379,7 @@ def main(argv=None):
               "bounded_steady_state_verified": False, "same_boot_authenticated_successor_verified": False,
               "after_effect_crash_verified": False, "lost_copyout_live_verified": False,
               "recovered_unknown_without_install_verified": False, "cross_boot_unknown_preservation_verified": False,
-              "grant_renewal_verified": False, "repeated_recovery_verified": False,
+              "grant_renewal_verified": False, "history_only_recovery_verified": False, "repeated_recovery_verified": False,
               "unbounded_persistent_cpu_verified": False, "power_loss_verified": False,
               "hardware_qualification": False, "production_ready": False, "g2_complete": False,
               "started_at_utc": datetime.now(timezone.utc).isoformat()}
