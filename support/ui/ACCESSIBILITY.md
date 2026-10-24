@@ -15,11 +15,11 @@ Hepta owners still decide whether an operation is allowed.
 
 ## Reproduce
 
-Use Rust 1.88 and the committed UI lockfile:
+Use Rust 1.96 and the committed UI lockfile:
 
 ```sh
-cargo +1.88.0 test --manifest-path ui/Cargo.toml --workspace --locked
-cargo +1.88.0 build --manifest-path ui/Cargo.toml --locked -p trill-app-window
+cargo +1.96.0 test --manifest-path ui/Cargo.toml --workspace --locked
+cargo +1.96.0 build --manifest-path ui/Cargo.toml --locked -p trill-app-window
 bash tests/ui/accesskit-smoke.sh
 ```
 

@@ -9,13 +9,15 @@ rust-version.workspace = true
 default = []
 # Candidate only: both original packages are pinned to the same reviewed head.
 hepta-shared-presenter = ["dep:hepta-control-core", "dep:hepta-robrix-ui"]
+hepta-native-makepad = ["hepta-shared-presenter", "hepta-robrix-ui/ui", "hepta-robrix-ui/native-presentation"]
+hepta-native-clipboard-sdk = ["hepta-native-makepad", "hepta-robrix-ui/native-clipboard-sdk"]
 
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
-hepta-control-core = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "56630b12b8a4c69fff2c47b95b36d88a7389c39f", optional = true }
-hepta-robrix-ui = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "56630b12b8a4c69fff2c47b95b36d88a7389c39f", default-features = false, optional = true }
+hepta-control-core = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9", optional = true }
+hepta-robrix-ui = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9", default-features = false, optional = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libc.workspace = true

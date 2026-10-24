@@ -87,7 +87,7 @@ results later in this document retain their own dates and scope.
 
 ## Automated commands
 
-Automated Rust commands (from repository root with `RUSTUP_TOOLCHAIN=1.88.0`;
+Automated Rust commands (from repository root with `RUSTUP_TOOLCHAIN=1.96.0`;
 the blocking CI `tests/ui/check-host.sh` runs all three A10-owned Cargo suites
 and the separate A07 observer suite):
 - cargo test --manifest-path ui/Cargo.toml --workspace --locked --offline
@@ -115,7 +115,8 @@ the strict rustfmt check fails, then exits nonzero. It never reports success
 until that patch is reviewed, committed, and rerun.
 The same blocking host gate stages an actual Linux ELF binary archive only
 after all four Cargo suites and strict Rustfmt pass. The archive and its
-SHA256 contain four built Rust programs and their build/source provenance,
+SHA256 contain five built Rust programs, including the read-only Notes recovery
+helper, and their build/source provenance,
 not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
 
 ## Session exchange deadline

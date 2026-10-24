@@ -1,8 +1,27 @@
 # Rust desktop workspace
 
 This workspace builds the Linux host Shell, Session and application windows. The
-renderer is egui/eframe; native window creation does not qualify Asterinas
-graphics, a web build, a compositor, or a mobile device.
+default renderer is egui/eframe. The explicit `hepta-native-makepad` Shell
+feature composes the original pinned Hepta Robrix/Makepad app, shared
+ChatWorkspace and authenticated Agentd text worker. Both renderers use Rust
+native windows. Each Asterinas display/input or mobile target requires its own
+execution evidence.
+
+The original UI/core, Agentd host dependencies and all four original AccessKit
+patches resolve from Hepta `52456c309f64ee80e7e377f774445c5dfe0523c9`
+(tree `9d0949a72d064cc2222859780c6ccd9a22c8e575`). The patch entries live in
+this workspace's Cargo root because Cargo does not inherit dependency-workspace
+patches. The [fixed source map](../docs/SOURCES.md#hepta-native-organ) links the
+same original modules and their development contracts.
+
+Normal `hepta-native-makepad` keeps original SDK 337566c8 and the 54-file bundle.
+The separate `hepta-native-clipboard-sdk` feature requires the exact all-SDK
+override, a separate candidate worktree/lock and the 60-file bundle; only that
+candidate advertises native PasteText. See [the two profiles](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate).
+Latest original UI 43/43 and AccessKit 54/54 results are scoped default-SDK
+package tests, not a full Desktop workspace, release or real window result;
+their [exact execution record](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
+does not qualify the clipboard candidate or installed production.
 
 ## Modules
 
@@ -17,12 +36,15 @@ graphics, a web build, a compositor, or a mobile device.
 ## Build and verify
 
 Run from the repository root with the pinned Linux host dependencies in
-[RUN](../support/ui/RUN.md). The blocking host workflow uses Rust 1.88.0; a
-result on another toolchain is a separate development observation.
+[RUN](../support/ui/RUN.md). The integrated product uses Rust 1.96.0 to match
+the original Hepta runtime dependencies. Earlier Rust 1.88 receipts remain
+historical evidence for their recorded source and binaries.
 
 ```sh
-RUSTUP_TOOLCHAIN=1.88.0 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
-RUSTUP_TOOLCHAIN=1.88.0 cargo test --manifest-path ui/Cargo.toml --workspace --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml --workspace --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo build --manifest-path ui/Cargo.toml --locked \
+  --workspace --bins --features trill-shell/hepta-native-makepad
 bash tests/ui/check-host.sh
 bash tests/ui/headless-weston.sh
 ```

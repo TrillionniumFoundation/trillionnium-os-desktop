@@ -7,6 +7,8 @@ pub mod notes_bootstrap;
 #[cfg(target_os = "linux")]
 pub mod notes_private_unix;
 pub mod notes_recovery;
+#[cfg(target_os = "linux")]
+pub mod notes_store;
 pub mod objective;
 pub mod observation;
 
@@ -278,38 +280,31 @@ pub struct HostResources {
 // Requesting f32 directly would enable serde_json's feature-unified single-
 // precision parser; converting every token through f64 would instead double-
 // round some large integers. Missing/null and accepted f32 overflow stay local
-// observation semantics, not an authority or completion assertion.
+// observation semantics, not an authority or completion assertion. The native
+// Hepta graph also enables arbitrary_precision, whose decimal number visits a
+// private serde map. Use serde_json's Number implementation to consume that
+// representation even inside Response's internally tagged serde buffer.
+// RawValue cannot be deserialized through that buffer.
 fn deserialize_host_load_legacy<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    struct LegacyHostLoad;
-
-    impl serde::de::Visitor<'_> for LegacyHostLoad {
-        type Value = Option<f32>;
-
-        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            formatter.write_str("a JSON number or null for the host load observation")
-        }
-
-        fn visit_unit<E>(self) -> Result<Self::Value, E> {
-            Ok(None)
-        }
-
-        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
-            Ok(Some(value as f32))
-        }
-
-        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
-            Ok(Some(value as f32))
-        }
-
-        fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E> {
-            Ok(Some(value as f32))
-        }
+    let Some(number) = Option::<serde_json::Number>::deserialize(deserializer)? else {
+        return Ok(None);
+    };
+    if let Some(value) = number.as_u64() {
+        return Ok(Some(value as f32));
     }
-
-    deserializer.deserialize_any(LegacyHostLoad)
+    if let Some(value) = number.as_i64() {
+        return Ok(Some(value as f32));
+    }
+    let value = number
+        .as_f64()
+        .filter(|value| value.is_finite())
+        .ok_or_else(|| {
+            serde::de::Error::custom("host load exceeds the original JSON number range")
+        })?;
+    Ok(Some(value as f32))
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

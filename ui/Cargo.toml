@@ -5,7 +5,7 @@ members = ["core", "session", "shell", "app-window", "broker"]
 [workspace.package]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-rust-version = "1.88"
+rust-version = "1.96"
 
 [workspace.dependencies]
 trill-ui-core = { path = "core" }
@@ -16,3 +16,25 @@ sha2 = "=0.10.9"
 libc = "=0.2.190"
 eframe = { version = "=0.31.1", default-features = false, features = ["glow", "default_fonts", "wayland", "x11", "accesskit"] }
 ab_glyph = "=0.2.32"
+
+[patch.crates-io]
+# Original UI and its four accessibility crates must resolve from one Hepta source.
+accesskit = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+accesskit_consumer = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+accesskit_atspi_common = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+accesskit_unix = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+# Cargo applies patches only from the root workspace. Keep the original
+# Hepta graph and its security fixes when Agentd is a native UI dependency.
+i18n-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+secret-service = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+zbus-secret-service-keyring-store = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+anymap2 = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+imbl = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+matrix-sdk-sqlite = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+matrix-sdk-crypto = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "52456c309f64ee80e7e377f774445c5dfe0523c9" }
+crossterm = { git = "https://github.com/openai-oss-forks/crossterm", rev = "45fecb9508105988f42fe6ff0441783ed3717f92" }
+tokio-tungstenite = { git = "https://github.com/openai-oss-forks/tokio-tungstenite", rev = "0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186" }
+tungstenite = { git = "https://github.com/openai-oss-forks/tungstenite-rs", rev = "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f" }
+
+[patch."ssh://git@github.com/openai-oss-forks/tungstenite-rs.git"]
+tungstenite = { git = "https://github.com/openai-oss-forks/tungstenite-rs", rev = "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f" }

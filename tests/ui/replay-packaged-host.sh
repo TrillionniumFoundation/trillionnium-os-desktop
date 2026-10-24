@@ -23,11 +23,11 @@ python3 - "$bundle" <<'PYTAR'
 import sys, tarfile
 root="a10-linux-host-binaries"
 files={root+"/"+name for name in (
-    "trill-session", "trill-shell", "trill-app-window", "trill-ctl",
+    "trill-session", "trill-shell", "trill-app-window", "trill-ctl", "trill-notes-recovery",
     "PROVENANCE.txt", "SHA256SUMS")}
 with tarfile.open(sys.argv[1],"r:gz") as tar:
     entries=tar.getmembers()
-    assert len(entries)==7, "expected exactly one directory and six files"
+    assert len(entries)==8, "expected exactly one directory and seven files"
     assert set(member.name for member in entries)==files|{root}, "unexpected tar members"
     assert sum(member.size for member in entries)<512*1024*1024, "unbounded tar"
     for member in entries:
@@ -64,7 +64,7 @@ grep -Fxq "Source commit: $source_sha" "$programs/PROVENANCE.txt" || {
     echo 'Source HEAD mismatch: running archive is not the requested commit' >&2
     exit 1
 }
-for bin in trill-session trill-shell trill-app-window trill-ctl; do
+for bin in trill-session trill-shell trill-app-window trill-ctl trill-notes-recovery; do
     [[ -f "$programs/$bin" && -x "$programs/$bin" ]] || { echo "Missing ELF $bin" >&2; exit 1; }
     [[ "$(head -c 4 "$programs/$bin" | od -An -tx1 | tr -d ' \n')" == 7f454c46 ]] || {
         echo "Not an ELF: $bin" >&2; exit 1;

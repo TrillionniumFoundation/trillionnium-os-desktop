@@ -6,6 +6,21 @@ trusted embedding component. Its typed host accepts bounded user intentions
 through an injected original authority. It provides no issuer or database owner.
 An unconfigured standalone Session remains unavailable.
 
+All original Hepta dependencies and Hepta-carried patches in this crate are
+fixed at `52456c309f64ee80e7e377f774445c5dfe0523c9`, tree
+`9d0949a72d064cc2222859780c6ccd9a22c8e575`, matching the native UI source.
+The [fixed cross-repository map](../../docs/SOURCES.md#hepta-native-organ) and
+[latest scoped executions](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
+keep component tests separate from the final combined workspace, installed
+production authority and device qualification. The local `hepta-os-observer`
+dependency retains its own protocol contracts; it has no Hepta Git dependency.
+
+The optional native App Server text path has a separate
+[development and technical handoff](TEXT_SESSION.md): actual source entry
+points, feature/build commands, authenticated inputs, stream outputs and
+same-identity recovery. It uses the original Root/Agentd text worker and does
+not route model chat through the finite literal Notes compiler below.
+
 ## Sources and ownership
 
 | Responsibility | Existing owner |
@@ -147,8 +162,10 @@ a future migration.
 
 ## Development and qualification
 
-The new standalone host workspace uses Rust 1.95, matching its pinned original
-Hepta packages. Existing Desktop UI workspaces retain their Rust 1.88 contract.
+The standalone host and integrated Desktop UI workspaces use Rust 1.96,
+matching the pinned original Hepta runtime graph. Both Cargo roots explicitly
+retain the original Hepta dependency patches because dependency workspaces
+cannot propagate their root patches to a consuming product.
 Their serde and serde_json constraints are aligned through normal Cargo lock
 resolution; no original Hepta package, workspace membership or dependency is
 substituted to make the host compile.
@@ -260,5 +277,7 @@ retain the returned exact payload and `OperationIntentV1` through the original
 content or predecessor changes the original operation identity and that literal
 Chinese text survives without reinterpretation. The test authentication context
 is explicitly synthetic; it does not replace the production issuer or qualify
-a real document write. Notes currently provides an in-memory document; neither
-this compiler nor admission establishes persistent document storage.
+a real document write. Notes application storage and crash recovery are owned
+by the [original Notes store and recovery helper](../../support/ui/NOTES_DURABILITY.md);
+neither this compiler nor admission proves a persisted document or a durable
+original-writer terminal receipt.

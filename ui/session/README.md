@@ -33,7 +33,7 @@ trill-ctl cancel <task-id> <session-generation>
 ```
 
 ```sh
-RUSTUP_TOOLCHAIN=1.88.0 cargo test --manifest-path ui/Cargo.toml -p trill-session --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-session --locked
 ```
 
 [tests](tests/) exercise real process/socket lifecycle within their declared

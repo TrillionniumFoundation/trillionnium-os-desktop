@@ -5,6 +5,7 @@
 ## 当前接续顺序
 
 1. 固定最终两仓source/tree、features与部署输入，重建/验证新的source profile；历史10-22清单不覆盖当前Notes bootstrap v2/recovery v1。
+   Linux host 的安装入口和schema v4本地恢复已落代码，按[产品手册](../support/ui/PRODUCT.md)构建五程序包；在隔离专属unit上实测安装、启动、v3迁移与Shell恢复、停止后升级/回滚、卸载保留数据。此流程不要求先关闭原生guest G2，但其成功也不改变G2资格。
 2. 沿原authority/writer运行UI目标到限定target，再做真实回读、持久终态与未知态恢复；已有transport/owner源码分别按所属包验收。
 3. 在同一ordinary内核上执行原Agentd生命周期与store门禁，再接最终exec身份和原生G2。单独的store guest成功不关闭daemon或生产效果。
 4. 对已加入的用户数据页限制、独立timer watchdog、Session期限和Notes恢复重跑相同profile的正反门禁；继续实现完整资源保留和可信暂停，不把局部机制当完整恢复。

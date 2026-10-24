@@ -2,6 +2,12 @@
 
 当前候选的能力与未取得资格集中在 [CURRENT_CAPABILITIES](CURRENT_CAPABILITIES.md)。下表记录最新逐源验收；下文按时间保留原记录，“当前”、README 空文件规则及测试数均只描述各节来源。
 
+## 2026-10-24 Linux host 当前来源与 scoped 验收
+
+当前 Cargo 集成来源为 Hepta `52456c309f64ee80e7e377f774445c5dfe0523c9` / tree `9d0949a72d064cc2222859780c6ccd9a22c8e575`，对应[固定跨仓入口](SOURCES.md#hepta-native-organ)。[v10/v11 独立原始收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)记录 Agentd 349 pass/34 ignored、文本8/8、Legacy3/3（1015 unselected）、client29/29、协议306 pass/1 ignored，以及默认原 SDK native UI43/43、AccessKit54/54。ignored 与 unselected 不计通过；它们不是完整两仓或生产产品验收。
+
+默认 `hepta-native-makepad` 保持原 SDK/54 文件资源；独立 `hepta-native-clipboard-sdk` 使用固定全 crate override、独立锁和60文件 bundle，候选不继承默认测试资格。最终 Desktop 完整 workspace、release、真实窗口、安装后生产与 Android 同 signer 签名仍待各自执行，见[当前能力](CURRENT_CAPABILITIES.md)。v8/v9 失败和其余历史 pin/收据不改写。
+
 ## 2026-10-23 审计后实施候选（持续验收）
 
 当前 Desktop 与 Hepta 集成修改分别发布于草稿 [#257](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/257) 与 [#3452](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3452)。main 未合并；下表每个实测结果只属于列出的固定源码，不给后续文档提交、分支或生产环境转授资格。

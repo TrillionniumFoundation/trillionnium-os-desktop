@@ -156,7 +156,7 @@ fn received_descriptors(message: &libc::msghdr) -> (Vec<OwnedFd>, bool) {
         }
         let count_bytes = value.cmsg_len - minimum;
         if value.cmsg_level == libc::SOL_SOCKET && value.cmsg_type == libc::SCM_RIGHTS {
-            valid &= count_bytes % mem::size_of::<RawFd>() == 0;
+            valid &= count_bytes.is_multiple_of(mem::size_of::<RawFd>());
             for index in 0..count_bytes / mem::size_of::<RawFd>() {
                 // SAFETY: each complete descriptor lies within the ancillary
                 // payload. Kernel-transferred descriptors have unique owned

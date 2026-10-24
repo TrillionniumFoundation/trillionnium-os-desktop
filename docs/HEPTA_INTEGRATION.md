@@ -1,6 +1,8 @@
 # Hepta 的实际宿主接合
 
-版本0.4。实际生产 writer 接线路径已按 Hepta 候选 `44d98ca5501188b06c3df63fe57575d62c2ca8dd` 复核；该候选及 OS 接合的运行资格仍须分别看各自云端结果，不能由源码存在推定通过。运行状态统一见 [STATUS](STATUS.md)。OS 层不复制第二套 Agent、Codex 主链或持久操作账本。
+当前 Linux host 集成固定在 Hepta `52456c309f64ee80e7e377f774445c5dfe0523c9` / tree `9d0949a72d064cc2222859780c6ccd9a22c8e575`，三处 Cargo 入口与四个 UI AccessKit patch 见[当前 source map](SOURCES.md#hepta-native-organ)。实际已有 [Session host](../services/hepta-session-host/README.md)、[原文本 adapter](../services/hepta-session-host/TEXT_SESSION.md) 和 [原 Makepad Shell 组合](../ui/shell/README.md#original-makepad-renderer)。它们借用原 ChatWorkspace、Root/Agentd、App Server 及 writer，不复制第二套 Agent、Codex 主链或持久操作账本。
+
+[当前能力](CURRENT_CAPABILITIES.md)和 [v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)记录已执行的包与过滤范围。默认原 SDK、独立 clipboard SDK、完整两仓 workspace、release、真实窗口、安装后生产运行和 Android 签名分别验收。下文保留版本0.4在 `44d98ca5501188b06c3df63fe57575d62c2ca8dd` 核查的 writer/ABI 映射与固定链接；它们是各自来源的合同对照，不改写为本轮运行收据。
 
 ## 1. 已核查源码到产品入口
 
@@ -14,7 +16,7 @@
 | `codex-rs/hepta-agentd/src/production_writer_host.rs` | 显式 durable writer 宿主接缝 | 正常启动不自动安装；只在实际所需产品 profile 装配 |
 | `hepta-infer-worker --profile native-app-server` | 使用 owner 的 App Server provider；不是新模型主链 | 可作为真实模型路径观测，不能代替工具执行/OS资源接口 |
 
-以上是来源映射，不是本项目已编译/调用的证明。核对来源：[宿主入口与限制](SOURCES.md#hepta-modules)。新增适配器文件尚不存在，不伪造调用点已合并。每一运行要报告二进制、构建 features、启动参数、装配 owner 与实际宣告能力。
+以上是原来源映射，不能单独当作运行证明。较早的[宿主入口与限制](SOURCES.md#hepta-modules)保留其研究基线；当前实际 adapter、命令和原 owner 合同从[本轮模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)进入。每一运行仍要报告二进制、构建 features、启动参数、装配 owner 与实际宣告能力。
 
 ## 2. 依赖必须先于 Hepta 闭环
 

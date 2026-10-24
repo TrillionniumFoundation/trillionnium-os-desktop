@@ -62,6 +62,15 @@ hold capabilities. A future organ can consume a bounded owner-produced snapshot;
 an effect must still follow the original authority/operations owners and the
 separate restricted OS adapter.
 
+The separate [Android device adapter](../../support/android/DEVICE_ORGAN.md)
+implements pinned Digitalis/Droidloom host reads and a non-authorizing semantic
+intent format. It is not enabled by this observer or the Session. Its CLI has no
+effect command, and its intents still require the original effect owner and a
+receiver that enforces the exact window and snapshot binding. This host I/O must
+remain outside `TrustedReadOnlyOrganV1`; a future compiled organ may consume only
+the bounded, owner-produced observation projection. Android kernel compatibility
+and production device effects remain independently unqualified.
+
 The host configuration must identify the expected Agent UUID, spawn generation,
 and OS UID from a separately trusted supervisor record. Reusing values returned
 by an arbitrary socket to configure that same socket would defeat identity

@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 60
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-      RUSTUP_TOOLCHAIN: '1.95.0'
+      RUSTUP_TOOLCHAIN: '1.96.0'
       CARGO_BUILD_JOBS: '1'
       CARGO_INCREMENTAL: '0'
       RUST_BACKTRACE: '1'
@@ -58,7 +58,7 @@ jobs:
       - name: Install the original Hepta host compiler and native prerequisites
         run: |
           set -euo pipefail
-          rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+          rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pkg-config libssl-dev
       - name: Resolve and identify the immutable original owner dependency

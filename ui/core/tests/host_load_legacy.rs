@@ -33,6 +33,14 @@ fn legacy_load_rounding_and_finite_boundaries_are_preserved() {
 }
 
 #[test]
+fn integer_negative_zero_remains_zero_across_json_feature_sets() {
+    // serde_json/arbitrary_precision normalizes the integer token -0 before
+    // invoking a field visitor. The original wire serializer writes -0.0 for
+    // negative f32 zero; that spelling retains its exact bits above.
+    assert_eq!(load_bits(Some("-0")).unwrap().unwrap() & 0x7fff_ffff, 0);
+}
+
+#[test]
 fn legacy_load_f32_overflow_keeps_the_original_accepted_observation() {
     for (number, bits) in [
         ("3.4028236e38", 0x7f80_0000),
@@ -57,6 +65,33 @@ fn legacy_load_non_numeric_or_json_overflow_remain_rejected() {
     ] {
         assert!(load_bits(Some(value)).is_err(), "{value}");
     }
+}
+
+#[test]
+fn native_graph_numeric_observation_roundtrips_through_value() {
+    let json = r#"{"sampled_unix_ms":3,"mem_total_kib":null,"mem_available_kib":null,"source":"real snapshot","load_average_1m":0.43}"#;
+    let resources: HostResources = serde_json::from_str(json).unwrap();
+    let restored: HostResources =
+        serde_json::from_value(serde_json::to_value(&resources).unwrap()).unwrap();
+    assert_eq!(
+        restored.load_average_1m.map(f32::to_bits),
+        resources.load_average_1m.map(f32::to_bits)
+    );
+    let snapshot = format!(
+        r#"{{"type":"snapshot","tasks":[],"resources":{json},"session_instance":"original"}}"#
+    );
+    let response: trill_ui_core::Response = serde_json::from_str(&snapshot).unwrap();
+    let trill_ui_core::Response::Snapshot {
+        resources: restored,
+        ..
+    } = response
+    else {
+        panic!("original snapshot variant changed");
+    };
+    assert_eq!(
+        restored.load_average_1m.map(f32::to_bits),
+        resources.load_average_1m.map(f32::to_bits)
+    );
 }
 
 #[test]

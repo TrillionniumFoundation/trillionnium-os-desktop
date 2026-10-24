@@ -2,10 +2,17 @@
 #[path = "../../activation.rs"]
 mod activation;
 mod conversation;
+mod draft_recovery;
 mod hepta_panel;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
 mod local_drafts;
+#[cfg(all(feature = "hepta-native-makepad", target_os = "linux"))]
+mod native_makepad;
+#[cfg(all(feature = "hepta-native-makepad", target_os = "linux"))]
+mod native_resources;
+#[cfg(all(feature = "hepta-native-makepad", target_os = "linux"))]
+mod native_text_config;
 mod objective_panel;
 
 use conversation::{DraftBook, HostObservation, WorkspaceTab};
@@ -14,6 +21,7 @@ use std::cmp::Reverse;
 use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 #[cfg(test)]
 use trill_ui_core::conversation::{LocalDraft, MAX_DRAFT_BYTES, MAX_LOCAL_DRAFTS};
@@ -51,7 +59,17 @@ impl Page {
 #[derive(Clone, Copy)]
 struct StartupOptions {
     page: Page,
+    page_explicit: bool,
     hepta_layout_probe: bool,
+    renderer: Renderer,
+    workspace: Workspace,
+    workspace_explicit: bool,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Renderer {
+    Egui,
+    Makepad,
 }
 
 fn parse_startup_options(
@@ -59,12 +77,35 @@ fn parse_startup_options(
 ) -> Result<StartupOptions, &'static str> {
     let mut options = StartupOptions {
         page: Page::Conversation,
+        page_explicit: false,
         hepta_layout_probe: false,
+        renderer: Renderer::Egui,
+        workspace: Workspace::Personal,
+        workspace_explicit: false,
     };
     let mut page_selected = false;
+    let mut renderer_selected = false;
+    let mut workspace_selected = false;
     let mut args = args.into_iter();
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--renderer" if !renderer_selected => {
+                options.renderer = match args.next().as_deref() {
+                    Some("egui") => Renderer::Egui,
+                    Some("makepad") => Renderer::Makepad,
+                    _ => return Err("--renderer requires egui or makepad"),
+                };
+                renderer_selected = true;
+            }
+            "--workspace" if !workspace_selected => {
+                options.workspace = match args.next().as_deref() {
+                    Some("personal") => Workspace::Personal,
+                    Some("research") => Workspace::Research,
+                    Some("build") => Workspace::Build,
+                    _ => return Err("--workspace requires personal, research or build"),
+                };
+                workspace_selected = true;
+            }
             "--page" if !page_selected => {
                 options.page = match args.next().as_deref() {
                     Some("conversation") => Page::Conversation,
@@ -87,6 +128,14 @@ fn parse_startup_options(
     if options.hepta_layout_probe && options.page != Page::Hepta {
         return Err("--hepta-layout-probe requires --page hepta");
     }
+    if options.renderer == Renderer::Makepad
+        && (options.hepta_layout_probe
+            || !matches!(options.page, Page::Conversation | Page::Console))
+    {
+        return Err("the original Makepad App supports --page conversation or console");
+    }
+    options.workspace_explicit = workspace_selected;
+    options.page_explicit = page_selected;
     Ok(options)
 }
 
@@ -105,7 +154,9 @@ struct Bridge {
     polls: SyncSender<()>,
     objective_polls: SyncSender<Request>,
     rx: Receiver<BridgeReply>,
+    waker: BridgeWaker,
 }
+type BridgeWaker = Arc<Mutex<Option<Arc<dyn Fn() + Send + Sync>>>>;
 impl Bridge {
     fn new() -> Self {
         Self::with_transport(|message| request(message).map_err(|err| err.to_string()))
@@ -118,6 +169,8 @@ impl Bridge {
         let (polls, incoming_polls) = mpsc::sync_channel::<()>(1);
         let (objective_polls, incoming_objective_polls) = mpsc::sync_channel::<Request>(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
+        let waker: BridgeWaker = Arc::new(Mutex::new(None));
+        let worker_waker = Arc::clone(&waker);
         // The worker, not egui, waits for the Unix socket. After each IPC,
         // prioritized actions are handled before the coalesced next poll.
         std::thread::spawn(move || loop {
@@ -152,13 +205,37 @@ impl Bridge {
             if outgoing.send(reply).is_err() {
                 break;
             }
+            let wake = worker_waker.lock().ok().and_then(|slot| slot.clone());
+            if let Some(wake) = wake {
+                wake();
+            }
         });
         Self {
             actions,
             polls,
             objective_polls,
             rx,
+            waker,
         }
+    }
+
+    fn set_waker(&self, wake: Arc<dyn Fn() + Send + Sync>) {
+        if let Ok(mut slot) = self.waker.lock() {
+            *slot = Some(wake);
+        }
+    }
+
+    #[cfg(feature = "hepta-native-makepad")]
+    fn close(&mut self) {
+        if let Ok(mut slot) = self.waker.lock() {
+            *slot = None;
+        }
+        // Disconnect only this window's channels. The Session and its tasks
+        // remain alive, and a blocked reply send is released by dropping rx.
+        self.actions = mpsc::sync_channel(1).0;
+        self.polls = mpsc::sync_channel(1).0;
+        self.objective_polls = mpsc::sync_channel(1).0;
+        self.rx = mpsc::sync_channel(1).1;
     }
 
     fn send_action(&self, request: Request) -> bool {
@@ -244,6 +321,7 @@ struct Desktop {
     page: Page,
     workspace: Workspace,
     drafts: DraftBook,
+    recovery: draft_recovery::DraftRecovery,
     host_observation: HostObservation,
     tasks: Vec<TaskRecord>,
     selected: Option<u64>,
@@ -273,13 +351,27 @@ impl Desktop {
         visuals.widgets.active.bg_fill = Color32::from_rgb(27, 102, 123);
         ctx.set_visuals(visuals);
         host_fonts::install(ctx);
+        let desktop = Self::from_options(options);
+        let repaint = ctx.clone();
+        desktop
+            .bridge
+            .set_waker(Arc::new(move || repaint.request_repaint()));
+        desktop
+    }
+
+    fn from_options(options: StartupOptions) -> Self {
         let bridge = Bridge::new();
         bridge.poll();
-        let mut drafts = DraftBook::default();
+        let (recovery, mut drafts, recovered_workspace) = draft_recovery::DraftRecovery::open();
+        let workspace = if options.workspace_explicit {
+            options.workspace
+        } else {
+            recovered_workspace
+        };
         let page = match options.page {
             Page::Tasks | Page::Workspaces => Page::Conversation,
             Page::Console => {
-                drafts.set_tab(Workspace::Personal, WorkspaceTab::Console);
+                drafts.set_tab(workspace, WorkspaceTab::Console);
                 Page::Conversation
             }
             page => page,
@@ -288,8 +380,9 @@ impl Desktop {
             activation: activation::ActivationGuard::default(),
             objectives: objective_panel::ObjectivePanel::default(),
             page,
-            workspace: Workspace::Personal,
+            workspace,
             drafts,
+            recovery,
             host_observation: HostObservation::default(),
             tasks: Vec::new(),
             selected: None,
@@ -371,7 +464,8 @@ impl Desktop {
         self.tasks.sort_by_key(|task| Reverse(task.id));
     }
 
-    fn receive(&mut self) {
+    fn receive(&mut self) -> bool {
+        let mut received = false;
         while let Ok(BridgeReply {
             is_action,
             result,
@@ -379,6 +473,7 @@ impl Desktop {
             received_at,
         }) = self.bridge.rx.try_recv()
         {
+            received = true;
             match result {
                 Ok(Response::Snapshot {
                     tasks,
@@ -493,13 +588,14 @@ impl Desktop {
                 }
             }
         }
+        received
     }
 
     /// Consume queued host responses and refresh state before any page draws.
     /// The clock is sampled after receive, so an arriving response does not
     /// get a local timestamp later than the frame's freshness evaluation.
-    fn receive_and_refresh_hepta(&mut self, clock: impl FnOnce() -> (Instant, u64)) {
-        self.receive();
+    fn receive_and_refresh_hepta(&mut self, clock: impl FnOnce() -> (Instant, u64)) -> bool {
+        let received = self.receive();
         let (now, now_unix_ms) = clock();
         self.host_observation.expire(now, now_unix_ms);
         hepta_panel::expire_unfresh_observation(
@@ -514,6 +610,7 @@ impl Desktop {
             now,
             now_unix_ms,
         );
+        received
     }
 
     /// Explicit user-requested export. Never autosave chat or feed Hepta.
@@ -962,6 +1059,12 @@ impl Desktop {
     }
 }
 
+impl Drop for Desktop {
+    fn drop(&mut self) {
+        self.recovery.finish(&self.drafts, self.workspace);
+    }
+}
+
 impl eframe::App for Desktop {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.activation.begin_frame(ctx);
@@ -969,6 +1072,7 @@ impl eframe::App for Desktop {
         self.drafts
             .observe_composition(self.workspace, self.activation.composing());
         self.receive_and_refresh_hepta(|| (Instant::now(), trill_ui_core::unix_ms()));
+        self.recovery.tick(&self.drafts, self.workspace);
         if self.last_poll.elapsed() >= Duration::from_millis(800) {
             self.last_poll = Instant::now();
             self.bridge.poll();
@@ -978,6 +1082,9 @@ impl eframe::App for Desktop {
                 ui.label(RichText::new("TRILLIONNIUM").size(22.0).strong());
                 ui.separator();
                 ui.label("AI-native workspace · Linux host prototype");
+                if let Some(recovery_warning) = &self.recovery.warning {
+                    ui.colored_label(warning(), recovery_warning);
+                }
                 if self.activation.composing() {
                     ui.small("IME composition active · action controls wait for commit");
                 }
@@ -1069,15 +1176,21 @@ fn state_color(state: TaskState) -> Color32 {
     }
 }
 
-fn main() -> eframe::Result {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let startup = match parse_startup_options(std::env::args().skip(1)) {
         Ok(options) => options,
         Err(message) => {
             eprintln!("trill-shell: {message}");
-            eprintln!("Usage: trill-shell [--page conversation|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe]");
+            eprintln!("Usage: trill-shell [--renderer egui|makepad] [--workspace personal|research|build] [--page conversation|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe]");
             std::process::exit(2);
         }
     };
+    if startup.renderer == Renderer::Makepad {
+        #[cfg(all(feature = "hepta-native-makepad", target_os = "linux"))]
+        return native_makepad::run(startup).map_err(|error| io::Error::other(error).into());
+        #[cfg(not(all(feature = "hepta-native-makepad", target_os = "linux")))]
+        return Err(io::Error::other("Makepad is unavailable in this build; build trill-shell on Linux with --features hepta-native-makepad").into());
+    }
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([1360.0, 840.0]),
         ..Default::default()
@@ -1087,6 +1200,7 @@ fn main() -> eframe::Result {
         options,
         Box::new(move |cc| Ok(Box::new(Desktop::new(&cc.egui_ctx, startup)))),
     )
+    .map_err(Into::into)
 }
 
 #[cfg(test)]
@@ -1157,6 +1271,7 @@ mod observation_freshness_tests {
             page: Page::Hepta,
             workspace: Workspace::Personal,
             drafts: DraftBook::default(),
+            recovery: draft_recovery::DraftRecovery::default(),
             host_observation: HostObservation::default(),
             tasks: Vec::new(),
             selected: None,
@@ -1173,6 +1288,7 @@ mod observation_freshness_tests {
                 polls,
                 objective_polls: mpsc::sync_channel(1).0,
                 rx,
+                waker: Arc::new(Mutex::new(None)),
             },
             zoom: 1.0,
             show_notifications: false,
@@ -1742,9 +1858,11 @@ mod startup_tests {
         let ordinary = parse(&[]).unwrap();
         assert!(ordinary.page == Page::Conversation);
         assert!(!ordinary.hepta_layout_probe);
+        assert!(!ordinary.page_explicit);
         let runtime = parse(&["--page", "hepta", "--hepta-layout-probe"]).unwrap();
         assert!(runtime.page == Page::Hepta);
         assert!(runtime.hepta_layout_probe);
+        assert!(runtime.page_explicit);
         assert!(parse(&["--hepta-layout-probe"]).is_err());
         assert!(parse(&["--page", "conversation", "--hepta-layout-probe"]).is_err());
         assert!(parse(&["--page", "unknown"]).is_err());

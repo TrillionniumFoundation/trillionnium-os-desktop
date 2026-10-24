@@ -83,8 +83,9 @@ relaxation or following of symbolic links.
 
 Local chat drafts may be explicitly exported/imported under the user's
 own XDG state directory, with a 0700 app subdirectory and 0600 bounded
-plaintext JSON snapshot. There is no background save, external file picker,
-Hepta submission, cross-UID security claim or A05 file-portal grant.
+plaintext JSON snapshot. The configured schema v3 recovery additionally uses
+one locked background writer for all local composers and saved drafts; see
+[PRODUCT](PRODUCT.md). It never creates a Hepta submission or file-portal grant.
 Import refuses to modify a nonempty chat/composer. A same-UID malicious
 host process is outside this provisional UI storage trust boundary.
 

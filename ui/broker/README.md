@@ -28,7 +28,7 @@ receipt and failure bounds; this channel is not a new grant or effect retry path
 ## Development
 
 ```sh
-RUSTUP_TOOLCHAIN=1.88.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-broker --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-broker --locked
 ```
 
 [tests](tests/) cover actual Session admission/identity and Notes targets within

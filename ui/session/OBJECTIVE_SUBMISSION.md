@@ -165,7 +165,7 @@ cargo test --manifest-path services/hepta-os/Cargo.toml \
 ```
 
 The A10 workflow runs the feature-specific Session tests and Clippy after the
-existing dependency/build gate, on its pinned Rust 1.88.0 toolchain, and archives
+existing dependency/build gate, on its pinned Rust 1.96.0 product toolchain, and archives
 their actual logs. Local evidence records which commands actually executed and
 which stopped during dependency resolution; authored tests are never counted
 as passing tests without execution.
