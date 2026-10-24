@@ -8,84 +8,98 @@ use crate::{
     process::{Credentials, Gid, Pid, Uid, posix_thread::AsPosixThread},
 };
 
+/// Identity captured at connection creation or message send, never a live view
+/// of the sender's mutable credential object. Group snapshots share the original
+/// immutable owner, so message capture does not copy or allocate a group list.
 pub(super) struct SocketCred<R = ReadOp> {
-    pid: Pid,
-    cred: Credentials<R>,
+    real: CUserCred,
+    effective: CUserCred,
+    groups: Arc<BTreeSet<Gid>>,
+    rights: R,
 }
 
 impl SocketCred<ReadOp> {
-    // Snapshot real original credentials for endpoint-only kernel tests. This
-    // helper neither installs a current caller nor grants an operation permit.
     #[cfg(ktest)]
     pub(super) fn from_posix_thread_for_test(
         thread: &crate::process::posix_thread::PosixThread,
     ) -> Self {
-        Self {
-            pid: thread.process().pid(),
-            cred: thread.credentials(),
-        }
+        Self::capture(thread.process().pid(), &thread.credentials())
     }
 
     pub(super) fn new_current() -> Self {
         let pid = current!().pid();
         let cred = current_thread!().as_posix_thread().unwrap().credentials();
-
-        Self { pid, cred }
+        Self::capture(pid, &cred)
     }
 }
 
 impl SocketCred<ReadDupOp> {
     pub(super) fn new_current() -> Self {
         let pid = current!().pid();
-        let cred = current_thread!()
-            .as_posix_thread()
-            .unwrap()
-            .credentials_dup();
-
-        Self { pid, cred }
+        let cred = current_thread!().as_posix_thread().unwrap().credentials();
+        Self::capture(pid, &cred)
     }
 }
 
 impl<R: TRights> SocketCred<R> {
-    /// Converts to a [`CUserCred`] with the PID and the _effective_ UID/GID.
-    #[require(R > Read)]
-    pub(super) fn to_effective_c_cred(&self) -> CUserCred {
-        CUserCred {
-            pid: self.pid,
-            uid: self.cred.euid(),
-            gid: self.cred.egid(),
+    // Production capture reads only the current thread's credentials. Other
+    // threads cannot mutate that owner; live updates use its original image
+    // transaction. The test constructor accepts only controlled fixture owners.
+    fn capture(pid: Pid, cred: &Credentials<ReadOp>) -> Self {
+        Self {
+            real: CUserCred {
+                pid,
+                uid: cred.ruid(),
+                gid: cred.rgid(),
+            },
+            effective: CUserCred {
+                pid,
+                uid: cred.euid(),
+                gid: cred.egid(),
+            },
+            groups: cred.groups(),
+            rights: R::new(),
         }
     }
 
-    /// Converts to a [`CUserCred`] with the PID and the _real_ UID/GID.
+    #[require(R > Read)]
+    pub(super) fn to_effective_c_cred(&self) -> CUserCred {
+        self.effective
+    }
+
     #[require(R > Read)]
     pub(super) fn to_real_c_cred(&self) -> CUserCred {
-        CUserCred {
-            pid: self.pid,
-            uid: self.cred.ruid(),
-            gid: self.cred.rgid(),
-        }
+        self.real
     }
 
     #[require(R > Read)]
     pub(super) fn groups(&self) -> Arc<[Gid]> {
-        self.cred.groups().iter().cloned().collect()
+        self.groups.iter().cloned().collect()
     }
 
     #[require(R > R1)]
     pub(super) fn restrict<R1: TRights>(self) -> SocketCred<R1> {
-        let Self { pid, cred } = self;
+        let Self {
+            real,
+            effective,
+            groups,
+            ..
+        } = self;
         SocketCred {
-            pid,
-            cred: cred.restrict(),
+            real,
+            effective,
+            groups,
+            rights: R1::new(),
         }
     }
 
     #[require(R > Dup)]
     pub(super) fn dup(&self) -> Self {
         Self {
-            pid: self.pid,
-            cred: self.cred.dup(),
+            real: self.real,
+            effective: self.effective,
+            groups: self.groups.clone(),
+            rights: self.rights,
         }
     }
 }
@@ -118,3 +132,6 @@ impl CUserCred {
         }
     }
 }
+
+#[cfg(ktest)]
+mod tests;
