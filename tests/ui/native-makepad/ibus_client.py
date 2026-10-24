@@ -194,6 +194,28 @@ def run(args, report):
         (args.output / "recovery-after-ime.json").write_bytes(checkpoint.read_bytes())
         report["screenshots"].append(display.screenshot(args.output / "ime-final-window.png", xid))
         report["screenshots"].append(display.screenshot(args.output / "ime-final-display.png"))
+    except BaseException:
+        # Preserve the actual private editor/engine/pixels at the failed cut.
+        # Diagnostics never satisfy an assertion or change the input deadline.
+        observed = {}
+        for name, probe in (
+            ("editor_text", lambda: Atspi.Text.get_text(named("Message / 消息"), 0, -1)),
+            ("selected_room", lambda: selected_room().get_name()),
+            ("new_draft_enabled", lambda: named("+ New draft").get_state_set().contains(Atspi.StateType.ENABLED)),
+            ("engine", lambda: subprocess.check_output(["ibus", "engine"], text=True, timeout=5).strip()),
+            ("focus_window", lambda: subprocess.check_output(["xdotool", "getwindowfocus"], text=True, timeout=5).strip()),
+        ):
+            try:
+                observed[name] = probe()
+            except Exception as error:
+                observed[name + "_error"] = str(error)
+        report["failure_observation"] = observed
+        for name, window in (("ime-failure-window.png", xid), ("ime-failure-display.png", None)):
+            try:
+                report["screenshots"].append(display.screenshot(args.output / name, window))
+            except Exception as error:
+                report.setdefault("diagnostic_errors", []).append(str(error))
+        raise
     finally:
         display.close()
 
