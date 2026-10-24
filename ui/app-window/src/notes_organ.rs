@@ -7,11 +7,14 @@ use eframe::egui;
 use std::io::{self, Read, Write};
 use std::os::fd::BorrowedFd;
 use std::os::unix::net::{UnixDatagram, UnixStream};
-use std::sync::mpsc::{self, Receiver, SyncSender};
+use std::sync::mpsc::{self, SyncSender};
 use std::time::{Duration, Instant};
 use trill_ui_core::notes::{
-    NotesDocument, NotesTargetIdentity, MAX_NOTES_REQUEST_BYTES, MAX_NOTES_RESPONSE_BYTES,
+    NotesTargetIdentity, MAX_NOTES_REQUEST_BYTES, MAX_NOTES_RESPONSE_BYTES,
 };
+
+#[path = "notes_worker.rs"]
+mod worker;
 
 const APP_HANDOFF_DEADLINE: Duration = Duration::from_secs(1);
 
@@ -23,8 +26,15 @@ struct Pending {
 }
 
 pub struct NotesAppChannel {
-    document: NotesDocument,
-    requests: Receiver<Pending>,
+    worker: worker::Connection,
+    version: u64,
+    text: String,
+    revision: u64,
+    next_edit: u64,
+    pending_edit: Option<u64>,
+    deferred_edit: Option<(u64, String)>,
+    notice: Option<&'static str>,
+    frozen: bool,
 }
 
 impl NotesAppChannel {
@@ -32,8 +42,6 @@ impl NotesAppChannel {
         ctx: egui::Context,
         target: NotesTargetIdentity,
     ) -> io::Result<Self> {
-        let document = NotesDocument::new(target.clone())
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "notes target identity"))?;
         // stdin is a known, process-owned descriptor. Duplicate it before
         // constructing UnixStream; dropping this worker never closes stdin.
         // No caller-supplied descriptor integer or path is accepted.
@@ -49,7 +57,8 @@ impl NotesAppChannel {
                 "Notes app handoff identity mismatch",
             ));
         }
-        let (sender, requests) = mpsc::sync_channel(2);
+        let worker = worker::start(ctx.clone(), target)?;
+        let sender = worker.sender.clone();
         let effect_sender = sender.clone();
         let effect_ctx = ctx.clone();
         std::thread::Builder::new()
@@ -58,49 +67,140 @@ impl NotesAppChannel {
         std::thread::Builder::new()
             .name("notes-recovery-channel".into())
             .spawn(move || serve_recovery(recovery, sender, ctx))?;
-        Ok(Self { document, requests })
+        Ok(Self {
+            worker,
+            version: 0,
+            text: String::new(),
+            revision: 0,
+            next_edit: 1,
+            pending_edit: None,
+            deferred_edit: None,
+            notice: None,
+            frozen: false,
+        })
     }
 
-    /// Called only on the same egui thread as local text edits. A stalled GUI
-    /// cannot accumulate unbounded delayed mutations; expired handoffs are
-    /// discarded before touching the document. Once applied, a lost reply
-    /// remains an unknown outcome for the owner, never a rollback claim.
+    /// Copy the bounded document projection without waiting for storage or
+    /// transport. Local typing is coalesced while one revision-CAS edit is in
+    /// flight; an intervening external effect retains the unsaved draft and
+    /// reports a conflict instead of automatically overwriting that effect.
     pub fn poll(&mut self) -> bool {
-        let before = self.document.revision();
-        while let Ok(pending) = self.requests.try_recv() {
-            if Instant::now() >= pending.expires_at {
-                let _ = pending.reply.try_send(None);
-                continue;
+        let before = self.text.clone();
+        let revision_before = self.revision;
+        let projection = self
+            .worker
+            .projection
+            .try_lock()
+            .ok()
+            .map(|value| value.clone());
+        if let Some(value) = projection.filter(|value| value.version != self.version) {
+            self.version = value.version;
+            self.revision = value.revision;
+            self.frozen = value.storage_failed;
+            if self.frozen {
+                self.notice = Some("保存结果未知；保留当前编辑，需要独立恢复。");
+                self.deferred_edit = None;
+            } else if let Some((_, accepted, revision)) = value
+                .local_result
+                .filter(|(id, _, _)| self.pending_edit == Some(*id))
+            {
+                self.pending_edit = None;
+                if !accepted || (self.deferred_edit.is_some() && value.revision != revision) {
+                    self.notice = Some("文档已被其他操作修改；当前编辑尚未保存。");
+                    self.deferred_edit = None;
+                } else if let Some((base, _)) = &mut self.deferred_edit {
+                    *base = revision;
+                } else {
+                    self.text = value.text;
+                }
+            } else if self.pending_edit.is_none()
+                && self.deferred_edit.is_none()
+                && self.notice.is_none()
+            {
+                self.text = value.text;
             }
-            let result = if pending.recovery {
-                self.document.recovery_exact(&pending.bytes)
-            } else {
-                self.document
-                    .apply_exact(&pending.bytes)
-                    .and_then(|response| {
-                        serde_json::to_vec(&response)
-                            .map_err(|_| trill_ui_core::notes::NotesProtocolError::Receipt)
-                    })
-            };
-            let _ = pending.reply.try_send(result.ok());
         }
-        self.document.revision() != before
+        self.flush_edit();
+        self.text != before || self.revision != revision_before
     }
 
     pub fn text(&self) -> &str {
-        self.document.text()
+        &self.text
     }
 
     pub fn revision(&self) -> u64 {
-        self.document.revision()
+        self.revision
     }
 
     pub fn local_edit(&mut self, text: String) -> bool {
-        self.document.local_edit(text).is_ok()
+        if self.frozen || text.len() > trill_ui_core::notes::MAX_NOTES_TEXT_BYTES {
+            return false;
+        }
+        self.notice = None;
+        self.text = text.clone();
+        self.deferred_edit = Some((self.revision, text));
+        self.flush_edit();
+        true
+    }
+
+    pub fn storage_status(&self) -> &'static str {
+        if let Some(notice) = self.notice {
+            return notice;
+        }
+        if self.pending_edit.is_some() || self.deferred_edit.is_some() {
+            return "正在保存编辑……";
+        }
+        if self.worker.durable {
+            "已保存到本机；旧操作可独立回读。"
+        } else {
+            "临时笔记：关闭窗口后不会保存。"
+        }
+    }
+
+    fn flush_edit(&mut self) {
+        if self.frozen || self.pending_edit.is_some() {
+            return;
+        }
+        let Some((revision, text)) = self.deferred_edit.take() else {
+            return;
+        };
+        if revision != self.revision {
+            self.notice = Some("文档已被其他操作修改；当前编辑尚未保存。");
+            return;
+        }
+        let Some(next) = self.next_edit.checked_add(1) else {
+            self.frozen = true;
+            return;
+        };
+        let id = self.next_edit;
+        match self
+            .worker
+            .sender
+            .try_send(worker::Command::LocalEdit { id, revision, text })
+        {
+            Ok(()) => {
+                self.pending_edit = Some(id);
+                self.next_edit = next;
+            }
+            Err(mpsc::TrySendError::Full(worker::Command::LocalEdit {
+                revision, text, ..
+            })) => {
+                self.deferred_edit = Some((revision, text));
+            }
+            Err(_) => {
+                self.frozen = true;
+                self.notice = Some("笔记进程连接中断；编辑尚未保存。");
+            }
+        }
     }
 }
 
-fn serve(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::Context, recovery: bool) {
+fn serve(
+    mut stream: UnixStream,
+    sender: SyncSender<worker::Command>,
+    ctx: egui::Context,
+    recovery: bool,
+) {
     // This thread handles a single serial private channel. Its only allocation
     // based on peer data follows the fixed length bound, and only one pending
     // GUI handoff may exist. Idle blocking does not occupy the egui thread.
@@ -123,12 +223,12 @@ fn serve(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::Context
         let (reply, receive) = mpsc::sync_channel(1);
         let expires_at = Instant::now() + APP_HANDOFF_DEADLINE;
         if sender
-            .try_send(Pending {
+            .try_send(worker::Command::Protocol(Pending {
                 bytes,
                 recovery,
                 expires_at,
                 reply,
-            })
+            }))
             .is_err()
         {
             return;
@@ -154,7 +254,7 @@ fn serve(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::Context
 // Datagram boundaries survive a lost response. Retrying an exact retirement
 // is safe because the model retains its last retirement identity. This lane
 // never calls the mutation parser, even when the peer sends replace_note.
-fn serve_recovery(channel: UnixDatagram, sender: SyncSender<Pending>, ctx: egui::Context) {
+fn serve_recovery(channel: UnixDatagram, sender: SyncSender<worker::Command>, ctx: egui::Context) {
     let mut buffer = [0_u8; MAX_NOTES_REQUEST_BYTES + 1];
     loop {
         let Ok(length) = channel.recv(&mut buffer) else {
@@ -165,12 +265,12 @@ fn serve_recovery(channel: UnixDatagram, sender: SyncSender<Pending>, ctx: egui:
         }
         let (reply, receive) = mpsc::sync_channel(1);
         if sender
-            .try_send(Pending {
+            .try_send(worker::Command::Protocol(Pending {
                 bytes: buffer[..length].to_vec(),
                 recovery: true,
                 expires_at: Instant::now() + APP_HANDOFF_DEADLINE,
                 reply,
-            })
+            }))
             .is_err()
         {
             continue;
