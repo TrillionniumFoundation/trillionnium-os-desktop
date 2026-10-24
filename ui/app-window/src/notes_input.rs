@@ -70,6 +70,7 @@ pub(super) struct NotesInput {
     empty_preedit: bool,
     commit: bool,
     cancel: bool,
+    pointer_cancelled_ime: bool,
     notice: Option<&'static str>,
     queue_notice: Option<&'static str>,
     begun_frame: Option<u64>,
@@ -181,6 +182,42 @@ impl NotesInput {
             }
             self.raw_frames.push_front(deferred);
         }
+        if self.composition.is_some()
+            && current.events.iter().any(|event| {
+                matches!(event, egui::Event::Ime(egui::ImeEvent::Commit(value))
+                    if !value.is_empty() && value != "\n" && value != "\r")
+            })
+        {
+            // TextEdit handles pointer positioning before its IME events. A
+            // pointer delivered with Commit would move the private IME anchor
+            // and make egui report changed without inserting the confirmation.
+            // Commit at that original anchor first; retain the complete mouse
+            // gesture for the next ordered frame, ahead of any next preedit.
+            let mut pointer = current.clone();
+            pointer.events.retain(|event| {
+                matches!(
+                    event,
+                    egui::Event::PointerMoved(_)
+                        | egui::Event::PointerButton { .. }
+                        | egui::Event::PointerGone
+                )
+            });
+            if !pointer.events.is_empty() {
+                current.events.retain(|event| {
+                    !matches!(
+                        event,
+                        egui::Event::PointerMoved(_)
+                            | egui::Event::PointerButton { .. }
+                            | egui::Event::PointerGone
+                    )
+                });
+                pointer.dropped_files.clear();
+                for viewport in pointer.viewports.values_mut() {
+                    viewport.events.clear();
+                }
+                self.raw_frames.push_front(pointer);
+            }
+        }
         *raw = current;
         if !self.raw_frames.is_empty() {
             ctx.request_repaint();
@@ -197,7 +234,39 @@ impl NotesInput {
         self.begun_frame = Some(frame);
         self.commit = false;
         self.cancel = false;
-        let (focused, events) = ctx.input(|input| (input.focused, input.events.clone()));
+        let (focused, mut events) = ctx.input(|input| (input.focused, input.events.clone()));
+        if self.pointer_cancelled_ime
+            && events.iter().any(|event| {
+                matches!(
+                    event,
+                    egui::Event::Ime(
+                        egui::ImeEvent::Enabled
+                            | egui::ImeEvent::Preedit(_)
+                            | egui::ImeEvent::Commit(_)
+                    )
+                )
+            })
+        {
+            // A pointer-only frame explicitly cancelled our old composition.
+            // The OS may keep its IME enabled, so establish egui's new anchor
+            // before accepting a later real confirmation at the current caret.
+            if !events
+                .iter()
+                .any(|event| matches!(event, egui::Event::Ime(egui::ImeEvent::Enabled)))
+            {
+                events.insert(0, egui::Event::Ime(egui::ImeEvent::Enabled));
+                ctx.input_mut(|input| {
+                    input
+                        .events
+                        .insert(0, egui::Event::Ime(egui::ImeEvent::Enabled))
+                });
+            }
+            self.pointer_cancelled_ime = false;
+        }
+        let pointer_cancels = self.composition.is_some()
+            && events
+                .iter()
+                .any(|event| matches!(event, egui::Event::PointerButton { pressed: true, .. }));
         let mut saw_preedit = false;
         let mut disabled = !focused;
         let mut ordinary_edit = false;
@@ -232,10 +301,15 @@ impl NotesInput {
         }
         // Empty Preedit often precedes Commit in a later frame. Keep the old
         // revision until Commit, explicit cancellation, or ordinary new input.
-        if !self.commit && (disabled || (self.empty_preedit && !saw_preedit && ordinary_edit)) {
+        if !self.commit
+            && (disabled
+                || pointer_cancels
+                || (self.empty_preedit && !saw_preedit && ordinary_edit))
+        {
             if let Some(before) = self.composition.take() {
                 before.restore(ctx, text);
                 self.cancel = true;
+                self.pointer_cancelled_ime |= pointer_cancels;
                 // The same raw frame can contain Preedit then Disabled. The
                 // original TextEdit would otherwise reinsert that cancelled
                 // prediction after this restoration and report it as changed.

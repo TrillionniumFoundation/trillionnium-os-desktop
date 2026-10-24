@@ -468,9 +468,69 @@ fn pointer_caret_move_before_commit_never_publishes_the_old_preedit() {
             egui::Event::Ime(egui::ImeEvent::Commit("确认".into())),
         ],
     );
-    assert_ne!(
+    assert_eq!(
         edit,
-        Some((4, "temporary".into())),
-        "a rejected native Commit must never turn its residual prediction into a saved local edit"
+        Some((4, "确认".into())),
+        "the original native Commit must be accepted before its accompanying pointer gesture"
     );
+    assert!(frame(&ctx, &mut input, &mut text, 5, vec![]).is_none());
+    assert_eq!(text, "确认");
+    assert!(
+        ctx.input(|input| input.pointer.any_click()),
+        "the pointer gesture was deferred, not discarded"
+    );
+}
+
+#[test]
+fn pointer_in_an_earlier_frame_cancels_prediction_but_accepts_the_later_confirmation() {
+    let mut text = "original".to_owned();
+    let (ctx, mut input) = setup(&mut text);
+    assert!(frame(
+        &ctx,
+        &mut input,
+        &mut text,
+        4,
+        vec![
+            egui::Event::Ime(egui::ImeEvent::Enabled),
+            egui::Event::Ime(egui::ImeEvent::Preedit("temporary".into())),
+        ]
+    )
+    .is_none());
+    let position = egui::pos2(40.0, 16.0); // The actual TextEdit's first line in the fixed test viewport.
+    assert!(frame(
+        &ctx,
+        &mut input,
+        &mut text,
+        4,
+        vec![
+            egui::Event::PointerMoved(position),
+            egui::Event::PointerButton {
+                pos: position,
+                button: egui::PointerButton::Primary,
+                pressed: true,
+                modifiers: egui::Modifiers::default()
+            },
+            egui::Event::PointerButton {
+                pos: position,
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: egui::Modifiers::default()
+            },
+        ]
+    )
+    .is_none());
+    assert_eq!(text, "original");
+    assert!(!input.composing());
+    let edit = frame(
+        &ctx,
+        &mut input,
+        &mut text,
+        4,
+        vec![egui::Event::Ime(egui::ImeEvent::Commit("确认".into()))],
+    )
+    .unwrap();
+    assert_eq!(edit.0, 4);
+    assert!(edit.1.contains("确认"));
+    assert!(!edit.1.contains("temporary"));
+    assert_eq!(edit.1, text);
 }
