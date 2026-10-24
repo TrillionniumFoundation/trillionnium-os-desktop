@@ -4,8 +4,9 @@ This isolated lane links the unchanged Hepta `codex-hepta-memory` public API.
 It exercises the real original SQLx/SQLite WAL implementation, with the
 original dependency package identities retained from Hepta's Cargo.lock. It
 contains no raw SQL, substitute database, production authority verifier, lease,
-or owner test hooks. `source-review.json` freezes clean Hepta b3d3f2d4 and its
-full Git tree. The existing Agentd lifecycle lane's 2da/068 profile is unchanged.
+or owner test hooks. The initial `source-review.json` froze clean Hepta b3d3f2d4 and its full Git
+tree. The current source review remains independent of the Agentd lifecycle
+lane and binds the exact Hepta head, tree and selected file identities.
 
 The fixture performs ten checks in order:
 
@@ -52,8 +53,14 @@ python3 tests/workloads/hepta_cognitive_store/run_host.py --execute \
 python3 -m unittest discover -s tests/workloads/hepta_cognitive_store -p 'test_*.py'
 ```
 
-Preparation uses installed Rust 1.95.0, offline dependencies, the original
-explicit resolver and dev-small profile. An optional `--target` is an exclusively
+Preparation uses the exact installed Rust version in this lane's
+`source-review.json` `userspace_toolchain` record, offline dependencies, the
+original explicit resolver and dev-small profile. That record binds the
+`codex-rs/rust-toolchain.toml` bytes by SHA-256 and the parsed stable channel.
+Both the actual Cargo and rustc version responses must match; an unrelated or
+stale installed compiler is rejected. The original b3 profile used 1.95.0; a
+new 1.96.0 source requires an explicit updated review and new execution
+evidence. Updating the runtime lane's review does not update this lane. An optional `--target` is an exclusively
 leased build cache, not a source checkout. The external root omits only the
 same exact, inactive duplicate SSH tungstenite patch alias as the original
 Agentd fixture; the fixed crates-io target remains unused and checked. It then
@@ -99,6 +106,16 @@ real ordinary guest can set the native store compatibility result true.
 Synthetic Python oracle tests, source preflight and static launcher compilation
 are not runtime evidence. A failed build/guest is never promoted to a pass.
 
+## Source and runner updates
+
+The runner code and the compiled Hepta source have independent identities.
+Preparation requires the exact clean source head/tree named by this module's
+review; the native stage additionally requires the actual ordinary kernel
+build's tree and retained receipt. A newer harness may consume old explicitly
+reviewed source, but it cannot label old bytes as a new build or inherit their
+runtime result for a new source pair. Preserve historical validation records
+and select new output directories for each actual updated build and run.
+
 ## Qualification boundary
 
 The original legacy open takes a shared store fence; SQLite serializes these
@@ -122,3 +139,14 @@ supplies its authorized writer and independently authenticated current cut.
 The [2026-10-23 validation record](VALIDATION.md) distinguishes the actual host
 and guest passes, exact source/binary inputs, failed earlier attempts and the
 remaining production authorization boundary.
+
+### Explicit V8 supplier inputs
+
+When the reviewed graph needs the original V8 prebuilt pair, preparation accepts
+`--v8-archive`, `--expected-v8-archive-sha256`, `--v8-bindings` and
+`--expected-v8-bindings-sha256` together. Both canonical regular files are checked
+against their caller-pinned digests, copied into the new output as read-only
+inputs, passed through the build environment whitelist, and checked again after
+compilation. The receipt records both supplier and retained identities. Partial
+pairs, changed bytes and symlink substitutions fail. Omitting all four options
+preserves the original build defaults; no ambient compiler flags are imported.

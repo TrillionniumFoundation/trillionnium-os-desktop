@@ -78,6 +78,28 @@ from source instead of importing that older artifact.
 Current F1/G2 and hardware qualification remain open until their own real
 execution receipts exist. Host tests validate the runner, not the daemon.
 
+## Reviewed userspace toolchain and runner identity
+
+The current `source-review.json` also requires `userspace_toolchain` with one
+exact stable `channel`, the fixed `codex-rs/rust-toolchain.toml` path, and that
+manifest's SHA-256. Both the source manifest bytes and its parsed channel must
+match. Preparation then checks the actual Cargo and rustc `--version` output
+against this same channel. A binary at an expected path with a different
+version is rejected. The native workflow resolves its installation and binary
+paths from that review; it does not keep a second hard-coded userspace version.
+The initial b3 source uses Rust 1.95.0; a later 1.96.0 source needs its own
+explicit source/toolchain review before it can run. Named moving channels,
+missing toolchain identities, stale hashes and version mismatches are refused.
+
+The runner's commit and the compiled Desktop commit may differ. The runner
+loads the selected source review, while its `--desktop-source` and
+`--hepta-source` inputs must be clean worktrees at the exact reviewed heads and
+trees. Keep the runner's file identities as separate evidence. Updating a
+runner or a review does not rename an already built kernel or transfer an old
+lifecycle result to a new source pair. The historical retained-source profile
+and its execution records remain unchanged. The separate CognitiveStore lane
+has its own source review and must be updated and executed independently.
+
 ## Original owners and precise scope
 
 The fixture is the existing
@@ -220,12 +242,12 @@ fallback to the latest artifact, a ktest image or a fabricated receipt.
 ## Prepare actual build inputs
 
 The preparation command needs canonical clean Git checkouts of both fixed source
-commits, installed native Rust/Cargo 1.95.0, the original dependency cache, at least
+commits, the explicitly reviewed native Rust/Cargo version, the original dependency cache, at least
 8 GiB free, and a new output directory outside both checkouts and retained kernel
 inputs. It invokes Cargo with `--offline`, locked application builds, original
 `dev-small`, no default Agentd features, and no inherited provider environment.
-It does not download a replacement toolchain. Rust 1.95.0 here is a userspace
-compiler, not a substitute for the kernel's pinned nightly toolchain. The optional
+It does not download a replacement toolchain. The userspace compiler is distinct
+from the kernel's pinned nightly toolchain. The optional
 `--fetch-dependencies` flag requires `--execute` and warms only the two original
 locked x86_64 dependency graphs before offline compilation; no resolution drift
 or application execution is permitted by that flag.
@@ -300,8 +322,8 @@ python3 -I -B tests/workloads/hepta_agentd_runtime/prepare_inputs.py --execute \
   --kernel /absolute/retained-kernel/kernel.elf \
   --kernel-receipt /absolute/retained-kernel/build.json \
   --expected-kernel-receipt-sha256 <retained-receipt-sha256> \
-  --cargo /absolute/rust-1.95.0/bin/cargo --expected-cargo-sha256 <cargo-sha256> \
-  --rustc /absolute/rust-1.95.0/bin/rustc --expected-rustc-sha256 <rustc-sha256> \
+  --cargo /absolute/reviewed-toolchain/bin/cargo --expected-cargo-sha256 <cargo-sha256> \
+  --rustc /absolute/reviewed-toolchain/bin/rustc --expected-rustc-sha256 <rustc-sha256> \
   --cargo-home /absolute/original-dependency-cache \
   --output /absolute/new-frozen-inputs
 ```
@@ -395,3 +417,14 @@ Production grants, final execution role admission, canonical K↔D replay and
 retirement, aggregate memory accounting, autonomous recovery, real GPU/ARM/mobile
 execution and hardware input each retain their own acceptance gates. This runner
 does not add a second owner or fabricate those missing production inputs.
+
+### Explicit V8 supplier inputs
+
+When the reviewed graph needs the original V8 prebuilt pair, preparation accepts
+`--v8-archive`, `--expected-v8-archive-sha256`, `--v8-bindings` and
+`--expected-v8-bindings-sha256` together. Both canonical regular files are checked
+against their caller-pinned digests, copied into the new output as read-only
+inputs, passed through the build environment whitelist, and checked again after
+compilation. The receipt records both supplier and retained identities. Partial
+pairs, changed bytes and symlink substitutions fail. Omitting all four options
+preserves the original build defaults; no ambient compiler flags are imported.

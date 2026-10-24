@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -I -B - <<'PYCODE'
-          import json, os, re
+          import importlib.util, json, os, re
           from pathlib import Path
           review = json.loads(Path("tests/workloads/hepta_agentd_runtime/source-review.json").read_bytes())
           if review.get("schema") != "hepta.native-original-runtime-source-review.v1":
@@ -51,6 +51,11 @@ jobs:
                   if not isinstance(source[field], str) or re.fullmatch(r"[0-9a-f]{40}", source[field]) is None:
                       raise SystemExit("invalid reviewed " + name + " " + field)
               pins.append(name.upper() + "_SOURCE_PIN=" + source["head"])
+          spec = importlib.util.spec_from_file_location("reviewed_userspace_toolchain",
+              "tests/workloads/hepta_agentd_runtime/reviewed_toolchain.py")
+          toolchain = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(toolchain)
+          pins.append("USERSPACE_TOOLCHAIN_PIN=" + toolchain.reviewed_channel(review))
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as output:
               output.write("\n".join(pins) + "\n")
           PYCODE
@@ -86,15 +91,15 @@ jobs:
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
               build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils \
               qemu-system-x86 e2fsprogs clang lld busybox-static
-            rustup toolchain install 1.95.0 --profile minimal
+            rustup toolchain install "$USERSPACE_TOOLCHAIN_PIN" --profile minimal
             rustup toolchain install nightly-2026-07-21 --profile minimal --component rust-src,rustc-dev,llvm-tools-preview --target x86_64-unknown-none
             rustup_binary=$(command -v rustup)
             mkdir -p "$CARGO_HOME/bin"
             for proxy in rustup cargo rustc rustdoc; do
               ln -s "$rustup_binary" "$CARGO_HOME/bin/$proxy"
             done
-            rustup run 1.95.0 rustc -Vv
-            rustup run 1.95.0 cargo -Vv
+            rustup run "$USERSPACE_TOOLCHAIN_PIN" rustc -Vv
+            rustup run "$USERSPACE_TOOLCHAIN_PIN" cargo -Vv
             qemu-system-x86_64 --version
             gcc --version
             dpkg-query -W build-essential pkg-config libcap-dev cmake libssl-dev binutils qemu-system-x86 e2fsprogs clang lld busybox-static
@@ -146,8 +151,8 @@ jobs:
       - name: Build original Agentd, unchanged original fixture and real observer for x86_64
         run: |
           set -euo pipefail
-          cargo_binary=$(rustup which --toolchain 1.95.0 cargo)
-          rustc_binary=$(rustup which --toolchain 1.95.0 rustc)
+          cargo_binary=$(rustup which --toolchain "$USERSPACE_TOOLCHAIN_PIN" cargo)
+          rustc_binary=$(rustup which --toolchain "$USERSPACE_TOOLCHAIN_PIN" rustc)
           cargo_sha=$(sha256sum "$cargo_binary" | cut -d ' ' -f1)
           rustc_sha=$(sha256sum "$rustc_binary" | cut -d ' ' -f1)
           kernel_receipt_sha=$(sha256sum "$F1_CI_ROOT/kernel-inputs/kernel-build.json" | cut -d ' ' -f1)

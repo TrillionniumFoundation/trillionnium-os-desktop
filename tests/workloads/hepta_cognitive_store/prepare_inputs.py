@@ -18,7 +18,9 @@ sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 NAME = "hepta-original-cognitive-store-probe"
-TOOLCHAIN = "1.95.0"
+sys.path.insert(0, str(HERE.parent / "hepta_agentd_runtime"))
+import reviewed_toolchain as toolchain
+import dependency_artifacts
 
 
 def require(condition, message):
@@ -54,8 +56,7 @@ def verify_source(source):
         path = source / item["path"]
         require(path.is_file() and not path.is_symlink() and sha(path) == item["sha256"], "reviewed source content differs")
         require(HELPER.git(source, "rev-parse", "HEAD:" + item["path"]) == item["git_blob"], "reviewed source blob differs")
-    config = tomllib.loads((source / "codex-rs/rust-toolchain.toml").read_text())
-    require(config["toolchain"]["channel"] == TOOLCHAIN, "original Rust toolchain changed")
+    toolchain.verify_manifest(source, review)
     return review
 
 
@@ -123,7 +124,8 @@ def build(args, source, out, review, report):
     require(not out.exists() and not out.is_symlink(), "output must be new")
     require(not out.resolve().is_relative_to(source), "output must be outside original source")
     require(shutil.disk_usage(out.parent).free >= 8 * 1024**3, "8 GiB free required")
-    tool_bin = Path(subprocess.check_output(["rustup", "which", "--toolchain", TOOLCHAIN, "cargo"], text=True).strip()).parent
+    channel = toolchain.verify_manifest(source, review)
+    tool_bin = Path(subprocess.check_output(["rustup", "which", "--toolchain", channel, "cargo"], text=True).strip()).parent
     cargo, rustc = tool_bin / "cargo", tool_bin / "rustc"
     target = args.target.absolute() if args.target else out / "target"
     environment = HELPER.build_environment(target)
@@ -132,10 +134,11 @@ def build(args, source, out, review, report):
     versions = {}
     for name, path in (("cargo", cargo), ("rustc", rustc)):
         result = subprocess.run([str(path), "--version"], env=environment, capture_output=True, text=True, timeout=30, check=True)
-        require(result.stdout.startswith(name + " " + TOOLCHAIN + " "), "original 1.95.0 tools required")
-        versions[name] = {"path": str(path), "sha256": sha(path), "version": result.stdout.strip()}
+        version = toolchain.validate_version(name, result.stdout, channel)
+        versions[name] = {"path": str(path), "sha256": sha(path), "version": version}
     out.mkdir(mode=0o700)
     report["output_created"] = True
+    environment.update(dependency_artifacts.freeze(report["dependency_artifacts"], out))
     runner = out / "runner"
     omission = prepare_runner(source, runner)
     commands = [
@@ -155,6 +158,7 @@ def build(args, source, out, review, report):
         require(sha(runner / "Cargo.lock") == lock_digest, "resolved dependency lock changed")
     require(verify_source(source) == review, "original source changed during build")
     require(sha(runner / "src/main.rs") == sha(HERE / "store_probe.rs"), "fixture source changed during build")
+    dependency_artifacts.verify_frozen(report["dependency_artifacts"])
     binary = out / NAME
     shutil.copyfile(target / "dev-small" / NAME, binary)
     binary.chmod(0o555)
@@ -171,6 +175,7 @@ def main(argv=None):
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--target", type=Path, help="optional exclusively leased cache directory")
+    dependency_artifacts.add_arguments(parser)
     args = parser.parse_args(argv)
     if args.execute and args.output is None:
         parser.error("--execute requires --output")
@@ -178,6 +183,7 @@ def main(argv=None):
               "runtime_executed": False, "commands": []}
     out = args.output.absolute() if args.output else None
     try:
+        report["dependency_artifacts"] = dependency_artifacts.selected(args)
         source = args.hepta_source.absolute()
         review = verify_source(source)
         report.update(preflight_passed=True, source=review)

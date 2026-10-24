@@ -2,7 +2,7 @@
 """Build the unchanged original fixture and userspace; freeze real guest inputs.
 
 Default mode only validates fixed clean source checkouts and the caller-retained
-ordinary kernel build receipt. --execute builds with installed Rust 1.95, offline
+ordinary kernel build receipt. --execute builds with the reviewed installed Rust, offline
 dependencies, and a new output directory. Both existing Cargo target caches can
 be selected explicitly and leased exclusively. --fetch-dependencies explicitly
 warms the two original locked dependency graphs first. No built binary is launched.
@@ -19,12 +19,13 @@ import shutil
 import stat
 import subprocess
 import sys
-import tomllib
 
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import run_agentd_runtime as gate
+import reviewed_toolchain as toolchain
+import dependency_artifacts
 
 require, sha, save = gate.require, gate.sha, gate.save
 
@@ -49,8 +50,7 @@ def verify_sources(roots):
         path = source / item["path"]
         require(path.is_file() and not path.is_symlink() and sha(path) == item["sha256"], "reviewed source content changed")
         require(git(source, "rev-parse", "HEAD:" + item["path"]) == item["git_blob"], "reviewed Git blob changed")
-    toolchain = tomllib.loads((roots["hepta"] / "codex-rs/rust-toolchain.toml").read_text())
-    require(toolchain["toolchain"]["channel"] == "1.95.0", "original Hepta toolchain changed")
+    toolchain.verify_manifest(roots["hepta"], review)
     return review["source_files"]
 
 
@@ -183,14 +183,17 @@ def build(args, roots, out, report, source_files, receipt):
                    "RUSTC": str(rustc), "CARGO_HOME": str(args.cargo_home.resolve(strict=True)),
                    "CARGO_INCREMENTAL": "0", "CARGO_BUILD_JOBS": "1", "CARGO_PROFILE_DEV_DEBUG": "0",
                    "CARGO_PROFILE_DEV_SMALL_DEBUG": "0", "LANG": "C.UTF-8"}
+    channel = toolchain.verify_manifest(roots["hepta"], gate.SOURCE_REVIEW)
     versions = {}
     for name, executable in (("cargo", cargo), ("rustc", rustc)):
         result = subprocess.run([str(executable), "--version"], env=environment, capture_output=True,
                                 text=True, timeout=30, check=False)
-        require(result.returncode == 0 and result.stdout.startswith(name + " 1.95.0 "), "installed Rust 1.95.0 required")
-        versions[name] = {"path": str(executable), "sha256": sha(executable), "version": result.stdout.strip()}
+        require(result.returncode == 0, "original compiler version query failed")
+        version = toolchain.validate_version(name, result.stdout, channel)
+        versions[name] = {"path": str(executable), "sha256": sha(executable), "version": version}
     out.mkdir(mode=0o700)
     report["output_created"] = True
+    environment.update(dependency_artifacts.freeze(report["dependency_artifacts"], out))
     targets, target_record = cargo_targets(args, roots, out)
     report["cargo_targets"] = target_record
     with ExitStack() as leases:
@@ -258,6 +261,7 @@ def build_userspace(args, roots, out, report, source_files, receipt, environment
         require(sha(target) == sha(source), "built binary changed while freezing")
         identities[name] = identity(target, "bin/" + filename)
     verify_target_caches(targets, report["cargo_targets"])
+    dependency_artifacts.verify_frozen(report["dependency_artifacts"])
     userspace = {"schema": "hepta.native-original-runtime-build.v1", "sources": gate.SOURCES,
                  "build_sources": gate.SOURCES,
                  "built": True, "source_clean": True, "commands": commands, "toolchains": versions,
@@ -266,6 +270,7 @@ def build_userspace(args, roots, out, report, source_files, receipt, environment
                  "fixture_patch_omission": omission, "fixture_resolved_lock_sha256": lock_digest,
                  "dependencies_prefetched": getattr(args, "fetch_dependencies", False),
                  "cargo_targets": report["cargo_targets"],
+                 "dependency_artifacts": report["dependency_artifacts"],
                  "command_timeout_seconds": 3600,
                  "source_files": source_files, "runtime_executed": False}
     save(out / "userspace-build.json", userspace)
@@ -300,6 +305,7 @@ def main(argv=None):
     parser.add_argument("--observer-target-cache", type=Path,
                         help="with --execute, exclusively lease this existing observer Cargo target cache")
     parser.add_argument("--output", type=Path)
+    dependency_artifacts.add_arguments(parser)
     args = parser.parse_args(argv)
     if args.fetch_dependencies and not args.execute:
         parser.error("--fetch-dependencies requires --execute")
@@ -315,6 +321,7 @@ def main(argv=None):
     roots = {"desktop": args.desktop_source.absolute(), "hepta": args.hepta_source.absolute()}
     out = args.output.absolute() if args.output is not None else None
     try:
+        report["dependency_artifacts"] = dependency_artifacts.selected(args)
         source_files = verify_sources(roots)
         receipt = kernel_receipt(args.kernel_receipt, args.kernel, args.expected_kernel_receipt_sha256)
         report["preflight_passed"] = True

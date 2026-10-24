@@ -162,7 +162,8 @@ class TargetCacheTests(unittest.TestCase):
 
     def test_cache_preserves_original_agentd_command_and_3600_second_deadline(self):
         paths, record = self.selected()
-        report = {"steps": [], "cargo_targets": record}
+        report = {"steps": [], "cargo_targets": record,
+                  "dependency_artifacts": preparation.dependency_artifacts.selected(self.args)}
         calls = []
         class GateError(Exception):
             pass
@@ -186,7 +187,8 @@ class TargetCacheTests(unittest.TestCase):
 
     def test_synthetic_success_receipt_retains_actual_command_cache_and_deadline_contract(self):
         paths, record = self.selected()
-        report = {"steps": [], "cargo_targets": record}
+        report = {"steps": [], "cargo_targets": record,
+                  "dependency_artifacts": preparation.dependency_artifacts.selected(self.args)}
         self.out.mkdir()
         self.args.kernel.write_bytes(b"unit-only kernel identity, never executed")
         self.args.kernel_receipt = self.root / "unused-kernel-receipt"
@@ -224,6 +226,7 @@ class TargetCacheTests(unittest.TestCase):
         self.assertTrue(receipt["cargo_targets"]["cache_reused"])
         self.assertFalse(receipt["cargo_targets"]["cold_build_claimed"])
         self.assertEqual(receipt["cargo_targets"], record)
+        self.assertEqual(receipt["dependency_artifacts"], report["dependency_artifacts"])
         self.assertEqual(receipt["command_records"], report["steps"])
         self.assertEqual(receipt["command_timeout_seconds"], 3600)
         self.assertEqual(len(receipt["commands"]), 5)
