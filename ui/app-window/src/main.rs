@@ -59,13 +59,16 @@ impl eframe::App for ClientWindow {
                         }
                         ui.small(format!("Document revision: {} · private Notes destination", organ.revision()));
                         ui.small("External edits require the original Hepta owner. This document is limited to 4096 UTF-8 bytes.");
+                        ui.small(organ.storage_status());
                     }
                     ui.small(if editor.has_focus() {
                         "Keyboard focus: NOTES editor (IME target)"
                     } else {
                         "Keyboard focus: inactive; click Notes editor to compose"
                     });
-                    ui.small("Local unsaved memory only. Closing this app discards notes.");
+                    if self.notes_organ.is_none() {
+                        ui.small("Local unsaved memory only. Closing this app discards notes.");
+                    }
                 }
                 AppKind::Calculator => {
                     ui.horizontal(|ui| {

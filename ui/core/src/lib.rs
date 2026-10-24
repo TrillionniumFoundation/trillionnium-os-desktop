@@ -7,6 +7,8 @@ pub mod notes_bootstrap;
 #[cfg(target_os = "linux")]
 pub mod notes_private_unix;
 pub mod notes_recovery;
+#[cfg(target_os = "linux")]
+pub mod notes_store;
 pub mod objective;
 pub mod observation;
 

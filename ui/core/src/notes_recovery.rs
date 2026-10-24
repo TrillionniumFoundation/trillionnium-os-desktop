@@ -63,3 +63,37 @@ pub struct NotesRetirementResponse {
     pub receipt_sha256: String,
     pub status: NotesRetirementStatus,
 }
+
+/// Original Hepta compiler observations on the same private recovery lane.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum NotesReadAction {
+    ReadDocumentState,
+    ReadPreviousReceipt,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NotesRead {
+    pub schema_version: u16,
+    pub action: NotesReadAction,
+    pub target: NotesTargetIdentity,
+    pub request_id: String,
+}
+
+impl NotesRead {
+    pub fn parse_exact(raw: &[u8]) -> Result<Self, NotesProtocolError> {
+        if raw.is_empty() || raw.len() > MAX_NOTES_REQUEST_BYTES {
+            return Err(NotesProtocolError::FrameBound);
+        }
+        let value: Self = serde_json::from_slice(raw).map_err(|_| NotesProtocolError::Schema)?;
+        value.target.validate()?;
+        if value.schema_version != NOTES_SCHEMA_VERSION {
+            return Err(NotesProtocolError::Version);
+        }
+        if !lower_hex(&value.request_id, 32) {
+            return Err(NotesProtocolError::Operation);
+        }
+        Ok(value)
+    }
+}
