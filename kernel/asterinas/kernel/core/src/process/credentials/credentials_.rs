@@ -2,8 +2,6 @@
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use ostd::sync::{PreemptDisabled, RwLockReadGuard, RwLockWriteGuard};
-
 use super::{
     FileCapabilities, Gid, SecureBits, Uid, group::AtomicGid, secure_bits::AtomicSecureBits,
     user::AtomicUid,
@@ -52,7 +50,7 @@ pub(super) struct Credentials_ {
     fsgid: AtomicGid,
 
     /// A set of additional groups to which a process belongs.
-    supplementary_gids: RwLock<BTreeSet<Gid>>,
+    supplementary_gids: RwLock<Arc<BTreeSet<Gid>>>,
 
     // The Linux capabilities. They are not the capability (in `static_cap.rs`) that is enforced on
     // Rust objects.
@@ -119,7 +117,7 @@ impl Credentials_ {
             egid: AtomicGid::new(gid),
             sgid: AtomicGid::new(gid),
             fsgid: AtomicGid::new(gid),
-            supplementary_gids: RwLock::new(supplementary_gids),
+            supplementary_gids: RwLock::new(Arc::new(supplementary_gids)),
             inheritable_capset: AtomicCapSet::new(CapSet::empty()),
             permitted_capset: AtomicCapSet::new(capset),
             effective_capset: AtomicCapSet::new(capset),
@@ -500,12 +498,18 @@ impl Credentials_ {
 
     //  ******* Supplementary Groups methods *******
 
-    pub(super) fn groups(&self) -> RwLockReadGuard<'_, BTreeSet<Gid>, PreemptDisabled> {
-        self.supplementary_gids.read()
+    /// The immutable original group owner can outlive a credential update.
+    pub(super) fn groups(&self) -> Arc<BTreeSet<Gid>> {
+        self.supplementary_gids.read().clone()
     }
 
-    pub(super) fn groups_mut(&self) -> RwLockWriteGuard<'_, BTreeSet<Gid>, PreemptDisabled> {
-        self.supplementary_gids.write()
+    pub(super) fn set_groups(&self, groups: Arc<BTreeSet<Gid>>) {
+        let old = {
+            let mut current = self.supplementary_gids.write();
+            core::mem::replace(&mut *current, groups)
+        };
+        // The final old owner may free tree nodes. Do this outside the spin lock.
+        drop(old);
     }
 
     //  ******* Linux Capabilities methods *******

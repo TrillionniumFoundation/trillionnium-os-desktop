@@ -25,7 +25,7 @@ PERMISSION_TESTS = {
 # regressions. Existing required names are never replaced by these additions.
 # Filtered runs retain explicit opt-in; they cannot stand in for a complete
 # core qualification.
-MINIMUM_CORE_TESTS = 363  # Retained 360 plus three original-owner commoncap regressions.
+MINIMUM_CORE_TESTS = 365  # Retained 363 plus two immutable socket-credential owner regressions.
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -192,7 +192,11 @@ DUMPABILITY_CORE_TESTS = tuple("aster_core::process::posix_thread::credentials_e
     "alien_capture_respects_dumpability_same_group_and_original_capability",
     "shared_vm_credential_writer_waits_for_real_alien_capture",
 ))
-REQUIRED_CORE_TESTS = (*DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+SOCKET_CREDENTIAL_CORE_TESTS = tuple("aster_core::net::socket::unix::cred::tests::" + suffix for suffix in (
+    "socket_identity_captures_distinct_real_effective_ids_without_live_credential_alias",
+    "socket_group_snapshot_shares_original_immutable_owner_across_fork_replace_and_last_alias",
+))
+REQUIRED_CORE_TESTS = (*SOCKET_CREDENTIAL_CORE_TESTS, *DUMPABILITY_CORE_TESTS, *INLINE_SIGNAL_CORE_TESTS, *ORDINARY_FAULT_CORE_TESTS, *ANCILLARY_ALLOCATION_CORE_TESTS, *SETGID_CREATION_CORE_TESTS, *UNIX_OWNERSHIP_CORE_TESTS, *SEQPACKET_QUEUE_CORE_TESTS, *DATAGRAM_FRAME_CORE_TESTS, *HIERARCHICAL_MEMORY_CORE_TESTS, *BOOT_ID_CORE_TESTS, *IPC_FRAME_CORE_TESTS, *FATAL_CLEANUP_CORE_TESTS, *sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
                        *EXT2_DURABILITY_TESTS, *EXT2_READONLY_ATIME_TESTS,
                        *USER_MEMORY_CORE_TESTS, *TIMESTAMP_CORE_TESTS, *WATCHDOG_CORE_TESTS)
 RECOVERY_PAGE_TABLE_TESTS = tuple("ostd::mm::vm_space::recovery_tests::" + suffix for suffix in (
