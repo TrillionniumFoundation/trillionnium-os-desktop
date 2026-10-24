@@ -1,5 +1,7 @@
 //! Presentation fixtures only; synthetic receipts do not qualify a Root lane.
 use super::*;
+use hepta_control_core::chat_timeline::{Message, MessagePhase, Role};
+use serde_json::json;
 
 fn owner() -> TextOwnerReceipt {
     TextOwnerReceipt {
@@ -260,6 +262,141 @@ fn original_oversize_history_notice_does_not_block_reference_recovery() {
         workspace.presentation_note.as_deref(),
         Some("Original large item preview is unavailable")
     );
+}
+
+#[test]
+fn original_typed_attachment_history_preserves_chinese_draft_and_next_thread_stream() {
+    let directory = tempfile::tempdir().unwrap();
+    let mut adapter = TextChatAdapter::start(
+        directory.path().join("absent-root.sock"),
+        std::process::id(),
+        Arc::new(|| {}),
+    )
+    .unwrap();
+    let mut workspace = ChatWorkspace::default();
+    adapter
+        .observe(
+            &mut workspace,
+            TextWorkerEvent::Connected { connection_id: 7 },
+            10,
+        )
+        .unwrap();
+    adapter
+        .observe(
+            &mut workspace,
+            TextWorkerEvent::Authenticated {
+                connection_id: 7,
+                owner: owner(),
+            },
+            10,
+        )
+        .unwrap();
+    workspace.edit("  下一条中文\n保留原文。  ".into());
+    let draft = workspace.draft().clone();
+    // Deserialize actual original Turn/UserInput protocol types before the
+    // adapter serializes them for its existing ChatWorkspace projection.
+    let turn = serde_json::from_value(json!({
+        "id":"attachment-turn","itemsView":"full","status":"completed","items":[
+            {"type":"userMessage","id":"attachment-input","clientId":"another-client","content":[
+                {"type":"text","text":"  原始中文\n请看附件。  ","text_elements":[]},
+                {"type":"image","url":"data:image/png;base64,DO_NOT_EXPAND"},
+                {"type":"localImage","path":"/private/do-not-open.png"},
+                {"type":"audio","url":"https://example.invalid/do-not-fetch.wav"},
+                {"type":"localAudio","path":"/private/do-not-open.wav"},
+                {"type":"skill","name":"do-not-invoke","path":"/private/skill.md"},
+                {"type":"mention","name":"do-not-resolve","path":"connector://private"}
+            ]}
+        ]
+    }))
+    .unwrap();
+    adapter
+        .observe(
+            &mut workspace,
+            TextWorkerEvent::History {
+                connection_id: 7,
+                viewing_earlier: false,
+                page: codex_hepta_agentd::text_session::TextHistorySnapshot {
+                    turns: vec![turn],
+                    earlier_cursor: Some("original-earlier-page".into()),
+                    notice: None,
+                },
+            },
+            11,
+        )
+        .unwrap();
+    adapter
+        .observe(
+            &mut workspace,
+            TextWorkerEvent::RecoveryComplete { connection_id: 7 },
+            11,
+        )
+        .unwrap();
+    assert!(adapter.history_ready && !adapter.history_pending && !adapter.recovering);
+    assert!(adapter.can_load_earlier && !adapter.viewing_earlier);
+    assert!(
+        workspace
+            .authenticated_chat_scope(ChatCapability::SubmitSignedText, 11)
+            .is_ok()
+    );
+    for notification in [
+        json!({"method":"item/started","params":{
+            "threadId":"thread-one","turnId":"following-turn","startedAtMs":12,
+            "item":{"type":"agentMessage","id":"following-reply","text":""}
+        }}),
+        json!({"method":"item/agentMessage/delta","params":{
+            "threadId":"thread-one","turnId":"following-turn","itemId":"following-reply","delta":"继续处理中文。"
+        }}),
+        json!({"method":"turn/completed","params":{
+            "threadId":"thread-one","turn":{"id":"following-turn","status":"completed","items":[]}
+        }}),
+    ] {
+        adapter
+            .observe(
+                &mut workspace,
+                TextWorkerEvent::Notification(codex_hepta_agentd::text_session::AgentdTextEvent {
+                    connection_id: 7,
+                    thread_id: "thread-one".into(),
+                    message_id: String::new(),
+                    delivery_id: String::new(),
+                    turn_id: "following-turn".into(),
+                    notification: serde_json::from_value(notification).unwrap(),
+                }),
+                12,
+            )
+            .unwrap();
+    }
+    let history = workspace.timeline().unwrap().history().unwrap();
+    assert_eq!(history.thread_id, "thread-one");
+    assert_eq!(
+        history.messages,
+        vec![
+            Message {
+                id: "attachment-input".into(),
+                turn_id: "attachment-turn".into(),
+                role: Role::User,
+                text: concat!(
+                    "  原始中文\n请看附件。  \n",
+                    "[Original image attachment; preview unavailable]\n",
+                    "[Original local image attachment; preview unavailable]\n",
+                    "[Original audio attachment; preview unavailable]\n",
+                    "[Original local audio attachment; preview unavailable]\n",
+                    "[Original skill reference; details remain in App Server]\n",
+                    "[Original mention reference; details remain in App Server]"
+                )
+                .into(),
+                phase: MessagePhase::Observed,
+            },
+            Message {
+                id: "following-reply".into(),
+                turn_id: "following-turn".into(),
+                role: Role::Assistant,
+                text: "继续处理中文。".into(),
+                phase: MessagePhase::Completed,
+            },
+        ]
+    );
+    assert_eq!(workspace.draft(), &draft);
+    assert!(adapter.intents.is_empty() && adapter.tickets.is_empty());
 }
 
 #[test]

@@ -8,6 +8,11 @@ daemon/cell identity and `observe` reads one explicitly named application's
 current window. A pure Python API prepares a semantic intent without executing
 it. Every effect operation is rejected before the privileged helper is invoked.
 
+The cross-platform [action capability matrix](../../docs/agents/ACTION_CAPABILITIES.md)
+separates these reads and non-authorizing proposals from the strict text receiver,
+legacy helper commands and original-owner deployment gates. It also specifies
+which identities survive cancellation/recovery and which retries are forbidden.
+
 The current device profile is Android 17 / SDK 37. It does not alter the existing
 Android 15 AOSP/Cuttlefish lock, qualify APK workloads on the Rust kernel, or
 establish physical handset support. The source profile is machine-readable in

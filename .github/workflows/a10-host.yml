@@ -8,6 +8,7 @@ on:
       - 'support/ui/**'
       - 'libs/os-abi/**'
       - 'services/hepta-os/**'
+      - 'services/hepta-session-host/**'
       - 'tests/integration/hepta/**'
       - '.github/workflows/a10-host.yml'
       - 'README.md'
@@ -19,6 +20,7 @@ on:
       - 'support/ui/**'
       - 'libs/os-abi/**'
       - 'services/hepta-os/**'
+      - 'services/hepta-session-host/**'
       - 'tests/integration/hepta/**'
       - '.github/workflows/a10-host.yml'
       - 'README.md'
@@ -49,6 +51,8 @@ jobs:
           set -euo pipefail
           test -f README.md && test ! -L README.md
           if [[ -f ui/Cargo.toml ]]; then
+            python3 -B tests/ui/verify_product_source.py
+            python3 -B tests/ui/test_product_source.py
             echo 'has_ui=true' >> "$GITHUB_OUTPUT"
             echo 'A10 Rust source exists; host build and Wayland tests are required.'
           else

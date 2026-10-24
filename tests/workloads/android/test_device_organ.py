@@ -170,6 +170,14 @@ class DeviceOrganTests(unittest.TestCase):
             ({"op": "observe", "package": "org.example.notes", "display": 0,
               "with_png": False, "accessibility_mode": "touch-exploration"}, "READ_ONLY_PROFILE_REQUIRED"),
         ]
+        # The original helper has these native entrypoints, but their presence
+        # never gives this read-only organ profile an execution capability.
+        # The strict receiver remains a separate original-owner destination.
+        requests += [({"op": op}, "EFFECT_OWNER_NOT_CONFIGURED") for op in (
+            "type-text", "scroll-forward", "scroll-backward", "home", "back", "enter",
+            "tap", "swipe", "visual-click", "snapshot-tap", "dump", "find", "screenshot",
+            "apps", "visual-find", "organ-observe", "organ-set-text", "organ-readback",
+        )]
         for request, code in requests:
             with self.subTest(request=request), patch.object(adapter, "run_bounded") as run:
                 with self.assertRaises(transport.AdapterError) as failed:
@@ -260,6 +268,18 @@ class DeviceOrganTests(unittest.TestCase):
         self.assertEqual(intent["payload"]["raw_observation_sha256"], "d" * 64)
         self.assertEqual(intent["dispatch_status"], "NOT_CONFIGURED")
         run.assert_not_called()
+
+    def test_semantic_intent_requires_exact_integer_schema_before_transport(self):
+        for version in (True, 1.0, "1", None, 2):
+            original = observation()
+            original["schema_version"] = version
+            with self.subTest(version=version), patch.object(adapter, "run_bounded") as run:
+                with self.assertRaises(transport.AdapterError) as failed:
+                    adapter.prepare_semantic_intent(
+                        original, "operation/one", "set-text", {"id": "editor"}, "中文")
+                self.assertEqual(failed.exception.code, "INVALID_OBSERVATION")
+                self.assertFalse(failed.exception.attempted)
+                run.assert_not_called()
 
     def test_changed_token_cannot_reuse_an_old_window_context(self):
         stale = observation()
