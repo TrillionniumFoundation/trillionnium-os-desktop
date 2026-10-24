@@ -381,6 +381,19 @@ in the executed Shell command line. After rollback it launches a real Makepad
 window and a real Notes process from the restored package, verifies a new
 Session generation and preserved workspace text, then performs uninstall.
 
+Each Shell startup must also produce nonuniform pixels from its exact XRes-owned
+XID within the existing 25-second startup deadline. Mapping a window or sleeping
+for a fixed delay is insufficient. The harness retains a pidfd throughout the
+observation, checks its start time and executable identity, raises only that
+verified window, and invokes the original native `capture.py` with the remaining
+deadline. It rechecks XRes ownership after `XGetImage`. A pure black or other
+single-color capture cannot satisfy the frame gate. Notes gets independent
+window/first-frame evidence after its initial launch, after Shell recovery with
+the same Notes process/window, and after rollback. Per-window PNGs provide that
+evidence; separate root-window PNGs are context only. Nonuniform pixels do not
+prove readable text, correct fonts, a completed human visual review or physical
+input. The report keeps those qualification flags false.
+
 Only this test's child environment drops inherited `TRILL_`/`HEPTA_` lane
 locators. The actual HOME and original user service bus remain intact. A unique
 owned unit drop-in unsets those names for its own Session; the user's manager

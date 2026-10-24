@@ -1,10 +1,21 @@
 """Lossless pixels and a focus target on the caller-owned private X11 display."""
+import argparse
 import ctypes as C
 import hashlib
+import json
 import os
 from pathlib import Path
 import struct
 import zlib
+
+
+def rgb_content(rows, width):
+    """Describe actual RGB rows, excluding PNG filter bytes and X11 padding."""
+    if not rows or width <= 0 or any(len(row) != 1 + width * 3 or row[0] != 0 for row in rows):
+        raise RuntimeError("Invalid unfiltered RGB capture rows")
+    first = rows[0][1:4]
+    uniform = all(row[1:] == first * width for row in rows)
+    return {"nonuniform_rgb": not uniform, "uniform_rgb": list(first) if uniform else None}
 
 
 class XImage(C.Structure):
@@ -31,6 +42,7 @@ class Display:
             "XCreateSimpleWindow": ([C.c_void_p, C.c_ulong, C.c_int, C.c_int,
                 C.c_uint, C.c_uint, C.c_uint, C.c_ulong, C.c_ulong], C.c_ulong),
             "XMapWindow": ([C.c_void_p, C.c_ulong], C.c_int),
+            "XRaiseWindow": ([C.c_void_p, C.c_ulong], C.c_int),
             "XStoreName": ([C.c_void_p, C.c_ulong, C.c_char_p], C.c_int),
             "XDestroyWindow": ([C.c_void_p, C.c_ulong], C.c_int),
             "XSync": ([C.c_void_p, C.c_int], C.c_int),
@@ -86,7 +98,8 @@ class Display:
         Path(destination).write_bytes(png)
         return {"file": Path(destination).name, "window": window, "width": width.value,
                 "height": height.value, "bytes": len(png), "sha256": hashlib.sha256(png).hexdigest(),
-                "capture": "XGetImage actual private X11 framebuffer", "human_visual_review_required": True}
+                "capture": "XGetImage actual private X11 framebuffer", "human_visual_review_required": True,
+                **rgb_content(rows, width.value)}
 
     def close(self):
         if self.handle:
@@ -94,3 +107,30 @@ class Display:
                 self.lib.XDestroyWindow(self.handle, self.focus_target)
             self.lib.XCloseDisplay(self.handle)
             self.handle = None
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, required=True)
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--window-id", type=lambda value: int(value, 0))
+    target.add_argument("--root-context", action="store_true")
+    parser.add_argument("--raise-window", action="store_true",
+                        help="raise only the caller's independently verified owned window")
+    args = parser.parse_args()
+    if args.window_id is not None and not 0 < args.window_id <= 0xFFFFFFFF:
+        parser.error("window ID must be a nonzero 32-bit X11 resource")
+    if args.raise_window and args.window_id is None:
+        parser.error("--raise-window requires --window-id")
+    display = Display()
+    try:
+        if args.raise_window:
+            display.lib.XRaiseWindow(display.handle, args.window_id)
+            display.lib.XSync(display.handle, 0)
+        print(json.dumps(display.screenshot(args.output, args.window_id)), flush=True)
+    finally:
+        display.close()
+
+
+if __name__ == "__main__":
+    main()

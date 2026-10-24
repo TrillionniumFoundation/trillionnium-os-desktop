@@ -1,10 +1,12 @@
 """Read-only acceptance gates; these tests do not qualify a Rust GUI package."""
 
+import importlib.util
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -12,7 +14,61 @@ import acceptance_identity as identity
 import desktop
 
 
+capture_path = Path(__file__).resolve().parents[3] / "tests/ui/native-makepad/capture.py"
+capture_spec = importlib.util.spec_from_file_location("native_frame_capture", capture_path)
+capture = importlib.util.module_from_spec(capture_spec)
+capture_spec.loader.exec_module(capture)
+
+
 class AcceptanceIdentityTests(unittest.TestCase):
+    def test_uniform_owned_pixels_do_not_count_as_a_rendered_frame(self):
+        for color in (b"\x00\x00\x00", b"\xff\xff\xff", b"\x12\x34\x56"):
+            with self.subTest(color=color):
+                rows = [b"\0" + color * 4] * 3
+                frame = dict(capture.rgb_content(rows, 4), window=41)
+                self.assertFalse(identity.nonuniform_window_frame(frame, 41))
+                self.assertEqual(frame["uniform_rgb"], list(color))
+        rows = [b"\0" + b"\x00\x00\x00" * 4,
+                b"\0" + b"\xff\xff\xff" + b"\x00\x00\x00" * 3]
+        frame = dict(capture.rgb_content(rows, 4), window=41)
+        self.assertTrue(identity.nonuniform_window_frame(frame, 41))
+        self.assertIsNone(frame["uniform_rgb"])
+
+    def test_foreign_window_and_root_pixels_cannot_qualify_the_shell(self):
+        original = {"matched": True, "window": {"pid": 101, "xid": 41}}
+        self.assertEqual(identity.window_identity(original, 101), 41)
+        with self.assertRaisesRegex(RuntimeError, "foreign window owner"):
+            identity.window_identity(original, 202)
+        with self.assertRaisesRegex(RuntimeError, "window changed"):
+            identity.window_identity(original, 101, expected_window=42)
+        with self.assertRaisesRegex(RuntimeError, "verified owned X11 window"):
+            identity.nonuniform_window_frame({"window": 1, "nonuniform_rgb": True}, 41)
+        with self.assertRaisesRegex(RuntimeError, "RGB content observation"):
+            identity.nonuniform_window_frame({"window": 41}, 41)
+
+    def test_blocking_probe_spends_the_original_deadline_without_rearming_it(self):
+        deadline = time.monotonic() + 0.1
+        with self.assertRaises(subprocess.TimeoutExpired):
+            subprocess.run([sys.executable, "-c", "import time; time.sleep(30)"],
+                           timeout=identity.remaining_timeout(deadline, 8), check=True)
+        with self.assertRaisesRegex(RuntimeError, "deadline expired"):
+            identity.remaining_timeout(deadline, 8)
+
+    def test_retained_pidfd_rejects_foreign_pid_and_actual_child_exit(self):
+        child = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.buffer.read()"],
+                                 stdin=subprocess.PIPE)
+        handle = os.pidfd_open(child.pid)
+        try:
+            identity.require_live_pidfd(handle, child.pid)
+            with self.assertRaisesRegex(RuntimeError, "different process"):
+                identity.require_live_pidfd(handle, os.getpid())
+            child.communicate(timeout=5)
+            with self.assertRaisesRegex(RuntimeError, "exited during window observation"):
+                identity.require_live_pidfd(handle, child.pid)
+        finally:
+            child.communicate(timeout=5)
+            os.close(handle)
+
     def test_runtime_root_is_private_and_its_identity_detects_replacement(self):
         with tempfile.TemporaryDirectory(prefix="tr-run-") as scratch:
             root = Path(scratch) / "r"
@@ -95,6 +151,20 @@ class AcceptanceIdentityTests(unittest.TestCase):
             self.assertEqual(first["executable_sha256"], digest)
             with self.assertRaisesRegex(RuntimeError, "package hash"):
                 identity.process_identity(child.pid, binary, "0" * 64)
+            handle = os.pidfd_open(child.pid)
+            foreign = os.pidfd_open(os.getpid())
+            try:
+                identity.require_same_process(handle, first)
+                with self.assertRaisesRegex(RuntimeError, "different process"):
+                    identity.require_same_process(foreign, first)
+                with self.assertRaisesRegex(RuntimeError, "start time changed"):
+                    identity.require_same_process(handle, dict(first, start_ticks="0"))
+                child.communicate(timeout=5)
+                with self.assertRaisesRegex(RuntimeError, "exited during window observation"):
+                    identity.require_same_process(handle, first)
+            finally:
+                os.close(foreign)
+                os.close(handle)
         finally:
             child.communicate(timeout=5)
 

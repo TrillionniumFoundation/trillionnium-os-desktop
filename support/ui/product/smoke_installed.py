@@ -81,6 +81,7 @@ def main():
     parser.add_argument("--cjk-font", type=Path)
     options = parser.parse_args()
     owner_helper = (options.hepta_source / "apps/hepta-control-ui/test/x11_client_owner.py").resolve(strict=True)
+    capture_helper = (Path(__file__).resolve().parents[3] / "tests/ui/native-makepad/capture.py").resolve(strict=True)
     output = options.evidence
     require(output.is_absolute() and not output.exists(), "evidence must be a new absolute directory")
     require(options.unit_dir.is_absolute(), "unit directory must be absolute")
@@ -166,9 +167,12 @@ def main():
               "identity_gate_sha256": desktop.digest(Path(acceptance_identity.__file__).read_bytes()),
               "original_xres_helper": {"path": str(owner_helper),
                                        "sha256": desktop.digest(owner_helper.read_bytes())},
+              "capture_helper": {"path": str(capture_helper),
+                                 "sha256": desktop.digest(capture_helper.read_bytes())},
               "runtime_root_identity": runtime_identity,
               "private_xdg_environment": dict(private_environment, XDG_RUNTIME_DIR=str(runtime), XDG_STATE_HOME=str(state)),
               "production_authority_verified": False, "physical_input_verified": False,
+              "human_visual_review_verified": False, "font_pixels_verified": False,
               "checks": {}, "screenshots": [], "commands": []}
     running = []
     display = None
@@ -211,42 +215,93 @@ def main():
             manifest["files"]["bin/trill-session"]["sha256"])
         return value["live_session"]["session_instance"]
 
+    def observe_owned_frame(label, pid, binary_name, deadline, expected_identity=None, expected_window=None):
+        # The original 25-second startup deadline covers mapping, ownership and
+        # the first nonuniform frame. Xlib capture runs in a bounded child so a
+        # stalled XGetImage cannot strand the installation harness.
+        handle = os.pidfd_open(pid)
+        try:
+            acceptance_identity.remaining_timeout(deadline, 25)
+            release = desktop.current_release(prefix)
+            manifest = desktop.verify_package(release)
+            identity = None
+            xid = expected_window
+            attempts = 0
+
+            def alive():
+                if identity is None:
+                    # The retained launcher may still be execing the actual
+                    # Shell. Its mapped XRes window is the image-check boundary.
+                    acceptance_identity.require_live_pidfd(handle, pid)
+                else:
+                    acceptance_identity.require_same_process(handle, identity)
+
+            def window_observation():
+                alive()
+                found = command(label + "-xres-owner", [sys.executable, "-B", owner_helper,
+                                "--pid", pid, "--find-visible"], check=False,
+                                timeout=acceptance_identity.remaining_timeout(deadline, 8))
+                alive()
+                acceptance_identity.remaining_timeout(deadline, 25)
+                require(found.returncode in (0, 1), "original XRes window-owner query failed")
+                observation = json.loads(found.stdout)
+                observed = acceptance_identity.window_identity(observation, pid, xid)
+                require((found.returncode == 0) == (observed is not None), "XRes result disagrees with its exit status")
+                return observed, observation
+
+            while True:
+                observed, observation = window_observation()
+                if observed is not None:
+                    xid = observed
+                    if identity is None:
+                        identity = acceptance_identity.process_identity(pid, release / "bin" / binary_name,
+                                                                       manifest["files"]["bin/" + binary_name]["sha256"])
+                        require(expected_identity is None or identity == expected_identity,
+                                label + " changed its original process identity")
+                        if binary_name == "trill-shell":
+                            require(identity["argv"][-2:] == ["--renderer", "makepad"], "actual Shell did not select Makepad")
+                        alive()
+                        report["checks"][label + "-process"] = identity
+                    attempts += 1
+                    captured = command(label + "-window-pixels", [sys.executable, "-B", capture_helper,
+                                       "--window-id", xid, "--raise-window", "--output", output / (label + ".png")],
+                                       timeout=acceptance_identity.remaining_timeout(deadline, 8))
+                    frame = json.loads(captured.stdout)
+                    # Requery the original server-side owner after capturing;
+                    # another process or a replacement XID cannot supply proof.
+                    confirmed, observation = window_observation()
+                    require(confirmed == xid, "owned window disappeared during capture")
+                    ready = acceptance_identity.nonuniform_window_frame(frame, xid)
+                    report["checks"][label + "-window-owner"] = observation["window"]
+                    report["checks"][label + "-window-frame"] = {
+                        "nonuniform_owned_pixels": ready, "attempts": attempts,
+                        "startup_budget_seconds": 25, "last_capture": frame,
+                        "human_visual_review_verified": False}
+                    if ready:
+                        context = command(label + "-display-context", [sys.executable, "-B", capture_helper,
+                                          "--root-context", "--output", output / (label + "-display.png")],
+                                          timeout=acceptance_identity.remaining_timeout(deadline, 8))
+                        acceptance_identity.require_same_process(handle, identity)
+                        acceptance_identity.remaining_timeout(deadline, 25)
+                        report["screenshots"].append(dict(frame, role="owned-window-nonuniform-frame", owner_pid=pid))
+                        report["screenshots"].append(dict(json.loads(context.stdout), role="private-display-context-only"))
+                        return identity, xid
+                time.sleep(acceptance_identity.remaining_timeout(deadline, 0.1))
+        finally:
+            os.close(handle)
+
     def start_shell(label):
         require(acceptance_identity.runtime_root_identity(runtime) == runtime_identity,
                 "caller-owned --runtime-root identity changed")
         require(manager_lanes() <= excluded_lanes, "user manager added an unisolated host lane during qualification")
         log = (output / (label + ".log")).open("wb")
+        deadline = time.monotonic() + 25
         process = subprocess.Popen([str(launcher), "run"], env=env, stdout=log, stderr=subprocess.STDOUT,
                                    start_new_session=True)
         log.close()
         running.append(process)
-        deadline = time.monotonic() + 25
-        while time.monotonic() < deadline:
-            require(process.poll() is None, label + " exited before mapping a native window")
-            found = command(label + "-xres-owner", [sys.executable, "-B", owner_helper,
-                            "--pid", process.pid, "--find-visible"], check=False, timeout=8)
-            require(process.poll() is None, label + " exited during XRes ownership query")
-            require(found.returncode in (0, 1), "original XRes window-owner query failed")
-            observation = json.loads(found.stdout)
-            if found.returncode == 0 and observation["matched"]:
-                window = observation["window"]
-                require(window["pid"] == process.pid, "XRes returned a foreign window owner")
-                xid = window["xid"]
-                report["checks"][label + "-window-owner"] = window
-                break
-            time.sleep(0.1)
-        else:
-            raise RuntimeError(label + " did not map exactly one private-display window")
-        command(label + "-tree", ["xwininfo", "-root", "-tree"])
-        release = desktop.current_release(prefix)
-        manifest = desktop.verify_package(release)
-        identity = acceptance_identity.process_identity(process.pid, release / "bin/trill-shell",
-                                                       manifest["files"]["bin/trill-shell"]["sha256"])
-        require(identity["argv"][-2:] == ["--renderer", "makepad"], "actual Shell did not select Makepad")
-        report["checks"][label + "-process"] = identity
-        time.sleep(0.7)
-        report["screenshots"].append(display.screenshot(output / (label + ".png")))
-        return process, int(xid)
+        _, xid = observe_owned_frame(label, process.pid, "trill-shell", deadline)
+        return process, xid
 
     def close_shell(label, process, window):
         require(process.poll() is None, label + " exited before its normal window close")
@@ -324,26 +379,28 @@ def main():
         report["checks"]["active_upgrade_refused"] = True
         # A real independent application stays under Session across Shell exits.
         ctl = desktop.current_release(prefix) / "bin/trill-ctl"
-        app = json.loads(command("launch-owned-notes", [ctl, "launch", "personal", "notes"]).stdout)["task"]
+        notes_deadline = time.monotonic() + 25
+        app = json.loads(command("launch-owned-notes", [ctl, "launch", "personal", "notes"],
+                                 timeout=acceptance_identity.remaining_timeout(notes_deadline, 20)).stdout)["task"]
         require(app["state"] == "running" and app["pid"], "actual Notes did not start")
         incarnation = app.get("notes_destination", {}).get("incarnation")
         require(isinstance(incarnation, str) and re.fullmatch("[0-9a-f]{32}", incarnation)
                 and app["notes_destination"]["original_owner_registered"] is False,
                 "isolated Notes lacks its own incarnation or inherited an original-owner registration")
-        notes_identity = acceptance_identity.process_identity(app["pid"], desktop.current_release(prefix) / "bin/trill-app-window",
-                                                              first["files"]["bin/trill-app-window"]["sha256"])
+        notes_identity, notes_window = observe_owned_frame("notes-first", app["pid"], "trill-app-window", notes_deadline)
         close_shell("first", process, window)
         require(read_snapshot("doctor-shell-closed") == first_session, "closing Shell replaced Session")
         process, window = start_shell("shell-recovered")
         require(read_snapshot("doctor-shell-recovered") == first_session, "Shell restart changed Session generation")
-        snapshot = json.loads(command("notes-after-shell-restart", [ctl, "snapshot"]).stdout)
+        notes_deadline = time.monotonic() + 25
+        snapshot = json.loads(command("notes-after-shell-restart", [ctl, "snapshot"],
+                                      timeout=acceptance_identity.remaining_timeout(notes_deadline, 20)).stdout)
         task = next(task for task in snapshot["tasks"] if task["id"] == app["id"])
         require(task["state"] == "running" and task["pid"] == app["pid"], "Notes did not survive Shell restart")
         require(task.get("notes_destination", {}).get("incarnation") == incarnation,
                 "Notes restart changed its application incarnation")
-        require(acceptance_identity.process_identity(task["pid"], desktop.current_release(prefix) / "bin/trill-app-window",
-                first["files"]["bin/trill-app-window"]["sha256"]) == notes_identity,
-                "same reported Notes PID hid a changed process image/start time")
+        observe_owned_frame("notes-after-shell-restart", task["pid"], "trill-app-window", notes_deadline,
+                            expected_identity=notes_identity, expected_window=notes_window)
         report["checks"]["surviving_notes_process"] = notes_identity
         close_shell("recovered", process, window)
         report["checks"]["shell_restart_same_session_and_notes"] = True
@@ -377,11 +434,13 @@ def main():
         rolled_session = read_snapshot("doctor-rolled-back-live")
         require(rolled_session not in (first_session, new_session), "rollback reused an old Session incarnation")
         ctl = desktop.current_release(prefix) / "bin/trill-ctl"
-        rolled_notes = json.loads(command("launch-rolled-back-notes", [ctl, "launch", "personal", "notes"]).stdout)["task"]
+        notes_deadline = time.monotonic() + 25
+        rolled_notes = json.loads(command("launch-rolled-back-notes", [ctl, "launch", "personal", "notes"],
+                                         timeout=acceptance_identity.remaining_timeout(notes_deadline, 20)).stdout)["task"]
         require(rolled_notes["state"] == "running" and rolled_notes["pid"], "rolled-back Notes did not start")
-        report["checks"]["rolled_back_notes_process"] = acceptance_identity.process_identity(
-            rolled_notes["pid"], desktop.current_release(prefix) / "bin/trill-app-window",
-            first["files"]["bin/trill-app-window"]["sha256"])
+        rolled_notes_identity, _ = observe_owned_frame("notes-rolled-back", rolled_notes["pid"],
+                                                       "trill-app-window", notes_deadline)
+        report["checks"]["rolled_back_notes_process"] = rolled_notes_identity
         close_shell("rolled-back", process, window)
         command("stop-rolled-back-session", [launcher, "stop"])
         report["checks"]["rollback_actual_makepad_and_notes"] = True

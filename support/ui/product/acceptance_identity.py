@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import select
 import stat
+import time
 
 import desktop
 
@@ -69,6 +70,61 @@ def manager_lane_names(raw):
             require(re.fullmatch("[A-Za-z_][A-Za-z0-9_]*", name), "invalid manager lane variable name")
             names.add(name)
     return names
+
+
+def remaining_timeout(deadline, maximum):
+    """Spend one existing deadline; a retry never creates another budget."""
+    remaining = deadline - time.monotonic()
+    require(remaining > 0, "owned-window startup deadline expired")
+    return min(remaining, maximum)
+
+
+def window_identity(observation, pid, expected_window=None):
+    require(type(observation.get("matched")) is bool, "invalid original XRes observation")
+    if not observation["matched"]:
+        require(observation.get("window") is None, "unmatched XRes observation contains a window")
+        return None
+    window = observation.get("window")
+    require(isinstance(window, dict) and type(window.get("pid")) is int
+            and window["pid"] == pid, "XRes returned a foreign window owner")
+    xid = window.get("xid")
+    require(type(xid) is int and 0 < xid <= 0xFFFFFFFF, "invalid XRes window resource ID")
+    require(expected_window is None or xid == expected_window, "owned X11 window changed during observation")
+    return xid
+
+
+def nonuniform_window_frame(frame, window):
+    require(type(frame.get("window")) is int and frame["window"] == window,
+            "capture did not use the verified owned X11 window")
+    require(type(frame.get("nonuniform_rgb")) is bool, "capture omitted its RGB content observation")
+    return frame["nonuniform_rgb"]
+
+
+def require_live_pidfd(handle, pid):
+    require(not select.select([handle], [], [], 0)[0], "owned process exited during window observation")
+    fdinfo = dict(line.split(":", 1) for line in Path(f"/proc/self/fdinfo/{handle}").read_text().splitlines())
+    # fdinfo's Pid is relative to the procfs mount, which can be outside our
+    # PID namespace. Select our namespace's entry, including for nested children.
+    own_depth = next(len(line.split(":", 1)[1].split())
+                     for line in Path("/proc/self/status").read_text().splitlines() if line.startswith("NSpid:"))
+    namespace_pids = fdinfo.get("NSpid", "").split()
+    require(own_depth > 0 and len(namespace_pids) >= own_depth
+            and namespace_pids[own_depth - 1] == str(pid), "pidfd belongs to a different process")
+
+
+def require_same_process(handle, identity):
+    """Recheck the live pidfd retained throughout XRes and pixel observation."""
+    require_live_pidfd(handle, identity["pid"])
+    proc = Path("/proc") / str(identity["pid"])
+    require((proc / "stat").read_text().rsplit(")", 1)[1].split()[19] == identity["start_ticks"],
+            "owned process start time changed during window observation")
+    info = (proc / "exe").stat()
+    require((info.st_dev, info.st_ino) == (identity["device"], identity["inode"])
+            and os.readlink(proc / "exe") == identity["executable"],
+            "owned process image changed during window observation")
+    command = (proc / "cmdline").read_bytes().decode("utf-8", "strict").rstrip("\0").split("\0")
+    require(command == identity["argv"], "owned process arguments changed during window observation")
+    require(not select.select([handle], [], [], 0)[0], "owned process exited before window observation completed")
 
 
 def process_identity(pid, binary, expected_sha256):
