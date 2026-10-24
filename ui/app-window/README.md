@@ -42,3 +42,8 @@ Launch apps through Session and trill-ctl as described in
 for identity, bounded GUI handoff, revision checks and uncertain outcomes.
 Use [RUN](../../support/ui/RUN.md) and [TESTPLAN](../../tests/ui/TESTPLAN.md)
 for real process, window and owned-compositor validation.
+
+The [executed ordinary reopen probe](../../tests/ui/evidence/2026-10-24-notes-reopen/README.md)
+records real close/reopen, picker selection, independent AT-SPI readback,
+continued editing and unchanged source storage, with exact binaries and
+actual window captures. It remains separate from production effect recovery.
