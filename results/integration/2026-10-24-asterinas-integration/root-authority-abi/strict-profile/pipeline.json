@@ -1,0 +1,45 @@
+{
+  "source_head": "3f416881b99941c2070923a96bc9c28288dc3b26",
+  "scope": "actual Root Linux and ordinary native ABI; original writer, persistent CPU and recovery not qualified",
+  "passed": true,
+  "commands": [
+    {
+      "label": "linux",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-integration/tests/workloads/linux/root_authority_abi/run_linux.py",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi-02/linux"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.5690730570349842
+    },
+    {
+      "label": "native",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-integration/tests/workloads/linux/root_authority_abi/run_guest.py",
+        "--kernel",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/ordinary/product-kernel.elf",
+        "--initramfs",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/ordinary/product-boot/initramfs.cpio.gz",
+        "--probe",
+        "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi-02/linux/probe.elf",
+        "--reference",
+        "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi-02/linux/result.json",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi-02/native"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.7720262770308182
+    }
+  ],
+  "native_kernel_source": "556615fc9368c35539fbd1829f386ab55996dd47",
+  "g2_complete": false
+}
