@@ -153,6 +153,30 @@ original durable writer, with its original protected owner and retirement
 permit, may acknowledge terminal history. The bootstrap page itself makes no
 claim about SQLite durability.
 
+## Archived kernel regression execution
+
+The [retained kernel execution](../../results/integration/2026-10-24-asterinas-integration/kernel-process-successor/publication.json) belongs to OS `39c1eaf89a211b91e5e687ceaf86fd033567e536`
+and tree `41afddf4360f18ad50d62f9647de6f2e4f602a0e`. The actual pipeline took 455.040 seconds: ordinary
+aster-core passed all 373 tests with its exact 134 required names; G2 aster-core
+passed all 387 tests, preserving those 373 and adding the original three Root
+image tests plus eleven Process/history/owner-cut regressions. Both guests
+returned raw QEMU exit 33 with no failed, filtered or soft-skipped tests.
+Each required successor test has its own terminal result in the original log.
+
+These kernel regressions exercise the sealed-image preparation/cancellation and
+allocation-release gates, immutable generation replay and exact-generation
+AckSaved admission, original history ownership, and the watchdog receipt retained
+at the actual final CPU-owner cut. The prior three CPU-continuity and five
+CPU-successor tests also pass in both suites. The 799744-byte frozen ELF is a
+compilation input only; no original Hepta userspace owner is executed here.
+
+This evidence does not qualify the real native launcher/ioctl and pidfd lifecycle,
+the original Supervisor/writer/FinalUse chain, or Root's durable save-before-ACK
+sequence. Lost-reply recovery, cross-boot Unknown preservation and long-term
+persistent CPU control still require actual execution of their final source.
+The 824720ea product/socket/watchdog and f6e837c6 core archives retain their own
+source identities; this two-suite run does not extend their scope.
+
 ## Validation boundaries
 
 The CPU owner tests exercise prepare-without-publication, both exact old-origin
