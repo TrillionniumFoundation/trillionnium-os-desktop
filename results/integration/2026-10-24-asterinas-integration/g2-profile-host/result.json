@@ -1,0 +1,61 @@
+{
+  "scope": "actual host profile-selection, original entry builder and source gates only; G2 kernel not compiled or booted here",
+  "native_g2_qualified": false,
+  "passed": true,
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustfmt",
+        "+nightly-2026-07-21",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "kernel/asterinas/kernel/core/src/process/process/image.rs",
+        "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs",
+        "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs",
+        "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+        "kernel/asterinas/kernel/core/src/process/process/trusted_control.rs",
+        "kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.09911086992360651
+    },
+    {
+      "argv": [
+        "/bin/bash",
+        "-n",
+        "support/build/kernel.sh"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.0028460819739848375
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "support/build/verify-source.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.11571000900585204
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_cpu_control",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.1540448259329423
+    }
+  ]
+}

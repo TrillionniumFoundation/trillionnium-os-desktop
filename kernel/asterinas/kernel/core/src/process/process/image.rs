@@ -13,17 +13,18 @@ use core::sync::atomic::{AtomicU64, Ordering};
 use super::Process;
 #[cfg(feature = "g1d-trusted-control")]
 use super::trusted_control::TrustedControlSlots;
-use crate::prelude::*;
-
 #[cfg(feature = "g1c-trusted-observe")]
 use crate::fs::cgroupfs::{CpuUsageError, NativeCpuObserver};
 #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
 use crate::hos2_os_abi::Status;
+use crate::prelude::*;
 
 #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
-fn check_initial_observe_lease(issued_ns: u64, expires_ns: u64, sample_ns: u64)
-    -> core::result::Result<(), Status>
-{
+fn check_initial_observe_lease(
+    issued_ns: u64,
+    expires_ns: u64,
+    sample_ns: u64,
+) -> core::result::Result<(), Status> {
     if sample_ns < issued_ns {
         Err(Status::Indeterminate)
     } else if sample_ns >= expires_ns {
@@ -87,6 +88,10 @@ pub(super) struct ProcessImageState {
     initial_observe: Option<InitialObserveGrant>,
     #[cfg(feature = "g1d-trusted-control")]
     initial_control: Option<Arc<TrustedControlSlots>>,
+    /// Protects the sealed Root image from cross-process mutation. This marker
+    /// contains no CPU, history, delegation or process-launch capability.
+    #[cfg(feature = "g2-trusted-daemon")]
+    initial_root: bool,
 }
 
 impl ProcessImageState {
@@ -100,6 +105,8 @@ impl ProcessImageState {
             initial_observe: None,
             #[cfg(feature = "g1d-trusted-control")]
             initial_control: None,
+            #[cfg(feature = "g2-trusted-daemon")]
+            initial_root: false,
         }
     }
 
@@ -138,7 +145,13 @@ impl ProcessImageState {
 
     fn begin_close(&mut self) {
         #[cfg(feature = "g1c-trusted-observe")]
-        { self.initial_observe = None; }
+        {
+            self.initial_observe = None;
+        }
+        #[cfg(feature = "g2-trusted-daemon")]
+        {
+            self.initial_root = false;
+        }
         if self.phase == ImagePhase::Live {
             self.phase = ImagePhase::Closing;
         }
@@ -146,7 +159,13 @@ impl ProcessImageState {
 
     fn close(&mut self) {
         #[cfg(feature = "g1c-trusted-observe")]
-        { self.initial_observe = None; }
+        {
+            self.initial_observe = None;
+        }
+        #[cfg(feature = "g2-trusted-daemon")]
+        {
+            self.initial_root = false;
+        }
         self.phase = ImagePhase::Closed;
     }
 
@@ -161,7 +180,13 @@ impl ProcessImageState {
         // error nor a later open may make its old namespace live again.
         self.phase = ImagePhase::Closed;
         #[cfg(feature = "g1c-trusted-observe")]
-        { self.initial_observe = None; }
+        {
+            self.initial_observe = None;
+        }
+        #[cfg(feature = "g2-trusted-daemon")]
+        {
+            self.initial_root = false;
+        }
         let next = self
             .epoch
             .checked_add(1)
@@ -218,22 +243,36 @@ impl ProcessImageState {
         issued_ns: u64,
     ) -> Result<()> {
         self.check_session(key)?;
+        #[cfg(feature = "g2-trusted-daemon")]
+        if self.initial_root || self.initial_control.is_some() {
+            return_errno_with_message!(Errno::ESTALE, "initial role cannot receive an observe role")
+        }
         if self.first_run != FirstRun::Prepared || self.initial_observe.is_some() {
             return_errno_with_message!(Errno::ESTALE, "initial observe slot cannot be reactivated")
         }
         let expires_ns = issued_ns.checked_add(300_000_000_000).ok_or_else(|| {
             Error::with_message(Errno::EOVERFLOW, "initial observe lease overflow")
         })?;
-        self.initial_observe = Some(InitialObserveGrant { observer, issued_ns, expires_ns });
+        self.initial_observe = Some(InitialObserveGrant {
+            observer,
+            issued_ns,
+            expires_ns,
+        });
         Ok(())
     }
 
     #[cfg(feature = "g1c-trusted-observe")]
-    fn initial_observer(&self, key: ProcessImageKey, slot: u64, generation: u64)
-        -> core::result::Result<&InitialObserveGrant, Status>
-    {
+    fn initial_observer(
+        &self,
+        key: ProcessImageKey,
+        slot: u64,
+        generation: u64,
+    ) -> core::result::Result<&InitialObserveGrant, Status> {
         self.check_session(key).map_err(|_| Status::StaleHandle)?;
-        let grant = self.initial_observe.as_ref().ok_or(Status::PermissionDenied)?;
+        let grant = self
+            .initial_observe
+            .as_ref()
+            .ok_or(Status::PermissionDenied)?;
         if slot != 1 || generation != 1 {
             return Err(Status::StaleHandle);
         }
@@ -247,8 +286,14 @@ impl ProcessImageState {
         slots: Arc<TrustedControlSlots>,
     ) -> Result<()> {
         self.check_session(key)?;
-        if self.first_run != FirstRun::Prepared || self.initial_control.is_some()
-            || self.initial_observe.is_some() || !slots.belongs_to(key)
+        #[cfg(feature = "g2-trusted-daemon")]
+        if self.initial_root {
+            return_errno_with_message!(Errno::ESTALE, "initial Root cannot receive a control role")
+        }
+        if self.first_run != FirstRun::Prepared
+            || self.initial_control.is_some()
+            || self.initial_observe.is_some()
+            || !slots.belongs_to(key)
         {
             return_errno_with_message!(Errno::ESTALE, "initial control binding cannot be activated")
         }
@@ -256,17 +301,38 @@ impl ProcessImageState {
         Ok(())
     }
 
+    #[cfg(feature = "g2-trusted-daemon")]
+    pub(super) fn activate_initial_root(&mut self, key: ProcessImageKey) -> Result<()> {
+        self.check_session(key)?;
+        if self.first_run != FirstRun::Prepared
+            || self.initial_root
+            || self.initial_observe.is_some()
+            || self.initial_control.is_some()
+        {
+            return_errno_with_message!(Errno::ESTALE, "initial Root binding cannot be activated")
+        }
+        self.initial_root = true;
+        Ok(())
+    }
+
     #[cfg(feature = "g1d-trusted-control")]
-    pub(super) fn initial_control(&self, key: ProcessImageKey)
-        -> core::result::Result<&Arc<TrustedControlSlots>, Status>
-    {
+    pub(super) fn initial_control(
+        &self,
+        key: ProcessImageKey,
+    ) -> core::result::Result<&Arc<TrustedControlSlots>, Status> {
         self.check_session(key).map_err(|_| Status::StaleHandle)?;
-        self.initial_control.as_ref().ok_or(Status::PermissionDenied)
+        self.initial_control
+            .as_ref()
+            .ok_or(Status::PermissionDenied)
     }
 
     #[cfg(feature = "g1d-trusted-control")]
     pub(super) fn closing_control(&self) -> Option<Arc<TrustedControlSlots>> {
-        if self.phase == ImagePhase::Live { None } else { self.initial_control.clone() }
+        if self.phase == ImagePhase::Live {
+            None
+        } else {
+            self.initial_control.clone()
+        }
     }
 }
 
@@ -279,6 +345,8 @@ impl Process {
         let has_authority = image.initial_observe.is_some();
         #[cfg(feature = "g1d-trusted-control")]
         let has_authority = has_authority || image.initial_control.is_some();
+        #[cfg(feature = "g2-trusted-daemon")]
+        let has_authority = has_authority || image.initial_root;
         image.phase == ImagePhase::Live && has_authority
     }
 
@@ -299,11 +367,18 @@ impl Process {
             let grant = image.initial_observer(key, slot, generation)?;
             (grant.observer.clone(), grant.issued_ns, grant.expires_ns)
         };
-        let usage = observer.read_usage_during(issued_ns, expires_ns).map_err(|error| match error {
-            CpuUsageError::Unbound | CpuUsageError::Closed | CpuUsageError::Expired => Status::Revoked,
-            CpuUsageError::Indeterminate | CpuUsageError::ClockUnavailable
-                | CpuUsageError::UnsupportedProfile | CpuUsageError::InconsistentAccounting => Status::Indeterminate,
-        })?;
+        let usage =
+            observer
+                .read_usage_during(issued_ns, expires_ns)
+                .map_err(|error| match error {
+                    CpuUsageError::Unbound | CpuUsageError::Closed | CpuUsageError::Expired => {
+                        Status::Revoked
+                    }
+                    CpuUsageError::Indeterminate
+                    | CpuUsageError::ClockUnavailable
+                    | CpuUsageError::UnsupportedProfile
+                    | CpuUsageError::InconsistentAccounting => Status::Indeterminate,
+                })?;
         let image = self.hepta_image.lock();
         let grant = image.initial_observer(key, slot, generation)?;
         if !Arc::ptr_eq(&grant.observer, &observer) {
@@ -345,7 +420,9 @@ impl Process {
                 image.close();
                 image.initial_control.take()
             };
-            if let Some(slots) = slots { slots.revoke_after_image_close(); }
+            if let Some(slots) = slots {
+                slots.revoke_after_image_close();
+            }
         }
     }
 
@@ -361,7 +438,9 @@ impl Process {
                 let mut image = self.hepta_image.lock();
                 let slots = if image.phase == ImagePhase::Closing {
                     image.initial_control.take()
-                } else { None };
+                } else {
+                    None
+                };
                 (image.commit_exec(), slots)
             };
             // Namespace and resource pins may have meaningful destructors.
@@ -384,15 +463,30 @@ mod tests {
         let issued = 123;
         let expires = issued + 300_000_000_000;
         assert_eq!(check_initial_observe_lease(issued, expires, issued), Ok(()));
-        assert_eq!(check_initial_observe_lease(issued, expires, expires - 1), Ok(()));
-        assert_eq!(check_initial_observe_lease(issued, expires, expires), Err(Status::Revoked));
-        assert_eq!(check_initial_observe_lease(issued, expires, expires + 1), Err(Status::Revoked));
+        assert_eq!(
+            check_initial_observe_lease(issued, expires, expires - 1),
+            Ok(())
+        );
+        assert_eq!(
+            check_initial_observe_lease(issued, expires, expires),
+            Err(Status::Revoked)
+        );
+        assert_eq!(
+            check_initial_observe_lease(issued, expires, expires + 1),
+            Err(Status::Revoked)
+        );
     }
 
     #[ktest]
     fn initial_observe_lease_does_not_accept_a_pre_issue_clock_cut() {
-        assert_eq!(check_initial_observe_lease(10, 20, 9), Err(Status::Indeterminate));
-        assert_eq!(check_initial_observe_lease(u64::MAX - 1, u64::MAX, u64::MAX - 2), Err(Status::Indeterminate));
+        assert_eq!(
+            check_initial_observe_lease(10, 20, 9),
+            Err(Status::Indeterminate)
+        );
+        assert_eq!(
+            check_initial_observe_lease(u64::MAX - 1, u64::MAX, u64::MAX - 2),
+            Err(Status::Indeterminate)
+        );
     }
 
     // These use actual unstarted Process/Task allocations. They do not execute
@@ -531,5 +625,53 @@ mod tests {
         process.close_hepta_image();
         assert_stale(process.hepta_image.lock().prepare_initial());
         assert_stale(process.hepta_image.lock().claim_unprepared_run());
+    }
+
+    #[cfg(feature = "g2-trusted-daemon")]
+    #[ktest]
+    fn frozen_root_requires_its_prepared_image_and_has_no_control_slot() {
+        let (root, _root_task) = test_util::new_unstarted_process();
+        let key = root.hepta_capspace_session().unwrap();
+        assert_stale(root.hepta_image.lock().activate_initial_root(key));
+        assert_eq!(root.hepta_image.lock().prepare_initial().unwrap(), key);
+        let (foreign, _foreign_task) = test_util::new_unstarted_process();
+        let foreign_key = foreign.hepta_capspace_session().unwrap();
+        assert_stale(root.hepta_image.lock().activate_initial_root(foreign_key));
+        root.hepta_image.lock().activate_initial_root(key).unwrap();
+        assert!(root.has_initial_observe_authority());
+        assert_eq!(
+            root.hepta_image.lock().initial_control(key).err(),
+            Some(Status::PermissionDenied)
+        );
+        assert_stale(root.hepta_image.lock().activate_initial_root(key));
+    }
+
+    #[cfg(feature = "g2-trusted-daemon")]
+    #[ktest]
+    fn frozen_root_exec_fences_old_image_without_reactivating_the_role() {
+        let (root, _root_task) = test_util::new_unstarted_process();
+        let key = root.hepta_image.lock().prepare_initial().unwrap();
+        root.hepta_image.lock().activate_initial_root(key).unwrap();
+        root.hepta_image.lock().consume_initial(key).unwrap();
+        root.begin_hepta_image_close();
+        assert!(!root.has_initial_observe_authority());
+        assert_stale(root.check_hepta_capspace_session(key));
+        root.commit_hepta_exec_image().unwrap();
+        let replacement = root.hepta_capspace_session().unwrap();
+        assert_ne!(key, replacement);
+        assert!(!root.has_initial_observe_authority());
+        assert_stale(root.hepta_image.lock().activate_initial_root(replacement));
+    }
+
+    #[cfg(feature = "g2-trusted-daemon")]
+    #[ktest]
+    fn cancelled_frozen_root_does_not_leave_live_process_protection() {
+        let (root, _root_task) = test_util::new_unstarted_process();
+        let key = root.hepta_image.lock().prepare_initial().unwrap();
+        root.hepta_image.lock().activate_initial_root(key).unwrap();
+        root.hepta_image.lock().cancel_initial(key);
+        assert!(!root.has_initial_observe_authority());
+        assert_stale(root.hepta_capspace_session());
+        assert_stale(root.hepta_image.lock().activate_initial_root(key));
     }
 }

@@ -4,7 +4,7 @@
 Use --pristine for the initial import. Later kernel development may change
 Rust sources, while the default check continues to protect build input pins.
 Build-input derivatives are the explicitly enumerated G1-a local owner metadata
-dependency, default-off G1-c/G1-d profiles, physical-reserve forwarding and
+dependency, default-off G1-c/G1-d/G2 profiles, physical-reserve forwarding and
 permission SMP feature declarations;
 --pristine still accepts only the original upstream tree.
 """
@@ -75,6 +75,20 @@ PHYSICAL_RESERVE_FEATURE_ADDITIONS = {
         b"[features]\nphysical-reserve = []\n\n[lints]\n",
     ),
 }
+G2_FEATURE_ADDITIONS = {
+    "kernel/Cargo.toml": (
+        b'g1d-trusted-control = ["aster-core/g1d-trusted-control"]\n',
+        b'g1d-trusted-control = ["aster-core/g1d-trusted-control"]\n'
+        b'g2-trusted-daemon = ["aster-core/g2-trusted-daemon"]\n',
+    ),
+    "kernel/core/Cargo.toml": (
+        b'g1d-trusted-control = ["g1c-trusted-observe", "osdk-frame-allocator/physical-reserve"]\n',
+        b'g1d-trusted-control = ["g1c-trusted-observe", "osdk-frame-allocator/physical-reserve"]\n'
+        b'# Separate frozen original-owner profile: Root plus three actual role images.\n'
+        b'# This selects no runtime issuer or durable writer on behalf of userspace.\n'
+        b'g2-trusted-daemon = ["g1d-trusted-control"]\n',
+    ),
+}
 ROOT_LOCK_ADDITIONS = (
     (b' "miniz_oxide",\n "osdk-frame-allocator",\n',
      b' "miniz_oxide",\n "os-control",\n "osdk-frame-allocator",\n'),
@@ -113,6 +127,8 @@ def derive_downstream_input(name, original):
             additions += (G1D_FEATURE_ADDITIONS[name],)
         if name in PHYSICAL_RESERVE_FEATURE_ADDITIONS:
             additions += (PHYSICAL_RESERVE_FEATURE_ADDITIONS[name],)
+        if name in G2_FEATURE_ADDITIONS:
+            additions += (G2_FEATURE_ADDITIONS[name],)
         if name == "kernel/core/Cargo.toml":
             additions += (PERMISSION_SMP_FEATURE_ADDITION,)
         if name == "osdk/deps/test-kernel/Cargo.toml":
@@ -166,6 +182,7 @@ def main():
                 or name in G1C_FEATURE_ADDITIONS
                 or name in G1D_FEATURE_ADDITIONS
                 or name in PHYSICAL_RESERVE_FEATURE_ADDITIONS
+                or name in G2_FEATURE_ADDITIONS
                 or name in {"Cargo.lock", "osdk/deps/test-kernel/Cargo.toml"}
             ):
                 original = subprocess.check_output(["git", "cat-file", "blob", expected], cwd=ROOT)
@@ -180,6 +197,7 @@ def main():
                         (G1C_FEATURE_ADDITIONS, "g1c-trusted-observe"),
                         (G1D_FEATURE_ADDITIONS, "g1d-trusted-control"),
                         (PHYSICAL_RESERVE_FEATURE_ADDITIONS, "physical-reserve"),
+                        (G2_FEATURE_ADDITIONS, "g2-trusted-daemon"),
                     ) if name in additions],
                 }
                 expected = hashlib.sha1(f"blob {len(derived)}\0".encode() + derived).hexdigest()

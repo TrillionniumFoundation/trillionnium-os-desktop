@@ -81,8 +81,10 @@ impl TrustedInitialSnapshot {
             if read == 0 {
                 #[cfg(not(feature = "g1d-trusted-control"))]
                 println!("[hepta-g1c] rejected initial image: truncated-snapshot");
-                #[cfg(feature = "g1d-trusted-control")]
+                #[cfg(all(feature = "g1d-trusted-control", not(feature = "g2-trusted-daemon")))]
                 println!("[hepta-g1d] rejected initial image: truncated-snapshot");
+                #[cfg(feature = "g2-trusted-daemon")]
+                println!("[hepta-g2] rejected initial image: truncated-snapshot");
                 return_errno_with_message!(
                     Errno::ENOEXEC,
                     "trusted initial image snapshot is truncated"
@@ -96,8 +98,10 @@ impl TrustedInitialSnapshot {
         {
             #[cfg(not(feature = "g1d-trusted-control"))]
             println!("[hepta-g1c] rejected initial image: manifest-byte-mismatch");
-            #[cfg(feature = "g1d-trusted-control")]
+            #[cfg(all(feature = "g1d-trusted-control", not(feature = "g2-trusted-daemon")))]
             println!("[hepta-g1d] rejected initial image: manifest-byte-mismatch");
+            #[cfg(feature = "g2-trusted-daemon")]
+            println!("[hepta-g2] rejected initial image: manifest-byte-mismatch");
             return_errno_with_message!(
                 Errno::ENOEXEC,
                 "trusted initial image bytes do not match kernel manifest"
@@ -243,9 +247,15 @@ impl TrustedInitialSnapshot {
             snapshot.len(),
             entry_point
         );
-        #[cfg(feature = "g1d-trusted-control")]
+        #[cfg(all(feature = "g1d-trusted-control", not(feature = "g2-trusted-daemon")))]
         println!(
             "[hepta-g1d] trusted initial image committed: bytes={} entry={:#x}",
+            snapshot.len(),
+            entry_point
+        );
+        #[cfg(feature = "g2-trusted-daemon")]
+        println!(
+            "[hepta-g2] trusted initial image committed: bytes={} entry={:#x}",
             snapshot.len(),
             entry_point
         );

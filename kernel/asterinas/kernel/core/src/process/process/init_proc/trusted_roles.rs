@@ -10,9 +10,16 @@
 //! credentials and session. It receives only the already-open standard console
 //! handles; this I/O handoff never assigns a role or a grant.
 
+#[cfg(not(feature = "g2-trusted-daemon"))]
 use os_control::PublisherId;
 
 use super::*;
+use crate::process::{
+    credentials::{Gid, SecureBits, Uid, capabilities::CapSet},
+    program_loader::elf::TrustedInitialSnapshot,
+    rlimit::ResourceType,
+};
+#[cfg(not(feature = "g2-trusted-daemon"))]
 use crate::{
     device::misc::{hepta_boot_id, hepta_image_space_id},
     fs::{
@@ -24,20 +31,23 @@ use crate::{
     },
     process::{
         clone::{CloneFlags, set_parent_and_group},
-        credentials::{Gid, SecureBits, Uid, capabilities::CapSet},
         process::trusted_control::TrustedControlSlots,
-        program_loader::elf::TrustedInitialSnapshot,
-        rlimit::{ResourceType, new_resource_limits_for_initial_workload},
+        rlimit::new_resource_limits_for_initial_workload,
     },
 };
 
+#[cfg(not(feature = "g2-trusted-daemon"))]
 const BOOT_PAGE_BYTES: u64 = 192;
+#[cfg(not(feature = "g2-trusted-daemon"))]
 const WORKLOAD_ID: u32 = 60001;
+#[cfg(not(feature = "g2-trusted-daemon"))]
 const WORKLOAD_AS_BYTES: u64 = 256 * 1024 * 1024;
 // Aggregate user-data frames, including the stopped initial image. This is
 // separate from virtual-address admission and is not a global memory reserve.
+#[cfg(not(feature = "g2-trusted-daemon"))]
 const WORKLOAD_USER_PAGES: usize = 64 * 1024 * 1024 / PAGE_SIZE;
 
+#[cfg(not(feature = "g2-trusted-daemon"))]
 pub(super) fn spawn(
     path_resolver: PathResolver,
     executable_path: Path,
@@ -121,7 +131,7 @@ pub(super) fn spawn(
             Box::new(crate::fs::init_console_file_table)
         };
         let credentials = if index == 1 {
-            workload_credentials()?
+            workload_credentials(WORKLOAD_ID)?
         } else {
             Credentials::new_root()
         };
@@ -186,7 +196,7 @@ pub(super) fn spawn(
     Ok(result)
 }
 
-fn workload_credentials() -> Result<Credentials> {
+pub(super) fn workload_credentials(workload_id: u32) -> Result<Credentials> {
     // This private value is never attached to a task until every restriction
     // is applied. No user instruction or startup hook can run with root IDs.
     let credentials = Credentials::new_root();
@@ -198,8 +208,8 @@ fn workload_credentials() -> Result<Credentials> {
             | SecureBits::NO_CAP_AMBIENT_RAISE
             | SecureBits::NO_CAP_AMBIENT_RAISE_LOCKED,
     )?;
-    credentials.set_gid(Gid::new(WORKLOAD_ID))?;
-    credentials.set_uid(Uid::new(WORKLOAD_ID))?;
+    credentials.set_gid(Gid::new(workload_id))?;
+    credentials.set_uid(Uid::new(workload_id))?;
     credentials.set_inheritable_capset(CapSet::empty());
     credentials.set_permitted_capset(CapSet::empty());
     credentials.set_effective_capset(CapSet::empty());
@@ -208,7 +218,7 @@ fn workload_credentials() -> Result<Credentials> {
     Ok(credentials)
 }
 
-fn prepare_role(
+pub(super) fn prepare_role(
     (process, vmar): (Arc<Process>, VmarHandle),
     fs: ThreadFsInfo,
     snapshot: &TrustedInitialSnapshot,
@@ -254,6 +264,7 @@ fn prepare_role(
     Ok((prepared, image, info.entry_point))
 }
 
+#[cfg(not(feature = "g2-trusted-daemon"))]
 fn boot_page(
     role: u64,
     pids: [crate::process::Pid; 3],

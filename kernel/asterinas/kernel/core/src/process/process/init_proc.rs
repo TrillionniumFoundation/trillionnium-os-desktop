@@ -22,6 +22,8 @@ use crate::{
     vm::vmar::{Vmar, VmarHandle},
 };
 
+#[cfg(feature = "g2-trusted-daemon")]
+mod trusted_daemon;
 #[cfg(feature = "g1d-trusted-control")]
 mod trusted_roles;
 
@@ -49,6 +51,14 @@ struct PreparedInitialProcess {
 }
 
 impl PreparedInitialProcess {
+    #[cfg(feature = "g2-trusted-daemon")]
+    fn activate_root(&self, loaded: LoadedInitialImage, entry: Vaddr) -> Result<()> {
+        loaded.consume(&self.vmar, entry)?;
+        with_initial_image(&self.process, &self.vmar, &self.task, |image| {
+            image.activate_initial_root(self.key)
+        })
+    }
+
     #[cfg(feature = "g1d-trusted-control")]
     fn activate_control(
         &self,
@@ -175,13 +185,15 @@ pub(crate) fn spawn_init_process(
     envp: Vec<CString>,
 ) -> Result<Arc<Process>> {
     // Boot arguments are already kernel-owned. Check them before either the
-    // ordinary initial load or the trusted profile's three role copies.
+    // ordinary initial load or any of the trusted profile's role copies.
     crate::process::program_loader::ArgBudget::for_args(
         crate::process::process_vm::INIT_STACK_SIZE as u64,
         &argv,
         &envp,
     )?;
-    #[cfg(feature = "g1d-trusted-control")]
+    #[cfg(feature = "g2-trusted-daemon")]
+    return trusted_daemon::spawn(path_resolver, executable_path, argv, envp);
+    #[cfg(all(feature = "g1d-trusted-control", not(feature = "g2-trusted-daemon")))]
     return trusted_roles::spawn(path_resolver, executable_path, argv, envp);
     #[cfg(not(feature = "g1d-trusted-control"))]
     create_init_process(path_resolver, executable_path, argv, envp)?.resume()
