@@ -65,6 +65,8 @@ impl BeforeEdit {
 #[derive(Default)]
 pub(super) struct NotesInput {
     raw_frames: VecDeque<egui::RawInput>,
+    pending_pointer_commit: Option<String>,
+    activation_commit: Option<String>,
     composition: Option<BeforeEdit>,
     before_frame: Option<BeforeEdit>,
     empty_preedit: bool,
@@ -84,6 +86,9 @@ impl NotesInput {
     /// TextEdit exposes only its final text, not each intermediate commit.
     /// Keep complete ordered RawInput fragments until that next transaction.
     pub fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) {
+        // A pointer fragment is always pushed to the very front, so the next
+        // raw frame is exactly the gesture associated with this real Commit.
+        self.activation_commit = self.pending_pointer_commit.take();
         let mut incoming = std::mem::take(raw);
         if self.raw_frames.is_empty() && !incoming.events.is_empty() {
             self.queue_notice = None;
@@ -182,12 +187,15 @@ impl NotesInput {
             }
             self.raw_frames.push_front(deferred);
         }
-        if self.composition.is_some()
-            && current.events.iter().any(|event| {
-                matches!(event, egui::Event::Ime(egui::ImeEvent::Commit(value))
-                    if !value.is_empty() && value != "\n" && value != "\r")
-            })
-        {
+        let native_commit = current.events.iter().find_map(|event| match event {
+            egui::Event::Ime(egui::ImeEvent::Commit(value))
+                if !value.is_empty() && value != "\n" && value != "\r" =>
+            {
+                Some(value.clone())
+            }
+            _ => None,
+        });
+        if self.composition.is_some() && native_commit.is_some() {
             // TextEdit handles pointer positioning before its IME events. A
             // pointer delivered with Commit would move the private IME anchor
             // and make egui report changed without inserting the confirmation.
@@ -216,11 +224,47 @@ impl NotesInput {
                     viewport.events.clear();
                 }
                 self.raw_frames.push_front(pointer);
+                self.pending_pointer_commit = native_commit;
             }
+        } else if self.composition.is_some()
+            && current
+                .events
+                .iter()
+                .any(|event| matches!(event, egui::Event::PointerButton { pressed: true, .. }))
+        {
+            // Share this explicit cancellation with ActivationGuard before
+            // either consumer sees the frame. Otherwise Notes would cancel
+            // while the guard kept blocking subsequent controls as composing.
+            current
+                .events
+                .push(egui::Event::Ime(egui::ImeEvent::Disabled));
         }
         *raw = current;
         if !self.raw_frames.is_empty() {
             ctx.request_repaint();
+        }
+    }
+
+    /// Preserve the original guard's IME fence for a pointer deferred from a
+    /// Commit frame. Only the guard observes this retained Commit; TextEdit
+    /// receives the original pointer once and never replays the text effect.
+    pub fn begin_activation(
+        &self,
+        ctx: &egui::Context,
+        guard: &mut crate::activation::ActivationGuard,
+    ) {
+        if let Some(commit) = &self.activation_commit {
+            ctx.input_mut(|input| {
+                input
+                    .events
+                    .insert(0, egui::Event::Ime(egui::ImeEvent::Commit(commit.clone())))
+            });
+        }
+        guard.begin_frame(ctx);
+        if self.activation_commit.is_some() {
+            ctx.input_mut(|input| {
+                input.events.remove(0);
+            });
         }
     }
 

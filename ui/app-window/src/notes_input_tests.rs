@@ -479,6 +479,20 @@ fn pointer_caret_move_before_commit_never_publishes_the_old_preedit() {
         ctx.input(|input| input.pointer.any_click()),
         "the pointer gesture was deferred, not discarded"
     );
+    let original_events = ctx.input(|state| state.events.clone());
+    let mut guard = crate::activation::ActivationGuard::default();
+    input.begin_activation(&ctx, &mut guard);
+    assert!(
+        guard.ime_confirmation_fenced(),
+        "the same pointer must retain the original Commit's effect fence"
+    );
+    assert_eq!(
+        ctx.input(|state| state.events.clone()),
+        original_events,
+        "the retained Commit is never replayed into TextEdit"
+    );
+    assert!(frame(&ctx, &mut input, &mut text, 5, vec![]).is_none());
+    assert!(input.activation_commit.is_none());
 }
 
 #[test]

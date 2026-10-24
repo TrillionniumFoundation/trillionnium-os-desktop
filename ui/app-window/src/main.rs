@@ -36,7 +36,7 @@ impl eframe::App for ClientWindow {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.activation.begin_frame(ctx);
+        self.notes_input.begin_activation(ctx, &mut self.activation);
         self.terminal_preedit_active = self.activation.composing();
         let mut notes_updated = false;
         if let Some(organ) = &mut self.notes_organ {
