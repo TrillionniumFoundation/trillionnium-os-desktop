@@ -15,6 +15,7 @@ from native_owner_successor_wire import initial_bootstrap, initial_expiry_upper_
 
 OWNER_KEYS = ("role", "pid", "kernel_bootstrap", "supervisor", "root_lease", "writer", "writer_proof", "current",
               "material_sha256", "device_frontier", "notes_frontier", "usage")
+RELEASE_KEYS = ("pid", "peer_lifetime", "receipt", "current", "material_sha256", "device_frontier", "notes_frontier")
 
 
 class Continuity:
@@ -50,6 +51,21 @@ class Continuity:
 
     def activation_predecessor(self, previous):
         return previous
+
+    def owner_keys(self):
+        return OWNER_KEYS
+
+    def release_keys(self):
+        return RELEASE_KEYS
+
+    def root_lease_id(self, writer, initial):
+        suffix = self.c.peers["root"]["boot_id"] + "." + str(writer["spawn_generation"])
+        return "native-cpu-root-installation" if initial else "native-cpu.root." + suffix
+
+    def original_root_scope(self):
+        return hashlib.sha256(b"hepta.hos2.cpu-budget.scope.v1\0" + bytes(self.c.boot_id)
+                              + bytes(self.initial_spaces["manager"])
+                              + (2).to_bytes(8, "little") + (1).to_bytes(8, "little")).digest()
 
     def sample(self, value, role, expected_revision=None, expected_cap=None):
         current = base.usage(value, self.c.boot_id, self.c.spaces[role])
@@ -99,7 +115,7 @@ class Continuity:
             if retirement["policy_retired"] and launched["generation"] != previous_kernel_generation:
                 self.check_policy_cut(retirement)
                 self.observed_watchdog = None
-        value = base.obj(self.c.take("continuity_owner"), OWNER_KEYS, "complete actual continuity owner")
+        value = base.obj(self.c.take("continuity_owner"), self.owner_keys(), "complete actual continuity owner")
         base.require(value["role"] == role and type(value["pid"]) is int,
                      "actual continuation role differs from the original Supervisor flow")
         if launched["generation"] == 0:
@@ -130,8 +146,7 @@ class Continuity:
         auth = types.authority(value["root_lease"], value["writer"], value["writer_proof"], current, self.agent)
         writer, root = auth["writer"], auth["root"]
         lease_suffix = self.c.peers["root"]["boot_id"] + "." + str(writer["spawn_generation"])
-        expected_root_id = ("native-cpu-root-installation" if initial
-                            else "native-cpu.root." + lease_suffix)
+        expected_root_id = self.root_lease_id(writer, initial)
         base.require(root["lease_id"] == expected_root_id
                      and writer["authority_lease"]["lease_id"] == "native-cpu.writer." + lease_suffix
                      and root["lease_id"] not in self.seen_root_leases
@@ -179,9 +194,7 @@ class Continuity:
                 self.c.materials[self.previous["role"]]))
         if self.root_binding is None:
             self.root_binding = root["binding"]
-        original_root_scope = hashlib.sha256(b"hepta.hos2.cpu-budget.scope.v1\0" + bytes(self.c.boot_id)
-                                            + bytes(self.initial_spaces["manager"])
-                                            + (2).to_bytes(8, "little") + (1).to_bytes(8, "little")).digest()
+        original_root_scope = self.original_root_scope()
         base.require(root["binding"] == self.root_binding
                      and bytes(root["binding"]["scope_sha256"]) == original_root_scope
                      and bytes(root["binding"]["payload_sha256"]) == hashlib.sha256(b"native-root-installation-observation-only").digest(),
@@ -244,8 +257,7 @@ class Continuity:
 
     def release(self):
         role = self.active["role"]
-        value = base.obj(self.c.take("owner_released"), ("pid", "peer_lifetime", "receipt", "current", "material_sha256",
-                                                       "device_frontier", "notes_frontier"), "actual original writer release")
+        value = base.obj(self.c.take("owner_released"), self.release_keys(), "actual original writer release")
         base.require(value["pid"] == self.active["pid"] and type(value["pid"]) is int and value["peer_lifetime"] == self.active["peer"],
                      "release observation came from another actual live publisher")
         current = base.checkpoint(value["current"], self.active["peer"], self.agent)
@@ -273,6 +285,7 @@ class Continuity:
         self.last_lifecycle_generation = stopped_snapshot["events"][-1]["generation"]
         self.previous = self.active
         self.active = None
+        return value
 
     def check_policy_cut(self, retired):
         base.require(self.last_effect is not None, "a CPU policy was retired before its original Manager effect")

@@ -239,9 +239,10 @@ def parse(raw, scenario, nonce):
     return _parse(raw, scenario, nonce, False)
 
 
-def _parse(raw, scenario, nonce, prior_boot, activation=False, genesis=False):
+def _parse(raw, scenario, nonce, prior_boot, activation=False, genesis=False, prior_renewal=False):
     require(type(raw) is bytes and len(raw) <= MAX_SERIAL_BYTES, "serial evidence exceeds the original bound")
     require(scenario in SUPPORTED_SCENARIOS or (prior_boot and scenario == "prior-boot-unknown-v1")
+            or (prior_renewal and scenario == "prior-boot-unknown-renewal-v1")
             or (activation and scenario in ("activation-after-proof-v1", "activation-after-material-v1"))
             or (genesis and scenario in ("original-genesis-before-writer-v1", "original-genesis-writer-reserved-v1", "original-genesis-before-head-v1")),
             "unsupported original-owner scenario")
@@ -267,7 +268,8 @@ def _parse(raw, scenario, nonce, prior_boot, activation=False, genesis=False):
             events.append((line_number, value))
         elif line.startswith(("G1D_", "G1C_", "[hepta-g1d]", "[hepta-g1c]")):
             raise ValueError("legacy role or read-only qualification cannot substitute for an original G2 owner")
-    event_limit = 1024 if scenario == "successor-renewal-v1" else MAX_EVENTS
+    event_limit = 1024 if (scenario == "successor-renewal-v1" or
+                           (prior_renewal and scenario == "prior-boot-unknown-renewal-v1")) else MAX_EVENTS
     require(1 <= len(events) <= event_limit, "bounded original-owner event stream required")
     return lines, events
 
@@ -305,9 +307,13 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
 
 def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, prior_boot, activation=None, genesis=None):
     expected_exit = 33
+    prior_renewal = False
     if prior_boot is not None:
         from native_owner_prior_boot_evidence import PriorBootTranscript
-        require(type(prior_boot) is PriorBootTranscript and scenario == "prior-boot-unknown-v1",
+        if scenario == "prior-boot-unknown-renewal-v1":
+            from native_owner_prior_renewal_evidence import PriorRenewalTranscript
+            prior_renewal = type(prior_boot) is PriorRenewalTranscript
+        require((type(prior_boot) is PriorBootTranscript and scenario == "prior-boot-unknown-v1") or prior_renewal,
                 "only the separate actual two-boot oracle can consume this transcript")
         expected_exit = -9 if prior_boot.phase == "fresh" else 33
     if activation is not None:
@@ -321,9 +327,10 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
                 "only the separate original no-head recovery oracle can consume this transcript")
     require(type(code) is int and code == expected_exit and timed_out is False and excessive is False,
             "QEMU must finish the bounded actual boot with the original success exit")
-    lines, events = _parse(raw, scenario, nonce, prior_boot is not None, activation is not None, genesis is not None)
+    lines, events = _parse(raw, scenario, nonce, prior_boot is not None, activation is not None,
+                          genesis is not None, prior_renewal)
     successor_markers = []
-    if scenario in CONTINUITY_SCENARIOS or activation is not None:
+    if scenario in CONTINUITY_SCENARIOS or activation is not None or (prior_renewal and prior_boot.phase == "retained"):
         from native_owner_continuity_kernel import kernel_records
         initial, successor_markers = kernel_records(lines, events, elf_info)
         activated = [initial]
@@ -615,12 +622,34 @@ def _evaluate_boot(raw, code, timed_out, excessive, scenario, nonce, elf_info, p
     copyout_flags = {}
     if prior_boot is not None:
         from types import SimpleNamespace
-        result = prior_boot.finish(SimpleNamespace(
+        shared = SimpleNamespace(
             take=take, role_pids=role_pids, boot_id=boot_id, linux_boot=linux_boot, spaces=spaces,
             peers=peers, state=state, owners=owners, currents=currents, materials=materials,
             frontiers=frontiers, operations=operations, prepared=prepared,
             native_result=native_result, source_terminal=source_terminal,
-            acknowledge=acknowledge, window=window))
+            acknowledge=acknowledge, window=window)
+        if prior_renewal:
+            def peek():
+                return values[cursor]["event"] if cursor < len(values) else None
+
+            def next_line():
+                require(cursor < len(events), "original prior-boot renewal ended before its required event")
+                return events[cursor][0]
+
+            def current_usage():
+                return last_usage
+
+            def retain_usage(sample):
+                nonlocal last_usage
+                last_usage = sample
+
+            shared.peek, shared.next_line = peek, next_line
+            shared.current_usage, shared.retain_usage = current_usage, retain_usage
+            shared.initial_peers = {name: dict(peer) for name, peer in peers.items()}
+            shared.native_sequence = native_sequence
+            result = prior_boot.finish(shared, successor_markers)
+        else:
+            result = prior_boot.finish(shared)
         require(cursor == len(values), "actual prior-boot stream contains a later or unexpected owner event")
         result.update(raw_serial_sha256=hashlib.sha256(raw).hexdigest(), event_count=len(values),
                       genesis_initial_expected=genesis_initial if prior_boot.phase == "fresh"

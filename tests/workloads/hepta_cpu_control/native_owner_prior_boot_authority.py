@@ -185,6 +185,12 @@ def root_authority(disk, transcript, prior=None):
     event = transcript["cut_event"] if phase == "fresh" else transcript["complete_event"]
     current = transcript["cut_current"] if phase == "fresh" else transcript["final_current"]
     authority = event["authority_before_dispatch"] if phase == "fresh" else event["authority"]
+    return verify_observed_root(disk, transcript, current, authority, transcript["original_owner"], prior)
+
+
+def verify_observed_root(disk, transcript, current, authority, owner, prior=None):
+    """Bind explicit actual observations without manufacturing an event."""
+    phase = transcript["phase"]
     head, head_file = root_record(disk, t.AUTHORITY + "/checkpoint", "root-cognitive-checkpoint-v1")
     e.require(head == current["head"] and sha(b"hepta:root:cognitive-checkpoint-head:v1\0" + e.canonical(head).encode())
               == current["token"]["head_sha256"], "physical original Current is missing, newer, or bound to another complete head")
@@ -215,7 +221,7 @@ def root_authority(disk, transcript, prior=None):
     e.require(writer == authority["writer"] and claims["sequence"] <= issuer["sequence"],
               "physical original canonical writer differs from actual source owner")
     root_id = ("native-cpu-root-installation" if phase == "fresh" else
-               "native-cpu.root." + transcript["linux_boot_id"] + "." + str(transcript["original_owner"]["spawn_generation"]))
+               "native-cpu.root." + transcript["linux_boot_id"] + "." + str(owner["spawn_generation"]))
     e.require(root_id in registry["state"]["leases"], "actual finite Root session was not retained in original registry")
     checked = original.authority(registry["state"]["leases"][root_id], writer, proof, current, t.AGENT)
     e.require(checked["proof_sha256"] == authority["writer_proof_sha256"], "physical original signed writer bytes differ")
