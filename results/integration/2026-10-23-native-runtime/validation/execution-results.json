@@ -1,0 +1,246 @@
+{
+  "actual_retained_a06_import": {
+    "f1_completed": false,
+    "finished_at_utc": "2026-10-23T05:49:15.276752+00:00",
+    "guest_executed_in_this_import": false,
+    "imported": true,
+    "kernel_built_in_this_import": false,
+    "kernel_receipt_sha256": "4d9d06aba189c19737a99564bccb06bf4088900bfbcd5b08fe64d9445c18b4c6",
+    "kernel_sha256": "5a4f528b344c2d0bdb40c41c446e141d206aafb84d4cb6a6895dcf5c962f1450",
+    "original_candidate_oracle_passed": true,
+    "output_created": true,
+    "schema": "hepta.native-original-runtime-kernel-import.v1",
+    "source_file_count": 7821,
+    "sources": {
+      "desktop": {
+        "head": "c5c88794bf227b1d862b2f914b02809a0090e854",
+        "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c"
+      },
+      "hepta": {
+        "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+        "tree": "f722fbe5f24275c324089be720559a40901105f3"
+      }
+    },
+    "started_at_utc": "2026-10-23T05:49:14.983343+00:00"
+  },
+  "changed_source_files": [
+    {
+      "bytes": 2453,
+      "path": ".github/workflows/f1-original-runtime-host.yml",
+      "sha256": "0428385aaf10ecfb4f1c2c2eb18a4614e39444bf730f562da78eb449ee7027ea"
+    },
+    {
+      "bytes": 10922,
+      "path": ".github/workflows/f1-original-runtime-native.yml",
+      "sha256": "a8cabd54621b0082a0fe7497da5b13d5266632570693599e30c62e6aaa0c1661"
+    },
+    {
+      "bytes": 17631,
+      "path": "tests/workloads/hepta_agentd_runtime/README.md",
+      "sha256": "0a5af5a039872c01c6caed84ed2707da8f2049e920ae4d91a7cf82cae84f23eb"
+    },
+    {
+      "bytes": 4015,
+      "path": "tests/workloads/hepta_agentd_runtime/agentd_runtime_probe.c",
+      "sha256": "a3304e70e839ce5740cd6dfb3726a695143752e7cfc379a5686d04d81d76d629"
+    },
+    {
+      "bytes": 16064,
+      "path": "tests/workloads/hepta_agentd_runtime/import_kernel_artifact.py",
+      "sha256": "50b0c1464543b8fe0b47e8e29c00c51d4b23b1f0f7d8c9e6f454dd7f67fd012b"
+    },
+    {
+      "bytes": 13708,
+      "path": "tests/workloads/hepta_agentd_runtime/prepare_inputs.py",
+      "sha256": "f971f341367b29c41aab74cb73b861f0e90f5989d86078562efc29d70dfc21ca"
+    },
+    {
+      "bytes": 26644,
+      "path": "tests/workloads/hepta_agentd_runtime/run_agentd_runtime.py",
+      "sha256": "eea60ca73d86537a6d83d91b937851b6a1386b3f3c061db1e4095e01305179e6"
+    },
+    {
+      "bytes": 7364,
+      "path": "tests/workloads/hepta_agentd_runtime/source-review.json",
+      "sha256": "ae515465f3d9455b7a00dab60b5cc8234480a2f27b61d300ec384322c3e392bd"
+    },
+    {
+      "bytes": 20505,
+      "path": "tests/workloads/hepta_agentd_runtime/test_agentd_runtime.py",
+      "sha256": "86b5839f36e16893a08e8c62dfae95840807d53ce718ba960de32d94ea487803"
+    },
+    {
+      "bytes": 7110,
+      "path": "tests/workloads/hepta_agentd_runtime/test_kernel_import.py",
+      "sha256": "ac9c55626968398d1b4eb8494d93836ce50cbcf2725a2ea177952f488c0af835"
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_agentd_runtime",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": "validation/final-native-ready/runtime-host-tests.log",
+      "log_sha256": "718f8d4cf3d2d33fbb0304da30354c3eb73baed68f5397afc4b65f66b1a3554c",
+      "name": "runtime-host-tests"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_agentd_runtime",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": "validation/final-native-ready/runtime-host-tests-optimized.log",
+      "log_sha256": "074cbf34ae762f2cd57b672198e7202930801a2500cc3ee5f26b99b50d67aec8",
+      "name": "runtime-host-tests-optimized"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_agentd_abi",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": "validation/final-native-ready/original-refusal-tests.log",
+      "log_sha256": "e395173cf9789fdcc60692a0243a9f5821dc87ee12dc5fe1a37b668619ded650",
+      "name": "original-refusal-tests"
+    },
+    {
+      "argv": [
+        "gcc",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-static",
+        "tests/workloads/hepta_agentd_runtime/agentd_runtime_probe.c",
+        "-o",
+        "/workspace/scratch/3d6a75235bcb/work/native-kernel/validation/final-native-ready/launcher.elf"
+      ],
+      "exit": 0,
+      "log": "validation/final-native-ready/compile-launcher.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "compile-launcher"
+    },
+    {
+      "argv": [
+        "readelf",
+        "-lW",
+        "/workspace/scratch/3d6a75235bcb/work/native-kernel/validation/final-native-ready/launcher.elf"
+      ],
+      "exit": 0,
+      "log": "validation/final-native-ready/launcher-headers.log",
+      "log_sha256": "2b1295fde87630ac5201afeadfbf74737f9b82a128a83465bb16731dc7237bae",
+      "name": "launcher-headers"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/workloads/hepta_agentd_runtime/run_agentd_runtime.py"
+      ],
+      "exit": 0,
+      "log": "validation/final-native-ready/disabled-runner.log",
+      "log_sha256": "11fe565d2b792f4ac7022d3f70fd8b03b2e6396abdb0d5c30cc5b2586427693a",
+      "name": "disabled-runner"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/workloads/hepta_agentd_runtime/import_kernel_artifact.py",
+        "--archive",
+        "../artifacts/a06-final-c5c8879-39898657974.zip",
+        "--artifact-metadata",
+        "review-inputs/artifact-list.json",
+        "--run-metadata",
+        "review-inputs/workflow-run.json",
+        "--desktop-source",
+        "review-inputs/pr245-source",
+        "--output",
+        "/workspace/scratch/3d6a75235bcb/work/native-kernel/validation/final-native-ready/kernel-import"
+      ],
+      "exit": 0,
+      "log": "validation/final-native-ready/actual-a06-import.log",
+      "log_sha256": "36bfa0f61e28245f267600cd7d2a9a3307da41050af3633eb9918baf7be4dfdd",
+      "name": "actual-a06-import"
+    }
+  ],
+  "desktop_main_same_tree_merge": "39c1d84ebf854958f5829c0118b0c8b92a6b4926",
+  "desktop_source": "c5c88794bf227b1d862b2f914b02809a0090e854",
+  "desktop_tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c",
+  "f1_completed": false,
+  "finished_at_utc": "2026-10-23T05:49:15.359849+00:00",
+  "g2_completed": false,
+  "guest_executed": false,
+  "hardware_verified": false,
+  "hepta_source": "6d6097da843f5831dfaf9cee3530da512d072a15",
+  "hepta_tree": "f722fbe5f24275c324089be720559a40901105f3",
+  "host_validation_passed": true,
+  "launcher_sha256": "aaf28e44da85e19a87a03975681b65378dacb046404f8bd2c85e75c6400be7a2",
+  "launcher_static": true,
+  "original_agentd_executed": false,
+  "original_fixture_executed": false,
+  "original_refusal_test_methods": 11,
+  "patch": {
+    "bytes": 131339,
+    "fresh_application_all_file_hashes_match": true,
+    "git_apply_check_passed": true,
+    "new_files": 10,
+    "path": "native-runtime.patch",
+    "sha256": "9c441a3c4c1ef9b32fb3a16309029313f66f4e7c9180533a8e3924652766f392"
+  },
+  "runtime_test_methods": 38,
+  "schema": "f1.original-runtime-validation.v2",
+  "source_review_recheck": {
+    "all_28_blobs_match": true,
+    "path": "review-inputs/source-review-c5-recheck.json",
+    "sha256": "b3e55a004261c23b263452b319a28a6dad294c5a850f0473ccaa879ad0a5c99d"
+  },
+  "started_at_utc": "2026-10-23T05:49:12.865044+00:00",
+  "userspace_build_executed": false,
+  "workflow_syntax": [
+    {
+      "bash_steps_syntax_checked": 3,
+      "path": ".github/workflows/f1-original-runtime-host.yml",
+      "yaml_parsed": true
+    },
+    {
+      "bash_steps_syntax_checked": 8,
+      "path": ".github/workflows/f1-original-runtime-native.yml",
+      "yaml_parsed": true
+    }
+  ]
+}
