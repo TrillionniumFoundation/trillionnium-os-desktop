@@ -19,6 +19,7 @@ import tempfile
 import time
 
 from inventory import inventory
+import preedit_gate
 
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
@@ -73,6 +74,7 @@ def run(args):
     groups, logs = [], []
     temporary = None
     guard = None
+    preedit = None
 
     def save():
         (output / "receipt.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
@@ -113,6 +115,7 @@ def run(args):
                       "build_source_identity_verified": False}
         if editable is not None:
             provenance["original_atomic_editable_text_script"] = {"path": str(editable), "sha256": digest(editable)}
+        build = None
         if args.build_receipt is not None:
             build = json.loads(args.build_receipt.read_bytes())
             provenance["build_artifact_kind"] = verify_build_binary(
@@ -122,6 +125,10 @@ def run(args):
             provenance["source_commit"] = build["source_commit"]
             provenance["source_tree"] = build["source_tree"]
             shutil.copyfile(args.build_receipt, output / "build-receipt.json")
+        preedit = preedit_gate.verify_resources(resources, build, packaged_binary=args.packaged_binary,
+                                                atomic_editable_text=args.atomic_editable_text)
+        if preedit is not None:
+            provenance["sdk_profile"] = preedit
         (output / "provenance.json").write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n")
         report["provenance"] = provenance
         guard_path = ROOT / "tests/integration/hepta/run_original_agentd.py"
@@ -263,6 +270,9 @@ def run(args):
                 return str(observation["window"]["xid"])
             return None
         xid = until(window, "Exactly one original Makepad window did not appear", timeout=30)
+        if preedit is not None:
+            report["preedit_sdk_negotiation"] = preedit_gate.verify_negotiation(
+                output / "original-makepad-shell.stderr.log", xid)
         command("owned-window-pid", [sys.executable, "-B", str(owner_helper),
                 "--pid", str(shell_group.process.pid), "--window-id", xid])
         alive(shell_group)
@@ -289,6 +299,9 @@ def run(args):
         ime = json.loads((output / "ibus-receipt.json").read_bytes())
         if ime.get("passed") is not True:
             raise RuntimeError("Real IBus test did not pass")
+        if preedit is not None:
+            report["preedit_sdk_negotiation"] = preedit_gate.verify_negotiation(
+                output / "original-makepad-shell.stderr.log", xid)
         for group in (xserver, bus, a11y, ibus, shell_group):
             alive(group)
         report["supported_atspi_checks_passed"] = True
@@ -318,6 +331,7 @@ def run(args):
             report["passed"] = False
             report["cleanup_errors"] = errors
         report["finished_unix_ms"] = time.time_ns() // 1_000_000
+        report["preedit_profile_qualified"] = preedit is not None and report["passed"]
         save()
         print(json.dumps({"passed": report["passed"], "receipt": str(output / "receipt.json"), "error": report.get("error")}, ensure_ascii=False))
         if errors:
