@@ -176,6 +176,19 @@ def freeze(source, destination):
     return {"path": destination.name, "bytes": destination.stat().st_size, "sha256": before}
 
 
+@contextmanager
+def packaging_copy(source, destination):
+    """Let the original strip command write only its new private copy."""
+    require(not destination.exists() and not destination.is_symlink(), "packaging copy must be new")
+    freeze(source, destination)
+    destination.chmod(0o755)
+    try:
+        yield destination
+    finally:
+        require(destination.is_file() and not destination.is_symlink(), "original packaging lost its regular binary")
+        destination.chmod(0o555)
+
+
 def environment(args, toolchain):
     cargo = args.toolchain_bin / "cargo"
     rustc = args.toolchain_bin / "rustc"
@@ -262,12 +275,12 @@ def execute(args, report):
             report["built"] = True
             packaged = args.output / "packaged"
             packaged.mkdir(mode=0o700)
-            freeze(product, packaged / args.entry)
+            binary = packaged / args.entry
             script = args.hepta_source / ".github/scripts/archive-release-symbols-and-strip-binaries.sh"
             package_command = ["/bin/bash", script, "--target", TARGET, "--artifact-name", "hepta-original-native-entry",
                                "--release-dir", packaged, "--archive-dir", args.output / "symbols-dist", "--binaries", args.entry]
-            run(package_command, args.hepta_source, env, args.output, "original-packaging.log", report, 600)
-            binary = packaged / args.entry
+            with packaging_copy(product, binary):
+                run(package_command, args.hepta_source, env, args.output, "original-packaging.log", report, 600)
             report["product"] = {"path": "packaged/" + args.entry, "bytes": binary.stat().st_size, "sha256": digest(binary)}
             report["packaged"] = True
             run(["/usr/bin/readelf", "-W", "-h", "-l", "-d", binary], args.hepta_source, env, args.output,

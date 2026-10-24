@@ -2,8 +2,11 @@
 """Real local Git, file and lease failures for original-entry provenance."""
 
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -108,6 +111,69 @@ class SourceAndEntryTests(unittest.TestCase):
         self.assertEqual(report["commands"][0]["exit_code"], 7)
         self.assertEqual((output / "failed.log").read_text(), "retained-failure\n")
         self.assertFalse(json.loads((output / "result.json").read_text())["g2_complete"])
+
+
+class PackagingPermissionTests(unittest.TestCase):
+    def test_actual_strip_writes_only_the_private_copy_then_refreezes_it(self):
+        """A small local ELF checks strip permissions, never Hepta qualification."""
+        compiler, strip = shutil.which("cc"), shutil.which("strip")
+        self.assertIsNotNone(compiler, "an actual C compiler is required for this permission regression")
+        self.assertIsNotNone(strip, "the actual strip tool is required for this permission regression")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            source, product = root / "permission.c", root / "product"
+            source.write_text("int main(void) { return 0; }\n")
+            subprocess.run([compiler, "-g", "-o", str(product), str(source)],
+                           env=build.BASE_ENV, capture_output=True, check=True, timeout=30)
+            module = root / "builder.py"
+            shutil.copyfile(Path(build.__file__), module)
+            # Privileged root can bypass mode 0555. Drop to an ordinary user
+            # when DAC bypass capabilities are present. A capability-free
+            # user-namespace root already obeys the owner permission bits.
+            credentials = {}
+            capabilities = next(line.split()[1] for line in Path("/proc/self/status").read_text().splitlines()
+                                if line.startswith("CapEff:"))
+            if os.geteuid() == 0 and int(capabilities, 16) & 0x6:
+                os.chown(root, 65534, 65534)
+                credentials = {"user": 65534, "group": 65534, "extra_groups": []}
+            script = r'''
+import importlib.util, json, pathlib, stat, subprocess, sys
+root, strip = pathlib.Path(sys.argv[1]), sys.argv[2]
+spec = importlib.util.spec_from_file_location("permission_builder", root / "builder.py")
+build = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(build)
+product = root / "product"
+original = build.digest(product)
+retained = root / "product.unstripped"
+build.freeze(product, retained)
+private = root / "packaged"
+private.mkdir(mode=0o700)
+legacy = private / "old-readonly"
+build.freeze(product, legacy)
+failed = subprocess.run([strip, "--strip-all", str(legacy)], env=build.BASE_ENV,
+                        capture_output=True, timeout=30)
+binary = private / "entry"
+with build.packaging_copy(product, binary):
+    mode_during = stat.S_IMODE(binary.stat().st_mode)
+    subprocess.run([strip, "--strip-all", str(binary)], env=build.BASE_ENV,
+                   capture_output=True, check=True, timeout=30)
+print(json.dumps({"old_exit": failed.returncode, "old_stderr": failed.stderr.decode(),
+    "mode_during": mode_during, "mode_after": stat.S_IMODE(binary.stat().st_mode),
+    "retained_mode": stat.S_IMODE(retained.stat().st_mode),
+    "original_unchanged": original == build.digest(product) == build.digest(retained),
+    "stripped": build.digest(binary) != original and binary.stat().st_size < product.stat().st_size}))
+'''
+            result = subprocess.run([sys.executable, "-I", "-B", "-c", script, str(root), strip],
+                                    cwd=root, env=build.BASE_ENV, capture_output=True, text=True,
+                                    check=True, timeout=90, **credentials)
+            observed = json.loads(result.stdout)
+            self.assertNotEqual(observed["old_exit"], 0)
+            self.assertIn("Permission denied", observed["old_stderr"])
+            self.assertEqual(observed["mode_during"], 0o755)
+            self.assertEqual(observed["mode_after"], 0o555)
+            self.assertEqual(observed["retained_mode"], 0o555)
+            self.assertTrue(observed["original_unchanged"])
+            self.assertTrue(observed["stripped"])
 
 
 if __name__ == "__main__":
