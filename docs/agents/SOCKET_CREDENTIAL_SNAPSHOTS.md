@@ -2,8 +2,7 @@
 
 This slice fixes a reproduced identity lifetime error in the original Unix
 socket credential owner. It does not replace sender authorization with a PID,
-UID label, peer group, or transferred descriptor supplied by userspace. Native
-qualification of this candidate is pending the complete source-bound run.
+UID label, peer group, or transferred descriptor supplied by userspace. Exact native qualification below belongs only to its recorded source and ELF.
 
 ## Reproduced lifetime errors
 
@@ -96,3 +95,41 @@ The second probe uses the already supported O_NONBLOCK descriptor flag to isolat
 the snapshot defect and completes all 59 records. That fixture change does not
 fix or close the MSG_DONTWAIT API defect. It requires a separate production slice
 and execution of the original first probe, without widening the deadline.
+
+## Exact native qualification
+
+Source `22e0a19f8ab95f730e0fedd85462157ed3d9a10e`, tree
+`9cbd2a0762b42a63cb2c718746773d6555c46460`, passed all original unfiltered
+core 365/365 (126 mandatory names), OSTD 230, frame allocator 20 and MLSDisk 15
+suites. All four guests returned raw 33 with no failed or filtered tests; only
+OSTD's three original TCG VMX soft skips remain. Both new snapshot owner tests
+actually executed. The original physical PT exhaustion/recovery regression also
+ran again without changing its memory, available-frame windows or assertions.
+
+The fresh ordinary kernel passed all 18 boot/QueryAbi checks. That exact ELF
+passed the existing SGID 30, Unix ownership 12, proc Groups/NoNewPrivs 12, memfd 4,
+signal 22, dumpability lifecycle 164, stat 54, TRACEME 15, supplementary DAC 6 and
+commoncap 16 checks. The unchanged Linux-referenced new binaries then passed
+59/59 identity records in 1.724 seconds and 16/16 group records in 2.126 seconds.
+All five owned children across the two probes were reaped, with raw QEMU 33 and
+no timeout. The distinct capability-free identity and CAP_SETGID group fixtures
+retained their exact original credentials. The old 15- and four-failure results,
+and the earlier incomplete MSG_DONTWAIT run, remain unchanged.
+
+The complete pipeline took 659.472 seconds. All tracked source bytes were equal
+before and after, and the frozen checkout stayed clean. The ordinary ELF SHA-256
+is `a3fb67d9ea48f981d8b26d10d0d9d9bd2e4d20e7a978e48abb1dda7d1d251baa`.
+New lifetime/group serial hashes are respectively
+`fe9390cb91d3b513e16a2ce20815ca226ae8b26579e3a35fce7f712d009c8a4c` and
+`b65363d2a78b0878ed952f13eb7e8d3d3ac8981fdabef4e145602edadbddbe36`.
+The [full receipt](../../results/integration/2026-10-23-audit-closure/socket-credential-22e0.json)
+retains all input, ELF, source, log and negative identities. It separately records
+84 host tests, 118 original source checks, four strict checker tests, and successful
+ordinary/G1d feature Clippy compilations (113/124 warnings respectively). The G1d
+feature build used a retained explicit initial-image input and is compilation
+evidence only; this slice does not add new G1d guest qualification. Initial compile
+failures remain recorded, including the missing required initial-image input.
+
+The datagram MSG_DONTWAIT blocker is still open. Passing the supported O_NONBLOCK
+fixture does not qualify that different operation flag, full Linux socket parity,
+production Root/Host authority or global memory recovery.

@@ -37,4 +37,7 @@ bug. `native-4aab-baseline-02-*` is the complete 15-failure lifetime baseline;
 Raw poweroff status 33 is not success when the probe failed or did not finish.
 
 See [the owner and scope contract](../../../../docs/agents/SOCKET_CREDENTIAL_SNAPSHOTS.md).
-Candidate native qualification is pending; prior kernel results are not inherited.
+Frozen source `22e0a19f8ab95f730e0fedd85462157ed3d9a10e` passed the complete
+original four-suite/ordinary/all-prior-native chain and these exact 59/16 records.
+See the source/ELF-bound receipt linked in the owner contract; MSG_DONTWAIT remains
+a separate open defect, and prior or later source states do not inherit this result.
