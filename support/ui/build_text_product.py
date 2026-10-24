@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import subprocess
 import sys
 import time
@@ -29,6 +30,76 @@ def digest(path):
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def cache_git(directory, *args):
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    env.update(GIT_NO_REPLACE_OBJECTS="1", GIT_TERMINAL_PROMPT="0", GIT_OPTIONAL_LOCKS="0")
+    result = subprocess.run(["git", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false",
+                             "-C", str(directory), *args], env=env, capture_output=True, check=False)
+    require(result.returncode == 0, "Cargo source Git check failed: " + result.stderr.decode(errors="replace")[:2000])
+    return result.stdout
+
+
+def verify_source_caches(metadata, hepta_commit, hepta_tree, profile):
+    """Verify actual resolved Git worktrees; normal untracked Cargo markers are allowed."""
+    sources = {
+        "hepta": ("https://github.com/TrillionniumFoundation/hepta-private-ci", hepta_commit, hepta_tree),
+        "makepad": (profile["makepad_repository"], profile["makepad_commit"], None),
+    }
+    families = {name: {} for name in sources}
+    for package in metadata["packages"]:
+        source = package.get("source") or ""
+        for family, (repository, commit, _tree) in sources.items():
+            if repository not in source:
+                continue
+            require(source == "git+" + repository + "?rev=" + commit + "#" + commit,
+                    "Unexpected resolved source in " + family)
+            manifest = Path(package["manifest_path"])
+            require(manifest.is_absolute() and manifest.is_file() and not manifest.is_symlink(),
+                    "Cargo source manifest must be an absolute regular file")
+            manifest = manifest.resolve(strict=True)
+            root = Path(cache_git(manifest.parent, "rev-parse", "--show-toplevel").decode().strip()).resolve(strict=True)
+            relative = manifest.relative_to(root).as_posix()
+            cache_git(root, "ls-files", "--error-unmatch", "--", relative)
+            families[family].setdefault(root, []).append(relative)
+    verified = {}
+    for family, roots in families.items():
+        require(len(roots) == 1, "Resolved " + family + " packages must use one Git worktree")
+        root, manifests = next(iter(roots.items()))
+        _repository, commit, tree = sources[family]
+        expected_tree = cache_git(root, "rev-parse", "--verify", commit + "^{tree}").decode().strip()
+        actual_commit = cache_git(root, "rev-parse", "--verify", "HEAD^{commit}").decode().strip()
+        actual_tree = cache_git(root, "rev-parse", "--verify", "HEAD^{tree}").decode().strip()
+        require(actual_commit == commit and actual_tree == expected_tree
+                and (tree is None or actual_tree == tree), "Cargo " + family + " HEAD/tree mismatch")
+        flags = cache_git(root, "ls-files", "-v", "-z").split(b"\0")
+        require(not any(item and (item[:1].islower() or item[:1] == b"S") for item in flags),
+                "Cargo " + family + " assume-unchanged/skip-worktree flags hide source changes")
+        require(not cache_git(root, "status", "--porcelain=v1", "--untracked-files=no", "--ignore-submodules=none"),
+                "Cargo " + family + " tracked source is dirty")
+        verified[family] = {"root": str(root), "commit": actual_commit, "tree": actual_tree,
+                            "manifests": sorted(set(manifests)), "tracked_clean": True,
+                            "untracked_files": "not assessed; Cargo markers allowed"}
+    return verified
+
+
+def controlled_environment(profile, target, jobs, tools, inherited=None):
+    env = dict(os.environ if inherited is None else inherited)
+    removed = []
+    for key in list(env):
+        if (key in {"RUSTC", "RUSTDOC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTC_BOOTSTRAP",
+                    "RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS"}
+                or key.startswith(("CARGO_BUILD_", "CARGO_PROFILE_", "CARGO_TARGET_"))
+                or re.match(r"^(?:(?:HOST|TARGET)_)?(?:CC|CXX|AR|CFLAGS|CXXFLAGS|CPPFLAGS|LDFLAGS)(?:_|$)", key)):
+            removed.append(key)
+            del env[key]
+    env.update(RUSTUP_TOOLCHAIN=profile["toolchain"], CARGO_TARGET_DIR=str(target), CARGO_BUILD_JOBS=str(jobs),
+               CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_DEV_INCREMENTAL="false", GIT_TERMINAL_PROMPT="0",
+               RUSTC=tools["rustc"], RUSTDOC=tools["rustdoc"], RUSTC_WRAPPER="", RUSTC_WORKSPACE_WRAPPER="",
+               RUSTFLAGS="", RUSTDOCFLAGS="", CARGO_ENCODED_RUSTFLAGS="", CARGO_ENCODED_RUSTDOCFLAGS="")
+    env["PATH"] = str(Path(tools["cargo"]).parent) + os.pathsep + env.get("PATH", os.defpath)
+    return env, sorted(removed)
 
 
 def validate_graph(metadata, hepta_commit, profile):
@@ -84,23 +155,31 @@ def build(args):
     logs = output / "logs"
     logs.mkdir(mode=0o700)
     target = output / "target"
-    env = dict(os.environ, RUSTUP_TOOLCHAIN=profile["toolchain"],
-               CARGO_TARGET_DIR=str(target), CARGO_BUILD_JOBS=str(args.jobs),
-               CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_DEV_INCREMENTAL="false",
-               GIT_TERMINAL_PROMPT="0")
+    tools = {name: str(Path(subprocess.check_output(
+        ["rustup", "which", "--toolchain", profile["toolchain"], name], text=True).strip()).resolve(strict=True))
+        for name in ("cargo", "rustc", "rustdoc")}
+    env, removed = controlled_environment(profile, target, args.jobs, tools)
     receipt = {"schema": "trill.linux-text-build-receipt.v1", "status": "running",
                "source_commit": identity["commit"], "source_tree": identity["tree"],
                "hepta": hepta_identity, "profile": profile,
                "profile_sha256": digest(profile_path), "cargo_profile": args.build_profile,
                "commands": [], "locks": {}, "binaries": {},
+               "toolchain_executables": {name: {"path": path, "sha256": digest(path)} for name, path in tools.items()},
+               "ambient_overrides_removed": removed,
+               "native_input_paths": {key: env[key] for key in ("PKG_CONFIG_PATH", "PKG_CONFIG_LIBDIR",
+                   "LIBRARY_PATH", "LD_LIBRARY_PATH", "CMAKE_PREFIX_PATH", "CMAKE_TOOLCHAIN_FILE") if key in env},
                "production_authority_qualified": False, "window_qualified": False,
                "environment": {key: env[key] for key in ("RUSTUP_TOOLCHAIN", "CARGO_TARGET_DIR",
-                   "CARGO_BUILD_JOBS", "CARGO_PROFILE_DEV_DEBUG", "CARGO_PROFILE_DEV_INCREMENTAL")}}
+                   "CARGO_BUILD_JOBS", "CARGO_PROFILE_DEV_DEBUG", "CARGO_PROFILE_DEV_INCREMENTAL",
+                   "RUSTC", "RUSTDOC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTFLAGS",
+                   "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS")}}
 
     def save():
         desktop.atomic_write(output / "build-receipt.json", source_profile.canonical(receipt))
 
     def run(name, command, machine_output=False):
+        if command[0] in tools:
+            command = [tools[command[0]], *command[1:]]
         start = time.monotonic()
         stdout, stderr = logs / (name + (".json" if machine_output else ".log")), logs / (name + ".stderr.log")
         entry = {"name": name, "command": command, "stdout": stdout.name, "stderr": stderr.name}
@@ -132,7 +211,9 @@ def build(args):
         feature = ["--features", profile["cargo_feature"]]
         metadata = run("native-metadata", ["cargo", "metadata", "--manifest-path", "ui/Cargo.toml",
             "--format-version", "1", *common, *feature], machine_output=True)
-        receipt["resolved_packages"] = validate_graph(json.loads(metadata.read_bytes()), args.hepta_commit, profile)
+        graph = json.loads(metadata.read_bytes())
+        receipt["resolved_packages"] = validate_graph(graph, args.hepta_commit, profile)
+        receipt["source_caches"] = verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile)
         run("rustfmt", ["cargo", "fmt", "--manifest-path", "ui/Cargo.toml", "--all", "--", "--check"])
         for name, path, features in (
             ("native-ui-tests", "ui/Cargo.toml", ["--workspace", *feature]),
@@ -161,6 +242,10 @@ def build(args):
         receipt["resources"] = {name: digest(resources / name) for name in resource_files}
         os_repo.check(args.desktop_commit, args.desktop_tree)
         hepta_repo.check(args.hepta_commit, args.hepta_tree)
+        require(verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile) == receipt["source_caches"],
+                "Actual Cargo source caches changed while building")
+        for name, executable in receipt["toolchain_executables"].items():
+            require(digest(executable["path"]) == executable["sha256"], "Compiler executable changed: " + name)
         for path, checksum in receipt["locks"].items():
             require(digest(REPO / path) == checksum, "Cargo lock changed while building: " + path)
         for name in desktop.PROGRAMS:

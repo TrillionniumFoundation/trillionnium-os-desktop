@@ -44,6 +44,29 @@ resources and final package hash. The source profile remains
 production-disabled. A build receipt is separate from owned-window,
 installed-systemd, authenticated model and physical-device acceptance.
 
+## Actual Cargo source caches and compiler inputs
+
+The verifier follows each resolved Hepta/Makepad package's actual
+`manifest_path` to its Git root. Each family must resolve from one worktree.
+Hepta must match the separately checked commit and tree; the SDK tree must be
+the tree of its pinned commit. Every manifest must be tracked. Before tests and
+after the build/resource preparation, the same roots must have matching
+HEAD/tree, no tracked changes and no assume-unchanged/skip-worktree flags.
+`source_caches` records those roots, trees and manifest paths. Ordinary
+untracked Cargo markers are allowed; this is explicitly a tracked-source check,
+not a claim that every untracked or generated file has been audited.
+
+Rustup resolves the exact toolchain's Cargo, rustc and rustdoc executables;
+their paths/hashes are recorded and checked again after execution. Cargo gets
+fixed `RUSTC`/`RUSTDOC` paths and empty wrappers/encoded Rust flags. Ambient
+compiler wrappers, Rust flags, Cargo build/target/profile overrides and native
+CC/CXX flags are removed; their variable names are recorded without copying
+their prior values. The selected jobs/profile settings are then applied.
+Existing Cargo caches remain usable. Relevant package/library/CMake search
+paths are recorded as native inputs; changing them requires a new build.
+These checks describe local build inputs and assume the build host and Git/Cargo
+tools operate normally; the receipt is not remote attestation of a hostile host.
+
 ## Install the explicit renderer
 
 The build writes a user-owned mode0600 `linux-text-config.json` with renderer
