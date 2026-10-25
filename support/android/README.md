@@ -9,11 +9,12 @@ The first native x86-64 seccomp stage now has real install and syscall-dispatch
 paths, immutable inherited filters, strict mode and ALLOW/ERRNO/TRAP/KILL actions.
 Its implementation, limitations and ordinary-kernel reproduction commands are
 documented in [SECCOMP.md](SECCOMP.md). The latest native core suite passed 304
-tests, including eleven new verifier/policy/siginfo tests. The actual ordinary
-double-CPU guest passed filtering and SIGSYS handler/return checks. These
+tests, followed by 305 tests with thread-group synchronization. The actual
+ordinary four-CPU guest passed filtering, SIGSYS handler/return, TSYNC and
+setuid-exec race checks. These
 runtime receipts remain separate from the source scan.
 
-This stage does not implement TSYNC, Binder or Android
+This stage does not implement Binder or Android
 SELinux policy. It does not qualify Android boot, APKs, phone hardware or CTS.
 The source auditor continues to inspect immutable commits, so an uncommitted
 seccomp implementation is deliberately absent from its selected-commit scan.

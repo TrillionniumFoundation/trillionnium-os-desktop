@@ -36,19 +36,19 @@ use crate::{
     vm::vmar::Vmar,
 };
 
-mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 mod control_lock;
+mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use control_lock::KernelControlBackend;
-#[cfg(feature = "g1d-trusted-control")]
-mod trusted_control;
 mod init_proc;
 mod job_control;
 mod process_group;
 mod session;
 mod terminal;
 mod timer_manager;
+#[cfg(feature = "g1d-trusted-control")]
+mod trusted_control;
 
 use atomic_integer_wrapper::define_atomic_version_of_integer_like_type;
 pub(crate) use image::ProcessImageKey;
@@ -103,6 +103,10 @@ pub struct Process {
     // Mutable Part
     /// The threads
     tasks: Mutex<TaskSet>,
+    /// Serializes filter publication, clone inheritance and exec credential
+    /// preparation. Order: seccomp_update -> tasks -> per-thread policy.
+    /// Exec releases this before waiting for its killed siblings.
+    seccomp_update: Mutex<()>,
     /// Process status
     status: ProcessStatus,
     /// Parent process
@@ -262,6 +266,7 @@ impl Process {
                 children_wait_queue,
                 pidfile_pollee: Pollee::new(),
                 tasks: Mutex::new(TaskSet::new()),
+                seccomp_update: Mutex::new(()),
                 status: ProcessStatus::default(),
                 parent: ParentProcess::new(Weak::new()),
                 children: Mutex::new(Some(BTreeMap::new())),
@@ -327,6 +332,10 @@ impl Process {
 
     pub(crate) fn tasks(&self) -> &Mutex<TaskSet> {
         &self.tasks
+    }
+
+    pub(crate) fn seccomp_update(&self) -> &Mutex<()> {
+        &self.seccomp_update
     }
 
     pub(crate) fn resource_limits(&self) -> &ResourceLimits {

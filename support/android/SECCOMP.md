@@ -14,6 +14,25 @@ policy owner. Every thread owns a mutex-protected immutable policy snapshot.
 Both process and thread clone paths inherit that snapshot; exec retains it.
 There is no interface to disable a filter or replace a strict policy.
 
+TSYNC is flag 1 of SET_MODE_FILTER. It admits disabled peers or peers whose
+actual immutable filter chain is an ancestor of the caller's chain. Identical
+looking independently installed programs are not ancestry. An incompatible
+peer returns its positive TID, before any policy or no_new_privs mutation.
+Success installs the same new chain on every live original TaskSet member,
+and monotonically propagates the caller's no_new_privs flag if set.
+
+All installations share `Process::seccomp_update` with clone inheritance and
+exec credential preparation. Lock order is update mutex, TaskSet, thread
+policy. Clone holds the update mutex from the credential/policy cut through
+TaskSet insertion; a later TSYNC cannot miss the new sibling. Fork takes a
+coherent credential/filter cut for its independent process. Exec takes the
+mutex before preparing credentials and keeps it until in_execve and sibling
+SIGKILL are published, then releases it **before** waiting for siblings.
+Publication interrupted by admitted exec/exit returns EINTR without mutation.
+Thus an installer blocked on this mutex can return and process SIGKILL; exec
+does not wait while holding a mutex needed by that sibling. A successful NNP
+sync cannot be followed by a stale pre-NNP privileged exec publication.
+
 Filter installation requires the calling thread's `no_new_privs` or effective
 `CAP_SYS_ADMIN`. The complete `sock_fprog` is copied from user memory before
 validation. No user pointer survives publication. A failed installation leaves
@@ -73,13 +92,13 @@ This does not provide a complete kernel-heap resource budget.
 Only ALLOW, ERRNO, TRAP, KILL_THREAD and KILL_PROCESS are advertised. Static
 TRACE, USER_NOTIF and LOG results are rejected with EOPNOTSUPP. An unknown or
 unsupported dynamic result terminates the process. All nonzero install flags,
-including TSYNC and NEW_LISTENER, are rejected with EINVAL. GET_NOTIF_SIZES and
+except TSYNC are rejected with EINVAL, including NEW_LISTENER, LOG and
+TSYNC_ESRCH. GET_NOTIF_SIZES and
 other unsupported operations are rejected. Installation on other architectures
 returns ENOSYS. These refusals must remain explicit until the corresponding
 semantics and race tests exist.
 
-TSYNC needs atomic group publication coordinated with clone and exec; applying
-a filter only to the caller must never return TSYNC success. AOSP
+AOSP
 seccomp policy compatibility, ptrace interactions and Android's required action
 set must be measured on its pinned workloads before changing the Android gate.
 The pinned [Android 15 Bionic policy builder](https://android.googlesource.com/platform/bionic/+/refs/tags/android-15.0.0_r36/libc/seccomp/seccomp_policy.cpp)
@@ -139,4 +158,20 @@ the recorded compilation snapshot through the completed guest. The actual
 double-CPU ordinary guest passed every filtering and trap assertion on ELF
 `95055dc36f386cae9e0209fe67bc635e9dc89010ce4813130d1e6816ef8cade2`,
 with unchanged source/artifacts and QEMU exit 33. Initial non-TRAP evidence
-above remains historical; neither stage provides TSYNC or Android qualification.
+above remains historical.
+
+The TSYNC stage passed 305/305 native tests and a first four-CPU ordinary guest
+with 119 assertions. The added privilege-race workload then passed 201/201
+assertions on the same ELF
+`99436891ca66961c068950a05876924b1670bae93b970bc7ffc823c54ff14fdf`.
+It exercises disabled peers, inherited ancestry, atomic refusal of a divergent
+peer, NNP propagation, 16 concurrently created threads and exec against a live
+filter installer. Sixteen actual setuid-exec/TSYNC races observed both valid
+outcomes: exec before synchronization retained its legitimate setuid effect
+with NNP=0; successful synchronization preserved NNP=1 and the unprivileged
+effective UID. No NNP=1 privileged result was accepted. The setuid fixture is
+created only inside the disposable guest; `--linux-reference` never creates
+one on the host. The source and artifacts remained unchanged throughout each
+run. A separate static lock-order review found no blocking issue; it is not
+additional runtime evidence. These bounded races do not prove every possible
+scheduling interleaving or qualify AOSP/CTS/ARM64.

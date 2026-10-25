@@ -186,3 +186,21 @@ fn seccomp_trap_preserves_data_and_precedes_errno_but_not_kill() {
     policy.install_filter(constant(KILL_THREAD)).unwrap();
     assert_eq!(policy.evaluate(&data(39), true), Action::KillThread);
 }
+
+#[ktest]
+fn seccomp_sync_eligibility_requires_actual_immutable_ancestry() {
+    let disabled = Policy::default();
+    let mut root = Policy::default();
+    root.install_filter(constant(ALLOW)).unwrap();
+    let mut child = root.clone();
+    child.install_filter(constant(ERRNO | 1)).unwrap();
+    assert!(disabled.can_sync_from(&child));
+    assert!(root.can_sync_from(&child));
+    assert!(child.can_sync_from(&child));
+    assert!(!child.can_sync_from(&root));
+    assert!(!root.can_sync_from(&disabled));
+    let mut unrelated = Policy::default();
+    unrelated.install_filter(constant(ALLOW)).unwrap();
+    assert!(!unrelated.can_sync_from(&child));
+    assert!(!Policy::Strict.can_sync_from(&child));
+}

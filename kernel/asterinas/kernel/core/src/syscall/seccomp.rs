@@ -34,8 +34,8 @@ pub(super) fn sys_seccomp(
     if !cfg!(target_arch = "x86_64") {
         return_errno_with_message!(Errno::ENOSYS, "seccomp architecture not yet qualified");
     }
-    if flags != 0 {
-        // In particular, never pretend that TSYNC or NEW_LISTENER succeeded.
+    if (operation != 1 && flags != 0) || flags & !1 != 0 {
+        // Only TSYNC is implemented; never pretend NEW_LISTENER/LOG succeeded.
         return_errno_with_message!(Errno::EINVAL, "unsupported seccomp flags");
     }
     match operation {
@@ -45,7 +45,11 @@ pub(super) fn sys_seccomp(
             }
             install(1, 0, ctx)?;
         }
-        1 => install(2, args, ctx)?,
+        1 => {
+            return Ok(SyscallReturn::Return(
+                install_filter(args, flags == 1, ctx)? as _,
+            ));
+        }
         2 => {
             let action: u32 = ctx.user_space().read_val(args)?;
             if !matches!(
@@ -69,38 +73,36 @@ pub(super) fn install(mode: u32, address: Vaddr, ctx: &Context) -> Result<()> {
         return_errno_with_message!(Errno::ENOSYS, "seccomp architecture not yet qualified");
     }
     match mode {
-        1 => ctx.posix_thread.seccomp().lock().install_strict(),
-        2 => {
-            {
-                let credentials = ctx.posix_thread.credentials();
-                if !credentials.no_new_privs()
-                    && !credentials.effective_capset().contains(CapSet::SYS_ADMIN)
-                {
-                    return_errno_with_message!(
-                        Errno::EACCES,
-                        "seccomp requires no_new_privs or SYS_ADMIN"
-                    );
-                }
-            }
-            let user_space = ctx.user_space();
-            let descriptor: SockFprog = user_space.read_val(address)?;
-            let count = descriptor.len as usize;
-            if count == 0 || count > seccomp::MAX_PROGRAM_INSNS {
-                return_errno_with_message!(Errno::EINVAL, "invalid seccomp program length");
-            }
-            // Copy all bytes before verification/publication. The pointer and
-            // program may change afterwards without mutating an installed filter.
-            let mut reader =
-                user_space.reader(descriptor.filter, count * size_of::<Instruction>())?;
-            let mut instructions = Vec::with_capacity(count);
-            for _ in 0..count {
-                instructions.push(reader.read_val()?);
-            }
-            let program = Program::verify(instructions)?;
-            ctx.posix_thread.seccomp().lock().install_filter(program)
-        }
+        1 => seccomp::publish_strict(ctx),
+        2 => install_filter(address, false, ctx).map(|_| ()),
         _ => return_errno_with_message!(Errno::EINVAL, "invalid seccomp mode"),
     }
+}
+
+fn install_filter(address: Vaddr, sync: bool, ctx: &Context) -> Result<usize> {
+    {
+        let credentials = ctx.posix_thread.credentials();
+        if !credentials.no_new_privs()
+            && !credentials.effective_capset().contains(CapSet::SYS_ADMIN)
+        {
+            return_errno_with_message!(Errno::EACCES, "seccomp requires no_new_privs or SYS_ADMIN");
+        }
+    }
+    let user_space = ctx.user_space();
+    let descriptor: SockFprog = user_space.read_val(address)?;
+    let count = descriptor.len as usize;
+    if count == 0 || count > seccomp::MAX_PROGRAM_INSNS {
+        return_errno_with_message!(Errno::EINVAL, "invalid seccomp program length");
+    }
+    // Copy all bytes before verification/publication. The pointer and
+    // program may change afterwards without mutating an installed filter.
+    let mut reader = user_space.reader(descriptor.filter, count * size_of::<Instruction>())?;
+    let mut instructions = Vec::with_capacity(count);
+    for _ in 0..count {
+        instructions.push(reader.read_val()?);
+    }
+    let program = Program::verify(instructions)?;
+    seccomp::publish_filter(ctx, program, sync)
 }
 
 /// Filter before dispatch, including unknown syscall numbers. A rejected call

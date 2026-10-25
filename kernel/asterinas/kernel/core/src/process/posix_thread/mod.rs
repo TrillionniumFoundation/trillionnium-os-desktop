@@ -81,7 +81,7 @@ pub struct PosixThread {
     credentials: Credentials,
 
     /// Thread-local policy snapshots are immutable and inherited by clone.
-    /// This stage never modifies another thread's policy: TSYNC is rejected.
+    /// TSYNC publishes under the process update lock and original TaskSet.
     seccomp: Mutex<seccomp::Policy>,
 
     /// The file system information of the thread.

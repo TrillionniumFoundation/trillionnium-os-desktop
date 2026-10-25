@@ -463,6 +463,9 @@ fn clone_child_task(
 
     let child_tid = allocate_posix_tid();
     let child_task = {
+        // Keep the policy and no_new_privs snapshot through insertion below.
+        // A successful TSYNC cannot miss a newly published sibling.
+        let _seccomp_update = process.seccomp_update().lock();
         let credentials = {
             let credentials = ctx.posix_thread.credentials();
             Credentials::new_from(&credentials)
@@ -494,19 +497,19 @@ fn clone_child_task(
         thread_builder = clone_child_cleartid(thread_builder, clone_args.child_tid, clone_flags);
         thread_builder = clone_child_settid(thread_builder, clone_args.child_tid, clone_flags);
 
-        thread_builder.build()
+        let child_task = thread_builder.build();
+        process
+            .tasks()
+            .lock()
+            .insert(child_task.clone())
+            .map_err(|_| {
+                Error::with_message(
+                    Errno::EINTR,
+                    "the process has exited or has already executed a new program",
+                )
+            })?;
+        child_task
     };
-
-    process
-        .tasks()
-        .lock()
-        .insert(child_task.clone())
-        .map_err(|_| {
-            Error::with_message(
-                Errno::EINTR,
-                "the process has exited or has already executed a new program",
-            )
-        })?;
 
     // Consume the whole option before moving the cgroup borrowed by its guard.
     pids_charge.map_or((), |charge| charge.apply());
@@ -601,6 +604,9 @@ fn clone_child_process(
     let child_tid = allocate_posix_tid();
 
     let child = {
+        // A fork receives one coherent policy/credential cut. Its private
+        // process is not a later TSYNC target of the parent group.
+        let _seccomp_update = process.seccomp_update().lock();
         let child_vmar_arc = child_vmar.clone_arc();
 
         let mut child_thread_builder = {

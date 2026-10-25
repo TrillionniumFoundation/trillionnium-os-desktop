@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Immutable, bounded syscall filters. Installation never retains user memory.
-//! Strict mode and ALLOW/ERRNO/TRAP/KILL filters are implemented; TSYNC,
-//! tracing and notification are not advertised as supported.
+//! Strict mode and ALLOW/ERRNO/TRAP/KILL filters are implemented. Group
+//! synchronization uses the original TaskSet; tracing/notification are absent.
+
+mod publish;
+pub(crate) use publish::{publish_filter, publish_strict};
 
 use crate::prelude::*;
 
@@ -225,6 +228,20 @@ pub(crate) enum Policy {
 }
 
 impl Policy {
+    /// Only actual inherited ancestry is eligible, not equal-looking bytes.
+    fn can_sync_from(&self, caller: &Self) -> bool {
+        match (self, caller) {
+            (Self::Disabled, _) => true,
+            (Self::Filters(own), Self::Filters(source)) => {
+                own.len() <= source.len()
+                    && own
+                        .iter()
+                        .zip(source.iter())
+                        .all(|(a, b)| Arc::ptr_eq(a, b))
+            }
+            _ => false,
+        }
+    }
     pub(crate) fn mode(&self) -> usize {
         match self {
             Self::Disabled => 0,
