@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use trill_ui_core::shared_chat::native_presentation::{
     run_native_presentation, NativeApprovalDecision, NativeApprovalView, NativeChatAvailability,
-    NativeChatComposition, NativeConsoleObservation,
+    NativeChatComposition, NativeConsoleObservation, NativeNotesView,
 };
 use trill_ui_core::shared_chat::{ChatWorkspace, NativeWorkspaceTab, RoomKey};
 
@@ -44,6 +44,19 @@ impl DesktopComposition {
             || self.workspace().composing
         {
             return Err("Conversation changed or input is composing; action was not queued".into());
+        }
+        Ok(())
+    }
+
+    fn validate_notes_source(&self, source: RoomKey) -> Result<(), String> {
+        self.validate_source(source)?;
+        if self.workspace().tab != NativeWorkspaceTab::Conversations
+            || self.workspace().navigation_open
+        {
+            return Err(
+                "Notes action is unavailable outside the current conversation; draft retained"
+                    .into(),
+            );
         }
         Ok(())
     }
@@ -155,6 +168,37 @@ impl NativeChatComposition for DesktopComposition {
         chat.request_latest_history(workspace, source.local_id, trill_ui_core::unix_ms())
     }
 
+    fn notes_view(&self) -> Option<NativeNotesView> {
+        if self.closed {
+            return None;
+        }
+        let view = self.desktop.notes_controls_view();
+        let current = self.workspace().tab == NativeWorkspaceTab::Conversations
+            && !self.workspace().navigation_open
+            && !self.workspace().composing;
+        Some(NativeNotesView {
+            status: view.status,
+            can_write: current && view.can_write,
+            can_refresh: current && view.can_refresh,
+            can_cancel: current && view.can_cancel,
+        })
+    }
+
+    fn request_write_note(&mut self, source: RoomKey) -> Result<(), String> {
+        self.validate_notes_source(source)?;
+        self.desktop.write_note_from_draft()
+    }
+
+    fn request_notes_refresh(&mut self, source: RoomKey) -> Result<(), String> {
+        self.validate_notes_source(source)?;
+        self.desktop.refresh_notes_controls()
+    }
+
+    fn request_notes_cancel(&mut self, source: RoomKey) -> Result<(), String> {
+        self.validate_notes_source(source)?;
+        self.desktop.cancel_note_request()
+    }
+
     fn pending_approval(&self) -> Option<NativeApprovalView> {
         let view = self
             .chat
@@ -216,6 +260,7 @@ impl NativeChatComposition for DesktopComposition {
         {
             self.refresh_pending = false;
         }
+        self.desktop.poll_notes_controls();
         self.sync_tab_for_recovery();
         self.desktop
             .recovery
@@ -351,3 +396,7 @@ pub(super) fn run(options: StartupOptions) -> Result<(), String> {
         }),
     )
 }
+
+#[cfg(test)]
+#[path = "native_notes_tests.rs"]
+mod notes_tests;

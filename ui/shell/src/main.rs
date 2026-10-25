@@ -242,10 +242,11 @@ impl Bridge {
         self.actions.try_send(request).is_ok()
     }
 
-    fn poll_objective(&self, request: Request) {
+    fn poll_objective(&self, request: Request) -> bool {
         // Coalesce passive authority/status observations independently of the
-        // bounded user action queue and ordinary snapshot polling.
-        let _ = self.objective_polls.try_send(request);
+        // bounded user action queue and ordinary snapshot polling. A scheduler
+        // advances only after this queue accepts its selected observation.
+        self.objective_polls.try_send(request).is_ok()
     }
 
     fn poll(&self) {

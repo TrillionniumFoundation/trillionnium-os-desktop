@@ -100,6 +100,36 @@ pub struct ObjectiveRunObservation {
     pub terminal_observed: bool,
 }
 
+/// A read-only snapshot from the exact attached Notes application. This is
+/// independent of run admission/terminality and is never an effect receipt.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NotesDocumentObservation {
+    pub target: crate::notes::NotesTargetIdentity,
+    pub observed_unix_ms: u64,
+    pub revision: u64,
+    pub text_sha256: String,
+    pub receipt_pending: bool,
+}
+
+impl NotesDocumentObservation {
+    pub fn validate(&self) -> Result<(), ObjectiveHostIssue> {
+        self.target
+            .validate()
+            .map_err(|_| ObjectiveHostIssue::IdentityMismatch)?;
+        if self.observed_unix_ms == 0
+            || self.text_sha256.len() != 64
+            || !self
+                .text_sha256
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        {
+            return Err(ObjectiveHostIssue::IdentityMismatch);
+        }
+        Ok(())
+    }
+}
+
 /// Navigation IDs read from the original owner's retained requests. No signed
 /// request, admission, sending permission or effect result is projected here.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -155,6 +185,8 @@ pub struct ObjectiveObservation {
     pub issue: Option<ObjectiveHostIssue>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub retained_intents: Option<ObjectiveRetainedIntents>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes_document: Option<NotesDocumentObservation>,
 }
 
 impl ObjectiveObservation {
@@ -169,6 +201,7 @@ impl ObjectiveObservation {
             cancellation: ObjectiveCancellation::NotRequested,
             issue: None,
             retained_intents: None,
+            notes_document: None,
         }
     }
 }
@@ -227,5 +260,37 @@ mod tests {
             serde_json::from_str::<ObjectiveObservation>(&json).unwrap(),
             old
         );
+    }
+
+    #[test]
+    fn actual_document_readback_is_independent_of_unknown_objective_delivery() {
+        let raw = include_str!("../../../tests/ui/notes-document-observation-v1.json");
+        let view: ObjectiveObservation = serde_json::from_str(raw).unwrap();
+        assert_eq!(view.stage, ObjectiveStage::SubmitUnknown);
+        assert!(!view.publication_retained);
+        assert!(view.run.is_none());
+        let observed = view.notes_document.as_ref().unwrap();
+        assert_eq!(observed.validate(), Ok(()));
+        assert_eq!(observed.revision, 5);
+        assert_eq!(
+            observed.text_sha256,
+            crate::notes::sha256_hex("已保存的笔记".as_bytes())
+        );
+        assert_eq!(
+            serde_json::to_value(&view).unwrap(),
+            serde_json::from_str::<serde_json::Value>(raw).unwrap()
+        );
+        for changed in ["foreign-target", "invalid-digest", "missing-time"] {
+            let mut rejected = observed.clone();
+            match changed {
+                "foreign-target" => rejected.target.incarnation = "../../other".into(),
+                "invalid-digest" => rejected.text_sha256 = "a".repeat(63),
+                _ => rejected.observed_unix_ms = 0,
+            }
+            assert_eq!(
+                rejected.validate(),
+                Err(ObjectiveHostIssue::IdentityMismatch)
+            );
+        }
     }
 }

@@ -2,6 +2,7 @@
 //! publication and run state; this module retains no authority or recovery log.
 use super::{Desktop, Workspace};
 use eframe::egui;
+use std::fmt::Write as _;
 use std::io::Read;
 use std::time::{Duration, Instant};
 use trill_ui_core::notes::MAX_NOTES_TEXT_BYTES;
@@ -32,6 +33,8 @@ pub(super) struct ObjectivePanel {
     last_query: Option<Instant>,
     query_status: bool,
     selected: Option<String>,
+    status_cursor: usize,
+    rotating_status_next: bool,
 }
 
 fn fresh(
@@ -72,10 +75,15 @@ impl ObjectivePanel {
         self.invalidate();
         self.last_query = None;
         self.query_status = false;
+        self.status_cursor = 0;
+        self.rotating_status_next = false;
         for intent in &mut self.intents {
             if intent.session != session {
                 intent.session = session.into();
                 intent.observation.observed_unix_ms = 0;
+                // The operation ID survives; a live document snapshot does not
+                // gain the new Session's provenance from its recent timestamp.
+                intent.observation.notes_document = None;
                 intent.observation.issue =
                     Some(trill_ui_core::objective::ObjectiveHostIssue::Unavailable);
                 intent.cancel_queued = false;
@@ -87,6 +95,7 @@ impl ObjectivePanel {
         self.availability.as_ref().is_some_and(|receipt| {
             receipt.session == session
                 && receipt.observation.stage == ObjectiveStage::Ready
+                && receipt.observation.issue.is_none()
                 && receipt
                     .observation
                     .retained_intents
@@ -185,6 +194,35 @@ impl ObjectivePanel {
         self.intents.iter().rev().find(matches)
     }
 
+    fn document_readback(
+        &self,
+        workspace: Workspace,
+        session: &str,
+    ) -> Option<(&trill_ui_core::objective::NotesDocumentObservation, Instant)> {
+        self.current(workspace, session)
+            .and_then(|intent| {
+                intent
+                    .observation
+                    .notes_document
+                    .as_ref()
+                    .map(|document| (document, intent.received_at))
+            })
+            .into_iter()
+            .chain(
+                self.availability
+                    .as_ref()
+                    .filter(|receipt| receipt.session == session)
+                    .and_then(|receipt| {
+                        receipt
+                            .observation
+                            .notes_document
+                            .as_ref()
+                            .map(|document| (document, receipt.received_at))
+                    }),
+            )
+            .max_by_key(|(document, _)| document.observed_unix_ms)
+    }
+
     fn poll(&mut self, workspace: Workspace, session: &str, now: Instant) -> Option<Request> {
         if self
             .last_query
@@ -195,9 +233,36 @@ impl ObjectivePanel {
         self.last_query = Some(now);
         self.query_status = !self.query_status;
         if self.query_status {
-            if let Some(intent) = self.current(workspace, session) {
+            let current = self
+                .current(workspace, session)
+                .map(|intent| (intent.id.clone(), finished(&intent.observation)));
+            // Current request stays responsive while every original unresolved
+            // ID gets a turn, including recovered requests from another local
+            // workspace. The bounded vector never removes or renumbers IDs.
+            if !self.rotating_status_next {
+                if let Some((id, false)) = &current {
+                    self.rotating_status_next = true;
+                    return Some(Request::ObjectiveStatus {
+                        client_intent_id: id.clone(),
+                        expected_instance: session.into(),
+                    });
+                }
+            }
+            self.rotating_status_next = false;
+            for offset in 0..self.intents.len() {
+                let index = (self.status_cursor + offset) % self.intents.len();
+                let intent = &self.intents[index];
+                if intent.session == session && !finished(&intent.observation) {
+                    self.status_cursor = (index + 1) % self.intents.len();
+                    return Some(Request::ObjectiveStatus {
+                        client_intent_id: intent.id.clone(),
+                        expected_instance: session.into(),
+                    });
+                }
+            }
+            if let Some((id, _)) = current {
                 return Some(Request::ObjectiveStatus {
-                    client_intent_id: intent.id.clone(),
+                    client_intent_id: id,
                     expected_instance: session.into(),
                 });
             }
@@ -228,33 +293,281 @@ fn intent_id(workspace: Workspace) -> std::io::Result<String> {
     ))
 }
 
+fn readback_fresh(
+    document: &trill_ui_core::objective::NotesDocumentObservation,
+    received_at: Instant,
+    now: Instant,
+    wall_ms: u64,
+) -> bool {
+    now.checked_duration_since(received_at)
+        .is_some_and(|age| age <= READY_MAX_AGE)
+        && wall_ms
+            .checked_sub(document.observed_unix_ms)
+            .is_some_and(|age| age <= READY_MAX_AGE.as_millis() as u64)
+}
+
+/// Shared projection for both Rust renderers. This carries observations and
+/// button availability, never an admission, grant or operation receipt.
+pub(super) struct NotesControlsView {
+    pub status: String,
+    pub can_write: bool,
+    pub can_refresh: bool,
+    pub can_cancel: bool,
+}
+
 impl Desktop {
+    pub(super) fn poll_notes_controls(&mut self) {
+        if let Some(session) = self.session_instance.as_deref().filter(|_| self.connected) {
+            let cursor = (
+                self.objectives.query_status,
+                self.objectives.status_cursor,
+                self.objectives.rotating_status_next,
+            );
+            if let Some(request) = self
+                .objectives
+                .poll(self.workspace, session, Instant::now())
+            {
+                if !self.bridge.poll_objective(request) {
+                    // Keep the selected read on a full/disconnected queue. The
+                    // 700 ms throttle remains; no effect request is retried.
+                    (
+                        self.objectives.query_status,
+                        self.objectives.status_cursor,
+                        self.objectives.rotating_status_next,
+                    ) = cursor;
+                }
+            }
+        }
+    }
+
+    pub(super) fn notes_controls_view(&self) -> NotesControlsView {
+        let now = Instant::now();
+        let wall_ms = unix_ms();
+        let session = self.session_instance.as_deref().filter(|_| self.connected);
+        let composer = self.drafts.composer(self.workspace);
+        let ready = session.is_some_and(|session| self.objectives.ready(session, now, wall_ms));
+        let document =
+            session.and_then(|session| self.objectives.document_readback(self.workspace, session));
+        let receipt_pending = document.is_some_and(|(document, received_at)| {
+            document.receipt_pending && readback_fresh(document, received_at, now, wall_ms)
+        });
+        let may_start = self
+            .objectives
+            .intents
+            .iter()
+            .all(|intent| finished(&intent.observation));
+        let can_write = ready
+            && !receipt_pending
+            && may_start
+            && composer.contexts.is_empty()
+            && !composer.text().trim().is_empty()
+            && composer.text().len() <= MAX_NOTES_TEXT_BYTES
+            && composer.can_save_local().is_ok()
+            && !self.activation.composing()
+            && self.objectives.intents.len() < MAX_OBJECTIVE_VIEWS;
+        let current = session.and_then(|session| self.objectives.current(self.workspace, session));
+        let can_cancel = current.is_some_and(|intent| {
+            !intent.cancel_queued
+                && intent.observation.cancellation
+                    == trill_ui_core::objective::ObjectiveCancellation::NotRequested
+                && !finished(&intent.observation)
+                && fresh(&intent.observation, intent.received_at, now, wall_ms)
+        });
+        let availability_issue = self
+            .objectives
+            .availability
+            .as_ref()
+            .filter(|receipt| Some(receipt.session.as_str()) == session)
+            .and_then(|receipt| receipt.observation.issue);
+        let mut status = if session.is_none() {
+            "Waiting for the current host session. Sending is unavailable.".to_owned()
+        } else if availability_issue.is_some() {
+            "Hepta 暂时无法核对笔记状态，请刷新后重试。".to_owned()
+        } else if !ready {
+            "Checking Hepta availability; writing requires a fresh host observation.".to_owned()
+        } else if receipt_pending {
+            "上一笔笔记写入仍待核对，请先恢复原请求再写入新内容。".to_owned()
+        } else if !may_start {
+            "A previous request is unresolved. Refresh its original status before writing again."
+                .to_owned()
+        } else if !composer.contexts.is_empty() {
+            "Notes accepts text only. Remove quoted references before writing; the draft and references are preserved.".to_owned()
+        } else if composer.text().len() > MAX_NOTES_TEXT_BYTES {
+            "Notes content exceeds 4096 UTF-8 bytes. Shorten it before writing; the draft is preserved.".to_owned()
+        } else if composer.can_save_local().is_err() || self.activation.composing() {
+            "Finish the current editor transaction before writing Notes.".to_owned()
+        } else if self.objectives.intents.len() >= MAX_OBJECTIVE_VIEWS {
+            "The request history limit has been reached. Existing status remains available."
+                .to_owned()
+        } else {
+            "Hepta is available to write the draft into the configured Notes document.".to_owned()
+        };
+        if let Some(intent) = current {
+            let observation = &intent.observation;
+            let observed = fresh(observation, intent.received_at, now, wall_ms);
+            let _ = write!(
+                status,
+                "\nRequest {} · admission: {:?}{}",
+                intent.id,
+                observation.stage,
+                if observed {
+                    ""
+                } else {
+                    " (last observed; refresh pending)"
+                }
+            );
+            let _ = write!(
+                status,
+                "\nRequest retained: {} · publication retained: {}",
+                observation.request_retained, observation.publication_retained
+            );
+            if let Some(run) = &observation.run {
+                let _ = write!(
+                    status,
+                    "\nRun: {:?} · revision {} · terminal observed: {}",
+                    run.phase, run.revision, run.terminal_observed
+                );
+            } else {
+                status.push_str("\nRun state has not been observed.");
+            }
+            let _ = write!(status, "\nCancellation: {:?}", observation.cancellation);
+            if intent.cancel_queued {
+                status.push_str(" (request queued; outcome unconfirmed)");
+            }
+            if let Some(issue) = observation.issue {
+                let _ = write!(status, "\nHost observation: {issue:?}");
+            }
+            if intent.workspace.is_none() {
+                status.push_str("\nRecovered request: status is queried without sending it again.");
+            }
+        }
+        if let Some((document, received_at)) = document {
+            let observed = readback_fresh(document, received_at, now, wall_ms);
+            let digest: String = document.text_sha256.chars().take(12).collect();
+            let _ = write!(status, "\nNotes readback{}: {} · document revision {} · text digest {} · receipt pending: {}",
+                if observed { "" } else { " (last observed; refresh pending)" }, document.target.destination_id(),
+                document.revision, digest, document.receipt_pending);
+        } else {
+            status.push_str("\nNotes readback unavailable.");
+        }
+        status.push_str("\nRun status and the current document snapshot are separate from an exact operation receipt. Your draft is retained.");
+        NotesControlsView {
+            status,
+            can_write,
+            can_refresh: session.is_some(),
+            can_cancel,
+        }
+    }
+
+    pub(super) fn write_note_from_draft(&mut self) -> Result<(), String> {
+        if !self.notes_controls_view().can_write {
+            return Err("Notes writing is unavailable for the current draft or host observation; draft retained".into());
+        }
+        let session = self
+            .session_instance
+            .clone()
+            .ok_or("No current host session")?;
+        let text = self.drafts.composer(self.workspace).text().to_owned();
+        let id = intent_id(self.workspace)
+            .map_err(|error| format!("Cannot create an intent ID; nothing queued: {error}"))?;
+        if !self.submit(Request::ObjectiveSubmit {
+            client_intent_id: id.clone(),
+            text,
+            expected_instance: session.clone(),
+        }) {
+            return Err("Notes request was not queued; draft retained".into());
+        }
+        self.objectives.intents.push(IntentView {
+            workspace: Some(self.workspace),
+            session,
+            id: id.clone(),
+            observation: ObjectiveObservation::new(Some(id.clone()), ObjectiveStage::Queued),
+            received_at: Instant::now(),
+            cancel_queued: false,
+        });
+        self.objectives.selected = Some(id);
+        self.notice("Objective queued for the host. Admission and execution are not yet confirmed; your draft remains available.");
+        Ok(())
+    }
+
+    pub(super) fn refresh_notes_controls(&mut self) -> Result<(), String> {
+        let session = self
+            .session_instance
+            .as_deref()
+            .filter(|_| self.connected)
+            .ok_or("No current host session")?;
+        let request = self
+            .objectives
+            .current(self.workspace, session)
+            .map_or_else(
+                || Request::ObjectiveAvailability {
+                    expected_instance: session.into(),
+                },
+                |intent| Request::ObjectiveStatus {
+                    client_intent_id: intent.id.clone(),
+                    expected_instance: session.into(),
+                },
+            );
+        self.objectives.last_query = None;
+        if self.bridge.poll_objective(request) {
+            Ok(())
+        } else {
+            Err("A Notes observation is already pending or the connection is unavailable; refresh was not queued".into())
+        }
+    }
+
+    pub(super) fn cancel_note_request(&mut self) -> Result<(), String> {
+        if !self.notes_controls_view().can_cancel {
+            return Err(
+                "No fresh cancellable Notes request is available; refresh the original status"
+                    .into(),
+            );
+        }
+        let session = self
+            .session_instance
+            .clone()
+            .ok_or("No current host session")?;
+        let id = self
+            .objectives
+            .current(self.workspace, &session)
+            .ok_or("No retained Notes request")?
+            .id
+            .clone();
+        if !self.submit(Request::ObjectiveCancel {
+            client_intent_id: id.clone(),
+            expected_instance: session,
+        }) {
+            return Err("Cancellation was not queued; its outcome remains unknown".into());
+        }
+        if let Some(intent) = self
+            .objectives
+            .intents
+            .iter_mut()
+            .find(|intent| intent.id == id)
+        {
+            intent.cancel_queued = true;
+        }
+        Ok(())
+    }
+
     pub(super) fn objective_controls(&mut self, ui: &mut egui::Ui) {
         ui.separator();
         ui.strong("Hepta Notes / 笔记");
-        let Some(session) = self.session_instance.clone().filter(|_| self.connected) else {
-            ui.label("Waiting for the current host session. Sending is unavailable.");
-            return;
-        };
-        let now = Instant::now();
-        if let Some(request) = self.objectives.poll(self.workspace, &session, now) {
-            self.bridge.poll_objective(request);
-        }
-        let ready = self.objectives.ready(&session, now, unix_ms());
+        self.poll_notes_controls();
+        let session = self.session_instance.as_deref().filter(|_| self.connected);
         let previous: Vec<_> = self
             .objectives
             .intents
             .iter()
             .filter(|intent| {
-                intent.session == session
+                Some(intent.session.as_str()) == session
                     && intent
                         .workspace
                         .is_none_or(|workspace| workspace == self.workspace)
             })
             .map(|intent| intent.id.clone())
             .collect();
-        // Keep one parent scope even before the first request. Inserting the
-        // history must not renumber an already exposed cancellation control.
+        // Preserve a stable parent scope before the history appears.
         ui.scope(|ui| {
             if !previous.is_empty() {
                 ui.collapsing("Previous Hepta requests / 之前的请求", |ui| {
@@ -269,144 +582,41 @@ impl Desktop {
                                     self.objectives.selected = Some(id);
                                     self.objectives.last_query = None;
                                     self.objectives.query_status = false;
+                                    self.objectives.rotating_status_next = false;
                                 }
                             }
                         });
                 });
             }
         });
-        ui.label(if ready {
-            "Hepta is available to write this text into the configured Notes document."
-        } else {
-            "Checking Hepta availability; sending remains disabled until a fresh host observation."
-        });
-        ui.small("The text is Notes document content. General AI tasks and other device actions are not supported here. Notes remain in app memory unless separately exported.");
-        let composer = self.drafts.composer(self.workspace);
-        let has_context = !composer.contexts.is_empty();
-        let text = composer.text().to_owned();
-        let may_start = self
-            .objectives
-            .intents
-            .iter()
-            .all(|intent| finished(&intent.observation));
-        let enabled = ready
-            && may_start
-            && !has_context
-            && !text.trim().is_empty()
-            && text.len() <= MAX_NOTES_TEXT_BYTES
-            && composer.can_save_local().is_ok()
-            && self.objectives.intents.len() < MAX_OBJECTIVE_VIEWS;
+        let view = self.notes_controls_view();
+        ui.label(view.status);
+        ui.small("Notes 窗口显示本机保存状态，并可打开已经保存的笔记。此操作会保留当前对话草稿。");
         if self.activation.activated(&ui.add_enabled(
-            enabled,
+            view.can_write,
             egui::Button::new("Write note via Hepta / 通过 Hepta 写入笔记"),
         )) {
-            match intent_id(self.workspace) {
-                Ok(id) => {
-                    if self.submit(Request::ObjectiveSubmit {
-                        client_intent_id: id.clone(),
-                        text: text.clone(),
-                        expected_instance: session.clone(),
-                    }) {
-                        self.objectives.intents.push(IntentView {
-                            workspace: Some(self.workspace),
-                            session: session.clone(),
-                            id: id.clone(),
-                            observation: ObjectiveObservation::new(
-                                Some(id),
-                                ObjectiveStage::Queued,
-                            ),
-                            received_at: now,
-                            cancel_queued: false,
-                        });
-                        self.objectives.selected = self
-                            .objectives
-                            .intents
-                            .last()
-                            .map(|intent| intent.id.clone());
-                        self.notice("Objective queued for the host. Admission and execution are not yet confirmed; your draft remains available.");
+            if let Err(error) = self.write_note_from_draft() {
+                self.notice(error);
+            }
+        }
+        let view = self.notes_controls_view();
+        let id = self.objectives.selected.clone();
+        ui.push_id(("objective-actions", id), |ui| {
+            ui.horizontal(|ui| {
+                if self.activation.activated(&ui.add_enabled(
+                    view.can_refresh,
+                    egui::Button::new("Refresh objective status"),
+                )) {
+                    if let Err(error) = self.refresh_notes_controls() {
+                        self.notice(error);
                     }
                 }
-                Err(error) => self.notice(format!(
-                    "Cannot create an intent ID; nothing queued: {error}"
-                )),
-            }
-        }
-        if text.len() > MAX_NOTES_TEXT_BYTES {
-            ui.small("Notes content exceeds 4096 UTF-8 bytes. Shorten it before writing; all text remains in your draft.");
-        }
-        if has_context {
-            ui.small("This objective transport accepts text only. Remove the quoted references before sending; your current draft and references are preserved.");
-        }
-        if self.objectives.intents.len() >= MAX_OBJECTIVE_VIEWS {
-            ui.small("This window has reached its objective history limit. Existing status and cancellation remain available.");
-        }
-        let Some(intent) = self.objectives.current(self.workspace, &session) else {
-            return;
-        };
-        let id = intent.id.clone();
-        if intent.workspace.is_none() {
-            ui.small("This request was recovered from Hepta. Its earlier workspace is unknown; status is queried without sending it again.");
-        }
-        let observation = &intent.observation;
-        let current = fresh(observation, intent.received_at, now, unix_ms());
-        ui.label(format!(
-            "Objective {} · admission: {:?}{}",
-            id,
-            observation.stage,
-            if current {
-                ""
-            } else {
-                " (last observed; refresh pending)"
-            }
-        ));
-        if observation.stage == ObjectiveStage::Abstained {
-            ui.label("Hepta abstained. This objective was not admitted for execution.");
-        }
-        ui.small(format!(
-            "Request retained: {} · publication retained: {}",
-            observation.request_retained, observation.publication_retained
-        ));
-        if let Some(run) = &observation.run {
-            ui.label(format!(
-                "Run: {:?} · revision {} · terminal observed: {}",
-                run.phase, run.revision, run.terminal_observed
-            ));
-        } else {
-            ui.label("Run state has not been observed.");
-        }
-        ui.label(format!("Cancellation: {:?}", observation.cancellation));
-        if intent.cancel_queued {
-            ui.small("Cancellation request queued for the host; outcome remains unconfirmed.");
-        }
-        if let Some(issue) = observation.issue {
-            ui.label(format!("Host observation: {issue:?}"));
-        }
-        ui.small("Run admission or a terminal run state does not prove a device effect. Your original draft is retained.");
-        let can_cancel = !finished(observation);
-        ui.push_id(("objective-actions", &id), |ui| {
-            ui.horizontal(|ui| {
-                if self
-                    .activation
-                    .activated(&ui.button("Refresh objective status"))
-                {
-                    self.bridge.poll_objective(Request::ObjectiveStatus {
-                        client_intent_id: id.clone(),
-                        expected_instance: session.clone(),
-                    });
-                }
                 if self.activation.activated(
-                    &ui.add_enabled(can_cancel, egui::Button::new("Request cancellation")),
-                ) && self.submit(Request::ObjectiveCancel {
-                    client_intent_id: id.clone(),
-                    expected_instance: session,
-                }) {
-                    if let Some(intent) = self
-                        .objectives
-                        .intents
-                        .iter_mut()
-                        .find(|intent| intent.id == id)
-                    {
-                        intent.cancel_queued = true;
+                    &ui.add_enabled(view.can_cancel, egui::Button::new("Request cancellation")),
+                ) {
+                    if let Err(error) = self.cancel_note_request() {
+                        self.notice(error);
                     }
                 }
             })
@@ -702,3 +912,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "objective_notes_tests.rs"]
+mod notes_tests;
