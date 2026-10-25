@@ -172,11 +172,15 @@ def switch_release(prefix, release_id):
             path.unlink()
 
 
-def native_resource_files(root, expected_hepta=None, expected_sdk=None):
+def native_resource_files(root, expected_hepta=None, expected_sdk=None, *, installed_version=None):
     """Verify the prepared original bundle; Rust also checks its compiled inventory."""
     root = Path(root)
     require(root.is_dir() and not root.is_symlink(), "Makepad resource root must be a real directory")
     bundle = read_json(root / "bundle.json", 64 * 1024)
+    if installed_version is not None:
+        historical = native_sdk.historical_installation(installed_version)
+        require(digest(regular_bytes(root / "bundle.json", 64 * 1024)) == historical["bundle_sha256"],
+                "Historical native resource bundle identity differs")
     inventory_bytes = regular_bytes(root / "NATIVE-ASSETS.json", 128 * 1024)
     inventory = read_json(root / "NATIVE-ASSETS.json", 128 * 1024)
     require(bundle["schema"] == "trill.original-makepad-bundle.v1"
@@ -185,7 +189,8 @@ def native_resource_files(root, expected_hepta=None, expected_sdk=None):
     require(inventory["schema"] == "hepta.native-embedded-assets.v1"
             and inventory["makepadRevision"] == sdk
             and bundle["makepadSource"] in (
-                "git+" + native_sdk.UPSTREAM + "?rev=" + sdk + "#" + sdk, native_sdk.SOURCE_ID)
+                "git+" + native_sdk.UPSTREAM + "?rev=" + sdk + "#" + sdk,
+                native_sdk.resource_source(installed_version))
             and re.search(r"#[0-9a-f]{40}\Z", bundle["heptaSource"]), "Unpinned Makepad resource sources")
     require(len(inventory["assets"]) == bundle["assets"] == 29
             and len(inventory["noticeFileSha256"]) == bundle["notices"] == 15,
@@ -214,7 +219,8 @@ def native_resource_files(root, expected_hepta=None, expected_sdk=None):
     records += [(entry["path"], entry) for entry in dependency_files]
     try:
         records += native_sdk.bundle_records(root, bundle, read_json, regular_bytes, expected_sdk,
-                                             bind_binary=expected_hepta is not None)
+                                             bind_binary=expected_hepta is not None,
+                                             installed_version=installed_version)
     except ValueError as error:
         raise ProductError(str(error)) from error
     source = inventory["liberationSource"]
@@ -242,6 +248,45 @@ def native_resource_files(root, expected_hepta=None, expected_sdk=None):
 
 
 def verify_package(package):
+    """Incoming packages must satisfy the current build/resource contract."""
+    return _verify_package(package)
+
+
+def verify_installed_package(package, selection):
+    """Recheck a protected deployment selection without running packaged code.
+
+    Only trusted_desktop uses this path. Its original Root ownership, lock and
+    manifest checks remain mandatory; history never grants execution authority.
+    """
+    package = Path(package)
+    require(isinstance(selection, dict) and set(selection) == {"release_id", "manifest_sha256"}
+            and RELEASE.fullmatch(selection["release_id"])
+            and re.fullmatch(r"[0-9a-f]{64}", selection["manifest_sha256"]),
+            "Invalid installed package selection")
+    manifest_hash = digest(regular_bytes(package / "manifest.json"))
+    require(manifest_hash == selection["manifest_sha256"], "Selected native manifest differs from reviewed package")
+    manifest = read_json(package / "manifest.json")
+    require(manifest.get("release_id") == selection["release_id"], "Native release identifier differs")
+    try:
+        version = native_sdk.historical_install_contract(manifest, manifest_hash)
+    except ValueError as error:
+        raise ProductError(str(error)) from error
+    if version is not None:
+        historical = native_sdk.historical_installation(version)
+        require(digest(regular_bytes(package / "source-profile.json")) == historical["source_profile_sha256"],
+                "Historical binary source profile identity differs")
+    verified = _verify_package(package, installed_version=version)
+    if version is not None:
+        actual = set()
+        for path in package.rglob("*"):
+            require(not path.is_symlink(), "Historical package contains a symlink")
+            if not path.is_dir():
+                actual.add(path.relative_to(package).as_posix())
+        require(actual == set(verified["files"]) | {"manifest.json"}, "Unexpected or missing historical package file")
+    return verified
+
+
+def _verify_package(package, *, installed_version=None):
     package = Path(package)
     manifest = read_json(package / "manifest.json")
     require(set(manifest) == {"schema_version", "release_id", "desktop_commit", "hepta_commit",
@@ -263,7 +308,8 @@ def verify_package(package):
     expected.update("bin/" + name for name in PROGRAMS)
     if any(name.startswith("resources/") for name in files):
         expected.update("resources/" + name for name in native_resource_files(
-            package / "resources", manifest["hepta_commit"], profile.get("makepad_sdk")))
+            package / "resources", manifest["hepta_commit"], profile.get("makepad_sdk"),
+            installed_version=installed_version))
     require(set(files) == expected, "Unexpected or missing package file")
     total = 0
     for name, record in files.items():

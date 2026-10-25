@@ -1,0 +1,542 @@
+{
+  "schema": "hepta.verified-original-sdk-source.v1",
+  "native_ui_feature": "native-clipboard-sdk",
+  "upstream_repository": "https://github.com/kevinaboos/makepad",
+  "upstream_commit": "337566c8b25d47f7e4fff6a202157b65bf183330",
+  "patched_tree": "e5ae930cc6a0a528719673deff44ec2830f4bdfa",
+  "manifest_sha256": "cd511d5c0862ce720f596285f17aa2e4e3d133f3c45b76bcaa5a5d962d005f73",
+  "patches": [
+    {
+      "file": "native-clipboard-read.patch",
+      "sha256": "0edf1c0f806fec15ce29f03670e722d3eda4ec3943911537874087e8a8d4fa1f",
+      "bytes": 19919
+    },
+    {
+      "file": "sdk-num-traits-path.patch",
+      "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c",
+      "bytes": 521
+    }
+  ],
+  "prepared_root": "/data/trillionnium-desktop-product-20261024-integration/native-sdk-candidate-v3/makepad-prepared",
+  "resolved_packages": [
+    {
+      "name": "ab_glyph_rasterizer",
+      "version": "0.1.8",
+      "manifest": "libs/ab_glyph_rasterizer/Cargo.toml"
+    },
+    {
+      "name": "arrayvec",
+      "version": "0.7.6",
+      "manifest": "libs/vulkan/arrayvec/Cargo.toml"
+    },
+    {
+      "name": "ash",
+      "version": "0.38.0+1.3.281",
+      "manifest": "libs/vulkan/ash/Cargo.toml"
+    },
+    {
+      "name": "bit-set",
+      "version": "0.8.0",
+      "manifest": "libs/vulkan/bit-set/Cargo.toml"
+    },
+    {
+      "name": "bit-vec",
+      "version": "0.8.0",
+      "manifest": "libs/vulkan/bit-vec/Cargo.toml"
+    },
+    {
+      "name": "bitflags",
+      "version": "2.10.0",
+      "manifest": "libs/bitflags/Cargo.toml"
+    },
+    {
+      "name": "bytemuck",
+      "version": "1.25.0",
+      "manifest": "libs/bytemuck/Cargo.toml"
+    },
+    {
+      "name": "byteorder",
+      "version": "1.5.0",
+      "manifest": "libs/byteorder/Cargo.toml"
+    },
+    {
+      "name": "cfg-if",
+      "version": "1.0.4",
+      "manifest": "libs/cfg-if/Cargo.toml"
+    },
+    {
+      "name": "cfg_aliases",
+      "version": "0.2.1",
+      "manifest": "libs/vulkan/cfg_aliases/Cargo.toml"
+    },
+    {
+      "name": "crunchy",
+      "version": "0.2.4",
+      "manifest": "libs/vulkan/crunchy/Cargo.toml"
+    },
+    {
+      "name": "downcast-rs",
+      "version": "1.2.1",
+      "manifest": "libs/linux/downcast-rs/Cargo.toml"
+    },
+    {
+      "name": "equivalent",
+      "version": "1.0.2",
+      "manifest": "libs/vulkan/equivalent/Cargo.toml"
+    },
+    {
+      "name": "foldhash",
+      "version": "0.2.0",
+      "manifest": "libs/vulkan/foldhash/Cargo.toml"
+    },
+    {
+      "name": "fxhash",
+      "version": "0.2.1",
+      "manifest": "libs/fxhash/Cargo.toml"
+    },
+    {
+      "name": "hashbrown",
+      "version": "0.16.1",
+      "manifest": "libs/vulkan/hashbrown/Cargo.toml"
+    },
+    {
+      "name": "hexf-parse",
+      "version": "0.2.1",
+      "manifest": "libs/vulkan/hexf-parse/Cargo.toml"
+    },
+    {
+      "name": "indexmap",
+      "version": "2.13.0",
+      "manifest": "libs/vulkan/indexmap/Cargo.toml"
+    },
+    {
+      "name": "libloading",
+      "version": "0.8.9",
+      "manifest": "libs/vulkan/libloading/Cargo.toml"
+    },
+    {
+      "name": "makepad-apple-sys",
+      "version": "1.0.0",
+      "manifest": "libs/apple_sys/Cargo.toml"
+    },
+    {
+      "name": "makepad-byteorder-lite",
+      "version": "0.1.0",
+      "manifest": "libs/byteorder-lite/Cargo.toml"
+    },
+    {
+      "name": "makepad-derive-wasm-bridge",
+      "version": "1.0.0",
+      "manifest": "libs/wasm_bridge/derive/Cargo.toml"
+    },
+    {
+      "name": "makepad-derive-widget",
+      "version": "2.0.0",
+      "manifest": "widgets/derive_widget/Cargo.toml"
+    },
+    {
+      "name": "makepad-draw",
+      "version": "2.0.0",
+      "manifest": "draw/Cargo.toml"
+    },
+    {
+      "name": "makepad-error-log",
+      "version": "1.0.0",
+      "manifest": "libs/error_log/Cargo.toml"
+    },
+    {
+      "name": "makepad-fast-inflate",
+      "version": "0.1.0",
+      "manifest": "libs/fast_inflate/Cargo.toml"
+    },
+    {
+      "name": "makepad-filesystem-watcher",
+      "version": "0.1.0",
+      "manifest": "libs/filesystem_watcher/Cargo.toml"
+    },
+    {
+      "name": "makepad-futures",
+      "version": "1.0.0",
+      "manifest": "libs/futures/Cargo.toml"
+    },
+    {
+      "name": "makepad-futures-legacy",
+      "version": "1.0.0",
+      "manifest": "libs/futures_legacy/Cargo.toml"
+    },
+    {
+      "name": "makepad-gif",
+      "version": "0.1.0",
+      "manifest": "libs/gif/Cargo.toml"
+    },
+    {
+      "name": "makepad-git",
+      "version": "0.1.0",
+      "manifest": "libs/git/Cargo.toml"
+    },
+    {
+      "name": "makepad-half",
+      "version": "2.7.1",
+      "manifest": "libs/vulkan/makepad-half/Cargo.toml"
+    },
+    {
+      "name": "makepad-html",
+      "version": "1.0.0",
+      "manifest": "libs/html/Cargo.toml"
+    },
+    {
+      "name": "makepad-latex-math",
+      "version": "0.1.0",
+      "manifest": "libs/latex_math/Cargo.toml"
+    },
+    {
+      "name": "makepad-live-id",
+      "version": "1.0.0",
+      "manifest": "libs/live_id/Cargo.toml"
+    },
+    {
+      "name": "makepad-live-id-macros",
+      "version": "1.0.0",
+      "manifest": "libs/live_id/id_macros/Cargo.toml"
+    },
+    {
+      "name": "makepad-live-reload-core",
+      "version": "0.1.0",
+      "manifest": "libs/live_reload_core/Cargo.toml"
+    },
+    {
+      "name": "makepad-math",
+      "version": "1.0.0",
+      "manifest": "libs/math/Cargo.toml"
+    },
+    {
+      "name": "makepad-micro-proc-macro",
+      "version": "1.0.0",
+      "manifest": "libs/micro_proc_macro/Cargo.toml"
+    },
+    {
+      "name": "makepad-micro-serde",
+      "version": "1.0.0",
+      "manifest": "libs/micro_serde/Cargo.toml"
+    },
+    {
+      "name": "makepad-micro-serde-derive",
+      "version": "1.0.0",
+      "manifest": "libs/micro_serde/derive/Cargo.toml"
+    },
+    {
+      "name": "makepad-network",
+      "version": "1.0.0",
+      "manifest": "platform/network/Cargo.toml"
+    },
+    {
+      "name": "makepad-objc-sys",
+      "version": "1.0.0",
+      "manifest": "libs/objc-sys/Cargo.toml"
+    },
+    {
+      "name": "makepad-platform",
+      "version": "2.0.0",
+      "manifest": "platform/Cargo.toml"
+    },
+    {
+      "name": "makepad-platform-video",
+      "version": "1.0.0",
+      "manifest": "platform/video/Cargo.toml"
+    },
+    {
+      "name": "makepad-regex",
+      "version": "0.1.0",
+      "manifest": "libs/regex/Cargo.toml"
+    },
+    {
+      "name": "makepad-script",
+      "version": "1.0.0",
+      "manifest": "platform/script/Cargo.toml"
+    },
+    {
+      "name": "makepad-script-derive",
+      "version": "1.0.0",
+      "manifest": "platform/script/derive/Cargo.toml"
+    },
+    {
+      "name": "makepad-script-std",
+      "version": "1.0.0",
+      "manifest": "platform/script/std/Cargo.toml"
+    },
+    {
+      "name": "makepad-shared-bytes",
+      "version": "1.0.0",
+      "manifest": "libs/shared_bytes/Cargo.toml"
+    },
+    {
+      "name": "makepad-stitch",
+      "version": "0.1.0",
+      "manifest": "libs/stitch/Cargo.toml"
+    },
+    {
+      "name": "makepad-studio-protocol",
+      "version": "0.1.0",
+      "manifest": "platform/studio/Cargo.toml"
+    },
+    {
+      "name": "makepad-svg",
+      "version": "1.0.0",
+      "manifest": "libs/svg/Cargo.toml"
+    },
+    {
+      "name": "makepad-tsdf",
+      "version": "0.1.0",
+      "manifest": "libs/tsdf/Cargo.toml"
+    },
+    {
+      "name": "makepad-wasm-bridge",
+      "version": "1.0.0",
+      "manifest": "libs/wasm_bridge/Cargo.toml"
+    },
+    {
+      "name": "makepad-webp",
+      "version": "0.2.4",
+      "manifest": "libs/webp/Cargo.toml"
+    },
+    {
+      "name": "makepad-widgets",
+      "version": "2.0.0",
+      "manifest": "widgets/Cargo.toml"
+    },
+    {
+      "name": "makepad-zune-bmp",
+      "version": "0.5.2",
+      "manifest": "libs/zune/zune-bmp/Cargo.toml"
+    },
+    {
+      "name": "makepad-zune-core",
+      "version": "0.5.1",
+      "manifest": "libs/zune/zune-core/Cargo.toml"
+    },
+    {
+      "name": "makepad-zune-inflate",
+      "version": "0.2.54",
+      "manifest": "libs/zune/zune-inflate/Cargo.toml"
+    },
+    {
+      "name": "makepad-zune-jpeg",
+      "version": "0.5.15",
+      "manifest": "libs/zune/zune-jpeg/Cargo.toml"
+    },
+    {
+      "name": "makepad-zune-png",
+      "version": "0.5.2",
+      "manifest": "libs/zune/zune-png/Cargo.toml"
+    },
+    {
+      "name": "makepad-zune-qoi",
+      "version": "0.5.2",
+      "manifest": "libs/zune/zune-qoi/Cargo.toml"
+    },
+    {
+      "name": "memchr",
+      "version": "2.7.6",
+      "manifest": "libs/memchr/Cargo.toml"
+    },
+    {
+      "name": "naga",
+      "version": "27.0.3",
+      "manifest": "libs/vulkan/naga/Cargo.toml"
+    },
+    {
+      "name": "num-traits",
+      "version": "0.2.20",
+      "manifest": "libs/rapier/vendor/num-traits/Cargo.toml"
+    },
+    {
+      "name": "once_cell",
+      "version": "1.21.3",
+      "manifest": "libs/vulkan/once_cell/Cargo.toml"
+    },
+    {
+      "name": "pkg-config",
+      "version": "0.3.32",
+      "manifest": "libs/linux/pkg-config/Cargo.toml"
+    },
+    {
+      "name": "pulldown-cmark",
+      "version": "0.12.2",
+      "manifest": "libs/pulldown-cmark/Cargo.toml"
+    },
+    {
+      "name": "rustc-hash",
+      "version": "1.1.0",
+      "manifest": "libs/vulkan/rustc-hash/Cargo.toml"
+    },
+    {
+      "name": "rustybuzz",
+      "version": "0.18.0",
+      "manifest": "libs/rustybuzz/Cargo.toml"
+    },
+    {
+      "name": "scoped-tls",
+      "version": "1.0.1",
+      "manifest": "libs/linux/scoped-tls/Cargo.toml"
+    },
+    {
+      "name": "sdfer",
+      "version": "0.2.1",
+      "manifest": "libs/sdfer/Cargo.toml"
+    },
+    {
+      "name": "simd-adler32",
+      "version": "0.3.9",
+      "manifest": "libs/simd-adler32/Cargo.toml"
+    },
+    {
+      "name": "smallvec",
+      "version": "1.15.1",
+      "manifest": "libs/smallvec/Cargo.toml"
+    },
+    {
+      "name": "spirv",
+      "version": "0.3.0+sdk-1.3.268.0",
+      "manifest": "libs/vulkan/spirv/Cargo.toml"
+    },
+    {
+      "name": "thiserror",
+      "version": "2.0.18",
+      "manifest": "libs/vulkan/thiserror/Cargo.toml"
+    },
+    {
+      "name": "thiserror-impl",
+      "version": "2.0.18",
+      "manifest": "libs/vulkan/thiserror-impl/Cargo.toml"
+    },
+    {
+      "name": "ttf-parser",
+      "version": "0.24.1",
+      "manifest": "libs/ttf-parser/Cargo.toml"
+    },
+    {
+      "name": "unicase",
+      "version": "2.9.0",
+      "manifest": "libs/unicase/Cargo.toml"
+    },
+    {
+      "name": "unicode-bidi",
+      "version": "0.3.18",
+      "manifest": "libs/unicode/unicode-bidi/Cargo.toml"
+    },
+    {
+      "name": "unicode-bidi-mirroring",
+      "version": "0.3.0",
+      "manifest": "libs/unicode/unicode-bidi-mirroring/Cargo.toml"
+    },
+    {
+      "name": "unicode-ccc",
+      "version": "0.3.0",
+      "manifest": "libs/unicode/unicode-ccc/Cargo.toml"
+    },
+    {
+      "name": "unicode-ident",
+      "version": "1.0.22",
+      "manifest": "libs/vulkan/unicode-ident/Cargo.toml"
+    },
+    {
+      "name": "unicode-linebreak",
+      "version": "0.1.5",
+      "manifest": "libs/unicode/unicode-linebreak/Cargo.toml"
+    },
+    {
+      "name": "unicode-properties",
+      "version": "0.1.4",
+      "manifest": "libs/unicode/unicode-properties/Cargo.toml"
+    },
+    {
+      "name": "unicode-script",
+      "version": "0.5.8",
+      "manifest": "libs/unicode/unicode-script/Cargo.toml"
+    },
+    {
+      "name": "unicode-segmentation",
+      "version": "1.12.0",
+      "manifest": "libs/unicode/unicode-segmentation/Cargo.toml"
+    },
+    {
+      "name": "wayland-backend",
+      "version": "0.3.12",
+      "manifest": "libs/linux/wayland-backend/Cargo.toml"
+    },
+    {
+      "name": "wayland-client",
+      "version": "0.31.12",
+      "manifest": "libs/linux/wayland-client/Cargo.toml"
+    },
+    {
+      "name": "wayland-egl",
+      "version": "0.32.9",
+      "manifest": "libs/linux/wayland-egl/Cargo.toml"
+    },
+    {
+      "name": "wayland-protocols",
+      "version": "0.32.10",
+      "manifest": "libs/linux/wayland-protocols/Cargo.toml"
+    },
+    {
+      "name": "wayland-sys",
+      "version": "0.31.8",
+      "manifest": "libs/linux/wayland-sys/Cargo.toml"
+    },
+    {
+      "name": "weezl",
+      "version": "0.1.12",
+      "manifest": "libs/gif/weezl/Cargo.toml"
+    },
+    {
+      "name": "windows",
+      "version": "0.62.2",
+      "manifest": "libs/windows/windows-rs/Cargo.toml"
+    },
+    {
+      "name": "windows-collections",
+      "version": "0.3.2",
+      "manifest": "libs/windows/windows-collections/Cargo.toml"
+    },
+    {
+      "name": "windows-core",
+      "version": "0.62.2",
+      "manifest": "libs/windows/windows-core/Cargo.toml"
+    },
+    {
+      "name": "windows-future",
+      "version": "0.3.2",
+      "manifest": "libs/windows/windows-future/Cargo.toml"
+    },
+    {
+      "name": "windows-link",
+      "version": "0.2.1",
+      "manifest": "libs/windows/windows-link/Cargo.toml"
+    },
+    {
+      "name": "windows-result",
+      "version": "0.4.1",
+      "manifest": "libs/windows/windows-result/Cargo.toml"
+    },
+    {
+      "name": "windows-strings",
+      "version": "0.5.1",
+      "manifest": "libs/windows/windows-strings/Cargo.toml"
+    },
+    {
+      "name": "zerocopy",
+      "version": "0.8.39",
+      "manifest": "libs/vulkan/zerocopy/Cargo.toml"
+    }
+  ],
+  "original_metadata_sha256": "7a256bf2eb60f1c3670e27c98ff68ca07bc212827b41222ae0c31b54dc758995",
+  "candidate_metadata_sha256": "2de640bfc070b37b3991d87190595c9f484794b91945a25be220c2addc2aedfb",
+  "cargo_config_sha256": "d3b0461a6052499e66cb0687d593b68d124004195ee9634f6d53a015e13fa911",
+  "source_tree_verified": true,
+  "all_sdk_packages_same_tree": true,
+  "dependency_edges_verified": true,
+  "compiled": false,
+  "runtime_qualified": false,
+  "effects_authority": false
+}

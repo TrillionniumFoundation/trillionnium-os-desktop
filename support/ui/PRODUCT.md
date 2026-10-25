@@ -296,6 +296,48 @@ copied during package rollback. The package filesystem tests and deployment-lock
 tests establish plumbing boundaries; actual Root recognition, upgrade isolation
 and original thread continuity still require the live acceptance run.
 
+### Rechecking an installed historical SDK release
+
+An SDK change must not make an already registered, immutable previous release
+unreadable. The administrator's `verified_release` path therefore calls
+`verify_installed_package` with the exact selection from the protected deployment
+record. It verifies that record's manifest hash before selecting a historical
+contract. This applies to the current release check before an upgrade, the
+previous release check before rollback, and the binding used by `describe` and
+`launch` after rollback.
+
+There is one registered historical contract, `trill.installed-sdk.e5-a762-22.v1`:
+
+| Identity | Exact retained value |
+| --- | --- |
+| Release | `a7621d8022f5-7bb3f08ce5c1` |
+| Package manifest SHA256 | `b1872f83b9e882ddc4f241be5b7a50039c8f40c24c6fc50cf3845c3ba4a53aa7` |
+| Desktop commit | `a7621d8022f52add679bd6edba5d0bad6772dabc` |
+| Hepta commit | `22e87e0dd6560a7b925e716a33011378ae07a9a2` |
+| Prepared SDK tree | `e5ae930cc6a0a528719673deff44ec2830f4bdfa` |
+| Inventory | 72 package files, including 61 resources and five SDK notices |
+
+`native_sdk.py` also fixes the exact binary source profile, SDK source profile,
+SDK notice inventory and bundle hashes, the original license, and both reviewed
+patch identities. The complete package/resource checks still run; missing,
+changed, extra or linked historical files are refused. The installed B does not
+contain the later IME preedit patch and cannot claim that capability.
+
+Incoming `stage` packages and `pack` still use `verify_package`, which has no
+historical-selection option. SDK preparation and source/build verification still
+call the current-only `validate_profile` and `validate_notice_inventory`; the
+current clipboard SDK requires tree `ceb83c36b474eb55336cb69b430ff9d898cb51f6`
+and all three patches/six notices. A package cannot register history by supplying
+its own profile or manifest. No CLI flag or environment variable broadens the
+history table, and the tool never imports the installed package's Python files.
+
+The retained metadata fixture in `product/fixtures/historical-sdk-b` is bound to
+the original B manifest. Cross-version transaction tests use synthetic ELF and
+asset bytes with explicitly scoped fixture identities. Those tests do not
+qualify actual B/C binaries, original Root recognition, or a live UI launch.
+The real retained deployment must still complete the new upgrade/rollback run
+with its installed files and original launch authority before P0-2 is closed.
+
 ## Configuration and diagnostics
 
 The installed, private `0600` config is
