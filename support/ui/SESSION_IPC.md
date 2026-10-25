@@ -15,6 +15,7 @@ prototype, not an Asterinas compositor or HOS2 authority service. See
 | `ui/core/src/host_peer.rs` | Same-effective-UID peer checks |
 | `ui/session/src/hepta.rs` | Original-runtime observation; not a writer |
 | `ui/session/src/notes_bootstrap.rs` | Private inherited Notes descriptor transfer |
+| `ui/session/src/desktop_bootstrap.rs` | Explicit inherited X11 connection and private original-owner descriptor handoff |
 | `ui/session/src/bin/trill-ctl.rs` | Public host client |
 
 The runtime directory and lock enforce ownership, private modes and one live
@@ -22,7 +23,9 @@ Session. Generation checks bind cancel requests to the Session and child
 incarnation. Same-UID checks apply before parsing, and clients check the server
 UID before using responses. They provide a host transport boundary, not a
 distinction between mutually distrustful applications under one user account.
-Public IPC cannot export a Notes descriptor or issue an effect grant.
+Public IPC cannot export a Notes/display descriptor or issue an effect grant.
+The private X11 startup runs its native work on separate workers; its full
+scope, trusted-server inputs and bounds are documented in [DESKTOP_X11.md](DESKTOP_X11.md).
 
 ## Fair main-loop service
 

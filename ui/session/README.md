@@ -1,5 +1,10 @@
 # trill-session
 
+Explicit `--desktop-bootstrap-stdin` startup can attach one trusted inherited
+X11 connection and hand private input/observation descriptors to the original
+Hepta host. Public IPC remains Snapshot/Launch/Cancel. See the
+[Desktop X11 contract](../../support/ui/DESKTOP_X11.md).
+
 Linux host process owner for the Shell and application windows. `src/main.rs`
 owns task generations, launch/cancel/reap and private Notes startup;
 `src/ipc.rs` serves bounded nonblocking public requests. `src/hepta.rs` observes

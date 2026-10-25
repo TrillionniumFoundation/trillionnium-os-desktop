@@ -16,6 +16,8 @@
 
 use serde::{Deserialize, Serialize};
 #[cfg(target_os = "linux")]
+pub mod desktop;
+#[cfg(target_os = "linux")]
 pub mod notes;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fmt;

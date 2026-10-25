@@ -9,6 +9,11 @@ original-owner composition. It performs bounded synchronous exact-byte socket
 I/O; the renderer broker neither calls it nor exports its handle. The original
 Hepta owner must validate authority and journal the operation independently.
 
+`src/desktop.rs` and `src/desktop/x11.rs` provide a separately bootstrapped
+Linux display-domain destination with real XTEST input and bounded XGetImage
+capture. Its exact live receipts are not a durable ledger or an application
+business result. [Desktop X11 contract](../../support/ui/DESKTOP_X11.md).
+
 From the repository root:
 
 ```sh

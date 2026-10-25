@@ -1,5 +1,9 @@
 # trill-ui-core
 
+The private display protocol in `src/desktop.rs` defines the X11 destination
+identity, bounded input/capture schemas and cross-repository golden digests.
+See [Desktop X11](../../support/ui/DESKTOP_X11.md); it grants no authority.
+
 Shared host UI types and bounded protocols. `src/lib.rs` defines task snapshots
 and Session requests; `conversation.rs` defines local drafts and context;
 `hepta.rs` and `observation.rs` represent read-only observations. These types do

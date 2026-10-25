@@ -1,6 +1,7 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
 pub mod conversation;
+pub mod desktop;
 pub mod hepta;
 pub mod notes;
 pub mod notes_bootstrap;

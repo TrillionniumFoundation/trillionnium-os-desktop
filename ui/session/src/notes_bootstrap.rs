@@ -138,7 +138,7 @@ fn remaining(deadline: Instant) -> io::Result<Duration> {
         .ok_or_else(|| io::Error::new(io::ErrorKind::TimedOut, "Notes bootstrap total deadline"))
 }
 
-fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> {
+pub(super) fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> {
     for (name, expected) in [
         (libc::SO_DOMAIN, libc::AF_UNIX),
         (libc::SO_TYPE, expected_type),
@@ -165,7 +165,7 @@ fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> 
     Ok(())
 }
 
-fn send_descriptors(
+pub(super) fn send_descriptors(
     channel: &UnixDatagram,
     raw: &[u8],
     fds: &[RawFd],
@@ -217,7 +217,7 @@ fn send_descriptors(
     }
 }
 
-fn receive_ack(channel: &UnixDatagram, deadline: Instant) -> io::Result<Vec<u8>> {
+pub(super) fn receive_ack(channel: &UnixDatagram, deadline: Instant) -> io::Result<Vec<u8>> {
     loop {
         channel.set_read_timeout(Some(remaining(deadline)?))?;
         let mut bytes = [0u8; NOTES_BOOTSTRAP_MAX_BYTES + 1];
