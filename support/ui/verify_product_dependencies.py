@@ -32,6 +32,13 @@ LOCKS = {
 REQUIRED_FILES = {
     "codex-rs/hepta-objective/src/lib.rs",
     "codex-rs/hepta-objective/src/notes_literal_source.rs",
+    "codex-rs/hepta-agentd/src/notes_ui_wire.rs",
+    "codex-rs/hepta-agentd/src/notes_ui_worker.rs",
+    "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/mod.rs",
+}
+MIRRORED_FIXTURES = {
+    "codex-rs/hepta-agentd/tests/fixtures/notes-document-observation-v1.json":
+        "tests/ui/notes-document-observation-v1.json",
 }
 
 
@@ -51,6 +58,14 @@ def verify(root=ROOT, hepta_root=None):
             "Unexpected original repository")
     require(REQUIRED_FILES <= {entry["path"] for entry in source["files"]},
             "Source contract omits the shared literal Notes compiler")
+    files = {entry["path"]: entry for entry in source["files"]}
+    require(len(files) == len(source["files"]), "Duplicate original source identity")
+    for original, local in MIRRORED_FIXTURES.items():
+        require(original in files, "Source contract omits the Notes readback wire fixture")
+        data = (root / local).read_bytes()
+        require(len(data) == files[original]["bytes"]
+                and hashlib.sha256(data).hexdigest() == files[original]["sha256"],
+                "Desktop and original Notes readback wire fixtures differ")
     dependency_count = 0
     for name in MANIFESTS:
         manifest = tomllib.loads((root / name).read_text())

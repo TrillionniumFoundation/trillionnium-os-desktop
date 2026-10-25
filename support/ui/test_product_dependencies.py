@@ -17,7 +17,8 @@ class ProductDependencies(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
-        for name in (*guard.MANIFESTS, *guard.LOCKS, guard.SOURCE, "support/ui/linux-preedit-profile.json"):
+        for name in (*guard.MANIFESTS, *guard.LOCKS, guard.SOURCE,
+                     "support/ui/linux-preedit-profile.json", *guard.MIRRORED_FIXTURES.values()):
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(guard.ROOT / name, target)
@@ -71,6 +72,13 @@ class ProductDependencies(unittest.TestCase):
         profile["hepta_commit"] = "b" * 40
         path.write_text(json.dumps(profile))
         with self.assertRaisesRegex(ValueError, "Preedit profile differs"):
+            guard.verify(self.root)
+
+    def test_readback_wire_cannot_drift_from_the_original_contract(self):
+        for name in guard.MIRRORED_FIXTURES.values():
+            path = self.root / name
+            path.write_text(path.read_text().replace('"revision": 5', '"revision": 6'))
+        with self.assertRaisesRegex(ValueError, "readback wire fixtures differ"):
             guard.verify(self.root)
 
 

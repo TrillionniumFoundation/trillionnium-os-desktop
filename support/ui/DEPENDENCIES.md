@@ -6,10 +6,14 @@ dependency patches. The canonical identity and source hashes are in
 [HEPTA_SHARED_PRESENTER.json](HEPTA_SHARED_PRESENTER.json). The literal Notes
 compiler is part of that source contract, so a source that lacks the required
 API cannot be advertised as the current product combination.
+The same contract includes the original native Notes port, bounded UI worker
+and exact shared document-readback fixture. Both repositories decode
+`notes-document-observation-v1.json`; a mismatched fixture is rejected before
+Cargo runs. The snapshot is separate from an operation's terminal receipt.
 
 The integration baseline is Desktop PR265 `4db81c63037f54c2a107c822d2cbc436150d8134`
-and original Hepta `9600de28f5295c1758dd7e19bcac743fe5cfc082`, tree
-`5cf15149d0e0d2ef1ae7d1d2784ea55c99b9a658`. The Desktop build commit must be
+and original Hepta `1b980b0bd36bb0ec66540e5171c54a8f2ea828ba`, tree
+`4c045f9e6a5262c2a99cd673450e1eadd5f4a22a`. The Desktop build commit must be
 recorded separately by the actual build receipt; this document does not grant
 later source edits the baseline's test results. Both product Cargo roots use
 Rust 1.96.0. The prior `7ea3df4` combination remains historical evidence.
