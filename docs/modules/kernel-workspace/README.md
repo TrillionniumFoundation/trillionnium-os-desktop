@@ -1,5 +1,10 @@
 # 57 个内核 workspace crate 的开发与技术手册
 
+当前 checkout 的成员/合同/源码链接与标题锚点可通过
+`python3 -I -B support/docs/check_modules.py` 检查；它会按实际 workspace members
+逐条复核以下三册，不把历史清单的 commit 归为当前未提交源码。其他第一方模块见
+[当前开发与技术交接](../README.md)。
+
 本目录包含当前机器清单与逐 crate 手册。当前 [inventory.json](inventory.json) 绑定的源码 commit/tree 见文件中的 `source_commit`/`source_tree`；它重新读取全部 57 个成员的 manifest、入口及被 Git 跟踪的 Rust 源文件。分项手册最初基于 **`10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd`** 编写，保留各 crate 的职责、接口、状态所有权、错误边界、开发入口和具体待验证项。机器清单更新属于源码核对，不将文档覆盖率、静态测试声明或哈希计作运行完成率。
 
 范围来自 [原 workspace manifest](../../../kernel/asterinas/Cargo.toml) 的全部 **57 个显式 members**。当前其中 **11 个**目录已有 Markdown，**46 个**没有同目录 Markdown；57 个包均有集中手册入口。这个存在性统计仍与最初审计 `39c1d84ebf854958f5829c0118b0c8b92a6b4926` 一致。没有为 vendored 目录机械添加 README；集中手册按包名逐条索引。
