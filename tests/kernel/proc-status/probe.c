@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <grp.h>
 #include <linux/capability.h>
+#include <limits.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -18,6 +19,8 @@ static unsigned failed;
 static pthread_barrier_t barrier;
 static pid_t worker_tid;
 static const char *self;
+static const gid_t initial_groups[] = {23, 65539, 70003};
+static const gid_t leader_groups[] = {31, 80001};
 static void check(const char *name, int okay) {
     printf("{\"case\":\"%s\",\"passed\":%s}\n", name, okay ? "true" : "false");
     if (!okay) ++failed;
@@ -60,6 +63,38 @@ static int status_nnp(const char *path) {
     }
     return found == 1 ? value : -1;
 }
+static int status_groups(const char *path, const gid_t *expected, size_t count) {
+    char buffer[16384];
+    if (status_bytes(path, buffer)) return 0;
+    unsigned found = 0;
+    for (char *line = buffer; *line;) {
+        char *end = strchr(line, '\n');
+        if (!end) return 0;
+        *end = 0;
+        if (!strncmp(line, "Groups:", 7)) {
+            ++found;
+            size_t index = 0;
+            for (char *value = line + 7;;) {
+                while (*value == ' ' || *value == '\t') ++value;
+                if (!*value) break;
+                if (*value < '0' || *value > '9') return 0;
+                errno = 0; char *next;
+                unsigned long group = strtoul(value, &next, 10);
+                if (errno || group > UINT_MAX || index >= count ||
+                    group != expected[index++] || (*next && *next != ' ' && *next != '\t')) return 0;
+                value = next;
+            }
+            if (index != count) return 0;
+        }
+        line = end + 1;
+    }
+    return found == 1;
+}
+static int current_groups(const gid_t *expected, size_t count) {
+    gid_t actual[16];
+    int n = (int)syscall(SYS_getgroups, 16, actual);
+    return n >= 0 && (size_t)n == count && (!count || !memcmp(actual, expected, count * sizeof(gid_t)));
+}
 static void task_path(char path[128], pid_t pid, pid_t tid) {
     snprintf(path, 128, "/proc/%d/task/%d/status", pid, tid);
 }
@@ -85,6 +120,7 @@ static void child_drop(void) {
         check(caps[i], read_ok && strstr(status, line) != NULL);
     }
     check("original_agent_nnp_readback", status_nnp("/proc/self/status") == 1);
+    check("original_agent_groups_empty_readback", current_groups(NULL, 0) && status_groups("/proc/self/status", NULL, 0));
 }
 static void *existing_thread(void *unused) {
     (void)unused;
@@ -93,6 +129,11 @@ static void *existing_thread(void *unused) {
     char path[128]; task_path(path, getpid(), worker_tid);
     check("existing_thread_retains_nnp_zero", prctl(PR_GET_NO_NEW_PRIVS, 0L, 0L, 0L, 0L) == 0 && status_nnp(path) == 0);
     check("self_status_reports_leader_not_reader", status_nnp("/proc/self/status") == 1);
+    check("existing_thread_retains_original_groups", current_groups(initial_groups, 3) && status_groups(path, initial_groups, 3));
+    check("thread_self_status_reports_leader_groups", status_groups("/proc/self/status", leader_groups, 2));
+    /* Raw syscall deliberately changes this thread only, bypassing NPTL propagation. */
+    check("thread_clears_own_groups", syscall(SYS_setgroups, 0, NULL) == 0);
+    check("thread_reads_own_empty_groups", current_groups(NULL, 0) && status_groups(path, NULL, 0));
     check("thread_set_nnp", prctl(PR_SET_NO_NEW_PRIVS, 1L, 0L, 0L, 0L) == 0);
     sync_thread(); sync_thread(); return NULL;
 }
@@ -100,6 +141,7 @@ static void *inherited_thread(void *unused) {
     (void)unused;
     char path[128]; task_path(path, getpid(), (pid_t)syscall(SYS_gettid));
     check("new_thread_inherits_nnp", prctl(PR_GET_NO_NEW_PRIVS, 0L, 0L, 0L, 0L) == 1 && status_nnp(path) == 1);
+    check("new_thread_inherits_groups", current_groups(leader_groups, 2) && status_groups(path, leader_groups, 2));
     return NULL;
 }
 static int wait_child(pid_t child) {
@@ -111,11 +153,16 @@ int main(int argc, char **argv) {
     alarm(30); setvbuf(stdout, NULL, _IOLBF, 0); self = argv[0];
     if (argc == 2 && !strcmp(argv[1], "--inherited-exec")) {
         check("exec_keeps_nnp", prctl(PR_GET_NO_NEW_PRIVS, 0L, 0L, 0L, 0L) == 1 && status_nnp("/proc/self/status") == 1);
+        check("exec_keeps_groups", current_groups(leader_groups, 2) && status_groups("/proc/self/status", leader_groups, 2));
         errno = 0;
         check("exec_cannot_unset_nnp", prctl(PR_SET_NO_NEW_PRIVS, 0L, 0L, 0L, 0L) == -1 && errno == EINVAL && status_nnp("/proc/self/status") == 1);
         return failed != 0;
     }
     check("initial_nnp_zero", prctl(PR_GET_NO_NEW_PRIVS, 0L, 0L, 0L, 0L) == 0 && status_nnp("/proc/self/status") == 0);
+    const gid_t unordered_groups[] = {70003, 23, 65539};
+    check("set_nonempty_groups", syscall(SYS_setgroups, 3, unordered_groups) == 0);
+    check("actual_nonempty_groups_sorted", current_groups(initial_groups, 3) && status_groups("/proc/self/status", initial_groups, 3));
+    check("nonempty_groups_cannot_pass_empty_policy", !status_groups("/proc/self/status", NULL, 0));
     int ready[2], release[2]; if (pipe(ready) || pipe(release)) return 91;
     pid_t child = fork();
     if (!child) {
@@ -128,18 +175,26 @@ int main(int argc, char **argv) {
     if (read(ready[0], &byte, 1) != 1) return 94;
     char path[128]; snprintf(path, sizeof path, "/proc/%d/status", child);
     check("root_reads_dropped_child_nnp_one", status_nnp(path) == 1);
+    check("root_reads_dropped_child_empty_groups", status_groups(path, NULL, 0));
     task_path(path, child, child); check("root_reads_dropped_child_task_nnp_one", status_nnp(path) == 1);
+    check("root_reads_dropped_child_task_empty_groups", status_groups(path, NULL, 0));
     check("child_nnp_does_not_change_parent", status_nnp("/proc/self/status") == 0);
+    check("child_groups_do_not_change_parent", current_groups(initial_groups, 3) && status_groups("/proc/self/status", initial_groups, 3));
     if (write(release[1], "R", 1) != 1) return 95;
     close(ready[0]); close(release[1]); check("original_agent_readback_child_exits", wait_child(child));
     pthread_t thread;
     if (pthread_barrier_init(&barrier, NULL, 2) || pthread_create(&thread, NULL, existing_thread, NULL)) return 96;
     sync_thread();
+    check("leader_changes_only_own_groups", syscall(SYS_setgroups, 2, leader_groups) == 0);
+    check("leader_reads_changed_groups", current_groups(leader_groups, 2) && status_groups("/proc/self/status", leader_groups, 2));
     check("leader_sets_nnp", prctl(PR_SET_NO_NEW_PRIVS, 1L, 0L, 0L, 0L) == 0);
     check("leader_reads_nnp_one", prctl(PR_GET_NO_NEW_PRIVS, 0L, 0L, 0L, 0L) == 1 && status_nnp("/proc/self/status") == 1);
     task_path(path, getpid(), worker_tid); check("leader_reads_existing_thread_nnp_zero", status_nnp(path) == 0);
+    check("leader_reads_existing_thread_original_groups", status_groups(path, initial_groups, 3));
     sync_thread(); sync_thread();
     check("leader_reads_changed_thread_nnp_one", status_nnp(path) == 1);
+    check("leader_reads_changed_thread_empty_groups", status_groups(path, NULL, 0));
+    check("thread_group_change_does_not_change_leader", current_groups(leader_groups, 2) && status_groups("/proc/self/status", leader_groups, 2));
     sync_thread(); check("existing_thread_joins", pthread_join(thread, NULL) == 0);
     check("barrier_destroy", pthread_barrier_destroy(&barrier) == 0);
     errno = 0;
@@ -150,10 +205,11 @@ int main(int argc, char **argv) {
     if (!child) {
         failed = 0;
         check("fork_inherits_nnp", prctl(PR_GET_NO_NEW_PRIVS, 0L, 0L, 0L, 0L) == 1 && status_nnp("/proc/self/status") == 1);
+        check("fork_inherits_groups", current_groups(leader_groups, 2) && status_groups("/proc/self/status", leader_groups, 2));
         if (failed) _exit(1);
         char *const arguments[] = {(char *)self, "--inherited-exec", NULL}; execv(self, arguments); _exit(98);
     }
     check("fork_exec_child_exits", child > 0 && wait_child(child));
-    printf("{\"suite\":\"proc-no-new-privs-v1\",\"passed\":%s}\n", failed ? "false" : "true");
+    printf("{\"suite\":\"proc-credential-status-v2\",\"passed\":%s}\n", failed ? "false" : "true");
     return failed != 0;
 }

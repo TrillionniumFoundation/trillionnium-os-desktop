@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MPL-2.0
-"""Read actual per-thread NoNewPrivs proc status in an ordinary kernel guest."""
+"""Read actual per-thread groups and NoNewPrivs in an ordinary kernel guest."""
 import importlib.util
 from pathlib import Path
 import sys

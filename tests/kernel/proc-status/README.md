@@ -5,5 +5,5 @@ reuses the shared safety runner, including exact-source product admission,
 bounded QEMU execution and complete raw evidence. It is not a host model test.
 
 Run `python3 -B tests/kernel/proc-status/run.py --help` for options. See
-[the NoNewPrivs contract and cases](../../../support/kernel-safety/PROC_STATUS.md)
+[the credential status contract and cases](../../../support/kernel-safety/PROC_STATUS.md)
 for the observed regression, privilege boundaries and expected behavior.
