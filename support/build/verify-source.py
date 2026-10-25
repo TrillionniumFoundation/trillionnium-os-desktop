@@ -4,7 +4,7 @@
 Use --pristine for the initial import. Later kernel development may change
 Rust sources, while the default check continues to protect build input pins.
 Build-input derivatives are the explicitly enumerated G1-a local owner metadata
-dependency, default-off G1-c/G1-d profiles and permission SMP feature declarations;
+dependency, default-off G1-c/G1-d, permission SMP and DMA fixture declarations;
 --pristine still accepts only the original upstream tree.
 """
 import argparse
@@ -37,6 +37,14 @@ DOWNSTREAM_MANIFEST_ADDITIONS = {
 }
 # Exact opt-in feature declarations. This adds no package, version, source or
 # lock dependency; every other manifest byte remains pinned to the import.
+DMA_FEATURE_ADDITIONS = {
+    "ostd/Cargo.toml": (
+        b"[features]\n",
+        b"[features]\n"
+        b"# Explicit hardware fixture; never silently skipped without its two EDU devices.\n"
+        b"dma-domain-ktest = []\n",
+    ),
+}
 G1C_FEATURE_ADDITIONS = {
     "kernel/Cargo.toml": (
         b'riscv_sv39_mode = ["aster-core/riscv_sv39_mode"]\n',
@@ -96,6 +104,8 @@ def derive_downstream_input(name, original):
         additions = ()
         if name in DOWNSTREAM_MANIFEST_ADDITIONS:
             additions += (DOWNSTREAM_MANIFEST_ADDITIONS[name],)
+        if name in DMA_FEATURE_ADDITIONS:
+            additions += (DMA_FEATURE_ADDITIONS[name],)
         if name in G1C_FEATURE_ADDITIONS:
             additions += (G1C_FEATURE_ADDITIONS[name],)
         if name in G1D_FEATURE_ADDITIONS:
@@ -150,6 +160,7 @@ def main():
                 content = path.read_bytes()
             if not args.pristine and (
                 name in DOWNSTREAM_MANIFEST_ADDITIONS
+                or name in DMA_FEATURE_ADDITIONS
                 or name in G1C_FEATURE_ADDITIONS
                 or name in G1D_FEATURE_ADDITIONS
                 or name in {"Cargo.lock", "osdk/deps/test-kernel/Cargo.toml"}
@@ -163,6 +174,7 @@ def main():
                     "local_dependency": "os-control" if name in DOWNSTREAM_MANIFEST_ADDITIONS or name == "Cargo.lock" else None,
                     "optional_profile": "g1c-trusted-observe" if name in G1C_FEATURE_ADDITIONS else None,
                     "optional_profiles": [profile for additions, profile in (
+                        (DMA_FEATURE_ADDITIONS, "dma-domain-ktest"),
                         (G1C_FEATURE_ADDITIONS, "g1c-trusted-observe"),
                         (G1D_FEATURE_ADDITIONS, "g1d-trusted-control"),
                     ) if name in additions],

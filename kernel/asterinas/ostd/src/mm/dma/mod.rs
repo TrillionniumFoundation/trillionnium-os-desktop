@@ -26,3 +26,8 @@ mod util;
 
 pub use dma_coherent::DmaCoherent;
 pub use dma_stream::{DmaDirection, DmaStream, FromAndToDevice, FromDevice, ToDevice};
+
+#[cfg(target_arch = "x86_64")]
+pub use crate::arch::iommu::{
+    DeviceDmaBuffer, DeviceDmaDomain, DmaDomainError, DmaRequester, RevokedDmaBuffer,
+};

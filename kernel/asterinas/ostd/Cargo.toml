@@ -70,6 +70,8 @@ fdt.workspace = true
 unwinding = { workspace = true, features = ["fde-static"] }
 
 [features]
+# Explicit hardware fixture; never silently skipped without its two EDU devices.
+dma-domain-ktest = []
 default = ["cvm_guest"]
 # The guest OS support for Confidential VMs (CVMs), e.g., Intel TDX
 cvm_guest = ["dep:tdx-guest"]

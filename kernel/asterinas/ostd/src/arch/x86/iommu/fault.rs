@@ -5,7 +5,10 @@ use core::{fmt::Debug, ptr::NonNull};
 
 use bitflags::bitflags;
 use spin::Once;
-use volatile::{VolatileRef, access::ReadWrite};
+use volatile::{
+    VolatileRef,
+    access::{ReadOnly, ReadWrite},
+};
 
 use super::registers::Capability;
 use crate::{
@@ -23,7 +26,10 @@ struct FaultEventRegisters {
     _data: VolatileRef<'static, u32, ReadWrite>,
     _address: VolatileRef<'static, u32, ReadWrite>,
     _upper_address: VolatileRef<'static, u32, ReadWrite>,
-    recordings: Vec<VolatileRef<'static, u128, ReadWrite>>,
+    recordings: Vec<(
+        VolatileRef<'static, u64, ReadOnly>,
+        VolatileRef<'static, u64, ReadWrite>,
+    )>,
 
     _fault_irq: IrqLine,
 }
@@ -63,15 +69,27 @@ impl FaultEventRegisters {
         let length = capability_val.fault_recording_number() as usize + 1;
         let offset = (capability_val.fault_recording_register_offset() as usize) * 16;
 
-        // FIXME: We now trust the hardware. We should instead find a way to check that `length`
-        // and `offset` are reasonable values before proceeding.
+        assert!(
+            offset >= 0xc0 && offset + length * 16 <= crate::mm::PAGE_SIZE,
+            "fault registers exceed the reserved IOMMU aperture"
+        );
 
         let mut recordings = Vec::with_capacity(length);
         for i in 0..length {
             // SAFETY: The safety is upheld by the caller and the correctness of the capability
             // value.
             recordings.push(unsafe {
-                VolatileRef::new(base_register_vaddr.add(offset).add(i * 16).cast::<u128>())
+                (
+                    VolatileRef::new_read_only(
+                        base_register_vaddr.add(offset).add(i * 16).cast::<u64>(),
+                    ),
+                    VolatileRef::new(
+                        base_register_vaddr
+                            .add(offset)
+                            .add(i * 16 + 8)
+                            .cast::<u64>(),
+                    ),
+                )
             })
         }
 
@@ -102,8 +120,9 @@ impl FaultRecording {
         self.0 & (1 << 127) != 0
     }
 
-    fn clear_fault(&mut self) {
-        self.0 &= !(1 << 127);
+    fn clear_fault_high_value(&self) -> u64 {
+        // VT-d 5.0 FRCD_REG.F (bit 127) is write-one-to-clear in the high half.
+        1 << 63
     }
 
     fn request_type(&self) -> FaultRequestType {
@@ -261,20 +280,23 @@ fn iommu_fault_handler(_frame: &TrapFrame) {
 }
 
 fn primary_fault_handler(fault_event_regs: &mut FaultEventRegisters) {
-    let mut fault_status = fault_event_regs.status();
+    let fault_status = fault_event_regs.status();
     if !fault_status.contains(FaultStatus::PPF) {
         return;
     }
 
     let start_index = ((fault_event_regs.status().bits & FaultStatus::FRI.bits) >> 8) as usize;
-    let mut fault_iter = fault_event_regs.recordings.iter_mut();
-    fault_iter.advance_by(start_index).unwrap();
-    for raw_recording in fault_iter {
-        let raw_recording = raw_recording.as_mut_ptr();
-        let mut recording = FaultRecording(raw_recording.read());
-        if !recording.is_fault() {
+    let count = fault_event_regs.recordings.len();
+    for offset in 0..count {
+        let (low, high) = &mut fault_event_regs.recordings[(start_index + offset) % count];
+        // Hardware publishes F last and cannot replace this record until its
+        // acknowledgement. Read F first, then the stable record's low half.
+        let high_value = high.as_ptr().read();
+        if high_value & (1 << 63) == 0 {
             break;
         }
+        let recording =
+            FaultRecording((u128::from(high_value) << 64) | u128::from(low.as_ptr().read()));
 
         // Report
         error!(
@@ -282,17 +304,53 @@ fn primary_fault_handler(fault_event_regs: &mut FaultEventRegisters) {
             recording
         );
 
-        // Clear Fault field
-        recording.clear_fault();
-        raw_recording.write(recording.0);
+        #[cfg(all(ktest, feature = "dma-domain-ktest"))]
+        record_test_fault(&recording);
+        // Acknowledge only the W1C fault bit. Do not rewrite unrelated fields.
+        high.as_mut_ptr().write(recording.clear_fault_high_value());
     }
 
     if fault_status.contains(FaultStatus::PFO) {
         info!("Primary fault overflow detected.");
-        fault_status.remove(FaultStatus::PFO);
         fault_event_regs
             .status
             .as_mut_ptr()
-            .write(fault_status.bits);
+            .write(FaultStatus::PFO.bits);
+    }
+}
+
+#[cfg(all(ktest, feature = "dma-domain-ktest"))]
+static TEST_FAULTS: core::sync::atomic::AtomicU64 = core::sync::atomic::AtomicU64::new(0);
+#[cfg(all(ktest, feature = "dma-domain-ktest"))]
+static TEST_LAST_FAULT: core::sync::atomic::AtomicU64 = core::sync::atomic::AtomicU64::new(0);
+
+#[cfg(all(ktest, feature = "dma-domain-ktest"))]
+fn record_test_fault(record: &FaultRecording) {
+    use core::sync::atomic::Ordering;
+    TEST_LAST_FAULT.store(
+        u64::from(record.source_identifier()) | (u64::from(record.fault_reason()) << 16),
+        Ordering::Relaxed,
+    );
+    TEST_FAULTS.fetch_add(1, Ordering::Release);
+}
+
+#[cfg(all(ktest, feature = "dma-domain-ktest"))]
+pub(super) fn test_fault_snapshot() -> (u64, u64) {
+    use core::sync::atomic::Ordering;
+    (
+        TEST_FAULTS.load(Ordering::Acquire),
+        TEST_LAST_FAULT.load(Ordering::Relaxed),
+    )
+}
+
+#[cfg(ktest)]
+mod tests {
+    use super::*;
+    use crate::prelude::ktest;
+    #[ktest]
+    fn dma_fault_acknowledges_only_w1c_fault_bit() {
+        let record = FaultRecording((1 << 127) | 0x1234);
+        assert!(record.is_fault());
+        assert_eq!(record.clear_fault_high_value(), 1 << 63);
     }
 }

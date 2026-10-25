@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
+use core::mem::ManuallyDrop;
+
 pub(super) use context_table::RootTable;
 pub(crate) use second_stage::IommuPtConfig;
 use spin::Once;
@@ -15,6 +17,7 @@ use crate::{
 };
 
 mod context_table;
+pub(crate) mod domain;
 mod second_stage;
 
 pub(crate) fn has_dma_remapping() -> bool {
@@ -92,8 +95,12 @@ pub(crate) unsafe fn map(daddr: Daddr, paddr: Paddr) -> Result<(), IommuError> {
     let res = unsafe { locked_table.map(PciDeviceLocation::zero(), daddr, paddr) };
 
     match res {
-        Ok(()) => Ok(()),
+        Ok(()) => {
+            IOMMU_REGS.get().unwrap().lock().invalidate_dma_cache();
+            Ok(())
+        }
         Err(context_table::ContextTableError::InvalidDeviceId) => unreachable!(),
+        Err(context_table::ContextTableError::NotMapped) => Err(IommuError::NotMapped),
         Err(context_table::ContextTableError::ModificationError(err)) => {
             Err(IommuError::ModificationError(err))
         }
@@ -113,8 +120,16 @@ pub(crate) fn unmap(daddr: Daddr) -> Result<(), IommuError> {
     let res = locked_table.unmap(PciDeviceLocation::zero(), daddr);
 
     match res {
-        Ok(()) => Ok(()),
+        Ok(fragment) => {
+            let fragment = ManuallyDrop::new(fragment);
+            IOMMU_REGS.get().unwrap().lock().invalidate_dma_cache();
+            // For unmap, release removed page-table fragments only after hardware
+            // no longer caches them or retains untranslated accesses to the target.
+            drop(ManuallyDrop::into_inner(fragment));
+            Ok(())
+        }
         Err(context_table::ContextTableError::InvalidDeviceId) => unreachable!(),
+        Err(context_table::ContextTableError::NotMapped) => Err(IommuError::NotMapped),
         Err(context_table::ContextTableError::ModificationError(err)) => {
             Err(IommuError::ModificationError(err))
         }
@@ -146,6 +161,7 @@ pub(super) fn init() {
     for table in PciDeviceLocation::all() {
         root_table.specify_device_page_table(table, unsafe { page_table.shallow_copy() })
     }
+    root_table.publish_initial();
     PAGE_TABLE.call_once(|| SpinLock::new(root_table));
 
     // Enable DMA remapping.

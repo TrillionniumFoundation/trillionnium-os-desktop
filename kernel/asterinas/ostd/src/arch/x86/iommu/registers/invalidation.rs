@@ -45,8 +45,10 @@ impl InvalidationRegisters {
             extend_cap.iotlb_register_offset() as usize * 16
         };
 
-        // FIXME: We now trust the hardware. We should instead find a way to check that `offset`
-        // are reasonable values before proceeding.
+        assert!(
+            offset >= 0xc0 && offset + 16 <= crate::mm::PAGE_SIZE,
+            "invalidation registers exceed the reserved IOMMU aperture"
+        );
 
         // SAFETY: The safety is upheld by the caller and the correctness of the capability value.
         unsafe {

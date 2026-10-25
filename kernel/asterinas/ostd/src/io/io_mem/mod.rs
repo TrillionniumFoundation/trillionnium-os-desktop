@@ -171,6 +171,12 @@ impl<SecuritySensitivity> IoMem<SecuritySensitivity> {
 
 #[cfg_attr(target_arch = "loongarch64", expect(unused))]
 impl IoMem<Sensitive> {
+    /// Returns the mapped base for OSTD register accessors. Any pointer derived
+    /// from this address is valid only while this mapping remains owned.
+    pub(crate) fn mapped_base(&self) -> usize {
+        self.base()
+    }
+
     /// Reads a value of the `PodOnce` type at the specified offset using one
     /// non-tearing memory load.
     ///

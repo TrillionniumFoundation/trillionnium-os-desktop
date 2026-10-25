@@ -28,6 +28,29 @@ impl Drhd {
     pub(in crate::arch) fn register_base_addr(&self) -> u64 {
         self.header.register_base_addr
     }
+
+    /// Root-bus, function-zero requesters explicitly covered by this unit.
+    /// Bridge paths and other segments are deliberately not inferred.
+    pub(in crate::arch) fn root_function_zero_coverage(&self) -> u32 {
+        if self.header.segment_num != 0 {
+            return 0;
+        }
+        if self.header.flags & 1 != 0 {
+            return u32::MAX;
+        }
+        self.device_scopes.iter().fold(0, |mask, scope| {
+            if scope.header.typ == 1
+                && scope.header.start_bus_number == 0
+                && scope.path.len() == 1
+                && scope.path[0].0 < 32
+                && scope.path[0].1 == 0
+            {
+                mask | (1 << scope.path[0].0)
+            } else {
+                mask
+            }
+        })
+    }
 }
 
 #[repr(C)]
@@ -276,5 +299,50 @@ impl Andd {
             header,
             acpi_object_name,
         }
+    }
+}
+
+#[cfg(ktest)]
+mod tests {
+    use super::*;
+    use crate::prelude::ktest;
+
+    #[ktest]
+    fn domain_coverage_does_not_infer_bridges_other_functions_or_segments() {
+        let mut drhd = Drhd {
+            header: DrhdHeader {
+                typ: 0,
+                length: 16,
+                flags: 0,
+                size: 0,
+                segment_num: 0,
+                register_base_addr: 0xfed90000,
+            },
+            device_scopes: Vec::new(),
+        };
+        assert_eq!(drhd.root_function_zero_coverage(), 0);
+        let scope = |typ, bus, path| DeviceScope {
+            header: DeviceScopeHeader {
+                typ,
+                length: 8,
+                flags: 0,
+                reserved: 0,
+                enum_id: 0,
+                start_bus_number: bus,
+            },
+            path,
+        };
+        drhd.device_scopes.push(scope(1, 0, alloc::vec![(5, 0)]));
+        drhd.device_scopes.push(scope(1, 0, alloc::vec![(6, 1)]));
+        drhd.device_scopes.push(scope(1, 1, alloc::vec![(7, 0)]));
+        drhd.device_scopes
+            .push(scope(1, 0, alloc::vec![(8, 0), (0, 0)]));
+        drhd.device_scopes.push(scope(2, 0, alloc::vec![(9, 0)]));
+        drhd.device_scopes.push(scope(1, 0, alloc::vec![(32, 0)]));
+        assert_eq!(drhd.root_function_zero_coverage(), 1 << 5);
+        drhd.header.flags = 1;
+        assert_eq!(drhd.root_function_zero_coverage(), u32::MAX);
+        drhd.header.segment_num = 1;
+        assert_eq!(drhd.root_function_zero_coverage(), 0);
     }
 }
