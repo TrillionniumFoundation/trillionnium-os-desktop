@@ -162,7 +162,10 @@ pub(super) fn verify(root: &Path) -> Result<(), String> {
         return Err("Preedit source profile differs from its compiled contract".into());
     }
     if !cfg!(feature = "hepta-native-preedit-sdk")
-        && profile.sdk_profile.as_deref().is_some_and(|name| name != "clipboard")
+        && profile
+            .sdk_profile
+            .as_deref()
+            .is_some_and(|name| name != "clipboard")
     {
         return Err("Clipboard source profile differs from its compiled contract".into());
     }

@@ -38,7 +38,10 @@ impl NotesBootstrap {
             ));
         }
         channel.set_nonblocking(false)?;
-        Ok(Self { channel, staged: false })
+        Ok(Self {
+            channel,
+            staged: false,
+        })
     }
 
     /// Only the explicit trusted-parent startup mode selects this barrier.
@@ -118,10 +121,14 @@ impl NotesBootstrap {
         self.channel.set_write_timeout(Some(remaining(deadline)?))?;
         // Metadata only: both effect/recovery descriptors remain held locally
         // until the exact activation below. This is never an Attached ACK.
-        if self.channel.send(&raw)? != raw.len() { return Err(invalid("Notes reservation was not sent atomically")); }
+        if self.channel.send(&raw)? != raw.len() {
+            return Err(invalid("Notes reservation was not sent atomically"));
+        }
         let response = receive_ack(&self.channel, deadline)?;
         let activation = NotesStartupActivation::parse_exact(&response).map_err(invalid)?;
-        if !activation.matches(&reservation) { return Err(invalid("Notes activation differs from actual reservation")); }
+        if !activation.matches(&reservation) {
+            return Err(invalid("Notes activation differs from actual reservation"));
+        }
         remaining(deadline)?;
         Ok(())
     }

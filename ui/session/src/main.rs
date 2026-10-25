@@ -794,7 +794,11 @@ fn serve_request(stream: &mut deadline::DeadlineStream, session: &mut Session) -
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum NotesBootstrapMode { None, Direct, Reserved }
+enum NotesBootstrapMode {
+    None,
+    Direct,
+    Reserved,
+}
 
 fn notes_bootstrap_requested(
     args: impl IntoIterator<Item = std::ffi::OsString>,
@@ -802,8 +806,12 @@ fn notes_bootstrap_requested(
     let mut args = args.into_iter();
     match args.next() {
         None => Ok(NotesBootstrapMode::None),
-        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Direct),
-        Some(flag) if flag == "--notes-root-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Reserved),
+        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => {
+            Ok(NotesBootstrapMode::Direct)
+        }
+        Some(flag) if flag == "--notes-root-bootstrap-stdin" && args.next().is_none() => {
+            Ok(NotesBootstrapMode::Reserved)
+        }
         _ => Err(io::Error::new(
             io::ErrorKind::InvalidInput,
             "expected no arguments, --notes-bootstrap-stdin or --notes-root-bootstrap-stdin",
@@ -816,8 +824,13 @@ fn main() -> io::Result<()> {
     #[cfg(target_os = "linux")]
     let notes_bootstrap = match requested {
         NotesBootstrapMode::None => None,
-        NotesBootstrapMode::Direct => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?),
-        NotesBootstrapMode::Reserved => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?.with_root_startup_reservation()),
+        NotesBootstrapMode::Direct => {
+            Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?)
+        }
+        NotesBootstrapMode::Reserved => Some(
+            notes_bootstrap::NotesBootstrap::from_inherited_stdin()?
+                .with_root_startup_reservation(),
+        ),
     };
     #[cfg(not(target_os = "linux"))]
     if requested != NotesBootstrapMode::None {
@@ -899,9 +912,18 @@ mod tests {
     #[test]
     fn notes_bootstrap_is_explicit_startup_and_never_a_public_request() {
         use std::ffi::OsString;
-        assert_eq!(notes_bootstrap_requested(Vec::<OsString>::new()).unwrap(), NotesBootstrapMode::None);
-        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Direct);
-        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Reserved);
+        assert_eq!(
+            notes_bootstrap_requested(Vec::<OsString>::new()).unwrap(),
+            NotesBootstrapMode::None
+        );
+        assert_eq!(
+            notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap(),
+            NotesBootstrapMode::Direct
+        );
+        assert_eq!(
+            notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(),
+            NotesBootstrapMode::Reserved
+        );
         assert!(notes_bootstrap_requested([
             OsString::from("--notes-bootstrap-stdin"),
             OsString::from("extra")

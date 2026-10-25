@@ -1,7 +1,13 @@
 //! Verify the original inventory before the SDK opens a native window.
-#[cfg(all(feature = "hepta-native-clipboard-sdk", feature = "hepta-native-preedit-sdk"))]
+#[cfg(all(
+    feature = "hepta-native-clipboard-sdk",
+    feature = "hepta-native-preedit-sdk"
+))]
 compile_error!("Select one explicit original SDK candidate, not clipboard and preedit together");
-#[cfg(any(feature = "hepta-native-clipboard-sdk", feature = "hepta-native-preedit-sdk"))]
+#[cfg(any(
+    feature = "hepta-native-clipboard-sdk",
+    feature = "hepta-native-preedit-sdk"
+))]
 mod sdk;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
@@ -93,7 +99,10 @@ pub(super) fn verified_root() -> Result<String, String> {
         }
         verify(&root, entry)?;
     }
-    #[cfg(any(feature = "hepta-native-clipboard-sdk", feature = "hepta-native-preedit-sdk"))]
+    #[cfg(any(
+        feature = "hepta-native-clipboard-sdk",
+        feature = "hepta-native-preedit-sdk"
+    ))]
     sdk::verify(&root)?;
     root.into_os_string()
         .into_string()
