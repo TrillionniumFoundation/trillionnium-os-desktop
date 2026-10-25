@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #define MAP_BYTES (16u * 4096u)
@@ -308,6 +309,80 @@ static void exec_boundary(void) {
     }
     wait_child(child);puts("binder_exec_old_image_fd_rejected\tPASS");
 }
+#define BUDGET_BASE "/sys/fs/cgroup/binder-map-budget"
+#define BUDGET_WORK BUDGET_BASE "/worker"
+static void budget_write(const char *path,const char *value) {
+    int fd=open(path,O_WRONLY|O_CLOEXEC);CHECK(fd>=0);
+    size_t size=strlen(value);ssize_t wrote=write(fd,value,size);
+    if(wrote!=(ssize_t)size)fprintf(stderr,"Binder budget write path=%s value=%s returned=%zd errno=%d\n",path,value,wrote,errno);
+    CHECK(wrote==(ssize_t)size);CHECK(close(fd)==0);
+}
+static unsigned long budget_value(const char *attribute,const char *key) {
+    char path[256],data[512]={0};snprintf(path,sizeof path,"%s/%s",BUDGET_WORK,attribute);
+    int fd=open(path,O_RDONLY|O_CLOEXEC);CHECK(fd>=0);
+    ssize_t n=read(fd,data,sizeof(data)-1);CHECK(n>0);CHECK(close(fd)==0);
+    if(!key)return strtoul(data,NULL,10);
+    for(char *line=data;*line;) {
+        if(!strncmp(line,key,strlen(key))&&line[strlen(key)]==' ')
+            return strtoul(line+strlen(key)+1,NULL,10);
+        char *next=strchr(line,'\n');if(!next)break;line=next+1;
+    }
+    CHECK(0);return 0;
+}
+__attribute__((noinline)) static void budget_warm(void) {
+    volatile unsigned char stack[64*1024];
+    for(size_t i=0;i<sizeof stack;i+=4096)stack[i]=1;
+    (void)budget_value("hepta.page.current",NULL);
+    (void)budget_value("hepta.page.stat","private");
+    (void)budget_value("hepta.page.stat","page_table");
+    (void)budget_value("hepta.page.events","max");
+    // Keep failure reporting and errno's TLS page out of the measured budget.
+    fputs("binder_mapping_budget_measurement_warmed\n",stderr);errno=0;
+    budget_write(BUDGET_WORK "/hepta.page.max","max");usleep(1000);
+}
+static void budget_mapping_child(void) {
+    char pid[32];snprintf(pid,sizeof pid,"%d",getpid());
+    budget_write(BUDGET_WORK "/cgroup.procs",pid);budget_warm();
+    int fd=open("/dev/binder",O_RDWR|O_CLOEXEC);CHECK(fd>=0);
+    struct binder_version version={0};CHECK(ioctl(fd,BINDER_VERSION,&version)==0);
+    unsigned long private_before=budget_value("hepta.page.stat","private");
+    unsigned long tables_before=budget_value("hepta.page.stat","page_table");
+    unsigned long denied_before=budget_value("hepta.page.events","max");
+    unsigned long before=budget_value("hepta.page.current",NULL);
+    char ceiling[32];snprintf(ceiling,sizeof ceiling,"%lu",before+MAP_BYTES+3*4096UL);
+    budget_write(BUDGET_WORK "/hepta.page.max",ceiling);
+    // The first page needs three fresh tables. Crossing a PML4 boundary then
+    // needs another path, after all 16 receive frames have been reserved.
+    void *target=(void *)(((uintptr_t)1<<40)-4096);
+    errno=0;void *mapped=mmap(target,MAP_BYTES,PROT_READ,MAP_PRIVATE|MAP_FIXED_NOREPLACE,fd,0);
+    CHECK(mapped==MAP_FAILED&&errno==ENOMEM);
+    CHECK(budget_value("hepta.page.events","max")>denied_before);
+    CHECK(budget_value("hepta.page.stat","page_table")>=tables_before+3*4096UL);
+    // Failure may retain charged empty table nodes. All receive data frames,
+    // including the briefly published prefix, must lose their final reference.
+    unsigned observations=0;unsigned long held;
+    do { held=budget_value("hepta.page.stat","private");if(held<=private_before)break;usleep(1000); }
+    while(++observations<1000);
+    CHECK(held==private_before);
+    budget_write(BUDGET_WORK "/hepta.page.max","max");
+    // No receive area or VMA may be published by the failed mmap. Reuse both
+    // the same endpoint and exactly the same requested range successfully.
+    mapped=mmap(target,MAP_BYTES,PROT_READ,MAP_PRIVATE|MAP_FIXED_NOREPLACE,fd,0);
+    CHECK(mapped==target);
+    CHECK(((volatile unsigned char *)mapped)[0]==0&&((volatile unsigned char *)mapped)[MAP_BYTES-1]==0);
+    CHECK(munmap(mapped,MAP_BYTES)==0);CHECK(close(fd)==0);
+    puts("binder_partial_mapping_budget_failure_refund_and_retry\tPASS");
+    _exit(0);
+}
+static void budget_mapping(void) {
+    budget_write("/sys/fs/cgroup/cgroup.subtree_control","+memory");
+    CHECK(mkdir(BUDGET_BASE,0755)==0);
+    budget_write(BUDGET_BASE "/cgroup.subtree_control","+memory");
+    CHECK(mkdir(BUDGET_WORK,0755)==0);
+    pid_t child=fork();CHECK(child>=0);
+    if(child==0)budget_mapping_child();
+    wait_child(child);
+}
 static void alarmed(int sig) { (void)sig;_exit(124); }
 int main(int argc,char **argv) {
     if(argc==3 && strcmp(argv[1],"--old-fd")==0) {
@@ -315,6 +390,10 @@ int main(int argc,char **argv) {
         CHECK(ioctl(fd,BINDER_VERSION,&version)==-1&&errno==EPERM);CHECK(close(fd)==0);return 0;
     }
     signal(SIGALRM,alarmed);alarm(20);setbuf(stdout,NULL);
+    if(argc==2&&strcmp(argv[1],"--budget-only")==0) {
+        budget_mapping();printf("{\"passed\":true,\"checks\":%u,\"scope\":\"binder_mapping_budget\"}\n",checks);return 0;
+    }
+    budget_mapping();
     roundtrip();killed_manager();prepared_sender_exit();receive_capacity();queue_capacity();exec_boundary();
     printf("{\"passed\":true,\"checks\":%u,\"scope\":\"synchronous_handle0_bytes\",\"objects\":false,\"fd_transfer\":false,\"death_notifications\":false,\"android_boot\":false}\n",checks);
     return 0;

@@ -658,7 +658,10 @@ impl Mappable for BinderFile {
             return_errno!(Errno::EBUSY);
         }
         for (index, frame) in frames.iter().enumerate() {
-            handle.map_frame(index * PAGE_SIZE, frame.clone());
+            // Do not publish a receive area after fallible page-table
+            // admission failed. VMAR removes any mapped prefix on this error;
+            // the endpoint stays available for a later successful mmap.
+            handle.map_frame(index * PAGE_SIZE, frame.clone())?;
         }
         e.mapping = Some(ReceiveArea {
             base: handle.address(),

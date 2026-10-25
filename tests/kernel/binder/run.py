@@ -12,5 +12,8 @@ spec.loader.exec_module(runner)
 runner.PROBES = ("binder",)
 runner.SOURCE_FILES = {"binder": [here / "binder_probe.c"]}
 runner.PROBE_ARGS = {}
+if "--budget-only" in sys.argv[1:]:
+    sys.argv.remove("--budget-only")
+    runner.PROBE_ARGS = {"binder": " --budget-only"}
 if __name__ == "__main__":
     raise SystemExit(runner.main())

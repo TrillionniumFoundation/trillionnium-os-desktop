@@ -23,3 +23,22 @@ The driver uses actual process and thread allocation identities, so the probe
 opens a fresh endpoint in each process. It intentionally tries an inherited
 parent endpoint and expects rejection. The server response is checked by the
 other process using bytes read from the real receive mapping.
+
+## Page-budget integration regression
+
+The full probe also includes a receive-mapping admission failure. Its separate
+`--budget-only` runner option selects this same case without the transaction
+suite. A child enters a real capped cgroup, reserves all 16 receive frames, and
+maps across a PML4 boundary with budget for only the first three new table pages.
+The mapping must return ENOMEM, increment the denial event, release every receive
+data frame after actual reference destruction, and permit the same endpoint and
+address range to be mapped successfully after the ceiling is lifted. Charged
+empty table nodes may remain; the probe does not pretend those nodes were freed.
+
+This case actually reproduced an integration bug: the Binder caller ignored
+`MapHandle::map_frame`'s newly fallible return value and reported mmap success.
+The driver now propagates the error before publishing its receive area. The
+existing VMAR error path removes its mapped prefix. The before-fix failure and
+after-fix passing guest evidence are separate. Two earlier fixture failures
+(missing parent controller activation and cold stderr/TLS COW at the ceiling)
+are retained and are not counted as reproductions of the product bug.

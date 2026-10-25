@@ -119,7 +119,7 @@ passed the SMP2 byte/lifetime suite and the expanded SMP4 suite. The final SMP4
 run reports 557 parent assertions, plus child-process payload/identity checks;
 its source and artifact snapshots are unchanged. All execution is inside the
 ordinary guest, with Android/object/FD/death-conformance flags still false.
-The final native kernel rerun passed 313 tests with zero failures, covering the
+The initial Binder stage's native kernel rerun passed 313 tests with zero failures, covering the
 owner/queue/file-status refinements. The targeted Rust formatting check and
 static C compilation with warnings treated as errors also passed. Existing
 upstream Rust warnings are not represented as a clean full Clippy gate.
@@ -135,3 +135,12 @@ service-manager compatibility, then descriptor installation/rollback, death
 registration, nested transactions and thread-pool lifecycle. Each requires
 negative and exit-race tests on actual processes. None should be represented by
 returning success from an otherwise unimplemented ioctl.
+
+The receiver's page-table admission is fallible. Each `MapHandle::map_frame`
+error must reach mmap before `ReceiveArea` is installed. If a later frame fails,
+the original VMAR population error path unmaps every populated prefix page;
+remaining frame owners then refund at their real last reference. The endpoint
+retains no receive area and can retry. Empty table nodes that remain allocated
+continue to count against the original group. The real capped cross-PML4 mapping
+regression in the Binder guest runbook covers this combined Binder/page-budget
+contract, independently of normal transaction success.
