@@ -240,6 +240,17 @@ impl PosixThread {
         *signalled_waker = Some((waker, reason));
     }
 
+    /// Changes the reason of the current thread's registered signal wait.
+    ///
+    /// The waiter and its event registrations remain live. Only the thread
+    /// owning the wait may call this, and it must restore the previous reason
+    /// before continuing the original wait.
+    pub(crate) fn replace_pause_reason(&self, reason: PauseReason) -> PauseReason {
+        let mut signalled_waker = self.signalled_waker.lock();
+        let (_, current_reason) = signalled_waker.as_mut().unwrap();
+        core::mem::replace(current_reason, reason)
+    }
+
     /// Clears the signalled waker of this thread.
     pub(crate) fn clear_signalled_waker(&self) {
         *self.signalled_waker.lock() = None;

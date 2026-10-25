@@ -2,11 +2,11 @@
 
 use ostd::sync::{WaitQueue, Waiter};
 
-use super::sig_mask::SigMask;
+use super::{constants::SIGCONT, sig_mask::SigMask};
 use crate::{
     prelude::*,
     process::{
-        posix_thread::{AsPosixThread, ContextPthreadAdminApi},
+        posix_thread::{AsPosixThread, ContextPthreadAdminApi, PosixThread},
         signal::HandlePendingSignal,
     },
     thread::AsThread,
@@ -147,6 +147,9 @@ impl Pause for Waiter {
         };
 
         let cancel_cond = || {
+            if matches!(reason, PauseReason::Sleep) {
+                wait_for_group_resume(self, posix_thread)?;
+            }
             let has_pending = match reason {
                 PauseReason::StopByPtrace => posix_thread.has_pending_sigkill(),
                 _ => posix_thread.has_pending(),
@@ -183,18 +186,26 @@ impl Pause for Waiter {
 
         if let Some(posix_thread) = posix_thread_opt {
             posix_thread.set_signalled_waker(self.waker(), PauseReason::Sleep);
-            // Check `has_pending` after `set_signalled_waker` to avoid race conditions.
-            if posix_thread.has_pending() {
-                posix_thread.clear_signalled_waker();
-                return_errno_with_message!(
-                    Errno::EINTR,
-                    "the current thread is interrupted by a signal"
-                );
-            }
-
-            self.wait();
-
+            // Check the stop condition and pending signals only after
+            // registration, so publishing either condition cannot lose a wake.
+            let result = (|| {
+                wait_for_group_resume(self, posix_thread)?;
+                if posix_thread.has_pending() {
+                    return_errno_with_message!(
+                        Errno::EINTR,
+                        "the current thread is interrupted by a signal"
+                    );
+                }
+                self.wait();
+                wait_for_group_resume(self, posix_thread)
+            })();
             posix_thread.clear_signalled_waker();
+            if let Err(error) = result {
+                if let Some(timer) = timer {
+                    timer.lock().cancel();
+                }
+                return Err(error);
+            }
         } else {
             self.wait();
         }
@@ -220,6 +231,55 @@ impl Pause for Waiter {
 
         Ok(())
     }
+}
+
+/// Joins an already-published process stop without completing the original
+/// interruptible wait on ordinary I/O/timer wakes. Registrations and the
+/// original timeout stay live. SIGKILL or an unmasked targeted SIGCONT instead
+/// return to the original signal handling path; no signal is synthesized.
+fn wait_for_group_resume(waiter: &Waiter, posix_thread: &PosixThread) -> Result<()> {
+    let process = posix_thread.process();
+    if !process.is_stopped() {
+        return Ok(());
+    }
+
+    struct RestoreReason<'a>(&'a PosixThread, PauseReason);
+    impl Drop for RestoreReason<'_> {
+        fn drop(&mut self) {
+            self.0.replace_pause_reason(self.1);
+        }
+    }
+    let previous = posix_thread.replace_pause_reason(PauseReason::StopBySignal);
+    let restore = RestoreReason(posix_thread, previous);
+    // No process/task-set or condition lock is held while waiting. The thread
+    // that handles the stopping signal remains in the user-return stop loop,
+    // where it can process process-directed SIGCONT. A thread-directed SIGCONT
+    // can instead be queued only to this sleeping sibling: return through the
+    // original signal path so that it is dequeued and handled exactly once.
+    // Do not repeatedly resume from a pending CONT level; a blocked old CONT
+    // must not cancel a subsequent stop. The existing masked/ignored CONT
+    // generation-time semantics are not changed by this wait implementation.
+    let result = waiter.wait_until_or_cancelled(
+        || (!process.is_stopped()).then_some(()),
+        || {
+            if posix_thread.has_pending_sigkill()
+                || (!posix_thread.sig_mask().contains(SIGCONT)
+                    && posix_thread.sig_queues().has_pending_signal(SIGCONT))
+            {
+                return_errno_with_message!(
+                    Errno::EINTR,
+                    "group-stopped wait requires signal handling"
+                );
+            }
+            Ok(())
+        },
+    );
+    drop(restore);
+    // The nested stop wait may have consumed the original I/O or timer wake.
+    // Force the outer wait to recheck its condition and original deadline;
+    // do not restart a relative timeout or wait for an event already delivered.
+    waiter.waker().wake_up();
+    result
 }
 
 impl Pause for WaitQueue {

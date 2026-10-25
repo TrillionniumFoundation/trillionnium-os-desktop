@@ -721,6 +721,13 @@ impl Process {
     pub(crate) fn stop(&self, sig_num: SigNum) {
         if self.status.stop_status().stop(sig_num) {
             self.wake_up_parent();
+
+            // Signal enqueue precedes this state transition. A sibling may
+            // already have consumed the pending signal, so wake interruptible
+            // waiters again after publishing the process-wide stop condition.
+            for task in self.tasks.lock().as_slice() {
+                task.as_posix_thread().unwrap().wake_signalled_waker();
+            }
         }
     }
 
