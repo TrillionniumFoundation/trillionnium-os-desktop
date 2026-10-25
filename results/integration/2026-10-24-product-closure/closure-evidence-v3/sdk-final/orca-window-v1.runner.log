@@ -1,0 +1,9 @@
+{"passed": false, "receipt": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/orca-window-v1/receipt.json", "error": "RuntimeError: Original Orca did not initialize its real private speech factory; last error: None"}
+Traceback (most recent call last):
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v1/ready/qualify_orca.py", line 447, in <module>
+    run(arguments)
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v1/ready/qualify_orca.py", line 352, in run
+    until(orca_ready, "Original Orca did not initialize its real private speech factory", timeout=20)
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v1/ready/qualify_orca.py", line 47, in until
+    raise RuntimeError(f"{description}; last error: {error}")
+RuntimeError: Original Orca did not initialize its real private speech factory; last error: None

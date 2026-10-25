@@ -1,0 +1,100 @@
+{
+  "schema": "trillionnium.trusted-real-package-stage.v1",
+  "uid": 0,
+  "euid": 0,
+  "root_namespace": "/var/lib/trillionnium-native-stage-20261024-01",
+  "prefix": "/var/lib/trillionnium-native-stage-20261024-01/deployment",
+  "reviewed_inputs": {
+    "package": "/data/trillionnium-desktop-product-20261024-integration/native-v14-product-attempt3/extracted-B-bundled/trillionnium-desktop",
+    "manifest_sha256": "3436abaa775fbaa6000899343b542117b30886de2c2c98a66c738f431d4e953b",
+    "manifest": {
+      "desktop_commit": "6ee49848a4da82ee71e9707285dcc2c7e2b3c66b",
+      "effects_authorized": false,
+      "hepta_commit": "52456c309f64ee80e7e377f774445c5dfe0523c9",
+      "qualification": "linux-host-package",
+      "release_id": "6ee49848a4da-b6a10e16adab",
+      "schema_version": 1
+    },
+    "binaries": {
+      "bin/trill-app-window": {
+        "bytes": 16694480,
+        "mode": 493,
+        "sha256": "214e9e8fd0d8f950e3fa47a70d85c1404ab736f4b0da60006755b28e160c0f10"
+      },
+      "bin/trill-ctl": {
+        "bytes": 2837992,
+        "mode": 493,
+        "sha256": "6cee09b6e6dfd0610c4795310a99b3bb4b021386771291dc607ee255585efb69"
+      },
+      "bin/trill-notes-recovery": {
+        "bytes": 2709032,
+        "mode": 493,
+        "sha256": "16c2c9ab2a0e14ab7ba23c0ace6f4c1953fd24f4fd3374848fa422faafab1294"
+      },
+      "bin/trill-session": {
+        "bytes": 3992120,
+        "mode": 493,
+        "sha256": "17e731674a22343c366ff67e230297f38f89040dd4286722104b54c5fe8d42b5"
+      },
+      "bin/trill-shell": {
+        "bytes": 83501048,
+        "mode": 493,
+        "sha256": "70e5097b708a0469b46a0ab9c3836e6b71c31590bbf09b382a47eda41a751bc5"
+      }
+    },
+    "file_count": 64,
+    "resource_files": 54,
+    "installer_modules": {
+      "trusted_desktop.py": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/ui/product/trusted_desktop.py",
+        "bytes": 12256,
+        "sha256": "74938e4ea0717289682bccdf69dda8c29ac5c1b7287066db7770c198a207c1bc"
+      },
+      "desktop.py": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/ui/product/desktop.py",
+        "bytes": 43585,
+        "sha256": "eacc37ec0fed5c77c1f5a612b6047007b3b924276aff92677ec1b104e51b4eb5"
+      },
+      "native_sdk.py": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/ui/product/native_sdk.py",
+        "bytes": 7161,
+        "sha256": "ee3dab388d5492a40cb5005e2915df137d8c46fd72ce455f25c93d8b130dfbe7"
+      }
+    }
+  },
+  "initial_binding": {
+    "schema": "trill.native-program-binding.v1",
+    "generation": 1,
+    "release_id": "6ee49848a4da-b6a10e16adab",
+    "desktop_commit": "6ee49848a4da82ee71e9707285dcc2c7e2b3c66b",
+    "hepta_commit": "52456c309f64ee80e7e377f774445c5dfe0523c9",
+    "program": "/var/lib/trillionnium-native-stage-20261024-01/deployment/releases/6ee49848a4da-b6a10e16adab/bin/trill-shell",
+    "program_sha256": "70e5097b708a0469b46a0ab9c3836e6b71c31590bbf09b382a47eda41a751bc5",
+    "resources": "/var/lib/trillionnium-native-stage-20261024-01/deployment/releases/6ee49848a4da-b6a10e16adab/resources",
+    "human_authority_created": false,
+    "production_authority_verified": false
+  },
+  "record_sha256": "a4248d8e324439855cfced8f01325809969d29e88b58040aadb3d152d26bab55",
+  "checks": [
+    {
+      "name": "stage-while-locked",
+      "passed": true,
+      "exit_code": 1,
+      "stderr": "Native deployment refused: Original native Root is active; end that session before changing releases\n"
+    },
+    {
+      "name": "rollback-while-locked",
+      "passed": true,
+      "exit_code": 1,
+      "stderr": "Native deployment refused: Original native Root is active; end that session before changing releases\n"
+    },
+    {
+      "name": "same-package-idempotent",
+      "passed": true
+    }
+  ],
+  "actual_package_installed": true,
+  "production_authority_verified": false,
+  "original_root_claim": false,
+  "installed_ui_executed": false
+}

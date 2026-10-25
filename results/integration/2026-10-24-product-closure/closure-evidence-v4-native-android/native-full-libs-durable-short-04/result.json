@@ -1,0 +1,212 @@
+{
+  "source": {
+    "head": "7ecc1d58d383e15f6f59646a371e837b64e49887",
+    "tree": "fc7112c4c2b9f83674f65a860e1f1be1cd1f518e"
+  },
+  "original_full_log_sha256": "5d747a1f9e1c1ef7476c0b854ed3a1f1d33589277a0b40c263941b3ca7dc6a2c",
+  "failed_cases": [
+    {
+      "package": "codex-hepta-agentd",
+      "test": "runtime::hos2_recovery_tests::notes_tests::composition_tests::local_handoff_tests::notes_local_handoff_real_clock_preserves_unknown_with_distinct_spawn_and_lease_generations"
+    },
+    {
+      "package": "codex-hepta-agentd",
+      "test": "state::notes_objective::lock_tests::notes_objective_drain_does_not_reenter_run_mutex"
+    },
+    {
+      "package": "codex-hepta-agentd",
+      "test": "runtime_tasks::service_generations::writer_tests::sqlite_writer_rotates_256_times_without_consuming_new_service_identities"
+    },
+    {
+      "package": "codex-hepta-authbus",
+      "test": "authority_schema::tests::missing_and_replaced_authority_triggers_fail_closed_on_reopen"
+    },
+    {
+      "package": "codex-hepta-evidence",
+      "test": "qualification_tests::claim_query_rejects_more_than_512_references"
+    },
+    {
+      "package": "codex-hepta-memory",
+      "test": "production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay"
+    },
+    {
+      "package": "codex-hepta-memory",
+      "test": "production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt"
+    }
+  ],
+  "steps": [
+    {
+      "label": "cargo-metadata",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1",
+        "--locked",
+        "--offline"
+      ],
+      "exit_code": 0,
+      "seconds": 0.5568082400131971
+    },
+    {
+      "label": "binaries-metadata",
+      "argv": [
+        "cargo",
+        "nextest",
+        "list",
+        "--cargo-metadata",
+        "/data/trillionnium-desktop-closure-20261024-pass1/native-full-libs-durable-short-04/cargo-metadata.json",
+        "--locked",
+        "--offline",
+        "--lib",
+        "--list-type",
+        "binaries-only",
+        "--message-format",
+        "json",
+        "-p",
+        "codex-hepta-agentd",
+        "-p",
+        "codex-hepta-authbus",
+        "-p",
+        "codex-hepta-automation",
+        "-p",
+        "codex-hepta-evidence",
+        "-p",
+        "codex-hepta-matrix-store",
+        "-p",
+        "codex-hepta-operations",
+        "-p",
+        "codex-hepta-memory",
+        "-p",
+        "codex-hepta-supervisor"
+      ],
+      "exit_code": 0,
+      "seconds": 3.739465549006127
+    },
+    {
+      "label": "full-eight-libs",
+      "argv": [
+        "just",
+        "test",
+        "--binaries-metadata",
+        "/data/trillionnium-desktop-closure-20261024-pass1/native-full-libs-durable-short-04/binaries-metadata.json",
+        "--cargo-metadata",
+        "/data/trillionnium-desktop-closure-20261024-pass1/native-full-libs-durable-short-04/cargo-metadata.json",
+        "--retries",
+        "0",
+        "--test-threads",
+        "1"
+      ],
+      "exit_code": 100,
+      "seconds": 736.864512644941
+    }
+  ],
+  "test_threads": 1,
+  "retries": 0,
+  "original_test_deadlines_changed": false,
+  "prior_failed_run_preserved": true,
+  "selected_run": false,
+  "all_eight_library_binaries": true,
+  "fixture_storage": {
+    "path": "/data/h7-261024-04",
+    "device": 2067,
+    "original_tmp_device": 2050,
+    "durability": "ordinary durable ext4, no tmpfs or SQLite settings changes",
+    "reason": "measured pwrite+fsync latency /tmp median .391s,max2.168s versus /data median .001324s,max .001752s"
+  },
+  "changed_only_environment": [
+    "TMPDIR",
+    "TMP",
+    "TEMP"
+  ],
+  "short_fixture_path_reason": "The prior full durable-data-03 run introduced 16 SUN_LEN failures through its overlong harness TMPDIR; this directory is on the same durable device with a short non-symlink path",
+  "prior_full_durable_run": "native-full-libs-durable-data-03",
+  "previous_tests_deadlines_and_assertions_preserved": true,
+  "system_io_exclusivity_claimed": false,
+  "binaries_before": {
+    "codex-hepta-agentd": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_agentd-315b5f7aa0655bff",
+      "bytes": 168183112,
+      "sha256": "e0ca28bf0ddbe831cdd1d863de737737541f0ddd65e5a8a5a83eda020d5d8f87"
+    },
+    "codex-hepta-authbus": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_authbus-a4a7aead9ac4f524",
+      "bytes": 10974864,
+      "sha256": "8ed5de725dd418b583a350a7acd162abc6a6292bfd55921e9ad49219c4b41ead"
+    },
+    "codex-hepta-automation": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_automation-718eff037280906a",
+      "bytes": 13972512,
+      "sha256": "adc906963d006b5ff00a454fd2bc29f6263be2257bb88fc0b0ecc52d106a2a6d"
+    },
+    "codex-hepta-evidence": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_evidence-a08e6c861102b8a6",
+      "bytes": 15860320,
+      "sha256": "ba3d7796929d59a3aa2c00bf890e2101562a782698f8acd132480f937a0c5d22"
+    },
+    "codex-hepta-matrix-store": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_matrix_store-013e245332968198",
+      "bytes": 1855112,
+      "sha256": "b22d2ea44c2e10fa8eeb1f6b396eefda26a85ddfc4c913abf6e68c9f4f5a9694"
+    },
+    "codex-hepta-memory": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_memory-b168589ce772ef80",
+      "bytes": 39674864,
+      "sha256": "b0acd0dd04132ba55e5b75a0e79d57ae9c8b2c5ceca5229d2f485e942a557344"
+    },
+    "codex-hepta-operations": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_operations-7db127859a9ebc04",
+      "bytes": 11659936,
+      "sha256": "14f03801587f06320ebd959c6fc9bb8e31cf984578814e73900274a531619f34"
+    },
+    "codex-hepta-supervisor": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_supervisor-9c09a0d7e083dbab",
+      "bytes": 21560152,
+      "sha256": "d656025db5f6e6d52f8785aece237827e9ed0e0664f911eb6ce44897c4449811"
+    }
+  },
+  "binaries_after": {
+    "codex-hepta-agentd": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_agentd-315b5f7aa0655bff",
+      "bytes": 168183112,
+      "sha256": "e0ca28bf0ddbe831cdd1d863de737737541f0ddd65e5a8a5a83eda020d5d8f87"
+    },
+    "codex-hepta-authbus": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_authbus-a4a7aead9ac4f524",
+      "bytes": 10974864,
+      "sha256": "8ed5de725dd418b583a350a7acd162abc6a6292bfd55921e9ad49219c4b41ead"
+    },
+    "codex-hepta-automation": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_automation-718eff037280906a",
+      "bytes": 13972512,
+      "sha256": "adc906963d006b5ff00a454fd2bc29f6263be2257bb88fc0b0ecc52d106a2a6d"
+    },
+    "codex-hepta-evidence": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_evidence-a08e6c861102b8a6",
+      "bytes": 15860320,
+      "sha256": "ba3d7796929d59a3aa2c00bf890e2101562a782698f8acd132480f937a0c5d22"
+    },
+    "codex-hepta-matrix-store": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_matrix_store-013e245332968198",
+      "bytes": 1855112,
+      "sha256": "b22d2ea44c2e10fa8eeb1f6b396eefda26a85ddfc4c913abf6e68c9f4f5a9694"
+    },
+    "codex-hepta-memory": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_memory-b168589ce772ef80",
+      "bytes": 39674864,
+      "sha256": "b0acd0dd04132ba55e5b75a0e79d57ae9c8b2c5ceca5229d2f485e942a557344"
+    },
+    "codex-hepta-operations": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_operations-7db127859a9ebc04",
+      "bytes": 11659936,
+      "sha256": "14f03801587f06320ebd959c6fc9bb8e31cf984578814e73900274a531619f34"
+    },
+    "codex-hepta-supervisor": {
+      "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_supervisor-9c09a0d7e083dbab",
+      "bytes": 21560152,
+      "sha256": "d656025db5f6e6d52f8785aece237827e9ed0e0664f911eb6ce44897c4449811"
+    }
+  },
+  "passed": false
+}

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "native_qualification": false,
+  "power_loss_qualification": false,
+  "tests": [
+    "cognitive_store::recovery::tests::root_install::root_installed_material_cold_opens_as_actual_owner_and_recovers_each_new_generation",
+    "cognitive_store::recovery::tests::root_install::root_install_refuses_wrong_cut_and_invalid_original_pointer_without_activation",
+    "cognitive_store::recovery::tests::root_install::attempt_tests::root_new_physical_attempt_preserves_partial_and_published_predecessor_files",
+    "cognitive_store::recovery::tests::root_install::attempt_tests::root_failed_physical_candidate_does_not_block_a_distinct_successor_attempt"
+  ],
+  "required_parent_tests": 4,
+  "source_before": {
+    "head": "c8211eb9f861ea0a5f3dc03cbd0adedef7ab74bd",
+    "tree": "c8e707a33ee948981302142f36b779d3a2f047e6",
+    "parents": [
+      "d8badc4558fa872aaa37fb8aabe7c794f8d747db"
+    ],
+    "changed_from_base": [
+      "codex-rs/hepta-memory/src/cognitive_store_material_attempt_tests.rs",
+      "codex-rs/hepta-memory/src/cognitive_store_material_install.rs"
+    ],
+    "base_diff_sha256": "331951e5b8b8bbe94a99a1d83ae2c311679ae758bf645570eb638570b0ed8aff",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "",
+    "files": {
+      "codex-rs/hepta-memory/src/cognitive_store_material_install.rs": "645d535ab16fc4b45ace257303578aea23b5dc39f0bc3c3087472fd19b032355",
+      "codex-rs/hepta-memory/src/cognitive_store_material_attempt_tests.rs": "8fa5de704f6ac944065ba14b72be93e27479cb2ac535cb7c909e43c6af945ce5"
+    }
+  },
+  "owner": "/var/lib/hepta-material-fix-20261024-01",
+  "original_binary": {
+    "path": "/data/trillionnium-closure-20261024/hepta-host-target/debug/deps/codex_hepta_memory-cac5cdd527b6b0d5",
+    "bytes": 75490872,
+    "sha256": "c69109d25079a88819db714b4404e651810a0270e4159ff3e33cc8b336634fa8"
+  },
+  "config_sha256": "313709a3f4b8087611579ee7341da81722281d42152dd2261d79af0a9f0b819e",
+  "input_cargo_metadata_sha256": "da6b067578184c0692ae6a636423de1fe912a09efb00f0f52d3fd96c97595103",
+  "input_binaries_metadata_sha256": "1381f55f8d43bbc1eeb3133a844dd92bfa8d51b184c4cd1477c251b31d33414f",
+  "existing_parent_permissions_changed": false,
+  "mount_used": false,
+  "sealed_binary": {
+    "path": "/var/lib/hepta-material-fix-20261024-01/original-memory-libtest",
+    "bytes": 75490872,
+    "sha256": "c69109d25079a88819db714b4404e651810a0270e4159ff3e33cc8b336634fa8"
+  },
+  "sealed_binaries_metadata_sha256": "06b66af8c5fc1bc5a576f26609d9a0a7117938e9734032c4104e5a4f3f103302",
+  "sealed_cargo_metadata_sha256": "dae3012d2bdf08579dc2e73deab1a86d2d2193ca103b97492f06af6031211c69",
+  "command": [
+    "/home/qian-qi/.cargo/bin/just",
+    "test",
+    "--binaries-metadata",
+    "/var/lib/hepta-material-fix-20261024-01/sealed-binaries-metadata.json",
+    "--cargo-metadata",
+    "/var/lib/hepta-material-fix-20261024-01/sealed-cargo-metadata.json",
+    "--run-ignored",
+    "ignored-only",
+    "-E",
+    "package(codex-hepta-memory) & (test(=cognitive_store::recovery::tests::root_install::root_installed_material_cold_opens_as_actual_owner_and_recovers_each_new_generation) | test(=cognitive_store::recovery::tests::root_install::root_install_refuses_wrong_cut_and_invalid_original_pointer_without_activation) | test(=cognitive_store::recovery::tests::root_install::attempt_tests::root_new_physical_attempt_preserves_partial_and_published_predecessor_files) | test(=cognitive_store::recovery::tests::root_install::attempt_tests::root_failed_physical_candidate_does_not_block_a_distinct_successor_attempt))",
+    "--retries",
+    "0",
+    "--test-threads",
+    "1"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 22.739283869042993,
+  "log_sha256": "b3cb2cb3f924035f8870b832f07ca100a210e396363074b026372cac5f5fd943",
+  "summary": "Summary [  22.364s] 4 tests run: 4 passed, 396 skipped",
+  "actual_parent_tests": 4,
+  "passed_parent_tests": 4,
+  "source_after": {
+    "head": "c8211eb9f861ea0a5f3dc03cbd0adedef7ab74bd",
+    "tree": "c8e707a33ee948981302142f36b779d3a2f047e6",
+    "parents": [
+      "d8badc4558fa872aaa37fb8aabe7c794f8d747db"
+    ],
+    "changed_from_base": [
+      "codex-rs/hepta-memory/src/cognitive_store_material_attempt_tests.rs",
+      "codex-rs/hepta-memory/src/cognitive_store_material_install.rs"
+    ],
+    "base_diff_sha256": "331951e5b8b8bbe94a99a1d83ae2c311679ae758bf645570eb638570b0ed8aff",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "",
+    "files": {
+      "codex-rs/hepta-memory/src/cognitive_store_material_install.rs": "645d535ab16fc4b45ace257303578aea23b5dc39f0bc3c3087472fd19b032355",
+      "codex-rs/hepta-memory/src/cognitive_store_material_attempt_tests.rs": "8fa5de704f6ac944065ba14b72be93e27479cb2ac535cb7c909e43c6af945ce5"
+    }
+  }
+}

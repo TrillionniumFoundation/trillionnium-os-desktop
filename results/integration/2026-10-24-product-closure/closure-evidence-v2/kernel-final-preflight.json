@@ -1,0 +1,57 @@
+{
+  "base": "d8badc4558fa872aaa37fb8aabe7c794f8d747db",
+  "stop_patch_sha256": "8ced99e9e235c5e1f2f532812175d61c0cc9727d191f74ad1572fb9276bde714",
+  "runtime_sha256": "c73415e20dc7a98249c6f3a058a0eb23788072947f7c30999a130c2fcb3a241a",
+  "packages": [
+    "codex-hepta-agentd",
+    "codex-hepta-authbus",
+    "codex-hepta-automation",
+    "codex-hepta-evidence",
+    "codex-hepta-matrix-store",
+    "codex-hepta-operations",
+    "codex-hepta-memory",
+    "codex-hepta-supervisor"
+  ],
+  "results": [
+    {
+      "step": "fmt",
+      "argv": [
+        "just",
+        "fmt",
+        "--base",
+        "d8badc4558fa872aaa37fb8aabe7c794f8d747db"
+      ],
+      "exit": 0,
+      "seconds": 3.89,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/kernel-final-fmt.log"
+    },
+    {
+      "step": "fix",
+      "argv": [
+        "just",
+        "fix",
+        "-p",
+        "codex-hepta-agentd",
+        "-p",
+        "codex-hepta-authbus",
+        "-p",
+        "codex-hepta-automation",
+        "-p",
+        "codex-hepta-evidence",
+        "-p",
+        "codex-hepta-matrix-store",
+        "-p",
+        "codex-hepta-operations",
+        "-p",
+        "codex-hepta-memory",
+        "-p",
+        "codex-hepta-supervisor",
+        "--allow-dirty",
+        "--allow-staged"
+      ],
+      "exit": 1,
+      "seconds": 1.84,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/kernel-final-fix.log"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+RUST_MIN_STACK=8388608 NEXTEST_PROFILE=local python3 ../scripts/run-nextest.py "$@"
+────────────
+ Nextest run ID e1039485-96ba-45a8-962c-4a2972c692e5 with nextest profile: local
+    Starting 4 tests across 1 binary (396 tests skipped)
+        PASS [   2.311s] (1/4) codex-hepta-memory cognitive_store::recovery::tests::root_install::attempt_tests::root_failed_physical_candidate_does_not_block_a_distinct_successor_attempt
+        PASS [   6.126s] (2/4) codex-hepta-memory cognitive_store::recovery::tests::root_install::attempt_tests::root_new_physical_attempt_preserves_partial_and_published_predecessor_files
+        PASS [   9.146s] (3/4) codex-hepta-memory cognitive_store::recovery::tests::root_install::root_install_refuses_wrong_cut_and_invalid_original_pointer_without_activation
+        PASS [   4.775s] (4/4) codex-hepta-memory cognitive_store::recovery::tests::root_install::root_installed_material_cold_opens_as_actual_owner_and_recovers_each_new_generation
+────────────
+     Summary [  22.364s] 4 tests run: 4 passed, 396 skipped

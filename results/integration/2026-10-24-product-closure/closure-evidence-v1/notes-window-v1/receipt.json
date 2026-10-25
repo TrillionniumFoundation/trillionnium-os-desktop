@@ -1,0 +1,42 @@
+{
+  "schema": "trillionnium.notes-ordinary-reopen-window.v1",
+  "passed": false,
+  "checks": [],
+  "scope": "owned Xvfb, original Session/egui Notes, AT-SPI, real OS clipboard and synthesized keyboard",
+  "physical_ime_qualified": false,
+  "production_authority": false,
+  "original_writer_terminal": false,
+  "font": {
+    "path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+  },
+  "harness_sha256": "7d407d18cf0251440367bb83198816c6af00dd8164ea448d1daf7f08fde04be7",
+  "binary_sha256": {
+    "trill-session": "85f8dbf4a5dee33babdbb6c1dbc09ea3ac2b62d114611d37025b3c8e9096d025",
+    "trill-app-window": "f7957d5a478d62acf7c40b6ba2f260ece4ec6aa1522492fdc69200f1f59143c0",
+    "trill-notes-recovery": "489f70e7763adce3c39d0943ab9cfadc92cb4ba7b4587ebb0e0a57724418f53f"
+  },
+  "xres_helper_sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+  "windows": [
+    {
+      "pid": 1681192,
+      "xid": 6291459,
+      "xres_version": [
+        1,
+        2
+      ],
+      "method": "XRes 1.2 QueryClientIds LocalClientPID",
+      "helper": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta/apps/hepta-control-ui/test/x11_client_owner.py",
+        "bytes": 7574,
+        "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+        "method": "XRes 1.2 QueryClientIds LocalClientPID",
+        "libraries": [
+          "libX11.so.6",
+          "libXRes.so.1"
+        ]
+      }
+    }
+  ],
+  "error": "RuntimeError: exact Notes PID registered with AT-SPI: deadline; last error: None"
+}

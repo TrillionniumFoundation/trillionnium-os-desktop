@@ -1,0 +1,44 @@
+{
+  "source": {
+    "commit": "f4a259c64701da67516b280097fdb9235c63607d",
+    "tree": "e8deab19bf101ac6351a8c5f7670d2d2c0a1846d",
+    "local_source_commit": "a54e9099f6473b7669c61fe3010292ba2d2de98c"
+  },
+  "hepta": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+  "results": [
+    {
+      "argv": [
+        "python3",
+        "tests/ui/test-native-sdk-candidate-runner.py"
+      ],
+      "exit": 0,
+      "seconds": 0.81,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v1-0.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "tests/ui/verify_product_source.py"
+      ],
+      "exit": 0,
+      "seconds": 0.27,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v1-1.log"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "-p",
+        "trill-app-window"
+      ],
+      "exit": 101,
+      "seconds": 21.93,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v1-2.log"
+    }
+  ]
+}

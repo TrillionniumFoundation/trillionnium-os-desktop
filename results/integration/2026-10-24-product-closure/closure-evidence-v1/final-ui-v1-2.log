@@ -1,0 +1,98 @@
+warning: skipping duplicate package `bitflags v2.10.0 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/bitflags/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/bitflags/Cargo.toml
+
+warning: skipping duplicate package `cfg-if v1.0.4 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/cfg-if/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/cfg-if/Cargo.toml
+
+warning: patch `anymap2 v0.13.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)` was not used in the crate graph
+warning: patch `crossterm v0.29.0 (https://github.com/openai-oss-forks/crossterm?rev=45fecb9508105988f42fe6ff0441783ed3717f92#45fecb95)` was not used in the crate graph
+warning: patch `imbl v6.1.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)` was not used in the crate graph
+warning: patch `matrix-sdk-crypto v0.18.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)` was not used in the crate graph
+warning: patch `matrix-sdk-sqlite v0.18.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling accesskit v0.17.1 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)
+   Compiling trill-ui-core v0.1.0 (/data/trillionnium-desktop-closure-20261024-pass1/desktop-ui-final/ui/core)
+   Compiling accesskit_consumer v0.26.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)
+   Compiling accesskit_atspi_common v0.10.1 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)
+   Compiling accesskit_unix v0.13.1 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)
+   Compiling egui v0.31.1
+   Compiling accesskit_winit v0.23.1
+   Compiling egui-winit v0.31.1
+   Compiling egui_glow v0.31.1
+   Compiling eframe v0.31.1
+   Compiling trill-app-window v0.1.0 (/data/trillionnium-desktop-closure-20261024-pass1/desktop-ui-final/ui/app-window)
+    Finished `test` profile [unoptimized] target(s) in 21.47s
+     Running unittests src/main.rs (/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/deps/trill_app_window-2c9d983f4949b763)
+
+running 48 tests
+test activation::policy::tests::active_composition_blocks_every_effect_source ... ok
+test activation::policy::tests::commit_then_trailing_confirmation_is_blocked_until_release ... ok
+test activation::policy::tests::deliberate_enter_and_space_activate_without_a_pointer ... ok
+test activation::policy::tests::empty_preedit_and_disabled_cannot_drop_the_confirmation_fence ... ok
+test activation::policy::tests::explicit_navigation_recovers_when_backend_swallows_key_release ... ok
+test activation::policy::tests::explicit_pointer_and_accessibility_actions_work_after_commit_frame ... ok
+test activation::policy::tests::focus_loss_cancels_preedit_but_keeps_delayed_key_fenced ... ok
+test activation::policy::tests::held_key_without_backend_repeat_flag_is_blocked_until_release ... ok
+test activation::policy::tests::navigation_during_composition_does_not_bypass_the_fence ... ok
+test activation::policy::tests::one_release_does_not_unfence_another_held_confirmation_key ... ok
+test activation::policy::tests::press_then_release_does_not_unblock_the_same_candidate_frame ... ok
+test activation::policy::tests::repeated_or_modified_keypresses_do_not_repeat_effects ... ok
+test activation::policy::tests::same_frame_commit_and_key_are_blocked_in_either_order ... ok
+test activation::tests::accesskit_button_exposes_label_role_and_semantic_activation ... ok
+test activation::tests::accesskit_actions_cannot_bypass_composition_or_disabled_controls ... ok
+test activation::tests::explicit_pointer_cannot_bypass_active_preedit ... ok
+test activation::tests::real_button_rejects_ime_confirmation_then_accepts_a_fresh_press ... ok
+test activation::tests::real_button_rejects_repeat_without_requiring_a_pointer ... ok
+test activation::tests::repeated_layout_pass_preserves_the_commit_fence ... ok
+test host_fonts::tests::corrupt_font_and_wrong_face_are_rejected_before_egui ... ok
+test host_fonts::tests::override_requires_an_absolute_path_and_valid_face_index ... ok
+test host_fonts::tests::oversized_file_and_directory_are_rejected_without_loading ... ok
+test host_fonts::tests::selected_real_font_covers_egui_proportional_and_monospace ... ignored, requires TRILL_UI_TEST_CJK_FONT to select a real host font
+test activation::tests::real_focused_button_is_accessible_by_enter_and_space ... ok
+test notes_input::tests::actual_egui_cancel_preserves_committed_selection_and_never_publishes_preedit ... ok
+test notes_input::tests::actual_egui_preedit_is_visible_but_only_commit_returns_original_revision ... ok
+test notes_input::tests::cancelled_second_composition_keeps_the_earlier_same_batch_commit ... ok
+test notes_input::tests::empty_commit_cannot_publish_leftover_preedit ... ok
+test notes_input::tests::first_oversized_raw_batch_is_refused_without_losing_committed_text ... ok
+test notes_input::tests::one_native_batch_preedit_then_disabled_never_replays_cancelled_text ... ok
+test notes_input::tests::one_native_batch_commits_then_defers_new_preedit_without_saving_it ... ok
+test notes_input::tests::ordinary_input_uses_revision_after_the_workers_own_acknowledgement ... ok
+test notes_input::tests::oversize_native_paste_rejects_the_whole_replacement_and_retains_selection ... ok
+test notes_input::tests::pointer_caret_move_before_commit_never_publishes_the_old_preedit ... FAILED
+test notes_input::tests::repeated_update_in_one_egui_frame_cannot_publish_the_transaction_twice ... ok
+test notes_organ::editor_tests::commit_from_an_older_composition_retains_unsaved_text_without_queueing_an_overwrite ... ok
+test notes_organ::worker::tests::delayed_local_typing_cannot_overwrite_an_intervening_external_effect ... ok
+test notes_input::tests::split_raw_frames_keep_each_fragments_focus_and_modifier_state ... ok
+test notes_organ::worker::tests::expired_handoff_never_mutates_while_fresh_local_edits_share_the_same_revision ... ok
+test tests::division_by_zero_never_claims_a_numeric_result ... ok
+test tests::focused_run_button_accepts_deliberate_keyboard_activation ... ok
+test tests::ime_candidate_enter_never_implicitly_runs_a_terminal_command ... ok
+test tests::parse_arguments_accepts_terminal_kind ... ok
+test tests::restricted_terminal_bounds_input_and_clear_is_local_only ... ok
+test tests::restricted_terminal_refuses_commands_over_wire_budget ... ok
+test tests::restricted_terminal_refuses_forged_log_lines_and_bidi_controls ... ok
+test tests::restricted_terminal_rejects_shell_syntax_and_runs_only_allowlist ... ok
+test notes_organ::worker::tests::durable_reopen_uses_the_original_worker_and_rejects_stale_local_edits ... ok
+
+failures:
+
+---- notes_input::tests::pointer_caret_move_before_commit_never_publishes_the_old_preedit stdout ----
+
+thread 'notes_input::tests::pointer_caret_move_before_commit_never_publishes_the_old_preedit' (1776025) panicked at app-window/src/notes_input_tests.rs:471:5:
+assertion `left != right` failed: a rejected native Commit must never turn its residual prediction into a saved local edit
+  left: Some((4, "temporary"))
+ right: Some((4, "temporary"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    notes_input::tests::pointer_caret_move_before_commit_never_publishes_the_old_preedit
+
+test result: FAILED. 46 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+error: test failed, to rerun pass `-p trill-app-window --bin trill-app-window`

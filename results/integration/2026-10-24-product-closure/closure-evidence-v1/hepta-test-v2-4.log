@@ -1,0 +1,43 @@
+cargo clippy --fix --tests --allow-dirty {args}
+warning: skipping duplicate package `bitflags v2.10.0 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/bitflags/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/bitflags/Cargo.toml
+
+warning: skipping duplicate package `cfg-if v1.0.4 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/cfg-if/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/cfg-if/Cargo.toml
+
+    Checking typenum v1.20.1
+    Checking serde_core v1.0.229
+    Checking generic-array v0.14.7
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking tinyvec_macros v0.1.1
+    Checking tinyvec v1.10.0
+    Checking digest v0.10.7
+    Checking memchr v2.8.3
+    Checking sha2 v0.10.9
+    Checking serde v1.0.229
+    Checking serde_json v1.0.151
+    Checking unicode-normalization v0.1.25
+    Checking hepta-control-core v0.1.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta/apps/hepta-control-ui/rust/core)
+       Fixed core/src/chat_owner_tests.rs (1 fix)
+warning: this call to `clone` can be replaced with `std::slice::from_ref`
+  --> core/src/chat_stream_tests.rs:51:51
+   |
+51 |         .receive_app_server_history(&binding, 11, &[earlier.clone()], 12)
+   |                                                   ^^^^^^^^^^^^^^^^^^ help: try: `std::slice::from_ref(&earlier)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#cloned_ref_to_slice_refs
+   = note: `#[warn(clippy::cloned_ref_to_slice_refs)]` on by default
+
+warning: this call to `clone` can be replaced with `std::slice::from_ref`
+   --> core/src/chat_stream_tests.rs:166:51
+    |
+166 |         .receive_app_server_history(&binding, 11, &[turn.clone()], 11)
+    |                                                   ^^^^^^^^^^^^^^^ help: try: `std::slice::from_ref(&turn)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#cloned_ref_to_slice_refs
+
+warning: `hepta-control-core` (lib test) generated 2 warnings
+    Finished `dev` profile [unoptimized] target(s) in 11.23s

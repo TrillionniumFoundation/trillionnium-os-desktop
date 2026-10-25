@@ -1,0 +1,29 @@
+{
+  "source": "31bbb8c295546fb0ed5073292dd107e0dac49349",
+  "lock_before": "b3fe18f7e75d80594ab5145ae5b192b6f8605c59d850a8264be5c8f775cf1d3a",
+  "config_sha256": "d3b0461a6052499e66cb0687d593b68d124004195ee9634f6d53a015e13fa911",
+  "reason": "original global config must be forwarded after external clippy subcommand; original lock retained",
+  "argv": [
+    "cargo",
+    "+1.96.0",
+    "clippy",
+    "--config",
+    "/data/trillionnium-desktop-product-20261024-integration/native-sdk-candidate-v3/all-sdk-overrides.toml",
+    "--manifest-path",
+    "/data/trillionnium-desktop-closure-20261024-pass1/sdk-config-probe/ui/Cargo.toml",
+    "--workspace",
+    "--release",
+    "--locked",
+    "--all-targets",
+    "--features",
+    "trill-shell/hepta-native-clipboard-sdk",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "exit": 0,
+  "seconds": 540.52,
+  "lock_after": "b3fe18f7e75d80594ab5145ae5b192b6f8605c59d850a8264be5c8f775cf1d3a",
+  "source_status": "",
+  "log": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-config-forwarding.log"
+}

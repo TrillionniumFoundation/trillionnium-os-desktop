@@ -1,0 +1,438 @@
+[
+  {
+    "path": "final-ui-v2-results.json",
+    "data": {
+      "source": {
+        "commit": "5663337400f912cbbbba76239ec80895e6155354",
+        "tree": "c6fe202017c2b67373d5e6984344386268a4c9d0",
+        "local_source_commit": "9eaec9113296dbedf8a606193992ab747aa21c51"
+      },
+      "hepta": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+      "results": [
+        {
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--manifest-path",
+            "ui/Cargo.toml",
+            "-p",
+            "trill-ui-core",
+            "-p",
+            "trill-app-window"
+          ],
+          "exit": 0,
+          "seconds": 50.15,
+          "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v2-0.log"
+        },
+        {
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--manifest-path",
+            "ui/Cargo.toml",
+            "-p",
+            "trill-app-window",
+            "host_fonts::tests::selected_real_font_covers_egui_proportional_and_monospace",
+            "--",
+            "--ignored"
+          ],
+          "exit": 0,
+          "seconds": 1.85,
+          "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v2-1.log"
+        },
+        {
+          "argv": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--manifest-path",
+            "ui/Cargo.toml",
+            "-p",
+            "trill-ui-core",
+            "-p",
+            "trill-app-window",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit": 0,
+          "seconds": 10.23,
+          "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v2-2.log"
+        },
+        {
+          "argv": [
+            "cargo",
+            "build",
+            "--locked",
+            "--manifest-path",
+            "ui/Cargo.toml",
+            "-p",
+            "trill-app-window",
+            "-p",
+            "trill-session",
+            "--bins"
+          ],
+          "exit": 0,
+          "seconds": 6.74,
+          "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v2-3.log"
+        }
+      ],
+      "source_status": "",
+      "binaries": {
+        "trill-session": {
+          "path": "/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/trill-session",
+          "bytes": 4634232,
+          "sha256": "1003c2ff56f02ee93b8565125654da47236f8faec0f2d995562bd89942f354fb"
+        },
+        "trill-app-window": {
+          "path": "/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/trill-app-window",
+          "bytes": 36429912,
+          "sha256": "1ff8643f33780977445cb5e5eaa7fbd096feca5fa9a4ca11445e1ac5431fd2d0"
+        },
+        "trill-notes-recovery": {
+          "path": "/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/trill-notes-recovery",
+          "bytes": 1593552,
+          "sha256": "699d030322e9111bd268f1601a417c3765248137521827d5d54a12d8f7a52d32"
+        }
+      }
+    }
+  },
+  {
+    "path": "final-ui-v3-results.json",
+    "data": {
+      "source": {
+        "commit": "5f8244bda093588db907bde38643f43bc32a7add",
+        "tree": "d7c0d61a1519db8f4b0a7178b9f6867f85719b48",
+        "local_source_commit": "cb34422ba37a3d92d362c1efba2faa4da090a58a"
+      },
+      "hepta": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+      "results": [
+        {
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--manifest-path",
+            "ui/Cargo.toml",
+            "-p",
+            "trill-app-window",
+            "--bin",
+            "trill-app-window"
+          ],
+          "exit": 0,
+          "seconds": 3.88,
+          "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v3-0.log"
+        },
+        {
+          "argv": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--manifest-path",
+            "ui/Cargo.toml",
+            "-p",
+            "trill-app-window",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit": 0,
+          "seconds": 2.14,
+          "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v3-1.log"
+        },
+        {
+          "argv": [
+            "cargo",
+            "build",
+            "--locked",
+            "--manifest-path",
+            "ui/Cargo.toml",
+            "-p",
+            "trill-app-window",
+            "-p",
+            "trill-session",
+            "--bins"
+          ],
+          "exit": 0,
+          "seconds": 2.74,
+          "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-ui-v3-2.log"
+        }
+      ],
+      "source_status": "",
+      "binaries": {
+        "trill-session": {
+          "path": "/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/trill-session",
+          "bytes": 4634232,
+          "sha256": "1003c2ff56f02ee93b8565125654da47236f8faec0f2d995562bd89942f354fb"
+        },
+        "trill-app-window": {
+          "path": "/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/trill-app-window",
+          "bytes": 36435984,
+          "sha256": "2ffe518c0bb3161931150e74b0442205bc226843a43760a832cd4e4959576ad9"
+        },
+        "trill-notes-recovery": {
+          "path": "/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/trill-notes-recovery",
+          "bytes": 1593552,
+          "sha256": "699d030322e9111bd268f1601a417c3765248137521827d5d54a12d8f7a52d32"
+        }
+      }
+    }
+  },
+  {
+    "path": "notes-window-v5/receipt.json",
+    "data": {
+      "schema": "trillionnium.notes-ordinary-reopen-window.v1",
+      "passed": true,
+      "checks": [
+        {
+          "name": "real-egui-native-CJK-paste-saved-with-original-pending-receipt",
+          "passed": true
+        },
+        {
+          "name": "ordinary-WM-DELETE-WINDOW-and-original-Session-reap",
+          "passed": true
+        },
+        {
+          "name": "ordinary-saved-note-UI-reopens-only-text-under-fresh-effect-identity",
+          "passed": true
+        },
+        {
+          "name": "continued-native-editing-shares-new-local-revision-CAS",
+          "passed": true
+        },
+        {
+          "name": "independent-original-incarnation-recovery-retains-exact-pending-receipt",
+          "passed": true
+        }
+      ],
+      "scope": "owned Xvfb, original Session/egui Notes, AT-SPI, real OS clipboard and synthesized keyboard",
+      "physical_ime_qualified": false,
+      "production_authority": false,
+      "original_writer_terminal": false,
+      "font": {
+        "path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+      },
+      "harness_sha256": "bab6b966ff1e1e99c7915317a1d4e59442f045eb3e2a5ed890d5df7638b7c6cc",
+      "binary_sha256": {
+        "trill-session": "1003c2ff56f02ee93b8565125654da47236f8faec0f2d995562bd89942f354fb",
+        "trill-app-window": "2ffe518c0bb3161931150e74b0442205bc226843a43760a832cd4e4959576ad9",
+        "trill-notes-recovery": "699d030322e9111bd268f1601a417c3765248137521827d5d54a12d8f7a52d32"
+      },
+      "xres_helper_sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+      "owned_a11y_status": {
+        "IsEnabled": true,
+        "ScreenReaderEnabled": true
+      },
+      "windows": [
+        {
+          "pid": 1831275,
+          "xid": 6291459,
+          "xres_version": [
+            1,
+            2
+          ],
+          "method": "XRes 1.2 QueryClientIds LocalClientPID",
+          "helper": {
+            "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+            "bytes": 7574,
+            "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+            "method": "XRes 1.2 QueryClientIds LocalClientPID",
+            "libraries": [
+              "libX11.so.6",
+              "libXRes.so.1"
+            ]
+          }
+        },
+        {
+          "pid": 1831516,
+          "xid": 6291459,
+          "xres_version": [
+            1,
+            2
+          ],
+          "method": "XRes 1.2 QueryClientIds LocalClientPID",
+          "helper": {
+            "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+            "bytes": 7574,
+            "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+            "method": "XRes 1.2 QueryClientIds LocalClientPID",
+            "libraries": [
+              "libX11.so.6",
+              "libXRes.so.1"
+            ]
+          }
+        }
+      ],
+      "screenshots": [
+        {
+          "file": "01-original-note.png",
+          "sha256": "7edc141b14ba4c2e3e6ac217453af982800a556911e66890db31f75a1206dc31"
+        },
+        {
+          "file": "02-reopened-note.png",
+          "sha256": "538936f0912c5f3c7eab9460ea87378aebb90db872103c51bb629d0decd6e2bc"
+        },
+        {
+          "file": "03-continued-note.png",
+          "sha256": "8c596ca0a38a2c12817af757f1c69905c4d092f564660dec3a94d872dddb0f07"
+        }
+      ],
+      "old_target": {
+        "session_instance": "48242f162051eaa45b69d207a1fee73b",
+        "task_id": 1,
+        "incarnation": "fec4223e517d33975a87032f0c878c63"
+      },
+      "new_target": {
+        "session_instance": "48242f162051eaa45b69d207a1fee73b",
+        "task_id": 2,
+        "incarnation": "756a539aab7516ed4fcc2af995a2e000"
+      },
+      "original_checkpoint_sha256": "ddd767497c390f02dbb7dce09e72c99828f2fadfb8fb1255ec6e164975cf03a2",
+      "new_checkpoint_sha256": "b448fd5a5300cffe0c2e9eef2b13631f10821a0bcf3fb7b58ffc3be9a7c7364a",
+      "new_revision": 2
+    }
+  },
+  {
+    "path": "sdk-final/canonical-build-v1/receipt.json",
+    "data": {
+      "schema": "trillionnium.native-sdk-candidate-build.v1",
+      "passed": false,
+      "compiled": false,
+      "status": "running",
+      "exit_code": null,
+      "binaries": {},
+      "runtime_qualified": false,
+      "production_authority": false,
+      "steps": [
+        {
+          "name": "metadata",
+          "argv": [
+            "cargo",
+            "+1.96.0",
+            "metadata",
+            "--config",
+            "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml",
+            "--manifest-path",
+            "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml",
+            "--locked",
+            "--features",
+            "trill-shell/hepta-native-clipboard-sdk",
+            "--offline",
+            "--format-version",
+            "1"
+          ],
+          "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+          "started_unix": 1792858154.2328787,
+          "passed": true,
+          "exit_code": 0,
+          "duration_seconds": 1.8203742504119873
+        },
+        {
+          "name": "test",
+          "argv": [
+            "cargo",
+            "+1.96.0",
+            "test",
+            "--config",
+            "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml",
+            "--manifest-path",
+            "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml",
+            "--locked",
+            "--features",
+            "trill-shell/hepta-native-clipboard-sdk",
+            "--offline",
+            "--workspace",
+            "--profile",
+            "release",
+            "--target-dir",
+            "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+            "--all-targets"
+          ],
+          "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+          "started_unix": 1792858158.35867,
+          "passed": false
+        }
+      ],
+      "runner_sha256": "a59a0492a4e30f581e76e7dd310f5e15431fa3be7ba5a6d5b9dd406daaf83108",
+      "desktop": {
+        "commit": "a7621d8022f52add679bd6edba5d0bad6772dabc",
+        "tree": "e9026801f2686b7ea3f89759609c326f72fb2cfa"
+      },
+      "hepta": {
+        "commit": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+        "tree": "7e376f5d3509cf38e13b513ca2b87d9eecd7dc47"
+      },
+      "toolchain": "1.96.0",
+      "feature": "trill-shell/hepta-native-clipboard-sdk",
+      "profile": "release",
+      "source_commit": "a7621d8022f52add679bd6edba5d0bad6772dabc",
+      "source_tree": "e9026801f2686b7ea3f89759609c326f72fb2cfa",
+      "inputs_sha256": {
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.lock": "c3fc7793678ad269321fb32b4669d4ac37ab8a8ce63be600aea21b310decb132",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml": "f44195797c6bcb6d53bb6b2cf71a801226313dbcca93b723f763f57a2b2793ab",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/rust-toolchain.toml": "dad73043643ef4285aca2153b3f6e50dd70ebace44c4f913bcd1be2d4403717b",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml": "d3b0461a6052499e66cb0687d593b68d124004195ee9634f6d53a015e13fa911",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/original-metadata.json": "7a256bf2eb60f1c3670e27c98ff68ca07bc212827b41222ae0c31b54dc758995"
+      },
+      "target_dir": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+      "environment": {
+        "CARGO_TARGET_DIR": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+        "CARGO_BUILD_JOBS": "2",
+        "RUSTUP_TOOLCHAIN": "1.96.0"
+      },
+      "cargo_version": "cargo 1.96.0 (30a34c682 2026-05-25)\nrelease: 1.96.0\ncommit-hash: 30a34c6821b57de0aaec83a901aca39f88f6778c\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]"
+    }
+  },
+  {
+    "path": "final-ui-v2-0.log",
+    "test_results": [
+      "test result: ok. 48 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.40s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+      "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "tail": "test recovery_preserves_exact_receipt_and_retirement_without_restoring_effects ... ok\ntest saved_note_custody_and_failed_destination_save_preserve_original_bytes ... ok\ntest reopening_refuses_live_changed_or_already_edited_documents ... ok\n\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s\n\n   Doc-tests trill_ui_core\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
+  },
+  {
+    "path": "final-ui-v2-1.log",
+    "test_results": [
+      "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 48 filtered out; finished in 0.08s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "tail": "\nrunning 1 test\ntest host_fonts::tests::selected_real_font_covers_egui_proportional_and_monospace ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 48 filtered out; finished in 0.08s\n\n     Running unittests src/bin/trill-notes-recovery.rs (/data/trillionnium-desktop-product-20261024-integration/ui-target/debug/deps/trill_notes_recovery-4490bdc0c736db19)\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n"
+  },
+  {
+    "path": "final-ui-v3-0.log",
+    "test_results": [
+      "test result: ok. 48 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.52s"
+    ],
+    "tail": "test tests::division_by_zero_never_claims_a_numeric_result ... ok\ntest tests::focused_run_button_accepts_deliberate_keyboard_activation ... ok\ntest tests::ime_candidate_enter_never_implicitly_runs_a_terminal_command ... ok\ntest tests::parse_arguments_accepts_terminal_kind ... ok\ntest tests::restricted_terminal_bounds_input_and_clear_is_local_only ... ok\ntest tests::restricted_terminal_refuses_commands_over_wire_budget ... ok\ntest tests::restricted_terminal_refuses_forged_log_lines_and_bidi_controls ... ok\ntest tests::restricted_terminal_rejects_shell_syntax_and_runs_only_allowlist ... ok\ntest notes_organ::worker::tests::durable_reopen_uses_the_original_worker_and_rejects_stale_local_edits ... ok\n\ntest result: ok. 48 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.52s\n"
+  },
+  {
+    "path": "sdk-final/canonical-build-v1/test.stderr.log",
+    "test_results": [],
+    "tail": "   Compiling codex-utils-path v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling codex-hepta-contracts v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling codex-shell-command v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling i18n-config v0.4.8 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling codex-features v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling codex-model-provider-info v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling codex-config v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling i18n-embed-impl v0.8.4\n   Compiling secret-service v6.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling codex-windows-sandbox v0.0.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling zbus-secret-service-keyring-store v1.0.1 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=22e87e0dd6560a7b925e716a33011378ae07a9a2#22e87e0d)\n   Compiling i18n-embed v0.15.4"
+  },
+  {
+    "path": "notes-window-v5/01-original-note.png",
+    "bytes": 43296,
+    "sha256": "7edc141b14ba4c2e3e6ac217453af982800a556911e66890db31f75a1206dc31"
+  },
+  {
+    "path": "notes-window-v5/02-reopened-note.png",
+    "bytes": 49533,
+    "sha256": "538936f0912c5f3c7eab9460ea87378aebb90db872103c51bb629d0decd6e2bc"
+  },
+  {
+    "path": "notes-window-v5/03-continued-note.png",
+    "bytes": 51265,
+    "sha256": "8c596ca0a38a2c12817af757f1c69905c4d092f564660dec3a94d872dddb0f07"
+  }
+]

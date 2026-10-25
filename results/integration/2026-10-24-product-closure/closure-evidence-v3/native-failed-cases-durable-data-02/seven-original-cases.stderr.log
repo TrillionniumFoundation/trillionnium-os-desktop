@@ -1,0 +1,14 @@
+RUST_MIN_STACK=8388608 NEXTEST_PROFILE=local python3 ../scripts/run-nextest.py "$@"
+────────────
+ Nextest run ID 18b54015-dca9-42b2-9ea6-3e933d08fc18 with nextest profile: local
+    Starting 7 tests across 4 binaries (979 tests and 4 binaries skipped)
+        PASS [   5.406s] (1/7) codex-hepta-agentd runtime::hos2_recovery_tests::notes_tests::composition_tests::local_handoff_tests::notes_local_handoff_real_clock_preserves_unknown_with_distinct_spawn_and_lease_generations
+        PASS [  23.143s] (2/7) codex-hepta-agentd runtime_tasks::service_generations::writer_tests::sqlite_writer_rotates_256_times_without_consuming_new_service_identities
+        PASS [   1.454s] (3/7) codex-hepta-agentd state::notes_objective::lock_tests::notes_objective_drain_does_not_reenter_run_mutex
+        PASS [   2.431s] (4/7) codex-hepta-authbus authority_schema::tests::missing_and_replaced_authority_triggers_fail_closed_on_reopen
+        SLOW [> 30.000s] (───) codex-hepta-evidence qualification_tests::claim_query_rejects_more_than_512_references
+        PASS [  55.337s] (5/7) codex-hepta-evidence qualification_tests::claim_query_rejects_more_than_512_references
+        PASS [   3.353s] (6/7) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay
+        PASS [   4.595s] (7/7) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt
+────────────
+     Summary [  95.731s] 7 tests run: 7 passed (1 slow), 979 skipped

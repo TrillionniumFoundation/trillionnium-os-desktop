@@ -1,0 +1,48 @@
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x476b80
+  Start of program headers:          64 (bytes into file)
+  Start of section headers:          13241368 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         10
+  Size of section headers:           64 (bytes)
+  Number of section headers:         32
+  Section header string table index: 31
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x000040 0x0000000000200040 0x0000000000200040 0x000230 0x000230 R   0x8
+  LOAD           0x000000 0x0000000000200000 0x0000000000200000 0x275b80 0x275b80 R   0x1000
+  LOAD           0x275b80 0x0000000000476b80 0x0000000000476b80 0xa1b240 0xa1b240 R E 0x1000
+  LOAD           0xc90dc0 0x0000000000e92dc0 0x0000000000e92dc0 0x008238 0x008240 RW  0x1000
+  LOAD           0xc99000 0x0000000000e9c000 0x0000000000e9c000 0x005fc0 0x00c2e8 RW  0x1000
+  TLS            0xc90dc0 0x0000000000e92dc0 0x0000000000e92dc0 0x0000f0 0x0001ec R   0x8
+  GNU_RELRO      0xc90dc0 0x0000000000e92dc0 0x0000000000e92dc0 0x008238 0x008240 R   0x1
+  GNU_EH_FRAME   0x18ca40 0x000000000038ca40 0x000000000038ca40 0x01cadc 0x01cadc R   0x4
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0
+  NOTE           0x000270 0x0000000000200270 0x0000000000200270 0x000044 0x000044 R   0x4
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .note.ABI-tag .note.gnu.build-id .rela.dyn .rodata .gcc_except_table .debug_gdb_scripts rodata.cst32 .eh_frame_hdr .eh_frame 
+   02     .text .init .fini .iplt 
+   03     .tdata .fini_array .init_array .data.rel.ro .got .got.plt .relro_padding 
+   04     .data .bss 
+   05     .tdata .tbss 
+   06     .tdata .fini_array .init_array .data.rel.ro .got .got.plt .relro_padding 
+   07     .eh_frame_hdr 
+   08     
+   09     .note.ABI-tag .note.gnu.build-id 
+
+There is no dynamic section in this file.

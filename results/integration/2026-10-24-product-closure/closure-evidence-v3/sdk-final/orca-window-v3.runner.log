@@ -1,0 +1,9 @@
+{"passed": false, "receipt": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/orca-window-v3/receipt.json", "error": "RuntimeError: original-real-ibus failed with exit 1"}
+Traceback (most recent call last):
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v3/ready/qualify_orca.py", line 495, in <module>
+    run(arguments)
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v3/ready/qualify_orca.py", line 409, in run
+    stage("original-real-ibus", [sys.executable, "-B", str(HERE / "ibus_client.py"), "--pid", str(shell_group.process.pid),
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v3/ready/qualify_orca.py", line 264, in stage
+    raise RuntimeError(f"{label} failed with exit {code}")
+RuntimeError: original-real-ibus failed with exit 1

@@ -1,0 +1,81 @@
+{
+  "patch_sha256": "f0c9f9ffde88a9d959cc05c817624e4f6ca07000dfc07175f4357f0fbafe2b74",
+  "results": [
+    {
+      "argv": [
+        "just",
+        "test",
+        "-p",
+        "codex-hepta-agentd",
+        "authority_host_native",
+        "--locked"
+      ],
+      "exit": 0,
+      "seconds": 145.33,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-test-v2-0.log"
+    },
+    {
+      "argv": [
+        "just",
+        "test",
+        "--manifest-path",
+        "../apps/hepta-control-ui/rust/Cargo.toml",
+        "-p",
+        "hepta-control-core",
+        "--lib",
+        "--locked"
+      ],
+      "exit": 0,
+      "seconds": 7.56,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-test-v2-1.log"
+    },
+    {
+      "argv": [
+        "just",
+        "fmt",
+        "--base",
+        "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9"
+      ],
+      "exit": 0,
+      "seconds": 0.78,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-test-v2-2.log"
+    },
+    {
+      "argv": [
+        "just",
+        "fix",
+        "-p",
+        "codex-hepta-memory",
+        "-p",
+        "codex-hepta-agentd",
+        "--allow-staged"
+      ],
+      "exit": 0,
+      "seconds": 571.28,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-test-v2-3.log"
+    },
+    {
+      "argv": [
+        "just",
+        "fix",
+        "--manifest-path",
+        "../apps/hepta-control-ui/rust/Cargo.toml",
+        "-p",
+        "hepta-control-core",
+        "--allow-staged"
+      ],
+      "exit": 0,
+      "seconds": 11.38,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-test-v2-4.log"
+    },
+    {
+      "argv": [
+        "just",
+        "bazel-lock-update"
+      ],
+      "exit": 0,
+      "seconds": 17.34,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-test-v2-5.log"
+    }
+  ]
+}

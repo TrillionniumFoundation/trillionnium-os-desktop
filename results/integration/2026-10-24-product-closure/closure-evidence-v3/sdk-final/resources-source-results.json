@@ -1,0 +1,85 @@
+{
+  "runtime_qualified": false,
+  "production_authority": false,
+  "steps": [
+    {
+      "name": "resources",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/ui/prepare_native_makepad.py",
+        "--metadata",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/canonical-build-v1/metadata.stdout.log",
+        "--sdk-source-profile",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/canonical-build-v1/verified-sdk-source.json",
+        "--sdk-original-metadata",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/original-metadata.json",
+        "--sdk-cargo-config",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml",
+        "--liberation-source",
+        "/data/trillionnium-desktop-product-20261024-integration/native-v14-resources/sources/liberation-fonts-1.04.93.devel.src.tar.gz",
+        "--output",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/resources"
+      ],
+      "exit_code": 0,
+      "seconds": 66.72,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/resources.log"
+    },
+    {
+      "name": "source-profile-build",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/release/organ_release_profile.py",
+        "build",
+        "--os-repo",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+        "--hepta-repo",
+        "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final",
+        "--os-head",
+        "a7621d8022f52add679bd6edba5d0bad6772dabc",
+        "--os-tree",
+        "e9026801f2686b7ea3f89759609c326f72fb2cfa",
+        "--hepta-head",
+        "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+        "--hepta-tree",
+        "7e376f5d3509cf38e13b513ca2b87d9eecd7dc47",
+        "--output",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/organ-source-profile.json",
+        "--receipt",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/source-profile-build-receipt.json"
+      ],
+      "exit_code": 0,
+      "seconds": 1.98,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/source-profile-build.log"
+    },
+    {
+      "name": "source-profile-verify",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/release/organ_release_profile.py",
+        "verify",
+        "--os-repo",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+        "--hepta-repo",
+        "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final",
+        "--os-head",
+        "a7621d8022f52add679bd6edba5d0bad6772dabc",
+        "--os-tree",
+        "e9026801f2686b7ea3f89759609c326f72fb2cfa",
+        "--manifest",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/organ-source-profile.json",
+        "--receipt",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/source-profile-verify-receipt.json"
+      ],
+      "exit_code": 0,
+      "seconds": 0.87,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/source-profile-verify.log"
+    }
+  ],
+  "organ_source_profile_sha256": "eaf4a33302f8c2677fcdb712517e5bf171302df15b2a0ba335deeaa7ed12df02",
+  "sdk_profile_sha256": "ee76f8dc021c253ad23a4de54ea7b0ab6c0333036f62822bc9922aa77f922986",
+  "resources_files": 61,
+  "compiled": false
+}

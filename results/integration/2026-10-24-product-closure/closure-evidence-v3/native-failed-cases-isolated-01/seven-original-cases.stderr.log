@@ -1,0 +1,117 @@
+RUST_MIN_STACK=8388608 NEXTEST_PROFILE=local python3 ../scripts/run-nextest.py "$@"
+────────────
+ Nextest run ID baf9d0bb-604b-4e48-a59b-81428be07d3e with nextest profile: local
+    Starting 7 tests across 4 binaries (979 tests and 4 binaries skipped)
+        SLOW [> 30.000s] (───) codex-hepta-agentd runtime::hos2_recovery_tests::notes_tests::composition_tests::local_handoff_tests::notes_local_handoff_real_clock_preserves_unknown_with_distinct_spawn_and_lease_generations
+        FAIL [  47.086s] (1/7) codex-hepta-agentd runtime::hos2_recovery_tests::notes_tests::composition_tests::local_handoff_tests::notes_local_handoff_real_clock_preserves_unknown_with_distinct_spawn_and_lease_generations
+  stdout ───
+
+    running 1 test
+    test runtime::hos2_recovery_tests::notes_tests::composition_tests::local_handoff_tests::notes_local_handoff_real_clock_preserves_unknown_with_distinct_spawn_and_lease_generations ... FAILED
+
+    failures:
+
+    failures:
+        runtime::hos2_recovery_tests::notes_tests::composition_tests::local_handoff_tests::notes_local_handoff_real_clock_preserves_unknown_with_distinct_spawn_and_lease_generations
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 430 filtered out; finished in 47.07s
+
+  stderr ───
+    Error: ProductionWriter(AuthorityExpired { deadline: 1792863763 })
+
+        SLOW [> 30.000s] (───) codex-hepta-agentd runtime_tasks::service_generations::writer_tests::sqlite_writer_rotates_256_times_without_consuming_new_service_identities
+ TERMINATING [> 60.000s] (───) codex-hepta-agentd runtime_tasks::service_generations::writer_tests::sqlite_writer_rotates_256_times_without_consuming_new_service_identities
+     TIMEOUT [  60.516s] (2/7) codex-hepta-agentd runtime_tasks::service_generations::writer_tests::sqlite_writer_rotates_256_times_without_consuming_new_service_identities
+  stdout ───
+
+    running 1 test
+
+    (test timed out)
+
+        FAIL [  21.123s] (3/7) codex-hepta-agentd state::notes_objective::lock_tests::notes_objective_drain_does_not_reenter_run_mutex
+  stdout ───
+
+    running 1 test
+
+    running 1 test
+    test state::notes_objective::lock_tests::notes_objective_drain_does_not_reenter_run_mutex ... FAILED
+
+    failures:
+
+    failures:
+        state::notes_objective::lock_tests::notes_objective_drain_does_not_reenter_run_mutex
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 430 filtered out; finished in 21.07s
+
+  stderr ───
+    Error: Notes drain deadlocked while refreshing Fleet
+
+        SLOW [> 30.000s] (───) codex-hepta-authbus authority_schema::tests::missing_and_replaced_authority_triggers_fail_closed_on_reopen
+ TERMINATING [> 60.000s] (───) codex-hepta-authbus authority_schema::tests::missing_and_replaced_authority_triggers_fail_closed_on_reopen
+     TIMEOUT [  60.321s] (4/7) codex-hepta-authbus authority_schema::tests::missing_and_replaced_authority_triggers_fail_closed_on_reopen
+  stdout ───
+
+    running 1 test
+
+    (test timed out)
+
+        SLOW [> 30.000s] (───) codex-hepta-evidence qualification_tests::claim_query_rejects_more_than_512_references
+ TERMINATING [> 60.000s] (───) codex-hepta-evidence qualification_tests::claim_query_rejects_more_than_512_references
+     TIMEOUT [  60.313s] (5/7) codex-hepta-evidence qualification_tests::claim_query_rejects_more_than_512_references
+  stdout ───
+
+    running 1 test
+
+    (test timed out)
+
+        SLOW [> 30.000s] (───) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay
+        FAIL [  31.085s] (6/7) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay
+  stdout ───
+
+    running 1 test
+    test production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay ... FAILED
+
+    failures:
+
+    failures:
+        production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 403 filtered out; finished in 31.08s
+
+  stderr ───
+
+    thread 'production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay' (2252502) panicked at hepta-memory/src/cognitive_checkpoint_observation_tests.rs:176:13:
+    child did not reach its controlled kill point
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        SLOW [> 30.000s] (───) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt
+        FAIL [  32.256s] (7/7) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt
+  stdout ───
+
+    running 1 test
+    test production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt ... FAILED
+
+    failures:
+
+    failures:
+        production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 403 filtered out; finished in 32.25s
+
+  stderr ───
+
+    thread 'production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt' (2253173) panicked at hepta-memory/src/cognitive_checkpoint_tests.rs:170:10:
+    called `Result::unwrap()` on an `Err` value: AccessDenied("production authority lease expired at 1792864009")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [ 312.716s] 7 tests run: 0 passed, 4 failed, 3 timed out, 979 skipped
+        FAIL [  47.086s] (1/7) codex-hepta-agentd runtime::hos2_recovery_tests::notes_tests::composition_tests::local_handoff_tests::notes_local_handoff_real_clock_preserves_unknown_with_distinct_spawn_and_lease_generations
+     TIMEOUT [  60.516s] (2/7) codex-hepta-agentd runtime_tasks::service_generations::writer_tests::sqlite_writer_rotates_256_times_without_consuming_new_service_identities
+        FAIL [  21.123s] (3/7) codex-hepta-agentd state::notes_objective::lock_tests::notes_objective_drain_does_not_reenter_run_mutex
+     TIMEOUT [  60.321s] (4/7) codex-hepta-authbus authority_schema::tests::missing_and_replaced_authority_triggers_fail_closed_on_reopen
+     TIMEOUT [  60.313s] (5/7) codex-hepta-evidence qualification_tests::claim_query_rejects_more_than_512_references
+        FAIL [  31.085s] (6/7) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::observation_tests::crash::protected_checkpoint_current_recovers_after_polling_and_process_kill_without_replay
+        FAIL [  32.256s] (7/7) codex-hepta-memory production_writer::objective_sender::protected_checkpoint_tests::terminal_tests::actual_expiry_during_terminal_publication_never_returns_a_success_receipt
+error: test run failed
+error: recipe `test` failed on line 89 with exit code 100

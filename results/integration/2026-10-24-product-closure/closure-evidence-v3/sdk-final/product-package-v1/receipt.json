@@ -1,0 +1,458 @@
+{
+  "source": {
+    "head": "a7621d8022f52add679bd6edba5d0bad6772dabc",
+    "tree": "e9026801f2686b7ea3f89759609c326f72fb2cfa"
+  },
+  "unstripped_binaries": {
+    "trill-session": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-session",
+      "bytes": 4514872,
+      "sha256": "9c914cb255c8fd2bb7ee8708f913c7f4f53d88872c74df8b13385852a705da9d"
+    },
+    "trill-shell": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-shell",
+      "bytes": 89419784,
+      "sha256": "e315c61f4d28a097aaa461164a3ef4567e91cb7482b8b9dc0539cd9a388dd6a7"
+    },
+    "trill-app-window": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-app-window",
+      "bytes": 17759984,
+      "sha256": "2aa0de6b7fe691c799651e5b225bac4be0c17b273754c59c53e2a0b11c451295"
+    },
+    "trill-ctl": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-ctl",
+      "bytes": 3313104,
+      "sha256": "c6abd4f7288ddb2dfe4eda3c90d02e410f578d5a26856bbe8f3a083c40016dee"
+    },
+    "trill-notes-recovery": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-notes-recovery",
+      "bytes": 3184816,
+      "sha256": "3500edcda6cf87709aff1ebb305adaf760a4a6381fc8a017504b27daaef79725"
+    }
+  },
+  "steps": [
+    {
+      "label": "rustfmt",
+      "argv": [
+        "cargo",
+        "+1.96.0",
+        "fmt",
+        "--manifest-path",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 1.9027822191128507
+    },
+    {
+      "label": "host-package",
+      "argv": [
+        "/bin/bash",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/ui/package-host-binaries.sh",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/product-package-v1/host",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/canonical-build-v1/verified-sdk-source.json"
+      ],
+      "exit_code": 0,
+      "seconds": 10.14901370392181
+    },
+    {
+      "label": "product-package",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/support/ui/product/desktop.py",
+        "pack",
+        "--host-archive",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/product-package-v1/host/a10-linux-host-binaries.tar.gz",
+        "--expected-desktop",
+        "a7621d8022f52add679bd6edba5d0bad6772dabc",
+        "--source-profile",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/binary-source-profile.json",
+        "--makepad-resources",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/resources",
+        "--output",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/product-package-v1/trillionnium-desktop.tar.gz"
+      ],
+      "exit_code": 0,
+      "seconds": 25.340958044980653
+    }
+  ],
+  "production_authority": false,
+  "installed_ui_executed": false,
+  "passed": true,
+  "manifest": {
+    "desktop_commit": "a7621d8022f52add679bd6edba5d0bad6772dabc",
+    "effects_authorized": false,
+    "files": {
+      "PRODUCT.md": {
+        "bytes": 30867,
+        "mode": 420,
+        "sha256": "f993452907cecccc2d7463916d31a8edaef20bf0c0f3a36fa5932ba9b42708f1"
+      },
+      "PROVENANCE.txt": {
+        "bytes": 609,
+        "mode": 420,
+        "sha256": "aa69d5450ae4bd74d6faca41f9c83b6c4139afb9da18d061494d9335431b8724"
+      },
+      "bin/trill-app-window": {
+        "bytes": 16924096,
+        "mode": 493,
+        "sha256": "0f0b0043fe55c50553c9cd59f56835a051241b5e385243eb618d57b27ea5fc3e"
+      },
+      "bin/trill-ctl": {
+        "bytes": 2839960,
+        "mode": 493,
+        "sha256": "39c07dfeb0c93db5ecaeb5afac0c95e3e307fe33c43be86e63b8457daa933414"
+      },
+      "bin/trill-notes-recovery": {
+        "bytes": 2712592,
+        "mode": 493,
+        "sha256": "316238a05d18e041e18fa6efe2d0d039e8bc0a0f4485f593e88054bd89c217f4"
+      },
+      "bin/trill-session": {
+        "bytes": 3994624,
+        "mode": 493,
+        "sha256": "d8ce5016820d803a39f434ae4a8de12b2bc4cf6694c2a95cfb7bd5ffde0e806d"
+      },
+      "bin/trill-shell": {
+        "bytes": 83702008,
+        "mode": 493,
+        "sha256": "080ad7e93a85b2c1b564e7f382312c9be1609f3e1687a37cbe61a178063ad674"
+      },
+      "desktop.py": {
+        "bytes": 43585,
+        "mode": 493,
+        "sha256": "eacc37ec0fed5c77c1f5a612b6047007b3b924276aff92677ec1b104e51b4eb5"
+      },
+      "native_sdk.py": {
+        "bytes": 7161,
+        "mode": 420,
+        "sha256": "ee3dab388d5492a40cb5005e2915df137d8c46fd72ce455f25c93d8b130dfbe7"
+      },
+      "resources/NATIVE-ASSETS.json": {
+        "bytes": 9548,
+        "mode": 420,
+        "sha256": "77242df60cef56281baf2d84efd1e0a08deae9d78ebc91bff91e4cb96b985065"
+      },
+      "resources/NATIVE-DEPENDENCIES.json": {
+        "bytes": 1365,
+        "mode": 420,
+        "sha256": "f4a734c3fb3e2522b343f2ae00abdbade635ba8fa894caa687755f046f6c56c0"
+      },
+      "resources/NATIVE-SDK-PATCH.json": {
+        "bytes": 1244,
+        "mode": 420,
+        "sha256": "a761ceb436df275a605190ccab6060ff5a593e4c36e020a7cbd58851ea4f1a38"
+      },
+      "resources/NATIVE-SDK-SOURCE.json": {
+        "bytes": 13774,
+        "mode": 420,
+        "sha256": "ee76f8dc021c253ad23a4de54ea7b0ab6c0333036f62822bc9922aa77f922986"
+      },
+      "resources/bundle.json": {
+        "bytes": 1729,
+        "mode": 420,
+        "sha256": "0c3d8f8890fe262ac8b3320a5a4e7603d03c94f72b2b678487c71b77e2833011"
+      },
+      "resources/dependency-notices/accesskit/HEPTA_PATCH.diff": {
+        "bytes": 56556,
+        "mode": 420,
+        "sha256": "edcbd6feb9d8cb71dd1265b458c5b2410f0993fb34ec3450263a846b53e7fa16"
+      },
+      "resources/dependency-notices/accesskit/HEPTA_PATCH.md": {
+        "bytes": 5454,
+        "mode": 420,
+        "sha256": "294e50a9ce31acfe15c90d48174989b9d82200b6cd5f308c9e220e182f25854b"
+      },
+      "resources/dependency-notices/accesskit/HEPTA_UPSTREAM.json": {
+        "bytes": 18144,
+        "mode": 420,
+        "sha256": "7950d3af65034dc8ea038377adccc16d634cab62d7119ef0dd4cc88112c7b435"
+      },
+      "resources/dependency-notices/accesskit/LICENSE-APACHE": {
+        "bytes": 9723,
+        "mode": 420,
+        "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+      },
+      "resources/dependency-notices/accesskit/LICENSE-MIT": {
+        "bytes": 1023,
+        "mode": 420,
+        "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+      },
+      "resources/dependency-notices/accesskit/LICENSE.chromium": {
+        "bytes": 1559,
+        "mode": 420,
+        "sha256": "845022e0c1db1abb41a6ba4cd3c4b674ec290f3359d9d3c78ae558d4c0ed9308"
+      },
+      "resources/dependency-notices/makepad/LICENSE-MIT": {
+        "bytes": 1069,
+        "mode": 420,
+        "sha256": "3855d73a873244ec424ac5781d5d8fc8e2a789ff9d2f1cb804bec585a64ea88f"
+      },
+      "resources/dependency-notices/makepad/MANIFEST.json": {
+        "bytes": 4040,
+        "mode": 420,
+        "sha256": "cd511d5c0862ce720f596285f17aa2e4e3d133f3c45b76bcaa5a5d962d005f73"
+      },
+      "resources/dependency-notices/makepad/README.md": {
+        "bytes": 6228,
+        "mode": 420,
+        "sha256": "0449cb12a27f7f0003312c63cd810a96930f92dd6917f782381147063d7c3d01"
+      },
+      "resources/dependency-notices/makepad/native-clipboard-read.patch": {
+        "bytes": 19919,
+        "mode": 420,
+        "sha256": "0edf1c0f806fec15ce29f03670e722d3eda4ec3943911537874087e8a8d4fa1f"
+      },
+      "resources/dependency-notices/makepad/sdk-num-traits-path.patch": {
+        "bytes": 521,
+        "mode": 420,
+        "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"
+      },
+      "resources/hepta_robrix_ui/resources/fonts/NotoSansSC-Bold.otf": {
+        "bytes": 8543168,
+        "mode": 420,
+        "sha256": "c6cb5a93abaa9edc8ee7463b7ebb7f42d618d40e6ed2f7a5371c97b0b64767c0"
+      },
+      "resources/hepta_robrix_ui/resources/fonts/NotoSansSC-Regular.otf": {
+        "bytes": 8331336,
+        "mode": 420,
+        "sha256": "faa6c9df652116dde789d351359f3d7e5d2285a2b2a1f04a2d7244df706d5ea9"
+      },
+      "resources/makepad_widgets/resources/IBMPlexSans-BoldItalic.ttf": {
+        "bytes": 184656,
+        "mode": 420,
+        "sha256": "451f1e35cf09ef4411c9f38e7eb7d4967aef427c52e048dff26cc36393937882"
+      },
+      "resources/makepad_widgets/resources/IBMPlexSans-Italic.ttf": {
+        "bytes": 184020,
+        "mode": 420,
+        "sha256": "21effb0b8dabbbd6548db1c581c68c6335f6ffaabd6946a6a73ade24dec050eb"
+      },
+      "resources/makepad_widgets/resources/IBMPlexSans-SemiBold.ttf": {
+        "bytes": 182176,
+        "mode": 420,
+        "sha256": "391bd290357cb19bacccd66dc82f3213e0c66c34025a4dd3e15c49d3db7c585e"
+      },
+      "resources/makepad_widgets/resources/IBMPlexSans-Text.ttf": {
+        "bytes": 181792,
+        "mode": 420,
+        "sha256": "8c358c56c56f76a28cecb8ca10734c1c9cafa01a752dc8364b9ef7de412437dc"
+      },
+      "resources/makepad_widgets/resources/LXGWWenKaiBold.ttf": {
+        "bytes": 18546748,
+        "mode": 420,
+        "sha256": "7a356605eb36c92e29cc64090e2856e4675694572a2ae4da84adbadffecae907"
+      },
+      "resources/makepad_widgets/resources/LXGWWenKaiRegular.ttf": {
+        "bytes": 19073964,
+        "mode": 420,
+        "sha256": "0819604ad9357afbc6e7cc097328a16ed85143ee0848ffda09fda35a30da6506"
+      },
+      "resources/makepad_widgets/resources/LiberationMono-Regular.ttf": {
+        "bytes": 108168,
+        "mode": 420,
+        "sha256": "3e396ddd3d1c7d3dca1fb16dd64802b32f295f856ac10c0c1f2ab1c738196045"
+      },
+      "resources/makepad_widgets/resources/NewCMMath-Regular.otf": {
+        "bytes": 1151568,
+        "mode": 420,
+        "sha256": "ad746f5307fed53d8e5d7d201f5054abe73f1f47c51040767d898e3481c6e648"
+      },
+      "resources/makepad_widgets/resources/NotoColorEmoji.ttf": {
+        "bytes": 10643852,
+        "mode": 420,
+        "sha256": "39ee3c587e10e89669b9ff32703261d10d5f9c4dd5ad147b6b5a1c5200591817"
+      },
+      "resources/makepad_widgets/resources/fa-solid-900.ttf": {
+        "bytes": 426112,
+        "mode": 420,
+        "sha256": "d2f0593540b0e33ba6de255a54f272d466e31144806956bea8cfdbf7edffc9bd"
+      },
+      "resources/makepad_widgets/resources/icons/back.svg": {
+        "bytes": 306,
+        "mode": 420,
+        "sha256": "a5afa4a6316b4fe7cf704a825850f9b44b7ca2be94927082b6ade11959cf6135"
+      },
+      "resources/makepad_widgets/resources/icons/close_left_panel.svg": {
+        "bytes": 1848,
+        "mode": 420,
+        "sha256": "b5424c732e61392f5b388c2b0f95248632d182433a13b8aa9c02e4473ae33ed7"
+      },
+      "resources/makepad_widgets/resources/icons/icon_draw.svg": {
+        "bytes": 791,
+        "mode": 420,
+        "sha256": "72f7ab46845b0abfb5a01208edd330578814f16f11fb81ff9a5fb24d6ef1c0fe"
+      },
+      "resources/makepad_widgets/resources/icons/icon_file.svg": {
+        "bytes": 792,
+        "mode": 420,
+        "sha256": "0df20ec2a62be5e1b6ecddd7f1a7c67f4052523297c671b8fb4ed91234efb19e"
+      },
+      "resources/makepad_widgets/resources/icons/icon_folder.svg": {
+        "bytes": 865,
+        "mode": 420,
+        "sha256": "6f04b6990decd30cada6fdb5bdf8cefc4b64cbaa5c88eafe9b5f6eb810c25355"
+      },
+      "resources/makepad_widgets/resources/icons/icon_image.svg": {
+        "bytes": 1381,
+        "mode": 420,
+        "sha256": "c72a2174638ad01484a417cbca3c553750c4248e5ea70879ad6dcc4f1c73104d"
+      },
+      "resources/makepad_widgets/resources/icons/icon_layout.svg": {
+        "bytes": 1579,
+        "mode": 420,
+        "sha256": "0b5ac88625a3f3d69e53911b52a2abf9468203fd1c986ca536861afcf9735950"
+      },
+      "resources/makepad_widgets/resources/icons/icon_select.svg": {
+        "bytes": 851,
+        "mode": 420,
+        "sha256": "374b732f376a1cbd3637e7b7b895a576708003787ee4c34a6b6e78855a1d5156"
+      },
+      "resources/makepad_widgets/resources/icons/icon_text.svg": {
+        "bytes": 1704,
+        "mode": 420,
+        "sha256": "40afe2d6a05fca94f131b07937ee68b28c3d1c7a7e8e21b3302c1c925d5a6c82"
+      },
+      "resources/makepad_widgets/resources/icons/icon_text_align_justify.svg": {
+        "bytes": 1245,
+        "mode": 420,
+        "sha256": "b9b36f101a672da9be6361fa1dd4aa84eb0cf5aeb790cbe166645116e6a5014c"
+      },
+      "resources/makepad_widgets/resources/icons/icon_text_align_left.svg": {
+        "bytes": 1242,
+        "mode": 420,
+        "sha256": "d624019d42eff133560f6951c75b9f1c1402c9489699c08494232a9126ecba3a"
+      },
+      "resources/makepad_widgets/resources/icons/icon_text_align_right.svg": {
+        "bytes": 1241,
+        "mode": 420,
+        "sha256": "155c55c216aa1c284c4974772a972793efd112a2f1cadf112c35bcb1205c9659"
+      },
+      "resources/makepad_widgets/resources/icons/icon_typography.svg": {
+        "bytes": 1717,
+        "mode": 420,
+        "sha256": "6c3e56a42538d6d0e21e1298a27275a7f1441310877efaac2bdfbab46408c09d"
+      },
+      "resources/makepad_widgets/resources/icons/icon_vector.svg": {
+        "bytes": 1760,
+        "mode": 420,
+        "sha256": "a04bd179f828767e3491305c89da2afc1e8e3cda7201e348ce9078387c82b5f9"
+      },
+      "resources/makepad_widgets/resources/icons/icon_widget.svg": {
+        "bytes": 1238,
+        "mode": 420,
+        "sha256": "33e7a59d1485ec173618808791a259c02029c12ee700bc869a17a7b6278778bd"
+      },
+      "resources/makepad_widgets/resources/icons/open_left_panel.svg": {
+        "bytes": 1892,
+        "mode": 420,
+        "sha256": "6709f838e74e285d7831ea16bf8d482e3ed8c677eea6d8ec7530506dbeba972a"
+      },
+      "resources/makepad_widgets/resources/icons/sploded.svg": {
+        "bytes": 249,
+        "mode": 420,
+        "sha256": "4a16d4017caf3d1f6b290f8c389768419fe3feafa64551abd9542dfce13726c6"
+      },
+      "resources/notices/FONT-METADATA-NOTICES.txt": {
+        "bytes": 3873,
+        "mode": 420,
+        "sha256": "d09270ac14939f800f9b3a4da41ac66e7f0e61a11d81b3ca4ea9a884950eac62"
+      },
+      "resources/notices/Font-Awesome-6.7.2-LICENSE.txt": {
+        "bytes": 7427,
+        "mode": 420,
+        "sha256": "9b914eae88817d63b576eab5aafde7068c7a1abae125d7cdfb034f1da43a9afc"
+      },
+      "resources/notices/GUST-1.0-CTAN-extracted.txt": {
+        "bytes": 1301,
+        "mode": 420,
+        "sha256": "6a54df2d333f1fc0ffdc62c37895d4a9c2dc0f85bad13c4f8a0bb4f42b8b90e6"
+      },
+      "resources/notices/IBM-Plex-v6.4.2-LICENSE.txt": {
+        "bytes": 4456,
+        "mode": 420,
+        "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+      },
+      "resources/notices/LPPL-1.3c.txt": {
+        "bytes": 19102,
+        "mode": 420,
+        "sha256": "3d262cdf34dafa6955f703c634a8c238ec44109bc8dd6ef34fb7aa54809f7e66"
+      },
+      "resources/notices/LXGW-WenKai-v1.330-OFL.txt": {
+        "bytes": 4448,
+        "mode": 420,
+        "sha256": "ef535bf1a3c546928f8e97570f2c72603185f88fa4d82a6df6708348ad4c7614"
+      },
+      "resources/notices/Liberation-1.04.93.devel-AUTHORS": {
+        "bytes": 213,
+        "mode": 420,
+        "sha256": "1983698d88ce9de3ba41c62d4d1b6d4d11b3162da5ab283c84d6ac11b65aa1b0"
+      },
+      "resources/notices/Liberation-1.04.93.devel-COPYING": {
+        "bytes": 17992,
+        "mode": 420,
+        "sha256": "32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670"
+      },
+      "resources/notices/Liberation-1.04.93.devel-License.txt": {
+        "bytes": 4009,
+        "mode": 420,
+        "sha256": "696c8257e24fbc158549191ab3e0ef2c5edc4582a3c3f0dd096e1efd281195bf"
+      },
+      "resources/notices/Liberation-1.04.93.devel-README": {
+        "bytes": 1418,
+        "mode": 420,
+        "sha256": "1625b42cd6ed728f4156a5c1a9e863defbb659b148e8a7710e333fabd8966256"
+      },
+      "resources/notices/Makepad-337566c-MIT.txt": {
+        "bytes": 1069,
+        "mode": 420,
+        "sha256": "3855d73a873244ec424ac5781d5d8fc8e2a789ff9d2f1cb804bec585a64ea88f"
+      },
+      "resources/notices/Noto-Emoji-v2.047-LICENSE.txt": {
+        "bytes": 4330,
+        "mode": 420,
+        "sha256": "500bb1ccf43df7bbb522112f9133a52b16e1c35e809632f5d8609b179152de5b"
+      },
+      "resources/notices/Noto-Sans-CJK-2.004-NOTICE.txt": {
+        "bytes": 559,
+        "mode": 420,
+        "sha256": "53eac13efa92294d76c9866527f46ceef1bb06804ea943ccbfe4963a4ff1111c"
+      },
+      "resources/notices/Noto-Sans-CJK-2.004-OFL.txt": {
+        "bytes": 4301,
+        "mode": 420,
+        "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+      },
+      "resources/notices/ROBRIX-MIT.txt": {
+        "bytes": 1097,
+        "mode": 420,
+        "sha256": "7c370204a7507a3c33398d6377aa69691991b0582a3d92ace8d27d8819b223f7"
+      },
+      "resources/sources/liberation-fonts-1.04.93.devel.src.tar.gz": {
+        "bytes": 2255959,
+        "mode": 420,
+        "sha256": "fe3ea5f7a2d3bdea8b8f0d82cdc6c07d14ace67c6e06d7aa33b83fd9e640adae"
+      },
+      "source-profile.json": {
+        "bytes": 24582,
+        "mode": 420,
+        "sha256": "fe29b7cfc8c367fbdfc947169ef8d3a0a43faa751ffc41179bde556bb709a5dd"
+      },
+      "trusted_desktop.py": {
+        "bytes": 12256,
+        "mode": 420,
+        "sha256": "74938e4ea0717289682bccdf69dda8c29ac5c1b7287066db7770c198a207c1bc"
+      }
+    },
+    "hepta_commit": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+    "qualification": "linux-host-package",
+    "release_id": "a7621d8022f5-7bb3f08ce5c1",
+    "schema_version": 1
+  },
+  "manifest_sha256": "b1872f83b9e882ddc4f241be5b7a50039c8f40c24c6fc50cf3845c3ba4a53aa7",
+  "package_path": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/product-package-v1/extracted/trillionnium-desktop",
+  "package_archive_sha256": "96e92963967bc9336f3eda04c74a5228090ee016c6b9a737aa1cfa76fa5ba660",
+  "host_archive_sha256": "e475ef2a01740b086a12331c25eae60f36ea185b92b3039e9655bf04273a3cc7"
+}
