@@ -6,6 +6,7 @@ pub(crate) use dirent_visitor::DirentVisitor;
 pub(crate) use direntry_vec::DirEntryVecExt;
 pub(crate) use endpoint::{Endpoint, EndpointState};
 pub(crate) use id_bitmap::IdBitmap;
+pub(in crate::fs) use inode_creation::InodeCreation;
 
 use crate::{
     process::{Gid, Uid, posix_thread::AsPosixThread},
@@ -16,6 +17,7 @@ mod dirent_visitor;
 mod direntry_vec;
 mod endpoint;
 mod id_bitmap;
+mod inode_creation;
 pub(crate) mod systree_inode;
 
 /// Maximum bytes in a path

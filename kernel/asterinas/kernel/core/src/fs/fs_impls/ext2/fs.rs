@@ -36,7 +36,7 @@ use crate::{
         ext2::utils,
         vfs::file_system::{AtomicFsFlags, FsEventSubscriberStats, FsFlags},
     },
-    process::{Gid, UserNamespace, credentials::capabilities::CapSet, posix_thread::AsPosixThread},
+    process::{Gid, Uid, UserNamespace, credentials::capabilities::CapSet, posix_thread::AsPosixThread},
     security::lsm::hooks as lsm_hooks,
     thread::Thread,
 };
@@ -385,6 +385,8 @@ impl Ext2 {
         parent_ino: Ext2Ino,
         inode_type: InodeType,
         perm: FilePerm,
+        uid: Uid,
+        gid: Gid,
     ) -> Result<Arc<Inode>> {
         if inode_type == InodeType::Unknown {
             return_errno_with_message!(Errno::EINVAL, "cannot create inode with unknown type");
@@ -392,22 +394,17 @@ impl Ext2 {
 
         let ino = self.alloc_ino(parent_ino, inode_type)?;
         let link_count = if inode_type.is_directory() { 2 } else { 1 };
-        let (uid, gid) = Thread::current()
-            .and_then(|thread| {
-                thread
-                    .as_posix_thread()
-                    .map(|posix_thread| posix_thread.credentials())
-            })
-            .map(|credentials| {
-                (
-                    u32::from(credentials.fsuid()),
-                    u32::from(credentials.fsgid()),
-                )
-            })
-            .unwrap_or((0, 0));
         let now = utils::now();
         let generation = self.next_generation.fetch_add(1, Ordering::Relaxed);
-        let inode_desc = InodeDesc::new(inode_type, perm, uid, gid, link_count, generation, now);
+        let inode_desc = InodeDesc::new(
+            inode_type,
+            perm,
+            uid.into(),
+            gid.into(),
+            link_count,
+            generation,
+            now,
+        );
         let raw_inode = RawInode::from(&inode_desc);
 
         let block_group = self
