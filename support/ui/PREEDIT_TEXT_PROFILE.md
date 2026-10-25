@@ -15,7 +15,14 @@ window focus gain/loss conditional on real state transitions: a redundant X11
 visibility notification cannot restore an old caret or cancel live preedit,
 and repeated loss cannot overwrite the saved editor. Actual SDK Window and
 drawn TextInput regressions cover duplicate gain/loss, true loss/return and
-other-window isolation. A positioning warning never grants composition or
+other-window isolation. The explicit candidate also treats desktop IME
+composition as one transaction: previews never enter undo/redo history or
+committed checkpoints; a commit records one net edit; cancellation restores
+the original selected text and selection. Legal edits beside composition use
+committed UTF-8 coordinates without consuming adjacent combining characters.
+The original drawn TextInput event regressions cover commit/cancel, ordinary
+typing, consecutive compositions, selection direction, boundary edits and
+checkpoint restoration. A positioning warning never grants composition or
 execution authority.
 
 ## Frozen inputs and the integrated companion
@@ -23,8 +30,8 @@ execution authority.
 The profile freezes the executing Hepta commit/tree and preparation-helper
 commit/tree plus both helper scripts' SHA256. Execution and preparation must
 use that same integrated original Hepta companion. The helper permits only
-the two reviewed window source/test files in this preedit profile; arbitrary
-widget changes and clipboard-profile widget changes remain refused. The
+the four reviewed Window/TextInput source/test files in this preedit profile;
+arbitrary widget changes and clipboard-profile widget changes remain refused. The
 complete SDK tree, exact patch/manifest bytes and helper scripts are checked
 independently. Changing the companion requires updating both profile
 identities and every existing Hepta

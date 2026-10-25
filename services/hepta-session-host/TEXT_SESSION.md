@@ -15,11 +15,11 @@ Objective/Notes path remains documented in [README](README.md).
 | [src/text_tests.rs](src/text_tests.rs) | Presentation fixtures for recovered identity, unchanged local drafts, stale connections and separate approval permission |
 | [Shell native_makepad.rs](../../ui/shell/src/native_makepad.rs) | Borrow the current original workspace, poll outside Draw, queue Send/Stop/history/approval and wake the native event loop |
 | [Shell native_text_config.rs](../../ui/shell/src/native_text_config.rs) | Validate the two original Root endpoint hints without accepting a principal or route override |
-| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/1a76b5084d52957ac7993fbf26839d0539c567b4/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
+| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/489f7096b0e5754968a30fa4477bb4417d24834f/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
 
 The cross-repository link is fixed at the current Cargo source
-`1a76b5084d52957ac7993fbf26839d0539c567b4`, tree
-`eb58ab6bc074aa3741bdf613d11a9c258716445f`; the
+`489f7096b0e5754968a30fa4477bb4417d24834f`, tree
+`4731de9117065bd773b2fcee92c815ff896b8488`; the
 [dependency contract](../../support/ui/DEPENDENCIES.md) checks the complete
 shared source and lock combination. The
 [source profile](../../docs/agents/ORGAN_RELEASE_PROFILE.md) must also bind the

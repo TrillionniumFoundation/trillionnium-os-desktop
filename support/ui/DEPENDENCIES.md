@@ -12,8 +12,8 @@ and exact shared document-readback fixture. Both repositories decode
 Cargo runs. The snapshot is separate from an operation's terminal receipt.
 
 The integration baseline is Desktop PR265 `4db81c63037f54c2a107c822d2cbc436150d8134`
-and original Hepta `1a76b5084d52957ac7993fbf26839d0539c567b4`, tree
-`eb58ab6bc074aa3741bdf613d11a9c258716445f`. The Desktop build commit must be
+and original Hepta `489f7096b0e5754968a30fa4477bb4417d24834f`, tree
+`4731de9117065bd773b2fcee92c815ff896b8488`. The Desktop build commit must be
 recorded separately by the actual build receipt; this document does not grant
 later source edits the baseline's test results. Both product Cargo roots use
 Rust 1.96.0. The prior `7ea3df4` combination remains historical evidence.
