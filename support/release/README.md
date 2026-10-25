@@ -68,3 +68,25 @@ When the protocol or build inputs change, update the reviewed source map,
 generate and review a new manifest with the original source-profile tool,
 commit it, and verify again against the final Desktop identity. Keep historical
 profiles and receipts intact. See [the detailed source contract](../../docs/agents/ORGAN_RELEASE_PROFILE.md).
+
+## Expanded source profile
+
+Schema 2 uses the code-owned map [`organ_source_map_v2.json`](organ_source_map_v2.json).
+It adds the X11 effect/observation wire golden, signed Objective inbox and submission
+store, Binder byte transport, seccomp dispatch, page-table accounting, requester DMA
+domains, trusted boot roles and boot identity. On the original Hepta side it binds
+the Desktop consumer, native HOS2 owner, original Root service/issuer/clock/frontier,
+checkpoint coordinator, SQLite pool guard and commit gate.
+
+The source-profile builder selects this map with `--source-map`; the pair runner
+selects one of the two fixed map filenames from the manifest's integer schema
+version. Missing roles, byte drift, an unsupported version or a version downgrade
+cannot remove those checks. Schema 1 and its map remain available for historical
+manifests. A schema-2 tool does not make a historical schema-1 pin describe new code:
+generate a new manifest only after both intended source commits are frozen.
+
+Both schema versions keep production effects disabled and all seven deployment
+inputs unconfigured in a source receipt. An independently tested Root fixture or
+a successful compilation does not promote those fields. Actual deployment,
+original-owner GUI tests, persistent guest storage, trusted-role execution and
+cross-kernel Unknown recovery require separate evidence for the same final pair.

@@ -52,6 +52,19 @@ class PairExecutionTests(unittest.TestCase):
         self.assertEqual(self.receipt()["qualification"], "source-only")
         self.assertEqual(self.receipt()["steps"], [])
 
+    def test_v2_selects_fixed_v2_map_and_runs_source_check(self):
+        fixtures.SourceCombinationTests.upgrade_to_v2(self)
+        fixtures.write(self.os, "support/release/organ_source_map_v2.json",
+                       runner.profile.canonical(self.mapping))
+        fixtures.commit(self.os, "review v2 source map")
+        with patch.object(runner.profile, "HISTORY_OWNER", self.owner):
+            manifest, _ = runner.profile.create_manifest(*fixtures.SourceCombinationTests.inputs(self))
+        self.manifest.write_bytes(runner.profile.canonical(manifest))
+        with patch.object(runner, "execute_step", side_effect=AssertionError("unexpected execution")):
+            self.assertEqual(self.run_pair(), 0)
+        self.assertEqual(self.receipt()["source"]["schema_version"], 2)
+        self.assertEqual(self.receipt()["qualification"], "source-only")
+
     def test_wrong_pin_prevents_any_execution_or_output(self):
         manifest = json.loads(self.manifest.read_text())
         manifest["hepta"]["commit"] = "0" * 40

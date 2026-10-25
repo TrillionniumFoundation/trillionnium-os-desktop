@@ -29,6 +29,36 @@ HEPTA_ROLES = {
     "notes_owner_impl", "notes_recovery", "notes_readback", "notes_first_composition",
 }
 GOLDEN_ROLES = {"notes_target", "notes_bootstrap", "notes_bootstrap_v2", "notes_recovery"}
+OS_ROLES_V2 = OS_ROLES | {
+    "desktop_core", "desktop_broker", "desktop_x11", "desktop_bootstrap",
+    "objective_core", "objective_session", "objective_submission_store", "objective_panel",
+    "kernel_page_budget", "kernel_page_table", "kernel_dma_domain",
+    "kernel_seccomp", "kernel_seccomp_dispatch", "kernel_binder", "kernel_boot_id",
+    "kernel_trusted_roles", "desktop_owner_fixture", "objective_owner_fixture",
+}
+HEPTA_ROLES_V2 = HEPTA_ROLES | {
+    "desktop_wire", "desktop_owner", "desktop_channel", "desktop_bootstrap",
+    "private_organ_owner", "agentd_entry", "hos2_device", "hos2_owner",
+    "root_entry", "root_service", "root_runtime", "root_config", "root_writer",
+    "root_checkpoint", "root_consumer_frontier", "root_issuer", "root_clock",
+    "root_frontier", "cognitive_commit_gate", "cognitive_checkpoint",
+    "sqlite_pool_guard", "protected_writer_host", "cognitive_checkpoint_bind",
+}
+GOLDEN_ROLES_V2 = GOLDEN_ROLES | {"desktop_x11"}
+
+
+def roles_for_version(version):
+    if type(version) is not int or version not in (1, 2):
+        raise ProfileError("unsupported source map schema_version")
+    if version == 2:
+        return OS_ROLES_V2, HEPTA_ROLES_V2, GOLDEN_ROLES_V2
+    return OS_ROLES, HEPTA_ROLES, GOLDEN_ROLES
+
+
+def source_map_name(version):
+    roles_for_version(version)
+    return "organ_source_map_v2.json" if version == 2 else "organ_source_map.json"
+
 PRODUCTION = {
     "activation": "disabled",
     "effects_authorized": False,
@@ -98,12 +128,11 @@ def source_path(value, label):
 def check_map(mapping):
     if not isinstance(mapping, dict) or set(mapping) != {"schema_version", "sources", "goldens"}:
         raise ProfileError("source map requires schema_version, sources, and goldens only")
-    if mapping["schema_version"] != 1 or isinstance(mapping["schema_version"], bool):
-        raise ProfileError("unsupported source map schema_version")
+    os_roles, hepta_roles, golden_roles = roles_for_version(mapping["schema_version"])
     sources = mapping["sources"]
     if not isinstance(sources, dict) or set(sources) != {"os", "hepta"}:
         raise ProfileError("source map requires both os and hepta sources")
-    for name, roles in (("os", OS_ROLES), ("hepta", HEPTA_ROLES)):
+    for name, roles in (("os", os_roles), ("hepta", hepta_roles)):
         entries = sources[name]
         if not isinstance(entries, dict) or set(entries) != roles:
             raise ProfileError(f"source map requires exactly these {name} roles: {sorted(roles)}")
@@ -112,15 +141,15 @@ def check_map(mapping):
         if len(set(entries.values())) != len(entries):
             raise ProfileError(f"{name} source roles must name distinct files")
     goldens = mapping["goldens"]
-    if not isinstance(goldens, dict) or set(goldens) != GOLDEN_ROLES:
-        raise ProfileError("source map requires target, bootstrap v1/v2, and recovery goldens")
+    if not isinstance(goldens, dict) or set(goldens) != golden_roles:
+        raise ProfileError(f"source map requires exactly these golden roles: {sorted(golden_roles)}")
     for role, paths in goldens.items():
         if not isinstance(paths, dict) or set(paths) != {"os", "hepta"}:
             raise ProfileError(f"golden {role} requires os and hepta paths")
         for name, path in paths.items():
             source_path(path, f"{role}.{name}")
     for name in ("os", "hepta"):
-        if len({paths[name] for paths in goldens.values()}) != len(GOLDEN_ROLES):
+        if len({paths[name] for paths in goldens.values()}) != len(golden_roles):
             raise ProfileError(f"{name} golden roles must name distinct files")
 
 
@@ -221,7 +250,7 @@ def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tre
     os_repo.check(os_head, os_tree)
     hepta_repo.check(hepta_head, hepta_tree)
     manifest = {
-        "schema_version": 1,
+        "schema_version": mapping["schema_version"],
         "qualification": "source-only",
         "os_identity_binding": "explicit_caller_head_and_tree_in_verification_receipt",
         "hepta": hepta_identity,
@@ -232,7 +261,7 @@ def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tre
         "goldens": goldens,
     }
     receipt = {
-        "schema_version": 1, "qualification": "source-only", "source_checks": "passed",
+        "schema_version": mapping["schema_version"], "qualification": "source-only", "source_checks": "passed",
         "os": os_identity, "hepta": hepta_identity,
         "original_history_proof": proof, "production": PRODUCTION,
         "runtime_tests": "not_run_by_this_tool",

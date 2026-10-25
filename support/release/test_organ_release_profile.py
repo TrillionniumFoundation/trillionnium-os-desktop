@@ -75,6 +75,21 @@ class SourceCombinationTests(unittest.TestCase):
     def build(self, hepta=None):
         return profile.create_manifest(*self.inputs(hepta))
 
+    def upgrade_to_v2(self):
+        self.mapping["schema_version"] = 2
+        for name, roles in (("os", profile.OS_ROLES_V2), ("hepta", profile.HEPTA_ROLES_V2)):
+            for role in roles - set(self.mapping["sources"][name]):
+                path = f"{name}/{role}.rs"
+                self.mapping["sources"][name][role] = path
+                write(getattr(self, name), path, (role + " source\n").encode())
+        for role in profile.GOLDEN_ROLES_V2 - set(self.mapping["goldens"]):
+            paths = {name: f"goldens/{role}.json" for name in ("os", "hepta")}
+            self.mapping["goldens"][role] = paths
+            for name, path in paths.items():
+                write(getattr(self, name), path, ('{"fixture":"' + role + '"}\n').encode())
+        commit(self.os, "review expanded Desktop and kernel source roles")
+        commit(self.hepta, "review original Root and native owner source roles")
+
     def verify(self, manifest):
         os_repo, hepta_repo, head, tree, _, _, mapping = self.inputs()
         return profile.verify_manifest(manifest, os_repo, hepta_repo, head, tree, mapping)
@@ -87,6 +102,43 @@ class SourceCombinationTests(unittest.TestCase):
         self.assertFalse(manifest["production"]["effects_authorized"])
         self.assertEqual(len(manifest["production"]["unconfigured"]), 7)
         self.assertEqual(self.verify(manifest)["os"], receipt["os"])
+
+    def test_v2_pair_binds_new_lanes_and_preserves_disabled_authority(self):
+        self.upgrade_to_v2()
+        manifest, receipt = self.build()
+        self.assertEqual(manifest["schema_version"], 2)
+        self.assertEqual(receipt["schema_version"], 2)
+        self.assertEqual({item["role"] for item in manifest["sources"]["hepta"]}, profile.HEPTA_ROLES_V2)
+        self.assertEqual({item["role"] for item in manifest["goldens"]}, profile.GOLDEN_ROLES_V2)
+        self.assertEqual(manifest["production"], profile.PRODUCTION)
+        self.assertEqual(self.verify(manifest)["source_checks"], "passed")
+
+    def test_v2_cannot_omit_root_writer_or_desktop_golden_or_downgrade(self):
+        self.upgrade_to_v2()
+        original = copy.deepcopy(self.mapping)
+        for mutate in (
+            lambda value: value["sources"]["hepta"].pop("root_writer"),
+            lambda value: value["goldens"].pop("desktop_x11"),
+            lambda value: value.update(schema_version=1),
+        ):
+            self.mapping = copy.deepcopy(original)
+            mutate(self.mapping)
+            with self.assertRaises(profile.ProfileError):
+                self.build()
+
+    def test_v2_desktop_wire_byte_drift_is_rejected(self):
+        self.upgrade_to_v2()
+        path = self.mapping["goldens"]["desktop_x11"]["hepta"]
+        write(self.hepta, path, (self.hepta / path).read_bytes() + b" ")
+        commit(self.hepta, "drift desktop golden")
+        with self.assertRaisesRegex(profile.ProfileError, "golden byte mismatch: desktop_x11"):
+            self.build()
+
+    def test_noninteger_or_unknown_schema_is_rejected(self):
+        for version in (True, 1.0, 2.0, "2", None, 0, 3):
+            self.mapping["schema_version"] = version
+            with self.subTest(version=version), self.assertRaisesRegex(profile.ProfileError, "unsupported source map"):
+                self.build()
 
     def test_wrong_os_head_rejected(self):
         args = list(self.inputs())

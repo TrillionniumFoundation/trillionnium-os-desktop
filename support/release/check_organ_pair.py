@@ -121,9 +121,12 @@ def main(argv=None):
         hepta_repo = profile.Repository(args.hepta_repo, "hepta")
         if os_repo.path == hepta_repo.path:
             raise profile.ProfileError("os and hepta must be distinct repository roots")
-        mapping = profile.load_json(os_repo.path / "support/release/organ_source_map.json")
         raw_manifest = Path(args.manifest).read_bytes()
         manifest = profile.load_json_bytes(raw_manifest, args.manifest)
+        if not isinstance(manifest, dict):
+            raise profile.ProfileError("manifest must be an object")
+        mapping = profile.load_json(os_repo.path / "support/release" /
+                                    profile.source_map_name(manifest.get("schema_version")))
         before = profile.verify_manifest(manifest, os_repo, hepta_repo, args.os_head,
                                          args.os_tree, mapping)
         output = output_directory(args.output_dir, (os_repo, hepta_repo))
