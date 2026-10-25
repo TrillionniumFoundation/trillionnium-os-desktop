@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Immutable, bounded syscall filters. Installation never retains user memory.
-//! This first stage implements strict mode and ALLOW/ERRNO/KILL filters; TSYNC,
-//! tracing, notification and SIGSYS trap delivery are not advertised as supported.
+//! Strict mode and ALLOW/ERRNO/TRAP/KILL filters are implemented; TSYNC,
+//! tracing and notification are not advertised as supported.
 
 use crate::prelude::*;
 
@@ -10,6 +10,7 @@ pub(crate) const MAX_PROGRAM_INSNS: usize = 4096;
 const MAX_CHAIN_COST: usize = 32768;
 pub(crate) const KILL_THREAD: u32 = 0;
 pub(crate) const KILL_PROCESS: u32 = 0x8000_0000;
+pub(crate) const TRAP: u32 = 0x0003_0000;
 pub(crate) const ERRNO: u32 = 0x0005_0000;
 pub(crate) const ALLOW: u32 = 0x7fff_0000;
 const ACTION_MASK: u32 = 0xffff_0000;
@@ -46,6 +47,7 @@ impl Data {
 pub(crate) enum Action {
     Allow,
     Errno(u16),
+    Trap(u16),
     KillThread,
     KillProcess,
 }
@@ -56,6 +58,7 @@ impl Action {
             KILL_THREAD => Self::KillThread,
             KILL_PROCESS => Self::KillProcess,
             ERRNO => Self::Errno((raw as u16).min(4095)),
+            TRAP => Self::Trap(raw as u16),
             ALLOW => Self::Allow,
             // Linux treats unknown actions as KILL_PROCESS. A dynamic RET A
             // cannot turn an unsupported or malformed result into permission.
@@ -67,8 +70,9 @@ impl Action {
         match self {
             Self::KillProcess => 0,
             Self::KillThread => 1,
-            Self::Errno(_) => 2,
-            Self::Allow => 3,
+            Self::Trap(_) => 2,
+            Self::Errno(_) => 3,
+            Self::Allow => 4,
         }
     }
 }
@@ -126,10 +130,7 @@ impl Program {
                     successors = [Some(yes), Some(no)];
                 }
                 0x06 => {
-                    if matches!(
-                        k & ACTION_MASK,
-                        0x0003_0000 | 0x0007_0000 | 0x7fc0_0000 | 0x7ffc_0000
-                    ) {
+                    if matches!(k & ACTION_MASK, 0x0007_0000 | 0x7fc0_0000 | 0x7ffc_0000) {
                         return_errno_with_message!(
                             Errno::EOPNOTSUPP,
                             "seccomp action not implemented"

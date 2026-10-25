@@ -18,6 +18,7 @@
 #include <sys/syscall.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <ucontext.h>
 #include <unistd.h>
 
 static unsigned checks, failed;
@@ -105,8 +106,8 @@ static void malformed(void) {
     errno = 0; check(syscall(SYS_seccomp, SECCOMP_SET_MODE_FILTER, 0, NULL) == -1 && errno == EFAULT, "bad_program_pointer_rejected");
     if (partial) {
         errno = 0; check(install(allow, 1, SECCOMP_FILTER_FLAG_TSYNC, 0) == -1 && errno == EINVAL, "unsupported_tsync_not_success");
-        unsigned action = SECCOMP_RET_TRAP;
-        errno = 0; check(syscall(SYS_seccomp, SECCOMP_GET_ACTION_AVAIL, 0, &action) == -1 && errno == EOPNOTSUPP, "unsupported_trap_not_advertised");
+        unsigned action = SECCOMP_RET_TRACE;
+        errno = 0; check(syscall(SYS_seccomp, SECCOMP_GET_ACTION_AVAIL, 0, &action) == -1 && errno == EOPNOTSUPP, "unsupported_trace_not_advertised");
     }
     check(install(allow, 1, 0, 0) == 0, "valid_filter_after_failures");
 }
@@ -148,6 +149,50 @@ static void killed_with_sibling(void) {
     (void)syscall(SYS_getpid);
     check(0, "kill_process_cannot_leave_sibling_running");
 }
+static volatile sig_atomic_t trap_received, trap_fields_ok;
+static void trap_handler(int signo, siginfo_t *info, void *context) {
+    ucontext_t *uc = context;
+    trap_fields_ok = signo == SIGSYS && info->si_signo == SIGSYS && info->si_code == 1
+        && info->si_errno == 0x1234 && info->si_syscall == SYS_openat
+        && info->si_arch == AUDIT_ARCH_X86_64
+        && info->si_call_addr == (void *)(size_t)uc->uc_mcontext.gregs[REG_RIP];
+    ++trap_received;
+    uc->uc_mcontext.gregs[REG_RAX] = -ERANGE;
+}
+static void trapped(void) {
+    struct sigaction action = { .sa_sigaction = trap_handler, .sa_flags = SA_SIGINFO };
+    sigemptyset(&action.sa_mask);
+    check(sigaction(SIGSYS, &action, NULL) == 0, "install_sigsys_handler");
+    struct sock_filter code[7];
+    nnp();
+    deny(code, SYS_openat, SECCOMP_RET_ERRNO | EACCES);
+    check(install(code, 7, 0, 0) == 0, "install_older_errno");
+    deny(code, SYS_openat, SECCOMP_RET_TRAP | 0x1234);
+    unsigned available = SECCOMP_RET_TRAP;
+    check(syscall(SYS_seccomp, SECCOMP_GET_ACTION_AVAIL, 0, &available) == 0, "trap_advertised");
+    check(install(code, 7, 0, 0) == 0, "install_trap");
+    errno = 0;
+    long fd = syscall(SYS_openat, AT_FDCWD, effect_path, O_WRONLY | O_CREAT | O_EXCL, 0600);
+    check(fd == -1 && errno == ERANGE, "trap_handler_controls_return_without_dispatch");
+    check(trap_received == 1 && trap_fields_ok, "trap_siginfo_uapi_and_return_ip");
+    check(syscall(SYS_getpid) > 0, "trap_resumes_at_next_instruction");
+}
+static void trap_forced(int ignored) {
+    if (ignored) signal(SIGSYS, SIG_IGN);
+    else {
+        struct sigaction action = { .sa_sigaction = trap_handler, .sa_flags = SA_SIGINFO };
+        sigemptyset(&action.sa_mask);
+        check(sigaction(SIGSYS, &action, NULL) == 0, "install_blocked_trap_handler");
+        sigset_t blocked; sigemptyset(&blocked); sigaddset(&blocked, SIGSYS);
+        check(sigprocmask(SIG_BLOCK, &blocked, NULL) == 0, "block_sigsys_before_trap");
+    }
+    struct sock_filter code[7]; deny(code, SYS_getpid, SECCOMP_RET_TRAP);
+    nnp(); check(install(code, 7, 0, 0) == 0, "install_forced_trap");
+    (void)syscall(SYS_getpid);
+    check(0, "forced_trap_cannot_be_suppressed");
+}
+static void trap_ignored(void) { trap_forced(1); }
+static void trap_blocked(void) { trap_forced(0); }
 static void strict_ok(void) {
     check(syscall(SYS_seccomp, SECCOMP_SET_MODE_STRICT, 0, 0) == 0, "strict_install");
     const char text[] = "strict_write_allowed\n";
@@ -189,13 +234,17 @@ int main(int argc, char **argv) {
     else puts("Linux_reference_privilege_drop\tNOT_RUN\trequires_root");
     run("kill_process_reports_sigsys", killed, SIGSYS);
     run("kill_process_terminates_sibling", killed_with_sibling, SIGSYS);
+    run("trap_siginfo_handler_roundtrip", trapped, 0);
+    check(access(effect_path, F_OK) == -1 && errno == ENOENT, "parent_confirms_trap_has_no_file_effect");
+    run("ignored_trap_forces_sigsys", trap_ignored, SIGSYS);
+    run("blocked_trap_forces_sigsys", trap_blocked, SIGSYS);
     // Container reference hosts can prohibit strict mode with their own filter.
     // This does not weaken the ordinary guest's required strict assertions.
     if (partial) {
         run("strict_write_and_exit_child", strict_ok, 0);
         run("strict_disallowed_call_sigsys", strict_killed, SIGSYS);
     }
-    printf("{\"scope\":\"seccomp_x86_64_stage_one\",\"parent_checks\":%u,\"failed\":%u,\"tsync_supported\":false,\"android_qualified\":false}\n", checks, failed);
+    printf("{\"scope\":\"seccomp_x86_64_trap\",\"parent_checks\":%u,\"failed\":%u,\"tsync_supported\":false,\"android_qualified\":false}\n", checks, failed);
     unlink(effect_path);
     rmdir(private_root);
     return failed ? 1 : 0;

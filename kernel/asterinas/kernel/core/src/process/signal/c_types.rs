@@ -80,6 +80,14 @@ impl siginfo_t {
     pub(crate) fn si_addr(&self) -> Vaddr {
         self.siginfo_fields.sigfault().addr
     }
+
+    pub(crate) fn set_seccomp(&mut self, call_addr: Vaddr, syscall: i32, arch: u32) {
+        *self.siginfo_fields.seccomp_mut() = siginfo_seccomp_t {
+            call_addr,
+            syscall,
+            arch,
+        };
+    }
 }
 
 #[pod_union]
@@ -89,6 +97,15 @@ union siginfo_fields_t {
     bytes: [u8; 128 - size_of::<i32>() * 4],
     common: siginfo_common_t,
     sigfault: siginfo_sigfault_t,
+    seccomp: siginfo_seccomp_t,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Pod)]
+struct siginfo_seccomp_t {
+    call_addr: Vaddr,
+    syscall: i32,
+    arch: u32,
 }
 
 impl Default for siginfo_fields_t {

@@ -13,7 +13,7 @@ use crate::{
             do_exit, do_exit_group,
             seccomp::{self, Action, Data, Instruction, Program},
         },
-        signal::constants::SIGSYS,
+        signal::{constants::SIGSYS, signals::seccomp::SeccompSignal},
     },
 };
 
@@ -50,7 +50,11 @@ pub(super) fn sys_seccomp(
             let action: u32 = ctx.user_space().read_val(args)?;
             if !matches!(
                 action,
-                seccomp::KILL_THREAD | seccomp::KILL_PROCESS | seccomp::ERRNO | seccomp::ALLOW
+                seccomp::KILL_THREAD
+                    | seccomp::KILL_PROCESS
+                    | seccomp::ERRNO
+                    | seccomp::TRAP
+                    | seccomp::ALLOW
             ) {
                 return_errno_with_message!(Errno::EOPNOTSUPP, "seccomp action unavailable");
             }
@@ -121,6 +125,17 @@ pub(super) fn check_entry(
         Action::Allow => true,
         Action::Errno(errno) => {
             user_ctx.set_syscall_ret((-(errno as isize)) as usize);
+            false
+        }
+        Action::Trap(data) => {
+            ctx.thread_local.seccomp_trap().set(Some(SeccompSignal {
+                data,
+                syscall: number as i32,
+                arch: 0xc000_003e,
+                call_addr: user_ctx.instruction_pointer(),
+            }));
+            // Preserve the architecture's return register until the handler
+            // chooses a value. Never dispatch or restart the rejected syscall.
             false
         }
         Action::KillThread => {

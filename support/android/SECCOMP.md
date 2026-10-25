@@ -1,6 +1,6 @@
 # Native seccomp: development and technical contract
 
-This first stage implements a bounded syscall filter in the actual Asterinas
+This stage implements a bounded syscall filter in the actual Asterinas
 core. It is an x86-64 kernel feature, not an Android compatibility certificate.
 Binder, Android MAC, framework boot, ARM64 filtering and phone hardware remain
 separate work. The original A08 Linux-host probe is a reference comparison;
@@ -19,7 +19,7 @@ Filter installation requires the calling thread's `no_new_privs` or effective
 validation. No user pointer survives publication. A failed installation leaves
 the prior policy unchanged. Adding an ALLOW filter cannot relax an earlier
 restriction. Equal-priority action data comes from the most recently installed
-filter; KILL_PROCESS precedes KILL_THREAD, then ERRNO, then ALLOW.
+filter; KILL_PROCESS precedes KILL_THREAD, then TRAP, then ERRNO, then ALLOW.
 
 The syscall entry hook runs before dispatch, including unrecognized syscall
 numbers. ERRNO returns directly without entering the handler. ERRNO data is
@@ -27,6 +27,19 @@ clamped to 4095; data zero returns zero without executing the syscall. KILL
 actions use the kernel's thread/group exit path with SIGSYS and cannot be
 turned into permission by ignoring SIGSYS. Strict mode permits native read,
 write, rt_sigreturn and exit only. In particular exit_group is not allowed.
+
+TRAP does not dispatch the syscall. It records a kernel-created synchronous
+thread fault separately from coalescing user-signal queues, then delivers it
+after the ptrace syscall-exit stop and before returning to userspace. SIGKILL
+keeps priority. The native 128-byte siginfo contains SYS_SECCOMP, filter data
+in si_errno, the original syscall number, audit architecture and saved return
+instruction pointer. The handler can change the return register via ucontext;
+signal return continues after the trapped instruction without restarting the
+call. If SIGSYS is blocked or ignored, its mask/disposition is forced to the
+default action. A default forced fault also applies to init. User-supplied
+siginfo cannot opt into this kernel-only behavior. Ptrace signal replacement
+still follows the existing signal path; a full ptrace compatibility suite is
+not implied by this stage.
 
 The process filter module contains the pure verifier, interpreter and policy;
 the syscall module owns user-memory copies, credential admission and effects.
@@ -57,7 +70,7 @@ This does not provide a complete kernel-heap resource budget.
 
 ## Explicitly incomplete interfaces
 
-Only ALLOW, ERRNO, KILL_THREAD and KILL_PROCESS are advertised. Static TRAP,
+Only ALLOW, ERRNO, TRAP, KILL_THREAD and KILL_PROCESS are advertised. Static
 TRACE, USER_NOTIF and LOG results are rejected with EOPNOTSUPP. An unknown or
 unsupported dynamic result terminates the process. All nonzero install flags,
 including TSYNC and NEW_LISTENER, are rejected with EINVAL. GET_NOTIF_SIZES and
@@ -66,11 +79,13 @@ returns ENOSYS. These refusals must remain explicit until the corresponding
 semantics and race tests exist.
 
 TSYNC needs atomic group publication coordinated with clone and exec; applying
-a filter only to the caller must never return TSYNC success. SIGSYS trap needs
-the correct siginfo syscall/architecture/address fields and signal return
-semantics. Neither can be replaced by a symbol or a successful no-op. AOSP
+a filter only to the caller must never return TSYNC success. AOSP
 seccomp policy compatibility, ptrace interactions and Android's required action
 set must be measured on its pinned workloads before changing the Android gate.
+The pinned [Android 15 Bionic policy builder](https://android.googlesource.com/platform/bionic/+/refs/tags/android-15.0.0_r36/libc/seccomp/seccomp_policy.cpp)
+uses TRAP for rejected calls; implementing it here does not establish that
+the whole generated policy or mixed 32/64-bit ABI works. Native i386/x32 syscall
+compatibility remains unqualified.
 
 ## Reproduction and evidence
 
@@ -92,7 +107,9 @@ It requires real filtering, syscall/prctl installation, fork/thread/exec
 inheritance, unchanged installed bytes after user mutation, stacking, privilege
 admission, malformed/faulting inputs, no file creation on a denied openat,
 SIGSYS termination including a live sibling, and strict-mode positive/negative
-cases. The guest has no host disk or network. Raw serial, nonce, ELF/initramfs
+cases. It also checks actual TRAP siginfo against libc's UAPI, handler-controlled
+return, action precedence, absence of file effects and blocked/ignored traps.
+The guest has no host disk or network. Raw serial, nonce, ELF/initramfs
 hashes and before/after source snapshots are retained; any failed assertion,
 timeout or source mutation fails the run.
 
@@ -115,3 +132,11 @@ The first compile failure (missing trait imports) remains in the evidence.
 The selected-commit Android source report remains independently bound to its
 commit and always leaves runtime verification false. Android host tooling,
 JNI tests and Binder-device absence must also retain their own actual results.
+
+The subsequent TRAP stage passed 304/304 native tests, including a full
+independent siginfo byte-layout check. Its 3518 relevant inputs matched from
+the recorded compilation snapshot through the completed guest. The actual
+double-CPU ordinary guest passed every filtering and trap assertion on ELF
+`95055dc36f386cae9e0209fe67bc635e9dc89010ce4813130d1e6816ef8cade2`,
+with unchanged source/artifacts and QEMU exit 33. Initial non-TRAP evidence
+above remains historical; neither stage provides TSYNC or Android qualification.

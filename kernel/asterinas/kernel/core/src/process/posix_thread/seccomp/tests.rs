@@ -158,7 +158,7 @@ fn seccomp_unknown_dynamic_action_and_zero_register_division_fail_closed() {
 
 #[ktest]
 fn seccomp_unimplemented_static_actions_are_not_accepted_as_supported() {
-    for action in [0x0003_0000, 0x0007_0000, 0x7fc0_0000, 0x7ffc_0000] {
+    for action in [0x0007_0000, 0x7fc0_0000, 0x7ffc_0000] {
         assert_eq!(
             Program::verify(vec![insn(0x06, action, 0, 0)])
                 .err()
@@ -172,4 +172,17 @@ fn seccomp_unimplemented_static_actions_are_not_accepted_as_supported() {
         Action::Errno(4095)
     );
     assert_eq!(constant(ERRNO).evaluate(&data(39)), Action::Errno(0));
+}
+
+#[ktest]
+fn seccomp_trap_preserves_data_and_precedes_errno_but_not_kill() {
+    let mut policy = Policy::default();
+    policy.install_filter(constant(ERRNO | 1)).unwrap();
+    policy.install_filter(constant(TRAP | 0xabcd)).unwrap();
+    policy.install_filter(constant(ALLOW)).unwrap();
+    assert_eq!(policy.evaluate(&data(39), true), Action::Trap(0xabcd));
+    policy.install_filter(constant(TRAP | 0x1234)).unwrap();
+    assert_eq!(policy.evaluate(&data(39), true), Action::Trap(0x1234));
+    policy.install_filter(constant(KILL_THREAD)).unwrap();
+    assert_eq!(policy.evaluate(&data(39), true), Action::KillThread);
 }

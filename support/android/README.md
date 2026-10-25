@@ -6,13 +6,14 @@ root README for the current Desktop/Hepta product status.
 ## Current kernel work — 2026-10-25
 
 The first native x86-64 seccomp stage now has real install and syscall-dispatch
-paths, immutable inherited filters, strict mode and ALLOW/ERRNO/KILL actions.
+paths, immutable inherited filters, strict mode and ALLOW/ERRNO/TRAP/KILL actions.
 Its implementation, limitations and ordinary-kernel reproduction commands are
-documented in [SECCOMP.md](SECCOMP.md). The native core suite passed 302 tests,
-including nine new verifier/policy tests. Ordinary guest syscall qualification
-is recorded separately; a source scan cannot establish it.
+documented in [SECCOMP.md](SECCOMP.md). The latest native core suite passed 304
+tests, including eleven new verifier/policy/siginfo tests. The actual ordinary
+double-CPU guest passed filtering and SIGSYS handler/return checks. These
+runtime receipts remain separate from the source scan.
 
-This stage does not implement TSYNC, SIGSYS trap delivery, Binder or Android
+This stage does not implement TSYNC, Binder or Android
 SELinux policy. It does not qualify Android boot, APKs, phone hardware or CTS.
 The source auditor continues to inspect immutable commits, so an uncommitted
 seccomp implementation is deliberately absent from its selected-commit scan.
