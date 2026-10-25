@@ -165,11 +165,12 @@ static void capped_writer(int mode) {
     close(fd); _exit(failures?1:0);
 }
 /* Exercise actual simultaneous VMO commit/final-refund versus limit writes.
- * Fixed ceilings leave enough room for each worker's precharged fault context;
+ * The low ceiling exceeds all 4*128*3 pages even if no RCU refund occurs
+ * during the loop, plus each worker's private fault context;
  * denial behavior is covered separately by the exact-ceiling cases above. */
 static void concurrent_frames(void) {
-    enum { WORKERS=4, ITERATIONS=128 };
-    check("concurrent_group_created",mkdir(RACE,0755)==0&&set_max(RACE,256*PAGE)==0);
+    enum { WORKERS=4, ITERATIONS=128, CEILING_PAGES=4096 };
+    check("concurrent_group_created",mkdir(RACE,0755)==0&&set_max(RACE,CEILING_PAGES*PAGE)==0);
     _Atomic unsigned *ready=mmap(NULL,PAGE,PROT_READ|PROT_WRITE,MAP_ANONYMOUS|MAP_SHARED,-1,0);
     check("observer_owned_concurrent_barrier",ready!=MAP_FAILED); if(ready==MAP_FAILED)return;
     for(unsigned i=0;i<WORKERS+1;i++)atomic_init(&ready[i],0);
@@ -204,7 +205,7 @@ static void concurrent_frames(void) {
     atomic_store(&ready[WORKERS],1);
     int valid=1;
     for(unsigned iteration=0;iteration<256;iteration++) {
-        unsigned long ceiling=(iteration%2?256:512)*PAGE;
+        unsigned long ceiling=(iteration%2?CEILING_PAGES:2*CEILING_PAGES)*PAGE;
         valid=valid&&set_max(RACE,ceiling)==0;
         valid=valid&&number(RACE,"hepta.page.current")<=ceiling;
         delay();
