@@ -103,14 +103,19 @@ pub(super) fn sys_futex(
             futex_wake_bitset(futex_addr as _, max_count, bitset as _, visibility)
         }
         FutexOp::FUTEX_REQUEUE => {
-            let max_nwakes = futex_val_to_max_count(futex_val);
-            // `utime_addr` is used as the maximum number of requeues in this case.
-            // When `utime_addr` is 0 or negative, it means no requeues.
-            let max_nrequeues = (utime_addr as i32).max(0) as usize;
+            // Unlike FUTEX_WAKE, requeue must allow zero wakes; otherwise a
+            // migration request can complete the waiter instead of moving it.
+            // Linux rejects negative wake and requeue counts.
+            // Reference: Linux v6.17, kernel/futex/requeue.c, futex_requeue().
+            let max_nwakes = futex_val as i32;
+            let max_nrequeues = utime_addr as i32;
+            if max_nwakes < 0 || max_nrequeues < 0 {
+                return_errno_with_message!(Errno::EINVAL, "negative futex requeue count");
+            }
             futex_requeue(
                 futex_addr as _,
-                max_nwakes,
-                max_nrequeues,
+                max_nwakes as usize,
+                max_nrequeues as usize,
                 futex_new_addr as _,
                 ctx,
                 visibility,

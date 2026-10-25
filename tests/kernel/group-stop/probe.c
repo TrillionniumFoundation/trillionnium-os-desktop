@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/sem.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -21,7 +22,7 @@
 #include <unistd.h>
 #define WORKERS 5
 #define THREADS (WORKERS + 1)
-struct shared { atomic_int futex; atomic_int returned[THREADS]; atomic_int result[THREADS]; atomic_int errors[THREADS]; int timeout_ms; };
+struct shared { atomic_int futex; atomic_int futex_new; atomic_int returned[THREADS]; atomic_int result[THREADS]; atomic_int errors[THREADS]; int timeout_ms; bool futex_timed; int semid; int sem_mode; };
 struct ready { int kind; pid_t tid; };
 struct observed { pid_t tid; char state; };
 static struct shared *shared;
@@ -40,7 +41,8 @@ static void *worker(void *arg) {
   else {
    int result;
    if(kind==2) { struct timespec t={shared->timeout_ms/1000,(shared->timeout_ms%1000)*1000000L}; result=nanosleep(&t,NULL); }
-   else if(kind==3) result=(int)syscall(SYS_futex,&shared->futex,FUTEX_WAIT,0,NULL,NULL,0);
+   else if(kind==3 && shared->sem_mode) { struct sembuf op={0,-1,0}; struct timespec t={1,0}; result=shared->sem_mode==3?semtimedop(shared->semid,&op,1,&t):semop(shared->semid,&op,1); }
+   else if(kind==3) { struct timespec t={1,0}; result=(int)syscall(SYS_futex,&shared->futex,FUTEX_WAIT,0,shared->futex_timed?&t:NULL,NULL,0); }
    else if(kind==4) { char b; result=(int)read(blockedfd,&b,1); }
    else { struct pollfd p={blockedfd,POLLIN,0}; result=poll(&p,1,shared->timeout_ms==3600000?-1:shared->timeout_ms); }
    atomic_store(&shared->errors[kind],result<0?errno:0);
@@ -87,8 +89,10 @@ static bool matches(struct observed *obs,int n,struct ready *ids) {
 }
 static void run(int scenario) {
  bool self_stop=scenario!=0;
- mode=scenario==0?"external":scenario==1?"self":scenario==2?"self_kill_stopped":scenario==3?"self_deadlines":scenario==4?"self_io_while_stopped":"self_thread_directed_continue";
+ mode=scenario==0?"external":scenario==1?"self":scenario==2?"self_kill_stopped":scenario==3?"self_deadlines":scenario==4?"self_io_while_stopped":scenario==5?"self_thread_directed_continue":scenario==6?"self_futex_requeue":scenario==7?"self_futex_requeue_timeout":scenario==8?"self_futex_wake_stopped":scenario==9?"self_sem_wait":scenario==10?"self_sem_complete_stopped":"self_sem_timeout_stopped";
  shared->timeout_ms=scenario==3?1000:3600000;
+ shared->futex_timed=scenario==7;shared->sem_mode=scenario>=9?scenario-8:0;
+ if(shared->sem_mode && semctl(shared->semid,0,SETVAL,0)<0){check("sem_reset",false);return;}
  for(int i=0;i<THREADS;++i){atomic_store(&shared->returned[i],0);atomic_store(&shared->result[i],-99);atomic_store(&shared->errors[i],0);}
  int rp[2],gp[2],bp[2];if(pipe(rp)||pipe(gp)||pipe(bp)){check("pipe_setup",false);return;}
  pid_t p=fork();if(p==0){close(rp[0]);close(gp[1]);close(bp[1]);child(rp[1],gp[0],bp[0],self_stop);_exit(27);}
@@ -133,9 +137,17 @@ static void run(int scenario) {
   close(rp[0]);close(gp[1]);close(bp[1]);return;
  }
  if(scenario==2)goto cleanup;
- if(scenario==3 || scenario==4) {
+ if(scenario==6 || scenario==7) {
+  errno=0;check("requeue_negative_wake_rejected",syscall(SYS_futex,&shared->futex,FUTEX_REQUEUE,-1,1,&shared->futex_new,0)==-1&&errno==EINVAL);
+  errno=0;check("requeue_negative_count_rejected",syscall(SYS_futex,&shared->futex,FUTEX_REQUEUE,0,-1,&shared->futex_new,0)==-1&&errno==EINVAL);
+  check("futex_requeue_while_stopped",syscall(SYS_futex,&shared->futex,FUTEX_REQUEUE,0,1,&shared->futex_new,0)>=0);
+  check("old_futex_has_no_waiter_after_requeue",syscall(SYS_futex,&shared->futex,FUTEX_WAKE,1,NULL,NULL,0)==0);
+ }
+ if(scenario==8)check("real_futex_wake_while_stopped_counted",syscall(SYS_futex,&shared->futex,FUTEX_WAKE,1,NULL,NULL,0)==1);
+ if(scenario==10) {struct sembuf op={0,1,0};check("semaphore_completed_while_stopped",semop(shared->semid,&op,1)==0);}
+ if(scenario==3 || scenario==4 || scenario==7 || scenario==8 || scenario==10 || scenario==11) {
   if(scenario==4)check("two_bytes_sent_while_all_stopped",write(bp[1],"ab",2)==2);
-  nap(scenario==3?1200:100);
+  nap(scenario==3||scenario==7||scenario==11?1200:100);
   count=snapshot(p,cur);bool held=matches(cur,count,ids);
   for(int i=0;i<count&&held;++i)held&=cur[i].state=='T';
   check("all_remain_T_after_timer_or_io_event",held);
@@ -152,7 +164,8 @@ static void run(int scenario) {
  emit("after_continue",cur,count>0?count:0);
  check("all_six_leave_T",resumed);
  if(self_stop) {
-  nap(scenario==3?100:250);
+  nap(scenario==3||scenario==7||scenario==11?100:250);
+  for(int k=2;k<THREADS;++k)printf("{\"suite\":\"stop_all\",\"mode\":\"%s\",\"observation\":\"return_state\",\"kind\":%d,\"returned\":%d,\"result\":%d,\"errno\":%d}\n",mode,k,atomic_load(&shared->returned[k]),atomic_load(&shared->result[k]),atomic_load(&shared->errors[k]));
   if(scenario==3) {
    check("nanosleep_original_deadline_not_restarted",atomic_load(&shared->returned[2])==1&&atomic_load(&shared->result[2])==0);
    check("poll_original_deadline_not_restarted",atomic_load(&shared->returned[5])==1&&atomic_load(&shared->result[5])==0);
@@ -175,6 +188,34 @@ static void run(int scenario) {
    }while(now_ms()<deadline);
    emit("second_stop_after_targeted_continue",cur,count>0?count:0);
    check("old_continue_does_not_cancel_new_stop",stopped_again);
+  } else if(scenario==6) {
+   check("requeue_continue_does_not_complete_wait",atomic_load(&shared->returned[3])==0);
+   check("new_futex_wake_counts_one",syscall(SYS_futex,&shared->futex_new,FUTEX_WAKE,1,NULL,NULL,0)==1);
+   deadline=now_ms()+3000;while(!atomic_load(&shared->returned[3])&&now_ms()<deadline)nap(10);
+   check("requeued_wait_completes_on_new_futex",atomic_load(&shared->returned[3])==1&&atomic_load(&shared->result[3])==0);
+   check("completed_wait_removed_from_new_futex",syscall(SYS_futex,&shared->futex_new,FUTEX_WAKE,1,NULL,NULL,0)==0);
+  } else if(scenario==7) {
+   check("requeued_futex_original_deadline_not_restarted",atomic_load(&shared->returned[3])==1&&atomic_load(&shared->result[3])==-1&&atomic_load(&shared->errors[3])==ETIMEDOUT);
+   check("timed_out_requeued_wait_removed",syscall(SYS_futex,&shared->futex_new,FUTEX_WAKE,1,NULL,NULL,0)==0);
+   check("unrelated_waits_survive_requeue_timeout",atomic_load(&shared->returned[2])==0&&atomic_load(&shared->returned[4])==0&&atomic_load(&shared->returned[5])==0);
+  } else if(scenario==8) {
+   check("futex_wake_retained_until_continue",atomic_load(&shared->returned[3])==1&&atomic_load(&shared->result[3])==0);
+   check("stopped_woken_futex_has_no_queued_item",syscall(SYS_futex,&shared->futex,FUTEX_WAKE,1,NULL,NULL,0)==0);
+   check("unrelated_waits_survive_futex_wake",atomic_load(&shared->returned[2])==0&&atomic_load(&shared->returned[4])==0&&atomic_load(&shared->returned[5])==0);
+  } else if(scenario==9) {
+   check("sem_wait_survives_continue",atomic_load(&shared->returned[3])==0);
+   struct sembuf op={0,1,0};check("sem_actual_completion_requested",semop(shared->semid,&op,1)==0);
+   deadline=now_ms()+3000;while(!atomic_load(&shared->returned[3])&&now_ms()<deadline)nap(10);
+   check("sem_wait_completes_after_real_operation",atomic_load(&shared->returned[3])==1&&atomic_load(&shared->result[3])==0);
+   check("sem_value_consumed_once",semctl(shared->semid,0,GETVAL)==0);
+  } else if(scenario==10) {
+   check("stopped_sem_completion_retained",atomic_load(&shared->returned[3])==1&&atomic_load(&shared->result[3])==0);
+   check("stopped_sem_consumed_once",semctl(shared->semid,0,GETVAL)==0);
+   check("other_waits_survive_sem_completion",atomic_load(&shared->returned[2])==0&&atomic_load(&shared->returned[4])==0&&atomic_load(&shared->returned[5])==0);
+  } else if(scenario==11) {
+   check("sem_original_deadline_not_restarted",atomic_load(&shared->returned[3])==1&&atomic_load(&shared->result[3])==-1&&atomic_load(&shared->errors[3])==EAGAIN);
+   struct sembuf op={0,1,0};check("sem_post_timeout_increment",semop(shared->semid,&op,1)==0);
+   check("sem_timed_out_waiter_removed",semctl(shared->semid,0,GETVAL)==1);
   } else {
    bool unchanged=true;for(int i=2;i<THREADS;++i)unchanged&=atomic_load(&shared->returned[i])==0;
    check("continue_preserves_blocking_calls_without_EINTR",unchanged);
@@ -190,8 +231,10 @@ int main(void) {
  setvbuf(stdout,NULL,_IONBF,0);
  shared=mmap(NULL,sizeof*shared,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS,-1,0);
  if(shared==MAP_FAILED)return 2;
- atomic_init(&shared->futex,0);
- for(int scenario=0;scenario<6;++scenario)run(scenario);
+ atomic_init(&shared->futex,0);atomic_init(&shared->futex_new,0);
+ shared->semid=semget(IPC_PRIVATE,1,0600);if(shared->semid<0)return 3;
+ for(int scenario=0;scenario<12;++scenario)run(scenario);
+ if(semctl(shared->semid,0,IPC_RMID)<0)return 4;
  printf("{\"suite\":\"stop_all\",\"cases\":%d,\"failed\":%d,\"passed\":%s}\n",cases,failed,failed?"false":"true");
  return failed?1:0;
 }

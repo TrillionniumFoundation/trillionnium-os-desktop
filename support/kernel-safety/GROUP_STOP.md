@@ -39,6 +39,36 @@ timeout with a new one. Once a task is in this stop wait, ordinary I/O and timer
 wakes cannot execute its original condition while it remains stopped. Condition
 completion before the task joins the stop retains the previous behavior.
 
+Futex waiting has an explicit completion condition shared with its queue item.
+Only removal by a real futex wake publishes this condition; a signal, timer or
+group-stop notification is not itself a successful futex wake. This matters
+because the first group-stop implementation (`2dec1dda`) actually passed all-task
+stop checks but returned an unintended EINTR from untargeted futex waits after
+CONT (four of the 88 original assertions failed). The failed product and complete
+serial output are retained. The follow-up keeps the same original deadline and
+waits for completion rather than treating a raw notification as completion.
+
+A queued futex also carries its current bucket index. Requeue updates the key and
+index while both buckets are locked in their existing index order. Cancellation
+locks only the indicated bucket and rechecks the index before removing the exact
+waiter; if it moved, cancellation retries without holding either lock. A real
+wake that wins this race returns success. Timeout or signal cancellation removes
+the item from its current bucket, preventing a retained requeued waiter. Real
+wakes publish completion before notifying and count the queue item even if an
+unrelated notification has already set the waker bit. The REQUEUE syscall now
+preserves a zero wake count and rejects negative wake/requeue counts, matching
+[Linux v6.17](https://github.com/torvalds/linux/blob/v6.17/kernel/futex/requeue.c).
+It no longer converts a migration-only request into an actual wake. This stage
+does not claim a complete futex compatibility audit; the existing REQUEUE return
+count, bitset migration, and same-bucket zero-requeue behavior remain separate
+compatibility work.
+
+System V semaphore waits likewise use their existing pending-operation status
+as a completion condition. Stop/continue does not itself finish or cancel a
+queued semop. Its existing signal/timeout cleanup and real status transitions
+remain in place. Poller raw notifications retain their original caller-recheck
+contract; generic raw notifications are not promoted into operation success.
+
 SIGKILL leaves through the original signal handling and group-exit path. An
 unmasked thread-directed SIGCONT may only be visible to this sibling, so it
 returns through the original interruptible-syscall/signal-dequeue path. It does
@@ -74,14 +104,20 @@ python3 -B tests/kernel/group-stop/run.py --smp 1 \
   --output /absolute/path/to/new-evidence-directory
 ```
 
-Repeat with `--smp 4`. Each of six scenarios has a leader and five worker threads:
-yielding, nanosleep, futex wait, pipe read, and poll. Readiness is published only
+Repeat with `--smp 4`. Each of twelve scenarios has a leader and five worker threads:
+yielding, nanosleep, futex wait (or semaphore wait in its three scenarios), pipe
+read, and poll. Readiness is published only
 after the startup barrier and immediately before each blocking primitive; the
 parent also observes their actual sleeping state and checks that the calls have
-not returned. The 88 assertions cover external/self SIGSTOP, stable six-task T
+not returned. The 200 assertions cover external/self SIGSTOP, stable six-task T
 sets, SIGCONT, SIGKILL while stopped, preserving blocked calls, deadline expiry
 while stopped, retaining I/O events without consuming them in T, and targeted
-CONT followed by a new stop. Children are reaped, and a child already reaped by
+CONT followed by a new stop. Three additional scenarios cover actual futex wake
+while stopped, requeue while stopped followed by continuation and a wake on the
+new address, and requeued timeout expiry with no remaining queued item. Three semaphore
+scenarios cover continuation without completion, completion while stopped, and
+original-deadline expiry with cancellation cleanup. Children
+are reaped, and a child already reaped by
 a failed assertion is never signalled again.
 
 Tests report the complete observed task sets. Both positive and failed results

@@ -279,7 +279,13 @@ pub(crate) fn sem_op(
     let (waiter_result, status) = match sem_op_result {
         SemOpResult::Completed { status } => return map_status_to_result(status, None),
         SemOpResult::Pending { status, waiter } => {
-            let result = waiter.pause_timeout(&timeout.as_ref().into());
+            // Stop/continue may notify the waiter without completing the
+            // queued operation. Only the shared operation status is terminal;
+            // keep its original timeout across internal state rechecks.
+            let result = waiter.pause_until_or_timeout(
+                || (!matches!(status.load(Ordering::Relaxed), Status::Pending)).then_some(()),
+                timeout.as_ref(),
+            );
             (result, status)
         }
     };

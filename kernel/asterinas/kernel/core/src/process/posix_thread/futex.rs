@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
+use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
 use int_to_c_enum::TryFromInt;
 use ostd::{
     cpu::num_cpus,
@@ -78,6 +80,7 @@ pub(crate) fn futex_wait_bitset(
     let futex_key = FutexKey::new(futex_addr, bitset, &user_space, visibility)?;
     let (_, futex_bucket_ref) = get_futex_bucket(&futex_key);
     let (futex_item, waiter) = FutexItem::create(futex_key);
+    let wait_state = futex_item.wait_state.clone();
 
     let (mut futex_bucket, val) = loop {
         // Lock the futex bucket first to avoid race conditions.
@@ -116,26 +119,36 @@ pub(crate) fn futex_wait_bitset(
     // Release the lock.
     drop(futex_bucket);
 
-    let result = waiter.pause_timeout(&timeout.into());
+    // Signal, timer and group-stop wakeups share the same waiter. Only a futex
+    // wake that removes this item completes the futex operation. Keep the
+    // original timeout while a stop/continue merely rechecks this condition.
+    let result = waiter.pause_until_or_timeout(
+        || wait_state.is_woken.load(Ordering::Acquire).then_some(()),
+        timeout,
+    );
 
     // If the futex wait operation was interrupted by a signal or timed out, the
     // `FutexItem` must be dequeued and dropped. Otherwise, malicious user programs
     // could repeatedly issue futex wait operations to exhaust kernel memory.
-    let item = futex_bucket_ref.lock().remove_by_waker(&waiter.waker());
+    let item = loop {
+        // Requeue updates the index while holding both buckets. Take only the
+        // indicated bucket and recheck under its lock; never acquire a second
+        // bucket here or invert the ordered pair locking used by requeue.
+        let index = wait_state.bucket_index.load(Ordering::Acquire);
+        let mut bucket = FUTEX_BUCKETS.get().unwrap().vec[index].lock();
+        if wait_state.bucket_index.load(Ordering::Acquire) != index {
+            continue;
+        }
+        break bucket.remove_by_waker(&waiter.waker());
+    };
     if item.is_none() {
-        // The futex item will be removed asynchronously if and only if it has been woken up. In
-        // that case, we should report success to the user.
-        // FIXME: `pause_timeout` should return `Ok(())` in this case, but it currently may return
-        // errors due to race conditions.
+        // A real futex wake won the race against cancellation. Requeue alone
+        // cannot make the item absent from the rechecked current bucket.
+        debug_assert!(wait_state.is_woken.load(Ordering::Acquire));
         Ok(())
-    } else if let Err(err) = result {
-        Err(err)
     } else {
-        // Spurious wakeups. Return `EINTR` anyway.
-        return_errno_with_message!(
-            Errno::EINTR,
-            "the current thread is interrupted by a signal"
-        );
+        debug_assert!(result.is_err());
+        result
     }
 }
 
@@ -486,7 +499,8 @@ impl FutexBucket {
         let mut count = 0;
 
         self.items.retain(|item| {
-            if item.key.match_up(key) && count < max_count && item.wake() {
+            if item.key.match_up(key) && count < max_count {
+                item.wake();
                 count += 1;
                 false
             } else {
@@ -529,6 +543,13 @@ impl FutexBucket {
             })
             .for_each(|mut extracted| {
                 extracted.key = new_key.clone();
+                // Both the old and new bucket remain locked through insertion.
+                // A cancelling waiter must lock and recheck this index before
+                // removing its item, so it cannot miss an in-flight migration.
+                extracted
+                    .wait_state
+                    .bucket_index
+                    .store(get_futex_bucket(new_key).0, Ordering::Release);
                 another.add_item(extracted);
             });
     }
@@ -537,19 +558,39 @@ impl FutexBucket {
 struct FutexItem {
     key: FutexKey,
     waker: Arc<Waker>,
+    wait_state: Arc<FutexWaitState>,
+}
+
+/// Queue ownership and completion survive movement between futex hash buckets.
+/// The bucket index is changed only under the old and new bucket locks. The
+/// completion flag is published only by a real wake while holding that bucket.
+struct FutexWaitState {
+    bucket_index: AtomicUsize,
+    is_woken: AtomicBool,
 }
 
 impl FutexItem {
     pub(self) fn create(key: FutexKey) -> (Self, Waiter) {
         let (waiter, waker) = Waiter::new_pair();
-        let futex_item = FutexItem { key, waker };
+        let wait_state = Arc::new(FutexWaitState {
+            bucket_index: AtomicUsize::new(get_futex_bucket(&key).0),
+            is_woken: AtomicBool::new(false),
+        });
+        let futex_item = FutexItem {
+            key,
+            waker,
+            wait_state,
+        };
 
         (futex_item, waiter)
     }
 
-    #[must_use]
-    pub(self) fn wake(&self) -> bool {
-        self.waker.wake_up()
+    pub(self) fn wake(&self) {
+        // A signal or stop may already have set the waker's notification bit.
+        // That does not consume this queued futex wake or exclude it from the
+        // syscall's wake count. Publish completion before notifying the waiter.
+        self.wait_state.is_woken.store(true, Ordering::Release);
+        self.waker.wake_up();
     }
 }
 
