@@ -127,24 +127,40 @@ impl KVirtArea {
         frames: impl Iterator<Item = Frame<T>>,
         prop: PageProperty,
     ) -> Self {
+        Self::try_map_frames(area_size, map_offset, frames, prop)
+            .expect("Failed to map kernel virtual area")
+    }
+
+    /// Fallible tracked mapping for unpublished objects such as new task
+    /// stacks. The area owns each published prefix and unmaps it on error;
+    /// cursor guards are dropped before its destructor reacquires those locks.
+    pub(crate) fn try_map_frames<T: AnyFrameMeta + ?Sized>(
+        area_size: usize,
+        map_offset: usize,
+        frames: impl Iterator<Item = Frame<T>>,
+        prop: PageProperty,
+    ) -> crate::Result<Self> {
         assert!(area_size.is_multiple_of(PAGE_SIZE));
         assert!(map_offset.is_multiple_of(PAGE_SIZE));
+        assert!(map_offset < area_size);
 
         let irq_guard = irq::disable_local();
-
-        let range = kvirt_area_allocator(&irq_guard).alloc(area_size).unwrap();
-        let cursor_range = range.start + map_offset..range.end;
-
-        let page_table = KERNEL_PAGE_TABLE.get().unwrap();
-        let mut cursor = page_table.cursor_mut(&irq_guard, &cursor_range).unwrap();
-
-        for frame in frames.into_iter() {
-            // SAFETY: The constructor of the `KVirtArea` has already ensured
-            // that this mapping does not affect kernel's memory safety.
-            unsafe { cursor.map(MappedItem::Tracked(Frame::from_unsized(frame), prop)) };
+        let range = kvirt_area_allocator(&irq_guard)
+            .alloc(area_size)
+            .map_err(|_| crate::Error::NoMemory)?;
+        let area = Self { range };
+        let cursor_range = area.start() + map_offset..area.end();
+        {
+            let page_table = KERNEL_PAGE_TABLE.get().unwrap();
+            let mut cursor = page_table.cursor_mut(&irq_guard, &cursor_range)?;
+            for frame in frames {
+                // SAFETY: This fresh, privately owned area cannot overlap any
+                // live kernel allocation. On failure its mapped prefix remains
+                // owned by `area` and is removed before the range is recycled.
+                unsafe { cursor.try_map(MappedItem::Tracked(Frame::from_unsized(frame), prop)) }?;
+            }
         }
-
-        Self { range }
+        Ok(area)
     }
 
     /// Creates a kernel virtual area and maps untracked frames into it.

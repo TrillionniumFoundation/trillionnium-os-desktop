@@ -186,7 +186,7 @@ fn prepare_role(
     let task = PosixThreadBuilder::new(
         process.pid(), derive_thread_name(abs_path), Box::new(user_ctx), credentials, vmar,
     ).process(Arc::downgrade(&process)).fs(Arc::new(fs))
-        .before_initial_user_run(startup).build();
+        .before_initial_user_run(startup).build()?;
     process.tasks().lock().insert(task.clone()).unwrap();
     let prepared = PreparedInitialProcess::new(process, loaded_vmar, task)?;
     Ok((prepared, image, info.entry_point))

@@ -20,6 +20,7 @@ pub(crate) enum PageKind {
     AnonymousVmo = 1,
     FileCache = 2,
     PageTable = 3,
+    KernelStack = 4,
 }
 
 #[derive(Debug)]
@@ -31,7 +32,7 @@ pub(crate) struct PageMemoryBudget {
 #[derive(Debug)]
 struct State {
     current: usize,
-    kinds: [usize; 4],
+    kinds: [usize; 5],
     max: usize,
     denied: u64,
 }
@@ -42,7 +43,7 @@ impl PageMemoryBudget {
             parent,
             state: SpinLock::new(State {
                 current: 0,
-                kinds: [0; 4],
+                kinds: [0; 5],
                 max: usize::MAX,
                 denied: 0,
             }),
@@ -132,8 +133,8 @@ impl PageMemoryBudget {
             "hepta.page.events" => writeln!(printer, "max {denied}")?,
             "hepta.page.stat" => writeln!(
                 printer,
-                "private {}\nanonymous_vmo {}\nfile_cache {}\npage_table {}",
-                kinds[0], kinds[1], kinds[2], kinds[3]
+                "private {}\nanonymous_vmo {}\nfile_cache {}\npage_table {}\nkernel_stack {}",
+                kinds[0], kinds[1], kinds[2], kinds[3], kinds[4]
             )?,
             _ => return Err(AttrError::AttributeError),
         }
@@ -224,9 +225,26 @@ pub(crate) fn charge_current_pages(kind: PageKind, bytes: usize) -> Result<PageC
 /// Runs under the page-table cursor's atomic guard. Membership reads use RCU;
 /// charge locks never sleep or re-enter page-table code. Each token keeps the
 /// account captured for this individual physical node until Frame destruction.
-pub(crate) fn charge_current_page_table() -> ostd::Result<Box<dyn ostd::mm::vm_space::PageTableCharge>> {
-    let charge = charge_current_pages(PageKind::PageTable, PAGE_SIZE)
-        .map_err(|_| ostd::Error::NoMemory)?;
+pub(crate) fn charge_current_page_table()
+-> ostd::Result<Box<dyn ostd::mm::vm_space::PageTableCharge>> {
+    let charge =
+        charge_current_pages(PageKind::PageTable, PAGE_SIZE).map_err(|_| ostd::Error::NoMemory)?;
+    Ok(Box::new(charge))
+}
+
+impl ostd::task::StackReservation for PageCharge {
+    fn split_page(&mut self) -> Box<dyn ostd::task::StackPageCharge> {
+        Box::new(PageCharge::split_page(self))
+    }
+}
+
+/// Captures one original account for all frames of this stack before any
+/// physical allocation; each split token independently refunds its real frame.
+pub(crate) fn charge_current_kernel_stack(
+    bytes: usize,
+) -> ostd::Result<Box<dyn ostd::task::StackReservation>> {
+    let charge =
+        charge_current_pages(PageKind::KernelStack, bytes).map_err(|_| ostd::Error::NoMemory)?;
     Ok(Box::new(charge))
 }
 

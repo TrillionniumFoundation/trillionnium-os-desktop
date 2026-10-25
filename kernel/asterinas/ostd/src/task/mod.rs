@@ -19,6 +19,7 @@ use core::{
 };
 
 use kernel_stack::KernelStack;
+pub use kernel_stack::{PreparedTaskStack, StackCharger, StackPageCharge, StackReservation};
 use processor::current_task;
 use spin::Once;
 use utils::ForceSync;
@@ -175,6 +176,17 @@ impl TaskOptions {
 
     /// Builds a new task without running it immediately.
     pub fn build(self) -> Result<Task> {
+        let stack = KernelStack::new_with_guard_page(None)?;
+        Ok(self.build_inner(stack))
+    }
+
+    /// Builds a task from a stack whose fallible allocation already completed.
+    /// The stack remains owned by the task until its actual last reference.
+    pub fn build_with_stack(self, stack: PreparedTaskStack) -> Task {
+        self.build_inner(stack.0)
+    }
+
+    fn build_inner(self, kstack: KernelStack) -> Task {
         // All tasks will enter this function. It is meant to execute the `task_fn` in `Task`.
         //
         // We provide an assembly wrapper for this function as the end of call stack so we
@@ -210,8 +222,6 @@ impl TaskOptions {
             scheduler::exit_current();
         }
 
-        let kstack = KernelStack::new_with_guard_page()?;
-
         let mut ctx = TaskContext::new();
         ctx.set_instruction_pointer(
             crate::arch::task::kernel_task_entry_wrapper as *const () as usize,
@@ -239,7 +249,7 @@ impl TaskOptions {
             },
         };
 
-        Ok(new_task)
+        new_task
     }
 
     /// Builds a new task and runs it immediately.

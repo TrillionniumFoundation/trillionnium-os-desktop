@@ -1,6 +1,6 @@
 # Real physical page budget probes
 
-This suite boots an ordinary x86-64 kernel with 2 or 4 CPUs and tests `hepta.page.*` through actual user syscalls. It is development validation of private/COW and VMO pages, not Linux `memory.max`, all-memory isolation, production resource authority or hardware qualification.
+This suite boots an ordinary x86-64 kernel with 2 or 4 CPUs and tests `hepta.page.*` through actual user syscalls. It is development validation of private/COW, VMO, user page-table and POSIX task-stack pages, not Linux `memory.max`, all-memory isolation, production resource authority or hardware qualification.
 
 `probe.c` checks shared anonymous pages, memfd, cross-group reuse, last-reference refunds, ext2 cold cache reads and shared writes, truncate/cache lifetime, exact-budget ENOMEM/SIGSEGV and denial events, plus actual sibling recovery allocations. The observer remains outside the exhausted group. The only disk is a generated 16 MiB ext2 fixture attached with snapshot writes. No host block device, personal data or network is exposed. Do not execute the probe directly on the host.
 
@@ -38,3 +38,30 @@ negative admission checks use exact ceilings separately.
 See [the page-table design](../../../support/kernel-safety/PAGE_TABLE_MEMORY.md)
 for ownership, partial allocation and TLB/RCU/active-CPU refund limits. These tests
 do not qualify Linux memory.max or a physically reserved recovery pool.
+
+## M4 POSIX task-stack coverage
+
+The observer prefaults independent user stacks outside the workload and uses
+`clone(CLONE_VM | SIGCHLD)`, so the child shares the existing user page tables.
+A live child measures the real `kernel_stack` increment and verifies zero new
+user-table charge. Each negative ceiling is exactly one physical page below
+that measured stack requirement: first at the leaf, then at its ancestor.
+The probe checks ENOMEM, no child entry, no PID charge leak, full leaf rollback
+and an event only at the denying account. A sibling creates and releases a
+real task while the original ancestor remains capped. Four live children then
+hold four distinct stack segments under an exact ceiling, a fifth is denied,
+and all final frame and PID charges must return to baseline.
+
+The earlier fork-root, partial-table, exec, mremap and pure-table fault
+negatives retain their original ceilings. They must fail before stack
+allocation; increasing their budgets to accommodate a stack would weaken the
+original checks. See [the stack design](../../../support/kernel-safety/KERNEL_STACK_MEMORY.md).
+
+The M4 probe also creates a real CLONE_THREAD task in the same process,
+requires an additional live PID charge and the same actual stack-frame count,
+and waits for its final refund. Both leaf and ancestor negatives repeat with
+CLONE_THREAD so the precharged thread-PID reservation's error path is exercised,
+not only the new-process path. PID checks first enable the controller and
+require an actual creator/live-child count; unavailable attributes cannot pass
+as equal sentinel values. Group deletion retries only EBUSY while actual
+scheduler switches settle the observer's migration CPU lease.

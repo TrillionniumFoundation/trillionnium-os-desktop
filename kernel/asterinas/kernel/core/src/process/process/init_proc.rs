@@ -319,7 +319,7 @@ fn create_init_task(
             .process(Arc::downgrade(process))
             .fs(Arc::new(fs));
     Ok(LoadedInitialTask {
-        task: thread_builder.build(),
+        task: thread_builder.build()?,
         #[cfg(feature = "g1c-trusted-observe")]
         image,
         #[cfg(feature = "g1c-trusted-observe")]

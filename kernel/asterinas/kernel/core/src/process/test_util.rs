@@ -88,7 +88,8 @@ fn new_unstarted_process_with_vmar_and_threads(
             vmar.clone_handle(),
         )
         .process(Arc::downgrade(&process))
-        .build();
+        .build()
+        .unwrap();
         process.tasks().lock().insert(task.clone()).unwrap();
         tasks.push(task);
     }

@@ -37,17 +37,20 @@ fn page_budget_combines_three_real_frame_classes_and_refunds_last_reference() {
     let shared = allocate(&leaf, PageKind::AnonymousVmo).unwrap();
     let file = allocate(&leaf, PageKind::FileCache).unwrap();
     assert_eq!(used(&root), 3 * PAGE_SIZE);
-    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, PAGE_SIZE, PAGE_SIZE, 0]);
+    assert_eq!(
+        leaf.state.lock().kinds,
+        [PAGE_SIZE, PAGE_SIZE, PAGE_SIZE, 0, 0]
+    );
     assert!(allocate(&leaf, PageKind::AnonymousVmo).is_err());
     let held = shared.clone();
     drop(shared);
     assert_eq!(used(&leaf), 3 * PAGE_SIZE);
     drop(held);
     assert_eq!(used(&leaf), 2 * PAGE_SIZE);
-    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, 0, PAGE_SIZE, 0]);
+    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, 0, PAGE_SIZE, 0, 0]);
     drop((private, file));
     assert_eq!(used(&root), 0);
-    assert_eq!(leaf.state.lock().kinds, [0; 4]);
+    assert_eq!(leaf.state.lock().kinds, [0; 5]);
 }
 
 #[ktest]
@@ -58,7 +61,7 @@ fn page_budget_ancestor_denial_rolls_back_the_class_and_total() {
     let held = allocate(&root, PageKind::Private).unwrap();
     assert!(allocate(&leaf, PageKind::FileCache).is_err());
     assert_eq!(used(&leaf), 0);
-    assert_eq!(leaf.state.lock().kinds, [0; 4]);
+    assert_eq!(leaf.state.lock().kinds, [0; 5]);
     assert_eq!(root.state.lock().denied, 1);
     drop(held);
     let next = allocate(&leaf, PageKind::FileCache).unwrap();
@@ -189,4 +192,43 @@ fn page_budget_real_contiguous_segment_retains_each_frame_charge() {
     assert_eq!(used(&owner), PAGE_SIZE);
     drop(held);
     assert_eq!(used(&owner), 0);
+}
+
+#[derive(Debug)]
+struct StackCharged {
+    _charge: Box<dyn ostd::task::StackPageCharge>,
+}
+ostd::impl_frame_meta_for!(StackCharged);
+
+#[ktest]
+fn page_budget_stack_split_preserves_ancestors_and_final_frame_ownership() {
+    let root = PageMemoryBudget::new(None);
+    let leaf = PageMemoryBudget::new(Some(root.clone()));
+    root.set_max(3 * PAGE_SIZE).unwrap();
+    let mut reservation = leaf.charge(PageKind::KernelStack, 3 * PAGE_SIZE).unwrap();
+    let frames = FrameAllocOptions::new()
+        .alloc_segment_with(2, |_| StackCharged {
+            _charge: ostd::task::StackReservation::split_page(&mut reservation),
+        })
+        .unwrap()
+        .into_iter()
+        .collect::<Vec<_>>();
+    for owner in [&root, &leaf] {
+        assert_eq!(used(owner), 3 * PAGE_SIZE);
+        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, 3 * PAGE_SIZE]);
+    }
+    // The unused reservation tail is real owned budget, independent of the
+    // initialized physical frames. This does not force allocator-global OOM.
+    drop(reservation);
+    let held = frames[0].clone();
+    drop(frames);
+    for owner in [&root, &leaf] {
+        assert_eq!(used(owner), PAGE_SIZE);
+        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, PAGE_SIZE]);
+    }
+    drop(held);
+    for owner in [&root, &leaf] {
+        assert_eq!(used(owner), 0);
+        assert_eq!(owner.state.lock().kinds, [0; 5]);
+    }
 }

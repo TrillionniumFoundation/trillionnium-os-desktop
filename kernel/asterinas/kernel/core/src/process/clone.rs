@@ -497,7 +497,7 @@ fn clone_child_task(
         thread_builder = clone_child_cleartid(thread_builder, clone_args.child_tid, clone_flags);
         thread_builder = clone_child_settid(thread_builder, clone_args.child_tid, clone_flags);
 
-        let child_task = thread_builder.build();
+        let child_task = thread_builder.build()?;
         process
             .tasks()
             .lock()
@@ -511,8 +511,10 @@ fn clone_child_task(
         child_task
     };
 
+    // Commit only after the task has joined the process under the TSYNC guard.
+    // Failed stack admission drops the reservation and refunds the PID.
     // Consume the whole option before moving the cgroup borrowed by its guard.
-    pids_charge.map_or((), |charge| charge.apply());
+    let () = pids_charge.map_or((), |charge| charge.apply());
     child_task
         .as_posix_thread()
         .unwrap()
@@ -657,7 +659,7 @@ fn clone_child_process(
             child_sig_dispositions,
             child_user_ns,
             child_thread_builder,
-        )
+        )?
     };
 
     clone_pidfd(ctx, &child, clone_flags, clone_args.pidfd)?;
@@ -861,7 +863,7 @@ fn create_child_process(
     sig_dispositions: Arc<Mutex<SigDispositions>>,
     user_ns: Arc<UserNamespace>,
     thread_builder: PosixThreadBuilder,
-) -> Arc<Process> {
+) -> Result<Arc<Process>> {
     let child_proc = Process::new(
         pid,
         vmar,
@@ -872,10 +874,12 @@ fn create_child_process(
         user_ns,
     );
 
-    let child_task = thread_builder.process(Arc::downgrade(&child_proc)).build();
+    let child_task = thread_builder
+        .process(Arc::downgrade(&child_proc))
+        .build()?;
     child_proc.tasks().lock().insert(child_task).unwrap();
 
-    child_proc
+    Ok(child_proc)
 }
 
 pub(in crate::process) fn set_parent_and_group(

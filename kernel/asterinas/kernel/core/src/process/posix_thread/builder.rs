@@ -171,7 +171,12 @@ impl PosixThreadBuilder {
         self
     }
 
-    pub(crate) fn build(self) -> Arc<Task> {
+    pub(crate) fn build(self) -> Result<Arc<Task>> {
+        // Finish budget, physical-frame and kernel-mapping admission before
+        // entering the infallible cyclic task/thread ownership construction.
+        let stack = ostd::task::PreparedTaskStack::try_new(
+            crate::fs::cgroupfs::charge_current_kernel_stack,
+        )?;
         let Self {
             tid,
             user_ctx,
@@ -204,7 +209,7 @@ impl PosixThreadBuilder {
         let fs = fs
             .unwrap_or_else(|| Arc::new(ThreadFsInfo::new(ns_proxy.mnt_ns().new_path_resolver())));
 
-        Arc::new_cyclic(|weak_task| {
+        Ok(Arc::new_cyclic(|weak_task| {
             let posix_thread = {
                 let prof_clock = ProfClock::new();
                 let virtual_timer_manager = TimerManager::new(prof_clock.user_clock().clone());
@@ -261,9 +266,10 @@ impl PosixThreadBuilder {
                 user_ctx,
                 thread,
                 thread_local,
+                stack,
                 #[cfg(feature = "g1d-trusted-control")]
                 initial_user_startup,
             )
-        })
+        }))
     }
 }

@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sched.h>
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,7 +70,7 @@ static unsigned long await_stat(const char *group, const char *kind, unsigned lo
 static unsigned long await_total(const char *group, unsigned long ceiling) {
     unsigned long value = number(group, "hepta.page.current"); unsigned count = 0;
     while (value > ceiling && count++ < 1000) { delay(); value = number(group,"hepta.page.current"); }
-    printf("{\"total\":%lu,\"private\":%lu,\"anonymous_vmo\":%lu,\"file_cache\":%lu,\"observations\":%u}\n",value,stat_value(group,"private"),stat_value(group,"anonymous_vmo"),stat_value(group,"file_cache"),count);
+    printf("{\"total\":%lu,\"private\":%lu,\"anonymous_vmo\":%lu,\"file_cache\":%lu,\"page_table\":%lu,\"kernel_stack\":%lu,\"observations\":%u}\n",value,stat_value(group,"private"),stat_value(group,"anonymous_vmo"),stat_value(group,"file_cache"),stat_value(group,"page_table"),stat_value(group,"kernel_stack"),count);
     return value;
 }
 /* Commit the inherited stack VMO from the observer before fork. Otherwise a
@@ -352,6 +353,148 @@ static void page_tables(void) {
     if(fd>=0)close(fd);
     check("page_table_group_removed",rmdir(TABLE)==0);
 }
+/* CLONE_VM shares already resident user pages/table paths. Its only new
+ * accounted allocation is the POSIX task's actual kernel stack. The observer
+ * owns and pre-faults the user stacks before entering the capped subtree. */
+#define STACK_PARENT BASE "/stacks"
+#define STACK_LEAF STACK_PARENT "/leaf"
+#define USER_STACK (64*1024UL)
+struct stack_control { _Atomic unsigned ready, release; };
+static int stack_child(void *argument) {
+    struct stack_control *control=argument;
+    atomic_store(&control->ready,1);
+    while(!atomic_load(&control->release))delay();
+    return 0;
+}
+static pid_t start_stack_child(char *stack,struct stack_control *control) {
+    atomic_store(&control->ready,0);atomic_store(&control->release,0);
+    return clone(stack_child,stack+USER_STACK,CLONE_VM|SIGCHLD,control);
+}
+static pid_t start_stack_thread(char *stack,struct stack_control *control) {
+    atomic_store(&control->ready,0);atomic_store(&control->release,0);
+    return clone(stack_child,stack+USER_STACK,CLONE_VM|CLONE_SIGHAND|CLONE_THREAD|CLONE_FS|CLONE_FILES,control);
+}
+static int ready_stack_child(pid_t child,struct stack_control *control) {
+    if(child<0)return 0;
+    for(unsigned i=0;i<5000;i++) {
+        if(atomic_load(&control->ready))return 1;
+        delay();
+    }
+    return 0;
+}
+static int stop_stack_child(pid_t child,struct stack_control *control) {
+    if(child<0)return 0;
+    atomic_store(&control->release,1);
+    int status=0;
+    return waitpid(child,&status,0)==child&&WIFEXITED(status)&&WEXITSTATUS(status)==0;
+}
+static int remove_stack_group(const char *path) {
+    int rc=-1,saved=0;unsigned attempts=0;
+    for(;attempts<1000;attempts++) {
+        rc=rmdir(path);saved=errno;
+        if(rc==0||saved!=EBUSY)break;
+        /* Migration can retain a CPU debit lease until an actual switch. */
+        delay();
+    }
+    printf("{\"stack_group_remove\":\"%s\",\"result\":%d,\"errno\":%d,\"observations\":%u}\n",path,rc,rc?saved:0,attempts);
+    return rc;
+}
+static void kernel_stacks(void) {
+    enum { COUNT=4 };
+    char *stacks=mmap(NULL,(COUNT+1)*USER_STACK,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    struct stack_control *control=mmap(NULL,PAGE,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS,-1,0);
+    check("kernel_stack_observer_owned_user_memory",stacks!=MAP_FAILED&&control!=MAP_FAILED);
+    if(stacks==MAP_FAILED||control==MAP_FAILED)return;
+    for(size_t i=0;i<(COUNT+1)*USER_STACK;i+=PAGE)stacks[i]=0;
+    memset(control,0,PAGE);
+    pid_t child=start_stack_child(stacks,&control[0]);
+    check("kernel_stack_warm_shared_vm_child",ready_stack_child(child,&control[0]));
+    check("kernel_stack_warm_child_exits",stop_stack_child(child,&control[0]));
+    check("kernel_stack_pid_controller_enabled",store("/sys/fs/cgroup/cgroup.subtree_control","+pids")==0&&store(BASE "/cgroup.subtree_control","+pids")==0);
+    check("kernel_stack_groups_created",mkdir(STACK_PARENT,0755)==0&&store(STACK_PARENT "/cgroup.subtree_control","+pids")==0&&mkdir(STACK_LEAF,0755)==0);
+    check("kernel_stack_creator_enters_leaf",join(STACK_LEAF)==0);
+    unsigned long baseline=stat_value(STACK_LEAF,"kernel_stack");
+    unsigned long tables=stat_value(STACK_LEAF,"page_table");
+    unsigned long pids=number(STACK_LEAF,"pids.current");
+    check("kernel_stack_pid_baseline_is_actual_creator",pids==1);
+    unsigned long parent_baseline=stat_value(STACK_PARENT,"kernel_stack");
+    child=start_stack_child(stacks,&control[0]);
+    check("kernel_stack_real_shared_vm_child_ready",ready_stack_child(child,&control[0]));
+    check("kernel_stack_live_child_has_actual_pid_charge",number(STACK_LEAF,"pids.current")==pids+1);
+    unsigned long bytes=stat_value(STACK_LEAF,"kernel_stack")-baseline;
+    printf("{\"actual_kernel_stack_bytes\":%lu}\n",bytes);
+    check("kernel_stack_actual_positive_frame_charge",bytes>0&&bytes%PAGE==0);
+    check("kernel_stack_shared_vm_allocates_no_user_tables",stat_value(STACK_LEAF,"page_table")==tables);
+    check("kernel_stack_charge_reaches_ancestor",stat_value(STACK_PARENT,"kernel_stack")==parent_baseline+bytes);
+    check("kernel_stack_real_child_exits",stop_stack_child(child,&control[0]));
+    check("kernel_stack_last_frame_release_refunds",await_stat(STACK_LEAF,"kernel_stack",baseline)==baseline);
+    check("kernel_stack_pids_return_to_baseline",number(STACK_LEAF,"pids.current")==pids);
+    if(bytes==0||bytes%PAGE!=0){join("/sys/fs/cgroup");return;}
+    child=start_stack_thread(stacks,&control[0]);
+    check("kernel_stack_real_thread_ready_and_counted",ready_stack_child(child,&control[0])&&number(STACK_LEAF,"pids.current")==pids+1);
+    check("kernel_stack_real_thread_same_physical_size",stat_value(STACK_LEAF,"kernel_stack")==baseline+bytes&&stat_value(STACK_LEAF,"page_table")==tables);
+    atomic_store(&control[0].release,1);
+    check("kernel_stack_thread_actual_frames_refunded",await_stat(STACK_LEAF,"kernel_stack",baseline)==baseline);
+    check("kernel_stack_thread_pid_refunded",number(STACK_LEAF,"pids.current")==pids);
+    for(unsigned level=0;level<2;level++) {
+        const char *limited=level?STACK_PARENT:STACK_LEAF;
+        unsigned long current=number(limited,"hepta.page.current");
+        unsigned long leaf_current=number(STACK_LEAF,"hepta.page.current");
+        unsigned long leaf_events=number(STACK_LEAF,"hepta.page.events");
+        unsigned long parent_events=number(STACK_PARENT,"hepta.page.events");
+        check(level?"kernel_stack_ancestor_exact_short_ceiling":"kernel_stack_leaf_exact_short_ceiling",set_max(limited,current+bytes-PAGE)==0);
+        errno=0;child=start_stack_child(stacks,&control[0]);int saved=errno;
+        check(level?"kernel_stack_ancestor_denies_clone_ENOMEM":"kernel_stack_leaf_denies_clone_ENOMEM",child==-1&&saved==ENOMEM);
+        check("kernel_stack_denied_child_never_started",atomic_load(&control[0].ready)==0);
+        if(child>=0)stop_stack_child(child,&control[0]);
+        check("kernel_stack_denial_no_user_table_allocation",stat_value(STACK_LEAF,"page_table")==tables);
+        check("kernel_stack_denial_rolls_back_entire_leaf_reservation",number(STACK_LEAF,"hepta.page.current")==leaf_current&&stat_value(STACK_LEAF,"kernel_stack")==baseline);
+        check("kernel_stack_denial_leaks_no_pids",number(STACK_LEAF,"pids.current")==pids);
+        check("kernel_stack_event_only_at_denying_level",number(STACK_LEAF,"hepta.page.events")==leaf_events+!level&&number(STACK_PARENT,"hepta.page.events")==parent_events+level);
+        errno=0;child=start_stack_thread(stacks,&control[0]);saved=errno;
+        check(level?"kernel_stack_ancestor_denies_thread_ENOMEM":"kernel_stack_leaf_denies_thread_ENOMEM",child==-1&&saved==ENOMEM);
+        check("kernel_stack_denied_thread_never_started",atomic_load(&control[0].ready)==0);
+        atomic_store(&control[0].release,1);
+        check("kernel_stack_thread_denial_refunds_pid_precharge",number(STACK_LEAF,"pids.current")==pids);
+        check("kernel_stack_thread_denial_rolls_back_full_leaf_charge",number(STACK_LEAF,"hepta.page.current")==leaf_current&&stat_value(STACK_LEAF,"kernel_stack")==baseline);
+        check("kernel_stack_thread_event_only_at_denying_level",number(STACK_LEAF,"hepta.page.events")==leaf_events+2*!level&&number(STACK_PARENT,"hepta.page.events")==parent_events+2*level);
+        if(level) {
+            /* The exhausted branch stays capped while a sibling can create
+             * a genuine new task; this is isolation, not a global reserve. */
+            check("kernel_stack_sibling_creator_migrates",join(RECOVER)==0);
+            unsigned long recovery=stat_value(RECOVER,"kernel_stack");
+            child=start_stack_child(stacks,&control[0]);
+            check("kernel_stack_sibling_recovers_despite_exhausted_branch",ready_stack_child(child,&control[0])&&stat_value(RECOVER,"kernel_stack")==recovery+bytes);
+            check("kernel_stack_sibling_child_exits",stop_stack_child(child,&control[0]));
+            check("kernel_stack_sibling_frames_refunded",await_stat(RECOVER,"kernel_stack",recovery)==recovery);
+            check("kernel_stack_creator_returns_to_leaf",join(STACK_LEAF)==0);
+        }
+        char path[256];snprintf(path,sizeof(path),"%s/hepta.page.max",limited);
+        check("kernel_stack_reset_admission",store(path,"max")==0);
+    }
+    /* Four live children hold distinct real stack segments. With every byte
+     * admitted, a fifth creation must fail, then all final references refund. */
+    unsigned long initial=number(STACK_LEAF,"hepta.page.current");
+    check("kernel_stack_four_live_exact_ceiling",set_max(STACK_LEAF,initial+COUNT*bytes)==0);
+    pid_t children[COUNT];int all_ready=1;
+    for(unsigned i=0;i<COUNT;i++) {
+        children[i]=start_stack_child(stacks+i*USER_STACK,&control[i]);
+        all_ready=ready_stack_child(children[i],&control[i])&&all_ready;
+    }
+    check("kernel_stack_four_simultaneous_actual_stacks",all_ready&&stat_value(STACK_LEAF,"kernel_stack")==baseline+COUNT*bytes);
+    errno=0;pid_t extra=start_stack_child(stacks+COUNT*USER_STACK,&control[COUNT]);int saved=errno;
+    check("kernel_stack_fifth_at_exact_ceiling_denied",extra==-1&&saved==ENOMEM);
+    for(unsigned i=0;i<COUNT;i++)atomic_store(&control[i].release,1);
+    int exited=1;for(unsigned i=0;i<COUNT;i++)exited=stop_stack_child(children[i],&control[i])&&exited;
+    if(extra>=0)stop_stack_child(extra,&control[COUNT]);
+    check("kernel_stack_four_live_children_exit",exited);
+    check("kernel_stack_all_real_segments_refunded",await_stat(STACK_LEAF,"kernel_stack",baseline)==baseline);
+    check("kernel_stack_all_pids_refunded",number(STACK_LEAF,"pids.current")==pids);
+    check("kernel_stack_leave_subtree",join("/sys/fs/cgroup")==0);
+    check("kernel_stack_groups_removed",remove_stack_group(STACK_LEAF)==0&&remove_stack_group(STACK_PARENT)==0);
+    munmap(stacks,(COUNT+1)*USER_STACK);munmap(control,PAGE);
+}
+
 int main(int argc, char **argv) {
     if(argc>1){(void)argv;return 99;}
     setvbuf(stdout,NULL,_IONBF,0);
@@ -368,6 +511,7 @@ int main(int argc, char **argv) {
     check("release_real_filesystem_cache",umount("/page-cache")==0);
     check("mixed_process_private_final_frames_refunded",await_stat(WORK,"private",0)==0);
     check("mixed_process_page_table_frames_refunded",await_stat(WORK,"page_table",0)==0);
+    check("mixed_process_kernel_stack_frames_refunded",await_stat(WORK,"kernel_stack",0)==0);
     unsigned long retained=number(WORK,"hepta.page.current");
     printf("{\"retained_after_unmount\":%lu,\"anonymous_vmo\":%lu,\"file_cache\":%lu}\n",retained,stat_value(WORK,"anonymous_vmo"),stat_value(WORK,"file_cache"));
     check("retained_cache_pages_still_accounted",retained==stat_value(WORK,"anonymous_vmo")+stat_value(WORK,"file_cache"));
@@ -399,6 +543,7 @@ int main(int argc, char **argv) {
     check("sibling_recovery_child_created",child>0); if(child>0)waitpid(child,&status,0);
     check("sibling_actual_private_and_shared_allocation_after_workload_denials",child>0&&WIFEXITED(status)&&WEXITSTATUS(status)==0);
     check("sibling_final_reference_refunds",await_total(RECOVER,0)==0);
+    kernel_stacks();
     concurrent_frames();
     page_tables();
     close(denied_file);
