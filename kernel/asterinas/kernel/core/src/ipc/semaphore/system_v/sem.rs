@@ -89,7 +89,9 @@ impl PendingOp {
     }
 
     pub(super) fn set_status(&self, status: Status) {
-        self.status.store(status, Ordering::Relaxed);
+        // The waiter may observe terminal status before consuming the waker
+        // notification. Publish the completed semaphore operation directly.
+        self.status.store(status, Ordering::Release);
     }
 
     pub(super) fn waker(&self) -> Option<&Arc<Waker>> {
@@ -135,7 +137,7 @@ impl Debug for PendingOp {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("PendingOp")
             .field("sops", &self.sops)
-            .field("status", &(self.status.load(Ordering::Relaxed)))
+            .field("status", &(self.status.load(Ordering::Acquire)))
             .field("pid", &self.pid)
             .finish()
     }
@@ -283,14 +285,14 @@ pub(crate) fn sem_op(
             // queued operation. Only the shared operation status is terminal;
             // keep its original timeout across internal state rechecks.
             let result = waiter.pause_until_or_timeout(
-                || (!matches!(status.load(Ordering::Relaxed), Status::Pending)).then_some(()),
+                || (!matches!(status.load(Ordering::Acquire), Status::Pending)).then_some(()),
                 timeout.as_ref(),
             );
             (result, status)
         }
     };
 
-    if matches!(status.load(Ordering::Relaxed), Status::Pending) {
+    if matches!(status.load(Ordering::Acquire), Status::Pending) {
         // Remove and check again to avoid race conditions
         let _ = ipc_ns.with_sem_set(sem_id, PermissionMode::empty(), |sem_set| {
             let mut inner = sem_set.inner();
@@ -306,7 +308,7 @@ pub(crate) fn sem_op(
         });
     }
 
-    map_status_to_result(status.load(Ordering::Relaxed), waiter_result.err())
+    map_status_to_result(status.load(Ordering::Acquire), waiter_result.err())
 }
 
 /// Checks whether there are two operations that will operate on the same semaphore and the first

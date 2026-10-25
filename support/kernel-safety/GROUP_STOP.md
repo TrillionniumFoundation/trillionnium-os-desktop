@@ -66,7 +66,9 @@ compatibility work.
 System V semaphore waits likewise use their existing pending-operation status
 as a completion condition. Stop/continue does not itself finish or cancel a
 queued semop. Its existing signal/timeout cleanup and real status transitions
-remain in place. Poller raw notifications retain their original caller-recheck
+remain in place. Terminal status is published with Release and observed with
+Acquire, including the condition fast path that may return before consuming a
+waker notification. Poller raw notifications retain their original caller-recheck
 contract; generic raw notifications are not promoted into operation success.
 
 SIGKILL leaves through the original signal handling and group-exit path. An
