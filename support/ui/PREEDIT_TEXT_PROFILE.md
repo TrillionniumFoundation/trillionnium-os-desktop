@@ -10,19 +10,24 @@ The preedit-only product does not advertise PasteText.
 The original Hepta input owner, ImeRouter, TextInput, ChatWorkspace, Agentd
 and writer paths remain in their pinned original source. The SDK patch makes
 the existing XIM callbacks the preferred input-context style and retains that
-context when optional callback spot forwarding is unsupported. A positioning
-warning never grants composition or execution authority.
+context when optional callback spot forwarding is unsupported. It also makes
+window focus gain/loss conditional on real state transitions: a redundant X11
+visibility notification cannot restore an old caret or cancel live preedit,
+and repeated loss cannot overwrite the saved editor. Actual SDK Window and
+drawn TextInput regressions cover duplicate gain/loss, true loss/return and
+other-window isolation. A positioning warning never grants composition or
+execution authority.
 
 ## Frozen inputs and the integrated companion
 
 The profile freezes the executing Hepta commit/tree and preparation-helper
-commit/tree plus both helper scripts' SHA256. The integrated companion uses
-original Hepta `1b980b0bd36bb0ec66540e5171c54a8f2ea828ba` for both execution
-and preparation. The historical `aa6a86e` helper commit is unavailable from
-the original repository; the integrated companion retains byte-identical
-helper scripts with the same two frozen SHA256 values. The reviewed SDK
-tree, patches and byte-strict helper checks are unchanged. Changing the
-companion requires updating both profile identities and every existing Hepta
+commit/tree plus both helper scripts' SHA256. Execution and preparation must
+use that same integrated original Hepta companion. The helper permits only
+the two reviewed window source/test files in this preedit profile; arbitrary
+widget changes and clipboard-profile widget changes remain refused. The
+complete SDK tree, exact patch/manifest bytes and helper scripts are checked
+independently. Changing the companion requires updating both profile
+identities and every existing Hepta
 dependency pin and lock together. The builder checks all Hepta sources in the
 actual UI graph and all five committed product lockfiles against that single
 execution pin.
