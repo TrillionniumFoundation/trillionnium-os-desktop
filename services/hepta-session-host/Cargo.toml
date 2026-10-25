@@ -13,14 +13,14 @@ resolver = "2"
 native-text = ["dep:codex-hepta-agentd", "dep:hepta-control-core"]
 
 [dependencies]
-codex-hepta-agentd = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9", optional = true }
-hepta-control-core = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9", optional = true }
-codex-hepta-objective = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-codex-hepta-operations = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-codex-hepta-types = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-codex-hepta-agent-protocol = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
+codex-hepta-agentd = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082", optional = true }
+hepta-control-core = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082", optional = true }
+codex-hepta-objective = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+codex-hepta-operations = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+codex-hepta-types = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+codex-hepta-agent-protocol = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
 trill-ui-core = { path = "../../ui/core" }
-codex-hepta-memory = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
+codex-hepta-memory = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
 hepta-os-observer = { path = "../hepta-os", features = ["objective-history"] }
 trill-session = { path = "../../ui/session", features = ["objective-submission"] }
 serde = { version = "=1.0.229", features = ["derive"] }
@@ -28,8 +28,8 @@ serde_json = "=1.0.151"
 tokio = { version = "=1.53.3", features = ["rt-multi-thread", "time", "net", "io-util", "fs"] }
 
 [dev-dependencies]
-codex-hepta-contracts = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-codex-hepta-paths = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
+codex-hepta-contracts = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+codex-hepta-paths = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
 tempfile = "3.23.0"
 
 [profile.dev-small]
@@ -41,13 +41,13 @@ strip = "symbols"
 [patch.crates-io]
 # Cargo applies patches only from the root workspace. Keep the original
 # Hepta graph and its security fixes when Agentd is a native UI dependency.
-i18n-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-secret-service = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-zbus-secret-service-keyring-store = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-anymap2 = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-imbl = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-matrix-sdk-sqlite = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
-matrix-sdk-crypto = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9" }
+i18n-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+secret-service = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+zbus-secret-service-keyring-store = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+anymap2 = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+imbl = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+matrix-sdk-sqlite = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
+matrix-sdk-crypto = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "9600de28f5295c1758dd7e19bcac743fe5cfc082" }
 crossterm = { git = "https://github.com/openai-oss-forks/crossterm", rev = "45fecb9508105988f42fe6ff0441783ed3717f92" }
 tokio-tungstenite = { git = "https://github.com/openai-oss-forks/tokio-tungstenite", rev = "0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186" }
 tungstenite = { git = "https://github.com/openai-oss-forks/tungstenite-rs", rev = "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f" }

@@ -7,8 +7,8 @@ through an injected original authority. It provides no issuer or database owner.
 An unconfigured standalone Session remains unavailable.
 
 All original Hepta dependencies and Hepta-carried patches in this crate are
-fixed at `7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9`, tree
-`cf53a7c0e7ad57772238b614b673d176386ddfe5`, matching the native UI source.
+fixed at `9600de28f5295c1758dd7e19bcac743fe5cfc082`, tree
+`5cf15149d0e0d2ef1ae7d1d2784ea55c99b9a658`, matching the native UI source.
 The [fixed cross-repository map](../../docs/SOURCES.md#hepta-native-organ) and
 [latest scoped executions](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
 keep component tests separate from the final combined workspace, installed
@@ -272,7 +272,9 @@ remain the original finite Notes contract. Desktop keeps only UI validation and
 original Notes payload/operation construction; Agentd can use that same compiler
 inside its one production writer process without depending on Desktop.
 
-**Integration requirement:** this wrapper requires the combined Hepta companion
+**Source integration:** the current pinned companion contains this API. The
+[cross-root dependency check](../../support/ui/DEPENDENCIES.md) binds both
+Cargo roots and the shared compiler source. This wrapper requires the combined Hepta companion
 containing the shared compiler change (`b0b78be161addb9d574dc359f3e6f757e35021bf`
 or its integrated equivalent). It must be selected through the single frozen
 Hepta source profile and all existing Hepta dependency pins/locks updated

@@ -64,7 +64,11 @@ pub fn compile_notes_intent(
         deadline: context.deadline,
     })
     .map_err(|_| ObjectiveHostIssue::InvalidIntent)?;
-    Ok(CompiledNotesIntent { source_envelope_json, payload_json, operation })
+    Ok(CompiledNotesIntent {
+        source_envelope_json,
+        payload_json,
+        operation,
+    })
 }
 
 /// A frozen profile for one persistent principal and registered signing adapter.
