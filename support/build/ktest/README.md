@@ -44,6 +44,21 @@ The runner installs OSDK from the vendored source with `--locked`, then invokes
 `cargo osdk test` from `kernel/asterinas/ostd/`,
 `kernel/asterinas/kernel/core/`, `kernel/asterinas/osdk/deps/frame-allocator/`, and
 `kernel/asterinas/kernel/core/comps/mlsdisk/`, respectively. All four run by default.
+After a complete default run, verify its aggregate receipt with:
+
+```sh
+python3 -I -B support/build/ktest/check-report.py /absolute/path/to/ktest-output
+```
+
+This reads the required crate inventory from the same checkout's `run.py`,
+requires every crate exactly once, and reruns the original `check.py` checks
+against every retained QEMU serial log and exit record. Per-crate and aggregate
+receipts must equal those recomputed results. A two-crate historical report,
+missing suite, duplicated guest, timeout, or required soft skip cannot qualify
+the current four-crate default gate. This entry only rechecks evidence; it
+does not build or boot a kernel. Its synthetic-evidence host regressions run
+with `python3 -I -B -m unittest discover -s support/build/ktest -p test_report.py -v`.
+
 `OSDK_CARGO_LOCK` selects the
 corresponding fixed test-base lock. The installed downstream OSDK lock patch
 copies it into the generated workspace and passes `--locked` to Cargo. The

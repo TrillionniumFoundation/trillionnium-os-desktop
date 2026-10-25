@@ -11,6 +11,10 @@ on:
       - 'ui/broker/**'
       - 'ui/session/**'
       - 'libs/os-abi/**'
+      - 'support/ui/HEPTA_SHARED_PRESENTER.json'
+      - 'support/ui/linux-preedit-profile.json'
+      - 'support/ui/verify_product_dependencies.py'
+      - 'support/ui/test_product_dependencies.py'
       - '.github/workflows/hepta-session-host.yml'
   push:
     branches: [main]
@@ -23,6 +27,10 @@ on:
       - 'ui/broker/**'
       - 'ui/session/**'
       - 'libs/os-abi/**'
+      - 'support/ui/HEPTA_SHARED_PRESENTER.json'
+      - 'support/ui/linux-preedit-profile.json'
+      - 'support/ui/verify_product_dependencies.py'
+      - 'support/ui/test_product_dependencies.py'
       - '.github/workflows/hepta-session-host.yml'
   workflow_dispatch:
 
@@ -61,6 +69,13 @@ jobs:
           rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pkg-config libssl-dev
+      - name: Verify the unified original Hepta product dependencies before Cargo
+        run: |
+          set -euo pipefail
+          python3 -I -B support/ui/test_product_dependencies.py
+          python3 -I -B -O support/ui/test_product_dependencies.py
+          python3 -I -B support/ui/verify_product_dependencies.py \
+            | tee "$RUNNER_TEMP/hepta-session-host/product-dependencies.json"
       - name: Resolve and identify the immutable original owner dependency
         run: |
           set -euo pipefail
@@ -72,7 +87,7 @@ jobs:
             --locked --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
             > "$RUNNER_TEMP/hepta-session-host/metadata.json"
           python3 - <<'PY'
-          import json, os, pathlib, re, subprocess, tomllib
+          import json, os, pathlib, re, subprocess, sys, tomllib
           manifest = tomllib.loads(pathlib.Path('services/hepta-session-host/Cargo.toml').read_text())
           dependency = manifest['dependencies']['codex-hepta-memory']
           assert dependency['git'] == 'https://github.com/TrillionniumFoundation/hepta-private-ci'
@@ -94,6 +109,8 @@ jobs:
           owner = next(package for package in packages if package['name'] == 'codex-hepta-memory')
           upstream = pathlib.Path(owner['manifest_path']).resolve().parents[2]
           assert subprocess.check_output(['git', '-C', str(upstream), 'rev-parse', 'HEAD'], text=True).strip() == revision
+          subprocess.run([sys.executable, '-I', '-B', 'support/ui/verify_product_dependencies.py',
+                          '--hepta-root', str(upstream)], check=True)
           original_bytes = subprocess.check_output(['git', '-C', str(upstream), 'show', revision + ':codex-rs/Cargo.toml'])
           assert (upstream / 'codex-rs/Cargo.toml').read_bytes() == original_bytes
           expected_patches = tomllib.loads(original_bytes.decode())['patch']
