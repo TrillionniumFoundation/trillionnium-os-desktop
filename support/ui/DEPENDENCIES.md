@@ -80,10 +80,23 @@ Before Cargo, the nine dependency guard regressions run normally and with
 Python optimization enabled. Actual native Cargo metadata must then pass
 `build_text_product.validate_graph` and `verify_source_caches`; the canonical
 source verifier checks the resolved original Hepta checkout, including its
-reviewed source files and the mirrored Notes readback contract. This baseline
-does not enable an optional SDK patch profile. Formatting, full native workspace
+reviewed source files and the mirrored Notes readback contract. The default
+product checks keep their original Git SDK. Formatting, full native workspace
 tests, native binary builds, all-target Clippy with warnings denied and
 `hepta-session-host --features native-text --lib text::tests` are required.
+
+An additional explicit prepared-preedit component creates disposable Desktop,
+clean same-pin Hepta helper and SDK sources. The canonical helper generates
+the complete 102-crate override from actual original metadata, and Cargo alone
+generates the disposable UI path lock. That lock is restored in a `finally`
+guard, including on rejected tests or caught termination. The component runs
+the actual SDK Window focus scope (4 tests) and TextInput scope (35 tests),
+checks named passes rather than accepting Cargo's zero-test success, and
+re-verifies helper/SDK/full graph and original source caches. Eight component
+guard regressions run normally and under Python optimization. This adds
+reviewed SDK regression coverage without changing the default product source
+or claiming its binaries were executed with that SDK. See
+[PREEDIT_TEXT_PROFILE.md](PREEDIT_TEXT_PROFILE.md) for ownership and commands.
 
 The final gate checks both committed product locks, checkout commit/tree,
 tracked and untracked source cleanliness, actual native graph/cache identities

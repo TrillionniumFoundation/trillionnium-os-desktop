@@ -112,6 +112,10 @@ jobs:
             2>&1 | tee "$evidence/product-guard-tests.log"
           python3 -I -B -O support/ui/test_product_dependencies.py \
             2>&1 | tee "$evidence/product-guard-optimized-tests.log"
+          python3 -I -B support/ui/test_preedit_component.py \
+            2>&1 | tee "$evidence/preedit-component-guard-tests.log"
+          python3 -I -B -O support/ui/test_preedit_component.py \
+            2>&1 | tee "$evidence/preedit-component-guard-optimized-tests.log"
           python3 -I -B support/ui/verify_product_dependencies.py \
             | tee "$evidence/product-dependencies.json"
 
@@ -204,6 +208,17 @@ jobs:
           cargo test --manifest-path services/hepta-session-host/Cargo.toml --locked \
             --features native-text --lib text::tests \
             2>&1 | tee "$RUNNER_TEMP/hepta-native-ui/evidence/native-text-tests.log"
+
+      - name: Test the explicit prepared-preedit SDK in isolated source copies
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
+          python3 -I -B support/ui/preedit_component.py \
+            --metadata "$evidence/native-metadata.json" \
+            --source-receipt "$evidence/native-source-before.json" \
+            --work-dir "$RUNNER_TEMP/hepta-native-ui/preedit-source" \
+            --output "$evidence/preedit-sdk-component" --jobs 1 \
+            2>&1 | tee "$evidence/preedit-sdk-component-runner.log"
 
       - name: Enforce unchanged source, locks and actual native dependency caches
         if: always()

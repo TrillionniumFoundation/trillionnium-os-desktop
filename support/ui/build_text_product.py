@@ -22,6 +22,7 @@ sys.path.insert(0, str(HERE / "product"))
 import organ_release_profile as source_profile
 import desktop
 import preedit_source
+import preedit_component
 
 
 def digest(path):
@@ -228,7 +229,11 @@ def build(args):
 
     def run(name, command, machine_output=False):
         if command[0] == "cargo" and sdk_config is not None and "ui/Cargo.toml" in command:
-            command = [command[0], "--config", str(sdk_config), *command[1:]]
+            # Clippy forwards its own arguments to Cargo; a global --config
+            # before the subcommand can be lost by that forwarding.
+            command = ([command[0], "clippy", "--config", str(sdk_config), *command[2:]]
+                       if command[1] == "clippy"
+                       else [command[0], "--config", str(sdk_config), *command[1:]])
         if command[0] in tools:
             command = [tools[command[0]], *command[1:]]
         start = time.monotonic()
@@ -282,13 +287,21 @@ def build(args):
         receipt["source_caches"] = verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile, sdk_profile)
         run("rustfmt", ["cargo", "fmt", "--manifest-path", "ui/Cargo.toml", "--all", "--", "--check"])
         for name, path, features in (
-            ("native-ui-tests", "ui/Cargo.toml", ["--workspace", *feature]),
+            ("native-ui-tests", "ui/Cargo.toml", ["--workspace", "--all-targets", *feature]),
             ("native-text-tests", "services/hepta-session-host/Cargo.toml", ["--features", "native-text", "--lib"]),
             ("observer-tests", "services/hepta-os/Cargo.toml", []),
             ("support-tests", "support/ui/Cargo.toml", []),
             ("host-contract-tests", "tests/ui/Cargo.toml", []),
         ):
             run(name, ["cargo", "test", "--manifest-path", path, *common, *features])
+        if preedit:
+            receipt["sdk_regressions"] = {}
+            for name, command, test_filter, expected in preedit_component.sdk_test_commands(profile, common):
+                log = run(name, command)
+                receipt["sdk_regressions"][name] = preedit_component.require_test_results(log.read_text(), expected, test_filter)
+                save()
+        run("native-ui-clippy", ["cargo", "clippy", "--manifest-path", "ui/Cargo.toml",
+            "--workspace", "--all-targets", *common, *feature, "--", "-D", "warnings"])
         command = ["cargo", "build", "--manifest-path", "ui/Cargo.toml", "--workspace", "--bins", *common, *feature]
         if args.build_profile == "release":
             command.append("--release")
