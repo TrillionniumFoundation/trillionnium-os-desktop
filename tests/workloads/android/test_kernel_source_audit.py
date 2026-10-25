@@ -78,7 +78,13 @@ class KernelSourceAuditTests(unittest.TestCase):
             ).strip()
             self.assertEqual(report["project_commit"], commit)
             self.assertEqual(report["project_tree"], tree)
-            self.assertEqual(report["blocking_requirements"], ["binder", "seccomp", "mac"])
+            # Native seccomp candidates can advance independently of Binder/MAC.
+            # Their presence must never turn this source scan into runtime proof.
+            self.assertIn("binder", report["blocking_requirements"])
+            self.assertIn("mac", report["blocking_requirements"])
+            self.assertEqual("seccomp" in report["blocking_requirements"],
+                             not bool(report["source_scan"]["seccomp_matches"]))
+            self.assertFalse(report["checks"]["seccomp"]["negative_filter_test_passed"])
             self.assertFalse(report["runtime_android_verified"])
             self.assertFalse(report["booted_android_on_asterinas"])
             self.assertEqual(report["kernel_upstream_lock"]["status"], "matched")

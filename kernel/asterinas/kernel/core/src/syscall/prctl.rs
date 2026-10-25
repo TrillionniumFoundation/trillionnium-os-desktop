@@ -24,6 +24,14 @@ pub(super) fn sys_prctl(
     debug!("prctl_cmd = {:x?}", prctl_cmd);
 
     match prctl_cmd {
+        PrctlCmd::PR_SET_SECCOMP(mode, address) => {
+            super::seccomp::install(mode, address, ctx)?;
+        }
+        PrctlCmd::PR_GET_SECCOMP => {
+            return Ok(SyscallReturn::Return(
+                ctx.posix_thread.seccomp().lock().mode() as _,
+            ));
+        }
         PrctlCmd::PR_SET_PDEATHSIG(signum) => {
             ctx.process.set_parent_death_signal(signum);
         }
@@ -163,6 +171,8 @@ const PR_GET_KEEPCAPS: i32 = 7;
 const PR_SET_KEEPCAPS: i32 = 8;
 const PR_SET_NAME: i32 = 15;
 const PR_GET_NAME: i32 = 16;
+const PR_GET_SECCOMP: i32 = 21;
+const PR_SET_SECCOMP: i32 = 22;
 const PR_CAPBSET_READ: i32 = 23;
 const PR_CAPBSET_DROP: i32 = 24;
 const PR_GET_SECUREBITS: i32 = 27;
@@ -178,6 +188,8 @@ const PR_CAP_AMBIENT: i32 = 47;
 #[expect(non_camel_case_types)]
 #[derive(Clone, Copy, Debug)]
 enum PrctlCmd {
+    PR_SET_SECCOMP(u32, Vaddr),
+    PR_GET_SECCOMP,
     PR_SET_PDEATHSIG(SigNum),
     PR_GET_PDEATHSIG(Vaddr),
     PR_GET_DUMPABLE,
@@ -218,6 +230,18 @@ enum CapAmbientCmd {
 impl PrctlCmd {
     fn from_args(option: i32, arg2: u64, arg3: u64, arg4: u64, arg5: u64) -> Result<PrctlCmd> {
         match option {
+            PR_SET_SECCOMP => {
+                if arg4 != 0 || arg5 != 0 || arg2 > u32::MAX as u64 {
+                    return_errno_with_message!(Errno::EINVAL, "invalid seccomp prctl arguments");
+                }
+                Ok(PrctlCmd::PR_SET_SECCOMP(arg2 as u32, arg3 as Vaddr))
+            }
+            PR_GET_SECCOMP => {
+                if arg2 != 0 || arg3 != 0 || arg4 != 0 || arg5 != 0 {
+                    return_errno_with_message!(Errno::EINVAL, "unused seccomp prctl arguments");
+                }
+                Ok(PrctlCmd::PR_GET_SECCOMP)
+            }
             PR_SET_PDEATHSIG => {
                 let signum = SigNum::try_from(arg2 as u8)?;
                 Ok(PrctlCmd::PR_SET_PDEATHSIG(signum))

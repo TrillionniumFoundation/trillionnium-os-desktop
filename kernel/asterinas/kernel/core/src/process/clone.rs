@@ -185,7 +185,10 @@ impl CloneArgs {
             && !clone_flags.contains(CloneFlags::CLONE_THREAD)
             && ctx.user_space().vmar().has_sealed_initial_image()
         {
-            return_errno_with_message!(Errno::EPERM, "trusted initial image cannot share its VMAR with another Process")
+            return_errno_with_message!(
+                Errno::EPERM,
+                "trusted initial image cannot share its VMAR with another Process"
+            )
         }
 
         // This checks the arguments for all clone-related system calls.
@@ -480,6 +483,7 @@ fn clone_child_task(
         .user_ns(child_user_ns)
         .ns_proxy(child_ns_proxy)
         .default_timer_slack_ns(default_timer_slack_ns);
+        thread_builder = thread_builder.seccomp(posix_thread.seccomp().lock().clone());
         #[cfg(target_arch = "x86_64")]
         {
             thread_builder = thread_builder.fs_base(child_fs_base).gs_base(child_gs_base);
@@ -622,6 +626,7 @@ fn clone_child_process(
             .user_ns(child_user_ns.clone())
             .ns_proxy(child_ns_proxy)
             .default_timer_slack_ns(default_timer_slack_ns)
+            .seccomp(posix_thread.seccomp().lock().clone())
         };
         #[cfg(target_arch = "x86_64")]
         {

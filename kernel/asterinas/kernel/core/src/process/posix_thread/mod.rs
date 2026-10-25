@@ -43,6 +43,7 @@ mod personality;
 mod posix_thread_ext;
 pub(crate) mod ptrace;
 mod robust_list;
+pub(crate) mod seccomp;
 mod thread_local;
 
 pub(crate) use builder::PosixThreadBuilder;
@@ -78,6 +79,10 @@ pub struct PosixThread {
 
     /// Process credentials. At the kernel level, credentials are a per-thread attribute.
     credentials: Credentials,
+
+    /// Thread-local policy snapshots are immutable and inherited by clone.
+    /// This stage never modifies another thread's policy: TSYNC is rejected.
+    seccomp: Mutex<seccomp::Policy>,
 
     /// The file system information of the thread.
     fs: RwMutex<Arc<ThreadFsInfo>>,
@@ -128,6 +133,10 @@ pub struct PosixThread {
 }
 
 impl PosixThread {
+    pub(crate) fn seccomp(&self) -> &Mutex<seccomp::Policy> {
+        &self.seccomp
+    }
+
     pub(crate) fn process(&self) -> Arc<Process> {
         self.process.upgrade().unwrap()
     }

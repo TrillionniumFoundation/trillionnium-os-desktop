@@ -1,6 +1,22 @@
 # A08 build and APK evidence
 
-This is support/android/README.md. The repository ROOT README.md stays 0 bytes.
+This is the Android compatibility development entry point. See the repository
+root README for the current Desktop/Hepta product status.
+
+## Current kernel work — 2026-10-25
+
+The first native x86-64 seccomp stage now has real install and syscall-dispatch
+paths, immutable inherited filters, strict mode and ALLOW/ERRNO/KILL actions.
+Its implementation, limitations and ordinary-kernel reproduction commands are
+documented in [SECCOMP.md](SECCOMP.md). The native core suite passed 302 tests,
+including nine new verifier/policy tests. Ordinary guest syscall qualification
+is recorded separately; a source scan cannot establish it.
+
+This stage does not implement TSYNC, SIGSYS trap delivery, Binder or Android
+SELinux policy. It does not qualify Android boot, APKs, phone hardware or CTS.
+The source auditor continues to inspect immutable commits, so an uncommitted
+seccomp implementation is deliberately absent from its selected-commit scan.
+The checkpoints below remain historical evidence of the earlier source state.
 
 ## Current checkpoint — 2026-10-17 commit-bound source audit
 

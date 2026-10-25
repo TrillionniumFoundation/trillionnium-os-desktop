@@ -12,7 +12,7 @@ use ostd::{
 };
 use spin::Once;
 
-use super::{PosixThread, ThreadLocal};
+use super::{PosixThread, ThreadLocal, seccomp};
 use crate::{
     fs::{file::file_table::FileTable, thread_info::ThreadFsInfo},
     prelude::*,
@@ -49,6 +49,7 @@ pub(crate) struct PosixThreadBuilder {
     user_ns: Option<Arc<UserNamespace>>,
     ns_proxy: Option<Arc<NsProxy>>,
     default_timer_slack_ns: u64,
+    seccomp: seccomp::Policy,
     #[cfg(feature = "g1d-trusted-control")]
     initial_user_startup: Option<Box<dyn FnOnce(&Context<'_>) + Send>>,
 }
@@ -79,6 +80,7 @@ impl PosixThreadBuilder {
             user_ns: None,
             ns_proxy: None,
             default_timer_slack_ns: 50_000, // 50 usec default slack
+            seccomp: seccomp::Policy::default(),
             #[cfg(feature = "g1d-trusted-control")]
             initial_user_startup: None,
         }
@@ -164,6 +166,11 @@ impl PosixThreadBuilder {
         self
     }
 
+    pub(crate) fn seccomp(mut self, policy: seccomp::Policy) -> Self {
+        self.seccomp = policy;
+        self
+    }
+
     pub(crate) fn build(self) -> Arc<Task> {
         let Self {
             tid,
@@ -183,6 +190,7 @@ impl PosixThreadBuilder {
             user_ns,
             ns_proxy,
             default_timer_slack_ns,
+            seccomp,
             #[cfg(feature = "g1d-trusted-control")]
             initial_user_startup,
         } = self;
@@ -210,6 +218,7 @@ impl PosixThreadBuilder {
                     tid: AtomicU32::new(tid),
                     name: Mutex::new(thread_name),
                     credentials,
+                    seccomp: Mutex::new(seccomp),
                     fs: RwMutex::new(fs.clone()),
                     file_table: Mutex::new(Some(file_table.clone_ro())),
                     sig_mask,
