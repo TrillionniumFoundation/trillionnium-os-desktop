@@ -28,7 +28,7 @@ use crate::{
         bio::BlockSet,
         log::{TxLogId, TxLogStore},
     },
-    os::{BTreeMap, RwLock, spawn},
+    os::{BTreeMap, RwMutex, spawn},
     prelude::*,
     tx::CurrentTx,
 };
@@ -45,7 +45,7 @@ pub(crate) struct TxLsmTree<K: RecordKey<K>, V, D>(Arc<TreeInner<K, V, D>>);
 /// Inner structures of `TxLsmTree`.
 pub(super) struct TreeInner<K: RecordKey<K>, V, D> {
     memtable_manager: MemTableManager<K, V>,
-    sst_manager: RwLock<SstManager<K, V>>,
+    sst_manager: RwMutex<SstManager<K, V>>,
     wal_append_tx: WalAppendTx<D>,
     compactor: Compactor<K, V>,
     tx_log_store: Arc<TxLogStore<D>>,
@@ -271,7 +271,7 @@ impl<K: RecordKey<K>, V: RecordValue, D: BlockSet + 'static> TreeInner<K, V, D> 
                 MEMTABLE_CAPACITY,
                 on_drop_record_in_memtable,
             ),
-            sst_manager: RwLock::new(SstManager::new()),
+            sst_manager: RwMutex::new(SstManager::new()),
             wal_append_tx: WalAppendTx::new(&tx_log_store, sync_id),
             compactor: Compactor::new(),
             tx_log_store,
@@ -301,7 +301,7 @@ impl<K: RecordKey<K>, V: RecordValue, D: BlockSet + 'static> TreeInner<K, V, D> 
 
         let recov_self = Self {
             memtable_manager,
-            sst_manager: RwLock::new(sst_manager),
+            sst_manager: RwMutex::new(sst_manager),
             wal_append_tx: WalAppendTx::new(&tx_log_store, sync_id),
             compactor: Compactor::new(),
             tx_log_store,
@@ -978,7 +978,7 @@ mod tests {
     fn tx_lsm_tree_fns() -> Result<()> {
         let nblocks = 102400;
         let mem_disk = MemDisk::create(nblocks)?;
-        let tx_log_store = Arc::new(TxLogStore::format(mem_disk, Key::random())?);
+        let tx_log_store = Arc::new(TxLogStore::format(mem_disk, Key::random().unwrap())?);
         let tx_lsm_tree: TxLsmTree<BlockId, Value, MemDisk> =
             TxLsmTree::format(tx_log_store.clone(), Arc::new(Factory), None, None)?;
 
@@ -990,8 +990,8 @@ mod tests {
                 i as BlockId,
                 Value {
                     hba: i as BlockId,
-                    key: Key::random(),
-                    mac: Mac::random(),
+                    key: Key::random().unwrap(),
+                    mac: Mac::random().unwrap(),
                 },
             );
             tx_lsm_tree.put(k, v)?;
@@ -1011,8 +1011,8 @@ mod tests {
                 i as BlockId,
                 Value {
                     hba: (i * 2) as BlockId,
-                    key: Key::random(),
-                    mac: Mac::random(),
+                    key: Key::random().unwrap(),
+                    mac: Mac::random().unwrap(),
                 },
             );
             tx_lsm_tree.put(k, v)?;

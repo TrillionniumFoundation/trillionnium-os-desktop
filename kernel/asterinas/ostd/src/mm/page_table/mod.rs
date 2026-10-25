@@ -24,7 +24,7 @@ use super::{
 };
 use crate::{
     arch::mm::{PageTableEntry, PagingConsts},
-    mm::page_prop::PageTableFlags,
+    mm::{frame::PhysicalReserve, page_prop::PageTableFlags},
     task::{atomic_mode::AsAtomicModeGuard, disable_preempt},
 };
 
@@ -364,7 +364,21 @@ impl PageTable<KernelPtConfig> {
     /// duplicate the kernel page table with all the kernel mappings shared.
     pub(in crate::mm) fn create_user_page_table(&'static self) -> PageTable<UserPtConfig> {
         let new_root = PageTableNode::alloc(PagingConsts::NR_LEVELS);
+        self.create_user_page_table_with_root(new_root)
+    }
 
+    pub(in crate::mm) fn try_create_user_page_table_from(
+        &'static self,
+        reserve: &PhysicalReserve,
+    ) -> crate::Result<PageTable<UserPtConfig>> {
+        let root = PageTableNode::try_alloc_from(reserve, PagingConsts::NR_LEVELS)?;
+        Ok(self.create_user_page_table_with_root(root))
+    }
+
+    fn create_user_page_table_with_root(
+        &'static self,
+        new_root: PageTableNode<UserPtConfig>,
+    ) -> PageTable<UserPtConfig> {
         let preempt_guard = disable_preempt();
         let mut root_node = self.root.borrow().lock(&preempt_guard);
         let mut new_node = new_root.borrow().lock(&preempt_guard);
@@ -451,6 +465,34 @@ impl<C: PageTableConfig> PageTable<C> {
         va: &Range<Vaddr>,
     ) -> Result<CursorMut<'rcu, C>, PageTableError> {
         self.cursor_mut_with_min_level(guard, va, 1)
+    }
+
+    /// Locks existing nodes, stopping at the first absent branch without allocation.
+    pub(crate) fn cursor_mut_no_prealloc<'rcu, G: AsAtomicModeGuard>(
+        &'rcu self,
+        guard: &'rcu G,
+        va: &Range<Vaddr>,
+    ) -> Result<CursorMut<'rcu, C>, PageTableError> {
+        CursorMut::new_no_prealloc(self, guard.as_atomic_mode_guard(), va)
+    }
+
+    pub(crate) fn cursor_no_prealloc<'rcu, G: AsAtomicModeGuard>(
+        &'rcu self,
+        guard: &'rcu G,
+        va: &Range<Vaddr>,
+    ) -> Result<Cursor<'rcu, C>, PageTableError> {
+        Cursor::new_no_prealloc(self, guard.as_atomic_mode_guard(), va)
+    }
+
+    /// Locks at the root so cursor construction cannot allocate child nodes.
+    /// Reserve authority is supplied separately to each fallible map operation;
+    /// neither this cursor nor the page table retains or inherits a token.
+    pub(crate) fn cursor_mut_no_alloc<'rcu, G: AsAtomicModeGuard>(
+        &'rcu self,
+        guard: &'rcu G,
+        va: &Range<Vaddr>,
+    ) -> Result<CursorMut<'rcu, C>, PageTableError> {
+        self.cursor_mut_with_min_level(guard, va, C::NR_LEVELS)
     }
 
     /// Creates a mapping cursor that locks at `min_level` or higher.

@@ -1,0 +1,59 @@
+diff --git a/codex-rs/hepta-agentd/src/notes_channel_tests.rs b/codex-rs/hepta-agentd/src/notes_channel_tests.rs
+index e62feba..73cda02 100644
+--- a/codex-rs/hepta-agentd/src/notes_channel_tests.rs
++++ b/codex-rs/hepta-agentd/src/notes_channel_tests.rs
+@@ -14,7 +14,7 @@ fn independent_recovery_survives_effect_loss_and_filters_late_datagrams() -> Tes
+         "target":{"session_instance":"11111111111111111111111111111111","task_id":1,"incarnation":"22222222222222222222222222222222"},
+         "operation_id":"exact-operation","payload_sha256":"a".repeat(64)});
+     let raw = serde_json::to_vec(&query)?;
+-    let mut reply = query.clone();
++    let mut reply = query;
+     reply
+         .as_object_mut()
+         .ok_or("reply object")?
+diff --git a/codex-rs/hepta-memory/src/production_notes_owner_tests.rs b/codex-rs/hepta-memory/src/production_notes_owner_tests.rs
+index be731f9..2a86e30 100644
+--- a/codex-rs/hepta-memory/src/production_notes_owner_tests.rs
++++ b/codex-rs/hepta-memory/src/production_notes_owner_tests.rs
+@@ -219,7 +219,28 @@ async fn inherited_notes_settlement_preserves_complete_receipt_under_successor_f
+     .await?;
+     let (payload, identity, target) = fixture()?;
+     let operation = prepare(&writer, payload, &identity).await?;
+-    writer.release().await?;
++    // Normal release must not hide the unresolved application effect. Use the
++    // existing test clock seam to exercise the separate expiry transition at
++    // the persisted deadline, without weakening the production lease fence.
++    assert!(matches!(
++        writer.release().await,
++        Err(ProductionWriterError::Local(
++            LocalLeaseOutboxError::IllegalTransition(reason)
++        )) if reason.contains(&operation)
++    ));
++    let expiry = writer.authority().lease_expires_at_unix_seconds;
++    assert!(matches!(
++        writer.lease.expire_lease_at_unix_seconds(expiry - 1).await,
++        Err(LocalLeaseOutboxError::StaleFence(_))
++    ));
++    assert_eq!(
++        writer.status(&operation).await?,
++        LocalOutcomeState::Indeterminate
++    );
++    let expired = writer.lease.expire_lease_at_unix_seconds(expiry).await?;
++    assert_eq!(expired.state, crate::LocalLeaseState::RolledBack);
++    assert_eq!(expired.generation, 1);
++    assert_eq!(expired.owner_epoch, Some(1));
+     drop(writer);
+     let successor = ProductionDurableWriter::open_with_live_verifier(
+         store.clone(),
+@@ -229,6 +250,11 @@ async fn inherited_notes_settlement_preserves_complete_receipt_under_successor_f
+         /*generation*/ 2,
+     )
+     .await?;
++    assert_eq!(successor.generation(), 2);
++    assert_eq!(
++        successor.status(&operation).await?,
++        LocalOutcomeState::Indeterminate
++    );
+     let request = successor
+         .reconciliation_request(&operation, &identity.destination_id())
+         .await?;

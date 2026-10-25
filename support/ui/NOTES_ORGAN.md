@@ -1,9 +1,12 @@
 # First Linux Notes destination
 
 This slice provides real, bounded Linux socketpair I/O to the existing native
-Rust Notes application. Its operation is **replace the in-memory text of one
-identified Notes document, subject to a revision comparison**. The document is
-not saved to a user file. This is a small destination adapter, not a compositor,
+Rust Notes application. Its operation is **replace the text of one identified
+Notes document, subject to a revision comparison**. The explicitly configured
+durable mode synchronizes application data before replying; without
+`TRILL_NOTES_STATE_DIR`, the existing temporary mode remains. The
+[durability and process-recovery manual](NOTES_DURABILITY.md) specifies storage,
+crash handling, helper startup and the actual companion probe. This is a small destination adapter, not a compositor,
 global keyboard controller, mobile device port, or an Asterinas desktop.
 
 The standalone Session keeps each new destination private and reports
@@ -19,10 +22,14 @@ grant provider; normal Session launch performs no registration.
 
 | Path | Responsibility |
 | --- | --- |
-| `ui/core/src/notes.rs` | Bounded wire types, exact-byte hashes, document revision comparison, one retained app receipt |
+| `ui/core/src/notes.rs` | Bounded wire types, exact-byte hashes, document revision comparison, one pending receipt retained until exact durable-owner ACK |
+| `ui/core/src/notes_recovery.rs` | Strict exact receipt retirement request and idempotent response |
+| `ui/core/src/notes_private_unix.rs` | Ordered effect-stream/recovery-datagram descriptor handoff and descriptor validation |
 | `ui/broker/src/notes.rs` | Private Linux destination handle, synchronous exact-byte I/O, conservative unknown outcomes |
-| `ui/app-window/src/notes_organ.rs` | Inherited stdin receiver, bounded handoff to the egui thread |
-| `ui/app-window/src/main.rs` | Notes update, user-edit revision changes, layout-only witness |
+| `ui/app-window/src/notes_organ.rs` | Inherited stdin receiver, bounded worker handoff and presentation projection |
+| `ui/app-window/src/notes_worker.rs` | Serialize local revision-CAS edits, effects, receipt retirement and optional durable storage off Draw |
+| `ui/core/src/notes_store.rs` | Durable document/receipt store and exclusive incarnation ownership |
+| `ui/app-window/src/main.rs` | Notes presentation, user-edit requests and layout-only witness |
 | `ui/session/src/main.rs` | Existing child-process owner creates and retains private handles |
 | `ui/core/src/notes_bootstrap.rs` | Strict one-time descriptor handoff request and acknowledgement schema |
 | `ui/session/src/notes_bootstrap.rs` | Linux inherited datagram sender, SCM_RIGHTS and bounded acknowledgement |
@@ -30,7 +37,8 @@ grant provider; normal Session launch performs no registration.
 | `ui/broker/tests/notes_target.rs` | Real socketpair tests against an explicit application-model fixture |
 | `ui/broker/examples/notes_host_probe.rs` | Isolated real-window target probe, separate from a production-owner run |
 | `tests/ui/notes-target-v1.json` | Cross-language request, response, payload hash, scope hash and predecessor hash |
-| `tests/ui/notes-bootstrap-v1.json` | Exact bootstrap offer and attached/rejected ACK fixtures shared with the owner |
+| `tests/ui/notes-bootstrap-v2.json` | Exact bootstrap offer and attached/rejected ACK fixtures shared with the owner |
+| `tests/ui/notes-recovery-v1.json` | Exact observation, durable receipt ACK and idempotent retirement fixtures shared with the owner |
 | `tests/ui/test-notes-bootstrap-ipc.py` | Actual Session/App descriptor handoff with a transport-only parent fixture and read-only query |
 
 The original default-deny broker is reused from PR #210 head
@@ -49,7 +57,7 @@ and maintains its own operation history and generation fences. The private
 target handle is a host composition input, never a renderer-deserialized value.
 
 ```rust,ignore
-NotesTarget::from_private_channel(stream, target_identity)?;
+NotesTarget::from_private_channels(effect_stream, recovery_datagram, target_identity)?;
 target.enter_exact(original_payload_bytes, &NotesDispatchBinding {
     operation_id,
     destination_id,
@@ -82,13 +90,15 @@ attachment does not issue or consume a grant.
 Before serving any public IPC request, that explicit Session mode launches one
 Build Notes child with task id 1 and a fresh Session/child incarnation. It
 consumes its never-contacted `NotesTarget` and sends a **single atomic datagram**
-with exactly one `SCM_RIGHTS` descriptor. The descriptor is the original private
-Notes effect `UnixStream`; the ordinary effect framing remains unchanged.
+with exactly two ordered `SCM_RIGHTS` descriptors: the private Notes effect
+`UnixStream`, then its separate recovery `UnixDatagram`. Bootstrap version 2
+rejects version 1 and wrong descriptor counts or types; it never falls back to
+observing on an ambiguous effect stream. The ordinary effect framing remains unchanged.
 Bootstrap JSON is at most 1024 bytes, without a length prefix:
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "action": "offer_notes_target",
   "target": {
     "session_instance": "11111111111111111111111111111111",
@@ -185,7 +195,7 @@ trill.notes.predecessor.v1\0{session_instance}\0{task_id}\0{incarnation}\0{expec
 
 `NotesTargetIdentity::predecessor_sha256` supplies this derivation. The original
 production adapter compares it with the durable semantic expectation. The app
-compares the same identity and revision on the GUI thread when applying. Local
+compares the same identity and revision on the application worker when applying. Local
 edits increment that same revision, preventing a request with an old expectation
 from silently overwriting an intervening user edit.
 
@@ -206,8 +216,12 @@ Read-only requests contain `schema_version: 1`, `action: "observe"`, `target`,
 retained matching applied receipt. A missing receipt is unknown, even if current
 text matches. Exact replay of the retained operation and payload returns the
 same receipt without repeating the mutation. A conflicting payload for that
-retained operation is refused. This volatile last-mutation cache is not durable
-history and cannot make older unknown operations retryable.
+retained operation is refused. If another operation targets the current revision
+while this receipt remains pending, it receives `not_applied: receipt_pending`;
+the existing receipt is never overwritten to make room. Local edits retain the
+pending receipt. The durable mode stores it with the document and last retirement
+identity; temporary mode retains it in memory. Neither supplies a second Hepta
+history or makes an unknown operation retryable.
 
 ## Failure and observation semantics
 
@@ -219,14 +233,51 @@ write zero destination bytes.
 After bytes may have been sent, transport loss, timeout or an unrelated reply
 is `Indeterminate`. Transport/framing/correlation failure poisons and shuts
 down the channel, preventing silent replay. A lost ack can follow a real
-mutation. Timeout and cancellation do not roll it back. A poisoned channel's
-observer is unavailable; the original owner must retain unknown and seek
-independently recovered target evidence if available later.
+mutation. Timeout and cancellation do not roll it back. The separate recovery datagram remains available if the same application is
+still alive. It accepts `observe` and `acknowledge_terminal` only. The UI
+receiver rejects `replace_note` on this lane; rejection is enforced before
+calling the document mutation method. Every query/reply matches the exact
+incarnation, operation id and original raw payload SHA-256. Stale datagrams
+are discarded within a total deadline; no effect is replayed.
 
-The app has a bounded one-slot GUI handoff. Expired handoffs are discarded
-before document mutation. The GUI thread serializes external and local edits.
-An applied reply means its in-memory document changed; the original production
-owner still owns durable outcome publication.
+The app has a bounded four-slot application-worker handoff shared by both lanes
+and local edits. Expired
+handoffs are discarded before document mutation; a timed-out recovery request
+cannot create an unbounded queue. The worker serializes external and local edits.
+In durable mode it synchronizes the changed state before an applied reply;
+storage failure freezes further writes with an unknown result. The original
+production owner still owns durable outcome publication.
+
+
+### Durable original-owner receipt retirement
+
+The application retains one pending applied receipt. Only the original writer
+may acknowledge it after appending its complete terminal evidence to the existing
+`cognitive_local_events` chain. Normal dispatch, inherited dispatch settlement
+and recovered observation all use the same typed Notes evidence. A failed SQLite
+commit leaves the operation indeterminate and emits no retirement ACK.
+
+The writer rebuilds a private, non-serializable `NotesRetirementPermit` from its
+verified immutable operation/outbox binding and committed event. It checks the
+original live verifier after its SQLite awaits, then sends a metadata-only
+`acknowledge_terminal` datagram containing `schema_version: 1`, the exact target,
+operation id, original `payload_sha256`, and `receipt_sha256` of the full persisted
+application response. No new signer, operation ledger or writer is introduced.
+
+A matching ACK clears the pending receipt and returns `released`. The app retains
+one last retirement identity so a lost ACK can return `already_released` on an
+exact repeat. Wrong target, operation, payload or receipt hash cannot release
+capacity. A late ACK for the prior receipt cannot erase the next pending receipt.
+The source remains committed even if retirement fails; its reconciliation pass
+retries the latest exact retirement for that incarnation without dispatching text.
+
+The live channel covers a retained application and an original writer reopened
+against its authenticated source store. After the old application is reaped,
+the explicit [durable recovery helper](NOTES_DURABILITY.md#recovery-process-contract)
+can observe and retire the exact old stored receipt through a new private pair.
+It does not reconstruct an effect descriptor or make a new incarnation answer
+the old operation. Temporary-mode receipts cannot survive application exit.
+Production authority and the seven original trust inputs remain external requirements.
 
 After constructing a changed widget layout, the app writes
 `TRILL_NOTES_LAYOUT_V1:{revision}:{text_sha256}` to owned stdout. This is an
@@ -274,9 +325,10 @@ It is a destination test without a fabricated grant, signer or ledger.
 
 Test commands and code presence do not assert passes. Record actual tested
 commit, environment, commands and results. Remaining acceptance includes
-production-configured bootstrap and real-authority dispatch through the original owner, durable
-history/restart/failure reconciliation, and separately scoped visual/device
-tests.
+production-configured bootstrap and real-authority dispatch through the original owner,
+whole-process endpoint recovery (not supplied by this two-lane protocol), and
+separately scoped visual/device tests. Current patch test results must be recorded
+separately from the historical runs below.
 
 The [2026-10-21 Linux destination evidence](../../tests/ui/evidence/2026-10-21-notes-target/README.md)
 records a Rust 1.95.0 workspace run (172 passed, two opt-in host-font tests

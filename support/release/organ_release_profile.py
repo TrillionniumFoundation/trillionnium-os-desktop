@@ -17,12 +17,15 @@ OS_ROLES = {
     "hepta_adapter", "notes_broker", "notes_core", "bootstrap_core",
     "session_entry", "session_bootstrap", "notes_app", "notes_app_target",
     "session_contract", "objective_contract", "history_contract", "cpu_contract",
+    "notes_recovery", "notes_private_handoff",
 }
 HEPTA_ROLES = {
     "production_writer_host", "notes_channel", "notes_bootstrap", "notes_owner",
     "durable_writer", "lease_outbox", "final_use_authority", "final_use_control", "history_owner",
+    "notes_terminal_owner",
+    "production_composition", "grant_provider", "grant_provider_worker", "protected_authority_inputs",
 }
-GOLDEN_ROLES = {"notes_target", "notes_bootstrap"}
+GOLDEN_ROLES = {"notes_target", "notes_bootstrap", "notes_recovery"}
 PRODUCTION = {
     "activation": "disabled",
     "effects_authorized": False,
@@ -100,7 +103,7 @@ def check_map(mapping):
             raise ProfileError(f"{name} source roles must name distinct files")
     goldens = mapping["goldens"]
     if not isinstance(goldens, dict) or set(goldens) != GOLDEN_ROLES:
-        raise ProfileError("source map requires notes_target and notes_bootstrap goldens")
+        raise ProfileError(f"source map requires exactly these golden roles: {sorted(GOLDEN_ROLES)}")
     for role, paths in goldens.items():
         if not isinstance(paths, dict) or set(paths) != {"os", "hepta"}:
             raise ProfileError(f"golden {role} requires os and hepta paths")

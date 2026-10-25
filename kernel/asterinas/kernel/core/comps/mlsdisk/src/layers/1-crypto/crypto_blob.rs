@@ -92,7 +92,7 @@ impl<B: BlockSet> CryptoBlob<B> {
 
         // Encrypt init_data.
         let aead = Aead::new();
-        let key = Key::random();
+        let key = Key::random()?;
         let version: VersionId = 0;
         let mut iv = Iv::new_zeroed();
         iv.as_bytes_mut()[..version.as_bytes().len()].copy_from_slice(version.as_bytes());

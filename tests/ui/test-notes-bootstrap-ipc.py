@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 import signal
 import socket
-import struct
 import subprocess
 import sys
 import tempfile
@@ -52,12 +51,14 @@ def owned_children(proc, app):
 
 
 @contextlib.contextmanager
-def launched(binary_dir):
+def launched(binary_dir, notes_state_dir=None):
     with tempfile.TemporaryDirectory(prefix="trill-private-bootstrap-") as directory:
         root = Path(directory)
         runtime = root / "runtime"
         runtime.mkdir(mode=0o700)
         env = os.environ.copy()
+        if notes_state_dir is not None:
+            env["TRILL_NOTES_STATE_DIR"] = str(notes_state_dir)
         # Preserve only the exact compositor selected by the owned test
         # harness when the Session receives its separate private runtime.
         display = env.get("WAYLAND_DISPLAY")
@@ -113,10 +114,10 @@ def receive_offer(parent):
             values.frombytes(data)
             descriptors.extend(values)
         require(not flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC), "truncated bootstrap offer")
-        require(0 < len(raw) <= 1024 and len(descriptors) == 1, "bootstrap bound or descriptor count")
+        require(0 < len(raw) <= 1024 and len(descriptors) == 2, "bootstrap bound or descriptor count")
         offer = json.loads(raw)
         require(set(offer) == {"schema_version", "action", "target", "destination_id"}, "offer fields")
-        require(offer["schema_version"] == 1 and offer["action"] == "offer_notes_target", "offer action")
+        require(offer["schema_version"] == 2 and offer["action"] == "offer_notes_target", "offer action")
         identity = offer["target"]
         require(set(identity) == {"session_instance", "task_id", "incarnation"} and identity["task_id"] == 1,
                 "only the fixed initial task can bootstrap")
@@ -124,26 +125,29 @@ def receive_offer(parent):
             require(len(identity[key]) == 32 and all(c in "0123456789abcdef" for c in identity[key]), "identity shape")
         expected = f"trill.notes:{identity['session_instance']}:1:{identity['incarnation']}"
         require(offer["destination_id"] == expected, "destination differs from target")
-        fd = descriptors[0]
-        require(fcntl.fcntl(fd, fcntl.F_GETFD) & fcntl.FD_CLOEXEC, "received descriptor lacks CLOEXEC")
-        stream = socket.socket(fileno=fd)
-        descriptors.clear()
+        endpoints = []
         try:
-            require(stream.getsockopt(socket.SOL_SOCKET, socket.SO_TYPE) == socket.SOCK_STREAM, "effect type")
-            require(stream.family == socket.AF_UNIX and stream.getsockname() == "" and stream.getpeername() == "",
-                    "effect is not a private unnamed Unix stream")
+            for kind in (socket.SOCK_STREAM, socket.SOCK_DGRAM):
+                fd = descriptors.pop(0)
+                endpoint = socket.socket(fileno=fd)
+                endpoints.append(endpoint)
+                require(fcntl.fcntl(fd, fcntl.F_GETFD) & fcntl.FD_CLOEXEC, "received descriptor lacks CLOEXEC")
+                require(endpoint.getsockopt(socket.SOL_SOCKET, socket.SO_TYPE) == kind, "ordered endpoint type")
+                require(endpoint.family == socket.AF_UNIX and endpoint.getsockname() == "" and endpoint.getpeername() == "",
+                        "endpoint is not a private unnamed Unix socket")
+                endpoint.settimeout(2)
+            return offer, endpoints[0], endpoints[1]
         except Exception:
-            stream.close()
+            for endpoint in endpoints:
+                endpoint.close()
             raise
-        stream.settimeout(2)
-        return offer, stream
     finally:
         for fd in descriptors:
             os.close(fd)
 
 
 def acknowledge(parent, offer, status):
-    parent.send(encode({"schema_version": 1, "action": "notes_target_registration",
+    parent.send(encode({"schema_version": 2, "action": "notes_target_registration",
                         "target": offer["target"], "destination_id": offer["destination_id"], "status": status}))
 
 
@@ -160,15 +164,6 @@ def roundtrip(path, request):
         return json.loads(raw)
 
 
-def read_exact(channel, length):
-    raw = b""
-    while len(raw) < length:
-        part = channel.recv(length - len(raw))
-        require(part, "application channel closed")
-        raw += part
-    return raw
-
-
 def check(binary_dir):
     require(sys.platform == "linux", "Linux is required")
     require(os.environ.get("TRILL_NOTES_PROBE_ISOLATED") == "1"
@@ -179,8 +174,8 @@ def check(binary_dir):
         require(os.access(binary_dir / binary, os.X_OK), f"missing built {binary}")
 
     with launched(binary_dir) as (proc, parent, path, app):
-        offer, endpoint = receive_offer(parent)
-        with endpoint:
+        offer, endpoint, recovery = receive_offer(parent)
+        with endpoint, recovery:
             initial_children = owned_children(proc, app)
             require(len(initial_children) == 1, "bootstrap must own exactly one initial Notes app")
             acknowledge(parent, offer, "rejected")
@@ -190,8 +185,8 @@ def check(binary_dir):
             require(endpoint.recv(1) == b"", "rejected bootstrap left its effect channel open")
 
     with launched(binary_dir) as (proc, parent, path, app):
-        offer, endpoint = receive_offer(parent)
-        with endpoint:
+        offer, endpoint, recovery = receive_offer(parent)
+        with endpoint, recovery:
             acknowledge(parent, offer, "attached")
             deadline = time.monotonic() + 10
             while True:
@@ -207,15 +202,30 @@ def check(binary_dir):
                 require(time.monotonic() < deadline, "initial Notes layout timed out")
                 time.sleep(0.05)
 
-            # Query the actual application through the received descriptor.
-            # This has no mutation text and creates no operation or grant.
+            # The actual recovery receiver must reject even a fully shaped
+            # mutation. This hostile transport fixture has no original grant;
+            # it must not reach the document mutation method on this lane.
+            forbidden = {"schema_version": 1, "action": "replace_note", "target": offer["target"],
+                         "destination_id": offer["destination_id"],
+                         "operation_id": "qualification-recovery-must-not-edit",
+                         "expected_revision": 0, "text": "recovery lane must reject this fixture"}
+            recovery.send(encode(forbidden))
+            try:
+                recovery.recv(2049)
+            except socket.timeout:
+                pass
+            else:
+                raise RuntimeError("recovery receiver accepted or acknowledged replace_note")
+
+            # Query the actual application through the separate descriptor.
+            # Revision zero proves the hostile request did not mutate it.
             query = {"schema_version": 1, "action": "observe", "target": offer["target"],
                      "operation_id": "qualification-bootstrap-read-only", "payload_sha256": "0" * 64}
             raw = encode(query)
-            endpoint.sendall(struct.pack("!I", len(raw)) + raw)
-            length = struct.unpack("!I", read_exact(endpoint, 4))[0]
-            require(0 < length <= 2048, "application response bound")
-            response = json.loads(read_exact(endpoint, length))
+            recovery.send(raw)
+            reply = recovery.recv(2049)
+            require(0 < len(reply) <= 2048, "application response bound")
+            response = json.loads(reply)
             require(response["target"] == offer["target"] and response["operation_id"] == query["operation_id"]
                     and response["payload_sha256"] == query["payload_sha256"], "query response correlation")
             require(response["result"] == {"status": "unknown", "current_revision": 0}, "bootstrap unexpectedly mutated Notes")
@@ -238,9 +248,10 @@ def check(binary_dir):
                 time.sleep(0.05)
             require(not owned_children(proc, app), "owned Notes processes were not reaped")
 
-    print(json.dumps({"profile": "isolated_session_bootstrap_transport_fixture", "private_fd_roundtrip": True,
+    print(json.dumps({"profile": "isolated_session_bootstrap_transport_fixture", "private_fd_roundtrip": True, "bootstrap_schema_version": 2, "ordered_private_endpoints": ["effect_stream", "recovery_datagram"],
                       "parent_rejection_blocks_startup_and_reaps_child": True, "initial_task_id": 1,
                       "public_launch_does_not_export": True, "actual_app_read_only_query": True,
+                      "recovery_lane_rejects_replace": True,
                       "document_revision": 0, "hepta_production_owner_run": False,
                       "final_use_authority_run": False, "asterinas_run": False}, sort_keys=True))
 

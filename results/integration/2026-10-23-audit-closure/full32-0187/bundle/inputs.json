@@ -1,0 +1,217 @@
+{
+  "case_count": 32,
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "cwd": "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account",
+      "log": "build/rustc-version.log"
+    },
+    {
+      "argv": [
+        "/usr/bin/gcc-13",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "probe.c",
+        "-o",
+        "/data/asterinas-audit-build.8tdrjboi/full32-0187-01/bundle/build/probe_dynamic"
+      ],
+      "cwd": "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/tests/workloads/linux",
+      "log": "build/probe_dynamic.log"
+    },
+    {
+      "argv": [
+        "/usr/bin/gcc-13",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-static",
+        "probe.c",
+        "-o",
+        "/data/asterinas-audit-build.8tdrjboi/full32-0187-01/bundle/build/probe_static"
+      ],
+      "cwd": "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/tests/workloads/linux",
+      "log": "build/probe_static.log"
+    },
+    {
+      "argv": [
+        "/usr/bin/gcc-13",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "sqlite_probe.c",
+        "-o",
+        "/data/asterinas-audit-build.8tdrjboi/full32-0187-01/bundle/build/sqlite_dynamic",
+        "-lsqlite3"
+      ],
+      "cwd": "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/tests/workloads/linux",
+      "log": "build/sqlite_dynamic.log"
+    },
+    {
+      "argv": [
+        "/usr/bin/gcc-13",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-static",
+        "sqlite_probe.c",
+        "-o",
+        "/data/asterinas-audit-build.8tdrjboi/full32-0187-01/bundle/build/sqlite_static",
+        "-lsqlite3",
+        "-lpthread",
+        "-lm",
+        "-ldl"
+      ],
+      "cwd": "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/tests/workloads/linux",
+      "log": "build/sqlite_static.log"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "+nightly-2026-07-21",
+        "build",
+        "--offline",
+        "--locked",
+        "--release",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "--manifest-path",
+        "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/tests/workloads/linux/rust/Cargo.toml",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/full32-0187-01/bundle/build/cargo-target"
+      ],
+      "cwd": "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account",
+      "log": "build/tokio.log"
+    }
+  ],
+  "contract_sha256": "9cd5eab0ad9976943c4eca6e6fe12ceb7d46b04ae60d0dee0059b47db48f1b4d",
+  "guest_script_sha256": "26eadc29e4ba84850e9febeba0e5f613aeed29b39030c438d6bbfe00b0c77e2e",
+  "image_sha256": "6335a8e2087d9b2e9b241949435aa49b9e6d46fda2796b62704f37e660cfd65f",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "packages": {
+    "ca-certificates": "20260816ubuntu0.24.04.1",
+    "gcc-13": "13.3.0-6ubuntu2~24.04.1",
+    "libc6": "2.39-0ubuntu8.92.39-0ubuntu8.9",
+    "libc6-dev": "2.39-0ubuntu8.9",
+    "libpython3.12-stdlib": "3.12.3-1ubuntu0.17",
+    "libsqlite3-0": "3.45.1-1ubuntu2.83.45.1-1ubuntu2.8",
+    "libsqlite3-dev": "3.45.1-1ubuntu2.8",
+    "openssl": "3.0.13-0ubuntu3.16",
+    "python3.12": "3.12.3-1ubuntu0.17",
+    "python3.12-minimal": "3.12.3-1ubuntu0.17",
+    "tzdata": "2026e-0ubuntu0.24.04.1"
+  },
+  "probe_elf": {
+    "a04-tokio-workload": {
+      "bytes": 1088496,
+      "sha256": "ab1d3387dd9db1a7b2c8efadea8bc3070b6839a596db4f3d552304f669bfeb10"
+    },
+    "probe_dynamic": {
+      "bytes": 48480,
+      "sha256": "8976f763b4ccbf58e2eb26e68ba9331606a48043bfdffc5b6cd8812f835d74fb"
+    },
+    "probe_static": {
+      "bytes": 961184,
+      "sha256": "096f0a960c0bbeddf63ad1e14c56844dcccbff26634a0026668b44ed04974573"
+    },
+    "sqlite_dynamic": {
+      "bytes": 17032,
+      "sha256": "142570068591ae50c1af63343cbdfb82d0292c04e14691a7a7f5692cdbff846e"
+    },
+    "sqlite_static": {
+      "bytes": 2771680,
+      "sha256": "3f53f961f82d529cbac105b608f6a03d62bf357236a209b2e17a01873c3c22a1"
+    }
+  },
+  "profile": "linux-ubuntu24.04-x86_64-20261019",
+  "runtime_manifest_sha256": "be2668bdcd88d63ae2e32fc093d025e2bc681d77a7d42b30f61f6b1d970b4d10",
+  "schema": "a04.ubuntu-full-inputs.v1",
+  "source_head": "0187bd578f6786c40c812c13976e4889a1aba835",
+  "source_tree": "335007e4f94114c6a26506d9448faf0d43c4245c",
+  "sources": {
+    "compat/linux/profiles/ubuntu24.04-x86_64-20261019.json": "9cd5eab0ad9976943c4eca6e6fe12ceb7d46b04ae60d0dee0059b47db48f1b4d",
+    "support/rootfs/ubuntu_full.py": "ea9cf8b949fadf1e3597fa747445b1480bcc53df1f0951d2c41593cbe7f4ccc4",
+    "tests/integration/hepta/run_original_agentd.py": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8",
+    "tests/organ_backend/run_guest_probe.py": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+    "tests/workloads/linux/full_python_case.py": "f314ead0237e361296594abb5f225d1605270362f7948b8a7361d63255330ad7",
+    "tests/workloads/linux/probe.c": "30b1b6c8f04fc00b4807b9def258739293cd80cb3e3d691f5f1c9a5e60bc7287",
+    "tests/workloads/linux/run.py": "9c9fd2b1b6a7cf79ac226b355a901efea7bc13fa193ad0b0ee567ef987b44754",
+    "tests/workloads/linux/run_full_ubuntu_profile.py": "f6cbb63ddcb07981af6698955ce22ae63468ebf15fe4eda423fad8dc177eabed",
+    "tests/workloads/linux/run_rlimit_nofile_guest.py": "adce5f93bbc8679c6aa0b08162baf0c1f8ae854ef346b78e585525062484ad1c",
+    "tests/workloads/linux/run_scm_rights_cloexec_guest.py": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d",
+    "tests/workloads/linux/rust/Cargo.lock": "b38d7f2ae2d70dcd07bc58b5ecf050ae1d3ab19eb08acb4559f1a0c5929a1e42",
+    "tests/workloads/linux/rust/Cargo.toml": "347c799ed98a98ae188802bb46f0af2885f1a7eeb26eb48436b4f932b19b24ce",
+    "tests/workloads/linux/rust/src/main.rs": "4e4faf6c7be21fcaaca3bbbfbcab9e6b51561cbb1524385d170e4e0e97b485bc",
+    "tests/workloads/linux/sqlite_probe.c": "a2cccd3a147eadc52ea5db1e1d3ced589b308b871a58ff2f6183a1716a970f8e",
+    "tests/workloads/linux/workload_catalog.json": "64b268956848d4fd97c6ace51343d607f20495d7bd317491a5bf7ead5e672db0"
+  },
+  "tools": {
+    "/usr/bin/gcc-13": {
+      "bytes": 1023032,
+      "path": "/usr/bin/gcc-13",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "version": "gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+    },
+    "/usr/bin/ld": {
+      "bytes": 1359128,
+      "path": "/usr/bin/ld",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+      "sha256": "e9ceb054c12207970f2726dfc07e9a66b411602748628baf27399f02a9bbb31b",
+      "version": "GNU ld (GNU Binutils for Ubuntu) 2.42"
+    },
+    "/usr/bin/python3.12": {
+      "bytes": 8020928,
+      "path": "/usr/bin/python3.12",
+      "resolved_path": "/usr/bin/python3.12",
+      "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "version": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]"
+    },
+    "/usr/bin/readelf": {
+      "bytes": 789280,
+      "path": "/usr/bin/readelf",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-readelf",
+      "sha256": "64c58e15274bbbb5153f31078e455e9e77ee5f51489e709bba5bb788ce9df2b0"
+    },
+    "cargo": {
+      "bytes": 21113232,
+      "path": "/home/qian-qi/.cargo/bin/cargo",
+      "resolved_path": "/home/qian-qi/.cargo/bin/rustup",
+      "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+    },
+    "cargo_pinned": {
+      "bytes": 40539896,
+      "path": "/home/qian-qi/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "resolved_path": "/home/qian-qi/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03"
+    },
+    "qemu": {
+      "bytes": 26415624,
+      "path": "/usr/bin/qemu-system-x86_64",
+      "resolved_path": "/usr/bin/qemu-system-x86_64",
+      "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    },
+    "rustc_pinned": {
+      "bytes": 645184,
+      "path": "/home/qian-qi/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "resolved_path": "/home/qian-qi/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "752104a1bd1bc3a59e6a2bd8ec02fa7113acf0e5083f9ee59d43e983ecc5d48f"
+    }
+  },
+  "workload_execution_performed": false
+}

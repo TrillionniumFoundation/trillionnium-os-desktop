@@ -14,7 +14,7 @@ mod socket_timeout;
 
 pub(crate) use linger_option::LingerOption;
 pub(crate) use message_flags::{RecvFlags, SendFlags};
-pub(super) use message_header::CControlHeader;
+pub(super) use message_header::{CControlHeader, reserve_control_items};
 pub(crate) use message_header::{ControlMessage, MessageHeader};
 pub(super) use port_privilege::check_port_privilege;
 pub(crate) use recv_output::RecvOutput;

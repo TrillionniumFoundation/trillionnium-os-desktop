@@ -1,6 +1,35 @@
 # A08 build and APK evidence
 
-This is support/android/README.md. The repository ROOT README.md stays 0 bytes.
+This is the Android development guide. The repository [README](../../README.md) provides project navigation; [current capabilities](../../docs/CURRENT_CAPABILITIES.md) separates candidate implementation from platform qualification.
+
+## Separate physical Android DEX smoke profile
+
+The original no-permission Java/DEX fixture can also be built with an installed
+SDK and tested on one explicitly identified existing Android device. See
+[`compat/android/PHYSICAL_SMOKE.md`](../../compat/android/PHYSICAL_SMOKE.md) for
+development inputs, source/signature pins, the default host-only gate, owned-app
+execution and cleanup rules. This profile never relaxes the Cuttlefish gates or
+qualifies Asterinas, an ARM BSP, Hepta production ownership or mobile organ control.
+
+## Android device organ adapter
+
+The separate [Digitalis/Droidloom device adapter](DEVICE_ORGAN.md) provides
+bounded, pinned host observation of the existing `pocket4` Android 17 / SDK 37
+cell, plus pure construction of exact semantic intents. Its CLI permits only
+`qualify` and `observe`; effect dispatch and original production owner integration
+remain `NOT_CONFIGURED`. It uses the original operator-selected host and helper,
+keeps ADB disabled, and never treats a timeout as permission to replay.
+The development contract, source pins, tests, and required receiver/owner work
+are documented together. These capabilities are separate from the Android 15
+AOSP/Cuttlefish and Android-on-Asterinas qualification below.
+
+The [original receiver binding manual](receiver/README.md) documents the strict
+`organ-observe`, `organ-set-text` and independent `organ-readback` extension,
+original source generation/SDK build, same-signer and installed-byte checks,
+and generation-safe failure/recovery. Its
+[Hepta original-owner adapter contract](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/main/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md)
+names the existing FinalUse/writer attachment and required original Runtime
+capability. These entries do not enable effects in the read-only CLI.
 
 ## Current checkpoint — 2026-10-17 commit-bound source audit
 

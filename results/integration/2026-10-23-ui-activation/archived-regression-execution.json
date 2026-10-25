@@ -1,0 +1,25 @@
+{
+  "scope": "Archived fixture path correction only; runtime source unchanged",
+  "source_sha256": "1159a2a3978fc38a847c7b50b8746c0661dad45a922d5a558d34f19dd91092d4",
+  "fixture_sha256": "7f8350d374bbb1b09421c9dd2ec68c7e94f866f0abff2f777e08a3f74737b4b4",
+  "compile": {
+    "argv": [
+      "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "--edition=2021",
+      "--crate-name",
+      "archived_input_repeat",
+      "--test",
+      "/workspace/scratch/3d6a75235bcb/work/desktop-ui/results/integration/2026-10-23-ui-activation/repeat-regression.rs",
+      "-o",
+      "/workspace/scratch/3d6a75235bcb/work/desktop-ui/validation/repeat-repro/archive-regression"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "execution": {
+    "exit_code": 0,
+    "stdout": "\nrunning 1 test\ntest repeated_unmarked_keydown_does_not_repeat_an_effect ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s\n\n",
+    "stderr": ""
+  }
+}

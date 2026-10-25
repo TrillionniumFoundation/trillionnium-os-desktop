@@ -1,0 +1,91 @@
+{
+  "app_sha256": "a4fdf1f81f4063e9c1de2e087db16db976ca0a4a3a98107e172f7c9b06c7566a",
+  "application_receipt": {
+    "operation_id": "notes-real-ui-fixture",
+    "payload_sha256": "74bd63bc299bb03258b269f35fa10bf55b28785535ee0e13a435a820d508f1ee",
+    "result": {
+      "previous_revision": 0,
+      "revision": 1,
+      "status": "applied",
+      "text_sha256": "06790c0cdc6bf6d37d7ff4c98dd496bff2bc469a038182ac1698ee50a4149134"
+    },
+    "schema_version": 1,
+    "target": {
+      "incarnation": "f11394ae1db0e0625a8c73465916355a",
+      "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+      "task_id": 1
+    }
+  },
+  "bootstrap_schema_version": 2,
+  "complete_frame_written_then_effect_stream_closed": true,
+  "effect_dispatch_attempts": 3,
+  "effect_reply_read_by_fault_fixture": false,
+  "injected_complete_frame_writes": 1,
+  "issuer_requests": 4,
+  "lost_reply_initial_source_state": "indeterminate",
+  "lost_reply_recovered_source_state": "committed",
+  "native_kernel_qualified": false,
+  "pixels_qualified": false,
+  "production_authority": false,
+  "profile": "test-issuer-original-owner-real-session-notes",
+  "receipt_capacity_reused_after_durable_ack": true,
+  "recovered_application_receipt": {
+    "operation_id": "notes-real-ui-fixture-lost-reply",
+    "payload_sha256": "7c88502d97a5ec94d657c172ec4fe59d32d03f3be424abc6eab2cf4c4a5ce21a",
+    "result": {
+      "previous_revision": 2,
+      "revision": 3,
+      "status": "applied",
+      "text_sha256": "d742490feb42388586933f9e89646c2917a4c3f95f166e2235076c408a0f229d"
+    },
+    "schema_version": 1,
+    "target": {
+      "incarnation": "f11394ae1db0e0625a8c73465916355a",
+      "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+      "task_id": 1
+    }
+  },
+  "recovered_application_receipt_utf8": "{\"schema_version\":1,\"target\":{\"session_instance\":\"57fd3437d00f5e9d99252780ff88e611\",\"task_id\":1,\"incarnation\":\"f11394ae1db0e0625a8c73465916355a\"},\"operation_id\":\"notes-real-ui-fixture-lost-reply\",\"payload_sha256\":\"7c88502d97a5ec94d657c172ec4fe59d32d03f3be424abc6eab2cf4c4a5ce21a\",\"result\":{\"status\":\"applied\",\"previous_revision\":2,\"revision\":3,\"text_sha256\":\"d742490feb42388586933f9e89646c2917a4c3f95f166e2235076c408a0f229d\"}}",
+  "recovered_receipt_sha256": "d0a65dcc991e4cd79dcd3cbc7345a34f0871390045fdab17a497b1ab71c7451c",
+  "recovered_retirement_response": {
+    "operation_id": "notes-real-ui-fixture-lost-reply",
+    "payload_sha256": "7c88502d97a5ec94d657c172ec4fe59d32d03f3be424abc6eab2cf4c4a5ce21a",
+    "receipt_sha256": "d0a65dcc991e4cd79dcd3cbc7345a34f0871390045fdab17a497b1ab71c7451c",
+    "schema_version": 1,
+    "status": "released",
+    "target": {
+      "incarnation": "f11394ae1db0e0625a8c73465916355a",
+      "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+      "task_id": 1
+    }
+  },
+  "recovery_effect_replay": false,
+  "recovery_requested_new_grant": false,
+  "recovery_transport": "private_unix_datagram",
+  "schema_version": 1,
+  "second_application_receipt": {
+    "operation_id": "notes-real-ui-fixture-second",
+    "payload_sha256": "ddf1c7e5b0c1ac31249eb48e989d7d28b0ee974fde0b2528ad6835208af40be3",
+    "result": {
+      "previous_revision": 1,
+      "revision": 2,
+      "status": "applied",
+      "text_sha256": "3073d0f3b5bb930f89a1752508c1991be66375ad7946e8ae5f70c940592413e5"
+    },
+    "schema_version": 1,
+    "target": {
+      "incarnation": "f11394ae1db0e0625a8c73465916355a",
+      "session_instance": "57fd3437d00f5e9d99252780ff88e611",
+      "task_id": 1
+    }
+  },
+  "session_sha256": "36c92ca5c897c2049b1821448c74c9d17bdc8b27e2b7e020506e09d5737f1f2f",
+  "source_recovery_anchor": {
+    "owner_agent_id": "00000000-0000-4000-8000-00000000c061",
+    "profile": "hepta:cognitive:exact-current-cut:v1",
+    "schema_digest": "c448a01d9749d7c409bb9c384ceaa7245ef6aca0eda722ac3ec8b2501602bed0",
+    "state_digest": "d3c2f21212637a09dd0231ae588358e73a7dc6272a57506fccec948b32d88d1d"
+  },
+  "source_state": "committed",
+  "ui_first_frame_unix_ms": 1792728308755
+}

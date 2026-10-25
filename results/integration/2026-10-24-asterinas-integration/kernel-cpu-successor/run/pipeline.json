@@ -1,0 +1,69 @@
+{
+  "source_head": "f6e837c60b1fa65da4118535a3013e4b38c6ec98",
+  "source_tree": "ccaa945c9b7c64471171b83ea46ba5cef315c68b",
+  "passed": true,
+  "native_entry_executed": false,
+  "production_ready": false,
+  "steps": [
+    {
+      "label": "osdk-build",
+      "argv": [
+        "/data/trillionnium-closure-20261024/kernel-cargo-home/bin/cargo",
+        "+nightly-2026-07-21",
+        "install",
+        "--offline",
+        "--locked",
+        "--force",
+        "cargo-osdk",
+        "--path",
+        "/data/trillionnium-closure-20261024/os-native-cpu-successor/kernel/asterinas/osdk",
+        "--target-dir",
+        "/data/trillionnium-closure-20261024/kernel-osdk-target"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-cpu-successor",
+      "exit_code": 0,
+      "elapsed_seconds": 23.94591250200756
+    },
+    {
+      "label": "g2-initial-root",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-cpu-successor/support/build/ktest/run.py",
+        "--g2-initial-root",
+        "--crate",
+        "aster-core",
+        "--trusted-initial-sha256",
+        "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+        "--skip-osdk-install",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-cpu-successor/g2-initial-root"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-cpu-successor",
+      "exit_code": 0,
+      "elapsed_seconds": 229.04464405600447
+    },
+    {
+      "label": "aster-core",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-cpu-successor/support/build/ktest/run.py",
+        "--skip-osdk-install",
+        "--crate",
+        "aster-core",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-cpu-successor/full-aster-core"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-cpu-successor",
+      "exit_code": 0,
+      "elapsed_seconds": 129.48353156005032
+    }
+  ],
+  "osdk_sha256": "ebb6be251d96a029c11b805e093f14e9965c1e2d65f23849acac6ef06f059464",
+  "osdk_source_root": "/data/trillionnium-closure-20261024/os-native-cpu-successor/kernel/asterinas/osdk",
+  "source_inputs_unchanged": true,
+  "elapsed_seconds": 385.41192932403646
+}

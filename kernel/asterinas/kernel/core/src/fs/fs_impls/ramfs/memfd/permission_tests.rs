@@ -18,6 +18,7 @@ fn permission_memfd_exec_seal_preserves_attributes_on_error() {
     let inode = dentry.inode();
     inode.set_ctime(dentry, Duration::MAX);
     let before = inode.metadata().unwrap();
+    assert_eq!(before.nr_hard_links, 0);
     assert!(file.get_seals().unwrap().contains(FileSeals::F_SEAL_EXEC));
     assert!(!before.mode.intersects(mkmod!(a+x)));
     let request = |mode| PermissionAttrRequest::for_test(
@@ -27,6 +28,7 @@ fn permission_memfd_exec_seal_preserves_attributes_on_error() {
     let result = inode.try_permission_attr_transaction(dentry, &denied).unwrap();
     assert_eq!(result.unwrap_err().error(), Errno::EPERM);
     let after = inode.metadata().unwrap();
+    assert_eq!(after.nr_hard_links, 0);
     assert_eq!(after.uid, before.uid);
     assert_eq!(after.gid, before.gid);
     assert_eq!(after.mode, before.mode);
@@ -36,4 +38,5 @@ fn permission_memfd_exec_seal_preserves_attributes_on_error() {
     inode.try_permission_attr_transaction(dentry, &request(before.mode)).unwrap().unwrap();
     assert_eq!(inode.mode().unwrap(), before.mode);
     assert_ne!(inode.ctime(), before.last_meta_change_at);
+    assert_eq!(inode.metadata().unwrap().nr_hard_links, 0);
 }

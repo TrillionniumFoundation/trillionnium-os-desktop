@@ -43,9 +43,8 @@ pub(crate) enum ControlMessage {
 
 impl ControlMessage {
     pub(crate) fn read_all_from(reader: &mut VmReader) -> Result<Vec<Self>> {
-        // FIXME: This method may exhaust kernel memory and cause a panic if the program is
-        // malicious and attempts to send too many control messages. To prevent this, we limit the
-        // number of control messages, but this limit does not have a Linux equivalent.
+        // Keep the original bounded parsing policy. This limit has no Linux equivalent;
+        // fallible vector growth below separately handles allocation failure.
         const MAX_NR_MSGS: usize = 32;
 
         let mut msgs = Vec::new();
@@ -60,6 +59,7 @@ impl ControlMessage {
             }
 
             if let Some(msg) = Self::read_from(&header, reader)? {
+                reserve_control_items(&mut msgs, 1)?;
                 msgs.push(msg);
             }
 
@@ -144,6 +144,17 @@ impl ControlMessage {
     }
 }
 
+/// Reserves ancillary vector storage without invoking the allocation-error handler.
+/// Existing entries stay owned by the original vector on failure.
+pub(in crate::net::socket) fn reserve_control_items<T>(
+    items: &mut Vec<T>,
+    additional: usize,
+) -> Result<()> {
+    items
+        .try_reserve_exact(additional)
+        .map_err(|_| Error::new(Errno::ENOMEM))
+}
+
 /// `cmsghdr` in Linux.
 ///
 /// Reference: <https://elixir.bootlin.com/linux/v6.13/source/include/linux/socket.h#L105>.
@@ -210,3 +221,6 @@ impl CControlHeader {
         self.len.align_up(CMSG_ALIGN)
     }
 }
+
+#[cfg(ktest)]
+mod allocation_tests;

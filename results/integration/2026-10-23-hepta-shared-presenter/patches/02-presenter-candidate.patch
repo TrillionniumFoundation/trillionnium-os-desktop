@@ -1,0 +1,2795 @@
+diff --git a/.github/workflows/a10-host.yml b/.github/workflows/a10-host.yml
+index e845909fa48508222cce75be9e2a73d1324ccef2..0c0de53aa34d3c37fe86e7571ad262ead3c16c50 100644
+--- a/.github/workflows/a10-host.yml
++++ b/.github/workflows/a10-host.yml
+@@ -120,6 +120,52 @@
+           mkdir -p "$RUNNER_TEMP/a10"
+           export A10_HEADLESS_LOG_DIR="$RUNNER_TEMP/a10/wayland"
+           bash tests/ui/headless-weston.sh 2>&1 | tee "$RUNNER_TEMP/a10/headless.log"
++      - name: Verify original shared presenter source and default-off candidate
++        run: |
++          set -euo pipefail
++          mkdir -p "$RUNNER_TEMP/a10"
++          python3 -I tests/ui/test_shared_presenter_source.py \
++            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source-tests.log"
++          python3 -I tests/ui/test_wire_compatibility.py \
++            2>&1 | tee "$RUNNER_TEMP/a10/wire-compatibility-tests.log"
++          cargo metadata --manifest-path ui/Cargo.toml --locked --format-version 1 \
++            --features trill-shell/hepta-shared-presenter \
++            --filter-platform x86_64-unknown-linux-gnu \
++            > "$RUNNER_TEMP/a10/shared-presenter-metadata.json"
++          python3 -I tests/ui/verify_shared_presenter.py \
++            --metadata "$RUNNER_TEMP/a10/shared-presenter-metadata.json" \
++            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source.log"
++      - name: Test original shared packages and real egui edit transactions
++        run: |
++          set -euo pipefail
++          cargo test --manifest-path ui/Cargo.toml --all-targets --locked \
++            -p hepta-control-core -p hepta-robrix-ui -p trill-ui-core -p trill-shell \
++            --no-default-features --features trill-shell/hepta-shared-presenter \
++            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-tests.log"
++          cargo clippy --manifest-path ui/Cargo.toml --all-targets --locked \
++            -p trill-ui-core -p trill-shell \
++            --features trill-shell/hepta-shared-presenter -- -D warnings \
++            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-clippy.log"
++          cargo run --quiet --manifest-path ui/Cargo.toml --locked \
++            -p trill-ui-core --example wire_compatibility --no-default-features \
++            > "$RUNNER_TEMP/a10/shared-presenter-wire-default.json"
++          cmp tests/ui/wire-compatibility-aligned-v1.json "$RUNNER_TEMP/a10/shared-presenter-wire-default.json"
++          python3 -I tests/ui/verify_wire_compatibility.py \
++            --original tests/ui/wire-compatibility-v1.json \
++            --candidate "$RUNNER_TEMP/a10/shared-presenter-wire-default.json" \
++            | tee "$RUNNER_TEMP/a10/wire-default-compatibility.json"
++          cargo run --quiet --manifest-path ui/Cargo.toml --locked \
++            -p trill-ui-core --example wire_compatibility \
++            --features hepta-shared-presenter \
++            > "$RUNNER_TEMP/a10/shared-presenter-wire.json"
++          cmp tests/ui/wire-compatibility-aligned-v1.json "$RUNNER_TEMP/a10/shared-presenter-wire.json"
++          python3 -I tests/ui/verify_wire_compatibility.py \
++            --original tests/ui/wire-compatibility-v1.json \
++            --candidate "$RUNNER_TEMP/a10/shared-presenter-wire.json" \
++            | tee "$RUNNER_TEMP/a10/wire-candidate-compatibility.json"
++          python3 -I tests/ui/verify_shared_presenter.py \
++            --metadata "$RUNNER_TEMP/a10/shared-presenter-metadata.json" \
++            2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source-after-tests.log"
+       - name: Enforce Rust 1.88 UI workspace and all-target Clippy warnings
+         run: |
+           set -euo pipefail
+diff --git a/support/ui/HEPTA_SHARED_PRESENTER.json b/support/ui/HEPTA_SHARED_PRESENTER.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..3dfb110cc192a1349e81f2bd8d73783881146a79
+--- /dev/null
++++ b/support/ui/HEPTA_SHARED_PRESENTER.json
+@@ -0,0 +1,111 @@
++{
++  "schema": "trillionnium.original-shared-presenter.v1",
++  "repository": "TrillionniumFoundation/hepta-private-ci",
++  "pull_request": 3067,
++  "commit": "56630b12b8a4c69fff2c47b95b36d88a7389c39f",
++  "tree": "15ff893b92898185ea709e847b244e4d66ae2bf4",
++  "desktop_base": {
++    "commit": "64736996d310d597ffba513ee109264cd5f5f83f",
++    "tree": "363700005afb52d2ac88aab709c3e0d0f78bcc0a",
++    "pull_request": 251
++  },
++  "contract": "Direct original Git packages, no copied presenter/model. Default-off candidate. Existing Session/broker owns transport and task/context observations. SendUnavailable is unchanged. Makepad renderer is disabled.",
++  "files": [
++    {
++      "path": "LICENSE",
++      "git_blob": "4606e72e042564097e8780d66c1d4dcb611869bd",
++      "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc",
++      "bytes": 10926
++    },
++    {
++      "path": "NOTICE",
++      "git_blob": "2805899d56d0332d175cfc613c67d45d6f006db7",
++      "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915",
++      "bytes": 242
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/Cargo.lock",
++      "git_blob": "5b035491f782063d2a114c54ab0a9868ab27f97b",
++      "sha256": "9fb1e6c648f6b7fe35e2655be9c2a2f360615050c264a0ce6fba6ef85664419f",
++      "bytes": 39319
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/Cargo.toml",
++      "git_blob": "7ee000995b3f1625a4b05a1692a821c4f3d7fba4",
++      "sha256": "a8f8785b15a066f02219150f35bd1ed53ed3e7bb4ab0174e2560fe4d21f0c45e",
++      "bytes": 532
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/Cargo.toml",
++      "git_blob": "3d77b4ccc8ad8f3d464f0ff5fec69a838980665b",
++      "sha256": "b3ae31e06c79323bc0f2bf245f066125ce45d61418460ed64847abe2caa9ea41",
++      "bytes": 270
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/src/chat.rs",
++      "git_blob": "0c8b10d64c895e7376ee07172995137a319aef2b",
++      "sha256": "3f53bb9af20787ac406ef7db11059e2e6b88a8c903400bdf319a9eb559a21d82",
++      "bytes": 16079
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/src/chat/basic_tests.rs",
++      "git_blob": "d535e51221065cd82ba219278dc49d2c817a0357",
++      "sha256": "157ad9b1bc8fc4cce81bab5ff5ee50b2d6e79ac8a8d5201f6c924a06814eedf4",
++      "bytes": 1452
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/src/chat/integration_tests.rs",
++      "git_blob": "c66c62304e08c52e266416800132f646880d904e",
++      "sha256": "7d39d8152abf6c732ddad36c6fd91370dccb8ac34b99fe8a2c12b1872bbac768",
++      "bytes": 5357
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/src/chat/partition_tests.rs",
++      "git_blob": "be33a7fdb8babfe08fdd558ffe34e6fc69ce6476",
++      "sha256": "f743b8671422575449d84fcd303af3788cd87cb38b809f0a71371cd67c08a03e",
++      "bytes": 2418
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/src/chat_owner.rs",
++      "git_blob": "9ad806f75401238c04502f1813fcace25e5b481f",
++      "sha256": "23389393e2d332b1fb0964e671eabe479f3726f31f8b46e6e77cdd65262b2dce",
++      "bytes": 22631
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/src/chat_owner_tests.rs",
++      "git_blob": "9823ed3ae2aa97d95535f2238333e0423c7f6456",
++      "sha256": "bf6059e8cd775f23fb63fffcc8a9515663e889c5632ab76e17872d1c6985110f",
++      "bytes": 16400
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/core/src/chat_timeline.rs",
++      "git_blob": "191990a9458b20fcb70b69a21afcc2271091b7aa",
++      "sha256": "8833777a27a7c1d7abf0b8f90c53954a91e1f9983239dbb560a6b4b5737369a6",
++      "bytes": 10840
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml",
++      "git_blob": "93c6358f34878287273452f9a860ea390a3a057a",
++      "sha256": "f71f5b262362c8695fc6587f093937f033c683778a07961ca5fd42eb1caf3700",
++      "bytes": 583
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt",
++      "git_blob": "7f77de13d6a3a5b2a7b35bfb249b7902317c2045",
++      "sha256": "7c370204a7507a3c33398d6377aa69691991b0582a3d92ace8d27d8819b223f7",
++      "bytes": 1097
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation.rs",
++      "git_blob": "f7e3aa347a2088ab2d2ec495184344d24a2b67f2",
++      "sha256": "809c4c1117836bf2b1932a25fd0edd78d747914d52f93502930c8a959f7f57b8",
++      "bytes": 15597
++    },
++    {
++      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation_tests.rs",
++      "git_blob": "e97b7f56059122aef731a6c056c1d144345ebe53",
++      "sha256": "6f3ea57649bf67ac2312ea16994afded3dac934f0a5aeac4ac5bf0bdc2db499f",
++      "bytes": 22554
++    }
++  ]
++}
+diff --git a/support/ui/HEPTA_SHARED_PRESENTER.md b/support/ui/HEPTA_SHARED_PRESENTER.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..25445fc2defb4cb2aaa4ba9ebedc9f4954f63111
+--- /dev/null
++++ b/support/ui/HEPTA_SHARED_PRESENTER.md
+@@ -0,0 +1,245 @@
++# Original Hepta shared presenter candidate
++
++## Status and source
++
++`hepta-shared-presenter` is a default-off Desktop candidate. It uses the original
++Hepta `hepta-control-core` and `hepta-robrix-ui` Git packages directly. Desktop
++still renders with eframe/egui. This slice shares the original draft model and
++presentation/action functions; it does not qualify a shared Makepad renderer,
++Web runtime, mobile port, accessibility backend or production chat submission.
++
++The upstream is [Hepta PR #3067](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3067),
++commit `56630b12b8a4c69fff2c47b95b36d88a7389c39f`,
++tree `15ff893b92898185ea709e847b244e4d66ae2bf4`. Both dependency declarations pin
++that full revision. `hepta-robrix-ui` has `default-features = false`: its `ui`
++and `native-host` features are not enabled. The resulting Desktop dependency
++lock contains neither Makepad nor a replacement UI implementation.
++
++The Desktop source base is [PR #251 at 64736996](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/64736996d310d597ffba513ee109264cd5f5f83f),
++tree `363700005afb52d2ac88aab709c3e0d0f78bcc0a`. Its shared activation state
++transitions are retained; a read-only frame projection exposes the same IME
++confirmation fence to the candidate editor. The Objective Session adapter in PR #255 is a
++separate change; this candidate must be combined by applying the actual diffs,
++without replacing the newer Objective adapter with an older Session snapshot.
++
++[`HEPTA_SHARED_PRESENTER.json`](HEPTA_SHARED_PRESENTER.json) records the exact
++upstream commit, tree, package manifests, original lock, four model/presenter
++files, their original tests and license files. No Hepta implementation is
++vendored or copied into Desktop. The original Git checkout remains the only
++source of those packages.
++
++To build this candidate explicitly:
++
++```sh
++cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked \
++  --features trill-shell/hepta-shared-presenter
++```
++
++Then follow the existing [Linux host run guide](RUN.md). A default build keeps the existing editor.
++The feature changes local composition; it does not make an unavailable owner
++or Send action available.
++
++## Ownership and data flow
++
++| Data or action | Actual owner and behavior |
++| --- | --- |
++| Current text in each Personal/Research/Build workspace | One original `ChatWorkspace` inside `SharedComposer`; the former persistent Desktop `String` is absent when the feature is enabled. |
++| Editor callback | A temporary `String` for one egui call; one complete edit is passed to original `apply_action`. It is not stored as a second draft. |
++| Composer text, status and IME state | Original `project`, `PresentationAction`, `PresentationCommand` and `RoomKey`; stale original presentation keys are refused. |
++| Saved local drafts and quoted context | Existing Desktop `DraftBook` and `LocalDraft` archive. These remain visibly local and unsent. They are not Hepta timeline messages or delivery receipts. |
++| Host task state and commands | Existing Session, broker and freshness checks. No second transport, ledger, task cache or owner is introduced. |
++| Hepta history and identity | No owner is installed by this wrapper; no Session snapshot is inserted into original chat history. Workspace labels do not become authenticated principals. |
++| Send | Original `RequestSend` still yields `SendUnavailable` outside composition, and `Ignored` during composition. The Shell does not wire a new Send button. |
++
++`ui/core/src/shared_chat.rs` is a narrow wrapper over original package APIs. It
++does not expose a mutable `ChatWorkspace`, an owner-installation API, signing,
++Objective preparation, history mutation or network I/O. Its read projection
++borrows the original draft; it does not keep a second rendered transcript.
++
++`ui/shell/src/conversation.rs` keeps the existing local archive. Saving checks
++composition, rejected-edit status, draft/context validity and archive capacity
++before asking the original presenter to clear the active text. Only after Clear
++succeeds does Desktop append an immutable local capture. Neither step reports
++delivery, admission, task completion or device effects.
++
++Three host workspaces keep separate original local composer instances. This is
++the existing Desktop workspace behavior, not three authenticated Hepta owners.
++The synchronous widget callback captures its original `RoomKey` before editing;
++this slice does not define a cross-process action bus or asynchronous room router.
++
++## Input transaction and 16 KiB behavior
++
++The old Desktop editor accepted text beyond its 16 KiB archive limit, kept all
++of it visible, and refused Save. The original Hepta editor model enforces the
++same byte limit at Edit: it rejects an over-limit or NUL-containing edit and
++retains the last accepted text. This is an intentional candidate behavior
++change. Feature-on and feature-off regressions assert their different results.
++
++The candidate shows an explicit rejection message and prevents Save until the
++user edits again. It never silently truncates UTF-8 or saves the older text as
++though the rejected edit had succeeded. Exact-boundary and multibyte regressions
++cover the original 16 KiB rule.
++
++egui deletes a selection before inserting pasted text or an IME prediction. A
++mutable adapter that rejected only the insertion could already have deleted
++the selected text. The Shell therefore runs the real `TextEdit` against a
++frame-local transaction, then applies its full result to the original model.
++On rejection it restores the previous cursor/selection and undo contents and
++requests a repaint. The real callback's IME lifecycle is retained, so rejecting
++a commit does not revive an earlier active composition. The temporary layout
++from the rejected callback is replaced on the requested repaint.
++
++The actual egui `Preedit`, `Commit`, `Disabled` and confirmation-key lifecycle
++continues through the existing activation guard. The wrapper forwards the
++guard's composition state to original `SetComposing`. Saving, clearing and
++candidate workspace/page/tab navigation respect the original guard, including
++the entire Commit frame and delayed confirmation keys. Merely seeing
++`composing == false` after a Commit is insufficient to move the editor.
++While that same confirmation fence is active, the candidate TextEdit disables
++its Return shortcut so a same-frame or delayed IME Enter does not insert an
++unintended newline. This includes a delayed press and release delivered together:
++the policy's pending state may clear at frame end, but that whole confirmation
++frame remains fenced. A fresh Enter in a later frame after key release keeps
++normal multiline editing; the default feature-off editor retains its existing
++behavior.
++
++Headless egui event tests are distinct from a physical input-method test. They
++cannot establish Wayland/X11 candidate placement, touch keyboards, accessibility
++tree behavior or a working screen reader. Those require the original native
++host gates and real device/input evidence.
++
++## Dependency alignment and wire compatibility
++
++Cargo rejected the old exact Desktop pins (`serde 1.0.219` and
++`serde_json 1.0.140`) together with the original package's exact
++`serde 1.0.229` and `serde_json 1.0.151` requirements. The candidate aligns only
++these two direct pins in `ui/Cargo.toml` and `services/hepta-os/Cargo.toml`.
++Both locks were generated by Cargo from the actual Git and registry sources.
++
++The UI lock changes the existing Serde, serde_derive and serde_json versions,
++adds serde_core, zmij, unicode-normalization, tinyvec and the two original Git
++packages, and removes ryu. Its other existing registry versions remain the
++same. The independent observer lock also moves syn from 2.0.119 to 3.0.9 because
++the new original serde_derive uses syn 3; the UI lock already contained syn 3.0.9.
++No checksum or lock entry was synthesized by hand.
++
++`ui/core/examples/wire_compatibility.rs` emits a deterministic corpus using the
++real Desktop types: strict host requests, task states, old snapshot defaults,
++integer boundaries, representative float bit patterns and parsed observation
++rounding boundaries, Unicode/escaping, local draft/context JSON and the existing
++Notes fixture JSON. Validation runs the
++same example against the exact original Desktop source/lock and the candidate
++source/lock. Both `wire-compatibility-v1.json` and
++`wire-compatibility-aligned-v1.json` are verbatim outputs of those actual Rust
++1.88 executions; neither was edited to hide a difference.
++
++The first actual feature-on comparison found three differences. Original
++`serde_json/float_roundtrip` feature unification changed f32 rounding just above
++a half-ULP boundary and rejected f32 overflow that the old observer had accepted.
++`HostResources.load_average_1m` now uses a field-level numeric Visitor: integer
++tokens narrow directly from i64/u64, decimal tokens narrow from f64, and null or
++an absent field remains `None`. The intermediate `Option<f64>` approach restored
++the first cases but double-rounded two large signed/unsigned integer examples;
++independent review found this, and both were reproduced as separate real red
++tests before the numeric Visitor fixed them. The same six public-type tests run
++against the original source/lock and the candidate. No signed request or identity
++is re-encoded. The new library feature may also affect f64 decimal parsing, so
++this bounded evidence establishes the retained number-dispatch path and tested
++boundaries, **not bit-exact equivalence for every possible decimal JSON input**.
++
++One lexical difference remains in the corpus: the MAX-f32 observation serializes
++as `3.4028235e+38` instead of `3.4028235e38` after the registry serializer changes
++from ryu to zmij. CI checks the actual output against the aligned golden, then
++`verify_wire_compatibility.py` requires 51 original case strings unchanged and
++allows only that exact token replacement in the remaining case. It compares the
++complete stdout bytes and also proves the two finite decimal values equal with
++`Decimal`; it does not canonicalize other JSON or discard the initial failures.
++The result is **not 52 byte-identical cases**. A new exponent spelling or any
++other change requires a separate explicit review.
++
++The known producer reads `/proc/loadavg` into this field. The Session returns it
++inside an unprivileged snapshot, the bounded JSON transport parses it into a
++typed `Response`, the Shell uses it as a resource label, and `trill-ctl`
++pretty-prints the typed response. In the reviewed
++Desktop source, no hash, signature, authority digest, retained Objective bytes
++or persisted draft identity consumes that resource observation JSON. The exact
++original Objective envelope and its owner/history bindings remain separate.
++This search establishes the checked-in consumer path, not a claim about unknown
++external consumers or every possible JSON number. Original transport and Session
++package tests remain required after dependency alignment. The existing frame-size
++limit still applies to the actual emitted bytes, including the extra exponent
++character; an oversized snapshot is refused rather than partially emitted.
++
++## Explicit candidate gates
++
++Use the A10 Rust 1.88.0 toolchain. Run from the repository root:
++
++```sh
++python3 -I tests/ui/test_shared_presenter_source.py
++python3 -I tests/ui/test_wire_compatibility.py
++cargo metadata --manifest-path ui/Cargo.toml --locked --format-version 1 \
++  --features trill-shell/hepta-shared-presenter \
++  --filter-platform x86_64-unknown-linux-gnu > /tmp/shared-presenter-metadata.json
++python3 -I tests/ui/verify_shared_presenter.py \
++  --metadata /tmp/shared-presenter-metadata.json
++cargo test --manifest-path ui/Cargo.toml --all-targets --locked \
++  -p hepta-control-core -p hepta-robrix-ui -p trill-ui-core -p trill-shell \
++  --no-default-features --features trill-shell/hepta-shared-presenter
++cargo clippy --manifest-path ui/Cargo.toml --all-targets --locked \
++  -p trill-ui-core -p trill-shell --features trill-shell/hepta-shared-presenter \
++  -- -D warnings
++cargo run --quiet --manifest-path ui/Cargo.toml --locked \
++  -p trill-ui-core --example wire_compatibility --features hepta-shared-presenter \
++  > /tmp/shared-presenter-wire.json
++cmp tests/ui/wire-compatibility-aligned-v1.json /tmp/shared-presenter-wire.json
++python3 -I tests/ui/verify_wire_compatibility.py \
++  --original tests/ui/wire-compatibility-v1.json \
++  --candidate /tmp/shared-presenter-wire.json
++```
++
++The source gate checks the real Cargo-resolved package IDs and enabled features,
++the actual Git checkout HEAD/tree, every recorded source byte and every original
++package file against its Git tree blob, plus the clean package directories.
++Index flags cannot hide modified modules outside the review manifest.
++Same-named local replacements, mismatched Git
++sources, disabled candidate validation, enabling the unqualified Makepad
++renderer, modified sources and altered local license notices fail the gate.
++It does not rely on a package name or a successful default-only workspace test.
++
++The A10 workflow explicitly invokes these candidate checks in addition to the
++existing default build, real host/Weston checks and Clippy gates. The README guard
++migration in PR #247 and Objective feature gates in PR #255 are independent
++workflow hunks that must be preserved when composing the changes.
++
++Execution receipts must identify the source bytes and locked toolchain actually
++run. An earlier core-only pass, a dependency compile, a resource-limited stop or
++a queued CI job must not be recorded as a final Shell, Wayland or Makepad pass.
++
++## Remaining integration
++
++The next renderer slice must use the original pinned Robrix/Makepad widgets and
++presenter, replace this candidate's egui composition adapter, and keep the same
++original draft instance. Enabling an optional dependency alone is not renderer
++unification. Desktop Session and broker continue to own existing host operations.
++
++Chat submission needs the original authenticated SourceEnvelope/AuthBus issuer
++bridge and the original durable pre-send retention/mark-started capability. The
++separate FinalUse issuer for production operations does not sign chat Objectives.
++Only original admission/history observations can populate delivery or task
++outcomes; an unknown result must retain its original request and must not retry
++automatically. Local waiter cancellation is separate from original run cancellation.
++
++Native and Web must then exercise the same original renderer, owner projection,
++keyboard/IME behavior and bounded timeline. Each platform still needs actual
++build/runtime evidence, and accessibility and mobile input need their own gates.
++This candidate does not change any of those statuses to complete.
++
++## Notices
++
++The exact original repository [LICENSE](licenses/HEPTA-LICENSE.txt) and
++[NOTICE](licenses/HEPTA-NOTICE.txt), plus the original
++[Robrix MIT notice](licenses/ROBRIX-MIT.txt), are retained verbatim. Their hashes
++are bound to the same upstream source manifest and checked against the actual
++dependency checkout. The original Robrix notice attributes Project Robius
++Developers. This candidate does not import Robrix logos or separately licensed
++SVG assets, or change the licenses of upstream source files.
+diff --git a/support/ui/licenses/HEPTA-LICENSE.txt b/support/ui/licenses/HEPTA-LICENSE.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..4606e72e042564097e8780d66c1d4dcb611869bd
+--- /dev/null
++++ b/support/ui/licenses/HEPTA-LICENSE.txt
+@@ -0,0 +1,201 @@
++                                 Apache License
++                           Version 2.0, January 2004
++                        http://www.apache.org/licenses/
++
++TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
++
++1.  Definitions.
++
++    "License" shall mean the terms and conditions for use, reproduction,
++    and distribution as defined by Sections 1 through 9 of this document.
++
++    "Licensor" shall mean the copyright owner or entity authorized by
++    the copyright owner that is granting the License.
++
++    "Legal Entity" shall mean the union of the acting entity and all
++    other entities that control, are controlled by, or are under common
++    control with that entity. For the purposes of this definition,
++    "control" means (i) the power, direct or indirect, to cause the
++    direction or management of such entity, whether by contract or
++    otherwise, or (ii) ownership of fifty percent (50%) or more of the
++    outstanding shares, or (iii) beneficial ownership of such entity.
++
++    "You" (or "Your") shall mean an individual or Legal Entity
++    exercising permissions granted by this License.
++
++    "Source" form shall mean the preferred form for making modifications,
++    including but not limited to software source code, documentation
++    source, and configuration files.
++
++    "Object" form shall mean any form resulting from mechanical
++    transformation or translation of a Source form, including but
++    not limited to compiled object code, generated documentation,
++    and conversions to other media types.
++
++    "Work" shall mean the work of authorship, whether in Source or
++    Object form, made available under the License, as indicated by a
++    copyright notice that is included in or attached to the work
++    (an example is provided in the Appendix below).
++
++    "Derivative Works" shall mean any work, whether in Source or Object
++    form, that is based on (or derived from) the Work and for which the
++    editorial revisions, annotations, elaborations, or other modifications
++    represent, as a whole, an original work of authorship. For the purposes
++    of this License, Derivative Works shall not include works that remain
++    separable from, or merely link (or bind by name) to the interfaces of,
++    the Work and Derivative Works thereof.
++
++    "Contribution" shall mean any work of authorship, including
++    the original version of the Work and any modifications or additions
++    to that Work or Derivative Works thereof, that is intentionally
++    submitted to Licensor for inclusion in the Work by the copyright owner
++    or by an individual or Legal Entity authorized to submit on behalf of
++    the copyright owner. For the purposes of this definition, "submitted"
++    means any form of electronic, verbal, or written communication sent
++    to the Licensor or its representatives, including but not limited to
++    communication on electronic mailing lists, source code control systems,
++    and issue tracking systems that are managed by, or on behalf of, the
++    Licensor for the purpose of discussing and improving the Work, but
++    excluding communication that is conspicuously marked or otherwise
++    designated in writing by the copyright owner as "Not a Contribution."
++
++    "Contributor" shall mean Licensor and any individual or Legal Entity
++    on behalf of whom a Contribution has been received by Licensor and
++    subsequently incorporated within the Work.
++
++2.  Grant of Copyright License. Subject to the terms and conditions of
++    this License, each Contributor hereby grants to You a perpetual,
++    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++    copyright license to reproduce, prepare Derivative Works of,
++    publicly display, publicly perform, sublicense, and distribute the
++    Work and such Derivative Works in Source or Object form.
++
++3.  Grant of Patent License. Subject to the terms and conditions of
++    this License, each Contributor hereby grants to You a perpetual,
++    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++    (except as stated in this section) patent license to make, have made,
++    use, offer to sell, sell, import, and otherwise transfer the Work,
++    where such license applies only to those patent claims licensable
++    by such Contributor that are necessarily infringed by their
++    Contribution(s) alone or by combination of their Contribution(s)
++    with the Work to which such Contribution(s) was submitted. If You
++    institute patent litigation against any entity (including a
++    cross-claim or counterclaim in a lawsuit) alleging that the Work
++    or a Contribution incorporated within the Work constitutes direct
++    or contributory patent infringement, then any patent licenses
++    granted to You under this License for that Work shall terminate
++    as of the date such litigation is filed.
++
++4.  Redistribution. You may reproduce and distribute copies of the
++    Work or Derivative Works thereof in any medium, with or without
++    modifications, and in Source or Object form, provided that You
++    meet the following conditions:
++
++    (a) You must give any other recipients of the Work or
++    Derivative Works a copy of this License; and
++
++    (b) You must cause any modified files to carry prominent notices
++    stating that You changed the files; and
++
++    (c) You must retain, in the Source form of any Derivative Works
++    that You distribute, all copyright, patent, trademark, and
++    attribution notices from the Source form of the Work,
++    excluding those notices that do not pertain to any part of
++    the Derivative Works; and
++
++    (d) If the Work includes a "NOTICE" text file as part of its
++    distribution, then any Derivative Works that You distribute must
++    include a readable copy of the attribution notices contained
++    within such NOTICE file, excluding those notices that do not
++    pertain to any part of the Derivative Works, in at least one
++    of the following places: within a NOTICE text file distributed
++    as part of the Derivative Works; within the Source form or
++    documentation, if provided along with the Derivative Works; or,
++    within a display generated by the Derivative Works, if and
++    wherever such third-party notices normally appear. The contents
++    of the NOTICE file are for informational purposes only and
++    do not modify the License. You may add Your own attribution
++    notices within Derivative Works that You distribute, alongside
++    or as an addendum to the NOTICE text from the Work, provided
++    that such additional attribution notices cannot be construed
++    as modifying the License.
++
++    You may add Your own copyright statement to Your modifications and
++    may provide additional or different license terms and conditions
++    for use, reproduction, or distribution of Your modifications, or
++    for any such Derivative Works as a whole, provided Your use,
++    reproduction, and distribution of the Work otherwise complies with
++    the conditions stated in this License.
++
++5.  Submission of Contributions. Unless You explicitly state otherwise,
++    any Contribution intentionally submitted for inclusion in the Work
++    by You to the Licensor shall be under the terms and conditions of
++    this License, without any additional terms or conditions.
++    Notwithstanding the above, nothing herein shall supersede or modify
++    the terms of any separate license agreement you may have executed
++    with Licensor regarding such Contributions.
++
++6.  Trademarks. This License does not grant permission to use the trade
++    names, trademarks, service marks, or product names of the Licensor,
++    except as required for reasonable and customary use in describing the
++    origin of the Work and reproducing the content of the NOTICE file.
++
++7.  Disclaimer of Warranty. Unless required by applicable law or
++    agreed to in writing, Licensor provides the Work (and each
++    Contributor provides its Contributions) on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++    implied, including, without limitation, any warranties or conditions
++    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
++    PARTICULAR PURPOSE. You are solely responsible for determining the
++    appropriateness of using or redistributing the Work and assume any
++    risks associated with Your exercise of permissions under this License.
++
++8.  Limitation of Liability. In no event and under no legal theory,
++    whether in tort (including negligence), contract, or otherwise,
++    unless required by applicable law (such as deliberate and grossly
++    negligent acts) or agreed to in writing, shall any Contributor be
++    liable to You for damages, including any direct, indirect, special,
++    incidental, or consequential damages of any character arising as a
++    result of this License or out of the use or inability to use the
++    Work (including but not limited to damages for loss of goodwill,
++    work stoppage, computer failure or malfunction, or any and all
++    other commercial damages or losses), even if such Contributor
++    has been advised of the possibility of such damages.
++
++9.  Accepting Warranty or Additional Liability. While redistributing
++    the Work or Derivative Works thereof, You may choose to offer,
++    and charge a fee for, acceptance of support, warranty, indemnity,
++    or other liability obligations and/or rights consistent with this
++    License. However, in accepting such obligations, You may act only
++    on Your own behalf and on Your sole responsibility, not on behalf
++    of any other Contributor, and only if You agree to indemnify,
++    defend, and hold each Contributor harmless for any liability
++    incurred by, or claims asserted against, such Contributor by reason
++    of your accepting any such warranty or additional liability.
++
++END OF TERMS AND CONDITIONS
++
++APPENDIX: How to apply the Apache License to your work.
++
++      To apply the Apache License to your work, attach the following
++      boilerplate notice, with the fields enclosed by brackets "[]"
++      replaced with your own identifying information. (Don't include
++      the brackets!)  The text should be enclosed in the appropriate
++      comment syntax for the file format. We also recommend that a
++      file or class name and description of purpose be included on the
++      same "printed page" as the copyright notice for easier
++      identification within third-party archives.
++
++Copyright 2025 OpenAI
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
+diff --git a/support/ui/licenses/HEPTA-NOTICE.txt b/support/ui/licenses/HEPTA-NOTICE.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..2805899d56d0332d175cfc613c67d45d6f006db7
+--- /dev/null
++++ b/support/ui/licenses/HEPTA-NOTICE.txt
+@@ -0,0 +1,6 @@
++OpenAI Codex
++Copyright 2025 OpenAI
++
++This project includes code derived from [Ratatui](https://github.com/ratatui/ratatui), licensed under the MIT license.
++Copyright (c) 2016-2022 Florian Dehau
++Copyright (c) 2023-2025 The Ratatui Developers
+diff --git a/support/ui/licenses/ROBRIX-MIT.txt b/support/ui/licenses/ROBRIX-MIT.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..7f77de13d6a3a5b2a7b35bfb249b7902317c2045
+--- /dev/null
++++ b/support/ui/licenses/ROBRIX-MIT.txt
+@@ -0,0 +1,9 @@
++The MIT License (MIT)
++
++Copyright (c) 2023-2026 Project Robius Developers
++
++Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+diff --git a/tests/ui/test_shared_presenter_source.py b/tests/ui/test_shared_presenter_source.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..c7988afe5286d7436cf3d0add73412438d731ae2
+--- /dev/null
++++ b/tests/ui/test_shared_presenter_source.py
+@@ -0,0 +1,156 @@
++#!/usr/bin/env python3
++"""Mutation regressions for the original-package source binding gate."""
++import copy
++import hashlib
++import importlib.util
++from pathlib import Path
++import subprocess
++import tempfile
++import unittest
++
++spec = importlib.util.spec_from_file_location("presenter_guard", Path(__file__).with_name("verify_shared_presenter.py"))
++guard = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(guard)
++
++
++class SourceBindingTests(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        paths = guard.REQUIRED_SOURCES | set(guard.PACKAGES.values()) | {
++            "LICENSE", "NOTICE", "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt"}
++        self.source = {"schema": "trillionnium.original-shared-presenter.v1", "repository": guard.REPOSITORY,
++                       "files": []}
++        for path in sorted(paths):
++            data = ("fixture only: " + path + "\n").encode()
++            target = self.root / path
++            target.parent.mkdir(parents=True, exist_ok=True)
++            target.write_bytes(data)
++            self.source["files"].append(self.record(path, data))
++        self.git("init", "--quiet")
++        self.git("add", ".")
++        self.git("-c", "user.name=Gate Fixture", "-c", "user.email=fixture@invalid", "commit", "--quiet", "-m", "fixture")
++        commit = self.git("rev-parse", "HEAD")
++        self.source.update(commit=commit, tree=self.git("rev-parse", "HEAD^{tree}"))
++        source_id = f"git+https://github.com/{guard.REPOSITORY}?rev={commit}#{commit}"
++        packages = [{"name": name, "id": name, "version": "0.1.0", "source": source_id,
++                     "manifest_path": str(self.root / path)} for name, path in guard.PACKAGES.items()]
++        packages.extend({"name": name, "id": name, "features": {"default": []}}
++                        for name in ("trill-ui-core", "trill-shell"))
++        nodes = [{"id": "hepta-robrix-ui", "features": []}]
++        nodes.extend({"id": name, "features": ["hepta-shared-presenter"]}
++                     for name in ("trill-ui-core", "trill-shell"))
++        self.metadata = {"packages": packages, "resolve": {"nodes": nodes}}
++
++    def git(self, *args):
++        return subprocess.check_output(["git", "-C", str(self.root), *args], text=True).strip()
++
++    @staticmethod
++    def record(path, data):
++        return {"path": path, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
++                "git_blob": hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()}
++
++    def test_exact_fixture_checkout_and_packages_are_accepted(self):
++        guard.validate_manifest(self.source)
++        self.assertEqual(guard.check_packages(self.metadata, self.source), self.root)
++        guard.check_checkout(self.root, self.source)
++        guard.check_files(self.root, self.source)
++
++    def test_changed_source_cannot_be_accepted_even_after_rehashing_manifest(self):
++        item = self.source["files"][0]
++        (self.root / item["path"]).write_bytes(b"edited local implementation\n")
++        with self.assertRaises(ValueError):
++            guard.check_files(self.root, self.source)
++        item.update(self.record(item["path"], (self.root / item["path"]).read_bytes()))
++        guard.check_files(self.root, self.source)
++        with self.assertRaises(ValueError):
++            guard.check_checkout(self.root, self.source)
++
++    def test_wrong_commit_or_tree_is_rejected(self):
++        for field in ("commit", "tree"):
++            changed = copy.deepcopy(self.source)
++            changed[field] = "a" * 40
++            with self.assertRaises(ValueError):
++                guard.check_checkout(self.root, changed)
++
++    def test_index_flags_cannot_hide_changes_outside_review_manifest(self):
++        path = "apps/hepta-control-ui/rust/core/src/additional.rs"
++        target = self.root / path
++        target.write_text("original fixture module\n")
++        self.git("add", path)
++        self.git("-c", "user.name=Gate Fixture", "-c", "user.email=fixture@invalid", "commit", "--quiet", "-m", "extra fixture module")
++        self.source.update(commit=self.git("rev-parse", "HEAD"), tree=self.git("rev-parse", "HEAD^{tree}"))
++        self.git("update-index", "--assume-unchanged", path)
++        target.write_text("hidden local modification\n")
++        self.assertEqual(self.git("status", "--porcelain=v1"), "")
++        with self.assertRaises(ValueError):
++            guard.check_checkout(self.root, self.source)
++
++    def test_same_named_local_package_or_other_git_source_is_rejected(self):
++        for source in (None, "git+https://github.com/unrelated/replacement#" + self.source["commit"]):
++            changed = copy.deepcopy(self.metadata)
++            changed["packages"][0]["source"] = source
++            with self.assertRaises(ValueError):
++                guard.check_packages(changed, self.source)
++
++    def test_inactive_feature_and_unqualified_renderer_are_rejected(self):
++        changed = copy.deepcopy(self.metadata)
++        changed["resolve"]["nodes"][1]["features"] = []
++        with self.assertRaises(ValueError):
++            guard.check_packages(changed, self.source)
++        changed = copy.deepcopy(self.metadata)
++        changed["resolve"]["nodes"][0]["features"] = ["ui"]
++        with self.assertRaises(ValueError):
++            guard.check_packages(changed, self.source)
++
++    def test_duplicate_package_or_missing_critical_source_is_rejected(self):
++        changed = copy.deepcopy(self.metadata)
++        changed["packages"].append(changed["packages"][0])
++        with self.assertRaises(ValueError):
++            guard.check_packages(changed, self.source)
++        changed = copy.deepcopy(self.source)
++        omitted = next(iter(guard.REQUIRED_SOURCES))
++        changed["files"] = [item for item in changed["files"] if item["path"] != omitted]
++        with self.assertRaises(ValueError):
++            guard.validate_manifest(changed)
++
++    def test_symlink_and_path_escape_are_rejected(self):
++        item = self.source["files"][0]
++        path = self.root / item["path"]
++        data = path.read_bytes()
++        alternate = self.root / "alternate"
++        alternate.write_bytes(data)
++        path.unlink()
++        path.symlink_to(alternate)
++        with self.assertRaises(ValueError):
++            guard.check_files(self.root, self.source)
++        changed = copy.deepcopy(self.source)
++        changed["files"][0]["path"] = "../escape"
++        with self.assertRaises(ValueError):
++            guard.validate_manifest(changed)
++
++    def test_candidate_default_enablement_is_rejected(self):
++        changed = copy.deepcopy(self.metadata)
++        changed["packages"][-1]["features"]["default"] = ["hepta-shared-presenter"]
++        with self.assertRaises(ValueError):
++            guard.check_packages(changed, self.source)
++
++    def test_local_upstream_notices_are_exact_and_required(self):
++        directory = self.root / "local-notices"
++        directory.mkdir()
++        for name, path in guard.LICENSE_COPIES.items():
++            (directory / name).write_bytes((self.root / path).read_bytes())
++        guard.check_license_copies(directory, self.source)
++        target = directory / "ROBRIX-MIT.txt"
++        original = target.read_bytes()
++        target.write_bytes(original + b"changed")
++        with self.assertRaises(ValueError):
++            guard.check_license_copies(directory, self.source)
++        target.unlink()
++        with self.assertRaises(ValueError):
++            guard.check_license_copies(directory, self.source)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/ui/test_wire_compatibility.py b/tests/ui/test_wire_compatibility.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..13926143b0bd8aacd442a81f0a9eac76ea9012f1
+--- /dev/null
++++ b/tests/ui/test_wire_compatibility.py
+@@ -0,0 +1,67 @@
++#!/usr/bin/env python3
++"""Refusal boundaries for the narrowly reviewed actual-output exception."""
++import importlib.util
++from pathlib import Path
++import sys
++import unittest
++
++sys.dont_write_bytecode = True
++DIRECTORY = Path(__file__).resolve().parent
++spec = importlib.util.spec_from_file_location("wire_gate", DIRECTORY / "verify_wire_compatibility.py")
++gate = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(gate)
++
++
++class WireCompatibilityTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        cls.original = (DIRECTORY / "wire-compatibility-v1.json").read_bytes()
++        cls.aligned = (DIRECTORY / "wire-compatibility-aligned-v1.json").read_bytes()
++
++    def test_actual_original_and_aligned_execution_outputs(self):
++        report = gate.compare(self.original, self.aligned)
++        self.assertTrue(report["passed"])
++        self.assertFalse(report["exact_stdout_bytes_equal"])
++        self.assertEqual(report["exact_case_values"], 51)
++        self.assertEqual(len(report["allowed_observer_exponent_changes"]), 1)
++
++    def test_byte_identical_output_is_also_compatible(self):
++        self.assertTrue(gate.compare(self.original, self.original)["exact_stdout_bytes_equal"])
++
++    def test_changing_the_finite_value_is_refused(self):
++        changed = self.aligned.replace(b"3.4028235e+38", b"3.4028234e+38", 1)
++        self.assertNotEqual(changed, self.aligned)
++        with self.assertRaises(ValueError):
++            gate.compare(self.original, changed)
++
++    def test_the_observed_rounding_regression_is_refused(self):
++        old = b'"response/parse-f32/above-half-ulp-at-one": "3f800000"'
++        changed = self.aligned.replace(old, old.replace(b"3f800000", b"3f800001"), 1)
++        self.assertNotEqual(changed, self.aligned)
++        with self.assertRaises(ValueError):
++            gate.compare(self.original, changed)
++
++    def test_the_observed_overflow_regression_is_refused(self):
++        old = b'"response/parse-f32/f32-overflow": "7f800000"'
++        changed = self.aligned.replace(old, old.replace(b"7f800000", b"rejected"), 1)
++        self.assertNotEqual(changed, self.aligned)
++        with self.assertRaises(ValueError):
++            gate.compare(self.original, changed)
++
++    def test_unrelated_whitespace_is_not_canonicalized(self):
++        with self.assertRaises(ValueError):
++            gate.compare(self.original, self.aligned.replace(b"  ", b" ", 1))
++
++    def test_duplicate_or_extra_outer_cases_are_refused(self):
++        for extra in (b'"unexpected":"new",', b'"request/snapshot":"duplicate",'):
++            with self.assertRaises(ValueError):
++                gate.compare(self.original, self.aligned.replace(b"{", b"{" + extra, 1))
++
++    def test_modified_original_cannot_redefine_the_exception(self):
++        changed = self.original.replace(b"3.4028235e38", b"3.4028234e38", 1)
++        with self.assertRaises(ValueError):
++            gate.compare(changed, self.aligned)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/ui/verify_shared_presenter.py b/tests/ui/verify_shared_presenter.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..82d4f454f7a8edef7a3c3af0fd560870a75da5b8
+--- /dev/null
++++ b/tests/ui/verify_shared_presenter.py
+@@ -0,0 +1,173 @@
++#!/usr/bin/env python3
++"""Fail closed unless the candidate uses both unchanged original Git packages."""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++from pathlib import Path, PurePosixPath
++import re
++import subprocess
++
++REPOSITORY = "TrillionniumFoundation/hepta-private-ci"
++PACKAGES = {
++    "hepta-control-core": "apps/hepta-control-ui/rust/core/Cargo.toml",
++    "hepta-robrix-ui": "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml",
++}
++REQUIRED_SOURCES = {
++    "apps/hepta-control-ui/rust/core/src/chat.rs",
++    "apps/hepta-control-ui/rust/core/src/chat_owner.rs",
++    "apps/hepta-control-ui/rust/core/src/chat_timeline.rs",
++    "apps/hepta-control-ui/rust/robrix-ui/src/presentation.rs",
++}
++LICENSE_COPIES = {
++    "HEPTA-LICENSE.txt": "LICENSE",
++    "HEPTA-NOTICE.txt": "NOTICE",
++    "ROBRIX-MIT.txt": "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt",
++}
++
++
++def require(condition: bool, message: str) -> None:
++    if not condition:
++        raise ValueError(message)
++
++
++def validate_manifest(value: dict) -> None:
++    require(value.get("schema") == "trillionnium.original-shared-presenter.v1", "wrong source schema")
++    require(value.get("repository") == REPOSITORY, "wrong upstream repository")
++    for field in ("commit", "tree"):
++        require(bool(re.fullmatch(r"[0-9a-f]{40}", value.get(field, ""))), f"invalid {field}")
++    paths = set()
++    for item in value.get("files", []):
++        path = item.get("path", "")
++        pure = PurePosixPath(path)
++        require(bool(path) and not pure.is_absolute() and ".." not in pure.parts
++                and str(pure) == path, "unsafe source path")
++        require(path not in paths, "duplicate source path")
++        paths.add(path)
++        require(bool(re.fullmatch(r"[0-9a-f]{40}", item.get("git_blob", ""))), "invalid blob")
++        require(bool(re.fullmatch(r"[0-9a-f]{64}", item.get("sha256", ""))), "invalid SHA256")
++        require(type(item.get("bytes")) is int and item["bytes"] >= 0, "invalid size")
++    require(REQUIRED_SOURCES <= paths, "missing original presenter/model source")
++    require({"LICENSE", "NOTICE", "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt"} <= paths,
++            "missing upstream license/notice provenance")
++
++
++def check_packages(metadata: dict, source: dict) -> Path:
++    expected = f"git+https://github.com/{REPOSITORY}?rev={source['commit']}#{source['commit']}"
++    roots = []
++    ids = {}
++    for name, original_path in PACKAGES.items():
++        matches = [p for p in metadata.get("packages", []) if p.get("name") == name]
++        require(len(matches) == 1, f"expected one original {name} package")
++        package = matches[0]
++        require(package.get("source") == expected, f"{name} is not the exact original Git package")
++        require(package.get("version") == "0.1.0", f"unexpected {name} version")
++        manifest = Path(package["manifest_path"]).resolve()
++        root = manifest
++        for _ in PurePosixPath(original_path).parts:
++            root = root.parent
++        require(root / original_path == manifest, f"wrong original {name} manifest path")
++        roots.append(root)
++        ids[name] = package["id"]
++    require(roots[0] == roots[1], "model and presenter came from different checkouts")
++    nodes = metadata.get("resolve", {}).get("nodes", [])
++    selected = [node for node in nodes if node.get("id") == ids["hepta-robrix-ui"]]
++    require(len(selected) == 1, "presenter was not actually resolved for the enabled feature")
++    require(not ({"ui", "native-host"} & set(selected[0].get("features", []))),
++            "this gate does not qualify a Makepad renderer or native owner host")
++    for name in ("trill-ui-core", "trill-shell"):
++        packages = [p for p in metadata.get("packages", []) if p.get("name") == name]
++        require(len(packages) == 1, f"missing Desktop {name}")
++        require(packages[0].get("features", {}).get("default", []) == [],
++                "candidate must remain default-off")
++        active = [node for node in nodes if node.get("id") == packages[0]["id"]]
++        require(len(active) == 1 and "hepta-shared-presenter" in active[0].get("features", []),
++                f"{name} candidate feature was not enabled in this validation")
++    return roots[0]
++
++
++def check_files(root: Path, source: dict) -> None:
++    for item in source["files"]:
++        path = root
++        for part in PurePosixPath(item["path"]).parts:
++            path = path / part
++            require(not path.is_symlink(), f"symlink in original source path: {item['path']}")
++        require(path.is_file(), f"missing source: {item['path']}")
++        data = path.read_bytes()
++        require(len(data) == item["bytes"], f"source size changed: {item['path']}")
++        require(hashlib.sha256(data).hexdigest() == item["sha256"], f"source SHA256 changed: {item['path']}")
++        blob = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
++        require(blob == item["git_blob"], f"source Git blob changed: {item['path']}")
++
++
++def check_checkout(root: Path, source: dict) -> int:
++    def git(*args: str) -> str:
++        return subprocess.check_output(["git", "-C", str(root), *args], text=True).strip()
++    require(git("rev-parse", "HEAD") == source["commit"], "checkout HEAD differs from source pin")
++    require(git("rev-parse", "HEAD^{tree}") == source["tree"], "checkout tree differs from source pin")
++    paths = sorted({str(PurePosixPath(p).parent) for p in PACKAGES.values()}
++                   | {item["path"] for item in source["files"]})
++    # Check every original package file, including modules beyond the four
++    # directly reviewed presenter/model files. A patched local checkout fails.
++    require(not git("status", "--porcelain=v1", "--untracked-files=all", "--", *paths),
++            "original package checkout contains modifications or extra files")
++    # Do not let index assume-unchanged/skip-worktree flags hide a modified
++    # module outside the small review manifest. Hash every original package
++    # file from the pinned HEAD tree directly, independently of Git's index.
++    entries = subprocess.check_output(
++        ["git", "-C", str(root), "ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", *paths]
++    ).split(b"\0")
++    verified = 0
++    for entry in entries:
++        if not entry:
++            continue
++        header, name = entry.split(b"\t", 1)
++        mode, kind, expected_blob = header.decode().split()
++        require(kind == "blob" and mode in ("100644", "100755"),
++                "original package contains an unqualified source entry")
++        path = root
++        for part in PurePosixPath(name.decode()).parts:
++            path /= part
++            require(not path.is_symlink(), "symlink in original package checkout")
++        require(path.is_file(), "original package checkout file is missing")
++        data = path.read_bytes()
++        actual_blob = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
++        require(actual_blob == expected_blob, "original package bytes differ from pinned tree")
++        verified += 1
++    require(verified > 0, "original package tree is empty")
++    return verified
++
++
++def check_license_copies(directory: Path, source: dict) -> None:
++    records = {item["path"]: item for item in source["files"]}
++    require(not directory.is_symlink(), "license directory must not be a symlink")
++    for name, upstream_path in LICENSE_COPIES.items():
++        path = directory / name
++        require(path.is_file() and not path.is_symlink(), f"missing local upstream notice: {name}")
++        data = path.read_bytes()
++        require(len(data) == records[upstream_path]["bytes"]
++                and hashlib.sha256(data).hexdigest() == records[upstream_path]["sha256"],
++                f"local upstream notice changed: {name}")
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--metadata", type=Path, required=True)
++    parser.add_argument("--source", type=Path, default=Path("support/ui/HEPTA_SHARED_PRESENTER.json"))
++    args = parser.parse_args()
++    source = json.loads(args.source.read_text())
++    validate_manifest(source)
++    root = check_packages(json.loads(args.metadata.read_text()), source)
++    checkout_files = check_checkout(root, source)
++    check_files(root, source)
++    check_license_copies(args.source.parent / "licenses", source)
++    print(json.dumps({"status": "passed", "commit": source["commit"], "tree": source["tree"],
++                      "source_files_verified": len(source["files"]), "original_packages": sorted(PACKAGES),
++                      "checkout_files_verified": checkout_files,
++                      "local_license_copies_verified": len(LICENSE_COPIES),
++                      "makepad_renderer_enabled": False, "send_authority_installed": False}))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tests/ui/verify_wire_compatibility.py b/tests/ui/verify_wire_compatibility.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..0e9b4b0f1bf95597a77dfae5c0396c0c8364d5e8
+--- /dev/null
++++ b/tests/ui/verify_wire_compatibility.py
+@@ -0,0 +1,88 @@
++#!/usr/bin/env python3
++"""Allow one reviewed observer exponent spelling; preserve every other byte."""
++import argparse
++from decimal import Decimal
++import hashlib
++import json
++from pathlib import Path
++import sys
++
++
++# Recorded from the actual Desktop 64736996 source and original lock, Rust 1.88.
++ORIGINAL_SHA256 = "1e4ced2871836a18177f166de7394b7f32d8de98af6fd6f1b4206ef28b2f85dd"
++CASE = "response/resources/f32-7f7fffff"
++OLD_TOKEN = b'\\"load_average_1m\\":3.4028235e38'
++ALIGNED_TOKEN = b'\\"load_average_1m\\":3.4028235e+38'
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def compare(original, candidate):
++    if digest(original) != ORIGINAL_SHA256:
++        raise ValueError("Original corpus is not the recorded original-source/lock output")
++    old, new = json.loads(original), json.loads(candidate)
++    if not isinstance(old, dict) or not isinstance(new, dict):
++        raise ValueError("The two corpora must be JSON objects")
++    if len(old) != 52 or len(new) != 52 or set(old) != set(new):
++        raise ValueError("The exact 52 original cases are required")
++    if not all(isinstance(value, str) for corpus in (old, new) for value in corpus.values()):
++        raise ValueError("Corpus values must remain the original encoded strings")
++    report = {
++        "passed": True,
++        "original_sha256": digest(original),
++        "candidate_sha256": digest(candidate),
++        "case_count": 52,
++        "exact_stdout_bytes_equal": original == candidate,
++        "exact_case_values": 52,
++        "allowed_observer_exponent_changes": [],
++        "scope": "Bounded observer/IPC corpus; not all JSON inputs, signatures or renderer qualification.",
++    }
++    if original == candidate:
++        return report
++    # The comparison is over the complete actual stdout, including JSON order,
++    # escaping and whitespace. It is not a generic JSON canonicalizer.
++    if original.count(OLD_TOKEN) != 1:
++        raise ValueError("Expected exactly one recorded MAX-f32 observer token")
++    if candidate != original.replace(OLD_TOKEN, ALIGNED_TOKEN, 1):
++        raise ValueError("Bytes differ outside the one reviewed observer exponent spelling")
++    different = [name for name in old if old[name] != new[name]]
++    if different != [CASE]:
++        raise ValueError("A different corpus case changed")
++    old_response = json.loads(old[CASE], parse_float=Decimal)
++    new_response = json.loads(new[CASE], parse_float=Decimal)
++    old_number = old_response["resources"]["load_average_1m"]
++    new_number = new_response["resources"]["load_average_1m"]
++    if (
++        old_response != new_response
++        or not isinstance(old_number, Decimal)
++        or not isinstance(new_number, Decimal)
++        or not old_number.is_finite()
++        or old_number != Decimal("3.4028235e38")
++        or new_number != old_number
++    ):
++        raise ValueError("The one observer token is not the same finite decimal value")
++    report["exact_case_values"] = 51
++    report["allowed_observer_exponent_changes"] = [
++        {"case": CASE, "path": "resources.load_average_1m", "original": "3.4028235e38", "candidate": "3.4028235e+38"}
++    ]
++    return report
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--original", type=Path, required=True)
++    parser.add_argument("--candidate", type=Path, required=True)
++    args = parser.parse_args()
++    try:
++        report = compare(args.original.read_bytes(), args.candidate.read_bytes())
++    except (OSError, ValueError, TypeError, KeyError) as error:
++        print(json.dumps({"passed": False, "error": str(error)}), file=sys.stderr)
++        return 1
++    print(json.dumps(report, indent=2))
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/ui/wire-compatibility-aligned-v1.json b/tests/ui/wire-compatibility-aligned-v1.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..16c6be153e5da3b5307990279a401a7acf3a347b
+--- /dev/null
++++ b/tests/ui/wire-compatibility-aligned-v1.json
+@@ -0,0 +1,54 @@
++{
++  "draft/context-reference": "{\"workspace\":\"personal\",\"text\":\"unsent / 未发送\\n\\\"quoted\\\" \\\\ 📝\",\"contexts\":[{\"kind\":\"host_task\",\"key\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":18446744073709551615},\"workspace\":\"personal\",\"app\":\"notes\",\"quoted_state\":\"unknown\",\"quoted_pid\":1,\"sampled_unix_ms\":3,\"task_updated_unix_ms\":2}]}",
++  "existing-golden/notes-bootstrap": "{\"attached_ack_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"notes_target_registration\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":1,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:1:22222222222222222222222222222222\\\",\\\"status\\\":\\\"attached\\\"}\",\"offer_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"offer_notes_target\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":1,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:1:22222222222222222222222222222222\\\"}\",\"provenance\":\"Fixed private inherited descriptor bootstrap fixture; no authority or runtime execution.\",\"rejected_ack_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"notes_target_registration\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":1,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:1:22222222222222222222222222222222\\\",\\\"status\\\":\\\"rejected\\\"}\",\"schema_version\":1}",
++  "existing-golden/notes-target": "{\"application_response_utf8\":\"{\\\"schema_version\\\":1,\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":7,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"operation_id\\\":\\\"fixture-notes-v1\\\",\\\"payload_sha256\\\":\\\"1d67dd039e9fc0171c5a90757f4fd837bf4d0f43cb8cb7ea62d81c899854dac2\\\",\\\"result\\\":{\\\"status\\\":\\\"applied\\\",\\\"previous_revision\\\":0,\\\"revision\\\":1,\\\"text_sha256\\\":\\\"08afb733b7642615a77dbad7b0070e07ba26e5a97400178793618bbaa1e14678\\\"}}\",\"expected_predecessor_sha256\":\"85c1a9a87c31e09481bc3ea8e72fd0f942733d3f8a1d256f28bc39956ac4537b\",\"expected_scope_sha256\":\"fea5abaa4b0566e66c775bbcc05f60ece7aec6d29e7f23dcfb6386ca27000fc7\",\"payload_sha256\":\"1d67dd039e9fc0171c5a90757f4fd837bf4d0f43cb8cb7ea62d81c899854dac2\",\"provenance\":\"Fixed cross-language wire fixture; no authority, production owner, GUI, or kernel run.\",\"request_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"replace_note\\\",\\\"operation_id\\\":\\\"fixture-notes-v1\\\",\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:7:22222222222222222222222222222222\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":7,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"expected_revision\\\":0,\\\"text\\\":\\\"Notes target / 中文\\\"}\",\"schema_version\":1}",
++  "request/acceptance/cancel": "true",
++  "request/acceptance/duplicate-id": "false",
++  "request/acceptance/duplicate-type": "false",
++  "request/acceptance/fractional-id": "false",
++  "request/acceptance/missing-instance": "false",
++  "request/acceptance/negative-id": "false",
++  "request/acceptance/overflow-id": "false",
++  "request/acceptance/snapshot": "true",
++  "request/acceptance/unknown-command": "false",
++  "request/acceptance/unknown-field": "false",
++  "request/cancel/0": "{\"type\":\"cancel\",\"id\":0,\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/cancel/1": "{\"type\":\"cancel\",\"id\":1,\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/cancel/18446744073709551615": "{\"type\":\"cancel\",\"id\":18446744073709551615,\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Build/Calculator": "{\"type\":\"launch\",\"workspace\":\"build\",\"app\":\"calculator\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Build/Notes": "{\"type\":\"launch\",\"workspace\":\"build\",\"app\":\"notes\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Build/Terminal": "{\"type\":\"launch\",\"workspace\":\"build\",\"app\":\"terminal\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Personal/Calculator": "{\"type\":\"launch\",\"workspace\":\"personal\",\"app\":\"calculator\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Personal/Notes": "{\"type\":\"launch\",\"workspace\":\"personal\",\"app\":\"notes\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Personal/Terminal": "{\"type\":\"launch\",\"workspace\":\"personal\",\"app\":\"terminal\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Research/Calculator": "{\"type\":\"launch\",\"workspace\":\"research\",\"app\":\"calculator\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Research/Notes": "{\"type\":\"launch\",\"workspace\":\"research\",\"app\":\"notes\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Research/Terminal": "{\"type\":\"launch\",\"workspace\":\"research\",\"app\":\"terminal\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/snapshot": "{\"type\":\"snapshot\"}",
++  "response/old-defaults": "{\"type\":\"snapshot\",\"tasks\":[],\"resources\":{\"sampled_unix_ms\":5,\"mem_total_kib\":null,\"mem_available_kib\":null,\"load_average_1m\":null,\"source\":\"old host\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"old\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/parse-f32/above-half-ulp-at-one": "3f800000",
++  "response/parse-f32/decimal-tenth": "3dcccccd",
++  "response/parse-f32/f32-overflow": "7f800000",
++  "response/parse-f32/half-ulp-at-one": "3f800000",
++  "response/parse-f32/json-number-overflow": "rejected",
++  "response/parse-f32/largest-finite": "7f7fffff",
++  "response/parse-f32/negative-zero": "80000000",
++  "response/parse-f32/positive-zero": "00000000",
++  "response/parse-f32/smallest-subnormal": "00000001",
++  "response/resources/f32-00000000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":0.0,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-00000001": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":1e-45,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-3dcccccd": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":0.1,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-3f800000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":1.0,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-7f7fffff": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":3.4028235e+38,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-7f800000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":null,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-7fc00000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":null,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-80000000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":-0.0,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/task/CancelRequested": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"cancel_requested\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Cancelled": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"cancelled\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Completed": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"completed\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Failed": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"failed\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Partial": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"partial\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Pending": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"pending\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Running": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"running\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Unknown": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}"
++}
+diff --git a/tests/ui/wire-compatibility-v1.json b/tests/ui/wire-compatibility-v1.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..c3675d86248769e81b951c3f669f7382254e1285
+--- /dev/null
++++ b/tests/ui/wire-compatibility-v1.json
+@@ -0,0 +1,54 @@
++{
++  "draft/context-reference": "{\"workspace\":\"personal\",\"text\":\"unsent / 未发送\\n\\\"quoted\\\" \\\\ 📝\",\"contexts\":[{\"kind\":\"host_task\",\"key\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":18446744073709551615},\"workspace\":\"personal\",\"app\":\"notes\",\"quoted_state\":\"unknown\",\"quoted_pid\":1,\"sampled_unix_ms\":3,\"task_updated_unix_ms\":2}]}",
++  "existing-golden/notes-bootstrap": "{\"attached_ack_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"notes_target_registration\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":1,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:1:22222222222222222222222222222222\\\",\\\"status\\\":\\\"attached\\\"}\",\"offer_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"offer_notes_target\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":1,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:1:22222222222222222222222222222222\\\"}\",\"provenance\":\"Fixed private inherited descriptor bootstrap fixture; no authority or runtime execution.\",\"rejected_ack_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"notes_target_registration\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":1,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:1:22222222222222222222222222222222\\\",\\\"status\\\":\\\"rejected\\\"}\",\"schema_version\":1}",
++  "existing-golden/notes-target": "{\"application_response_utf8\":\"{\\\"schema_version\\\":1,\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":7,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"operation_id\\\":\\\"fixture-notes-v1\\\",\\\"payload_sha256\\\":\\\"1d67dd039e9fc0171c5a90757f4fd837bf4d0f43cb8cb7ea62d81c899854dac2\\\",\\\"result\\\":{\\\"status\\\":\\\"applied\\\",\\\"previous_revision\\\":0,\\\"revision\\\":1,\\\"text_sha256\\\":\\\"08afb733b7642615a77dbad7b0070e07ba26e5a97400178793618bbaa1e14678\\\"}}\",\"expected_predecessor_sha256\":\"85c1a9a87c31e09481bc3ea8e72fd0f942733d3f8a1d256f28bc39956ac4537b\",\"expected_scope_sha256\":\"fea5abaa4b0566e66c775bbcc05f60ece7aec6d29e7f23dcfb6386ca27000fc7\",\"payload_sha256\":\"1d67dd039e9fc0171c5a90757f4fd837bf4d0f43cb8cb7ea62d81c899854dac2\",\"provenance\":\"Fixed cross-language wire fixture; no authority, production owner, GUI, or kernel run.\",\"request_utf8\":\"{\\\"schema_version\\\":1,\\\"action\\\":\\\"replace_note\\\",\\\"operation_id\\\":\\\"fixture-notes-v1\\\",\\\"destination_id\\\":\\\"trill.notes:11111111111111111111111111111111:7:22222222222222222222222222222222\\\",\\\"target\\\":{\\\"session_instance\\\":\\\"11111111111111111111111111111111\\\",\\\"task_id\\\":7,\\\"incarnation\\\":\\\"22222222222222222222222222222222\\\"},\\\"expected_revision\\\":0,\\\"text\\\":\\\"Notes target / 中文\\\"}\",\"schema_version\":1}",
++  "request/acceptance/cancel": "true",
++  "request/acceptance/duplicate-id": "false",
++  "request/acceptance/duplicate-type": "false",
++  "request/acceptance/fractional-id": "false",
++  "request/acceptance/missing-instance": "false",
++  "request/acceptance/negative-id": "false",
++  "request/acceptance/overflow-id": "false",
++  "request/acceptance/snapshot": "true",
++  "request/acceptance/unknown-command": "false",
++  "request/acceptance/unknown-field": "false",
++  "request/cancel/0": "{\"type\":\"cancel\",\"id\":0,\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/cancel/1": "{\"type\":\"cancel\",\"id\":1,\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/cancel/18446744073709551615": "{\"type\":\"cancel\",\"id\":18446744073709551615,\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Build/Calculator": "{\"type\":\"launch\",\"workspace\":\"build\",\"app\":\"calculator\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Build/Notes": "{\"type\":\"launch\",\"workspace\":\"build\",\"app\":\"notes\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Build/Terminal": "{\"type\":\"launch\",\"workspace\":\"build\",\"app\":\"terminal\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Personal/Calculator": "{\"type\":\"launch\",\"workspace\":\"personal\",\"app\":\"calculator\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Personal/Notes": "{\"type\":\"launch\",\"workspace\":\"personal\",\"app\":\"notes\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Personal/Terminal": "{\"type\":\"launch\",\"workspace\":\"personal\",\"app\":\"terminal\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Research/Calculator": "{\"type\":\"launch\",\"workspace\":\"research\",\"app\":\"calculator\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Research/Notes": "{\"type\":\"launch\",\"workspace\":\"research\",\"app\":\"notes\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/launch/Research/Terminal": "{\"type\":\"launch\",\"workspace\":\"research\",\"app\":\"terminal\",\"expected_instance\":\"11111111111111111111111111111111\"}",
++  "request/snapshot": "{\"type\":\"snapshot\"}",
++  "response/old-defaults": "{\"type\":\"snapshot\",\"tasks\":[],\"resources\":{\"sampled_unix_ms\":5,\"mem_total_kib\":null,\"mem_available_kib\":null,\"load_average_1m\":null,\"source\":\"old host\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"old\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/parse-f32/above-half-ulp-at-one": "3f800000",
++  "response/parse-f32/decimal-tenth": "3dcccccd",
++  "response/parse-f32/f32-overflow": "7f800000",
++  "response/parse-f32/half-ulp-at-one": "3f800000",
++  "response/parse-f32/json-number-overflow": "rejected",
++  "response/parse-f32/largest-finite": "7f7fffff",
++  "response/parse-f32/negative-zero": "80000000",
++  "response/parse-f32/positive-zero": "00000000",
++  "response/parse-f32/smallest-subnormal": "00000001",
++  "response/resources/f32-00000000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":0.0,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-00000001": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":1e-45,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-3dcccccd": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":0.1,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-3f800000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":1.0,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-7f7fffff": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":3.4028235e38,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-7f800000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":null,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-7fc00000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":null,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/resources/f32-80000000": "{\"type\":\"snapshot\",\"tasks\":[{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null}],\"resources\":{\"sampled_unix_ms\":3,\"mem_total_kib\":18446744073709551615,\"mem_available_kib\":null,\"load_average_1m\":-0.0,\"source\":\"host observation only\",\"wayland\":{\"status\":\"unconfigured\",\"socket_observation_epoch\":0,\"sampled_unix_ms\":0}},\"session_instance\":\"11111111111111111111111111111111\",\"hepta\":{\"connection\":\"not_observed\",\"last_attempt_unix_ms\":null,\"error_code\":null,\"last_observation\":null}}",
++  "response/task/CancelRequested": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"cancel_requested\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Cancelled": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"cancelled\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Completed": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"completed\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Failed": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"failed\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Partial": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"partial\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Pending": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"pending\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Running": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"running\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}",
++  "response/task/Unknown": "{\"type\":\"task\",\"task\":{\"id\":18446744073709551615,\"workspace\":\"personal\",\"app\":\"notes\",\"state\":\"unknown\",\"pid\":1,\"exit_code\":null,\"detail\":\"观察记录 · 中文 📝\\nquotes: \\\" \\\\\",\"created_unix_ms\":1,\"updated_unix_ms\":2,\"execution_mode\":\"linux_host_process\",\"hos2_revision\":null,\"ui_first_frame_unix_ms\":null,\"wayland_socket_epoch_at_launch\":null},\"session_instance\":\"11111111111111111111111111111111\"}"
++}
+diff --git a/ui/activation.rs b/ui/activation.rs
+index e62f17391057d83e39a83c60b937e109ce94ab09..67617b9ed2ef5f26ae34b091572fc010e6d833d7 100644
+--- a/ui/activation.rs
++++ b/ui/activation.rs
+@@ -72,6 +72,13 @@
+         self.policy.composing()
+     }
+ 
++    // This shared adapter is also compiled by app-window, whose editors do not
++    // yet use the optional original-Hepta composer transaction.
++    #[allow(dead_code)]
++    pub fn ime_confirmation_fenced(&self) -> bool {
++        self.permission.ime_confirmation_fenced()
++    }
++
+     pub fn activated(&self, response: &egui::Response) -> bool {
+         if !response.enabled() || !response.clicked() {
+             return false;
+diff --git a/ui/activation_policy.rs b/ui/activation_policy.rs
+index e62a9de11e96919a74730e881753b4cf22a29112..adce760500fa27b79322a4c97398fb0cc39e8c68 100644
+--- a/ui/activation_policy.rs
++++ b/ui/activation_policy.rs
+@@ -41,6 +41,7 @@
+     effects: bool,
+     keyboard: bool,
+     confirmation_key_seen: bool,
++    ime_confirmation_fenced: bool,
+ }
+ 
+ impl FramePermission {
+@@ -55,6 +56,12 @@
+     pub fn confirmation_key_seen(self) -> bool {
+         self.confirmation_key_seen
+     }
++
++    /// Keep the whole confirming frame fenced even when its key-up clears the
++    /// pending state before a renderer processes that frame's editor events.
++    pub fn ime_confirmation_fenced(self) -> bool {
++        self.ime_confirmation_fenced
++    }
+ }
+ 
+ #[derive(Debug, Default)]
+@@ -70,11 +77,18 @@
+         self.composing
+     }
+ 
++    /// A renderer must not reinterpret a delayed IME confirmation as editor
++    /// Return while waiting for its release or fresh explicit navigation.
++    pub fn ime_confirmation_pending(&self) -> bool {
++        self.composing || self.wait_for_confirmation_release
++    }
++
+     pub fn begin_frame(
+         &mut self,
+         focused: bool,
+         events: impl IntoIterator<Item = InputEvent>,
+     ) -> FramePermission {
++        let ime_confirmation_pending_at_start = self.ime_confirmation_pending();
+         let mut blocks_effects = self.composing || !focused;
+         let mut blocks_keyboard = false;
+         let mut fresh_keyboard_activation = false;
+@@ -150,6 +164,9 @@
+             effects: !blocks_effects && !self.composing,
+             keyboard: fresh_keyboard_activation && !blocks_keyboard,
+             confirmation_key_seen,
++            ime_confirmation_fenced: ime_confirmation_pending_at_start
++                || blocks_effects
++                || self.wait_for_confirmation_release,
+         }
+     }
+ }
+@@ -174,6 +191,7 @@
+             let frame = policy.begin_frame(true, [key(confirm, true)]);
+             assert!(frame.allows(ActivationSource::Keyboard));
+             assert!(frame.confirmation_key_seen());
++            assert!(!frame.ime_confirmation_fenced());
+         }
+     }
+ 
+@@ -183,6 +201,7 @@
+         for events in [vec![InputEvent::Preedit { empty: false }], vec![]] {
+             let frame = policy.begin_frame(true, events);
+             assert!(policy.composing());
++            assert!(frame.ime_confirmation_fenced());
+             for source in [
+                 ActivationSource::Keyboard,
+                 ActivationSource::Pointer,
+@@ -200,13 +219,17 @@
+             policy.begin_frame(true, [InputEvent::Preedit { empty: false }]);
+             let commit = policy.begin_frame(true, [InputEvent::Commit, InputEvent::ImeDisabled]);
+             assert!(!policy.composing());
++            assert!(policy.ime_confirmation_pending());
++            assert!(commit.ime_confirmation_fenced());
+             assert!(!commit.allows(ActivationSource::Pointer));
+             assert!(!commit.allows(ActivationSource::Accessibility));
+             policy.begin_frame(true, []);
++            assert!(policy.ime_confirmation_pending());
+             assert!(!policy
+                 .begin_frame(true, [key(confirm, true)])
+                 .allows(ActivationSource::Keyboard));
+             policy.begin_frame(true, [key(confirm, false)]);
++            assert!(!policy.ime_confirmation_pending());
+             assert!(policy
+                 .begin_frame(true, [key(confirm, true)])
+                 .allows(ActivationSource::Keyboard));
+@@ -230,15 +253,16 @@
+     fn press_then_release_does_not_unblock_the_same_candidate_frame() {
+         let mut policy = ActivationPolicy::default();
+         policy.begin_frame(true, [InputEvent::Commit]);
+-        assert!(!policy
+-            .begin_frame(
+-                true,
+-                [key(ConfirmKey::Enter, true), key(ConfirmKey::Enter, false)],
+-            )
+-            .allows(ActivationSource::Keyboard));
+-        assert!(policy
+-            .begin_frame(true, [key(ConfirmKey::Enter, true)])
+-            .allows(ActivationSource::Keyboard));
++        let confirmation = policy.begin_frame(
++            true,
++            [key(ConfirmKey::Enter, true), key(ConfirmKey::Enter, false)],
++        );
++        assert!(!confirmation.allows(ActivationSource::Keyboard));
++        assert!(!policy.ime_confirmation_pending());
++        assert!(confirmation.ime_confirmation_fenced());
++        let fresh = policy.begin_frame(true, [key(ConfirmKey::Enter, true)]);
++        assert!(fresh.allows(ActivationSource::Keyboard));
++        assert!(!fresh.ime_confirmation_fenced());
+     }
+ 
+     #[test]
+@@ -260,10 +284,11 @@
+     fn explicit_navigation_recovers_when_backend_swallows_key_release() {
+         let mut policy = ActivationPolicy::default();
+         policy.begin_frame(true, [InputEvent::Commit]);
+-        policy.begin_frame(true, [InputEvent::ExplicitNavigation]);
+-        assert!(policy
+-            .begin_frame(true, [key(ConfirmKey::Enter, true)])
+-            .allows(ActivationSource::Keyboard));
++        let navigation = policy.begin_frame(true, [InputEvent::ExplicitNavigation]);
++        assert!(navigation.ime_confirmation_fenced());
++        let fresh = policy.begin_frame(true, [key(ConfirmKey::Enter, true)]);
++        assert!(fresh.allows(ActivationSource::Keyboard));
++        assert!(!fresh.ime_confirmation_fenced());
+     }
+ 
+     #[test]
+diff --git a/ui/core/examples/wire_compatibility.rs b/ui/core/examples/wire_compatibility.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..33cdb7bb8c1afcf0a03a8d45504a4df742d683b8
+--- /dev/null
++++ b/ui/core/examples/wire_compatibility.rs
+@@ -0,0 +1,195 @@
++//! Deterministic observer/IPC compatibility corpus. It performs no I/O to a
++//! Session, owner, socket or device. CI checks exact aligned bytes and the
++//! single reviewed exponent spelling against the actual Desktop 64736996
++//! original-source/original-lock output; it does not canonicalize other JSON.
++use serde::Serialize;
++use std::collections::BTreeMap;
++use trill_ui_core::conversation::{ContextRef, LocalDraft};
++use trill_ui_core::{
++    parse_host_request, AppKind, HostResources, HostWaylandObservation, Request, Response,
++    TaskRecord, TaskState, Workspace,
++};
++
++fn task(state: TaskState) -> TaskRecord {
++    TaskRecord {
++        id: u64::MAX,
++        workspace: Workspace::Personal,
++        app: AppKind::Notes,
++        state,
++        pid: Some(1),
++        exit_code: None,
++        detail: "观察记录 · 中文 📝\nquotes: \" \\".into(),
++        created_unix_ms: 1,
++        updated_unix_ms: 2,
++        execution_mode: "linux_host_process".into(),
++        hos2_revision: None,
++        ui_first_frame_unix_ms: None,
++        wayland_socket_epoch_at_launch: None,
++        notes_destination: None,
++    }
++}
++
++fn capture(out: &mut BTreeMap<String, String>, key: String, value: &impl Serialize) {
++    out.insert(key, serde_json::to_string(value).unwrap());
++}
++
++fn main() {
++    let mut output = BTreeMap::new();
++    capture(&mut output, "request/snapshot".into(), &Request::Snapshot);
++    for workspace in Workspace::ALL {
++        for app in AppKind::ALL {
++            capture(
++                &mut output,
++                format!("request/launch/{workspace:?}/{app:?}"),
++                &Request::Launch {
++                    workspace,
++                    app,
++                    expected_instance: "11111111111111111111111111111111".into(),
++                },
++            );
++        }
++    }
++    for id in [0, 1, u64::MAX] {
++        capture(
++            &mut output,
++            format!("request/cancel/{id}"),
++            &Request::Cancel {
++                id,
++                expected_instance: "11111111111111111111111111111111".into(),
++            },
++        );
++    }
++    for state in [
++        TaskState::Pending,
++        TaskState::Running,
++        TaskState::Completed,
++        TaskState::Failed,
++        TaskState::Partial,
++        TaskState::Unknown,
++        TaskState::CancelRequested,
++        TaskState::Cancelled,
++    ] {
++        capture(
++            &mut output,
++            format!("response/task/{state:?}"),
++            &Response::Task {
++                task: task(state),
++                session_instance: "11111111111111111111111111111111".into(),
++            },
++        );
++    }
++    for bits in [
++        0_u32,
++        0x8000_0000,
++        0x3dcc_cccd,
++        0x3f80_0000,
++        0x7f7f_ffff,
++        1,
++        0x7f80_0000,
++        0x7fc0_0000,
++    ] {
++        capture(
++            &mut output,
++            format!("response/resources/f32-{bits:08x}"),
++            &Response::Snapshot {
++                tasks: vec![task(TaskState::Unknown)],
++                resources: HostResources {
++                    sampled_unix_ms: 3,
++                    mem_total_kib: Some(u64::MAX),
++                    mem_available_kib: None,
++                    load_average_1m: Some(f32::from_bits(bits)),
++                    source: "host observation only".into(),
++                    wayland: HostWaylandObservation::default(),
++                },
++                session_instance: "11111111111111111111111111111111".into(),
++                hepta: Default::default(),
++            },
++        );
++    }
++    // The shared original package enables serde_json/float_roundtrip. Compare
++    // the actual observation field's parsed bits as well as serialized bytes;
++    // reserializing alone could hide a boundary rounding change.
++    for (name, number) in [
++        ("positive-zero", "0"),
++        ("negative-zero", "-0.0"),
++        ("decimal-tenth", "0.1"),
++        ("half-ulp-at-one", "1.000000059604644775390625"),
++        ("above-half-ulp-at-one", "1.000000059604644775390626"),
++        ("smallest-subnormal", "1.401298464324817e-45"),
++        ("largest-finite", "3.4028234663852886e38"),
++        ("f32-overflow", "3.4028236e38"),
++        ("json-number-overflow", "1e400"),
++    ] {
++        let json = format!(
++            r#"{{"sampled_unix_ms":3,"mem_total_kib":null,"mem_available_kib":null,"load_average_1m":{number},"source":"float boundary"}}"#
++        );
++        let parsed: Result<HostResources, _> = serde_json::from_str(&json);
++        output.insert(
++            format!("response/parse-f32/{name}"),
++            match parsed {
++                Ok(resources) => format!("{:08x}", resources.load_average_1m.unwrap().to_bits()),
++                Err(_) => "rejected".into(),
++            },
++        );
++    }
++    let draft = LocalDraft {
++        workspace: Workspace::Personal,
++        text: "unsent / 未发送\n\"quoted\" \\ 📝".into(),
++        contexts: vec![ContextRef::host_task(
++            "11111111111111111111111111111111",
++            &task(TaskState::Unknown),
++            3,
++        )],
++    };
++    draft.validate().unwrap();
++    capture(&mut output, "draft/context-reference".into(), &draft);
++    let older = r#"{"type":"snapshot","tasks":[],"resources":{"sampled_unix_ms":5,"mem_total_kib":null,"mem_available_kib":null,"load_average_1m":null,"source":"old host"},"session_instance":"old"}"#;
++    let parsed: Response = serde_json::from_str(older).unwrap();
++    capture(&mut output, "response/old-defaults".into(), &parsed);
++    for (name, input) in [
++        ("snapshot", r#"{"type":"snapshot"}"#),
++        ("unknown-field", r#"{"type":"snapshot","launch":true}"#),
++        ("duplicate-type", r#"{"type":"snapshot","type":"snapshot"}"#),
++        (
++            "cancel",
++            r#"{"type":"cancel","id":1,"expected_instance":"observed"}"#,
++        ),
++        (
++            "duplicate-id",
++            r#"{"type":"cancel","id":1,"id":2,"expected_instance":"observed"}"#,
++        ),
++        (
++            "negative-id",
++            r#"{"type":"cancel","id":-1,"expected_instance":"observed"}"#,
++        ),
++        (
++            "fractional-id",
++            r#"{"type":"cancel","id":1.5,"expected_instance":"observed"}"#,
++        ),
++        (
++            "overflow-id",
++            r#"{"type":"cancel","id":18446744073709551616,"expected_instance":"observed"}"#,
++        ),
++        ("missing-instance", r#"{"type":"cancel","id":1}"#),
++        ("unknown-command", r#"{"type":"signed_objective","id":1}"#),
++    ] {
++        output.insert(
++            format!("request/acceptance/{name}"),
++            parse_host_request(input.as_bytes()).is_ok().to_string(),
++        );
++    }
++    for (name, fixture) in [
++        (
++            "notes-target",
++            include_str!("../../../tests/ui/notes-target-v1.json"),
++        ),
++        (
++            "notes-bootstrap",
++            include_str!("../../../tests/ui/notes-bootstrap-v1.json"),
++        ),
++    ] {
++        let value: serde_json::Value = serde_json::from_str(fixture).unwrap();
++        capture(&mut output, format!("existing-golden/{name}"), &value);
++    }
++    println!("{}", serde_json::to_string_pretty(&output).unwrap());
++}
+diff --git a/ui/core/src/lib.rs b/ui/core/src/lib.rs
+index 80bdcf52e9b830052fad4f4a08f381bd89c7bdd4..8d2e9af6c859288b46c34d66f4af691fb5ab2c3f 100644
+--- a/ui/core/src/lib.rs
++++ b/ui/core/src/lib.rs
+@@ -5,6 +5,9 @@
+ pub mod notes;
+ pub mod notes_bootstrap;
+ pub mod observation;
++
++#[cfg(feature = "hepta-shared-presenter")]
++pub mod shared_chat;
+ 
+ use serde::{Deserialize, Serialize};
+ 
+@@ -257,12 +260,52 @@
+     pub sampled_unix_ms: u64,
+     pub mem_total_kib: Option<u64>,
+     pub mem_available_kib: Option<u64>,
++    #[serde(default, deserialize_with = "deserialize_host_load_legacy")]
+     pub load_average_1m: Option<f32>,
+     pub source: String,
+     /// Older host snapshots must default to unknown rather than implying a
+     /// live compositor or restored Wayland surface.
+     #[serde(default)]
+     pub wayland: HostWaylandObservation,
++}
++
++// Preserve the original JSON number dispatch for this observation: integer
++// tokens narrow directly from i64/u64, and decimal tokens narrow from f64.
++// Requesting f32 directly would enable serde_json's feature-unified single-
++// precision parser; converting every token through f64 would instead double-
++// round some large integers. Missing/null and accepted f32 overflow stay local
++// observation semantics, not an authority or completion assertion.
++fn deserialize_host_load_legacy<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
++where
++    D: serde::Deserializer<'de>,
++{
++    struct LegacyHostLoad;
++
++    impl serde::de::Visitor<'_> for LegacyHostLoad {
++        type Value = Option<f32>;
++
++        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++            formatter.write_str("a JSON number or null for the host load observation")
++        }
++
++        fn visit_unit<E>(self) -> Result<Self::Value, E> {
++            Ok(None)
++        }
++
++        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
++            Ok(Some(value as f32))
++        }
++
++        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
++            Ok(Some(value as f32))
++        }
++
++        fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E> {
++            Ok(Some(value as f32))
++        }
++    }
++
++    deserializer.deserialize_any(LegacyHostLoad)
+ }
+ 
+ #[derive(Clone, Debug, Serialize, Deserialize)]
+diff --git a/ui/core/src/shared_chat.rs b/ui/core/src/shared_chat.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..f00b6fa351f967e54154b3c640a5b2dd3e5870e1
+--- /dev/null
++++ b/ui/core/src/shared_chat.rs
+@@ -0,0 +1,193 @@
++//! Default-off Desktop adapter to the exact Hepta #3067 shared presenter.
++//!
++//! `SharedComposer` contains the sole active draft. It exposes no mutable
++//! `ChatWorkspace`, owner installation, signed-envelope, history or I/O API.
++//! Desktop's existing Session task/context observations remain separate. Saving
++//! an immutable local archive does not turn it into an observed chat message.
++
++use hepta_control_core::chat::ChatWorkspace;
++pub use hepta_control_core::chat::ComposeStatus;
++use hepta_robrix_ui::presentation::{
++    apply_action, project, PresentationAction, PresentationCommand, TimelineWindow,
++};
++pub use hepta_robrix_ui::presentation::{ActionResult, ChatPresentation, RoomKey};
++
++#[derive(Default)]
++pub struct SharedComposer {
++    workspace: ChatWorkspace,
++}
++
++impl SharedComposer {
++    pub fn text(&self) -> &str {
++        &self.workspace.draft().text
++    }
++
++    /// Borrow the original presenter. Task snapshots are never injected into
++    /// the original timeline or used to install an authenticated chat owner.
++    pub fn presentation(&self, now_ms: u64) -> ChatPresentation<'_> {
++        project(&self.workspace, now_ms, TimelineWindow::default())
++    }
++
++    pub fn source(&self) -> RoomKey {
++        RoomKey {
++            epoch: self.workspace.presentation_epoch(),
++            local_id: self.workspace.active_id(),
++        }
++    }
++
++    /// One complete editor transaction; rejecting it preserves the old text,
++    /// including a selection that the widget deleted before inserting a paste.
++    pub fn edit(&mut self, source: RoomKey, text: String) -> ActionResult {
++        self.apply(source, PresentationCommand::Edit(text))
++    }
++
++    /// The renderer supplies its actual IME lifecycle, never a guessed timeout.
++    pub fn set_composing(&mut self, composing: bool) -> ActionResult {
++        self.apply(self.source(), PresentationCommand::SetComposing(composing))
++    }
++
++    pub fn can_save_local(&self) -> Result<(), &'static str> {
++        if self.workspace.composing {
++            return Err("IME composition is active; local draft was not saved or cleared.");
++        }
++        if self.workspace.draft().status == ComposeStatus::InputLimit {
++            return Err("The last edit was rejected (16 KiB or NUL); previous text is kept. Edit it before saving.");
++        }
++        Ok(())
++    }
++
++    /// Called only after Desktop validates local archive capacity and context.
++    /// It deliberately does not create an observed history entry or a delivery.
++    pub fn clear(&mut self, source: RoomKey) -> ActionResult {
++        self.apply(source, PresentationCommand::Clear)
++    }
++
++    /// Retains the original refusal. This is not connected to Objective submit,
++    /// AuthBus signing, an owner port, or Desktop's local task transport.
++    pub fn request_send(&mut self, source: RoomKey) -> ActionResult {
++        self.apply(source, PresentationCommand::RequestSend)
++    }
++
++    fn apply(&mut self, source: RoomKey, command: PresentationCommand) -> ActionResult {
++        apply_action(&mut self.workspace, PresentationAction { source, command })
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::conversation::MAX_DRAFT_BYTES;
++    use hepta_robrix_ui::presentation::{EmptyState, TimelineStatus};
++
++    #[test]
++    fn edit_and_projection_borrow_the_one_original_draft() {
++        let mut draft = SharedComposer::default();
++        assert_eq!(
++            draft.edit(draft.source(), "中文 📝".into()),
++            ActionResult::Applied
++        );
++        let view = draft.presentation(42);
++        assert_eq!(view.composer.text, "中文 📝");
++        assert_eq!(view.composer.text.as_ptr(), draft.text().as_ptr());
++        assert_eq!(view.timeline.status, TimelineStatus::LocalOnly);
++        assert_eq!(view.timeline.empty_state, Some(EmptyState::LocalDraft));
++        assert!(view.timeline.messages.is_empty());
++        assert!(view.composer.delivery.is_none());
++    }
++
++    #[test]
++    fn whole_utf8_edit_rejects_without_losing_selection_or_earlier_draft() {
++        let mut draft = SharedComposer::default();
++        let original = "保留这段 selected text";
++        draft.edit(draft.source(), original.into());
++        assert_eq!(
++            draft.edit(draft.source(), "界".repeat(MAX_DRAFT_BYTES / 3 + 1)),
++            ActionResult::Rejected
++        );
++        assert_eq!(draft.text(), original);
++        assert_eq!(
++            *draft.presentation(0).composer.status,
++            ComposeStatus::InputLimit
++        );
++        assert!(draft.can_save_local().is_err());
++        assert_eq!(
++            draft.edit(draft.source(), "新输入".into()),
++            ActionResult::Applied
++        );
++        assert!(draft.can_save_local().is_ok());
++    }
++
++    #[test]
++    fn byte_limit_is_exact_and_never_truncates_a_unicode_scalar() {
++        let mut draft = SharedComposer::default();
++        let edge = format!("{}a", "界".repeat(MAX_DRAFT_BYTES / 3));
++        assert_eq!(edge.len(), MAX_DRAFT_BYTES);
++        assert_eq!(
++            draft.edit(draft.source(), edge.clone()),
++            ActionResult::Applied
++        );
++        assert_eq!(
++            draft.edit(draft.source(), format!("{edge}é")),
++            ActionResult::Rejected
++        );
++        assert_eq!(draft.text(), edge);
++        assert_eq!(
++            draft.edit(draft.source(), "bad\0input".into()),
++            ActionResult::Rejected
++        );
++        assert_eq!(draft.text(), edge);
++    }
++
++    #[test]
++    fn actual_composition_lifecycle_blocks_save_clear_and_send() {
++        let mut draft = SharedComposer::default();
++        draft.edit(draft.source(), "输入候选".into());
++        assert_eq!(draft.set_composing(true), ActionResult::Applied);
++        assert!(draft.presentation(0).composer.composing);
++        assert!(draft.can_save_local().is_err());
++        assert_eq!(draft.clear(draft.source()), ActionResult::Ignored);
++        assert_eq!(draft.request_send(draft.source()), ActionResult::Ignored);
++        assert_eq!(draft.text(), "输入候选");
++        draft.set_composing(false);
++        assert!(draft.can_save_local().is_ok());
++        assert_eq!(
++            draft.request_send(draft.source()),
++            ActionResult::SendUnavailable
++        );
++        assert_eq!(draft.text(), "输入候选");
++        assert!(draft.presentation(0).timeline.messages.is_empty());
++    }
++
++    #[test]
++    fn stale_presenter_events_cannot_edit_or_clear_current_draft() {
++        let mut draft = SharedComposer::default();
++        draft.edit(draft.source(), "keep".into());
++        let wrong = RoomKey {
++            epoch: draft.source().epoch + 1,
++            ..draft.source()
++        };
++        assert_eq!(draft.edit(wrong, "late".into()), ActionResult::Stale);
++        assert_eq!(draft.clear(wrong), ActionResult::Stale);
++        assert_eq!(draft.request_send(wrong), ActionResult::Stale);
++        assert_eq!(draft.text(), "keep");
++    }
++
++    #[test]
++    fn repeated_send_refusal_never_creates_transcript_delivery_or_clears_text() {
++        let mut draft = SharedComposer::default();
++        draft.edit(draft.source(), "unsubmitted".into());
++        for _ in 0..3 {
++            assert_eq!(
++                draft.request_send(draft.source()),
++                ActionResult::SendUnavailable
++            );
++        }
++        let view = draft.presentation(100);
++        assert_eq!(view.composer.text, "unsubmitted");
++        assert_eq!(*view.composer.status, ComposeStatus::TransportUnavailable);
++        assert_eq!(view.rooms.len(), 1);
++        assert!(view.composer.delivery.is_none());
++        assert!(view.timeline.messages.is_empty());
++        assert_eq!(view.timeline.thread_id, None);
++    }
++}
+diff --git a/ui/core/tests/host_load_legacy.rs b/ui/core/tests/host_load_legacy.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..f837c67aeffa704b991b9d3001fdbc94da0634aa
+--- /dev/null
++++ b/ui/core/tests/host_load_legacy.rs
+@@ -0,0 +1,76 @@
++//! The same public-type cases run against the original source/lock during
++//! compatibility review. Host load is observation data, never task authority.
++use trill_ui_core::HostResources;
++
++fn load_bits(value: Option<&str>) -> Result<Option<u32>, serde_json::Error> {
++    let field = value
++        .map(|value| format!(",\"load_average_1m\":{value}"))
++        .unwrap_or_default();
++    let json = format!(
++        "{{\"sampled_unix_ms\":3,\"mem_total_kib\":null,\"mem_available_kib\":null,\"source\":\"compatibility\"{field}}}"
++    );
++    serde_json::from_str::<HostResources>(&json)
++        .map(|resources| resources.load_average_1m.map(f32::to_bits))
++}
++
++#[test]
++fn legacy_load_rounding_and_finite_boundaries_are_preserved() {
++    for (number, bits) in [
++        ("0", 0x0000_0000),
++        ("-0.0", 0x8000_0000),
++        ("0.1", 0x3dcc_cccd),
++        ("1", 0x3f80_0000),
++        ("42", 0x4228_0000),
++        ("1e-100", 0x0000_0000),
++        ("-1e-100", 0x8000_0000),
++        ("1.401298464324817e-45", 0x0000_0001),
++        ("3.4028234663852886e38", 0x7f7f_ffff),
++        ("1.000000059604644775390625", 0x3f80_0000),
++        ("1.000000059604644775390626", 0x3f80_0000),
++    ] {
++        assert_eq!(load_bits(Some(number)).unwrap(), Some(bits), "{number}");
++    }
++}
++
++#[test]
++fn legacy_load_f32_overflow_keeps_the_original_accepted_observation() {
++    for (number, bits) in [
++        ("3.4028236e38", 0x7f80_0000),
++        ("-3.4028236e38", 0xff80_0000),
++        ("1e100", 0x7f80_0000),
++        ("-1e100", 0xff80_0000),
++    ] {
++        assert_eq!(load_bits(Some(number)).unwrap(), Some(bits), "{number}");
++    }
++}
++
++#[test]
++fn legacy_load_missing_and_null_remain_optional() {
++    assert_eq!(load_bits(None).unwrap(), None);
++    assert_eq!(load_bits(Some("null")).unwrap(), None);
++}
++
++#[test]
++fn legacy_load_non_numeric_or_json_overflow_remain_rejected() {
++    for value in [
++        "true", "false", "\"0.1\"", "[]", "{}", "1e400", "-1e400", "NaN",
++    ] {
++        assert!(load_bits(Some(value)).is_err(), "{value}");
++    }
++}
++
++#[test]
++fn legacy_load_large_unsigned_integer_is_not_double_rounded() {
++    assert_eq!(
++        load_bits(Some("9223372586610589697")).unwrap(),
++        Some(0x5f00_0001)
++    );
++}
++
++#[test]
++fn legacy_load_large_signed_integer_is_not_double_rounded() {
++    assert_eq!(
++        load_bits(Some("-4611686293305294849")).unwrap(),
++        Some(0xde80_0001)
++    );
++}
+diff --git a/ui/shell/src/conversation.rs b/ui/shell/src/conversation.rs
+index 8dde900d6290db8ee28763a08645931334484fb7..b749c14432e23acd9ae46cefa5ab05ddc0383e1f 100644
+--- a/ui/shell/src/conversation.rs
++++ b/ui/shell/src/conversation.rs
+@@ -40,8 +40,141 @@
+ 
+ #[derive(Default)]
+ pub struct Composer {
+-    pub text: String,
++    #[cfg(not(feature = "hepta-shared-presenter"))]
++    text: String,
++    // Under the candidate feature this replaces the String, rather than
++    // shadowing it. The original Hepta ChatWorkspace is the sole draft owner.
++    #[cfg(feature = "hepta-shared-presenter")]
++    shared: trill_ui_core::shared_chat::SharedComposer,
+     pub contexts: Vec<ContextRef>,
++}
++
++impl Composer {
++    pub fn text(&self) -> &str {
++        #[cfg(feature = "hepta-shared-presenter")]
++        {
++            self.shared.text()
++        }
++        #[cfg(not(feature = "hepta-shared-presenter"))]
++        {
++            &self.text
++        }
++    }
++
++    #[cfg(test)]
++    pub fn edit(&mut self, text: String) -> bool {
++        #[cfg(feature = "hepta-shared-presenter")]
++        {
++            self.shared.edit(self.shared.source(), text)
++                == trill_ui_core::shared_chat::ActionResult::Applied
++        }
++        #[cfg(not(feature = "hepta-shared-presenter"))]
++        {
++            self.text = text;
++            true
++        }
++    }
++
++    fn can_save_local(&self) -> Result<(), &'static str> {
++        #[cfg(feature = "hepta-shared-presenter")]
++        self.shared.can_save_local()?;
++        Ok(())
++    }
++
++    pub(super) fn clear(&mut self) -> bool {
++        #[cfg(feature = "hepta-shared-presenter")]
++        {
++            self.shared.clear(self.shared.source())
++                == trill_ui_core::shared_chat::ActionResult::Applied
++        }
++        #[cfg(not(feature = "hepta-shared-presenter"))]
++        {
++            self.text.clear();
++            true
++        }
++    }
++}
++
++#[cfg(not(feature = "hepta-shared-presenter"))]
++fn composer_editor(
++    ui: &mut egui::Ui,
++    composer: &mut Composer,
++    workspace: Workspace,
++    _ime_confirmation_fenced: bool,
++) {
++    ui.add(
++        egui::TextEdit::multiline(&mut composer.text)
++            .id(egui::Id::new("hepta-local-composer").with(workspace.code()))
++            .hint_text("输入想法、任务草稿……")
++            .desired_rows(3)
++            .desired_width(f32::INFINITY),
++    );
++    if composer.text().len() > trill_ui_core::conversation::MAX_DRAFT_BYTES {
++        ui.colored_label(
++            super::warning(),
++            "Draft exceeds 16 KiB; all text remains in the composer.",
++        );
++    }
++}
++
++#[cfg(feature = "hepta-shared-presenter")]
++fn composer_editor(
++    ui: &mut egui::Ui,
++    composer: &mut Composer,
++    workspace: Workspace,
++    ime_confirmation_fenced: bool,
++) {
++    use trill_ui_core::shared_chat::{ActionResult, ComposeStatus};
++
++    let id = egui::Id::new("hepta-local-composer").with(workspace.code());
++    let source = composer.shared.source();
++    // egui may delete a selection before inserting a paste or IME commit.
++    // Keep that sequence transactional: this String exists for this GUI call
++    // only, and the original ChatWorkspace owns every accepted draft value.
++    let mut transaction = composer.text().to_owned();
++    let previous =
++        egui::TextEdit::load_state(ui.ctx(), id).map(|state| (state.cursor, state.undoer()));
++    let mut editor = egui::TextEdit::multiline(&mut transaction)
++        .id(id)
++        .hint_text("输入想法、任务草稿……")
++        .desired_rows(3)
++        .desired_width(f32::INFINITY);
++    if ime_confirmation_fenced {
++        // egui otherwise handles Commit followed by Return as a line break,
++        // including a confirming key delivered in a later frame. This reads
++        // the same guard used for buttons; no second IME policy is created.
++        editor = editor.return_key(None);
++    }
++    let mut output = editor.show(ui);
++    if output.response.changed()
++        && composer.shared.edit(source, transaction) != ActionResult::Applied
++    {
++        // Preserve the native IME lifecycle from this callback. Restore only
++        // cursor/selection and undo contents for the rejected transaction; a
++        // rejected commit must not resurrect an earlier active IME session.
++        if let Some((cursor, undoer)) = previous {
++            output.state.cursor = cursor;
++            output.state.set_undoer(undoer);
++        } else {
++            output
++                .state
++                .cursor
++                .set_char_range(Some(egui::text::CCursorRange::one(
++                    egui::text::CCursor::new(composer.text().chars().count()),
++                )));
++            output.state.clear_undoer();
++        }
++        output.state.store(ui.ctx(), id);
++        ui.ctx().request_repaint();
++    }
++    let view = composer.shared.presentation(trill_ui_core::unix_ms());
++    if *view.composer.status == ComposeStatus::InputLimit {
++        ui.colored_label(
++            super::warning(),
++            "Edit rejected: 16 KiB limit or NUL input. Previous draft is kept; edit it before saving.",
++        );
++    }
++    ui.small(view.composer.owner_status);
+ }
+ 
+ #[derive(Default)]
+@@ -62,7 +195,26 @@
+         self.tabs[workspace_index(workspace)]
+     }
+     pub fn set_tab(&mut self, workspace: Workspace, tab: WorkspaceTab) {
++        #[cfg(feature = "hepta-shared-presenter")]
++        if self
++            .composer(workspace)
++            .shared
++            .presentation(0)
++            .composer
++            .composing
++        {
++            return;
++        }
+         self.tabs[workspace_index(workspace)] = tab;
++    }
++
++    #[cfg(feature = "hepta-shared-presenter")]
++    pub fn observe_composition(&mut self, workspace: Workspace, composing: bool) {
++        for (index, composer) in self.composers.iter_mut().enumerate() {
++            composer
++                .shared
++                .set_composing(index == workspace_index(workspace) && composing);
++        }
+     }
+ 
+     pub fn attach(
+@@ -88,24 +240,30 @@
+ 
+     pub fn save(&mut self, workspace: Workspace) -> Result<(), &'static str> {
+         let composer = self.composer(workspace);
++        composer.can_save_local()?;
+         let draft = LocalDraft {
+             workspace,
+-            text: composer.text.clone(),
++            text: composer.text().to_owned(),
+             contexts: composer.contexts.clone(),
+         };
+         draft.validate()?;
+         if self.drafts.len() >= MAX_LOCAL_DRAFTS {
+             return Err("Local draft history is full; older messages were NOT evicted");
+         }
++        // All rejection checks precede Clear, and Clear must succeed before
++        // publishing the immutable local capture. Neither is a Hepta send.
++        if !self.composer_mut(workspace).clear() {
++            return Err("Composer is busy; draft and references were kept.");
++        }
++        self.composer_mut(workspace).contexts.clear();
+         self.drafts.push(draft);
+-        *self.composer_mut(workspace) = Composer::default();
+         Ok(())
+     }
+ 
+     fn has_unsaved_composer(&self) -> bool {
+         self.composers
+             .iter()
+-            .any(|composer| !composer.text.is_empty() || !composer.contexts.is_empty())
++            .any(|composer| !composer.text().is_empty() || !composer.contexts.is_empty())
+     }
+ 
+     pub fn export(&self) -> Result<Vec<LocalDraft>, &'static str> {
+@@ -498,19 +656,12 @@
+         ui.separator();
+         ui.label("Message / 消息");
+         let composer = self.drafts.composer_mut(self.workspace);
+-        ui.add(
+-            egui::TextEdit::multiline(&mut composer.text)
+-                .id(egui::Id::new("hepta-local-composer").with(self.workspace.code()))
+-                .hint_text("输入想法、任务草稿……")
+-                .desired_rows(3)
+-                .desired_width(f32::INFINITY),
+-        );
+-        if composer.text.len() > trill_ui_core::conversation::MAX_DRAFT_BYTES {
+-            ui.colored_label(
+-                super::warning(),
+-                "Draft exceeds 16 KiB; all text remains in the composer.",
+-            );
+-        }
++        composer_editor(
++            ui,
++            composer,
++            self.workspace,
++            self.activation.ime_confirmation_fenced(),
++        );
+         let mut remove = None;
+         let mut open_task = None;
+         let contexts = &self.drafts.composer(self.workspace).contexts;
+@@ -550,7 +701,7 @@
+             self.open_task_context(key);
+         }
+         ui.horizontal_wrapped(|ui| {
+-            if self.activation.activated(&ui.add_enabled(!self.drafts.composer(self.workspace).text.trim().is_empty(), egui::Button::new("Save local draft")))
++            if self.activation.activated(&ui.add_enabled(!self.drafts.composer(self.workspace).text().trim().is_empty(), egui::Button::new("Save local draft")))
+             {
+                 match self.drafts.save(self.workspace) {
+                     Ok(()) => self.notice("Draft and context references stored in Shell memory. Not executed or sent to Hepta."),
+@@ -582,10 +733,9 @@
+     fn workspace_context(&mut self, ui: &mut egui::Ui) {
+         ui.horizontal_wrapped(|ui| {
+             for tab in WorkspaceTab::ALL {
+-                if ui
+-                    .selectable_label(self.drafts.tab(self.workspace) == tab, tab.name())
+-                    .clicked()
+-                {
++                if self.navigation_activated(
++                    &ui.selectable_label(self.drafts.tab(self.workspace) == tab, tab.name()),
++                ) {
+                     self.drafts.set_tab(self.workspace, tab);
+                 }
+             }
+@@ -628,13 +778,15 @@
+     fn workspace_switch_keeps_unsent_text_and_context_separate() {
+         let mut book = DraftBook::default();
+         let task = TaskRecord::new(1, Workspace::Research, AppKind::Notes);
+-        book.composer_mut(Workspace::Research).text = "研究草稿 📝".into();
++        assert!(book
++            .composer_mut(Workspace::Research)
++            .edit("研究草稿 📝".into()));
+         book.attach(
+             Workspace::Research,
+             ContextRef::host_task(INSTANCE, &task, 10_000),
+         )
+         .unwrap();
+-        assert!(book.composer(Workspace::Build).text.is_empty());
++        assert!(book.composer(Workspace::Build).text().is_empty());
+         assert!(book.composer(Workspace::Build).contexts.is_empty());
+         assert!(book.export().is_err());
+         assert!(!book.may_restore());
+@@ -643,7 +795,7 @@
+         assert_eq!(exported[0].text, "研究草稿 📝");
+         assert_eq!(exported[0].workspace, Workspace::Research);
+         assert_eq!(exported[0].contexts.len(), 1);
+-        assert!(book.composer(Workspace::Research).text.is_empty());
++        assert!(book.composer(Workspace::Research).text().is_empty());
+     }
+ 
+     #[test]
+@@ -659,7 +811,9 @@
+             ],
+             ..Default::default()
+         };
+-        book.composer_mut(Workspace::Personal).text = "valuable unsaved".into();
++        assert!(book
++            .composer_mut(Workspace::Personal)
++            .edit("valuable unsaved".into()));
+         let task = TaskRecord::new(1, Workspace::Personal, AppKind::Notes);
+         book.attach(
+             Workspace::Personal,
+@@ -669,13 +823,24 @@
+         assert!(book.save(Workspace::Personal).is_err());
+         assert_eq!(book.drafts.len(), MAX_LOCAL_DRAFTS);
+         assert_eq!(book.drafts[0].text, "keep");
+-        assert_eq!(book.composer(Workspace::Personal).text, "valuable unsaved");
++        assert_eq!(
++            book.composer(Workspace::Personal).text(),
++            "valuable unsaved"
++        );
+         assert_eq!(book.composer(Workspace::Personal).contexts.len(), 1);
+         book.drafts.clear();
+         let oversized = "中文".repeat(MAX_DRAFT_BYTES / 6 + 1);
+-        book.composer_mut(Workspace::Personal).text = oversized.clone();
++        let accepted = book
++            .composer_mut(Workspace::Personal)
++            .edit(oversized.clone());
++        assert_eq!(accepted, !cfg!(feature = "hepta-shared-presenter"));
+         assert!(book.save(Workspace::Personal).is_err());
+-        assert_eq!(book.composer(Workspace::Personal).text, oversized);
++        let expected = if cfg!(feature = "hepta-shared-presenter") {
++            "valuable unsaved"
++        } else {
++            oversized.as_str()
++        };
++        assert_eq!(book.composer(Workspace::Personal).text(), expected);
+         assert_eq!(book.composer(Workspace::Personal).contexts.len(), 1);
+         assert!(book.drafts.is_empty());
+     }
+@@ -761,3 +926,225 @@
+         assert_eq!(book.composer(Workspace::Personal).contexts[0], first);
+     }
+ }
++
++#[cfg(all(test, feature = "hepta-shared-presenter"))]
++mod shared_presenter_tests {
++    use super::*;
++    use crate::activation::ActivationGuard;
++    use trill_ui_core::conversation::MAX_DRAFT_BYTES;
++    use trill_ui_core::shared_chat::ComposeStatus;
++
++    fn editor_id() -> egui::Id {
++        egui::Id::new("hepta-local-composer").with(Workspace::Personal.code())
++    }
++
++    fn key(pressed: bool) -> egui::Event {
++        egui::Event::Key {
++            key: egui::Key::Enter,
++            physical_key: None,
++            pressed,
++            repeat: false,
++            modifiers: egui::Modifiers::default(),
++        }
++    }
++
++    fn frame(
++        ctx: &egui::Context,
++        guard: &mut ActivationGuard,
++        book: &mut DraftBook,
++        events: Vec<egui::Event>,
++    ) -> egui::Id {
++        let mut save_id = None;
++        let _ = ctx.run(
++            egui::RawInput {
++                focused: true,
++                screen_rect: Some(egui::Rect::from_min_size(
++                    egui::Pos2::ZERO,
++                    egui::vec2(800.0, 600.0),
++                )),
++                events,
++                ..Default::default()
++            },
++            |ctx| {
++                guard.begin_frame(ctx);
++                book.observe_composition(Workspace::Personal, guard.composing());
++                egui::CentralPanel::default().show(ctx, |ui| {
++                    composer_editor(
++                        ui,
++                        book.composer_mut(Workspace::Personal),
++                        Workspace::Personal,
++                        guard.ime_confirmation_fenced(),
++                    );
++                    let response = ui.button("Save local draft");
++                    save_id = Some(response.id);
++                    if guard.activated(&response) {
++                        let _ = book.save(Workspace::Personal);
++                    }
++                });
++            },
++        );
++        save_id.unwrap()
++    }
++
++    #[test]
++    fn real_editor_rejects_oversized_selection_paste_atomically() {
++        let ctx = egui::Context::default();
++        let mut guard = ActivationGuard::default();
++        let mut book = DraftBook::default();
++        let original = "前缀 selected 中文 tail";
++        assert!(book.composer_mut(Workspace::Personal).edit(original.into()));
++        frame(&ctx, &mut guard, &mut book, vec![]);
++        ctx.memory_mut(|memory| memory.request_focus(editor_id()));
++        let selected = egui::text::CCursorRange::two(
++            egui::text::CCursor::new(3),
++            egui::text::CCursor::new(11),
++        );
++        let mut state = egui::TextEdit::load_state(&ctx, editor_id()).unwrap();
++        state.cursor.set_char_range(Some(selected));
++        state.store(&ctx, editor_id());
++        frame(
++            &ctx,
++            &mut guard,
++            &mut book,
++            vec![egui::Event::Paste("界".repeat(MAX_DRAFT_BYTES))],
++        );
++        let composer = book.composer(Workspace::Personal);
++        assert_eq!(composer.text(), original);
++        assert_eq!(
++            *composer.shared.presentation(0).composer.status,
++            ComposeStatus::InputLimit
++        );
++        assert!(book.save(Workspace::Personal).is_err());
++        assert!(book.drafts.is_empty());
++        let restored = egui::TextEdit::load_state(&ctx, editor_id())
++            .unwrap()
++            .cursor
++            .char_range()
++            .unwrap();
++        assert_eq!(restored.primary.index, selected.primary.index);
++        assert_eq!(restored.secondary.index, selected.secondary.index);
++        frame(&ctx, &mut guard, &mut book, vec![]);
++        assert_eq!(book.composer(Workspace::Personal).text(), original);
++    }
++
++    #[test]
++    fn real_ime_commit_and_fresh_keyboard_save_use_the_original_draft_once() {
++        let ctx = egui::Context::default();
++        let mut guard = ActivationGuard::default();
++        let mut book = DraftBook::default();
++        frame(&ctx, &mut guard, &mut book, vec![]);
++        ctx.memory_mut(|memory| memory.request_focus(editor_id()));
++        frame(
++            &ctx,
++            &mut guard,
++            &mut book,
++            vec![
++                egui::Event::Ime(egui::ImeEvent::Enabled),
++                egui::Event::Ime(egui::ImeEvent::Preedit("拼音".into())),
++            ],
++        );
++        assert!(
++            book.composer(Workspace::Personal)
++                .shared
++                .presentation(0)
++                .composer
++                .composing
++        );
++        assert!(book.save(Workspace::Personal).is_err());
++        let save_id = frame(
++            &ctx,
++            &mut guard,
++            &mut book,
++            vec![
++                egui::Event::Ime(egui::ImeEvent::Commit("中文".into())),
++                key(true),
++            ],
++        );
++        assert_eq!(book.composer(Workspace::Personal).text(), "中文");
++        assert!(
++            !book
++                .composer(Workspace::Personal)
++                .shared
++                .presentation(0)
++                .composer
++                .composing
++        );
++        assert!(book.drafts.is_empty(), "IME confirmation is not Save");
++        ctx.memory_mut(|memory| memory.request_focus(save_id));
++        frame(&ctx, &mut guard, &mut book, vec![key(false)]);
++        frame(&ctx, &mut guard, &mut book, vec![key(true)]);
++        assert_eq!(book.drafts.len(), 1);
++        assert_eq!(book.drafts[0].text, "中文");
++        let view = book.composer(Workspace::Personal).shared.presentation(0);
++        assert!(view.composer.text.is_empty());
++        assert!(view.timeline.messages.is_empty());
++        assert!(view.composer.delivery.is_none());
++    }
++
++    #[test]
++    fn real_editor_ignores_delayed_ime_enter_then_accepts_a_fresh_linebreak() {
++        for coalesced_release in [false, true] {
++            let ctx = egui::Context::default();
++            let mut guard = ActivationGuard::default();
++            let mut book = DraftBook::default();
++            frame(&ctx, &mut guard, &mut book, vec![]);
++            ctx.memory_mut(|memory| memory.request_focus(editor_id()));
++            frame(
++                &ctx,
++                &mut guard,
++                &mut book,
++                vec![
++                    egui::Event::Ime(egui::ImeEvent::Enabled),
++                    egui::Event::Ime(egui::ImeEvent::Preedit("候选".into())),
++                ],
++            );
++            frame(
++                &ctx,
++                &mut guard,
++                &mut book,
++                vec![egui::Event::Ime(egui::ImeEvent::Commit("中文".into()))],
++            );
++            frame(&ctx, &mut guard, &mut book, vec![]);
++            let mut confirmation = vec![key(true)];
++            if coalesced_release {
++                confirmation.push(key(false));
++            }
++            frame(&ctx, &mut guard, &mut book, confirmation);
++            assert_eq!(book.composer(Workspace::Personal).text(), "中文");
++            assert!(book.drafts.is_empty());
++            if !coalesced_release {
++                frame(&ctx, &mut guard, &mut book, vec![key(false)]);
++            }
++            frame(&ctx, &mut guard, &mut book, vec![key(true)]);
++            assert_eq!(book.composer(Workspace::Personal).text(), "中文\n");
++            assert!(
++                book.drafts.is_empty(),
++                "editing never creates a local archive"
++            );
++        }
++    }
++
++    #[test]
++    fn session_task_quotes_and_local_archives_never_become_original_history() {
++        let mut book = DraftBook::default();
++        let task = TaskRecord::new(7, Workspace::Personal, trill_ui_core::AppKind::Notes);
++        book.attach(
++            Workspace::Personal,
++            ContextRef::host_task("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", &task, 1000),
++        )
++        .unwrap();
++        assert!(book
++            .composer_mut(Workspace::Personal)
++            .edit("请检查引用".into()));
++        let before = book.composer(Workspace::Personal).shared.presentation(1000);
++        assert_eq!(before.timeline.thread_id, None);
++        assert!(before.timeline.messages.is_empty());
++        assert!(before.composer.delivery.is_none());
++        book.save(Workspace::Personal).unwrap();
++        assert_eq!(book.drafts[0].contexts.len(), 1);
++        let after = book.composer(Workspace::Personal).shared.presentation(1001);
++        assert_eq!(after.timeline.thread_id, None);
++        assert!(after.timeline.messages.is_empty());
++        assert!(after.composer.delivery.is_none());
++    }
++}
+diff --git a/ui/shell/src/main.rs b/ui/shell/src/main.rs
+index ecd4e31a00c92c6b3ade42d299312745bc70c1ee..4ec03577bab9bb54ef9b5591139c535f5adb938a 100644
+--- a/ui/shell/src/main.rs
++++ b/ui/shell/src/main.rs
+@@ -296,6 +296,17 @@
+             self.notices.pop_front();
+         }
+         self.notices.push_back(message.into());
++    }
++
++    fn navigation_activated(&self, response: &egui::Response) -> bool {
++        if cfg!(feature = "hepta-shared-presenter") {
++            // A commit can end `composing` before this frame renders the old
++            // editor. Keep that frame's original guard fence so navigation
++            // cannot move the commit to a different workspace's composer.
++            self.activation.activated(response)
++        } else {
++            response.clicked()
++        }
+     }
+ 
+     /// A queue admission is NOT a successful OS operation. Report false
+@@ -631,13 +642,10 @@
+                 .iter()
+                 .filter(|task| task.workspace == workspace)
+                 .count();
+-            if ui
+-                .selectable_label(
+-                    self.workspace == workspace,
+-                    format!("{}    ·    {} host tasks", workspace.name(), count),
+-                )
+-                .clicked()
+-            {
++            if self.navigation_activated(&ui.selectable_label(
++                self.workspace == workspace,
++                format!("{}    ·    {} host tasks", workspace.name(), count),
++            )) {
+                 self.workspace = workspace;
+                 self.selected = None;
+                 self.show_workspace_tab(WorkspaceTab::Tasks);
+@@ -921,6 +929,9 @@
+ impl eframe::App for Desktop {
+     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+         self.activation.begin_frame(ctx);
++        #[cfg(feature = "hepta-shared-presenter")]
++        self.drafts
++            .observe_composition(self.workspace, self.activation.composing());
+         self.receive_and_refresh_hepta(|| (Instant::now(), trill_ui_core::unix_ms()));
+         if self.last_poll.elapsed() >= Duration::from_millis(800) {
+             self.last_poll = Instant::now();
+@@ -951,10 +962,9 @@
+             .show(ctx, |ui| {
+                 ui.heading("Workspace");
+                 for workspace in Workspace::ALL {
+-                    if ui
+-                        .selectable_label(self.workspace == workspace, workspace.name())
+-                        .clicked()
+-                    {
++                    if self.navigation_activated(
++                        &ui.selectable_label(self.workspace == workspace, workspace.name()),
++                    ) {
+                         self.workspace = workspace;
+                         self.selected = None;
+                         self.page = Page::Conversation;
+@@ -962,9 +972,8 @@
+                 }
+                 ui.separator();
+                 for page in [Page::Conversation, Page::Apps, Page::Settings] {
+-                    if ui
+-                        .selectable_label(self.page == page, page.name())
+-                        .clicked()
++                    if self
++                        .navigation_activated(&ui.selectable_label(self.page == page, page.name()))
+                     {
+                         self.page = page;
+                     }
+@@ -2011,7 +2020,10 @@
+             .send(queued_reply(false, Ok(snapshot(A, 20_000, task.clone()))))
+             .unwrap();
+         desktop.receive_and_refresh_hepta(|| (Instant::now(), 20_000));
+-        desktop.drafts.composer_mut(Workspace::Personal).text = "检查这份笔记 📝".into();
++        assert!(desktop
++            .drafts
++            .composer_mut(Workspace::Personal)
++            .edit("检查这份笔记 📝".into()));
+         let ctx = egui::Context::default();
+         click(&mut desktop, &ctx, "Quote in draft");
+         assert_eq!(
+@@ -2049,6 +2061,84 @@
+             unreachable!()
+         };
+         assert_eq!(reference.key.session_instance, A);
++        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
++    }
++
++    #[cfg(feature = "hepta-shared-presenter")]
++    #[test]
++    fn real_workspace_navigation_waits_through_the_ime_commit_frame() {
++        let (mut desktop, _, requests) = setup();
++        assert!(desktop
++            .drafts
++            .composer_mut(Workspace::Personal)
++            .edit("保留原草稿".into()));
++        let ctx = egui::Context::default();
++        let draw_navigation = |desktop: &mut Desktop, events| {
++            ctx.run(
++                egui::RawInput {
++                    focused: true,
++                    screen_rect: Some(egui::Rect::from_min_size(
++                        egui::Pos2::ZERO,
++                        egui::vec2(900.0, 600.0),
++                    )),
++                    events,
++                    ..Default::default()
++                },
++                |ctx| {
++                    desktop.activation.begin_frame(ctx);
++                    desktop
++                        .drafts
++                        .observe_composition(desktop.workspace, desktop.activation.composing());
++                    egui::CentralPanel::default().show(ctx, |ui| desktop.workspaces(ui));
++                },
++            )
++        };
++        let output = draw_navigation(&mut desktop, vec![]);
++        let label = format!("{}    ·    0 host tasks", Workspace::Research.name());
++        let pos = output
++            .shapes
++            .iter()
++            .find_map(|shape| match &shape.shape {
++                egui::Shape::Text(text) if text.galley.job.text == label => {
++                    Some(text.pos + text.galley.size() * 0.5)
++                }
++                _ => None,
++            })
++            .unwrap();
++        let pointer = |pressed| egui::Event::PointerButton {
++            pos,
++            button: egui::PointerButton::Primary,
++            pressed,
++            modifiers: egui::Modifiers::NONE,
++        };
++        draw_navigation(
++            &mut desktop,
++            vec![
++                egui::Event::Ime(egui::ImeEvent::Preedit("候选".into())),
++                egui::Event::PointerMoved(pos),
++                pointer(true),
++            ],
++        );
++        draw_navigation(
++            &mut desktop,
++            vec![
++                egui::Event::Ime(egui::ImeEvent::Commit("确认".into())),
++                pointer(false),
++            ],
++        );
++        assert_eq!(desktop.workspace, Workspace::Personal);
++        draw_navigation(&mut desktop, vec![pointer(true)]);
++        draw_navigation(&mut desktop, vec![pointer(false)]);
++        assert_eq!(desktop.workspace, Workspace::Research);
++        assert_eq!(
++            desktop.drafts.composer(Workspace::Personal).text(),
++            "保留原草稿"
++        );
++        assert!(desktop
++            .drafts
++            .composer(Workspace::Research)
++            .text()
++            .is_empty());
+         assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+     }
+ 
+@@ -2347,15 +2437,19 @@
+     fn full_chat_never_evicts_earlier_user_text_or_clears_composer() {
+         let mut book = DraftBook::default();
+         for i in 0..MAX_LOCAL_DRAFTS {
+-            book.composer_mut(Workspace::Personal).text = format!("draft-{i}");
++            assert!(book
++                .composer_mut(Workspace::Personal)
++                .edit(format!("draft-{i}")));
+             book.save(Workspace::Personal).unwrap();
+         }
+-        book.composer_mut(Workspace::Personal).text = "a valuable unsaved draft".into();
++        assert!(book
++            .composer_mut(Workspace::Personal)
++            .edit("a valuable unsaved draft".into()));
+         assert!(book.save(Workspace::Personal).is_err());
+         assert_eq!(book.drafts.len(), MAX_LOCAL_DRAFTS);
+         assert_eq!(book.drafts[0].text, "draft-0");
+         assert_eq!(
+-            book.composer(Workspace::Personal).text,
++            book.composer(Workspace::Personal).text(),
+             "a valuable unsaved draft"
+         );
+     }
+@@ -2364,10 +2458,18 @@
+     fn oversized_utf8_draft_is_not_truncated_or_saved() {
+         let mut book = DraftBook::default();
+         let original = "中文".repeat(MAX_DRAFT_BYTES / 6 + 1);
+-        book.composer_mut(Workspace::Personal).text = original.clone();
++        let accepted = book
++            .composer_mut(Workspace::Personal)
++            .edit(original.clone());
++        assert_eq!(accepted, !cfg!(feature = "hepta-shared-presenter"));
+         assert!(book.save(Workspace::Personal).is_err());
+         assert!(book.drafts.is_empty());
+-        assert_eq!(book.composer(Workspace::Personal).text, original);
++        let expected = if cfg!(feature = "hepta-shared-presenter") {
++            ""
++        } else {
++            original.as_str()
++        };
++        assert_eq!(book.composer(Workspace::Personal).text(), expected);
+     }
+ 
+     #[test]
+@@ -2379,7 +2481,9 @@
+             contexts: vec![],
+         }];
+         assert!(book.may_restore());
+-        book.composer_mut(Workspace::Build).text = "unfinished".into();
++        assert!(book
++            .composer_mut(Workspace::Build)
++            .edit("unfinished".into()));
+         assert!(!book.may_restore());
+         assert!(book.restore(imported.clone()).is_err());
+         book.save(Workspace::Build).unwrap();
+@@ -2392,22 +2496,28 @@
+     fn export_collection_never_omits_unsent_text_or_overwrites_old_backup() {
+         let mut book = DraftBook::default();
+         assert!(book.export().is_err());
+-        book.composer_mut(Workspace::Personal).text = "prior saved 中文".into();
++        assert!(book
++            .composer_mut(Workspace::Personal)
++            .edit("prior saved 中文".into()));
+         book.save(Workspace::Personal).unwrap();
+-        book.composer_mut(Workspace::Research).text = "unfinished composer".into();
++        assert!(book
++            .composer_mut(Workspace::Research)
++            .edit("unfinished composer".into()));
+         assert!(book.export().is_err());
+-        book.composer_mut(Workspace::Research).text.clear();
++        assert!(book.composer_mut(Workspace::Research).clear());
+         assert_eq!(book.export().unwrap()[0].text, "prior saved 中文");
+     }
+ 
+     #[test]
+     fn accepted_chinese_draft_is_stored_exactly_once() {
+         let mut book = DraftBook::default();
+-        book.composer_mut(Workspace::Personal).text = "测试输入法：你好 📝".into();
++        assert!(book
++            .composer_mut(Workspace::Personal)
++            .edit("测试输入法：你好 📝".into()));
+         assert!(book.save(Workspace::Personal).is_ok());
+         assert_eq!(book.drafts.len(), 1);
+         assert_eq!(book.drafts[0].text, "测试输入法：你好 📝");
+-        assert!(book.composer(Workspace::Personal).text.is_empty());
++        assert!(book.composer(Workspace::Personal).text().is_empty());
+         assert!(book.save(Workspace::Personal).is_err());
+         assert_eq!(book.drafts.len(), 1);
+     }

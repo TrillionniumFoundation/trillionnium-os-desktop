@@ -1,0 +1,160 @@
+{
+  "schema": "trillionnium.native-kernel-integration.v1",
+  "source_head": "4d32d94f0a3647155245d0a1b1dbe0d3caec8e7f",
+  "source_tree": "dfeff07356b3255ad91722a4fd2bf91ad720abca",
+  "commands": [
+    {
+      "stage": "original-four-suites",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-original-full-ipc.py",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable",
+        "--head",
+        "4d32d94f0a3647155245d0a1b1dbe0d3caec8e7f",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/full"
+      ],
+      "outer_deadline_seconds": 15000,
+      "exit_code": 0
+    },
+    {
+      "stage": "original-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "4d32d94f0a3647155245d0a1b1dbe0d3caec8e7f",
+        "--expected-source-tree",
+        "dfeff07356b3255ad91722a4fd2bf91ad720abca",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/inline-signal-joint-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ordinary"
+      ],
+      "outer_deadline_seconds": 7200,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-sgid30",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-native-sgid-probe.py",
+        "--ordinary",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ordinary",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/sgid30"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-ownership12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-process-dumpable-ownership-4d32.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-proc-privileges12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_proc_process_privileges.py",
+        "--kernel",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ordinary/product-kernel.elf",
+        "--ordinary-receipt",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ordinary/result.json",
+        "--expected-receipt-sha256",
+        "ed850d02d0dca240e1982eecbf1e27bcec7cd254088fd5fa939acc941c3056c6",
+        "--initramfs",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/proc-privileges12"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-memfd4",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-process-dumpable-memfd-4d32.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-inline-signal22",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-process-dumpable-probe-4d32.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-dumpability-lifecycle",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-process-dumpable-native-4d32.py",
+        "lifecycle"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-dumpability-stat",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-process-dumpable-native-4d32.py",
+        "stat"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-dumpability-traceme",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-process-dumpable-native-4d32.py",
+        "traceme"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    }
+  ],
+  "passed": true,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "elapsed_seconds": 577.893,
+  "source_checkout_clean": true
+}

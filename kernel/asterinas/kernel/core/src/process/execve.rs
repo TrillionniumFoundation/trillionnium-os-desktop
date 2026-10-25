@@ -30,7 +30,7 @@ use crate::{
         signal::{
             HandlePendingSignal, PauseReason, SigStack,
             constants::{SIGCHLD, SIGKILL},
-            signals::kernel::KernelSignal,
+            signals::{OwnedSignal, kernel::KernelSignal},
         },
     },
     vm::vmar::VmarHandle,
@@ -70,7 +70,11 @@ pub(crate) fn do_execve(
         ProgramToLoad::from_executable(executable, &path_resolver, argv, envp, stack_limit_bytes)?;
     let exec_cred = prepare_exec_cred(program_to_load.elf_path(), ctx)?;
 
-    let new_vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
+    let new_vmar = VmarHandle::new_with_owner(
+        ProcessVm::new(executable_path.clone()),
+        ctx.process.user_memory_owner().clone(),
+    );
+    *new_vmar.process_vm().dumpable().lock() = exec_cred.allows_dumpability();
     let elf_load_info = program_to_load.load_to_vmar(&new_vmar, &path_resolver)?;
 
     // Ensure no other thread is concurrently performing exit_group or execve.
@@ -125,7 +129,7 @@ pub(crate) fn do_execve(
         // while SIGKILL or the last-thread cleanup is still pending.
         ctx.process.close_hepta_image();
         ctx.posix_thread
-            .enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+            .enqueue_owned_signal(OwnedSignal::new(KernelSignal::new(SIGKILL)));
     }
 
     ctx.process.tasks().lock().finish_execve();
@@ -242,7 +246,9 @@ fn do_execve_no_return(
     // This prevents race conditions when checking access permissions while opening
     // `/proc/[pid]/mem` or `/proc/[pid]/maps`.
     let (vmar_guard, old_vmar) = activate_vmar(ctx, new_vmar);
-    apply_exec_cred(process, &ctx.credentials_mut(), exec_cred)?;
+    ctx.with_credentials_mut_in(&vmar_guard, |credentials| {
+        apply_exec_cred(process, credentials, exec_cred)
+    })?;
     drop(vmar_guard);
     drop(old_vmar);
 
@@ -291,7 +297,7 @@ fn wait_other_threads_exit(ctx: &Context) -> Result<()> {
 
         ctx.posix_thread
             .set_signalled_waker(waker.clone(), PauseReason::Sleep);
-        if ctx.has_pending_sigkill() {
+        if ctx.has_fatal_sigkill() {
             ctx.posix_thread.clear_signalled_waker();
             return_errno_with_message!(Errno::EAGAIN, "the current thread has received SIGKILL");
         }

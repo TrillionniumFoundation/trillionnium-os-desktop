@@ -1,0 +1,102 @@
+[
+  {
+    "argv": [
+      "rustc",
+      "--version",
+      "--verbose"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15",
+    "exit_code": 0,
+    "finished_unix": 1792728229.936235,
+    "name": "toolchain",
+    "started_unix": 1792728229.9117217,
+    "status": "passed"
+  },
+  {
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "cargo",
+      "build",
+      "--locked",
+      "-p",
+      "trill-session",
+      "-p",
+      "trill-app-window",
+      "--bins"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-notes-recovery-20261023/ui",
+    "exit_code": 0,
+    "finished_unix": 1792728282.1200495,
+    "name": "build-desktop-binaries",
+    "started_unix": 1792728229.936794,
+    "status": "passed"
+  },
+  {
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "cargo",
+      "build",
+      "--locked",
+      "-p",
+      "trill-ui-broker",
+      "--example",
+      "notes_host_probe"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-notes-recovery-20261023/ui",
+    "exit_code": 0,
+    "finished_unix": 1792728295.2784474,
+    "name": "build-broker-probe",
+    "started_unix": 1792728282.1206837,
+    "status": "passed"
+  },
+  {
+    "argv": [
+      "/usr/bin/python3",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-notes-recovery-20261023/tests/ui/test-notes-bootstrap-ipc.py",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/notes-recovery-gui-20261023-v1/bin"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-notes-recovery-20261023",
+    "exit_code": 0,
+    "finished_unix": 1792728302.8512995,
+    "name": "python-bootstrap-v2",
+    "started_unix": 1792728299.9457395,
+    "status": "passed"
+  },
+  {
+    "argv": [
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/notes-recovery-gui-20261023-v1/bin/notes_host_probe",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/notes-recovery-gui-20261023-v1/bin/trill-app-window"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-notes-recovery-20261023",
+    "exit_code": 0,
+    "finished_unix": 1792728303.200345,
+    "name": "broker-target-probe",
+    "started_unix": 1792728302.8527796,
+    "status": "passed"
+  },
+  {
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "just",
+      "test",
+      "--locked",
+      "-p",
+      "codex-hepta-agentd",
+      "notes_actual_ui_original_owner_roundtrip",
+      "--run-ignored",
+      "only"
+    ],
+    "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/hepta-notes-recovery-20261023/codex-rs",
+    "exit_code": 0,
+    "finished_unix": 1792728309.4866571,
+    "name": "actual-gui-original-owner",
+    "started_unix": 1792728303.201325,
+    "status": "passed"
+  }
+]

@@ -17,7 +17,7 @@ cp -- support/ui/package-host-binaries.sh "$root/support/ui/package-host-binarie
 cat > "$root/test-probe.c" <<'SOURCE'
 int main(void) { return 0; }
 SOURCE
-for name in trill-shell trill-session trill-app-window trill-ctl; do
+for name in trill-shell trill-session trill-app-window trill-ctl trill-notes-recovery; do
     cc "$root/test-probe.c" -o "$CARGO_TARGET_DIR/debug/$name"
 done
 cat > "$root/mock-bin/rustc" <<'MOCK'
@@ -41,7 +41,7 @@ archive_dir="$root/evidence/a10-linux-host-binaries"
 (cd "$archive_dir" && sha256sum -c SHA256SUMS)
 [[ "$(grep -c '^Source commit: ' "$archive_dir/PROVENANCE.txt")" -eq 1 ]]
 grep -Fxq "Source commit: $source_sha" "$archive_dir/PROVENANCE.txt"
-for name in trill-shell trill-session trill-app-window trill-ctl; do
+for name in trill-shell trill-session trill-app-window trill-ctl trill-notes-recovery; do
     [[ -x "$archive_dir/$name" ]]
     [[ "$(head -c 4 "$archive_dir/$name" | od -An -tx1 | tr -d ' \n')" == 7f454c46 ]]
 done
@@ -66,4 +66,4 @@ if PATH="$root/mock-bin:$PATH" bash "$root/support/ui/package-host-binaries.sh" 
     exit 1
 fi
 grep -Fq 'A10 evidence path must be absolute' "$root/relative-rejection.log"
-printf 'A10 packager fixture PASS: four fixture ELF hashes, provenance, missing binary and relative destination rejection (NO Rust/Weston claim)\n'
+printf 'A10 packager fixture PASS: five fixture ELF hashes, provenance, missing binary and relative destination rejection (NO Rust/Weston claim)\n'

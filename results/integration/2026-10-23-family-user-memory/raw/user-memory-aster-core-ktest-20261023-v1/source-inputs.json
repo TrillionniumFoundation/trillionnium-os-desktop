@@ -1,0 +1,67 @@
+{
+  "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "toolchain": "nightly-2026-07-21",
+  "pristine": false,
+  "checked_files": 118,
+  "input_sha256": {
+    "Cargo.lock": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "LICENSE-MPL": "86cf9656479f1edb82245b985f4a2cc0d503b945766ebeda4269c60b307699ae",
+    "Makefile": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6",
+    "OSDK.toml": "155af7cb53b4dffc679393b8fc7c2c1719a74134a0ec2b0812f0c4b53a6c609b",
+    "osdk/Cargo.lock": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+    "rust-toolchain.toml": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+  },
+  "downstream_manifests": {
+    "Cargo.toml": {
+      "upstream_blob": "034636c01943abf240547c233803b43f07b0340a",
+      "upstream_sha256": "52c00575e48ccc738efdaacc8f035db77c23d0f9d769b3b519f8fe423d3c1106",
+      "derived_sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+      "local_dependency": "os-control",
+      "optional_profile": null,
+      "optional_profiles": []
+    },
+    "kernel/Cargo.toml": {
+      "upstream_blob": "0b09fed8dd3907a51e8ff7b1f9e446848af5ae83",
+      "upstream_sha256": "4f6a00f2dc54a2c15cc23d4354dff8cfde81dad8c58a707b6636840c61d1d727",
+      "derived_sha256": "793fbe82cd8cabd2d6047d5f5b4220ee16788aa46a51931f4f89a2752991ebe3",
+      "local_dependency": null,
+      "optional_profile": "g1c-trusted-observe",
+      "optional_profiles": [
+        "g1c-trusted-observe",
+        "g1d-trusted-control"
+      ]
+    },
+    "kernel/core/Cargo.toml": {
+      "upstream_blob": "ccda2552afb7e5d9bdeeb7a2a1da27deed0bae35",
+      "upstream_sha256": "177678640798c8c4b70d41c11a2becdff9911e2013fd3c2345346f843383ab2c",
+      "derived_sha256": "da62ea1ac3af6ee79f2a7e3ddf7bb0ae7cd89ae9f896ba4c22a887466480e273",
+      "local_dependency": "os-control",
+      "optional_profile": "g1c-trusted-observe",
+      "optional_profiles": [
+        "g1c-trusted-observe",
+        "g1d-trusted-control"
+      ]
+    },
+    "osdk/deps/test-kernel/Cargo.toml": {
+      "upstream_blob": "c22fa69cd833a11dd6116a8a8d1963a5d3bdf2f1",
+      "upstream_sha256": "629282d4a97d169db2b491b0137c221083fa0438c225a8d713f09cbf29fa0905",
+      "derived_sha256": "56dbb8ccb936f9ef2c1d0223e5848a32348aaaf294c23a5cedd4aa02df39ba91",
+      "local_dependency": null,
+      "optional_profile": null,
+      "optional_profiles": []
+    }
+  },
+  "downstream_locks": {
+    "Cargo.lock": {
+      "upstream_blob": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+      "upstream_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "derived_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "local_dependency": "os-control",
+      "optional_profile": null,
+      "optional_profiles": []
+    }
+  },
+  "errors": [],
+  "passed": true
+}

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use core::{
+    ops::Deref,
     sync::atomic::{AtomicBool, Ordering},
     time::Duration,
 };
@@ -15,7 +16,12 @@ use crate::{
         Socket, new_socket_common,
         options::{Error as SocketError, PeerCred, SocketOption, macros::sock_option_mut},
         private::SocketPrivate,
-        unix::{CUserCred, UnixSocketAddr, cred::SocketCred, ctrl_msg::AuxiliaryData},
+        unix::{
+            CUserCred, UnixSocketAddr,
+            cred::SocketCred,
+            ctrl_msg::AuxiliaryData,
+            ownership::{Lease, Node},
+        },
         util::{
             MessageHeader, RecvFlags, RecvOutput, SendFlags, SockShutdownCmd, SocketAddr,
             options::{
@@ -30,7 +36,7 @@ use crate::{
 
 pub(crate) struct UnixDatagramSocket {
     local_receiver: MessageReceiver,
-    remote_queue: RwLock<Option<Arc<MessageQueue>>>,
+    remote_queue: RwLock<Option<RemoteQueue>>,
     options: RwLock<OptionSet>,
     timeouts: SocketTimeouts,
     // Since datagram sockets are not connection-oriented, they typically lack well-defined peer
@@ -40,6 +46,29 @@ pub(crate) struct UnixDatagramSocket {
 
     is_write_shutdown: AtomicBool,
     common: FileCommon,
+}
+
+#[derive(Clone)]
+struct RemoteQueue {
+    queue: Arc<MessageQueue>,
+    _ownership: Lease,
+}
+
+impl Deref for RemoteQueue {
+    type Target = Arc<MessageQueue>;
+    fn deref(&self) -> &Self::Target {
+        &self.queue
+    }
+}
+
+impl RemoteQueue {
+    fn new(owner: &Node, queue: Arc<MessageQueue>) -> Result<Self> {
+        let edge = Lease::single(owner, &queue.ownership)?;
+        Ok(Self {
+            queue,
+            _ownership: edge,
+        })
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -56,13 +85,13 @@ impl OptionSet {
 }
 
 impl UnixDatagramSocket {
-    pub(crate) fn new(is_nonblocking: bool) -> Arc<Self> {
-        Arc::new(Self::new_raw(is_nonblocking))
+    pub(crate) fn new(is_nonblocking: bool) -> Result<Arc<Self>> {
+        Ok(Arc::new(Self::new_raw(is_nonblocking)?))
     }
 
-    pub(crate) fn new_pair(is_nonblocking: bool) -> (Arc<Self>, Arc<Self>) {
-        let mut socket_a = Self::new_raw(is_nonblocking);
-        let mut socket_b = Self::new_raw(is_nonblocking);
+    pub(crate) fn new_pair(is_nonblocking: bool) -> Result<(Arc<Self>, Arc<Self>)> {
+        let mut socket_a = Self::new_raw(is_nonblocking)?;
+        let mut socket_b = Self::new_raw(is_nonblocking)?;
 
         let cred = SocketCred::<ReadDupOp>::new_current();
         socket_a.peer_cred = Some(cred.dup().restrict());
@@ -71,22 +100,32 @@ impl UnixDatagramSocket {
         let remote_queue_a = socket_a.remote_queue.get_mut();
         let remote_queue_b = socket_b.remote_queue.get_mut();
 
-        *remote_queue_a = Some(socket_b.local_receiver.queue().clone());
-        *remote_queue_b = Some(socket_a.local_receiver.queue().clone());
+        *remote_queue_a = Some(RemoteQueue::new(
+            &socket_a.local_receiver.ownership,
+            socket_b.local_receiver.queue().clone(),
+        )?);
+        *remote_queue_b = Some(RemoteQueue::new(
+            &socket_b.local_receiver.ownership,
+            socket_a.local_receiver.queue().clone(),
+        )?);
 
-        (Arc::new(socket_a), Arc::new(socket_b))
+        Ok((Arc::new(socket_a), Arc::new(socket_b)))
     }
 
-    fn new_raw(is_nonblocking: bool) -> Self {
-        Self {
-            local_receiver: MessageReceiver::new(),
+    fn new_raw(is_nonblocking: bool) -> Result<Self> {
+        Ok(Self {
+            local_receiver: MessageReceiver::new()?,
             remote_queue: RwLock::new(None),
             options: RwLock::new(OptionSet::new()),
             timeouts: SocketTimeouts::new(),
             peer_cred: None,
             is_write_shutdown: AtomicBool::new(false),
             common: new_socket_common(is_nonblocking),
-        }
+        })
+    }
+
+    pub(in crate::net::socket::unix) fn ownership_node(&self) -> &Node {
+        &self.local_receiver.ownership
     }
 
     fn do_send(
@@ -94,7 +133,7 @@ impl UnixDatagramSocket {
         reader: &mut dyn MultiRead,
         mut aux_data: AuxiliaryData,
         remote: Option<UnixSocketAddr>,
-        _flags: SendFlags,
+        flags: SendFlags,
         timeout: Option<Duration>,
     ) -> Result<usize> {
         if self.is_write_shutdown.load(Ordering::Relaxed) {
@@ -106,12 +145,15 @@ impl UnixDatagramSocket {
             MessageQueue::lookup_bound(&connected_addr)?
         } else {
             let remote_queue = self.remote_queue.read();
-            remote_queue.clone().ok_or_else(|| {
-                Error::with_message(Errno::ENOTCONN, "the socket is not connected")
-            })?
+            remote_queue
+                .as_ref()
+                .map(|remote| remote.queue.clone())
+                .ok_or_else(|| {
+                    Error::with_message(Errno::ENOTCONN, "the socket is not connected")
+                })?
         };
 
-        let res = if self.is_nonblocking() {
+        let res = if self.is_nonblocking() || flags.contains(SendFlags::MSG_DONTWAIT) {
             queue.try_send(reader, &mut aux_data, &self.local_receiver)
         } else {
             queue.block_send(timeout, || {
@@ -177,7 +219,10 @@ impl Socket for UnixDatagramSocket {
         let queue = MessageQueue::lookup_bound(&connected_addr)?;
 
         let mut remote_queue = self.remote_queue.write();
-        *remote_queue = Some(queue);
+        let admitted = RemoteQueue::new(self.ownership_node(), queue)?;
+        let old = remote_queue.replace(admitted);
+        drop(remote_queue);
+        drop(old);
 
         Ok(())
     }
@@ -271,7 +316,7 @@ impl Socket for UnixDatagramSocket {
         flags: SendFlags,
     ) -> Result<usize> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - SendFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
@@ -302,14 +347,18 @@ impl Socket for UnixDatagramSocket {
         flags: RecvFlags,
     ) -> Result<(RecvOutput, MessageHeader)> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - RecvFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
-        let (output, control_messages, peer_addr) =
+        // Per-call nonblocking I/O must not alter the shared file description.
+        let (output, control_messages, peer_addr) = if flags.contains(RecvFlags::MSG_DONTWAIT) {
+            self.local_receiver.try_recv(writer, flags)
+        } else {
             self.block_on(IoEvents::IN, self.timeouts.recv_timeout(), || {
                 self.local_receiver.try_recv(writer, flags)
-            })?;
+            })
+        }?;
 
         let message_header = MessageHeader::new(Some(peer_addr.into()), control_messages);
 

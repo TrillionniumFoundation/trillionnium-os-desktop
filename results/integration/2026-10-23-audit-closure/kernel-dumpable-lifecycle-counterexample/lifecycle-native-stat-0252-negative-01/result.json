@@ -1,0 +1,564 @@
+{
+  "schema_version": 1,
+  "command": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/signal-bounds-native-0252-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-stat-0252-negative-01/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-stat-0252-negative-01/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "status": "complete",
+  "passed": false,
+  "expected_negative": true,
+  "original_kernel_receipt": "/data/asterinas-audit-build.8tdrjboi/signal-bounds-native-0252-01/ordinary/result.json",
+  "kernel_receipt_sha256": "f85a30e74ce0403658faa5b8938d403fe8c8e9aea6e2d55f455924a8fec8d01c",
+  "kernel_sha256": "202baef98b167989a85744f30290da3a85b9ce49d8e1e71c5acae662ed511014",
+  "kernel_source": "02521c15edbd8b2308248f28fcecf285b863a4c6",
+  "kernel_tree": "7def41fc2e4f043cc260f75abf68f617d7e7a9f5",
+  "probe_binary": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-v3-stat/stat-probe",
+  "probe_sha256": "3a08fe53b7f20974b085c280fb3078009af6c2fb3fa7d5667cdac2339d4f84df",
+  "shape": {
+    "entry": 4201376,
+    "bytes": 799576,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4722688,
+        "file_end": 527405,
+        "entry_inside": true
+      },
+      {
+        "start": 4722688,
+        "end": 4878336,
+        "file_end": 683994,
+        "entry_inside": false
+      },
+      {
+        "start": 4878336,
+        "end": 4931584,
+        "file_end": 711360,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "3a08fe53b7f20974b085c280fb3078009af6c2fb3fa7d5667cdac2339d4f84df"
+  },
+  "linux_receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-linux-stat-reference-03.json",
+  "linux_receipt_sha256": "2a6feeb5cf9d33c1dc8c9552cf110cd834df5c62404310538114b389f2fcaf00",
+  "original_initrd_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "injected_initrd_sha256": "f45c69e0ec22b1785f466127a8ed55eb4f4c552a7e3c21899ec36e82a3a8c7d8",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "timeout_seconds": 120,
+  "memory_mib": 512,
+  "smp": 1,
+  "sdk_or_kernel_rebuilt": false,
+  "production_isolation_qualified": false,
+  "raw_qemu_exit": 33,
+  "seconds": 1.821921012015082,
+  "probe_exit_42": true,
+  "serial_sha256": "41dc9eb0874809a79dafacb7620147771ae77ad0aa69c5afaba10014c041841b",
+  "observations": [
+    {
+      "suite": "dumpable-stat-v3",
+      "observer_uid": 60001,
+      "cap_eff": 0,
+      "cap_prm": 0,
+      "nnp": 1
+    },
+    {
+      "case": "child_set_get_agree",
+      "passed": true
+    },
+    {
+      "case": "stat_exact_52_fields_parsed",
+      "passed": true
+    },
+    {
+      "case": "ordinary_starttime_stable_nonzero",
+      "passed": true
+    },
+    {
+      "case": "ordinary_vsize_readable_nonzero",
+      "passed": true
+    },
+    {
+      "case": "ordinary_rss_readable_bounded",
+      "passed": true
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 26,
+      "masked_value": 4198400,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 27,
+      "masked_value": 4721709,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 28,
+      "masked_value": 140737487494800,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 45,
+      "masked_value": 4882192,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 46,
+      "masked_value": 4930024,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 47,
+      "masked_value": 5615616,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 48,
+      "masked_value": 140737487495065,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 49,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 50,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 51,
+      "masked_value": 140737487495168,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "case": "live_child_exit_code_zero",
+      "passed": true
+    },
+    {
+      "stage_dumpable": 0,
+      "ordinary_fields_remain_readable": true,
+      "only_owned_child": true
+    },
+    {
+      "case": "child_set_get_agree",
+      "passed": false
+    },
+    {
+      "case": "stat_exact_52_fields_parsed",
+      "passed": true
+    },
+    {
+      "case": "ordinary_starttime_stable_nonzero",
+      "passed": true
+    },
+    {
+      "case": "ordinary_vsize_readable_nonzero",
+      "passed": true
+    },
+    {
+      "case": "ordinary_rss_readable_bounded",
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 26,
+      "masked_value": 0,
+      "expected_mask": 1,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 27,
+      "masked_value": 0,
+      "expected_mask": 1,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 28,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 45,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 46,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 47,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 48,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 49,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 50,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "field": 51,
+      "masked_value": 0,
+      "expected_mask": 0,
+      "passed": true
+    },
+    {
+      "case": "live_child_exit_code_zero",
+      "passed": true
+    },
+    {
+      "stage_dumpable": 1,
+      "ordinary_fields_remain_readable": true,
+      "only_owned_child": true
+    },
+    {
+      "case": "child_set_get_agree",
+      "passed": true
+    },
+    {
+      "case": "stat_exact_52_fields_parsed",
+      "passed": true
+    },
+    {
+      "case": "ordinary_starttime_stable_nonzero",
+      "passed": true
+    },
+    {
+      "case": "ordinary_vsize_readable_nonzero",
+      "passed": true
+    },
+    {
+      "case": "ordinary_rss_readable_bounded",
+      "passed": true
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 26,
+      "masked_value": 4198400,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 27,
+      "masked_value": 4721709,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 28,
+      "masked_value": 140737487494800,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 45,
+      "masked_value": 4882192,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 46,
+      "masked_value": 4930024,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 47,
+      "masked_value": 5615616,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 48,
+      "masked_value": 140737487495065,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 49,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 50,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 51,
+      "masked_value": 140737487495168,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "case": "live_child_exit_code_zero",
+      "passed": true
+    },
+    {
+      "stage_dumpable": 0,
+      "ordinary_fields_remain_readable": true,
+      "only_owned_child": true
+    },
+    {
+      "case": "owned_child_reaped",
+      "passed": true
+    },
+    {
+      "summary": true,
+      "violations": 21,
+      "all_children_reaped": true
+    }
+  ],
+  "failed_observations": [
+    {
+      "stage_dumpable": 0,
+      "field": 26,
+      "masked_value": 4198400,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 27,
+      "masked_value": 4721709,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 28,
+      "masked_value": 140737487494800,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 45,
+      "masked_value": 4882192,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 46,
+      "masked_value": 4930024,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 47,
+      "masked_value": 5615616,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 48,
+      "masked_value": 140737487495065,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 49,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 50,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 51,
+      "masked_value": 140737487495168,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "case": "child_set_get_agree",
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 26,
+      "masked_value": 4198400,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 27,
+      "masked_value": 4721709,
+      "expected_mask": 1,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 28,
+      "masked_value": 140737487494800,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 45,
+      "masked_value": 4882192,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 46,
+      "masked_value": 4930024,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 47,
+      "masked_value": 5615616,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 48,
+      "masked_value": 140737487495065,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 49,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 50,
+      "masked_value": 140737487495094,
+      "expected_mask": 0,
+      "passed": false
+    },
+    {
+      "stage_dumpable": 0,
+      "field": 51,
+      "masked_value": 140737487495168,
+      "expected_mask": 0,
+      "passed": false
+    }
+  ],
+  "summaries": [
+    {
+      "summary": true,
+      "violations": 21,
+      "all_children_reaped": true
+    }
+  ],
+  "expected_negative_reproduced": true,
+  "inputs_unchanged": true
+}

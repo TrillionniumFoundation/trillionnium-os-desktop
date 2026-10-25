@@ -1,0 +1,48 @@
+{
+  "schema": "supplemental.ostd-real-kvm.v1",
+  "source": "10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd",
+  "passed": true,
+  "physical_device_qualification": false,
+  "production_ready": false,
+  "original_fixed_tcg_replaced": false,
+  "raw_exit": 33,
+  "timed_out": false,
+  "actual_profile": {
+    "arch": "x86_64",
+    "machine": "q35",
+    "accel": "kvm",
+    "cpu": "host,vmx=on",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "network": false,
+    "data_disks": false
+  },
+  "kernel_sha256": "cc81ce45c209ee1cdfe7fe73c77c18b0fdc8987873d2b21ed17ea4fcda6d62b5",
+  "checker_sha256": "9edeb24dcd9b738f63e2c467255f200c60e970bc8784e6efbcc63b11cf7380c5",
+  "original_verdict": {
+    "crate": "ostd",
+    "declared": 229,
+    "passed": 229,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 0,
+    "soft_skip_reasons": [],
+    "exercised_passed_lower_bound": 229,
+    "observed_test_starts": 229,
+    "required_permission_tests": [],
+    "required_core_tests": [],
+    "required_allocator_tests": [],
+    "allocator_exhaustion": null,
+    "required_ostd_tests": [
+      "ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner",
+      "ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code",
+      "ostd::mm::vm_space::recovery_tests::recovery_root_uses_explicit_reserve_and_closed_root_fails",
+      "ostd::mm::vm_space::recovery_tests::recovery_mapping_failure_at_each_missing_level_preserves_input_and_tree",
+      "ostd::mm::vm_space::recovery_tests::recovery_mapping_uses_only_selected_token_and_refunds_last_vm_owner",
+      "ostd::mm::vm_space::recovery_tests::recovery_mapping_does_not_authorize_ordinary_or_closed_growth",
+      "ostd::mm::vm_space::recovery_tests::recovery_mapping_rejects_conflict_without_replacing_original_frame"
+    ],
+    "raw_qemu_exit": 33,
+    "guest": "ostd-real-kvm-10dae-01"
+  }
+}

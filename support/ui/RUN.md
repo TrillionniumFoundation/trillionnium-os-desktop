@@ -3,19 +3,29 @@
 This is an executable Rust GUI prototype under the Linux host compositor.
 It is NOT booted under Asterinas, NOT native HOS2, and NOT a full compositor.
 
-The blocking A00 host workflow fixes Rust **1.88.0**, Cargo and Rustfmt.
-The repository's `nightly-2026-07-21` toolchain is an additional development
-environment; a pass there does not establish the 1.88.0 host gate. Required
-host dependencies include network/cached crates,
+For the explicit original Makepad/text combination, use
+[LINUX_TEXT_PROFILE](LINUX_TEXT_PROFILE.md). Its build entry checks the resolved
+native feature, original Root/Agentd adapter dependencies, both clean source
+identities, locks and all 54 baseline resource files before packaging the five
+executables. The build receipt and actual window/deployment receipts are separate.
+
+The integrated Linux product and its blocking host workflow use Rust
+**1.96.0**, including the original Agentd dependency graph. Earlier Rust 1.88
+receipts retain their original source scope. The Asterinas kernel keeps its
+separate pinned nightly toolchain. Required host dependencies include network/cached crates,
 Linux Wayland (or X11), OpenGL/Mesa including llvmpipe for software rendering,
 libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
-The crates' `rust-version = "1.83"` metadata is not a demonstrated minimum
-for every transitive dependency in the current lockfile.
+The UI workspace declares Rust **1.96** and pins the original Hepta dependency
+patches at its Cargo root. The native renderers include AccessKit; see
+[`ACCESSIBILITY.md`](ACCESSIBILITY.md) for the AT-SPI gate and its limits.
 
 For the Session-owned Hepta runtime observer, explicit endpoint configuration,
 read-only UI behavior and its separate acceptance limits, see
 [`HEPTA_OBSERVER.md`](HEPTA_OBSERVER.md). Authenticated objective submission
-is not configured; Conversation remains a local draft.
+is disabled in a standalone Session. A host configured with the fixed private
+Notes-only Objective bridge can expose Write note via Hepta after a fresh
+Ready observation. Chat drafts are retained; quoted context is not silently
+dropped or promoted to authority. See [`OBJECTIVE_UI.md`](OBJECTIVE_UI.md).
 
 The default Shell now opens Workspace / Chat with typed local draft/context
 references and embedded Tasks, Context and Console tabs. See
@@ -36,7 +46,7 @@ actual Pixman screenshots and the separate live-IME gate, see
 From the repository root:
 
 ~~~sh
-export RUSTUP_TOOLCHAIN=1.88.0
+export RUSTUP_TOOLCHAIN=1.96.0
 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
 cargo test --manifest-path ui/Cargo.toml --workspace --locked
 cargo test --manifest-path services/hepta-os/Cargo.toml --locked
@@ -98,12 +108,12 @@ The A00-owned GitHub workflow uploads the A10-owned `$RUNNER_TEMP/a10/`
 directory as a CI artifact. After Rust build, all host test suites and strict
 Rustfmt pass, `support/ui/package-host-binaries.sh` adds
 `a10-linux-host-binaries.tar.gz` and an outer SHA256 file. The archive contains
-`trill-session`, `trill-shell`, `trill-app-window`, `trill-ctl`, per-binary
+`trill-session`, `trill-shell`, `trill-app-window`, `trill-ctl`, `trill-notes-recovery`, per-binary
 SHA256 sums and `PROVENANCE.txt` with exact source HEAD and toolchain.
 The copies are debug builds stripped of debug symbols to limit artifact size;
 they depend on compatible Linux system libraries. An independent committed
 `tests/ui/test-package-host-binaries.sh` exercise runs first on the CI host:
-it compiles four disposable C ELF fixtures (NOT A10 Rust binaries), verifies
+it compiles five disposable C ELF fixtures (NOT A10 Rust binaries), verifies
 the provenance and both SHA256 layers, and proves failure cannot replace an
 existing archive when one source executable is missing. Real Rust executables
 are only packaged after all four Cargo suites and Rustfmt pass.
@@ -116,6 +126,12 @@ restart in a private runtime without a display. Weston, live Chinese IME,
 GPU, and Asterinas acceptance remain separate gates. The artifact is NOT an
 Asterinas boot image, compositor, IME, native GPU gate or proof Weston passed.
 Never publish it as a release simply because the binary build succeeded.
+
+For an installable user package, wrap these exact artifacts using
+[PRODUCT](PRODUCT.md). Its single launcher, private config, stopped-service
+upgrade/rollback and local composer recovery are separate behavior gates.
+The two fast Python modes in `check-host.sh` validate lifecycle file handling;
+actual user systemd and renderer recovery still require their real run.
 
 For CI/a Linux host without a physical desktop but WITH Weston, Mesa
 software GL and the Rust toolchain:
@@ -250,10 +266,11 @@ contract tests; it is not Android runtime evidence.
 Do not extrapolate host process exit code 0 to successful Hepta operations.
 
 Optional **user-triggered** draft backup: click “Export drafts to local file”
-to write unencrypted JSON at `$XDG_STATE_HOME/trillionnium-ui/local-drafts-v1.json`
+to write unencrypted JSON at `$XDG_STATE_HOME/trillionnium-ui/local-context-drafts-v2.json`
 (or `$HOME/.local/state/trillionnium-ui/` if XDG_STATE_HOME is unset).
 The application-specific directory is 0700 and the regular file is 0600.
-Nothing is autosaved or uploaded to Hepta. Restore is accepted only with an
+This explicit export is separate from configured automatic workspace recovery
+in [PRODUCT](PRODUCT.md); neither uploads drafts to Hepta. Restore is accepted only with an
 empty local chat/composer, never overwriting active unsent input. These are
 host-user files, NOT an A05 portal or cross-workspace secure storage service.
 

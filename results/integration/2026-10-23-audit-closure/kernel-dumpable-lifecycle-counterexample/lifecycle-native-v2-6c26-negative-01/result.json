@@ -1,0 +1,1510 @@
+{
+  "schema_version": 1,
+  "command": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-v2-6c26-negative-01/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-v2-6c26-negative-01/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "status": "complete",
+  "passed": false,
+  "expected_negative": true,
+  "original_kernel_receipt": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary/result.json",
+  "kernel_receipt_sha256": "dddd4cb58a7d64517d4f95c3b119812ea88b5f73d95345b9fce6e2d7db23b93f",
+  "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+  "kernel_source": "6c26e3aeefde05c120944e278299b4925612f3c8",
+  "kernel_tree": "6c84a0663441dcbf9629fc2da8f857265baa5fe1",
+  "probe_binary": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-v2/lifecycle-probe",
+  "probe_sha256": "0abe42254db858d63feebf2656e00ae178caf3bab1b2ad8ef95ae1e380f6f285",
+  "shape": {
+    "entry": 4201872,
+    "bytes": 942240,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1392,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4833280,
+        "file_end": 637133,
+        "entry_inside": true
+      },
+      {
+        "start": 4833280,
+        "end": 5005312,
+        "file_end": 809978,
+        "entry_inside": false
+      },
+      {
+        "start": 5005312,
+        "end": 5058560,
+        "file_end": 838384,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "0abe42254db858d63feebf2656e00ae178caf3bab1b2ad8ef95ae1e380f6f285"
+  },
+  "linux_receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-linux-reference-02.json",
+  "linux_receipt_sha256": "be2115a5e435c13bf46f3ef39cc864e0f1eee60e42f57dbe74acc4fe6e41a349",
+  "original_initrd_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "injected_initrd_sha256": "23e8074bff86ec8dbc01f635e277cdaaa1468d3ead5263e8c1eebb8f7a389af3",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "timeout_seconds": 120,
+  "memory_mib": 512,
+  "smp": 1,
+  "sdk_or_kernel_rebuilt": false,
+  "production_isolation_qualified": false,
+  "raw_qemu_exit": 33,
+  "seconds": 1.4204391799867153,
+  "probe_exit_42": true,
+  "serial_sha256": "68ab6aa1999413fa4d0e655d6e2bb1b1a3025be1e2ac54c07c496314b0d2df23",
+  "observations": [
+    {
+      "suite": "dumpable-lifecycle-v2",
+      "kernel": "Linux",
+      "release": "5.13.0",
+      "max_live_owned_children": 2
+    },
+    {
+      "reset_policy": 0,
+      "policy_sysctl_present": false,
+      "no_sysctl_changed": true
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "uid_noop",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "gid_noop",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "uid_gid_noop_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "fsuid_query",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "fsgid_query",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "query_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "fsuid_noop",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "fsgid_noop",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "fsid_noop_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "failed_uid_change",
+      "actual": -1,
+      "expected": -1,
+      "passed": true
+    },
+    {
+      "case": "failed_uid_errno",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "failed_uid_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "failed_gid_change",
+      "actual": -1,
+      "expected": -1,
+      "passed": true
+    },
+    {
+      "case": "failed_gid_errno",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "failed_gid_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "failed_fsuid_returns_old",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "failed_fsuid_unchanged",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "failed_fsgid_returns_old",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "failed_fsgid_unchanged",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "failed_fsid_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "effective_uid_change",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "effective_uid_change_resets_to_policy",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "filesystem_uid_change",
+      "actual": 60002,
+      "expected": 60002,
+      "passed": true
+    },
+    {
+      "case": "filesystem_uid_current",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "filesystem_uid_change_resets_to_policy",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "real_uid_only_change",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "real_uid_only_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "saved_uid_only_change",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "saved_uid_only_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "effective_gid_change",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "effective_gid_change_resets_to_policy",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "filesystem_gid_change",
+      "actual": 60002,
+      "expected": 60002,
+      "passed": true
+    },
+    {
+      "case": "filesystem_gid_current",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "filesystem_gid_change_resets_to_policy",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "real_gid_only_change",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "real_gid_only_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "cap_drop_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "permitted_capability_decrease_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_set_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "exec_unequal_effective_real_uid_retains_identity",
+      "actual": 60002,
+      "expected": 60002,
+      "passed": true
+    },
+    {
+      "case": "exec_unequal_real_uid",
+      "actual": 60001,
+      "expected": 60001,
+      "passed": true
+    },
+    {
+      "case": "exec_unequal_ids_resets_to_policy",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "observer_uid": 60001,
+      "observer_gid": 60001,
+      "cap_eff": 0,
+      "cap_prm": 0,
+      "nnp": 1
+    },
+    {
+      "case": "set_zero",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "get_zero",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "invalid_set_rejected",
+      "actual": -1,
+      "expected": -1,
+      "passed": true
+    },
+    {
+      "case": "invalid_set_errno",
+      "actual": 22,
+      "expected": 22,
+      "passed": true
+    },
+    {
+      "case": "invalid_set_preserves_zero",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "failed_exec",
+      "actual": -1,
+      "expected": -1,
+      "passed": true
+    },
+    {
+      "case": "failed_exec_errno",
+      "actual": 2,
+      "expected": 2,
+      "passed": true
+    },
+    {
+      "case": "failed_exec_preserves_zero",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "self_dev_null_open",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "dump0_self_fd_readlink",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "dump0_self_fdinfo",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "self_pidfd_open",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "dump0_self_pidfd_readlink",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "self_pidfd_link_identity",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "dump0_self_pidfd_fdinfo",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "self_pidfd_metadata_identity",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "fork_copies_zero",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "fork_child_change_not_shared",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "pthread_create",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "thread_inherits_zero",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "thread_sets_one",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "pthread_join",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "thread_change_shared",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "failed_exec_at_one",
+      "actual": -1,
+      "expected": -1,
+      "passed": true
+    },
+    {
+      "case": "failed_exec_at_one_errno",
+      "actual": 2,
+      "expected": 2,
+      "passed": true
+    },
+    {
+      "case": "failed_exec_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "clone_vm_bounded_stack",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "clone_vm_created",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "clone_vm_child_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "clone_vm_change_shared",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "case": "owned_child_pidfd_open",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "retained_child_identity",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "cross_child_set0",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "case": "public_mem_sentinel_only",
+      "actual": 1511506142,
+      "expected": 1511506142,
+      "passed": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "fd/4",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "exe",
+      "rc": 26,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "case": "copied_own_dev_null_only",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "cross_child_set1",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "case": "public_mem_sentinel_only",
+      "actual": 1511506142,
+      "expected": 1511506142,
+      "passed": true
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "fd/4",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "exe",
+      "rc": 26,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set1",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "case": "copied_own_dev_null_only",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "cross_child_set0_again",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "case": "public_mem_sentinel_only",
+      "actual": 1511506142,
+      "expected": 1511506142,
+      "passed": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "fd/4",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "exe",
+      "rc": 26,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "case": "copied_own_dev_null_only",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_image_fd_open_at_dump1",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_image_fd_open_at_dump1",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_image_fd_open_at_dump1",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_image_fd_open_at_dump1",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_public_auxv_snapshot_exists",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "exec_preserves_owned_pid",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "ordinary_exec_resets_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "case": "public_mem_sentinel_only",
+      "actual": 1511506142,
+      "expected": 1511506142,
+      "passed": true
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "fd/5",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "exe",
+      "rc": 26,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "stage": "ordinary_exec_resets_one",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": false,
+      "passed": true,
+      "own_child": true
+    },
+    {
+      "case": "copied_own_dev_null_only",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_proc_fd_rewind",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_maps_after_exec_empty",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "operation": "old_maps_after_exec",
+      "read_bytes": 0
+    },
+    {
+      "case": "old_proc_fd_rewind",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_mem_after_exec_empty",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "operation": "old_mem_after_exec",
+      "read_bytes": 0
+    },
+    {
+      "case": "old_proc_fd_rewind",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_environ_after_exec_empty",
+      "actual": 40,
+      "expected": 0,
+      "passed": false
+    },
+    {
+      "operation": "old_environ_after_exec",
+      "read_bytes": 40
+    },
+    {
+      "case": "old_proc_fd_rewind",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "old_auxv_is_empty_or_identical_old_snapshot",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "operation": "old_auxv_after_exec",
+      "read_bytes": 144
+    },
+    {
+      "case": "sensitive_child_reaped",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "case": "unprivileged_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "summary": true,
+      "failed_fixtures": 10,
+      "all_children_reaped": true,
+      "production_isolation_qualified": false
+    }
+  ],
+  "failed_observations": [
+    {
+      "case": "uid_gid_noop_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "query_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "fsid_noop_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "failed_uid_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "failed_gid_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "failed_fsid_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "real_uid_only_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "saved_uid_only_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "real_gid_only_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "permitted_capability_decrease_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "thread_change_shared",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "failed_exec_preserves_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "clone_vm_child_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "fd/4",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "exe",
+      "rc": 26,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "case": "cross_child_set1",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "maps",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "mem",
+      "rc": 4,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "environ",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "auxv",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "fd/4",
+      "rc": 9,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "exe",
+      "rc": 26,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "ns/mnt",
+      "rc": 7,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "stage": "cross_child_set0_again",
+      "operation": "pidfd_getfd_dev_null",
+      "rc": 1,
+      "errno": 0,
+      "denied_expected": true,
+      "passed": false,
+      "own_child": true
+    },
+    {
+      "case": "ordinary_exec_resets_one",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "old_environ_after_exec_empty",
+      "actual": 40,
+      "expected": 0,
+      "passed": false
+    },
+    {
+      "case": "old_auxv_is_empty_or_identical_old_snapshot",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "unprivileged_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    }
+  ],
+  "summaries": [
+    {
+      "summary": true,
+      "failed_fixtures": 10,
+      "all_children_reaped": true,
+      "production_isolation_qualified": false
+    }
+  ],
+  "expected_negative_reproduced": true,
+  "inputs_unchanged": true
+}

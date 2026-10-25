@@ -22,7 +22,10 @@ use crate::{
     ipc::IpcNamespace,
     net::uts_ns::UtsNamespace,
     prelude::*,
-    process::{NsProxy, UserNamespace, posix_thread::AsPosixThread},
+    process::{
+        NsProxy, UserNamespace,
+        posix_thread::{AsPosixThread, alien_access::AlienAccessMode},
+    },
     thread::Thread,
 };
 
@@ -278,6 +281,20 @@ impl<T: NsCommonOps> ProcSymOps for NsSymOps<T> {
     }
 
     fn read_link(&self) -> Result<SymbolicLink> {
+        let thread = self.dir.thread().ok_or_else(|| Error::new(Errno::ESRCH))?;
+        let target = thread.as_posix_thread().unwrap();
+        let process = target
+            .weak_process()
+            .upgrade()
+            .ok_or_else(|| Error::new(Errno::ESRCH))?;
+        let vmar = process.lock_vmar();
+        let _access = target
+            .check_alien_access_from(
+                current_thread!().as_posix_thread().unwrap(),
+                AlienAccessMode::READ_WITH_FS_CREDS,
+                &vmar,
+            )
+            .map_err(|_| Error::new(Errno::EACCES))?;
         Ok(SymbolicLink::Path(self.ns_path.clone()))
     }
 }

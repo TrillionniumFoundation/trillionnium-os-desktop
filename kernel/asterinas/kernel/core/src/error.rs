@@ -158,20 +158,57 @@ pub enum Errno {
 #[derive(Clone, Copy, Debug)]
 pub struct Error {
     errno: Errno,
+    user_frame_limit: bool,
+    cgroup_frame_limit: bool,
     #[expect(dead_code)]
     msg: Option<&'static str>,
 }
 
 impl Error {
     pub const fn new(errno: Errno) -> Self {
-        Error { errno, msg: None }
+        Error {
+            errno,
+            user_frame_limit: false,
+            cgroup_frame_limit: false,
+            msg: None,
+        }
     }
 
     pub const fn with_message(errno: Errno, msg: &'static str) -> Self {
         Error {
             errno,
+            user_frame_limit: false,
+            cgroup_frame_limit: false,
             msg: Some(msg),
         }
+    }
+
+    /// Internal provenance retained while an admission failure unwinds VM locks.
+    pub(crate) const fn user_frame_limit() -> Self {
+        Self {
+            errno: Errno::ENOMEM,
+            user_frame_limit: true,
+            cgroup_frame_limit: false,
+            msg: Some("workload family user-frame limit reached"),
+        }
+    }
+
+    /// Preserve the distinct hierarchical cause through VM lock unwinding.
+    pub(crate) const fn cgroup_frame_limit() -> Self {
+        Self {
+            errno: Errno::ENOMEM,
+            user_frame_limit: true,
+            cgroup_frame_limit: true,
+            msg: Some("cgroup physical-frame admission rejected"),
+        }
+    }
+
+    pub(crate) const fn is_cgroup_frame_limit(&self) -> bool {
+        self.cgroup_frame_limit
+    }
+
+    pub(crate) const fn is_user_frame_limit(&self) -> bool {
+        self.user_frame_limit
     }
 
     pub const fn error(&self) -> Errno {
@@ -375,6 +412,7 @@ impl From<aster_systree::Error> for Error {
         match err {
             NotFound => Error::new(Errno::ENOENT),
             InvalidOperation | InvalidName => Error::new(Errno::EINVAL),
+            OperationNotSupported => Error::new(Errno::EOPNOTSUPP),
             ResourceUnavailable => Error::new(Errno::EBUSY),
             AttributeError => Error::new(Errno::EIO),
             PermissionDenied => Error::new(Errno::EACCES),

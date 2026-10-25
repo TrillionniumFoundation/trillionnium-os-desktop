@@ -1,0 +1,64 @@
+{
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/home/qian-qi/work/os-audit-implementation-20261024-r1/targets/kernel-ordinary-e262/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/home/qian-qi/work/os-audit-implementation-20261024-r1/evidence/kernel-ordinary-smp2-e262-v1/ordinary-queryabi/product-boot/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "shell_command": "/usr/bin/qemu-system-x86_64 -kernel /home/qian-qi/work/os-audit-implementation-20261024-r1/targets/kernel-ordinary-e262/osdk/asterinas/asterinas-osdk-bin.elf -initrd /home/qian-qi/work/os-audit-implementation-20261024-r1/evidence/kernel-ordinary-smp2-e262-v1/ordinary-queryabi/product-boot/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /usr/share/seabios/bios-256k.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04",
+  "cwd": "/home/qian-qi/work/os-audit-implementation-20261024-r1/kernel-ordinary-e262/kernel/asterinas/kernel",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "artifacts": {
+    "-kernel": {
+      "path": "/home/qian-qi/work/os-audit-implementation-20261024-r1/targets/kernel-ordinary-e262/osdk/asterinas/asterinas-osdk-bin.elf",
+      "size": 8606608,
+      "sha256": "c90cb30bd5e6d081193ea26d71bbaf585719dc9eefa9eab081a2ba06b1056965"
+    },
+    "-initrd": {
+      "path": "/home/qian-qi/work/os-audit-implementation-20261024-r1/evidence/kernel-ordinary-smp2-e262-v1/ordinary-queryabi/product-boot/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    "-bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    }
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "serial_path": "/home/qian-qi/work/os-audit-implementation-20261024-r1/kernel-ordinary-e262/kernel/asterinas/kernel/qemu.log",
+  "serial_sha256": "3f854ef21cc926a6cc71cac3225576e5e39134e75f94f5e23ec4e8139948bfb2",
+  "serial_size": 72408,
+  "duration_seconds": 2.242
+}

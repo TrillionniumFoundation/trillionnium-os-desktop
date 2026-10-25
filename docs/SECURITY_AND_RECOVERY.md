@@ -34,7 +34,9 @@ execution、cancel、effect、observation分别记录。停止设备不是零效
 
 使用上游CSPRNG与已支持的可信熵来源，记录virtio-rng/硬件熵配置及失败模式。熵未就绪时允许无网络诊断启动，但不签发可用于外部认证的秘密、TLS凭据或授权session；返回明确不可用，不使用固定种子装作安全随机。
 
-boot_id、CapSpace ID来自已就绪CSPRNG，非零且不从PID/墙钟推导。确定性QEMU测试种子只用于synthetic profile；N0不支持带活动授权的快照恢复/克隆或宿主休眠恢复；在可信before-resume失效流程实现前，禁止将这些场景算作支持。仅重新生成随机数不能证明旧投递/撤销状态不会复活。
+可信角色使用的 boot_id、CapSpace ID必须来自已就绪CSPRNG，非零且不从PID/墙钟推导。当前G2在加载初始可信镜像、分配角色PID/CapSpace或准备grant之前检查原`util/random.rs`单一RNG的不可变种子来源；只有上游硬件接口取得完整seed才准入。未初始化、timestamp回退及尚无G2可信来源/新鲜度合同的device-tree seed均返回`EAGAIN`，不发布角色。普通诊断启动仍保留上游不安全回退，其UUID格式与非零值不代表认证级随机就绪；这项改动没有把一般Linux `getrandom`重做为完整的阻塞/重播种熵系统。x86实现在当前CPU/虚拟机提供者信任边界内使用OSTD的RDRAND路径；仅配置virtio-rng设备不证明该RNG已消费其熵。
+
+原生runner增加同一真实内核/未改原owner的`max,-rdrand`负向启动，必须记录实际回退、`entropy-not-ready`、raw exit 65且没有任何角色恢复执行；只有真实保留日志才能声称该场景已执行。确定性QEMU测试种子只用于synthetic profile；N0不支持带活动授权的快照恢复/克隆或宿主休眠恢复；在可信before-resume失效流程实现前，禁止将这些场景算作支持。仅重新生成随机数不能证明旧投递/撤销状态不会复活。
 
 租约与策略时限用内核初始时钟域（不随Linux time namespace偏移）的CLOCK_BOOTTIME等价单调时间，预算CPU用量由实际运行计数累计。墙上时钟用于日志与必要证书时间校验，不决定本地授权剩余时间。重启后旧lease/CapSpace无效；不能把过去boot的数值期限直接搬到新boot。缺可信墙钟时拒绝需要正确证书时间的连接，不关闭证书检查。
 

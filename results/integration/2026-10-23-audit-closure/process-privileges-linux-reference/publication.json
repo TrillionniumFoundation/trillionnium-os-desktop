@@ -1,0 +1,27 @@
+{
+  "schema": "trillionnium.source-bound-acceptance-publication.v1",
+  "raw_evidence_directory": "/data/asterinas-audit-build.8tdrjboi/proc-privileges-host-02",
+  "files": [
+    {
+      "raw": "reference.log",
+      "published": "reference.log.gz",
+      "raw_bytes": 708,
+      "raw_sha256": "70cea2af29aca87c54fe92fde1a2497cb3dd5bc45f7402de8e77dcb80b20f170",
+      "published_sha256": "b99fdade358d825f32f13d881206995b51a842119f8bbce6e6ade5de7cf77056",
+      "compressed": true
+    },
+    {
+      "raw": "result.json",
+      "published": "result.json",
+      "raw_bytes": 389,
+      "raw_sha256": "fec08b1d239cd0a621414de30b9106b07ceb9445938474d9a9553d444adc8266",
+      "published_sha256": "fec08b1d239cd0a621414de30b9106b07ceb9445938474d9a9553d444adc8266",
+      "compressed": false
+    }
+  ],
+  "selection": "Original text receipts, manifests and logs. ELF/initrd/targets remain in the recorded raw directory; retained receipts contain their actual hashes.",
+  "production_ready": false,
+  "g2_complete": false,
+  "passed": true,
+  "boundary": "Actual Linux reference12 cases plus setup/exec, initial NoNewPrivs must be zero. Controlled reference only, no native production qualification."
+}

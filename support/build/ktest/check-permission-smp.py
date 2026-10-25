@@ -28,6 +28,7 @@ PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
 FATAL = ("An uncaught panic occurred:", "Uncaught panic:", "unknown panic payload!",
          "Non-resettable panic!", "The panic handler panicked", "Panicked in `PanicGuard`")
 BOOTSTRAP = "PERMISSION_SMP_BOOTSTRAP scheduler=class runner_cpu=0 runner_thread=true"
+MINIMUM_COMPILED_CORE_TESTS = 380  # Retained complete N0 377 plus the three SMP cases.
 
 
 def require(condition, message):
@@ -103,10 +104,9 @@ def parse_serial(raw, control=None):
     require(failed == len(expected_failures) and passed == len(TESTS) - failed,
             "kernel counts differ from the three observed tests")
     declared = int(headers[0][1])
-    # Keep the original 238, five permission, twenty-one G1-c/G1-d, two
-    # ExFAT cases, three ext2 durability and five initial-readonly atime/sync
-    # cases. Three SMP tests are additional; filtering cannot shrink them.
-    require(declared >= 277 and passed + failed + filtered == declared,
+    # The profile adds three tests to the complete retained N0 core suite.
+    # Filtering these three races cannot justify a smaller compiled inventory.
+    require(declared >= MINIMUM_COMPILED_CORE_TESTS and passed + failed + filtered == declared,
             "compiled core test denominator was reduced or is inconsistent")
     require(status == ("FAILED" if expected_failures else "ok"), "kernel summary status differs")
     require(serial.count("[ktest runner] All crates tested.") == int(not expected_failures),
@@ -137,10 +137,15 @@ def check_guest(guest, control=None, kernel_path=None):
         require(len(positions) == 1 and positions[0] + 1 < len(requested),
                 "OSDK kernel input is missing or repeated: " + option)
         value = requested[positions[0] + 1]
-        expected_argv.extend((option, value))
         if option != "-append":
-            require(str(Path(value).resolve()) == artifacts[option]["path"],
+            # The recorder invokes the exact canonical artifact it hashes,
+            # while preserving OSDK's original (possibly symlinked) request.
+            # Require both provenance and the complete actual argv to agree;
+            # an unresolved invocation spelling is not accepted as equivalent.
+            value = str(Path(value).resolve())
+            require(value == artifacts[option]["path"],
                     "recorded kernel input path differs: " + option)
+        expected_argv.extend((option, value))
     expected_argv.extend(("-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", artifacts["-bios"]["path"],
                           "-m", "512M", "-smp", "2", "-nodefaults", "-no-user-config", "-no-reboot",
                           "-nographic", "-display", "none", "-monitor", "none", "-serial", "chardev:serial",

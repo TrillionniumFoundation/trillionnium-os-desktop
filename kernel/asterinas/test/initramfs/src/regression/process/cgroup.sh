@@ -195,16 +195,21 @@ verify "cpu.stat has burst_usec after enabling CPU sub-controller" \
     "grep '^burst_usec ' cpu.stat" \
     "burst_usec 0"
 
-log_step "2.2.1 Verify cpu.weight dummy read/write"
+log_step "2.2.1 Verify unsupported cpu.weight writes do not claim policy"
 verify "cpu.weight defaults to 100" \
     "cat cpu.weight" \
     "100"
-echo 250 > cpu.weight
-verify "cpu.weight accepts a valid weight" \
+verify "cpu.weight rejects a valid but unsupported policy" \
+    "echo 250 > cpu.weight 2>/dev/null || echo rejected" \
+    "rejected"
+verify "cpu.weight rejects an invalid value" \
+    "echo 0 > cpu.weight 2>/dev/null || echo rejected" \
+    "rejected"
+verify "cpu.weight remains at the neutral default after rejection" \
     "cat cpu.weight" \
-    "250"
+    "100"
 
-log_step "2.2.2 Verify cpu.max dummy read/write"
+log_step "2.2.2 Verify cpu.max configuration read/write"
 verify "cpu.max defaults to max with 100ms period" \
     "cat cpu.max" \
     "max 100000"
@@ -231,7 +236,9 @@ verify "cpu.max resets to default value" \
     "max 100000"
 
 log_step "2.2.3 Verify cpu controller settings reset after toggle"
-echo 250 > "$CGROUP_ROOT/$CGROUP_NAME/cpu.weight"
+verify "cpu.weight still refuses unsupported policy before controller toggle" \
+    "echo 250 > cpu.weight 2>/dev/null || echo rejected" \
+    "rejected"
 echo "50000 200000" > "$CGROUP_ROOT/$CGROUP_NAME/cpu.max"
 
 cd "$CGROUP_ROOT"

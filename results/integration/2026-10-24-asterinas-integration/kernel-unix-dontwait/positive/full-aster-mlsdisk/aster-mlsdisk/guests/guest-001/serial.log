@@ -1,0 +1,126 @@
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+Booting from ROM..DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 0, apic_id: 0, flags: 1 }
+INFO: Initializing frame metadata for physical memory 0..20000000
+INFO: Adding free frames to the allocator: 0..8000
+INFO: Adding free frames to the allocator: 9000..9f000
+INFO: Adding free frames to the allocator: 100000..8000000
+INFO: Adding free frames to the allocator: 8aa6000..1ffe0000
+INFO: Initializing the kernel page table
+INFO: Creating new I/O memory allocator builder, ranges: [
+    0x20000000..0x100000000,
+    0x100000000..0x10000000000000,
+]
+INFO: xAPIC found!
+DEBUG: Try to reserve security-sensitive MMIO range: 0xfee00000..0xfee01000 with cache policy: Uncacheable
+INFO: irq: Initializing PIC as disabled
+DEBUG: Try to reserve security-sensitive MMIO range: 0xfec00000..0xfec01000 with cache policy: Uncacheable
+INFO: irq: IOAPIC found at 0xfec00000, ID 0, version 32, interrupt base 0, interrupt count 23
+INFO: irq: IOAPIC override: ISA interrupt 0 for GSI 2
+INFO: irq: IOAPIC override: ISA interrupt 5 for GSI 5
+INFO: irq: IOAPIC override: ISA interrupt 9 for GSI 9
+INFO: irq: IOAPIC override: ISA interrupt 10 for GSI 10
+INFO: irq: IOAPIC override: ISA interrupt 11 for GSI 11
+INFO: xAPIC ID: 0, Version: 14, Max LVT: 5
+INFO: TSC frequency: 2388729600 Hz
+INFO: timer: Enable APIC periodic mode
+INFO: timer: APIC timer: first 0xa44, current 0x17d34c, init 0x3ce3
+WARN: IOMMU initialization error: NoIommu
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x20,
+    end: 0x21,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa1,
+    end: 0xa2,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x21,
+    end: 0x22,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa0,
+    end: 0xa1,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x40,
+    end: 0x41,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x41,
+    end: 0x42,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x42,
+    end: 0x43,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x43,
+    end: 0x44,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x3f8,
+    end: 0x400,
+}
+INFO: acpi: Collected information AcpiInfo { century_register: Some(50), boot_flags: Some(IaPcBootArchFlags(2)), reset_port_and_val: Some((3321, 15)), pci_ecam_region: Some(PciEcamRegion { base_address: 2952790016, bus_start: 0, bus_end: 255 }) }
+INFO: QEMU hypervisor detected, assuming that the isa-debug-exit device exists
+DEBUG: Try to acquire PIO range: 0xf4..0xf8
+
+[ktest runner] running 299 tests in 8 crates
+
+running 15 tests in crate "aster-mlsdisk"
+
+test aster_mlsdisk::layers::log::tx_log::entropy_tests::journal_entropy_failure_aborts_before_log_publication ... [32mok[39m
+test aster_mlsdisk::os::entropy_test::entropy_cut_is_task_scoped_and_restored_on_drop ... [32mok[39m
+test aster_mlsdisk::os::entropy_test::entropy_fill_reports_partial_failure_and_exact_word_count ... [32mok[39m
+test aster_mlsdisk::test::write_sync_read ...INFO: mlsdisk: Created successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 0, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {}, persistent_bucket_table: {}, raw_log_store: RawLogStore { persistent_log_table: {}, next_free_log_id: 0, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 3, bitmap_next_free: 0 } }, root_key: AeadKey([134, 72, 159, 91, 175, 109, 190, 120, 209, 92, 19, 146, 247, 110, 101, 56]) } } }
+DEBUG: mlsdisk: Sync completed. MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 128, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([254, 93, 232, 19, 97, 179, 211, 38, 50, 114, 52, 231, 46, 37, 7, 204]), root_mht: RootMhtMeta { pos: 2, mac: AeadMac([106, 177, 217, 156, 10, 209, 141, 104, 31, 6, 17, 247, 64, 55, 163, 88]), iv: AeadIv([41, 114, 57, 79, 139, 192, 114, 76, 190, 103, 4, 5]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([20, 235, 134, 245, 155, 79, 51, 227, 113, 237, 152, 53, 153, 170, 120, 205]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([20, 2, 85, 52, 254, 40, 192, 78, 15, 1, 79, 144, 202, 95, 151, 151]), iv: AeadIv([243, 213, 215, 154, 163, 248, 16, 3, 54, 132, 52, 101]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 3 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([134, 72, 159, 91, 175, 109, 190, 120, 209, 92, 19, 146, 247, 110, 101, 56]) } } }
+ [32mok[39m
+test aster_mlsdisk::test::mlsdisk_sync_returns_device_flush_error ...INFO: mlsdisk: Created successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 0, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {}, persistent_bucket_table: {}, raw_log_store: RawLogStore { persistent_log_table: {}, next_free_log_id: 0, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 3, bitmap_next_free: 0 } }, root_key: AeadKey([222, 215, 54, 143, 159, 245, 43, 250, 79, 24, 59, 68, 95, 162, 8, 61]) } } }
+ERROR: block: failed to do Flush on the device with error status: IoError
+ [32mok[39m
+test aster_mlsdisk::test::mlsdisk_flush_bio_completes_with_io_error ...INFO: mlsdisk: Created successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 0, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {}, persistent_bucket_table: {}, raw_log_store: RawLogStore { persistent_log_table: {}, next_free_log_id: 0, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 3, bitmap_next_free: 0 } }, root_key: AeadKey([66, 202, 72, 15, 96, 22, 25, 40, 206, 171, 125, 94, 154, 148, 130, 151]) } } }
+ERROR: block: failed to do Flush on the device with error status: IoError
+ [32mok[39m
+test aster_mlsdisk::test::delayed_bio_completes_after_original_task_parks ...INFO: mlsdisk: Created successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 0, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {}, persistent_bucket_table: {}, raw_log_store: RawLogStore { persistent_log_table: {}, next_free_log_id: 0, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 3, bitmap_next_free: 0 } }, root_key: AeadKey([77, 248, 101, 160, 200, 31, 16, 215, 156, 66, 127, 104, 218, 103, 25, 139]) } } }
+DEBUG: mlsdisk: Sync completed. MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 1, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([131, 84, 250, 165, 36, 182, 213, 118, 217, 182, 9, 193, 193, 88, 172, 244]), root_mht: RootMhtMeta { pos: 1, mac: AeadMac([116, 182, 41, 37, 205, 47, 212, 211, 152, 130, 121, 193, 37, 251, 199, 90]), iv: AeadIv([162, 74, 206, 140, 52, 170, 144, 70, 69, 202, 249, 10]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([9, 134, 115, 139, 142, 184, 13, 42, 0, 215, 8, 21, 195, 236, 252, 161]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([247, 235, 65, 213, 240, 133, 200, 58, 6, 14, 109, 165, 54, 199, 87, 129]), iv: AeadIv([77, 82, 145, 209, 74, 27, 52, 252, 115, 177, 143, 173]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 2 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([77, 248, 101, 160, 200, 31, 16, 215, 156, 66, 127, 104, 218, 103, 25, 139]) } } }
+ERROR: block: failed to do Flush on the device with error status: IoError
+DEBUG: mlsdisk: Sync completed. MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 1, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([131, 84, 250, 165, 36, 182, 213, 118, 217, 182, 9, 193, 193, 88, 172, 244]), root_mht: RootMhtMeta { pos: 5, mac: AeadMac([165, 184, 68, 14, 181, 124, 122, 170, 92, 60, 76, 43, 26, 239, 244, 44]), iv: AeadIv([142, 116, 225, 156, 65, 212, 51, 129, 5, 117, 71, 201]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([9, 134, 115, 139, 142, 184, 13, 42, 0, 215, 8, 21, 195, 236, 252, 161]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([247, 235, 65, 213, 240, 133, 200, 58, 6, 14, 109, 165, 54, 199, 87, 129]), iv: AeadIv([77, 82, 145, 209, 74, 27, 52, 252, 115, 177, 143, 173]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 6 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([77, 248, 101, 160, 200, 31, 16, 215, 156, 66, 127, 104, 218, 103, 25, 139]) } } }
+DEBUG: mlsdisk: Recovery completed: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 1, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([131, 84, 250, 165, 36, 182, 213, 118, 217, 182, 9, 193, 193, 88, 172, 244]), root_mht: RootMhtMeta { pos: 5, mac: AeadMac([165, 184, 68, 14, 181, 124, 122, 170, 92, 60, 76, 43, 26, 239, 244, 44]), iv: AeadIv([142, 116, 225, 156, 65, 212, 51, 129, 5, 117, 71, 201]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([9, 134, 115, 139, 142, 184, 13, 42, 0, 215, 8, 21, 195, 236, 252, 161]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([247, 235, 65, 213, 240, 133, 200, 58, 6, 14, 109, 165, 54, 199, 87, 129]), iv: AeadIv([77, 82, 145, 209, 74, 27, 52, 252, 115, 177, 143, 173]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 6 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([77, 248, 101, 160, 200, 31, 16, 215, 156, 66, 127, 104, 218, 103, 25, 139]) } }
+INFO: mlsdisk: Opened successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 1, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([131, 84, 250, 165, 36, 182, 213, 118, 217, 182, 9, 193, 193, 88, 172, 244]), root_mht: RootMhtMeta { pos: 5, mac: AeadMac([165, 184, 68, 14, 181, 124, 122, 170, 92, 60, 76, 43, 26, 239, 244, 44]), iv: AeadIv([142, 116, 225, 156, 65, 212, 51, 129, 5, 117, 71, 201]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([9, 134, 115, 139, 142, 184, 13, 42, 0, 215, 8, 21, 195, 236, 252, 161]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([247, 235, 65, 213, 240, 133, 200, 58, 6, 14, 109, 165, 54, 199, 87, 129]), iv: AeadIv([77, 82, 145, 209, 74, 27, 52, 252, 115, 177, 143, 173]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 6 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([77, 248, 101, 160, 200, 31, 16, 215, 156, 66, 127, 104, 218, 103, 25, 139]) } } }
+DEBUG: mlsdisk: Sync completed. MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 1, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([131, 84, 250, 165, 36, 182, 213, 118, 217, 182, 9, 193, 193, 88, 172, 244]), root_mht: RootMhtMeta { pos: 5, mac: AeadMac([165, 184, 68, 14, 181, 124, 122, 170, 92, 60, 76, 43, 26, 239, 244, 44]), iv: AeadIv([142, 116, 225, 156, 65, 212, 51, 129, 5, 117, 71, 201]) } }, 2: TxLogEntry { bucket: "WAL", key: AeadKey([188, 177, 183, 224, 157, 2, 143, 135, 49, 142, 60, 247, 208, 213, 67, 249]), root_mht: RootMhtMeta { pos: 1, mac: AeadMac([95, 158, 210, 2, 89, 240, 151, 63, 252, 130, 29, 37, 173, 138, 157, 167]), iv: AeadIv([43, 91, 13, 159, 92, 80, 61, 87, 200, 123, 12, 14]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([9, 134, 115, 139, 142, 184, 13, 42, 0, 215, 8, 21, 195, 236, 252, 161]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([247, 235, 65, 213, 240, 133, 200, 58, 6, 14, 109, 165, 54, 199, 87, 129]), iv: AeadIv([77, 82, 145, 209, 74, 27, 52, 252, 115, 177, 143, 173]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0, 2} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 6 } }, 2: RawLogEntry { head: RawLogHead { chunks: [2], num_blocks: 2 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 3, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 0, bitmap_next_free: 3 } }, root_key: AeadKey([77, 248, 101, 160, 200, 31, 16, 215, 156, 66, 127, 104, 218, 103, 25, 139]) } } }
+ [32mok[39m
+test aster_mlsdisk::test::entropy_failure_aborts_original_log_transaction ... [32mok[39m
+test aster_mlsdisk::test::entropy_failure_keeps_buffered_disk_data_for_retry ...INFO: mlsdisk: Created successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 0, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {}, persistent_bucket_table: {}, raw_log_store: RawLogStore { persistent_log_table: {}, next_free_log_id: 0, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 3, bitmap_next_free: 0 } }, root_key: AeadKey([211, 79, 226, 206, 82, 81, 110, 42, 57, 82, 241, 24, 254, 197, 175, 39]) } } }
+DEBUG: mlsdisk: Sync completed. MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 2, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([93, 129, 117, 189, 148, 91, 200, 48, 64, 116, 211, 33, 179, 38, 96, 109]), root_mht: RootMhtMeta { pos: 1, mac: AeadMac([236, 250, 56, 31, 19, 233, 112, 241, 216, 75, 140, 137, 145, 153, 58, 156]), iv: AeadIv([185, 201, 223, 110, 162, 27, 243, 32, 113, 147, 117, 133]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([173, 136, 192, 226, 100, 193, 187, 6, 186, 15, 108, 88, 154, 27, 185, 254]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([190, 26, 1, 59, 246, 111, 43, 240, 185, 246, 237, 17, 178, 171, 236, 173]), iv: AeadIv([55, 22, 217, 145, 6, 218, 166, 179, 34, 94, 5, 135]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 2 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([211, 79, 226, 206, 82, 81, 110, 42, 57, 82, 241, 24, 254, 197, 175, 39]) } } }
+ [32mok[39m
+test aster_mlsdisk::test::entropy_failure_does_not_apply_current_journal_edit ... [32mok[39m
+test aster_mlsdisk::test::entropy_failure_prevents_blob_and_chain_publication ... [32mok[39m
+test aster_mlsdisk::test::raw_disk_flush_submits_and_reports_terminal_failure ...ERROR: block: failed to do Flush on the device with error status: NotSupported
+ERROR: block: failed to do Flush on the device with error status: NoSpace
+ERROR: block: failed to do Flush on the device with error status: IoError
+ [32mok[39m
+test aster_mlsdisk::test::final_store_owner_releases_real_disk_between_full_runs ...INFO: mlsdisk: Created successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 0, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {}, persistent_bucket_table: {}, raw_log_store: RawLogStore { persistent_log_table: {}, next_free_log_id: 0, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 3, bitmap_next_free: 0 } }, root_key: AeadKey([222, 62, 230, 105, 167, 67, 205, 28, 191, 101, 122, 173, 236, 54, 70, 95]) } } }
+DEBUG: mlsdisk: Sync completed. MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 1, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([232, 71, 146, 103, 249, 221, 198, 159, 108, 127, 107, 235, 250, 178, 89, 220]), root_mht: RootMhtMeta { pos: 1, mac: AeadMac([159, 54, 26, 215, 214, 171, 34, 233, 155, 136, 72, 200, 216, 180, 63, 166]), iv: AeadIv([231, 192, 93, 109, 199, 102, 126, 42, 43, 195, 27, 79]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([214, 217, 111, 175, 144, 173, 184, 46, 238, 192, 254, 134, 44, 95, 31, 112]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([112, 3, 3, 91, 63, 132, 74, 156, 170, 241, 37, 28, 114, 79, 243, 134]), iv: AeadIv([88, 102, 52, 60, 19, 165, 187, 65, 227, 85, 21, 3]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 2 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([222, 62, 230, 105, 167, 67, 205, 28, 191, 101, 122, 173, 236, 54, 70, 95]) } } }
+INFO: mlsdisk: Created successfully! MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 0, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {}, persistent_bucket_table: {}, raw_log_store: RawLogStore { persistent_log_table: {}, next_free_log_id: 0, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 3, bitmap_next_free: 0 } }, root_key: AeadKey([114, 62, 118, 88, 217, 195, 235, 112, 16, 117, 62, 189, 220, 130, 164, 160]) } } }
+DEBUG: mlsdisk: Sync completed. MlsDisk { user_data_nblocks: 61440, logical_block_table: TxLsmTree { memtable_manager: MemTableManager { mutable_memtable_size: 1, immutable_memtable_size: 0 }, sst_manager: SstManager { level_ssts: [{}, {}, {}, {}, {}, {}] }, tx_log_store: TxLogStore { persistent_log_table: {0: TxLogEntry { bucket: "WAL", key: AeadKey([37, 190, 210, 83, 143, 147, 42, 250, 167, 42, 251, 135, 208, 211, 101, 61]), root_mht: RootMhtMeta { pos: 1, mac: AeadMac([35, 2, 187, 179, 232, 193, 181, 33, 96, 30, 102, 28, 82, 108, 185, 152]), iv: AeadIv([6, 205, 103, 36, 255, 241, 83, 98, 207, 38, 137, 136]) } }, 1: TxLogEntry { bucket: "BVT", key: AeadKey([104, 72, 14, 216, 60, 131, 33, 35, 233, 135, 241, 172, 147, 33, 156, 120]), root_mht: RootMhtMeta { pos: 3, mac: AeadMac([207, 51, 86, 17, 200, 21, 101, 58, 68, 131, 219, 89, 234, 240, 132, 24]), iv: AeadIv([156, 204, 159, 174, 59, 177, 11, 140, 252, 28, 83, 252]) } }}, persistent_bucket_table: {"WAL": Bucket { log_ids: {0} }, "BVT": Bucket { log_ids: {1} }}, raw_log_store: RawLogStore { persistent_log_table: {0: RawLogEntry { head: RawLogHead { chunks: [0], num_blocks: 2 } }, 1: RawLogEntry { head: RawLogHead { chunks: [1], num_blocks: 4 } }}, next_free_log_id: 2, write_set: {}, chunk_alloc: ChunkAlloc { bitmap_free_count: 1, bitmap_next_free: 2 } }, root_key: AeadKey([114, 62, 118, 88, 217, 195, 235, 112, 16, 117, 62, 189, 220, 130, 164, 160]) } } }
+ [32mok[39m
+test aster_mlsdisk::test::frame_backed_disk_handles_noncontiguous_cross_page_bios ... [32mok[39m
+test aster_mlsdisk::test::transaction_callbacks_sleep_and_defer_reentrant_registration ... [32mok[39m
+
+test result: [32mok[39m. 15 passed; 0 failed; 0 filtered out.
+
+[ktest runner] skipping crate "aster-softirq".
+
+[ktest runner] skipping crate "aster-util".
+
+[ktest runner] skipping crate "dma-pool".
+
+[ktest runner] skipping crate "osdk-frame-allocator".
+
+[ktest runner] skipping crate "osdk-heap-allocator".
+
+[ktest runner] skipping crate "osdk-test-kernel".
+
+[ktest runner] skipping crate "ostd".
+
+[ktest runner] All crates tested.

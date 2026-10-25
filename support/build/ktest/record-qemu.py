@@ -18,8 +18,14 @@ def digest(path):
 def main():
     requested = sys.argv[1:]
     profile = os.environ.get("A01_KTEST_PROFILE", "default")
+    crate = os.environ["A01_KTEST_CRATE"]
+    test_name = os.environ.get("A01_KTEST_TEST_NAME") or None
+    if crate not in ("ostd", "aster-core", "osdk-frame-allocator", "aster-mlsdisk"):
+        raise SystemExit("unknown kernel-test crate")
     if profile not in ("default", "permission-attr-smp"):
         raise SystemExit("unknown fixed kernel-test profile")
+    if crate in ("osdk-frame-allocator", "aster-mlsdisk") and (profile != "default" or test_name is not None):
+        raise SystemExit(f"{crate} requires its complete unfiltered default N0 suite")
     vcpus = 2 if profile == "permission-attr-smp" else 1
     if profile == "permission-attr-smp" and os.environ["A01_KTEST_CRATE"] != "aster-core":
         raise SystemExit("the permission SMP profile is restricted to aster-core")
@@ -45,11 +51,15 @@ def main():
         if not positions:
             continue
         value = requested[positions[0] + 1]
-        command.extend((option, value))
         if option != "-append":
             path = Path(value).resolve()
+            # Invoke the exact path whose bytes are recorded. OSDK's target may
+            # be a symlink to an isolated build cache; retain its requested
+            # spelling separately, without making the actual receipt ambiguous.
+            value = str(path)
             artifacts[option] = {"path": str(path), "size": path.stat().st_size,
                                  "sha256": digest(path)}
+        command.extend((option, value))
     firmware = Path("/usr/share/seabios/bios-256k.bin")
     artifacts["-bios"] = {"path": str(firmware), "size": firmware.stat().st_size,
                            "sha256": digest(firmware)}
@@ -58,7 +68,7 @@ def main():
                     "-nographic", "-display", "none", "-monitor", "none", "-serial", "chardev:serial",
                     "-chardev", f"stdio,id=serial,signal=off,logfile={guest / 'serial.log'}",
                     "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"))
-    record = {"schema": 1, "crate": os.environ["A01_KTEST_CRATE"], "cwd": os.getcwd(),
+    record = {"schema": 1, "crate": crate, "cwd": os.getcwd(), "test_name": test_name,
               "ktest_profile": profile,
               "requested_osdk_args": requested, "argv": command, "shell_command": shlex.join(command),
               "profile": {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",

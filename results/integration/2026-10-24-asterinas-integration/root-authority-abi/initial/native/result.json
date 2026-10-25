@@ -1,0 +1,117 @@
+{
+  "schema": "trillionnium.root-authority-abi-native.v1",
+  "passed": true,
+  "oracle": {
+    "passed": true,
+    "checks": 27,
+    "errors": [],
+    "runtime_scope": "native_abi",
+    "original_writer_executed": false,
+    "persistent_cpu_qualified": false,
+    "recovery_qualified": false,
+    "g2_complete": false
+  },
+  "inputs_unchanged": true,
+  "input_before": {
+    "kernel": "e995bab6f5d7084bf0a92bb814baa181ef6e01501ca7353eca66100b3097eacd",
+    "probe": "7ec2d717e604882e9454eadd55f03ada4fb2da8b0e52edd0230951825d2131fc",
+    "reference": "0646a0dd8322a9680fcf714b08b96779e3284b87db63929c187961e0cd62c5fd",
+    "initramfs": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "source": "cdaa1ddc6a20d157b524926d645212f642d306c4dc577ee58b866e8708ff8025",
+    "checker": "6aace1a5a9c277477f47de7ae22a6d4d1e4416fbcf0bb0f8ca66cc121dc6cdb2",
+    "runner": "be6a9fe78e953663229aa68888845c87001df77676ca1f1ebd337fa910bcfa48"
+  },
+  "input_after": {
+    "kernel": "e995bab6f5d7084bf0a92bb814baa181ef6e01501ca7353eca66100b3097eacd",
+    "probe": "7ec2d717e604882e9454eadd55f03ada4fb2da8b0e52edd0230951825d2131fc",
+    "reference": "0646a0dd8322a9680fcf714b08b96779e3284b87db63929c187961e0cd62c5fd",
+    "initramfs": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "source": "cdaa1ddc6a20d157b524926d645212f642d306c4dc577ee58b866e8708ff8025",
+    "checker": "6aace1a5a9c277477f47de7ae22a6d4d1e4416fbcf0bb0f8ca66cc121dc6cdb2",
+    "runner": "be6a9fe78e953663229aa68888845c87001df77676ca1f1ebd337fa910bcfa48"
+  },
+  "qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 1.2317265899619088,
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi/native/kernel.elf",
+    "-initrd",
+    "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi/native/initramfs.cpio.gz",
+    "-bios",
+    "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi/native/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "elf_shape": {
+    "entry": 4207744,
+    "bytes": 949552,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1296,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4857856,
+        "file_end": 663309,
+        "entry_inside": true
+      },
+      {
+        "start": 4857856,
+        "end": 5025792,
+        "file_end": 828272,
+        "entry_inside": false
+      },
+      {
+        "start": 5025792,
+        "end": 5079040,
+        "file_end": 854720,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "7ec2d717e604882e9454eadd55f03ada4fb2da8b0e52edd0230951825d2131fc"
+  },
+  "kernel_sha256": "e995bab6f5d7084bf0a92bb814baa181ef6e01501ca7353eca66100b3097eacd",
+  "probe_sha256": "7ec2d717e604882e9454eadd55f03ada4fb2da8b0e52edd0230951825d2131fc",
+  "probe_source_sha256": "cdaa1ddc6a20d157b524926d645212f642d306c4dc577ee58b866e8708ff8025",
+  "linux_reference_receipt_sha256": "0646a0dd8322a9680fcf714b08b96779e3284b87db63929c187961e0cd62c5fd",
+  "runner_source_sha256": "be6a9fe78e953663229aa68888845c87001df77676ca1f1ebd337fa910bcfa48",
+  "checker_source_sha256": "6aace1a5a9c277477f47de7ae22a6d4d1e4416fbcf0bb0f8ca66cc121dc6cdb2",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "initramfs_sha256": "dd8f1bd3f3b2bf956fdb13517ff38fa332aeab8bdc2bd173f1019f69407424d9",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "serial_sha256": "094864a4503b2fca24b97ab81c950eac44ceef43895204fd8ab3a38a9c20c17d",
+  "production_qualification": false,
+  "original_writer_executed": false,
+  "persistent_cpu_qualified": false,
+  "recovery_qualified": false,
+  "g2_complete": false
+}

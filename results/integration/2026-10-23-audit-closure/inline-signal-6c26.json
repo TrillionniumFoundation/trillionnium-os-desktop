@@ -1,0 +1,695 @@
+{
+  "schema": "trillionnium.inline-signal-qualified-source.v1",
+  "source_head": "6c26e3aeefde05c120944e278299b4925612f3c8",
+  "source_tree": "6c84a0663441dcbf9629fc2da8f857265baa5fe1",
+  "source_unchanged": true,
+  "evidence_root": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01",
+  "elapsed_seconds": 545.818,
+  "full_suites": [
+    {
+      "crate": "ostd",
+      "declared": 230,
+      "passed": 230,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 8,
+      "kernel_sha256": "a9ec38dad0a62d39566ab91e22e5dedca7d6024f3403a9f86387b1954ab2ac6e",
+      "serial_sha256": "af0dd9f497692eed558f2d33fb12150152425fb0844bde3e278f116b9063475d"
+    },
+    {
+      "crate": "osdk-frame-allocator",
+      "declared": 20,
+      "passed": 20,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "5cc42304edcaf32f1c543ec3986aa65c1ca319bbede4d7365d21a755a953e6ca",
+      "serial_sha256": "d63b33e1d30ad34c9300c3e56d18d213ac3c29a40fe992477f6977ee9c490ab3"
+    },
+    {
+      "crate": "aster-core",
+      "declared": 353,
+      "passed": 353,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 114,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "13b647fc099e4870fe4274bcb83a4f41559a06591ba7de2a4626cf0c6e0e6216",
+      "serial_sha256": "88f7cd0580e2e79aab7701520b5ef47b6ab51734b58f54fb21f2674986fb2c55"
+    },
+    {
+      "crate": "aster-mlsdisk",
+      "declared": 15,
+      "passed": 15,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "a203f7cd41377414bf704545972c2d3cad96453ee44a819c82b8d5259a07b83e",
+      "serial_sha256": "409f7140075cc769800298e48e2415505a2c3f24ce200f313bd4c34d5ea9d9bd"
+    }
+  ],
+  "ordinary": {
+    "passed": true,
+    "source_head": "6c26e3aeefde05c120944e278299b4925612f3c8",
+    "source_tree": "6c84a0663441dcbf9629fc2da8f857265baa5fe1",
+    "kernel_elf_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+    "marker_counts": {
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_EXEC_EFAULT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_ENOENT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "HEPTA_THREAD_SESSION_SHARED": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "qemu_exit": 33,
+    "source_inputs_unchanged": true,
+    "source_file_count": 9547
+  },
+  "sgid30": {
+    "passed": true,
+    "cases": [
+      {
+        "fs": "ramfs",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      }
+    ],
+    "timed_out": false,
+    "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+    "probe_sha256": "396abd5506de19a410c2391333d1413370f14c59c0e92a9c083a0eb3d5f87f36",
+    "probe_source_sha256": "00d2eb17d2fe3ab32454a3f446b099b227b33e4df9733e86e9be6490576ae7dd",
+    "raw_qemu_exit": 33
+  },
+  "ownership12": {
+    "passed": true,
+    "cases": [
+      "notes_stream",
+      "notes_seqpacket",
+      "listener_pending_stream",
+      "listener_pending_seqpacket",
+      "datagram_future_connect",
+      "self_stream",
+      "self_seqpacket",
+      "self_datagram",
+      "seqpacket_empty_slots",
+      "concurrent_cross_edges",
+      "ancillary_multisegment_253",
+      "ancillary_rejected_inputs_publish_nothing"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+    "probe_sha256": "7f357e210c27cd2f35b50a022ee05763b7e396d883bcaea1d9985e372799409f",
+    "probe_source_sha256": "62672e40c7c5c7f83f594ec734aed6e0cb4029d73b55742a9b67c85006115e21",
+    "raw_qemu_exit": 33
+  },
+  "proc-privileges12": {
+    "passed": true,
+    "cases": [
+      [
+        "initial_nnp_agrees",
+        "1"
+      ],
+      [
+        "per_thread_nnp",
+        "1"
+      ],
+      [
+        "main_thread_nnp_unchanged",
+        "1"
+      ],
+      [
+        "child_sets_and_cannot_clear_nnp",
+        "1"
+      ],
+      [
+        "parent_attests_child_nnp",
+        "1"
+      ],
+      [
+        "four_child_uids",
+        "1"
+      ],
+      [
+        "four_child_gids",
+        "1"
+      ],
+      [
+        "child_groups_empty",
+        "1"
+      ],
+      [
+        "five_child_capsets_zero",
+        "1"
+      ],
+      [
+        "parent_uid_unchanged",
+        "1"
+      ],
+      [
+        "parent_nnp_unchanged",
+        "1"
+      ],
+      [
+        "exec_preserves_identity",
+        "1"
+      ]
+    ],
+    "timed_out": false,
+    "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+    "probe_sha256": "923063b008790be29b0a266bbbd8f274583effbec02c4feb513baa1652ccf8fd",
+    "probe_source_sha256": "7e711cefe6cc212beb2b0590dd54507b8b954ce75bb38a6c9a2bf98b133b2236",
+    "raw_qemu_exit": 33
+  },
+  "memfd4": {
+    "passed": true,
+    "cases": [
+      "detached_metadata",
+      "readonly_four_seals",
+      "duplicate_lifetime",
+      "sealed_mutations_rejected"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+    "probe_sha256": "b9e744717cb0ebe69c44bf61350d844aad50c4221d0724e627705dbc32f3c873",
+    "probe_source_sha256": "8a69021270396bf2af25abcd616f4a3c047b6d85ffda99e242ab705c17adfd0e",
+    "raw_qemu_exit": 33
+  },
+  "signal14": {
+    "passed": true,
+    "cases": [
+      "fault_siginfo",
+      "unmapped_fault_siginfo",
+      "kill_reap",
+      "tgkill_reap",
+      "group_kill_reap",
+      "pidfd_dynamic_reap",
+      "original_permissions",
+      "dynamic_realtime_fifo",
+      "dynamic_signalfd",
+      "ptrace_fault_owner",
+      "rt_queue_argument_contract",
+      "rt_queue_payload_and_zero",
+      "rt_queue_actual_credentials",
+      "rt_queue_nonleader_shared_pending"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+    "probe_sha256": "874420b294ec4fb11f1d173fe03331aabd7f1d8b223f49521fb311e95090d981",
+    "probe_source_sha256": "2635fed8d7d78b498d063a9b3e53ff680fe19f3673d7c23396940a68d1ff320d",
+    "raw_qemu_exit": 33
+  },
+  "retained_receipts": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/pipeline.json",
+      "sha256": "be892dd3b582e6a68c8a9f16e239d465efc613bf028715eec3c021ca05ca993c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/full/outer-result.json",
+      "sha256": "a22481fbd3601a999feea94782499f636a6b0ef67deb37a609493ea918bef4bf"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/full/osdk-retention.json",
+      "sha256": "2a26b681080fb00f2670b04810571ec6308c9f7d28805d999da2a3954a2e8cb5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/full/retention.json",
+      "sha256": "56927ae3475c4971ebb22fb31b9951d8f975bde365a69c55dbbb0857044bed75"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/full/source-before.json",
+      "sha256": "bdf9af9ddf782e415db35665645815b26f827ca37e19aba143e8138f2383ac6c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/full/source-after.json",
+      "sha256": "bdf9af9ddf782e415db35665645815b26f827ca37e19aba143e8138f2383ac6c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary/result.json",
+      "sha256": "dddd4cb58a7d64517d4f95c3b119812ea88b5f73d95345b9fce6e2d7db23b93f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/sgid30/result.json",
+      "sha256": "6835a991411462a0dbc4473420b62a9c0bc80c49766128209dc8637defb506e2"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/sgid30/serial.log",
+      "sha256": "26d9b2258f49c0f777ef29464e9281ea35cbcff95fcfd037b70cf5815cb717fc"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ownership12-source-bound.json",
+      "sha256": "ccc17028007681d3f295780cb328e0c995f4186d31d8fd1a3275b2fae4261c32"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ownership12-source-after.json",
+      "sha256": "bdf9af9ddf782e415db35665645815b26f827ca37e19aba143e8138f2383ac6c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ownership12/result.json",
+      "sha256": "6ffb8f33c6962238647df602c436244696ec4031d4b586e8de577ea06232d3d4"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ownership12/serial.log",
+      "sha256": "7449b3d1b968db304fb560cba0fdad25cd99056c54adbbd9ebacc6fd415d749c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/proc-privileges12/result.json",
+      "sha256": "ebe5b18fd5bd6eb3dbff1aae6a1fab70cba4d8392c5f70bec1536a60e1b767ff"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/proc-privileges12/serial.log",
+      "sha256": "4a08b9d8abf120228e8920762d99bdfbc3e52e369bd72fe08a573e681991b93b"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/signal14-source-bound.json",
+      "sha256": "c22c0759c2e4d9957970c6fc416e461773a2ce5ad7deb7d1895b901e5fe4df4d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/signal14-source-after.json",
+      "sha256": "bdf9af9ddf782e415db35665645815b26f827ca37e19aba143e8138f2383ac6c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/signal14/result.json",
+      "sha256": "d91e28fc9fbc177e646ab9eaf6f8e1811a60799b1ecfaedb1f0e4ee97dc83af0"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/signal14/serial.log",
+      "sha256": "b304580ffd66382922dd97e48122625f64abf6fd363e5715a69858426bd0c956"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/memfd4-source-bound.json",
+      "sha256": "0537d7f03c3fabfc13dd4ee4b286897ee2fe4938b81a6fc2fca3ecf7cccdb674"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/memfd4-source-after.json",
+      "sha256": "bdf9af9ddf782e415db35665645815b26f827ca37e19aba143e8138f2383ac6c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/memfd4/result.json",
+      "sha256": "589c8ab405437418af6cd264ee1d7e1b3fcd43050ebb86843c3701ca906d0d6c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/memfd4/serial.log",
+      "sha256": "253027792d7e6610e8417ef64106f1a58f39f3c7dc527047239bd8eedd3bde17"
+    }
+  ],
+  "original_kernel_baseline_failures": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-baseline-d5a2-01",
+      "source_head": "d5a21bb7e70a22cd022f4275ba2d22a6b726d233",
+      "kernel_sha256": "f22e596de885a901cda99d5115edd915a12b017f31c383327ea5179c6f6d8c8d",
+      "receipt_sha256": "d8ad2e8850165e03c0a5980fd98f5edd04026b0f93c04af279d0ab01107f2344",
+      "serial_sha256": "1b8d03a9c7edc7a43bce33f4e7e8de4aa98e1f81311eb27c174009bc9735a8dd",
+      "probe_exit": 1,
+      "raw_qemu_exit": 33,
+      "passed": false,
+      "cause": "Existing PROT_NONE VMA returned EACCES but hardware-absent PTE selected SIGSEGV/MAPERR code 1; strict Linux ACCERR code 2 assertion rejected it."
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-baseline-d5a2-02",
+      "source_head": "d5a21bb7e70a22cd022f4275ba2d22a6b726d233",
+      "kernel_sha256": "f22e596de885a901cda99d5115edd915a12b017f31c383327ea5179c6f6d8c8d",
+      "receipt_sha256": "fba8ad32cf054fc11af7a568d06d4844ea4027d22fb48f20fca2e0c4bb1748d2",
+      "serial_sha256": "e9d1faa42eecfc83a94f2657bfaf7fa3e43ae5693d5c1efb1f3fe91caffdfe9e",
+      "probe_exit": 1,
+      "raw_qemu_exit": 33,
+      "passed": false,
+      "cause": "Existing PROT_NONE VMA returned EACCES but hardware-absent PTE selected SIGSEGV/MAPERR code 1; strict Linux ACCERR code 2 assertion rejected it."
+    }
+  ],
+  "first_correction_failure": {
+    "source_head": "bdda4873641e93f3ece7028bca41505d0e630524",
+    "source_tree": "12719bf00690ff216f9cf663d1c0163e6f1d69c9",
+    "passed": false,
+    "core_passed": 352,
+    "core_declared": 353,
+    "core_failed": 1,
+    "raw_qemu_exit": 65,
+    "kernel_sha256": "f3c37849e4341ec4d865278b90861cd8d2f65b36bcfa483bdacc87e75cdc3da2",
+    "serial_sha256": "d54dd676b3302c89fc4bf3a754179b0693f80084be98b4f69e4b21a3235e1fa6",
+    "cause": "Original unmapped VMAR and denied mapping both return EACCES; errno-only inference failed the preserved absent-map negative. Typed classification now originates under the original VMAR read guard.",
+    "receipts": [
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-bdda-01/pipeline.json",
+        "sha256": "bb47eab25cd3d4569ac6bc2dc05811973a0534dd693bc01206859b1425a8bb5a"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-bdda-01/full/retention.json",
+        "sha256": "270630b46e4dc9013d8e02ad85518ca3c7b3c2af5abd638bd166c2daccc49779"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-bdda-01/full/source-before.json",
+        "sha256": "5cc2885d3279592f95a7ec7fb0d28809d15d6f5ca48ea5735aa71c7a1ee65c3a"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-bdda-01/full/source-after.json",
+        "sha256": "5cc2885d3279592f95a7ec7fb0d28809d15d6f5ca48ea5735aa71c7a1ee65c3a"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-bdda-01/full/ktest/aster-core/guests/guest-001/qemu.json",
+        "sha256": "2530b95ce34847688d9b8a25a6a9a813eda67ce64a216130e3af0c841bf56829"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-bdda-01/full/ktest/aster-core/guests/guest-001/serial.log",
+        "sha256": "d54dd676b3302c89fc4bf3a754179b0693f80084be98b4f69e4b21a3235e1fa6"
+      }
+    ]
+  },
+  "fixture_initialization_failure": {
+    "source_head": "ce94ea4892a3505dd4a633aea05c5058d8238c8e",
+    "source_tree": "2c4bf9971d778926a91310df04b5f529ba2b85e8",
+    "passed": false,
+    "core_passed": 352,
+    "core_declared": 353,
+    "core_failed": 1,
+    "raw_qemu_exit": 65,
+    "kernel_sha256": "47474697b6d82703fa734835fd0fc916fafa2b21e2dc5cfb0629fb1081ccef18",
+    "serial_sha256": "0225e6d7278b00323e29bee9b27c8d0570e1a8d64b3466366909bf2e008dbd2d",
+    "cause": "Genuine quota-denial diagnostic reached the original console component without standalone aster-core bootstrap. A cfg(ktest)-only helper now invokes the original component_init/Once; production diagnostics and assertions are unchanged.",
+    "receipts": [
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-ce94-01/pipeline.json",
+        "sha256": "acf7f1ba6443fb16925d614d93c24f1c848588097c487bc4421f06fad114589e"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-ce94-01/full/retention.json",
+        "sha256": "dab2899239bb0f2544218643c5db7e06e65b966e8235de18f8bea05b48a3a0c1"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-ce94-01/full/source-before.json",
+        "sha256": "694d97a2c568364caba031aed04e2e51054bd7a26b7babdb546d03a951f42b68"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-ce94-01/full/source-after.json",
+        "sha256": "694d97a2c568364caba031aed04e2e51054bd7a26b7babdb546d03a951f42b68"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-ce94-01/full/ktest/aster-core/guests/guest-001/qemu.json",
+        "sha256": "f38d6225c2ebfa3ab1ff15570f1809d864dfe707df9a25d4292fcdbb88f35008"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-ce94-01/full/ktest/aster-core/guests/guest-001/serial.log",
+        "sha256": "0225e6d7278b00323e29bee9b27c8d0570e1a8d64b3466366909bf2e008dbd2d"
+      }
+    ]
+  },
+  "missing_rt_syscall_failure": {
+    "source_head": "1d2d20c4228354a56593386f9505976ecc8ff9c7",
+    "source_tree": "4f10e5a8370e8690bc5382e4cf03491f222c501d",
+    "passed": false,
+    "completed_signal_cases": [
+      "fault_siginfo",
+      "unmapped_fault_siginfo",
+      "kill_reap",
+      "tgkill_reap",
+      "group_kill_reap",
+      "pidfd_dynamic_reap",
+      "original_permissions"
+    ],
+    "raw_qemu_exit": 33,
+    "kernel_sha256": "d75a6e8e5a6d849675e6853473e148bf8bed179efcc86eb9a45a493a9dad7ea6",
+    "receipt_sha256": "52e268f1a133e450fd4d3163d94d11c0dcd8c2ccc29ed7b204db103b69caa998",
+    "serial_sha256": "caeae28a42bbe2f620cdebd9003b83dd344ee65c181087b404241d65d5d99301",
+    "cause": "Original syscall 129 returned ENOSYS after the first seven cases; exit 1 was rejected despite QEMU raw 33. Original complete four suites and other native cases passed separately."
+  },
+  "linux_references": [
+    {
+      "linux_reference": true,
+      "native_qualification": false,
+      "host": {
+        "system": "Linux",
+        "node": "qian-qi",
+        "release": "7.0.0-38-generic",
+        "version": "#38~24.04.4-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 14 16:37:11 UTC 2",
+        "machine": "x86_64",
+        "processor": "x86_64"
+      },
+      "files": {
+        "source": {
+          "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-rtqueue/tests/workloads/linux/inline_signal/probe.c",
+          "sha256": "2635fed8d7d78b498d063a9b3e53ff680fe19f3673d7c23396940a68d1ff320d"
+        },
+        "binary": {
+          "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-linux-probe-05.elf",
+          "sha256": "874420b294ec4fb11f1d173fe03331aabd7f1d8b223f49521fb311e95090d981"
+        },
+        "log": {
+          "path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-linux-reference-05.log",
+          "sha256": "11976f666e89eb8daa63a7e83f463bc078029ef546213de3b2b09797e25d4dac"
+        }
+      },
+      "cases": 14,
+      "exit_code": 0,
+      "receipt_path": "/data/asterinas-audit-build.8tdrjboi/inline-signal-linux-reference-05.json",
+      "receipt_sha256": "601b0ac5a76f4308c4bf75559215269f3f427389186f5b83d4cd00c362ab0e20"
+    },
+    {
+      "linux_reference": true,
+      "native_qualification": false,
+      "host": {
+        "system": "Linux",
+        "node": "qian-qi",
+        "release": "7.0.0-38-generic",
+        "version": "#38~24.04.4-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 14 16:37:11 UTC 2",
+        "machine": "x86_64",
+        "processor": "x86_64"
+      },
+      "files": {
+        "source": {
+          "path": "/data/asterinas-audit-build.8tdrjboi/memfd-detached-links/tests/workloads/linux/memfd_metadata/probe.c",
+          "sha256": "8a69021270396bf2af25abcd616f4a3c047b6d85ffda99e242ab705c17adfd0e"
+        },
+        "binary": {
+          "path": "/data/asterinas-audit-build.8tdrjboi/memfd-metadata-linux-01.elf",
+          "sha256": "b9e744717cb0ebe69c44bf61350d844aad50c4221d0724e627705dbc32f3c873"
+        },
+        "log": {
+          "path": "/data/asterinas-audit-build.8tdrjboi/memfd-metadata-linux-01.log",
+          "sha256": "62d8423ad47458a3edd9be0d5e3b3180438ab25c1b43f60048813721b4259a6c"
+        }
+      },
+      "cases": 4,
+      "exit_code": 0,
+      "receipt_path": "/data/asterinas-audit-build.8tdrjboi/memfd-metadata-linux-reference-01.json",
+      "receipt_sha256": "e74afe38db78758a6a520da99406a4dab24aea8fb5cfc7a8e32117eaeeeeb74a"
+    }
+  ],
+  "profile": {
+    "memory_mib": 512,
+    "vcpus": 1,
+    "acceleration": "tcg",
+    "ktest_guest_deadline_seconds": 300,
+    "probe_guest_deadline_seconds": 120,
+    "filtered_suite": false
+  },
+  "production_authority": false,
+  "global_recovery_guarantee": false,
+  "all_kernel_memory_accounted": false,
+  "global_oom_injection_qualified": false,
+  "scope": "Closed standard Fault/KernelKill/UserKill ownership avoids those per-signal Boxes and remains inline through original pending, ptrace/requeue and read paths. Dynamic/RT/raw APIs remain original. Only the typed permission-denied reason captured in the original locked VMAR lookup selects ACCERR; other errors retain original architecture policy. Queue initial allocation, RT growth, observer/waker/exit heap and full OOM recovery remain unqualified.",
+  "independent_memfd_handoff": [
+    {
+      "receipt_path": "/data/asterinas-audit-build.8tdrjboi/root-bootstrap-memfd-d5a21-baseline-01/result.json",
+      "receipt_sha256": "2eaf92696f3cc63f1d5750ae3e325c09a8256c2edf81bd43dbf053baf54bfb58",
+      "binary_sha256": "6edfd15e3510450ec35431fe1ccb2a031f4e4e2dc2527f0ee32089ae5bdf8108",
+      "source_sha256": "90d875ec01c8aadc1ec36ca947b5d5e212edac1bc31f2c81ff886196d2c0caf4",
+      "kernel_source": "d5a21bb7e70a22cd022f4275ba2d22a6b726d233",
+      "kernel_sha256": "f22e596de885a901cda99d5115edd915a12b017f31c383327ea5179c6f6d8c8d",
+      "native_qualification_passed": false,
+      "native_probe_exit": 1,
+      "raw_qemu_exit": 33,
+      "serial_sha256": "8725c83f53a97957d283f06954ab99e4049a7c7d9c97467b242f60031a81ef0d",
+      "linux_reference_passed": true,
+      "production_authority": false
+    },
+    {
+      "receipt_path": "/data/asterinas-audit-build.8tdrjboi/root-bootstrap-memfd-6c26-positive-01/result.json",
+      "receipt_sha256": "f4d91569d48bfd8e8085a6adbef37357e4bc9b9c898a7882c376306f33eb6817",
+      "binary_sha256": "6edfd15e3510450ec35431fe1ccb2a031f4e4e2dc2527f0ee32089ae5bdf8108",
+      "source_sha256": "90d875ec01c8aadc1ec36ca947b5d5e212edac1bc31f2c81ff886196d2c0caf4",
+      "kernel_source": "6c26e3aeefde05c120944e278299b4925612f3c8",
+      "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+      "native_qualification_passed": true,
+      "native_probe_exit": 0,
+      "raw_qemu_exit": 33,
+      "serial_sha256": "f25d012dd20cc1a2b7c3b01db062c79a61b46ae5af7958e01e2f5048192b24d4",
+      "linux_reference_passed": true,
+      "production_authority": false
+    }
+  ]
+}

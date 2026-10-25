@@ -14,9 +14,11 @@ use trill_ui_core::notes_bootstrap::{
 };
 
 const DEADLINE: Duration = Duration::from_secs(2);
+const RESERVATION_DEADLINE: Duration = Duration::from_secs(30);
 
 pub struct NotesBootstrap {
     channel: UnixDatagram,
+    staged: bool,
 }
 
 impl NotesBootstrap {
@@ -36,22 +38,40 @@ impl NotesBootstrap {
             ));
         }
         channel.set_nonblocking(false)?;
-        Ok(Self { channel })
+        Ok(Self { channel, staged: false })
+    }
+
+    /// Only the explicit trusted-parent startup mode selects this barrier.
+    /// Ordinary Session IPC and the old direct bootstrap never enable it.
+    pub fn with_root_startup_reservation(mut self) -> Self {
+        self.staged = true;
+        self
     }
 
     /// Consume this one-shot bootstrap and the fresh endpoint. On success the
     /// original host alone retains the effect endpoint. On failure shut down
     /// all duplicate endpoint references; a lost attachment ACK is not proof
     /// that the parent never attached or that any concurrent effect rolled back.
-    pub fn offer(self, identity: NotesTargetIdentity, endpoint: UnixStream) -> io::Result<()> {
-        let outcome = self.offer_inner(identity, &endpoint);
+    pub fn offer(
+        self,
+        identity: NotesTargetIdentity,
+        endpoint: UnixStream,
+        recovery: UnixDatagram,
+    ) -> io::Result<()> {
+        let outcome = self.offer_inner(identity, &endpoint, &recovery);
         if outcome.is_err() {
             let _ = endpoint.shutdown(Shutdown::Both);
+            let _ = recovery.shutdown(Shutdown::Both);
         }
         outcome
     }
 
-    fn offer_inner(&self, identity: NotesTargetIdentity, endpoint: &UnixStream) -> io::Result<()> {
+    fn offer_inner(
+        &self,
+        identity: NotesTargetIdentity,
+        endpoint: &UnixStream,
+        recovery: &UnixDatagram,
+    ) -> io::Result<()> {
         let offer = NotesBootstrapOffer::new(identity).map_err(invalid)?;
         require_socket_type(endpoint.as_raw_fd(), libc::SOCK_STREAM)?;
         if !endpoint.local_addr()?.is_unnamed() || !endpoint.peer_addr()?.is_unnamed() {
@@ -61,8 +81,17 @@ impl NotesBootstrap {
         if raw.is_empty() || raw.len() > NOTES_BOOTSTRAP_MAX_BYTES {
             return Err(invalid("Notes bootstrap offer bound"));
         }
+        if self.staged {
+            self.reserve_startup(&offer.target)?;
+        }
         let deadline = Instant::now() + DEADLINE;
-        send_descriptor(&self.channel, &raw, endpoint.as_raw_fd(), deadline)?;
+        trill_ui_core::notes_private_unix::send_channels(
+            &self.channel,
+            &raw,
+            endpoint,
+            recovery,
+            remaining(deadline)?,
+        )?;
         let raw = receive_ack(&self.channel, deadline)?;
         let ack = NotesBootstrapAck::parse_exact(&raw).map_err(invalid)?;
         if !ack.matches(&offer) {
@@ -75,6 +104,26 @@ impl NotesBootstrap {
                 "original production host rejected Notes attachment",
             )),
         }
+    }
+
+    fn reserve_startup(&self, target: &NotesTargetIdentity) -> io::Result<()> {
+        use std::io::Read;
+        use trill_ui_core::notes_startup::{NotesStartupActivation, NotesStartupReservation};
+        let deadline = Instant::now() + RESERVATION_DEADLINE;
+        let mut nonce = [0u8; 16];
+        std::fs::File::open("/dev/urandom")?.read_exact(&mut nonce)?;
+        let nonce = nonce.iter().map(|byte| format!("{byte:02x}")).collect();
+        let reservation = NotesStartupReservation::new(target.clone(), nonce).map_err(invalid)?;
+        let raw = serde_json::to_vec(&reservation).map_err(io::Error::other)?;
+        self.channel.set_write_timeout(Some(remaining(deadline)?))?;
+        // Metadata only: both effect/recovery descriptors remain held locally
+        // until the exact activation below. This is never an Attached ACK.
+        if self.channel.send(&raw)? != raw.len() { return Err(invalid("Notes reservation was not sent atomically")); }
+        let response = receive_ack(&self.channel, deadline)?;
+        let activation = NotesStartupActivation::parse_exact(&response).map_err(invalid)?;
+        if !activation.matches(&reservation) { return Err(invalid("Notes activation differs from actual reservation")); }
+        remaining(deadline)?;
+        Ok(())
     }
 }
 
@@ -116,6 +165,7 @@ fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> 
     Ok(())
 }
 
+#[cfg(test)]
 fn send_descriptor(
     channel: &UnixDatagram,
     raw: &[u8],

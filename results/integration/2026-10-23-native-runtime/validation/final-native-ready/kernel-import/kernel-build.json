@@ -1,0 +1,210 @@
+{
+  "attestation": "transcribed exact successful A06 build and raw boot records; not new execution or remote attestation",
+  "binary_sha256": {
+    "kernel": "5a4f528b344c2d0bdb40c41c446e141d206aafb84d4cb6a6895dcf5c962f1450"
+  },
+  "build_sources": {
+    "desktop": {
+      "head": "c5c88794bf227b1d862b2f914b02809a0090e854",
+      "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c"
+    }
+  },
+  "built": true,
+  "commands": [
+    [
+      "make",
+      "-C",
+      "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas",
+      "-f",
+      "Makefile",
+      "-f",
+      "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/minimal.mk",
+      "run_kernel",
+      "CARGO_OSDK=/home/runner/.cargo/bin/cargo-osdk",
+      "A01_INITRAMFS=/home/runner/work/_temp/a06-queryabi-candidate/product-boot/initramfs.cpio.gz",
+      "A01_QEMU_WRAPPER=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/record-qemu.py",
+      "TARGET_ARCH=x86_64",
+      "SMP=1",
+      "MEM=512M",
+      "ENABLE_KVM=0",
+      "BOOT_PROTOCOL=multiboot",
+      "INITRAMFS=on",
+      "AUTO_TEST=none"
+    ]
+  ],
+  "f1_completed": false,
+  "guest_executed_in_this_import": false,
+  "kernel_built_in_this_import": false,
+  "kernel_profile": "ordinary-os",
+  "origin": {
+    "archive_bytes": 222254688,
+    "archive_sha256": "12f6e6ccd459358e5cc254c7aa60d1f0ca16d9930e66c0f58906c18ab9b5784e",
+    "artifact_id": 12480223660,
+    "artifact_name": "a06-exact-kernel-ktest-39898657974",
+    "metadata": {
+      "artifact-list.json": {
+        "bytes": 1005,
+        "sha256": "87cd4bb48c3fffc4d01a4403ff5a0b42b9671248e8012b056d50b260c742eb48"
+      },
+      "workflow-run.json": {
+        "bytes": 16934,
+        "sha256": "559ab527b3f706d016687dd624eb795a286c4dc5a1a73c547fffcb0733f31174"
+      }
+    },
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "workflow_run_id": 39898657974
+  },
+  "original_candidate_oracle": {
+    "exact_one_markers": true,
+    "marker_counts": {
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_EXEC_EFAULT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_ENOENT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "HEPTA_THREAD_SESSION_SHARED": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "no_guest_failure": true,
+    "ordered_root_completion": true,
+    "passed": true,
+    "raw_serial_sha256": "fe75ac2f713c703e63ca865f38a3ed22f52fbe099472883c07af20e56f74797c",
+    "raw_serial_size": 86018
+  },
+  "original_checker_sources": {
+    "support/build/check-boot.py": {
+      "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
+    },
+    "tests/kernel/control/run_queryabi_candidate_guest.py": {
+      "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93",
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5"
+    },
+    "tests/kernel/control/run_queryabi_guest.py": {
+      "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719",
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268"
+    },
+    "tests/organ_backend/run_guest_probe.py": {
+      "git_blob": "3b31dd8cbc51c5527d28dd35f98d68de838cb5d5",
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+    }
+  },
+  "original_evidence": {
+    "product-boot/command.sh": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/command.sh",
+      "bytes": 558,
+      "path": "original/product-boot/command.sh",
+      "sha256": "89a7bee154edf69b7c4fc8329994f5e5cadcd2ca664f3a8292dbbe48c7fbaac2"
+    },
+    "product-boot/environment.log": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/environment.log",
+      "bytes": 2825,
+      "path": "original/product-boot/environment.log",
+      "sha256": "6bff69e12cc5e64fe97edecc309afcc07a3595765a72149070187ca8339c3a5a"
+    },
+    "product-boot/initramfs-manifest.json": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/initramfs-manifest.json",
+      "bytes": 7121,
+      "path": "original/product-boot/initramfs-manifest.json",
+      "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+    },
+    "product-boot/log-exit-code.txt": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/log-exit-code.txt",
+      "bytes": 2,
+      "path": "original/product-boot/log-exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "product-boot/make-exit-code.txt": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/make-exit-code.txt",
+      "bytes": 2,
+      "path": "original/product-boot/make-exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "product-boot/qemu.json": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/qemu.json",
+      "bytes": 2976,
+      "path": "original/product-boot/qemu.json",
+      "sha256": "6a25355db669de1acb29effeef264504e40bf00dd0bf5011bb4ad84741e2ddaa"
+    },
+    "product-boot/run-exit-code.txt": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/run-exit-code.txt",
+      "bytes": 2,
+      "path": "original/product-boot/run-exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "product-boot/run_kernel.log": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/run_kernel.log",
+      "bytes": 127555,
+      "path": "original/product-boot/run_kernel.log",
+      "sha256": "c97bc07d9007a8649f1362a0c9a5ec6325dcb5f87c609ede32168420f30ef8ca"
+    },
+    "product-boot/serial.log": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/serial.log",
+      "bytes": 72374,
+      "path": "original/product-boot/serial.log",
+      "sha256": "461f8b0a081f59be0a758a043c68b8de5f854554bc42e32530bcab493398bb47"
+    },
+    "product-boot/source-inputs.json": {
+      "archive_member": "_temp/a06-queryabi-candidate/product-boot/source-inputs.json",
+      "bytes": 2941,
+      "path": "original/product-boot/source-inputs.json",
+      "sha256": "00ff13d6d0a68045c6ae03fc77afe602d8edf3f3b08c197ae0ecee43ae8a1949"
+    },
+    "result.json": {
+      "archive_member": "_temp/a06-queryabi-candidate/result.json",
+      "bytes": 3551,
+      "path": "original/result.json",
+      "sha256": "441dad6a80e77003c203f881b91473f435269a661ea680461b977e42efda7e4f"
+    },
+    "serial.log": {
+      "archive_member": "_temp/a06-queryabi-candidate/serial.log",
+      "bytes": 86018,
+      "path": "original/serial.log",
+      "sha256": "fe75ac2f713c703e63ca865f38a3ed22f52fbe099472883c07af20e56f74797c"
+    },
+    "source-after-boot.json": {
+      "archive_member": "_temp/a06-queryabi-candidate/source-after-boot.json",
+      "bytes": 2190950,
+      "path": "original/source-after-boot.json",
+      "sha256": "96041289ecfa8911772f236291697fe1b27e44457383f64b009ff26e84461c31"
+    },
+    "source-after-guest.json": {
+      "archive_member": "_temp/a06-queryabi-candidate/source-after-guest.json",
+      "bytes": 2190950,
+      "path": "original/source-after-guest.json",
+      "sha256": "96041289ecfa8911772f236291697fe1b27e44457383f64b009ff26e84461c31"
+    },
+    "source-before.json": {
+      "archive_member": "_temp/a06-queryabi-candidate/source-before.json",
+      "bytes": 2190950,
+      "path": "original/source-before.json",
+      "sha256": "96041289ecfa8911772f236291697fe1b27e44457383f64b009ff26e84461c31"
+    }
+  },
+  "runtime_executed": false,
+  "schema": "hepta.native-original-runtime-build.v1",
+  "source_clean": true,
+  "source_file_count": 7821,
+  "source_snapshots_equal": true,
+  "sources": {
+    "desktop": {
+      "head": "c5c88794bf227b1d862b2f914b02809a0090e854",
+      "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c"
+    },
+    "hepta": {
+      "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+      "tree": "f722fbe5f24275c324089be720559a40901105f3"
+    }
+  }
+}

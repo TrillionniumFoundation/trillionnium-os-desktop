@@ -47,13 +47,16 @@ opt-in layout probe retain the separate diagnostic path used by existing gates.
 | `ui/shell/src/conversation.rs` | Per-workspace composer/tab state, bounded draft book, complete host snapshot cache, cards and embedded panels | Actual `Response::Snapshot` for current task rows; expired Hepta projection for runtime rows |
 | `ui/shell/src/main.rs` | Actual response queue, expiry before every page, existing host launch/cancel transport | The independent Session, fenced by its observed instance |
 | `ui/shell/src/hepta_panel.rs` | Runtime health, independent known-run card and one-shot health layout diagnostic | Read-only Session projections; runtime and known-run each use their own monotonic total-age bound and source wall-time check |
-| `ui/shell/src/local_drafts.rs` | Explicit private plaintext export/import, v2 context schema and v1 compatibility | Local file content is historical input, never a live receipt |
+| `ui/shell/src/local_drafts.rs` | Private background v4 recovery, preserving v3 during migration; separate explicit v2 export/import and v1 compatibility | Local file content is historical input, never a live receipt |
+| `ui/shell/src/draft_recovery.rs` | Renderer-independent open, queued snapshots, warning projection and normal-close drain | Existing `DraftBook` checkpoint and one background recovery writer |
 
-The renderer IPC still contains only Snapshot, Launch and Cancel. This change
-adds no objective request, issuer, raw signed envelope, privileged Agentd
-socket or permission grant. Session remains the host process owner; original
-Hepta remains its independent runtime owner. Saving, quoting, navigating or
-importing local context cannot transition either owner's state.
+Snapshot, Launch and Cancel retain their existing host lifecycle roles. The
+separately configured [Objective bridge](../../ui/session/OBJECTIVE_BRIDGE.md)
+adds bounded intent/status/cancel messages; the
+[native text adapter](../../services/hepta-session-host/TEXT_SESSION.md) uses
+the original Root/Agentd lane. Saving, quoting, navigating or importing local
+context enters neither execution path and supplies no issuer, signed envelope
+or grant. Session remains the host process owner; original Hepta owns execution.
 
 ## Identity, history and current observations
 
@@ -130,6 +133,11 @@ See [the known-run contract](HEPTA_OBSERVER.md#observe-one-already-known-run)
 and [the total-age specification](../../ui/shell/OBSERVATION_FRESHNESS.md#independently-sampled-known-run).
 
 ## Local storage and bounds
+
+Automatic all-workspace recovery uses the v4 checkpoint contract in
+[PRODUCT](PRODUCT.md#upgrade-rollback-and-uninstall), including its 64 MiB
+bound, principal partitions, migration, single-writer lock and close behavior.
+The v1/v2 files below are separate explicit exports with their own 4 MiB bound.
 
 The draft book has a global limit of 127 saved drafts. Each draft has at most
 16 KiB of UTF-8 text and eight context references. Full/oversized/duplicate

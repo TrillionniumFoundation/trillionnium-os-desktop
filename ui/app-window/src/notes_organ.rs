@@ -6,25 +6,40 @@
 use eframe::egui;
 use std::io::{self, Read, Write};
 use std::os::fd::BorrowedFd;
-use std::os::unix::net::UnixStream;
-use std::sync::mpsc::{self, Receiver, SyncSender};
+use std::os::unix::net::{UnixDatagram, UnixStream};
+use std::sync::mpsc::{self, SyncSender};
 use std::time::{Duration, Instant};
 use trill_ui_core::notes::{
-    NotesDocument, NotesObserve, NotesResponse, NotesTargetIdentity, MAX_NOTES_REQUEST_BYTES,
-    MAX_NOTES_RESPONSE_BYTES,
+    NotesTargetIdentity, MAX_NOTES_REQUEST_BYTES, MAX_NOTES_RESPONSE_BYTES,
 };
+use trill_ui_core::notes_store::{SavedNotesDocument, SavedNotesListing};
+
+#[path = "notes_worker.rs"]
+mod worker;
 
 const APP_HANDOFF_DEADLINE: Duration = Duration::from_secs(1);
 
 struct Pending {
     bytes: Vec<u8>,
     expires_at: Instant,
-    reply: SyncSender<Option<NotesResponse>>,
+    recovery: bool,
+    reply: SyncSender<Option<Vec<u8>>>,
 }
 
 pub struct NotesAppChannel {
-    document: NotesDocument,
-    requests: Receiver<Pending>,
+    worker: worker::Connection,
+    version: u64,
+    text: String,
+    revision: u64,
+    next_edit: u64,
+    pending_edit: Option<u64>,
+    deferred_edit: Option<(u64, String)>,
+    notice: Option<&'static str>,
+    frozen: bool,
+    saved_documents: SavedNotesListing,
+    pending_list: Option<u64>,
+    pending_restore: Option<u64>,
+    list_error: Option<&'static str>,
 }
 
 impl NotesAppChannel {
@@ -32,60 +47,285 @@ impl NotesAppChannel {
         ctx: egui::Context,
         target: NotesTargetIdentity,
     ) -> io::Result<Self> {
-        let document = NotesDocument::new(target)
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "notes target identity"))?;
         // stdin is a known, process-owned descriptor. Duplicate it before
         // constructing UnixStream; dropping this worker never closes stdin.
         // No caller-supplied descriptor integer or path is accepted.
         let fd = unsafe { BorrowedFd::borrow_raw(0) }.try_clone_to_owned()?;
-        let stream = UnixStream::from(fd);
-        if !stream.local_addr()?.is_unnamed() || !stream.peer_addr()?.is_unnamed() {
+        let bootstrap = UnixDatagram::from(fd);
+        let (raw, effect, recovery) =
+            trill_ui_core::notes_private_unix::receive_channels(&bootstrap, APP_HANDOFF_DEADLINE)?;
+        let offered: NotesTargetIdentity =
+            serde_json::from_slice(&raw).map_err(io::Error::other)?;
+        if offered != target {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
-                "notes requires inherited socketpair",
+                "Notes app handoff identity mismatch",
             ));
         }
-        let (sender, requests) = mpsc::sync_channel(1);
+        let worker = worker::start(ctx.clone(), target)?;
+        let sender = worker.sender.clone();
+        let effect_sender = sender.clone();
+        let effect_ctx = ctx.clone();
         std::thread::Builder::new()
-            .name("notes-private-channel".into())
-            .spawn(move || serve(stream, sender, ctx))?;
-        Ok(Self { document, requests })
+            .name("notes-effect-channel".into())
+            .spawn(move || serve(effect, effect_sender, effect_ctx, false))?;
+        std::thread::Builder::new()
+            .name("notes-recovery-channel".into())
+            .spawn(move || serve_recovery(recovery, sender, ctx))?;
+        Ok(Self {
+            worker,
+            version: 0,
+            text: String::new(),
+            revision: 0,
+            next_edit: 1,
+            pending_edit: None,
+            deferred_edit: None,
+            notice: None,
+            frozen: false,
+            saved_documents: SavedNotesListing::default(),
+            pending_list: None,
+            pending_restore: None,
+            list_error: None,
+        })
     }
 
-    /// Called only on the same egui thread as local text edits. A stalled GUI
-    /// cannot accumulate unbounded delayed mutations; expired handoffs are
-    /// discarded before touching the document. Once applied, a lost reply
-    /// remains an unknown outcome for the owner, never a rollback claim.
+    /// Copy the bounded document projection without waiting for storage or
+    /// transport. Local typing is coalesced while one revision-CAS edit is in
+    /// flight; an intervening external effect retains the unsaved draft and
+    /// reports a conflict instead of automatically overwriting that effect.
     pub fn poll(&mut self) -> bool {
-        let before = self.document.revision();
-        while let Ok(pending) = self.requests.try_recv() {
-            if Instant::now() >= pending.expires_at {
-                let _ = pending.reply.try_send(None);
-                continue;
+        let before = self.text.clone();
+        let revision_before = self.revision;
+        let projection = self
+            .worker
+            .projection
+            .try_lock()
+            .ok()
+            .map(|value| value.clone());
+        if let Some(value) = projection.filter(|value| value.version != self.version) {
+            self.version = value.version;
+            self.revision = value.revision;
+            self.frozen = value.storage_failed;
+            if let Some((_, result)) = value
+                .saved_documents
+                .as_ref()
+                .filter(|(id, _)| self.pending_list == Some(*id))
+            {
+                self.pending_list = None;
+                match result {
+                    Ok(listing) => {
+                        self.saved_documents = listing.clone();
+                        self.list_error = None;
+                    }
+                    Err(_) => self.list_error = Some("无法读取已保存笔记；原文件保持不变。"),
+                }
             }
-            let result = self.document.apply_exact(&pending.bytes).or_else(|_| {
-                NotesObserve::parse_exact(&pending.bytes)
-                    .and_then(|query| self.document.observe(&query))
-            });
-            let _ = pending.reply.try_send(result.ok());
+            let restored = value
+                .restore_result
+                .as_ref()
+                .filter(|(id, _)| self.pending_restore == Some(*id))
+                .map(|(_, result)| result.is_ok());
+            if restored.is_some() {
+                self.pending_restore = None;
+            }
+            if self.frozen {
+                self.notice = Some("保存结果未知；保留当前编辑，需要独立恢复。");
+                self.deferred_edit = None;
+            } else if let Some(accepted) = restored {
+                self.text = value.text;
+                self.notice = if accepted {
+                    None
+                } else {
+                    Some("未恢复：文档已变化、仍在使用或无法读取。请刷新后选择，或新建笔记。")
+                };
+            } else if let Some((_, accepted, revision)) = value
+                .local_result
+                .filter(|(id, _, _)| self.pending_edit == Some(*id))
+            {
+                self.pending_edit = None;
+                if !accepted || (self.deferred_edit.is_some() && value.revision != revision) {
+                    self.notice = Some("文档已被其他操作修改；当前编辑尚未保存。");
+                    self.deferred_edit = None;
+                } else if let Some((base, _)) = &mut self.deferred_edit {
+                    *base = revision;
+                } else {
+                    self.text = value.text;
+                }
+            } else if self.pending_edit.is_none()
+                && self.deferred_edit.is_none()
+                && self.notice.is_none()
+            {
+                self.text = value.text;
+            }
         }
-        self.document.revision() != before
+        self.flush_edit();
+        self.text != before || self.revision != revision_before
     }
 
     pub fn text(&self) -> &str {
-        self.document.text()
+        &self.text
     }
 
     pub fn revision(&self) -> u64 {
-        self.document.revision()
+        self.revision
     }
 
     pub fn local_edit(&mut self, text: String) -> bool {
-        self.document.local_edit(text).is_ok()
+        if self.frozen
+            || self.pending_restore.is_some()
+            || text.len() > trill_ui_core::notes::MAX_NOTES_TEXT_BYTES
+        {
+            return false;
+        }
+        self.notice = None;
+        self.text = text.clone();
+        self.deferred_edit = Some((self.revision, text));
+        self.flush_edit();
+        true
+    }
+
+    pub fn has_document_storage(&self) -> bool {
+        self.worker.durable
+    }
+
+    pub fn restore_pending(&self) -> bool {
+        self.pending_restore.is_some()
+    }
+
+    pub fn can_restore_saved(&self) -> bool {
+        self.worker.durable
+            && !self.frozen
+            && self.revision == 0
+            && self.text.is_empty()
+            && self.pending_edit.is_none()
+            && self.deferred_edit.is_none()
+            && self.pending_restore.is_none()
+    }
+
+    pub fn saved_documents(&self) -> &SavedNotesListing {
+        &self.saved_documents
+    }
+
+    pub fn saved_list_pending(&self) -> bool {
+        self.pending_list.is_some()
+    }
+
+    pub fn saved_list_error(&self) -> Option<&'static str> {
+        self.list_error
+    }
+
+    pub fn refresh_saved_documents(&mut self) {
+        if !self.worker.durable || self.pending_list.is_some() {
+            return;
+        }
+        let Some(id) = self.next_request_id() else {
+            return;
+        };
+        match self
+            .worker
+            .sender
+            .try_send(worker::Command::ListSaved { id })
+        {
+            Ok(()) => {
+                self.pending_list = Some(id);
+                self.list_error = None;
+            }
+            Err(_) => self.list_error = Some("笔记读取暂不可用，请稍后刷新。"),
+        }
+    }
+
+    pub fn restore_saved_document(&mut self, source: SavedNotesDocument) -> bool {
+        if !self.can_restore_saved() {
+            return false;
+        }
+        let Some(id) = self.next_request_id() else {
+            return false;
+        };
+        match self.worker.sender.try_send(worker::Command::RestoreSaved {
+            id,
+            revision: self.revision,
+            source,
+        }) {
+            Ok(()) => {
+                self.pending_restore = Some(id);
+                self.notice = None;
+                true
+            }
+            Err(_) => {
+                self.notice = Some("保存通道暂不可用；尚未开始恢复，请稍后重试。");
+                false
+            }
+        }
+    }
+
+    fn next_request_id(&mut self) -> Option<u64> {
+        let next = self.next_edit.checked_add(1)?;
+        let id = self.next_edit;
+        self.next_edit = next;
+        Some(id)
+    }
+
+    pub fn storage_status(&self) -> &'static str {
+        if let Some(notice) = self.notice {
+            return notice;
+        }
+        if self.pending_edit.is_some() || self.deferred_edit.is_some() {
+            return "正在保存编辑……";
+        }
+        if self.pending_restore.is_some() {
+            return "正在打开已保存笔记的副本……";
+        }
+        if self.worker.durable {
+            "已保存到本机；旧操作可独立回读。"
+        } else {
+            "临时笔记：关闭窗口后不会保存。"
+        }
+    }
+
+    fn flush_edit(&mut self) {
+        if self.frozen || self.pending_edit.is_some() {
+            return;
+        }
+        let Some((revision, text)) = self.deferred_edit.take() else {
+            return;
+        };
+        if revision != self.revision {
+            self.notice = Some("文档已被其他操作修改；当前编辑尚未保存。");
+            return;
+        }
+        let Some(next) = self.next_edit.checked_add(1) else {
+            self.frozen = true;
+            return;
+        };
+        let id = self.next_edit;
+        match self
+            .worker
+            .sender
+            .try_send(worker::Command::LocalEdit { id, revision, text })
+        {
+            Ok(()) => {
+                self.pending_edit = Some(id);
+                self.next_edit = next;
+            }
+            Err(mpsc::TrySendError::Full(worker::Command::LocalEdit {
+                revision, text, ..
+            })) => {
+                self.deferred_edit = Some((revision, text));
+            }
+            Err(_) => {
+                self.frozen = true;
+                self.notice = Some("笔记进程连接中断；编辑尚未保存。");
+            }
+        }
     }
 }
 
-fn serve(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::Context) {
+fn serve(
+    mut stream: UnixStream,
+    sender: SyncSender<worker::Command>,
+    ctx: egui::Context,
+    recovery: bool,
+) {
     // This thread handles a single serial private channel. Its only allocation
     // based on peer data follows the fixed length bound, and only one pending
     // GUI handoff may exist. Idle blocking does not occupy the egui thread.
@@ -108,20 +348,18 @@ fn serve(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::Context
         let (reply, receive) = mpsc::sync_channel(1);
         let expires_at = Instant::now() + APP_HANDOFF_DEADLINE;
         if sender
-            .try_send(Pending {
+            .try_send(worker::Command::Protocol(Pending {
                 bytes,
+                recovery,
                 expires_at,
                 reply,
-            })
+            }))
             .is_err()
         {
             return;
         }
         ctx.request_repaint();
-        let Ok(Some(response)) = receive.recv_timeout(APP_HANDOFF_DEADLINE) else {
-            return;
-        };
-        let Ok(raw) = serde_json::to_vec(&response) else {
+        let Ok(Some(raw)) = receive.recv_timeout(APP_HANDOFF_DEADLINE) else {
             return;
         };
         if raw.is_empty() || raw.len() > MAX_NOTES_RESPONSE_BYTES {
@@ -135,5 +373,48 @@ fn serve(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::Context
         {
             return;
         }
+    }
+}
+
+// Datagram boundaries survive a lost response. Retrying an exact retirement
+// is safe because the model retains its last retirement identity. This lane
+// never calls the mutation parser, even when the peer sends replace_note.
+fn serve_recovery(channel: UnixDatagram, sender: SyncSender<worker::Command>, ctx: egui::Context) {
+    let mut buffer = [0_u8; MAX_NOTES_REQUEST_BYTES + 1];
+    loop {
+        let Ok(length) = channel.recv(&mut buffer) else {
+            return;
+        };
+        if length == 0 || length > MAX_NOTES_REQUEST_BYTES {
+            continue;
+        }
+        let (reply, receive) = mpsc::sync_channel(1);
+        if sender
+            .try_send(worker::Command::Protocol(Pending {
+                bytes: buffer[..length].to_vec(),
+                recovery: true,
+                expires_at: Instant::now() + APP_HANDOFF_DEADLINE,
+                reply,
+            }))
+            .is_err()
+        {
+            continue;
+        }
+        ctx.request_repaint();
+        let Ok(Some(raw)) = receive.recv_timeout(APP_HANDOFF_DEADLINE) else {
+            continue;
+        };
+        if raw.is_empty() || raw.len() > MAX_NOTES_RESPONSE_BYTES {
+            continue;
+        }
+        if channel
+            .set_write_timeout(Some(APP_HANDOFF_DEADLINE))
+            .is_err()
+        {
+            return;
+        }
+        // A lost acknowledgement does not close the observation lane or drop
+        // the document's pending receipt. The exact request can be repeated.
+        let _ = channel.send(&raw);
     }
 }

@@ -368,6 +368,10 @@ impl UserContextApiInternal for UserContext {
             crate::task::scheduler::might_preempt();
 
             let guard = crate::irq::disable_local();
+            if hooks.has_fatal_kernel_event(&guard) {
+                drop(guard);
+                return ReturnReason::KernelEvent;
+            }
             hooks.pre_user_run(&guard);
             self.user_context.run(guard);
 

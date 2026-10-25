@@ -1,0 +1,28 @@
+{
+  "source_head": "556615fc9368c35539fbd1829f386ab55996dd47",
+  "source_tree": "97ba9c49ed6c613e7255d3b7d6bc8a7e1f230a1b",
+  "osdk_sha256": "2ea416edc9f1ef6568157e58c9e0908aba10d06ae0ddbbe07b9083ed9525743e",
+  "passed": false,
+  "production_ready": false,
+  "steps": [
+    {
+      "label": "aster-core",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/support/build/ktest/run.py",
+        "--skip-osdk-install",
+        "--crate",
+        "aster-core",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc/full-aster-core"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 1,
+      "elapsed_seconds": 1.1585189190227538
+    }
+  ],
+  "error": "RuntimeError('aster-core failed; retained /data/trillionnium-closure-20261024/native-evidence/kernel-556615fc/aster-core.log')",
+  "elapsed_seconds": 1.1595593980746344
+}

@@ -309,7 +309,7 @@ impl Path {
     }
 
     /// Checks whether the path is on a writable mount and filesystem.
-    fn check_mount_writable(&self) -> Result<()> {
+    pub(crate) fn check_mount_writable(&self) -> Result<()> {
         if self.mount.flags().contains(PerMountFlags::RDONLY)
             || self.fs().flags().contains(FsFlags::RDONLY)
         {
@@ -851,7 +851,6 @@ impl Path {
         gid: Option<Gid>,
         ctx: &Context,
     ) -> Result<()> {
-
         // FIXME: Keep the ownership checks and owner, group, and mode updates in
         // one inode critical section. `metadata()` returns a snapshot, so concurrent
         // attribute changes can invalidate the checks before the updates run.
@@ -927,11 +926,9 @@ impl Path {
     pub(crate) fn chmod(&self, mode: InodeMode, ctx: &Context) -> Result<()> {
         self.check_mount_writable()?;
 
-        if let Some(result) = PermissionAttrRequest::run_for_context(
-            PermissionAttrOp::Chmod(mode),
-            &self.dentry,
-            ctx,
-        ) {
+        if let Some(result) =
+            PermissionAttrRequest::run_for_context(PermissionAttrOp::Chmod(mode), &self.dentry, ctx)
+        {
             result?;
             notify::on_attr_change(self);
             return Ok(());
@@ -941,7 +938,6 @@ impl Path {
 
     /// Compatibility path; this does not serialize aliases of an unported inode.
     fn legacy_chmod_split_lock(&self, mut mode: InodeMode, ctx: &Context) -> Result<()> {
-
         // FIXME: Keep the ownership checks and mode update in one inode critical
         // section. `metadata()` returns a snapshot, so a concurrent `chown()` can
         // change the owner or group before `set_mode()` runs.
@@ -988,8 +984,6 @@ impl Path {
     pub(crate) fn size(&self) -> usize;
     pub(crate) fn owner(&self) -> Result<Uid>;
     pub(crate) fn group(&self) -> Result<Gid>;
-    pub(crate) fn atime(&self) -> Duration;
-    pub(crate) fn mtime(&self) -> Duration;
     pub(crate) fn ctime(&self) -> Duration;
     pub(crate) fn list_xattr(
         &self,
@@ -1009,16 +1003,36 @@ impl Path {
         self.inode().set_group(&self.dentry, gid)
     }
 
-    pub(crate) fn set_atime(&self, time: Duration) {
-        self.inode().set_atime(&self.dentry, time)
-    }
-
-    pub(crate) fn set_mtime(&self, time: Duration) {
-        self.inode().set_mtime(&self.dentry, time)
-    }
-
     pub(crate) fn set_ctime(&self, time: Duration) {
         self.inode().set_ctime(&self.dentry, time)
+    }
+
+    /// Authorizes and changes user-requested timestamps under the inode owner lock.
+    pub(crate) fn set_times(
+        &self,
+        atime: Option<Duration>,
+        mtime: Option<Duration>,
+        now_only: bool,
+        ctx: &Context,
+    ) -> Result<()> {
+        self.check_mount_writable()?;
+        PermissionAttrRequest::run_for_context(
+            PermissionAttrOp::Utimes {
+                atime,
+                mtime,
+                now_only,
+            },
+            &self.dentry,
+            ctx,
+        )
+        .unwrap_or_else(|| {
+            // A split check/set fallback would race a concurrent owner change.
+            // Unported filesystem owners must implement a serialized transaction.
+            Err(Error::with_message(
+                Errno::EOPNOTSUPP,
+                "atomic timestamp authorization unsupported",
+            ))
+        })
     }
 
     /// Resizes the file.
@@ -1027,8 +1041,11 @@ impl Path {
         self.resize_unchecked_access(size)
     }
 
-    /// Resizes the file without permission checks.
+    /// Resizes the file without rechecking inode access permissions.
+    ///
+    /// The mount must still be writable, including for an already-open descriptor.
     pub(in crate::fs) fn resize_unchecked_access(&self, size: usize) -> Result<()> {
+        self.check_mount_writable()?;
         let inode = self.inode();
         xattr::clear_file_priv(&self.dentry)?;
         inode.resize(&self.dentry, size)
@@ -1042,6 +1059,7 @@ impl Path {
         flags: XattrSetFlags,
         ctx: &Context,
     ) -> Result<()> {
+        self.check_mount_writable()?;
         let inode = self.inode();
         if name.full_name() == xattr::SECURITY_CAPABILITY_XATTR_NAME {
             capable_modify_file_cap(inode.as_ref(), ctx)?;
@@ -1060,6 +1078,7 @@ impl Path {
 
     /// Removes an xattr of the file.
     pub(crate) fn remove_xattr(&self, name: XattrName, ctx: &Context) -> Result<()> {
+        self.check_mount_writable()?;
         let inode = self.inode();
         if name.full_name() == xattr::SECURITY_CAPABILITY_XATTR_NAME {
             capable_modify_file_cap(inode.as_ref(), ctx)?;

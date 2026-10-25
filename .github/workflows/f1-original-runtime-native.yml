@@ -1,0 +1,234 @@
+name: F1 original owner lifecycle in native x86_64 guest
+
+on:
+  pull_request:
+    paths:
+      - "tests/workloads/hepta_agentd_runtime/**"
+      - "tests/workloads/hepta_agentd_abi/**"
+      - "tests/integration/hepta/**"
+      - "services/hepta-os/**"
+      - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - "support/build/**"
+      - ".github/workflows/f1-original-runtime-native.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  original-owner-native-lifecycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
+    env:
+      GIT_TERMINAL_PROMPT: "0"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Resolve the reviewed original source pair
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYCODE'
+          import importlib.util, json, os, re
+          from pathlib import Path
+          review = json.loads(Path("tests/workloads/hepta_agentd_runtime/source-review.json").read_bytes())
+          if review.get("schema") != "hepta.native-original-runtime-source-review.v1":
+              raise SystemExit("unexpected original runtime source-review schema")
+          pins = []
+          for name in ("desktop", "hepta"):
+              source = review[name]
+              for field in ("head", "tree"):
+                  if not isinstance(source[field], str) or re.fullmatch(r"[0-9a-f]{40}", source[field]) is None:
+                      raise SystemExit("invalid reviewed " + name + " " + field)
+              pins.append(name.upper() + "_SOURCE_PIN=" + source["head"])
+          spec = importlib.util.spec_from_file_location("reviewed_userspace_toolchain",
+              "tests/workloads/hepta_agentd_runtime/reviewed_toolchain.py")
+          toolchain = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(toolchain)
+          pins.append("USERSPACE_TOOLCHAIN_PIN=" + toolchain.reviewed_channel(review))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as output:
+              output.write("\n".join(pins) + "\n")
+          PYCODE
+
+      - name: Allocate isolated native evidence and cache directories
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$RUNNER_OS" = Linux
+          test "$RUNNER_ARCH" = X64
+          test "$(uname -m)" = x86_64
+          ci_root="$RUNNER_TEMP/f1-native-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$ci_root"
+          mkdir -m 700 "$ci_root"
+          mkdir -m 700 "$ci_root/logs" "$ci_root/identity" "$ci_root/download" \
+            "$ci_root/cargo-home" "$ci_root/rustup-home"
+          printf 'F1_CI_ROOT=%s\nCARGO_HOME=%s/cargo-home\nRUSTUP_HOME=%s/rustup-home\n' \
+            "$ci_root" "$ci_root" "$ci_root" >> "$GITHUB_ENV"
+          git rev-parse HEAD HEAD^{tree} > "$ci_root/identity/runner-source.txt"
+          git status --porcelain=v1 --untracked-files=all > "$ci_root/identity/runner-status.txt"
+          test ! -s "$ci_root/identity/runner-status.txt"
+          sha256sum tests/workloads/hepta_agentd_runtime/*.py \
+            tests/workloads/hepta_agentd_runtime/*.c \
+            tests/workloads/hepta_agentd_runtime/source-review.json \
+            .github/workflows/f1-original-runtime-native.yml \
+            > "$ci_root/identity/runner-inputs.sha256"
+
+      - name: Install the original userspace compiler and actual guest tools
+        run: |
+          set -euo pipefail
+          {
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils \
+              qemu-system-x86 e2fsprogs clang lld busybox-static
+            rustup toolchain install "$USERSPACE_TOOLCHAIN_PIN" --profile minimal
+            rustup toolchain install nightly-2026-07-21 --profile minimal --component rust-src,rustc-dev,llvm-tools-preview --target x86_64-unknown-none
+            rustup_binary=$(command -v rustup)
+            mkdir -p "$CARGO_HOME/bin"
+            for proxy in rustup cargo rustc rustdoc; do
+              ln -s "$rustup_binary" "$CARGO_HOME/bin/$proxy"
+            done
+            rustup run "$USERSPACE_TOOLCHAIN_PIN" rustc -Vv
+            rustup run "$USERSPACE_TOOLCHAIN_PIN" cargo -Vv
+            qemu-system-x86_64 --version
+            gcc --version
+            dpkg-query -W build-essential pkg-config libcap-dev cmake libssl-dev binutils qemu-system-x86 e2fsprogs clang lld busybox-static
+            df -B1 "$F1_CI_ROOT"
+          } 2>&1 | tee "$F1_CI_ROOT/logs/native-setup.log"
+
+      - name: Fetch exact original Desktop and Hepta sources without credentials
+        run: |
+          set -euo pipefail
+          {
+            git init "$F1_CI_ROOT/desktop-source"
+            git -C "$F1_CI_ROOT/desktop-source" remote add origin \
+              https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git
+            git -C "$F1_CI_ROOT/desktop-source" -c credential.helper= -c core.askPass= \
+              fetch --depth=1 --no-tags origin "$DESKTOP_SOURCE_PIN"
+            git -C "$F1_CI_ROOT/desktop-source" checkout --detach "$DESKTOP_SOURCE_PIN"
+            git init "$F1_CI_ROOT/hepta-source"
+            git -C "$F1_CI_ROOT/hepta-source" remote add origin \
+              https://github.com/TrillionniumFoundation/hepta-private-ci.git
+            git -C "$F1_CI_ROOT/hepta-source" -c credential.helper= -c core.askPass= \
+              fetch --depth=1 --no-tags origin "$HEPTA_SOURCE_PIN"
+            git -C "$F1_CI_ROOT/hepta-source" checkout --detach "$HEPTA_SOURCE_PIN"
+          } 2>&1 | tee "$F1_CI_ROOT/logs/source-checkout.log"
+          git -C "$F1_CI_ROOT/desktop-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/desktop-source.txt"
+          git -C "$F1_CI_ROOT/hepta-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/hepta-source.txt"
+
+      - name: Fetch the exact original VDSO and verify its bytes
+        run: |
+          set -euo pipefail
+          git clone https://github.com/asterinas/linux_vdso.git "$F1_CI_ROOT/linux-vdso"
+          git -C "$F1_CI_ROOT/linux-vdso" checkout --detach 8af571775a3d3a1df3e84fc9709b9d6b160c771a
+          test "$(git -C "$F1_CI_ROOT/linux-vdso" rev-parse HEAD^{tree})" = 8e0a300d78c2a020ccc79f1253bc27a8301416e6
+          printf '%s  %s\n' 27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3 \
+            "$F1_CI_ROOT/linux-vdso/vdso_x86_64.so" | sha256sum --check
+
+      - name: Build and boot the reviewed ordinary kernel from source
+        run: |
+          set -euo pipefail
+          review_sha=$(sha256sum tests/workloads/hepta_agentd_runtime/source-review.json | cut -d ' ' -f1)
+          python3 -I -B tests/workloads/hepta_agentd_runtime/build_kernel.py --execute \
+            --desktop-source "$F1_CI_ROOT/desktop-source" \
+            --hepta-source "$F1_CI_ROOT/hepta-source" \
+            --expected-source-review-sha256 "$review_sha" \
+            --cargo-home "$CARGO_HOME" --rustup-home "$RUSTUP_HOME" \
+            --target-dir "$F1_CI_ROOT/kernel-target" \
+            --vdso "$F1_CI_ROOT/linux-vdso" --output "$F1_CI_ROOT/kernel-inputs" \
+            2>&1 | tee "$F1_CI_ROOT/logs/kernel-build-and-boot.log"
+
+      - name: Build original Agentd, unchanged original fixture and real observer for x86_64
+        run: |
+          set -euo pipefail
+          cargo_binary=$(rustup which --toolchain "$USERSPACE_TOOLCHAIN_PIN" cargo)
+          rustc_binary=$(rustup which --toolchain "$USERSPACE_TOOLCHAIN_PIN" rustc)
+          cargo_sha=$(sha256sum "$cargo_binary" | cut -d ' ' -f1)
+          rustc_sha=$(sha256sum "$rustc_binary" | cut -d ' ' -f1)
+          kernel_receipt_sha=$(sha256sum "$F1_CI_ROOT/kernel-inputs/kernel-build.json" | cut -d ' ' -f1)
+          # Dependency prefetch is explicit and uses original locked manifests.
+          # All builds and fixture resolution then run offline; no ELF is run here.
+          python3 -I -B tests/workloads/hepta_agentd_runtime/prepare_inputs.py \
+            --execute --fetch-dependencies \
+            --desktop-source "$F1_CI_ROOT/desktop-source" \
+            --hepta-source "$F1_CI_ROOT/hepta-source" \
+            --kernel "$F1_CI_ROOT/kernel-inputs/kernel.elf" \
+            --kernel-receipt "$F1_CI_ROOT/kernel-inputs/kernel-build.json" \
+            --expected-kernel-receipt-sha256 "$kernel_receipt_sha" \
+            --cargo "$cargo_binary" --expected-cargo-sha256 "$cargo_sha" \
+            --rustc "$rustc_binary" --expected-rustc-sha256 "$rustc_sha" \
+            --cargo-home "$CARGO_HOME" --output "$F1_CI_ROOT/frozen-inputs" \
+            2>&1 | tee "$F1_CI_ROOT/logs/userspace-preparation.log"
+
+      - name: Execute the unchanged original no-turn lifecycle in the actual OS guest
+        run: |
+          set -euo pipefail
+          qemu_binary=$(command -v qemu-system-x86_64)
+          qemu_sha=$(sha256sum "$qemu_binary" | cut -d ' ' -f1)
+          manifest_sha=$(sha256sum "$F1_CI_ROOT/frozen-inputs/input-manifest.json" | cut -d ' ' -f1)
+          python3 -I -B tests/workloads/hepta_agentd_runtime/run_agentd_runtime.py --execute \
+            --input-manifest "$F1_CI_ROOT/frozen-inputs/input-manifest.json" \
+            --expected-input-manifest-sha256 "$manifest_sha" \
+            --initramfs "$F1_CI_ROOT/kernel-inputs/initramfs.cpio.gz" \
+            --bios "$F1_CI_ROOT/kernel-inputs/bios.bin" \
+            --qemu "$qemu_binary" --expected-qemu-sha256 "$qemu_sha" \
+            --memory-mib 4096 --timeout 900 --output "$F1_CI_ROOT/guest" \
+            2>&1 | tee "$F1_CI_ROOT/logs/guest-execution.log"
+
+      - name: Preserve source identities and scope on success or failure
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PY'
+          from datetime import datetime, timezone
+          import json, os, subprocess
+          from pathlib import Path
+          root = Path(os.environ["F1_CI_ROOT"])
+          result = {"recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "run_url": f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}',
+                    "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"], "checkouts": {},
+                    "f1_completed": False, "g2_completed": False, "hardware_verified": False}
+          for name, source in (("runner", Path(os.environ["GITHUB_WORKSPACE"])),
+                               ("desktop", root / "desktop-source"), ("hepta", root / "hepta-source")):
+              result["checkouts"][name] = {}
+              for key, arguments in (("identity", ["rev-parse", "HEAD", "HEAD^{tree}"]),
+                                     ("status", ["status", "--porcelain=v1", "--untracked-files=all"])):
+                  command = subprocess.run(["git", "-C", str(source), *arguments], capture_output=True, text=True, timeout=30)
+                  result["checkouts"][name][key] = {"exit_code": command.returncode, "stdout": command.stdout, "stderr": command.stderr}
+          (root / "identity/final.json").write_text(json.dumps(result, indent=2) + "\n")
+          PY
+
+      - name: Upload original evidence, real binaries and actual guest diagnostics even on failure
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: f1-original-owner-native-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ env.F1_CI_ROOT }}/logs/
+            ${{ env.F1_CI_ROOT }}/identity/
+            ${{ env.F1_CI_ROOT }}/download/*.json
+            ${{ env.F1_CI_ROOT }}/kernel-inputs/
+            ${{ env.F1_CI_ROOT }}/frozen-inputs/*.json
+            ${{ env.F1_CI_ROOT }}/frozen-inputs/*.log
+            ${{ env.F1_CI_ROOT }}/frozen-inputs/bin/
+            ${{ env.F1_CI_ROOT }}/frozen-inputs/fixture-build/Cargo.toml
+            ${{ env.F1_CI_ROOT }}/frozen-inputs/fixture-build/Cargo.lock
+            ${{ env.F1_CI_ROOT }}/frozen-inputs/fixture-build/src/
+            ${{ env.F1_CI_ROOT }}/guest/*.json
+            ${{ env.F1_CI_ROOT }}/guest/*.log
+            ${{ env.F1_CI_ROOT }}/guest/fixture.stdout
+            ${{ env.F1_CI_ROOT }}/guest/fixture.stderr
+            ${{ env.F1_CI_ROOT }}/guest/agentd-runtime-probe
+            ${{ env.F1_CI_ROOT }}/guest/state.raw

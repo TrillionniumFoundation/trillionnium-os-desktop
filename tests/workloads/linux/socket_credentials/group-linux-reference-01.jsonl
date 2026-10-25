@@ -1,0 +1,16 @@
+{"suite":"socket-group-lifetime-v1","maximum_live_children":1,"production_qualified":false}
+{"transport":"stream","case":"actual_rights_handoff_cloexec","passed":true}
+{"transport":"stream","stage":"initial","uid":60001,"euid":60001,"gid":60001,"egid":60001,"permitted":64,"effective":64,"nnp":1,"group_count":2,"group0":60003,"group1":60004,"passed":true}
+{"transport":"stream","peer_group_stage":"created","rc":0,"errno":0,"bytes":8,"group0":60003,"group1":60004,"passed":true}
+{"transport":"stream","stage":"changed","uid":60001,"euid":60001,"gid":60001,"egid":60001,"permitted":64,"effective":64,"nnp":1,"group_count":1,"group0":60005,"group1":0,"passed":true}
+{"transport":"stream","peer_group_stage":"after_group_change","rc":0,"errno":0,"bytes":8,"group0":60003,"group1":60004,"passed":true}
+{"transport":"stream","case":"owned_child_reaped","passed":true}
+{"transport":"stream","peer_group_stage":"after_sender_exit","rc":0,"errno":0,"bytes":8,"group0":60003,"group1":60004,"passed":true}
+{"transport":"seqpacket","case":"actual_rights_handoff_cloexec","passed":true}
+{"transport":"seqpacket","stage":"initial","uid":60001,"euid":60001,"gid":60001,"egid":60001,"permitted":64,"effective":64,"nnp":1,"group_count":2,"group0":60003,"group1":60004,"passed":true}
+{"transport":"seqpacket","peer_group_stage":"created","rc":0,"errno":0,"bytes":8,"group0":60003,"group1":60004,"passed":true}
+{"transport":"seqpacket","stage":"changed","uid":60001,"euid":60001,"gid":60001,"egid":60001,"permitted":64,"effective":64,"nnp":1,"group_count":1,"group0":60005,"group1":0,"passed":true}
+{"transport":"seqpacket","peer_group_stage":"after_group_change","rc":0,"errno":0,"bytes":8,"group0":60003,"group1":60004,"passed":true}
+{"transport":"seqpacket","case":"owned_child_reaped","passed":true}
+{"transport":"seqpacket","peer_group_stage":"after_sender_exit","rc":0,"errno":0,"bytes":8,"group0":60003,"group1":60004,"passed":true}
+{"summary":true,"failures":0,"incomplete_fixtures":0,"reaped_fixtures":2}

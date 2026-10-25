@@ -1,0 +1,123 @@
+{
+  "schema": "hepta.native-process-privilege-abi.v1",
+  "source_head": "22e0a19f8ab95f730e0fedd85462157ed3d9a10e",
+  "source_tree": "9cbd2a0762b42a63cb2c718746773d6555c46460",
+  "kernel_sha256": "a3fb67d9ea48f981d8b26d10d0d9d9bd2e4d20e7a978e48abb1dda7d1d251baa",
+  "ordinary_receipt_sha256": "3bbce68c52865a684e6c2fe1a54849689e64e0def585c30f939419a2bef8cf5a",
+  "probe_source_sha256": "7e711cefe6cc212beb2b0590dd54507b8b954ce75bb38a6c9a2bf98b133b2236",
+  "runner_sha256": "0efa7a584631d193632e793b8ba3029dabbe296beb1f3e6e69a945e0d4bb9b42",
+  "shared_runner_sha256": "4b2b62ce0384aedb8d08a4a2724c1a1c034fe80c221ee2925a2a3c36c5f7ba3f",
+  "probe_sha256": "923063b008790be29b0a266bbbd8f274583effbec02c4feb513baa1652ccf8fd",
+  "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "injected_initramfs_sha256": "7148b1d6651ea1c6747d154935387166c5ca7f65bdafa56b5bb71ec5197399e3",
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-native-22e0-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-native-22e0-01/proc-privileges12/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-native-22e0-01/proc-privileges12/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "compile_argv": [
+    "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pthread",
+    "-static",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-snapshot/tests/kernel/control/proc_process_privileges.c",
+    "-o",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-native-22e0-01/proc-privileges12/probe.elf"
+  ],
+  "raw_qemu_exit": 33,
+  "timed_out": false,
+  "cases": [
+    [
+      "initial_nnp_agrees",
+      "1"
+    ],
+    [
+      "per_thread_nnp",
+      "1"
+    ],
+    [
+      "main_thread_nnp_unchanged",
+      "1"
+    ],
+    [
+      "child_sets_and_cannot_clear_nnp",
+      "1"
+    ],
+    [
+      "parent_attests_child_nnp",
+      "1"
+    ],
+    [
+      "four_child_uids",
+      "1"
+    ],
+    [
+      "four_child_gids",
+      "1"
+    ],
+    [
+      "child_groups_empty",
+      "1"
+    ],
+    [
+      "five_child_capsets_zero",
+      "1"
+    ],
+    [
+      "parent_uid_unchanged",
+      "1"
+    ],
+    [
+      "parent_nnp_unchanged",
+      "1"
+    ],
+    [
+      "exec_preserves_identity",
+      "1"
+    ]
+  ],
+  "serial_sha256": "9f178e8d775e2d114f0f9057b5f245730a0574839ecfc2b7a0426021f33b7283",
+  "guest_deadline_seconds": 120,
+  "expected_missing_negative": false,
+  "passed": true,
+  "negative_control_matched": false,
+  "production_authority": false,
+  "g2_complete": false
+}

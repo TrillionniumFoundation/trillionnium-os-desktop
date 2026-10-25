@@ -1,6 +1,6 @@
 # 多 Agent 并行开发执行方案（2026-10-16）
 
-项目：https://github.com/TrillionniumFoundation/trillionnium-os-desktop。初始规划绑定主干 `e4b2086b0ea28a20b6e721928b925555c0dc3bc8`；该快照的“仅规格”状态已经过时。2026-10-17 核对的 `146dedf75c5729ef1930c845eeb60e31e8111c60` 已有 Rust codec/control core、原生只读 QueryAbi 的 Process / exec 镜像隔离和实验 CPU 配额；G1/G2 仍未闭合。本文保留职责与依赖，开工进度以 [STATUS](../STATUS.md) 的固定源码与真实证据为准。README.md 根文件必须始终为 0 字节。所有成果提交到本仓库，按真实测试记录进度。
+项目：https://github.com/TrillionniumFoundation/trillionnium-os-desktop。初始规划绑定主干 `e4b2086b0ea28a20b6e721928b925555c0dc3bc8`；该快照的“仅规格”状态已经过时。2026-10-17 核对的 `146dedf75c5729ef1930c845eeb60e31e8111c60` 已有 Rust codec/control core、原生只读 QueryAbi 的 Process / exec 镜像隔离和实验 CPU 配额；G1/G2 仍未闭合。本文保留职责与依赖，开工进度以 [STATUS](../STATUS.md) 的固定源码与真实证据为准。根 README.md 用于项目导航，保持受版本管理的普通文件；当前能力与未完成项见 [能力表](../CURRENT_CAPABILITIES.md)。所有成果提交到本仓库，按真实测试记录进度。
 
 ## 并发策略与依赖
 

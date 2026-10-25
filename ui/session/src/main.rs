@@ -1,8 +1,10 @@
 //! Independent host-only process launcher/lifecycle owner.
 //! It is not a Wayland compositor and it grants no kernel permissions.
+mod deadline;
 mod hepta;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
+mod objective_bridge;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -16,6 +18,7 @@ use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
+use std::time::{Duration, Instant};
 
 #[cfg(target_os = "linux")]
 use trill_ui_broker::notes::NotesTarget;
@@ -127,6 +130,7 @@ impl DisplayTracker {
 }
 
 struct Session {
+    objective: objective_bridge::ObjectiveBridge,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -154,6 +158,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            objective: objective_bridge::ObjectiveBridge::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -221,8 +226,9 @@ impl Session {
             .notes_targets
             .remove(&1)
             .ok_or_else(|| io::Error::other("initial Notes endpoint missing"))
-            .and_then(NotesTarget::into_initial_endpoint);
-        let attached = endpoint.and_then(|(identity, stream)| bootstrap.offer(identity, stream));
+            .and_then(NotesTarget::into_initial_endpoints);
+        let attached = endpoint
+            .and_then(|(identity, effect, recovery)| bootstrap.offer(identity, effect, recovery));
         if let Err(error) = attached {
             // This closes only the Session-owned initial child. An attachment
             // timeout cannot prove the parent's grant/effect never occurred.
@@ -270,13 +276,23 @@ impl Session {
             incarnation,
         };
         let (parent, child) = UnixStream::pair()?;
-        let target = NotesTarget::from_private_channel(parent, identity.clone())?;
+        let (recovery_parent, recovery_child) = std::os::unix::net::UnixDatagram::pair()?;
+        let (bootstrap, child_bootstrap) = std::os::unix::net::UnixDatagram::pair()?;
+        let raw = serde_json::to_vec(&identity).map_err(io::Error::other)?;
+        trill_ui_core::notes_private_unix::send_channels(
+            &bootstrap,
+            &raw,
+            &child,
+            &recovery_child,
+            std::time::Duration::from_secs(1),
+        )?;
+        let target = NotesTarget::from_private_channels(parent, recovery_parent, identity.clone())?;
         command
             .arg("--notes-session")
             .arg(&identity.session_instance)
             .arg("--notes-incarnation")
             .arg(&identity.incarnation)
-            .stdin(Stdio::from(OwnedFd::from(child)));
+            .stdin(Stdio::from(OwnedFd::from(child_bootstrap)));
         Ok(target)
     }
 
@@ -483,9 +499,57 @@ impl Session {
         }
     }
 
+    fn objective_request(
+        &self,
+        expected_instance: String,
+        command: trill_ui_core::objective::ObjectiveCommand,
+    ) -> Response {
+        if expected_instance != self.instance {
+            return Response::Error {
+                message: "Stale Session; Objective command not forwarded".into(),
+                session_instance: self.instance.clone(),
+            };
+        }
+        Response::Objective {
+            observation: self.objective.request(command),
+            session_instance: self.instance.clone(),
+        }
+    }
+
     fn handle(&mut self, request: Request) -> Response {
         self.refresh();
         match request {
+            Request::ObjectiveAvailability { expected_instance } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Availability {},
+            ),
+            Request::ObjectiveSubmit {
+                client_intent_id,
+                text,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Submit {
+                    intent: trill_ui_core::objective::ObjectiveIntent {
+                        client_intent_id,
+                        text,
+                    },
+                },
+            ),
+            Request::ObjectiveStatus {
+                client_intent_id,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Status { client_intent_id },
+            ),
+            Request::ObjectiveCancel {
+                client_intent_id,
+                expected_instance,
+            } => self.objective_request(
+                expected_instance,
+                trill_ui_core::objective::ObjectiveCommand::Cancel { client_intent_id },
+            ),
             Request::Snapshot => {
                 let observation = self.display.observe(probe_host_wayland());
                 Response::Snapshot {
@@ -668,20 +732,42 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
     }
 }
 
-fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result<()> {
-    require_same_uid_peer(&stream)?;
+// Shared by the request read and response write; partial I/O never restarts it.
+const EXCHANGE_BUDGET: Duration = Duration::from_millis(500);
+
+fn serve_connection(stream: UnixStream, session: &mut Session) -> io::Result<()> {
+    serve_connection_until(stream, session, Instant::now() + EXCHANGE_BUDGET)
+}
+
+fn serve_connection_until(
+    stream: UnixStream,
+    session: &mut Session,
+    deadline: Instant,
+) -> io::Result<()> {
     // Invalid/malformed peers must not prevent reaping independent apps.
     // A valid Request::Snapshot/Cancel already refreshes in handle(), but
     // rejected frames never reach handle(). Refresh before parsing every peer.
     session.refresh();
-    // This is a local single-owner session loop, so an idle same-UID peer
-    // must not block task reaping and every other GUI client for two seconds.
-    // A legitimate request is <=64 KiB and written as one bounded frame.
-    stream.set_read_timeout(Some(std::time::Duration::from_millis(500)))?;
-    stream.set_write_timeout(Some(std::time::Duration::from_millis(500)))?;
-    let response = match read_frame(&mut stream) {
+    let result = (|| {
+        require_same_uid_peer(&stream)?;
+        let mut stream = deadline::DeadlineStream::new(stream, deadline);
+        serve_request(&mut stream, session)
+    })();
+    // A child may exit while the request is incomplete or its response cannot
+    // be delivered. Reap on every return path before accepting the next peer.
+    session.refresh();
+    result
+}
+
+fn serve_request(stream: &mut deadline::DeadlineStream, session: &mut Session) -> io::Result<()> {
+    let response = match read_frame(&mut *stream) {
         Ok(frame) => match parse_host_request(&frame) {
-            Ok(command) => session.handle(command),
+            // Parsing a bounded frame must not allow an expired exchange to
+            // begin a launch/cancel effect after its read allowance elapsed.
+            Ok(command) => {
+                stream.remaining()?;
+                session.handle(command)
+            }
             Err(error) => Response::Error {
                 message: format!("Invalid IPC request: {error}"),
                 session_instance: session.instance.clone(),
@@ -694,10 +780,10 @@ fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result
     };
     // Never emit a partial/truncated JSON frame or silently lose lifecycle
     // provenance if a future TaskRecord field makes a snapshot too large.
-    match write_frame(&mut stream, &response) {
+    match write_frame(&mut *stream, &response) {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == io::ErrorKind::InvalidData => write_frame(
-            &mut stream,
+            &mut *stream,
             &Response::Error {
                 message: "Session snapshot is too large; no task state is being asserted".into(),
                 session_instance: session.instance.clone(),
@@ -707,16 +793,20 @@ fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum NotesBootstrapMode { None, Direct, Reserved }
+
 fn notes_bootstrap_requested(
     args: impl IntoIterator<Item = std::ffi::OsString>,
-) -> io::Result<bool> {
+) -> io::Result<NotesBootstrapMode> {
     let mut args = args.into_iter();
     match args.next() {
-        None => Ok(false),
-        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => Ok(true),
+        None => Ok(NotesBootstrapMode::None),
+        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Direct),
+        Some(flag) if flag == "--notes-root-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Reserved),
         _ => Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "expected no arguments or --notes-bootstrap-stdin",
+            "expected no arguments, --notes-bootstrap-stdin or --notes-root-bootstrap-stdin",
         )),
     }
 }
@@ -724,13 +814,13 @@ fn notes_bootstrap_requested(
 fn main() -> io::Result<()> {
     let requested = notes_bootstrap_requested(std::env::args_os().skip(1))?;
     #[cfg(target_os = "linux")]
-    let notes_bootstrap = if requested {
-        Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?)
-    } else {
-        None
+    let notes_bootstrap = match requested {
+        NotesBootstrapMode::None => None,
+        NotesBootstrapMode::Direct => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?),
+        NotesBootstrapMode::Reserved => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?.with_root_startup_reservation()),
     };
     #[cfg(not(target_os = "linux"))]
-    if requested {
+    if requested != NotesBootstrapMode::None {
         return Err(io::Error::new(
             io::ErrorKind::Unsupported,
             "Notes bootstrap requires Linux",
@@ -809,8 +899,9 @@ mod tests {
     #[test]
     fn notes_bootstrap_is_explicit_startup_and_never_a_public_request() {
         use std::ffi::OsString;
-        assert!(!notes_bootstrap_requested(Vec::<OsString>::new()).unwrap());
-        assert!(notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap());
+        assert_eq!(notes_bootstrap_requested(Vec::<OsString>::new()).unwrap(), NotesBootstrapMode::None);
+        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Direct);
+        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Reserved);
         assert!(notes_bootstrap_requested([
             OsString::from("--notes-bootstrap-stdin"),
             OsString::from("extra")
@@ -820,6 +911,7 @@ mod tests {
         for request in [
             br#"{"type":"notes_bootstrap","fd":0}"#.as_slice(),
             br#"{"type":"offer_notes_target","target":{"task_id":1}}"#.as_slice(),
+            br#"{"type":"notes_target_reserved","target":{"task_id":1},"nonce":"0000"}"#.as_slice(),
         ] {
             assert!(parse_host_request(request).is_err());
         }
@@ -1134,6 +1226,161 @@ mod tests {
         assert!(settled, "malformed traffic must still reap /bin/true");
         assert_eq!(session.tasks[&task.id].exit_code, Some(0));
         assert!(session.children.is_empty());
+    }
+
+    #[test]
+    fn fragmented_snapshot_keeps_the_existing_request_and_response_api() {
+        use std::io::Write as _;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let instance = session.instance.clone();
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        peer.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        let owner = thread::spawn(move || serve_connection(stream, &mut session));
+        // Ordinary newline framing may be split across multiple writes.
+        peer.write_all(b"{\"type\":").unwrap();
+        peer.write_all(b"\"snapshot\"}\n").unwrap();
+        let response: Response = serde_json::from_slice(&read_frame(&mut peer).unwrap()).unwrap();
+        let Response::Snapshot {
+            tasks,
+            session_instance,
+            ..
+        } = response
+        else {
+            panic!("expected the unchanged snapshot response");
+        };
+        assert!(tasks.is_empty());
+        assert_eq!(session_instance, instance);
+        owner.join().unwrap().unwrap();
+    }
+
+    #[test]
+    fn an_expired_complete_request_cannot_dispatch_a_launch() {
+        use std::io::Write as _;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        write_frame(
+            &mut peer,
+            &Request::Launch {
+                workspace: Workspace::Build,
+                app: AppKind::Calculator,
+                expected_instance: session.instance.clone(),
+            },
+        )
+        .unwrap();
+        peer.flush().unwrap();
+        let error = serve_connection_until(
+            stream,
+            &mut session,
+            Instant::now() - Duration::from_millis(1),
+        )
+        .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+        assert!(session.tasks.is_empty());
+        assert!(session.children.is_empty());
+        assert_eq!(session.next_id, 1);
+    }
+
+    #[test]
+    fn incomplete_request_expires_then_next_snapshot_observes_reaped_child() {
+        use std::io::Write as _;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let Response::Task { task, .. } = session.launch(Workspace::Build, AppKind::Calculator)
+        else {
+            panic!("expected owned host child");
+        };
+        let (mut incomplete, stream) = UnixStream::pair().unwrap();
+        // One ordinary partial frame, followed by no more input. This is a
+        // controlled transport-timeout fixture with no retrying sender.
+        incomplete.write_all(b"{\"type\":").unwrap();
+        let started = Instant::now();
+        let error =
+            serve_connection_until(stream, &mut session, started + Duration::from_millis(100))
+                .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+        assert!(started.elapsed() < Duration::from_secs(2));
+        assert_eq!(session.tasks[&task.id].state, TaskState::Completed);
+        assert_eq!(session.tasks[&task.id].exit_code, Some(0));
+        assert!(session.children.is_empty());
+
+        // The next queued client retains the same Session and gets a normal
+        // bounded response after the incomplete exchange relinquishes it.
+        let (mut next, stream) = UnixStream::pair().unwrap();
+        write_frame(&mut next, &Request::Snapshot).unwrap();
+        serve_connection(stream, &mut session).unwrap();
+        let response: Response = serde_json::from_slice(&read_frame(&mut next).unwrap()).unwrap();
+        let Response::Snapshot { tasks, .. } = response else {
+            panic!("expected next client's snapshot");
+        };
+        assert_eq!(tasks[0].id, task.id);
+        assert_eq!(tasks[0].state, TaskState::Completed);
+        drop(incomplete);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn response_backpressure_still_refreshes_child_exit_and_releases_owner() {
+        use std::os::fd::AsRawFd;
+        let mut session = Session::new(PathBuf::from("/bin/true")).unwrap();
+        let Response::Task { task, .. } = session.launch(Workspace::Build, AppKind::Calculator)
+        else {
+            panic!("expected owned child");
+        };
+        // Replace only this test-owned child with a short process that exits
+        // during the blocked response; the completed original is reaped first.
+        session.children.get_mut(&task.id).unwrap().wait().unwrap();
+        session.children.insert(
+            task.id,
+            Command::new("/bin/sleep").arg("0.05").spawn().unwrap(),
+        );
+        for id in 2..26 {
+            let mut padding = task.clone();
+            padding.id = id;
+            padding.detail = "x".repeat(1000);
+            session.tasks.insert(id, padding);
+        }
+        let (mut peer, stream) = UnixStream::pair().unwrap();
+        let buffer_bytes: libc::c_int = 4096;
+        assert_eq!(
+            unsafe {
+                libc::setsockopt(
+                    stream.as_raw_fd(),
+                    libc::SOL_SOCKET,
+                    libc::SO_SNDBUF,
+                    (&buffer_bytes as *const libc::c_int).cast(),
+                    std::mem::size_of_val(&buffer_bytes) as libc::socklen_t,
+                )
+            },
+            0
+        );
+        write_frame(&mut peer, &Request::Snapshot).unwrap();
+        let started = Instant::now();
+        assert!(
+            serve_connection_until(stream, &mut session, started + Duration::from_millis(150))
+                .is_err()
+        );
+        assert!(started.elapsed() < Duration::from_secs(1));
+        assert_eq!(session.tasks[&task.id].state, TaskState::Completed);
+        assert!(
+            session.children.is_empty(),
+            "response failure must reap an unrelated child"
+        );
+        // Trim artificial response padding before proving the next client can
+        // observe the same live owner without restarting it or closing peer.
+        session.tasks.retain(|id, _| *id == task.id);
+        let (mut next, stream) = UnixStream::pair().unwrap();
+        write_frame(&mut next, &Request::Snapshot).unwrap();
+        serve_connection(stream, &mut session).unwrap();
+        let response: Response = serde_json::from_slice(&read_frame(&mut next).unwrap()).unwrap();
+        let Response::Snapshot {
+            tasks,
+            session_instance,
+            ..
+        } = response
+        else {
+            panic!("next snapshot");
+        };
+        assert_eq!(session_instance, session.instance);
+        assert_eq!(tasks[0].state, TaskState::Completed);
     }
 
     #[test]

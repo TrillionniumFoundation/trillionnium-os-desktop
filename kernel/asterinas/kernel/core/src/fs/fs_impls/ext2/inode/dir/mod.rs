@@ -13,7 +13,10 @@ mod dir_entry;
 
 use self::dir_entry::{DOT_BYTE, DOT_DOT_BYTE, DirBlockView, DirEntryFileType, DirEntryHeader};
 use super::{super::Ext2, FileFlags, FilePerm, Inode, InodeInner, MAX_LINK_COUNT};
-use crate::fs::ext2::{prelude::*, utils};
+use crate::fs::{
+    ext2::{prelude::*, utils},
+    file::InodeMode,
+};
 
 /// Information about a candidate directory entry slot.
 #[derive(Clone, Copy, Debug)]
@@ -128,7 +131,7 @@ impl Inode {
         &self,
         name: &str,
         type_: InodeType,
-        perm: FilePerm,
+        mut perm: FilePerm,
         init_child_fn: impl FnOnce(&Arc<Ext2>, &Inode) -> Result<()>,
     ) -> Result<Arc<Inode>> {
         let dir_entry_file_type = DirEntryFileType::from(type_);
@@ -149,7 +152,17 @@ impl Inode {
         // concurrent `create` / `lookup_via_fs` on this directory.
         // So the concurrent `lookup_via_fs` won't create a new `Arc<Inode>`
         // from Inode desc and then insert it into inode cache.
-        let child = fs.create_inode(self.ino, type_, perm)?;
+        // This same original parent write guard serializes group/mode changes
+        // with child publication. Inherit the parent group only for setgid
+        // directories, and carry setgid onto a newly created directory.
+        let (uid, gid, mode) = crate::fs::utils::child_creation_attrs(
+            parent_inner.mode(),
+            crate::process::Gid::new(parent_inner.gid()),
+            type_,
+            InodeMode::from_bits_truncate(perm.bits()),
+        );
+        perm = FilePerm::from_bits_truncate(mode.bits());
+        let child = fs.create_inode(self.ino, type_, perm, uid, gid)?;
         let child_ino = child.ino();
         let result = init_child_fn(&fs, &child)
             .and_then(|_| parent_inner.add_entry(&slot, name, child_ino, dir_entry_file_type));

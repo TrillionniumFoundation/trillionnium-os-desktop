@@ -33,8 +33,17 @@ pub(in crate::fs) mod smp_support;
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum PermissionAttrOp {
     Chmod(InodeMode),
-    Chown { uid: Option<Uid>, gid: Option<Gid> },
+    Chown {
+        uid: Option<Uid>,
+        gid: Option<Gid>,
+    },
     ClearSetIdBits,
+    /// `None` preserves a timestamp; only setting both to now permits write DAC.
+    Utimes {
+        atime: Option<Duration>,
+        mtime: Option<Duration>,
+        now_only: bool,
+    },
 }
 
 /// Caller authority captured outside the inode critical section.
@@ -42,10 +51,11 @@ pub(crate) struct PermissionAttrRequest {
     operation: PermissionAttrOp,
     fsuid: Uid,
     fsgid: Gid,
-    supplementary_gids: BTreeSet<Gid>,
+    supplementary_gids: Arc<BTreeSet<Gid>>,
     cap_chown: Option<Result<()>>,
     cap_fowner: Option<Result<()>>,
     cap_fsetid: Option<Result<()>>,
+    cap_dac_override: Option<Result<()>>,
     pending_cap: Cell<Option<PermissionCap>>,
     #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
     checkpoint: Option<Arc<smp_support::PermissionCheckpoint>>,
@@ -72,10 +82,11 @@ impl PermissionAttrRequest {
             operation,
             fsuid: credentials.fsuid(),
             fsgid: credentials.fsgid(),
-            supplementary_gids: credentials.groups().clone(),
+            supplementary_gids: credentials.groups(),
             cap_chown: None,
             cap_fowner: None,
             cap_fsetid: None,
+            cap_dac_override: None,
             pending_cap: Cell::new(None),
             #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
             checkpoint: None,
@@ -84,14 +95,18 @@ impl PermissionAttrRequest {
         // A capability hook runs only after a real locked decision needs it.
         // Its result is caller-/namespace-specific, not inode-specific, so it is
         // reusable within this operation. Credentials belong to the current
-        // thread. Each of the three hooks is requested at most once.
+        // thread. Each of the capability hooks is requested at most once.
         loop {
-            let result = dentry.inode().try_permission_attr_transaction(dentry, &request);
+            let result = dentry
+                .inode()
+                .try_permission_attr_transaction(dentry, &request);
             let Some(cap) = request.pending_cap.take() else {
                 return result;
             };
             debug_assert!(result.as_ref().is_some_and(|result| {
-                result.as_ref().is_err_and(|error| error.error() == Errno::EAGAIN)
+                result
+                    .as_ref()
+                    .is_err_and(|error| error.error() == Errno::EAGAIN)
             }));
             let result = lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
                 user_ns,
@@ -102,6 +117,7 @@ impl PermissionAttrRequest {
                 PermissionCap::Chown => request.cap_chown = Some(result),
                 PermissionCap::Fowner => request.cap_fowner = Some(result),
                 PermissionCap::Fsetid => request.cap_fsetid = Some(result),
+                PermissionCap::DacOverride => request.cap_dac_override = Some(result),
             }
         }
     }
@@ -114,12 +130,16 @@ impl PermissionAttrRequest {
             PermissionCap::Chown => self.cap_chown,
             PermissionCap::Fowner => self.cap_fowner,
             PermissionCap::Fsetid => self.cap_fsetid,
+            PermissionCap::DacOverride => self.cap_dac_override,
         };
         if let Some(result) = result {
             return Ok(result);
         }
         self.pending_cap.set(Some(cap));
-        Err(Error::with_message(Errno::EAGAIN, "capability evidence required"))
+        Err(Error::with_message(
+            Errno::EAGAIN,
+            "capability evidence required",
+        ))
     }
 
     fn has_group(&self, gid: Gid) -> bool {
@@ -148,9 +168,8 @@ impl PermissionAttrRequest {
             }
             PermissionAttrOp::Chown { uid, gid } => {
                 let needs_cap_chown = uid.is_some_and(|uid| !is_owner || uid != attrs.uid)
-                    || gid.is_some_and(|gid| {
-                        !is_owner || (gid != attrs.gid && !self.has_group(gid))
-                    });
+                    || gid
+                        .is_some_and(|gid| !is_owner || (gid != attrs.gid && !self.has_group(gid)));
                 if needs_cap_chown {
                     self.capability(PermissionCap::Chown)??;
                 }
@@ -177,17 +196,50 @@ impl PermissionAttrRequest {
                 // Includes chown(-1, -1) with no set-ID bits and no owner check.
                 update.touch_ctime = true;
             }
+            PermissionAttrOp::Utimes {
+                atime,
+                mtime,
+                now_only,
+            } => {
+                // Linux utimensat: write DAC authorizes only the two-now form.
+                // Explicit values or a single UTIME_OMIT require owner/FOWNER.
+                // The group class takes precedence over the other class.
+                if !is_owner {
+                    let writable = if self.has_group(attrs.gid) {
+                        attrs.mode.is_group_writable()
+                    } else {
+                        attrs.mode.is_other_writable()
+                    };
+                    if now_only {
+                        if !writable
+                            && self.capability(PermissionCap::Fowner)?.is_err()
+                            && self.capability(PermissionCap::DacOverride)?.is_err()
+                        {
+                            return_errno_with_message!(
+                                Errno::EACCES,
+                                "cannot set current file times"
+                            );
+                        }
+                    } else {
+                        self.capability(PermissionCap::Fowner)??;
+                    }
+                }
+                update.atime = atime;
+                update.mtime = mtime;
+                update.touch_ctime = true;
+            }
             PermissionAttrOp::ClearSetIdBits => {
                 if attrs.type_ != InodeType::File
-                    || !attrs.mode.intersects(InodeMode::S_ISUID | InodeMode::S_ISGID)
+                    || !attrs
+                        .mode
+                        .intersects(InodeMode::S_ISUID | InodeMode::S_ISGID)
                     || self.capability(PermissionCap::Fsetid)?.is_ok()
                 {
                     return Ok(update);
                 }
                 let mut mode = attrs.mode;
                 mode.remove(InodeMode::S_ISUID);
-                if mode.has_set_gid()
-                    && (mode.is_group_executable() || !self.has_group(attrs.gid))
+                if mode.has_set_gid() && (mode.is_group_executable() || !self.has_group(attrs.gid))
                 {
                     mode.remove(InodeMode::S_ISGID);
                 }
@@ -217,6 +269,12 @@ impl PermissionAttrRequest {
         if let Some(gid) = update.gid {
             metadata.gid = gid;
         }
+        if let Some(atime) = update.atime {
+            metadata.last_access_at = atime;
+        }
+        if let Some(mtime) = update.mtime {
+            metadata.last_modify_at = mtime;
+        }
         if let Some(ctime) = update.ctime(ctime_policy) {
             metadata.last_meta_change_at = ctime;
         }
@@ -242,10 +300,11 @@ impl PermissionAttrRequest {
             operation,
             fsuid,
             fsgid,
-            supplementary_gids,
+            supplementary_gids: Arc::new(supplementary_gids),
             cap_chown: Some(capable(CapSet::CHOWN)),
             cap_fowner: Some(capable(CapSet::FOWNER)),
             cap_fsetid: Some(capable(CapSet::FSETID)),
+            cap_dac_override: Some(capable(CapSet::DAC_OVERRIDE)),
             pending_cap: Cell::new(None),
             #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
             checkpoint: None,
@@ -274,6 +333,7 @@ enum PermissionCap {
     Chown,
     Fowner,
     Fsetid,
+    DacOverride,
 }
 
 impl PermissionCap {
@@ -282,6 +342,7 @@ impl PermissionCap {
             Self::Chown => CapSet::CHOWN,
             Self::Fowner => CapSet::FOWNER,
             Self::Fsetid => CapSet::FSETID,
+            Self::DacOverride => CapSet::DAC_OVERRIDE,
         }
     }
 }
@@ -312,6 +373,8 @@ pub(in crate::fs) struct PermissionAttrUpdate {
     pub mode: Option<InodeMode>,
     pub uid: Option<Uid>,
     pub gid: Option<Gid>,
+    pub atime: Option<Duration>,
+    pub mtime: Option<Duration>,
     touch_ctime: bool,
 }
 

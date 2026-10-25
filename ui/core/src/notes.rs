@@ -182,6 +182,7 @@ pub enum NotesNotAppliedReason {
     RevisionExhausted,
     TargetMismatch,
     UiDeadlineElapsed,
+    ReceiptPending,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -253,14 +254,17 @@ pub enum NotesProtocolError {
     Receipt,
 }
 
-/// App-owned state, used on the egui thread. The one retained applied receipt
-/// describes the last external mutation, not durable operation history. A
-/// missing older receipt or a restarted process is Unknown, never "not sent".
+/// App-owned state, serialized by the application worker. The one retained applied receipt
+/// cannot be overwritten until the original durable writer acknowledges that
+/// exact receipt. Capacity is one. Persistence is supplied by NotesStore;
+/// the in-memory model alone does not confer crash recovery.
+#[derive(Clone)]
 pub struct NotesDocument {
     target: NotesTargetIdentity,
     text: String,
     revision: u64,
     last_applied: Option<NotesResponse>,
+    last_retired: Option<crate::notes_recovery::NotesAcknowledge>,
 }
 
 impl NotesDocument {
@@ -271,11 +275,16 @@ impl NotesDocument {
             text: String::new(),
             revision: 0,
             last_applied: None,
+            last_retired: None,
         })
     }
 
     pub fn text(&self) -> &str {
         &self.text
+    }
+
+    pub fn target(&self) -> &NotesTargetIdentity {
+        &self.target
     }
 
     pub fn revision(&self) -> u64 {
@@ -328,6 +337,9 @@ impl NotesDocument {
         if request.expected_revision != self.revision {
             return Ok(refusal(NotesNotAppliedReason::RevisionConflict));
         }
+        if self.last_applied.is_some() {
+            return Ok(refusal(NotesNotAppliedReason::ReceiptPending));
+        }
         let Some(revision) = self.revision.checked_add(1) else {
             return Ok(refusal(NotesNotAppliedReason::RevisionExhausted));
         };
@@ -340,6 +352,80 @@ impl NotesDocument {
         self.revision = revision;
         self.last_applied = Some(applied.clone());
         Ok(applied)
+    }
+
+    /// This lane accepts observation and exact receipt retirement only. It
+    /// deliberately has no fallback to apply_exact, so replace_note cannot
+    /// mutate the document even if sent by a misbehaving peer.
+    pub fn recovery_exact(&mut self, raw: &[u8]) -> Result<Vec<u8>, NotesProtocolError> {
+        use crate::notes_recovery::{NotesRead, NotesReadAction};
+        if let Ok(query) = NotesRead::parse_exact(raw) {
+            if query.target != self.target {
+                return Err(NotesProtocolError::Target);
+            }
+            let response = match query.action {
+                NotesReadAction::ReadDocumentState => serde_json::json!({
+                    "schema_version": NOTES_SCHEMA_VERSION,
+                    "action": "document_state",
+                    "target": self.target,
+                    "request_id": query.request_id,
+                    "revision": self.revision,
+                    "text_sha256": sha256_hex(self.text.as_bytes()),
+                    "receipt_pending": self.last_applied.is_some(),
+                }),
+                // A new application incarnation does not discover or adopt
+                // another incarnation's receipt from directory names. Its
+                // old retained owner may attach a separate recovery process.
+                NotesReadAction::ReadPreviousReceipt => serde_json::json!({
+                    "schema_version": NOTES_SCHEMA_VERSION,
+                    "action": "previous_receipt",
+                    "target": self.target,
+                    "request_id": query.request_id,
+                    "pending_receipt": null,
+                }),
+            };
+            return serde_json::to_vec(&response).map_err(|_| NotesProtocolError::Receipt);
+        }
+        if let Ok(query) = NotesObserve::parse_exact(raw) {
+            return serde_json::to_vec(&self.observe(&query)?)
+                .map_err(|_| NotesProtocolError::Receipt);
+        }
+        use crate::notes_recovery::{
+            NotesAcknowledge, NotesRetirementResponse, NotesRetirementStatus,
+        };
+        let acknowledgement = NotesAcknowledge::parse_exact(raw)?;
+        if acknowledgement.target != self.target {
+            return Err(NotesProtocolError::Target);
+        }
+        let status = if self.last_retired.as_ref() == Some(&acknowledgement) {
+            NotesRetirementStatus::AlreadyReleased
+        } else if let Some(receipt) = &self.last_applied {
+            let receipt_bytes =
+                serde_json::to_vec(receipt).map_err(|_| NotesProtocolError::Receipt)?;
+            if receipt.matches(
+                &self.target,
+                &acknowledgement.operation_id,
+                &acknowledgement.payload_sha256,
+            ) && sha256_hex(&receipt_bytes) == acknowledgement.receipt_sha256
+            {
+                self.last_applied = None;
+                self.last_retired = Some(acknowledgement.clone());
+                NotesRetirementStatus::Released
+            } else {
+                NotesRetirementStatus::Unknown
+            }
+        } else {
+            NotesRetirementStatus::Unknown
+        };
+        serde_json::to_vec(&NotesRetirementResponse {
+            schema_version: NOTES_SCHEMA_VERSION,
+            target: self.target.clone(),
+            operation_id: acknowledgement.operation_id,
+            payload_sha256: acknowledgement.payload_sha256,
+            receipt_sha256: acknowledgement.receipt_sha256,
+            status,
+        })
+        .map_err(|_| NotesProtocolError::Receipt)
     }
 
     pub fn observe(&self, request: &NotesObserve) -> Result<NotesResponse, NotesProtocolError> {
@@ -472,12 +558,19 @@ mod tests {
                 ..
             }
         ));
-        document
-            .apply_exact(&request("op-two", 1, "same text"))
-            .unwrap();
+        assert!(matches!(
+            document
+                .apply_exact(&request("op-two", 1, "same text"))
+                .unwrap()
+                .result,
+            NotesResult::NotApplied {
+                reason: NotesNotAppliedReason::ReceiptPending,
+                ..
+            }
+        ));
         assert!(matches!(
             document.observe(&query).unwrap().result,
-            NotesResult::Unknown { .. }
+            NotesResult::Applied { .. }
         ));
         let fresh = NotesDocument::new(identity()).unwrap();
         assert!(matches!(
@@ -530,3 +623,10 @@ mod tests {
         assert_eq!(response, expected);
     }
 }
+
+#[cfg(test)]
+#[path = "notes_recovery_tests.rs"]
+mod recovery_tests;
+
+#[path = "notes_checkpoint.rs"]
+mod checkpoint;

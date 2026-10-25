@@ -9,6 +9,34 @@ sendmmsg, recvmmsg, accept4, recvmsg, and socketcall
 under this category.
 -->
 
+## UNIX ownership and queue limits
+
+The downstream kernel supports `AF_UNIX` stream, seqpacket and datagram sockets.
+`SCM_RIGHTS` may transfer Unix socket descriptors when their persistent ownership remains acyclic,
+including an effect stream and a recovery datagram passed through a bootstrap channel.
+A send or later connection that would introduce a cycle returns `ELOOP` before publication.
+There is no privileged exemption.
+This admission policy does not implement Linux's in-flight socket garbage collector;
+applications that intentionally construct such cycles are unsupported.
+
+The global graph has 1,024 identities and 4,096 distinct directed edges.
+Socket creation, socketpair, connect, listen, accept and descriptor transfer may return `ENOBUFS`
+when the corresponding graph capacity is exhausted.
+An unsuccessful accept retains its pending connection;
+an unsuccessful datagram reconnection retains its old peer.
+Closing the final actual owner and ancillary alias releases its graph capacity.
+A peeked or received control alias may conservatively retain an admission until that alias is dropped.
+
+Each Unix datagram and seqpacket receive queue accepts at most 128 messages, including empty messages.
+Their existing 64 KiB payload-byte limit is unchanged.
+A full queue makes a nonblocking send return `EAGAIN`; blocking send waits through the original socket wait path.
+Peeking does not release a message slot.
+Consumption wakes blocked senders, and peer close wakes them with the original peer-closure error.
+Payload physical-page accounting and allocation rounding are separate from these message and graph limits.
+
+SCML describes accepted arguments; it cannot encode the current ownership graph or its remaining capacity.
+The limitations above therefore apply even when a call's arguments match a SCML rule.
+
 ## Socket creation
 
 ### `socket`
@@ -77,6 +105,12 @@ Supported functionality in SCML:
 ```c
 {{#include sendto_and_sendmsg.scml}}
 ```
+
+Ancillary input parsing and descriptor-vector merging return `ENOMEM`
+if their kernel vector storage cannot be reserved.
+No socket payload or control message is published by these failed input stages.
+The existing limits remain 32 parsed control messages and 253 transferred descriptors.
+This does not imply fallible allocation for all later send or receive work.
 
 Unsupported flags:
 * `MSG_CONFIRM`

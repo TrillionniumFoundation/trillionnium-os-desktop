@@ -7,6 +7,16 @@ use crate::{prelude::*, vm::perms::VmPerms};
 
 impl Vmar {
     pub(crate) fn handle_page_fault(&self, page_fault_info: &PageFaultInfo) -> Result<()> {
+        self.handle_page_fault_with_reason(page_fault_info)
+            .map_err(PageFaultError::into_error)
+    }
+
+    /// Retains the classification from the same locked mapping lookup and
+    /// permission check; callers must not infer it from an errno or later lookup.
+    pub(crate) fn handle_page_fault_with_reason(
+        &self,
+        page_fault_info: &PageFaultInfo,
+    ) -> Result<(), PageFaultError> {
         let inner = self.inner.read();
 
         let address = page_fault_info.address;
@@ -14,13 +24,40 @@ impl Vmar {
             debug_assert!(vm_mapping.range().contains(&address));
 
             let mut rss_delta = RssDelta::new(self);
-            return vm_mapping.handle_page_fault(&self.vm_space, page_fault_info, &mut rss_delta);
+            return vm_mapping.handle_page_fault(
+                &self.vm_space,
+                page_fault_info,
+                &mut rss_delta,
+                self.user_memory_owner(),
+            );
         }
 
-        return_errno_with_message!(
+        Err(PageFaultError::Unmapped(Error::with_message(
             Errno::EACCES,
-            "no VM mappings contain the page fault address"
-        );
+            "no VM mappings contain the page fault address",
+        )))
+    }
+}
+
+/// A reason captured at the original lookup/check, carrying the unchanged error.
+#[derive(Debug)]
+pub(crate) enum PageFaultError {
+    Unmapped(Error),
+    PermissionDenied(Error),
+    Other(Error),
+}
+
+impl PageFaultError {
+    pub(crate) fn error(&self) -> &Error {
+        match self {
+            Self::Unmapped(error) | Self::PermissionDenied(error) | Self::Other(error) => error,
+        }
+    }
+
+    pub(crate) fn into_error(self) -> Error {
+        match self {
+            Self::Unmapped(error) | Self::PermissionDenied(error) | Self::Other(error) => error,
+        }
     }
 }
 
@@ -53,6 +90,10 @@ impl PageFaultInfo {
             required_perms,
             is_forced: false,
         }
+    }
+
+    pub(crate) fn address(&self) -> Vaddr {
+        self.address
     }
 
     /// Returns whether this page fault is forced.

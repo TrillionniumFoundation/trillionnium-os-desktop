@@ -4,7 +4,17 @@ pub mod conversation;
 pub mod hepta;
 pub mod notes;
 pub mod notes_bootstrap;
+pub mod notes_startup;
+#[cfg(target_os = "linux")]
+pub mod notes_private_unix;
+pub mod notes_recovery;
+#[cfg(target_os = "linux")]
+pub mod notes_store;
+pub mod objective;
 pub mod observation;
+
+#[cfg(feature = "hepta-shared-presenter")]
+pub mod shared_chat;
 
 use serde::{Deserialize, Serialize};
 
@@ -257,6 +267,7 @@ pub struct HostResources {
     pub sampled_unix_ms: u64,
     pub mem_total_kib: Option<u64>,
     pub mem_available_kib: Option<u64>,
+    #[serde(default, deserialize_with = "deserialize_host_load_legacy")]
     pub load_average_1m: Option<f32>,
     pub source: String,
     /// Older host snapshots must default to unknown rather than implying a
@@ -265,10 +276,58 @@ pub struct HostResources {
     pub wayland: HostWaylandObservation,
 }
 
+// Preserve the original JSON number dispatch for this observation: integer
+// tokens narrow directly from i64/u64, and decimal tokens narrow from f64.
+// Requesting f32 directly would enable serde_json's feature-unified single-
+// precision parser; converting every token through f64 would instead double-
+// round some large integers. Missing/null and accepted f32 overflow stay local
+// observation semantics, not an authority or completion assertion. The native
+// Hepta graph also enables arbitrary_precision, whose decimal number visits a
+// private serde map. Use serde_json's Number implementation to consume that
+// representation even inside Response's internally tagged serde buffer.
+// RawValue cannot be deserialized through that buffer.
+fn deserialize_host_load_legacy<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let Some(number) = Option::<serde_json::Number>::deserialize(deserializer)? else {
+        return Ok(None);
+    };
+    if let Some(value) = number.as_u64() {
+        return Ok(Some(value as f32));
+    }
+    if let Some(value) = number.as_i64() {
+        return Ok(Some(value as f32));
+    }
+    let value = number
+        .as_f64()
+        .filter(|value| value.is_finite())
+        .ok_or_else(|| {
+            serde::de::Error::custom("host load exceeds the original JSON number range")
+        })?;
+    Ok(Some(value as f32))
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Request {
     Snapshot,
+    ObjectiveAvailability {
+        expected_instance: String,
+    },
+    ObjectiveSubmit {
+        client_intent_id: String,
+        text: String,
+        expected_instance: String,
+    },
+    ObjectiveStatus {
+        client_intent_id: String,
+        expected_instance: String,
+    },
+    ObjectiveCancel {
+        client_intent_id: String,
+        expected_instance: String,
+    },
     Launch {
         workspace: Workspace,
         app: AppKind,
@@ -283,6 +342,10 @@ pub enum Request {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Response {
+    Objective {
+        observation: objective::ObjectiveObservation,
+        session_instance: String,
+    },
     Snapshot {
         tasks: Vec<TaskRecord>,
         resources: HostResources,
@@ -352,6 +415,11 @@ pub fn parse_host_request(frame: &[u8]) -> io::Result<Request> {
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     let allowed: &[&str] = match fields.get("type").and_then(serde_json::Value::as_str) {
         Some("snapshot") => &["type"],
+        Some("objective_availability") => &["type", "expected_instance"],
+        Some("objective_submit") => &["type", "client_intent_id", "text", "expected_instance"],
+        Some("objective_status" | "objective_cancel") => {
+            &["type", "client_intent_id", "expected_instance"]
+        }
         Some("launch") => &["type", "workspace", "app", "expected_instance"],
         Some("cancel") => &["type", "id", "expected_instance"],
         _ => {

@@ -2,6 +2,8 @@
 
 //! The process status.
 
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+use alloc::sync::Arc;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 
 use ostd::sync::SpinLock;
@@ -23,6 +25,27 @@ pub(crate) struct ProcessStatus {
     is_vfork_child: AtomicBool,
     exit_code: AtomicU32,
     stop_status: StopStatus,
+}
+
+/// Read-only handle to the original status allocation. It keeps no Process,
+/// VMAR, task set or PID-table reference alive and cannot stop/resume a task.
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+#[derive(Clone)]
+pub(crate) struct ProcessStatusObserver(Arc<ProcessStatus>);
+
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+impl ProcessStatusObserver {
+    pub(super) fn new(status: Arc<ProcessStatus>) -> Self {
+        Self(status)
+    }
+
+    pub(crate) fn is_stopped(&self) -> bool {
+        self.0.stop_status.is_stopped()
+    }
+
+    pub(crate) fn is_zombie(&self) -> bool {
+        self.0.is_zombie()
+    }
 }
 
 impl Default for ProcessStatus {

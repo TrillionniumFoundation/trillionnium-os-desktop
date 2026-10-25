@@ -1,0 +1,81 @@
+{
+  "guest_executed_in_this_workspace": false,
+  "native_ci_configured": true,
+  "native_ci_executed_in_this_workspace": false,
+  "patch": {
+    "bytes": 131339,
+    "fresh_application_all_file_hashes_match": true,
+    "git_apply_check_passed": true,
+    "new_files": 10,
+    "path": "native-runtime.patch",
+    "sha256": "9c441a3c4c1ef9b32fb3a16309029313f66f4e7c9180533a8e3924652766f392"
+  },
+  "real_a06_import": {
+    "path": "validation/final-native-ready/kernel-import/kernel-build.json",
+    "sha256": "4d9d06aba189c19737a99564bccb06bf4088900bfbcd5b08fe64d9445c18b4c6"
+  },
+  "recommended_base": "main",
+  "remaining": [
+    "publish PR to trigger actual x86_64 native CI",
+    "inspect real build logs and real guest result; a configured job is not a pass"
+  ],
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "reviewed_base_tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c",
+  "schema": "f1.original-runtime-publication.v1",
+  "source_files": [
+    {
+      "bytes": 2453,
+      "path": ".github/workflows/f1-original-runtime-host.yml",
+      "sha256": "0428385aaf10ecfb4f1c2c2eb18a4614e39444bf730f562da78eb449ee7027ea"
+    },
+    {
+      "bytes": 10922,
+      "path": ".github/workflows/f1-original-runtime-native.yml",
+      "sha256": "a8cabd54621b0082a0fe7497da5b13d5266632570693599e30c62e6aaa0c1661"
+    },
+    {
+      "bytes": 17631,
+      "path": "tests/workloads/hepta_agentd_runtime/README.md",
+      "sha256": "0a5af5a039872c01c6caed84ed2707da8f2049e920ae4d91a7cf82cae84f23eb"
+    },
+    {
+      "bytes": 4015,
+      "path": "tests/workloads/hepta_agentd_runtime/agentd_runtime_probe.c",
+      "sha256": "a3304e70e839ce5740cd6dfb3726a695143752e7cfc379a5686d04d81d76d629"
+    },
+    {
+      "bytes": 16064,
+      "path": "tests/workloads/hepta_agentd_runtime/import_kernel_artifact.py",
+      "sha256": "50b0c1464543b8fe0b47e8e29c00c51d4b23b1f0f7d8c9e6f454dd7f67fd012b"
+    },
+    {
+      "bytes": 13708,
+      "path": "tests/workloads/hepta_agentd_runtime/prepare_inputs.py",
+      "sha256": "f971f341367b29c41aab74cb73b861f0e90f5989d86078562efc29d70dfc21ca"
+    },
+    {
+      "bytes": 26644,
+      "path": "tests/workloads/hepta_agentd_runtime/run_agentd_runtime.py",
+      "sha256": "eea60ca73d86537a6d83d91b937851b6a1386b3f3c061db1e4095e01305179e6"
+    },
+    {
+      "bytes": 7364,
+      "path": "tests/workloads/hepta_agentd_runtime/source-review.json",
+      "sha256": "ae515465f3d9455b7a00dab60b5cc8234480a2f27b61d300ec384322c3e392bd"
+    },
+    {
+      "bytes": 20505,
+      "path": "tests/workloads/hepta_agentd_runtime/test_agentd_runtime.py",
+      "sha256": "86b5839f36e16893a08e8c62dfae95840807d53ce718ba960de32d94ea487803"
+    },
+    {
+      "bytes": 7110,
+      "path": "tests/workloads/hepta_agentd_runtime/test_kernel_import.py",
+      "sha256": "ac9c55626968398d1b4eb8494d93836ce50cbcf2725a2ea177952f488c0af835"
+    }
+  ],
+  "validation": {
+    "path": "validation/execution-results.json",
+    "sha256": "ffa07fc58cf4dd2c706b8894e9599a1a5ff8087c54351ba51df520748dcf1870"
+  }
+}
