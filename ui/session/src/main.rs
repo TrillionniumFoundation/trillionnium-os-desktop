@@ -1310,6 +1310,29 @@ mod tests {
         else {
             panic!("expected owned host child");
         };
+        // The request deadline is not proof that /bin/true was scheduled.
+        // Observe real exit first, retaining the same Child in the Session.
+        // try_wait caches its ExitStatus but does not project TaskRecord or
+        // retire the children entry; the timeout exchange must still do that.
+        let mut exited = false;
+        for _ in 0..100 {
+            if session
+                .children
+                .get_mut(&task.id)
+                .unwrap()
+                .try_wait()
+                .unwrap()
+                .is_some()
+            {
+                exited = true;
+                break;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        assert!(exited, "owned /bin/true must exit within the fixture bound");
+        assert_eq!(session.tasks[&task.id].state, TaskState::Running);
+        assert!(session.children.contains_key(&task.id));
+
         let (mut incomplete, stream) = UnixStream::pair().unwrap();
         // One ordinary partial frame, followed by no more input. This is a
         // controlled transport-timeout fixture with no retrying sender.
