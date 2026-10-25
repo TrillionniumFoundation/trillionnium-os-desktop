@@ -16,13 +16,16 @@ warning never grants composition or execution authority.
 ## Frozen inputs and the integrated companion
 
 The profile freezes the executing Hepta commit/tree and preparation-helper
-commit/tree plus both helper scripts' SHA256. The current candidate study uses
-7ea execution source and aa6 preparation tools. These are explicitly separate
-roles; no Agentd dependency is moved to a different source than the UI. The
-final integrated companion must replace both profile identities with the
-same reviewed commit/tree and update every existing Hepta dependency pin and
-lock together. The builder checks all Hepta sources in the actual UI graph
-and all five committed product lockfiles against that single execution pin.
+commit/tree plus both helper scripts' SHA256. The integrated companion uses
+original Hepta `1b980b0bd36bb0ec66540e5171c54a8f2ea828ba` for both execution
+and preparation. The historical `aa6a86e` helper commit is unavailable from
+the original repository; the integrated companion retains byte-identical
+helper scripts with the same two frozen SHA256 values. The reviewed SDK
+tree, patches and byte-strict helper checks are unchanged. Changing the
+companion requires updating both profile identities and every existing Hepta
+dependency pin and lock together. The builder checks all Hepta sources in the
+actual UI graph and all five committed product lockfiles against that single
+execution pin.
 Original-owner ancestry and Notes protocol goldens remain mandatory through
 the existing release source verifier.
 
@@ -79,11 +82,10 @@ python3 -B support/ui/build_text_product.py --profile preedit-callbacks \
   --liberation-source /absolute/verified-liberation-source.tar.gz
 ```
 
-For the final single companion, `--sdk-helper-repo` can be omitted when the
-helper and executing repository are the same frozen checkout. The current
-two-role candidate needs the explicit helper path. Changing either frozen
-identity requires new complete source/build/runtime evidence, not just a
-changed command argument.
+`--sdk-helper-repo` can be omitted when preparation and execution use that
+same frozen checkout. An explicit helper path must identify the same reviewed
+commit/tree. Changing the frozen identity requires new complete
+source/build/runtime evidence, not just a changed command argument.
 
 The builder retains the original metadata and exact Cargo config, generates
 a fresh SDK receipt from its actual build metadata, and re-verifies the full
