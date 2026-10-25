@@ -3,16 +3,15 @@
 mod max_config;
 mod native;
 
-#[cfg(feature = "g1c-trusted-observe")]
-pub(crate) use native::{CpuUsageError, NativeCpuObserver};
-#[cfg(feature = "g1d-trusted-control")]
-pub(crate) use native::NativeCpuManager;
-
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicU32, Ordering};
 
 use aster_systree::{Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysPerms, SysStr};
 use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
+#[cfg(feature = "g1d-trusted-control")]
+pub(crate) use native::NativeCpuManager;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use native::{CpuUsageError, NativeCpuObserver};
 use os_control::CPU_PERIOD_NS;
 use ostd::{
     cpu::CpuId,
@@ -20,7 +19,6 @@ use ostd::{
     sync::{LocalIrqDisabled, SpinLock},
     task::{Task, atomic_mode::AsAtomicModeGuard},
     timer::Jiffies,
-    warn,
 };
 
 use self::native::CpuBandwidthState;
@@ -498,35 +496,11 @@ impl super::SubControl for CpuController {
     fn write_attr(&self, name: &str, reader: &mut VmReader) -> Result<usize> {
         match name {
             "cpu.weight" => {
-                let control = self.control()?;
-
-                // The cgroup v2 CPU weight is a scheduling weight in the range 1..=10000.
-                //
-                // Reference: <https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files>
-                const MIN_WEIGHT: u32 = 1;
-                const MAX_WEIGHT: u32 = 10_000;
-
-                let (content, len) = reader
-                    .read_cstring_until_end(MAX_ATTR_SIZE)
-                    .map_err(|_| Error::PageFault)?;
-                let weight = content
-                    .to_str()
-                    .map_err(|_| Error::InvalidOperation)?
-                    .trim()
-                    .parse::<u32>()
-                    .map_err(|_| Error::InvalidOperation)?;
-                if !(MIN_WEIGHT..=MAX_WEIGHT).contains(&weight) {
-                    return Err(Error::InvalidOperation);
-                }
-
-                // TODO: Enforce cgroup CPU weight for scheduling and remove this warning.
-                warn!(
-                    "`cpu.weight` is accepted but not enforced yet; weight = {}",
-                    weight
-                );
-                control.weight.store(weight, Ordering::Relaxed);
-
-                Ok(len)
+                // No scheduler path consumes this value yet. Returning success
+                // would advertise an unenforced resource policy. Keep the default
+                // read value, but reject every write until hierarchical scheduling
+                // actually consumes it; cpu.max remains independently supported.
+                Err(Error::InvalidOperation)
             }
             "cpu.max" => {
                 let control = self.control()?;

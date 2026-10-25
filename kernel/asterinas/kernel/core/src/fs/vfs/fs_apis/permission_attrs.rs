@@ -72,7 +72,7 @@ impl PermissionAttrRequest {
             operation,
             fsuid: credentials.fsuid(),
             fsgid: credentials.fsgid(),
-            supplementary_gids: credentials.groups().clone(),
+            supplementary_gids: (*credentials.groups()).clone(),
             cap_chown: None,
             cap_fowner: None,
             cap_fsetid: None,

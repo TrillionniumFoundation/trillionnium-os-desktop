@@ -20,6 +20,9 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "tests/kernel/safety/**"
+      - "tests/kernel/network/**"
+      - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -42,6 +45,9 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "tests/kernel/safety/**"
+      - "tests/kernel/network/**"
+      - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -331,6 +337,33 @@ jobs:
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
 
+      - name: Verify scoped kernel safety on the same ordinary ELF with 2 and 4 CPUs
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-safety-runner-checks"
+          mkdir "$checks"
+          python3 -I -B tests/kernel/safety/test_runner.py > "$checks/tests.log" 2>&1
+          python3 -I -B -O tests/kernel/safety/test_runner.py > "$checks/tests-optimized.log" 2>&1
+          /usr/bin/gcc-13 --version > "$checks/compiler-version.txt"
+          /usr/bin/qemu-system-x86_64 --version > "$checks/qemu-version.txt"
+          # Reuse the preceding clean-head ordinary product and verified boot
+          # inputs. This step performs no kernel build and grants no HOS2 rights.
+          # Both guests run even if one rejects; all raw failures are uploaded.
+          failed=0
+          for cpus in 2 4; do
+            if python3 -I -B tests/kernel/safety/run.py \
+                --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+                --cc /usr/bin/gcc-13 --qemu /usr/bin/qemu-system-x86_64 \
+                --smp "$cpus" --timeout 180 \
+                --output "${RUNNER_TEMP}/a06-kernel-safety-smp${cpus}"; then
+              :
+            else
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0
+
       - name: Verify SQLite WAL after abrupt guest restart and reject an omitted COMMIT
         shell: bash
         run: |
@@ -582,6 +615,9 @@ jobs:
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
+            ${{ runner.temp }}/a06-safety-runner-checks
+            ${{ runner.temp }}/a06-kernel-safety-smp2
+            ${{ runner.temp }}/a06-kernel-safety-smp4
             ${{ runner.temp }}/a04-sqlite-restart
             ${{ runner.temp }}/a06-owner-negative
             ${{ runner.temp }}/a06-clock-handoff-negative

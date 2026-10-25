@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
 
 pub(crate) use cgroup_ns::CgroupNamespace;
-pub(crate) use controller::cpu::{
-    CpuChargeOwner, CpuStatKind, charge_cpu_time, task_cpu_eligible,
-};
-#[cfg(feature = "g1c-trusted-observe")]
-pub(crate) use controller::cpu::{CpuUsageError, NativeCpuObserver};
 #[cfg(feature = "g1d-trusted-control")]
 pub(crate) use controller::cpu::NativeCpuManager;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use controller::cpu::{CpuUsageError, NativeCpuObserver};
+pub(crate) use controller::{
+    anon::alloc_anon_frame,
+    cpu::{CpuChargeOwner, CpuStatKind, charge_cpu_time, task_cpu_eligible},
+};
 use fs::CgroupFsType;
 pub(in crate::fs) use systree_node::CgroupSystem;
 pub(crate) use systree_node::{CgroupMembership, CgroupNode, CgroupSysNode};

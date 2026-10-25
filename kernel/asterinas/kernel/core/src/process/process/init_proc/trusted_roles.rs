@@ -145,7 +145,7 @@ fn workload_credentials() -> Result<Credentials> {
     // This private value is never attached to a task until every restriction
     // is applied. No user instruction or startup hook can run with root IDs.
     let credentials = Credentials::new_root();
-    credentials.groups_mut().clear();
+    credentials.set_groups(Arc::new(BTreeSet::new()));
     credentials.drop_bounding_capability(CapSet::all())?;
     credentials.set_securebits(SecureBits::NOROOT | SecureBits::NOROOT_LOCKED
         | SecureBits::NO_CAP_AMBIENT_RAISE | SecureBits::NO_CAP_AMBIENT_RAISE_LOCKED)?;

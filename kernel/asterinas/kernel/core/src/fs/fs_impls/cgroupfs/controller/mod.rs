@@ -24,6 +24,7 @@ use crate::fs::cgroupfs::{
     systree_node::CgroupSysNode,
 };
 
+pub(super) mod anon;
 pub(super) mod cpu;
 mod cpuset;
 mod memory;
@@ -229,6 +230,9 @@ pub(crate) struct Controller {
     /// Updates to this set are serialized by `CgroupMembership::write_lock()`.
     active_set: AtomicSubCtrlSet,
 
+    /// Independent of replaceable Linux sub-controller incarnations.
+    anon: Arc<anon::AnonBudget>,
+
     cpuset: Rcu<Arc<SubController<CpuSetController>>>,
     cpu: Rcu<Arc<SubController<CpuController>>>,
     memory: Rcu<Arc<SubController<MemoryController>>>,
@@ -245,6 +249,7 @@ impl Controller {
 
         Self {
             active_set: AtomicSubCtrlSet::new(SubCtrlSet::empty()),
+            anon: anon::AnonBudget::new(parent_controller.map(|parent| parent.anon.clone())),
             cpuset: Rcu::new(cpuset_controller),
             cpu: Rcu::new(cpu_controller),
             memory: Rcu::new(memory_controller),
@@ -253,6 +258,7 @@ impl Controller {
     }
 
     pub(super) fn init_attr_set(builder: &mut SysAttrSetBuilder, is_root: bool) {
+        anon::AnonBudget::init_attr_set(builder);
         CpuSetController::init_attr_set(builder, is_root);
         CpuController::init_attr_set(builder, is_root);
         MemoryController::init_attr_set(builder, is_root);
@@ -292,6 +298,9 @@ impl Controller {
         offset: usize,
         writer: &mut VmWriter,
     ) -> Result<usize> {
+        if name.starts_with("hepta.anon.") {
+            return self.anon.read_attr_at(name, offset, writer);
+        }
         let Some((subsys, _)) = name.split_once('.') else {
             return Err(Error::NotFound);
         };
@@ -306,6 +315,9 @@ impl Controller {
     }
 
     pub(super) fn write_attr(&self, name: &str, reader: &mut VmReader) -> Result<usize> {
+        if name.starts_with("hepta.anon.") {
+            return self.anon.write_attr(name, reader);
+        }
         let Some((subsys, _)) = name.split_once('.') else {
             return Err(Error::NotFound);
         };

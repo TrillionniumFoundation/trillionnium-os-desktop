@@ -76,3 +76,20 @@ fn single_quota_write_keeps_the_current_owner_period() {
     assert_eq!(budget.quota_usec, 2_000);
     assert_eq!(budget.period_usec, 250_000);
 }
+
+#[ktest]
+fn cpu_weight_rejects_writes_until_scheduler_supports_weights() {
+    let controller = CpuController::new(true);
+    let control = controller.control().unwrap();
+    for input in ["1", "100", "10000", "0", "garbage"] {
+        let mut reader = VmReader::from(input.as_bytes()).to_fallible();
+        assert!(matches!(
+            controller.write_attr("cpu.weight", &mut reader),
+            Err(Error::InvalidOperation)
+        ));
+        assert_eq!(
+            control.weight.load(core::sync::atomic::Ordering::Relaxed),
+            100
+        );
+    }
+}

@@ -37,24 +37,23 @@ pub(super) fn sys_pidfd_getfd(
         .process_opt()
         .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target process has been reaped"))?;
 
-    process
-        .main_thread()
-        .as_posix_thread()
-        .unwrap()
-        .check_alien_access_from(ctx.posix_thread, AlienAccessMode::ATTACH_WITH_REAL_CREDS)?;
-
-    let main_thread = process.main_thread();
-
-    // Get the file description corresponding to to the file descriptor `targetfd` in the process
-    // referred to by the PID file.
-    let target_file_table = main_thread.as_posix_thread().unwrap().file_table();
-    let target_file = target_file_table
-        .lock()
-        .as_ref()
-        .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target process has exited"))?
-        .read()
-        .get_file(targetfd.try_into()?)?
-        .clone();
+    let target_file = {
+        let vmar = process.lock_vmar();
+        let main_thread = process.main_thread();
+        let target = main_thread.as_posix_thread().unwrap();
+        let _access = target.check_alien_access_from(
+            ctx.posix_thread,
+            AlienAccessMode::ATTACH_WITH_REAL_CREDS,
+            &vmar,
+        )?;
+        let table = target.file_table().lock();
+        table
+            .as_ref()
+            .ok_or_else(|| Error::with_message(Errno::ESRCH, "the target process has exited"))?
+            .read()
+            .get_file(targetfd.try_into()?)?
+            .clone()
+    };
 
     // Duplicate the file descriptor into the caller's file descriptor table.
     let new_fd = FileTable::reserve_fd(ctx, FdFlags::CLOEXEC)?.install(target_file);
