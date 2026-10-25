@@ -156,6 +156,7 @@ def run(args):
         env = {"PATH": "/usr/local/bin:/usr/bin:/bin", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8",
                "DISPLAY": display, "XAUTHORITY": str(private / "Xauthority"),
                "DBUS_SESSION_BUS_ADDRESS": f"unix:path={private}/runtime/session-bus",
+               "IBUS_ADDRESS": f"unix:path={private}/runtime/ibus",
                "XDG_RUNTIME_DIR": str(private / "runtime"), "XDG_CONFIG_HOME": str(private / "config"),
                "XDG_CACHE_HOME": str(private / "cache"), "XDG_STATE_HOME": str(private / "state"),
                "XDG_DATA_HOME": str(private / "data"), "XDG_CURRENT_DESKTOP": "TRILL_NATIVE_PRIVATE_TEST",
@@ -234,7 +235,8 @@ def run(args):
             until(lambda: alive(a11y) and command("private-a11y-" + name, ["gdbus", "call", "--session", "--dest", "org.a11y.Bus",
                 "--object-path", "/org/a11y/bus", "--method", "org.freedesktop.DBus.Properties.Set", "org.a11y.Status", name, "<true>"], required=False).returncode == 0,
                 "Private accessibility status unavailable")
-        ibus = spawn("ibus", ["ibus-daemon", "--xim", "--verbose", "--panel=" + available["helpers"]["ibus_panel"],
+        ibus = spawn("ibus", ["ibus-daemon", "--address=" + env["IBUS_ADDRESS"],
+                               "--xim", "--verbose", "--panel=" + available["helpers"]["ibus_panel"],
                                "--config=" + available["helpers"]["ibus_memconf"], "--cache=none"])
         def registered_engine():
             alive(ibus)
@@ -251,6 +253,18 @@ def run(args):
                     return True
             return False
         until(registered_engine, "Private IBus engine and XIM selection did not become ready")
+        # Bind all clients to the actual private daemon. XDG isolation alone
+        # does not establish IBus address discovery on every installed version.
+        address = command("private-ibus-address", ["ibus", "address"])
+        if (address.stdout.decode("utf-8").strip() != env["IBUS_ADDRESS"]
+                or not (private / "runtime/ibus").is_socket()):
+            raise RuntimeError("IBus clients are not bound to the private daemon endpoint")
+        rejected = command("private-ibus-wrong-address", ["ibus", "list-engine", "--name-only"],
+                           required=False, environment=dict(env, IBUS_ADDRESS=f"unix:path={private}/runtime/missing-ibus"))
+        if rejected.returncode == 0:
+            raise RuntimeError("IBus accepted an invalid explicit address or used a fallback bus")
+        report["private_ibus_address_verified"] = True
+        report["private_ibus_rejected_wrong_address"] = True
         command("initial-english-engine", ["ibus", "engine", "xkb:us::eng"])
         observed = command("xim-selection", ["xprop", "-root", "XIM_SERVERS"])
         if b"@server=ibus" not in observed.stdout:
