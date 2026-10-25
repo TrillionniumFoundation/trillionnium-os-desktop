@@ -64,3 +64,31 @@ from the existing authenticated owner. Unknown effects are reconciled under
 their original operation identity; changing a dependency or restarting the UI
 does not authorize another effect. Notes document durability is described in
 [NOTES_DURABILITY.md](NOTES_DURABILITY.md).
+
+## Native UI and text CI coverage
+
+The `Original Hepta native UI compile coverage` workflow runs on Ubuntu 24.04
+for changes to the UI, original Session host, source contracts, release helpers,
+UI tests or its own workflow. It complements A10's default/shared-presenter
+checks by enabling `trill-shell/hepta-native-makepad` for every UI workspace
+target and binary, then exercising the standalone host's `native-text` adapter
+tests with the same Rust 1.96.0 compiler, debug profile and temporary target
+directory. One build job and disabled debug information/incremental output bound
+resource use; the job has a 90-minute timeout.
+
+Before Cargo, the eight dependency guard regressions run normally and with
+Python optimization enabled. Actual native Cargo metadata must then pass
+`build_text_product.validate_graph` and `verify_source_caches`; the canonical
+source verifier checks the resolved original Hepta checkout, including its
+reviewed source files and the mirrored Notes readback contract. This baseline
+does not enable an optional SDK patch profile. Formatting, full native workspace
+tests, native binary builds, all-target Clippy with warnings denied and
+`hepta-session-host --features native-text --lib text::tests` are required.
+
+The final gate checks both committed product locks, checkout commit/tree,
+tracked and untracked source cleanliness, actual native graph/cache identities
+and standalone `native-text` resolution again. Artifacts retain logs, metadata,
+source identities and ELF SHA256 records from that exact source. The Cargo
+target directory and binary files are not uploaded. This workflow qualifies
+compilation and tests; it does not start an original Root, install production
+authority or claim window, visual, input-method or physical-device acceptance.

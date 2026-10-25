@@ -1,0 +1,288 @@
+name: Original Hepta native UI compile coverage
+
+on:
+  pull_request:
+    paths:
+      - 'ui/**'
+      - 'services/hepta-session-host/**'
+      - 'services/hepta-os/**'
+      - 'libs/os-abi/**'
+      - 'support/ui/**'
+      - 'support/release/**'
+      - 'tests/ui/**'
+      - '.github/workflows/hepta-native-ui.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ui/**'
+      - 'services/hepta-session-host/**'
+      - 'services/hepta-os/**'
+      - 'libs/os-abi/**'
+      - 'support/ui/**'
+      - 'support/release/**'
+      - 'tests/ui/**'
+      - '.github/workflows/hepta-native-ui.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hepta-native-ui-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-ui-and-text:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      RUSTUP_TOOLCHAIN: '1.96.0'
+      CARGO_BUILD_JOBS: '1'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+      CARGO_INCREMENTAL: '0'
+      CARGO_TARGET_DIR: ${{ runner.temp }}/hepta-native-ui/target
+      RUST_BACKTRACE: '1'
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+
+      - name: Freeze exact source and committed product locks
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/hepta-native-ui/evidence"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          locks = {}
+          for name in ('ui/Cargo.lock', 'services/hepta-session-host/Cargo.lock'):
+              subprocess.run(['git', 'ls-files', '--error-unmatch', name], check=True)
+              path = Path(name)
+              if not path.is_file() or path.is_symlink():
+                  raise SystemExit('Expected tracked regular lock: ' + name)
+              locks[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+          record = {'schema': 'trill.native-ui-ci-source.v1',
+                    'desktop_commit': git('rev-parse', 'HEAD'),
+                    'desktop_tree': git('rev-parse', 'HEAD^{tree}'), 'locks_sha256': locks,
+                    'qualification': 'compile_and_unit_integration_tests_only',
+                    'runtime_qualified': False, 'production_authority_qualified': False,
+                    'visual_or_device_qualified': False}
+          output = Path(os.environ['RUNNER_TEMP']) / 'hepta-native-ui/evidence/source-before.json'
+          output.write_text(json.dumps(record, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Install pinned Rust and native Linux build prerequisites
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
+          rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy \
+            2>&1 | tee "$evidence/toolchain-install.log"
+          sudo apt-get update 2>&1 | tee "$evidence/apt-update.log"
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential pkg-config cmake clang perl binutils libssl-dev libcap-dev bubblewrap \
+            libwayland-dev libxkbcommon-dev libgl1-mesa-dev libegl1-mesa-dev libgbm-dev \
+            libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxinerama-dev libxext-dev \
+            libasound2-dev libpulse-dev libudev-dev \
+            2>&1 | tee "$evidence/apt-install.log"
+          rustc -Vv | tee "$evidence/rustc.log"
+          cargo -Vv | tee "$evidence/cargo.log"
+          cat /etc/os-release > "$evidence/os-release.log"
+          dpkg-query -W build-essential pkg-config cmake clang perl binutils libssl-dev \
+            libcap-dev bubblewrap libwayland-dev libxkbcommon-dev libgl1-mesa-dev \
+            libegl1-mesa-dev libgbm-dev libx11-dev libxi-dev libxrandr-dev libxcursor-dev \
+            libxinerama-dev libxext-dev libasound2-dev libpulse-dev libudev-dev \
+            > "$evidence/native-packages.log"
+
+      - name: Run product and original-source mutation guards before Cargo
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
+          python3 -I -B support/ui/test_product_dependencies.py \
+            2>&1 | tee "$evidence/product-guard-tests.log"
+          python3 -I -B -O support/ui/test_product_dependencies.py \
+            2>&1 | tee "$evidence/product-guard-optimized-tests.log"
+          python3 -I -B support/ui/verify_product_dependencies.py \
+            | tee "$evidence/product-dependencies.json"
+
+      - name: Resolve and verify the actual original Makepad and native-text graph
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
+          cargo metadata --manifest-path ui/Cargo.toml --locked --format-version 1 \
+            --features trill-shell/hepta-native-makepad \
+            --filter-platform x86_64-unknown-linux-gnu \
+            > "$evidence/native-metadata.json" 2> "$evidence/native-metadata.stderr.log"
+          python3 -I -B - <<'PY' 2>&1 | tee "$evidence/native-source-validation.log"
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('support/ui').resolve()))
+          import build_text_product as product
+          import verify_product_dependencies as dependencies
+          evidence = Path(os.environ['RUNNER_TEMP']) / 'hepta-native-ui/evidence'
+          source = json.loads(Path('support/ui/HEPTA_SHARED_PRESENTER.json').read_text())
+          profile = json.loads(Path('support/ui/linux-text-profile.json').read_text())
+          metadata = json.loads((evidence / 'native-metadata.json').read_text())
+          graph = product.validate_graph(metadata, source['commit'], profile)
+          caches = product.verify_source_caches(metadata, source['commit'], source['tree'], profile)
+          checked = dependencies.verify(Path.cwd(), Path(caches['hepta']['root']))
+          record = {'resolved_packages': graph, 'source_caches': caches, 'product_dependencies': checked,
+                    'profile': profile, 'profile_sha256': product.digest('support/ui/linux-text-profile.json')}
+          (evidence / 'native-source-before.json').write_text(json.dumps(record, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(record, indent=2, sort_keys=True))
+          PY
+
+      - name: Check formatting for both product Cargo roots
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
+          cargo fmt --manifest-path ui/Cargo.toml --all -- --check \
+            2>&1 | tee "$evidence/ui-format.log"
+          cargo fmt --manifest-path services/hepta-session-host/Cargo.toml \
+            --package hepta-session-host -- --check \
+            2>&1 | tee "$evidence/host-format.log"
+
+      - name: Test every UI workspace target with the original native feature
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path ui/Cargo.toml --workspace --all-targets --locked \
+            --features trill-shell/hepta-native-makepad \
+            2>&1 | tee "$RUNNER_TEMP/hepta-native-ui/evidence/native-ui-tests.log"
+
+      - name: Build every native UI workspace binary
+        run: |
+          set -euo pipefail
+          cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked \
+            --features trill-shell/hepta-native-makepad \
+            2>&1 | tee "$RUNNER_TEMP/hepta-native-ui/evidence/native-ui-build.log"
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, stat
+          from pathlib import Path
+          target = Path(os.environ['CARGO_TARGET_DIR']) / 'debug'
+          evidence = Path(os.environ['RUNNER_TEMP']) / 'hepta-native-ui/evidence'
+          binaries = {}
+          for name in ('trill-shell', 'trill-session', 'trill-ctl', 'trill-app-window', 'trill-notes-recovery'):
+              path = target / name
+              if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode) or not os.access(path, os.X_OK):
+                  raise SystemExit('Missing regular executable: ' + name)
+              with path.open('rb') as stream:
+                  header = stream.read(20)
+                  stream.seek(0)
+                  digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+              if header[:6] != b'\x7fELF\x02\x01' or header[18:20] != b'\x3e\x00':
+                  raise SystemExit('Expected actual x86_64 Linux ELF: ' + name)
+              binaries[name] = {'sha256': digest, 'bytes': path.stat().st_size}
+          source = json.loads((evidence / 'source-before.json').read_text())
+          record = {'schema': 'trill.native-ui-ci-binaries.v1', 'source': source,
+                    'feature': 'trill-shell/hepta-native-makepad', 'profile': 'debug',
+                    'runtime_executed': False, 'production_authority_qualified': False,
+                    'binaries': binaries}
+          (evidence / 'binary-sha256.json').write_text(json.dumps(record, indent=2, sort_keys=True) + '\n')
+          (evidence / 'SHA256SUMS').write_text(''.join(f'{entry["sha256"]}  {name}\n' for name, entry in binaries.items()))
+          PY
+
+      - name: Enforce all-target native UI Clippy warnings
+        run: |
+          set -euo pipefail
+          cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked \
+            --features trill-shell/hepta-native-makepad -- -D warnings \
+            2>&1 | tee "$RUNNER_TEMP/hepta-native-ui/evidence/native-ui-clippy.log"
+
+      - name: Test the original native-text host adapter with the same profile and target
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features native-text --lib text::tests \
+            2>&1 | tee "$RUNNER_TEMP/hepta-native-ui/evidence/native-text-tests.log"
+
+      - name: Enforce unchanged source, locks and actual native dependency caches
+        if: always()
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
+          mkdir -p "$evidence"
+          git status --porcelain=v1 --untracked-files=all > "$evidence/source-after-status.log"
+          git diff HEAD -- . > "$evidence/source-after-diff.log"
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          evidence = Path(os.environ['RUNNER_TEMP']) / 'hepta-native-ui/evidence'
+          before = json.loads((evidence / 'source-before.json').read_text())
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          locks = {}
+          for name in before['locks_sha256']:
+              subprocess.run(['git', 'ls-files', '--error-unmatch', name], check=True)
+              path = Path(name)
+              if not path.is_file() or path.is_symlink():
+                  raise SystemExit('Expected tracked regular lock: ' + name)
+              locks[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+          after = {'desktop_commit': git('rev-parse', 'HEAD'), 'desktop_tree': git('rev-parse', 'HEAD^{tree}'),
+                   'locks_sha256': locks, 'status': git('status', '--porcelain=v1', '--untracked-files=all')}
+          (evidence / 'source-after.json').write_text(json.dumps(after, indent=2, sort_keys=True) + '\n')
+          for name in ('desktop_commit', 'desktop_tree', 'locks_sha256'):
+              if after[name] != before[name]:
+                  raise SystemExit('Source/lock identity changed during CI: ' + name)
+          if after['desktop_commit'] != os.environ['SOURCE_SHA'] or after['status']:
+              raise SystemExit('Source checkout changed during CI')
+          PY
+          cargo metadata --manifest-path ui/Cargo.toml --locked --offline --format-version 1 \
+            --features trill-shell/hepta-native-makepad --filter-platform x86_64-unknown-linux-gnu \
+            > "$evidence/native-metadata-after.json" 2> "$evidence/native-metadata-after.stderr.log"
+          cargo metadata --manifest-path services/hepta-session-host/Cargo.toml --locked --offline \
+            --features native-text --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            > "$evidence/native-text-metadata-after.json" 2> "$evidence/native-text-metadata-after.stderr.log"
+          python3 -I -B - <<'PY' 2>&1 | tee "$evidence/native-source-after-validation.log"
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('support/ui').resolve()))
+          import build_text_product as product
+          import verify_product_dependencies as dependencies
+          evidence = Path(os.environ['RUNNER_TEMP']) / 'hepta-native-ui/evidence'
+          before = json.loads((evidence / 'native-source-before.json').read_text())
+          source = json.loads(Path('support/ui/HEPTA_SHARED_PRESENTER.json').read_text())
+          profile = json.loads(Path('support/ui/linux-text-profile.json').read_text())
+          metadata = json.loads((evidence / 'native-metadata-after.json').read_text())
+          graph = product.validate_graph(metadata, source['commit'], profile)
+          caches = product.verify_source_caches(metadata, source['commit'], source['tree'], profile)
+          checked = dependencies.verify(Path.cwd(), Path(caches['hepta']['root']))
+          host = json.loads((evidence / 'native-text-metadata-after.json').read_text())
+          host_packages = [p for p in host['packages'] if p['name'] == 'hepta-session-host']
+          if len(host_packages) != 1:
+              raise SystemExit('Expected one standalone original host adapter package')
+          host_nodes = [n for n in host['resolve']['nodes'] if n['id'] == host_packages[0]['id']]
+          if len(host_nodes) != 1 or 'native-text' not in host_nodes[0]['features']:
+              raise SystemExit('Standalone host metadata did not enable native-text')
+          expected = 'git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=' + source['commit'] + '#' + source['commit']
+          original_packages = [p for p in host['packages'] if 'TrillionniumFoundation/hepta-private-ci' in (p.get('source') or '')]
+          if not original_packages or any(p['source'] != expected for p in original_packages):
+              raise SystemExit('Standalone host resolved a different original Hepta source')
+          after = {'resolved_packages': graph, 'source_caches': caches, 'product_dependencies': checked,
+                   'profile': profile, 'profile_sha256': product.digest('support/ui/linux-text-profile.json')}
+          (evidence / 'native-source-after.json').write_text(json.dumps(after, indent=2, sort_keys=True) + '\n')
+          if after != before:
+              raise SystemExit('Native source graph or verified caches changed during CI')
+          print(json.dumps(after, indent=2, sort_keys=True))
+          PY
+          git diff --exit-code HEAD -- .
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Preserve only logs, metadata and source-bound binary hashes
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hepta-native-ui-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: ${{ runner.temp }}/hepta-native-ui/evidence/
