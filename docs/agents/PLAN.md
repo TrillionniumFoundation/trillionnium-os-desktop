@@ -1,6 +1,6 @@
 # 多 Agent 并行开发执行方案（2026-10-16）
 
-项目：https://github.com/TrillionniumFoundation/trillionnium-os-desktop。初始规划绑定主干 `e4b2086b0ea28a20b6e721928b925555c0dc3bc8`；该快照的“仅规格”状态已经过时。2026-10-17 核对的 `146dedf75c5729ef1930c845eeb60e31e8111c60` 已有 Rust codec/control core、原生只读 QueryAbi 的 Process / exec 镜像隔离和实验 CPU 配额；G1/G2 仍未闭合。本文保留职责与依赖，开工进度以 [STATUS](../STATUS.md) 的固定源码与真实证据为准。README.md 根文件必须始终为 0 字节。所有成果提交到本仓库，按真实测试记录进度。
+项目：https://github.com/TrillionniumFoundation/trillionnium-os-desktop。初始规划绑定主干 `e4b2086b0ea28a20b6e721928b925555c0dc3bc8`；该快照的“仅规格”状态已经过时。2026-10-17 核对的 `146dedf75c5729ef1930c845eeb60e31e8111c60` 已有 Rust codec/control core、原生只读 QueryAbi 的 Process / exec 镜像隔离和实验 CPU 配额；G1/G2 仍未闭合。本文保留职责与依赖，开工进度以 [STATUS](../STATUS.md) 的固定源码与真实证据为准。根 README 提供当前开发入口；2026-10-25 起不再把空文件作为源码或安全条件。所有成果提交到本仓库，按真实测试记录进度。
 
 ## 并发策略与依赖
 
@@ -48,7 +48,7 @@ G0 的“通过”必须区分源码编译、主机模型和内核启动：A01 �
 
 1. 每个 Agent 从当时实际 main 建立独立 agents/Axx-* 分支。每个可验证 commit 都 push 远端并维护指向 main 的 PR；只让 A00 协调最终集成。不要同时在同一内核文件写入互斥补丁；遇到冲突交最小复现而非覆盖。
 2. A00 合并共享 ABI、ResourceDomain、持久字段映射时，先检查对应 consumer 的实际编译与负面测试，再更新统一 docs/STATUS.md。任何人不得因“对照模型通过”宣称新内核运行。
-3. 轻量 CI：空 README/文档链接、相关 crate 构建/单测、单一路径 QEMU smoke、必要 W1 对照；重型矩阵按改动范围运行。拥有大量 GitHub runner 并不等于强制无意义任务同时占满。
+3. 轻量 CI：项目 README/文档链接、相关 crate 构建/单测、单一路径 QEMU smoke、必要 W1 对照；重型矩阵按改动范围运行。拥有大量 GitHub runner 并不等于强制无意义任务同时占满。
 4. 每个 PR 记录：基线与 HEAD、实际变更、完成的测试命令/环境/分母、未完成项、下一条 blocker、是否更改 ABI/权限/持久化/设备。失败不隐藏，测试不要求人为逐层审批。
 5. Hepta 的 Codex/Agentd/Operations 只有一条既有执行主链和持久 owner；禁止新建重复授权、效果账本、根权限后门。现役交易服务、模型工作流、系统盘和设备保持原样。
 6. 与 HOS2 相关的已知债务必须有 owner：A02 修三份单 CPU 黄金样本和 mutation 漏检；A03 测挂起前缀/错误发布者；A05 实现能力交接/历史观察；A06 实现时间与调度限制；A07 完成持久 K↔D、ack、接替和前驱实测。

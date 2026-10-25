@@ -17,12 +17,18 @@ OS_ROLES = {
     "hepta_adapter", "notes_broker", "notes_core", "bootstrap_core",
     "session_entry", "session_bootstrap", "notes_app", "notes_app_target",
     "session_contract", "objective_contract", "history_contract", "cpu_contract",
+    "notes_persistence", "session_ipc", "ui_workspace", "ui_lock",
+    "kernel_capability", "kernel_unix_credential", "kernel_anon_budget",
+    "kernel_vm_charge", "kernel_cpu_config", "kernel_credentials_edit", "kernel_rcu_idle",
 }
 HEPTA_ROLES = {
     "production_writer_host", "notes_channel", "notes_bootstrap", "notes_owner",
     "durable_writer", "lease_outbox", "final_use_authority", "final_use_control", "history_owner",
+    "hepta_workspace", "hepta_lock", "hepta_toolchain", "production_composition",
+    "protected_authority", "issuer_transport", "grant_worker",
+    "notes_owner_impl", "notes_recovery", "notes_readback", "notes_first_composition",
 }
-GOLDEN_ROLES = {"notes_target", "notes_bootstrap"}
+GOLDEN_ROLES = {"notes_target", "notes_bootstrap", "notes_bootstrap_v2", "notes_recovery"}
 PRODUCTION = {
     "activation": "disabled",
     "effects_authorized": False,
@@ -65,10 +71,17 @@ def json_object(pairs):
     return result
 
 
+def load_json_bytes(data, label):
+    try:
+        return json.loads(data, object_pairs_hook=json_object)
+    except ValueError as exc:
+        raise ProfileError(f"cannot parse JSON {label}: {exc}") from exc
+
+
 def load_json(path):
     try:
-        return json.loads(Path(path).read_bytes(), object_pairs_hook=json_object)
-    except (OSError, ValueError) as exc:
+        return load_json_bytes(Path(path).read_bytes(), path)
+    except OSError as exc:
         raise ProfileError(f"cannot read JSON {path}: {exc}") from exc
 
 
@@ -100,7 +113,7 @@ def check_map(mapping):
             raise ProfileError(f"{name} source roles must name distinct files")
     goldens = mapping["goldens"]
     if not isinstance(goldens, dict) or set(goldens) != GOLDEN_ROLES:
-        raise ProfileError("source map requires notes_target and notes_bootstrap goldens")
+        raise ProfileError("source map requires target, bootstrap v1/v2, and recovery goldens")
     for role, paths in goldens.items():
         if not isinstance(paths, dict) or set(paths) != {"os", "hepta"}:
             raise ProfileError(f"golden {role} requires os and hepta paths")
@@ -279,9 +292,9 @@ def main(argv=None):
             raw_manifest = canonical(manifest)
             write_new_outside(args.output, raw_manifest, (os_repo, hepta_repo))
         else:
-            manifest = load_json(args.manifest)
-            receipt = verify_manifest(manifest, os_repo, hepta_repo, args.os_head, args.os_tree, mapping)
             raw_manifest = Path(args.manifest).read_bytes()
+            manifest = load_json_bytes(raw_manifest, args.manifest)
+            receipt = verify_manifest(manifest, os_repo, hepta_repo, args.os_head, args.os_tree, mapping)
         receipt["manifest_sha256"] = sha256(raw_manifest)
         data = canonical(receipt)
         if args.receipt:
