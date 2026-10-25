@@ -1,0 +1,188 @@
+{
+  "schema": "trillionnium.final-python-gate.v1",
+  "gate": "product-source-normal",
+  "attempt": "sandbox",
+  "execution_mode": "workspace-sandbox",
+  "cwd": "/workspace/scratch/159b66073956/repos/desktop-product",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-B",
+    "tests/ui/test_product_source.py",
+    "-v"
+  ],
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "uid": 0,
+  "euid": 0,
+  "head": "0a268d8928d76682a59c8cc0be88428845f40ce3",
+  "tree": "d7c0d61a1519db8f4b0a7178b9f6867f85719b48",
+  "started_at": "2026-10-24T16:27:34.160338+00:00",
+  "ended_at": "2026-10-24T16:27:37.783808+00:00",
+  "elapsed_seconds": 3.727321,
+  "status": "passed",
+  "exit_code": 0,
+  "expected_unittest_count": 10,
+  "unittest": {
+    "tests_run": 10,
+    "passed": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "expected_failures": 0,
+    "unexpected_successes": 0,
+    "unittest_reported_seconds": 3.466
+  },
+  "source_verification": null,
+  "source_before": {
+    "head": "0a268d8928d76682a59c8cc0be88428845f40ce3",
+    "tree": "d7c0d61a1519db8f4b0a7178b9f6867f85719b48",
+    "tracked_clean": true,
+    "status_porcelain": "?? results/integration/2026-10-19-g1b-usage/source-publication/__pycache__/\n?? tests/spec/__pycache__/\n?? tests/ui/native-makepad/__pycache__/",
+    "preexisting_untracked_files": [
+      {
+        "path": "results/integration/2026-10-19-g1b-usage/source-publication/__pycache__/validate-publication.cpython-312.pyc",
+        "bytes": 39155,
+        "sha256": "8f0f911ef59534b81c724c0e41fb31c82848661a0a52e8fcb58958718d242f26"
+      },
+      {
+        "path": "tests/spec/__pycache__/rust_source_contract.cpython-312.pyc",
+        "bytes": 5109,
+        "sha256": "4fcdc423df8eedf1f0cefa16dabcdf9479b0ba4d30685d6ede8f15506fa679ef"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a01_ktest_lock_preflight.cpython-312.pyc",
+        "bytes": 14213,
+        "sha256": "f28215300144c2c7ddaf25d6f338045beca0df58ad71b8e3488c3e7fe48c8b4a"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a05_capspace_nonce.cpython-312.pyc",
+        "bytes": 10557,
+        "sha256": "3cd2ac73a3653e19e4c01dade6da1d1d30d8cf94df597e28f5a1b9173f31a9b1"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a05_effect_path_fail_closed.cpython-312.pyc",
+        "bytes": 16321,
+        "sha256": "f1bea6f03980bc48bce559a8db08bb3260ff6eb708af560a16a88259bfc350cb"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a06_final_accounting_source.cpython-312.pyc",
+        "bytes": 5478,
+        "sha256": "cfb7e6d748b0bc0b951d505c143d5f30f42bbd3aa6d1b10306b03520a538bbde"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a06_kernel_output_contract.cpython-312.pyc",
+        "bytes": 2475,
+        "sha256": "4f49ee950a88a6efba4159462dca4a00ff4eb5a25bcbd69702d43e9c7873a232"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_osdk_toolchain_contract.cpython-312.pyc",
+        "bytes": 1943,
+        "sha256": "6af58e2e012afdf180e44910cf4e36f1d27a440539248eeb6eede894a9d4f83b"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_publication_links.cpython-312.pyc",
+        "bytes": 6456,
+        "sha256": "afc4fedee4398ee7121f7595d6bc0b6afb677d1b465c0355ae1ddbb506acdc18"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_recovery_contract.cpython-312.pyc",
+        "bytes": 15691,
+        "sha256": "431e7ac00927d19270605b61c112834db0314e4a1f7b8a4a552ed05606411981"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_rust_source_contract.cpython-312.pyc",
+        "bytes": 3301,
+        "sha256": "08633001884cf759ac91e3154a53d68a39cd8acec05723fa5c4e19a0231b4e23"
+      },
+      {
+        "path": "tests/ui/native-makepad/__pycache__/capture.cpython-312.pyc",
+        "bytes": 14076,
+        "sha256": "b68272c6de9f587fff5ee9cae46193fe7dd7589e7cfca36434e232fa6c3c71d8"
+      }
+    ],
+    "locks": {
+      "ui/Cargo.lock": "1454b3ec327ed5cb2bd77c1c483c28130b43c8b5ee7e771f94f8a825e8f3f3ed",
+      "services/hepta-session-host/Cargo.lock": "5e648029cd086565a831637985e7d3a43f0fb8ac726a09eaf39b72e550bcbc05"
+    }
+  },
+  "source_after": {
+    "head": "0a268d8928d76682a59c8cc0be88428845f40ce3",
+    "tree": "d7c0d61a1519db8f4b0a7178b9f6867f85719b48",
+    "tracked_clean": true,
+    "status_porcelain": "?? results/integration/2026-10-19-g1b-usage/source-publication/__pycache__/\n?? tests/spec/__pycache__/\n?? tests/ui/native-makepad/__pycache__/",
+    "preexisting_untracked_files": [
+      {
+        "path": "results/integration/2026-10-19-g1b-usage/source-publication/__pycache__/validate-publication.cpython-312.pyc",
+        "bytes": 39155,
+        "sha256": "8f0f911ef59534b81c724c0e41fb31c82848661a0a52e8fcb58958718d242f26"
+      },
+      {
+        "path": "tests/spec/__pycache__/rust_source_contract.cpython-312.pyc",
+        "bytes": 5109,
+        "sha256": "4fcdc423df8eedf1f0cefa16dabcdf9479b0ba4d30685d6ede8f15506fa679ef"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a01_ktest_lock_preflight.cpython-312.pyc",
+        "bytes": 14213,
+        "sha256": "f28215300144c2c7ddaf25d6f338045beca0df58ad71b8e3488c3e7fe48c8b4a"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a05_capspace_nonce.cpython-312.pyc",
+        "bytes": 10557,
+        "sha256": "3cd2ac73a3653e19e4c01dade6da1d1d30d8cf94df597e28f5a1b9173f31a9b1"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a05_effect_path_fail_closed.cpython-312.pyc",
+        "bytes": 16321,
+        "sha256": "f1bea6f03980bc48bce559a8db08bb3260ff6eb708af560a16a88259bfc350cb"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a06_final_accounting_source.cpython-312.pyc",
+        "bytes": 5478,
+        "sha256": "cfb7e6d748b0bc0b951d505c143d5f30f42bbd3aa6d1b10306b03520a538bbde"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_a06_kernel_output_contract.cpython-312.pyc",
+        "bytes": 2475,
+        "sha256": "4f49ee950a88a6efba4159462dca4a00ff4eb5a25bcbd69702d43e9c7873a232"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_osdk_toolchain_contract.cpython-312.pyc",
+        "bytes": 1943,
+        "sha256": "6af58e2e012afdf180e44910cf4e36f1d27a440539248eeb6eede894a9d4f83b"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_publication_links.cpython-312.pyc",
+        "bytes": 6456,
+        "sha256": "afc4fedee4398ee7121f7595d6bc0b6afb677d1b465c0355ae1ddbb506acdc18"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_recovery_contract.cpython-312.pyc",
+        "bytes": 15691,
+        "sha256": "431e7ac00927d19270605b61c112834db0314e4a1f7b8a4a552ed05606411981"
+      },
+      {
+        "path": "tests/spec/__pycache__/test_rust_source_contract.cpython-312.pyc",
+        "bytes": 3301,
+        "sha256": "08633001884cf759ac91e3154a53d68a39cd8acec05723fa5c4e19a0231b4e23"
+      },
+      {
+        "path": "tests/ui/native-makepad/__pycache__/capture.cpython-312.pyc",
+        "bytes": 14076,
+        "sha256": "b68272c6de9f587fff5ee9cae46193fe7dd7589e7cfca36434e232fa6c3c71d8"
+      }
+    ],
+    "locks": {
+      "ui/Cargo.lock": "1454b3ec327ed5cb2bd77c1c483c28130b43c8b5ee7e771f94f8a825e8f3f3ed",
+      "services/hepta-session-host/Cargo.lock": "5e648029cd086565a831637985e7d3a43f0fb8ac726a09eaf39b72e550bcbc05"
+    }
+  },
+  "source_and_existing_untracked_unchanged": true,
+  "log": "/workspace/scratch/159b66073956/audit-runs/final-python-gates/product-source-normal-sandbox.log",
+  "log_bytes": 1659,
+  "log_sha256": "e703f096158ab5564821182ba2e4fba6d16fc2e3ef839cd8792a9c5087194340",
+  "capture": "stdout and stderr merged without rewriting",
+  "runtime_or_device_actions": false
+}

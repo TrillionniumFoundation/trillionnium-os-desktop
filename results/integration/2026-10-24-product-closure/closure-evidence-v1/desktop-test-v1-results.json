@@ -1,0 +1,41 @@
+{
+  "patch_sha256": "45bcc82584bda4c00a57256832959328b4167f004196335ae86c1f3c08e3eaac",
+  "results": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "-p",
+        "trill-app-window"
+      ],
+      "exit": 0,
+      "seconds": 149.39,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/desktop-test-v1-0.log"
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "-p",
+        "trill-app-window",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 77.35,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/desktop-test-v1-1.log"
+    }
+  ]
+}

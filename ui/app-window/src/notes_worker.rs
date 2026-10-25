@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Instant;
 use trill_ui_core::notes::{NotesDocument, NotesTargetIdentity};
-use trill_ui_core::notes_store::NotesStore;
+use trill_ui_core::notes_store::{NotesStore, SavedNote, SavedNotes};
 
 pub(super) enum Command {
     Protocol(Pending),
@@ -16,6 +16,14 @@ pub(super) enum Command {
         id: u64,
         revision: u64,
         text: String,
+    },
+    ListSaved {
+        id: u64,
+    },
+    ReopenSaved {
+        id: u64,
+        revision: u64,
+        source: SavedNote,
     },
 }
 
@@ -26,6 +34,8 @@ pub(super) struct Projection {
     pub revision: u64,
     pub local_result: Option<(u64, bool, u64)>,
     pub storage_failed: bool,
+    pub saved_result: Option<(u64, Result<Arc<SavedNotes>, String>)>,
+    pub reopen_result: Option<(u64, Result<(), String>)>,
 }
 
 enum Document {
@@ -69,6 +79,25 @@ impl Document {
         match self {
             Self::Memory(value) => value.local_edit(text).is_ok(),
             Self::Durable(value) => value.local_edit(text).is_ok(),
+        }
+    }
+
+    fn saved_notes(&self) -> Result<Arc<SavedNotes>, String> {
+        match self {
+            Self::Memory(_) => Err("This note has no persistent state directory".into()),
+            Self::Durable(value) => value
+                .saved_notes()
+                .map(Arc::new)
+                .map_err(|error| error.to_string()),
+        }
+    }
+
+    fn reopen_saved(&mut self, source: &SavedNote, revision: u64) -> Result<(), String> {
+        match self {
+            Self::Memory(_) => Err("This note has no persistent state directory".into()),
+            Self::Durable(value) => value
+                .reopen_text(source, revision)
+                .map_err(|error| error.to_string()),
         }
     }
 }
@@ -121,6 +150,18 @@ fn run(
             Command::LocalEdit { id, revision, text } => {
                 let accepted = revision == document.revision() && document.local_edit(text);
                 projection.local_result = Some((id, accepted, document.revision()));
+                None
+            }
+            Command::ListSaved { id } => {
+                projection.saved_result = Some((id, document.saved_notes()));
+                None
+            }
+            Command::ReopenSaved {
+                id,
+                revision,
+                source,
+            } => {
+                projection.reopen_result = Some((id, document.reopen_saved(&source, revision)));
                 None
             }
         };

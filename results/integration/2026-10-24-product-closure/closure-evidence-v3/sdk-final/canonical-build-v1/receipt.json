@@ -1,0 +1,173 @@
+{
+  "schema": "trillionnium.native-sdk-candidate-build.v1",
+  "passed": true,
+  "compiled": true,
+  "status": "passed",
+  "exit_code": 0,
+  "binaries": {
+    "trill-session": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-session",
+      "bytes": 4514872,
+      "sha256": "9c914cb255c8fd2bb7ee8708f913c7f4f53d88872c74df8b13385852a705da9d"
+    },
+    "trill-shell": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-shell",
+      "bytes": 89419784,
+      "sha256": "e315c61f4d28a097aaa461164a3ef4567e91cb7482b8b9dc0539cd9a388dd6a7"
+    },
+    "trill-app-window": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-app-window",
+      "bytes": 17759984,
+      "sha256": "2aa0de6b7fe691c799651e5b225bac4be0c17b273754c59c53e2a0b11c451295"
+    },
+    "trill-ctl": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-ctl",
+      "bytes": 3313104,
+      "sha256": "c6abd4f7288ddb2dfe4eda3c90d02e410f578d5a26856bbe8f3a083c40016dee"
+    },
+    "trill-notes-recovery": {
+      "path": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target/release/trill-notes-recovery",
+      "bytes": 3184816,
+      "sha256": "3500edcda6cf87709aff1ebb305adaf760a4a6381fc8a017504b27daaef79725"
+    }
+  },
+  "runtime_qualified": false,
+  "production_authority": false,
+  "steps": [
+    {
+      "name": "metadata",
+      "argv": [
+        "cargo",
+        "+1.96.0",
+        "metadata",
+        "--config",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml",
+        "--manifest-path",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml",
+        "--locked",
+        "--features",
+        "trill-shell/hepta-native-clipboard-sdk",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+      "started_unix": 1792858154.2328787,
+      "passed": true,
+      "exit_code": 0,
+      "duration_seconds": 1.8203742504119873
+    },
+    {
+      "name": "test",
+      "argv": [
+        "cargo",
+        "+1.96.0",
+        "test",
+        "--config",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml",
+        "--manifest-path",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml",
+        "--locked",
+        "--features",
+        "trill-shell/hepta-native-clipboard-sdk",
+        "--offline",
+        "--workspace",
+        "--profile",
+        "release",
+        "--target-dir",
+        "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+        "--all-targets"
+      ],
+      "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+      "started_unix": 1792858158.35867,
+      "passed": true,
+      "exit_code": 0,
+      "duration_seconds": 3290.924617290497
+    },
+    {
+      "name": "clippy",
+      "argv": [
+        "cargo",
+        "+1.96.0",
+        "clippy",
+        "--config",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml",
+        "--manifest-path",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml",
+        "--locked",
+        "--features",
+        "trill-shell/hepta-native-clipboard-sdk",
+        "--offline",
+        "--workspace",
+        "--profile",
+        "release",
+        "--target-dir",
+        "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+      "started_unix": 1792861451.9169672,
+      "passed": true,
+      "exit_code": 0,
+      "duration_seconds": 376.4407112598419
+    },
+    {
+      "name": "build",
+      "argv": [
+        "cargo",
+        "+1.96.0",
+        "build",
+        "--config",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml",
+        "--manifest-path",
+        "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml",
+        "--locked",
+        "--features",
+        "trill-shell/hepta-native-clipboard-sdk",
+        "--offline",
+        "--workspace",
+        "--profile",
+        "release",
+        "--target-dir",
+        "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+        "--bins"
+      ],
+      "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop",
+      "started_unix": 1792861829.6033256,
+      "passed": true,
+      "exit_code": 0,
+      "duration_seconds": 24.132724285125732
+    }
+  ],
+  "runner_sha256": "a59a0492a4e30f581e76e7dd310f5e15431fa3be7ba5a6d5b9dd406daaf83108",
+  "desktop": {
+    "commit": "a7621d8022f52add679bd6edba5d0bad6772dabc",
+    "tree": "e9026801f2686b7ea3f89759609c326f72fb2cfa"
+  },
+  "hepta": {
+    "commit": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+    "tree": "7e376f5d3509cf38e13b513ca2b87d9eecd7dc47"
+  },
+  "toolchain": "1.96.0",
+  "feature": "trill-shell/hepta-native-clipboard-sdk",
+  "profile": "release",
+  "source_commit": "a7621d8022f52add679bd6edba5d0bad6772dabc",
+  "source_tree": "e9026801f2686b7ea3f89759609c326f72fb2cfa",
+  "inputs_sha256": {
+    "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.lock": "c3fc7793678ad269321fb32b4669d4ac37ab8a8ce63be600aea21b310decb132",
+    "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/Cargo.toml": "f44195797c6bcb6d53bb6b2cf71a801226313dbcca93b723f763f57a2b2793ab",
+    "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/desktop/ui/rust-toolchain.toml": "dad73043643ef4285aca2153b3f6e50dd70ebace44c4f913bcd1be2d4403717b",
+    "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/all-sdk-overrides.toml": "d3b0461a6052499e66cb0687d593b68d124004195ee9634f6d53a015e13fa911",
+    "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/original-metadata.json": "7a256bf2eb60f1c3670e27c98ff68ca07bc212827b41222ae0c31b54dc758995"
+  },
+  "target_dir": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+  "environment": {
+    "CARGO_TARGET_DIR": "/data/trillionnium-desktop-product-20261024-integration/ui-release-target",
+    "CARGO_BUILD_JOBS": "2",
+    "RUSTUP_TOOLCHAIN": "1.96.0"
+  },
+  "cargo_version": "cargo 1.96.0 (30a34c682 2026-05-25)\nrelease: 1.96.0\ncommit-hash: 30a34c6821b57de0aaec83a901aca39f88f6778c\ncommit-date: 2026-05-25\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]"
+}

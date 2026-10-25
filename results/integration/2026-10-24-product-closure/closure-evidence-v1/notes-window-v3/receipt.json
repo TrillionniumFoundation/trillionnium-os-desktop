@@ -1,0 +1,80 @@
+{
+  "schema": "trillionnium.notes-ordinary-reopen-window.v1",
+  "passed": false,
+  "checks": [
+    {
+      "name": "real-egui-native-CJK-paste-saved-with-original-pending-receipt",
+      "passed": true
+    },
+    {
+      "name": "ordinary-WM-DELETE-WINDOW-and-original-Session-reap",
+      "passed": true
+    }
+  ],
+  "scope": "owned Xvfb, original Session/egui Notes, AT-SPI, real OS clipboard and synthesized keyboard",
+  "physical_ime_qualified": false,
+  "production_authority": false,
+  "original_writer_terminal": false,
+  "font": {
+    "path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+  },
+  "harness_sha256": "3312974386d2243ab4ab47adf0916a7bc914627d0152dc8d1267bec619c37b00",
+  "binary_sha256": {
+    "trill-session": "85f8dbf4a5dee33babdbb6c1dbc09ea3ac2b62d114611d37025b3c8e9096d025",
+    "trill-app-window": "f7957d5a478d62acf7c40b6ba2f260ece4ec6aa1522492fdc69200f1f59143c0",
+    "trill-notes-recovery": "489f70e7763adce3c39d0943ab9cfadc92cb4ba7b4587ebb0e0a57724418f53f"
+  },
+  "xres_helper_sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+  "owned_a11y_status": {
+    "IsEnabled": true,
+    "ScreenReaderEnabled": true
+  },
+  "windows": [
+    {
+      "pid": 1703896,
+      "xid": 6291459,
+      "xres_version": [
+        1,
+        2
+      ],
+      "method": "XRes 1.2 QueryClientIds LocalClientPID",
+      "helper": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+        "bytes": 7574,
+        "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+        "method": "XRes 1.2 QueryClientIds LocalClientPID",
+        "libraries": [
+          "libX11.so.6",
+          "libXRes.so.1"
+        ]
+      }
+    },
+    {
+      "pid": 1704040,
+      "xid": 6291459,
+      "xres_version": [
+        1,
+        2
+      ],
+      "method": "XRes 1.2 QueryClientIds LocalClientPID",
+      "helper": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+        "bytes": 7574,
+        "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+        "method": "XRes 1.2 QueryClientIds LocalClientPID",
+        "libraries": [
+          "libX11.so.6",
+          "libXRes.so.1"
+        ]
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-original-note.png",
+      "sha256": "7edc141b14ba4c2e3e6ac217453af982800a556911e66890db31f75a1206dc31"
+    }
+  ],
+  "error": "RuntimeError: actual saved Notes entry: deadline; last error: None"
+}

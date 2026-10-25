@@ -1,0 +1,450 @@
+warning: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+  --> utils/pty/src/unix_io.rs:38:60
+   |
+38 |         let fd = std::panic::catch_unwind(move || AsyncFd::new(File::from(fd)))
+   |                                                            ^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: `codex-utils-pty` (lib) generated 1 warning
+warning: hiding a lifetime that's elided elsewhere is confusing
+   --> third_party/i18n-config-0.4.8/src/lib.rs:144:9
+    |
+144 |         &self,
+    |         ^^^^^ the lifetime is elided here
+145 |     ) -> Result<Option<(&'_ Crate, &'_ I18nConfig)>, I18nConfigError> {
+    |                          ^^ ^^^^^   ^^ the same lifetime is elided here
+    |                          |  |
+    |                          |  the same lifetime is hidden here
+    |                          the same lifetime is elided here
+    |
+    = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+    = note: `#[warn(mismatched_lifetime_syntaxes)]` on by default
+help: use `'_` for type paths
+    |
+145 |     ) -> Result<Option<(&'_ Crate<'_>, &'_ I18nConfig)>, I18nConfigError> {
+    |                                  ++++
+
+warning: hiding a lifetime that's elided elsewhere is confusing
+   --> third_party/i18n-config-0.4.8/src/lib.rs:155:26
+    |
+155 |     pub fn active_config(&self) -> Result<Option<(&'_ Crate, &'_ I18nConfig)>, I18nConfigError> {
+    |                          ^^^^^                     ^^ ^^^^^   ^^ the same lifetime is elided here
+    |                          |                         |  |
+    |                          |                         |  the same lifetime is hidden here
+    |                          |                         the same lifetime is elided here
+    |                          the lifetime is elided here
+    |
+    = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+help: use `'_` for type paths
+    |
+155 |     pub fn active_config(&self) -> Result<Option<(&'_ Crate<'_>, &'_ I18nConfig)>, I18nConfigError> {
+    |                                                            ++++
+
+warning: `i18n-config` (lib) generated 2 warnings (run `cargo fix --lib -p i18n-config` to apply 2 suggestions)
+warning: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+   --> shell-escalation/src/unix/socket.rs:258:37
+    |
+258 |         let async_socket = AsyncFd::new(socket)?;
+    |                                     ^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+   --> shell-escalation/src/unix/socket.rs:374:29
+    |
+374 |             inner: AsyncFd::new(socket)?,
+    |                             ^^^
+
+warning: `codex-shell-escalation` (lib) generated 2 warnings
+   Compiling codex-core v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/core)
+warning: use of deprecated method `landlock::RulesetCreatedAttr::set_no_new_privs`: Use no_new_privs() instead.
+   --> linux-sandbox/src/landlock.rs:150:10
+    |
+150 |         .set_no_new_privs(true);
+    |          ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `codex-linux-sandbox` (lib) generated 1 warning
+warning: associated function `new` is never used
+   --> ext/hepta-memory/src/cognitive/mod.rs:274:19
+    |
+273 | impl CognitiveExtension {
+    | ----------------------- associated function in this implementation
+274 |     pub(crate) fn new(runtime: CognitiveRuntime) -> Self {
+    |                   ^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `api_digest` is never used
+   --> ext/hepta-memory/src/cognitive/federation.rs:864:4
+    |
+864 | fn api_digest(
+    |    ^^^^^^^^^^
+
+warning: `codex-hepta-memory-extension` (lib) generated 2 warnings
+warning: function `read_restart_journal` is never used
+   --> hepta-supervisor/src/restart_journal.rs:390:15
+    |
+390 | pub(crate) fn read_restart_journal(
+    |               ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `restore_window` is never used
+   --> hepta-supervisor/src/restart_journal.rs:433:15
+    |
+433 | pub(crate) fn restore_window(
+    |               ^^^^^^^^^^^^^^
+
+warning: methods `reset_restart_budget_for_release`, `reset_restart_budget`, and `restore_restart_budget` are never used
+  --> hepta-supervisor/src/restart_state.rs:37:19
+   |
+19 | impl<D: ProcessDriver> Supervisor<D> {
+   | ------------------------------------ methods in this implementation
+...
+37 |     pub(crate) fn reset_restart_budget_for_release(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+47 |     pub(crate) fn reset_restart_budget(
+   |                   ^^^^^^^^^^^^^^^^^^^^
+...
+64 |     pub(crate) fn restore_restart_budget(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reset_slot_restart_budget` is never used
+   --> hepta-supervisor/src/restart_state.rs:147:4
+    |
+147 | fn reset_slot_restart_budget<P>(slot: &mut AgentSlot<P>) {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `restart_window_started_at`, `restart_window_started_unix_millis`, `restart_retry_at`, `restart_automatic`, `restart_after_exit`, and `restart_exhausted` are never read
+   --> hepta-supervisor/src/runtime.rs:153:9
+    |
+145 | pub(crate) struct AgentSlot<P> {
+    |                   --------- fields in this struct
+...
+153 |     pub restart_window_started_at: Option<Instant>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+154 |     pub restart_window_started_unix_millis: Option<u64>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+155 |     pub restart_retry_at: Option<Instant>,
+    |         ^^^^^^^^^^^^^^^^
+156 |     pub restart_automatic: bool,
+    |         ^^^^^^^^^^^^^^^^^
+157 |     pub restart_after_exit: bool,
+    |         ^^^^^^^^^^^^^^^^^^
+158 |     pub restart_exhausted: bool,
+    |         ^^^^^^^^^^^^^^^^^
+
+warning: `codex-hepta-supervisor` (lib) generated 5 warnings
+warning: unused import: `codex_hepta_authority_types::HostAuthorityWriterObservationV2`
+  --> hepta-authority-client/src/lib.rs:33:16
+   |
+33 | pub(crate) use codex_hepta_authority_types::HostAuthorityWriterObservationV2;
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `codex_hepta_authority_types::HostWriterAuthorizationClaimsV1`
+  --> hepta-authority-client/src/lib.rs:37:16
+   |
+37 | pub(crate) use codex_hepta_authority_types::HostWriterAuthorizationClaimsV1;
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `codex-hepta-authority-client` (lib) generated 2 warnings (run `cargo fix --lib -p codex-hepta-authority-client` to apply 2 suggestions)
+   Compiling codex-memories-write v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/memories/write)
+   Compiling codex-external-agent-migration v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/external-agent-migration)
+   Compiling codex-guardian-v2 v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/guardian-v2)
+   Compiling codex-agent-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/agent)
+   Compiling codex-memories-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/memories)
+   Compiling codex-chatgpt v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/chatgpt)
+   Compiling codex-cloud-config v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/cloud-config)
+   Compiling codex-mcp-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/mcp)
+   Compiling codex-queue-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/queue)
+   Compiling codex-web-search-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/web-search)
+   Compiling codex-goal-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/goal)
+   Compiling codex-image-generation-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/image-generation)
+   Compiling codex-app-server-transport v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/app-server-transport)
+   Compiling codex-history-notes-extension v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/ext/history-notes)
+   Compiling codex-app-server v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/app-server)
+warning: variable does not need to be mutable
+    --> app-server/src/lib.rs:1658:5
+     |
+1658 |     mut loader_overrides: LoaderOverrides,
+     |     ----^^^^^^^^^^^^^^^^
+     |     |
+     |     help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling codex-app-server-client v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/app-server-client)
+   Compiling codex-hepta-codex-adapter v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/hepta-codex-adapter)
+   Compiling codex-hepta-agentd v0.0.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/hepta-agentd)
+warning: unused import: `std::io::Read`
+ --> hepta-agentd/src/native_cpu_platform.rs:4:5
+  |
+4 | use std::io::Read;
+  |     ^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `GenesisRecord` is never constructed
+  --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:13:8
+   |
+13 | struct GenesisRecord {
+   |        ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `RetainedCheckpointGenesis` is never constructed
+  --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:25:19
+   |
+25 | pub(crate) struct RetainedCheckpointGenesis {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `invalid` is never used
+  --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:31:4
+   |
+31 | fn invalid() -> AuthorityTrustError {
+   |    ^^^^^^^
+
+warning: function `unavailable` is never used
+  --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:34:4
+   |
+34 | fn unavailable(_: impl std::fmt::Display) -> AuthorityTrustError {
+   |    ^^^^^^^^^^^
+
+warning: function `identity` is never used
+  --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:37:4
+   |
+37 | fn identity(owner: &AgentId) -> String {
+   |    ^^^^^^^^
+
+warning: multiple methods are never used
+  --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:42:19
+   |
+41 | impl RetainedCheckpointGenesis {
+   | ------------------------------ methods in this implementation
+42 |     pub(crate) fn cut(&self) -> &CognitiveRecoveryAnchor {
+   |                   ^^^
+...
+45 |     pub(crate) fn initial_root(&self) -> &CognitiveCheckpointPeerLifetime {
+   |                   ^^^^^^^^^^^^
+...
+48 |     pub(crate) fn verifying_key(&self) -> [u8; 32] {
+   |                   ^^^^^^^^^^^^^
+...
+51 |     pub(crate) fn issuer_id(&self) -> &str {
+   |                   ^^^^^^^^^
+...
+54 |     pub(crate) fn initial_policies(&self) -> &[crate::DeploymentGrantPolicy] {
+   |                   ^^^^^^^^^^^^^^^^
+...
+57 |     pub(crate) fn sha256(&self) -> Sha256Digest {
+   |                   ^^^^^^
+...
+61 |     pub(crate) fn require_material(
+   |                   ^^^^^^^^^^^^^^^^
+...
+72 |     pub(crate) fn with_no_checkpoint<R>(
+   |                   ^^^^^^^^^^^^^^^^^^
+...
+89 |     pub(crate) fn require_issuer(
+   |                   ^^^^^^^^^^^^^^
+
+warning: function `validate_record` is never used
+   --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:101:4
+    |
+101 | fn validate_record(record: &GenesisRecord, owner: &AgentId) -> Result<(), AuthorityTrustError> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: associated functions `prepare_original_genesis_for_root` and `retained_original_genesis_for_root` are never used
+   --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:129:19
+    |
+125 | impl HostCognitiveCheckpoint {
+    | ---------------------------- associated functions in this implementation
+...
+129 |     pub(crate) fn prepare_original_genesis_for_root(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+187 |     pub(crate) fn retained_original_genesis_for_root(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `resume_host_authority_initialization` is never used
+  --> hepta-agentd/src/authority_host_runtime_initialization.rs:12:15
+   |
+12 | pub(crate) fn resume_host_authority_initialization(
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `resume_stores` is never used
+  --> hepta-agentd/src/authority_host_runtime_initialization.rs:43:4
+   |
+43 | fn resume_stores(
+   |    ^^^^^^^^^^^^^
+
+warning: function `entry_exists` is never used
+   --> hepta-agentd/src/authority_host_runtime_initialization.rs:207:4
+    |
+207 | fn entry_exists(directory: &File, name: &str) -> io::Result<bool> {
+    |    ^^^^^^^^^^^^
+
+warning: function `require_unused` is never used
+ --> hepta-agentd/src/deployment_native_cpu_genesis.rs:9:4
+  |
+9 | fn require_unused(state: &IssuerState) -> io::Result<()> {
+  |    ^^^^^^^^^^^^^^
+
+warning: methods `with_original_unused_genesis_for_root` and `replace_unused_native_cpu_namespaces_for_root` are never used
+  --> hepta-agentd/src/deployment_native_cpu_genesis.rs:22:19
+   |
+21 | impl DeploymentFinalUseIssuer {
+   | ----------------------------- methods in this implementation
+22 |     pub(crate) fn with_original_unused_genesis_for_root<R>(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+52 |     pub(crate) fn replace_unused_native_cpu_namespaces_for_root(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `chown_tree` is never used
+   --> hepta-agentd/src/native_cpu_platform.rs:245:15
+    |
+245 | pub(super) fn chown_tree(path: &Path, uid: u32, gid: u32) -> io::Result<()> {
+    |               ^^^^^^^^^^
+
+warning: field `sequence` is never read
+   --> hepta-agentd/src/browser_servo.rs:317:5
+    |
+316 | struct DecodedFrame {
+    |        ------------ field in this struct
+317 |     sequence: u64,
+    |     ^^^^^^^^
+    |
+    = note: `DecodedFrame` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: methods `append` and `append_with_delivery` are never used
+  --> hepta-agentd/src/cognitive_retrieval_learning.rs:32:19
+   |
+24 | impl CognitiveRetrievalLearningSink {
+   | ----------------------------------- methods in this implementation
+...
+32 |     pub(crate) fn append(
+   |                   ^^^^^^
+...
+52 |     pub(crate) fn append_with_delivery(
+   |                   ^^^^^^^^^^^^^^^^^^^^
+
+warning: method `require_finite_native_cpu_profile` is never used
+   --> hepta-agentd/src/config.rs:530:19
+    |
+ 83 | impl AgentdConfig {
+    | ----------------- method in this implementation
+...
+530 |     pub(crate) fn require_finite_native_cpu_profile(&self) -> Result<(), AgentdError> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `handle` is never read
+  --> hepta-agentd/src/plasticity_learning_producer.rs:24:5
+   |
+23 | pub(crate) struct AgentdLearningPlasticityProducerV1 {
+   |                   ---------------------------------- field in this struct
+24 |     handle: PlasticityRuntimeHandleV1,
+   |     ^^^^^^
+   |
+   = note: `AgentdLearningPlasticityProducerV1` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: methods `submit_parameter` and `submit_topology` are never used
+  --> hepta-agentd/src/plasticity_learning_producer.rs:32:25
+   |
+27 | impl AgentdLearningPlasticityProducerV1 {
+   | --------------------------------------- methods in this implementation
+...
+32 |     pub(crate) async fn submit_parameter(
+   |                         ^^^^^^^^^^^^^^^^
+...
+40 |     pub(crate) async fn submit_topology(
+   |                         ^^^^^^^^^^^^^^^
+
+warning: methods `submit_parameter_plasticity_v1` and `submit_topology_plasticity_v1` are never used
+   --> hepta-agentd/src/state.rs:181:25
+    |
+ 92 | impl AgentdState {
+    | ---------------- methods in this implementation
+...
+181 |     pub(crate) async fn submit_parameter_plasticity_v1(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+198 |     pub(crate) async fn submit_topology_plasticity_v1(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `codex-hepta-agentd` (lib) generated 21 warnings
+warning: `codex-app-server` (lib) generated 1 warning (run `cargo fix --lib -p codex-app-server` to apply 1 suggestion)
+warning: methods `validate_recovered_host` and `attach` are never used
+   --> hepta-agentd/src/production_writer_owner.rs:142:25
+    |
+ 94 | impl AgentdProductionOperationRuntimeConfig {
+    | ------------------------------------------- methods in this implementation
+...
+142 |     pub(crate) async fn validate_recovered_host(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^
+...
+170 |     pub(crate) async fn attach(
+    |                         ^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `current_generation` is never used
+   --> hepta-agentd/src/state_core.rs:164:19
+    |
+ 87 | impl<P: AgentdRuntimeProfile> AgentdStateCore<P> {
+    | ------------------------------------------------ method in this implementation
+...
+164 |     pub(crate) fn current_generation(&self) -> Result<u64, AgentdError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+
+warning: struct `GenesisRecord` is never constructed
+  --> hepta-agentd/src/authority_host_checkpoint_genesis.rs:13:8
+   |
+13 | struct GenesisRecord {
+   |        ^^^^^^^^^^^^^
+
+warning: associated function `from_process_environment` is never used
+  --> hepta-agentd/src/process_config.rs:33:19
+   |
+32 | impl ValidatedProcessConfig {
+   | --------------------------- associated function in this implementation
+33 |     pub(crate) fn from_process_environment() -> Result<Self, AgentdError> {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `required_utf8` is never used
+   --> hepta-agentd/src/process_config.rs:192:4
+    |
+192 | fn required_utf8(name: &str) -> Result<String, AgentdError> {
+    |    ^^^^^^^^^^^^^
+
+warning: function `required_path` is never used
+   --> hepta-agentd/src/process_config.rs:201:4
+    |
+201 | fn required_path(name: &str) -> Result<PathBuf, AgentdError> {
+    |    ^^^^^^^^^^^^^
+
+warning: method `batch` is never used
+  --> hepta-agentd/src/event_buffer.rs:37:19
+   |
+14 | impl EventBuffer {
+   | ---------------- method in this implementation
+...
+37 |     pub(crate) fn batch(&self, after_cursor: u64, limit: usize) -> EventBatch {
+   |                   ^^^^^
+
+warning: associated function `new` is never used
+  --> hepta-agentd/src/notes_document_observer.rs:18:19
+   |
+17 | impl AgentdNotesDocumentObserver {
+   | -------------------------------- associated function in this implementation
+18 |     pub(crate) fn new(inner: ProductionNotesObserver) -> Self {
+   |                   ^^^
+
+warning: `codex-hepta-agentd` (bin "hepta-native-cpu") generated 22 warnings (14 duplicates)
+    Finished `release` profile [optimized + debuginfo] target(s) in 16m 41s

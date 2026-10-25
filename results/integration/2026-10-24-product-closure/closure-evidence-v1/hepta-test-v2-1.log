@@ -1,0 +1,84 @@
+RUST_MIN_STACK=8388608 NEXTEST_PROFILE=local python3 ../scripts/run-nextest.py "$@"
+warning: in config file .config/nextest.toml, ignoring unknown configuration keys:
+
+  - profile.native-composition-headless.junit.report-skipped
+  - profile.native-composition-native.junit.report-skipped
+warning: skipping duplicate package `bitflags v2.10.0 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/bitflags/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/bitflags/Cargo.toml
+
+warning: skipping duplicate package `cfg-if v1.0.4 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/cfg-if/Cargo.toml
+in favor of /home/qian-qi/.cargo/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/cfg-if/Cargo.toml
+
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#generic-array@0.14.7` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.23` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.151` which wasn't produced by cargo metadata
+   Compiling hepta-control-core v0.1.0 (/data/trillionnium-desktop-closure-20261024-pass1/hepta/apps/hepta-control-ui/rust/core)
+    Finished `test` profile [unoptimized] target(s) in 6.68s
+────────────
+ Nextest run ID 466a28c2-bfa2-4f95-b2ae-5c459b0c36fb with nextest profile: local
+    Starting 57 tests across 1 binary
+        PASS [   0.008s] ( 1/57) hepta-control-core chat::integration_tests::actual_owner_adapter_is_consumed_without_manufacturing_a_message
+        PASS [   0.013s] ( 2/57) hepta-control-core chat::integration_tests::late_history_and_stream_remain_bound_to_original_room
+        PASS [   0.008s] ( 3/57) hepta-control-core chat::local_archive::tests::corrupt_partitions_and_preedit_are_rejected_without_partial_restoration
+        PASS [   0.007s] ( 4/57) hepta-control-core chat::local_archive::tests::every_parked_partition_survives_but_only_original_authentication_can_reveal_it
+        PASS [   0.007s] ( 5/57) hepta-control-core chat::partition_tests::principal_rotation_hides_all_history_and_drafts_without_discarding_them
+        PASS [   0.006s] ( 6/57) hepta-control-core chat::stream::tests::a_socket_connection_cannot_create_a_chat_owner
+        PASS [   0.015s] ( 7/57) hepta-control-core chat::stream::tests::a_large_tool_display_has_an_explicit_utf8_safe_preview_without_new_effects
+        PASS [   0.007s] ( 8/57) hepta-control-core chat::stream::tests::connection_rotation_and_owner_expiry_refuse_late_updates_without_touching_draft
+        PASS [   0.007s] ( 9/57) hepta-control-core chat::stream::tests::original_history_pages_replace_the_visible_window_without_changing_drafts
+        PASS [   0.012s] (10/57) hepta-control-core chat::stream::tests::future_original_input_is_explicitly_unsupported_and_never_expands_its_payload
+        PASS [   0.007s] (11/57) hepta-control-core chat::stream::tests::original_mixed_input_history_keeps_chinese_text_and_allows_the_next_stream
+        PASS [   0.012s] (12/57) hepta-control-core chat::stream::tests::original_stream_and_reconciliation_share_the_same_timeline_and_item_identity
+        PASS [   0.009s] (13/57) hepta-control-core chat::tests::bounded_unicode_drafts_reject_whole_update_without_truncation
+        PASS [   0.007s] (14/57) hepta-control-core chat::tests::composition_never_submits_switches_or_discards_input
+        PASS [   0.007s] (15/57) hepta-control-core chat::tests::drafts_survive_switch_and_unavailable_repeated_submission
+        PASS [   0.007s] (16/57) hepta-control-core chat_owner::tests::cross_principal_session_thread_and_hash_observations_are_rejected
+        PASS [   0.009s] (17/57) hepta-control-core chat_owner::tests::bounded_capacity_preserves_all_unresolved_identity_without_eviction
+        PASS [   0.010s] (18/57) hepta-control-core chat_owner::tests::disconnect_preserves_unknown_and_revocation_cannot_accept_a_late_ack
+        PASS [   0.010s] (19/57) hepta-control-core chat_owner::tests::exact_acknowledgement_handoff_reclaims_capacity_without_evicting_unknowns
+        PASS [   0.009s] (20/57) hepta-control-core chat_owner::tests::expiry_clock_regression_and_reload_never_authorize_a_new_submission
+        PASS [   0.009s] (21/57) hepta-control-core chat_owner::tests::immutable_signed_identity_rejects_same_id_with_changed_payload_or_handle
+        PASS [   0.007s] (22/57) hepta-control-core chat_owner::tests::interrupt_requires_the_explicit_original_owner_capability
+        PASS [   0.007s] (23/57) hepta-control-core chat_owner::tests::known_delivery_identity_and_terminal_queue_receipt_cannot_drift
+        PASS [   0.007s] (24/57) hepta-control-core chat_owner::tests::known_signed_identity_survives_lost_first_ack_for_lookup_only
+        PASS [   0.007s] (25/57) hepta-control-core chat_owner::tests::lost_initial_reply_retries_exact_envelope_and_fences_late_reply
+        PASS [   0.007s] (26/57) hepta-control-core chat_owner::tests::new_session_can_only_lookup_its_own_known_owner_delivery
+        PASS [   0.007s] (27/57) hepta-control-core chat_owner::tests::original_approval_scope_requires_its_explicit_live_owner_capability
+        PASS [   0.007s] (28/57) hepta-control-core chat_owner::tests::quarantine_is_not_unsent_or_model_completion_and_does_not_retry
+        PASS [   0.007s] (29/57) hepta-control-core chat_owner::tests::recovery::original_recovery_rejects_other_principal_or_changed_reference
+        PASS [   0.007s] (30/57) hepta-control-core chat_owner::tests::recovery::root_recovery_of_expired_old_generation_is_lookup_only
+        PASS [   0.007s] (31/57) hepta-control-core chat_owner::tests::recovery::root_retirement_callback_is_exact_fenced_and_never_fabricates_queue_ack
+        PASS [   0.007s] (32/57) hepta-control-core chat_owner::tests::repeated_clicks_share_the_exact_in_flight_submission
+        PASS [   0.008s] (33/57) hepta-control-core chat_owner::tests::unavailable_or_read_only_owner_cannot_turn_clicks_into_admission
+        PASS [   0.010s] (34/57) hepta-control-core chat_owner::tests::utf8_and_json_escaping_are_bounded_without_truncation_or_secret_debug
+        PASS [   0.007s] (35/57) hepta-control-core chat_timeline::tests::oversized_history_and_unknown_delta_are_atomic_rejections
+        PASS [   0.008s] (36/57) hepta-control-core chat_timeline::tests::stale_or_cross_owner_history_cannot_replace_observed_transcript
+        PASS [   0.007s] (37/57) hepta-control-core chat_timeline::tests::streamed_unicode_is_exact_deduplicated_and_gap_requires_resync
+        PASS [   0.007s] (38/57) hepta-control-core confirmation::tests::removal_never_silently_selects_a_different_target
+        PASS [   0.010s] (39/57) hepta-control-core confirmation::tests::confirmation_matches_javascript_and_binds_every_context_field
+        PASS [   0.008s] (40/57) hepta-control-core owner_view::tests::malformed_private_fields_and_inconsistent_generation_are_rejected
+        PASS [   0.008s] (41/57) hepta-control-core owner_view::tests::max_unsigned_wire_generation_renders_exactly_without_implying_sqlite_admission
+        PASS [   0.007s] (42/57) hepta-control-core owner_view::tests::not_attached_and_read_failure_never_become_ready_or_write_authority
+        PASS [   0.006s] (43/57) hepta-control-core owner_view::tests::refresh_cancel_epoch_and_late_reply_preserve_single_flight_and_clear_old_observation
+        PASS [   0.006s] (44/57) hepta-control-core owner_view::tests::ticket_exhaustion_does_not_recycle_request_identity
+        PASS [   0.013s] (45/57) hepta-control-core projection::tests::normalization_owns_session_snapshot_and_runtime_content
+        PASS [   0.011s] (46/57) hepta-control-core projection::tests::operation_domain_binds_every_field_and_local_proposal_rejects_extras
+        PASS [   0.012s] (47/57) hepta-control-core projection::tests::projections_and_hash_domains_match_actual_javascript
+        PASS [   0.012s] (48/57) hepta-control-core projection::tests::session_normalization_checks_authentication_expiry_permissions_and_protocol
+        PASS [   0.014s] (49/57) hepta-control-core projection::tests::snapshot_digest_and_generation_declarations_fail_closed
+        PASS [   0.010s] (50/57) hepta-control-core projection::tests::snapshot_transitions_match_javascript_including_observation_retention
+        PASS [   0.023s] (51/57) hepta-control-core runtime_view::tests::long_escaped_path_is_preserved_above_wire_v2_limit_within_json_bound
+        PASS [   0.007s] (52/57) hepta-control-core runtime_view::tests::malformed_http_schema_and_authority_are_unavailable_without_truncation
+        PASS [   0.006s] (53/57) hepta-control-core runtime_view::tests::repeated_start_and_late_reply_cannot_replace_newer_status
+        PASS [   0.007s] (54/57) hepta-control-core runtime_view::tests::request_counter_exhaustion_does_not_reuse_a_ticket
+        PASS [   0.006s] (55/57) hepta-control-core runtime_view::tests::timeout_and_disconnect_never_leave_old_success_displayed_as_current
+        PASS [   0.008s] (56/57) hepta-control-core scheduler::tests::individual_lookup_timeout_backs_off_without_aborting_session
+        PASS [   0.417s] (57/57) hepta-control-core projection::tests::full_thousand_module_ceiling_includes_projection_and_snapshot_envelopes
+────────────
+     Summary [   0.595s] 57 tests run: 57 passed, 0 skipped

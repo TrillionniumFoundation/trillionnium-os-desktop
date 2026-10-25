@@ -1,0 +1,67 @@
+{
+  "schema": "trill.host-durable-file-latency-diagnostic.v1",
+  "qualification": false,
+  "samples": [
+    {
+      "label": "root-ext4",
+      "path": "/tmp/trill-durable-latency-20261024-01/own-new-file.bin",
+      "device": 2050,
+      "latency_seconds": [
+        0.7819373669335619,
+        0.9780357549898326,
+        1.144954563002102,
+        0.7972313479986042,
+        0.8205865559866652,
+        1.3361212570453063,
+        2.1681737439939752,
+        0.7210127470316365,
+        0.02574710000772029,
+        0.06154272903222591,
+        0.041707742027938366,
+        0.041596621042117476,
+        0.044758700067177415,
+        0.014036667998880148,
+        0.04859563696663827,
+        0.012309905956499279
+      ],
+      "writes": 16,
+      "bytes_per_write": 4096,
+      "method": "pwrite followed by fsync; real new private file",
+      "total_seconds": 9.038348440080881,
+      "median_seconds": 0.3912777380319312,
+      "max_seconds": 2.1681737439939752,
+      "final_file_sha256": "d1c4808f4915c05b0d32202151b6c8813fbc083ebf1846f0ab0f8df0fe31006e"
+    },
+    {
+      "label": "data-ext4",
+      "path": "/data/trillionnium-desktop-closure-20261024-pass1/trill-durable-latency-20261024-01/own-new-file.bin",
+      "device": 2067,
+      "latency_seconds": [
+        0.001751957111991942,
+        0.0014434809563681483,
+        0.0013780880253762007,
+        0.0013863540953025222,
+        0.0013187900185585022,
+        0.0013794989790767431,
+        0.0013255380326882005,
+        0.0012416599784046412,
+        0.0013263539876788855,
+        0.001273634028621018,
+        0.0012947309296578169,
+        0.0013741889270022511,
+        0.0013215560466051102,
+        0.0012959010200574994,
+        0.0012638010084629059,
+        0.001294344081543386
+      ],
+      "writes": 16,
+      "bytes_per_write": 4096,
+      "method": "pwrite followed by fsync; real new private file",
+      "total_seconds": 0.021669877227395773,
+      "median_seconds": 0.0013235470396466553,
+      "max_seconds": 0.001751957111991942,
+      "final_file_sha256": "d1c4808f4915c05b0d32202151b6c8813fbc083ebf1846f0ab0f8df0fe31006e"
+    }
+  ],
+  "io_pressure": "some avg10=40.00 avg60=30.39 avg300=30.97 total=35037450208\nfull avg10=36.94 avg60=27.95 avg300=28.72 total=32154513020\n"
+}

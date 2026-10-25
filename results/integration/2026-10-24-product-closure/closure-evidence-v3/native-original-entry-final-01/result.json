@@ -1,0 +1,137 @@
+{
+  "built": false,
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--manifest-path",
+        "codex-rs/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "completed": true,
+      "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final",
+      "elapsed_seconds": 0.215,
+      "exit_code": 0,
+      "log": "metadata.log",
+      "timeout_seconds": 120
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--manifest-path",
+        "codex-rs/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--release",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "-p",
+        "codex-hepta-agentd",
+        "--bin",
+        "hepta-native-cpu",
+        "-j4"
+      ],
+      "completed": false,
+      "cwd": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final",
+      "log": "build.log",
+      "timeout_seconds": 7200
+    }
+  ],
+  "dependency_inputs": {
+    "RUSTY_V8_ARCHIVE": {
+      "bytes": 29366352,
+      "path": "/data/hepta-dependency-v8-pair/rusty-v8-150.4.0-x86_64-unknown-linux-gnu/librusty_v8_ptrcomp_sandbox_release_x86_64-unknown-linux-gnu.a.gz",
+      "sha256": "a35c75d1f26e6a983885a45b33490a4ebe54f05050568b32b89cfb421b30b583"
+    },
+    "RUSTY_V8_SRC_BINDING_PATH": {
+      "bytes": 39884,
+      "path": "/data/hepta-dependency-v8-pair/rusty-v8-150.4.0-x86_64-unknown-linux-gnu/src_binding_ptrcomp_sandbox_release_x86_64-unknown-linux-gnu.rs",
+      "sha256": "7727826ae479bdb645e807239fb12d1f8e2e23de7a6cf16f5ee592690d1d8506"
+    }
+  },
+  "environment": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_HOME": "/home/qian-qi/.cargo",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_DIR": "/data/trillionnium-closure-20261024/hepta-original-static-target",
+    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C target-feature=+crt-static -C relocation-model=static -C link-arg=-no-pie",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "OPENSSL_STATIC": "1",
+    "PATH": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "RUSTC": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "RUSTY_V8_ARCHIVE": "/data/hepta-dependency-v8-pair/rusty-v8-150.4.0-x86_64-unknown-linux-gnu/librusty_v8_ptrcomp_sandbox_release_x86_64-unknown-linux-gnu.a.gz",
+    "RUSTY_V8_SRC_BINDING_PATH": "/data/hepta-dependency-v8-pair/rusty-v8-150.4.0-x86_64-unknown-linux-gnu/src_binding_ptrcomp_sandbox_release_x86_64-unknown-linux-gnu.rs"
+  },
+  "executed_binary": false,
+  "features_disabled": false,
+  "fixture_created": false,
+  "g2_complete": false,
+  "limits_changed": false,
+  "native_role_verified": false,
+  "original_entry": {
+    "entry_sha256": "1eb1810ac9e6af546215fcdd0748f58083eb2ab82dbaddf95de0fb11a21c136f",
+    "kind": "bin",
+    "name": "hepta-native-cpu",
+    "package": "codex-hepta-agentd",
+    "package_id": "path+file:///data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final/codex-rs/hepta-agentd#codex-hepta-agentd@0.0.0",
+    "path": "codex-rs/hepta-agentd/src/native_owner_main.rs"
+  },
+  "original_lock_sha256": "9d4a53597727434dacbef2ac8f39b4a554397ccd00525a4821395d359af168e2",
+  "output_created": true,
+  "packaged": false,
+  "persistent_cpu_verified": false,
+  "profile_overridden": false,
+  "recovery_verified": false,
+  "release_profile": {
+    "codegen-units": 4,
+    "debug": "line-tables-only",
+    "lto": "thin",
+    "split-debuginfo": "off",
+    "strip": false
+  },
+  "schema": "hepta.original-native-entry-build.v1",
+  "sources": {
+    "desktop": {
+      "head": "a37d366f8f826e1808ecd0a34d5ef75fbbf3716b",
+      "tree": "be21cd4914668a27140c68541e3637880a3e0c34"
+    },
+    "hepta": {
+      "head": "7ecc1d58d383e15f6f59646a371e837b64e49887",
+      "tree": "fc7112c4c2b9f83674f65a860e1f1be1cd1f518e"
+    }
+  },
+  "started_at_utc": "2026-10-24T16:55:14.279721+00:00",
+  "static_profile_passed": false,
+  "target_cache": {
+    "cache_reused": true,
+    "cold_build_claimed": false,
+    "device": 2067,
+    "exclusive_lease_acquired": true,
+    "inode": 25598474,
+    "lease_device": 2067,
+    "lease_file": "/data/trillionnium-closure-20261024/hepta-original-static-target/.hepta-native-userspace.lock",
+    "lease_inode": 25598480,
+    "path": "/data/trillionnium-closure-20261024/hepta-original-static-target"
+  },
+  "toolchains": {
+    "cargo": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f",
+      "version": "cargo 1.96.0 (30a34c682 2026-05-25)"
+    },
+    "rustc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75",
+      "version": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+    }
+  }
+}

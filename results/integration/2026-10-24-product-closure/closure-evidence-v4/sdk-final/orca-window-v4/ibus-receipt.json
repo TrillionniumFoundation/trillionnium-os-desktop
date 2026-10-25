@@ -1,0 +1,40 @@
+{
+  "schema": "trill.native-real-ibus.v1",
+  "passed": false,
+  "pid": 2305860,
+  "checks": [],
+  "input": [
+    {
+      "kind": "XTEST_ASCII",
+      "text": "nihao"
+    }
+  ],
+  "screenshots": [],
+  "physical_keyboard_qualified": false,
+  "unicode_injection_used_for_ime": false,
+  "synthetic_ime_events_used": false,
+  "wayland_ime_qualified": false,
+  "orca_human_evaluation": false,
+  "oracle": "original AT-SPI editor and selected room title plus original v4 recovery file",
+  "x11_owner": {
+    "pid": 2305860,
+    "xid": 12582916,
+    "xres_version": [
+      1,
+      2
+    ],
+    "method": "XRes 1.2 QueryClientIds LocalClientPID",
+    "helper": {
+      "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+      "bytes": 7574,
+      "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+      "method": "XRes 1.2 QueryClientIds LocalClientPID",
+      "libraries": [
+        "libX11.so.6",
+        "libXRes.so.1"
+      ]
+    }
+  },
+  "engine": "libpinyin",
+  "error": "AssertionError: Real IBus preedit did not engage the original composition guard; last error: None"
+}

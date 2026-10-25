@@ -1,0 +1,12 @@
+
+(process:2274289): dbind-WARNING **: 17:56:18.443: AT-SPI: Error in GetItems, sender=:1.5, error=Unknown object '/org/a11y/atspi/cache'
+/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v3/ready/ibus_client.py:128: DeprecationWarning: Atspi.Action.get_action_name is deprecated
+  action_names = [action.get_action_name(i) for i in range(action.get_n_actions())]
+Traceback (most recent call last):
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v3/ready/ibus_client.py", line 217, in <module>
+    run(args, result)
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v3/ready/ibus_client.py", line 141, in run
+    until(lambda: not named("+ New draft").get_state_set().contains(Atspi.StateType.ENABLED),
+  File "/data/trillionnium-desktop-closure-20261024-pass1/orca-window-probe-v3/ready/ibus_client.py", line 41, in until
+    raise AssertionError(f"{description}; last error: {last}")
+AssertionError: Real IBus preedit did not engage the original composition guard; last error: None

@@ -12,6 +12,11 @@ libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
 The UI workspace declares Rust **1.96** and pins the original Hepta dependency
 patches at its Cargo root. The native renderers include AccessKit; see
 [`ACCESSIBILITY.md`](ACCESSIBILITY.md) for the AT-SPI gate and its limits.
+The Linux product source guard uses Python 3.11+ (provided by the Ubuntu 24.04
+CI profile). `python3 -B tests/ui/verify_product_source.py` checks all active UI
+manifests, the Session host manifest, both Cargo locks and the README against
+the shared Hepta source identity before compilation. Independent kernel
+profiles and historical evidence retain their own pins.
 
 For the Session-owned Hepta runtime observer, explicit endpoint configuration,
 read-only UI behavior and its separate acceptance limits, see

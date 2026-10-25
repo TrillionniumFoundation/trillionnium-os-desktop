@@ -109,6 +109,46 @@ Do not merge that lock or a global `.cargo/config` into the default product.
 Both modes share the reviewed source and original owner. `--all-features`
 includes this opt-in candidate and is not a baseline verification command.
 
+Once that candidate's generated lock and source are committed, use the single
+verification/build entry point to keep every Cargo command on the same inputs:
+
+```sh
+python3 -B support/ui/verify_native_sdk_candidate.py \
+  --hepta-root /absolute/exact-pinned-hepta-checkout \
+  --prepared-sdk /absolute/reviewed-prepared-sdk \
+  --sdk-cargo-config /absolute/all-sdk-overrides.toml \
+  --original-metadata /absolute/original-native-metadata.json \
+  --target-dir /absolute/candidate-target \
+  --profile release --jobs 2 \
+  --output /absolute/new-candidate-build-evidence
+```
+
+The command requires clean Desktop and Hepta checkouts, revalidates the exact
+SDK tree and all resolved dependency edges, and runs locked metadata, all-target
+tests, strict all-target Clippy and the binary build. Feature, Cargo config,
+toolchain, target directory and profile are fixed across those steps. The
+candidate lock/config/source inputs are checked between steps; any drift or
+failed command stops qualification and retains its logs. It never repairs or
+regenerates a lock automatically. The output contains command argv, input hashes,
+the exact candidate lock, a freshly verified SDK source profile, binary hashes
+and a separate build receipt. Its source profile still says `compiled: false`;
+the separate build receipt reports actual command success. Window, clipboard,
+IME and accessibility qualification remains a separate run on those binaries.
+The successful receipt directly supplies the existing native-window qualifier's
+`--build-receipt` contract: `status`, `exit_code`, `source_commit`, `source_tree`
+and `binaries` with each actual program's byte count and SHA-256. Use that exact
+receipt without rewriting it. `runtime_qualified` remains false until the
+separate window qualification succeeds and produces its own evidence.
+
+Put `--config` **after** the Cargo subcommand, especially
+`cargo +1.96.0 clippy --config /absolute/all-sdk-overrides.toml ... --locked`.
+Clippy is an external Cargo plugin; an outer `cargo --config ... clippy` can
+consume that configuration before invoking the plugin, whose inner Cargo then
+resolves a different graph. The canonical runner uses the forwarded position
+for every step. This distinction is covered by Cargo's original
+[external-plugin configuration issue](https://github.com/rust-lang/cargo/issues/11031)
+and a regression that invokes the real Cargo frontend with a temporary plugin.
+
 Pass the resulting SDK receipt and its inputs to the resource preparer:
 
 ```sh
@@ -185,6 +225,66 @@ reported by systemd; it is not automatically relabelled as a recovered session.
 The launcher writes only this unit's private display environment file. It does
 not import environment variables into the global user service manager, change
 other services, auto-start at login or enable a machine service.
+
+## Native Root deployment entry
+
+`trusted_desktop.py` is the administrator deployment entry for a bundled native
+package. Its `stage` command verifies the independently supplied manifest SHA256,
+copies each file into a new Root-owned release, rechecks the copied bytes and
+resources, synchronizes them, then atomically publishes one deployment record.
+The program path names the immutable release, not a mutable `current` symlink.
+The default prefix is `/opt/trillionnium-desktop`. Ancestors, ownership, modes,
+hard links and symlinks are checked. Execute this tool from reviewed administrator
+tooling; staging treats package files as data and never executes package code.
+
+```sh
+# Existing Root administrator, with a reviewed package and manifest digest:
+python3 /reviewed/tools/trusted_desktop.py stage \
+  --package /reviewed/trillionnium-desktop --expected-manifest REVIEWED_MANIFEST_SHA256
+python3 /reviewed/tools/trusted_desktop.py describe
+```
+
+The output is a program/resource binding for the existing authenticated launcher.
+It does not contain or create a principal, lease, writer or human authorization.
+The original provider must supply its existing Root0600 native profile naming
+that exact `program`, `program_sha256` and `TRILL_UI_MAKEPAD_RESOURCES`. A missing
+or mismatched profile stops launch; changing a path in the user config does not
+create one. The existing Hepta Root config, registered daemon, original owner
+pidfd and App Server thread are retained.
+
+In the intended user's graphical session, install the same verified package and
+run `trillionnium-desktop prepare-session`. This performs the normal service/PID
+and Snapshot readiness checks without starting another Shell. Then the existing
+Root launcher invokes the following entry with its **already held original daemon
+pidfd as stdin** (a shell pipe or a newly inferred PID is insufficient):
+
+```sh
+python3 /reviewed/tools/trusted_desktop.py launch \
+  --authority /protected/hepta-authority-host \
+  --authority-sha256 REVIEWED_ORIGINAL_ROOT_ELF_SHA256 \
+  --config ORIGINAL_ROOT_CONFIG --registration ORIGINAL_DAEMON_REGISTRATION \
+  --profile EXISTING_AUTHENTICATED_NATIVE_PROFILE
+```
+
+This entry hashes and executes the same open Root executable, transfers the
+original daemon pidfd, and passes an exclusive deployment lock to the original
+`launch-native --deployment-lock-fd` implementation. Root retains the lock for
+its serving lifetime and marks every inherited fd from 3 upward close-on-exec in
+the UI child. Thus the ordinary UI cannot retain a duplicate lock alias, unlock
+or write the Root deployment lock. The managed release path also requires this
+exact prefix lock inode when called through the generic Hepta launcher. The original Hepta
+launcher still hashes/executes the installed Shell inode, drops its privileges,
+retains its actual child pidfd and registers that process with the original
+human/session/permission revision and App Server route.
+
+`stage` and `rollback` refuse while that Root is active. After it ends, `rollback`
+validates the complete previous package before atomically exchanging the current
+and previous selection. The generation increases; old UI processes retain only
+their original process/session identities. A new launch always needs a matching
+existing authenticated profile and a fresh UI process. No grant or old effect is
+copied during package rollback. The package filesystem tests and deployment-lock
+tests establish plumbing boundaries; actual Root recognition, upgrade isolation
+and original thread continuity still require the live acceptance run.
 
 ## Configuration and diagnostics
 

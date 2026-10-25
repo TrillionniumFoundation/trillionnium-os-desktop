@@ -1,0 +1,48 @@
+{
+  "schema": "hepta.actual-static-size-diagnostic.v1",
+  "source": "7ecc1d58d383e15f6f59646a371e837b64e49887",
+  "commands": [
+    {
+      "label": "symbols",
+      "argv": [
+        "/usr/bin/nm",
+        "-S",
+        "--size-sort",
+        "--demangle",
+        "/data/trillionnium-desktop-closure-20261024-pass1/native-original-entry-final-02/hepta-native-cpu.unstripped"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7095612459816039,
+      "stdout_sha256": "9ab4e74b877f357447c53197b94137e3d19c7b00d610ee29fdf43db0ebf5c035",
+      "stdout_bytes": 1999962
+    },
+    {
+      "label": "sections",
+      "argv": [
+        "/usr/bin/size",
+        "-A",
+        "/data/trillionnium-desktop-closure-20261024-pass1/native-original-entry-final-02/packaged/hepta-native-cpu"
+      ],
+      "exit_code": 0,
+      "seconds": 0.14644798601511866,
+      "stdout_sha256": "ed8584de730763c4122a6e9f550d6ea4b2654df867b0f17a0f6b8e6a8511897b",
+      "stdout_bytes": 1573
+    },
+    {
+      "label": "elf",
+      "argv": [
+        "/usr/bin/readelf",
+        "-W",
+        "-h",
+        "-l",
+        "-d",
+        "/data/trillionnium-desktop-closure-20261024-pass1/native-original-entry-final-02/packaged/hepta-native-cpu"
+      ],
+      "exit_code": 0,
+      "seconds": 0.011432396015152335,
+      "stdout_sha256": "fbd545cd6b02042695e2a5d8e9e904a62a591bf812859803ef3befe852d62a26",
+      "stdout_bytes": 2541
+    }
+  ],
+  "binary_executed": false
+}

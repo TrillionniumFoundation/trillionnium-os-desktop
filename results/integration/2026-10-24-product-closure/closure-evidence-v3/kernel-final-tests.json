@@ -1,0 +1,38 @@
+{
+  "source": {
+    "head": "7ecc1d58d383e15f6f59646a371e837b64e49887",
+    "tree": "fc7112c4c2b9f83674f65a860e1f1be1cd1f518e"
+  },
+  "steps": [
+    {
+      "step": "libs",
+      "argv": [
+        "just",
+        "test",
+        "-p",
+        "codex-hepta-agentd",
+        "-p",
+        "codex-hepta-authbus",
+        "-p",
+        "codex-hepta-automation",
+        "-p",
+        "codex-hepta-evidence",
+        "-p",
+        "codex-hepta-matrix-store",
+        "-p",
+        "codex-hepta-operations",
+        "-p",
+        "codex-hepta-memory",
+        "-p",
+        "codex-hepta-supervisor",
+        "--lib",
+        "--locked",
+        "--offline"
+      ],
+      "exit_code": 100,
+      "seconds": 2682.08,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/kernel-final-libs.log"
+    }
+  ],
+  "runtime_qualified": false
+}

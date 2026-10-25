@@ -1,0 +1,42 @@
+{
+  "source": {
+    "head": "424ac28891f3b04bcd1c1ce09efac91e8561a998",
+    "tree": "db63d65393a46abe96daada36e5c04471d65f1a6"
+  },
+  "hepta": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+  "results": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-session-host/Cargo.toml",
+        "--features",
+        "native-text",
+        "--locked",
+        "--lib"
+      ],
+      "exit": 0,
+      "seconds": 717.24,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-host-native-0.log"
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "services/hepta-session-host/Cargo.toml",
+        "--features",
+        "native-text",
+        "--locked",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 302.12,
+      "log": "/data/trillionnium-desktop-closure-20261024-pass1/final-host-native-1.log"
+    }
+  ]
+}

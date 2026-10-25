@@ -1,0 +1,11 @@
+WAYLAND_DISPLAY: Not set
+DISPLAY: :366
+XDG_CURRENT_DESKTOP: TRILL_NATIVE_PRIVATE_TEST
+Selected: X11 backend
+Reason: DISPLAY environment variable is set
+[I] /data/trillionnium-desktop-product-20261024-integration/native-sdk-candidate-v3/makepad-prepared/platform/src/os/linux/windowing_backend.rs:106:13 - X11 session: Vulkan windowing needs Wayland; rendering with OpenGL ES
+[I] /data/trillionnium-desktop-product-20261024-integration/native-sdk-candidate-v3/makepad-prepared/platform/src/os/linux/opengl.rs:2081:13 - Makepad GL: vendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" version="OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.4" glsl="OpenGL ES GLSL ES 3.20" sampler_objects=true
+[I] /data/trillionnium-desktop-product-20261024-integration/native-sdk-candidate-v3/makepad-prepared/platform/src/os/linux/opengl.rs:406:13 - retained-upload budgets: adapter_bytes=0 process_allowance=67461527552 allocation_limit=16865381888 source=process_allowance_fallback
+ALSA ERROR snd_device_name_hint(-1, "pcm\0".as_ptr(), &mut hints) - No such file or directory
+[E] /data/trillionnium-desktop-product-20261024-integration/native-sdk-candidate-v3/makepad-prepared/platform/src/os/linux/pulse_audio.rs:749:17 - PulseAudio: pa_context_connect failed (Connection refused), using ALSA only
+ALSA ERROR snd_device_name_hint(-1, "pcm\0".as_ptr(), &mut hints) - No such file or directory

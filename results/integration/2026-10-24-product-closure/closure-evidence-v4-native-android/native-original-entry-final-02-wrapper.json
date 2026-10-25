@@ -1,0 +1,71 @@
+{
+  "exit_code": 1,
+  "seconds": 1021.46,
+  "argv": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/data/trillionnium-desktop-closure-20261024-pass1/os-kernel-final/tests/workloads/hepta_cpu_control/build_original_entry.py",
+    "--execute",
+    "--desktop-source",
+    "/data/trillionnium-desktop-closure-20261024-pass1/os-kernel-final",
+    "--desktop-head",
+    "a37d366f8f826e1808ecd0a34d5ef75fbbf3716b",
+    "--desktop-tree",
+    "be21cd4914668a27140c68541e3637880a3e0c34",
+    "--hepta-source",
+    "/data/trillionnium-desktop-closure-20261024-pass1/hepta-kernel-final",
+    "--hepta-head",
+    "7ecc1d58d383e15f6f59646a371e837b64e49887",
+    "--hepta-tree",
+    "fc7112c4c2b9f83674f65a860e1f1be1cd1f518e",
+    "--entry",
+    "hepta-native-cpu",
+    "--entry-kind",
+    "bin",
+    "--toolchain-bin",
+    "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin",
+    "--cargo-home",
+    "/home/qian-qi/.cargo",
+    "--target-cache",
+    "/data/trillionnium-closure-20261024/hepta-original-static-target",
+    "--jobs",
+    "2",
+    "--timeout",
+    "7200",
+    "--v8-archive",
+    "/data/hepta-dependency-v8-pair/rusty-v8-150.4.0-x86_64-unknown-linux-gnu/librusty_v8_ptrcomp_sandbox_release_x86_64-unknown-linux-gnu.a.gz",
+    "--v8-bindings",
+    "/data/hepta-dependency-v8-pair/rusty-v8-150.4.0-x86_64-unknown-linux-gnu/src_binding_ptrcomp_sandbox_release_x86_64-unknown-linux-gnu.rs",
+    "--expected-v8-archive-sha256",
+    "a35c75d1f26e6a983885a45b33490a4ebe54f05050568b32b89cfb421b30b583",
+    "--expected-v8-bindings-sha256",
+    "7727826ae479bdb645e807239fb12d1f8e2e23de7a6cf16f5ee592690d1d8506",
+    "--output",
+    "/data/trillionnium-desktop-closure-20261024-pass1/native-original-entry-final-02"
+  ],
+  "log": "/data/trillionnium-desktop-closure-20261024-pass1/native-original-entry-final-02-runner.log",
+  "result": {
+    "sources": {
+      "desktop": {
+        "head": "a37d366f8f826e1808ecd0a34d5ef75fbbf3716b",
+        "tree": "be21cd4914668a27140c68541e3637880a3e0c34"
+      },
+      "hepta": {
+        "head": "7ecc1d58d383e15f6f59646a371e837b64e49887",
+        "tree": "fc7112c4c2b9f83674f65a860e1f1be1cd1f518e"
+      }
+    },
+    "built": true,
+    "packaged": true,
+    "static_profile_passed": false,
+    "source_inputs_unchanged": true,
+    "product": {
+      "bytes": 13243416,
+      "path": "packaged/hepta-native-cpu",
+      "sha256": "a76cd047ae38628338ac1931a7f5f8417792ac26f3a694fd77544c2c3a491eaf"
+    },
+    "original_shape": null,
+    "error": "ValueError: static initial ELF size out of bounds"
+  }
+}

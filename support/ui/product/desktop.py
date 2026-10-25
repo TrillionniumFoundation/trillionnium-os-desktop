@@ -258,6 +258,8 @@ def verify_package(package):
     expected = {"desktop.py", "PRODUCT.md", "source-profile.json", "PROVENANCE.txt"}
     if "native_sdk.py" in files:
         expected.add("native_sdk.py")
+    if "trusted_desktop.py" in files:
+        expected.add("trusted_desktop.py")
     expected.update("bin/" + name for name in PROGRAMS)
     if any(name.startswith("resources/") for name in files):
         expected.update("resources/" + name for name in native_resource_files(
@@ -329,6 +331,7 @@ def pack(archive, expected_desktop, profile_path, output, makepad_resources=None
         (package / "source-profile.json").write_bytes(regular_bytes(profile_path))
         (package / "desktop.py").write_bytes(regular_bytes(Path(__file__)))
         (package / "native_sdk.py").write_bytes(regular_bytes(Path(__file__).with_name("native_sdk.py")))
+        (package / "trusted_desktop.py").write_bytes(regular_bytes(Path(__file__).with_name("trusted_desktop.py")))
         product_doc = Path(__file__).parent.parent / "PRODUCT.md"
         (package / "PRODUCT.md").write_bytes(regular_bytes(product_doc))
         if makepad_resources:
@@ -701,12 +704,12 @@ def doctor(prefix, live=False):
     return report
 
 
-def run(prefix, session=False, _locked=False):
+def run(prefix, session=False, _locked=False, prepare_only=False):
     if not session and not _locked:
         # Serialize start/readiness with upgrades. Python-created descriptors
         # are close-on-exec, so the lock releases when the Shell replaces us.
         with install_lock(prefix):
-            return run(prefix, session=False, _locked=True)
+            return run(prefix, session=False, _locked=True, prepare_only=prepare_only)
     record, release, _manifest, cfg = installed(prefix)
     allowed_environment = {"DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "XDG_RUNTIME_DIR",
                            "DBUS_SESSION_BUS_ADDRESS", "XDG_CURRENT_DESKTOP", "XDG_STATE_HOME",
@@ -748,6 +751,9 @@ def run(prefix, session=False, _locked=False):
         time.sleep(0.1)
     else:
         raise ProductError("Session did not become ready; run doctor --live or inspect the user service journal")
+    if prepare_only:
+        return {"session_ready": True, "release_id": release.name,
+                "production_authority_verified": False}
     program = release / "bin/trill-shell"
     args = [str(program), "--page", cfg["shell_page"]]
     if cfg["renderer"] != "egui":
@@ -778,7 +784,7 @@ def main():
     setup.add_argument("--config", type=Path, default=config / "trillionnium-desktop/config.json")
     diagnose = subs.add_parser("doctor", help="validate bytes/configuration and report actionable diagnostics")
     diagnose.add_argument("--live", action="store_true")
-    for command in ("run", "session", "stop", "rollback", "uninstall"):
+    for command in ("run", "session", "prepare-session", "stop", "rollback", "uninstall"):
         subs.add_parser(command)
     args = parser.parse_args()
     require(args.prefix.is_absolute(), "Installation prefix must be absolute")
@@ -794,6 +800,8 @@ def main():
     elif args.command in ("run", "session"):
         run(args.prefix, args.command == "session")
         return 0
+    elif args.command == "prepare-session":
+        result = run(args.prefix, prepare_only=True)
     elif args.command == "stop":
         record, _release, _manifest, _cfg = installed(args.prefix)
         systemctl("stop", record["paths"]["unit_name"])

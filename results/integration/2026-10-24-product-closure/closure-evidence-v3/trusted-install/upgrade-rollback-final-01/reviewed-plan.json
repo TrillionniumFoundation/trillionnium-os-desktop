@@ -1,0 +1,143 @@
+{
+  "authority_profile_creation_allowed": false,
+  "baseline_record": {
+    "current": {
+      "manifest_sha256": "3436abaa775fbaa6000899343b542117b30886de2c2c98a66c738f431d4e953b",
+      "release_id": "6ee49848a4da-b6a10e16adab"
+    },
+    "generation": 1,
+    "previous": null,
+    "schema": "trill.native-deployment.v1"
+  },
+  "baseline_record_sha256": "a4248d8e324439855cfced8f01325809969d29e88b58040aadb3d152d26bab55",
+  "default_output": "/data/trillionnium-desktop-closure-20261024-pass1/trusted-install/upgrade-rollback-final-01",
+  "installer_directory": "/var/lib/trillionnium-native-stage-20261024-01/installer",
+  "installer_modules": {
+    "desktop.py": {
+      "bytes": 43585,
+      "sha256": "eacc37ec0fed5c77c1f5a612b6047007b3b924276aff92677ec1b104e51b4eb5"
+    },
+    "native_sdk.py": {
+      "bytes": 7161,
+      "sha256": "ee3dab388d5492a40cb5005e2915df137d8c46fd72ce455f25c93d8b130dfbe7"
+    },
+    "trusted_desktop.py": {
+      "bytes": 12256,
+      "sha256": "74938e4ea0717289682bccdf69dda8c29ac5c1b7287066db7770c198a207c1bc"
+    }
+  },
+  "namespace": "/var/lib/trillionnium-native-stage-20261024-01",
+  "negative_proofs": [
+    "stage B while A1 deployment lock is held",
+    "rollback while B2 deployment lock is held"
+  ],
+  "original_root_launch_allowed": false,
+  "package_b": "/data/trillionnium-desktop-closure-20261024-pass1/sdk-final/product-package-v1/extracted/trillionnium-desktop",
+  "prefix": "/var/lib/trillionnium-native-stage-20261024-01/deployment",
+  "qualified": false,
+  "releases": {
+    "A": {
+      "binaries": {
+        "bin/trill-app-window": {
+          "bytes": 16694480,
+          "mode": 493,
+          "sha256": "214e9e8fd0d8f950e3fa47a70d85c1404ab736f4b0da60006755b28e160c0f10"
+        },
+        "bin/trill-ctl": {
+          "bytes": 2837992,
+          "mode": 493,
+          "sha256": "6cee09b6e6dfd0610c4795310a99b3bb4b021386771291dc607ee255585efb69"
+        },
+        "bin/trill-notes-recovery": {
+          "bytes": 2709032,
+          "mode": 493,
+          "sha256": "16c2c9ab2a0e14ab7ba23c0ace6f4c1953fd24f4fd3374848fa422faafab1294"
+        },
+        "bin/trill-session": {
+          "bytes": 3992120,
+          "mode": 493,
+          "sha256": "17e731674a22343c366ff67e230297f38f89040dd4286722104b54c5fe8d42b5"
+        },
+        "bin/trill-shell": {
+          "bytes": 83501048,
+          "mode": 493,
+          "sha256": "70e5097b708a0469b46a0ab9c3836e6b71c31590bbf09b382a47eda41a751bc5"
+        }
+      },
+      "desktop_commit": "6ee49848a4da82ee71e9707285dcc2c7e2b3c66b",
+      "effects_authorized": false,
+      "file_count": 64,
+      "hepta_commit": "52456c309f64ee80e7e377f774445c5dfe0523c9",
+      "manifest_sha256": "3436abaa775fbaa6000899343b542117b30886de2c2c98a66c738f431d4e953b",
+      "qualification": "linux-host-package",
+      "release_id": "6ee49848a4da-b6a10e16adab",
+      "resource_files": 54,
+      "schema_version": 1
+    },
+    "B": {
+      "binaries": {
+        "bin/trill-app-window": {
+          "bytes": 16924096,
+          "mode": 493,
+          "sha256": "0f0b0043fe55c50553c9cd59f56835a051241b5e385243eb618d57b27ea5fc3e"
+        },
+        "bin/trill-ctl": {
+          "bytes": 2839960,
+          "mode": 493,
+          "sha256": "39c07dfeb0c93db5ecaeb5afac0c95e3e307fe33c43be86e63b8457daa933414"
+        },
+        "bin/trill-notes-recovery": {
+          "bytes": 2712592,
+          "mode": 493,
+          "sha256": "316238a05d18e041e18fa6efe2d0d039e8bc0a0f4485f593e88054bd89c217f4"
+        },
+        "bin/trill-session": {
+          "bytes": 3994624,
+          "mode": 493,
+          "sha256": "d8ce5016820d803a39f434ae4a8de12b2bc4cf6694c2a95cfb7bd5ffde0e806d"
+        },
+        "bin/trill-shell": {
+          "bytes": 83702008,
+          "mode": 493,
+          "sha256": "080ad7e93a85b2c1b564e7f382312c9be1609f3e1687a37cbe61a178063ad674"
+        }
+      },
+      "desktop_commit": "a7621d8022f52add679bd6edba5d0bad6772dabc",
+      "effects_authorized": false,
+      "file_count": 72,
+      "hepta_commit": "22e87e0dd6560a7b925e716a33011378ae07a9a2",
+      "manifest_sha256": "b1872f83b9e882ddc4f241be5b7a50039c8f40c24c6fc50cf3845c3ba4a53aa7",
+      "qualification": "linux-host-package",
+      "release_id": "a7621d8022f5-7bb3f08ce5c1",
+      "resource_files": 61,
+      "schema_version": 1
+    }
+  },
+  "reported_build_archive_hashes_not_rehashed_by_runner": {
+    "host_archive_sha256": "e475ef2a01740b086a12331c25eae60f36ea185b92b3039e9655bf04273a3cc7",
+    "package_archive_sha256": "96e92963967bc9336f3eda04c74a5228090ee016c6b9a737aa1cfa76fa5ba660"
+  },
+  "schema": "trillionnium.trusted-real-package-transition-plan.v1",
+  "sequence": [
+    {
+      "current": "A",
+      "generation": 1,
+      "previous": null
+    },
+    {
+      "current": "B",
+      "generation": 2,
+      "previous": "A"
+    },
+    {
+      "current": "A",
+      "generation": 3,
+      "previous": "B"
+    },
+    {
+      "current": "B",
+      "generation": 4,
+      "previous": "A"
+    }
+  ]
+}

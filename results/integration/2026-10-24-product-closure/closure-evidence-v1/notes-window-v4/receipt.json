@@ -1,0 +1,112 @@
+{
+  "schema": "trillionnium.notes-ordinary-reopen-window.v1",
+  "passed": true,
+  "checks": [
+    {
+      "name": "real-egui-native-CJK-paste-saved-with-original-pending-receipt",
+      "passed": true
+    },
+    {
+      "name": "ordinary-WM-DELETE-WINDOW-and-original-Session-reap",
+      "passed": true
+    },
+    {
+      "name": "ordinary-saved-note-UI-reopens-only-text-under-fresh-effect-identity",
+      "passed": true
+    },
+    {
+      "name": "continued-native-editing-shares-new-local-revision-CAS",
+      "passed": true
+    },
+    {
+      "name": "independent-original-incarnation-recovery-retains-exact-pending-receipt",
+      "passed": true
+    }
+  ],
+  "scope": "owned Xvfb, original Session/egui Notes, AT-SPI, real OS clipboard and synthesized keyboard",
+  "physical_ime_qualified": false,
+  "production_authority": false,
+  "original_writer_terminal": false,
+  "font": {
+    "path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+  },
+  "harness_sha256": "bab6b966ff1e1e99c7915317a1d4e59442f045eb3e2a5ed890d5df7638b7c6cc",
+  "binary_sha256": {
+    "trill-session": "85f8dbf4a5dee33babdbb6c1dbc09ea3ac2b62d114611d37025b3c8e9096d025",
+    "trill-app-window": "f7957d5a478d62acf7c40b6ba2f260ece4ec6aa1522492fdc69200f1f59143c0",
+    "trill-notes-recovery": "489f70e7763adce3c39d0943ab9cfadc92cb4ba7b4587ebb0e0a57724418f53f"
+  },
+  "xres_helper_sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+  "owned_a11y_status": {
+    "IsEnabled": true,
+    "ScreenReaderEnabled": true
+  },
+  "windows": [
+    {
+      "pid": 1722239,
+      "xid": 6291459,
+      "xres_version": [
+        1,
+        2
+      ],
+      "method": "XRes 1.2 QueryClientIds LocalClientPID",
+      "helper": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+        "bytes": 7574,
+        "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+        "method": "XRes 1.2 QueryClientIds LocalClientPID",
+        "libraries": [
+          "libX11.so.6",
+          "libXRes.so.1"
+        ]
+      }
+    },
+    {
+      "pid": 1722471,
+      "xid": 6291459,
+      "xres_version": [
+        1,
+        2
+      ],
+      "method": "XRes 1.2 QueryClientIds LocalClientPID",
+      "helper": {
+        "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+        "bytes": 7574,
+        "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+        "method": "XRes 1.2 QueryClientIds LocalClientPID",
+        "libraries": [
+          "libX11.so.6",
+          "libXRes.so.1"
+        ]
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-original-note.png",
+      "sha256": "7edc141b14ba4c2e3e6ac217453af982800a556911e66890db31f75a1206dc31"
+    },
+    {
+      "file": "02-reopened-note.png",
+      "sha256": "36ba5b4f659a1dff71de954867040a98dcf0e2743bbf6d03b655d86f5044f50b"
+    },
+    {
+      "file": "03-continued-note.png",
+      "sha256": "8c596ca0a38a2c12817af757f1c69905c4d092f564660dec3a94d872dddb0f07"
+    }
+  ],
+  "old_target": {
+    "session_instance": "444d72a186e587e5a0f48734cdfef483",
+    "task_id": 1,
+    "incarnation": "dbf6b61e0cc280102771236ce25d8681"
+  },
+  "new_target": {
+    "session_instance": "444d72a186e587e5a0f48734cdfef483",
+    "task_id": 2,
+    "incarnation": "29b5fb198c19e6625e7bd95b14810a69"
+  },
+  "original_checkpoint_sha256": "4e3adfba52c5c0d4eceed94e9dad13ccfb8be4a4d8d59051e08c9f858064718c",
+  "new_checkpoint_sha256": "56e43184e2d734ddb08a8eebad331de9b0c2e3bbfef1f59d70e6a1b6d165cd3f",
+  "new_revision": 2
+}

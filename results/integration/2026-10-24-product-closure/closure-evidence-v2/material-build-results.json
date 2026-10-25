@@ -1,0 +1,41 @@
+{
+  "base": "d8badc4558fa872aaa37fb8aabe7c794f8d747db",
+  "source": "c8211eb9f861ea0a5f3dc03cbd0adedef7ab74bd",
+  "tree": "c8e707a33ee948981302142f36b779d3a2f047e6",
+  "patch_sha256": "ae1e250e382cf6df6e2929ac721c2b08fac5c425f1f113df5b85153d5a78c8eb",
+  "native_qualification": false,
+  "results": [
+    {
+      "name": "cargo-metadata",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "exit": 0,
+      "seconds": 1.93
+    },
+    {
+      "name": "binaries-metadata",
+      "argv": [
+        "cargo",
+        "nextest",
+        "list",
+        "--locked",
+        "--offline",
+        "-p",
+        "codex-hepta-memory",
+        "--lib",
+        "--list-type",
+        "binaries-only",
+        "--message-format",
+        "json"
+      ],
+      "exit": 0,
+      "seconds": 123.74
+    }
+  ]
+}

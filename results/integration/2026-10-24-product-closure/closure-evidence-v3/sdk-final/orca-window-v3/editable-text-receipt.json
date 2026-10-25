@@ -1,0 +1,61 @@
+{
+  "schema": "hepta.native-atomic-editable-text.v1",
+  "pid": 2272477,
+  "passed": true,
+  "checks": [
+    {
+      "name": "standard-EditableText-set-complete-CJK-graphemes",
+      "passed": true
+    },
+    {
+      "name": "standard-EditableText-byte-prefix-and-original-undo-redo",
+      "passed": true
+    },
+    {
+      "name": "standard-EditableText-copy-cut-delete-use-original-editor-and-clipboard",
+      "passed": true
+    },
+    {
+      "name": "standard-EditableText-limit-UTF8-grapheme-and-range-refusals-preserve-history",
+      "passed": true
+    },
+    {
+      "name": "request-scoped-PasteText-CJK-readback-undo-redo-and-oversize-refusal",
+      "passed": true
+    },
+    {
+      "name": "actual-delayed-native-clipboard-reply-cannot-follow-room-change",
+      "passed": true
+    },
+    {
+      "name": "stale-EditableText-object-cannot-edit-another-original-room",
+      "passed": true
+    }
+  ],
+  "supported_methods_passed": true,
+  "full_editable_text_qualified": false,
+  "orca_human_evaluation": false,
+  "physical_keyboard_qualified": false,
+  "synthetic_ime_events_used": false,
+  "request_scoped_paste_requested": true,
+  "x11_owner": {
+    "pid": 2272477,
+    "xid": 12582916,
+    "xres_version": [
+      1,
+      2
+    ],
+    "method": "XRes 1.2 QueryClientIds LocalClientPID",
+    "helper": {
+      "path": "/data/trillionnium-desktop-closure-20261024-pass1/hepta-final/apps/hepta-control-ui/test/x11_client_owner.py",
+      "bytes": 7574,
+      "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd",
+      "method": "XRes 1.2 QueryClientIds LocalClientPID",
+      "libraries": [
+        "libX11.so.6",
+        "libXRes.so.1"
+      ]
+    }
+  },
+  "paste_text": "native-X11-request-scoped-readback-passed"
+}
