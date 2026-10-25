@@ -9,10 +9,11 @@ use spin::Once;
 
 use super::registry::char::{MajorIdOwner, acquire_major};
 
-mod hwrng;
 mod hepta_control;
+mod hwrng;
+pub(crate) use hepta_control::boot_id as hepta_boot_id;
 #[cfg(feature = "g1d-trusted-control")]
-pub(crate) use hepta_control::{boot_id as hepta_boot_id, image_space_id as hepta_image_space_id};
+pub(crate) use hepta_control::image_space_id as hepta_image_space_id;
 #[cfg(all(target_arch = "x86_64", feature = "cvm_guest"))]
 pub(crate) mod tdxguest;
 

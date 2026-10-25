@@ -62,7 +62,7 @@ pub(super) fn spawn(
     let workload_console = Arc::new(Mutex::new(None::<[Arc<dyn FileLike>; 3]>));
     let mut prepared = Vec::with_capacity(3);
     for (index, allocation) in [manager, workload, recovery].into_iter().enumerate() {
-        let page = boot_page(index as u64 + 1, pids, spaces);
+        let page = boot_page(index as u64 + 1, pids, spaces)?;
         let startup: Box<dyn FnOnce(&Context<'_>) + Send> = if index == 0 {
             let pending_children = pending_children.clone();
             let workload_console = workload_console.clone();
@@ -193,7 +193,7 @@ fn prepare_role(
 }
 
 fn boot_page(role: u64, pids: [crate::process::Pid; 3], spaces: [[u8; 16]; 2])
-    -> Box<[u8; PAGE_SIZE]>
+    -> Result<Box<[u8; PAGE_SIZE]>>
 {
     let mut page = Box::new([0u8; PAGE_SIZE]);
     page[..8].copy_from_slice(b"HOS2BOOT");
@@ -206,7 +206,7 @@ fn boot_page(role: u64, pids: [crate::process::Pid; 3], spaces: [[u8; 16]; 2])
     for (index, word) in words.into_iter().enumerate() {
         page[8 + index * 8..16 + index * 8].copy_from_slice(&word.to_le_bytes());
     }
-    page[96..112].copy_from_slice(&hepta_boot_id());
+    page[96..112].copy_from_slice(&hepta_boot_id()?);
     page[112..128].copy_from_slice(&spaces[0]);
     page[128..144].copy_from_slice(&spaces[1]);
     let tail = [u64::from(pids[0]), u64::from(pids[1]), u64::from(pids[2]),
@@ -214,5 +214,5 @@ fn boot_page(role: u64, pids: [crate::process::Pid; 3], spaces: [[u8; 16]; 2])
     for (index, word) in tail.into_iter().enumerate() {
         page[144 + index * 8..152 + index * 8].copy_from_slice(&word.to_le_bytes());
     }
-    page
+    Ok(page)
 }

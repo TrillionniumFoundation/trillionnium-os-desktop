@@ -125,6 +125,8 @@ def main():
     parser.add_argument("--product-evidence", type=Path, help="reuse a verified exact-source ordinary product; no rebuild")
     parser.add_argument("--cc", default="gcc")
     parser.add_argument("--qemu", default="qemu-system-x86_64")
+    parser.add_argument("--cpu", choices=("max", "max,-rdrand"), default="max",
+                        help="fixed CPU profiles; the latter tests missing secure entropy")
     args = parser.parse_args()
     require(1 <= args.timeout <= 300, "guest timeout must be 1..300 seconds")
     output = args.output.resolve()
@@ -179,7 +181,7 @@ def main():
     require(expected_qemu_sha is None or qemu_sha == expected_qemu_sha, "QEMU differs from ordinary product boot")
     argv = [binary, "-kernel", str(output / "kernel.elf"), "-initrd", str(output / "initramfs.cpio.gz"),
             "-append", "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
-            "-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", str(output / "bios.bin"),
+            "-machine", "q35", "-accel", "tcg", "-cpu", args.cpu, "-bios", str(output / "bios.bin"),
             "-m", "512M", "-smp", str(args.smp), "-nodefaults", "-no-user-config", "-no-reboot", "-nographic",
             "-display", "none", "-monitor", "none", "-serial", "stdio", "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]
     result.update(nonce=nonce, qemu_argv=argv, qemu_sha256=qemu_sha, artifact_sha256={name: digest(data) for name, data in retained.items()},
