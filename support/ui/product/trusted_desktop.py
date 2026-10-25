@@ -97,7 +97,7 @@ def verified_release(prefix, selection):
     manifest_path = protected_file(release / "manifest.json", 0o644)
     require(desktop.digest(desktop.regular_bytes(manifest_path)) == selection["manifest_sha256"],
             "Selected native manifest differs from reviewed package")
-    manifest = desktop.verify_package(release)
+    manifest = desktop.verify_installed_package(release, selection)
     require(manifest["release_id"] == selection["release_id"], "Native release identifier differs")
     for name, record in manifest["files"].items():
         protected_file(release / name, record["mode"])
