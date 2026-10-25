@@ -74,6 +74,18 @@ class ProductDependencies(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Preedit profile differs"):
             guard.verify(self.root)
 
+    def test_composer_boundary_and_its_sdk_regression_cannot_be_omitted(self):
+        path = self.root / guard.SOURCE
+        original = json.loads(path.read_text())
+        for name in ("composer_transaction.rs", "composer_transaction_tests.rs"):
+            with self.subTest(source=name):
+                source = dict(original, files=[entry for entry in original["files"]
+                    if Path(entry["path"]).name != name])
+                path.write_text(json.dumps(source))
+                with self.assertRaisesRegex(ValueError, "original composer transaction"):
+                    guard.verify(self.root)
+        path.write_text(json.dumps(original))
+
     def test_readback_wire_cannot_drift_from_the_original_contract(self):
         for name in guard.MIRRORED_FIXTURES.values():
             path = self.root / name

@@ -8,9 +8,17 @@
 
 **当前没有完整生产控制、完整原生 F1/G2、通用桌面控制或手机产品资格。** 文档与源码门禁通过只能关闭对应工程问题；不能把单个 host、guest 或设备场景的成功扩展为产品验收。
 
+## 2026-10-25 审计整改与当前配对
+
+当前产品的唯一 Hepta 来源及 27 份关键文件身份由 [依赖合同](../support/ui/DEPENDENCIES.md)和 [source map](SOURCES.md#hepta-native-organ)绑定。三处 Cargo 入口与两产品锁同步更新；原生输入 SDK 只在显式 preedit profile 使用，默认 Git SDK 和 clipboard 候选各自保留独立合同。新的 ComposerTransaction 拒绝发布活动 preedit，确认后沿原 ChatWorkspace 更新；焦点补丁只处理同一窗口真实 gain/loss 转换，四项原 SDK 生命周期回归先复现再修复。
+
+[模块索引](modules/README.md)覆盖 16 个第一方 Cargo 入口、11 个开发域和原内核 57 个成员，提供各自开发步骤、技术合同、验证入口和当前限制。Notes 原生动作、独立只读文档观察与未知结果核对见 [Notes organ](../support/ui/NOTES_ORGAN.md)；保存、关闭、冲突和 recovery-only helper 见 [durability](../support/ui/NOTES_DURABILITY.md)。
+
+[Desktop PR #267](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/267)与 [Hepta 集成 PR #3938](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3938)保留本轮源码与验证范围。早先 Desktop `0b19344a` / Hepta `1b980b0b` 的完整原生工作区 346 项、独立 host 23 项、Notes 普通关闭重开和真实 App/原 SQLite owner 崩溃恢复已有执行证据；后续最终配对必须各自绑定构建收据及实际运行结果，不能因为依赖重新固定而继承全部窗口或生产资格。完整 A06/移动设备、生产 Root authority 和掉电仍按各自门禁验收。
+
 ## 2026-10-24 Linux 产品集成增量
 
-当前 UI、Session host 和原 Hepta 依赖补丁统一指向已发布 [Hepta `1b980b0bd36bb0ec66540e5171c54a8f2ea828ba`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/1b980b0bd36bb0ec66540e5171c54a8f2ea828ba)，完整 tree 为 `4c045f9e6a5262c2a99cd673450e1eadd5f4a22a`，产品工具链为 Rust 1.96.0。UI 根显式将 `accesskit`、`accesskit_consumer`、`accesskit_atspi_common`、`accesskit_unix` 四包固定到相同 Hepta SHA，避免依赖 workspace 的 patch 不向上继承。`services/hepta-os` 是本地 wire/transport crate，没有虚构新增 Hepta Git pin。完整 Desktop HEAD/tree、真实 Cargo 解析生成的锁和 features 仍由最终 source-profile 及构建收据绑定。
+当前 UI、Session host 和原 Hepta 依赖补丁统一指向已发布 [Hepta `1a76b5084d52957ac7993fbf26839d0539c567b4`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/1a76b5084d52957ac7993fbf26839d0539c567b4)，完整 tree 为 `eb58ab6bc074aa3741bdf613d11a9c258716445f`，产品工具链为 Rust 1.96.0。UI 根显式将 `accesskit`、`accesskit_consumer`、`accesskit_atspi_common`、`accesskit_unix` 四包固定到相同 Hepta SHA，避免依赖 workspace 的 patch 不向上继承。`services/hepta-os` 是本地 wire/transport crate，没有虚构新增 Hepta Git pin。完整 Desktop HEAD/tree、真实 Cargo 解析生成的锁和 features 仍由最终 source-profile 及构建收据绑定。
 
 原始 [v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)保留每次实际输入、命令、完整日志和退出码；下面计数只表示对应包/过滤范围，不合并计算为整仓通过。v8/v9 的原编译失败、文本失败和资源测试 panic 继续保存在[各自历史档案](../results/integration/2026-10-24-original-owner-product/text-native-v8-v9/README.md)，未被后续结果覆盖。
 
