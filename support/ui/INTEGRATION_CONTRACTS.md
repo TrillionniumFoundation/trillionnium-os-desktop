@@ -37,6 +37,9 @@ a trusted host explicitly calls the target behind the original production
 writer/Final-use boundary. Standalone Session retains that handle privately,
 does not register an original effect owner, and adds no renderer edit request.
 An application model ack, layout marker and durable owner result are distinct.
+The current [persistent application store and v2 recovery contract](NOTES_PERSISTENCE.md)
+retains that original-owner boundary. [Session IPC](SESSION_IPC.md) describes
+the bounded public transport; it exposes neither the store path nor an effect.
 
 ### Consumer-side permission state
 

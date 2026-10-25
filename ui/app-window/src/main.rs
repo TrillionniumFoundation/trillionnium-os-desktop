@@ -27,6 +27,9 @@ impl eframe::App for ClientWindow {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let mut notes_updated = false;
         if let Some(organ) = &mut self.notes_organ {
+            // The private channel needs progress while the window is idle.
+            // A worker wake can race viewport setup; retain a bounded fallback.
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
             if organ.poll() {
                 self.notes = organ.text().to_owned();
                 notes_updated = true;
@@ -60,7 +63,11 @@ impl eframe::App for ClientWindow {
                     } else {
                         "Keyboard focus: inactive; click Notes editor to compose"
                     });
-                    ui.small("Local unsaved memory only. Closing this app discards notes.");
+                    if let Some(organ) = &self.notes_organ {
+                        if organ.storage_error() { ui.colored_label(egui::Color32::RED, "Storage outcome uncertain. Reopen the document to recover; further edits are blocked."); }
+                        else if organ.is_durable() { ui.small("Saved locally after each completed edit. Restart recovery retains the document revision."); }
+                        else { ui.small("Legacy unsaved memory mode. Closing this app discards notes."); }
+                    } else { ui.small("Local unsaved memory only. Closing this app discards notes."); }
                 }
                 AppKind::Calculator => {
                     ui.horizontal(|ui| {
@@ -380,11 +387,15 @@ fn main() -> eframe::Result {
                     notes_organ::NotesAppChannel::from_inherited_stdin(cc.egui_ctx.clone(), target)
                 })
                 .transpose()?;
+            let restored_notes = notes_organ
+                .as_ref()
+                .map(|organ| organ.text().to_owned())
+                .unwrap_or_default();
             Ok(Box::new(ClientWindow {
                 kind,
                 workspace,
                 task_id,
-                notes: String::new(),
+                notes: restored_notes,
                 notes_organ,
                 left: String::new(),
                 right: String::new(),

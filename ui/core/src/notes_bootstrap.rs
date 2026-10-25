@@ -14,8 +14,8 @@ pub enum NotesBootstrapOfferAction {
     OfferNotesTarget,
 }
 
-/// One datagram, accompanied by exactly one SCM_RIGHTS descriptor for the
-/// Notes effect UnixStream. Version 1 bootstraps only initial task 1.
+/// One datagram for initial task 1. Version 1 transfers the effect UnixStream;
+/// version 2 transfers [effect UnixStream, recovery UnixDatagram], in that order.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct NotesBootstrapOffer {
@@ -35,6 +35,12 @@ impl NotesBootstrapOffer {
         };
         value.validate()?;
         Ok(value)
+    }
+
+    pub fn with_recovery(target: NotesTargetIdentity) -> Result<Self, &'static str> {
+        let mut offer = Self::new(target)?;
+        offer.schema_version = 2;
+        Ok(offer)
     }
 
     pub fn parse_exact(raw: &[u8]) -> Result<Self, &'static str> {
@@ -84,7 +90,9 @@ impl NotesBootstrapAck {
     }
 
     pub fn matches(&self, offer: &NotesBootstrapOffer) -> bool {
-        self.target == offer.target && self.destination_id == offer.destination_id
+        self.schema_version == offer.schema_version
+            && self.target == offer.target
+            && self.destination_id == offer.destination_id
     }
 }
 
@@ -94,10 +102,7 @@ fn identity(
     destination: &str,
 ) -> Result<(), &'static str> {
     target.validate().map_err(|_| "bootstrap identity")?;
-    if version != NOTES_BOOTSTRAP_SCHEMA_VERSION
-        || target.task_id != 1
-        || destination != target.destination_id()
-    {
+    if !matches!(version, 1 | 2) || target.task_id != 1 || destination != target.destination_id() {
         return Err("bootstrap version, initial task or destination");
     }
     Ok(())
@@ -113,6 +118,48 @@ fn frame(raw: &[u8]) -> Result<(), &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fixed_v2_bootstrap_roundtrips_offer_and_both_ack_statuses() {
+        let fixture: serde_json::Value =
+            serde_json::from_str(include_str!("../../../tests/ui/notes-bootstrap-v2.json"))
+                .unwrap();
+        let raw = fixture["offer_utf8"].as_str().unwrap();
+        let offer = NotesBootstrapOffer::parse_exact(raw.as_bytes()).unwrap();
+        let generated = NotesBootstrapOffer::with_recovery(offer.target.clone()).unwrap();
+        assert_eq!(generated, offer);
+        assert_eq!(serde_json::to_string(&generated).unwrap(), raw);
+        for (key, status) in [
+            ("attached_ack_utf8", NotesBootstrapStatus::Attached),
+            ("rejected_ack_utf8", NotesBootstrapStatus::Rejected),
+        ] {
+            let raw = fixture[key].as_str().unwrap();
+            let parsed = NotesBootstrapAck::parse_exact(raw.as_bytes()).unwrap();
+            let generated = NotesBootstrapAck {
+                schema_version: offer.schema_version,
+                action: NotesBootstrapAckAction::NotesTargetRegistration,
+                target: offer.target.clone(),
+                destination_id: offer.destination_id.clone(),
+                status,
+            };
+            assert_eq!(generated, parsed);
+            assert_eq!(serde_json::to_string(&generated).unwrap(), raw);
+            assert!(parsed.matches(&offer));
+            let legacy = NotesBootstrapAck::parse_exact(
+                raw.replacen("\"schema_version\":2", "\"schema_version\":1", 1)
+                    .as_bytes(),
+            )
+            .unwrap();
+            assert!(!legacy.matches(&offer));
+        }
+        for invalid in [
+            raw.replacen('{', "{\"schema_version\":2,", 1),
+            raw.replacen('{', "{\"recovery_fd\":3,", 1),
+            raw.replacen("\"schema_version\":2", "\"schema_version\":3", 1),
+        ] {
+            assert!(NotesBootstrapOffer::parse_exact(invalid.as_bytes()).is_err());
+        }
+    }
 
     #[test]
     fn fixed_bootstrap_fixture_pins_the_initial_target_and_ack() {
