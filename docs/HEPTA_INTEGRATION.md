@@ -1,6 +1,6 @@
 # Hepta 的实际宿主接合
 
-当前 Linux host 集成固定在 Hepta `7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9` / tree `cf53a7c0e7ad57772238b614b673d176386ddfe5`，三处 Cargo 入口与四个 UI AccessKit patch 见[当前 source map](SOURCES.md#hepta-native-organ)。实际已有 [Session host](../services/hepta-session-host/README.md)、[原文本 adapter](../services/hepta-session-host/TEXT_SESSION.md) 和 [原 Makepad Shell 组合](../ui/shell/README.md#original-makepad-renderer)。它们借用原 ChatWorkspace、Root/Agentd、App Server 及 writer，不复制第二套 Agent、Codex 主链或持久操作账本。
+当前 Linux host 集成固定在 Hepta `489f7096b0e5754968a30fa4477bb4417d24834f` / tree `4731de9117065bd773b2fcee92c815ff896b8488`，三处 Cargo 入口与四个 UI AccessKit patch 见[当前 source map](SOURCES.md#hepta-native-organ)。实际已有 [Session host](../services/hepta-session-host/README.md)、[原文本 adapter](../services/hepta-session-host/TEXT_SESSION.md) 和 [原 Makepad Shell 组合](../ui/shell/README.md#original-makepad-renderer)。它们借用原 ChatWorkspace、Root/Agentd、App Server 及 writer，不复制第二套 Agent、Codex 主链或持久操作账本。
 
 [当前能力](CURRENT_CAPABILITIES.md)和 [v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)记录已执行的包与过滤范围。默认原 SDK、独立 clipboard SDK、完整两仓 workspace、release、真实窗口、安装后生产运行和 Android 签名分别验收。下文保留版本0.4在 `44d98ca5501188b06c3df63fe57575d62c2ca8dd` 核查的 writer/ABI 映射与固定链接；它们是各自来源的合同对照，不改写为本轮运行收据。
 

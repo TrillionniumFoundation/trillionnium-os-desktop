@@ -3,6 +3,9 @@ name: G0 scoped host contracts
 on:
   pull_request:
     paths:
+      - "docs/**"
+      - "support/docs/**"
+      - "**/README.md"
       - "tests/abi/**"
       - "tests/golden/**"
       - "tests/spec/**"
@@ -15,6 +18,9 @@ on:
   push:
     branches: [main]
     paths:
+      - "docs/**"
+      - "support/docs/**"
+      - "**/README.md"
       - "tests/abi/**"
       - "tests/golden/**"
       - "tests/spec/**"
@@ -37,6 +43,11 @@ jobs:
         with:
           # Verify exact previous/base Git trees, including deleted regression pairs.
           fetch-depth: 0
+      - name: Verify module development and technical documentation
+        run: |
+          python3 -I -B support/docs/check_modules.py
+          python3 -I -B -m unittest discover -s support/docs -p 'test_*.py' -v
+          python3 -I -B -O -m unittest discover -s support/docs -p 'test_*.py' -v
       - name: Verify independent HOS2 golden fixtures
         run: python3 tests/golden/generate_hos2.py --check
       - name: Verify canonical HOS2 semantic edge corpus and independent generator

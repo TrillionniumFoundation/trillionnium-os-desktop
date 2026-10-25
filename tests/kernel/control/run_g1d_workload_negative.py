@@ -27,7 +27,10 @@ FORMATTED_BEFORE = b"""        let credentials = if index == 1 {
         };
 """
 FORMATTED_AFTER = FORMATTED_BEFORE.replace(b"workload_credentials()?", b"Credentials::new_root()")
-SELECTIONS = ((BEFORE, AFTER), (FORMATTED_BEFORE, FORMATTED_AFTER))
+IDENTIFIED_BEFORE = FORMATTED_BEFORE.replace(b"workload_credentials()?", b"workload_credentials(WORKLOAD_ID)?")
+IDENTIFIED_AFTER = FORMATTED_AFTER
+SELECTIONS = ((BEFORE, AFTER), (FORMATTED_BEFORE, FORMATTED_AFTER),
+              (IDENTIFIED_BEFORE, IDENTIFIED_AFTER))
 LOG_LIMIT = 64 * 1024 * 1024
 
 
@@ -38,8 +41,10 @@ def read(path, limit=LOG_LIMIT):
 
 
 def mutation(source):
-    # PR #252 applies the pinned Rust formatter to this selection. Accept only
-    # those two exact layouts, still substituting precisely one expression.
+    # Keep the reviewed layouts and the explicit workload-ID API. The current
+    # production call shares credential construction with other initial roles;
+    # the negative control must replace only this workload selection, never the
+    # common helper, the probe, or the guest verdict.
     require(sum(source.count(before) for before, _ in SELECTIONS) == 1
             and not any(after in source for _, after in SELECTIONS),
             "credential selection is absent or ambiguous")

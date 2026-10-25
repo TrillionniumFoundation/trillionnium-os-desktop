@@ -17,12 +17,12 @@ PATCHES = [{"file": "native-clipboard-read.patch", "bytes": 19919,
            {"file": "sdk-num-traits-path.patch", "bytes": 521,
             "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"}]
 SOURCE_ID = "prepared+" + UPSTREAM + "#" + TREE
-PREEDIT_TREE = "073cc6739391265f96c4ff18c1b95898a2bda98d"
+PREEDIT_TREE = "6b422b3120f5f9b5c7ada579b55f647d51bd7fcf"
 PREEDIT_SOURCE_ID = "prepared+" + UPSTREAM + "#" + PREEDIT_TREE
-PREEDIT_MANIFEST_SHA256 = "54139273177ccc2f19684f9a7d23ac2fda3d4fa789bd880b5a4e340ee0ad11e3"
+PREEDIT_MANIFEST_SHA256 = "7476afc9408cea0e5e97824a597fab9156d8b934419a18c49f9c42fe963ecf4c"
 PREEDIT_PATCHES = [
-    {"file": "native-preedit-callbacks.patch", "bytes": 5421,
-     "sha256": "b7de43140473c249dca3f07ca6d1d3195fb43a54ef96a205324ee5a0291c28c0"},
+    {"file": "native-preedit-callbacks.patch", "bytes": 55380,
+     "sha256": "c12d933adb12f83c5611e343841d3834876093473a0036df1683caf835a7a7a6"},
     {"file": "sdk-num-traits-path.patch", "bytes": 521,
      "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"}]
 NOTICE_NAMES = {"LICENSE-MIT", "MANIFEST.json", "native-clipboard-read.patch",

@@ -12,7 +12,9 @@ global keyboard controller, mobile device port, or an Asterinas desktop.
 The standalone Session keeps each new destination private and reports
 `original_owner_registered: false`. Public Snapshot / Launch / Cancel IPC has
 no Notes edit or handle-export command. Shell displays the target incarnation
-and channel observation; it cannot submit an effect.
+and channel observation. Its explicit Notes controls can submit a bounded
+Objective to the independently configured original host; Shell receives no
+private effect handle and cannot directly dispatch the mutation.
 An explicit trusted-parent startup mode can hand off the initial Notes
 endpoint through a private inherited descriptor. This requires the original
 production host to supply its own recovered writer, FinalUse authority and
@@ -33,7 +35,10 @@ grant provider; normal Session launch performs no registration.
 | `ui/session/src/main.rs` | Existing child-process owner creates and retains private handles |
 | `ui/core/src/notes_bootstrap.rs` | Strict one-time descriptor handoff request and acknowledgement schema |
 | `ui/session/src/notes_bootstrap.rs` | Linux inherited datagram sender, SCM_RIGHTS and bounded acknowledgement |
-| `ui/shell/src/main.rs` | Read-only destination observation |
+| `ui/shell/src/main.rs` | Bounded Session worker handoff and source-owned observation projection; no private effect handle |
+| `ui/shell/src/objective_panel.rs` | Shared Notes Write/Refresh/Cancel actions, original intent navigation, freshness and passive status recovery |
+| `ui/shell/src/native_makepad.rs` | Original Makepad Notes port and current-room/editor fences, forwarding to the same shared actions |
+| `ui/shell/src/objective_notes_tests.rs`, `native_notes_tests.rs` | Shared recovery/readback regressions and original native callback fences |
 | `ui/broker/tests/notes_target.rs` | Real socketpair tests against an explicit application-model fixture |
 | `ui/broker/examples/notes_host_probe.rs` | Isolated real-window target probe, separate from a production-owner run |
 | `tests/ui/notes-target-v1.json` | Cross-language request, response, payload hash, scope hash and predecessor hash |
@@ -47,6 +52,48 @@ generation checks and denied effect capabilities remain the same. The private
 destination module does not give those sessions an effect capability. No new
 authority, signer, operation allocator, durable effect ledger or model callback
 is introduced in UI code.
+
+## Shared Rust UI and original Notes owner
+
+The egui and original Makepad controls borrow the same retained conversation
+draft and `ObjectivePanel`. Write sends literal text through the bounded
+Session Objective bridge to the fixed trusted original host. The original
+Agentd compiler, durable writer and FinalUse dispatcher then own any operation
+and private destination entry. The renderer supplies no issuer, signer, effect
+ledger or replacement operation history. The exact paired original source and
+native `NativeNotesView` / three callback API are specified by
+[DEPENDENCIES.md](DEPENDENCIES.md) and its canonical source contract.
+
+Write preserves text and quoted references. It refuses quoted context rather
+than silently dropping it, enforces the 4096-byte Notes bound and checks editor
+composition, fresh current-Session readiness, complete retained-ID traversal,
+absence of host issues and absence of unfinished original requests. A fresh
+document snapshot with `receipt_pending` also requires reconciliation before
+another intent can be created. Makepad additionally checks current room and
+source epoch, an open window and the visible Conversations page; both the
+original renderer and Desktop callback fence actions, and Desktop rechecks
+readiness when handling them.
+
+Refresh sends only original availability/status queries. Cancel requests
+cancellation once for the current original intent; an unknown cancel is
+observed under that identity, never repeated automatically. Rejected queueing
+is visible and does not create an accepted local intent. Neither action clears
+the draft. Passive status rotation fairly revisits all retained unresolved IDs,
+interleaving the current request and separate availability reads within the
+128-ID navigation bound. It advances only after the bounded read queue accepts
+a query, retains its selection on a full queue and never consumes action
+capacity, submits an effect or generates another ID.
+
+The current-document readback is a separate projection containing target
+identity, its own observation time, revision, short text digest and pending
+receipt status. It does not import document text into the composer. Its own
+source and transport freshness must hold before it is shown as current; a run
+marked Succeeded is not an exact saved-operation receipt. Terminal publication
+and retirement still require the original writer's exact evidence below.
+Session migration preserves original intent/run history for passive recovery
+but clears the prior document snapshot. A recent old target cannot inherit the
+new Session's provenance from its timestamp. Missing or stale readback remains
+unavailable until the original source observes it again.
 
 ## Required original-owner composition
 
@@ -295,7 +342,20 @@ cargo test --manifest-path ui/Cargo.toml -p trill-session -p trill-app-window --
 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
 cargo build --manifest-path ui/Cargo.toml -p trill-ui-broker --example notes_host_probe --locked
 python3 tests/ui/test-strict-request-ipc.py /absolute/path/to/built/binaries
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked objective_panel
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked coalesced_poll_does_not_fill_action_queue_or_freeze_gui
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked --features hepta-native-makepad native_makepad::notes_tests
+cargo +1.96.0 clippy --manifest-path ui/Cargo.toml -p trill-shell --all-targets --locked --features hepta-native-makepad -- -D warnings
+cargo +1.96.0 build --manifest-path ui/Cargo.toml -p trill-shell --locked --features hepta-native-makepad
 ```
+
+The shared controls tests cover same-ID recovery, full-queue fairness, host
+issues, pending receipts, readback freshness and Session snapshot invalidation.
+The native tests exercise the original port's source/editor fences and the
+same bridge without clearing the draft. The actual receiver/helper process
+crash tests, input/save-close cases and original-owner acceptance are mapped in
+[NOTES_DURABILITY.md](NOTES_DURABILITY.md). Test presence is not a final
+source-paired pass; record the selected source, environment and results.
 
 The socketpair tests explicitly use an application-model fixture; they do not
 claim a GUI or production-owner run. The Session test sends forged Notes effect

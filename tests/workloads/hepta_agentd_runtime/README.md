@@ -75,6 +75,18 @@ Hepta combination. The historical archive procedure below is retained for
 replay and provenance only. Current native CI builds the reviewed kernel
 from source instead of importing that older artifact.
 
+The fresh Desktop source checkout is deliberately shallow. Before building,
+native CI also fetches the exact original Asterinas commit recorded in that
+checkout's `support/upstream-lock.json` and verifies its tree. This supplies
+the Git tree and immutable lock seed needed by the unchanged source verifier;
+it does not alter the reviewed Desktop HEAD or working files. A missing
+upstream tree otherwise stops `verify-source.py` before kernel compilation
+with `fatal: not a tree object`. The workflow records this fetch under
+`identity/upstream-source.json` and `logs/upstream-source-objects.log`.
+`test_workflow_source_objects.py` reproduces this failure with real isolated
+shallow Git repositories, then tests the fix and rejection of a wrong tree,
+moving identity, unreviewed repository, dirty source, or incorrect Desktop pin.
+
 Current F1/G2 and hardware qualification remain open until their own real
 execution receipts exist. Host tests validate the runner, not the daemon.
 

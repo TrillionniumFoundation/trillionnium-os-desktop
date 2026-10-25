@@ -71,6 +71,52 @@ an intervening original effect on the worker queue. They do not by themselves
 qualify a real compositor window, physical power failure, or production Hepta
 authorization.
 
+## Native close and committed input
+
+With durable storage enabled, a native close request is checked after the
+editor has processed the current frame. A final accepted edit and a close in
+that same frame cannot automatically bypass the worker acknowledgement. While the local edit,
+explicit restore, or a native editor transaction is pending, the close is
+cancelled temporarily and the window shows **正在保存最后的编辑，保存完成后将关闭窗口。**
+The renderer polls the bounded projection and requests another frame; it does
+not wait for filesystem synchronization. Once the acknowledged saved text
+matches and no accepted work remains, the pending close may complete.
+
+While saving, the user may explicitly select **停止等待并关闭**; the dialog
+states **停止等待时，最后的修改可能尚未保存。** This permits a close even if the
+worker has stopped replying or synchronization is stalled, while the ordinary
+close continues to wait for the acknowledgement. It does not cancel a command,
+reissue an edit, infer that nothing was written, or roll back a possible commit.
+The original incarnation's persisted state remains available for independent
+recovery. **继续编辑** clears the pending close without changing the operation.
+
+A CAS conflict or ambiguous storage result leaves the current draft visible.
+The close dialog offers **继续编辑** and, only as an explicit user choice,
+**关闭并舍弃未保存编辑**. Discarding the draft does not roll back a possible
+committed application write, retire an original receipt, or clear a frozen
+incarnation. It merely permits this window to close. SIGKILL, a process crash
+or power loss bypasses this user interface; only the last successful checkpoint
+is available for independent recovery.
+
+[notes_input.rs](../../ui/app-window/src/notes_input.rs) handles native editor
+transactions before the same storage path. IME Preedit is display-only; only a
+confirmed Commit becomes a local durable edit. Composition retains its original
+revision, so an intervening external effect cannot silently become its new CAS
+base. A conflict offers **确认保留我的编辑** (an explicit new local edit against the
+current revision) and **放弃未保存编辑，加载已保存内容**. These controls are disabled
+during composition; failed storage remains frozen. A bounded native input queue
+preserves already accepted transactions and rejects an overflowing new batch
+without deleting the saved document or previously accepted input.
+
+Source-level regressions are in
+[notes_close_tests.rs](../../ui/app-window/src/notes_close_tests.rs) and
+[notes_input_tests.rs](../../ui/app-window/src/notes_input_tests.rs). They exercise
+the actual egui frame/input path and store-worker acknowledgement. The close
+suite also checks a stalled save: explicit close releases the UI without
+cancelling or repeating the queued edit. Real IME,
+compositor pixels and physical input qualification still use the separate
+[input guide](X11_IME.md) and [test plan](../../tests/ui/TESTPLAN.md).
+
 ## Implementation and invariants
 
 | Owner / module | Responsibility |
@@ -80,6 +126,7 @@ authorization.
 | `ui/core/src/notes_store.rs` | Private directory/file custody, exclusive incarnation lock, atomic replacement and file/directory synchronization |
 | `ui/app-window/src/notes_worker.rs` | One bounded background worker serializes application state and storage; Draw never waits for filesystem synchronization |
 | `ui/app-window/src/notes_organ.rs` | Existing private effect/recovery channels plus a bounded presentation projection; local typing is coalesced and revision checked |
+| `ui/app-window/src/notes_input.rs` | Bounded committed native input transactions, preedit isolation and original revision preservation |
 | `ui/app-window/src/bin/trill-notes-recovery.rs` | Separate process exposing only the original incarnation's observation and exact retirement over an inherited private datagram pair |
 
 Each incarnation lives under
@@ -105,6 +152,35 @@ Local edits use the same revision domain as external effects. If an external
 effect wins while a local edit is queued, the stale local edit is rejected and
 the unsaved draft remains visible with a conflict notice. It is not silently
 reapplied against a newer revision. The worker queue and unsent edit are bounded.
+
+## Headless process-crash and lost-ACK regression
+
+[notes_recovery_process.rs](../../ui/app-window/tests/notes_recovery_process.rs)
+contains `process_crash_and_lost_retirement_ack_recover_without_replaying_the_effect`.
+It launches a real child that persists one exact test effect and is killed before
+its receipt can be handed to the caller. A separate real `trill-notes-recovery`
+process obtains the original incarnation lock, observes the exact operation and
+payload digest, and returns the persisted receipt for independent comparison.
+The recovery descriptor refuses the old mutation bytes; a wrong receipt digest
+cannot release the pending receipt.
+
+The fixture then drops the helper's actual successful retirement reply, kills
+that helper and starts another. Repeating only the exact retirement
+acknowledgement yields `AlreadyReleased`; observing the retired operation is unknown at revision 1,
+while the document text and revision remain unchanged. This exercises durable
+retirement and application receipts, without granting the fixture original
+Hepta terminal authority. A real embedding still needs its authorized original
+writer to reconcile and retain that outcome before it acknowledges retirement.
+
+Run the process test and normal application tests from the repository root:
+
+```sh
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-app-window --locked
+```
+
+The test needs no display server. It verifies actual Linux subprocess death,
+private datagrams, exclusive locks, synchronized app storage and exact readback;
+it does not simulate power failure, storage hardware loss or a production grant.
 
 ## Original Hepta observation contract
 

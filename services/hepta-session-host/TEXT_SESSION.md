@@ -15,14 +15,16 @@ Objective/Notes path remains documented in [README](README.md).
 | [src/text_tests.rs](src/text_tests.rs) | Presentation fixtures for recovered identity, unchanged local drafts, stale connections and separate approval permission |
 | [Shell native_makepad.rs](../../ui/shell/src/native_makepad.rs) | Borrow the current original workspace, poll outside Draw, queue Send/Stop/history/approval and wake the native event loop |
 | [Shell native_text_config.rs](../../ui/shell/src/native_text_config.rs) | Validate the two original Root endpoint hints without accepting a principal or route override |
-| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
+| [Original Hepta text session](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/489f7096b0e5754968a30fa4477bb4417d24834f/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | Trusted startup, Root registration/pidfd, worker/issuer source map, build/test commands and the same-thread recovery protocol |
 
 The cross-repository link is fixed at the current Cargo source
-`7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9`, tree
-`cf53a7c0e7ad57772238b614b673d176386ddfe5`. The
+`489f7096b0e5754968a30fa4477bb4417d24834f`, tree
+`4731de9117065bd773b2fcee92c815ff896b8488`; the
+[dependency contract](../../support/ui/DEPENDENCIES.md) checks the complete
+shared source and lock combination. The
 [source profile](../../docs/agents/ORGAN_RELEASE_PROFILE.md) must also bind the
-complete Desktop commit, actual generated locks and feature build. The latest
-[eight original text integrations](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
+complete Desktop commit, actual generated locks and feature build. The
+[historical eight original text integrations](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
 are scoped process/protocol executions with fixture inputs; installed production
 Root, real model credentials and final combined product acceptance remain open.
 

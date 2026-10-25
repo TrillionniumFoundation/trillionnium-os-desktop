@@ -500,7 +500,6 @@ def main(argv: list[str] | None = None) -> int:
     report["not_executed"] = [name for name in CHECK_NAMES if name not in observed]
     report["success"] = (not report["errors"] and not report["not_executed"]
                          and report.get("original_inputs_unchanged") is True
-                         and report.get("readme_bytes") == 0
                          and len(report["checks"]) == len(CHECK_NAMES)
                          and all(check["passed"] for check in report["checks"]))
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")

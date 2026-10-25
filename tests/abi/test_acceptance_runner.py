@@ -337,6 +337,49 @@ class AcceptanceRunnerTests(unittest.TestCase):
                 self.assertEqual(acceptance.main(["--output-dir", str(output)]), 1)
             self.assertEqual(report.read_text(), "existing evidence")
 
+    def test_nonempty_readme_does_not_override_complete_codec_acceptance(self):
+        # Exercise the final acceptance predicate independently of the tools.
+        # README is still source-bound; an unchanged navigation document is
+        # not a codec failure after the root-documentation migration.
+        def complete(_args, report, _output):
+            report.update(
+                original_inputs_unchanged=True,
+                readme_bytes=len(b"# Project navigation\n"),
+                checks=[{"name": name, "passed": True} for name in acceptance.CHECK_NAMES],
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "evidence"
+            with mock.patch.object(acceptance, "execute", side_effect=complete):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    code = acceptance.main(["--output-dir", str(output)])
+            report = json.loads((output / "report.json").read_text())
+            self.assertEqual(code, 0)
+            self.assertTrue(report["success"])
+            self.assertGreater(report["readme_bytes"], 0)
+            self.assertEqual(report["not_executed"], [])
+
+    def test_nonempty_readme_cannot_hide_changed_inputs_or_incomplete_checks(self):
+        for unchanged, omit, failed in ((False, None, None),
+                                       (True, "clippy", None),
+                                       (True, None, "compiled_mutations")):
+            def incomplete(_args, report, _output):
+                report.update(
+                    original_inputs_unchanged=unchanged, readme_bytes=21,
+                    checks=[{"name": name, "passed": name != failed}
+                            for name in acceptance.CHECK_NAMES if name != omit],
+                )
+
+            with self.subTest(unchanged=unchanged, omit=omit, failed=failed):
+                with tempfile.TemporaryDirectory() as temporary:
+                    output = Path(temporary) / "evidence"
+                    with mock.patch.object(acceptance, "execute", side_effect=incomplete):
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            code = acceptance.main(["--output-dir", str(output)])
+                    report = json.loads((output / "report.json").read_text())
+                    self.assertEqual(code, 1)
+                    self.assertFalse(report["success"])
+
     def test_missing_tool_writes_failure_report_with_unchanged_source(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
