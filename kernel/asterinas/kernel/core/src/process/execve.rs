@@ -73,7 +73,7 @@ pub(crate) fn do_execve(
     let seccomp_update = ctx.process.seccomp_update().lock();
     let exec_cred = prepare_exec_cred(program_to_load.elf_path(), ctx)?;
 
-    let new_vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
+    let new_vmar = VmarHandle::try_new(ProcessVm::new(executable_path.clone()))?;
     *new_vmar.process_vm().dumpable().lock() = exec_cred.allows_dumpability();
     let elf_load_info = program_to_load.load_to_vmar(&new_vmar, &path_resolver)?;
 

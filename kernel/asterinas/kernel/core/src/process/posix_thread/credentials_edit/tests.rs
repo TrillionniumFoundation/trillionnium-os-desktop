@@ -82,7 +82,7 @@ fn dumpability_shares_original_vm_but_fork_and_new_image_are_independent() {
     first.set_dumpable(false);
     assert!(!second.dumpable());
     test_util::initialize_vmar_heap_for_fork(&original, 0x1000_0000);
-    let fork = Vmar::fork_from(&original);
+    let fork = Vmar::fork_from(&original).unwrap();
     assert!(!*fork.process_vm().dumpable().lock());
     *fork.process_vm().dumpable().lock() = true;
     assert!(!first.dumpable() && !second.dumpable());

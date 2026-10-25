@@ -3,7 +3,7 @@
 use alloc::sync::{Arc, Weak};
 use core::ops::Deref;
 
-use crate::{process::ProcessVm, vm::vmar::Vmar};
+use crate::{prelude::Result, process::ProcessVm, vm::vmar::Vmar};
 
 /// A VMAR handle that is owned by a POSIX thread.
 ///
@@ -28,8 +28,13 @@ impl Drop for VmarHandle {
 
 impl VmarHandle {
     /// Creates a new handle that points to a new VMAR.
+    pub(crate) fn try_new(process_vm: ProcessVm) -> Result<Self> {
+        Ok(Self(Vmar::try_new(process_vm)?))
+    }
+
+    #[cfg(ktest)]
     pub(crate) fn new(process_vm: ProcessVm) -> Self {
-        Self(Vmar::new(process_vm))
+        Self::try_new(process_vm).unwrap()
     }
 
     /// Clones a new handle.

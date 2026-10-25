@@ -15,17 +15,17 @@ use crate::{prelude::*, process::ProcessVm, vm::vmar::VmarHandle};
 impl Vmar {
     /// Creates a new VMAR whose content is inherited from another
     /// using copy-on-write (COW) technique.
-    pub(crate) fn fork_from(vmar: &Self) -> VmarHandle {
+    pub(crate) fn fork_from(vmar: &Self) -> Result<VmarHandle> {
         // Snapshot before the heap lock: alien capture takes image policy -> heap.
         let dumpable = *vmar.process_vm.dumpable().lock();
         // Obtain the heap lock and hold it for the entire method to avoid race conditions.
         let heap_guard = vmar.process_vm.heap().lock();
 
-        let new_vmar = VmarHandle::new(ProcessVm::fork_from(
+        let new_vmar = VmarHandle::try_new(ProcessVm::fork_from(
             &vmar.process_vm,
             &heap_guard,
             dumpable,
-        ));
+        ))?;
 
         {
             let inner = vmar.inner.read();
@@ -64,8 +64,14 @@ impl Vmar {
                 cur_cursor.jump(base).unwrap();
                 new_cursor.jump(base).unwrap();
 
+                // On failure the child has never been activated or published;
+                // its handle clears/drops the partial table. Added parent RO
+                // protections need no rollback or flush for isolation: a stale
+                // writable parent TLB then exposes no mapping to a live child.
+                // A later parent fault restores W or follows ordinary COW.
+                // Successful forks still flush before publishing the child.
                 let num_copied =
-                    cow_copy_pt(&mut cur_cursor, &mut new_cursor, vm_mapping.map_size());
+                    cow_copy_pt(&mut cur_cursor, &mut new_cursor, vm_mapping.map_size())?;
 
                 // We need to ensure that no writes can be performed to COW
                 // pages only after `fork()` returns. So we can perform a full
@@ -80,7 +86,7 @@ impl Vmar {
             }
         }
 
-        new_vmar
+        Ok(new_vmar)
     }
 }
 
@@ -91,7 +97,7 @@ impl Vmar {
 /// `size`. The destination range starts from `dst`'s current position.
 ///
 /// The number of physical frames copied is returned.
-fn cow_copy_pt(src: &mut CursorMut<'_>, dst: &mut CursorMut<'_>, size: usize) -> usize {
+fn cow_copy_pt(src: &mut CursorMut<'_>, dst: &mut CursorMut<'_>, size: usize) -> Result<usize> {
     let start_va = src.virt_addr();
     let end_va = start_va + size;
     let mut remain_size = size;
@@ -116,7 +122,7 @@ fn cow_copy_pt(src: &mut CursorMut<'_>, dst: &mut CursorMut<'_>, size: usize) ->
 
                 dst.jump(mapped_va).unwrap();
                 op(&mut prop.flags, &mut prop.cache);
-                dst.map(frame, prop);
+                dst.try_map(frame, prop)?;
 
                 num_copied += 1;
             }
@@ -124,7 +130,7 @@ fn cow_copy_pt(src: &mut CursorMut<'_>, dst: &mut CursorMut<'_>, size: usize) ->
                 // For MMIO pages, find the corresponding `IoMem` and map it
                 let (iomem, offset) = src.find_iomem_by_paddr(paddr).unwrap();
                 dst.jump(mapped_va).unwrap();
-                dst.map_iomem(iomem, prop, PAGE_SIZE, offset);
+                dst.try_map_iomem(iomem, prop, PAGE_SIZE, offset)?;
 
                 // Manually advance the source cursor.
                 // In the `MappedRam` case, the cursor is advanced by `protect_next`.
@@ -140,7 +146,7 @@ fn cow_copy_pt(src: &mut CursorMut<'_>, dst: &mut CursorMut<'_>, size: usize) ->
         remain_size = end_va - src.virt_addr();
     }
 
-    num_copied
+    Ok(num_copied)
 }
 
 #[cfg(ktest)]
@@ -182,7 +188,7 @@ mod test {
         {
             let mut child_cursor = child_space.cursor_mut(&preempt_guard, &cow_range).unwrap();
             let mut parent_cursor = vm_space.cursor_mut(&preempt_guard, &cow_range).unwrap();
-            let num_copied = cow_copy_pt(&mut parent_cursor, &mut child_cursor, cow_range.len());
+            let num_copied = cow_copy_pt(&mut parent_cursor, &mut child_cursor, cow_range.len()).unwrap();
             assert_eq!(num_copied, 1); // Only one page should be copied
         };
 
@@ -227,7 +233,7 @@ mod test {
                 .cursor_mut(&preempt_guard, &cow_range)
                 .unwrap();
             let mut parent_cursor = vm_space.cursor_mut(&preempt_guard, &cow_range).unwrap();
-            let num_copied = cow_copy_pt(&mut parent_cursor, &mut sibling_cursor, cow_range.len());
+            let num_copied = cow_copy_pt(&mut parent_cursor, &mut sibling_cursor, cow_range.len()).unwrap();
             assert_eq!(num_copied, 0); // No pages should be copied
         }
 
@@ -311,7 +317,7 @@ mod test {
         {
             let mut child_cursor = child_space.cursor_mut(&preempt_guard, &cow_range).unwrap();
             let mut parent_cursor = vm_space.cursor_mut(&preempt_guard, &cow_range).unwrap();
-            let num_copied = cow_copy_pt(&mut parent_cursor, &mut child_cursor, cow_range.len());
+            let num_copied = cow_copy_pt(&mut parent_cursor, &mut child_cursor, cow_range.len()).unwrap();
             assert_eq!(num_copied, 0); // `IoMem` pages are not "copied" in the same sense as RAM pages.
         };
 
@@ -362,7 +368,7 @@ mod test {
                 .cursor_mut(&preempt_guard, &cow_range)
                 .unwrap();
             let mut parent_cursor = vm_space.cursor_mut(&preempt_guard, &cow_range).unwrap();
-            let num_copied = cow_copy_pt(&mut parent_cursor, &mut sibling_cursor, cow_range.len());
+            let num_copied = cow_copy_pt(&mut parent_cursor, &mut sibling_cursor, cow_range.len()).unwrap();
             assert_eq!(num_copied, 0); // No pages should be copied
         }
 

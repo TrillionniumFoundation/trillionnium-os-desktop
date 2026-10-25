@@ -32,6 +32,22 @@ use crate::{
     task::{DisabledPreemptGuard, atomic_mode::AsAtomicModeGuard, disable_preempt},
 };
 
+/// An opaque reservation retained until a user page-table frame's last reference
+/// is destroyed. Its destructor returns the reservation to the original owner.
+pub trait PageTableCharge: core::fmt::Debug + Send + Sync {}
+impl<T: core::fmt::Debug + Send + Sync> PageTableCharge for T {}
+
+/// Reserves one physical page before a user page-table node allocation.
+///
+/// Called while page-table locks/atomic-mode guards are held: the callback must
+/// not sleep or re-enter page-table operations. It can choose the current account
+/// at each allocation; the returned token must retain that account for refund.
+pub type PageTableCharger = fn() -> Result<Box<dyn PageTableCharge>>;
+
+#[cfg(all(ktest, target_arch = "x86_64"))]
+#[path = "vm_space_budget_tests.rs"]
+mod budget_tests;
+
 /// A virtual address space for user-mode tasks, enabling safe manipulation of user-space memory.
 ///
 /// The `VmSpace` type provides memory isolation guarantees between user-space and
@@ -58,8 +74,8 @@ use crate::{
 ///
 /// # Memory Backing
 ///
-/// A newly-created `VmSpace` is not backed by any physical memory pages. To
-/// provide memory pages for a `VmSpace`, one can allocate and map physical
+/// A newly-created `VmSpace` owns its root page table, but has no user data
+/// pages. To provide data pages for a `VmSpace`, one can allocate and map physical
 /// memory ([`UFrame`]s) to the `VmSpace` using the cursor.
 ///
 /// A `VmSpace` can also attach a page fault handler, which will be invoked to
@@ -82,6 +98,20 @@ impl VmSpace {
             cpus: AtomicCpuSet::new(CpuSet::new_empty()),
             iomems: SpinLock::new(Vec::new()),
         }
+    }
+
+    /// Creates a VM space with charged user page-table nodes. Allocation/budget
+    /// failure returns an error before a new address space is published. Shared
+    /// kernel mappings are not charged to the new user space.
+    pub fn try_new_with_page_table_charger(charger: PageTableCharger) -> Result<Self> {
+        Ok(Self {
+            pt: KERNEL_PAGE_TABLE
+                .get()
+                .unwrap()
+                .try_create_user_page_table(Some(charger))?,
+            cpus: AtomicCpuSet::new(CpuSet::new_empty()),
+            iomems: SpinLock::new(Vec::new()),
+        })
     }
 
     /// Gets an immutable cursor in the virtual address range.
@@ -368,10 +398,26 @@ impl<'a> CursorMut<'a> {
     ///  - the current virtual address is already mapped;
     ///  - the current virtual address is outside the cursor's range.
     pub fn map(&mut self, frame: UFrame, prop: PageProperty) {
+        self.try_map(frame, prop)
+            .expect("Failed to allocate user page-table nodes");
+    }
+
+    /// Maps one frame, returning an allocation/budget error without publishing
+    /// the frame. Charged user spaces should use this fallible operation.
+    pub fn try_map(&mut self, frame: UFrame, prop: PageProperty) -> Result<()> {
         let item = VmItem::new_tracked(frame, prop);
 
         // SAFETY: It is safe to map untyped memory into the userspace.
-        unsafe { self.pt_cursor.map(item) };
+        unsafe { self.pt_cursor.try_map(item) }?;
+        Ok(())
+    }
+
+    /// Reserves page-table nodes for the current base page without publishing
+    /// a mapping. Keep this cursor alive through subsequent mappings to ensure
+    /// the prepared nodes cannot be removed by another cursor.
+    pub fn try_prepare_base_page(&mut self) -> Result<()> {
+        self.pt_cursor.try_prepare_base_page()?;
+        Ok(())
     }
 
     /// Maps a range of [`IoMem`] into the current slot.
@@ -395,6 +441,19 @@ impl<'a> CursorMut<'a> {
     ///    not aligned to the page size;
     ///  - the current virtual address is already mapped.
     pub fn map_iomem(&mut self, io_mem: IoMem, prop: PageProperty, len: usize, offset: usize) {
+        self.try_map_iomem(io_mem, prop, len, offset)
+            .expect("Failed to allocate page-table nodes");
+    }
+
+    /// Fallible I/O mapping. A failure may leave a mapped prefix. The `IoMem`
+    /// owner is retained before the first PTE is published, including on error.
+    pub fn try_map_iomem(
+        &mut self,
+        io_mem: IoMem,
+        prop: PageProperty,
+        len: usize,
+        offset: usize,
+    ) -> Result<()> {
         assert_eq!(len % PAGE_SIZE, 0);
         assert_eq!(offset % PAGE_SIZE, 0);
 
@@ -404,7 +463,7 @@ impl<'a> CursorMut<'a> {
         assert_eq!(io_mem_size % PAGE_SIZE, 0);
 
         if offset >= io_mem_size {
-            return;
+            return Ok(());
         }
 
         let paddr_begin = io_mem_paddr + offset;
@@ -413,14 +472,6 @@ impl<'a> CursorMut<'a> {
         } else {
             io_mem_paddr + len + offset
         };
-
-        for current_paddr in (paddr_begin..paddr_end).step_by(PAGE_SIZE) {
-            // SAFETY: It is safe to map I/O memory into the userspace.
-            unsafe {
-                self.pt_cursor
-                    .map(VmItem::new_untracked_io(current_paddr, prop))
-            };
-        }
 
         fn io_mem_contains(parent: &IoMem, child: &IoMem) -> bool {
             parent.paddr() <= child.paddr() && child.end_paddr() <= parent.end_paddr()
@@ -433,6 +484,17 @@ impl<'a> CursorMut<'a> {
             iomems.retain(|iomem| !io_mem_contains(&io_mem, iomem));
             iomems.push(io_mem);
         }
+        drop(iomems);
+
+        for current_paddr in (paddr_begin..paddr_end).step_by(PAGE_SIZE) {
+            // SAFETY: It is safe to map I/O memory into the userspace.
+            unsafe {
+                self.pt_cursor
+                    .try_map(VmItem::new_untracked_io(current_paddr, prop))
+            }?;
+        }
+
+        Ok(())
     }
 
     /// Finds an [`IoMem`] that was previously mapped to by [`Self::map_iomem`] and contains the

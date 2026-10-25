@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MPL-2.0
-"""Actual VMO and ext2 cache budget checks in a disposable SMP QEMU guest.
+"""Actual user-page-table, VMO and ext2 cache budget checks in a disposable SMP QEMU guest.
 
 The only disk is a generated 16 MiB fixture with snapshot writes. No host
 block devices, personal data or network are exposed to the guest. Results are
@@ -112,7 +112,7 @@ def main():
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    result = {"schema": "hepta.page-memory-guest.v1", "passed": False, "production_qualified": False, "scope": "private-and-vmo-pages", "smp": args.smp}
+    result = {"schema": "hepta.page-memory-guest.v1", "passed": False, "production_qualified": False, "scope": "private-vmo-cache-and-user-page-table-pages", "smp": args.smp}
     save(output / "result.json", result)
     before = snapshot()
     save(output / "source-before.json", before)

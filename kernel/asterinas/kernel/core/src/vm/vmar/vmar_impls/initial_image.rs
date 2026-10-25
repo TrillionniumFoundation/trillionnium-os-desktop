@@ -150,7 +150,7 @@ mod tests {
         test_util::initialize_heap_for_fork(&process, BASE + 2 * PAGE_SIZE);
         assert_eq!(byte(&vmar), 0x5a);
         vmar.seal_initial_image(vec![BASE..BASE + PAGE_SIZE]).unwrap();
-        let child = Vmar::fork_from(&vmar);
+        let child = Vmar::fork_from(&vmar).unwrap();
         assert!(!child.has_sealed_initial_image());
         child.protect(VmPerms::READ | VmPerms::WRITE, BASE..BASE + PAGE_SIZE).unwrap();
         child.write_alien(BASE, &mut VmReader::from(&[0x33u8][..]).to_fallible()).unwrap();

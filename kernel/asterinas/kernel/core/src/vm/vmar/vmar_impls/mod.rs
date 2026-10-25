@@ -60,18 +60,20 @@ impl Vmar {
     /// Creates a new VMAR.
     ///
     /// This method should only be invoked by [`super::VmarHandle`].
-    pub(super) fn new(process_vm: ProcessVm) -> Arc<Self> {
+    pub(super) fn try_new(process_vm: ProcessVm) -> Result<Arc<Self>> {
         let inner = VmarInner::new();
-        let vm_space = VmSpace::new();
+        let vm_space = VmSpace::try_new_with_page_table_charger(
+            crate::fs::cgroupfs::charge_current_page_table,
+        )?;
         let rss_counters = array::from_fn(|_| PerCpuCounter::new());
-        Arc::new_cyclic(move |weak_self| Vmar {
+        Ok(Arc::new_cyclic(move |weak_self| Vmar {
             inner: RwMutex::new(inner),
             vm_space: Arc::new(vm_space),
             rss_counters,
             process_vm,
             num_handles: AtomicUsize::new(1),
             weak_self: weak_self.clone(),
-        })
+        }))
     }
 
     /// Returns the current RSS count for the given RSS type.

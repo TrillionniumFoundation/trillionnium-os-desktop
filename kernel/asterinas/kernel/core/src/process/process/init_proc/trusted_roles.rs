@@ -50,10 +50,10 @@ pub(super) fn spawn(
     // Exactly one bounded read of the input. No role loads from a later inode
     // snapshot, and the compiled manifest is not replaced for negative boots.
     let snapshot = executable.snapshot_trusted_initial()?;
-    let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+    let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init())?;
     let workload = allocate_initial_process(&executable_path,
-        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES));
-    let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES))?;
+    let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init())?;
     let keys = [manager.0.hepta_capspace_session()?, workload.0.hepta_capspace_session()?,
         recovery.0.hepta_capspace_session()?];
     let pids = [manager.0.pid(), workload.0.pid(), recovery.0.pid()];

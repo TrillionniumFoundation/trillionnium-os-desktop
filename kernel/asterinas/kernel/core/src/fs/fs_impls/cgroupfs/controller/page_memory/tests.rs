@@ -37,17 +37,17 @@ fn page_budget_combines_three_real_frame_classes_and_refunds_last_reference() {
     let shared = allocate(&leaf, PageKind::AnonymousVmo).unwrap();
     let file = allocate(&leaf, PageKind::FileCache).unwrap();
     assert_eq!(used(&root), 3 * PAGE_SIZE);
-    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE; 3]);
+    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, PAGE_SIZE, PAGE_SIZE, 0]);
     assert!(allocate(&leaf, PageKind::AnonymousVmo).is_err());
     let held = shared.clone();
     drop(shared);
     assert_eq!(used(&leaf), 3 * PAGE_SIZE);
     drop(held);
     assert_eq!(used(&leaf), 2 * PAGE_SIZE);
-    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, 0, PAGE_SIZE]);
+    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, 0, PAGE_SIZE, 0]);
     drop((private, file));
     assert_eq!(used(&root), 0);
-    assert_eq!(leaf.state.lock().kinds, [0; 3]);
+    assert_eq!(leaf.state.lock().kinds, [0; 4]);
 }
 
 #[ktest]
@@ -58,7 +58,7 @@ fn page_budget_ancestor_denial_rolls_back_the_class_and_total() {
     let held = allocate(&root, PageKind::Private).unwrap();
     assert!(allocate(&leaf, PageKind::FileCache).is_err());
     assert_eq!(used(&leaf), 0);
-    assert_eq!(leaf.state.lock().kinds, [0; 3]);
+    assert_eq!(leaf.state.lock().kinds, [0; 4]);
     assert_eq!(root.state.lock().denied, 1);
     drop(held);
     let next = allocate(&leaf, PageKind::FileCache).unwrap();

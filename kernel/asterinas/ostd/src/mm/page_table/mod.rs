@@ -41,6 +41,8 @@ pub(crate) mod boot_pt;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PageTableError {
+    /// A physical allocation or its user page-table reservation was refused.
+    NoMemory,
     /// The provided virtual address range is invalid.
     InvalidVaddrRange(Vaddr, Vaddr),
     /// The provided virtual address is invalid.
@@ -363,7 +365,15 @@ impl PageTable<KernelPtConfig> {
     /// This should be the only way to create the user page table, that is to
     /// duplicate the kernel page table with all the kernel mappings shared.
     pub(in crate::mm) fn create_user_page_table(&'static self) -> PageTable<UserPtConfig> {
-        let new_root = PageTableNode::alloc(PagingConsts::NR_LEVELS);
+        self.try_create_user_page_table(None)
+            .expect("Failed to allocate a user page table")
+    }
+
+    pub(in crate::mm) fn try_create_user_page_table(
+        &'static self,
+        charger: Option<super::vm_space::PageTableCharger>,
+    ) -> Result<PageTable<UserPtConfig>, PageTableError> {
+        let new_root = PageTableNode::try_alloc(PagingConsts::NR_LEVELS, charger)?;
 
         let preempt_guard = disable_preempt();
         let mut root_node = self.root.borrow().lock(&preempt_guard);
@@ -402,7 +412,7 @@ impl PageTable<KernelPtConfig> {
         }
         drop(new_node);
 
-        PageTable::<UserPtConfig> { root: new_root }
+        Ok(PageTable::<UserPtConfig> { root: new_root })
     }
 }
 

@@ -19,6 +19,7 @@
 #define WORK BASE "/work"
 #define RECOVER BASE "/recover"
 #define RACE BASE "/race"
+#define TABLE BASE "/page-table"
 #define PAGE 4096UL
 static int failures;
 static int denied_file;
@@ -184,8 +185,9 @@ static void concurrent_frames(void) {
             atomic_store(&ready[worker],1);
             while(!atomic_load(&ready[WORKERS]))delay();
             for(unsigned iteration=0;iteration<ITERATIONS;iteration++) {
-                volatile unsigned char *map=mmap(NULL,2*PAGE,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS,-1,0);
-                if(map==MAP_FAILED)_exit(41);
+                void *sparse=(void*)((4UL<<39)+((unsigned long)worker<<32)+((unsigned long)iteration<<21));
+                volatile unsigned char *map=mmap(sparse,2*PAGE,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED_NOREPLACE,-1,0);
+                if(map!=sparse)_exit(41);
                 map[0]=0x71; map[PAGE]=0x73;
                 int fd=memfd_create("concurrent-budget",0);
                 if(fd<0||ftruncate(fd,PAGE)||pwrite(fd,data,PAGE,0)!=PAGE)_exit(42);
@@ -219,7 +221,139 @@ static void concurrent_frames(void) {
     munmap((void*)ready,PAGE);
     check("concurrent_group_removed",rmdir(RACE)==0);
 }
-int main(void) {
+/* Sparse addresses occupy new PML4 branches. Each first resident base page
+ * therefore needs three real user page-table frames on this x86_64 profile. */
+static void page_table_transactions(void) {
+    failures=0;
+    if(join(TABLE))_exit(50);
+    warm();
+    unsigned long before=stat_value(TABLE,"page_table");
+    volatile unsigned char *source=mmap((void*)(1UL<<39),PAGE,PROT_READ|PROT_WRITE,
+        MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED_NOREPLACE,-1,0);
+    check("sparse_page_table_mapping_created",source==(void*)(1UL<<39));
+    if(source==MAP_FAILED)_exit(51);
+    source[0]=0x79;
+    check("sparse_fault_charges_three_actual_table_frames",stat_value(TABLE,"page_table")==before+3*PAGE);
+    unsigned long current=number(TABLE,"hepta.page.current");
+    unsigned long events=number(TABLE,"hepta.page.events");
+    if(set_max(TABLE,current))_exit(52);
+    errno=0;pid_t child=fork();int saved=errno;
+    if(child==0)_exit(99);
+    if(set_max(TABLE,current+64*PAGE))_exit(53);
+    check("fork_root_page_table_denied_with_ENOMEM",child==-1&&saved==ENOMEM);
+    if(child>0){int status;waitpid(child,&status,0);}
+    check("fork_page_table_denial_event",number(TABLE,"hepta.page.events")>events);
+    check("fork_denial_preserves_existing_mapping",source[0]==0x79);
+
+    before=stat_value(TABLE,"page_table");
+    current=number(TABLE,"hepta.page.current");
+    if(set_max(TABLE,current+2*PAGE))_exit(64);
+    errno=0;child=fork();saved=errno;
+    if(child==0)_exit(99);
+    if(set_max(TABLE,current+64*PAGE))_exit(65);
+    check("partial_fork_table_allocation_denied_with_ENOMEM",child==-1&&saved==ENOMEM);
+    if(child>0){int status;waitpid(child,&status,0);}
+    check("partial_fork_preserves_parent_data",source[0]==0x79);
+    check("partial_fork_table_frames_refunded",await_stat(TABLE,"page_table",before)==before);
+
+    current=number(TABLE,"hepta.page.current");events=number(TABLE,"hepta.page.events");
+    char *args[]={"/bin/page-memory-probe","unexpected-exec",NULL};
+    char *env[]={NULL};
+    if(set_max(TABLE,current))_exit(54);
+    errno=0;int rc=execve(args[0],args,env);saved=errno;
+    if(set_max(TABLE,current+64*PAGE))_exit(55);
+    check("exec_new_page_table_denied_with_ENOMEM",rc==-1&&saved==ENOMEM);
+    check("exec_page_table_denial_event",number(TABLE,"hepta.page.events")>events);
+    check("exec_denial_keeps_old_image_and_data",source[0]==0x79);
+
+    current=number(TABLE,"hepta.page.current");events=number(TABLE,"hepta.page.events");
+    before=stat_value(TABLE,"page_table");
+    if(set_max(TABLE,current))_exit(56);
+    errno=0;void *moved=mremap((void*)source,PAGE,PAGE,MREMAP_MAYMOVE|MREMAP_FIXED,(void*)(2UL<<39));saved=errno;
+    if(set_max(TABLE,current+64*PAGE))_exit(57);
+    check("mremap_table_preflight_denied_with_ENOMEM",moved==MAP_FAILED&&saved==ENOMEM);
+    check("mremap_failure_preserves_source_bytes",source[0]==0x79);
+    check("mremap_table_denial_event",number(TABLE,"hepta.page.events")>events);
+    moved=mremap((void*)source,PAGE,PAGE,MREMAP_MAYMOVE|MREMAP_FIXED,(void*)(2UL<<39));
+    check("mremap_retry_after_budget_increase_succeeds",moved==(void*)(2UL<<39));
+    if(moved!=MAP_FAILED) {
+        check("mremap_retry_preserves_actual_data",*(volatile unsigned char*)moved==0x79);
+        check("mremap_new_branch_has_real_table_charge",stat_value(TABLE,"page_table")==before+3*PAGE);
+        munmap(moved,PAGE);
+    }
+    before=stat_value(TABLE,"page_table");
+    unsigned long other=stat_value(RECOVER,"page_table");
+    check("page_table_migrate_to_new_owner",join(RECOVER)==0);
+    volatile unsigned char *migrated=mmap((void*)(5UL<<39),PAGE,PROT_READ|PROT_WRITE,
+        MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED_NOREPLACE,-1,0);
+    check("migrated_sparse_mapping_created",migrated==(void*)(5UL<<39));
+    if(migrated!=MAP_FAILED) {
+        migrated[0]=0x74;
+        check("old_page_table_charge_stays_original_owner",stat_value(TABLE,"page_table")==before);
+        check("new_page_table_nodes_charge_current_membership",stat_value(RECOVER,"page_table")==other+3*PAGE);
+        check("page_table_migrate_back",join(TABLE)==0);
+        munmap((void*)migrated,PAGE);
+    }
+    /* Existing mremap semantics shrink the source and truncate a fixed
+     * destination before table admission. Test that precise failure boundary. */
+    volatile unsigned char *shrunk=mmap((void*)(6UL<<39),2*PAGE,PROT_READ|PROT_WRITE,
+        MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED_NOREPLACE,-1,0);
+    void *target=mmap((void*)(7UL<<39),PAGE,PROT_READ|PROT_WRITE,
+        MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED_NOREPLACE,-1,0);
+    check("shrink_remap_source_and_empty_target_created",shrunk==(void*)(6UL<<39)&&target==(void*)(7UL<<39));
+    if(shrunk!=MAP_FAILED&&target!=MAP_FAILED) {
+        shrunk[0]=0x68;shrunk[PAGE]=0x69;
+        check("fixed_remap_target_initially_has_mapping",mprotect(target,PAGE,PROT_READ)==0);
+        current=number(TABLE,"hepta.page.current");
+        if(set_max(TABLE,current))_exit(66);
+        errno=0;moved=mremap((void*)shrunk,2*PAGE,PAGE,MREMAP_MAYMOVE|MREMAP_FIXED,target);saved=errno;
+        if(set_max(TABLE,current+64*PAGE))_exit(67);
+        check("shrinking_remap_target_preflight_denied",moved==MAP_FAILED&&saved==ENOMEM);
+        check("shrinking_remap_failure_keeps_retained_source_data",shrunk[0]==0x68);
+        errno=0;rc=mprotect((void*)(shrunk+PAGE),PAGE,PROT_READ);saved=errno;
+        check("shrinking_remap_failure_has_existing_tail_unmap_side_effect",rc==-1&&saved==ENOMEM);
+        errno=0;rc=mprotect(target,PAGE,PROT_READ);saved=errno;
+        check("fixed_remap_failure_has_existing_target_truncate_side_effect",rc==-1&&saved==ENOMEM);
+        munmap((void*)shrunk,2*PAGE);
+    }
+    _exit(failures?58:0);
+}
+static void page_tables(void) {
+    check("page_table_group_created",mkdir(TABLE,0755)==0);
+    pid_t child=fork();if(child==0)page_table_transactions();
+    int status=0;if(child>0)waitpid(child,&status,0);
+    check("page_table_real_transactions_child_passed",child>0&&WIFEXITED(status)&&WEXITSTATUS(status)==0);
+    check("page_table_final_frame_reference_refund",await_stat(TABLE,"page_table",0)==0);
+    check("page_table_process_account_refund",await_total(TABLE,0)==0);
+    check("migrated_page_table_original_owner_refund",await_stat(RECOVER,"page_table",0)==0);
+    check("migrated_page_table_process_charge_refund",await_total(RECOVER,0)==0);
+    check("page_table_reset_budget",store(TABLE "/hepta.page.max","max")==0);
+    /* The backing page belongs to the observer and already exists. The child's
+     * denied read allocates no data page, so this specifically probes tables. */
+    int fd=memfd_create("observer-owned-page",0);
+    char data[PAGE];memset(data,0x67,sizeof(data));
+    check("page_table_observer_commits_shared_backing",fd>=0&&ftruncate(fd,PAGE)==0&&pwrite(fd,data,PAGE,0)==PAGE);
+    unsigned long events=number(TABLE,"hepta.page.events");
+    child=fork();
+    if(child==0) {
+        if(join(TABLE))_exit(59);
+        warm();
+        volatile unsigned char *map=mmap((void*)(3UL<<39),PAGE,PROT_READ,MAP_SHARED|MAP_FIXED_NOREPLACE,fd,0);
+        if(map==MAP_FAILED)_exit(60);
+        unsigned long current=number(TABLE,"hepta.page.current");
+        if(set_max(TABLE,current))_exit(61);
+        unsigned char value=map[0];_exit(value==0x67?62:63);
+    }
+    if(child>0)waitpid(child,&status,0);
+    check("existing_shared_page_table_fault_denied_with_SIGSEGV",child>0&&WIFSIGNALED(status)&&WTERMSIG(status)==SIGSEGV);
+    check("existing_shared_page_table_denial_event",number(TABLE,"hepta.page.events")>events);
+    check("faulted_process_page_tables_refund",await_stat(TABLE,"page_table",0)==0);
+    check("faulted_process_all_charges_refund",await_total(TABLE,0)==0);
+    if(fd>=0)close(fd);
+    check("page_table_group_removed",rmdir(TABLE)==0);
+}
+int main(int argc, char **argv) {
+    if(argc>1){(void)argv;return 99;}
     setvbuf(stdout,NULL,_IONBF,0);
     check("work_group_create",mkdir(BASE,0755)==0&&mkdir(WORK,0755)==0&&mkdir(RECOVER,0755)==0);
     check("test_mount_directory",mkdir("/page-cache",0755)==0);
@@ -233,6 +367,7 @@ int main(void) {
     check("mixed_real_paths_child_passed",child>0&&WIFEXITED(status)&&WEXITSTATUS(status)==0);
     check("release_real_filesystem_cache",umount("/page-cache")==0);
     check("mixed_process_private_final_frames_refunded",await_stat(WORK,"private",0)==0);
+    check("mixed_process_page_table_frames_refunded",await_stat(WORK,"page_table",0)==0);
     unsigned long retained=number(WORK,"hepta.page.current");
     printf("{\"retained_after_unmount\":%lu,\"anonymous_vmo\":%lu,\"file_cache\":%lu}\n",retained,stat_value(WORK,"anonymous_vmo"),stat_value(WORK,"file_cache"));
     check("retained_cache_pages_still_accounted",retained==stat_value(WORK,"anonymous_vmo")+stat_value(WORK,"file_cache"));
@@ -265,6 +400,7 @@ int main(void) {
     check("sibling_actual_private_and_shared_allocation_after_workload_denials",child>0&&WIFEXITED(status)&&WEXITSTATUS(status)==0);
     check("sibling_final_reference_refunds",await_total(RECOVER,0)==0);
     concurrent_frames();
+    page_tables();
     close(denied_file);
     check("fixture_unmount",umount("/page-cache")==0);
     check("groups_removed",rmdir(WORK)==0&&rmdir(RECOVER)==0&&rmdir(BASE)==0);

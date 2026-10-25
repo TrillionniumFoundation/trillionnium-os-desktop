@@ -567,7 +567,7 @@ impl Mappable for FbHandle {
             io_mem.clone()
         };
 
-        handle.map_iomem(0, io_mem_sliced);
+        handle.map_iomem(0, io_mem_sliced)?;
 
         Ok(mapped_handle)
     }

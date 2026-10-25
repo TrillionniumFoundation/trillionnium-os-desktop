@@ -8,7 +8,7 @@ use crate::{
         HasPaddr, nr_subpage_per_huge,
         page_prop::PageProperty,
         page_size,
-        page_table::{PageTableConfig, PageTableNodeRef, PteScalar},
+        page_table::{PageTableConfig, PageTableError, PageTableNodeRef, PteScalar},
     },
     panic::PanicGuard,
     sync::RcuDrop,
@@ -121,13 +121,16 @@ impl<'a, 'rcu, C: PageTableConfig> Entry<'a, 'rcu, C> {
     pub(in crate::mm::page_table) fn alloc_if_none(
         &mut self,
         guard: &'rcu dyn InAtomicMode,
-    ) -> Option<PageTableGuard<'rcu, C>> {
+    ) -> Result<Option<PageTableGuard<'rcu, C>>, PageTableError> {
         if !matches!(self.to_ref(), PteStateRef::Absent) || self.node.level() == 1 {
-            return None;
+            return Ok(None);
         }
 
         let level = self.node.level();
-        let new_page = RcuDrop::new(PageTableNode::<C>::alloc(level - 1));
+        let new_page = RcuDrop::new(PageTableNode::<C>::try_alloc(
+            level - 1,
+            self.node.inner.meta().charger,
+        )?);
 
         let paddr = new_page.paddr();
         // SAFETY: The page table won't be dropped before the RCU grace period
@@ -147,7 +150,7 @@ impl<'a, 'rcu, C: PageTableConfig> Entry<'a, 'rcu, C> {
 
         *self.node.nr_children_mut() += 1;
 
-        Some(pt_lock_guard)
+        Ok(Some(pt_lock_guard))
     }
 
     /// Splits the entry to smaller pages if it maps to a huge page.
@@ -167,6 +170,9 @@ impl<'a, 'rcu, C: PageTableConfig> Entry<'a, 'rcu, C> {
             return None;
         };
 
+        // Budgeted UserPtConfig exposes base pages only; supporting charged
+        // huge mappings would also require fallible split/protect/unmap APIs.
+        assert!(self.node.inner.meta().charger.is_none(), "charged huge pages unsupported");
         let new_page = RcuDrop::new(PageTableNode::<C>::alloc(level - 1));
 
         let paddr = new_page.paddr();

@@ -28,6 +28,7 @@
 mod entry;
 mod pte_state;
 
+use alloc::boxed::Box;
 use core::{
     cell::SyncUnsafeCell,
     marker::PhantomData,
@@ -39,13 +40,14 @@ pub(in crate::mm) use self::{
     entry::Entry,
     pte_state::{PteState, PteStateRef},
 };
-use super::{PageTableConfig, PteTrait, nr_subpage_per_huge};
+use super::{PageTableConfig, PageTableError, PteTrait, nr_subpage_per_huge};
 use crate::{
     mm::{
         FrameAllocOptions, HasPaddr, Infallible, PagingConstsTrait, PagingLevel, VmReader,
         frame::{Frame, FrameRef, meta::AnyFrameMeta},
         paddr_to_vaddr,
         page_table::{PteScalar, load_pte, store_pte},
+        vm_space::{PageTableCharge, PageTableCharger},
     },
     task::atomic_mode::InAtomicMode,
 };
@@ -68,11 +70,24 @@ impl<C: PageTableConfig> PageTableNode<C> {
 
     /// Allocates a new empty page table node.
     pub(super) fn alloc(level: PagingLevel) -> Self {
-        let meta = PageTablePageMeta::new(level);
+        Self::try_alloc(level, None).expect("Failed to allocate a page table node")
+    }
+
+    pub(super) fn try_alloc(
+        level: PagingLevel,
+        charger: Option<PageTableCharger>,
+    ) -> Result<Self, PageTableError> {
+        // The reservation is held before touching the physical allocator.
+        // Failed allocation drops metadata and refunds it exactly once.
+        let charge = charger
+            .map(|charge| charge())
+            .transpose()
+            .map_err(|_| PageTableError::NoMemory)?;
+        let meta = PageTablePageMeta::new(level, charger, charge);
         FrameAllocOptions::new()
             .zeroed(true)
             .alloc_frame_with(meta)
-            .expect("Failed to allocate a page table node")
+            .map_err(|_| PageTableError::NoMemory)
     }
 
     /// Activates the page table assuming it is a root page table.
@@ -260,6 +275,8 @@ impl<C: PageTableConfig> Drop for PageTableGuard<'_, C> {
 /// Make sure the the generic parameters don't effect the memory layout.
 #[derive(Debug)]
 pub(crate) struct PageTablePageMeta<C: PageTableConfig> {
+    charger: Option<PageTableCharger>,
+    _charge: Option<Box<dyn PageTableCharge>>,
     /// The number of valid PTEs. It is mutable if the lock is held.
     nr_children: SyncUnsafeCell<u16>,
     /// If the page table is detached from its parent.
@@ -277,8 +294,14 @@ pub(crate) struct PageTablePageMeta<C: PageTableConfig> {
 }
 
 impl<C: PageTableConfig> PageTablePageMeta<C> {
-    fn new(level: PagingLevel) -> Self {
+    fn new(
+        level: PagingLevel,
+        charger: Option<PageTableCharger>,
+        charge: Option<Box<dyn PageTableCharge>>,
+    ) -> Self {
         Self {
+            charger,
+            _charge: charge,
             nr_children: SyncUnsafeCell::new(0),
             stray: SyncUnsafeCell::new(false),
             level,

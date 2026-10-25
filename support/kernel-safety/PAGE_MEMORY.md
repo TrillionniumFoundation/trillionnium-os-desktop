@@ -1,6 +1,6 @@
-# Physical page budget, second isolation stage
+# Physical page budget, staged isolation
 
-This is a development-stage extension of the reviewed private-anonymous/COW budget. It does **not** implement Linux `memory.max`, total RSS, all physical memory isolation, an OOM killer or a global recovery reserve. Standard `memory.max` remains unsupported. A later integrated build must rerun the actual guest tests; this document is not a passing result.
+This is a development-stage extension of the reviewed private-anonymous/COW budget, now including the third-stage user page-table paths documented in [PAGE_TABLE_MEMORY.md](PAGE_TABLE_MEMORY.md). It does **not** implement Linux `memory.max`, total RSS, all physical memory isolation, an OOM killer or a global recovery reserve. Standard `memory.max` remains unsupported. A later integrated build must rerun the actual guest tests; this document is not a passing result.
 
 ## Interfaces and owners
 
@@ -13,10 +13,11 @@ The new combined ceiling accounts these paths:
 | `private` | Private anonymous faults, private VMO tails, file/fork COW | Allocating process's cgroup; final physical frame reference refunds |
 | `anonymous_vmo` | New RAM-backed VMO pages, including shared anonymous maps, memfd and RAM-backed file caches | First committer's cgroup; later shared mappings do not charge again |
 | `file_cache` | New backend VMO cache pages for filesystem/block cache I/O | First allocating process's cgroup; mappings, cache entries and in-flight I/O all retain the charge |
+| `page_table` | New user page-table root and intermediate frames | Allocating process's cgroup captured for each node; original account retained through final node release |
 
 `current` is the sum of these categories in the account and its descendants. This is physical allocation ownership, not the sum of mappings or a process's resident set. A VMO page first populated outside a constrained subtree does not become that subtree's charge when reused. Migration affects future allocations; existing pages retain their original accounts. A delegated worker charges its own process, not an implicit caller. Allocations with no current process remain excluded.
 
-The original account is embedded in `CachePageMeta` or private-frame metadata and survives task exit, node deletion, truncate/eviction, mapping removal and asynchronous I/O references. No charge is refunded merely because a task exits or an unmap returns. This includes an inherited private mapping backed by a shared VMO: a child can first populate its backing page, and the parent can retain that physical page after the child exits. The guest probe prefaults the inherited stack from its observer before fork and tests newly allocated frame deltas separately from retained filesystem cache pages. TLB/RCU references can delay final release; CPUs must reach quiescent points. No wall-clock release bound is promised for a stalled CPU.
+The original account is embedded in `CachePageMeta`, private-frame metadata or OSTD page-table-node metadata and survives task exit, node deletion, truncate/eviction, mapping removal and asynchronous I/O references. No charge is refunded merely because a task exits or an unmap returns. This includes an inherited private mapping backed by a shared VMO: a child can first populate its backing page, and the parent can retain that physical page after the child exits. The guest probe prefaults the inherited stack from its observer before fork and tests newly allocated frame deltas separately from retained filesystem cache pages. TLB/RCU references can delay final release; CPUs must reach quiescent points. No wall-clock release bound is promised for a stalled CPU.
 
 ## Admission and failure rules
 
@@ -28,15 +29,15 @@ VMO page-array locking serializes first allocation, so racing faults or writers 
 
 ## Recovery boundary and remaining work
 
-A capped workload and a sibling recovery group can retain headroom **for these covered allocation classes** when their parent ceiling leaves enough space. Put the monitor/recovery process outside the exhausted workload before pressure begins, and prevent untrusted migration or limit changes. This is not reserved global memory: page tables, kernel heap/stacks and object metadata, device/DMA buffers, and boot/kernel-thread allocations can still consume physical memory outside this ledger. Shared cached pages owned by other groups also remain usable. This interface must not be advertised as protection from every memory exhaustion route.
+A capped workload and a sibling recovery group can retain headroom **for these covered allocation classes** when their parent ceiling leaves enough space. Put the monitor/recovery process outside the exhausted workload before pressure begins, and prevent untrusted migration or limit changes. This is not reserved global memory: kernel/shared page tables, kernel heap/stacks and object metadata, device/DMA buffers, and boot/kernel-thread allocations can still consume physical memory outside this ledger. Shared cached pages owned by other groups also remain usable. This interface must not be advertised as protection from every memory exhaustion route.
 
-A complete controller still needs explicit ownership for page tables and kernel allocations; worker and DMA delegation; global/root/recovery reserve pools; reclaim, writeback and OOM admission; bounded recovery; and migration/reparenting policy. Enabling standard `memory.max` before those semantics and their actual allocation paths pass independent review would be misleading.
+A complete controller still needs explicit ownership for kernel allocations and system/shared page tables; worker and DMA delegation; global/root/recovery reserve pools; reclaim, writeback and OOM admission; bounded recovery; and migration/reparenting policy. Enabling standard `memory.max` before those semantics and their actual allocation paths pass independent review would be misleading.
 
 ## Allocation audit for the next stage
 
 | Remaining owner | Current allocation path | Required next change |
 | --- | --- | --- |
-| User page tables | OSTD `mm/page_table/node/mod.rs::PageTableNode::alloc` and `node/entry.rs` | Carry a stable address-space account into each node; make node allocation/admission failure propagate through map/fault/fork before publication; refund only at final node release |
+| User page tables | OSTD fallible node allocator and per-node token, kernel fault/fork/exec/remap paths | Implemented incrementally in [PAGE_TABLE_MEMORY.md](PAGE_TABLE_MEMORY.md); still excludes shared kernel mappings and non-process allocations |
 | Kernel object/slab memory | `osdk/deps/heap-allocator/src/allocator.rs`, per-CPU caches and global slab pools | Define shared slab versus object ownership, fallible allocation for workload-induced objects, worker delegation and recursion-free accounting; a global byte counter is insufficient |
 | Kernel stacks | OSTD task/stack allocation | Charge task-owned stacks before thread publication and retain until task/CPU references are gone; reserve enough scheduler/fault-handler capacity for recovery |
 | DMA buffers | OSTD `mm/dma/{dma_coherent,dma_stream,util}.rs` | Explicit driver/request owner plus buffer charge lifetime through hardware completion; independent of IOMMU address authorization |
@@ -54,11 +55,11 @@ Run the full `aster-core` native suite through `support/build/ktest/run.py`. The
 
 Run `python3 tests/kernel/page-memory/run.py --smp 2 --output /absolute/new/evidence`, then its `--smp 4 --reuse /absolute/prior/evidence` mode against identical working bytes. The guest receives only a generated 16 MiB ext2 fixture using snapshot writes, no host block devices or network. The probes exercise real shared mmap, memfd, other-group reuse, actual ext2 cold reads/cache writes/truncate, exact-ceiling ENOMEM and SIGSEGV, denial events, and recovery sibling allocations. Failed setup is a failure, never an unavailable skip. Kernel/BIOS/initramfs/probe, source and raw serial hashes are retained. The reuse mode refuses changed source or artifacts. Also rerun `tests/kernel/safety/run.py` to cover the first stage.
 
-Evidence remains development evidence until the tested source is committed and its bytes are bound separately. OSTD code is unchanged in this memory stage; per-device IOMMU work is a separate stage and does not inherit qualification from these tests.
+Evidence remains development evidence until the tested source is committed and its bytes are bound separately. OSTD code was unchanged in M2; M3 changes its page-table and cursor layer, so full OSTD tests and the separate DMA-domain hardware probes must also be rerun. Device authorization does not inherit qualification from memory tests.
 
 The ext2 guest fixture uses modern-only VirtIO PCI (`disable-legacy=on`). The first default transitional-device run failed: the existing modern transport decodes transitional block ID `0x1001` as network type 1. That retained failure is not treated as memory validation or as working transitional VirtIO support.
 
-## Stage validation recorded locally
+## Historical M2 validation recorded locally
 
 The stage's final `aster-core` run executed 301 tests with no test skips. The 2-CPU and 4-CPU ordinary guests each passed 76 assertions, including four simultaneous workers committing and freeing actual shared/memfd pages while the observer changes the budget. Both prior five-probe safety suites also passed on the same ordinary ELF. Host evidence tests passed normally and with Python optimization. These results cover this stage's development bytes; integration still requires the receiving source and artifacts to be verified.
 

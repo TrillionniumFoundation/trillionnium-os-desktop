@@ -537,7 +537,7 @@ impl VmMapping {
                         prop.flags |= new_flags;
                         cursor.unmap(PAGE_SIZE);
                         cursor.jump(va.start).unwrap();
-                        cursor.map(new_frame.into(), prop);
+                        cursor.try_map(new_frame.into(), prop)?;
                         // FIXME: Linux re-classifies the page from `File` to `Anon` in RSS,
                         // when a COW on a file-backed mapping happens.
                         // We currently do not support this re-classification,
@@ -585,7 +585,7 @@ impl VmMapping {
                     }
                     let map_prop = PageProperty::new_user(page_flags, CachePolicy::Writeback);
 
-                    cursor.map(frame, map_prop);
+                    cursor.try_map(frame, map_prop)?;
                     rss_delta.add(self.rss_type(), 1);
                 }
             }
@@ -700,7 +700,7 @@ impl VmMapping {
                         let page_flags = PageFlags::from(vm_perms) | PageFlags::ACCESSED;
                         let page_prop = PageProperty::new_user(page_flags, CachePolicy::Writeback);
                         let (_, frame) = commit_fn()?;
-                        cursor.map(frame.into(), page_prop);
+                        cursor.try_map(frame.into(), page_prop)?;
                         rss_delta_ref.add(self.rss_type(), 1);
                     } else {
                         let next_addr = cursor.virt_addr() + PAGE_SIZE;
@@ -1154,10 +1154,10 @@ impl MapHandle<'_, '_, '_> {
     /// Maps a [`UFrame`].
     ///
     /// `offset` specifies the virtual address offset (from the start of the memory region).
-    pub fn map_frame(&mut self, offset: usize, frame: UFrame) {
+    pub fn map_frame(&mut self, offset: usize, frame: UFrame) -> Result<()> {
         let map_size = self.size();
         if offset >= map_size {
-            return;
+            return Ok(());
         }
 
         let map_addr = self.vm_mapping.map_to_addr + offset;
@@ -1177,19 +1177,20 @@ impl MapHandle<'_, '_, '_> {
         if cursor.query().unwrap().1.is_some() {
             // We assume this is a race condition because the page fault has already been handled.
             // Therefore, no action is required.
-            return;
+            return Ok(());
         }
-        cursor.map(frame, page_prop);
+        cursor.try_map(frame, page_prop)?;
         self.rss_delta.add(Self::DEVICE_RSS_TYPE, 1);
+        Ok(())
     }
 
     /// Maps an [`IoMem`].
     ///
     /// `offset` specifies the virtual address offset (from the start of the memory region).
-    pub fn map_iomem(&mut self, offset: usize, io_mem: IoMem) {
+    pub fn map_iomem(&mut self, offset: usize, io_mem: IoMem) -> Result<()> {
         let map_size = self.size();
         if offset >= map_size {
-            return;
+            return Ok(());
         }
 
         let map_addr = self.vm_mapping.map_to_addr + offset;
@@ -1209,9 +1210,17 @@ impl MapHandle<'_, '_, '_> {
         if cursor.query().unwrap().1.is_some() {
             // We assume this is a race condition because the page fault has already been handled.
             // Therefore, no action is required.
-            return;
+            return Ok(());
         }
-        cursor.map_iomem(io_mem, page_prop, map_len, 0);
+        // Preflight the whole device range before publishing its first PTE.
+        // The same cursor pins prepared nodes until mapping is complete.
+        for va in (map_range.start..map_range.end).step_by(PAGE_SIZE) {
+            cursor.jump(va).unwrap();
+            cursor.try_prepare_base_page()?;
+        }
+        cursor.jump(map_range.start).unwrap();
+        cursor.try_map_iomem(io_mem, page_prop, map_len, 0)?;
+        Ok(())
     }
 }
 

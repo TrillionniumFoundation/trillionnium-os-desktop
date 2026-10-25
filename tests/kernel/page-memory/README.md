@@ -22,3 +22,19 @@ Build `cargo-osdk` with `OSDK_LOCAL_DEV=1` from this exact worktree: it embeds s
 See [ownership, failure and recovery boundaries](../../../support/kernel-safety/PAGE_MEMORY.md) for allocation coverage and exclusions. In particular, filesystem cache pages can remain charged after the creating process exits; mapping removal alone is not a refund guarantee.
 
 The observer prefaults its stack before fork: otherwise a child may first populate inherited VMO backing that the observer still retains. Refund checks compare new allocations with retained-cache baselines, require private child frames to return to zero, and separately verify the exact last-reference releases of shared anonymous mappings and memfd. Unmount is not assumed to evict every global block metadata page.
+
+## M3 user page-table coverage
+
+The same guest probe now checks sparse 512-GiB-separated virtual branches,
+actual three-node table growth, fork root and partial-table ENOMEM with cleanup,
+exec root rejection preserving the old image, mremap preflight ENOMEM preserving
+source bytes followed by a successful retry, migration keeping old nodes on their
+original owner while new nodes charge current membership, and SIGSEGV when an
+already-committed shared data page cannot acquire its page tables. The four
+concurrent workers use sparse 2-MiB-separated ranges while the observer adjusts
+the ceiling. The 4096-page stress limit includes retained empty page-table nodes;
+negative admission checks use exact ceilings separately.
+
+See [the page-table design](../../../support/kernel-safety/PAGE_TABLE_MEMORY.md)
+for ownership, partial allocation and TLB/RCU/active-CPU refund limits. These tests
+do not qualify Linux memory.max or a physically reserved recovery pool.

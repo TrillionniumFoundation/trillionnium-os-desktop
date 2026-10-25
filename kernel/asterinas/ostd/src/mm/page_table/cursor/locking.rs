@@ -45,11 +45,20 @@ pub(super) fn lock_range<'rcu, C: PageTableConfig>(
     let mut path = core::array::from_fn(|_| None);
     path[guard_level as usize - 1] = Some(subtree_root);
 
+    let map_level = (min_level..=C::NR_LEVELS)
+        .rev()
+        .find(|&level| {
+            level == min_level
+                || pte_index::<C>(va.start, level) != pte_index::<C>(va.end - 1, level)
+        })
+        .unwrap();
+
     Cursor::<'rcu, C> {
         path,
         rcu_guard: guard,
         level: guard_level,
         guard_level,
+        map_level,
         va: va.start,
         barrier_va: va.clone(),
         _phantom: PhantomData,
@@ -81,9 +90,10 @@ pub(super) fn unlock_range<C: PageTableConfig>(cursor: &mut Cursor<'_, C>) {
 
 /// Finds and locks an intermediate page table node that covers the range.
 ///
-/// If that node (or any of its ancestors) does not exist, we need to lock
-/// the parent and create it. After the creation the lock of the parent will
-/// be released and the new node will be locked.
+/// If that node does not exist, lock its existing ancestor. No physical page
+/// is allocated for cursor acquisition; mapping explicitly creates children.
+/// This can lock a larger subtree for an empty range, while preserving the
+/// declared range barrier and existing RCU/ancestor locking protocol.
 ///
 /// If this function founds that a locked node is stray (because of racing with
 /// page table recycling), it will return `None`. The caller should retry in
@@ -126,7 +136,7 @@ fn try_traverse_and_lock_subtree_root<'rcu, C: PageTableConfig>(
             }
         }
 
-        // In case the child is absent, we should lock and allocate a new page table node.
+        // If the child is absent, lock its existing parent and recheck.
         let mut pt_guard = cur_node_guard.take().unwrap_or_else(|| {
             // SAFETY: The node must be alive for at least `'rcu` since the
             // address is read from the page table node.
@@ -137,15 +147,17 @@ fn try_traverse_and_lock_subtree_root<'rcu, C: PageTableConfig>(
             return None;
         }
 
-        let mut cur_entry = pt_guard.entry(start_idx);
+        let cur_entry = pt_guard.entry(start_idx);
         match cur_entry.to_ref() {
             PteStateRef::Mapped(_) => {
                 break;
             }
             PteStateRef::Absent => {
-                let allocated_guard = cur_entry.alloc_if_none(guard).unwrap();
-                cur_pt_addr = allocated_guard.paddr();
-                cur_node_guard = Some(allocated_guard);
+                // Do not allocate merely to query, unmap or protect a hole.
+                // Hold the existing ancestor; a fallible map may allocate its
+                // children later under this same lock and RCU guard.
+                cur_node_guard = Some(pt_guard);
+                break;
             }
             PteStateRef::PageTable(pt) => {
                 cur_pt_addr = pt.paddr();

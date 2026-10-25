@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Physical private/COW and VMO page accounting, not Linux `memory.max`.
-//! Page tables, kernel allocations, DMA and allocations without a process are
+//! Kernel heap allocations, DMA and allocations without a process are
 //! excluded. A frame keeps its first allocating process's original account.
 
 use aster_systree::{
@@ -19,6 +19,7 @@ pub(crate) enum PageKind {
     Private = 0,
     AnonymousVmo = 1,
     FileCache = 2,
+    PageTable = 3,
 }
 
 #[derive(Debug)]
@@ -30,7 +31,7 @@ pub(crate) struct PageMemoryBudget {
 #[derive(Debug)]
 struct State {
     current: usize,
-    kinds: [usize; 3],
+    kinds: [usize; 4],
     max: usize,
     denied: u64,
 }
@@ -41,7 +42,7 @@ impl PageMemoryBudget {
             parent,
             state: SpinLock::new(State {
                 current: 0,
-                kinds: [0; 3],
+                kinds: [0; 4],
                 max: usize::MAX,
                 denied: 0,
             }),
@@ -131,8 +132,8 @@ impl PageMemoryBudget {
             "hepta.page.events" => writeln!(printer, "max {denied}")?,
             "hepta.page.stat" => writeln!(
                 printer,
-                "private {}\nanonymous_vmo {}\nfile_cache {}",
-                kinds[0], kinds[1], kinds[2]
+                "private {}\nanonymous_vmo {}\nfile_cache {}\npage_table {}",
+                kinds[0], kinds[1], kinds[2], kinds[3]
             )?,
             _ => return Err(AttrError::AttributeError),
         }
@@ -218,6 +219,15 @@ pub(crate) fn charge_current_pages(kind: PageKind, bytes: usize) -> Result<PageC
         }
     };
     owner.charge(kind, bytes)
+}
+
+/// Runs under the page-table cursor's atomic guard. Membership reads use RCU;
+/// charge locks never sleep or re-enter page-table code. Each token keeps the
+/// account captured for this individual physical node until Frame destruction.
+pub(crate) fn charge_current_page_table() -> ostd::Result<Box<dyn ostd::mm::vm_space::PageTableCharge>> {
+    let charge = charge_current_pages(PageKind::PageTable, PAGE_SIZE)
+        .map_err(|_| ostd::Error::NoMemory)?;
+    Ok(Box::new(charge))
 }
 
 #[cfg(ktest)]

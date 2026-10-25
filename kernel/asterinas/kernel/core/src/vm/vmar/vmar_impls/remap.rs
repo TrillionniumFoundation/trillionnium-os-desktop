@@ -2,7 +2,7 @@
 
 use core::ops::Range;
 
-use ostd::{mm::vm_space::VmQueriedItem, task::disable_preempt};
+use ostd::{mm::vm_space::{CursorMut, VmQueriedItem}, task::disable_preempt};
 
 use super::{RssDelta, Vmar, util::is_intersected};
 use crate::{prelude::*, vm::vmar::is_userspace_vaddr_range};
@@ -188,9 +188,24 @@ impl Vmar {
         };
 
         let old_mapping_addr = inner.check_lies_in_single_mapping(old_addr, old_size)?;
+        let vmo_for_rmap = inner.vm_mappings.find_one(&old_mapping_addr).unwrap()
+            .vmo_for_rmap().cloned();
+        let mut rmap = vmo_for_rmap.as_ref().map(|vmo| vmo.rmap().lock());
+        let preempt_guard = disable_preempt();
+        let total_range = old_range.start.min(new_range.start)..old_range.end.max(new_range.end);
+        let mut cursor = self.vm_space.cursor_mut(&preempt_guard, &total_range)?;
+
+        // Reserve only paths for resident source pages. Hold the same cursor
+        // through metadata publication and moves so reverse unmaps cannot
+        // remove a prepared path. Failure preserves the retained source region;
+        // the earlier requested shrink/destination truncation can already have
+        // occurred. This is not rollback of every mremap side effect.
+        Self::prepare_move_pt(&mut cursor, &old_range, &new_range)?;
         if action == RemapOldMappingAction::Unmap {
-            let (vm_mapping, mut rmap_to_remove) = inner.remove(&old_mapping_addr).unwrap();
-            let mut rmap = rmap_to_remove.remove(self, old_mapping_addr);
+            let (vm_mapping, _rmap_to_remove) = inner.remove(&old_mapping_addr).unwrap();
+            if let Some(rmap) = rmap.as_deref_mut() {
+                rmap.remove(self.weak_self.clone(), old_mapping_addr);
+            }
 
             let (left, old_mapping, right) = vm_mapping.split_range(&old_range);
             if let Some(left) = left {
@@ -210,12 +225,9 @@ impl Vmar {
             );
 
             // Move the mapping before dropping `rmap`.
-            self.move_pt(old_range, new_range.clone());
+            Self::move_pt(&mut cursor, old_range, new_range.clone());
         } else {
             let old_mapping = inner.vm_mappings.find_one(&old_mapping_addr).unwrap();
-            let vmo_for_rmap = old_mapping.vmo_for_rmap().cloned();
-            let mut rmap = vmo_for_rmap.as_ref().map(|vmo| vmo.rmap().lock());
-
             // Create a new `VmMapping` at the target address.
             // Note that we have ensured that `new_size >= old_size` at the beginning.
             let new_mapping = old_mapping
@@ -227,24 +239,36 @@ impl Vmar {
             );
 
             // Move the mapping before dropping `rmap`.
-            self.move_pt(old_range, new_range.clone());
+            Self::move_pt(&mut cursor, old_range, new_range.clone());
         }
 
         Ok(new_range.start)
+    }
+
+    fn prepare_move_pt(
+        cursor: &mut CursorMut<'_>,
+        old_range: &Range<Vaddr>,
+        new_range: &Range<Vaddr>,
+    ) -> Result<()> {
+        let mut offset = 0;
+        while offset < old_range.len() {
+            cursor.jump(old_range.start + offset).unwrap();
+            let Some(source) = cursor.find_next(old_range.len() - offset) else {
+                break;
+            };
+            offset = source - old_range.start;
+            cursor.jump(new_range.start + offset).unwrap();
+            cursor.try_prepare_base_page()?;
+            offset += PAGE_SIZE;
+        }
+        Ok(())
     }
 
     /// Moves the mapping.
     ///
     /// If there are associated reverse mappings, we must hold the reverse mapping lock to avoid
     /// race conditions with unmapping from reverse mappings.
-    fn move_pt(&self, old_range: Range<Vaddr>, new_range: Range<Vaddr>) {
-        let preempt_guard = disable_preempt();
-        let total_range = old_range.start.min(new_range.start)..old_range.end.max(new_range.end);
-        let mut cursor = self
-            .vm_space
-            .cursor_mut(&preempt_guard, &total_range)
-            .unwrap();
-
+    fn move_pt(cursor: &mut CursorMut<'_>, old_range: Range<Vaddr>, new_range: Range<Vaddr>) {
         let old_size = old_range.len();
         let mut current_offset = 0;
         while current_offset < old_size {
