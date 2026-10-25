@@ -41,6 +41,7 @@ fn observe_generation() -> Result<String, String> {
 fn acknowledged(response: &Response) -> bool {
     match response {
         Response::Snapshot { .. } => true,
+        Response::Objectives { .. } | Response::ObjectiveDetail { .. } => false,
         Response::Error { .. } => false,
         Response::Task { task, .. } => !matches!(
             task.state,

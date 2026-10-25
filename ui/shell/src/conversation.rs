@@ -402,7 +402,7 @@ impl super::Desktop {
             ui.colored_label(super::warning(), "LOCAL DRAFT · NOT SUBMITTED");
         });
         ui.label("Connect your notes to observed host tasks and runtime context.");
-        ui.small("AI objective submission is unavailable. Saving a draft stores it locally.");
+        ui.small("Saving a draft stores it locally. Separately supplied envelopes can be reviewed on Signed requests.");
         ui.horizontal_wrapped(|ui| {
             for app in [
                 trill_ui_core::AppKind::Notes,

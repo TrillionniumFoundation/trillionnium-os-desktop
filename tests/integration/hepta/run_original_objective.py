@@ -22,7 +22,7 @@ ROOT = HERE.parents[2]
 BINARY = "hepta-original-objective-probe"
 SOURCES = ["original_objective_probe.rs", "original_objective_owner.rs",
            "original_objective_fixture.rs", "original_objective_profile.json",
-           "original_objective_session.rs"]
+           "original_objective_session.rs", "original_objective_export.rs"]
 CHECKS = ["compiled_original_admission", "exact_replay_same_publication",
           "explicit_abstain_durable_without_run", "invalid_signature_owner_rejected",
           "body_generation_fenced_before_send", "revoked_issuer_owner_rejected",

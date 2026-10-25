@@ -18,6 +18,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 mod original_objective_fixture;
+mod original_objective_export;
 mod original_objective_owner;
 mod original_objective_session;
 use original_objective_fixture::{ActionSet, Fixture, PROFILE, claims, hex, signed_fixture, trust};
@@ -244,6 +245,7 @@ fn run() -> Result<()> {
         args.len() >= 4,
         "usage: original-objective-probe AGENTD OBSERVER SUBMITTER FRESH-PRIVATE-ROOT [--session-bin PATH --ctl-bin PATH [--session-phase-dir PATH --session-ack-seconds N]]",
     )?;
+    if args.get(4).is_some_and(|v| v == "--export-ready") { return original_objective_export::run(&args); }
     let session_options = SessionOptions::read(&args[4..])?;
     let session_enabled = session_options.is_some();
     let mut seed = [0_u8; 32];

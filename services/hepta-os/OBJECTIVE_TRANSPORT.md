@@ -178,7 +178,9 @@ extra data or missing EOF keeps the attempt unknown.
 ## Trusted single-attempt command
 
 The same optional feature exposes `hepta-submit`. It is a trusted launcher
-boundary; neither the Session nor the Shell calls it. The executable must be
+boundary. The current explicitly configured [signed-request inbox](../../support/ui/OBJECTIVE_INBOX.md)
+uses the same library client in a separate Session worker; it does not spawn this
+CLI or connect local drafts to it. The executable must be
 built explicitly with the feature enabled:
 
 ```sh

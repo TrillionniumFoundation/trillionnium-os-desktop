@@ -6,6 +6,8 @@ mod hepta;
 mod ipc;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
+mod objective;
+mod objective_store;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -130,6 +132,7 @@ impl DisplayTracker {
 }
 
 struct Session {
+    objective: objective::ObjectiveMonitor,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -159,6 +162,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            objective: objective::ObjectiveMonitor::default(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -543,6 +547,39 @@ impl Session {
     fn handle(&mut self, request: Request) -> Response {
         self.refresh();
         match request {
+            Request::ObjectiveList { expected_instance } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.list(&self.instance)
+            }
+            Request::ObjectiveInspect {
+                id,
+                expected_instance,
+            } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.inspect(&id, &self.instance)
+            }
+            Request::ObjectiveSubmit {
+                id,
+                expected_instance,
+            } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.enqueue(id, true, &self.instance)
+            }
+            Request::ObjectiveQuery {
+                id,
+                expected_instance,
+            } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.enqueue(id, false, &self.instance)
+            }
             Request::Snapshot => {
                 let observation = self.display.observe(probe_host_wayland());
                 Response::Snapshot {
@@ -580,6 +617,12 @@ impl Session {
                     self.cancel(id)
                 }
             }
+        }
+    }
+    fn objective_generation_error(&self) -> Response {
+        Response::Error {
+            message: "Stale Session; no Objective command queued".into(),
+            session_instance: self.instance.clone(),
         }
     }
 }
@@ -762,6 +805,7 @@ struct Startup {
     bootstrap: Option<u16>,
     document: Option<(PathBuf, bool)>,
     desktop: desktop_bootstrap::DesktopStartup,
+    objective_config_fd: Option<i32>,
 }
 fn startup(args: impl IntoIterator<Item = std::ffi::OsString>) -> io::Result<Startup> {
     let mut args = args.into_iter();
@@ -769,9 +813,13 @@ fn startup(args: impl IntoIterator<Item = std::ffi::OsString>) -> io::Result<Sta
         bootstrap: None,
         document: None,
         desktop: desktop_bootstrap::DesktopStartup::default(),
+        objective_config_fd: None,
     };
     while let Some(flag) = args.next() {
         match flag.to_str() {
+            Some("--objective-config-fd") if result.objective_config_fd.is_none() => {
+                result.objective_config_fd = Some(startup_number(args.next())?)
+            }
             Some("--desktop-bootstrap-stdin") if !result.desktop.enabled => {
                 result.desktop.enabled = true
             }
@@ -816,6 +864,11 @@ fn startup(args: impl IntoIterator<Item = std::ffi::OsString>) -> io::Result<Sta
         ));
     }
     result.desktop.validate()?;
+    if result.objective_config_fd.is_some_and(|fd| {
+        fd < 3 || Some(fd) == result.desktop.x11_fd || Some(fd) == result.desktop.cookie_fd
+    }) {
+        return Err(io::Error::other("invalid/aliased Objective config fd"));
+    }
     if result.desktop.enabled && result.bootstrap.is_some() {
         return Err(io::Error::other(
             "only one trusted bootstrap profile per Session",
@@ -879,6 +932,9 @@ fn main() -> io::Result<()> {
     );
     let mut session = Session::new(app_binary)?;
     session.hepta = hepta::HeptaMonitor::from_env();
+    if let Some(fd) = startup.objective_config_fd {
+        session.objective = objective::ObjectiveMonitor::from_inherited_fd(fd)?;
+    }
     session.initial_document = startup.document;
     #[cfg(target_os = "linux")]
     if let Some(bootstrap) = notes_bootstrap {
@@ -911,6 +967,28 @@ mod tests {
     use std::{thread, time::Duration};
     #[cfg(target_os = "linux")]
     use trill_ui_core::host_peer::{self, linux_socket_peer_credentials, validate_same_uid};
+
+    #[test]
+    fn objective_inbox_requires_current_session_and_explicit_configuration() {
+        let mut session = Session::new(PathBuf::from("/unstarted/app")).unwrap();
+        assert!(matches!(
+            session.handle(Request::ObjectiveList {
+                expected_instance: "old".into()
+            }),
+            Response::Error { .. }
+        ));
+        assert!(
+            matches!(session.handle(Request::ObjectiveList{expected_instance:session.instance.clone()}),Response::Objectives{configured:false,entries,..}if entries.is_empty())
+        );
+        assert!(matches!(
+            session.handle(Request::ObjectiveSubmit {
+                id: "unknown".into(),
+                expected_instance: session.instance.clone()
+            }),
+            Response::Error { .. }
+        ));
+        assert!(session.children.is_empty());
+    }
 
     #[test]
     fn desktop_is_complete_trusted_startup_only_and_never_public_ipc() {

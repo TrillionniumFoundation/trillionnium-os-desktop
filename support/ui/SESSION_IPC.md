@@ -84,3 +84,11 @@ These tests do not establish kernel scheduling, graphical presentation or
 original Hepta authority. The complete current-source CI gate must also cover
 normal malformed requests, same-UID checks, singleton ownership, generation
 fencing and cancellation; see [RUN.md](RUN.md).
+
+## Explicit original Objective inbox
+
+The generation-fenced `objective_list`, `objective_inspect`, `objective_submit`
+and `objective_query` requests select preconfigured entries only. The optional
+`--objective-config-fd` startup descriptor and dedicated bounded worker are
+documented in [OBJECTIVE_INBOX.md](OBJECTIVE_INBOX.md). No raw envelope, endpoint
+editor, signer, arbitrary command or retry route is exposed through host IPC.

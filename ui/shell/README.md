@@ -7,7 +7,8 @@ Shell; `conversation.rs` and `local_drafts.rs` manage local content;
 
 Session owns application processes. Shell requests bounded host actions and
 renders observations; it does not own a Hepta writer, create Final-use grants,
-execute Notes effects, or submit an authenticated objective. A first egui layout
+execute Notes effects, or authenticate objective claims. The separate signed-request
+page asks Session to carry one existing envelope to the original owner. A first egui layout
 is not proof that a compositor presented pixels.
 
 From the repository root:
@@ -20,3 +21,7 @@ Development and technical contracts: [chat workspace](../../support/ui/CHAT_WORK
 [runtime observer](../../support/ui/HEPTA_OBSERVER.md),
 [integration boundaries](../../support/ui/INTEGRATION_CONTRACTS.md),
 [host build and acceptance](../../support/ui/RUN.md).
+
+The explicit [signed-request inbox](../../support/ui/OBJECTIVE_INBOX.md) uses the
+original Hepta Objective admission/history boundary. Normal startup remains
+unconfigured; local drafts never become signed or submitted requests.

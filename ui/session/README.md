@@ -25,3 +25,7 @@ Development and technical contracts: [Session IPC and lifecycle](../../support/u
 [Notes persistence and recovery](../../support/ui/NOTES_PERSISTENCE.md),
 [runtime observer](../../support/ui/HEPTA_OBSERVER.md),
 [host build and acceptance](../../support/ui/RUN.md).
+
+The explicit [signed-request inbox](../../support/ui/OBJECTIVE_INBOX.md) uses the
+original Hepta Objective admission/history boundary. Normal startup remains
+unconfigured; local drafts never become signed or submitted requests.

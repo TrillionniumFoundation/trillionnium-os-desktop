@@ -193,3 +193,10 @@ changing that oracle alone does not qualify a new IME run. The R6
 [original Session/Shell captures](../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)
 and [freshness RED/GREEN evidence](../../tests/ui/evidence/2026-10-17-observation-freshness/README.md)
 retain their recorded sources and scopes.
+
+## Separately supplied signed requests
+
+The [Signed requests page](OBJECTIVE_INBOX.md) accepts only immutable envelopes
+provided by a trusted launcher and displays actual original-owner admission or
+history. Conversation drafts stay within the existing local draft workflow;
+there is no text-to-signature or automatic submission shortcut.

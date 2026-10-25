@@ -24,3 +24,7 @@ Development and technical contracts: [Notes persistence](../../support/ui/NOTES_
 [Session IPC](../../support/ui/SESSION_IPC.md),
 [chat workspace](../../support/ui/CHAT_WORKSPACE.md),
 [host build and acceptance](../../support/ui/RUN.md).
+
+The explicit [signed-request inbox](../../support/ui/OBJECTIVE_INBOX.md) uses the
+original Hepta Objective admission/history boundary. Normal startup remains
+unconfigured; local drafts never become signed or submitted requests.
