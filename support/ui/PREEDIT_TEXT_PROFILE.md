@@ -108,6 +108,47 @@ their own committed locks and original source graphs; all still use the one
 frozen Hepta execution revision. No unused SDK patch is inserted into those
 unrelated workspace locks.
 
+The canonical builder tests every UI workspace target with `--all-targets`
+and denies native workspace Clippy warnings. For this explicit profile it also
+selects `-p trill-shell -p makepad-widgets --lib` with the same preedit feature
+and all-SDK config, then runs `window::focus_tests` (4 tests) and `text_input::`
+(35 tests). The former covers duplicate native focus notifications; the latter
+covers transient previews, one-step commit undo/redo, cancellation, selection
+affinity, legal edits outside the preview and committed checkpoints. The
+receipt requires the actual named widget tests and their exact pass counts;
+Cargo's successful zero-test feature-anchor suite is insufficient.
+
+The native CI workflow runs the same scoped SDK regressions as an additional
+component after the default Git-SDK checks. `preedit_component.py` verifies the
+actual default metadata/cache receipt, creates new Desktop and clean Hepta
+source clones, and invokes the same pinned canonical helper to prepare all
+102 SDK overrides. Only Cargo generates the disposable UI path lock. A
+`finally` guard restores its original bytes on success, rejected/failed tests
+or caught termination; the original checkout and lock are never edited.
+Original source caches and the complete prepared source/config/graph are
+checked again. Normal Cargo caches and the build target may be reused; no
+global Cargo configuration is written.
+
+For a clean checkout with the default CI metadata/source receipts already
+available, the component can also be run directly:
+
+```sh
+python3 -I -B support/ui/preedit_component.py \
+  --metadata /absolute/evidence/native-metadata.json \
+  --source-receipt /absolute/evidence/native-source-before.json \
+  --work-dir /absolute/new-disposable-preedit-sources \
+  --output /absolute/new-preedit-component-evidence --jobs 1
+python3 -I -B support/ui/test_preedit_component.py
+python3 -I -B -O support/ui/test_preedit_component.py
+```
+
+Both directories must be new and outside the source checkouts. The component
+retains commands, pass counts, logs and source/SDK/lock hashes, and rejects
+missing, zero, ignored, failed or incorrectly scoped tests. Its receipt claims
+unit regression coverage only; it does not execute a window, IBus, original
+Root, production effects or the default product's five binaries. The complete
+packaged-window gate below is still required.
+
 The pure original `source-profile.json` and its verification receipt remain
 unchanged in meaning. `package-source-profile.json` adds the separately
 verified `makepad_sdk` record for packaging, and is copied into the package's
