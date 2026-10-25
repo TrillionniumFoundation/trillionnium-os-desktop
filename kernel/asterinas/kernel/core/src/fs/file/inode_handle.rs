@@ -369,7 +369,7 @@ impl FileLike for InodeHandle {
         }
 
         if let Some(ref open_file) = self.open_file {
-            return open_file.ioctl(self.common.path(), raw_ioctl);
+            return open_file.ioctl_with_status(self.common.path(), raw_ioctl, self.status_flags());
         }
 
         return_errno_with_message!(Errno::ENOTTY, "ioctl is not supported");
@@ -602,6 +602,12 @@ pub trait PerOpenFileOps: Pollable + FileOps + Any + Send + Sync + 'static {
 
     fn ioctl(&self, _path: &Path, _raw_ioctl: RawIoctl) -> Result<i32> {
         return_errno_with_message!(Errno::ENOTTY, "ioctl is not supported");
+    }
+
+    /// Dispatches an ioctl with an instantaneous snapshot of the file status.
+    /// Drivers with blocking ioctls may override this to honor O_NONBLOCK.
+    fn ioctl_with_status(&self, path: &Path, raw: RawIoctl, _flags: StatusFlags) -> Result<i32> {
+        self.ioctl(path, raw)
     }
 
     /// Returns the status flags that can be set for this opened file.

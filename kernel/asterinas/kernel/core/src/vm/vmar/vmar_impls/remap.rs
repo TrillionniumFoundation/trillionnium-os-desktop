@@ -48,6 +48,16 @@ impl Vmar {
         let mut inner = self.inner.write();
         inner.check_initial_image_no_remap()?;
         let mut rss_delta = RssDelta::new(self);
+        let end = map_addr
+            .checked_add(old_size)
+            .ok_or_else(|| Error::with_message(Errno::EINVAL, "remap range overflow"))?;
+        if inner
+            .vm_mappings
+            .find(&(map_addr..end))
+            .any(|mapping| !mapping.can_remap())
+        {
+            return_errno_with_message!(Errno::EINVAL, "this device mapping cannot be remapped");
+        }
 
         if check_single_mapping {
             inner.check_lies_in_single_mapping(map_addr, old_size)?;
@@ -104,6 +114,9 @@ impl Vmar {
                 "remap: there is no mapping at the old address"
             )
         };
+        if !old_mapping.can_remap() {
+            return_errno_with_message!(Errno::EINVAL, "this device mapping cannot be remapped");
+        }
         if new_size > old_size {
             if !old_mapping.can_expand() {
                 return_errno_with_message!(

@@ -266,11 +266,23 @@ impl<'a, 'b> VmarMapOptions<'a, 'b> {
             handle_page_faults_around,
         } = self;
 
+        // Validate driver permission ceilings before MAP_FIXED can replace
+        // any previous mapping.
+        if let Some(MappableObject::Device(device)) = &mappable
+            && device.read_only_mapping()
+        {
+            may_perms &= VmPerms::MAY_READ;
+            (perms | may_perms).check()?;
+        }
+
         let mut inner = parent.inner.write();
 
         if inner.sealed_initial_ranges.is_some() {
             if perms.contains(VmPerms::EXEC) {
-                return_errno_with_message!(Errno::EPERM, "trusted initial profile cannot add executable mappings")
+                return_errno_with_message!(
+                    Errno::EPERM,
+                    "trusted initial profile cannot add executable mappings"
+                )
             }
             if let VmarMapOffset::FixedReplace(addr) = offset {
                 inner.check_initial_image_not_replaced(&(addr..addr + map_size))?;
@@ -359,7 +371,7 @@ impl<'a, 'b> VmarMapOptions<'a, 'b> {
                 (mapped_mem, None)
             }
             Some(MappableObject::Device(mappable)) => {
-                if !map_mode.is_shared() {
+                if !map_mode.is_shared() && !mappable.supports_private_mapping() {
                     return_errno_with_message!(
                         Errno::EINVAL,
                         "private device mappings are not yet supported"

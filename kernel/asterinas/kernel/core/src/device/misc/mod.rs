@@ -9,6 +9,7 @@ use spin::Once;
 
 use super::registry::char::{MajorIdOwner, acquire_major};
 
+mod binder;
 mod hepta_control;
 mod hwrng;
 pub(crate) use hepta_control::boot_id as hepta_boot_id;
@@ -22,6 +23,7 @@ static MISC_MAJOR: Once<MajorIdOwner> = Once::new();
 pub(super) fn init_in_first_kthread() {
     MISC_MAJOR.call_once(|| acquire_major(MajorId::new(10)).unwrap());
 
+    binder::init_in_first_kthread();
     hwrng::init_in_first_kthread();
     hepta_control::init_in_first_kthread();
 

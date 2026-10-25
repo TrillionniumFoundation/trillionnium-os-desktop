@@ -132,6 +132,26 @@ impl VmMapping {
         }
     }
 
+    pub(super) fn inherit_on_fork(&self) -> bool {
+        match &self.mapped_mem {
+            MappedMemory::Device(object) => object.inherit_on_fork(),
+            _ => true,
+        }
+    }
+
+    pub(super) fn can_remap(&self) -> bool {
+        match &self.mapped_mem {
+            MappedMemory::Device(object) => object.can_remap(),
+            _ => true,
+        }
+    }
+
+    pub(super) fn notify_unmap(&self) {
+        if let MappedMemory::Device(object) = &self.mapped_mem {
+            object.on_unmap();
+        }
+    }
+
     pub(super) fn new_fork(&self) -> VmMapping {
         VmMapping {
             mapped_mem: self.mapped_mem.dup(),
@@ -828,6 +848,7 @@ impl VmMapping {
     /// Unmaps the mapping from the VM space,
     /// and returns the number of unmapped pages.
     pub(super) fn unmap(self, vm_space: &VmSpace) -> usize {
+        self.notify_unmap();
         let preempt_guard = disable_preempt();
         let range = self.range();
         let mut cursor = vm_space.cursor_mut(&preempt_guard, &range).unwrap();
@@ -1119,6 +1140,11 @@ pub struct MapHandle<'a, 'b, 'c> {
 
 impl MapHandle<'_, '_, '_> {
     pub(super) const DEVICE_RSS_TYPE: RssType = RssType::File;
+
+    /// Returns the start address in the receiving process.
+    pub fn address(&self) -> usize {
+        self.vm_mapping.map_to_addr
+    }
 
     /// Returns the size of the target mapping in bytes.
     pub fn size(&self) -> usize {

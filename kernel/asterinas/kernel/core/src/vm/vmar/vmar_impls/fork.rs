@@ -32,10 +32,17 @@ impl Vmar {
             let mut new_inner = new_vmar.inner.write();
 
             let mut rss_delta = RssDelta::new(&new_vmar);
-            let mut remaining = inner.vm_mappings.len();
+            let mut remaining = inner
+                .vm_mappings
+                .iter()
+                .filter(|mapping| mapping.inherit_on_fork())
+                .count();
 
             // Clone mappings.
             for vm_mapping in inner.vm_mappings.iter() {
+                if !vm_mapping.inherit_on_fork() {
+                    continue;
+                }
                 remaining -= 1;
 
                 let base = vm_mapping.map_to_addr();
