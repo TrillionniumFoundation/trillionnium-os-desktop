@@ -13,7 +13,7 @@ use aster_util::printer::VmPrinter;
 use ostd::{
     io::IoMem,
     mm::{
-        CachePolicy, Frame, FrameAllocOptions, HasSize, PageFlags, PageProperty, UFrame, VmSpace,
+        CachePolicy, HasSize, PageFlags, PageProperty, UFrame, VmSpace,
         io::util::HasVmReaderWriter, tlb::TlbFlushOp, vm_space::VmQueriedItem,
     },
     task::disable_preempt,
@@ -586,7 +586,7 @@ impl VmMapping {
             MappedMemory::Vmo(vmo) => vmo,
             MappedMemory::Anonymous => {
                 // Anonymous mapping. Allocate a new frame.
-                return Ok((FrameAllocOptions::new().alloc_frame()?.into(), is_readonly));
+                return Ok((crate::fs::cgroupfs::alloc_anon_frame(true)?, is_readonly));
             }
             MappedMemory::Device(_) => {
                 // Device memory is populated when the memory mapping is created.
@@ -600,7 +600,7 @@ impl VmMapping {
         let page_offset = page_aligned_addr - self.map_to_addr;
         if !self.map_mode.is_shared() && page_offset >= vmo.valid_size() {
             // The page index is outside the VMO. This is only allowed in private mapping.
-            return Ok((FrameAllocOptions::new().alloc_frame()?.into(), is_readonly));
+            return Ok((crate::fs::cgroupfs::alloc_anon_frame(true)?, is_readonly));
         }
 
         let (page, mode) =
@@ -1102,8 +1102,8 @@ fn try_merge(left: &VmMapping, right: &VmMapping) -> Option<VmMapping> {
     })
 }
 
-fn duplicate_frame(src: &UFrame) -> Result<Frame<()>> {
-    let new_frame = FrameAllocOptions::new().zeroed(false).alloc_frame()?;
+fn duplicate_frame(src: &UFrame) -> Result<UFrame> {
+    let new_frame = crate::fs::cgroupfs::alloc_anon_frame(false)?;
     new_frame.writer().write(&mut src.reader());
     Ok(new_frame)
 }

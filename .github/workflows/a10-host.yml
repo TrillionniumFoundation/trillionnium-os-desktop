@@ -38,7 +38,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Verify A00 bootstrap versus A10 source diff and empty README
+      - name: Verify A00 bootstrap versus A10 source diff and project README
         id: scope
         shell: bash
         env:
@@ -47,7 +47,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
           if [[ -f ui/Cargo.toml ]]; then
             echo 'has_ui=true' >> "$GITHUB_OUTPUT"
             echo 'A10 Rust source exists; host build and Wayland tests are required.'
@@ -108,7 +108,7 @@ jobs:
           cargo -Vv
           weston --version
           cat /etc/os-release
-          test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
       - name: Compile and test Rust binaries and validate rustfmt
         run: |
           set -euo pipefail
@@ -120,6 +120,16 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a10"
           export A10_HEADLESS_LOG_DIR="$RUNNER_TEMP/a10/wayland"
           bash tests/ui/headless-weston.sh 2>&1 | tee "$RUNNER_TEMP/a10/headless.log"
+      - name: Verify real Notes persistence and recovery with the built UI binaries
+        run: |
+          set -euo pipefail
+          # Reuse the host build and installed Weston dependencies. The probe
+          # owns its compositor and app processes; this is the application and
+          # transport lane, not a substitute Hepta production writer.
+          ui_binaries="${CARGO_TARGET_DIR:-$PWD/ui/target}/debug"
+          python3 -B tests/ui/test-notes-persistence-ipc.py \
+            "$ui_binaries" "$RUNNER_TEMP/a10/notes-persistence" \
+            2>&1 | tee "$RUNNER_TEMP/a10/notes-persistence.log"
       - name: Enforce Rust 1.88 UI workspace and all-target Clippy warnings
         run: |
           set -euo pipefail

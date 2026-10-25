@@ -3,6 +3,13 @@
 This is an executable Rust GUI prototype under the Linux host compositor.
 It is NOT booted under Asterinas, NOT native HOS2, and NOT a full compositor.
 
+Current development contracts: [Session IPC fairness and lifecycle](SESSION_IPC.md)
+and [Notes persistence, trusted reopen and private recovery](NOTES_PERSISTENCE.md).
+Session-launched Notes now saves its application document; the latter document
+records the passing isolated Weston persistence/recovery lane and its earlier
+failed attempts. The original Hepta authority chain remains a separate gate;
+older memory-only evidence is not a durable-chain pass.
+
 The blocking A00 host workflow fixes Rust **1.88.0**, Cargo and Rustfmt.
 The repository's `nightly-2026-07-21` toolchain is an additional development
 environment; a pass there does not establish the 1.88.0 host gate. Required

@@ -13,7 +13,18 @@
       "session_contract": "services/hepta-os/UPSTREAM_CONTRACT.json",
       "objective_contract": "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json",
       "history_contract": "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
-      "cpu_contract": "services/hepta-os/CPU_UPSTREAM_CONTRACT.json"
+      "cpu_contract": "services/hepta-os/CPU_UPSTREAM_CONTRACT.json",
+      "notes_persistence": "ui/core/src/notes/persistence.rs",
+      "session_ipc": "ui/session/src/ipc.rs",
+      "ui_workspace": "ui/Cargo.toml",
+      "ui_lock": "ui/Cargo.lock",
+      "kernel_capability": "kernel/asterinas/kernel/core/src/security/lsm/modules/capability.rs",
+      "kernel_unix_credential": "kernel/asterinas/kernel/core/src/net/socket/unix/cred.rs",
+      "kernel_anon_budget": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/anon.rs",
+      "kernel_vm_charge": "kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
+      "kernel_cpu_config": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "kernel_credentials_edit": "kernel/asterinas/kernel/core/src/process/posix_thread/credentials_edit.rs",
+      "kernel_rcu_idle": "kernel/asterinas/ostd/src/task/preempt/mod.rs"
     },
     "hepta": {
       "production_writer_host": "codex-rs/hepta-agentd/src/production_writer_host.rs",
@@ -24,7 +35,18 @@
       "lease_outbox": "codex-rs/hepta-memory/src/local_lease_outbox.rs",
       "final_use_authority": "codex-rs/hepta-contracts/src/final_use.rs",
       "final_use_control": "codex-rs/hepta-contracts/src/final_use_control.rs",
-      "history_owner": "codex-rs/hepta-agentd/src/objective_history.rs"
+      "history_owner": "codex-rs/hepta-agentd/src/objective_history.rs",
+      "hepta_workspace": "codex-rs/Cargo.toml",
+      "hepta_lock": "codex-rs/Cargo.lock",
+      "hepta_toolchain": "codex-rs/rust-toolchain.toml",
+      "production_composition": "codex-rs/hepta-agentd/src/production_composition.rs",
+      "protected_authority": "codex-rs/hepta-agentd/src/production_authority.rs",
+      "issuer_transport": "codex-rs/hepta-agentd/src/final_use_issuer.rs",
+      "grant_worker": "codex-rs/hepta-agentd/src/grant_provider_worker.rs",
+      "notes_owner_impl": "codex-rs/hepta-memory/src/production_notes_owner.rs",
+      "notes_recovery": "codex-rs/hepta-memory/src/production_notes_recovery.rs",
+      "notes_readback": "codex-rs/hepta-memory/src/production_notes_read.rs",
+      "notes_first_composition": "codex-rs/hepta-agentd/src/production_notes_composition.rs"
     }
   },
   "goldens": {
@@ -35,6 +57,14 @@
     "notes_bootstrap": {
       "os": "tests/ui/notes-bootstrap-v1.json",
       "hepta": "codex-rs/hepta-agentd/tests/fixtures/notes-bootstrap-v1.json"
+    },
+    "notes_bootstrap_v2": {
+      "os": "tests/ui/notes-bootstrap-v2.json",
+      "hepta": "codex-rs/hepta-agentd/tests/fixtures/notes-bootstrap-v2.json"
+    },
+    "notes_recovery": {
+      "os": "tests/ui/notes-recovery-v1.json",
+      "hepta": "codex-rs/hepta-memory/tests/fixtures/notes-recovery-v1.json"
     }
   }
 }

@@ -10,7 +10,6 @@ use crate::{
     process::{
         posix_thread::{
             AsPosixThread,
-            alien_access::AlienAccessMode,
             ptrace::{PtraceContRequest, PtraceOptions},
         },
         signal::{constants::SIGKILL, sig_num::SigNum, signals::user::UserSignal},
@@ -35,8 +34,11 @@ pub(super) fn sys_ptrace(
     match request {
         PtraceRequest::PTRACE_TRACEME => {
             let current_thread = current_thread!();
-            let parent_guard = ctx.process.parent().lock();
-            let parent_main_thread = parent_guard.process().upgrade().unwrap().main_thread();
+            let parent_main_thread = {
+                let parent_guard = ctx.process.parent().lock();
+                parent_guard.process().upgrade().unwrap().main_thread()
+            };
+            // Release the parent mutex before the LSM ancestry check.
 
             do_ptrace_attach(&parent_main_thread, current_thread)?;
         }
@@ -161,8 +163,6 @@ fn do_ptrace_attach(tracer_thread: &Arc<Thread>, tracee_thread: Arc<Thread>) -> 
             "tracer and tracee must be in different processes"
         );
     }
-
-    tracee.check_alien_access_from(tracer, AlienAccessMode::ATTACH_WITH_REAL_CREDS)?;
 
     tracer.attach_to(tracer_thread, tracee_thread)
 }

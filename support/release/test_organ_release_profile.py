@@ -201,6 +201,32 @@ class SourceCombinationTests(unittest.TestCase):
         with self.assertRaisesRegex(profile.ProfileError, "outside both source repositories"):
             profile.write_new_outside(self.os / "new-profile.json", b"{}", self.inputs()[:2])
 
+    def test_cli_receipt_hashes_the_same_manifest_bytes_it_verified(self):
+        manifest, _ = self.build()
+        raw = profile.canonical(manifest)
+        path = self.root / "manifest.json"
+        path.write_bytes(raw)
+        mapping = self.root / "map.json"
+        mapping.write_bytes(profile.canonical(self.mapping))
+        receipt = self.root / "verified.json"
+        verify = profile.verify_manifest
+
+        def change_after_verification(*args):
+            result = verify(*args)
+            path.write_bytes(b'{"unverified":"replacement bytes"}\n')
+            return result
+
+        with patch.object(profile, "verify_manifest", side_effect=change_after_verification):
+            result = profile.main([
+                "verify", "--os-repo", str(self.os), "--hepta-repo", str(self.hepta),
+                "--os-head", git(self.os, "rev-parse", "HEAD"),
+                "--os-tree", git(self.os, "rev-parse", "HEAD^{tree}"),
+                "--source-map", str(mapping), "--manifest", str(path),
+                "--receipt", str(receipt),
+            ])
+        self.assertEqual(result, 0)
+        self.assertEqual(profile.load_json(receipt)["manifest_sha256"], profile.sha256(raw))
+
 
 if __name__ == "__main__":
     unittest.main()

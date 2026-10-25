@@ -1,0 +1,96 @@
+name: Current Desktop and original Hepta host pair
+
+on:
+  pull_request:
+    paths:
+      - 'ui/**'
+      - 'services/hepta-os/**'
+      - 'support/release/**'
+      - 'tests/ui/**'
+      - '.github/workflows/organ-current-pair.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ui/**'
+      - 'services/hepta-os/**'
+      - 'support/release/**'
+      - 'tests/ui/**'
+      - '.github/workflows/organ-current-pair.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-host-pair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      CARGO_BUILD_JOBS: '1'
+      CARGO_INCREMENTAL: '0'
+      RUSTUP_TOOLCHAIN: '1.95.0'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          path: desktop
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Read the single reviewed Hepta pin
+        id: pin
+        working-directory: desktop
+        run: |
+          python3 -I -B - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          manifest = json.loads(Path('support/release/profiles/current-organ-source.json').read_bytes())
+          pin = manifest['hepta']['commit']
+          if not re.fullmatch('[0-9a-f]{40}', pin):
+              raise SystemExit('A complete reviewed Hepta commit is required')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'hepta_sha={pin}\n')
+          PY
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: TrillionniumFoundation/hepta-private-ci
+          ref: ${{ steps.pin.outputs.hepta_sha }}
+          path: hepta
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Provision the pinned host compilers and Linux build dependencies
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.88.0 --profile minimal --component rustfmt --component clippy
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            pkg-config libssl-dev libwayland-dev libxkbcommon-dev \
+            libgl1-mesa-dev libegl1-mesa-dev libx11-dev libxi-dev \
+            libxrandr-dev libxcursor-dev libxinerama-dev
+          cargo install --locked just --version 1.51.0
+          cargo install --locked cargo-nextest --version 0.9.137
+
+      - name: Build and test the complete original source pair
+        working-directory: desktop
+        run: |
+          set -euo pipefail
+          python3 -I -B support/release/check_organ_pair.py \
+            --os-repo "$PWD" --hepta-repo "$GITHUB_WORKSPACE/hepta" \
+            --os-head "$DESKTOP_SHA" --os-tree "$(git rev-parse HEAD^{tree})" \
+            --manifest support/release/profiles/current-organ-source.json \
+            --output-dir "$RUNNER_TEMP/organ-pair" --execute-host
+
+      - name: Retain exact-pair receipt and full host logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-organ-host-pair-${{ env.DESKTOP_SHA }}
+          path: |
+            ${{ runner.temp }}/organ-pair/pair-receipt.json
+            ${{ runner.temp }}/organ-pair/source-manifest.json
+            ${{ runner.temp }}/organ-pair/*.log
+          if-no-files-found: error

@@ -5,7 +5,7 @@ set -euo pipefail
 # Many validation probes use Python assert: -O must never disable blockers.
 export PYTHONOPTIMIZE=0
 cd "$(dirname "$0")/../.."
-test "$(wc -c < README.md)" -eq 0
+test -f README.md && test ! -L README.md && test -s README.md
 
 # Even when compilation fails before fmt, preserve the exact-source
 # formatter diagnosis and review patch on a GitHub-hosted runner.
@@ -93,6 +93,7 @@ cargo clippy --manifest-path services/hepta-os/Cargo.toml --all-targets \
 # fixture. Its provenance says that upstream Agentd and effects were not run.
 ui_target="${CARGO_TARGET_DIR:-$PWD/ui/target}"
 ui_binaries="$ui_target/debug"
+python3 tests/ui/test-session-fairness.py "$ui_binaries/trill-session"
 observer_evidence_root="${RUNNER_TEMP:-$ui_target}"
 python3 tests/ui/probe-hepta-session.py \
     --session "$ui_binaries/trill-session" \
