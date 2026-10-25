@@ -90,6 +90,7 @@ riscv_sv39_mode = ["ostd/riscv_sv39_mode"]
 g1c-trusted-observe = []
 # G1-d reuses the exact-byte initial-image and VMAR sealing prerequisites.
 g1d-trusted-control = ["g1c-trusted-observe"]
+g2-native-agentd = ["g1d-trusted-control"]
 
 [lints]
 workspace = true

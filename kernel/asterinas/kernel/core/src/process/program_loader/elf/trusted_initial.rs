@@ -12,11 +12,7 @@ use core::ops::Range;
 
 use align_ext::AlignExt;
 
-use super::{
-    ElfHeaders, ElfLoadInfo,
-    load_elf::init_aux_vec,
-    relocate::RelocatedRange,
-};
+use super::{ElfHeaders, ElfLoadInfo, load_elf::init_aux_vec, relocate::RelocatedRange};
 use crate::{
     fs::file::FileLike,
     prelude::*,
@@ -28,11 +24,22 @@ use crate::{
     },
 };
 
+#[cfg(not(feature = "g2-native-agentd"))]
 const EXPECTED_ELF: &[u8] = include_bytes!(env!("HEPTA_TRUSTED_INITIAL_ELF"));
+#[cfg(feature = "g2-native-agentd")]
+static ALIGNED_ELF: g2_profile::AlignedElf<
+    { include_bytes!(env!("HEPTA_TRUSTED_INITIAL_ELF")).len() },
+> = g2_profile::AlignedElf(*include_bytes!(env!("HEPTA_TRUSTED_INITIAL_ELF")));
+#[cfg(feature = "g2-native-agentd")]
+const EXPECTED_ELF: &[u8] = &ALIGNED_ELF.0;
 #[cfg(not(target_arch = "x86_64"))]
 compile_error!("g1c-trusted-observe is an explicitly x86_64-only experiment");
+#[cfg(not(feature = "g2-native-agentd"))]
 const MAX_FILE_BYTES: usize = 8 * 1024 * 1024;
+#[cfg(not(feature = "g2-native-agentd"))]
 const MAX_MAPPED_BYTES: usize = 16 * 1024 * 1024;
+#[cfg(feature = "g2-native-agentd")]
+use super::g2_profile::{self, MAX_FILE_BYTES, MAX_MAPPED_BYTES};
 const MAX_LOAD_SEGMENTS: usize = 16;
 
 /// Consumed only by the unique, stopped initial Process transaction.
@@ -67,13 +74,51 @@ pub(in crate::process) fn load_trusted_initial(
 /// The single bounded, manifest-checked input. It exposes no mutable bytes and
 /// retains no inode/backend reference. Each load creates independent RAM VMOs.
 pub(in crate::process) struct TrustedInitialSnapshot {
+    #[cfg(not(feature = "g2-native-agentd"))]
     bytes: Vec<u8>,
+    // Created only after comparing the complete opened-file read sequence and
+    // EOF. This immutable equal copy avoids retaining a second full ELF in RAM.
+    #[cfg(feature = "g2-native-agentd")]
+    bytes: &'static [u8],
 }
 
 impl TrustedInitialSnapshot {
+    #[cfg(feature = "g2-native-agentd")]
     pub(in crate::process) fn read(file: Arc<dyn FileLike>) -> Result<Self> {
         if EXPECTED_ELF.is_empty() || EXPECTED_ELF.len() > MAX_FILE_BYTES {
-            return_errno_with_message!(Errno::ENOEXEC, "trusted initial manifest exceeds profile bounds")
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "trusted initial manifest exceeds profile bounds"
+            )
+        }
+        if let Err(error) = g2_profile::verify_stream(EXPECTED_ELF, |offset, chunk| {
+            file.read_bytes_at(offset, chunk)
+        }) {
+            let reason = match error {
+                g2_profile::StreamError::Read(error) => return Err(error),
+                g2_profile::StreamError::Truncated => "truncated-snapshot",
+                g2_profile::StreamError::Mismatch => "manifest-byte-mismatch",
+                g2_profile::StreamError::InvalidRead => "invalid-read-count",
+            };
+            println!("[hepta-g2] rejected initial image: {}", reason);
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "trusted initial bytes differ from immutable manifest"
+            )
+        }
+        drop(file);
+        Ok(Self {
+            bytes: EXPECTED_ELF,
+        })
+    }
+
+    #[cfg(not(feature = "g2-native-agentd"))]
+    pub(in crate::process) fn read(file: Arc<dyn FileLike>) -> Result<Self> {
+        if EXPECTED_ELF.is_empty() || EXPECTED_ELF.len() > MAX_FILE_BYTES {
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "trusted initial manifest exceeds profile bounds"
+            )
         }
         let mut snapshot = vec![0u8; EXPECTED_ELF.len()];
         let mut offset = 0;
@@ -84,17 +129,25 @@ impl TrustedInitialSnapshot {
                 println!("[hepta-g1c] rejected initial image: truncated-snapshot");
                 #[cfg(feature = "g1d-trusted-control")]
                 println!("[hepta-g1d] rejected initial image: truncated-snapshot");
-                return_errno_with_message!(Errno::ENOEXEC, "trusted initial image snapshot is truncated")
+                return_errno_with_message!(
+                    Errno::ENOEXEC,
+                    "trusted initial image snapshot is truncated"
+                )
             }
             offset += read;
         }
         let mut extra = [0u8; 1];
-        if file.read_bytes_at(snapshot.len(), &mut extra)? != 0 || snapshot.as_slice() != EXPECTED_ELF {
+        if file.read_bytes_at(snapshot.len(), &mut extra)? != 0
+            || snapshot.as_slice() != EXPECTED_ELF
+        {
             #[cfg(not(feature = "g1d-trusted-control"))]
             println!("[hepta-g1c] rejected initial image: manifest-byte-mismatch");
             #[cfg(feature = "g1d-trusted-control")]
             println!("[hepta-g1d] rejected initial image: manifest-byte-mismatch");
-            return_errno_with_message!(Errno::ENOEXEC, "trusted initial image bytes do not match kernel manifest")
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "trusted initial image bytes do not match kernel manifest"
+            )
         }
         // No later read, fault or mapping refers to the opened input or its inode.
         drop(file);
@@ -108,7 +161,10 @@ impl TrustedInitialSnapshot {
         envp: Vec<CString>,
         boot_bytes: Box<[u8; PAGE_SIZE]>,
     ) -> Result<(ElfLoadInfo, LoadedInitialImage)> {
-        let snapshot = self.bytes.as_slice();
+        let snapshot: &[u8] = &self.bytes;
+        #[cfg(feature = "g2-native-agentd")]
+        g2_profile::validate(snapshot, crate::vm::vmar::VMAR_CAP_ADDR as u64)
+            .map_err(|message| Error::with_message(Errno::ENOEXEC, message))?;
         let headers = ElfHeaders::parse(&snapshot)?;
         let segments = headers.loadable_phdrs();
         if headers.is_shared_object()
@@ -116,7 +172,10 @@ impl TrustedInitialSnapshot {
             || headers.ph_count() > 64
             || segments.len() > MAX_LOAD_SEGMENTS
         {
-            return_errno_with_message!(Errno::ENOEXEC, "trusted initial profile requires a static ET_EXEC")
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "trusted initial profile requires a static ET_EXEC"
+            )
         }
 
         let mut ranges: Vec<Range<Vaddr>> = Vec::with_capacity(segments.len() + 1);
@@ -134,14 +193,17 @@ impl TrustedInitialSnapshot {
                 || segment.file_range().end > snapshot.len()
                 || !perms.contains(VmPerms::READ)
                 || perms.contains(VmPerms::WRITE | VmPerms::EXEC)
-                || ranges.iter().any(|old| old.start < range.end && range.start < old.end)
+                || ranges
+                    .iter()
+                    .any(|old| old.start < range.end && range.start < old.end)
             {
                 return_errno_with_message!(
                     Errno::ENOEXEC,
                     "trusted initial LOAD pages violate the static profile"
                 )
             }
-            entry_is_executable |= perms.contains(VmPerms::EXEC) && virt.contains(&headers.entry_point());
+            entry_is_executable |=
+                perms.contains(VmPerms::EXEC) && virt.contains(&headers.entry_point());
             ranges.push(range);
         }
         if !entry_is_executable {
@@ -149,18 +211,41 @@ impl TrustedInitialSnapshot {
         }
 
         for (segment, range) in segments.iter().zip(&ranges) {
-            let mut expected = vec![0u8; range.len()];
-            let file_range = segment.file_range();
-            if !file_range.is_empty() {
-                let source = file_range.start.align_down(PAGE_SIZE)..file_range.end;
-                expected[..source.len()].copy_from_slice(&snapshot[source]);
+            #[cfg(not(feature = "g2-native-agentd"))]
+            {
+                let mut expected = vec![0u8; range.len()];
+                let file_range = segment.file_range();
+                if !file_range.is_empty() {
+                    let source = file_range.start.align_down(PAGE_SIZE)..file_range.end;
+                    expected[..source.len()].copy_from_slice(&snapshot[source]);
+                }
+                let ram = VmoOptions::new(range.len()).alloc()?;
+                ram.write(0, &mut VmReader::from(expected.as_slice()).to_fallible())?;
+                vmar.new_map(range.len(), segment.vm_perms())
+                    .vmo(ram)
+                    .offset(VmarMapOffset::FixedNoReplace(range.start))
+                    .build()?;
             }
-            let ram = VmoOptions::new(range.len()).alloc()?;
-            ram.write(0, &mut VmReader::from(expected.as_slice()).to_fallible())?;
-            vmar.new_map(range.len(), segment.vm_perms())
-                .vmo(ram)
-                .offset(VmarMapOffset::FixedNoReplace(range.start))
-                .build()?;
+            #[cfg(feature = "g2-native-agentd")]
+            {
+                let ram = VmoOptions::new(range.len()).alloc()?;
+                let mut chunk = [0u8; g2_profile::CHUNK_BYTES];
+                for offset in (0..range.len()).step_by(chunk.len()) {
+                    let count = chunk.len().min(range.len() - offset);
+                    g2_profile::fill_load_chunk(
+                        snapshot,
+                        segment.file_range().clone(),
+                        offset,
+                        &mut chunk[..count],
+                    )
+                    .map_err(|message| Error::with_message(Errno::ENOEXEC, message))?;
+                    ram.write(offset, &mut VmReader::from(&chunk[..count]).to_fallible())?;
+                }
+                vmar.new_map(range.len(), segment.vm_perms())
+                    .vmo(ram)
+                    .offset(VmarMapOffset::FixedNoReplace(range.start))
+                    .build()?;
+            }
         }
 
         let full = headers.calc_total_vaddr_bounds();
@@ -178,28 +263,53 @@ impl TrustedInitialSnapshot {
             vmar.process_vm().set_vdso_base(vdso_text);
             aux.set(AuxKey::AT_SYSINFO_EHDR, vdso_text as u64);
         }
-        let code = segments.iter().filter(|segment| segment.vm_perms().contains(VmPerms::EXEC))
+        let code = segments
+            .iter()
+            .filter(|segment| segment.vm_perms().contains(VmPerms::EXEC))
             .map(|segment| segment.virt_range().clone())
-            .reduce(|a, b| a.start.min(b.start)..a.end.max(b.end)).unwrap();
-        let data = segments.iter().filter(|segment| segment.vm_perms().contains(VmPerms::WRITE))
+            .reduce(|a, b| a.start.min(b.start)..a.end.max(b.end))
+            .unwrap();
+        let data = segments
+            .iter()
+            .filter(|segment| segment.vm_perms().contains(VmPerms::WRITE))
             .map(|segment| segment.virt_range().clone())
-            .reduce(|a, b| a.start.min(b.start)..a.end.max(b.end)).unwrap_or(full.end..full.end);
+            .reduce(|a, b| a.start.min(b.start)..a.end.max(b.end))
+            .unwrap_or(full.end..full.end);
         vmar.process_vm().set_code_range(code);
         vmar.process_vm().set_data_range(data.clone());
-        vmar.process_vm().map_and_write_init_stack(&vmar, argv, envp, aux)?;
-        vmar.process_vm().map_and_init_heap(&vmar, data.len(), full.end.align_up(PAGE_SIZE))?;
+        vmar.process_vm()
+            .map_and_write_init_stack(&vmar, argv, envp, aux)?;
+        vmar.process_vm()
+            .map_and_init_heap(&vmar, data.len(), full.end.align_up(PAGE_SIZE))?;
         // Verify only after *all* loader mappings and initialization have finished.
         // In particular, a hostile ELF layout must not let stack/heap setup replace
         // a previously verified page between verification and token creation.
         for (segment, range) in segments.iter().zip(&ranges) {
-            let mut expected = vec![0u8; range.len()];
-            if !segment.file_range().is_empty() {
-                let source = segment.file_range().start.align_down(PAGE_SIZE)..segment.file_range().end;
-                expected[..source.len()].copy_from_slice(&snapshot[source]);
+            #[cfg(not(feature = "g2-native-agentd"))]
+            {
+                let mut expected = vec![0u8; range.len()];
+                if !segment.file_range().is_empty() {
+                    let source =
+                        segment.file_range().start.align_down(PAGE_SIZE)..segment.file_range().end;
+                    expected[..source.len()].copy_from_slice(&snapshot[source]);
+                }
+                verify_mapping(&vmar, range.clone(), segment.vm_perms(), &expected)?;
             }
-            verify_mapping(&vmar, range.clone(), segment.vm_perms(), &expected)?;
+            #[cfg(feature = "g2-native-agentd")]
+            verify_load_chunks(
+                &vmar,
+                range.clone(),
+                segment.vm_perms(),
+                snapshot,
+                segment.file_range().clone(),
+            )?;
         }
-        verify_mapping(&vmar, boot..boot + PAGE_SIZE, VmPerms::READ, boot_bytes.as_slice())?;
+        verify_mapping(
+            &vmar,
+            boot..boot + PAGE_SIZE,
+            VmPerms::READ,
+            boot_bytes.as_slice(),
+        )?;
         // All operations above precede publication. No later VM operation can
         // change the verified executable pages or introduce another executable.
         vmar.seal_initial_image(ranges)?;
@@ -211,11 +321,21 @@ impl TrustedInitialSnapshot {
         #[cfg(not(feature = "g1d-trusted-control"))]
         println!(
             "[hepta-g1c] trusted initial image committed: bytes={} entry={:#x}",
-            snapshot.len(), entry_point
+            snapshot.len(),
+            entry_point
         );
-        #[cfg(feature = "g1d-trusted-control")]
-        println!("[hepta-g1d] trusted initial image committed: bytes={} entry={:#x}",
-            snapshot.len(), entry_point);
+        #[cfg(all(feature = "g1d-trusted-control", not(feature = "g2-native-agentd")))]
+        println!(
+            "[hepta-g1d] trusted initial image committed: bytes={} entry={:#x}",
+            snapshot.len(),
+            entry_point
+        );
+        #[cfg(feature = "g2-native-agentd")]
+        println!(
+            "[hepta-g2] trusted initial image committed: bytes={} entry={:#x}",
+            snapshot.len(),
+            entry_point
+        );
         Ok((info, LoadedInitialImage { vmar, entry_point }))
     }
 }
@@ -240,16 +360,65 @@ fn verify_mapping(vmar: &Vmar, range: Range<Vaddr>, perms: VmPerms, expected: &[
     {
         let query = vmar.query(range.clone());
         if !query.is_fully_mapped()
-            || query.iter().any(|mapping| mapping.perms() & VmPerms::ALL_PERMS != perms)
+            || query
+                .iter()
+                .any(|mapping| mapping.perms() & VmPerms::ALL_PERMS != perms)
         {
-            return_errno_with_message!(Errno::ENOEXEC, "trusted initial final mapping permissions differ")
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "trusted initial final mapping permissions differ"
+            )
         }
     }
     let mut actual = vec![0u8; range.len()];
-    let read = vmar.read_alien(range.start, &mut VmWriter::from(actual.as_mut_slice()).to_fallible())
+    let read = vmar
+        .read_alien(
+            range.start,
+            &mut VmWriter::from(actual.as_mut_slice()).to_fallible(),
+        )
         .map_err(|(error, _)| error)?;
     if read != actual.len() || actual.as_slice() != expected {
         return_errno_with_message!(Errno::ENOEXEC, "trusted initial final mapped bytes differ")
+    }
+    Ok(())
+}
+
+#[cfg(feature = "g2-native-agentd")]
+fn verify_load_chunks(
+    vmar: &Vmar,
+    range: Range<Vaddr>,
+    perms: VmPerms,
+    image: &[u8],
+    file: Range<usize>,
+) -> Result<()> {
+    {
+        let query = vmar.query(range.clone());
+        if !query.is_fully_mapped()
+            || query
+                .iter()
+                .any(|mapping| mapping.perms() & VmPerms::ALL_PERMS != perms)
+        {
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "trusted initial final mapping permissions differ"
+            )
+        }
+    }
+    let mut expected = [0u8; g2_profile::CHUNK_BYTES];
+    let mut actual = [0u8; g2_profile::CHUNK_BYTES];
+    for offset in (0..range.len()).step_by(expected.len()) {
+        let count = expected.len().min(range.len() - offset);
+        g2_profile::fill_load_chunk(image, file.clone(), offset, &mut expected[..count])
+            .map_err(|message| Error::with_message(Errno::ENOEXEC, message))?;
+        let read = vmar
+            .read_alien(
+                range.start + offset,
+                &mut VmWriter::from(&mut actual[..count]).to_fallible(),
+            )
+            .map_err(|(error, _)| error)?;
+        if read != count || actual[..count] != expected[..count] {
+            return_errno_with_message!(Errno::ENOEXEC, "trusted initial final mapped bytes differ")
+        }
     }
     Ok(())
 }

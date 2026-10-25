@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
 mod elf_file;
+#[cfg(any(feature = "g2-native-agentd", ktest))]
+#[cfg_attr(ktest, allow(dead_code))]
+mod g2_profile;
 mod load_elf;
 mod relocate;
 #[cfg(feature = "g1c-trusted-observe")]
