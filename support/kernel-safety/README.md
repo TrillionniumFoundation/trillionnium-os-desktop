@@ -2,6 +2,8 @@
 
 Status: development candidate based on main `38227d33fd3ed668f0424bc153e0d3d811731597`. This directory documents the implementation and its acceptance boundaries. The test evidence is generated separately by the commands below; the presence of this document is not a passing result or production qualification.
 
+The second-stage [physical page budget](PAGE_MEMORY.md) adds a separate `hepta.page.*` combined ceiling for private/COW and VMO/cache pages. The `hepta.anon.*` interface and its first-stage scope below remain unchanged. Neither interface is full Linux `memory.max`.
+
 ## Changes and invariants
 
 ### Commoncap process inspection

@@ -129,3 +129,34 @@ fn linux_memory_max_does_not_claim_partial_anon_coverage() {
     let mut reader = VmReader::from(&b"4096"[..]).to_fallible();
     assert!(memory.write_attr("memory.max", &mut reader).is_err());
 }
+
+#[ktest]
+fn anon_compatibility_denial_rolls_back_combined_page_budget() {
+    let anon = AnonBudget::new(None);
+    let pages = PageMemoryBudget::new(None);
+    let read_total = || {
+        let mut bytes = [0_u8; 64];
+        let length = pages
+            .read_attr_at(
+                "hepta.page.current",
+                0,
+                &mut VmWriter::from(&mut bytes[..]).to_fallible(),
+            )
+            .unwrap();
+        core::str::from_utf8(&bytes[..length])
+            .unwrap()
+            .trim()
+            .parse::<usize>()
+            .unwrap()
+    };
+    anon.set_max(0).unwrap();
+    assert!(allocate_accounted(&anon, &pages, true).is_err());
+    assert_eq!(read_total(), 0);
+    anon.set_max(PAGE_SIZE).unwrap();
+    let frame = allocate_accounted(&anon, &pages, true).unwrap();
+    assert_eq!(used(&anon), PAGE_SIZE);
+    assert_eq!(read_total(), PAGE_SIZE);
+    drop(frame);
+    assert_eq!(used(&anon), 0);
+    assert_eq!(read_total(), 0);
+}

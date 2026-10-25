@@ -13,7 +13,10 @@ use ostd::{
     sync::WaitQueue,
 };
 
-use crate::prelude::*;
+use crate::{
+    fs::cgroupfs::{MemoryPageCharge, PageKind, charge_current_pages},
+    prelude::*,
+};
 
 /// The state of a page in the page cache.
 #[repr(u8)]
@@ -74,6 +77,8 @@ pub(crate) type CachePage = Frame<CachePageMeta>;
 pub(crate) struct CachePageMeta {
     /// The current state of the page (uninit, up-to-date, or dirty).
     state: AtomicPageState,
+    /// Original account survives eviction, mappings and in-flight writeback.
+    _charge: MemoryPageCharge,
     /// This bit acts as a mutex for the corresponding page.
     ///
     /// When this bit is set, the holder has the exclusive right to perform critical
@@ -91,10 +96,11 @@ pub(crate) struct CachePageMeta {
     // TODO: Add a reverse mapping from the page to VMO for eviction.
 }
 
-impl Default for CachePageMeta {
-    fn default() -> Self {
+impl CachePageMeta {
+    pub(super) fn new_uninit(charge: MemoryPageCharge) -> Self {
         Self {
             state: AtomicPageState::new(PageState::Uninit),
+            _charge: charge,
             lock: AtomicBool::new(false),
             is_writing_back: AtomicBool::new(false),
         }
@@ -153,7 +159,7 @@ pub(crate) trait CachePageExt: Sized {
 
     /// Allocates a new cache page which content and state are uninitialized.
     fn alloc_uninit() -> Result<CachePage> {
-        let meta = CachePageMeta::default();
+        let meta = CachePageMeta::new_uninit(charge_current_pages(PageKind::FileCache, PAGE_SIZE)?);
         let page = FrameAllocOptions::new()
             .zeroed(false)
             .alloc_frame_with(meta)?;
@@ -162,10 +168,9 @@ pub(crate) trait CachePageExt: Sized {
 
     /// Allocates a new zeroed cache page with the up-to-date state.
     fn alloc_zero() -> Result<CachePage> {
-        let meta = CachePageMeta {
-            state: AtomicPageState::new(PageState::UpToDate),
-            ..Default::default()
-        };
+        let meta =
+            CachePageMeta::new_uninit(charge_current_pages(PageKind::AnonymousVmo, PAGE_SIZE)?);
+        meta.state.store(PageState::UpToDate, Ordering::Relaxed);
         let page = FrameAllocOptions::new()
             .zeroed(true)
             .alloc_frame_with(meta)?;

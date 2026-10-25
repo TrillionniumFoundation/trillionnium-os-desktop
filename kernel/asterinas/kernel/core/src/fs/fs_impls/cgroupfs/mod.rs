@@ -8,6 +8,7 @@ pub(crate) use controller::cpu::{CpuUsageError, NativeCpuObserver};
 pub(crate) use controller::{
     anon::alloc_anon_frame,
     cpu::{CpuChargeOwner, CpuStatKind, charge_cpu_time, task_cpu_eligible},
+    page_memory::{PageCharge as MemoryPageCharge, PageKind, charge_current_pages},
 };
 use fs::CgroupFsType;
 pub(in crate::fs) use systree_node::CgroupSystem;

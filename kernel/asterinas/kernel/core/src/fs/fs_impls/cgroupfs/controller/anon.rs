@@ -14,7 +14,10 @@ use ostd::{
     sync::LocalIrqDisabled,
 };
 
-use super::super::{CgroupSysNode, CgroupSystem};
+use super::{
+    super::{CgroupSysNode, CgroupSystem},
+    page_memory::{PageCharge as MemoryPageCharge, PageKind, PageMemoryBudget},
+};
 use crate::{prelude::*, process::Process};
 
 /// A stable account survives controller activation, migration and node deletion.
@@ -94,6 +97,7 @@ impl AnonBudget {
         }
         Ok(PageCharge {
             owner: Some(self.clone()),
+            memory: MemoryPageCharge::unaccounted(PageKind::Private, PAGE_SIZE),
         })
     }
 
@@ -164,6 +168,7 @@ impl AnonBudget {
 #[derive(Debug)]
 struct PageCharge {
     owner: Option<Arc<AnonBudget>>,
+    memory: MemoryPageCharge,
 }
 impl_untyped_frame_meta_for!(PageCharge);
 
@@ -180,7 +185,10 @@ impl Drop for PageCharge {
 fn allocate(owner: Option<&Arc<AnonBudget>>, zeroed: bool) -> Result<UFrame> {
     let charge = match owner {
         Some(owner) => owner.charge()?,
-        None => PageCharge { owner: None },
+        None => PageCharge {
+            owner: None,
+            memory: MemoryPageCharge::unaccounted(PageKind::Private, PAGE_SIZE),
+        },
     };
     Ok(FrameAllocOptions::new()
         .zeroed(zeroed)
@@ -198,11 +206,31 @@ pub(crate) fn alloc_anon_frame(zeroed: bool) -> Result<UFrame> {
     let owner = {
         let membership = process.cgroup();
         match membership.get() {
-            Some(node) => node.controller().anon.clone(),
-            None => CgroupSystem::singleton().controller().anon.clone(),
+            Some(node) => (
+                node.controller().anon.clone(),
+                node.controller().page_memory.clone(),
+            ),
+            None => {
+                let controller = CgroupSystem::singleton().controller();
+                (controller.anon.clone(), controller.page_memory.clone())
+            }
         }
     };
-    allocate(Some(&owner), zeroed)
+    allocate_accounted(&owner.0, &owner.1, zeroed)
+}
+
+fn allocate_accounted(
+    anon: &Arc<AnonBudget>,
+    pages: &Arc<PageMemoryBudget>,
+    zeroed: bool,
+) -> Result<UFrame> {
+    let memory = pages.charge(PageKind::Private, PAGE_SIZE)?;
+    let mut charge = anon.charge()?;
+    charge.memory = memory;
+    Ok(FrameAllocOptions::new()
+        .zeroed(zeroed)
+        .alloc_frame_with(charge)?
+        .into())
 }
 
 #[cfg(ktest)]

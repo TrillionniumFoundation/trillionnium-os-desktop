@@ -28,6 +28,7 @@ pub(super) mod anon;
 pub(super) mod cpu;
 mod cpuset;
 mod memory;
+pub(super) mod page_memory;
 mod pids;
 
 /// A trait to abstract all individual cgroup sub-controllers.
@@ -232,6 +233,7 @@ pub(crate) struct Controller {
 
     /// Independent of replaceable Linux sub-controller incarnations.
     anon: Arc<anon::AnonBudget>,
+    page_memory: Arc<page_memory::PageMemoryBudget>,
 
     cpuset: Rcu<Arc<SubController<CpuSetController>>>,
     cpu: Rcu<Arc<SubController<CpuController>>>,
@@ -250,6 +252,9 @@ impl Controller {
         Self {
             active_set: AtomicSubCtrlSet::new(SubCtrlSet::empty()),
             anon: anon::AnonBudget::new(parent_controller.map(|parent| parent.anon.clone())),
+            page_memory: page_memory::PageMemoryBudget::new(
+                parent_controller.map(|parent| parent.page_memory.clone()),
+            ),
             cpuset: Rcu::new(cpuset_controller),
             cpu: Rcu::new(cpu_controller),
             memory: Rcu::new(memory_controller),
@@ -259,6 +264,7 @@ impl Controller {
 
     pub(super) fn init_attr_set(builder: &mut SysAttrSetBuilder, is_root: bool) {
         anon::AnonBudget::init_attr_set(builder);
+        page_memory::PageMemoryBudget::init_attr_set(builder);
         CpuSetController::init_attr_set(builder, is_root);
         CpuController::init_attr_set(builder, is_root);
         MemoryController::init_attr_set(builder, is_root);
@@ -301,6 +307,9 @@ impl Controller {
         if name.starts_with("hepta.anon.") {
             return self.anon.read_attr_at(name, offset, writer);
         }
+        if name.starts_with("hepta.page.") {
+            return self.page_memory.read_attr_at(name, offset, writer);
+        }
         let Some((subsys, _)) = name.split_once('.') else {
             return Err(Error::NotFound);
         };
@@ -317,6 +326,9 @@ impl Controller {
     pub(super) fn write_attr(&self, name: &str, reader: &mut VmReader) -> Result<usize> {
         if name.starts_with("hepta.anon.") {
             return self.anon.write_attr(name, reader);
+        }
+        if name.starts_with("hepta.page.") {
+            return self.page_memory.write_attr(name, reader);
         }
         let Some((subsys, _)) = name.split_once('.') else {
             return Err(Error::NotFound);
