@@ -64,12 +64,18 @@ static void exercise(const struct scenario *s) {
     }
     struct linux_attr before, after;
     if (getattr(&before)) _exit(85);
+    check(s->name, "before_static_nice", before.nice == s->initial_nice, 0, 0, &before);
     struct sched_param p = {.sched_priority = s->prio};
     errno = 0;
     int rc = s->op == ATTR ? setattr(s->policy, s->prio, s->nice, s->flags) :
              s->op == SCHEDULER ? sched_setscheduler(0, s->policy, &p) : sched_setparam(0, &p);
     int error = errno;
     if (getattr(&after)) _exit(86);
+    struct sched_param observed;
+    int reported_policy = sched_getscheduler(0);
+    int param_rc = sched_getparam(0, &observed);
+    check(s->name, "getters_agree", reported_policy == (int)after.policy && !param_rc &&
+          observed.sched_priority == (int)after.priority, rc, error, &after);
     int allowed = !s->expected_errno;
     check(s->name, "result", allowed ? rc == 0 : rc == -1 && error == s->expected_errno,
           rc, error, &after);
@@ -120,6 +126,18 @@ int main(void) {
         {.name="util_min_unsupported", .op=ATTR, .flags=32, .expected_errno=EOPNOTSUPP},
         {.name="util_max_unsupported", .op=ATTR, .flags=64, .expected_errno=EOPNOTSUPP},
         {.name="unknown_flags", .op=ATTR, .flags=UINT64_C(1)<<63, .expected_errno=EINVAL},
+        CASE("normal_nice19_readback", ATTR, SCHED_OTHER,0,0,0,0,SCHED_OTHER,0,19,0,19),
+        CASE("declared_idle_static_nice", ATTR, SCHED_OTHER,0,8,0,0,SCHED_IDLE,0,0,0,8),
+        CASE("idle_normal_with_limit", SCHEDULER, SCHED_IDLE,0,8,0,12,SCHED_OTHER,0,0,0,8),
+        CASE("idle_normal_without_limit", SCHEDULER, SCHED_IDLE,0,8,0,0,SCHED_OTHER,0,0,EPERM,8),
+        CASE("idle_rt_with_limits", SCHEDULER, SCHED_IDLE,0,8,10,12,SCHED_RR,5,0,0,8),
+        CASE("idle_rt_without_nice_limit", SCHEDULER, SCHED_IDLE,0,8,10,0,SCHED_RR,5,0,EPERM,8),
+        CASE("rt_retains_static_nice", ATTR, SCHED_OTHER,0,8,10,0,SCHED_FIFO,1,0,0,8),
+        CASE("positive_nice_raise_zero", ATTR, SCHED_OTHER,0,8,0,0,SCHED_OTHER,0,0,EPERM,8),
+        CASE("positive_nice_raise_with_limit", ATTR, SCHED_OTHER,0,8,0,13,SCHED_OTHER,0,7,0,7),
+        CASE("nice_infinite_limit", ATTR, SCHED_OTHER,0,0,0,RLIM_INFINITY,SCHED_OTHER,0,-20,0,-20),
+        CASE("rt_infinite_limit", ATTR, SCHED_OTHER,0,0,RLIM_INFINITY,0,SCHED_FIFO,99,0,0,0),
+
     };
     int bad = 0;
     for (unsigned i=0; i<sizeof(cases)/sizeof(cases[0]); ++i) {

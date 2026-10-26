@@ -21,3 +21,10 @@ claim that bypass fixed.
 
 References: [sched(7)](https://man7.org/linux/man-pages/man7/sched.7.html) and
 [Linux v6.17 scheduling syscalls](https://github.com/torvalds/linux/blob/v6.17/kernel/sched/syscalls.c).
+
+The extended probe keeps the original 58 return/state assertions and adds
+consistent readback across all three scheduling getters, Normal nice 19 versus
+declared Idle, retained static nice across RT and Idle, positive nice raises,
+and full-width infinite soft limits. Forty scenarios produce 160 assertions.
+Its separate before stage retains P2 policy checks while exposing the remaining
+legacy getter conversion defects.
