@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import subprocess
 import tempfile
+from types import SimpleNamespace
 import unittest
 
 import build_original_entry as build
@@ -108,6 +109,150 @@ class SourceAndEntryTests(unittest.TestCase):
         self.assertEqual(report["commands"][0]["exit_code"], 7)
         self.assertEqual((output / "failed.log").read_text(), "retained-failure\n")
         self.assertFalse(json.loads((output / "result.json").read_text())["g2_complete"])
+
+
+class StaticPrivateArchiveTests(unittest.TestCase):
+    """Actual ar/file mutations with explicitly synthetic pkg-config/LLD replies.
+
+    These guards do not claim to compile Rust, OpenSSL or an original Agentd.
+    The installed system pkg-config and original full build are a separate gate.
+    """
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="hepta-static-private-")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        self.libdir = self.root / "lib"
+        self.pcdir = self.libdir / "pkgconfig"
+        self.pcdir.mkdir(parents=True)
+        self.bin = self.root / "tools"
+        self.bin.mkdir()
+        self.toolchain = self.root / "toolchain/bin"
+        self.toolchain.mkdir(parents=True)
+        linker = self.toolchain.parent / "lib/rustlib" / build.TARGET / "bin"
+        (linker / "gcc-ld").mkdir(parents=True)
+        (linker / "rust-lld").write_text("#!/bin/sh\nprintf 'LLD synthetic-test-fixture\\n'\n")
+        (linker / "rust-lld").chmod(0o700)
+        (linker / "gcc-ld/ld.lld").symlink_to("../rust-lld")
+        source, obj = self.root / "member.c", self.root / "member.o"
+        source.write_text("int native_private_fixture(void) { return 7; }\n")
+        subprocess.run(["/usr/bin/cc", "-c", source, "-o", obj], check=True, capture_output=True, env=build.BASE_ENV)
+        for name in (build.PRIVATE_ARCHIVE, "libcrypto.a", "libssl.a"):
+            subprocess.run(["/usr/bin/ar", "rcs", self.libdir / name, obj], check=True, capture_output=True, env=build.BASE_ENV)
+        for name in ("openssl", "libssl", "libcrypto"):
+            (self.pcdir / (name + ".pc")).write_text("Version: 3.5.5\nLibs.private: -l:libjitterentropy.a -lz -lzstd -ldl -pthread\n")
+        # The script reads mutable fixture .pc bytes, allowing actual token,
+        # source and postcheck failures without touching system packages.
+        self.pkg = self.bin / "pkg-config"
+        self.pkg.write_text("#!/usr/bin/python3\nimport sys\nfrom pathlib import Path\n"
+            + "lib=Path(" + repr(str(self.libdir)) + ")\n"
+            + "a=sys.argv[1:]\n"
+            + "if a==['--version']: print('synthetic-pkg-config-fixture'); raise SystemExit(0)\n"
+            + "module=a[-1]\ntext=(lib/'pkgconfig'/(module+'.pc')).read_text()\n"
+            + "if a[0]=='--variable=libdir': print(lib)\n"
+            + "elif a[0]=='--variable=pcfiledir': print(lib/'pkgconfig')\n"
+            + "elif a[0]=='--modversion': print(next(x.split(':',1)[1].strip() for x in text.splitlines() if x.startswith('Version:')))\n"
+            + "elif a[:2]==['--static','--libs']:\n"
+            + " print('-lcrypto '+next(x.split(':',1)[1].strip() for x in text.splitlines() if x.startswith('Libs.private:')))\n"
+            + "else: raise SystemExit(2)\n")
+        self.pkg.chmod(0o700)
+        self.args = SimpleNamespace(static_private_archive=self.libdir / build.PRIVATE_ARCHIVE,
+            expected_static_private_archive_sha256=build.digest(self.libdir / build.PRIVATE_ARCHIVE),
+            toolchain_bin=self.toolchain)
+        self.env = dict(build.BASE_ENV, PATH=str(self.bin) + ":" + build.BASE_ENV["PATH"])
+        self.output = self.root / "evidence"
+        self.output.mkdir()
+
+    def snapshot(self):
+        return build.static_private_snapshot(self.args, self.env)
+
+    def test_exact_private_source_is_retained_and_only_the_final_command_changes(self):
+        before = self.snapshot()
+        frozen = build.freeze_private_archive(before, self.output)
+        self.assertEqual(frozen["sha256"], self.args.expected_static_private_archive_sha256)
+        self.assertNotEqual(frozen["path"], before["archive"]["path"])
+        self.assertEqual(before["tools"]["ld.lld"]["resolved_path"], before["tools"]["rust-lld"]["resolved_path"])
+        self.assertFalse(before["linker_execution_observed"])
+        default = build.build_command("/selected/cargo", "bin", "hepta-agentd", 2)
+        explicit = build.build_command("/selected/cargo", "bin", "hepta-agentd", 2, frozen)
+        self.assertEqual(default, ["/selected/cargo", "build", "--manifest-path", "codex-rs/Cargo.toml", "--locked", "--offline",
+            "--release", "--target", "x86_64-unknown-linux-gnu", "-p", "codex-hepta-agentd", "--bin", "hepta-agentd", "-j2"])
+        self.assertEqual(explicit[:1] + ["build"] + explicit[2:-3], default)
+        self.assertEqual(explicit[1], "rustc")
+        self.assertEqual(explicit[-3:], ["--", "-C", "link-arg=" + frozen["path"]])
+        self.assertNotIn("RUSTFLAGS", self.env)
+        build.check_private_unchanged(before, self.snapshot(), frozen)
+        second = self.root / "second-evidence"
+        second.mkdir()
+        other = build.freeze_private_archive(before, second)
+        self.assertEqual(other["sha256"], frozen["sha256"])
+        self.assertNotEqual(build.build_command("/selected/cargo", "bin", "hepta-agentd", 2, other), explicit)
+
+    def test_missing_pair_wrong_hash_and_same_bytes_outside_original_libdir_fail(self):
+        self.args.expected_static_private_archive_sha256 = None
+        with self.assertRaisesRegex(ValueError, "together"):
+            self.snapshot()
+        self.args.expected_static_private_archive_sha256 = "0" * 64
+        with self.assertRaisesRegex(ValueError, "explicit SHA256"):
+            self.snapshot()
+        original = self.libdir / build.PRIVATE_ARCHIVE
+        outside = self.root / build.PRIVATE_ARCHIVE
+        outside.write_bytes(original.read_bytes())
+        self.args.static_private_archive = outside
+        self.args.expected_static_private_archive_sha256 = build.digest(outside)
+        with self.assertRaisesRegex(ValueError, "original OpenSSL pkg-config library directory"):
+            self.snapshot()
+
+    def test_missing_or_additional_colon_dependency_is_not_an_arbitrary_linker_escape(self):
+        for field in ("-lz -lzstd -ldl -pthread", "-l:libjitterentropy.a -l:unreviewed.a"):
+            (self.pcdir / "libcrypto.pc").write_text("Version: 3.5.5\nLibs.private: " + field + "\n")
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "actual static pkg-config output"):
+                self.snapshot()
+
+    def test_symlink_and_thin_archive_are_refused_before_linking(self):
+        archive = self.args.static_private_archive
+        data = archive.read_bytes()
+        target = self.root / "alias.a"
+        target.write_bytes(data)
+        archive.unlink()
+        archive.symlink_to(target)
+        with self.assertRaisesRegex(ValueError, "canonical unlinked"):
+            self.snapshot()
+        archive.unlink()
+        archive.write_bytes(b"!<thin>\n")
+        self.args.expected_static_private_archive_sha256 = build.digest(archive)
+        with self.assertRaisesRegex(ValueError, "thin archives refused"):
+            self.snapshot()
+
+    def test_changed_pc_library_tool_and_frozen_copy_cannot_pass_postcheck(self):
+        before = self.snapshot()
+        frozen = build.freeze_private_archive(before, self.output)
+        for path in (self.pcdir / "openssl.pc", self.libdir / "libcrypto.a", self.pkg):
+            original = path.read_bytes()
+            with path.open("ab") as stream:
+                stream.write(b"\n# actual fixture input mutation\n")
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, "closure changed"):
+                build.check_private_unchanged(before, self.snapshot(), frozen)
+            path.write_bytes(original)
+            # Restoring bytes is deliberately not restoration of the observed
+            # inode timestamp. Acquire a new before snapshot for each case.
+            before = self.snapshot()
+        copied = Path(frozen["path"])
+        copied.chmod(0o600)
+        copied.write_bytes(copied.read_bytes() + b"changed")
+        with self.assertRaisesRegex(ValueError, "frozen final-link archive"):
+            build.check_private_unchanged(before, self.snapshot(), frozen)
+
+    def test_original_archive_swap_before_freezing_is_rejected(self):
+        before = self.snapshot()
+        with self.args.static_private_archive.open("ab") as stream:
+            stream.write(b"changed after initial verification")
+        with self.assertRaisesRegex(ValueError, "changed before freezing"):
+            build.freeze_private_archive(before, self.output)
+
+    def test_no_explicit_archive_retains_the_default_profile(self):
+        self.args.static_private_archive = None
+        self.args.expected_static_private_archive_sha256 = None
+        self.assertIsNone(self.snapshot())
 
 
 if __name__ == "__main__":
