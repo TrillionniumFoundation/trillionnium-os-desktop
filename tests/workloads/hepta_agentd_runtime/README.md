@@ -30,17 +30,41 @@ It does not qualify later integrated source trees.
 
 ## Current fresh-build profile
 
-The current `source-review.json` selects Desktop
-`65800188415606451666fec3cfe94ecb5abdc2f6` / tree
-`ff2af1b22a2cc26efa579066c327e693b91b1262` and Hepta
-`a6b3506da75fb9b37c1078b5490178cc8c2f137d` / tree
-`f4f5314e1fba99a3f9c83cc63bcc883e4e850e30`, using the exact reviewed
-Rust 1.96.0 manifest. It adds every changed functional kernel, control,
-build and original fixture input since the earlier `0187` Desktop review.
-The 322 selected identities bind current input bytes; they are not a whole
-Hepta audit, build result or runtime receipt. Historical `0187` / `b3` and
-`7d` / `b3` executions retain their original identities. The current profile
-requires a new source-bound build and execution.
+Native CI compiles the exact clean Desktop revision checked out for its event.
+It creates an independent shallow Git copy from that checkout, so a new PR head
+need not already be fetchable as a separate remote commit. Its only Hepta source
+selector is `support/ui/HEPTA_SHARED_PRESENTER.json`; all three product Cargo
+entry points must agree with that contract. There is no second current Hepta
+pin in this workflow. A source selection is not build or execution evidence.
+
+`current_source_review.py` writes a review under the isolated runner evidence
+root, outside both source checkouts. It preserves every historical selected
+path, adds the complete current canonical source closure and tracked original
+owner package modules, and re-reads actual Git blobs and working bytes. The
+complete clean HEAD/tree identities bind the remaining files. The exact stable
+compiler and manifest digest come from the selected original Hepta checkout.
+A bounded, hash-bound external review is accepted only when independently
+reconstructing it from these same actual Git sources and the canonical contract
+produces an identical object. Duplicate/unknown fields, missing or invented
+inventory, unsafe paths, arbitrary pairs and dirty sources fail closed. The
+review is checked again through preparation, build, frozen-input validation and
+after the actual guest execution; the independent compiled checkouts must also
+remain exact and clean.
+
+The committed `source-review.json` remains the historical Desktop658001 /
+HeptaA6 review with its322 selected identities and original Rust1.96.0 manifest.
+Its old source and execution records are preserved, as are `retained-source-review.json`
+and the independently retained archive. An invocation without an explicit
+external binding continues to select that historical profile. Current native CI
+always supplies the complete external path/SHA256/actual Hepta checkout binding;
+an incomplete binding is rejected before any runtime action. In the old CI
+run40388171921, fetching the obsolete Desktop658001 commit failed with
+`upload-pack: not our ref` before any build or guest execution. That failure is
+not an owner-test result and is not converted into a pass by this migration.
+
+The following candidate design and device observations describe the historical
+658001 review; every current combination still requires its own source-bound
+build and lifecycle execution.
 
 This Desktop candidate includes the native-target metadata repair and the
 Multiboot2 ACPI reservation parity change, the optional framebuffer-support
@@ -54,7 +78,8 @@ cannot qualify this candidate or be silently converted into new evidence.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source
-review. It retains the original command, pinned toolchain gate, raw QEMU
+review. Native CI supplies the external current review digest; historical replay
+uses the retained fixed review. It retains the original command, pinned toolchain gate, raw QEMU
 record, serial bytes, all three boot binaries and complete tracked-source
 snapshots. It creates `kernel-build.json` only after successful build, boot,
 QueryAbi checks, live artifact verification and unchanged clean sources.

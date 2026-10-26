@@ -39,7 +39,7 @@ def git(source, *arguments):
 
 
 def verify_sources(roots):
-    review = gate.json_value((HERE / "source-review.json").read_bytes())
+    review = gate.read_source_review()
     for name, source in roots.items():
         require(source.is_dir() and source.resolve(strict=True) == source, "canonical source directory required")
         require(git(source, "rev-parse", "--show-toplevel") == str(source), "source must be its Git root")

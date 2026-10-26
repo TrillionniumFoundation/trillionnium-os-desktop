@@ -62,7 +62,7 @@ def verify_frozen_osdk(output, identity):
 
 
 def retain_build(args, roots, output, report):
-    review_path = HERE / "source-review.json"
+    review_path = gate.SOURCE_REVIEW_PATH
     gate.pinned(review_path, args.expected_source_review_sha256, 1024 * 1024)
     reviewed = preparation.verify_sources(roots)
     gate.require(not output.exists() and not output.is_symlink(), "output must be new")

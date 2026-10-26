@@ -21,6 +21,7 @@ sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 ABI = HERE.parent / "hepta_agentd_abi"
+sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ABI))
 import cpio_codec
 import run_agentd_abi as abi
@@ -53,7 +54,21 @@ def json_value(raw):
     return json.loads(raw, object_pairs_hook=object_pairs, parse_constant=invalid_constant)
 
 
-SOURCE_REVIEW = json_value((HERE / "source-review.json").read_bytes())
+def read_source_review():
+    pinned(SOURCE_REVIEW_PATH, SOURCE_REVIEW_SHA256, 1024 * 1024)
+    if EXTERNAL_SOURCE_REVIEW:
+        import current_source_review
+        return current_source_review.load_external(SOURCE_REVIEW_PATH, SOURCE_REVIEW_SHA256,
+                                                   ROOT, Path(os.environ["F1_HEPTA_SOURCE_ROOT"]))
+    return json_value(SOURCE_REVIEW_PATH.read_bytes())
+
+
+EXTERNAL_SOURCE_REVIEW = "F1_SOURCE_REVIEW_PATH" in os.environ
+require(EXTERNAL_SOURCE_REVIEW == ("F1_SOURCE_REVIEW_SHA256" in os.environ)
+        == ("F1_HEPTA_SOURCE_ROOT" in os.environ), "complete explicit current source review binding required")
+SOURCE_REVIEW_PATH = Path(os.environ["F1_SOURCE_REVIEW_PATH"]) if EXTERNAL_SOURCE_REVIEW else HERE / "source-review.json"
+SOURCE_REVIEW_SHA256 = os.environ["F1_SOURCE_REVIEW_SHA256"] if EXTERNAL_SOURCE_REVIEW else sha(SOURCE_REVIEW_PATH)
+SOURCE_REVIEW = read_source_review()
 DESKTOP, HEPTA = SOURCE_REVIEW["desktop"], SOURCE_REVIEW["hepta"]
 SOURCES = {"desktop": DESKTOP, "hepta": HEPTA}
 
@@ -89,7 +104,7 @@ def frozen_inputs(path, digest):
     require(value.get("schema") == "hepta.native-original-runtime-input.v1", "unknown input schema")
     require(value.get("sources") == SOURCES, "unreviewed Desktop/Hepta source pair")
     require(value.get("kernel_profile") == "ordinary-os", "ordinary OS kernel required; ktest is not runtime evidence")
-    review = json_value((HERE / "source-review.json").read_bytes())
+    review = read_source_review()
     require(value.get("source_files") == review["source_files"], "reviewed original-owner source identities differ")
     records = value.get("binaries", {})
     require(isinstance(records, dict) and set(records) == set(BINARIES) | {"kernel"},

@@ -11,6 +11,10 @@ on:
       - "libs/os-abi/**"
       - "libs/os-control/**"
       - "support/build/**"
+      - "support/ui/HEPTA_SHARED_PRESENTER.json"
+      - "ui/Cargo.toml"
+      - "ui/core/Cargo.toml"
+      - "services/hepta-session-host/Cargo.toml"
       - ".github/workflows/f1-original-runtime-native.yml"
   workflow_dispatch:
 
@@ -35,31 +39,6 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Resolve the reviewed original source pair
-        run: |
-          set -euo pipefail
-          python3 -I -B - <<'PYCODE'
-          import importlib.util, json, os, re
-          from pathlib import Path
-          review = json.loads(Path("tests/workloads/hepta_agentd_runtime/source-review.json").read_bytes())
-          if review.get("schema") != "hepta.native-original-runtime-source-review.v1":
-              raise SystemExit("unexpected original runtime source-review schema")
-          pins = []
-          for name in ("desktop", "hepta"):
-              source = review[name]
-              for field in ("head", "tree"):
-                  if not isinstance(source[field], str) or re.fullmatch(r"[0-9a-f]{40}", source[field]) is None:
-                      raise SystemExit("invalid reviewed " + name + " " + field)
-              pins.append(name.upper() + "_SOURCE_PIN=" + source["head"])
-          spec = importlib.util.spec_from_file_location("reviewed_userspace_toolchain",
-              "tests/workloads/hepta_agentd_runtime/reviewed_toolchain.py")
-          toolchain = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(toolchain)
-          pins.append("USERSPACE_TOOLCHAIN_PIN=" + toolchain.reviewed_channel(review))
-          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as output:
-              output.write("\n".join(pins) + "\n")
-          PYCODE
-
       - name: Allocate isolated native evidence and cache directories
         run: |
           set -euo pipefail
@@ -83,6 +62,42 @@ jobs:
             .github/workflows/f1-original-runtime-native.yml \
             > "$ci_root/identity/runner-inputs.sha256"
 
+      - name: Resolve the reviewed original source pair
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/workloads/hepta_agentd_runtime/current_source_review.py select \
+            --desktop-source "$GITHUB_WORKSPACE" \
+            --output "$F1_CI_ROOT/identity/source-selection.json" --github-env "$GITHUB_ENV"
+
+      - name: Fetch exact original Desktop and Hepta sources without credentials
+        run: |
+          set -euo pipefail
+          {
+            git init "$F1_CI_ROOT/desktop-source"
+            git -C "$F1_CI_ROOT/desktop-source" remote add origin \
+              https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git
+            # Compile this checked-out revision, including unpublished PR heads.
+            # The independent shallow copy keeps build outputs outside the runner.
+            git -C "$F1_CI_ROOT/desktop-source" -c credential.helper= -c core.askPass= \
+              fetch --depth=1 --no-tags "$GITHUB_WORKSPACE" "$DESKTOP_SOURCE_PIN"
+            git -C "$F1_CI_ROOT/desktop-source" checkout --detach "$DESKTOP_SOURCE_PIN"
+            git init "$F1_CI_ROOT/hepta-source"
+            git -C "$F1_CI_ROOT/hepta-source" remote add origin \
+              https://github.com/TrillionniumFoundation/hepta-private-ci.git
+            git -C "$F1_CI_ROOT/hepta-source" -c credential.helper= -c core.askPass= \
+              fetch --depth=1 --no-tags origin "$HEPTA_SOURCE_PIN"
+            git -C "$F1_CI_ROOT/hepta-source" checkout --detach "$HEPTA_SOURCE_PIN"
+          } 2>&1 | tee "$F1_CI_ROOT/logs/source-checkout.log"
+          git -C "$F1_CI_ROOT/desktop-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/desktop-source.txt"
+          git -C "$F1_CI_ROOT/hepta-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/hepta-source.txt"
+
+      - name: Freeze and verify the current canonical source review
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/workloads/hepta_agentd_runtime/current_source_review.py freeze \
+            --desktop-source "$GITHUB_WORKSPACE" --hepta-source "$F1_CI_ROOT/hepta-source" \
+            --output "$F1_CI_ROOT/identity/current-source-review.json" --github-env "$GITHUB_ENV"
+
       - name: Install the original userspace compiler and actual guest tools
         run: |
           set -euo pipefail
@@ -105,26 +120,6 @@ jobs:
             dpkg-query -W build-essential pkg-config libcap-dev cmake libssl-dev binutils qemu-system-x86 e2fsprogs clang lld busybox-static
             df -B1 "$F1_CI_ROOT"
           } 2>&1 | tee "$F1_CI_ROOT/logs/native-setup.log"
-
-      - name: Fetch exact original Desktop and Hepta sources without credentials
-        run: |
-          set -euo pipefail
-          {
-            git init "$F1_CI_ROOT/desktop-source"
-            git -C "$F1_CI_ROOT/desktop-source" remote add origin \
-              https://github.com/TrillionniumFoundation/trillionnium-os-desktop.git
-            git -C "$F1_CI_ROOT/desktop-source" -c credential.helper= -c core.askPass= \
-              fetch --depth=1 --no-tags origin "$DESKTOP_SOURCE_PIN"
-            git -C "$F1_CI_ROOT/desktop-source" checkout --detach "$DESKTOP_SOURCE_PIN"
-            git init "$F1_CI_ROOT/hepta-source"
-            git -C "$F1_CI_ROOT/hepta-source" remote add origin \
-              https://github.com/TrillionniumFoundation/hepta-private-ci.git
-            git -C "$F1_CI_ROOT/hepta-source" -c credential.helper= -c core.askPass= \
-              fetch --depth=1 --no-tags origin "$HEPTA_SOURCE_PIN"
-            git -C "$F1_CI_ROOT/hepta-source" checkout --detach "$HEPTA_SOURCE_PIN"
-          } 2>&1 | tee "$F1_CI_ROOT/logs/source-checkout.log"
-          git -C "$F1_CI_ROOT/desktop-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/desktop-source.txt"
-          git -C "$F1_CI_ROOT/hepta-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/hepta-source.txt"
 
       - name: Fetch immutable upstream objects required by the original source verifier
         run: |
@@ -177,7 +172,7 @@ jobs:
       - name: Build and boot the reviewed ordinary kernel from source
         run: |
           set -euo pipefail
-          review_sha=$(sha256sum tests/workloads/hepta_agentd_runtime/source-review.json | cut -d ' ' -f1)
+          review_sha="$F1_SOURCE_REVIEW_SHA256"
           python3 -I -B tests/workloads/hepta_agentd_runtime/build_kernel.py --execute \
             --desktop-source "$F1_CI_ROOT/desktop-source" \
             --hepta-source "$F1_CI_ROOT/hepta-source" \
@@ -223,6 +218,24 @@ jobs:
             --qemu "$qemu_binary" --expected-qemu-sha256 "$qemu_sha" \
             --memory-mib 4096 --timeout 900 --output "$F1_CI_ROOT/guest" \
             2>&1 | tee "$F1_CI_ROOT/logs/guest-execution.log"
+
+      - name: Verify the exact source pair after guest execution
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYCODE' 2>&1 | tee "$F1_CI_ROOT/logs/final-source-verification.log"
+          import importlib.util, os
+          from pathlib import Path
+          path = Path("tests/workloads/hepta_agentd_runtime/current_source_review.py")
+          spec = importlib.util.spec_from_file_location("current_source_review", path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          review = module.load_external(Path(os.environ["F1_SOURCE_REVIEW_PATH"]), os.environ["F1_SOURCE_REVIEW_SHA256"],
+                                        Path(os.environ["GITHUB_WORKSPACE"]), Path(os.environ["F1_HEPTA_SOURCE_ROOT"]))
+          for name in ("desktop", "hepta"):
+              module.require(module.clean_source(Path(os.environ["F1_CI_ROOT"]) / (name + "-source")) == review[name],
+                             "compiled source changed after guest execution")
+          print("Current clean checkout, canonical Hepta source and complete selected inventory remain exact")
+          PYCODE
 
       - name: Preserve source identities and scope on success or failure
         if: ${{ always() }}
