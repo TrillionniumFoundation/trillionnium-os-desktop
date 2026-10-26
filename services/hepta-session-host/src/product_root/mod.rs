@@ -20,7 +20,6 @@ use std::ffi::OsString;
 use std::os::fd::{AsFd, AsRawFd};
 use std::os::unix::net::UnixDatagram;
 use std::path::Path;
-use std::time::Duration;
 
 pub(super) type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 

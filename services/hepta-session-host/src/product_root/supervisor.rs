@@ -217,7 +217,7 @@ pub(super) fn start_original(
         driver: UnixProcessDriver::new(256)?,
         consumed: false,
     };
-    let (mut supervisor, recovery) = Supervisor::recover(
+    let (supervisor, recovery) = Supervisor::recover(
         registry.clone(),
         driver,
         SupervisorConfig::local_default(),

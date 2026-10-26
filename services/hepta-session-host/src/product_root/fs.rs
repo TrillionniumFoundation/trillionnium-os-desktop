@@ -62,7 +62,9 @@ pub(super) fn read_root_json<T: DeserializeOwned>(path: &Path) -> Result<T> {
         return Err("Root0600 input and Root0700 parent are required".into());
     }
     let mut bytes = Vec::new();
-    file.by_ref().take(65_537).read_to_end(&mut bytes)?;
+    Read::by_ref(&mut file)
+        .take(65_537)
+        .read_to_end(&mut bytes)?;
     if bytes.is_empty() || bytes.len() > 65_536 {
         return Err("Root JSON input bound".into());
     }
@@ -74,7 +76,9 @@ pub(super) fn read_root_json<T: DeserializeOwned>(path: &Path) -> Result<T> {
 pub(super) fn read_root_document<T: DeserializeOwned>(path: &Path) -> Result<T> {
     let mut file = root_file(path, false)?;
     let mut bytes = Vec::new();
-    file.by_ref().take(65_537).read_to_end(&mut bytes)?;
+    Read::by_ref(&mut file)
+        .take(65_537)
+        .read_to_end(&mut bytes)?;
     if bytes.is_empty() || bytes.len() > 65_536 {
         return Err("public product document bound".into());
     }
