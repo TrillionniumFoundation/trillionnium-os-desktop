@@ -96,7 +96,7 @@ def build(args):
         for name in ("cargo", "rustc", "rustdoc")}
     tool_records = {name: {"path": path, "sha256": digest(path)} for name, path in tools.items()}
     profile = {"toolchain": "1.96.0"}
-    env, removed = build_text_product.controlled_environment(profile, targets["hepta"], 1, tools)
+    env, removed = build_text_product.controlled_environment(profile, targets["hepta"], args.jobs, tools)
     env["CARGO_INCREMENTAL"] = "0"
     locks = {"hepta": (hepta_repo.path / "codex-rs/Cargo.lock"),
              "desktop": (REPO / "services/hepta-session-host/Cargo.lock")}
@@ -108,7 +108,8 @@ def build(args):
                "desktop_build_receipt_sha256": digest(ui_receipt_path), "packaging_sources": packaging,
                "targets": {key: str(value) for key, value in targets.items()}, "locks": lock_hashes,
                "compiler_tools": tool_records, "ambient_overrides_removed": removed,
-               "cargo_profile": args.build_profile, "distribution_transform": "GNU strip --strip-unneeded"}
+               "cargo_profile": args.build_profile, "cargo_jobs": args.jobs,
+               "distribution_transform": "GNU strip --strip-unneeded"}
 
     def save():
         desktop.atomic_write(output / "build-receipt.json", desktop.json_bytes(receipt))
@@ -139,13 +140,13 @@ def build(args):
                        "--format-version", "1", "--features", "product-root", *common], REPO, targets["desktop"])
         graph = json.loads(metadata.read_bytes())
         receipt["original_source_cache"] = original_cache(graph, identities["hepta"])
-        run("hepta-build", ["cargo", "build", *common, "--profile", args.build_profile, "--jobs", "1",
+        run("hepta-build", ["cargo", "build", *common, "--profile", args.build_profile, "--jobs", str(args.jobs),
                             "-p", "codex-hepta-agentd", "-p", "codex-app-server", "--bin", "codex-hepta-agentd",
                             "--bin", "hepta-authority-host", "--bin", "codex-app-server"],
             hepta_repo.path / "codex-rs", targets["hepta"])
         run("desktop-root-build", ["cargo", "build", "--manifest-path", "services/hepta-session-host/Cargo.toml",
                                    *common, "--features", "product-root", "--profile", args.build_profile,
-                                   "--bin", "hepta-desktop-root", "--jobs", "1"], REPO, targets["desktop"])
+                                   "--bin", "hepta-desktop-root", "--jobs", str(args.jobs)], REPO, targets["desktop"])
         strip = Path(shutil.which("strip")).resolve(strict=True)
         receipt["strip"] = {"path": str(strip), "sha256": digest(strip)}
         for name in root_bundle.PROGRAMS:
@@ -183,6 +184,8 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--build-profile", choices=("release", "dev-small"), default="release")
+    parser.add_argument("--jobs", type=int, choices=range(1, 9), default=1,
+                        help="Explicit bounded compiler concurrency, retained in the build receipt")
     try:
         return build(parser.parse_args())
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, desktop.ProductError,
