@@ -7,14 +7,48 @@ use codex_hepta_agentd::{
     NotesThreadSeedOptions, NotesThreadSeedReceipt, seed_original_notes_thread,
 };
 use codex_utils_absolute_path::AbsolutePathBuf;
+use serde::Deserialize;
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Preferences {
+    schema: String,
+    locale: String,
+    model: String,
+    model_provider: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PromptRegistry {
+    schema: String,
+    developer_instructions: String,
+}
+
 pub(super) async fn create(inputs: &Inputs, fresh: &Fresh) -> Result<NotesThreadSeedReceipt> {
     let home = fresh.record.layout.home_root();
+    let preferences: Preferences = fs::read_root_document(&inputs.sources.preferences)?;
+    let prompts: PromptRegistry = fs::read_root_document(&inputs.sources.prompt_registry)?;
+    if preferences.schema != "trill.original-notes-preferences.v1"
+        || preferences.locale != inputs.locale
+        || preferences.model != "qwen38-flash-next-uc"
+        || preferences.model_provider != "hepta_local"
+        || prompts.schema != "trill.original-notes-prompts.v1"
+        || prompts.developer_instructions.is_empty()
+        || prompts.developer_instructions.len() > 512
+        || prompts.developer_instructions.contains('\0')
+        || fs::digest(&inputs.sources.runtime_body)? != fs::digest(&inputs.programs.agentd)?
+    {
+        return Err(
+            "actual preferences, prompt or runtime input differs from the finite product profile"
+                .into(),
+        );
+    }
     // This is public, fixed product configuration in a genuinely new Core
     // home. It neither reads nor copies existing provider credentials.
     fs::write_new(&home.join("config.toml"), b"model = \"qwen38-flash-next-uc\"\nmodel_provider = \"hepta_local\"\n[model_providers.hepta_local]\nname = \"Hepta local Responses\"\nbase_url = \"http://127.0.0.1:18083/v1\"\nwire_api = \"responses\"\nrequires_openai_auth = false\n")?;
@@ -82,14 +116,14 @@ pub(super) async fn create(inputs: &Inputs, fresh: &Fresh) -> Result<NotesThread
         &client,
         home,
         NotesThreadSeedOptions {
-            model: Some("qwen38-flash-next-uc".into()),
-            model_provider: Some("hepta_local".into()),
+            model: Some(preferences.model.clone()),
+            model_provider: Some(preferences.model_provider.clone()),
             cwd: Some(fresh.record.manifest.workspace.as_path().to_path_buf()),
-            developer_instructions: None,
+            developer_instructions: Some(prompts.developer_instructions),
         },
     )
     .await?;
-    if receipt.model != "qwen38-flash-next-uc" || receipt.model_provider != "hepta_local" {
+    if receipt.model != preferences.model || receipt.model_provider != preferences.model_provider {
         return Err("actual Start result differs from the explicit product model/provider".into());
     }
     client.shutdown().await?;

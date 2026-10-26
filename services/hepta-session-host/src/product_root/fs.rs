@@ -69,6 +69,18 @@ pub(super) fn read_root_json<T: DeserializeOwned>(path: &Path) -> Result<T> {
     Ok(serde_json::from_slice(&bytes)?)
 }
 
+/// Public frozen product documents may be Root0644 under a protected package;
+/// they are not private administrative inputs or a source of authority.
+pub(super) fn read_root_document<T: DeserializeOwned>(path: &Path) -> Result<T> {
+    let mut file = root_file(path, false)?;
+    let mut bytes = Vec::new();
+    file.by_ref().take(65_537).read_to_end(&mut bytes)?;
+    if bytes.is_empty() || bytes.len() > 65_536 {
+        return Err("public product document bound".into());
+    }
+    Ok(serde_json::from_slice(&bytes)?)
+}
+
 pub(super) fn write_new(path: &Path, bytes: &[u8]) -> Result<()> {
     if bytes.is_empty() || bytes.len() > 65_536 {
         return Err("new deployment file bound".into());
