@@ -8,7 +8,7 @@ use alloc::{sync::Weak, vec, vec::Vec};
 use ostd::{Error, Result};
 
 use super::*;
-use crate::fs::cgroupfs::CpuSchedulingGroup;
+use crate::fs::cgroupfs::{CpuSchedulingGroup, CpuSchedulingRoute};
 
 #[cfg(ktest)]
 mod capacity_tests;
@@ -115,6 +115,8 @@ struct Binding {
     key: usize,
     task: Weak<Task>,
     leaf: GroupId,
+    /// Prepared routes are retired only in the cold path, outside rq/IRQ locks.
+    _route: Option<CpuSchedulingRoute>,
 }
 
 #[derive(Debug)]

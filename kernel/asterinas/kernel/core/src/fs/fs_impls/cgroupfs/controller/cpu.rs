@@ -2,9 +2,10 @@
 
 mod max_config;
 mod native;
+mod scheduling_route;
 
 use alloc::sync::Arc;
-use core::sync::atomic::{AtomicU32, Ordering};
+use core::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
 
 use aster_systree::{Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysPerms, SysStr};
 use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
@@ -20,6 +21,7 @@ use ostd::{
     task::{Task, atomic_mode::AsAtomicModeGuard},
     timer::Jiffies,
 };
+pub(crate) use scheduling_route::CpuSchedulingRoute;
 
 use self::native::CpuBandwidthState;
 use crate::{
@@ -42,6 +44,9 @@ pub(crate) struct CpuController {
     stats: CpuStats,
     /// Optional CPU resource control attributes exposed only when `+cpu` is active.
     control: Option<CpuControl>,
+    /// Original raw route references, including inactive CPU levels. These
+    /// preserve topology independently of bandwidth/final-charge ownership.
+    scheduling_routes: AtomicUsize,
 }
 
 /// CPU usage accounting that survives CPU controller toggles.
@@ -337,7 +342,12 @@ impl CpuController {
         Self {
             stats: CpuStats::new(),
             control: is_active.then(CpuControl::new),
+            scheduling_routes: AtomicUsize::new(0),
         }
+    }
+
+    pub(super) fn has_scheduling_routes(&self) -> bool {
+        self.scheduling_routes.load(Ordering::Acquire) != 0
     }
 
     /// Initializes CPU usage statistics from the previous sub-controller.

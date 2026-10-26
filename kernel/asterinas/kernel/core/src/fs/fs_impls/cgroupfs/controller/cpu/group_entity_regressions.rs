@@ -445,3 +445,173 @@ fn prepared_route_keeps_an_empty_node_until_the_last_queue_is_retired() {
         "prepared task slots allowed their original node to be removed"
     );
 }
+
+#[ktest]
+fn prepared_descendant_route_blocks_ancestor_replacement_without_partial_updates() {
+    let fixture = Fixture::new("w4a-route-descendant");
+    let child =
+        Arc::downcast::<CgroupNode>(fixture.leaves[0].create_child("deep").unwrap()).unwrap();
+    CgroupMembership::write_lock()
+        .move_process_to_node(fixture.processes[0].clone(), &child)
+        .unwrap();
+    let rq = fixture.runqueue();
+    let p = Arc::downcast::<CgroupNode>(fixture.leaves[0].parent().unwrap()).unwrap();
+    let before = [
+        cpu(fixture.leaves[0].controller()),
+        cpu(fixture.leaves[1].controller()),
+        cpu(child.controller()),
+    ];
+    let refused = matches!(
+        p.store_attr("cgroup.subtree_control", "-cpu"),
+        Err(Error::ResourceUnavailable)
+    );
+    let after = [
+        cpu(fixture.leaves[0].controller()),
+        cpu(fixture.leaves[1].controller()),
+        cpu(child.controller()),
+    ];
+    let unchanged = before
+        .iter()
+        .zip(after.iter())
+        .all(|(a, b)| Arc::ptr_eq(a, b));
+    drop(rq);
+    CgroupMembership::write_lock()
+        .move_process_to_node(fixture.processes[0].clone(), &fixture.leaves[0])
+        .unwrap();
+    fixture.leaves[0].remove_child("deep").unwrap();
+    p.store_attr("cgroup.subtree_control", "-cpu").unwrap();
+    p.store_attr("cgroup.subtree_control", "+cpu").unwrap();
+    drop(fixture);
+    assert!(
+        refused,
+        "a raw descendant must pin each affected direct ancestor"
+    );
+    assert!(
+        unchanged,
+        "rejection partially replaced an affected subtree"
+    );
+}
+
+#[ktest]
+fn prepared_route_does_not_block_an_unrelated_cpu_subtree() {
+    let fixture = Fixture::new("w4a-route-unrelated");
+    let rq = fixture.runqueue();
+    let sibling =
+        Arc::downcast::<CgroupNode>(fixture.parent.create_child("unrelated").unwrap()).unwrap();
+    sibling.create_child("leaf").unwrap();
+    let activated = sibling.store_attr("cgroup.subtree_control", "+cpu").is_ok();
+    let deactivated = sibling.store_attr("cgroup.subtree_control", "-cpu").is_ok();
+    sibling.remove_child("leaf").unwrap();
+    fixture.parent.remove_child("unrelated").unwrap();
+    drop(rq);
+    drop(fixture);
+    assert!(
+        activated && deactivated,
+        "route pins must follow the affected original branch"
+    );
+}
+
+#[ktest]
+fn failed_prepared_admission_refunds_all_original_route_pins() {
+    let fixture = Fixture::new("w4a-route-refund");
+    let a = CpuSchedulingGroup::for_task(&fixture.tasks[0]).unwrap();
+    let p = a.parent().unwrap();
+    let base = p.parent().unwrap();
+    let groups = [(base, 0), (p, 1), (a, 2)];
+    let bindings = [(fixture.tasks[0].clone(), 3), (fixture.tasks[0].clone(), 3)];
+    let refused = CpuRunQueueFixture::with_groups(
+        fixture.tasks[0].clone(),
+        fixture.start,
+        &groups,
+        &bindings,
+    )
+    .is_err();
+    let node = Arc::downcast::<CgroupNode>(fixture.leaves[0].parent().unwrap()).unwrap();
+    node.store_attr("cgroup.subtree_control", "-cpu").unwrap();
+    node.store_attr("cgroup.subtree_control", "+cpu").unwrap();
+    drop(fixture);
+    assert!(
+        refused,
+        "duplicate prepared slots must not escape admission"
+    );
+}
+
+#[ktest]
+fn raw_route_counter_overflow_refunds_only_the_successful_prefix() {
+    let mut fixture = Fixture::new("w4a-route-overflow");
+    let leaf = cpu(fixture.leaves[0].controller());
+    let parent = leaf.parent.as_ref().unwrap();
+    let old_parent = parent
+        .inner
+        .as_ref()
+        .unwrap()
+        .scheduling_routes
+        .swap(usize::MAX, Ordering::AcqRel);
+    let old_leaf = leaf
+        .inner
+        .as_ref()
+        .unwrap()
+        .scheduling_routes
+        .load(Ordering::Acquire);
+    let rootward = parent.parent.as_ref().unwrap();
+    let old_rootward = rootward
+        .inner
+        .as_ref()
+        .unwrap()
+        .scheduling_routes
+        .load(Ordering::Acquire);
+    let refused = {
+        let membership = CgroupMembership::read_lock();
+        matches!(
+            CpuSchedulingRoute::capture(&fixture.tasks[0], &membership),
+            Err(ostd::Error::Overflow)
+        )
+    };
+    let refunded = leaf
+        .inner
+        .as_ref()
+        .unwrap()
+        .scheduling_routes
+        .load(Ordering::Acquire)
+        == old_leaf;
+    let failed_unchanged = parent
+        .inner
+        .as_ref()
+        .unwrap()
+        .scheduling_routes
+        .swap(old_parent, Ordering::AcqRel)
+        == usize::MAX;
+    let later_unchanged = rootward
+        .inner
+        .as_ref()
+        .unwrap()
+        .scheduling_routes
+        .load(Ordering::Acquire)
+        == old_rootward;
+    CgroupMembership::write_lock().move_process_to_root(&fixture.processes[0]);
+    fixture.tasks[0]
+        .as_posix_thread()
+        .unwrap()
+        .set_cpu_cgroup(None);
+    let p = Arc::downcast::<CgroupNode>(fixture.leaves[0].parent().unwrap()).unwrap();
+    p.remove_child("a").unwrap();
+    fixture.leaves[0] = Arc::downcast::<CgroupNode>(p.create_child("a").unwrap()).unwrap();
+    drop(fixture);
+    assert!(refused && refunded && failed_unchanged && later_unchanged);
+}
+
+#[ktest]
+fn prepared_route_refuses_a_task_without_a_live_process() {
+    let fixture = Fixture::new("w4a-route-reaped");
+    let (process, task) = test_util::new_unstarted_process();
+    drop(process);
+    let refused =
+        CpuRunQueueFixture::with_groups(task.clone(), fixture.start, &[], &[(task.clone(), 0)])
+            .is_err();
+    drop(task);
+    drop(fixture);
+    assert!(
+        refused,
+        "a retained accounting fallback is not a live routing binding"
+    );
+}

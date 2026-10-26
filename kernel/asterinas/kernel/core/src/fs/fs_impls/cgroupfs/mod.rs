@@ -7,7 +7,10 @@ pub(crate) use controller::cpu::NativeCpuManager;
 pub(crate) use controller::cpu::{CpuUsageError, NativeCpuObserver};
 pub(crate) use controller::{
     anon::alloc_anon_frame,
-    cpu::{CpuChargeOwner, CpuSchedulingGroup, CpuStatKind, charge_cpu_time, task_cpu_eligible},
+    cpu::{
+        CpuChargeOwner, CpuSchedulingGroup, CpuSchedulingRoute, CpuStatKind, charge_cpu_time,
+        task_cpu_eligible,
+    },
     page_memory::{
         PageCharge as MemoryPageCharge, PageKind, alloc_ipc_segment, charge_current_kernel_stack,
         charge_current_page_table, charge_current_pages,

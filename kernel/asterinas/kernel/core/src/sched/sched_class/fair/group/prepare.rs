@@ -3,6 +3,7 @@
 //! Cold, fallible admission for an immutable internal topology.
 
 use super::*;
+use crate::fs::cgroupfs::CgroupMembership;
 
 impl GroupTree {
     /// Build the complete internal topology and immutable task bindings before
@@ -13,6 +14,10 @@ impl GroupTree {
         bindings: &[(Arc<Task>, GroupId)],
     ) -> Result<Self> {
         ostd::task::atomic_mode::might_sleep();
+        // One cold membership cut captures raw leaf/ancestor incarnations and
+        // validates effective group identities before the prepared tree escapes.
+        // No caller may enter prepare while holding the membership writer.
+        let membership = CgroupMembership::read_lock();
         let mut tree = Self {
             nodes: Vec::new(),
             bindings: Vec::new(),
@@ -58,7 +63,8 @@ impl GroupTree {
             if *leaf >= tree.nodes.len() {
                 return Err(Error::InvalidArgs);
             }
-            match CpuSchedulingGroup::for_task(task) {
+            let route = CpuSchedulingRoute::capture(task, &membership)?;
+            match route.as_ref().and_then(CpuSchedulingRoute::group) {
                 Some(owner) => {
                     if let Some(expected) = &tree.nodes[*leaf].owner {
                         if !expected.same_incarnation(&owner) {
@@ -77,6 +83,7 @@ impl GroupTree {
                 key: Arc::as_ptr(task) as usize,
                 task: Arc::downgrade(task),
                 leaf: *leaf,
+                _route: route,
             });
             tree.nodes[*leaf].admitted_tasks += 1;
         }

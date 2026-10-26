@@ -364,6 +364,10 @@ impl Controller {
             return Err(Error::NotFound);
         }
 
+        if ctrl_type == SubCtrlType::Cpu {
+            Self::ensure_cpu_routes_unpinned(current_node)?;
+        }
+
         active_set.add_type(ctrl_type);
         self.active_set.store(active_set, Ordering::Relaxed);
         self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
@@ -396,15 +400,45 @@ impl Controller {
             {
                 return Err(Error::InvalidOperation);
             }
-            if ctrl_type == SubCtrlType::Cpu && cgroup_child.controller().has_trusted_cpu_management() {
+            if ctrl_type == SubCtrlType::Cpu
+                && cgroup_child.controller().has_trusted_cpu_management()
+            {
                 return Err(Error::PermissionDenied);
             }
+        }
+
+        if ctrl_type == SubCtrlType::Cpu {
+            Self::ensure_cpu_routes_unpinned(current_node)?;
         }
 
         active_set.remove_type(ctrl_type);
         self.active_set.store(active_set, Ordering::Relaxed);
         self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
 
+        Ok(())
+    }
+
+    /// Check the whole affected subtree before changing active_set or closing
+    /// any incarnation. A route captured under membership's read side pins
+    /// every current raw ancestor, including inactive levels. Thus each direct
+    /// child's zero count implies no pinned route anywhere below that child.
+    /// Exited tasks' retained old-owner chains are never admitted as routes.
+    fn ensure_cpu_routes_unpinned(current_node: &dyn CgroupSysNode) -> Result<()> {
+        for child in current_node.children() {
+            let child = Arc::downcast::<CgroupNode>(child).unwrap();
+            if child
+                .controller()
+                .cpu
+                .read()
+                .get()
+                .inner
+                .as_ref()
+                .unwrap()
+                .has_scheduling_routes()
+            {
+                return Err(Error::ResourceUnavailable);
+            }
+        }
         Ok(())
     }
 
