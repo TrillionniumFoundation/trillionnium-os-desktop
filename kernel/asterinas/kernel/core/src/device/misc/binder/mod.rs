@@ -1237,7 +1237,7 @@ impl BinderFile {
                 }
             }
             d.notify();
-            return Err(error);
+            return Err(error.into());
         }
         {
             let mut d = domain().lock();
