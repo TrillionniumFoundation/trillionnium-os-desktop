@@ -643,7 +643,16 @@ impl Scheduler for ClassScheduler {
             let selected = self.select_cpu(&thread, flags);
             let cpu = match task.cpu().set_if_is_none(selected) {
                 Ok(()) => {
-                    return self.publish_detached((task, thread), Some(flags), None, None);
+                    let initial_cpu = (flags == EnqueueFlags::Spawn
+                        && thread.sched_attr().last_cpu().is_none())
+                    .then_some(selected);
+                    return self.publish_detached(
+                        (task, thread),
+                        Some(flags),
+                        None,
+                        None,
+                        initial_cpu,
+                    );
                 }
                 Err(owner) => owner,
             };
@@ -681,7 +690,7 @@ impl Scheduler for ClassScheduler {
         match action {
             CompletedSwitch::None => None,
             CompletedSwitch::Publish(entity, debt) => {
-                self.publish_detached(entity, Some(EnqueueFlags::Wake), debt, None)
+                self.publish_detached(entity, Some(EnqueueFlags::Wake), debt, None, None)
             }
             CompletedSwitch::Dormant(task, request, outcome) => {
                 affinity::finish_unclaimed(&task, &request, outcome);

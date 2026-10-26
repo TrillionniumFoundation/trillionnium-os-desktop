@@ -181,7 +181,7 @@ impl ClassScheduler {
             let rollback = QueuedRemoval::new(self, removed);
             let debt = rollback.debt();
             let entity = (rollback.task().clone(), task.as_thread().unwrap().clone());
-            self.publish_detached(entity, None, Some(debt), Some(rollback));
+            self.publish_detached(entity, None, Some(debt), Some(rollback), None);
             return;
         }
     }
@@ -205,6 +205,7 @@ impl ClassScheduler {
         flags: Option<EnqueueFlags>,
         debt: Option<u64>,
         mut rollback: Option<QueuedRemoval<'_>>,
+        mut initial_cpu: Option<CpuId>,
     ) -> Option<CpuId> {
         let _irq = disable_local();
         let (task, thread) = entity;
@@ -216,7 +217,22 @@ impl ClassScheduler {
                 .as_ref()
                 .and_then(|request| request.claim().map(|capacity| (request.clone(), capacity)));
             let destination = forced.as_ref().map_or_else(
-                || self.select_cpu(&thread, flags.unwrap_or(EnqueueFlags::Wake)),
+                || {
+                    // A new Task already advanced round-robin when claiming its
+                    // token. Reuse that choice once, while retaining the same
+                    // forced-request priority and final mask checks below.
+                    initial_cpu
+                        .take()
+                        .filter(|cpu| {
+                            thread
+                                .atomic_cpu_affinity()
+                                .load(Ordering::Acquire)
+                                .contains(*cpu)
+                        })
+                        .unwrap_or_else(|| {
+                            self.select_cpu(&thread, flags.unwrap_or(EnqueueFlags::Wake))
+                        })
+                },
                 |(request, _)| request.destination(),
             );
             if debt.is_none() && source.is_some_and(|cpu| cpu != destination) {
