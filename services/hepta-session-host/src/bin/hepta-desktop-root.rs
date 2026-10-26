@@ -11,25 +11,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let flag = args.next();
         let path = args.next();
         if flag.as_deref() != Some(std::ffi::OsStr::new("--config")) || path.is_none() {
-            return Err("expected initialize --config <Root0600-input> or recover --config <same-input> --operation-id <original-id>".into());
+            return Err("expected initialize --config <Root0600-input> or recover --config <same-input> (--operation-id <original-id> | --latest-original-notes)".into());
         }
         let path = std::path::Path::new(path.as_ref().ok_or("missing config")?);
         match action.as_deref().and_then(std::ffi::OsStr::to_str) {
             Some("initialize") if args.next().is_none() => product_root::initialize(path),
             Some("recover") => {
-                if args.next().as_deref() != Some(std::ffi::OsStr::new("--operation-id")) {
-                    return Err("recovery requires an explicit original operation selector".into());
-                }
-                let operation = args.next().ok_or("missing original operation selector")?;
-                if args.next().is_some() {
-                    return Err("unexpected recovery argument".into());
-                }
-                product_root::recover(
-                    path,
-                    operation
-                        .to_str()
-                        .ok_or("operation selector must be UTF-8")?,
-                )
+                let selection = product_root::RecoverySelection::from_arguments(args)?;
+                product_root::recover(path, selection)
             }
             _ => Err("unknown or repeated original Root action".into()),
         }

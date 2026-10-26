@@ -15,6 +15,8 @@ mod seed;
 mod session;
 mod supervisor;
 
+pub(super) use recovery::RecoverySelection;
+
 use codex_hepta_agentd::{
     PreparedHostAuthoritySession, bind_root_agentd_socket, send_root_production_handoff,
 };
@@ -39,10 +41,10 @@ pub(super) fn initialize(path: &Path) -> Result<()> {
     run(inputs, fresh, seed, replay, runtime, /*previous*/ None)
 }
 
-pub(super) fn recover(path: &Path, operation: &str) -> Result<()> {
+pub(super) fn recover(path: &Path, selection: RecoverySelection) -> Result<()> {
     root_environment()?;
     let inputs = config::Inputs::read_recovery(path)?;
-    let (old, fresh) = recovery::Existing::open(&inputs, operation)?;
+    let (old, fresh) = recovery::Existing::open(&inputs, selection)?;
     let issuer_expiry = recovery_authority::wait_retirement(&old)?;
     recovery_sockets::retire(&inputs, &fresh, &old)?;
     let replay = replay::existing(&inputs, &fresh)?;
@@ -267,7 +269,7 @@ fn run(
     let bootstrap = prepared.seal_bootstrap(&consumer_root)?;
     let self_pidfd = process::pin(std::process::id())?;
     if let Some((old, _)) = &previous {
-        old.stage(&fresh, "30-bootstrap-sealed", &serde_json::json!({"original_operation_id":old.operation,"old_target":old.target,"new_target_for_future_operations_only":target,"thread":seed,"scope":"same-identity sealed bootstrap remains undispatched until original listeners are serving; old outcome requires original writer/helper readback; no old dispatch"}))?;
+        old.stage(&fresh, "30-bootstrap-sealed", &serde_json::json!({"original_operation_selector":old.selection,"old_target":old.target,"new_target_for_future_operations_only":target,"thread":seed,"scope":"same-identity sealed bootstrap remains undispatched until original listeners are serving; old outcome requires original writer/helper readback; no old dispatch"}))?;
     }
     fs::json_new(
         &fresh.admin.join("actual-composition.json"),

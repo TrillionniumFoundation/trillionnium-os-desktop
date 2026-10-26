@@ -32,6 +32,8 @@ ORIGINAL_FILES = (
     "codex-rs/hepta-agentd/src/notes_thread_execution.rs",
     "codex-rs/hepta-agentd/src/notes_thread_execution_tests.rs",
     "codex-rs/hepta-agentd/src/notes_thread_runtime.rs",
+    "codex-rs/hepta-agentd/src/notes_thread_status.rs",
+    "codex-rs/hepta-agentd/src/notes_thread_status_tests.rs",
     "codex-rs/hepta-agentd/src/notes_thread_tool.rs",
     "codex-rs/hepta-agentd/src/notes_thread_human.rs",
     "codex-rs/hepta-agentd/src/notes_launch_mode.rs",

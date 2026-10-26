@@ -144,7 +144,7 @@ pub(super) fn rotate(
     profile["interaction"]["route"] = serde_json::to_value(&route)?;
     profile["previous_recovery"] = json!({"helper":inputs.programs.app_window.with_file_name("trill-notes-recovery"),
         "helper_sha256":fs::digest(&inputs.programs.app_window.with_file_name("trill-notes-recovery"))?,
-        "state_directory":product.user.join("notes"),"previous_target":old.target,"operation_id":old.operation});
+        "state_directory":product.user.join("notes"),"previous_target":old.target,"selector":old.selection});
     let profile_path = product.admin.join("notes-startup.json");
     fs::json_new(&profile_path, &profile)?;
     Ok(RegistrationFiles {

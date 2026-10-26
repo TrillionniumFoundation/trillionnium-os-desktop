@@ -10,6 +10,18 @@ receives a read-only channel. A wrong or unknown selector is an error, never a
 new dispatch or successful outcome. The original thread must Resume and compare
 its real seed/model/provider/catalog metadata on the final original client.
 
+When every reply was lost, `hepta-desktop-root recover --config <same input>
+--latest-original-notes` carries the explicit typed
+`latest_recorded_original_notes` selection. It is mutually exclusive with
+`--operation-id`. Root retains that selection without opening the cognitive
+database or guessing an operation ID. After the canonical writer and original
+thread profile have recovered, the original owner resolves a complete bounded
+read-only retained cut and verifies the protected original callback identity
+before attaching the existing read-only helper. Incomplete records, an
+ambiguous latest record, or a legacy record without the original reference
+remain unknown. Selection creates no send permission and does not convert a
+metadata reference into evidence that the document changed.
+
 The original schema-2 seed must still verify its exact Core configuration and
 disabled environment files before any recovery stage is created. Schema-1
 seeds do not establish the finite execution profile and are refused, as are

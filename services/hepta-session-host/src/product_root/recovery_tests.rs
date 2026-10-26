@@ -3,6 +3,34 @@ use super::super::recovery_authority::writer_expiry;
 use super::*;
 
 #[test]
+fn recovery_selector_is_explicit_exclusive_and_preserves_the_exact_old_id() {
+    let parse = |args: &[&str]| {
+        RecoverySelection::from_arguments(args.iter().map(std::ffi::OsString::from))
+    };
+    let exact = parse(&["--operation-id", "original-notes-17"]).unwrap();
+    assert_eq!(
+        serde_json::to_value(exact).unwrap(),
+        serde_json::json!({"kind":"exact_operation","operation_id":"original-notes-17"})
+    );
+    let latest = parse(&["--latest-original-notes"]).unwrap();
+    assert_eq!(
+        serde_json::to_value(latest).unwrap(),
+        serde_json::json!({"kind":"latest_recorded_original_notes"})
+    );
+    for args in [
+        vec![],
+        vec!["--operation-id"],
+        vec!["--operation-id", ""],
+        vec!["--operation-id", "bad/id"],
+        vec!["--latest-original-notes", "--operation-id", "old"],
+        vec!["--operation-id", "old", "--latest-original-notes"],
+        vec!["--latest-original-notes", "--latest-original-notes"],
+    ] {
+        assert!(parse(&args).is_err(), "accepted {args:?}");
+    }
+}
+
+#[test]
 fn writer_window_stops_before_the_original_issuer_without_renewal() {
     assert_eq!(writer_expiry(10_000, 310_000).unwrap(), 190_000);
     assert_eq!(writer_expiry(190_001, 310_000).unwrap(), 250_000);

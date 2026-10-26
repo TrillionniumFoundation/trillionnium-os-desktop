@@ -5,9 +5,48 @@ use codex_hepta_agentd::{
     NotesThreadSeedReceipt, RetiredCheckpointPublisher,
 };
 use codex_hepta_memory::{CognitiveCheckpointPeerLifetime, NotesTargetIdentity};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
+
+/// A request to select original records after the canonical owner has opened.
+/// Root does not resolve latest by reading the database or inventing an ID.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub(crate) enum RecoverySelection {
+    ExactOperation { operation_id: String },
+    LatestRecordedOriginalNotes,
+}
+
+impl RecoverySelection {
+    pub(crate) fn from_arguments(
+        mut args: impl Iterator<Item = std::ffi::OsString>,
+    ) -> Result<Self> {
+        let selection = match args.next().as_deref().and_then(std::ffi::OsStr::to_str) {
+            Some("--operation-id") => Self::ExactOperation {
+                operation_id: args
+                    .next()
+                    .ok_or("missing original operation selector")?
+                    .into_string()
+                    .map_err(|_| "operation selector must be UTF-8")?,
+            },
+            Some("--latest-original-notes") => Self::LatestRecordedOriginalNotes,
+            _ => return Err("recovery requires an explicit original operation selector".into()),
+        };
+        if args.next().is_some() {
+            return Err("unexpected or competing recovery selector".into());
+        }
+        selection.validate()?;
+        Ok(selection)
+    }
+
+    fn validate(&self) -> Result<()> {
+        if let Self::ExactOperation { operation_id } = self {
+            codex_hepta_types::StableId::new(operation_id)?;
+        }
+        Ok(())
+    }
+}
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -31,12 +70,12 @@ pub(super) struct Existing {
     pub seed: NotesThreadSeedReceipt,
     pub target: NotesTargetIdentity,
     pub profile: Value,
-    pub operation: String,
+    pub selection: RecoverySelection,
 }
 
 impl Existing {
-    pub(super) fn open(inputs: &Inputs, operation: &str) -> Result<(Self, Product)> {
-        codex_hepta_types::StableId::new(operation)?;
+    pub(super) fn open(inputs: &Inputs, selection: RecoverySelection) -> Result<(Self, Product)> {
+        selection.validate()?;
         let admin = inputs.prefix.join("admin");
         let original_inputs: Inputs = fs::read_root_json(&admin.join("original-inputs.json"))?;
         let mut expected = serde_json::to_value(original_inputs)?;
@@ -128,10 +167,10 @@ impl Existing {
             seed,
             target: composition.notes_target,
             profile,
-            operation: operation.into(),
+            selection,
         };
         old.stage(&product, "00-admitted", &serde_json::json!({"original_owner":old.registration,
-            "old_target":old.target,"original_thread":old.seed,"operation_id":old.operation,
+            "old_target":old.target,"original_thread":old.seed,"operation_selector":old.selection,
             "scope":"same-boot existing state selected; no recovery success or operation outcome asserted"}))?;
         Ok((old, product))
     }
