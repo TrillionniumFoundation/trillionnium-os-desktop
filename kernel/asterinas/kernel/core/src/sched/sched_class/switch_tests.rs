@@ -8,6 +8,25 @@ use super::*;
 use crate::thread::kernel_thread::ThreadOptions;
 
 #[ktest]
+fn a_new_task_advances_round_robin_once_through_actual_enqueue() {
+    // A06 run 40373542005: two selections per spawn cancelled rotation on
+    // two CPUs, leaving the real two-pthread unlimited baseline near 100%.
+    // Count the actual selection path even in the ordinary one-CPU ktest.
+    aster_time::init_for_ktest();
+    let scheduler = ClassScheduler::new();
+    let task = ThreadOptions::new(|| {}).build();
+    assert!(task.cpu().get().is_none());
+    assert!(task.as_thread().unwrap().sched_attr().last_cpu().is_none());
+    scheduler.enqueue(task.clone(), EnqueueFlags::Spawn);
+    assert_eq!(scheduler.round_robin_selections.load(Ordering::Relaxed), 1);
+    let cpu = task.cpu().get().unwrap();
+    assert_eq!(task.as_thread().unwrap().sched_attr().last_cpu(), Some(cpu));
+    let _irq = disable_local();
+    let rq = scheduler.rqs[cpu.as_usize()].lock();
+    assert_eq!(rq.load_stats().queue_len, 1);
+}
+
+#[ktest]
 fn merged_wait_wake_does_not_preempt_the_reserved_rt_task() {
     aster_time::init_for_ktest();
     let scheduler = ClassScheduler::new();

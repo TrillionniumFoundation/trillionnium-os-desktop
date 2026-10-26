@@ -163,6 +163,8 @@ pub(crate) struct ClassScheduler {
     /// the runqueues may be accessed in both the task and interrupt context (L1 and L2).
     rqs: Box<[SpinLock<PerCpuClassRqSet, LocalIrqDisabled>]>,
     last_chosen_cpu: AtomicCpuId,
+    #[cfg(ktest)]
+    round_robin_selections: core::sync::atomic::AtomicUsize,
 }
 
 /// Represents the run queue for each CPU core. It stores a list of run queues for
@@ -706,6 +708,8 @@ impl ClassScheduler {
         ClassScheduler {
             rqs: all_cpus().map(class_rq).collect(),
             last_chosen_cpu: AtomicCpuId::default(),
+            #[cfg(ktest)]
+            round_robin_selections: core::sync::atomic::AtomicUsize::new(0),
         }
     }
 
@@ -746,6 +750,8 @@ impl ClassScheduler {
             None => affinity.iter().for_each(test_candidate),
         }
 
+        #[cfg(ktest)]
+        self.round_robin_selections.fetch_add(1, Ordering::Relaxed);
         self.last_chosen_cpu.set_anyway(selected);
         selected
     }
