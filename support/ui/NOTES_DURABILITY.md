@@ -119,6 +119,12 @@ compositor pixels and physical input qualification still use the separate
 
 ## Implementation and invariants
 
+The [model and compatibility contract](NOTES_MODEL.md) separates wire schema 1,
+checkpoint format/schema 2, descriptor bootstrap 2 and Root reservation 1.
+Complete legacy checkpoint v1 remains readable for its original identity without
+rewriting on open. Only a later legitimate state-changing commit writes v2;
+opening a saved text copy never migrates authority or receipts.
+
 | Owner / module | Responsibility |
 | --- | --- |
 | `ui/core/src/notes.rs` | Exact effect bytes, revision CAS, one pending receipt, independent observations and exact retirement |

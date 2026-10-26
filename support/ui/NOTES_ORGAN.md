@@ -9,6 +9,9 @@ durable mode synchronizes application data before replying; without
 crash handling, helper startup and the actual companion probe. This is a small destination adapter, not a compositor,
 global keyboard controller, mobile device port, or an Asterinas desktop.
 
+The [single model contract](NOTES_MODEL.md) defines independent wire, checkpoint,
+bootstrap and startup versions and the identity-preserving legacy-read rule.
+
 The standalone Session keeps each new destination private and reports
 `original_owner_registered: false`. Public Snapshot / Launch / Cancel IPC has
 no Notes edit or handle-export command. Shell displays the target incarnation
