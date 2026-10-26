@@ -24,6 +24,7 @@ REPOSITORY = "https://github.com/TrillionniumFoundation/hepta-private-ci"
 MANIFESTS = ("ui/Cargo.toml", "ui/core/Cargo.toml", "services/hepta-session-host/Cargo.toml")
 ORIGINAL_FILES = (
     "codex-rs/Cargo.toml",
+    "codex-rs/Cargo.lock",
     "codex-rs/hepta-agentd/LINUX_PRODUCT_PROFILE.md",
     "codex-rs/hepta-agentd/NOTES_ORIGINAL_THREAD.md",
     "codex-rs/hepta-agentd/PRODUCTION_LAUNCHER.md",

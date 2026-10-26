@@ -78,7 +78,7 @@ jobs:
           set -euo pipefail
           python3 -I -B support/ui/test_product_dependencies.py
           python3 -I -B -O support/ui/test_product_dependencies.py
-          python3 -I -B support/ui/verify_product_dependencies.py \
+          python3 -I -B support/ui/verify_product_dependencies.py --source-only \
             | tee "$RUNNER_TEMP/hepta-session-host/product-dependencies.json"
       - name: Resolve and identify the immutable original owner dependency
         run: |

@@ -135,7 +135,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a10"
           python3 -I -B support/ui/test_product_dependencies.py
           python3 -I -B -O support/ui/test_product_dependencies.py
-          python3 -I -B support/ui/verify_product_dependencies.py \
+          python3 -I -B support/ui/verify_product_dependencies.py --source-only \
             | tee "$RUNNER_TEMP/a10/product-dependencies.json"
       - name: Compile and test Rust binaries and validate rustfmt
         run: |
@@ -177,6 +177,18 @@ jobs:
           python3 -I -B tests/ui/verify_shared_presenter.py \
             --metadata "$RUNNER_TEMP/a10/shared-presenter-metadata.json" \
             2>&1 | tee "$RUNNER_TEMP/a10/shared-presenter-source.log"
+          python3 -I -B - <<'PY' | tee "$RUNNER_TEMP/a10/product-dependencies-full.json"
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('tests/ui').resolve()))
+          import verify_shared_presenter
+          sys.path.insert(0, str(Path('support/ui').resolve()))
+          import verify_product_dependencies
+          metadata = json.loads((Path(os.environ['RUNNER_TEMP']) / 'a10/shared-presenter-metadata.json').read_text())
+          source = json.loads(Path('support/ui/HEPTA_SHARED_PRESENTER.json').read_text())
+          upstream = verify_shared_presenter.check_packages(metadata, source)
+          print(json.dumps(verify_product_dependencies.verify(Path.cwd(), upstream), sort_keys=True))
+          PY
       - name: Test original shared packages and real egui edit transactions
         run: |
           set -euo pipefail

@@ -25,6 +25,7 @@ import preedit_source
 import preedit_component
 from build_target_lease import TargetLease
 import prepared_build_source
+import verify_product_dependencies
 
 
 def digest(path):
@@ -191,6 +192,7 @@ def build(args):
     hepta_repo = source_profile.Repository(args.hepta_repo, "hepta")
     identity = os_repo.check(args.desktop_commit, args.desktop_tree)
     hepta_identity = hepta_repo.check(args.hepta_commit, args.hepta_tree)
+    dependencies = verify_product_dependencies.verify(REPO, hepta_repo.path)
     mapping = source_profile.load_json(REPO / "support/release/organ_source_map.json")
     manifest, source_receipt = source_profile.create_manifest(
         os_repo, hepta_repo, args.desktop_commit, args.desktop_tree,
@@ -231,6 +233,7 @@ def build(args):
     receipt = {"schema": "trill.linux-text-build-receipt.v1", "status": "running",
                "source_commit": identity["commit"], "source_tree": identity["tree"],
                "hepta": hepta_identity, "profile": profile,
+               "product_dependencies": dependencies,
                "profile_sha256": digest(profile_path), "cargo_profile": args.build_profile,
                "commands": [], "locks": {}, "binaries": {},
                "cargo_target_reused": bool(args.target_dir),
@@ -314,6 +317,8 @@ def build(args):
                            package_source_profile_sha256=digest(package_profile))
         receipt["resolved_packages"] = validate_graph(graph, args.hepta_commit, profile, sdk_profile)
         receipt["source_caches"] = verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile, sdk_profile)
+        require(verify_product_dependencies.verify(REPO, Path(receipt["source_caches"]["hepta"]["root"]))
+                == dependencies, "Resolved original dependency graph differs from the reviewed checkout")
         run("rustfmt", ["cargo", "fmt", "--manifest-path", "ui/Cargo.toml", "--all", "--", "--check"])
         for name, path, features in (
             ("native-ui-tests", "ui/Cargo.toml", ["--workspace", "--all-targets", *feature]),
@@ -357,6 +362,8 @@ def build(args):
         hepta_repo.check(args.hepta_commit, args.hepta_tree)
         require(verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile, sdk_profile) == receipt["source_caches"],
                 "Actual Cargo source caches changed while building")
+        require(verify_product_dependencies.verify(REPO, Path(receipt["source_caches"]["hepta"]["root"]))
+                == dependencies, "Original dependency graph changed while building")
         if preedit:
             after = run("native-metadata-after", ["cargo", "metadata", "--manifest-path", "ui/Cargo.toml",
                 "--format-version", "1", *common, *feature], machine_output=True)

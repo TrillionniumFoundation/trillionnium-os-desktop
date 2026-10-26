@@ -54,7 +54,30 @@ cargo +1.96.0 test --manifest-path services/hepta-session-host/Cargo.toml \
 
 The dependency verifier rejects mixed revisions, missing original owner
 packages, local owner substitution, drift in the preedit profile and changed
-source bytes. Full native metadata/resource verification still uses the
+source bytes. `codex-rs/Cargo.lock` is part of the original source contract:
+full verification checks its actual Git regular-file blob, bytes and hash
+before using it as the only reference for all six Desktop locks. Bindgen and
+prettyplease must retain the original parser edges and agree on the same Syn
+package identity; an unrelated Syn version used by another macro is allowed.
+Every zstd, zstd-safe and zstd-sys node and chain must match that reference,
+including source and checksum. A second obsolete version cannot hide beside
+an accepted version. The check also reads the original owners' tracked Cargo
+manifests and binds their mandatory incoming edges to that exact lock.
+Removing an entire family and its incoming references cannot turn a required
+dependency into a successful not-applicable result. Optional dependencies of
+external packages still require Cargo's actual locked feature resolution;
+the static check does not replace it. Missing or ambiguous edges are refused.
+
+An early CI job without an original checkout may run
+`python3 -I -B support/ui/verify_product_dependencies.py --source-only`.
+This is a source preflight with `critical_graph_checked=false`, not a full
+dependency result. Full verification requires `--hepta-root`; native source
+validation, the prepared SDK component and Root packaging use that full path.
+Its result records the reference lock hash and applicable nodes/edges for each
+consumer root. Roots without the relevant dependencies remain explicitly
+not applicable; the verifier never adds packages to make them applicable.
+
+Full native metadata/resource verification still uses the
 existing [text product builder](build_text_product.py) and
 [native packaging contract](PRODUCT.md). The source check is deliberately fast
 enough to run before either product's CI build.
@@ -70,6 +93,17 @@ for each Cargo root to preserve unaffected locked versions where resolution
 permits. Verify the actual metadata, original source checkout and all five locks,
 then execute the owning packages' tests and native feature build. Preserve
 the original logs and the final commit, tree, compiler and binary hashes.
+
+When the reference changes a parser/printer or compression family, use Cargo
+to update each affected consumer package ID to the reference version and
+then check the actual resolved edges. A successful update command alone does
+not establish type compatibility. Do not globally downgrade independent Syn
+consumers, hand-edit lock dependencies or substitute the Hepta lock for a
+Desktop lock. Generate the prepared SDK lock independently with the existing
+controlled source-copy workflow; its path SDK remains distinct from the
+ordinary Git SDK lock. The dependency regressions exercise these mismatches,
+ambiguous and deleted nodes, source/checksum substitutions and tracked
+reference-lock tampering in both normal and optimized Python.
 
 The immutable source selection supplies no production issuer, owner lease,
 checkpoint service, Root process or device permission. Runtime readiness comes

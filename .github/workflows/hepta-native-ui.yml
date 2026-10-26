@@ -126,7 +126,7 @@ jobs:
             2>&1 | tee "$evidence/root-bundle-tests.log"
           python3 -I -B support/ui/test_build_target_lease.py \
             2>&1 | tee "$evidence/product-cache-lease-tests.log"
-          python3 -I -B support/ui/verify_product_dependencies.py \
+          python3 -I -B support/ui/verify_product_dependencies.py --source-only \
             | tee "$evidence/product-dependencies.json"
 
       - name: Resolve and verify the actual original Makepad and native-text graph
