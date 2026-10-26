@@ -21,6 +21,7 @@ use crate::{
         signal::{HandlePendingSignal, sig_action::SigAction, sig_mask::SigMask},
     },
     sched::{SchedPolicy, UserSchedSnapshot},
+    thread::Thread,
     time::NSEC_PER_SEC,
     vm::vmar::RssType,
 };
