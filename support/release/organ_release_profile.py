@@ -46,6 +46,13 @@ HEPTA_ROLES_V2 = HEPTA_ROLES | {
 }
 GOLDEN_ROLES_V2 = GOLDEN_ROLES | {"desktop_x11"}
 OS_ROLES_V3 = OS_ROLES_V2 | {
+    'kernel_affinity_contract',
+    'kernel_affinity_owner',
+    'kernel_affinity_probe',
+    'kernel_affinity_runner',
+    'session_development_contract',
+    'session_observer_oracle',
+    'session_reconnect_oracle',
     'hos2_control_owner',
     'hos2_native_dispatch',
     'hos2_wire',

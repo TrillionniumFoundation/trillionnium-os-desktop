@@ -28,6 +28,7 @@ python3 -I -B support/release/check_organ_pair.py \
   --os-repo "$PWD" --hepta-repo /absolute/path/to/hepta-private-ci \
   --os-head FULL_REVIEWED_DESKTOP_SHA --os-tree FULL_REVIEWED_DESKTOP_TREE \
   --manifest support/release/profiles/current-organ-source.json \
+  --required-schema 3 \
   --output-dir /absolute/path/to/new-pair-receipt
 ```
 
@@ -88,7 +89,7 @@ cannot remove those checks. Schema 1 and its map remain available for historical
 manifests. A schema-2 tool does not make a historical schema-1 pin describe new code:
 generate a new manifest only after both intended source commits are frozen.
 
-Both schema versions keep production effects disabled and all seven deployment
+All schema versions keep production effects disabled and all seven deployment
 inputs unconfigured in a source receipt. An independently tested Root fixture or
 a successful compilation does not promote those fields. Actual deployment,
 original-owner GUI tests, persistent guest storage, trusted-role execution and
@@ -96,9 +97,13 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 
 ## Native owner source profile
 
-Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 156
+Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 163
 Desktop/kernel roles and 135 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
 settlement modules, their development/technical contracts and guest probes.
+The affinity owner, permission/race contract and SMP probe/runner are required
+roles, as are the Session observer and reconnect regressions and their module
+contract. This keeps the target-process lifetime fix and bounded private test
+socket paths inside the reviewed source combination.
 It preserves the five protocol
 goldens and adds the real native entry/runner, bounded ELF loader, per-frame
 kernel-stack accounting, actual proc credentials, SGID inode publication,
@@ -149,9 +154,10 @@ pass `--required-schema 3`; the runner then rejects an otherwise valid historica
 profile before executing host commands. The current-profile CI and manifest must
 adopt that requirement together.
 
-The checked-in `current-organ-source.json` remains an earlier source pin until
-a new manifest is deliberately generated and reviewed against both frozen
-commits. Adding schema-3 support does not update that pin or qualify a new pair.
+The checked-in `current-organ-source.json` names its reviewed source pair.
+Changes to required roles or source bytes require deliberate regeneration and
+review against both frozen commits; changing the checker alone does not update
+the pin or qualify a new pair.
 The new manifest still records `source-only` and disabled production authority.
 Only a later successful host run earns `host-build-tests`; native application,
 same-disk restart/history, GUI device effects and real deployment evidence must
