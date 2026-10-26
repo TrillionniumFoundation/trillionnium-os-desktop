@@ -137,3 +137,20 @@ fn fair_backward_cycle_read_does_not_replay_a_charged_prefix() {
     rq.update(UpdateFlags::Tick, START + 13);
     assert_eq!(vruntime(&outgoing), 13);
 }
+
+#[ktest]
+fn fair_root_class_entry_from_an_actual_rt_segment_keeps_the_old_prefix_out() {
+    let [outgoing, incoming] = tasks();
+    let attr = outgoing.as_thread().unwrap().sched_attr();
+    attr.set_policy(SchedPolicy::RealTime {
+        rt_prio: RealTimePriority::new(1),
+        rt_policy: RealTimePolicy::Fifo,
+    });
+    let mut rq = CpuRunQueueFixture::new(outgoing.clone(), START);
+    rq.enqueue(incoming);
+    attr.set_policy(SchedPolicy::Fair(Nice::default()));
+    assert!(rq.update(UpdateFlags::Tick, START + 11));
+    assert_eq!(vruntime(&outgoing), 0);
+    rq.pick(&[START + 17, START + 29]).unwrap();
+    assert_eq!(vruntime(&outgoing), 18);
+}

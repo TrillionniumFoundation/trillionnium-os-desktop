@@ -829,6 +829,8 @@ mod owner_retention_regressions;
 #[cfg(ktest)]
 mod scheduler_handoff_regressions;
 
+#[cfg(ktest)]
+mod group_entity_regressions;
 
 #[cfg(ktest)]
 mod quota_debt_regressions {

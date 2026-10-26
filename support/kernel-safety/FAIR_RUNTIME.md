@@ -75,6 +75,11 @@ retirement. Nice applies within a leaf; each runnable sibling group competes
 once regardless of thread count. Group weight changes must preserve virtual
 debt instead of recreating entities or granting fresh credit.
 
+The subsequent [W2A internal entity stage](FAIR_GROUP_ENTITIES.md) supplies
+prepared queues and production selection transactions while retaining root-only
+ordinary routing and rejected weight writes. It does not close the live
+membership or SMP stages below.
+
 W3 needs a real SMP ownership/migration/load-balancing protocol. The current
 scheduler reuses `last_cpu`, and `sched_setaffinity` explicitly does not migrate
 already running/queued tasks. Independent per-CPU group heaps alone do not
