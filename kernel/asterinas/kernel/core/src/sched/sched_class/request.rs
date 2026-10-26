@@ -8,7 +8,7 @@ use core::fmt;
 
 use ostd::{
     cpu::{CpuId, CpuSet},
-    sync::{SpinLock, Waker},
+    sync::{LocalIrqDisabled, SpinLock, Waker},
     task::Task,
 };
 
@@ -27,14 +27,16 @@ enum Stage {
 struct State<'a> {
     stage: Stage,
     capacity: Option<MigrationCapacity<'a>>,
+    controller: Option<Arc<Waker>>,
 }
 
 pub(super) struct AffinityRequest<'a> {
     generation: u64,
     destination: CpuId,
     placement: Placement,
-    state: SpinLock<State<'a>>,
-    controller: Option<Arc<Waker>>,
+    // Tick/physical-switch readers can interrupt a sleepable controller.
+    // Protect the short state section against same-CPU IRQ reentry as well.
+    state: SpinLock<State<'a>, LocalIrqDisabled>,
 }
 
 /// Return cancelled preparation to the outer caller for destruction after all
@@ -59,8 +61,8 @@ impl<'a> AffinityRequest<'a> {
             state: SpinLock::new(State {
                 stage: Stage::Pending,
                 capacity: Some(capacity),
+                controller,
             }),
-            controller,
         })
         .map_err(|_| ostd::Error::NoMemory)
     }
@@ -102,7 +104,7 @@ impl<'a> AffinityRequest<'a> {
     /// All external rq locks must already be released. Preserve the first
     /// terminal result and notify only after releasing the request spinlock.
     pub(super) fn finish(&self, outcome: Outcome) -> Finished<'a> {
-        let unused_capacity = {
+        let (unused_capacity, controller) = {
             let mut state = self.state.lock();
             if matches!(state.stage, Stage::Complete(_)) {
                 return Finished {
@@ -111,15 +113,43 @@ impl<'a> AffinityRequest<'a> {
                 };
             }
             state.stage = Stage::Complete(outcome);
-            state.capacity.take()
+            (state.capacity.take(), state.controller.take())
         };
-        if let Some(controller) = &self.controller {
+        if let Some(controller) = controller {
             controller.wake_up();
         }
         Finished {
             changed: true,
             unused_capacity,
         }
+    }
+
+    /// A non-owner may acknowledge placement only before the Task owner has
+    /// claimed its ticket. After claim, that owner completes after publication.
+    pub(super) fn finish_if_pending(&self, outcome: Outcome) -> Option<Finished<'a>> {
+        let (unused_capacity, controller) = {
+            let mut state = self.state.lock();
+            match state.stage {
+                Stage::Claimed => return None,
+                Stage::Complete(_) => {
+                    return Some(Finished {
+                        changed: false,
+                        unused_capacity: None,
+                    });
+                }
+                Stage::Pending => {
+                    state.stage = Stage::Complete(outcome);
+                    (state.capacity.take(), state.controller.take())
+                }
+            }
+        };
+        if let Some(controller) = controller {
+            controller.wake_up();
+        }
+        Some(Finished {
+            changed: true,
+            unused_capacity,
+        })
     }
 
     /// Policy writers yield without keeping the administration mutex or

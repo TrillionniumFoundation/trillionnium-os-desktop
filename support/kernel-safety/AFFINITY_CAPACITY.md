@@ -1,9 +1,9 @@
 # Cold transfer capacity prerequisite (W3B1)
 
-This internal prerequisite prepares the existing scheduler containers for a
-single future affinity transfer. It does not enable forced migration or public
-`cpu.weight`. W3A's blocked-wake route remains the production behavior until the
-request/ownership transaction is connected and tested in an ordinary SMP guest.
+W3B1 prepares the existing scheduler containers for a single affinity transfer.
+The later [W3B2 production transaction](FORCED_AFFINITY.md) connects these
+prerequisites to actual forced migration. Public `cpu.weight` remains rejected.
+The sections below describe each separately reviewable prerequisite.
 
 Every physical destination container records reserved incoming slots. Ordinary
 spawn/wake, current requeue and throttle parking preserve
@@ -73,9 +73,8 @@ vacated vector slot and refunds no FAIR/RT queued weight.
 
 The combined token binds the original CPU and exact rq address. It cannot remove
 logical incoming, physical outgoing or a Wait/Exit retry as an ordinary queued
-Task. Every live token must be restored or committed under its origin lock; the
-live request transaction still needs to wrap that obligation in cancellation
-RAII before enabling an entry point. Destination publication must disarm source
+Task. Every live token must be restored or committed under its origin lock;
+W3B2 wraps that obligation in cancellation RAII before publication. Destination publication must disarm source
 rollback before making the Task runnable, then refund only the old slot.
 
 Cross-CPU FAIR placement translates positive relative debt from the source floor
@@ -126,7 +125,8 @@ coordination, not a native delivery record or membership generation.
 
 Request Arc allocation is fallible and cold. An external affinity caller can
 prepare its one waiter with OSTD's safe `Waiter::try_new_pair` before publishing
-effects, avoiding a new waiter/queue allocation after activation. Self callers
+effects, avoiding allocation of a new wait object after activation. Notification uses
+the ordinary wake path; this does not remove legacy runnable-queue growth. Self callers
 must yield rather than park on their own placement. Other policy writers yield
 without holding administration while a placement is pending. Such waiting still
 consumes their ordinary CPU budget; it is not a new reserved recovery service.
@@ -135,4 +135,6 @@ Request and complete mask are installed under one request-slot spinlock, without
 acquiring an rq there. Every producer must consult that slot before publication.
 Retirement compares Arc identity so a delayed old completion cannot clear a newer
 request. Completed preparation/retired request storage must be destroyed outside
-the request/rq locks. These primitives alone do not enable forced migration.
+the request/rq locks. These primitives alone do not enable forced migration. Both the slot and request
+state use `LocalIrqDisabled` spin guardians: a tick may inspect them on the same
+CPU as a sleepable controller, so preemption disabling alone is insufficient.

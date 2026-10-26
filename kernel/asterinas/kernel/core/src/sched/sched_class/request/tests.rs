@@ -61,3 +61,42 @@ fn dropping_unpublished_request_cancels_its_original_capacity() {
     let _irq = disable_local();
     assert_eq!(scheduler.rqs[0].lock().throttled_reserved, 0);
 }
+
+#[ktest]
+fn nonowner_ack_cannot_finish_a_claimed_transfer() {
+    let scheduler = ClassScheduler::new();
+    let capacity = scheduler
+        .reserve_migration_capacity(CpuId::bsp(), Placement::Fair)
+        .unwrap();
+    let request = AffinityRequest::new(10, capacity, None).unwrap();
+    let claimed = request.claim().unwrap();
+    assert!(request.finish_if_pending(Ok(())).is_none());
+    assert_eq!(request.outcome(), None);
+    assert!(request.claim().is_none());
+    // Only the owner may publish/restore and then terminate the attempt.
+    drop(claimed);
+    assert!(request.finish(Ok(())).changed);
+    assert_eq!(request.outcome(), Some(Ok(())));
+}
+
+#[ktest]
+fn terminal_request_releases_controller_before_last_request_drop() {
+    let scheduler = ClassScheduler::new();
+    let capacity = scheduler
+        .reserve_migration_capacity(CpuId::bsp(), Placement::Fair)
+        .unwrap();
+    let (waiter, controller) = ostd::sync::Waiter::try_new_pair().unwrap();
+    assert_eq!(Arc::strong_count(&controller), 2);
+    let request = AffinityRequest::new(11, capacity, Some(controller.clone())).unwrap();
+    assert_eq!(Arc::strong_count(&controller), 3);
+    let finished = request.finish_if_pending(Ok(())).unwrap();
+    assert!(finished.changed);
+    // A later last request Arc can be retired by a hot scheduler path. It no
+    // longer owns the controller Waker (and hence the controller Task data).
+    assert_eq!(Arc::strong_count(&controller), 2);
+    assert!(!request.finish(Ok(())).changed);
+    drop(finished);
+    drop(request);
+    assert_eq!(Arc::strong_count(&controller), 2);
+    drop(waiter);
+}

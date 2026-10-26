@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
-//! Physical queue removal tokens. The live request state machine is not
-//! enabled by this module. A caller must restore or commit every live token
+//! Physical queue removal tokens used by the affinity request state machine.
+//! A caller must restore or commit every live token
 //! under its original rq; no second runnable staging queue is introduced.
 
 use super::*;
@@ -32,6 +32,50 @@ impl RemovedEntity {
 
     pub(super) fn debt(&self) -> u64 {
         self.debt
+    }
+}
+
+/// The production control path must wrap a detached entry before doing any
+/// fallible work. Before publication Drop restores; afterwards it only refunds
+/// the old physical slot. Never drop it while any rq lock is held.
+pub(super) struct QueuedRemoval<'a> {
+    scheduler: &'a ClassScheduler,
+    token: Option<RemovedEntity>,
+    published: bool,
+}
+
+impl<'a> QueuedRemoval<'a> {
+    pub(super) fn new(scheduler: &'a ClassScheduler, token: RemovedEntity) -> Self {
+        Self {
+            scheduler,
+            token: Some(token),
+            published: false,
+        }
+    }
+    pub(super) fn task(&self) -> &Arc<Task> {
+        self.token.as_ref().unwrap().task()
+    }
+    pub(super) fn debt(&self) -> u64 {
+        self.token.as_ref().unwrap().debt()
+    }
+    pub(super) fn disarm_rollback(&mut self) {
+        assert!(!self.published);
+        self.published = true;
+    }
+}
+
+impl Drop for QueuedRemoval<'_> {
+    fn drop(&mut self) {
+        let Some(mut token) = self.token.take() else {
+            return;
+        };
+        let _irq = disable_local();
+        let mut rq = self.scheduler.rqs[token.cpu.as_usize()].lock();
+        if self.published {
+            rq.commit_removed_task(&mut token);
+        } else {
+            rq.restore_removed_task(token);
+        }
     }
 }
 

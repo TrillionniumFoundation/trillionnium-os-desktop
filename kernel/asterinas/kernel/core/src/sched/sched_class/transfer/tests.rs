@@ -97,3 +97,51 @@ fn prepared_route_removal_is_explicitly_refused_without_root_fallback() {
     assert_eq!(rq.throttled_reserved, 0);
     assert_eq!(rq.fair.len(), 0);
 }
+
+#[ktest]
+fn detached_raii_drop_restores_original_task_and_slot() {
+    let scheduler = ClassScheduler::new();
+    let parked = task();
+    let removed = {
+        let _irq = disable_local();
+        let mut rq = scheduler.rqs[0].lock();
+        rq.park_throttled(parked.clone());
+        rq.take_queued_task(&parked).unwrap().unwrap()
+    };
+    let rollback = QueuedRemoval::new(&scheduler, removed);
+    {
+        let _irq = disable_local();
+        let rq = scheduler.rqs[0].lock();
+        assert_eq!(rq.throttled_reserved, 1);
+        assert!(rq.throttled.is_empty());
+    }
+    // No rq is held when cancellation reacquires the original queue.
+    drop(rollback);
+    let _irq = disable_local();
+    let rq = scheduler.rqs[0].lock();
+    assert_eq!(rq.throttled_reserved, 0);
+    assert_eq!(rq.throttled.len(), 1);
+    assert!(Arc::ptr_eq(&rq.throttled[0], &parked));
+}
+
+#[ktest]
+fn detached_raii_after_publication_refunds_only_old_slot() {
+    let scheduler = ClassScheduler::new();
+    let parked = task();
+    let removed = {
+        let _irq = disable_local();
+        let mut rq = scheduler.rqs[0].lock();
+        rq.park_throttled(parked.clone());
+        rq.take_queued_task(&parked).unwrap().unwrap()
+    };
+    let mut rollback = QueuedRemoval::new(&scheduler, removed);
+    // Controlled owner-transfer boundary; this test does not run a CPU move.
+    rollback.disarm_rollback();
+    drop(rollback);
+    let _irq = disable_local();
+    let rq = scheduler.rqs[0].lock();
+    assert_eq!(rq.throttled_reserved, 0);
+    assert!(rq.throttled.is_empty());
+    assert_eq!(rq.fair.len(), 0);
+    assert_eq!(rq.real_time.len(), 0);
+}

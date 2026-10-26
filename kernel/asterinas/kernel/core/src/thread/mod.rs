@@ -121,6 +121,11 @@ impl Thread {
         self.task.upgrade().unwrap()
     }
 
+    /// Retain the actual Task without assuming a PID lookup outlives exit.
+    pub(crate) fn try_task(&self) -> Option<Arc<Task>> {
+        self.task.upgrade()
+    }
+
     /// Runs this thread at once.
     #[track_caller]
     pub(crate) fn run(&self) {

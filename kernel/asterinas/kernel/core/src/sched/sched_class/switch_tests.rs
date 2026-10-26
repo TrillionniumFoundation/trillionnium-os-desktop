@@ -39,6 +39,7 @@ fn merged_wait_wake_does_not_preempt_the_reserved_rt_task() {
             },
             fair: None,
             finished: false,
+            fair_debt: None,
         });
     }
     assert!(

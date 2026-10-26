@@ -35,10 +35,6 @@ pub(super) fn sys_sched_getaffinity(
     Ok(SyscallReturn::Return(bytes_written as isize))
 }
 
-// TODO: The manual page of `sched_setaffinity` says that if the thread is not
-// running on the CPU specified in the affinity mask, it would be migrated to
-// one of the CPUs specified in the mask. We currently do not support this
-// feature as the scheduler is not ready for migration yet.
 pub(super) fn sys_sched_setaffinity(
     tid: Tid,
     cpuset_size: usize,
@@ -48,9 +44,7 @@ pub(super) fn sys_sched_setaffinity(
     let user_cpu_set = read_cpu_set_from(ctx.user_space(), cpuset_size, cpu_set_ptr)?;
 
     if tid == 0 {
-        ctx.thread
-            .atomic_cpu_affinity()
-            .store(&user_cpu_set, Ordering::Relaxed);
+        crate::sched::set_thread_affinity(ctx.thread, &user_cpu_set)?;
     } else {
         // Release the PID table before checking the target's namespace. A
         // denied request must not publish a mask or enter the scheduler.
@@ -71,9 +65,9 @@ pub(super) fn sys_sched_setaffinity(
                 CapSet::SYS_NICE,
             ))?;
         }
-        thread
-            .atomic_cpu_affinity()
-            .store(&user_cpu_set, Ordering::Relaxed);
+        let result = crate::sched::set_thread_affinity(&thread, &user_cpu_set);
+        drop(target_process);
+        result?;
     }
 
     Ok(SyscallReturn::Return(0))
