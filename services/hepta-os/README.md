@@ -1,5 +1,12 @@
 # Hepta host observer, ObjectiveStart and admission history
 
+Current development navigation: the
+[2026-10-26 module supplement](../../docs/agents/MODULE_DOCUMENTATION_2026_10_26.md)
+links the original Root/Notes/Current contracts and all thirteen release owning
+packages at their fixed Hepta revision. This observer remains a separate client;
+its history query is not an original writer or authority issuer. Historical
+counts below retain their recorded source identities.
+
 `hepta-os-observer` is the first concrete A10 Session → Hepta client slice. It
 speaks the existing, fixed Agentd v2 JSON-over-UDS control wire. Its default API exposes only
 `health`, `capabilities`, `events`, and `run_status`. The public API projects

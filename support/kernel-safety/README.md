@@ -23,6 +23,10 @@ ownership rules, reproduction commands and explicit qualification boundaries:
 - [FAIR execution intervals](FAIR_RUNTIME.md): complete original task runtime
   settlement across ticks, direct handoffs, waits and exits. This prerequisite
   does not enable hierarchical `cpu.weight` scheduling.
+- [Scheduling permissions and inheritance](SCHEDULING_PERMISSIONS.md): original
+  target-namespace authority, RLIMIT escalation checks, coherent user snapshots,
+  per-thread nice/proc readback and fresh clone/thread inheritance. P1/P2/P3 have
+  separate actual guest entry points; this does not add forced CPU migration.
 - [Persistent native storage](NATIVE_PERSISTENCE.md): generated private ext2,
   bind identity, UID isolation and actual VM-process crash/reopen.
 

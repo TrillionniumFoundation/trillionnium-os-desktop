@@ -19,8 +19,11 @@ real cross-process request/reply mappings, object handles and strong/weak
 reference ownership, actual open-file transfer with descriptor rollback,
 and bounded death subscriptions with clear acknowledgements. Its guest
 runbook is [tests/kernel/binder/README.md](../../tests/kernel/binder/README.md).
-It remains a synchronous single-thread-per-open profile with unique death
-cookies. Thread pools, nested/oneway transactions and FD arrays remain open.
+The [D1 actual-thread stage](BINDER_THREADS.md) permits eight real manual
+participants per original Process/image/open, sharing sixteen events and sixteen
+buffers. Returns remain owned by their actual calling/receiving thread. Unique
+death cookies and the retained EFAULT single preparation slot remain bounded
+limitations. Automatic thread pools, nested/oneway transactions and FD arrays remain open.
 Individual source-bound component suites do not establish Android compatibility.
 
 These stages do not implement Android SELinux policy. They do not qualify

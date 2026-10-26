@@ -1,5 +1,11 @@
 # Current Desktop / Hepta pair
 
+For module-to-owner navigation, the thirteen directly tested packages and the
+separate kernel/host/GUI/native source identities, see the
+[2026-10-26 documentation supplement](../../docs/agents/MODULE_DOCUMENTATION_2026_10_26.md).
+It preserves the original receipts and remaining manual gaps; it does not update
+this checkout's release map or qualify a new source pair.
+
 This module binds one Desktop checkout to one complete original Hepta checkout,
 builds the real host binaries and runs their owning-package tests. It does not
 create an authority or enable effects.

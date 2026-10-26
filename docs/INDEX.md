@@ -1,5 +1,13 @@
 # 开发与技术文档入口
 
+## 2026-10-26 固定来源补充
+
+[当前模块文档补充审计](agents/MODULE_DOCUMENTATION_2026_10_26.md)核对 A00–A10、
+自有／上游派生 Cargo 入口、P2/P3、Binder D1、Session／Notes 和原 Root／13 owning packages。
+它区分 `d3ae4b9a` 内核接收、`85425721`／`fef6a641` host／隔离 GUI 与未通过的原生运行。
+[机器摘要](agents/MODULE_DOCUMENTATION_2026_10_26.json)和
+[UI workspace 导航](../ui/README.md)提供实际路径；下方旧数字和旧审计仍保留其历史时点。
+
 ## 当前实施入口：2026-10-25
 
 当前工作继续 Asterinas 派生内核，收敛 Desktop／原 Hepta 的同一可构建版本组合，修复权限与 Session 可用性，并实现 Notes 文档持久化和原 owner 恢复。见[集成实施与验收边界](agents/ORGAN_CONVERGENCE.md)、[源码组合开发和技术契约](../support/release/README.md)与[根项目入口](../README.md)。当前结果须由最终 source-pair 收据和实际测试日志确认；下面的旧版结果保留各自历史时点。

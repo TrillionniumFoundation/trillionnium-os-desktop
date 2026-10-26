@@ -216,8 +216,9 @@ FD payload without a complete reservation batch, including a new front that
 arrives between locks. If a sender exits while reservations are being created,
 its pinned descriptor can still be delivered and freed, but no dead incoming
 reply stack is installed. This prevents a dead sender from blocking future
-requests. Endpoint allocation identities and the single original thread/image
-rule remain in force through this two-stage preparation.
+requests. Endpoint allocation and original Process/image identities remain in
+force through this two-stage preparation. D1 also retains each actual
+participating thread's transaction/return identity; see [BINDER_THREADS.md](BINDER_THREADS.md).
 
 There are at most 256 retained FD snapshots globally, including queued/prepared
 messages and deferred destruction. The 32-object/page/queue limits also apply to

@@ -8,6 +8,11 @@ storage or networking to the guest.
 
 The implemented profile is described in
 [the development and technical document](../../../support/android/BINDER_BYTES.md).
+The actual-thread D1 contract is in
+[BINDER_THREADS.md](../../../support/android/BINDER_THREADS.md). It adds up to
+eight real participating threads per original Process/image/open, with shared
+sixteen-event and sixteen-buffer bounds. It uses manual workers; automatic
+registration/spawn, nested/oneway calls and Android boot remain unimplemented.
 This gate is independent of the historical A08 primitive ioctl/layout checks.
 A byte-only pass does not qualify object IPC. `object_run.py` runs both the
 original byte/budget probe and the three-process object/handle probe against the
@@ -83,5 +88,26 @@ rejection, 32-record saturation/refund, attached last-reference cancellation,
 CLEAR-detached owed handshakes, small reads, EFAULT retry, poll and preserved
 ordinary requests while their admission queue is full. Sixteen actual child
 close/CLEAR races report which legal ordering occurred; deterministic death-first
-cases still require Dead → Done → ClearDone. Single-thread-per-open and unique
-cookie restrictions are deliberate; Android thread pools and boot remain open.
+cases still require Dead → Done → ClearDone. Unique cookie restrictions remain
+deliberate. These older probes do not replace the separate actual-thread suite.
+
+## Actual-thread ownership and lifecycle
+
+```sh
+python3 -I -B tests/kernel/binder/thread_run.py --smp 4 --output /absolute/new/thread-evidence
+```
+
+`thread_run.py` executes three probes: two actual callers/workers sharing opens;
+explicit and actual thread exit with real objects, FD rollback and terminal
+capacity; and prepared node/death work handoff after its reader exits. The
+single prepared transaction slot still retains an EFAULT descriptor for its
+original thread only, so siblings can receive EBUSY until retry or retirement.
+Normal active copying uses bounded admission and signal-aware waits; consumed
+commands are never replayed. See the D1 contract for the full lock/lifetime and
+fallible pre-publication queue-storage rules.
+
+Both thread and object runners accept `--product-evidence` for a successful
+exact-source ordinary product receipt. Omit it to use their original self-build
+path. The [documentation supplement](../../../docs/agents/MODULE_DOCUMENTATION_2026_10_26.md)
+records the separate `d3ae4b9a` reception and the limits of those actual runs;
+this runbook does not qualify an Android service manager or automatic pool.

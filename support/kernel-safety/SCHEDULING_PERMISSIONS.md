@@ -17,8 +17,8 @@ policy. The copyable `UserSchedSnapshot` supplies `policy()`, `linux_policy()`,
 snapshot, so ordinary Normal nice 19 is distinct from declared Idle, RT static
 nice is retained, and `sched_getparam` reports Linux rather than reversed internal
 RT priority. `SchedAttr::from_user_snapshot` constructs an unpublished attribute
-for the subsequent clone-inheritance integration; it does not change a live task
-or grant authority. The rq hot path does not use this snapshot mutex.
+for the actual fork/CLONE_THREAD inheritance path described below; it does not
+change a live task or grant authority. The rq hot path does not use this snapshot mutex.
 
 The writer copies the old policy through the short policy spinlock, releases
 that lock, reads the actual target soft limits and validates the change. Zero
