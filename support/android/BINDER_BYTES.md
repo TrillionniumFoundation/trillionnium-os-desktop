@@ -1,10 +1,11 @@
-# Binder synchronous byte IPC: development and technical contract
+# Binder synchronous IPC: development and technical contract
 
 This stage introduces a real `/dev/binder` device for Linux's 64-bit Binder v8
-wire layout. It implements bounded synchronous byte transactions to the single
-context manager at handle 0. Two independently opened endpoints can exchange a
-transaction and reply through kernel-owned receive pages. This is an initial
-kernel implementation, not a claim that Android can boot.
+wire layout. It implements bounded synchronous transactions to the context manager
+at handle 0 and to transferred strong object handles. Independently opened
+endpoints exchange actual transactions, object references and replies through
+kernel-owned receive pages. This restricted profile is not Android boot
+qualification.
 
 The ABI constants and structure layout follow the
 [Linux v6.17 UAPI](https://github.com/torvalds/linux/blob/v6.17/include/uapi/linux/android/binder.h).
@@ -25,7 +26,9 @@ The device supports `BINDER_VERSION` (8), `BINDER_SET_MAX_THREADS` (0 or 1),
 `BINDER_SET_CONTEXT_MGR` (legacy ignored argument), `BINDER_WRITE_READ` and
 `BINDER_THREAD_EXIT`. A context manager must map its receive area and enter its
 looper before clients can send. The write stream supports `BC_TRANSACTION`,
-`BC_REPLY`, `BC_FREE_BUFFER`, `BC_ENTER_LOOPER` and `BC_EXIT_LOOPER`.
+`BC_REPLY`, `BC_FREE_BUFFER`, `BC_ENTER_LOOPER`, `BC_EXIT_LOOPER`, the four
+handle reference commands (`BC_INCREFS`, `BC_ACQUIRE`, `BC_RELEASE`, `BC_DECREFS`),
+and exact owner acknowledgements (`BC_INCREFS_DONE`, `BC_ACQUIRE_DONE`).
 
 A synchronous call produces a transaction-complete event for the sender and a
 `BR_TRANSACTION` for the manager. The manager's reply produces its completion and
@@ -89,10 +92,73 @@ taking the domain lock. Output copying takes place after preparing a bounded
 event and releasing the domain lock. Unmap notifications run before the PTEs are
 removed; remaining UFrame/PTE references preserve memory safety through teardown.
 
+## Object and handle development contract
+
+The supported metadata objects are 24-byte strong/weak local Binder objects and
+strong/weak remote handle objects. Offset arrays use native 64-bit entries;
+offsets must be eight-byte aligned, strictly ordered, nonoverlapping, and fully
+inside the snapshotted data. Data rounded up to eight bytes plus the offset array
+must fit in one receive page. This bounded profile accepts zero object flags;
+priority/security labels and FD acceptance are not silently ignored.
+
+An object node is a real kernel allocation with a monotonic allocation identity.
+Its owner is the original endpoint, whose original Process/Thread/VMAR identity
+is enforced. The userspace pointer and cookie are opaque local object labels,
+never kernel addresses or authority tokens. Re-exporting an existing pointer with
+a different cookie fails. Receiving a foreign object creates a per-endpoint,
+monotonic nonzero descriptor. Forwarding resolves the actual node and allocates
+a descriptor in the next endpoint's namespace; returning to the original owner
+restores its original pointer, cookie and strong/weak object kind. A nonzero
+transaction target must resolve an existing strong reference and delivers the
+original target pointer/cookie to that owner, not to the current manager.
+
+Queued transfers, delivered receive buffers, and explicit userspace handle
+references are separately owned contributions. Preparing an event or retrying a
+failed descriptor copy shares the existing contribution, rather than incrementing
+it again. `BC_FREE_BUFFER` drops the buffer's contributions and removes descriptors
+with no remaining buffer or explicit reference. `BC_ACQUIRE`/`BC_INCREFS` retain
+existing strong/weak handles; `BC_RELEASE`/`BC_DECREFS` drop only explicit references
+and reject underflow. A pure weak handle cannot be called or promoted with
+`BC_ACQUIRE`. Dead-owner handles retain the old node identity and calls report
+completion plus `BR_DEAD_REPLY`; creating another endpoint cannot redirect them.
+
+The owner receives real `BR_INCREFS`, `BR_ACQUIRE`, `BR_RELEASE`, `BR_DECREFS` work
+from aggregate node state. The first two require matching pending pointer/cookie
+acknowledgements. Invalid, duplicate and mismatched acknowledgements fail.
+Reference work is scanned independently of the transaction queue, so a full queue
+cannot discard required owner notifications. Release/decref work waits for pending
+acknowledgements. Closing, exec's receive mapping teardown, thread exit, queued
+sender death and endpoint unmap drop their actual queued/buffer/user contributions.
+A prepared front event remains stable when its sender dies.
+
+Additional bounds are 32 metadata objects per payload, 16 local nodes per owner,
+256 simultaneously retained node allocations (including dead owners still held
+by another endpoint), 128 live descriptors per endpoint, 32 explicit references
+per strength per descriptor and 4096 contributions per node. Node and handle
+identities are checked for integer exhaustion and are never reused. The full
+payload is preflighted before publishing any node or contribution; receive
+handle allocation is drafted and committed only after a receive slot is available.
+Metadata uses the bounded kernel heap; these caps do not claim Android's full
+memory-pressure policy.
+
+Developers should keep `objects.rs` responsible for reference lifetime and owner
+work, `mod.rs` responsible for domain routing/receive ownership, and `uapi.rs`
+responsible for POD wire layouts. Lock order is DOMAIN then Node.state. Reference
+Drop only takes Node.state, never DOMAIN. No native PID lookup, userspace service,
+path reopen or synthetic handle substitutes for the actual node allocation.
+
+`tests/kernel/binder/object_run.py` compiles a static guest-only probe and uses
+the ordinary kernel build/boot gate before injecting it into an isolated QEMU
+initramfs. The three-process test covers local export, namespace forwarding,
+strong target invocation, return to original owner, exact sender identity,
+buffer-only and retained references, weak/forged handle denial, offset validation,
+copyout retry, reference underflow/acknowledgements, last-reference owner work and
+dead-owner identity nonreuse. The original byte probe remains required, including
+its real cgroup mapping-admission rollback. No probe runs on the host.
+
 ## Explicitly unsupported
 
-Nonzero handles, transferred Binder objects, nonempty offset arrays, FD/FD-array
-translation, scatter/gather, oneway calls, priority inheritance, nested calls,
+FD/FD-array translation, scatter/gather, oneway calls, priority inheritance, nested calls,
 thread-pool spawning, death subscriptions and transaction security contexts are
 rejected. `BINDER_SET_CONTEXT_MGR_EXT` is not a fake success. The supported byte
 profile uses zero transaction flags; even a request accepting FD replies must

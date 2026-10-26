@@ -117,11 +117,11 @@ static void unsupported(struct endpoint *e) {
     unsigned char stream[68]={0}; uint32_t command=BC_TRANSACTION;
     struct binder_transaction_data tr={.offsets_size=8};
     memcpy(stream,&command,4);memcpy(stream+4,&tr,64);
-    CHECK(write_commands(e->fd,stream,sizeof stream,&consumed)==-1&&errno==EOPNOTSUPP&&consumed==0);
+    CHECK(write_commands(e->fd,stream,sizeof stream,&consumed)==-1&&errno==EINVAL&&consumed==0);
     tr.offsets_size=0;tr.flags=TF_ONE_WAY;memcpy(stream+4,&tr,64);
     CHECK(write_commands(e->fd,stream,sizeof stream,NULL)==-1&&errno==EOPNOTSUPP);
     tr.flags=0;tr.target.handle=1;memcpy(stream+4,&tr,64);
-    CHECK(write_commands(e->fd,stream,sizeof stream,NULL)==-1&&errno==EOPNOTSUPP);
+    CHECK(write_commands(e->fd,stream,sizeof stream,NULL)==-1&&errno==EINVAL);
     tr.target.handle=0;tr.data_size=4097;memcpy(stream+4,&tr,64);
     CHECK(write_commands(e->fd,stream,sizeof stream,NULL)==-1&&errno==EMSGSIZE);
     tr.data_size=1;tr.data.ptr.buffer=1;memcpy(stream+4,&tr,64);

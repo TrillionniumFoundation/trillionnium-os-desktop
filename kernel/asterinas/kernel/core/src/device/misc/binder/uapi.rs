@@ -11,12 +11,41 @@ pub(super) const SET_CONTEXT_MGR_EXT: u32 = 0x4018_620d;
 pub(super) const TRANSACTION: u32 = 0x4040_6300;
 pub(super) const REPLY: u32 = 0x4040_6301;
 pub(super) const FREE_BUFFER: u32 = 0x4008_6303;
+pub(super) const INCREFS: u32 = 0x4004_6304;
+pub(super) const ACQUIRE: u32 = 0x4004_6305;
+pub(super) const RELEASE: u32 = 0x4004_6306;
+pub(super) const DECREFS: u32 = 0x4004_6307;
+pub(super) const INCREFS_DONE: u32 = 0x4010_6308;
+pub(super) const ACQUIRE_DONE: u32 = 0x4010_6309;
 pub(super) const ENTER_LOOPER: u32 = 0x630c;
 pub(super) const EXIT_LOOPER: u32 = 0x630d;
 pub(super) const BR_TRANSACTION: u32 = 0x8040_7202;
 pub(super) const BR_REPLY: u32 = 0x8040_7203;
 pub(super) const BR_DEAD_REPLY: u32 = 0x7205;
 pub(super) const BR_TRANSACTION_COMPLETE: u32 = 0x7206;
+pub(super) const BR_INCREFS: u32 = 0x8010_7207;
+pub(super) const BR_ACQUIRE: u32 = 0x8010_7208;
+pub(super) const BR_RELEASE: u32 = 0x8010_7209;
+pub(super) const BR_DECREFS: u32 = 0x8010_720a;
+pub(super) const TYPE_BINDER: u32 = 0x7362_2a85;
+pub(super) const TYPE_WEAK_BINDER: u32 = 0x7762_2a85;
+pub(super) const TYPE_HANDLE: u32 = 0x7368_2a85;
+pub(super) const TYPE_WEAK_HANDLE: u32 = 0x7768_2a85;
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Pod)]
+pub(super) struct FlatObject {
+    pub kind: u32,
+    pub flags: u32,
+    pub value: u64,
+    pub cookie: u64,
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Pod)]
+pub(super) struct PtrCookie {
+    pub pointer: u64,
+    pub cookie: u64,
+}
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Pod)]

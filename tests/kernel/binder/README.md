@@ -9,8 +9,11 @@ storage or networking to the guest.
 The implemented profile is described in
 [the development and technical document](../../../support/android/BINDER_BYTES.md).
 This gate is independent of the historical A08 primitive ioctl/layout checks.
-A pass does not qualify Android boot, Binder objects, descriptor transfer,
-thread pools, service registration, SELinux policy, or a Hepta device effect.
+A byte-only pass does not qualify object IPC. `object_run.py` runs both the
+original byte/budget probe and the three-process object/handle probe against the
+same ordinary kernel. Object qualification still does not qualify Android boot,
+file-descriptor transfer, thread pools, Android service registration, SELinux
+policy, or a Hepta device effect.
 
 Run from this checkout with its own source-built OSDK, pinned toolchain, external
 private build cache, the fixed vDSO directory, and at most two compiler jobs:
@@ -42,3 +45,17 @@ existing VMAR error path removes its mapped prefix. The before-fix failure and
 after-fix passing guest evidence are separate. Two earlier fixture failures
 (missing parent controller activation and cold stderr/TLS COW at the ceiling)
 are retained and are not counted as reproductions of the product bug.
+
+## Actual object/handle gate
+
+```sh
+python3 -I -B tests/kernel/binder/object_run.py --smp 4 --output /absolute/new/evidence
+```
+
+This gate validates strong/weak local objects, per-endpoint handle namespaces,
+three-process forwarding and return to the original node, nonzero strong-target
+calls, buffer ownership and explicit reference retention, precise owner reference
+notifications, malformed input/underflow rejection, copyout retry and old-owner
+death without identity reuse. Its helpers consume and acknowledge actual BR
+reference work; they never inject a synthetic kernel result. Guest fixtures have
+an alarm bound and are only compiled on the host.

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-//! Bounded synchronous Binder byte transactions to context-manager handle 0.
+//! Bounded synchronous Binder transactions and owned object references.
 //!
 //! One participating thread per open, one outgoing call per open, no nested
-//! calls, objects, FD translation, death subscriptions, oneway, or MAC labels.
+//! calls, FD translation, death subscriptions, oneway, or MAC labels.
 //! The device node is root:root 0600. This is not Android boot qualification.
 //!
 //! Lock order: VMAR -> DOMAIN. DOMAIN never acquires VMAR/process locks or
@@ -10,10 +10,12 @@
 //! domain lock and copied after releasing it. Mapping frames are owned, charged
 //! UFrames, not user addresses. A failed output copy retains the prepared event.
 
+mod objects;
 mod uapi;
 use core::time::Duration;
 
 use device_id::{DeviceId, MinorId};
+use objects::*;
 use ostd::{
     mm::{UFrame, VmIo},
     sync::WaitQueue,
@@ -56,6 +58,8 @@ fn domain() -> &'static Mutex<Domain> {
 
 struct Domain {
     next: u64,
+    next_node: u64,
+    nodes: BTreeMap<u64, Weak<Node>>,
     manager: Option<u64>,
     endpoints: BTreeMap<u64, Endpoint>,
 }
@@ -64,7 +68,9 @@ struct Endpoint {
     pollee: Arc<Pollee>,
     mapping: Option<ReceiveArea>,
     queue: VecDeque<Event>,
-    prepared: Option<Vec<u8>>,
+    prepared: Option<Prepared>,
+    nodes: BTreeMap<u64, Arc<Node>>,
+    handles: Handles,
     outgoing: Option<u64>,
     incoming: Option<u64>,
     looper: bool,
@@ -72,7 +78,11 @@ struct Endpoint {
 struct ReceiveArea {
     base: usize,
     frames: Vec<UFrame>,
-    used: Vec<bool>,
+    used: Vec<Option<Vec<Arc<Reference>>>>,
+}
+struct Prepared {
+    bytes: Vec<u8>,
+    queue: bool,
 }
 #[derive(Clone)]
 enum Event {
@@ -81,11 +91,11 @@ enum Event {
     Request {
         sender: u64,
         transaction: Transaction,
-        bytes: Vec<u8>,
+        payload: Payload,
     },
     Reply {
         transaction: Transaction,
-        bytes: Vec<u8>,
+        payload: Payload,
     },
 }
 impl Domain {
@@ -110,6 +120,14 @@ impl Domain {
         for id in dead {
             self.close(id);
         }
+        for endpoint in self.endpoints.values_mut() {
+            if endpoint.prepared.is_none() {
+                endpoint.nodes.retain(|_, node| !node.idle());
+            }
+        }
+        // Prune local ownership first so the weak registry counts actual live
+        // allocations in this reap, including dead owners referenced elsewhere.
+        self.nodes.retain(|_, node| node.strong_count() > 0);
     }
     fn close(&mut self, id: u64) {
         let Some(old) = self.endpoints.remove(&id) else {
@@ -123,7 +141,7 @@ impl Domain {
             // A prepared descriptor may currently be copied outside DOMAIN.
             // Keep its front event and buffer stable even if its sender exits;
             // removing it here would make the copyout commit pop another call.
-            let preserve_front = endpoint.prepared.is_some();
+            let preserve_front = endpoint.prepared.as_ref().is_some_and(|p| p.queue);
             let mut first = true;
             endpoint.queue.retain(|event| {
                 let preserve = first && preserve_front;
@@ -150,6 +168,86 @@ impl Domain {
         self.endpoints
             .get_mut(&id)
             .ok_or_else(|| Error::with_message(Errno::ECONNREFUSED, "Binder endpoint has closed"))
+    }
+    fn payload(
+        &mut self,
+        sender: u64,
+        bytes: Vec<u8>,
+        offsets: Vec<u64>,
+        objects: Vec<(usize, FlatObject)>,
+        target: Option<Arc<Node>>,
+    ) -> Result<Payload> {
+        let endpoint = self.endpoints.get(&sender).unwrap();
+        let buffers = &endpoint.mapping.as_ref().unwrap().used;
+        let mut new_nodes: BTreeMap<u64, Arc<Node>> = BTreeMap::new();
+        let mut next = self.next_node;
+        let mut translated = Vec::new();
+        let mut deltas: BTreeMap<u64, (Arc<Node>, usize)> = BTreeMap::new();
+        for (offset, object) in objects {
+            let node = if matches!(object.kind, TYPE_BINDER | TYPE_WEAK_BINDER) {
+                if let Some(node) = endpoint
+                    .nodes
+                    .get(&object.value)
+                    .or_else(|| new_nodes.get(&object.value))
+                {
+                    if node.cookie != object.cookie {
+                        return_errno!(Errno::EINVAL);
+                    }
+                    node.clone()
+                } else {
+                    if endpoint.nodes.len() + new_nodes.len() == MAX_LOCAL_NODES
+                        || self.nodes.len() + new_nodes.len() == MAX_NODES
+                    {
+                        return_errno!(Errno::ENOSPC);
+                    }
+                    let node = Arc::new(Node::new(next, sender, object.value, object.cookie));
+                    next = next.checked_add(1).ok_or_else(|| {
+                        Error::with_message(Errno::ENOSPC, "Binder node identity exhausted")
+                    })?;
+                    new_nodes.insert(object.value, node.clone());
+                    node
+                }
+            } else {
+                endpoint
+                    .handles
+                    .resolve(object.value, object.kind == TYPE_HANDLE, buffers)?
+            };
+            deltas.entry(node.id).or_insert((node.clone(), 0)).1 += 1;
+            translated.push((
+                offset,
+                node,
+                matches!(object.kind, TYPE_BINDER | TYPE_HANDLE),
+            ));
+        }
+        if let Some(node) = &target {
+            deltas.entry(node.id).or_insert((node.clone(), 0)).1 += 1;
+        }
+        for (node, count) in deltas.values() {
+            node.preflight(*count)?;
+        }
+        // All protocol and admission errors precede publication. References
+        // below are infallible and move with the queue/receive buffer.
+        self.next_node = next;
+        for (pointer, node) in new_nodes {
+            self.nodes.insert(node.id, Arc::downgrade(&node));
+            self.endpoints
+                .get_mut(&sender)
+                .unwrap()
+                .nodes
+                .insert(pointer, node);
+        }
+        Ok(Payload {
+            bytes,
+            offsets,
+            objects: translated
+                .into_iter()
+                .map(|(offset, node, strong)| Object {
+                    offset,
+                    reference: Reference::new(node, strong),
+                })
+                .collect(),
+            target: target.map(|node| Reference::new(node, true)),
+        })
     }
 }
 fn close(id: u64) {
@@ -192,6 +290,8 @@ impl Device for BinderDevice {
                 mapping: None,
                 queue: VecDeque::new(),
                 prepared: None,
+                nodes: BTreeMap::new(),
+                handles: Handles::default(),
                 outgoing: None,
                 incoming: None,
                 looper: false,
@@ -259,17 +359,56 @@ impl BinderFile {
             let command = match command {
                 TRANSACTION | REPLY => {
                     let mut tr = read::<Transaction>(&input, &mut cursor)?;
-                    if tr.offsets_size != 0 || tr.flags != 0 || tr.target != 0 || tr.cookie != 0 {
+                    if tr.flags != 0 || tr.cookie != 0 || (command == REPLY && tr.target != 0) {
                         return_errno_with_message!(
                             Errno::EOPNOTSUPP,
-                            "Binder objects, flags and nonzero handles unsupported"
+                            "Binder flags or reply target unsupported"
                         );
                     }
-                    if tr.data_size > PAGE_SIZE as u64 {
+                    if tr.data_size > PAGE_SIZE as u64 || tr.offsets_size > (MAX_OBJECTS * 8) as u64
+                    {
                         return_errno!(Errno::EMSGSIZE);
+                    }
+                    if (tr.offsets_size != 0 && tr.data_size < size_of::<FlatObject>() as u64)
+                        || tr.offsets_size % 8 != 0
+                        || tr.data_size.next_multiple_of(8) + tr.offsets_size > PAGE_SIZE as u64
+                    {
+                        return_errno!(Errno::EINVAL);
                     }
                     let mut bytes = vec![0; tr.data_size as usize];
                     current_userspace!().read_bytes(tr.buffer as usize, &mut bytes)?;
+                    let mut raw_offsets = vec![0; tr.offsets_size as usize];
+                    current_userspace!().read_bytes(tr.offsets as usize, &mut raw_offsets)?;
+                    let mut offsets = Vec::new();
+                    let mut objects = Vec::new();
+                    let mut cursor = 0;
+                    let mut previous_end = 0;
+                    while cursor < raw_offsets.len() {
+                        let offset = read::<u64>(&raw_offsets, &mut cursor)?;
+                        let offset_usize = usize::try_from(offset).map_err(|_| {
+                            Error::with_message(Errno::EINVAL, "Binder object offset overflow")
+                        })?;
+                        if offset_usize % 8 != 0 || offset_usize < previous_end {
+                            return_errno!(Errno::EINVAL);
+                        }
+                        let mut object_end = offset_usize;
+                        let object = read::<FlatObject>(&bytes, &mut object_end)?;
+                        if !matches!(
+                            object.kind,
+                            TYPE_BINDER | TYPE_WEAK_BINDER | TYPE_HANDLE | TYPE_WEAK_HANDLE
+                        ) || object.flags != 0
+                        {
+                            return_errno!(Errno::EOPNOTSUPP);
+                        }
+                        if matches!(object.kind, TYPE_HANDLE | TYPE_WEAK_HANDLE)
+                            && (object.value > u32::MAX as u64 || object.cookie != 0)
+                        {
+                            return_errno!(Errno::EINVAL);
+                        }
+                        offsets.push(offset);
+                        objects.push((offset_usize, object));
+                        previous_end = object_end;
+                    }
                     let task = Task::current().unwrap();
                     // Linux synchronous replies have no caller transaction
                     // parent and expose sender_pid=0; effective UID still names
@@ -286,8 +425,18 @@ impl BinderFile {
                         reply: command == REPLY,
                         transaction: tr,
                         bytes,
+                        offsets,
+                        objects,
                     }
                 }
+                INCREFS | ACQUIRE | RELEASE | DECREFS => Command::Reference {
+                    command,
+                    handle: read::<u32>(&input, &mut cursor)?,
+                },
+                INCREFS_DONE | ACQUIRE_DONE => Command::Done {
+                    strong: command == ACQUIRE_DONE,
+                    object: read::<PtrCookie>(&input, &mut cursor)?,
+                },
                 FREE_BUFFER => Command::Free(read::<u64>(&input, &mut cursor)? as usize),
                 ENTER_LOOPER => Command::Enter,
                 EXIT_LOOPER => Command::Exit,
@@ -323,27 +472,62 @@ impl BinderFile {
                 }
                 e.looper = false;
             }
-            Command::Free(address) => {
-                let area =
-                    d.endpoint(self.id)?.mapping.as_mut().ok_or_else(|| {
-                        Error::with_message(Errno::EINVAL, "Binder has no mapping")
+            Command::Reference { command, handle } => {
+                let e = d.endpoint(self.id)?;
+                let buffers = &e
+                    .mapping
+                    .as_ref()
+                    .ok_or_else(|| Error::with_message(Errno::EINVAL, "Binder has no mapping"))?
+                    .used;
+                // A weak-only handle cannot be promoted with BC_ACQUIRE.
+                // Strong commands require an existing strong contribution.
+                let node = e.handles.resolve(
+                    handle as u64,
+                    matches!(command, ACQUIRE | RELEASE),
+                    buffers,
+                )?;
+                if command == ACQUIRE && !d.endpoints.contains_key(&node.owner) {
+                    return_errno!(Errno::ECONNREFUSED);
+                }
+                let e = d.endpoint(self.id)?;
+                e.handles.change(handle, command, node)?;
+                e.prune_handles();
+            }
+            Command::Done { strong, object } => {
+                let node = d
+                    .endpoint(self.id)?
+                    .nodes
+                    .get(&object.pointer)
+                    .ok_or_else(|| {
+                        Error::with_message(Errno::EINVAL, "Unknown Binder owner pointer")
                     })?;
+                node.acknowledge(strong, object.cookie)?;
+            }
+            Command::Free(address) => {
+                let e = d.endpoint(self.id)?;
+                let area = e
+                    .mapping
+                    .as_mut()
+                    .ok_or_else(|| Error::with_message(Errno::EINVAL, "Binder has no mapping"))?;
                 let offset = address.checked_sub(area.base).ok_or_else(|| {
                     Error::with_message(Errno::EINVAL, "Binder buffer is not owned")
                 })?;
                 if offset % PAGE_SIZE != 0
                     || offset / PAGE_SIZE >= area.used.len()
-                    || !area.used[offset / PAGE_SIZE]
+                    || area.used[offset / PAGE_SIZE].is_none()
                 {
                     return_errno!(Errno::EINVAL);
                 }
                 area.frames[offset / PAGE_SIZE].write_bytes(0, &[0; PAGE_SIZE])?;
-                area.used[offset / PAGE_SIZE] = false;
+                area.used[offset / PAGE_SIZE] = None;
+                e.prune_handles();
             }
             Command::Send {
                 reply,
-                transaction,
+                mut transaction,
                 bytes,
+                offsets,
+                objects,
             } => {
                 let own = d.endpoint(self.id)?;
                 if own.mapping.is_none() || own.queue.len() >= MAX_QUEUE {
@@ -360,9 +544,11 @@ impl BinderFile {
                     if peer.queue.len() >= MAX_QUEUE {
                         return_errno!(Errno::EAGAIN);
                     }
-                    peer.queue.push_back(Event::Reply { transaction, bytes });
-                    // The reply is already owned by the caller's queue. Closing
-                    // the server now must not append a contradictory dead reply.
+                    let payload = d.payload(self.id, bytes, offsets, objects, None)?;
+                    d.endpoint(destination)?.queue.push_back(Event::Reply {
+                        transaction,
+                        payload,
+                    });
                     let own = d.endpoint(self.id)?;
                     own.incoming = None;
                     own.queue.push_back(Event::Complete);
@@ -370,9 +556,37 @@ impl BinderFile {
                     if own.incoming.is_some() || own.outgoing.is_some() {
                         return_errno!(Errno::EBUSY);
                     }
-                    let destination = d.manager.ok_or_else(|| {
-                        Error::with_message(Errno::ECONNREFUSED, "Binder has no context manager")
-                    })?;
+                    let target = if transaction.target == 0 {
+                        None
+                    } else {
+                        Some(own.handles.resolve(
+                            transaction.target,
+                            true,
+                            &own.mapping.as_ref().unwrap().used,
+                        )?)
+                    };
+                    let destination = if let Some(node) = &target {
+                        if !d.endpoints.contains_key(&node.owner) {
+                            let own = d.endpoint(self.id)?;
+                            if own.queue.len() > MAX_QUEUE - 2 {
+                                return_errno!(Errno::EAGAIN);
+                            }
+                            own.queue.push_back(Event::Complete);
+                            own.queue.push_back(Event::Dead);
+                            d.notify();
+                            return Ok(());
+                        }
+                        transaction.target = node.pointer;
+                        transaction.cookie = node.cookie;
+                        node.owner
+                    } else {
+                        d.manager.ok_or_else(|| {
+                            Error::with_message(
+                                Errno::ECONNREFUSED,
+                                "Binder has no context manager",
+                            )
+                        })?
+                    };
                     if destination == self.id {
                         return_errno!(Errno::EOPNOTSUPP);
                     }
@@ -380,10 +594,11 @@ impl BinderFile {
                     if peer.mapping.is_none() || !peer.looper || peer.queue.len() >= MAX_QUEUE - 1 {
                         return_errno!(Errno::EAGAIN);
                     }
-                    peer.queue.push_back(Event::Request {
+                    let payload = d.payload(self.id, bytes, offsets, objects, target)?;
+                    d.endpoint(destination)?.queue.push_back(Event::Request {
                         sender: self.id,
                         transaction,
-                        bytes,
+                        payload,
                     });
                     let own = d.endpoint(self.id)?;
                     own.outgoing = Some(destination);
@@ -400,54 +615,77 @@ impl BinderFile {
             d.reap();
             let e = d.endpoint(self.id)?;
             if let Some(prepared) = &e.prepared {
-                prepared.clone()
+                prepared.bytes.clone()
             } else {
-                let Some(event) = e.queue.front().cloned() else {
-                    return_errno!(Errno::EAGAIN);
-                };
-                let needed = if matches!(event, Event::Request { .. } | Event::Reply { .. }) {
-                    68
+                // Owner reference work is bounded by local node count, not
+                // dropped when the transaction queue is full. State changes
+                // once at preparation and survives an EFAULT copyout retry.
+                if e.nodes.values().any(|node| node.has_work()) {
+                    if capacity < 20 {
+                        return_errno!(Errno::ENOSPC);
+                    }
+                    let (command, object) = e
+                        .nodes
+                        .values()
+                        .find_map(|node| node.prepare_work())
+                        .unwrap();
+                    let mut bytes = command.to_ne_bytes().to_vec();
+                    bytes.extend_from_slice(object.as_bytes());
+                    e.prepared = Some(Prepared {
+                        bytes: bytes.clone(),
+                        queue: false,
+                    });
+                    bytes
                 } else {
-                    4
-                };
-                if capacity < needed {
-                    return_errno!(Errno::ENOSPC);
-                }
-                let mut output = Vec::with_capacity(needed);
-                match event {
-                    Event::Complete => {
-                        output.extend_from_slice(&BR_TRANSACTION_COMPLETE.to_ne_bytes())
+                    let Some(event) = e.queue.front().cloned() else {
+                        return_errno!(Errno::EAGAIN);
+                    };
+                    let needed = if matches!(event, Event::Request { .. } | Event::Reply { .. }) {
+                        68
+                    } else {
+                        4
+                    };
+                    if capacity < needed {
+                        return_errno!(Errno::ENOSPC);
                     }
-                    Event::Dead => output.extend_from_slice(&BR_DEAD_REPLY.to_ne_bytes()),
-                    Event::Request {
-                        sender,
-                        mut transaction,
-                        bytes,
-                    } => {
-                        if e.incoming.is_some() {
-                            return_errno!(Errno::EBUSY);
+                    let mut output = Vec::with_capacity(needed);
+                    match event {
+                        Event::Complete => {
+                            output.extend_from_slice(&BR_TRANSACTION_COMPLETE.to_ne_bytes())
                         }
-                        let address = e.reserve(&bytes)?;
-                        e.incoming = Some(sender);
-                        transaction.buffer = address as u64;
-                        transaction.offsets =
-                            transaction.buffer + transaction.data_size.next_multiple_of(8);
-                        output.extend_from_slice(&BR_TRANSACTION.to_ne_bytes());
-                        output.extend_from_slice(transaction.as_bytes());
+                        Event::Dead => output.extend_from_slice(&BR_DEAD_REPLY.to_ne_bytes()),
+                        Event::Request {
+                            sender,
+                            mut transaction,
+                            payload,
+                        } => {
+                            if e.incoming.is_some() {
+                                return_errno!(Errno::EBUSY);
+                            }
+                            transaction.buffer = e.reserve(self.id, &payload)? as u64;
+                            transaction.offsets =
+                                transaction.buffer + transaction.data_size.next_multiple_of(8);
+                            e.incoming = Some(sender);
+                            output.extend_from_slice(&BR_TRANSACTION.to_ne_bytes());
+                            output.extend_from_slice(transaction.as_bytes());
+                        }
+                        Event::Reply {
+                            mut transaction,
+                            payload,
+                        } => {
+                            transaction.buffer = e.reserve(self.id, &payload)? as u64;
+                            transaction.offsets =
+                                transaction.buffer + transaction.data_size.next_multiple_of(8);
+                            output.extend_from_slice(&BR_REPLY.to_ne_bytes());
+                            output.extend_from_slice(transaction.as_bytes());
+                        }
                     }
-                    Event::Reply {
-                        mut transaction,
-                        bytes,
-                    } => {
-                        transaction.buffer = e.reserve(&bytes)? as u64;
-                        transaction.offsets =
-                            transaction.buffer + transaction.data_size.next_multiple_of(8);
-                        output.extend_from_slice(&BR_REPLY.to_ne_bytes());
-                        output.extend_from_slice(transaction.as_bytes());
-                    }
+                    e.prepared = Some(Prepared {
+                        bytes: output.clone(),
+                        queue: true,
+                    });
+                    output
                 }
-                e.prepared = Some(output.clone());
-                output
             }
         };
         if capacity < output.len() {
@@ -456,8 +694,9 @@ impl BinderFile {
         current_userspace!().write_bytes(pointer, &output)?;
         let mut d = domain().lock();
         let e = d.endpoint(self.id)?;
-        e.prepared = None;
-        if matches!(e.queue.pop_front(), Some(Event::Reply { .. } | Event::Dead)) {
+        if e.prepared.take().unwrap().queue
+            && matches!(e.queue.pop_front(), Some(Event::Reply { .. } | Event::Dead))
+        {
             e.outgoing = None;
         }
         d.notify();
@@ -502,18 +741,54 @@ impl BinderFile {
     }
 }
 impl Endpoint {
-    fn reserve(&mut self, bytes: &[u8]) -> Result<usize> {
+    fn prune_handles(&mut self) {
+        if let Some(area) = &self.mapping {
+            self.handles.prune(&area.used);
+        }
+    }
+    fn reserve(&mut self, id: u64, payload: &Payload) -> Result<usize> {
         let area = self.mapping.as_mut().ok_or_else(|| {
             Error::with_message(Errno::ECONNREFUSED, "Binder receive mapping gone")
         })?;
         let slot = area
             .used
             .iter()
-            .position(|used| !used)
+            .position(Option::is_none)
             .ok_or_else(|| Error::with_message(Errno::ENOSPC, "Binder receive buffers full"))?;
+        // Draft descriptor allocation makes malformed/full handle delivery
+        // atomic. A failed prepare publishes neither descriptors nor refs.
+        let mut handles = self.handles.clone();
+        let mut bytes = payload.bytes.clone();
+        for object in &payload.objects {
+            let reference = &object.reference;
+            let node = &reference.node;
+            let local = node.owner == id;
+            let flat = FlatObject {
+                kind: match (local, reference.strong) {
+                    (true, true) => TYPE_BINDER,
+                    (true, false) => TYPE_WEAK_BINDER,
+                    (false, true) => TYPE_HANDLE,
+                    (false, false) => TYPE_WEAK_HANDLE,
+                },
+                flags: 0,
+                value: if local {
+                    node.pointer
+                } else {
+                    handles.descriptor(node)? as u64
+                },
+                cookie: if local { node.cookie } else { 0 },
+            };
+            bytes[object.offset..object.offset + size_of::<FlatObject>()]
+                .copy_from_slice(flat.as_bytes());
+        }
+        bytes.resize(bytes.len().next_multiple_of(8), 0);
+        for offset in &payload.offsets {
+            bytes.extend_from_slice(&offset.to_ne_bytes());
+        }
         area.frames[slot].write_bytes(0, &[0; PAGE_SIZE])?;
-        area.frames[slot].write_bytes(0, bytes)?;
-        area.used[slot] = true;
+        area.frames[slot].write_bytes(0, &bytes)?;
+        area.used[slot] = Some(payload.references());
+        self.handles = handles;
         Ok(area.base + slot * PAGE_SIZE)
     }
 }
@@ -521,10 +796,20 @@ enum Command {
     Enter,
     Exit,
     Free(usize),
+    Reference {
+        command: u32,
+        handle: u32,
+    },
+    Done {
+        strong: bool,
+        object: PtrCookie,
+    },
     Send {
         reply: bool,
         transaction: Transaction,
         bytes: Vec<u8>,
+        offsets: Vec<u64>,
+        objects: Vec<(usize, FlatObject)>,
     },
 }
 fn read<T: Pod>(input: &[u8], cursor: &mut usize) -> Result<T> {
@@ -550,7 +835,7 @@ impl Pollable for BinderFile {
                 None => IoEvents::HUP | IoEvents::ERR,
                 Some(e) => {
                     IoEvents::OUT
-                        | if e.queue.is_empty() {
+                        | if e.queue.is_empty() && !e.nodes.values().any(|node| node.has_work()) {
                             IoEvents::empty()
                         } else {
                             IoEvents::IN
@@ -665,7 +950,7 @@ impl Mappable for BinderFile {
         }
         e.mapping = Some(ReceiveArea {
             base: handle.address(),
-            used: vec![false; frames.len().min(MAX_BUFFERS)],
+            used: vec![None; frames.len().min(MAX_BUFFERS)],
             frames,
         });
         Ok(Box::new(BinderMapping { id: self.id }))
@@ -693,6 +978,8 @@ pub(super) fn init_in_first_kthread() {
     DOMAIN.call_once(|| {
         Mutex::new(Domain {
             next: 1,
+            next_node: 1,
+            nodes: BTreeMap::new(),
             manager: None,
             endpoints: BTreeMap::new(),
         })
