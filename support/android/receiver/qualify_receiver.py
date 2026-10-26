@@ -16,6 +16,7 @@ import stat
 import tempfile
 import time
 import types
+import zipfile
 
 if __package__:
     from . import build_receiver
@@ -50,12 +51,66 @@ def pinned_file(path, expected, owner):
     return raw
 
 
-def check_apks(sdk, original, candidate):
+def candidate_build_identity(candidate, build_record, expected_record_sha256):
+    """Bind a signed APK to the current strict receiver's recorded build.
+
+    Signer equality alone also accepts the legacy APK. A reviewed build receipt
+    is required to associate the candidate DEX with the generated source; this
+    is an identity check, not a replay of compilation or an Android effect.
+    """
+    require(isinstance(expected_record_sha256, str)
+            and re.fullmatch('[0-9a-f]{64}', expected_record_sha256), 'INVALID_BUILD_RECORD_PIN')
+    with Path(build_record).open('rb') as source:
+        raw = source.read(128 * 1024 + 1)
+    require(len(raw) <= 128 * 1024 and hashlib.sha256(raw).hexdigest() == expected_record_sha256,
+            'BUILD_RECORD_PIN_MISMATCH')
+    def unique_fields(pairs):
+        value = {}
+        for key, item in pairs:
+            require(key not in value, 'DUPLICATE_BUILD_RECORD_FIELD')
+            value[key] = item
+        return value
+    record = json.loads(raw.decode('utf-8', 'strict'), object_pairs_hook=unique_fields)
+    require(isinstance(record, dict) and type(record.get('schema_version')) is int and record['schema_version'] == 1
+            and record.get('package') == PACKAGE, 'INVALID_RECEIVER_BUILD_RECORD')
+    with tempfile.TemporaryDirectory(prefix='receiver-source-identity-') as scratch:
+        _, current = build_receiver.sources(Path(scratch) / 'generated')
+    require(record.get('original_source_sha256') == current['original_source_sha256']
+            and record.get('source_sha256') == current['source_sha256'], 'RECEIVER_BUILD_SOURCE_MISMATCH')
+    require(record.get('compile_sdk') == 35
+            and record.get('android_jar_sha256') == build_receiver.ANDROID_JAR_SHA256
+            and record.get('original_apk_sha256') == build_receiver.ORIGINAL_APK_SHA256
+            and record.get('signer_identity_matches_original') is True
+            and record.get('signing_required_for_deployment') is False,
+            'SIGNED_RECEIVER_BUILD_REQUIRED')
+    require(record.get('candidate_apk_sha256') == build_receiver.sha(candidate), 'CANDIDATE_BUILD_HASH_MISMATCH')
+    with zipfile.ZipFile(candidate) as archive:
+        entries = archive.infolist()
+        names = [entry.filename for entry in entries]
+        require(len(names) == len(set(names)) and names.count('classes.dex') == 1
+                and not any(name.startswith('classes') and name.endswith('.dex') and name != 'classes.dex'
+                            for name in names), 'AMBIGUOUS_CANDIDATE_DEX')
+        entry = archive.getinfo('classes.dex')
+        require(0 < entry.file_size <= 4 * 1024 * 1024, 'CANDIDATE_DEX_SIZE_UNQUALIFIED')
+        dex_sha256 = hashlib.sha256(archive.read(entry)).hexdigest()
+    require(dex_sha256 == record.get('classes_dex_sha256'), 'CANDIDATE_DEX_BUILD_MISMATCH')
+    return {'build_record_sha256': expected_record_sha256, 'classes_dex_sha256': dex_sha256,
+            'candidate_apk_sha256': record['candidate_apk_sha256'],
+            'generated_source_sha256': current['source_sha256'],
+            'build_record_original_signer_sha256': record.get('original_signer_sha256'),
+            'build_record_candidate_signer_sha256': record.get('candidate_signer_sha256'),
+            'current_receiver_build_inputs_bound': True}
+
+
+def check_apks(sdk, original, candidate, build_record, expected_record_sha256):
+    built = candidate_build_identity(candidate, build_record, expected_record_sha256)
     tools = Path(sdk).resolve() / 'build-tools/35.0.1'
     require(build_receiver.sha(original) == build_receiver.ORIGINAL_APK_SHA256, 'ORIGINAL_APK_PIN_MISMATCH')
     baseline = build_receiver.certificates(tools / 'apksigner', original)
     candidate_certs = build_receiver.certificates(tools / 'apksigner', candidate)
     require(baseline == candidate_certs, 'ORIGINAL_SIGNER_IDENTITY_MISMATCH')
+    require(built['build_record_original_signer_sha256'] == baseline
+            and built['build_record_candidate_signer_sha256'] == candidate_certs, 'BUILD_SIGNER_RECORD_MISMATCH')
     metadata = build_receiver.run([tools / 'aapt', 'dump', 'badging', candidate])
     package = re.search(r"^package: name='([^']+)' versionCode='([^']+)'", metadata, re.M)
     require(package is not None and package.group(1) == PACKAGE, 'CANDIDATE_PACKAGE_MISMATCH')
@@ -66,7 +121,10 @@ def check_apks(sdk, original, candidate):
     require('E: activity ' not in manifest and 'E: service ' not in manifest
             and 'E: provider ' not in manifest and 'E: receiver ' not in manifest,
             'UNREVIEWED_CANDIDATE_COMPONENT')
-    return {
+    require(build_receiver.sha(candidate) == built['candidate_apk_sha256']
+            and build_receiver.sha(original) == build_receiver.ORIGINAL_APK_SHA256,
+            'APK_CHANGED_DURING_QUALIFICATION')
+    return {**built,
         'package': PACKAGE, 'version_code': package.group(2),
         'original_apk_sha256': build_receiver.sha(original),
         'candidate_apk_sha256': build_receiver.sha(candidate),
@@ -78,7 +136,10 @@ def check_apks(sdk, original, candidate):
 def installed(args):
     require(os.geteuid() == 0, 'ORIGINAL_ROOT_INSPECTION_CAPABILITY_REQUIRED')
     require(args.droidloomctl_owner_uid >= 0, 'INVALID_CONTROL_OWNER')
-    baseline = check_apks(args.sdk, args.original_apk, args.candidate_apk)
+    baseline = check_apks(args.sdk, args.original_apk, args.candidate_apk,
+                          args.build_record, args.expected_build_record_sha256)
+    require(args.expected_helper_sha256 == baseline['generated_source_sha256']['android-digitalis-observe-helper'],
+            'HELPER_RECEIVER_BUILD_MISMATCH')
     # Read the already deployed helper bytes through a no-follow, explicitly
     # pinned root-owned file. Compile those verified bytes directly in memory;
     # do not reopen an unmeasured source or accept an arbitrary command hook.
@@ -131,6 +192,9 @@ def main():
         command.add_argument('--sdk', default='/opt/android-sdk')
         command.add_argument('--original-apk', default='/opt/pocket4-android-controls/actions-v2.apk')
         command.add_argument('--candidate-apk', required=True)
+        command.add_argument('--build-record', required=True, help='reviewed signed receiver build-record.json')
+        command.add_argument('--expected-build-record-sha256', required=True,
+                             help='trusted digest of the selected signed build record')
         if mode == 'installed':
             command.add_argument('--expected-helper-sha256', required=True)
             command.add_argument('--droidloomctl-sha256', required=True)
@@ -149,7 +213,8 @@ def main():
                       class_sha256={str(p.relative_to(output)): build_receiver.sha(p) for p in sorted(classes.rglob('*.class'))})
         (output / 'javac-record.json').write_text(json.dumps(record, indent=2) + '\n')
     elif args.mode == 'apk':
-        record = check_apks(args.sdk, args.original_apk, args.candidate_apk)
+        record = check_apks(args.sdk, args.original_apk, args.candidate_apk,
+                            args.build_record, args.expected_build_record_sha256)
         record['scope'] = 'signed APK identity only; no installed-package or native effect qualification'
     else:
         record = installed(args)

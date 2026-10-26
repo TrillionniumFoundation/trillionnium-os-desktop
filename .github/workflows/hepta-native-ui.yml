@@ -127,6 +127,12 @@ jobs:
             --features trill-shell/hepta-native-makepad \
             --filter-platform x86_64-unknown-linux-gnu \
             > "$evidence/native-metadata.json" 2> "$evidence/native-metadata.stderr.log"
+          # The standalone host has its own locked graph. Resolve it before any
+          # test can fail; the always() offline check must not depend on a later
+          # successful test step warming that separate graph.
+          cargo metadata --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features native-text --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            > "$evidence/native-text-metadata.json" 2> "$evidence/native-text-metadata.stderr.log"
           python3 -I -B - <<'PY' 2>&1 | tee "$evidence/native-source-validation.log"
           import json, os, sys
           from pathlib import Path
@@ -226,8 +232,8 @@ jobs:
           set -euo pipefail
           evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
           mkdir -p "$evidence"
-          git status --porcelain=v1 --untracked-files=all > "$evidence/source-after-status.log"
-          git diff HEAD -- . > "$evidence/source-after-diff.log"
+          git status --porcelain=v1 --untracked-files=all | tee "$evidence/source-after-status.log"
+          git diff HEAD -- . | tee "$evidence/source-after-diff.log"
           python3 -I -B - <<'PY'
           import hashlib, json, os, subprocess
           from pathlib import Path

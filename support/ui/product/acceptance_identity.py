@@ -53,6 +53,33 @@ def pinned_package(package, manifest_sha256):
     return manifest
 
 
+def native_package_identity(package, manifest_sha256, build):
+    """Join the real distribution ELF and resources to one completed build.
+
+    This checks input identity, not compiler execution or native UI behavior.
+    The caller must run the existing input tests and repeat this check afterward.
+    """
+    manifest = pinned_package(package, manifest_sha256)
+    require(build.get("schema") == "trill.linux-text-build-receipt.v1"
+            and build.get("status") == "passed" and build.get("exit_code") == 0,
+            "native package requires a successful original text product build receipt")
+    require(build.get("source_commit") == manifest["desktop_commit"]
+            and build.get("hepta", {}).get("commit") == manifest["hepta_commit"],
+            "package and build receipt have different Desktop/Hepta sources")
+    require(build.get("profile", {}).get("renderer") == "makepad"
+            and build.get("package", {}).get("release_id") == manifest["release_id"],
+            "package is not the exact Makepad release in the build receipt")
+    binaries = {name: {key: manifest["files"]["bin/" + name][key]
+                       for key in ("sha256", "bytes")} for name in desktop.PROGRAMS}
+    require(build.get("packaged_binaries") == binaries,
+            "package programs differ from the build's distribution ELF inventory")
+    resources = {name.removeprefix("resources/"): record["sha256"]
+                 for name, record in manifest["files"].items() if name.startswith("resources/")}
+    require(bool(resources) and resources == build.get("resources"),
+            "package resources differ from the build's complete native inventory")
+    return manifest
+
+
 def isolated_environment(source):
     """Remove lane locators from our children, retaining the original user bus."""
     return {key: value for key, value in source.items() if not key.startswith(LANE_PREFIXES)}

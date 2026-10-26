@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 
 import desktop
+import acceptance_identity
 
 
 class ProductTests(unittest.TestCase):
@@ -133,6 +134,36 @@ class ProductTests(unittest.TestCase):
         (release / "resources/makepad_widgets/resources/item-0").write_bytes(b"corrupt")
         with self.assertRaisesRegex(desktop.ProductError, "resource bytes mismatch"):
             desktop.verify_package(release)
+
+    def test_native_acceptance_requires_one_complete_built_release(self):
+        resources = self.resource_fixture()
+        output = self.root / "native-acceptance.tar.gz"
+        result = desktop.pack(self.make_archive("a" * 40, b"native distribution"), "a" * 40,
+                              self.root / "profile.json", output, resources)
+        extract = self.root / "native-acceptance"
+        extract.mkdir()
+        with tarfile.open(output) as archive:
+            archive.extractall(extract, filter="data")
+        package = extract / "trillionnium-desktop"
+        manifest = desktop.verify_package(package)
+        manifest_hash = desktop.digest((package / "manifest.json").read_bytes())
+        build = {"schema": "trill.linux-text-build-receipt.v1", "status": "passed", "exit_code": 0,
+                 "source_commit": "a" * 40, "hepta": {"commit": "b" * 40},
+                 "profile": {"renderer": "makepad"}, "package": result,
+                 "packaged_binaries": result["binaries"],
+                 "resources": {name.removeprefix("resources/"): record["sha256"]
+                               for name, record in manifest["files"].items() if name.startswith("resources/")}}
+        self.assertEqual(acceptance_identity.native_package_identity(package, manifest_hash, build), manifest)
+        changes = [{"source_commit": "c" * 40}, {"hepta": {"commit": "c" * 40}},
+                   {"status": "failed", "exit_code": 1}, {"resources": {}},
+                   {"package": dict(result, release_id="a" * 12 + "-" + "0" * 12)},
+                   {"packaged_binaries": {"trill-shell": result["binaries"]["trill-shell"]}}]
+        for change in changes:
+            with self.subTest(change=change), self.assertRaises(RuntimeError):
+                acceptance_identity.native_package_identity(package, manifest_hash, dict(build, **change))
+        (package / "resources/makepad_widgets/resources/item-0").write_bytes(b"changed after native test")
+        with self.assertRaisesRegex(desktop.ProductError, "resource bytes mismatch"):
+            acceptance_identity.native_package_identity(package, manifest_hash, build)
 
     def test_corrupt_dependency_license_is_refused_before_packaging(self):
         resources = self.resource_fixture()

@@ -164,11 +164,11 @@ owned X11/IBus/AT-SPI harness against that exact distribution ELF and resources:
 
 ```sh
 python3 -B tests/ui/native-makepad/qualify.py \
-  --shell /absolute/extracted/trillionnium-desktop/bin/trill-shell \
-  --resources /absolute/extracted/trillionnium-desktop/resources \
+  --package /absolute/extracted/trillionnium-desktop \
+  --expected-manifest-sha256 TRUSTED_FINAL_MANIFEST_SHA256 \
   --hepta-source /absolute/original-execution-hepta \
   --build-receipt /absolute/new-preedit-build/build-receipt.json \
-  --packaged-binary --atomic-editable-text \
+  --atomic-editable-text \
   --output /absolute/new-preedit-window-evidence
 ```
 

@@ -223,9 +223,11 @@ def build_userspace(args, roots, out, report, source_files, receipt, environment
         ("agentd", roots["hepta"] / "codex-rs", original_target,
          ["build", "--locked", "--offline", "--profile", "dev-small", "--no-default-features", "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd", "-j1"]),
         ("fixture-resolution", fixture, original_target,
-         ["metadata", "--offline", "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
+         ["metadata", "--offline", "--format-version", "1", "--filter-platform", "x86_64-unknown-linux-gnu",
+          "--manifest-path", str(fixture / "Cargo.toml")]),
         ("fixture-locked-metadata", fixture, original_target,
-         ["metadata", "--locked", "--offline", "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
+         ["metadata", "--locked", "--offline", "--format-version", "1", "--filter-platform", "x86_64-unknown-linux-gnu",
+          "--manifest-path", str(fixture / "Cargo.toml")]),
         ("fixture", fixture, original_target,
          ["build", "--locked", "--offline", "--profile", "dev-small", "--manifest-path", str(fixture / "Cargo.toml"), "-j1"]),
     ]
@@ -237,8 +239,20 @@ def build_userspace(args, roots, out, report, source_files, receipt, environment
         report["steps"].append({"name": name, "status": "running", "argv": command,
                                 "cwd": str(cwd), "cargo_target_dir": str(target),
                                 "command_timeout_seconds": 3600})
-        original_call(helper, "bounded_command", command, cwd, {**environment, "CARGO_TARGET_DIR": str(target)},
-                      out / (name + ".log"), 3600)
+        log = out / (name + ".log")
+        try:
+            original_call(helper, "bounded_command", command, cwd, {**environment, "CARGO_TARGET_DIR": str(target)},
+                          log, 3600)
+        except ValueError as error:
+            report["steps"][-1].update(status="failed", error=str(error), log=log.name)
+            # Preserve the full raw log in the artifact and expose a bounded
+            # tail in CI, so the failed step is actionable without a second
+            # artifact download. This never changes the command's verdict.
+            if log.is_file() and not log.is_symlink():
+                with log.open("rb") as stream:
+                    stream.seek(max(0, log.stat().st_size - 16 * 1024))
+                    print(stream.read().decode("utf-8", errors="replace"), file=sys.stderr)
+            raise
         if name.startswith("fixture"):
             original_call(helper, "verify_runner_lock", roots["hepta"], fixture)
             if lock_digest is None:

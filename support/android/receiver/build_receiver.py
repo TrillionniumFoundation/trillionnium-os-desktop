@@ -209,6 +209,7 @@ def compile_sources(output, record, sdk, manifest, original_apk, keystore=None, 
         raise ValueError('unsigned candidate unexpectedly carries a valid APK signature')
     record.update(scope='compiled original-package candidate; no deployment or Android qualification',
                   compile_sdk=35, android_jar_sha256=sha(android), original_apk_sha256=sha(original_apk),
+                  classes_dex_sha256=sha(dex / 'classes.dex'),
                   original_signer_sha256=original_certs, unsigned_apk_sha256=sha(output / 'aligned.apk'),
                   unsigned_apk_signature_valid=False, signing_required_for_deployment=True)
     if keystore is not None:

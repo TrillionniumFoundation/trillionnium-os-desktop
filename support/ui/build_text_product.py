@@ -266,7 +266,7 @@ def build(args):
         common = ["--locked"] + (["--offline"] if args.offline else [])
         feature = ["--features", profile["cargo_feature"]]
         metadata = run("native-metadata", ["cargo", "metadata", "--manifest-path", "ui/Cargo.toml",
-            "--format-version", "1", *common, *feature], machine_output=True)
+            "--format-version", "1", "--filter-platform", profile["target"], *common, *feature], machine_output=True)
         graph = json.loads(metadata.read_bytes())
         sdk_profile, sdk_receipt = None, None
         package_profile = output / "source-profile.json"
@@ -328,7 +328,7 @@ def build(args):
                 "Actual Cargo source caches changed while building")
         if preedit:
             after = run("native-metadata-after", ["cargo", "metadata", "--manifest-path", "ui/Cargo.toml",
-                "--format-version", "1", *common, *feature], machine_output=True)
+                "--format-version", "1", "--filter-platform", profile["target"], *common, *feature], machine_output=True)
             require(preedit_source.verify(after.read_bytes(), sdk_root, None,
                 sdk_original, sdk_config, sdk_helper) == sdk_profile,
                 "Prepared SDK source/config/metadata changed while building")

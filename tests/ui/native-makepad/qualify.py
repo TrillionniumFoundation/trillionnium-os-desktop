@@ -24,6 +24,8 @@ import preedit_gate
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
+sys.path.insert(0, str(ROOT / "support/ui/product"))
+import acceptance_identity
 
 
 def digest(path):
@@ -70,11 +72,13 @@ def run(args):
               "editable_text_interface_qualified": False, "orca_human_evaluation": False,
               "candidate_position_visually_qualified": False, "font_pixels_visually_qualified": False,
               "system_install_performed": False, "user_bus_accessed": False,
-              "original_agentd_started": False, "authenticated_send_qualified": False}
+              "original_agentd_started": False, "authenticated_send_qualified": False,
+              "same_release_inputs_verified": False, "display_scaling_qualified": False}
     groups, logs = [], []
     temporary = None
     guard = None
     preedit = None
+    package_manifest = None
 
     def save():
         (output / "receipt.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
@@ -93,8 +97,15 @@ def run(args):
         # Some installed components, including libpinyin, publish their engine
         # list dynamically. Empty static XML is not evidence of absence. The
         # exact engine must appear on our own fresh bus below before input.
-        shell = args.shell.resolve(strict=True)
-        resources = args.resources.resolve(strict=True)
+        build = json.loads(args.build_receipt.read_bytes()) if args.build_receipt is not None else None
+        if args.package is not None:
+            package = args.package.resolve(strict=True)
+            package_manifest = acceptance_identity.native_package_identity(
+                package, args.expected_manifest_sha256, build)
+            shell, resources = package / "bin/trill-shell", package / "resources"
+        else:
+            shell = args.shell.resolve(strict=True)
+            resources = args.resources.resolve(strict=True)
         if args.request_scoped_paste:
             profile = json.loads((resources / "NATIVE-SDK-SOURCE.json").read_bytes())
             if profile.get("native_ui_feature") != "native-clipboard-sdk":
@@ -115,9 +126,7 @@ def run(args):
                       "build_source_identity_verified": False}
         if editable is not None:
             provenance["original_atomic_editable_text_script"] = {"path": str(editable), "sha256": digest(editable)}
-        build = None
         if args.build_receipt is not None:
-            build = json.loads(args.build_receipt.read_bytes())
             provenance["build_artifact_kind"] = verify_build_binary(
                 build, shell, packaged=args.packaged_binary)
             provenance["build_source_identity_verified"] = True
@@ -125,6 +134,10 @@ def run(args):
             provenance["source_commit"] = build["source_commit"]
             provenance["source_tree"] = build["source_tree"]
             shutil.copyfile(args.build_receipt, output / "build-receipt.json")
+        if package_manifest is not None:
+            provenance["package"] = {"path": str(package), "release_id": package_manifest["release_id"],
+                                     "manifest_sha256": args.expected_manifest_sha256,
+                                     "hepta_commit": package_manifest["hepta_commit"]}
         preedit = preedit_gate.verify_resources(resources, build, packaged_binary=args.packaged_binary,
                                                 atomic_editable_text=args.atomic_editable_text)
         if preedit is not None:
@@ -292,6 +305,11 @@ def run(args):
         alive(shell_group)
         command("owned-window-properties", ["xprop", "-id", xid, "WM_CLASS", "_NET_WM_PID", "WM_NAME"])
         command("owned-window-focus", ["xdotool", "windowfocus", "--sync", xid])
+        process_identity = None
+        if package_manifest is not None:
+            process_identity = acceptance_identity.process_identity(
+                shell_group.process.pid, shell, package_manifest["files"]["bin/trill-shell"]["sha256"])
+            report["actual_package_process"] = process_identity
         save()
         stage("original-atspi-smoke", [sys.executable, "-B", str(smoke), "--pid", str(shell_group.process.pid),
               "--window-id", xid, "--output", str(output / "atspi-receipt.json")], 90)
@@ -318,6 +336,12 @@ def run(args):
                 output / "original-makepad-shell.stderr.log", xid)
         for group in (xserver, bus, a11y, ibus, shell_group):
             alive(group)
+        if package_manifest is not None:
+            after = acceptance_identity.native_package_identity(package, args.expected_manifest_sha256, build)
+            if after != package_manifest or acceptance_identity.process_identity(
+                    shell_group.process.pid, shell, package_manifest["files"]["bin/trill-shell"]["sha256"]) != process_identity:
+                raise RuntimeError("Package inputs or actual native process changed during qualification")
+            report["same_release_inputs_verified"] = True
         report["supported_atspi_checks_passed"] = True
         report["real_virtual_x11_ibus_checks_passed"] = True
         report["passed"] = True
@@ -354,8 +378,13 @@ def run(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--shell", type=Path, required=True)
-    parser.add_argument("--resources", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--shell", type=Path)
+    source.add_argument("--package", type=Path,
+                        help="Use the exact ELF and bundled resources from one extracted or installed release")
+    parser.add_argument("--resources", type=Path)
+    parser.add_argument("--expected-manifest-sha256",
+                        help="Trusted manifest digest from the selected final package; required with --package")
     parser.add_argument("--hepta-source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--engine", default="libpinyin")
@@ -367,6 +396,12 @@ if __name__ == "__main__":
     parser.add_argument("--request-scoped-paste", action="store_true",
                         help="Require a hepta-native-clipboard-sdk binary, exact candidate bundle and real delayed-response PasteText tests")
     arguments = parser.parse_args()
+    if arguments.package is not None:
+        if arguments.resources is not None or not arguments.expected_manifest_sha256 or arguments.build_receipt is None:
+            parser.error("--package requires --expected-manifest-sha256 and --build-receipt, and forbids --resources")
+        arguments.packaged_binary = True
+    elif arguments.resources is None or arguments.expected_manifest_sha256 is not None:
+        parser.error("--shell requires --resources and does not accept --expected-manifest-sha256")
     if arguments.request_scoped_paste and not arguments.atomic_editable_text:
         parser.error("--request-scoped-paste requires --atomic-editable-text")
     if arguments.packaged_binary and arguments.build_receipt is None:
