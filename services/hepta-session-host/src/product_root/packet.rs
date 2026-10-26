@@ -9,6 +9,10 @@ pub(super) enum ReadMode {
     Peek,
     Consume,
 }
+
+#[cfg(test)]
+#[path = "packet_tests.rs"]
+mod tests;
 pub(super) enum Rights {
     None,
     One,

@@ -28,6 +28,10 @@ use codex_hepta_supervisor::UnixProcessDriver;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+#[cfg(test)]
+#[path = "supervisor_tests.rs"]
+mod tests;
+
 /// This finite first-deployment capability delegates one spawn to the original
 /// driver. An uncertain spawn consumes it. Automatic lifecycle retries cannot
 /// reuse inherited FD numbers or a previous Root handoff in another process.
