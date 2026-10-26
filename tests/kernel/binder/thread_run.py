@@ -10,8 +10,9 @@ here = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("kernel_safety_runner", here.parent / "safety/run.py")
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
-runner.PROBES = ("binder_threads",)
-runner.SOURCE_FILES = {"binder_threads": [here / "thread_probe.c"]}
+runner.PROBES = ("binder_threads", "binder_thread_lifetime")
+runner.SOURCE_FILES = {"binder_threads": [here / "thread_probe.c"],
+                       "binder_thread_lifetime": [here / "thread_lifetime_probe.c"]}
 runner.PROBE_ARGS = {}
 if __name__ == "__main__":
     raise SystemExit(runner.main())

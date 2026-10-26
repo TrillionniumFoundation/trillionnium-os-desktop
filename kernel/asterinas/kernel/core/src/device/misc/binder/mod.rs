@@ -896,6 +896,10 @@ impl BinderFile {
                     let destination = if let Some(node) = &target {
                         if !d.endpoints.contains_key(&node.owner) {
                             let own = d.endpoint(self.id)?;
+                            own.threads.get_mut(&thread).unwrap().outgoing = Some(Outgoing {
+                                call,
+                                destination: node.owner,
+                            });
                             own.queue.push_back(Queued {
                                 call,
                                 recipient: Some(thread),
