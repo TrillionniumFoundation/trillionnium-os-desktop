@@ -741,6 +741,12 @@ inherit_sys_branch_node!(CgroupSystem, fields, {
                 let (activate_set, deactivate_set, len) = read_subtree_control_from_reader(reader)?;
 
                 let mut cgroup_guard = CgroupMembership::write_lock();
+                self.controller.preflight_cpu_routes(
+                    &activate_set,
+                    &deactivate_set,
+                    self,
+                    &cgroup_guard,
+                )?;
                 for ctrl_type in activate_set.iter_types() {
                     self.controller
                         .activate(ctrl_type, self, None, &mut cgroup_guard)?;
@@ -886,6 +892,13 @@ inherit_sys_branch_node!(CgroupNode, fields, {
                     if has_live_processes(processes) {
                         return Err(Error::ResourceUnavailable);
                     }
+
+                    self.controller.preflight_cpu_routes(
+                        &activate_set,
+                        &deactivate_set,
+                        self,
+                        &cgroup_guard,
+                    )?;
 
                     for ctrl_type in activate_set.iter_types() {
                         self.controller.activate(

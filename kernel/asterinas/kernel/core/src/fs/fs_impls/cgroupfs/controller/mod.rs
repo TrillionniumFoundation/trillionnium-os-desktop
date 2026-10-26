@@ -424,8 +424,9 @@ impl Controller {
     /// child's zero count implies no pinned route anywhere below that child.
     /// Exited tasks' retained old-owner chains are never admitted as routes.
     fn ensure_cpu_routes_unpinned(current_node: &dyn CgroupSysNode) -> Result<()> {
-        for child in current_node.children() {
-            let child = Arc::downcast::<CgroupNode>(child).unwrap();
+        let mut pinned = false;
+        current_node.visit_children_with(0, &mut |child| {
+            let child = child.as_any().downcast_ref::<CgroupNode>().unwrap();
             if child
                 .controller()
                 .cpu
@@ -436,8 +437,34 @@ impl Controller {
                 .unwrap()
                 .has_scheduling_routes()
             {
-                return Err(Error::ResourceUnavailable);
+                pinned = true;
+                None
+            } else {
+                Some(())
             }
+        });
+        if pinned {
+            Err(Error::ResourceUnavailable)
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Refuse a CPU route change before any part of a mixed subtree-control
+    /// request is applied. The caller holds the membership writer throughout
+    /// this preflight and the existing activation/deactivation loops.
+    pub(super) fn preflight_cpu_routes(
+        &self,
+        activate: &SubCtrlSet,
+        deactivate: &SubCtrlSet,
+        current_node: &dyn CgroupSysNode,
+        _membership: &CgroupMembership,
+    ) -> Result<()> {
+        let active = self.active_set().contains_type(SubCtrlType::Cpu);
+        if (activate.contains_type(SubCtrlType::Cpu) && !active)
+            || (deactivate.contains_type(SubCtrlType::Cpu) && active)
+        {
+            Self::ensure_cpu_routes_unpinned(current_node)?;
         }
         Ok(())
     }

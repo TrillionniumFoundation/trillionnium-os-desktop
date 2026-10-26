@@ -51,6 +51,11 @@ ancestor. The read/write membership cut excludes capture during subtree
 replacement. A nonzero counter returns `EBUSY`; unrelated branches remain
 modifiable. Existing node deletion rejects the retained original node lease.
 
+Both subtree-control writers perform this CPU-route preflight before their
+activation/deactivation loops. A route denial therefore leaves a mixed control
+request unchanged, including controls ordered before CPU in those loops.
+The preflight visits borrowed children without allocating another snapshot.
+
 The cold `GroupTree::prepare` constructor rejects atomic context, malformed
 parent chains, duplicate incarnations, stale owner bindings and duplicate task
 slots. New node, sorted weak-task binding and heap storage is reserved fallibly
@@ -164,3 +169,10 @@ descendant, rejection before any partial subtree update, unrelated topology,
 duplicate/failed admission, checked-counter prefix rollback and unavailable
 Process capture. These are lifecycle/queue evidence; they are not actual
 multi-CPU share measurements or public `cpu.weight` qualification.
+
+The empty-node case uses the real membership-writer/`mark_as_dead` deletion
+protocol. It retires old final-charge RCU backups first, driving only safe
+`Task::yield_now` quiescent cuts with no read/IRQ/runqueue guard held. A later
+FIFO RCU retirement marker confirms prior backup callbacks completed before
+the route-only lifetime assertion. Direct systree-index removal and a check
+while old backups are still pending are not valid deletion evidence.
