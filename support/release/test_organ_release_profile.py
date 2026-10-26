@@ -265,8 +265,14 @@ class SourceCombinationTests(unittest.TestCase):
             repository = getattr(self, side)
             write(repository, path, (repository / path).read_bytes() + b"changed owner bytes\n")
             commit(repository, "change receiving owner or negative control")
+            relabeled = copy.deepcopy(manifest)
+            if side == "hepta":
+                # Pass the changed identity gate deliberately; stale role bytes
+                # must still fail rather than inherit the old source receipt.
+                relabeled["hepta"] = {"commit": git(self.hepta, "rev-parse", "HEAD"),
+                                      "tree": git(self.hepta, "rev-parse", "HEAD^{tree}")}
             with self.subTest(side=side, role=role), self.assertRaisesRegex(profile.ProfileError, "manifest mismatch"):
-                self.verify(manifest)
+                self.verify(relabeled)
             manifest, _ = self.build()
 
     def test_wrong_os_head_rejected(self):
