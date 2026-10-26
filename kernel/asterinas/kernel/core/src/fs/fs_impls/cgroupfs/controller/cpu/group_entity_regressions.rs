@@ -4,6 +4,7 @@
 //! Controlled endpoints do not qualify live group scheduling or SMP migration.
 
 use alloc::vec::Vec;
+use core::sync::atomic::AtomicBool;
 
 use aster_systree::{SysBranchNode, SysNode, SysObj};
 use ostd::{prelude::ktest, task::scheduler::UpdateFlags};
@@ -28,6 +29,31 @@ struct Fixture {
 
 fn cpu(controller: &super::super::Controller) -> Arc<super::super::SubController<CpuController>> {
     controller.cpu.read().get().clone()
+}
+
+fn drain_preceding_rcu_retirements() {
+    struct Marker(Arc<AtomicBool>);
+    impl Drop for Marker {
+        fn drop(&mut self) {
+            self.0.store(true, Ordering::Release);
+        }
+    }
+    let completed = Arc::new(AtomicBool::new(false));
+    let marker = ostd::sync::RcuOption::new(Some(Arc::new(Marker(completed.clone()))));
+    marker.update(None);
+    // No membership/node/rq/RCU read guard is held. The real safe reschedule
+    // path reports quiescence and invokes ordinary FIFO retirement callbacks;
+    // this later marker proves all preceding CPU backup retirements ran.
+    for _ in 0..128 {
+        if completed.load(Ordering::Acquire) {
+            return;
+        }
+        Task::yield_now();
+    }
+    assert!(
+        completed.load(Ordering::Acquire),
+        "RCU retirement marker did not complete"
+    );
 }
 
 impl Fixture {
@@ -429,6 +455,7 @@ fn prepared_route_keeps_an_empty_node_until_the_last_queue_is_retired() {
         CgroupMembership::write_lock().move_process_to_root(process);
         task.as_posix_thread().unwrap().set_cpu_cgroup(None);
     }
+    drain_preceding_rcu_retirements();
     // b has no CurrentRuntime; only its prepared, currently empty task slots
     // can retain it once all real memberships/final-charge backups are gone.
     let p = Arc::downcast::<CgroupNode>(fixture.leaves[1].parent().unwrap()).unwrap();
