@@ -266,14 +266,8 @@ fn run(
     };
     let bootstrap = prepared.seal_bootstrap(&consumer_root)?;
     let self_pidfd = process::pin(std::process::id())?;
-    send_root_production_handoff(
-        root_handoff,
-        &bootstrap,
-        &self_pidfd,
-        packet::remaining(end)?,
-    )?;
     if let Some((old, _)) = &previous {
-        old.stage(&fresh, "30-bootstrap-sent", &serde_json::json!({"original_operation_id":old.operation,"old_target":old.target,"new_target_for_future_operations_only":target,"thread":seed,"scope":"same-identity old outcome remains unasserted until original writer/helper readback; no old dispatch"}))?;
+        old.stage(&fresh, "30-bootstrap-sealed", &serde_json::json!({"original_operation_id":old.operation,"old_target":old.target,"new_target_for_future_operations_only":target,"thread":seed,"scope":"same-identity sealed bootstrap remains undispatched until original listeners are serving; old outcome requires original writer/helper readback; no old dispatch"}))?;
     }
     fs::json_new(
         &fresh.admin.join("actual-composition.json"),
@@ -291,7 +285,23 @@ fn run(
     let (profile, leader) = human::capture(&inputs, &fresh, &files, &human_owner, &environment)?;
     let prepared = prepared.with_original_logind_session(&profile, leader)?;
     // Same retained issuer/clock/Root instance. No open-only CLI child replaces it.
-    let result = prepared.launch_native(&files.config, &files.registration, &profile);
+    let result = prepared.launch_native_with_ready(
+        &files.config,
+        &files.registration,
+        &profile,
+        move || {
+            // Human/login checks, native spawn and registration are complete,
+            // and all five original Root listeners can now accept. Release
+            // only this one inherited episode, without reconnect or renewal.
+            send_root_production_handoff(
+                root_handoff,
+                &bootstrap,
+                &self_pidfd,
+                packet::remaining(end).map_err(|error| std::io::Error::other(error.to_string()))?,
+            )
+            .map_err(std::io::Error::other)
+        },
+    );
     drop(monitor); // Original Supervisor stop/kill/reap only its actual child.
     drop(session_owner);
     drop(runtime);
