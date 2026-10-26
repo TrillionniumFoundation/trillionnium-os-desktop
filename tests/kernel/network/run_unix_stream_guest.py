@@ -44,6 +44,43 @@ CONNECTED_SHA = {
 PROBE_SHA = "bb7e334a76c4e201b3ef33842be7f87a235a6940d783c8c741d63839519ab747"
 ENV = {"PATH": "/usr/bin:/bin", "LC_ALL": "C", "LANG": "C"}
 
+# The reviewed IPC allocation stage. Legacy mutation controls keep their
+# original fingerprints; they are not silently rebased onto this production profile.
+IPC_SOURCE_SHA = {
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/page_memory.rs": "5e0084bb8b8752a3c24038a96d3f3dd2f43fcf9dd18e017e36c8e44998ff5e03",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/mod.rs": "c68bea2964a47d32702c244ee7e6246ced94ef05856b78aab6fe96f0076884d9",
+    "kernel/asterinas/kernel/core/src/fs/pipe/common.rs": "a3ac4014b42166deb0578444f18b0721e0c1c340448e7c3708b323f6941c8ba4",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs": "2acf2709ee3983b6388235629f53e985ccf58eb08bbe960679942479f84a5b72",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/init.rs": "d3c6163b7bd23dc7f8d57b136c4a09b868a13c1c70094e89f943d462640e6eac",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/listener.rs": "6a615eced8a03015ddd2731bf91a0bfac3f5b97b7319e2826d7da72a2ddaa28d",
+    "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs": "39d376e77ec83353df9df3880cfdd01939881b38ee572c4bf1300c7d8fd83e85",
+    "kernel/asterinas/kernel/core/src/syscall/socketpair.rs": "ecb440dd55c99c02d565586faa4bd87fc97ad9c30f3661caaaf8ac6d005a95f6",
+    "kernel/asterinas/kernel/core/src/util/ring_buffer.rs": "c4c98b949380893cc71b02182e27db7286413766931b5d9c82b44f56a623c15e",
+    "kernel/asterinas/kernel/libs/ring-buffer/src/lib.rs": "5e3375c47397446479681274e2a8bce3c7e778b9e4291eb97b4410fea2494839"
+}
+SOURCE_PROFILES = ("legacy", "ipc-memory-v1")
+
+
+def required_sources(variant, source_profile):
+    require(source_profile in SOURCE_PROFILES, "unknown production source profile")
+    require(source_profile == "legacy" or variant == "positive",
+            "historical source mutations require the legacy profile")
+    required = {ENDPOINT: ENDPOINT_SHA, CONNECTED: CONNECTED_SHA[variant],
+                SOCKET: SOCKET_SHA,
+                "tests/kernel/network/unix_stream_probe.c": PROBE_SHA,
+                "tests/kernel/network/unix_stream_protocol.json": oracle.PROTOCOL_SHA256}
+    if source_profile == "ipc-memory-v1":
+        required.update(IPC_SOURCE_SHA)
+    return required
+
+
+def check_sources(before, variant, source_profile):
+    required = required_sources(variant, source_profile)
+    for name, sha in required.items():
+        require(before["files"].get(name, {}).get("sha256") == sha,
+                "reviewed variant input mismatch: " + name)
+    return required
+
 
 def selection_valid(selection, variant):
     require(selection == "all" or selection in oracle.protocol()["cases"], "unknown case")
@@ -127,18 +164,13 @@ def run_qemu(argv, output, timeout):
 def execute(args, output, result):
     selection_valid(args.selection, args.variant)
     before = ordinary.source_snapshot(ROOT, args.expected_source_head, args.expected_source_tree)
-    required = {ENDPOINT: ENDPOINT_SHA, CONNECTED: CONNECTED_SHA[args.variant],
-                SOCKET: SOCKET_SHA,
-                "tests/kernel/network/unix_stream_probe.c": PROBE_SHA,
-                "tests/kernel/network/unix_stream_protocol.json": oracle.PROTOCOL_SHA256}
-    for name, sha in required.items():
-        require(before["files"].get(name, {}).get("sha256") == sha,
-                "reviewed variant input mismatch: " + name)
+    required = check_sources(before, args.variant, args.source_profile)
     for name in ("run_unix_stream_guest.py", "unix_stream_oracle.py", "test_unix_stream_guest.py"):
         require("tests/kernel/network/" + name in before["files"], "untracked execution input")
     save(output / "source-before.json", before)
     result.update(source_head=before["head"], source_tree=before["tree"],
                   source_file_count=len(before["files"]), source_variant=args.variant,
+                  production_source_profile=args.source_profile,
                   source_variant_sha256=required, stage="ordinary_product_build_and_boot")
     boot = output / "product-boot"
     target = args.target_dir.absolute()
@@ -215,6 +247,7 @@ def main(argv=None):
     parser.add_argument("--target-dir", type=Path, required=True)
     parser.add_argument("--selection", default="all")
     parser.add_argument("--variant", choices=oracle.VARIANTS, default="positive")
+    parser.add_argument("--source-profile", choices=SOURCE_PROFILES, default="legacy")
     parser.add_argument("--cc", default="cc")
     parser.add_argument("--qemu", default="qemu-system-x86_64")
     parser.add_argument("--timeout", type=int, default=90)

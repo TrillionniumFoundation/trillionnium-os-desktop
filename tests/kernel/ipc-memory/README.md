@@ -30,3 +30,12 @@ must exit successfully; a final parent marker alone cannot hide its failure.
 These checks cover the `ipc` class only. They do not turn `memory.max`, global
 recovery reserves, datagram/TTY/object/slab allocation or Android IPC support
 into completed features. The receiving integration must run its own evidence.
+
+The existing original socket/descriptor witness runner has a separate explicit
+`--source-profile ipc-memory-v1` for this reviewed allocation stage. Run it with
+the exact committed head/tree, then separately select `shutdown_race` for the
+64-iteration production stress witness. Its legacy source/mutation fingerprints
+and historical controls remain unchanged. The new profile accepts only the
+production-positive variant and pins the IPC allocator/ring/pipe/stream sources;
+missing or drifting sources cannot qualify. Synthetic host gate tests establish
+only this admission behavior, never an executed kernel witness.
