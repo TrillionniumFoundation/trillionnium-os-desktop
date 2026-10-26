@@ -262,3 +262,7 @@ python3 -I -B tests/kernel/network/run_unix_stream_post1138_guest.py \
 Run `shutdown_race` separately with new evidence. This source profile does not
 enable live group weights, native authority, production operations or physical
 device support. All earlier receipts keep their original source identities.
+# Current composition
+
+See [Post-1138 CPUNODE profile](POST1138_CPUNODE_PROFILE.md) for the fixed source
+admission and development checks for CPU route lifetime, placement and GDT ABI.

@@ -51,7 +51,7 @@ class IpcSourceProfile(unittest.TestCase):
 
     def test_current_source_is_rejected_by_historical_profiles_and_accepted_by_post_profile(self):
         import run_unix_stream_receiving_guest as receiving
-        import run_unix_stream_post1138_guest as post
+        import run_unix_stream_cpunode_guest as post
         root = HERE.parents[2]
         current = {"files": {path: {"sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
                              for _, path, _ in post.OWNERS}}
