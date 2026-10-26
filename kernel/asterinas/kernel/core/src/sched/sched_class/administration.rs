@@ -8,6 +8,34 @@ use ostd::sync::MutexGuard;
 
 use super::{LinuxSchedPolicy, Nice, SchedAttr, SchedPolicy};
 
+/// A coherent, copyable user scheduling state. This is observation, not authority.
+/// Clone construction can retain the exact policy, static nice and declared Idle.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) struct UserSchedSnapshot {
+    policy: SchedPolicy,
+    nice: Nice,
+    linux_policy: LinuxSchedPolicy,
+}
+
+impl UserSchedSnapshot {
+    pub(crate) fn policy(self) -> SchedPolicy {
+        self.policy
+    }
+    pub(crate) fn nice(self) -> Nice {
+        self.nice
+    }
+    pub(crate) fn linux_policy(self) -> LinuxSchedPolicy {
+        self.linux_policy
+    }
+    pub(crate) fn static_priority(self) -> u32 {
+        match self.policy {
+            SchedPolicy::Stop => 99,
+            SchedPolicy::RealTime { rt_prio, .. } => u32::from(100 - rt_prio.get()),
+            _ => 0,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub(super) struct AdministrationState {
     nice: Nice,
@@ -32,6 +60,20 @@ pub(crate) struct SchedAdministration<'a> {
 }
 
 impl SchedAttr {
+    pub(crate) fn user_snapshot(&self) -> UserSchedSnapshot {
+        self.administer().snapshot()
+    }
+
+    /// Construct unpublished attributes from an existing coherent observation.
+    pub(crate) fn from_user_snapshot(snapshot: UserSchedSnapshot) -> Self {
+        let mut attr = Self::new(snapshot.policy());
+        attr.administration = ostd::sync::Mutex::new(AdministrationState {
+            nice: snapshot.nice(),
+            user_idle: snapshot.linux_policy() == LinuxSchedPolicy::Idle,
+        });
+        attr
+    }
+
     pub(crate) fn administer(&self) -> SchedAdministration<'_> {
         ostd::task::atomic_mode::might_sleep();
         SchedAdministration {
@@ -49,6 +91,19 @@ impl Deref for SchedAdministration<'_> {
 }
 
 impl SchedAdministration<'_> {
+    pub(crate) fn snapshot(&self) -> UserSchedSnapshot {
+        let policy = self.policy();
+        UserSchedSnapshot {
+            policy,
+            nice: self.state.nice,
+            linux_policy: if self.state.user_idle {
+                LinuxSchedPolicy::Idle
+            } else {
+                policy.into()
+            },
+        }
+    }
+
     pub(crate) fn nice(&self) -> Nice {
         self.state.nice
     }

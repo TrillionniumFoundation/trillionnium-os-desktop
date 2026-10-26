@@ -7,7 +7,7 @@ use super::{
 use crate::{prelude::*, thread::Tid};
 
 pub(super) fn sys_sched_getscheduler(tid: Tid, ctx: &Context) -> Result<SyscallReturn> {
-    let policy = access_sched_attr_with(tid, ctx, |attr| Ok(attr.policy()))?;
+    let policy = access_sched_attr_with(tid, ctx, |attr| Ok(attr.user_snapshot()))?;
     let policy = LinuxSchedAttr::try_from(policy)?.sched_policy;
     Ok(SyscallReturn::Return(policy as isize))
 }

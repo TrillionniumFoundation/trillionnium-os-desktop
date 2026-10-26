@@ -43,7 +43,7 @@ mod real_time;
 mod stop;
 
 pub(crate) use self::{
-    administration::SchedAdministration,
+    administration::{SchedAdministration, UserSchedSnapshot},
     policy::{LinuxSchedPolicy, SchedPolicy},
     real_time::{RealTimePolicy, RealTimePriority},
 };

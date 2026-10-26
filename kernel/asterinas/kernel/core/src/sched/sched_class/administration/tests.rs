@@ -85,3 +85,32 @@ fn static_nice_and_declared_idle_survive_rt_policy_administration() {
     assert_eq!(admin.nice(), Nice::try_from(4).unwrap());
     assert_eq!(attr.policy(), SchedPolicy::Fair(Nice::try_from(4).unwrap()));
 }
+
+#[ktest]
+fn copied_user_snapshot_reconstructs_static_nice_declared_idle_and_rt_priority() {
+    let attr = SchedAttr::new(SchedPolicy::Fair(Nice::try_from(8).unwrap()));
+    let mut admin = attr.administer();
+    admin.set_policy(SchedPolicy::RealTime {
+        rt_prio: super::super::RealTimePriority::new(90),
+        rt_policy: super::super::RealTimePolicy::RoundRobin {
+            base_slice_factor: None,
+        },
+    });
+    let rt = admin.snapshot();
+    assert_eq!(rt.static_priority(), 10);
+    assert_eq!(rt.nice(), Nice::try_from(8).unwrap());
+    let reconstructed = SchedAttr::from_user_snapshot(rt);
+    assert_eq!(reconstructed.user_snapshot(), rt);
+    admin.set_user_idle();
+    let idle = admin.snapshot();
+    assert_eq!(idle.linux_policy(), LinuxSchedPolicy::Idle);
+    assert_eq!(SchedAttr::from_user_snapshot(idle).user_snapshot(), idle);
+    admin.set_policy(SchedPolicy::Fair(Nice::MAX));
+    let normal19 = admin.snapshot();
+    assert_eq!(normal19.linux_policy(), LinuxSchedPolicy::Normal);
+    assert_eq!(normal19.nice(), Nice::MAX);
+    assert_eq!(
+        SchedAttr::from_user_snapshot(normal19).user_snapshot(),
+        normal19
+    );
+}

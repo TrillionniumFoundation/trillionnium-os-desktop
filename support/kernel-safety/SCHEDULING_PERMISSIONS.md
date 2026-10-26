@@ -7,13 +7,18 @@ target-identity gate: caller effective UID must match the target's real/effectiv
 UID, or the original LSM `SYS_NICE` check must authorize the target namespace.
 A strong target Process survives the entire update; the PID table is released
 before credentials, namespace authorization and writer administration. The
-three scheduling getters keep their original cross-user behavior.
+three scheduling getters keep their original cross-user authorization behavior.
 
 The authorized writer then obtains `SchedAttr::administer()`. This sleepable
 per-thread mutex serializes all live policy writers and retains static nice
 across RT policy changes. It also records an explicitly requested user Idle
-policy, since the legacy getter aliases ordinary nice 19 and user Idle. This
-stage preserves that getter ABI rather than claiming full Idle compatibility.
+policy. The copyable `UserSchedSnapshot` supplies `policy()`, `linux_policy()`,
+`nice()` and `static_priority()`. All three public getters read this same coherent
+snapshot, so ordinary Normal nice 19 is distinct from declared Idle, RT static
+nice is retained, and `sched_getparam` reports Linux rather than reversed internal
+RT priority. `SchedAttr::from_user_snapshot` constructs an unpublished attribute
+for the subsequent clone-inheritance integration; it does not change a live task
+or grant authority. The rq hot path does not use this snapshot mutex.
 
 The writer copies the old policy through the short policy spinlock, releases
 that lock, reads the actual target soft limits and validates the change. Zero
@@ -52,7 +57,11 @@ real target soft limits and an explicit all-capabilities drop. Results check
 both return codes and the actual scheduling state after refusal. The test-only
 before commit leaves P1 kernel bytes unchanged. Its 58 assertions actually
 reported 30 failures, including unauthorized RT/nice changes, priority 5 being
-reported as 95, nice 8 resetting to zero and ignored flags returning success.
+reported as 95, nice 8 resetting to zero and ignored flags returning success. The first P2 after run passed Core 345 and
+all 9 groups, but did not cover the legacy getter defect. A subsequent frozen
+probe-only stage added 160 assertions and actually found 21 readback failures.
+Those failures remain separate evidence; no test success is inferred from the
+internal state alone.
 
 Run the same probe on the changed source, plus `aster-core` kernel tests,
 `sched-policy-auth`, `affinity-auth`, and `fair-runtime` on supported SMP
