@@ -816,6 +816,62 @@ mod tests {
 
     #[test]
     fn persistence_reopen_retains_text_revision_exact_receipt_and_fences_old_effect() {
+        const TEST: &str = "notes::persistence::tests::persistence_reopen_retains_text_revision_exact_receipt_and_fences_old_effect";
+        const CHILD_PARENT: &str = "TRILL_TEST_NOTES_REOPEN_PARENT_PID";
+        if let Some(parent) = std::env::var_os(CHILD_PARENT) {
+            let parent = parent.to_str().unwrap().parse::<u32>().unwrap();
+            assert_eq!(
+                parent,
+                unsafe { libc::getppid() } as u32,
+                "the isolated body must be executed by its waiting test parent"
+            );
+            assert_ne!(parent, std::process::id());
+            eprintln!(
+                "NOTES_REOPEN_ISOLATED parent={parent} child={}",
+                std::process::id()
+            );
+        } else {
+            // A concurrently spawned crash-test child can temporarily inherit
+            // another test's CLOEXEC lock before exec. This parent owns no
+            // writer: only its exec-complete exact-test child opens this fixture.
+            // Keep every original reopen/fencing assertion in that child rather
+            // than serializing unrelated tests or retrying a refused lock.
+            let child = Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", TEST, "--nocapture", "--test-threads=1"])
+                .env(CHILD_PARENT, std::process::id().to_string())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .unwrap();
+            let child_id = child.id();
+            let output = child.wait_with_output().unwrap();
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            assert!(output.status.success(), "{stdout}\n{stderr}");
+            assert_eq!(
+                stdout.matches(&format!("test {TEST} ... ok")).count(),
+                1,
+                "{stdout}"
+            );
+            assert_eq!(
+                stdout
+                    .matches("test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured;")
+                    .count(),
+                1,
+                "{stdout}"
+            );
+            let identity = format!(
+                "NOTES_REOPEN_ISOLATED parent={} child={child_id}",
+                std::process::id()
+            );
+            assert_eq!(
+                stderr.lines().filter(|line| *line == identity).count(),
+                1,
+                "{stderr}"
+            );
+            eprintln!("{identity}");
+            return;
+        }
         let fixture = Fixture::new();
         let payload = request(target('a'), "first", 0, "persistent 中文");
         let mut store = DurableNotes::create(&fixture.doc(), target('a')).unwrap();

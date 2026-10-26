@@ -344,7 +344,8 @@ class AcceptanceRunnerTests(unittest.TestCase):
             for relative in acceptance.SOURCE_ROOTS:
                 (repo / relative).mkdir(parents=True)
             (repo / "libs/os-abi/Cargo.toml").write_text("[package]\nname='fixture'\nversion='0.0.0'\n")
-            (repo / "README.md").write_bytes(b"")
+            readme = b"# Project\n\nActual project documentation.\n"
+            (repo / "README.md").write_bytes(readme)
             (repo / "support").mkdir()
             (repo / "support/upstream-lock.json").write_text('{"kernel":{"toolchain":"nightly-2026-07-21"}}')
             output = root / "evidence"
@@ -362,9 +363,37 @@ class AcceptanceRunnerTests(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertFalse(report["success"])
             self.assertTrue(report["original_inputs_unchanged"])
+            self.assertEqual(report["readme_policy"], "nonempty-captured-source")
+            self.assertTrue(report["readme_nonempty"])
+            self.assertEqual(report["readme_bytes"], len(readme))
+            self.assertEqual(report["input_sha256"]["README.md"], acceptance.digest(readme))
             self.assertEqual(report["not_executed"], list(acceptance.CHECK_NAMES))
             self.assertIn("no installation or fallback", report["errors"][0])
             self.assertFalse((repo / "libs/os-abi/Cargo.lock").exists())
+
+    def test_missing_project_documentation_refuses_before_any_acceptance_command(self):
+        for readme in (b"", b" \t\n"):
+            with self.subTest(readme=readme), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                repo = root / "repo"
+                for relative in acceptance.SOURCE_ROOTS:
+                    (repo / relative).mkdir(parents=True)
+                (repo / "README.md").write_bytes(readme)
+                (repo / "support").mkdir()
+                (repo / "support/upstream-lock.json").write_text(
+                    '{"kernel":{"toolchain":"nightly-2026-07-21"}}')
+                output = root / "evidence"
+                with mock.patch.object(acceptance, "run_command") as command:
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        code = acceptance.main(["--repo-root", str(repo),
+                                                "--output-dir", str(output)])
+                    command.assert_not_called()
+                report = json.loads((output / "report.json").read_text())
+                self.assertEqual(code, 1)
+                self.assertFalse(report["success"])
+                self.assertFalse(report["readme_nonempty"])
+                self.assertIn("project documentation", report["errors"][0])
+                self.assertEqual(report["not_executed"], list(acceptance.CHECK_NAMES))
 
     def test_toolchain_pin_is_required_even_with_an_explicit_override(self):
         inputs = {"support/upstream-lock.json": b'{"kernel":{"toolchain":"nightly-2026-07-21"}}'}

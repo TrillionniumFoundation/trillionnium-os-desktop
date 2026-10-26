@@ -33,8 +33,8 @@ class A05EffectPathFailClosedContract(unittest.TestCase):
             r'#\[cfg\(all\(feature = "g1c-trusted-observe", '
             r'not\(feature = "g1d-trusted-control"\)\)\)\]\s*'
             r'let \(supported_ops, max_response_payload\) = \(\s*'
-            r'\(1u64 << Opcode::QueryAbi\.as_u16\(\)\) \| '
-            r'\(1u64 << Opcode::ReadUsage\.as_u16\(\)\), 64,\s*\);',
+            r'\(1u64 << Opcode::QueryAbi\.as_u16\(\)\)\s*\|\s*'
+            r'\(1u64 << Opcode::ReadUsage\.as_u16\(\)\),\s*64,\s*\);',
             "G1-c must advertise exactly its two implemented reads",
         )
         bit_expression = r'\s*\|\s*'.join(
@@ -45,7 +45,7 @@ class A05EffectPathFailClosedContract(unittest.TestCase):
             source,
             r'#\[cfg\(feature = "g1d-trusted-control"\)\]\s*'
             r'let \(supported_ops, max_response_payload\) = \(\s*'
-            + bit_expression + r', 64,\s*\);',
+            + bit_expression + r',\s*64,\s*\);',
             "G1-d must uniformly declare exactly its five operations",
         )
         self.assertRegex(
@@ -81,8 +81,8 @@ class A05EffectPathFailClosedContract(unittest.TestCase):
         self.assertRegex(
             source,
             r'#\[cfg\(feature = "g1d-trusted-control"\)\]\s*'
-            r'RequestPayload::InstallBudget\(_\) \| RequestPayload::QueryDelivery\(_\)\s*'
-            r'\| RequestPayload::RetireThrough\(_\) =>',
+            r'RequestPayload::InstallBudget\(_\)\s*\|\s*RequestPayload::QueryDelivery\(_\)\s*'
+            r'\|\s*RequestPayload::RetireThrough\(_\) =>',
             "management and history arms require the separate G1-d profile",
         )
         self.assertEqual(source.count("process.dispatch_hepta_control(self.image_key, &request)"), 2)
