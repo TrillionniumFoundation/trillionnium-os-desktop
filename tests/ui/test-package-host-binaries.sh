@@ -9,16 +9,17 @@ done
 
 root="$(mktemp -d "${TMPDIR:-/tmp}/a10-package-check.XXXXXXXX")"
 trap 'rm -rf -- "$root"' EXIT
+fixture_source="$root/source"
 # A selected target directory must be used consistently by Cargo consumers.
 # Keep spaces in this private path to catch accidentally unquoted paths.
 export CARGO_TARGET_DIR="$root/selected target"
-mkdir -p "$root/support/ui" "$CARGO_TARGET_DIR/debug" "$root/evidence" "$root/mock-bin"
-cp -- support/ui/package-host-binaries.sh "$root/support/ui/package-host-binaries.sh"
-cat > "$root/test-probe.c" <<'SOURCE'
+mkdir -p "$fixture_source/support/ui" "$CARGO_TARGET_DIR/debug" "$root/evidence" "$root/mock-bin"
+cp -- support/ui/package-host-binaries.sh "$fixture_source/support/ui/package-host-binaries.sh"
+cat > "$fixture_source/test-probe.c" <<'SOURCE'
 int main(void) { return 0; }
 SOURCE
 for name in trill-shell trill-session trill-app-window trill-ctl trill-notes-recovery; do
-    cc "$root/test-probe.c" -o "$CARGO_TARGET_DIR/debug/$name"
+    cc "$fixture_source/test-probe.c" -o "$CARGO_TARGET_DIR/debug/$name"
 done
 cat > "$root/mock-bin/rustc" <<'MOCK'
 #!/usr/bin/env sh
@@ -29,12 +30,16 @@ cat > "$root/mock-bin/cargo" <<'MOCK'
 printf 'cargo fixture-only, not a Cargo test\n'
 MOCK
 chmod 755 "$root/mock-bin/rustc" "$root/mock-bin/cargo"
-git -C "$root" init -q
-git -C "$root" -c user.name=fixture -c user.email=fixture@example.invalid \
-    commit -q --allow-empty -m 'packager fixture, never production source'
-source_sha="$(git -C "$root" rev-parse HEAD)"
+# The packager binds a clean committed source tree. Keep all generated ELFs,
+# mock tools and evidence outside that tree, as an actual product build does.
+git -C "$fixture_source" init -q
+git -C "$fixture_source" add -- support/ui/package-host-binaries.sh test-probe.c
+git -C "$fixture_source" -c core.hooksPath=/dev/null \
+    -c user.name=fixture -c user.email=fixture@example.invalid \
+    commit -q -m 'packager fixture, never production source'
+source_sha="$(git -C "$fixture_source" rev-parse HEAD)"
 
-PATH="$root/mock-bin:$PATH" bash "$root/support/ui/package-host-binaries.sh" "$root/evidence"
+PATH="$root/mock-bin:$PATH" bash "$fixture_source/support/ui/package-host-binaries.sh" "$root/evidence"
 (cd "$root/evidence" && sha256sum -c a10-linux-host-binaries.tar.gz.sha256)
 tar -xzf "$root/evidence/a10-linux-host-binaries.tar.gz" -C "$root/evidence"
 archive_dir="$root/evidence/a10-linux-host-binaries"
@@ -50,7 +55,7 @@ done
 # archive. This is a negative check; a mock program cannot count as A10 ELF.
 archive_before="$(sha256sum "$root/evidence/a10-linux-host-binaries.tar.gz")"
 rm -f "$CARGO_TARGET_DIR/debug/trill-ctl"
-if PATH="$root/mock-bin:$PATH" bash "$root/support/ui/package-host-binaries.sh" "$root/evidence" \
+if PATH="$root/mock-bin:$PATH" bash "$fixture_source/support/ui/package-host-binaries.sh" "$root/evidence" \
     >"$root/expected-rejection.log" 2>&1; then
     echo 'MISSING_BINARY_REJECTED check failed: packager returned success' >&2
     exit 1
@@ -60,7 +65,7 @@ grep -Fq 'Missing built Rust program' "$root/expected-rejection.log"
 
 # Do not allow a caller to turn a relative path into an uncontrolled artifact
 # destination. A10 CI supplies an absolute per-runner temporary directory.
-if PATH="$root/mock-bin:$PATH" bash "$root/support/ui/package-host-binaries.sh" 'relative/path' \
+if PATH="$root/mock-bin:$PATH" bash "$fixture_source/support/ui/package-host-binaries.sh" 'relative/path' \
     >"$root/relative-rejection.log" 2>&1; then
     echo 'RELATIVE_PATH_REJECTED check failed' >&2
     exit 1
