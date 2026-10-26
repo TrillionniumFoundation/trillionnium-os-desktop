@@ -13,6 +13,7 @@ profile="${TRILL_UI_BUILD_PROFILE:-debug}"
 }
 sdk_receipt="${2:-}"
 sdk_receipt_sha=""
+declared_source_sha=""
 if [[ -n "$sdk_receipt" ]]; then
     [[ "$sdk_receipt" = /* ]] || { echo 'SDK receipt path must be absolute' >&2; exit 2; }
     sdk_receipt_sha="$(python3 -B - "$sdk_receipt" <<'PY'
@@ -35,6 +36,28 @@ def unique(pairs):
 
 data = regular_bytes(Path(sys.argv[1]), 1024 * 1024)
 validate_profile(json.loads(data, object_pairs_hook=unique))
+print(hashlib.sha256(data).hexdigest())
+PY
+)"
+fi
+if [[ -n "${TRILL_UI_DECLARED_BUILD_SOURCE:-}" ]]; then
+    declared_source_sha="$(python3 -I -B - "$TRILL_UI_DECLARED_BUILD_SOURCE" <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+if not path.is_absolute() or not path.is_file() or path.is_symlink() or path.stat().st_size > 1024 * 1024:
+    raise SystemExit('Expected one bounded regular declared source receipt')
+data = path.read_bytes()
+record = json.loads(data)
+if (record['schema'] != 'trill.declared-preedit-build-source.v1'
+        or record['only_changed_path'] != 'ui/Cargo.lock'
+        or record['rust_sources_changed'] is not False
+        or record['committed_lock']['path'] != 'support/ui/preedit-sdk/Cargo.lock'
+        or record['compiled_lock_sha256'] != record['committed_lock']['sha256']):
+    raise SystemExit('Invalid declared prepared build source receipt')
 print(hashlib.sha256(data).hexdigest())
 PY
 )"
@@ -74,6 +97,9 @@ done
     printf 'Distribution transform: GNU strip --strip-unneeded (build inputs retained)\n'
     if [[ -n "$sdk_receipt_sha" ]]; then
         printf 'Makepad source profile SHA256: %s\n' "$sdk_receipt_sha"
+    fi
+    if [[ -n "$declared_source_sha" ]]; then
+        printf 'Declared native build source SHA256: %s\n' "$declared_source_sha"
     fi
     printf 'Host: %s\n' "$(uname -s -m)"
     printf 'Rust compiler: %s\n' "$(rustc --version)"

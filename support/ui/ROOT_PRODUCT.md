@@ -127,3 +127,11 @@ readback when qualifying the product. Unknown outcomes remain fenced until
 their original result is reconciled. Android original-signer qualification and
 Asterinas native guest/driver qualification require their own source-bound
 execution evidence.
+
+The product builders use the selected optimized release profile for both native
+UI tests and distribution binaries. The unoptimized 2026-10-26 runtime attempt
+produced an actual 338,058,032-byte stripped Agentd and 304,151,824-byte stripped
+App Server, both above the original 128 MiB per-file limit. That attempt is not
+an installable product; stripping cannot remove already stripped code. The
+release build must pass the unchanged file and bundle size guards. Root and
+native UI build receipts retain their actual profile and compiler identities.

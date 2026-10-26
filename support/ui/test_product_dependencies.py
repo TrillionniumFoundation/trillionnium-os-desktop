@@ -18,7 +18,8 @@ class ProductDependencies(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
         for name in (*guard.MANIFESTS, *guard.LOCKS, guard.SOURCE,
-                     "support/ui/linux-preedit-profile.json", *guard.MIRRORED_FIXTURES.values()):
+                     "support/ui/linux-preedit-profile.json", "support/ui/linux-text-profile.json",
+                     *guard.MIRRORED_FIXTURES.values()):
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(guard.ROOT / name, target)
@@ -48,7 +49,14 @@ class ProductDependencies(unittest.TestCase):
                 path = self.root / name
                 original = path.read_text()
                 source = json.loads((self.root / guard.SOURCE).read_text())["commit"]
-                path.write_text(original.replace(source, "a" * 40, 1))
+                if source in original:
+                    changed = original.replace(source, "a" * 40, 1)
+                else:
+                    # These independent contract roots have no original Hepta
+                    # dependency. Introduce an actual foreign source rather
+                    # than expecting a no-op string replacement to fail.
+                    changed = original + '\n[[package]]\nname = "foreign-original-graph"\nversion = "0.0.0"\nsource = "git+' + guard.REPOSITORY + '?rev=' + "a" * 40 + '#' + "a" * 40 + '"\n'
+                path.write_text(changed)
                 with self.assertRaisesRegex(ValueError, "Mixed original Hepta sources"):
                     guard.verify(self.root)
                 path.write_text(original)
@@ -87,10 +95,57 @@ class ProductDependencies(unittest.TestCase):
         path.write_text(json.dumps(original))
 
     def test_readback_wire_cannot_drift_from_the_original_contract(self):
-        for name in guard.MIRRORED_FIXTURES.values():
-            path = self.root / name
-            path.write_text(path.read_text().replace('"revision": 5', '"revision": 6'))
+        name = guard.MIRRORED_FIXTURES["codex-rs/hepta-agentd/tests/fixtures/notes-document-observation-v1.json"]
+        path = self.root / name
+        path.write_text(path.read_text().replace('"revision": 5', '"revision": 6'))
         with self.assertRaisesRegex(ValueError, "readback wire fixtures differ"):
+            guard.verify(self.root)
+
+    def test_model_identity_fixture_cannot_drift(self):
+        name = guard.MIRRORED_FIXTURES["codex-rs/hepta-agentd/tests/fixtures/notes-model-v1.json"]
+        path = self.root / name
+        path.write_bytes(path.read_bytes() + b"\n")
+        with self.assertRaisesRegex(ValueError, "readback wire fixtures differ"):
+            guard.verify(self.root)
+
+    def test_root_dependency_cannot_be_replaced_by_a_path(self):
+        path = self.root / "services/hepta-session-host/Cargo.toml"
+        lines = path.read_text().splitlines()
+        lines = ['codex-hepta-supervisor = { path = "../substitute", optional = true }'
+                 if line.startswith("codex-hepta-supervisor =") else line for line in lines]
+        path.write_text("\n".join(lines) + "\n")
+        with self.assertRaisesRegex(ValueError, "Original owner dependency substituted"):
+            guard.verify(self.root)
+
+    def test_original_aws_security_patch_must_be_carried_by_both_roots(self):
+        for name in ("ui/Cargo.toml", "services/hepta-session-host/Cargo.toml"):
+            path = self.root / name
+            original = path.read_text()
+            path.write_text("\n".join(line for line in original.splitlines()
+                                      if not line.startswith("aws-config =")) + "\n")
+            with self.subTest(manifest=name), self.assertRaisesRegex(ValueError, "AWS security patch missing"):
+                guard.verify(self.root)
+            path.write_text(original)
+
+    def test_common_package_version_cannot_drift_in_one_lock(self):
+        path = self.root / "services/hepta-os/Cargo.lock"
+        original = path.read_text()
+        self.assertIn('name = "serde_json"\nversion = "1.0.154"', original)
+        path.write_text(original.replace('name = "serde_json"\nversion = "1.0.154"',
+                                         'name = "serde_json"\nversion = "1.0.151"'))
+        with self.assertRaisesRegex(ValueError, "Shared package version differs"):
+            guard.verify(self.root)
+
+    def test_default_and_prepared_sdk_locks_cannot_be_interchanged(self):
+        ordinary = self.root / "ui/Cargo.lock"
+        prepared = self.root / "support/ui/preedit-sdk/Cargo.lock"
+        ordinary_bytes, prepared_bytes = ordinary.read_bytes(), prepared.read_bytes()
+        prepared.write_bytes(ordinary_bytes)
+        with self.assertRaisesRegex(ValueError, "Prepared UI lock must resolve"):
+            guard.verify(self.root)
+        prepared.write_bytes(prepared_bytes)
+        ordinary.write_bytes(prepared_bytes)
+        with self.assertRaisesRegex(ValueError, "Default UI lock must retain"):
             guard.verify(self.root)
 
 

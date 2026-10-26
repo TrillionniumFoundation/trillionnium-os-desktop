@@ -67,7 +67,8 @@ jobs:
           def git(*args):
               return subprocess.check_output(['git', *args], text=True).strip()
           locks = {}
-          for name in ('ui/Cargo.lock', 'services/hepta-session-host/Cargo.lock'):
+          for name in ('ui/Cargo.lock', 'services/hepta-session-host/Cargo.lock',
+                       'services/hepta-os/Cargo.lock', 'support/ui/Cargo.lock', 'tests/ui/Cargo.lock'):
               subprocess.run(['git', 'ls-files', '--error-unmatch', name], check=True)
               path = Path(name)
               if not path.is_file() or path.is_symlink():
@@ -117,6 +118,12 @@ jobs:
             2>&1 | tee "$evidence/preedit-component-guard-tests.log"
           python3 -I -B -O support/ui/test_preedit_component.py \
             2>&1 | tee "$evidence/preedit-component-guard-optimized-tests.log"
+          python3 -I -B support/ui/test_prepared_build_source.py \
+            2>&1 | tee "$evidence/prepared-build-source-tests.log"
+          python3 -I -B -O support/ui/test_prepared_build_source.py \
+            2>&1 | tee "$evidence/prepared-build-source-optimized-tests.log"
+          python3 -B -m unittest discover -s support/ui/product -p test_root_bundle.py \
+            2>&1 | tee "$evidence/root-bundle-tests.log"
           python3 -I -B support/ui/verify_product_dependencies.py \
             | tee "$evidence/product-dependencies.json"
 
@@ -212,6 +219,20 @@ jobs:
           cargo test --manifest-path services/hepta-session-host/Cargo.toml --locked \
             --features native-text --lib text::tests \
             2>&1 | tee "$RUNNER_TEMP/hepta-native-ui/evidence/native-text-tests.log"
+
+      - name: Test and compile the installed Root composition entry
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-native-ui/evidence"
+          cargo metadata --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features product-root --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            > "$evidence/product-root-metadata.json" 2> "$evidence/product-root-metadata.stderr.log"
+          cargo test --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features product-root --bin hepta-desktop-root \
+            2>&1 | tee "$evidence/product-root-tests.log"
+          cargo clippy --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features product-root --bin hepta-desktop-root -- -D warnings \
+            2>&1 | tee "$evidence/product-root-clippy.log"
 
       - name: Test the explicit prepared-preedit SDK in isolated source copies
         run: |

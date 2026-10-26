@@ -73,8 +73,16 @@ cargo +1.96.0 --config /absolute/evidence/preedit-overrides.toml metadata \
   > /absolute/evidence/candidate-native-metadata.json
 ```
 
-Review and commit the candidate's `ui/Cargo.lock`. No source file, global Cargo
-configuration or cached SDK checkout may be edited as part of resolution.
+For the single-source product build, generate this lock with Cargo in a
+separate source copy and retain it as the tracked
+`support/ui/preedit-sdk/Cargo.lock`. Keep `ui/Cargo.lock` as the Git SDK
+resolution used by ordinary CI. Pass `--committed-preedit-lock` to the product
+builder: it clones the exact clean Desktop commit, substitutes only that
+tracked lock in its disposable build copy, and verifies all other tracked and
+untracked source both before and after compilation. The receipt records the
+base commit/tree, actual lock hash and the sole changed path. The Root builder
+checks that lock against the same original commit. No source file, global
+Cargo configuration or cached SDK checkout may be edited during resolution.
 The helper prepares a new full SDK checkout, verifies the complete patched
 Git tree and generates an override for every original resolved SDK crate.
 Partial overrides, another SDK tree, or an old clipboard profile are refused.

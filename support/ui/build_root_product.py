@@ -70,6 +70,17 @@ def build(args):
     hepta_repo = source_profile.Repository(args.hepta_repo, "hepta")
     for repo, name in ((os_repo, "os"), (hepta_repo, "hepta")):
         repo.check(identities[name]["commit"], identities[name]["tree"])
+    if "declared_build_source" in ui_receipt:
+        declared = ui_receipt["declared_build_source"]
+        _lock, lock_record = os_repo.file("support/ui/preedit-sdk/Cargo.lock")
+        desktop.require(declared["schema"] == "trill.declared-preedit-build-source.v1"
+                        and declared["base"] == os_repo.check(identities["os"]["commit"], identities["os"]["tree"])
+                        and declared["only_changed_path"] == "ui/Cargo.lock"
+                        and declared["rust_sources_changed"] is False
+                        and declared["committed_lock"] == lock_record
+                        and declared["compiled_lock_sha256"] == lock_record["sha256"]
+                        and ui_receipt["locks"]["ui/Cargo.lock"] == lock_record["sha256"],
+                        "Native UI declared build lock differs from the same tracked Desktop source")
     verify_product_dependencies.verify(REPO, hepta_repo.path)
     output = args.output.absolute()
     targets = {"hepta": args.hepta_target.absolute(), "desktop": args.root_target.absolute()}
@@ -97,7 +108,7 @@ def build(args):
                "desktop_build_receipt_sha256": digest(ui_receipt_path), "packaging_sources": packaging,
                "targets": {key: str(value) for key, value in targets.items()}, "locks": lock_hashes,
                "compiler_tools": tool_records, "ambient_overrides_removed": removed,
-               "cargo_profile": "dev-small", "distribution_transform": "GNU strip --strip-unneeded"}
+               "cargo_profile": args.build_profile, "distribution_transform": "GNU strip --strip-unneeded"}
 
     def save():
         desktop.atomic_write(output / "build-receipt.json", desktop.json_bytes(receipt))
@@ -128,18 +139,18 @@ def build(args):
                        "--format-version", "1", "--features", "product-root", *common], REPO, targets["desktop"])
         graph = json.loads(metadata.read_bytes())
         receipt["original_source_cache"] = original_cache(graph, identities["hepta"])
-        run("hepta-build", ["cargo", "build", *common, "--profile", "dev-small", "--jobs", "1",
+        run("hepta-build", ["cargo", "build", *common, "--profile", args.build_profile, "--jobs", "1",
                             "-p", "codex-hepta-agentd", "-p", "codex-app-server", "--bin", "codex-hepta-agentd",
                             "--bin", "hepta-authority-host", "--bin", "codex-app-server"],
             hepta_repo.path / "codex-rs", targets["hepta"])
         run("desktop-root-build", ["cargo", "build", "--manifest-path", "services/hepta-session-host/Cargo.toml",
-                                   *common, "--features", "product-root", "--profile", "dev-small",
+                                   *common, "--features", "product-root", "--profile", args.build_profile,
                                    "--bin", "hepta-desktop-root", "--jobs", "1"], REPO, targets["desktop"])
         strip = Path(shutil.which("strip")).resolve(strict=True)
         receipt["strip"] = {"path": str(strip), "sha256": digest(strip)}
         for name in root_bundle.PROGRAMS:
             target = targets["desktop" if name == "hepta-desktop-root" else "hepta"]
-            source = target / "dev-small" / name
+            source = target / args.build_profile / name
             destination = binaries / name
             shutil.copyfile(source, destination)
             run("strip-" + name, [str(strip), "--strip-unneeded", str(destination)], REPO, target)
@@ -171,6 +182,7 @@ def main():
     for name in ("desktop-package", "desktop-build", "hepta-repo", "hepta-target", "root-target", "output"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--build-profile", choices=("release", "dev-small"), default="release")
     try:
         return build(parser.parse_args())
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, desktop.ProductError,

@@ -15,20 +15,30 @@ MANIFESTS = (
     "ui/Cargo.toml",
     "ui/core/Cargo.toml",
     "services/hepta-session-host/Cargo.toml",
+    "services/hepta-os/Cargo.toml",
 )
 REQUIRED_DEPENDENCIES = {
     "ui/core/Cargo.toml": {"hepta-control-core", "hepta-robrix-ui"},
     "services/hepta-session-host/Cargo.toml": {
         "codex-hepta-memory", "codex-hepta-objective", "codex-hepta-operations",
         "codex-hepta-agentd", "hepta-control-core",
+        "codex-hepta-fleet", "codex-hepta-supervisor", "codex-hepta-evidence",
+        "codex-app-server-client", "codex-state", "codex-utils-absolute-path",
+        "codex-hepta-contracts", "codex-hepta-paths",
     },
 }
 LOCKS = {
     "ui/Cargo.lock": {"hepta-control-core", "hepta-robrix-ui"},
     "services/hepta-session-host/Cargo.lock": {
         "codex-hepta-memory", "codex-hepta-objective", "codex-hepta-operations",
+        "codex-hepta-agentd", "codex-hepta-fleet", "codex-hepta-supervisor",
     },
+    "services/hepta-os/Cargo.lock": set(),
+    "support/ui/Cargo.lock": set(),
+    "tests/ui/Cargo.lock": set(),
+    "support/ui/preedit-sdk/Cargo.lock": {"hepta-control-core", "hepta-robrix-ui"},
 }
+SHARED_VERSIONS = {"serde": "1.0.229", "serde_json": "1.0.154", "tokio": "1.53.3", "libc": "0.2.191"}
 REQUIRED_FILES = {
     "codex-rs/hepta-objective/src/lib.rs",
     "codex-rs/hepta-objective/src/notes_literal_source.rs",
@@ -37,10 +47,24 @@ REQUIRED_FILES = {
     "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/mod.rs",
     "apps/hepta-control-ui/rust/robrix-ui/src/robrix/composer_transaction.rs",
     "apps/hepta-control-ui/rust/robrix-ui/src/robrix/composer_transaction_tests.rs",
+    "codex-rs/hepta-agentd/src/notes_thread_seed.rs",
+    "codex-rs/hepta-agentd/src/notes_thread_runtime.rs",
+    "codex-rs/hepta-agentd/src/notes_thread_tool.rs",
+    "codex-rs/hepta-agentd/src/notes_launch_mode.rs",
+    "codex-rs/hepta-agentd/src/root_notes_startup.rs",
+    "codex-rs/hepta-agentd/src/authority_host_logind.rs",
+    "codex-rs/hepta-agentd/src/authority_host_notes_successor.rs",
+    "codex-rs/hepta-agentd/src/authority_host_checkpoint_material.rs",
+    "codex-rs/hepta-agentd/src/root_production_writer_handoff.rs",
+    "codex-rs/hepta-agentd/src/authority_host_writer_rotate.rs",
+    "codex-rs/hepta-memory/src/cognitive_checkpoint_image.rs",
+    "codex-rs/third_party/aws-config-1.12.0/Cargo.toml",
 }
 MIRRORED_FIXTURES = {
     "codex-rs/hepta-agentd/tests/fixtures/notes-document-observation-v1.json":
         "tests/ui/notes-document-observation-v1.json",
+    "codex-rs/hepta-agentd/tests/fixtures/notes-model-v1.json": "tests/ui/notes-model-v1.json",
+    "codex-rs/hepta-memory/tests/fixtures/notes-model-v1.json": "tests/ui/notes-model-v1.json",
 }
 
 
@@ -77,6 +101,10 @@ def verify(root=ROOT, hepta_root=None):
                     f"Original owner dependency substituted: {name}: {package}")
         tables = [manifest.get(key, {}) for key in ("dependencies", "dev-dependencies", "build-dependencies")]
         tables.extend(manifest.get("patch", {}).values())
+        if name in ("ui/Cargo.toml", "services/hepta-session-host/Cargo.toml"):
+            patch = manifest.get("patch", {}).get("crates-io", {}).get("aws-config", {})
+            require(patch.get("git") == REPOSITORY and patch.get("rev") == commit,
+                    f"Original AWS security patch missing: {name}")
         for target in manifest.get("target", {}).values():
             tables.extend(target.get(key, {}) for key in ("dependencies", "dev-dependencies", "build-dependencies"))
         for table in tables:
@@ -93,6 +121,19 @@ def verify(root=ROOT, hepta_root=None):
         original = [p for p in packages if REPOSITORY in p.get("source", "")]
         require(required <= {p["name"] for p in original}, f"Original owner packages missing from {name}")
         require(all(p["source"] == expected for p in original), f"Mixed original Hepta sources in {name}")
+        if name in ("ui/Cargo.lock", "support/ui/preedit-sdk/Cargo.lock"):
+            widgets = [package for package in packages if package["name"] == "makepad-widgets"]
+            require(len(widgets) == 1, f"Expected exactly one original widgets package: {name}")
+            if name == "ui/Cargo.lock":
+                baseline = json.loads((root / "support/ui/linux-text-profile.json").read_text())
+                sdk = "git+" + baseline["makepad_repository"] + "?rev=" + baseline["makepad_commit"] + "#" + baseline["makepad_commit"]
+                require(widgets[0].get("source") == sdk, "Default UI lock must retain the original Git SDK")
+            else:
+                require(widgets[0].get("source") is None, "Prepared UI lock must resolve the explicit path SDK")
+        for package in packages:
+            if package["name"] in SHARED_VERSIONS:
+                require(package["version"] == SHARED_VERSIONS[package["name"]],
+                        f"Shared package version differs: {name}: {package['name']}")
         lock_counts[name] = len(original)
     preedit = json.loads((root / "support/ui/linux-preedit-profile.json").read_text())
     require((preedit["hepta_commit"], preedit["hepta_tree"]) == (commit, tree),
