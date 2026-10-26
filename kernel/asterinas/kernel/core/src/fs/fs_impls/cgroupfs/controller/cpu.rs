@@ -496,10 +496,10 @@ impl super::SubControl for CpuController {
     fn write_attr(&self, name: &str, reader: &mut VmReader) -> Result<usize> {
         match name {
             "cpu.weight" => {
-                // No scheduler path consumes this value yet. Returning success
-                // would advertise an unenforced resource policy. Keep the default
-                // read value, but reject every write until hierarchical scheduling
-                // actually consumes it; cpu.max remains independently supported.
+                // Prepared internal entities do not admit live memberships or
+                // SMP migration yet. Returning success would still advertise an
+                // unenforced user policy. Keep the default read value and reject
+                // writes until that full route consumes the configured weight.
                 Err(Error::InvalidOperation)
             }
             "cpu.max" => {
@@ -650,6 +650,61 @@ pub(crate) struct CpuChargeOwner {
     cgroup: Option<Arc<CgroupNode>>,
 }
 
+/// Read-only scheduling identity of an original CPU-controller incarnation.
+///
+/// This is not a membership binding, management capability, budget or node
+/// lifecycle lease. Prepared scheduler entities retain it without consulting a
+/// node's replaceable RCU slot again. Live routing still needs its own admitted
+/// membership-generation and completed-switch protocol.
+#[derive(Clone)]
+pub(crate) struct CpuSchedulingGroup {
+    cpu: Arc<super::SubController<CpuController>>,
+}
+
+impl core::fmt::Debug for CpuSchedulingGroup {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("CpuSchedulingGroup")
+    }
+}
+
+impl CpuSchedulingGroup {
+    pub(crate) fn for_task(task: &Task) -> Option<Self> {
+        let owner = CpuChargeOwner::for_task(task)?;
+        Self::active(owner.cpu.clone())
+    }
+
+    fn active(mut cpu: Arc<super::SubController<CpuController>>) -> Option<Self> {
+        loop {
+            if cpu.inner.as_ref()?.control.is_some() {
+                return Some(Self { cpu });
+            }
+            cpu = cpu.parent.clone()?;
+        }
+    }
+
+    pub(crate) fn parent(&self) -> Option<Self> {
+        Self::active(self.cpu.parent.clone()?)
+    }
+
+    pub(crate) fn same_incarnation(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.cpu, &other.cpu)
+    }
+
+    pub(crate) fn weight(&self) -> u64 {
+        u64::from(
+            self.cpu
+                .inner
+                .as_ref()
+                .unwrap()
+                .control
+                .as_ref()
+                .unwrap()
+                .weight
+                .load(Ordering::Relaxed),
+        )
+    }
+}
+
 impl CpuChargeOwner {
     /// Captures the live binding for the next segment, without allocation.
     pub(crate) fn for_task(task: &Task) -> Option<Self> {
@@ -773,6 +828,7 @@ mod owner_retention_regressions;
 
 #[cfg(ktest)]
 mod scheduler_handoff_regressions;
+
 
 #[cfg(ktest)]
 mod quota_debt_regressions {

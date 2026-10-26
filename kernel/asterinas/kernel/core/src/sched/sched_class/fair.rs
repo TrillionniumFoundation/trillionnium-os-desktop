@@ -24,6 +24,8 @@ use crate::{
     thread::AsThread,
 };
 
+pub(super) mod group;
+
 const WEIGHT_0: u64 = 1024;
 
 const HAS_PENDING: u64 = 1 << (u64::BITS - 1);
