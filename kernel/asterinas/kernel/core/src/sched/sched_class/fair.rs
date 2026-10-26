@@ -177,6 +177,46 @@ impl FairAttr {
     }
 }
 
+/// The original class/weight and high-water mark of one running interval.
+///
+/// This cursor is separate from the class time slice: the dispatcher still
+/// executes on behalf of a waiting/exiting task until another task takes over.
+/// Policy changes become effective for accounting at the next checkpoint;
+/// they never reprice execution that has already occurred.
+pub(super) struct FairRuntime {
+    accounted_through: u64,
+    weight: Option<u64>,
+}
+
+impl FairRuntime {
+    pub(super) fn new_at(task: &Task, now: u64) -> Self {
+        let attr = task.as_thread().unwrap().sched_attr();
+        Self {
+            accounted_through: now,
+            weight: Self::weight(attr),
+        }
+    }
+
+    pub(super) fn settle(&mut self, task: &Task, now: u64) {
+        let attr = task.as_thread().unwrap().sched_attr();
+        let delta = now.saturating_sub(self.accounted_through);
+        self.accounted_through = self.accounted_through.max(now);
+        if let Some(weight) = self.weight {
+            attr.fair.update_vruntime(delta, weight);
+        }
+        self.weight = Self::weight(attr);
+    }
+
+    fn weight(attr: &SchedAttr) -> Option<u64> {
+        // Read the complete policy under its existing lock. Separate atomic
+        // kind and pending-weight reads could straddle a policy update.
+        match attr.policy() {
+            super::SchedPolicy::Fair(nice) => Some(nice_to_weight(nice)),
+            _ => None,
+        }
+    }
+}
+
 /// The wrapper for threads in the FAIR run queue.
 ///
 /// This structure is used to provide the capability for keying in the
@@ -326,7 +366,9 @@ impl SchedClassRq for FairClassRq {
         match flags {
             UpdateFlags::Tick | UpdateFlags::Yield | UpdateFlags::Wait => {
                 let (_old_weight, weight) = attr.fair.fetch_weight();
-                let vruntime = attr.fair.update_vruntime(rt.delta, weight);
+                // The common runtime cursor has already charged this exact
+                // interval, including any direct selection/handoff tails.
+                let vruntime = attr.fair.vruntime.load(Ordering::Relaxed);
                 let leftmost = self.entities.peek();
                 self.min_vruntime = match leftmost {
                     Some(Reverse(leftmost)) => vruntime.min(leftmost.key()),
@@ -344,3 +386,7 @@ impl SchedClassRq for FairClassRq {
         }
     }
 }
+
+#[cfg(ktest)]
+#[path = "fair_interval_tests.rs"]
+mod tests;
