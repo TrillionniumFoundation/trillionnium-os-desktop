@@ -141,8 +141,8 @@ impl Inputs {
         if fresh && std::fs::symlink_metadata(&session).is_ok() {
             return Err("an existing Session socket is never replaced".into());
         }
-        if self.environment.get("WAYLAND_DISPLAY").is_none()
-            && self.environment.get("DISPLAY").is_none()
+        if !self.environment.contains_key("WAYLAND_DISPLAY")
+            && !self.environment.contains_key("DISPLAY")
         {
             return Err("an actual display selection is required".into());
         }

@@ -90,7 +90,7 @@ pub(super) fn metadata(
                 valid = false;
             } else if (*header).cmsg_type == libc::SCM_RIGHTS {
                 let n = length - prefix;
-                if n % mem::size_of::<i32>() != 0 {
+                if !n.is_multiple_of(mem::size_of::<i32>()) {
                     valid = false;
                 }
                 for index in 0..n / mem::size_of::<i32>() {
