@@ -112,7 +112,7 @@ class HumanProviderTests(unittest.TestCase):
 @unittest.skipUnless(os.geteuid() == 0, 'These file cases require explicit real Root test execution')
 class ProtectedFileTests(unittest.TestCase):
     def test_actual_protected_read_refuses_symlink_hardlink_and_shared_mode(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(dir='/run') as directory:
             root = Path(directory)
             root.chmod(0o700)
             path = root / 'config.json'
@@ -133,13 +133,21 @@ class ProtectedFileTests(unittest.TestCase):
                 human.read_root_json(path)
 
     def test_actual_read_rejects_duplicates_and_parent_fsync_works(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(dir='/run') as directory:
             path = Path(directory) / 'duplicate.json'
             path.write_text('{"x":1,"x":2}')
             path.chmod(0o600)
             with self.assertRaises(human.Refused):
                 human.read_root_json(path)
             human.sync_parent(path)
+
+    def test_root_files_below_shared_ancestry_are_refused(self):
+        with tempfile.TemporaryDirectory(dir='/tmp') as directory:
+            path = Path(directory) / 'config.json'
+            path.write_text('{"peer_uid":1000}')
+            path.chmod(0o600)
+            with self.assertRaisesRegex(human.Refused, 'Root custody'):
+                human.read_root_json(path)
 
 
 if __name__ == '__main__':

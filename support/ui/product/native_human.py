@@ -73,6 +73,11 @@ def private_parent(path):
     require(stat.S_ISDIR(info.st_mode) and info.st_uid == 0
             and stat.S_IMODE(info.st_mode) == 0o700,
             'Root0700 protected parent is required')
+    for ancestor in path.parents:
+        metadata = ancestor.stat()
+        require(stat.S_ISDIR(metadata.st_mode) and metadata.st_uid == 0
+                and not metadata.st_mode & 0o022,
+                'Protected parent ancestry must remain in Root custody')
 
 
 def read_root_json(path):
@@ -100,6 +105,11 @@ def trusted_program(path, expected_sha256=None):
     path = Path(path)
     require(path.is_absolute() and path.resolve(strict=True) == path,
             'Trusted program must be absolute and canonical')
+    for ancestor in path.parents:
+        metadata = ancestor.stat()
+        require(stat.S_ISDIR(metadata.st_mode) and metadata.st_uid == 0
+                and not metadata.st_mode & 0o022,
+                'Trusted executable ancestry must remain in Root custody')
     descriptor = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
     try:
         info = os.fstat(descriptor)
