@@ -125,8 +125,16 @@ FD numbers. Additional startup/recovery modes need their own explicit contract.
    child. Verify its kernel credentials, exact public receipt/profile hash and
    one held login leader. The original Root independently verifies and retains
    that same physical login before launching the actual Makepad shell.
-9. Serve through that same prepared Root, without reopening exclusive issuer or
-   clock owners. The sealed model mode includes the mandatory typed seed.
+9. The same prepared Root first completes native child registration and binds
+   all five real authority listeners with the original custody checks. Only
+   its successful ready callback sends the held bootstrap once to Agentd,
+   using the remaining cumulative deadline. The listeners are already open
+   when Agentd performs its original single bounded connect; no retry or
+   synthetic readiness file substitutes for the actual bind. A partial bind
+   or failed callback closes only this invocation's retained socket guards
+   and cannot release the bootstrap. Serve through that same prepared Root,
+   without reopening exclusive issuer or clock owners.
+   The sealed model mode includes the mandatory typed seed.
    Agentd resumes on its actual tool connection and compares original thread,
    session, model, provider, catalog and metadata before accepting callbacks.
    Root-authenticated human ingress, original writer and exact operation
