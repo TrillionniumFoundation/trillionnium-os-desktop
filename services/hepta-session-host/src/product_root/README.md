@@ -39,8 +39,9 @@ refuses a different sibling. It never discovers an older Codex on PATH.
 freeze files are real package inputs, not caller-supplied digest strings.
 
 The only accepted display environment keys are `DISPLAY`, `WAYLAND_DISPLAY`,
-`XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS`, `XAUTHORITY`, `LANG`, and
-`LC_ALL`. The actual private owner runtime directory and an explicit display
+`XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS`, `XAUTHORITY`, `XMODIFIERS`, `LANG`,
+and `LC_ALL`. When supplied, `XMODIFIERS` must equal the original IBus selector
+`@im=ibus`. The actual private owner runtime directory and an explicit display
 are required. Initialize refuses an existing `trillionnium-ui/session.sock`. Recovery proves
 original Session retirement and leaves stale handling to original Session
 startup locking; it never overwrites a live endpoint. The entry
