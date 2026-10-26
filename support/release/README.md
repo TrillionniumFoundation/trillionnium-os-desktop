@@ -93,7 +93,7 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 
 ## Native owner source profile
 
-Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 110
+Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 135
 Desktop/kernel roles and 92 original Hepta roles. It preserves the five protocol
 goldens and adds the real native entry/runner, bounded ELF loader, per-frame
 kernel-stack accounting, actual proc credentials, SGID inode publication,
@@ -101,6 +101,15 @@ interruptible group stops, original Root composition, Current publisher and cold
 read-only SQLite recovery. Each role names one distinct tracked regular source
 file. Source identity covers a file's bytes, not a claim that every behavior in
 that file has been audited or dynamically exercised.
+
+The 25 IPC additions bind the actual page-budget exports and per-frame tests,
+Pipe and Unix Stream/Seqpacket allocation and publication paths, shared physical
+ring storage, development/technical contracts, the IPC guest probe and runner,
+and its Unix source-profile oracle. The already required page-budget owner and
+bounded Unix guest runner keep their existing roles. The original Unix oracle,
+probe, protocol, host tests and immutable historical control files are also
+bound under distinct roles. These source checks do not claim complete
+`memory.max`, general kernel-heap charging or a protected recovery reserve.
 
 The fixed schema-3 host lane directly tests the original `codex-hepta-agentd`,
 `codex-hepta-memory`, `codex-hepta-cognitive-store`, `codex-hepta-contracts` and

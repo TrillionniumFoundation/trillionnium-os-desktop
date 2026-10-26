@@ -170,6 +170,30 @@ class SourceCombinationTests(unittest.TestCase):
             with self.assertRaises(profile.ProfileError):
                 self.build()
 
+    def test_v3_ipc_owner_probe_and_oracle_cannot_be_omitted_or_aliased(self):
+        self.upgrade_to_version(3)
+        original = copy.deepcopy(self.mapping)
+        for role in ("kernel_pipe_buffer_owner", "kernel_ipc_memory_probe",
+                     "kernel_ipc_source_profile_oracle"):
+            for mutation in ("omit", "alias"):
+                self.mapping = copy.deepcopy(original)
+                entries = self.mapping["sources"]["os"]
+                if mutation == "omit":
+                    entries.pop(role)
+                else:
+                    entries[role] = entries["kernel_page_budget"]
+                with self.subTest(role=role, mutation=mutation), self.assertRaises(profile.ProfileError):
+                    self.build()
+
+    def test_v3_ipc_owner_byte_change_requires_a_new_manifest(self):
+        self.upgrade_to_version(3)
+        manifest, _ = self.build()
+        path = self.mapping["sources"]["os"]["kernel_pipe_buffer_owner"]
+        write(self.os, path, b"changed physical buffer admission\n")
+        commit(self.os, "change IPC admission owner")
+        with self.assertRaisesRegex(profile.ProfileError, "manifest mismatch"):
+            self.verify(manifest)
+
     def test_wrong_os_head_rejected(self):
         args = list(self.inputs())
         args[2] = "0" * 40
@@ -308,6 +332,17 @@ class SourceCombinationTests(unittest.TestCase):
             ])
         self.assertEqual(result, 0)
         self.assertEqual(profile.load_json(receipt)["manifest_sha256"], profile.sha256(raw))
+
+
+class CheckedInSourceMapTests(unittest.TestCase):
+    def test_v3_os_paths_are_distinct_tracked_regular_sources(self):
+        release = Path(__file__).resolve().parent
+        mapping = profile.load_json(release / "organ_source_map_v3.json")
+        profile.check_map(mapping)
+        repo = profile.Repository(release.parents[1], "os")
+        for role, path in mapping["sources"]["os"].items():
+            with self.subTest(role=role, path=path):
+                repo.file(path)
 
 
 if __name__ == "__main__":
