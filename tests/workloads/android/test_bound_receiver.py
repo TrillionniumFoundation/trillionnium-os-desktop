@@ -109,17 +109,16 @@ class BoundReceiverTests(unittest.TestCase):
         self.assertEqual(actual['organ']['mode'], 'readback')
         self.assertNotIn('value', actual)
 
-    def test_generation_change_or_expiry_prevents_runner_submission(self):
-        for generation, clock, code in [({'boot_id': 'b'}, 100, 'CELL_GENERATION_CHANGED'),
-                                         ({'boot_id': 'a'}, 106, 'ORGAN_DEADLINE_EXCEEDED')]:
-            cell = types.SimpleNamespace(generation=generation, deadline=155, run=lambda *a, **k: None, close=lambda: None)
-            with patch.object(self.receiver, '_OrganCell', return_value=cell), \
-                    patch.object(self.receiver.time, 'clock_gettime', return_value=clock), \
-                    patch.object(self.receiver, 'ui') as ui:
-                with self.assertRaises(self.receiver.ControlError) as failed:
-                    self.receiver.dispatch(request())
-            self.assertEqual(str(failed.exception), code)
-            ui.assert_not_called()
+    def test_generation_change_prevents_readback_runner_submission(self):
+        cell = types.SimpleNamespace(generation={'boot_id': 'b'}, deadline=155,
+                                     run=lambda *a, **k: None, close=lambda: None)
+        with patch.object(self.receiver, '_OrganCell', return_value=cell), \
+                patch.object(self.receiver.time, 'clock_gettime', return_value=100), \
+                patch.object(self.receiver, 'ui') as ui:
+            with self.assertRaises(self.receiver.ControlError) as failed:
+                self.receiver.dispatch(request(op='organ-readback'))
+        self.assertEqual(str(failed.exception), 'CELL_GENERATION_CHANGED')
+        ui.assert_not_called()
 
     def test_helper_cannot_synthesize_receiver_success_or_rebind_operation(self):
         cell = types.SimpleNamespace(generation={'boot_id': 'a'}, deadline=155,
@@ -132,10 +131,11 @@ class BoundReceiverTests(unittest.TestCase):
             with self.subTest(missing=missing), \
                     patch.object(self.receiver, '_OrganCell', return_value=cell), \
                     patch.object(self.receiver.time, 'clock_gettime', return_value=100), \
-                    patch.object(self.receiver, 'ui', return_value=reply):
+                    patch.object(self.receiver, 'ui', return_value=reply) as ui:
                 with self.assertRaises(self.receiver.ControlError) as failed:
-                    self.receiver.dispatch(request())
-            self.assertTrue(failed.exception.details['outcome_unknown'])
+                    self.receiver.dispatch(request(op='organ-readback'))
+            self.assertFalse(failed.exception.details['outcome_unknown'])
+            self.assertEqual(ui.call_args.args[0]['op'], 'find')
 
     def test_namespace_descriptors_pin_original_cell_across_every_command(self):
         generation = {'mount_namespace': 'mnt:[11]', 'pid_namespace': 'pid:[12]'}

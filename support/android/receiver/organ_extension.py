@@ -152,6 +152,13 @@ def _organ_request(r):
 
 def _organ_dispatch(r):
     request = _organ_request(r)
+    # No installed same-signer strict receiver is independently qualified in
+    # this source profile. The old APK ignores the organ binding and can write
+    # before the response protocol check below. Keep every strict effect closed
+    # before cell discovery or ui(); caller fields cannot supply qualification.
+    require(request['op'] != 'set-text', 'ORGAN_EFFECT_RECEIVER_NOT_QUALIFIED',
+            action_taken=False, action_submitted=False, outcome_unknown=False,
+            automatic_retry=False)
     cell = _OrganCell()
     original_arun = globals()['arun']
     submitted = False

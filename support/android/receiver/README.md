@@ -6,7 +6,7 @@ Agentd, issue authority, retain an operation ledger, enable ADB, or register an
 effect destination by default. The existing `device_organ.py` profile remains
 read only and retains its deployed helper pin.
 
-**Current local qualification:** source generation and 39 host protocol/transport
+**Current local qualification:** source generation and host protocol/transport
 tests pass. Android compilation, original signer equality, installation,
 actual native observation, a real text effect and original-owner durable
 reconciliation still require recorded execution. Host tests are not device
@@ -39,6 +39,29 @@ The build does not generate a signing key and rejects a candidate whose signer
 certificate differs from the verified original APK.
 
 ## Exact receiver protocol
+
+### Development boundary: effects remain disabled
+
+The helper rejects every `organ-set-text` with
+`ORGAN_EFFECT_RECEIVER_NOT_QUALIFIED` before cell discovery or `ui(request)`.
+No same-original-signer strict installed receiver is independently qualified in
+this source profile. Caller fields, a claimed protocol, or a later successful
+reply cannot supply that qualification. The original APK ignores the new
+top-level `organ` field and could otherwise write before the helper rejects its
+legacy reply. The reply check alone is too late to prevent that effect.
+
+`organ-observe` and `organ-readback` retain their find-only paths. The deployed
+read-only adapter, original signer and APK are unchanged. This guard does not
+qualify P1 Android delivery or enable an effect lane. A future enablement needs
+separate review of trusted installed-byte, original-signer and peer checks
+before any native write; an unsigned candidate is insufficient.
+
+Run the offline boundary regressions with
+`python3 -m unittest tests.workloads.android.test_receiver_effect_boundary`.
+All cell, transport and UI calls in these tests are synthetic doubles. They
+cover old/unknown receivers, forged caller qualification, premature effect
+submission and unchanged find-only observations/readback. The wire schema below
+describes the candidate receiver; host write dispatch remains disabled.
 
 The new operations are available only as explicit JSON on the existing helper.
 They are not added to the legacy CLI or the read-only adapter's effect allowlist.
