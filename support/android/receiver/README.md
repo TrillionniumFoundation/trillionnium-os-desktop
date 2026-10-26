@@ -6,11 +6,34 @@ Agentd, issue authority, retain an operation ledger, enable ADB, or register an
 effect destination by default. The existing `device_organ.py` profile remains
 read only and retains its deployed helper pin.
 
-**Current local qualification:** source generation and 39 host protocol/transport
-tests pass. Android compilation, original signer equality, installation,
-actual native observation, a real text effect and original-owner durable
-reconciliation still require recorded execution. Host tests are not device
-evidence. The original signing password and key were not read or copied.
+## Qualification snapshots
+
+The initial source-only increment recorded source generation and 39 host
+protocol/transport tests. Compilation was subsequently executed in these
+separate, source-bound records:
+
+- **2026-10-24 component archive:** the
+  [retained original receiver v2/v3 executions](../../../results/integration/2026-10-24-original-owner-product/continued-components/README.md)
+  compiled four Java sources, produced DEX and zipaligned an unsigned APK while
+  preserving the supplied original binary manifest/resources. Its archived
+  signer and candidate hashes identify those inputs only.
+- **2026-10-26 unsigned build:** frozen Desktop
+  `f36664310b7bb0074a16846f2c1c600e90844f05`, tree
+  `c4d59e190a746a1b32d374f94f5ab5d1503fc9e1`, produced a 19,443-byte APK with
+  SHA256 `b35d5641a038a9ee8fb472b92d89fe749fc276528163527d883800cac1c61806`.
+  The source-frozen operator preserved the original binary manifest/resources;
+  the candidate was **not signed or installed**. The external task receipt is
+  `/home/qian-qi/work/trillionnium-hepta-convergence-20261025/evidence/android-receiver-f366-unsigned-20261026/result.json`;
+  it has not been copied into this repository's `results/` archive. This result
+  is not relabeled as a D5 or later-source execution.
+
+Neither record verifies the certificate of the currently installed device app.
+Original signer equality for the selected deployment, installation, actual
+native observation, a real text effect and original-owner durable reconciliation
+still need their own exact-device execution. Host tests and APK compilation do
+not establish these gates. The original signing password and key were not read
+or copied. The [dated source/evidence index](../../../docs/CURRENT_CAPABILITIES.md#source-evidence-2026-10-26)
+keeps these component results separate from product qualification.
 
 ## Source and compatibility
 

@@ -1,5 +1,54 @@
 # 当前能力、源码与验收边界
 
+<a id="source-evidence-2026-10-26"></a>
+
+## 2026-10-26 固定来源与执行范围
+
+本节按实际已冻结输入记录进度，不把正在阅读本文件的任意后续提交称为已验收源码。
+当前 Hepta 依赖以 [DEPENDENCIES](../support/ui/DEPENDENCIES.md) 与
+[SOURCES](SOURCES.md#hepta-native-organ) 为准：H760
+`760363e06c5f4a115de039ffa7bd7e7767bd1fd9` / tree
+`87bcc851d794c89ede183353e7493461b931ebed`，产品工具链 Rust 1.96.0。
+
+| 固定输入 | 精确身份 | 用途 |
+| --- | --- | --- |
+| Desktop D5 | [`774df6c2abab4274bcc8081d23018dbd22613d7b`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/774df6c2abab4274bcc8081d23018dbd22613d7b) / tree `a40ec27901b55bba84514fd9c9d0fa59dd6b2401` | 本次主机回归与派生 preedit 的原始代码输入 |
+| Review R5 | [`f25411ea5f9b4d7a5842e75093f1e6d83a224f4e`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/f25411ea5f9b4d7a5842e75093f1e6d83a224f4e/tests/workloads/hepta_agentd_runtime/source-review.json) / tree `f8676aa32f2c42d67b63c60773d6a9246519c7c9` | 固定 D5/H760 的审查元数据；不是另一份已运行产品 |
+| D5 preedit 派生源码 | `60c246de3c0455fe1e97935411664c999bbf2341` / tree `f99f0c6de67cf002e19b6edb1f109db761cc7b3b` | 原 D5 的独立本地 child，只改 `ui/Cargo.lock`；未推送该 child 或安装产品 |
+| 较早 Desktop D3 | [`fadf22ba8521bf0173403de0f80518f4b893fa5d`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/fadf22ba8521bf0173403de0f80518f4b893fa5d) / tree `13f4256d24391f0cff51dbcd5159a058b72f1b14` | 较早 kernel/store/F1 与 preedit 收据继续保留 D3 身份，不改名为 D5 结果 |
+
+| 2026-10-26 已取得的结果 | 实际范围 | 不包括 |
+| --- | --- | --- |
+| D5/H760 主机 gate 通过 | 原 `tests/ui/check-host.sh`、UI workspace/all-targets strict Clippy、显式真实 CJK 字体检查；执行后源码干净 | 未启动生产 original owner，未操作用户显示或物理设备 |
+| D5 派生 preedit 通过 | `60c246de` 的 debug 构建/打包与同一 packaged Shell：AT-SPI 7、EditableText 5、真实 IBus 5，共 17 项；04:50:13 UTC 收据为 `qualified` | 资格限独立 X11/D-Bus/IBus 环境；不是 release 优化性能、Wayland IME、读屏听觉、物理 seat 或生产授权验收 |
+| R5 来源核对通过 | 完整 D5/H760/runner tree 与字节；374 个 runtime、181 个 critical、14 个 store pin | `build_executed=false`、`guest_executed=false`；没有借该检查新增运行资格 |
+| D3 派生 preedit 已通过 | 独立 child `b01dbd7fb99a6afa1e792919ffc1eb88d658e2c8` / tree `74a7db5d0333848b381a33b601accd592327232c`，debug 包及同样 17 项窗口门 | 这是较早 D3 的收据，不转授后续源码或 baseline SDK |
+
+上表新收据保留在本轮审计的外部附件中，尚未复制进本仓 `results/`。
+以下为审计工作区相对路径与原字节 SHA256，不是当前 checkout 内的下载链接：
+
+- `audit_evidence/current-final-readback/d5_host_receipt.json`：`990a6b5cd06d83a12215d39e1d47950ba316a1e83e20fc8b9e59c261f16d34b6`。
+- `audit_evidence/preedit-d5-60c-qualified/release-receipt.json`：`6e847b94370a71af375d59d42c803a7a86330ae91be84664d21ddfa6657499f9`；实际 Shell SHA256 为 `6ee058811f75a97346498181370b930098efe6ee4e58428029116c4629e50222`，原 build/window 分项收据在同一附件目录。
+- `audit_evidence/current-final-readback/r5-source-validation.json`：`f1e29c88bf4eed3febefc6b9a78b6bf9518056e7697ccffa6d23ba547bff1af2`。
+- `audit_evidence/preedit-b01-qualified/release-receipt.json`：`5a3598aacd5c3a84a66334bd4999f5449b36336ee693ae3fd96e884389a8bfc5`。
+
+2026-10-26 的 R5 GitHub 观察批次中，[PR #269](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/269)
+的 14 条 workflow 尚在 queued，未取得全绿结论；此处保留该次观察，实时状态应读取对应提交的 checks。
+本地通过结果不替代 GitHub 执行。D5 的派生构建遵守
+[PREEDIT_RELEASE](../support/ui/PREEDIT_RELEASE.md)，baseline 锁与原 SDK 资格保持独立。
+后续代码或文档提交仍须重新冻结自己的 source/review，不继承本节身份。
+
+Android 编译也有带来源的组件结果：[receiver 文档](../support/android/receiver/README.md#qualification-snapshots)
+区分 2026-10-24 仓内档案和 2026-10-26 Df366 unsigned 构建。
+后者 APK 为 19,443 字节、SHA256 `b35d5641a038a9ee8fb472b92d89fe749fc276528163527d883800cac1c61806`；
+没有签名、安装、原 owner 效果或当前设备证书核对。不能继续写成“从未编译”，也不能据此声称 Android organ 已可部署。
+
+**完整生产 Root/真实模型/原 writer 效果、完整原生 F1/G2、通用桌面控制和手机产品资格仍未取得。**
+已有源绑定组件结果须与这些产品门区分。以下历史正文保留原计数、成功与失败；其中“当前”“最新”“待验”
+只属于相应来源与记录时点，不能覆盖本节的新执行，也不能被重标成新版本通过。
+
+## 历史：2026-10-24 PR #257 内核实施线
+
 本实施线来自 PR #257。最新已归档源码为 `39c1eaf89a211b91e5e687ceaf86fd033567e536` / tree `41afddf4360f18ad50d62f9647de6f2e4f602a0e`，其[Process successor内核两套实测](../results/integration/2026-10-24-asterinas-integration/kernel-process-successor/publication.json)通过，整流水455.040秒：普通core373/required134，G2 core387=完整373+原Root3+新增11，两套均无失败、过滤或软跳过，原始QEMU退出33。新增G2内核回归覆盖launcher准备与取消、子进程allocation释放门槛、世代重放与精确Root ACK门槛、history-only原namespace保留，以及原watchdog receipt在同一owner最终切换点的保存；原CPU连续性3项与successor prepare/commit5项在两套中继续逐项通过。799744字节旧静态ELF仍仅作G2编译输入，本流水未执行原Hepta owner或原生launcher用户态闭环。[f6e837c6两套CPU successor证据](../results/integration/2026-10-24-asterinas-integration/kernel-cpu-successor/publication.json)独立保留；本轮未运行allocator、MLSDisk、OSTD、ordinary产品QueryAbi/socket或watchdog六轮，它们最近的[完整同源证据仍属于824720ea](../results/integration/2026-10-24-asterinas-integration/kernel-owner-continuity/publication.json)，不转授39c1eaf8。原生daemon/writer/FinalUse与Supervisor/pidfd闭环、Root先持久保存再AckSaved、失回复与跨boot恢复、300秒有限grant后续续约及长期持久CPU控制仍待各自最终源码实测。0f6300e4、824720ea、f6e837c6及更早档案全部保留。
 
 较早 `d5a21bb7` 的[缺页准入与 fallible 页表组合](../results/integration/2026-10-23-audit-closure/kernel-vmar-d5a21/publication.json)及其[首次 fixture 失败](../results/integration/2026-10-23-audit-closure/kernel-vmar-689c-failure/publication.json)继续保留。`0187bd57` / Hepta `b3d3f2d4` 另有原 daemon/store 和 Linux32 实测，`f3d54e5b` 有原 A10 十一项 Linux-host 执行体。每项结果只属于其明确来源，不给后续分支、远端 main 或部署环境转授资格。F1 CI 的源码选择现由同一份 `source-review.json` 提供，已修复旧 workflow pin 与 review 不一致；[68 项 host 回归和真实环境输出核对](../results/integration/2026-10-24-asterinas-integration/f1-source-pair/validation.json)只证明来源选择修复。
@@ -8,7 +57,7 @@
 
 **当前没有完整生产控制、完整原生 F1/G2、通用桌面控制或手机产品资格。** 文档与源码门禁通过只能关闭对应工程问题；不能把单个 host、guest 或设备场景的成功扩展为产品验收。
 
-## 2026-10-25 审计整改与当前配对
+## 历史：2026-10-25 审计整改记录
 
 当前产品的唯一 Hepta 来源及 27 份关键文件身份由 [依赖合同](../support/ui/DEPENDENCIES.md)和 [source map](SOURCES.md#hepta-native-organ)绑定。三处 Cargo 入口与两产品锁同步更新；原生输入 SDK 只在显式 preedit profile 使用，默认 Git SDK 和 clipboard 候选各自保留独立合同。新的 ComposerTransaction 拒绝发布活动 preedit，确认后沿原 ChatWorkspace 更新；焦点补丁只处理同一窗口真实 gain/loss 转换，四项原 SDK 生命周期回归先复现再修复。
 
@@ -18,13 +67,13 @@
 
 [Desktop PR #267](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/267)、[Hepta 集成 PR #3938](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3938)和[输入事务修复 #3960](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/3960)保留本轮源码与验证范围。早先 Desktop `0b19344a` / Hepta `1b980b0b` 的完整原生工作区 346 项、独立 host 23 项、Notes 普通关闭重开和真实 App/原 SQLite owner 崩溃恢复已有执行证据；后续最终配对必须各自绑定构建收据及实际运行结果，不能因为依赖重新固定而继承全部窗口或生产资格。完整 A06/移动设备、生产 Root authority 和掉电仍按各自门禁验收。
 
-## 2026-10-24 Linux 产品集成增量
+## 历史：2026-10-24 Linux 产品组件记录
 
 当前 UI、Session host 和原 Hepta 依赖补丁统一指向已发布 [Hepta `760363e06c5f4a115de039ffa7bd7e7767bd1fd9`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/760363e06c5f4a115de039ffa7bd7e7767bd1fd9)，完整 tree 为 `87bcc851d794c89ede183353e7493461b931ebed`，产品工具链为 Rust 1.96.0。UI 根显式将 `accesskit`、`accesskit_consumer`、`accesskit_atspi_common`、`accesskit_unix` 四包固定到相同 Hepta SHA，避免依赖 workspace 的 patch 不向上继承。`services/hepta-os` 是本地 wire/transport crate，没有虚构新增 Hepta Git pin。完整 Desktop HEAD/tree、真实 Cargo 解析生成的锁和 features 仍由最终 source-profile 及构建收据绑定。
 
 原始 [v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)保留每次实际输入、命令、完整日志和退出码；下面计数只表示对应包/过滤范围，不合并计算为整仓通过。v8/v9 的原编译失败、文本失败和资源测试 panic 继续保存在[各自历史档案](../results/integration/2026-10-24-original-owner-product/text-native-v8-v9/README.md)，未被后续结果覆盖。
 
-| 最新 scoped 执行项 | 实际结果 | 范围与未运行部分 |
+| 归档 scoped 执行项 | 实际结果 | 范围与未运行部分 |
 | --- | --- | --- |
 | 原 Agentd 库 | 349 passed / 34 ignored | ignored 未计为通过；包含未运行的专用 Root/FIFO 条件项。 |
 | 原 Agentd/App Server 文本集成 | 8/8 passed | 实际原进程/协议路径，签名与模型输入仍有 fixture；不证明生产身份或真实模型装配。 |
