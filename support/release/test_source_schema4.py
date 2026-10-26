@@ -210,8 +210,14 @@ class Schema4PairTests(unittest.TestCase):
         packages = [argv[index + 1] for index, value in enumerate(argv) if value == "-p"]
         self.assertEqual(len(packages), len(set(packages)))
         self.assertEqual(len(packages), 18)
-        self.assertTrue({"codex-app-server-protocol", "codex-thread-store", "codex-core-plugins",
-                         "codex-rollout", "codex-file-system"} <= set(packages))
+        legacy_tests = next(step[3] for step in runner.host_steps(self.os, self.hepta, True,
+                                                                 schema_version=3)
+                            if step[0] == "hepta-tests")
+        legacy_packages = {legacy_tests[index + 1] for index, value in enumerate(legacy_tests)
+                           if value == "-p"}
+        self.assertEqual(set(packages), legacy_packages | {
+            "codex-app-server-protocol", "codex-thread-store", "codex-core-plugins",
+            "codex-rollout", "codex-file-system"})
         self.assertEqual(set(steps), {"ui-build", "ui-tests", "adapter-tests", "hepta-build",
                                      "hepta-root-build", "hepta-recovery-build", "hepta-tests"})
         self.assertEqual(self.receipt()["qualification"], "host-build-tests")
@@ -282,9 +288,14 @@ class Schema4HistoricalContractTests(unittest.TestCase):
                                      expected["dispatch_sha256"][f"{version}:{offline}:{build_profile}"])
         self.assertEqual(profile.HISTORY_OWNER, expected["history_owner"])
         self.assertEqual(profile.GOLDEN_ROLES_V4, profile.GOLDEN_ROLES_V3)
-        migrations = {role for role in profile.HEPTA_ROLES_V4
-                      if role.startswith("automation_") and "migration" in role}
-        self.assertEqual(len(migrations), 19)
+        legacy = profile.load_json(HERE / "organ_source_map_v3.json")
+        current = profile.load_json(HERE / "organ_source_map_v4.json")
+        migration_prefix = "codex-rs/hepta-automation/migrations/"
+        migration_sources = lambda mapping: {
+            role: path for role, path in mapping["sources"]["hepta"].items()
+            if path.startswith(migration_prefix) and path.endswith(".sql")}
+        self.assertEqual(len(migration_sources(legacy)), 19)
+        self.assertEqual(migration_sources(current), migration_sources(legacy))
 
 
 # Inserted from frozen CAB export, never from current runtime acceptance.
