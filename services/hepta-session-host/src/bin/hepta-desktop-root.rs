@@ -8,6 +8,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         let mut args = std::env::args_os().skip(1);
         let action = args.next();
+        if action.as_deref() == Some(std::ffi::OsStr::new("admin")) {
+            return product_root::administer(args);
+        }
         let flag = args.next();
         let path = args.next();
         if flag.as_deref() != Some(std::ffi::OsStr::new("--config")) || path.is_none() {
