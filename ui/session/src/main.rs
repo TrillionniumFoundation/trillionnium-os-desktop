@@ -6,6 +6,7 @@ mod ipc;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
 mod objective_bridge;
+mod objective_forwarder;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -19,9 +20,7 @@ use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::time::Duration;
-#[cfg(test)]
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 #[cfg(target_os = "linux")]
 use trill_ui_broker::notes::NotesTarget;
@@ -138,7 +137,7 @@ impl DisplayTracker {
 }
 
 struct Session {
-    objective: objective_bridge::ObjectiveBridge,
+    objective: objective_forwarder::ObjectiveForwarder,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -156,6 +155,11 @@ struct Session {
     first_frame_rx: Receiver<u64>,
 }
 
+enum SessionReply {
+    Ready(Response),
+    Objective(objective_forwarder::PendingReply),
+}
+
 impl Session {
     fn new(app_binary: PathBuf) -> io::Result<Self> {
         // A generation fence must not silently degrade to PID + clock time:
@@ -166,7 +170,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
-            objective: objective_bridge::ObjectiveBridge::from_environment(),
+            objective: objective_forwarder::ObjectiveForwarder::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -511,53 +515,63 @@ impl Session {
         &self,
         expected_instance: String,
         command: trill_ui_core::objective::ObjectiveCommand,
-    ) -> Response {
+        deadline: Instant,
+    ) -> SessionReply {
         if expected_instance != self.instance {
-            return Response::Error {
+            return SessionReply::Ready(Response::Error {
                 message: "Stale Session; Objective command not forwarded".into(),
                 session_instance: self.instance.clone(),
-            };
+            });
         }
-        Response::Objective {
-            observation: self.objective.request(command),
-            session_instance: self.instance.clone(),
-        }
+        SessionReply::Objective(self.objective.request(command, deadline))
     }
 
-    fn handle(&mut self, request: Request) -> Response {
+    fn handle(&mut self, request: Request, deadline: Instant) -> SessionReply {
         self.refresh();
-        match request {
-            Request::ObjectiveAvailability { expected_instance } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Availability {},
-            ),
+        let response = match request {
+            Request::ObjectiveAvailability { expected_instance } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Availability {},
+                    deadline,
+                );
+            }
             Request::ObjectiveSubmit {
                 client_intent_id,
                 text,
                 expected_instance,
-            } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Submit {
-                    intent: trill_ui_core::objective::ObjectiveIntent {
-                        client_intent_id,
-                        text,
+            } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Submit {
+                        intent: trill_ui_core::objective::ObjectiveIntent {
+                            client_intent_id,
+                            text,
+                        },
                     },
-                },
-            ),
+                    deadline,
+                );
+            }
             Request::ObjectiveStatus {
                 client_intent_id,
                 expected_instance,
-            } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Status { client_intent_id },
-            ),
+            } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Status { client_intent_id },
+                    deadline,
+                );
+            }
             Request::ObjectiveCancel {
                 client_intent_id,
                 expected_instance,
-            } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Cancel { client_intent_id },
-            ),
+            } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Cancel { client_intent_id },
+                    deadline,
+                );
+            }
             Request::Snapshot => {
                 let observation = self.display.observe(probe_host_wayland());
                 Response::Snapshot {
@@ -595,7 +609,8 @@ impl Session {
                     self.cancel(id)
                 }
             }
-        }
+        };
+        SessionReply::Ready(response)
     }
 }
 
@@ -1488,11 +1503,14 @@ mod tests {
         let session = fixture.session.as_mut().unwrap();
         session.cancellation_fixture_socket = Some(socket);
         let expected_instance = session.instance.clone();
-        let Response::Task { task, .. } = session.handle(Request::Launch {
-            workspace: Workspace::Build,
-            app: AppKind::Notes,
-            expected_instance: expected_instance.clone(),
-        }) else {
+        let SessionReply::Ready(Response::Task { task, .. }) = session.handle(
+            Request::Launch {
+                workspace: Workspace::Build,
+                app: AppKind::Notes,
+                expected_instance: expected_instance.clone(),
+            },
+            Instant::now() + EXCHANGE_BUDGET,
+        ) else {
             panic!("expected real child launch");
         };
         assert_eq!(task.state, TaskState::Running, "{}", task.detail);
@@ -1536,12 +1554,15 @@ mod tests {
         control.read_exact(&mut ready).unwrap();
         assert_eq!(&ready, b"TRILL_CANCEL_READY\n");
 
-        let Response::Task {
+        let SessionReply::Ready(Response::Task {
             task: requested, ..
-        } = session.handle(Request::Cancel {
-            id: task.id,
-            expected_instance,
-        })
+        }) = session.handle(
+            Request::Cancel {
+                id: task.id,
+                expected_instance,
+            },
+            Instant::now() + EXCHANGE_BUDGET,
+        )
         else {
             panic!("expected bounded cancellation acknowledgement");
         };

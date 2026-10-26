@@ -1,12 +1,15 @@
 //! Disposable Objective UI observations. The host owns identity, admission,
 //! publication and run state; this module retains no authority or recovery log.
-use super::{Desktop, Workspace};
+use super::{Desktop, ObjectiveRequestReceipt, Workspace};
 use eframe::egui;
 use std::fmt::Write as _;
 use std::io::Read;
 use std::time::{Duration, Instant};
 use trill_ui_core::notes::MAX_NOTES_TEXT_BYTES;
-use trill_ui_core::objective::{ObjectiveObservation, ObjectiveStage, MAX_OBJECTIVE_VIEWS};
+use trill_ui_core::objective::{
+    ObjectiveObservation, ObjectiveStage, ObjectiveTransportRejection,
+    ObjectiveTransportRejectionReason, ObjectiveTransportRequest, MAX_OBJECTIVE_VIEWS,
+};
 use trill_ui_core::{unix_ms, Request};
 
 const READY_MAX_AGE: Duration = Duration::from_secs(2);
@@ -24,6 +27,30 @@ struct IntentView {
     observation: ObjectiveObservation,
     received_at: Instant,
     cancel_queued: bool,
+    submission: SubmissionTransport,
+    last_submit_receipt: u64,
+    last_cancel_receipt: u64,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SubmissionTransport {
+    Pending,
+    Uncertain,
+    NotForwarded(ObjectiveTransportRejectionReason),
+}
+
+fn owner_evidence(observation: &ObjectiveObservation) -> bool {
+    observation.request_retained
+        || observation.publication_retained
+        || observation.run.is_some()
+        || finished(observation)
+}
+
+impl IntentView {
+    fn locally_not_forwarded(&self) -> bool {
+        matches!(self.submission, SubmissionTransport::NotForwarded(_))
+            && !owner_evidence(&self.observation)
+    }
 }
 
 #[derive(Default)]
@@ -64,6 +91,91 @@ fn finished(observation: &ObjectiveObservation) -> bool {
 }
 
 impl ObjectivePanel {
+    pub(super) fn transport_returned(&mut self, receipt: &ObjectiveRequestReceipt) {
+        let (id, submit) = match &receipt.request {
+            ObjectiveTransportRequest::Submit { client_intent_id } => (client_intent_id, true),
+            ObjectiveTransportRequest::Cancel { client_intent_id } => (client_intent_id, false),
+            _ => return,
+        };
+        let Some(intent) = self
+            .intents
+            .iter_mut()
+            .find(|intent| intent.session == receipt.session && &intent.id == id)
+        else {
+            return;
+        };
+        let last = if submit {
+            &mut intent.last_submit_receipt
+        } else {
+            &mut intent.last_cancel_receipt
+        };
+        if receipt.sequence <= *last {
+            return;
+        }
+        *last = receipt.sequence;
+        if submit {
+            // A returned/failed RPC is uncertain unless this exact request
+            // receives the distinct, pre-enqueue Session refusal below.
+            intent.submission = SubmissionTransport::Uncertain;
+        }
+    }
+
+    pub(super) fn transport_rejected(
+        &mut self,
+        receipt: &ObjectiveRequestReceipt,
+        rejection: &ObjectiveTransportRejection,
+    ) -> bool {
+        if receipt.request != rejection.request {
+            return false;
+        }
+        let (id, submit) = match &receipt.request {
+            ObjectiveTransportRequest::Submit { client_intent_id } => (client_intent_id, true),
+            ObjectiveTransportRequest::Cancel { client_intent_id } => (client_intent_id, false),
+            _ => {
+                self.invalidate();
+                return false;
+            }
+        };
+        let Some(intent) = self
+            .intents
+            .iter_mut()
+            .find(|intent| intent.session == receipt.session && &intent.id == id)
+        else {
+            return false;
+        };
+        let last = if submit {
+            &mut intent.last_submit_receipt
+        } else {
+            &mut intent.last_cancel_receipt
+        };
+        if receipt.sequence <= *last {
+            return false;
+        }
+        *last = receipt.sequence;
+        let changed = if submit {
+            if intent.submission == SubmissionTransport::Pending
+                && !owner_evidence(&intent.observation)
+            {
+                intent.submission = SubmissionTransport::NotForwarded(rejection.reason);
+                true
+            } else {
+                false
+            }
+        } else if intent.cancel_queued
+            && intent.observation.cancellation
+                == trill_ui_core::objective::ObjectiveCancellation::NotRequested
+        {
+            intent.cancel_queued = false;
+            true
+        } else {
+            false
+        };
+        if changed {
+            self.invalidate();
+        }
+        changed
+    }
+
     pub(super) fn invalidate(&mut self) {
         self.availability = None;
     }
@@ -138,6 +250,9 @@ impl ObjectivePanel {
             {
                 intent.cancel_queued = false;
             }
+            if owner_evidence(&observation) {
+                intent.submission = SubmissionTransport::Uncertain;
+            }
             intent.observation = observation;
             intent.received_at = received_at;
         } else {
@@ -147,7 +262,15 @@ impl ObjectivePanel {
                     return;
                 }
                 for id in &retained.client_intent_ids {
-                    if self.intents.iter().any(|intent| &intent.id == id) {
+                    if let Some(intent) = self.intents.iter_mut().find(|intent| &intent.id == id) {
+                        if intent.session == session {
+                            // The original owner's retained-ID navigation is
+                            // positive retention evidence even before Status
+                            // supplies a run. It defeats a local-only refusal
+                            // assumption without inventing publication or exit.
+                            intent.observation.request_retained = true;
+                            intent.submission = SubmissionTransport::Uncertain;
+                        }
                         continue;
                     }
                     if self.intents.len() == MAX_OBJECTIVE_VIEWS {
@@ -163,6 +286,9 @@ impl ObjectivePanel {
                         observation: recovered,
                         received_at,
                         cancel_queued: false,
+                        submission: SubmissionTransport::Uncertain,
+                        last_submit_receipt: 0,
+                        last_cancel_receipt: 0,
                     });
                 }
             }
@@ -355,7 +481,7 @@ impl Desktop {
             .objectives
             .intents
             .iter()
-            .all(|intent| finished(&intent.observation));
+            .all(|intent| finished(&intent.observation) || intent.locally_not_forwarded());
         let can_write = ready
             && !receipt_pending
             && may_start
@@ -368,6 +494,7 @@ impl Desktop {
         let current = session.and_then(|session| self.objectives.current(self.workspace, session));
         let can_cancel = current.is_some_and(|intent| {
             !intent.cancel_queued
+                && !intent.locally_not_forwarded()
                 && intent.observation.cancellation
                     == trill_ui_core::objective::ObjectiveCancellation::NotRequested
                 && !finished(&intent.observation)
@@ -403,6 +530,24 @@ impl Desktop {
             "Hepta is available to write the draft into the configured Notes document.".to_owned()
         };
         if let Some(intent) = current {
+            if intent.locally_not_forwarded() {
+                let issue = match intent.submission {
+                    SubmissionTransport::NotForwarded(
+                        ObjectiveTransportRejectionReason::Capacity,
+                    ) => "服务暂时繁忙",
+                    SubmissionTransport::NotForwarded(
+                        ObjectiveTransportRejectionReason::Unavailable,
+                    ) => "服务暂时不可用",
+                    SubmissionTransport::NotForwarded(
+                        ObjectiveTransportRejectionReason::InvalidIntent,
+                    ) => "请求内容未通过检查",
+                    _ => unreachable!("local transport refusal checked above"),
+                };
+                let _ = write!(
+                    status,
+                    "\n此请求未发出（{issue}），原记录和草稿已保留；刷新后可手动重新写入。"
+                );
+            }
             let observation = &intent.observation;
             let observed = fresh(observation, intent.received_at, now, wall_ms);
             let _ = write!(
@@ -484,6 +629,9 @@ impl Desktop {
             observation: ObjectiveObservation::new(Some(id.clone()), ObjectiveStage::Queued),
             received_at: Instant::now(),
             cancel_queued: false,
+            submission: SubmissionTransport::Pending,
+            last_submit_receipt: 0,
+            last_cancel_receipt: 0,
         });
         self.objectives.selected = Some(id);
         self.notice("Objective queued for the host. Admission and execution are not yet confirmed; your draft remains available.");
@@ -779,6 +927,9 @@ mod tests {
             observation: original.clone(),
             received_at: now,
             cancel_queued: false,
+            submission: SubmissionTransport::Uncertain,
+            last_submit_receipt: 0,
+            last_cancel_receipt: 0,
         });
         let mut stale = original.clone();
         stale.run.as_mut().unwrap().revision = 7;
@@ -812,6 +963,9 @@ mod tests {
             observation,
             received_at: now,
             cancel_queued: false,
+            submission: SubmissionTransport::Uncertain,
+            last_submit_receipt: 0,
+            last_cancel_receipt: 0,
         });
         assert!(!finished(&panel.intents[0].observation));
         assert!(
@@ -834,6 +988,9 @@ mod tests {
             ),
             received_at: now,
             cancel_queued: true,
+            submission: SubmissionTransport::Uncertain,
+            last_submit_receipt: 0,
+            last_cancel_receipt: 0,
         });
         panel.observe("old-session", ready_observation(), now);
         panel.follow_session("new-session");

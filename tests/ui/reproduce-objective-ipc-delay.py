@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Observe the synchronous Objective bridge's remaining queue-delay boundary.
+"""Compare Session responsiveness under the same stalled Objective query load.
 
 Runs a real isolated Session against a same-UID/PID, mode-0600 synthetic
 endpoint that accepts only availability reads and deliberately sends no reply.
 No original owner, Notes bootstrap, app task, grant or device is started.
-Exit 0 means the documented limitation was reproduced, not product acceptance.
+The default reproduces the old serialized limitation. --expect responsive
+requires the fixed host transport; neither mode claims product acceptance.
 """
 
 import argparse
@@ -59,7 +60,7 @@ def snapshot(peer):
     return response["session_instance"]
 
 
-def reproduce(binary, temporary, report):
+def reproduce(binary, temporary, report, expected):
     endpoint = Path(temporary) / "synthetic-objective.sock"
     session_path = Path(temporary) / "trillionnium-ui/session.sock"
     env = {key: value for key, value in os.environ.items()
@@ -129,13 +130,44 @@ def reproduce(binary, temporary, report):
                           objective_availability_calls=len(calls),
                           objective_call_offsets_seconds=[value - started for value in calls])
             require(not failures, f"synthetic endpoint failed: {failures}")
-            require(len(calls) == 4, "fixture did not observe four actual bridge exchanges")
-            require(kind in ("eof", "reset") and response is None,
-                    "snapshot expiry was not reproduced on this binary/run")
-            require(elapsed >= 0.5, "snapshot closed before the expected serialized delay")
+            if expected == "serialized":
+                require(len(calls) == 4, "fixture did not observe four actual bridge exchanges")
+                require(kind in ("eof", "reset") and response is None,
+                        "snapshot expiry was not reproduced on this binary/run")
+                require(elapsed >= 0.5, "snapshot closed before the expected serialized delay")
+                status = "limitation_reproduced"
+            else:
+                require(kind == "response" and response["type"] == "snapshot",
+                        "stalled Objective queries blocked a local snapshot")
+                require(response["session_instance"] == generation and not response["tasks"],
+                        "snapshot changed generation or fabricated a task")
+                require(elapsed < 0.5, "snapshot missed its original exchange allowance")
+                query_outcomes = []
+                for peer in peers[:4]:
+                    query_kind, query = receive(peer)
+                    require(query_kind == "response", "bounded Objective query lost its reply")
+                    require(query["session_instance"] == generation, "query generation changed")
+                    if query["type"] == "objective_transport_rejected":
+                        require(query["rejection"] == {"request": {"type": "availability"}, "reason": "capacity"},
+                                "capacity must be an exact local availability refusal")
+                        query_outcomes.append({"local_transport_rejection": "capacity"})
+                    else:
+                        require(query["type"] == "objective", "unexpected Objective reply kind")
+                        observation = query["observation"]
+                        require(observation["client_intent_id"] is None
+                                and observation["stage"] == "unavailable"
+                                and observation["issue"] == "transport_unknown"
+                                and observation["run"] is None,
+                                "stalled read asserted an owner result")
+                        query_outcomes.append({"stage": observation["stage"], "issue": observation["issue"]})
+                require(1 <= len(calls) <= 2, "bounded FIFO admitted too many exchanges")
+                require(not failures, f"synthetic endpoint failed: {failures}")
+                report.update(query_outcomes=query_outcomes, objective_availability_calls=len(calls),
+                              objective_call_offsets_seconds=[value - started for value in calls])
+                status = "responsive"
             with connect(session_path) as recovery:
                 require(snapshot(recovery) == generation, "Session did not recover in place")
-            report.update(status="limitation_reproduced", same_session_generation=True,
+            report.update(status=status, same_session_generation=True,
                           task_count_before=0, task_count_after=0)
         finally:
             stop.set()
@@ -158,10 +190,11 @@ def reproduce(binary, temporary, report):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("session_binary", type=Path)
+    parser.add_argument("--expect", choices=("serialized", "responsive"), default="serialized")
     args = parser.parse_args()
     report = {"status": "inconclusive", "profile": "synthetic-stalled-objective-availability",
               "host_only_no_effect_dispatch": True, "production_authority": False,
-              "product_acceptance": False}
+              "product_acceptance": False, "expectation": args.expect}
     try:
         require(hasattr(socket, "SO_PEERCRED"), "this reproducer requires Linux SO_PEERCRED")
         binary = args.session_binary.resolve(strict=True)
@@ -169,12 +202,12 @@ def main():
             digest = hashlib.file_digest(handle, "sha256").hexdigest()
         report.update(session_binary=str(binary), session_binary_sha256=digest)
         with tempfile.TemporaryDirectory(prefix="trill-objective-delay-") as temporary:
-            reproduce(binary, temporary, report)
+            reproduce(binary, temporary, report, args.expect)
     except Exception as error:
         report["status"] = "inconclusive"
         report["error"] = str(error)
     print(json.dumps(report, sort_keys=True))
-    return 0 if report["status"] == "limitation_reproduced" else 1
+    return 0 if report["status"] in ("limitation_reproduced", "responsive") else 1
 
 
 if __name__ == "__main__":

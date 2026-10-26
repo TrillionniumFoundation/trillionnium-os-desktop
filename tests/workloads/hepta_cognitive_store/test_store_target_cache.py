@@ -146,6 +146,7 @@ class StoreTargetCacheTests(unittest.TestCase):
         with self.helpers.target_cache_lease(target, record["targets"]["store"]), \
              mock.patch.object(preparation, "prepare_runner", return_value={}), \
              mock.patch.object(preparation.HELPER, "bounded_command", side_effect=bounded), \
+             mock.patch.object(preparation.toolchain, "verify_executables"), \
              mock.patch.object(preparation, "verify_lock", return_value={}) as verify_lock, \
              self.assertRaisesRegex(RuntimeError, "controlled stop"):
             preparation.build_store(self.source, self.out, {}, report, target, {},

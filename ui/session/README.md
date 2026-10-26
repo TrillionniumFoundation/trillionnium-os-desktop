@@ -11,6 +11,14 @@ and finite task retention. [hepta.rs](src/hepta.rs) manages the explicitly
 configured read-only observer. [notes_bootstrap.rs](src/notes_bootstrap.rs)
 handles the trusted parent's private Notes bootstrap v2, including separate effect and recovery descriptors. [deadline.rs](src/deadline.rs) supplies one monotonic deadline across partial reads and response writes. [ipc.rs](src/ipc.rs) advances bounded nonblocking peers without giving a reply a fresh deadline.
 
+[objective_forwarder.rs](src/objective_forwarder.rs) moves the configured
+Objective RPC onto one bounded FIFO worker. It holds no effect authority or
+task state. The existing [bridge](src/objective_bridge.rs) still authenticates
+the exact trusted endpoint and validates original-owner observations. A
+separate typed local refusal lets the matching Shell release only a request
+that Session definitely did not enqueue; an admitted transport retains its
+original unknown-outcome rules.
+
 The socket is under an absolute private XDG_RUNTIME_DIR. Both peers check
 kernel-reported UID; same-UID hostile processes remain outside this prototype's
 trust boundary. A Session restart creates a new generation. Detached tasks

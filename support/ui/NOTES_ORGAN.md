@@ -85,11 +85,13 @@ a query, retains its selection on a full queue and never consumes action
 capacity, submits an effect or generates another ID.
 
 This passive query rotation is a UI selection guarantee, not a bound on every
-Session response. The Session still runs each parsed Objective bridge exchange
-synchronously with a 150 ms timeout. Four stalled availability queries can consume
-more than another accepted peer's 500 ms deadline, including a ready snapshot.
-The [isolated read-only queue-delay diagnostic](SESSION_IPC.md#remaining-synchronous-objective-queue-delay)
-records that boundary without an original owner, Notes bootstrap or effect.
+Session response. Session forwards Objective commands through one bounded FIFO
+transport worker so a stalled 150 ms exchange does not occupy its lifecycle
+loop. Queue wait consumes the accepted peer's original 500 ms allowance; excess
+requests receive typed backpressure. The
+[isolated read-only queue-delay regression](SESSION_IPC.md#historical-synchronous-delay-and-retained-regression)
+retains the previous synchronous failure and checks the changed transport
+without an original owner, Notes bootstrap or effect.
 The actual original-host/UI combination still needs concurrent-read latency
 evidence before its production responsiveness can be accepted. A lost reply
 does not establish a failed operation; the existing original-ID observation

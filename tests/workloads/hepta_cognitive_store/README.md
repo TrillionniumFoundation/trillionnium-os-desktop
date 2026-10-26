@@ -60,9 +60,14 @@ Preparation uses the exact installed Rust version in this lane's
 `source-review.json` `userspace_toolchain` record, offline dependencies, the
 original explicit resolver and dev-small profile. That record binds the
 `codex-rs/rust-toolchain.toml` bytes by SHA-256 and the parsed stable channel.
-Both the actual Cargo and rustc version responses must match; an unrelated or
-stale installed compiler is rejected. This Hepta760363e0 profile uses 1.96.0;
-the manifest SHA256 is
+The actual Cargo, rustc and rustdoc version responses must match. Preparation
+also identifies cargo-clippy and its adjacent clippy-driver, checks their Clippy
+versions, and requires `clippy-driver --rustc --version` to equal the selected
+rustc response, including its commit identity. All five executable paths and
+SHA-256 values are recorded before building and rechecked around each command
+and before freezing the result; failed builds retain those identities too.
+An unrelated or stale installed compiler is rejected. This Hepta760363e0
+profile uses 1.96.0; the manifest SHA256 is
 `e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380`.
 The original b3 profile used 1.95.0 and retains its historical identity.
 Updating the runtime lane's review does not update this lane. An optional `--target` is an exclusively
@@ -73,6 +78,20 @@ requires offline resolution, locked metadata, locked build and Clippy, with no
 package version, source or checksum drift. Provider credentials and inherited
 RUSTFLAGS never enter the build or runtime child environment. No network
 fetching is performed by this lane.
+
+The generated runner carries an exact copy of the reviewed toolchain manifest.
+Its subprocess environment binds `RUSTUP_TOOLCHAIN`, `CARGO`, `RUSTC` and
+`RUSTDOC` to that selection and clears inherited compiler wrappers. The Clippy
+step invokes the identified cargo-clippy executable directly with the original
+`clippy --locked --offline --profile dev-small -- -D warnings` arguments.
+This avoids Cargo's [documented preference for CARGO_HOME/bin custom
+subcommands](https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands),
+which can otherwise select a rustup proxy outside the original workspace even
+when the reviewed toolchain leads PATH. No global toolchain default or override
+is changed. `test_store_toolchain.py` uses actual temporary subprocesses to
+exercise an ambient proxy trap, nested Cargo/driver dispatch, mismatched embedded
+compilers, changed executable identities and retained strict-lint failures. Its
+controlled programs are host orchestration tests, not native Rust build evidence.
 
 An explicit `--target` requires `--execute` and an existing canonical cache
 directory separate from the compiled source, harness and output. The builder

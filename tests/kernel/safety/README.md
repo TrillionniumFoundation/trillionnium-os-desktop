@@ -15,6 +15,15 @@ reuse gate are adapted from #268 (`ca0b5592`). See
 
 The frame probe uses the #267 physical-frame owner. It does **not** install the
 older `hepta.anon.*` controller or claim full Linux memory-controller coverage.
+Before forking the measured worker, the observer touches 128 KiB of its inherited
+initial stack. The worker retains its original 64 KiB private-stack warmup and
+all allocation, COW, pressure and zero-refund checks. This setup matters because
+the initial stack's VMO is shared across fork: a zero base page first committed
+by the worker remains charged while the observer still holds that VMO. A process
+exit cannot refund a physical frame whose last shared reference is still alive.
+The setup changes no budget, zero ceiling or bounded-wait limit; see the scope
+note for the physical-owner lifetime contract.
+
 Do not run these credential/cgroup programs on a production host. The runner
 compiles them on the build host and executes them only in a transient guest with
 512 MiB RAM, no host disk and no network. Every probe must return zero; exit 77 is

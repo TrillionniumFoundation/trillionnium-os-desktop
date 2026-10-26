@@ -17,6 +17,7 @@ the original Hepta owner retains effect authorization and terminal outcomes.
 | `ui/session/src/ipc.rs` | Bounded nonblocking peer scheduling and response buffering |
 | `ui/session/src/deadline.rs` | One monotonic allowance shared by request and response I/O |
 | `ui/session/src/objective_bridge.rs` | Existing typed requests to the configured original owner |
+| `ui/session/src/objective_forwarder.rs` | One bounded FIFO transport worker and disposable reply tickets |
 | `ui/session/src/notes_bootstrap.rs` | Trusted-parent bootstrap v2, separate private effect and recovery channels |
 
 ## Fair service within explicit bounds
@@ -35,47 +36,75 @@ and before dispatch, and checks the same allowance before and after writes.
 An expired request cannot begin a launch, cancellation or Objective forwarding.
 EOF without a complete newline-terminated frame cannot make a request valid.
 
-After dispatch, the connection retains only its serialized response. A blocked
-reader cannot redispatch the command. A response that cannot be fully delivered
+After local dispatch, the connection retains its serialized response. An
+Objective request instead retains one disposable reply receiver until its
+transport completes, then retains its serialized response. Neither state
+re-reads or redispatches the command. A response that cannot be fully delivered
 before expiry does not roll back a possible action or prove that nothing
 happened. Clients obtain a fresh observation through the existing owner API;
 they do not automatically replay a mutating request.
 
-An incomplete peer or blocked response no longer occupies the sole state owner
-until its timeout. The loop remains synchronous while a parsed command runs:
-process creation, kernel scheduling and the configured Objective bridge's
-existing bounded exchange are outside a hard real-time guarantee. The per-peer
-I/O allowance and bounded connection count are not authentication between
-mutually hostile processes sharing a UID.
+An incomplete peer, blocked response or slow Objective endpoint does not occupy
+the sole lifecycle owner until its timeout. Local process creation, bounded
+response serialization and kernel scheduling remain outside a hard real-time
+guarantee. The per-peer I/O allowance and bounded connection count are not
+authentication between mutually hostile processes sharing a UID.
 
-### Remaining synchronous Objective queue delay
+## Objective transport ordering and uncertainty
 
-`ObjectiveBridge::request` still performs its fixed authenticated exchange on
-the Session thread with `Runtime::block_on` and a 150 ms timeout. Four accepted
-`ObjectiveAvailability` requests whose configured endpoint accepts but does
-not reply can therefore occupy that thread for approximately 600 ms. A ready
-snapshot accepted behind them can exhaust its original 500 ms allowance before
-dispatch and close without a response. This is a source-level, reproducible
-failure case for slow parsed requests; the partial-input and blocked-output
-regressions do not establish fairness for every business request.
+One worker executes Objective RPCs serially, with at most one additional queued
+command. Accepted commands preserve FIFO forwarding order. Validation failure,
+an unavailable local worker, and `try_send` refusal produce a separate
+`objective_transport_rejected` response before that command is enqueued. Its
+typed request kind/intent ID, reason and Session generation are transport
+backpressure, not an original-owner `NotSent` or cancellation terminal. The
+worker holds no task state, effect authority, recovery ledger or new owner.
+Configured socket ownership/mode, kernel UID/PID and typed response identity
+checks remain in the existing bridge.
 
-The isolated diagnostic below uses the actual Session binary and a private
-synthetic endpoint, checks the kernel peer PID/UID, and forwards only read-only
-availability commands. A barrier snapshot proves the affected connections
-were accepted before the four requests are sent. It records the binary digest,
-actual bridge call count, snapshot closure and recovery under the same Session
-generation with no tasks. Exit zero means this limitation was reproduced; it
-is not a product acceptance gate or evidence about a deployed original owner.
+The original 150 ms RPC bound is clipped to the accepted connection's original
+500 ms deadline. Queue wait consumes that same outer allowance. The worker
+checks expiry and abandonment before starting and again immediately before
+first-write admission. Dropping a pending connection, observing a Linux full
+peer hangup, or stopping Session abandons transport that has not won that
+admission race. A legitimate request-side half-close can still receive its
+reply. Other Unix platforms retain the same expiry and explicit-drop checks.
 
-```sh
-python3 tests/ui/reproduce-objective-ipc-delay.py ui/target/debug/trill-session
-```
+After first-write admission, the original owner may already have received a
+mutation. A client disconnect or missing reply cannot prove cancellation or
+rollback: submission remains `SubmitUnknown`, cancellation remains `Unknown`,
+and no automatic replay occurs. A valid owner response is forwarded unchanged,
+including exact Notes document observations. The host loop continues local
+snapshot service, process cancellation and actual child reaping while waiting.
 
-Actual UI/gateway acceptance must measure this behavior with the configured
-original host and real concurrent read traffic. Until that evidence exists,
-Notes refresh and Session responsiveness under a slow original host remain an
-open product risk. This diagnostic neither changes the original owner/writer
-nor submits, cancels or automatically repeats an effect.
+The shared Shell bridge retains the original request kind, ID, expected Session
+and a nonwrapping local RPC sequence with each reply. Only a matching transport
+refusal releases the corresponding pending UI mutation; duplicate or old
+generation receipts cannot release a later cancel attempt. A refused Submit
+keeps its original ID and draft as a disposable local view. Fresh availability
+and the normal draft checks are still required before a user can explicitly
+start another intent. Owner retention/publication/run evidence overrides any
+local refusal assumption. Ordinary owner `Capacity`, status absence and lost
+replies never become this local refusal and never trigger automatic replay.
+The new response variant is used by the matching Session/Shell product pair;
+request schemas and original Objective observation schemas remain unchanged.
+
+### Historical synchronous delay and retained regression
+
+On the frozen `f36664310b7bb0074a16846f2c1c600e90844f05` baseline, the
+bridge ran four successive 150 ms exchanges on the Session thread. The actual
+isolated binary reproduced a snapshot reset after 617.7 ms, with four observed
+availability calls and the same Session generation recovering afterward.
+The partial-input regression alone did not cover that parsed-request failure.
+
+The bounded worker above removes that inline wait. The same read-only case is
+retained in `reproduce-objective-ipc-delay.py`: its default mode verifies the
+old failure; `--expect responsive` requires the changed binary to serve the
+snapshot within its original allowance and return typed bounded replies.
+A barrier proves all affected peers were accepted before the requests start.
+Neither mode starts an original owner, app task or effect, and neither is
+production authority qualification. Deployment acceptance still requires the
+configured original host and actual concurrent UI/gateway traffic.
 
 ## Development and regression evidence
 
@@ -85,6 +114,7 @@ From the repository root:
 cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-session --locked
 cargo +1.96.0 build --manifest-path ui/Cargo.toml -p trill-session --bins --locked
 python3 tests/ui/test-session-fairness.py ui/target/debug/trill-session
+python3 tests/ui/reproduce-objective-ipc-delay.py ui/target/debug/trill-session --expect responsive
 ```
 
 Use the corresponding binary directory when `CARGO_TARGET_DIR` is configured.
@@ -100,6 +130,18 @@ idle peers. It asserts one unchanged Session generation and no dispatched task,
 and is included in `tests/ui/check-host.sh`. These are Linux host transport and
 lifecycle checks; compositor, physical device and original-owner end-to-end
 qualification remain separate gates.
+
+The Objective diagnostic retains the same isolated, read-only slow endpoint
+case used before this change. Its default `--expect serialized` reproduces the
+old snapshot expiry; `--expect responsive` requires a snapshot within its
+original allowance and bounded typed backpressure replies. Neither launches
+an original owner or effect. Rust regressions additionally exercise actual
+socket FIFO/at-most-once mutation forwarding, queue expiry/abandonment, worker
+shutdown uncertainty, exact reply retention under backpressure, half-close
+handling and a real owned child exit during a pending Objective exchange.
+The core golden `tests/ui/objective-transport-rejection-v1.json` and shared
+Shell Notes regressions additionally exercise correlated Submit/Cancel refusal,
+fresh manual retry, duplicate receipts, stale generation and owner evidence.
 
 See [Session development](../../ui/session/README.md), [Notes organ](NOTES_ORGAN.md),
 [Notes durability](NOTES_DURABILITY.md) and [integration boundaries](INTEGRATION_CONTRACTS.md).

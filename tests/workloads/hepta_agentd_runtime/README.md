@@ -41,13 +41,12 @@ have been re-frozen from those exact commits. This updated profile requires new
 build and guest execution records; earlier 0187/b3 and 7d/b3 lifecycle results
 remain source-specific. These identities are review inputs, not runtime receipts.
 
-This freeze also does not close the current host UI's
-[synchronous Objective queue-delay risk](../../../support/ui/SESSION_IPC.md#remaining-synchronous-objective-queue-delay).
-The bounded transport protects against incomplete input and blocked readers;
-four slow 150 ms availability exchanges can still exhaust a later accepted
-snapshot's 500 ms deadline. Its isolated read-only reproducer and the separate
-real original-host/UI latency gate must not be counted as F1 guest lifecycle
-or production Notes acceptance.
+F1 guest lifecycle evidence is separate from the host UI's
+[historical Objective queue-delay case and retained regression](../../../support/ui/SESSION_IPC.md#historical-synchronous-delay-and-retained-regression).
+The changed bounded worker must pass that same case without the original
+synchronous delay. Its isolated read-only result and the separate configured
+original-host/UI latency gate must not be counted as F1 guest lifecycle or
+production Notes acceptance.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source

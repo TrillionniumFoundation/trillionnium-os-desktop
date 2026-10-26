@@ -55,8 +55,8 @@ static unsigned long read_events(const char *path) {
     return n > 0 && !strncmp(b, "max ", 4) ? strtoul(b + 4, NULL, 10) : ~0UL;
 }
 /* Warm this process's private stack/C library paths before measuring a small
- * mapping delta. Fork initially shares those pages; the first test call can
- * legitimately COW them and is not a leaked mapped page. */
+ * mapping delta. The observer materializes the inherited base VMO before fork;
+ * this worker still COWs its private pages before the measured allocations. */
 __attribute__((noinline)) static void warm_measurement_paths(void) {
     volatile unsigned char stack[65536];
     for (size_t i = 0; i < sizeof(stack); i += PAGE) stack[i] = (unsigned char)i;
@@ -141,6 +141,17 @@ static int concurrent_worker(void) {
     munmap((void *)pinned, PAGE); pthread_barrier_destroy(&concurrent_start);
     return failures ? 42 : 0;
 }
+/* The initial stack's VMO remains shared with the observer after fork. If the
+ * worker first commits its zero base pages, their physical-frame charges must
+ * survive worker exit while the observer still holds that VMO. Materialize the
+ * base in the observer so the zero-refund checks cover the worker's own COW
+ * pages. The extra 64 KiB covers the worker's deeper call frame; its original
+ * 64 KiB warmup and every refund/budget/wait assertion remain unchanged. */
+__attribute__((noinline)) static void prepare_inherited_stack(void) {
+    volatile unsigned char stack[131072];
+    for (size_t i = 0; i < sizeof(stack); i += PAGE) stack[i] = (unsigned char)i;
+    printf("{\"observer_stack_warmed\":%zu}\n", sizeof(stack));
+}
 static int worker(void) {
     failures = 0; alarm(25);
     if (join(WORK "/cgroup.procs")) return 77;
@@ -202,6 +213,7 @@ int main(void) {
               read_number(WORK "/cpu.weight") == 100);
     }
     check("selected_frame_limit_reads_back", read_number(WORK "/memory.max") == 2097152);
+    prepare_inherited_stack();
     pid_t child = fork(); if (child < 0) return 90;
     if (!child) _exit(worker());
     int status; if (waitpid(child, &status, 0) != child) return 90;

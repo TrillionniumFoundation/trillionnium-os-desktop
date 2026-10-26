@@ -51,6 +51,28 @@ up to pages. There is no reclaim or OOM-killer algorithm in this controller.
 Migration only changes future allocation binding, so an administrator must place
 work in its budgeted domain before execution and control migration/delegation.
 
+Process exit does not by itself imply a zero account. In particular,
+`kernel/core/src/process/process_vm/init_stack/mod.rs` creates a VMO-backed initial
+stack, and `kernel/core/src/vm/vmar/vm_mapping.rs::MappedVmo::dup` retains the same
+VMO across fork. A private write to an uncommitted stack page first commits a
+zero base frame in that VMO, then creates a private COW frame. Both admissions
+use the initiating owner. The private copy can be refunded at worker exit while
+the base frame remains live
+through the observer's VMO. Refunding that base early would undercount live
+physical memory; its charge ends only after the last physical reference and any
+deferred destruction have completed. `memory.current` is consequently not the
+RSS of just the currently listed processes.
+
+The frame probe materializes 128 KiB of the observer's initial stack before
+forking the measured worker. This covers the worker's existing 64 KiB stack
+warmup and its deeper call frame. The worker still exercises real private COW,
+anonymous and file mappings, pressure denial and concurrent allocations. The
+observer remains outside WORK, and the original zero-refund assertions, budgets
+and bounded waits are unchanged. A lifetime diagnosis must also observe the
+original charge falling to zero after the last VMO holder exits; prewarming
+alone is not evidence that a retained reference was correct or that a release
+qualification passed.
+
 The existing owner covers more allocation paths than #268's separate
 `hepta.anon.*` prototype, including shared/page-cache paths and selected IPC
 storage. Page tables, slab/kernel heap and stacks, ancillary/datagram buffers and

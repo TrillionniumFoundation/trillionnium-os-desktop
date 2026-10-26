@@ -96,6 +96,7 @@ def prepare_runner(source, destination):
     (destination / "Cargo.toml").write_text("\n".join(lines) + "\n")
     shutil.copyfile(HERE / "store_probe.rs", destination / "src/main.rs")
     shutil.copyfile(workspace / "Cargo.lock", destination / "Cargo.lock")
+    shutil.copyfile(workspace / "rust-toolchain.toml", destination / "rust-toolchain.toml")
     return omission
 
 
@@ -161,21 +162,16 @@ def build(args, source, out, review, report):
     require(not out.exists() and not out.is_symlink(), "output must be new")
     require(not out.resolve().is_relative_to(source), "output must be outside original source")
     require(shutil.disk_usage(out.parent).free >= 8 * 1024**3, "8 GiB free required")
-    channel = toolchain.verify_manifest(source, review)
-    tool_bin = Path(subprocess.check_output(["rustup", "which", "--toolchain", channel, "cargo"], text=True).strip()).parent
-    cargo, rustc = tool_bin / "cargo", tool_bin / "rustc"
     target, target_record = cargo_target(args, source, out)
-    environment = HELPER.build_environment(target)
-    environment.update(PATH=str(tool_bin) + ":/usr/bin:/bin", RUSTC=str(rustc),
-                       CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_DEV_SMALL_DEBUG="0")
-    versions = {}
-    for name, path in (("cargo", cargo), ("rustc", rustc)):
-        result = subprocess.run([str(path), "--version"], env=environment, capture_output=True, text=True, timeout=30, check=True)
-        version = toolchain.validate_version(name, result.stdout, channel)
-        versions[name] = {"path": str(path), "sha256": sha(path), "version": version}
+    environment, versions = toolchain.clippy_environment(source, review, HELPER.build_environment(target))
+    environment.update(CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_DEV_SMALL_DEBUG="0")
     out.mkdir(mode=0o700)
     report["output_created"] = True
     report["cargo_targets"] = target_record
+    report["toolchains"] = versions
+    report["toolchain_selection"] = {"review": review["userspace_toolchain"],
+                                     "rustup_toolchain": environment["RUSTUP_TOOLCHAIN"],
+                                     "clippy_dispatch": "identified-absolute-cargo-clippy"}
     environment.update(dependency_artifacts.freeze(report["dependency_artifacts"], out))
     helpers = runtime_cache_helpers() if target_record["cache_reused"] else None
     lease = (helpers.target_cache_lease(target, target_record["targets"]["store"])
@@ -199,9 +195,12 @@ def build_store(source, out, review, report, target, environment, versions, help
     lock_digest = None
     for name, arguments in commands:
         verify_target_cache(target, report["cargo_targets"], helpers)
-        command = [str(cargo), *arguments]
+        toolchain.verify_executables(versions)
+        executable = versions["cargo-clippy"]["path"] if name == "clippy" else str(cargo)
+        command = [executable, *arguments]
         report["commands"].append(command)
         HELPER.bounded_command(command, runner, environment, out / (name + ".log"), 3600)
+        toolchain.verify_executables(versions)
         verify_target_cache(target, report["cargo_targets"], helpers)
         report["lock_validation"] = verify_lock(source, runner)
         if lock_digest is None:
@@ -209,6 +208,9 @@ def build_store(source, out, review, report, target, environment, versions, help
         require(sha(runner / "Cargo.lock") == lock_digest, "resolved dependency lock changed")
     require(verify_source(source) == review, "original source changed during build")
     require(sha(runner / "src/main.rs") == sha(HERE / "store_probe.rs"), "fixture source changed during build")
+    require(sha(runner / "rust-toolchain.toml") == review["userspace_toolchain"]["sha256"],
+            "fixture toolchain manifest changed during build")
+    toolchain.verify_executables(versions)
     dependency_artifacts.verify_frozen(report["dependency_artifacts"])
     verify_target_cache(target, report["cargo_targets"], helpers)
     binary = out / NAME
@@ -220,6 +222,7 @@ def build_store(source, out, review, report, target, environment, versions, help
                   original_cargo_lock_sha256=sha(source / "codex-rs/Cargo.lock"),
                   resolved_cargo_lock_sha256=lock_digest, fixture_patch_omission=omission,
                   fixture_source_sha256=sha(HERE / "store_probe.rs"),
+                  fixture_toolchain_manifest_sha256=sha(runner / "rust-toolchain.toml"),
                   binary={"path": NAME, "sha256": sha(binary), "bytes": binary.stat().st_size})
 
 

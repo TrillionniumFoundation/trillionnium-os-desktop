@@ -3,7 +3,11 @@
 //! Every accepted peer keeps the existing single exchange deadline. Neither
 //! partial input, dispatch nor partial output creates a fresh I/O allowance.
 
-use super::{deadline::DeadlineStream, Session, EXCHANGE_BUDGET};
+use super::{
+    deadline::DeadlineStream,
+    objective_forwarder::{ObjectiveReply, PendingReply},
+    Session, SessionReply, EXCHANGE_BUDGET,
+};
 use std::io::{self, Read, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::time::Instant;
@@ -17,6 +21,7 @@ const BYTES_PER_TICK: usize = 8192;
 struct Connection {
     stream: DeadlineStream,
     input: Vec<u8>,
+    pending: Option<PendingReply>,
     output: Option<Vec<u8>>,
     written: usize,
 }
@@ -28,6 +33,7 @@ impl Connection {
         Ok(Self {
             stream: DeadlineStream::new(stream, deadline),
             input: Vec::new(),
+            pending: None,
             output: None,
             written: 0,
         })
@@ -36,7 +42,7 @@ impl Connection {
     /// At most one bounded read and one bounded write; false closes this peer.
     fn step(&mut self, session: &mut Session) -> io::Result<bool> {
         self.stream.remaining()?;
-        if self.output.is_none() {
+        if self.output.is_none() && self.pending.is_none() {
             let mut bytes = [0; BYTES_PER_TICK];
             let remaining = (MAX_FRAME + 1 - self.input.len()).min(bytes.len());
             let count = match self.stream.read(&mut bytes[..remaining]) {
@@ -62,38 +68,45 @@ impl Connection {
                         // A successful read or parse can finish after a
                         // descheduled owner exhausts its original allowance.
                         self.stream.remaining()?;
-                        session.handle(request)
+                        session.handle(request, self.stream.deadline())
                     }
-                    Err(error) => Response::Error {
+                    Err(error) => SessionReply::Ready(Response::Error {
                         message: format!("Invalid IPC request: {error}"),
                         session_instance: session.instance.clone(),
-                    },
+                    }),
                 },
-                _ => Response::Error {
+                _ => SessionReply::Ready(Response::Error {
                     message: "Invalid IPC frame: invalid or oversized IPC frame".into(),
+                    session_instance: session.instance.clone(),
+                }),
+            };
+            self.input.clear();
+            match response {
+                SessionReply::Ready(response) => self.prepare(response, &session.instance)?,
+                SessionReply::Objective(pending) => self.pending = Some(pending),
+            }
+        }
+        if let Some(pending) = self.pending.as_mut() {
+            if self.stream.peer_disconnected()? {
+                // Dropping the connection abandons only a not-yet-sending
+                // transport ticket. It never cancels an original-owner action.
+                return Ok(false);
+            }
+            let Some(reply) = pending.poll() else {
+                return Ok(true);
+            };
+            self.pending = None;
+            let response = match reply {
+                ObjectiveReply::Observation(observation) => Response::Objective {
+                    observation,
+                    session_instance: session.instance.clone(),
+                },
+                ObjectiveReply::Rejected(rejection) => Response::ObjectiveTransportRejected {
+                    rejection,
                     session_instance: session.instance.clone(),
                 },
             };
-            let mut output = Vec::new();
-            match write_frame(&mut output, &response) {
-                Ok(()) => {}
-                Err(error) if error.kind() == io::ErrorKind::InvalidData => {
-                    output.clear();
-                    write_frame(
-                        &mut output,
-                        &Response::Error {
-                            message:
-                                "Session snapshot is too large; no task state is being asserted"
-                                    .into(),
-                            session_instance: session.instance.clone(),
-                        },
-                    )?;
-                }
-                Err(error) => return Err(error),
-            }
-            // Retain the response, never the command: backpressure cannot
-            // redispatch a launch, cancellation or original-owner request.
-            self.output = Some(output);
+            self.prepare(response, &session.instance)?;
         }
         let output = self.output.as_ref().expect("prepared response");
         let end = output.len().min(self.written + BYTES_PER_TICK);
@@ -111,6 +124,29 @@ impl Connection {
             Err(error) => return Err(error),
         }
         Ok(self.written < output.len())
+    }
+
+    fn prepare(&mut self, response: Response, instance: &str) -> io::Result<()> {
+        self.stream.remaining()?;
+        let mut output = Vec::new();
+        match write_frame(&mut output, &response) {
+            Ok(()) => {}
+            Err(error) if error.kind() == io::ErrorKind::InvalidData => {
+                output.clear();
+                write_frame(
+                    &mut output,
+                    &Response::Error {
+                        message: "Session snapshot is too large; no task state is being asserted"
+                            .into(),
+                        session_instance: instance.to_owned(),
+                    },
+                )?;
+            }
+            Err(error) => return Err(error),
+        }
+        // Retain the response, never redispatch its command on backpressure.
+        self.output = Some(output);
+        Ok(())
     }
 }
 
@@ -213,7 +249,9 @@ mod tests {
         use std::os::fd::AsRawFd;
 
         let mut session = session();
-        let Response::Task { task, .. } = session.handle(launch(&session)) else {
+        let SessionReply::Ready(Response::Task { task, .. }) =
+            session.handle(launch(&session), Instant::now() + EXCHANGE_BUDGET)
+        else {
             panic!("expected an owned child");
         };
         // Observe exit without projecting it into TaskRecord: the shared
@@ -326,3 +364,7 @@ mod tests {
         assert_eq!(session.next_id, 1);
     }
 }
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "objective_ipc_tests.rs"]
+mod objective_tests;

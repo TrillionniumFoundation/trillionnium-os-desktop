@@ -10,6 +10,9 @@ runtime="$root/ours"
 other_runtime="$root/other"
 mkdir -m 700 "$runtime" "$other_runtime"
 cp /bin/sleep "$root/trill-app-window"
+# Some hosts provide sleep through a multicall executable. Preserve its applet
+# argv[0] while retaining the copied app path as the real /proc/<pid>/exe.
+sleep_exe="$(readlink -f /bin/sleep)"
 ours=""
 other=""
 different=""
@@ -21,9 +24,9 @@ cleanup_fixture() {
 }
 trap cleanup_fixture EXIT
 
-env XDG_RUNTIME_DIR="$runtime" "$root/trill-app-window" 30 &
+XDG_RUNTIME_DIR="$runtime" exec -a sleep "$root/trill-app-window" 30 &
 ours=$!
-env XDG_RUNTIME_DIR="$other_runtime" "$root/trill-app-window" 30 &
+XDG_RUNTIME_DIR="$other_runtime" exec -a sleep "$root/trill-app-window" 30 &
 other=$!
 # Matching runtime is insufficient when the executable is not the app.
 env XDG_RUNTIME_DIR="$runtime" /bin/sleep 30 &
@@ -35,7 +38,7 @@ for _ in {1..100}; do
     a="$(readlink "/proc/$ours/exe" 2>/dev/null || true)"
     b="$(readlink "/proc/$other/exe" 2>/dev/null || true)"
     c="$(readlink "/proc/$different/exe" 2>/dev/null || true)"
-    if [[ "$a" == "$root/trill-app-window" && "$b" == "$root/trill-app-window" && "$c" == */sleep ]]; then
+    if [[ "$a" == "$root/trill-app-window" && "$b" == "$root/trill-app-window" && "$c" == "$sleep_exe" ]]; then
         ready=1
         break
     fi

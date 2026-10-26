@@ -130,6 +130,9 @@ python3 tests/ui/test-strict-request-ipc.py "$ui_binaries"
 # Incomplete frames and blocked readers must not occupy the lifecycle owner
 # serially. Exercise the actual Session with an isolated runtime and no effects.
 python3 tests/ui/test-session-fairness.py "$ui_binaries/trill-session"
+# Same read-only stalled Objective fixture as the prior serialized-delay
+# reproducer. The fixed transport must keep the local snapshot responsive.
+python3 tests/ui/reproduce-objective-ipc-delay.py "$ui_binaries/trill-session" --expect responsive
 # The binaries are packaged only when all host suites and strict Rustfmt
 # have passed; the separate Weston smoke still owns its independent gate.
 for manifest in ui/Cargo.toml services/hepta-os/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do

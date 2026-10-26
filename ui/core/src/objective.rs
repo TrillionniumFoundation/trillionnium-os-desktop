@@ -21,6 +21,21 @@ pub enum ObjectiveCommand {
 }
 
 impl ObjectiveCommand {
+    pub fn transport_request(&self) -> ObjectiveTransportRequest {
+        match self {
+            Self::Availability {} => ObjectiveTransportRequest::Availability {},
+            Self::Submit { intent } => ObjectiveTransportRequest::Submit {
+                client_intent_id: intent.client_intent_id.clone(),
+            },
+            Self::Status { client_intent_id } => ObjectiveTransportRequest::Status {
+                client_intent_id: client_intent_id.clone(),
+            },
+            Self::Cancel { client_intent_id } => ObjectiveTransportRequest::Cancel {
+                client_intent_id: client_intent_id.clone(),
+            },
+        }
+    }
+
     pub fn client_intent_id(&self) -> Option<&str> {
         match self {
             Self::Availability {} => None,
@@ -49,6 +64,34 @@ impl ObjectiveCommand {
         }
         Ok(())
     }
+}
+
+/// A Session transport receipt identifies one request without carrying text,
+/// authority or an original-owner outcome. A consumer must match its own RPC.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
+pub enum ObjectiveTransportRequest {
+    Availability {},
+    Submit { client_intent_id: String },
+    Status { client_intent_id: String },
+    Cancel { client_intent_id: String },
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ObjectiveTransportRejectionReason {
+    Capacity,
+    Unavailable,
+    InvalidIntent,
+}
+
+/// Only a rejection before Session enqueues the original RPC. A timeout,
+/// dropped reply or owner Capacity observation cannot produce this receipt.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ObjectiveTransportRejection {
+    pub request: ObjectiveTransportRequest,
+    pub reason: ObjectiveTransportRejectionReason,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -209,6 +252,40 @@ impl ObjectiveObservation {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn local_transport_rejection_is_distinct_from_owner_observation() {
+        let golden = include_str!("../../../tests/ui/objective-transport-rejection-v1.json");
+        let response: crate::Response = serde_json::from_str(golden).unwrap();
+        let crate::Response::ObjectiveTransportRejected {
+            rejection,
+            session_instance,
+        } = &response
+        else {
+            panic!("expected the explicit local transport receipt");
+        };
+        assert_eq!(session_instance, "original-session");
+        assert_eq!(
+            rejection.reason,
+            ObjectiveTransportRejectionReason::Capacity
+        );
+        assert_eq!(
+            rejection.request,
+            ObjectiveTransportRequest::Submit {
+                client_intent_id: "original-intent".into()
+            }
+        );
+        let value: serde_json::Value = serde_json::from_str(golden).unwrap();
+        assert_eq!(serde_json::to_value(&response).unwrap(), value);
+        for extra in ["run", "cancellation", "authority", "request_retained"] {
+            let mut invalid = value.clone();
+            invalid["rejection"][extra] = serde_json::json!(true);
+            assert!(serde_json::from_value::<crate::Response>(invalid).is_err());
+        }
+        let mut uncertain = value;
+        uncertain["rejection"]["reason"] = serde_json::json!("transport_unknown");
+        assert!(serde_json::from_value::<crate::Response>(uncertain).is_err());
+    }
     use crate::{parse_host_request, Request};
 
     #[test]
