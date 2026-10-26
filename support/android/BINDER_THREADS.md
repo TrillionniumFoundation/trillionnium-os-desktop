@@ -38,6 +38,23 @@ identity so cleanup cannot substitute another event during unlocked FD work.
 Outgoing terminal replies and incoming reply-completions reserve their bounded
 queue space before publication. Failed admission refunds it atomically.
 
+An active copyout or unlocked FD reservation is distinguished from a retained
+EFAULT descriptor. Blocking writes keep their original unpublished command and
+wait for active preparation to finish; blocking reads wait and reselect work.
+Nonblocking operations report EAGAIN for that transient activity. DOMAIN is
+released before parking on the existing signal-aware condition/recheck wait
+queue. Copy success, copy failure, FD-stage completion/failure, thread retirement
+and endpoint closure wake rechecks. Earlier accepted commands keep their actual
+write_consumed offset if the later wait is interrupted. The driver never resends
+an accepted transaction.
+
+Keep the first expanded D1 failure: revision `7612dd6d` let ordinary sibling
+commands observe EBUSY during successful copyout. It made the two-caller fixture
+fail intermittently and the eight-caller terminal fixture fail under contention.
+Six thread-exit/EFAULT/real object/FD lifetime rows and participant quota/refund
+passed before that contention failure. The passing basic run at `dd799201` did
+not certify that race fixed. Both receipts remain separate from later results.
+
 Object nodes, handles, delivered buffers, reference notifications and death
 subscriptions remain endpoint/process resources. A worker exit must release
 its unpublished transaction buffers and hidden FD reservations without killing

@@ -134,6 +134,7 @@ struct ReceiveArea {
 }
 struct Prepared {
     owner: Option<u64>,
+    copying: bool,
     buffer: Option<usize>,
     bytes: Vec<u8>,
     action: ReadAction,
@@ -720,12 +721,41 @@ impl BinderFile {
         }
         Ok(commands)
     }
-    fn execute(&self, command: Command) -> Result<()> {
-        let mut d = domain().lock();
-        let thread = self.participant(&mut d)?;
-        if d.endpoint(self.id)?.prepared.is_some() || d.endpoint(self.id)?.preparing.is_some() {
-            return_errno!(Errno::EBUSY);
+    fn wait_active_preparation(&self) -> Result<()> {
+        match WAKE.get().unwrap().pause_until_or_timeout(
+            || {
+                let d = domain().lock();
+                d.endpoints
+                    .get(&self.id)
+                    .is_none_or(|e| !e.active_preparation())
+                    .then_some(())
+            },
+            &Duration::from_millis(50),
+        ) {
+            Err(error) if error.error() == Errno::ETIME => Ok(()),
+            result => result,
         }
+    }
+    fn execute(&self, command: Command, nonblocking: bool) -> Result<()> {
+        let (mut d, thread) = loop {
+            let mut d = domain().lock();
+            let thread = self.participant(&mut d)?;
+            let e = d.endpoint(self.id)?;
+            if e.active_preparation() {
+                if nonblocking {
+                    return_errno!(Errno::EAGAIN);
+                }
+                // Keep the original command unpublished while a sibling
+                // finishes its active copy; no transaction is resent.
+                drop(d);
+                self.wait_active_preparation()?;
+                continue;
+            }
+            if e.prepared.is_some() {
+                return_errno!(Errno::EBUSY);
+            }
+            break (d, thread);
+        };
         match command {
             Command::Enter => {
                 let e = d.endpoint(self.id)?.threads.get_mut(&thread).unwrap();
@@ -970,10 +1000,13 @@ impl BinderFile {
             let thread = self.participant(&mut d)?;
             let e = d.endpoint(self.id)?;
             if e.preparing.is_some() {
-                return_errno!(Errno::EBUSY);
+                return_errno!(Errno::EAGAIN);
             }
             if let Some(prepared) = e.prepared.as_mut() {
                 if prepared.owner.is_some_and(|owner| owner != thread) {
+                    if prepared.copying {
+                        return_errno!(Errno::EAGAIN);
+                    }
                     return_errno!(Errno::EBUSY);
                 }
                 prepared.owner = Some(thread);
@@ -1031,13 +1064,17 @@ impl BinderFile {
                 let preparing = e.preparing.take().ok_or_else(|| {
                     Error::with_message(Errno::ECONNREFUSED, "Binder preparation retired")
                 })?;
+                // Wake on every completion/failure of the unlocked FD stage,
+                // including a later receive-buffer admission failure.
+                e.pollee.notify(IoEvents::IN | IoEvents::OUT);
+                WAKE.get().unwrap().wake_all();
                 if preparing.thread != thread {
                     return_errno!(Errno::EBUSY);
                 }
                 Some(preparing.key)
             } else {
                 if e.preparing.is_some() {
-                    return_errno!(Errno::EBUSY);
+                    return_errno!(Errno::EAGAIN);
                 }
                 None
             };
@@ -1045,6 +1082,9 @@ impl BinderFile {
                 .as_ref()
                 .is_some_and(|p| p.owner.is_some_and(|owner| owner != thread))
             {
+                if e.prepared.as_ref().unwrap().copying {
+                    return_errno!(Errno::EAGAIN);
+                }
                 return_errno!(Errno::EBUSY);
             }
             if e.prepared.is_none() {
@@ -1061,6 +1101,7 @@ impl BinderFile {
                     bytes.extend_from_slice(object.as_bytes());
                     e.prepared = Some(Prepared {
                         owner: Some(thread),
+                        copying: false,
                         buffer: None,
                         bytes,
                         action: ReadAction::Node,
@@ -1075,6 +1116,7 @@ impl BinderFile {
                     bytes.extend_from_slice(&delivery.cookie.to_ne_bytes());
                     e.prepared = Some(Prepared {
                         owner: Some(thread),
+                        copying: false,
                         buffer: None,
                         bytes,
                         action: ReadAction::Death(delivery),
@@ -1169,6 +1211,7 @@ impl BinderFile {
                     }
                     e.prepared = Some(Prepared {
                         owner: Some(thread),
+                        copying: false,
                         buffer,
                         bytes: output,
                         action: ReadAction::Queue(key),
@@ -1177,19 +1220,33 @@ impl BinderFile {
                 }
             }
             let prepared = d.endpoint(self.id)?.prepared.as_mut().unwrap();
+            if capacity < prepared.bytes.len() {
+                return_errno!(Errno::ENOSPC);
+            }
             prepared.owner = Some(thread);
+            prepared.copying = true;
             (prepared.bytes.clone(), prepared.fds.clone())
         };
-        if capacity < output.len() {
-            return_errno!(Errno::ENOSPC);
+        if let Err(error) = current_userspace!().write_bytes(pointer, &output) {
+            let mut d = domain().lock();
+            if let Some(endpoint) = d.endpoints.get_mut(&self.id) {
+                if let Some(prepared) = &mut endpoint.prepared {
+                    if prepared.owner == Some(thread) {
+                        prepared.copying = false;
+                    }
+                }
+            }
+            d.notify();
+            return Err(error);
         }
-        current_userspace!().write_bytes(pointer, &output)?;
         {
             let mut d = domain().lock();
             let e = d.endpoint(self.id)?;
             if !e.prepared.as_ref().is_some_and(|p| p.owner == Some(thread)) {
                 return_errno!(Errno::ECONNREFUSED);
             }
+            e.pollee.notify(IoEvents::IN | IoEvents::OUT);
+            WAKE.get().unwrap().wake_all();
             match e.prepared.take().unwrap().action {
                 ReadAction::Queue(key) => {
                     let index = e
@@ -1226,7 +1283,7 @@ impl BinderFile {
         let commands = self.commands(&wire)?;
         let outcome = (|| {
             for (consumed, command) in commands {
-                self.execute(command)?;
+                self.execute(command, nonblocking)?;
                 wire.write_consumed = consumed as u64;
             }
             if wire.read_size > 0 && nonblocking {
@@ -1260,6 +1317,9 @@ impl BinderFile {
     }
 }
 impl Endpoint {
+    fn active_preparation(&self) -> bool {
+        self.preparing.is_some() || self.prepared.as_ref().is_some_and(|p| p.copying)
+    }
     fn terminal_queued(&self, thread: u64, call: u64) -> bool {
         self.queue.iter().any(|q| {
             q.recipient == Some(thread)
