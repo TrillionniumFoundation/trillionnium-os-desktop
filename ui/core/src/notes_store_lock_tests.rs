@@ -48,3 +48,29 @@ fn retired_owner_releases_lock_despite_a_retained_open_description() {
         "closing the old duplicate must not release the replacement owner's lock"
     );
 }
+
+#[test]
+fn construction_error_releases_an_acquired_lock_before_store_construction() {
+    let root = Directory::new();
+    let identity = NotesTargetIdentity {
+        session_instance: "c".repeat(32),
+        task_id: 1,
+        incarnation: "d".repeat(32),
+    };
+    drop(NotesStore::create(&root.0, identity.clone()).unwrap());
+    let directory = open_directory(&root.0, &identity, Mode::RecoveryOnly).unwrap();
+    let mut inherited = None;
+    let failed: io::Result<()> = (|| {
+        let lock = lock_directory(&directory)?;
+        inherited = Some(lock.try_clone()?);
+        Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "constructor validation",
+        ))
+    })();
+    let recovered = NotesStore::recover(&root.0, &identity);
+    drop(inherited);
+    assert_eq!(failed.unwrap_err().kind(), io::ErrorKind::InvalidData);
+    let recovered = recovered.expect("constructor failure must retire its acquired lock");
+    assert_eq!(recovered.target(), &identity);
+}
