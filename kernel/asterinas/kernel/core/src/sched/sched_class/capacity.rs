@@ -54,12 +54,17 @@ pub(super) struct MigrationCapacity<'a> {
     scheduler: &'a ClassScheduler,
     cpu: CpuId,
     placement: Placement,
+    rq_identity: usize,
     live: bool,
 }
 
 impl MigrationCapacity<'_> {
     pub(super) fn consume(&mut self, rq: &mut PerCpuClassRqSet) {
         assert!(self.live && rq.cpu == self.cpu);
+        assert_eq!(
+            self.rq_identity, rq as *const PerCpuClassRqSet as usize,
+            "capacity ticket belongs to another runqueue"
+        );
         rq.release_migration_capacity(self.placement);
         self.live = false;
     }
@@ -175,7 +180,9 @@ impl ClassScheduler {
         for _ in 0..8 {
             let need = {
                 let _irq = disable_local();
-                rq.lock().migration_capacity_need(placement)?
+                let locked = rq.lock();
+                let need = locked.migration_capacity_need(placement)?;
+                need
             };
             let mut prepared = need.allocate()?;
             let installed = {
@@ -183,19 +190,20 @@ impl ClassScheduler {
                 let mut rq = rq.lock();
                 if rq.can_install_migration_capacity(&prepared, placement) {
                     rq.install_migration_capacity(&mut prepared, placement);
-                    true
+                    Some(&*rq as *const PerCpuClassRqSet as usize)
                 } else {
-                    false
+                    None
                 }
             };
             // Both unused preparation and retired empty buffers are destroyed
             // with IRQs restored and no runqueue lock, including stale retries.
             drop(prepared);
-            if installed {
+            if let Some(rq_identity) = installed {
                 return Ok(MigrationCapacity {
                     scheduler: self,
                     cpu,
                     placement,
+                    rq_identity,
                     live: true,
                 });
             }

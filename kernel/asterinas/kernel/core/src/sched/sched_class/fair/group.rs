@@ -16,6 +16,25 @@ mod prepare;
 
 pub(super) type GroupId = usize;
 
+#[must_use]
+pub(in crate::sched::sched_class) struct RemovedFair {
+    task: Arc<Task>,
+    key: u64,
+    accounted_weight: u64,
+    original_vruntime: u64,
+    debt: u64,
+    live: bool,
+}
+
+impl RemovedFair {
+    pub(in crate::sched::sched_class) fn task(&self) -> &Arc<Task> {
+        &self.task
+    }
+    pub(in crate::sched::sched_class) fn debt(&self) -> u64 {
+        self.debt
+    }
+}
+
 #[derive(Debug)]
 struct Node {
     owner: Option<CpuSchedulingGroup>,
@@ -108,6 +127,101 @@ pub(in crate::sched::sched_class) struct GroupTree {
 }
 
 impl GroupTree {
+    pub(super) fn take_root_task(&mut self, target: &Arc<Task>) -> Result<Option<RemovedFair>> {
+        if !self.root_migration_supported() {
+            return Err(Error::InvalidArgs);
+        }
+        let node = &mut self.nodes[0];
+        let mut removed = None;
+        let source_floor = node.min_vruntime;
+        node.tasks.retain(|item| {
+            if Arc::ptr_eq(&item.0.0, target) {
+                assert!(removed.is_none(), "duplicate FAIR entity");
+                let original_vruntime = target
+                    .as_thread()
+                    .unwrap()
+                    .sched_attr()
+                    .fair
+                    .vruntime
+                    .load(Ordering::Relaxed);
+                removed = Some(RemovedFair {
+                    task: target.clone(),
+                    key: item.0.1,
+                    accounted_weight: item.0.2,
+                    original_vruntime,
+                    debt: item.0.1.saturating_sub(source_floor),
+                    live: true,
+                });
+                false
+            } else {
+                true
+            }
+        });
+        if let Some(token) = &removed {
+            node.task_weight -= token.accounted_weight;
+            node.queued_tasks -= 1;
+            // The removed entry's exact physical slot is now a rollback slot.
+            // Ordinary producers already preserve every reserved slot.
+            node.reserved_incoming += 1;
+        }
+        Ok(removed)
+    }
+
+    pub(super) fn restore_root_task(&mut self, mut token: RemovedFair) {
+        assert!(self.root_migration_supported() && token.live);
+        let node = &mut self.nodes[0];
+        assert!(node.reserved_incoming > 0);
+        node.reserved_incoming -= 1;
+        assert!(node.tasks.len() < node.tasks.capacity());
+        token
+            .task
+            .as_thread()
+            .unwrap()
+            .sched_attr()
+            .fair
+            .vruntime
+            .store(token.original_vruntime, Ordering::Relaxed);
+        node.tasks.push(Reverse(FairQueueItem(
+            token.task.clone(),
+            token.key,
+            token.accounted_weight,
+        )));
+        node.task_weight += token.accounted_weight;
+        node.queued_tasks += 1;
+        token.live = false;
+    }
+
+    pub(super) fn commit_root_removal(&mut self, token: &mut RemovedFair) {
+        assert!(self.root_migration_supported() && token.live);
+        self.release_root_reservation();
+        token.live = false;
+    }
+
+    pub(super) fn root_debt(&self, task: &Task) -> Result<u64> {
+        if !self.root_migration_supported() {
+            return Err(Error::InvalidArgs);
+        }
+        Ok(task
+            .as_thread()
+            .unwrap()
+            .sched_attr()
+            .fair
+            .vruntime
+            .load(Ordering::Relaxed)
+            .saturating_sub(self.nodes[0].min_vruntime))
+    }
+
+    pub(super) fn rebase_root_debt(&self, task: &Task, debt: u64) -> Result<()> {
+        if !self.root_migration_supported() {
+            return Err(Error::InvalidArgs);
+        }
+        task.as_thread().unwrap().sched_attr().fair.vruntime.store(
+            self.nodes[0].min_vruntime.saturating_add(debt),
+            Ordering::Relaxed,
+        );
+        Ok(())
+    }
+
     pub(super) fn root_migration_supported(&self) -> bool {
         self.legacy_root && self.nodes.len() == 1 && self.bindings.is_empty()
     }

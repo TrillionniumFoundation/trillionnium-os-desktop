@@ -25,7 +25,7 @@ use crate::{
 };
 
 pub(super) mod group;
-pub(super) use group::Selection as FairSelection;
+pub(super) use group::{RemovedFair, Selection as FairSelection};
 
 const WEIGHT_0: u64 = 1024;
 
@@ -301,6 +301,22 @@ impl FairCapacityNeed {
 }
 
 impl FairClassRq {
+    pub(super) fn take_task(&mut self, task: &Arc<Task>) -> ostd::Result<Option<RemovedFair>> {
+        self.groups.take_root_task(task)
+    }
+
+    pub(super) fn restore_task(&mut self, token: RemovedFair) {
+        self.groups.restore_root_task(token);
+    }
+    pub(super) fn commit_removed(&mut self, token: &mut RemovedFair) {
+        self.groups.commit_root_removal(token);
+    }
+    pub(super) fn debt(&self, task: &Task) -> ostd::Result<u64> {
+        self.groups.root_debt(task)
+    }
+    pub(super) fn rebase_debt(&self, task: &Task, debt: u64) -> ostd::Result<()> {
+        self.groups.rebase_root_debt(task, debt)
+    }
     pub(super) fn root_migration_supported(&self) -> bool {
         self.groups.root_migration_supported()
     }

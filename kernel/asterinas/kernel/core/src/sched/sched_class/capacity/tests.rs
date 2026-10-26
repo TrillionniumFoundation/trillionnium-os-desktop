@@ -153,3 +153,19 @@ fn capacity_overflow_fails_cold_without_a_partial_ticket() {
     };
     assert!(matches!(need.allocate(), Err(ostd::Error::NoMemory)));
 }
+
+#[ktest]
+#[should_panic(expected = "capacity ticket belongs to another runqueue")]
+fn ticket_cannot_consume_another_scheduler_same_cpu_reservation() {
+    let source = ClassScheduler::new();
+    let other = ClassScheduler::new();
+    let mut ticket = source
+        .reserve_migration_capacity(CpuId::bsp(), Placement::Fair)
+        .unwrap();
+    let _other_ticket = other
+        .reserve_migration_capacity(CpuId::bsp(), Placement::Fair)
+        .unwrap();
+    let _irq = disable_local();
+    let mut wrong_rq = other.rqs[0].lock();
+    ticket.consume(&mut wrong_rq);
+}
