@@ -7,6 +7,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import posixpath
 import re
 import sys
 
@@ -22,7 +23,8 @@ base_initramfs = runner.initramfs
 
 def initramfs(original, binaries, nonce, smp):
     entries = runner.unpack(gzip.decompress(base_initramfs(original, binaries, nonce, smp)))
-    runner.require(not any(name.lstrip("./") == ".hepta-vdso-cpu-qa" for name, _, _ in entries),
+    runner.require(not any(posixpath.normpath("/" + name.lstrip("/")) == "/.hepta-vdso-cpu-qa"
+                           for name, _, _ in entries),
                    "private CPU probe marker already exists")
     inode = max(fields[0] for _, fields, _ in entries) + 1
     entries.append((".hepta-vdso-cpu-qa", [inode, 0o100400, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], (nonce + "\n").encode()))
