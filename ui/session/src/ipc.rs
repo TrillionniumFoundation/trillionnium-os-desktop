@@ -259,7 +259,10 @@ mod tests {
         let Response::Snapshot { tasks, .. } = response else {
             panic!("the ready client must receive its snapshot");
         };
-        let observed = tasks.iter().find(|observed| observed.id == task.id).unwrap();
+        let observed = tasks
+            .iter()
+            .find(|observed| observed.id == task.id)
+            .unwrap();
         assert_eq!(observed.state, TaskState::Completed);
         assert_eq!(observed.exit_code, Some(0));
         assert!(session.children.is_empty());
