@@ -402,12 +402,20 @@ static void client_process(int inherited, int rollback_ready) {
     // after that byte; require real EPIPE within a fixed bound, not in the
     // very first scheduling slice. Capture errno only for this actual write.
     struct timespec began, now; CHECK(clock_gettime(CLOCK_MONOTONIC, &began) == 0);
+    ssize_t first_write = 0; int first_error = 0; unsigned attempts = 0;
     for (;;) {
+        errno = 0;
         ssize_t written = write(pending[1], "Z", 1); int write_error = errno;
-        if (written == -1 && write_error == EPIPE) break;
+        if (attempts++ == 0) { first_write = written; first_error = write_error; }
         CHECK(clock_gettime(CLOCK_MONOTONIC, &now) == 0);
         int64_t elapsed_ns = (int64_t)(now.tv_sec - began.tv_sec) * INT64_C(1000000000)
                            + now.tv_nsec - began.tv_nsec;
+        if (written == -1 && write_error == EPIPE) {
+            CHECK(elapsed_ns >= 0 && elapsed_ns < INT64_C(1000000000));
+            printf("binder_fd_actual_cleanup_initial_rc=%zd_error=%d_EPIPE_elapsed_ns=%lld\tPASS\n",
+                   first_write, first_error, (long long)elapsed_ns);
+            break;
+        }
         if (written != 1 || elapsed_ns >= INT64_C(1000000000))
             fprintf(stderr, "Binder actual pipe cleanup rc=%zd error=%d elapsed_ns=%lld\n",
                     written, write_error, (long long)elapsed_ns);
