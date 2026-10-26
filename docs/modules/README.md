@@ -6,7 +6,8 @@
 授权、实际设备效果和持久恢复仍需本轮实际执行。当前跨仓来源以
 [SOURCES](../SOURCES.md#hepta-native-organ) 和实际 Cargo lock 为准。
 当前 Desktop/Hepta 依赖装配、两份 lock 与来源检查命令见
-[DEPENDENCIES](../../support/ui/DEPENDENCIES.md)；此前固定组合保留其历史资格。
+[DEPENDENCIES](../../support/ui/DEPENDENCIES.md)；当前默认 SDK、Notes 身份、bootstrap 与迁移规则见
+[产品收敛合同](../agents/PRODUCT_CONVERGENCE.md)。此前固定组合保留其历史资格。
 
 ## 产品与支持模块
 

@@ -6,11 +6,14 @@ Agentd, issue authority, retain an operation ledger, enable ADB, or register an
 effect destination by default. The existing `device_organ.py` profile remains
 read only and retains its deployed helper pin.
 
-**Current local qualification:** source generation and 39 host protocol/transport
-tests pass. Android compilation, original signer equality, installation,
-actual native observation, a real text effect and original-owner durable
-reconciliation still require recorded execution. Host tests are not device
-evidence. The original signing password and key were not read or copied.
+**Qualification scope:** source generation and host protocol/transport tests
+cover this candidate's boundaries. The component history also contains actual
+Java compilation, DEX/zipalign and original APK signature checks, as recorded in
+[current capabilities](../../../docs/CURRENT_CAPABILITIES.md). Those records do
+not qualify a new build. Original-signer equality, installation, actual native
+observation, a real text effect and original-owner durable reconciliation still
+require execution on the selected final source. Host tests are not device
+evidence. The original signing password and key are not read or copied.
 
 ## Source and compatibility
 
@@ -231,8 +234,21 @@ The signed artifact can be checked separately without installing it:
 ```sh
 python3 support/android/receiver/qualify_receiver.py apk \
   --sdk /opt/android-sdk \
-  --candidate-apk /tmp/android-organ-original-signed-build/actions-v2.apk
+  --candidate-apk /tmp/android-organ-original-signed-build/actions-v2.apk \
+  --build-record /tmp/android-organ-original-signed-build/build-record.json \
+  --expected-build-record-sha256 <trusted-signed-build-record-sha256>
 ```
+
+Both `apk` and `installed` require the exact reviewed signed-build record. The
+inspector regenerates the current strict receiver's sources without compiling
+or executing them and compares every generated Java/helper hash. It checks the
+candidate APK and its single bounded `classes.dex` against the recorded build,
+then verifies the actual original/candidate signatures and manifest. The
+installed helper must also match that same generated helper. A same-signer
+legacy APK, a source-generation-only record, an unsigned build or a different
+DEX cannot qualify as the strict receiver. Older build records without the DEX
+binding require a new build; they are not silently upgraded. These are input
+identity checks, not independent proof of compilation, FinalUse or an effect.
 
 After an independently coordinated original-package update, installed-source
 verification uses the existing original root inspection capability. This
@@ -247,6 +263,8 @@ No application is launched, stopped or changed, and no UI observation is made.
 python3 support/android/receiver/qualify_receiver.py installed \
   --sdk /opt/android-sdk \
   --candidate-apk /tmp/android-organ-original-signed-build/actions-v2.apk \
+  --build-record /tmp/android-organ-original-signed-build/build-record.json \
+  --expected-build-record-sha256 <trusted-signed-build-record-sha256> \
   --expected-helper-sha256 95731ff1a5e72b5f31a0625b157ea8ff2da1b8c718c0efb5055778cc458d1c9f \
   --droidloomctl-sha256 aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376 \
   --droidloomctl-owner-uid 1000

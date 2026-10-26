@@ -30,16 +30,34 @@ It does not qualify later integrated source trees.
 
 ## Current fresh-build profile
 
-The current `source-review.json` selects Desktop
-`0187bd578f6786c40c812c13976e4889a1aba835` / tree
-`335007e4f94114c6a26506d9448faf0d43c4245c` and Hepta
-`b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` / tree
-`b035a577969cb503d7c09620694a6b6c54178c97`. It additionally binds the IPC physical-frame, explicit page-table and watchdog
-changes. This updated profile has not yet executed; earlier 7d/b3 lifecycle
-results remain source-specific. It includes the UDP, exec
-argument, family user-frame, initial-stack and readonly fixes and the Oct 23
-original-owner recovery/issuer/composition stack. The 154 selected source
-identities are a review input, not a runtime receipt.
+The current `source-review.json` selects product implementation A:
+
+- Desktop `c69ad3cfaded34dd05e8cf34beee8545e5771562`, tree
+  `b27b99c3c4be1ee45fd18d3e87d720b1b1fc8c6b`.
+- Hepta `489f7096b0e5754968a30fa4477bb4417d24834f`, tree
+  `4731de9117065bd773b2fcee92c815ff896b8488`.
+- Original Hepta userspace Rust `1.96.0`, verified from its manifest bytes.
+
+This binds 574 selected source identities, including the unchanged entries
+from the prior review, the changed kernel and original owner inputs, and the
+current product dependency and SDK profile manifests. Full Git trees bind the
+remaining inputs. The native no-turn gate does not compile or qualify the
+Makepad UI; binding its source profile does not transfer packaged input results.
+The release candidate's prepared-preedit SDK and the development Git SDK keep
+their explicit distinction in the [product contract](../../../docs/agents/PRODUCT_CONVERGENCE.md).
+
+This pair has not yet completed this fresh native build/guest gate. The
+[previous 0187/b3 profile](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/bee137edce524f756fab4d05c5833b680080f4bd/tests/workloads/hepta_agentd_runtime/source-review.json)
+and its failed offline fixture preparation remain source-specific; see the
+[exact CI failure and repair](../../../support/build/CI_CONVERGENCE.md).
+Earlier 7d/b3 lifecycle results remain historical evidence. Updating this
+review is neither a semantic audit of every source line nor an execution receipt.
+
+The runner commit follows implementation A to record its immutable identity.
+Only this review and its documentation change in that follow-up: the compiled
+Desktop remains the exact implementation-A commit above. The runner and
+compiled-source identities must both be retained, without relabelling a result
+from either previous source pair.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source
@@ -99,8 +117,8 @@ match. Preparation then checks the actual Cargo and rustc `--version` output
 against this same channel. A binary at an expected path with a different
 version is rejected. The native workflow resolves its installation and binary
 paths from that review; it does not keep a second hard-coded userspace version.
-The initial b3 source uses Rust 1.95.0; a later 1.96.0 source needs its own
-explicit source/toolchain review before it can run. Named moving channels,
+The historical b3 source uses Rust 1.95.0; this selected 489 source uses
+Rust 1.96.0 and has its own explicit source/toolchain identity. Named moving channels,
 missing toolchain identities, stale hashes and version mismatches are refused.
 
 The runner's commit and the compiled Desktop commit may differ. The runner
@@ -111,6 +129,30 @@ runner or a review does not rename an already built kernel or transfer an old
 lifecycle result to a new source pair. The historical retained-source profile
 and its execution records remain unchanged. The separate CognitiveStore lane
 has its own source review and must be updated and executed independently.
+
+### Git source verification boundary
+
+The native preparation's Git queries retain their fixed environment and
+30-second deadline. They disable repository fsmonitor hooks, the untracked
+cache and replacement objects, and avoid optional index-refresh writes. Git
+directory, worktree, index and configuration overrides from the caller's
+environment are not inherited. Both source roots must have their exact reviewed
+HEAD/tree, no assume-unchanged or skip-worktree flags, and clean full tracked and
+untracked status; a sparse checkout is not a complete source input. Every
+selected file's actual bytes and original Git blob remain checked, followed by
+the original toolchain check. The kernel qualification's full tracked-byte
+snapshots remain mandatory and unchanged.
+
+`test_source_git.py` uses actual temporary repositories, a real configured
+monitor hook, hidden index flags and replacement objects. It checks that the
+hook is not invoked and that modified tracked files outside the selected blob
+list still fail. These are host verification regressions, not native execution
+receipts. If the initial source scan exceeds 30 seconds, preflight fails before
+build output is created. Later source-check failures cannot produce a success
+receipt either. Such a timeout does not establish its environmental
+cause or a dirty source tree; disabling caches is not evidence that a monitor
+caused an earlier timeout. Preserve the failed attempt when retrying the same
+reviewed sources, and record the runner revision separately from compiled inputs.
 
 ## Original owners and precise scope
 

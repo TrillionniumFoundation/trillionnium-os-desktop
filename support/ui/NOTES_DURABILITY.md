@@ -21,6 +21,46 @@ local document action. Final trusted deployment inputs and evidence must match
 the two-repo source pair. No production readiness or whole-machine recovery is
 implied by these application changes.
 
+## Canonical identity, versions and migration
+
+The product uses this incarnation-owned store as its single Notes data model.
+The storage schema, effect protocol and bootstrap have independent versions;
+the same version number does not make different formats interchangeable.
+
+| Contract | Selected representation | Compatibility rule |
+| --- | --- | --- |
+| Document/effect identity | Exact `(session_instance, task_id, incarnation)` | A new process receives a new identity; no alias rebinding |
+| Application checkpoint | `document.json`, schema 1, at most 16 KiB | Exact fields: `schema_version`, `target`, `text`, `revision`, `pending_receipt`, `retired_receipt`; reject unknown/duplicate fields and invalid receipt bindings |
+| Effect and observation | Existing Notes wire schema 1 | Preserve original request bytes, operation identity, payload hash and exact receipt |
+| Private endpoint bootstrap | Schema 2, one effect stream plus one recovery datagram | Reject schema 1, wrong descriptor count/type and any automatic downgrade |
+| Ordinary reopen | Explicit text-only copy into a fresh incarnation | Copy no revision, receipt, retirement ACK or effect permission |
+| Original operation recovery | Observation/retirement helper for the exact old incarnation | Retain original writer history and target binding; no effect descriptor |
+
+An existing checkpoint produced by this store remains schema 1 and needs no
+rewrite or migration merely because the application is upgraded. Reading,
+listing or opening saved text leaves the source bytes unchanged. A mutation or
+exact receipt retirement continues to use the same atomic replacement path.
+Snapshot validation alone conveys no authorization and cannot make a recovery
+store accept effects or local edits.
+
+The alternative stable-document prototype in Desktop PR #268 used
+`state.json`, a `document_id`, `active_target`, an incarnation history and a
+512 KiB bound. Although that prototype also called its schema `1`, it is a
+different format and is **not** a product checkpoint. Do not rename its files
+to `document.json`, reinterpret its receipt list, share its writer lock, or
+change the bootstrap to accept its version-1 offer. This product does not
+automatically import or modify that prototype's directories.
+
+If prototype data exists, keep its original source, identity and receipt files
+intact until its original owner has reconciled outstanding operations. A user
+may explicitly export its UTF-8 text through the matching prototype and paste
+that text into a fresh product document, subject to the 4096-byte bound. That
+is a new local edit, not a resumed effect or a migration of original history.
+There is no automatic merge, truncation, receipt conversion or claim that a
+matching text proves an old operation completed. A future structured importer
+requires its own typed format discriminator, bounded text-only validation and
+source-preservation tests before it can replace this explicit path.
+
 ## Reopen a saved user document
 
 Launch a new Notes window through the existing Session, select **打开已保存笔记**
@@ -137,9 +177,15 @@ text remains limited to 4096 UTF-8 bytes, requests to 8192 bytes, replies to
 hard links, foreign ownership and group/world permissions.
 
 Creation is exclusive. An existing incarnation directory, including one left
-by interrupted initialization, is never reset or silently adopted. A process
-holds the incarnation's `flock` throughout its lifetime. A competing recovery
-process is refused while that lock is held.
+by interrupted initialization, is never reset or silently adopted. A live store
+holds the incarnation's `flock`; a competing store or recovery process is
+refused while that lock is held. The acquiring process explicitly unlocks when
+its store is dropped. A forked child may inherit the open file description
+before `exec` closes `O_CLOEXEC` descriptors, but that inherited descriptor must
+not prolong a normally dropped store's lock. The lock guard records the owning
+PID, so dropping an inherited guard in the child cannot unlock the parent.
+Process death still uses kernel descriptor cleanup; no lock file is unlinked
+and no recovery retry manufactures a successful handoff.
 
 For a changed state the worker writes a separate file, synchronizes it,
 atomically renames it to `document.json`, and synchronizes the containing
@@ -229,6 +275,20 @@ recovery attempt may return `WouldBlock`; the correct response is to wait for
 the same predecessor's observed exit, never unlink its lock or create a new
 effect identity. The real-window probe initially failed at this boundary and
 was corrected to wait for the original Session's terminal child state.
+
+The unit regression
+`notes_store::lock_tests::forked_descriptor_does_not_extend_store_lock_or_unlock_its_parent`
+separately covers the normal-drop/fork boundary. It holds a real child between
+fork and exec with an explicit pipe handshake. The child's inherited guard
+cannot release the parent lock, competing recovery is refused while the parent
+store lives, and recovery succeeds immediately after the parent drops the
+store even while the child remains alive. It uses no retry or sleep to hide
+ownership errors. After fork, the child performs only async-signal-safe syscalls
+and the guard's PID check, then the test kills and reaps its own child.
+
+```sh
+cargo +1.96.0 test --locked --manifest-path ui/Cargo.toml -p trill-ui-core forked_descriptor_does_not_extend_store_lock_or_unlock_its_parent
+```
 
 ## Development and validation
 

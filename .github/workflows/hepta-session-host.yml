@@ -53,6 +53,7 @@ jobs:
       CARGO_BUILD_JOBS: '1'
       CARGO_INCREMENTAL: '0'
       RUST_BACKTRACE: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -62,6 +63,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/hepta-session-host"
+          # Cargo output is evidence, not an untracked source-tree mutation.
+          printf 'CARGO_TARGET_DIR=%s/hepta-session-host-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
           git rev-parse HEAD 'HEAD^{tree}' > "$RUNNER_TEMP/hepta-session-host/source.txt"
@@ -144,14 +147,19 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-session-host"
+          mkdir -p "$evidence"
+          git rev-parse HEAD 'HEAD^{tree}' | tee "$evidence/source-after.txt"
+          git status --porcelain=v1 --untracked-files=all | tee "$evidence/source-after-status.log"
+          git diff HEAD -- . | tee "$evidence/source-after-diff.log"
           git ls-files --error-unmatch services/hepta-session-host/Cargo.lock
+          sha256sum services/hepta-session-host/Cargo.lock ui/Cargo.lock \
+            services/hepta-os/Cargo.lock | tee "$evidence/locks-after.sha256"
           git diff --exit-code HEAD -- services/hepta-session-host/Cargo.lock \
             ui/Cargo.lock services/hepta-os/Cargo.lock
           git diff --exit-code HEAD -- .
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          test -z "$(git status --porcelain=v1 --untracked-files=all)"
-          sha256sum services/hepta-session-host/Cargo.lock ui/Cargo.lock \
-            services/hepta-os/Cargo.lock
+          test ! -s "$evidence/source-after-status.log"
       - name: Preserve raw evidence even when qualification fails
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f

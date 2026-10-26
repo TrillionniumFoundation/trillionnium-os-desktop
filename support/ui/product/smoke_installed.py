@@ -115,9 +115,9 @@ def main():
     manager_environment = dict(os.environ)
     bus = manager_environment.get("DBUS_SESSION_BUS_ADDRESS")
     if not bus:
-        runtime = manager_environment.get("XDG_RUNTIME_DIR")
-        require(runtime and (Path(runtime) / "bus").is_socket(), "no existing user service bus")
-        bus = "unix:path=" + str(Path(runtime) / "bus")
+        manager_runtime = manager_environment.get("XDG_RUNTIME_DIR")
+        require(manager_runtime and (Path(manager_runtime) / "bus").is_socket(), "no existing user service bus")
+        bus = "unix:path=" + str(Path(manager_runtime) / "bus")
     manager_environment["DBUS_SESSION_BUS_ADDRESS"] = bus
     subprocess.run(["systemctl", "--user", "show", "--property=Version", "--value"],
                    env=manager_environment, check=True, capture_output=True, timeout=10)

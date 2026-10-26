@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Real advisory-lock checks; mocked Cargo commands never qualify a build."""
-from contextlib import ExitStack
+from contextlib import ExitStack, redirect_stderr
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -184,6 +185,32 @@ class TargetCacheTests(unittest.TestCase):
         self.assertEqual([call[2]["CARGO_TARGET_DIR"] for call in calls], [str(self.observer), str(self.original)])
         self.assertEqual([step["command_timeout_seconds"] for step in report["steps"]], [3600, 3600])
         self.assertEqual(report["steps"][1]["cargo_target_dir"], str(self.original))
+
+    def test_failed_step_records_failure_and_only_a_bounded_raw_log_tail(self):
+        paths, record = self.selected()
+        report = {"steps": [], "cargo_targets": record}
+        self.out.mkdir()
+        class GateError(Exception):
+            pass
+        def bounded(argv, cwd, environment, log, timeout):
+            log.write_bytes(b"old diagnostics\n" + b"x" * 20000 + b"\nactual Cargo failure\n")
+            raise GateError("command_failed_exit_101")
+        helper = SimpleNamespace(GateError=GateError, prepare_runner=lambda *args: {}, bounded_command=bounded)
+        diagnostics = io.StringIO()
+        with ExitStack() as stack, mock.patch.object(preparation, "original_helper", return_value=helper), \
+             redirect_stderr(diagnostics), self.assertRaisesRegex(ValueError, "command_failed_exit_101"):
+            for name in paths:
+                stack.enter_context(preparation.target_cache_lease(paths[name], record["targets"][name]))
+            preparation.build_userspace(self.args, self.roots, self.out, report, [], {}, {},
+                                        {"cargo": {"path": "/fixed/cargo"}}, paths)
+        self.assertEqual(report["steps"][0]["status"], "failed")
+        self.assertEqual(report["steps"][0]["log"], "observer.log")
+        self.assertIn("command_failed_exit_101", report["steps"][0]["error"])
+        self.assertNotIn("old diagnostics", diagnostics.getvalue())
+        self.assertIn("actual Cargo failure", diagnostics.getvalue())
+        self.assertLessEqual(len(diagnostics.getvalue()), 16 * 1024 + 1)
+        self.assertTrue((self.out / "observer.log").read_bytes().startswith(b"old diagnostics\n"))
+        self.assertFalse((self.out / "input-manifest.json").exists())
 
     def test_synthetic_success_receipt_retains_actual_command_cache_and_deadline_contract(self):
         paths, record = self.selected()

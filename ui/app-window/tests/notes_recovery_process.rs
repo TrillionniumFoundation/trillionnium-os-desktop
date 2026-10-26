@@ -141,7 +141,13 @@ fn process_crash_and_lost_retirement_ack_recover_without_replaying_the_effect() 
     let root = Directory::new();
     let mut application = Process(
         Command::new(std::env::current_exe().unwrap())
-            .args(["--exact", "persist_without_reply_fixture", "--nocapture"])
+            .args([
+                "--exact",
+                "persist_without_reply_fixture",
+                "--nocapture",
+                "--format=terse",
+                "--test-threads=1",
+            ])
             .env("TRILL_HELPER_PROCESS_TEST_ROOT", &root.0)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

@@ -49,10 +49,35 @@ enum Mode {
 /// The caller must then close it and recover from the original on-disk state.
 pub struct NotesStore {
     directory: File,
-    _lock: File,
+    _lock: IncarnationLock,
     document: NotesDocument,
     mode: Mode,
     frozen: bool,
+}
+
+// flock belongs to the open file description, not to this File or PID. A
+// concurrent fork inherits that description until exec closes O_CLOEXEC
+// descriptors. Closing only our File can therefore leave a dropped store
+// spuriously locked by an unrelated child waiting to exec.
+struct IncarnationLock {
+    file: File,
+    owner_pid: libc::pid_t,
+}
+
+impl IncarnationLock {
+    fn release_if_owner(&self) {
+        // A forked child shares the description but does not own this store.
+        // It must only close its copy, never release its parent's lock.
+        if unsafe { libc::getpid() } == self.owner_pid {
+            unsafe { libc::flock(self.file.as_raw_fd(), libc::LOCK_UN) };
+        }
+    }
+}
+
+impl Drop for IncarnationLock {
+    fn drop(&mut self) {
+        self.release_if_owner();
+    }
 }
 
 impl NotesStore {
@@ -409,12 +434,15 @@ fn open_file(directory: &File, name: &str, flags: libc::c_int) -> io::Result<Fil
     Ok(file)
 }
 
-fn lock_directory(directory: &File) -> io::Result<File> {
+fn lock_directory(directory: &File) -> io::Result<IncarnationLock> {
     let lock = open_file(directory, "lock", libc::O_RDWR | libc::O_CREAT)?;
     if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
         return Err(io::Error::last_os_error());
     }
-    Ok(lock)
+    Ok(IncarnationLock {
+        file: lock,
+        owner_pid: unsafe { libc::getpid() },
+    })
 }
 
 fn replace_checkpoint(directory: &File, bytes: &[u8]) -> io::Result<()> {
@@ -449,3 +477,7 @@ fn replace_checkpoint(directory: &File, bytes: &[u8]) -> io::Result<()> {
     }
     directory.sync_all()
 }
+
+#[cfg(test)]
+#[path = "notes_store_lock_tests.rs"]
+mod lock_tests;

@@ -23,6 +23,7 @@ import organ_release_profile as source_profile
 import desktop
 import preedit_source
 import preedit_component
+import target_cache
 
 
 def digest(path):
@@ -96,13 +97,15 @@ def controlled_environment(profile, target, jobs, tools, inherited=None):
     removed = []
     for key in list(env):
         if (key in {"RUSTC", "RUSTDOC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTC_BOOTSTRAP",
-                    "RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS"}
+                    "RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS",
+                    "CARGO_INCREMENTAL"}
                 or key.startswith(("CARGO_BUILD_", "CARGO_PROFILE_", "CARGO_TARGET_"))
                 or re.match(r"^(?:(?:HOST|TARGET)_)?(?:CC|CXX|AR|CFLAGS|CXXFLAGS|CPPFLAGS|LDFLAGS)(?:_|$)", key)):
             removed.append(key)
             del env[key]
     env.update(RUSTUP_TOOLCHAIN=profile["toolchain"], CARGO_TARGET_DIR=str(target), CARGO_BUILD_JOBS=str(jobs),
-               CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_DEV_INCREMENTAL="false", GIT_TERMINAL_PROMPT="0",
+               CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_DEV_INCREMENTAL="false", CARGO_INCREMENTAL="0",
+               GIT_TERMINAL_PROMPT="0",
                RUSTC=tools["rustc"], RUSTDOC=tools["rustdoc"], RUSTC_WRAPPER="", RUSTC_WORKSPACE_WRAPPER="",
                RUSTFLAGS="", RUSTDOCFLAGS="", CARGO_ENCODED_RUSTFLAGS="", CARGO_ENCODED_RUSTDOCFLAGS="")
     env["PATH"] = str(Path(tools["cargo"]).parent) + os.pathsep + env.get("PATH", os.defpath)
@@ -164,6 +167,8 @@ def validate_graph(metadata, hepta_commit, profile, sdk_profile=None):
 def build(args):
     require(sys.version_info >= (3, 11), "Python 3.11 or later is required")
     require(platform.system() == "Linux" and platform.machine() == "x86_64", "This profile requires an x86_64 Linux host")
+    require(bool(args.target_cache) == bool(args.target_cache_receipt),
+            "--target-cache and --target-cache-receipt must be supplied together")
     preedit = args.profile == "preedit-callbacks"
     profile_path = HERE / ("linux-preedit-profile.json" if preedit else "linux-text-profile.json")
     profile = source_profile.load_json(profile_path)
@@ -204,7 +209,8 @@ def build(args):
         sdk_original, sdk_config = output / "sdk-original-metadata.json", output / "sdk-overrides.toml"
     logs = output / "logs"
     logs.mkdir(mode=0o700)
-    target = output / "target"
+    target = Path(args.target_cache) if args.target_cache else output / "target"
+    cache = None
     tools = {name: str(Path(subprocess.check_output(
         ["rustup", "which", "--toolchain", profile["toolchain"], name], text=True).strip()).resolve(strict=True))
         for name in ("cargo", "rustc", "rustdoc")}
@@ -213,6 +219,10 @@ def build(args):
                "source_commit": identity["commit"], "source_tree": identity["tree"],
                "hepta": hepta_identity, "profile": profile,
                "profile_sha256": digest(profile_path), "cargo_profile": args.build_profile,
+               "execution_uid": os.geteuid(),
+               "target_cache": {"mode": "pending-reuse" if args.target_cache else "fresh",
+                                "target": str(target), "cold_build": not bool(args.target_cache),
+                                "incremental_compilation": False, "prior_pass_reused": False},
                "commands": [], "locks": {}, "binaries": {},
                "toolchain_executables": {name: {"path": path, "sha256": digest(path)} for name, path in tools.items()},
                "ambient_overrides_removed": removed,
@@ -221,6 +231,7 @@ def build(args):
                "production_authority_qualified": False, "window_qualified": False,
                "environment": {key: env[key] for key in ("RUSTUP_TOOLCHAIN", "CARGO_TARGET_DIR",
                    "CARGO_BUILD_JOBS", "CARGO_PROFILE_DEV_DEBUG", "CARGO_PROFILE_DEV_INCREMENTAL",
+                   "CARGO_INCREMENTAL",
                    "RUSTC", "RUSTDOC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTFLAGS",
                    "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS")}}
 
@@ -243,7 +254,8 @@ def build(args):
         save()
         print("Running " + name, flush=True)
         with stdout.open("xb") as out, stderr.open("xb") as err:
-            result = subprocess.run(command, cwd=REPO, env=env, stdin=subprocess.DEVNULL, stdout=out, stderr=err)
+            result = subprocess.run(command, cwd=REPO, env=env, stdin=subprocess.DEVNULL, stdout=out, stderr=err,
+                                    pass_fds=() if cache is None else (cache.fd,))
         entry.update(exit_code=result.returncode, seconds=round(time.monotonic() - start, 3),
                      stdout_sha256=digest(stdout), stderr_sha256=digest(stderr))
         save()
@@ -252,6 +264,11 @@ def build(args):
 
     try:
         save()
+        if args.target_cache:
+            roots = [os_repo.path, hepta_repo.path]
+            if preedit:
+                roots.extend((sdk_helper, sdk_root_hint))
+            cache = target_cache.TargetCache(target, args.target_cache_receipt, roots, output)
         manifest_bytes = source_profile.canonical(manifest)
         (output / "source-profile.json").write_bytes(manifest_bytes)
         source_receipt["manifest_sha256"] = hashlib.sha256(manifest_bytes).hexdigest()
@@ -266,7 +283,7 @@ def build(args):
         common = ["--locked"] + (["--offline"] if args.offline else [])
         feature = ["--features", profile["cargo_feature"]]
         metadata = run("native-metadata", ["cargo", "metadata", "--manifest-path", "ui/Cargo.toml",
-            "--format-version", "1", *common, *feature], machine_output=True)
+            "--format-version", "1", "--filter-platform", profile["target"], *common, *feature], machine_output=True)
         graph = json.loads(metadata.read_bytes())
         sdk_profile, sdk_receipt = None, None
         package_profile = output / "source-profile.json"
@@ -286,13 +303,39 @@ def build(args):
         receipt["resolved_packages"] = validate_graph(graph, args.hepta_commit, profile, sdk_profile)
         receipt["source_caches"] = verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile, sdk_profile)
         run("rustfmt", ["cargo", "fmt", "--manifest-path", "ui/Cargo.toml", "--all", "--", "--check"])
-        for name, path, features in (
+        tests = (
             ("native-ui-tests", "ui/Cargo.toml", ["--workspace", "--all-targets", *feature]),
             ("native-text-tests", "services/hepta-session-host/Cargo.toml", ["--features", "native-text", "--lib"]),
             ("observer-tests", "services/hepta-os/Cargo.toml", []),
             ("support-tests", "support/ui/Cargo.toml", []),
             ("host-contract-tests", "tests/ui/Cargo.toml", []),
-        ):
+        )
+        if cache is not None:
+            receipt["target_cache"] = cache.validate(receipt,
+                [Path(value["root"]) for value in receipt["source_caches"].values()])
+            invalidations = []
+            seen = set()
+            for name, path, _features in tests:
+                if path == "ui/Cargo.toml":
+                    local_graph = graph
+                else:
+                    enabled = ["--features", "native-text"] if name == "native-text-tests" else []
+                    local_metadata = run("cache-metadata-" + name, ["cargo", "metadata", "--manifest-path", path,
+                        "--format-version", "1", "--filter-platform", profile["target"], *common, *enabled],
+                        machine_output=True)
+                    local_graph = json.loads(local_metadata.read_bytes())
+                packages = [package for package in target_cache.local_packages(local_graph, REPO)
+                            if package["id"] not in seen]
+                seen.update(package["id"] for package in packages)
+                if packages:
+                    invalidations.append({"name": name, "manifest": path, "packages": packages})
+            receipt["target_cache"]["local_package_invalidations"] = invalidations
+            save()
+            cache.begin(output / "build-receipt.json")
+            for invalidation in invalidations:
+                run("cache-clean-" + invalidation["name"], target_cache.clean_command(
+                    invalidation["manifest"], invalidation["packages"], common))
+        for name, path, features in tests:
             run(name, ["cargo", "test", "--manifest-path", path, *common, *features])
         if preedit:
             receipt["sdk_regressions"] = {}
@@ -328,7 +371,7 @@ def build(args):
                 "Actual Cargo source caches changed while building")
         if preedit:
             after = run("native-metadata-after", ["cargo", "metadata", "--manifest-path", "ui/Cargo.toml",
-                "--format-version", "1", *common, *feature], machine_output=True)
+                "--format-version", "1", "--filter-platform", profile["target"], *common, *feature], machine_output=True)
             require(preedit_source.verify(after.read_bytes(), sdk_root, None,
                 sdk_original, sdk_config, sdk_helper) == sdk_profile,
                 "Prepared SDK source/config/metadata changed while building")
@@ -354,12 +397,23 @@ def build(args):
         desktop.atomic_write(output / "linux-text-config.json", desktop.json_bytes(config))
         receipt.update(status="passed", exit_code=0)
         save()
+        if cache is not None:
+            cache.finish()
         print(str(output / "build-receipt.json"))
         return 0
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, source_profile.ProfileError, desktop.ProductError) as error:
         receipt.update(status="failed", exit_code=1, error=str(error))
         save()
+        if cache is not None:
+            try:
+                cache.finish()
+            except (OSError, ValueError, KeyError) as finish_error:
+                receipt["target_cache"]["finalization_error"] = str(finish_error)
+                save()
         raise
+    finally:
+        if cache is not None:
+            cache.close()
 
 
 def main():
@@ -372,6 +426,11 @@ def main():
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--liberation-source")
     parser.add_argument("--asset-cache")
+    parser.add_argument("--target-cache", help="Explicit same-UID external target from a completed original builder attempt; "
+                        "keeps a fresh output, disables incremental compilation and reruns every gate; not a cold build")
+    parser.add_argument("--target-cache-receipt", help="Required original/latest build-receipt.json binding that target; "
+                        "Hepta, SDK, compilers, locks and profile must match; current Desktop local packages are cleaned; "
+                        "current ownership is verified, not historical creator UID")
     parser.add_argument("--sdk-original-metadata")
     parser.add_argument("--sdk-cargo-config")
     parser.add_argument("--sdk-helper-repo")

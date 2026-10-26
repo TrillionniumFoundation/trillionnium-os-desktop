@@ -24,6 +24,31 @@ debug symbols were removed; stripping unused static symbols keeps that bound
 unchanged. Both raw and packaged hashes belong in the build receipt. Test the
 packaged Shell with `qualify.py --packaged-binary --build-receipt ...` before
 claiming acceptance of the installed bytes.
+For final-release input acceptance, use the complete extracted or installed
+release directly. This joins all five distribution ELFs, every native resource,
+the Desktop/Hepta commits and the release id to the successful build receipt:
+
+```sh
+python3 -B tests/ui/native-makepad/qualify.py \
+  --package /absolute/installed/releases/<release-id> \
+  --expected-manifest-sha256 <trusted-final-manifest-sha256> \
+  --build-receipt /absolute/build/build-receipt.json \
+  --hepta-source /absolute/original-hepta-source \
+  --atomic-editable-text \
+  --output /absolute/new-native-input-evidence
+```
+
+The package mode derives both Shell and resources from that release; it refuses
+separate resource overrides. It verifies the complete package before and after
+the original AT-SPI/real IBus tests, and measures the actual running Shell's
+Linux executable inode, hash and start identity. `same_release_inputs_verified`
+is recorded only after those checks. The existing build-receipt-only mode
+remains useful during development but does not claim final-release identity.
+This is virtual X11 input acceptance. Physical keyboard/display behavior,
+Wayland IME, human Orca use and display scaling require their own observed
+results. The unmodified SDK remains the default; a failed preedit/undo test is
+retained as a failure rather than enabling a prepared SDK implicitly.
+
 Wrap that artifact with the new lifecycle entry point:
 
 ```sh
