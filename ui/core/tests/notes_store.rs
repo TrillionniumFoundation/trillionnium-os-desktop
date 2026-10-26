@@ -45,6 +45,22 @@ fn target() -> NotesTargetIdentity {
     }
 }
 
+#[test]
+fn required_durable_root_preflight_uses_original_private_canonical_guard() {
+    let root = Directory::new();
+    NotesStore::validate_existing_storage_root(&root.0).unwrap();
+    assert_eq!(fs::read_dir(&root.0).unwrap().count(), 0);
+    assert!(NotesStore::validate_existing_storage_root(&root.0.join("missing")).is_err());
+    let alias = root.0.join("alias");
+    symlink(&root.0, &alias).unwrap();
+    assert!(NotesStore::validate_existing_storage_root(&alias).is_err());
+    fs::remove_file(alias).unwrap();
+    fs::set_permissions(&root.0, fs::Permissions::from_mode(0o750)).unwrap();
+    assert!(NotesStore::validate_existing_storage_root(&root.0).is_err());
+    fs::set_permissions(&root.0, fs::Permissions::from_mode(0o700)).unwrap();
+    NotesStore::validate_existing_storage_root(&root.0).unwrap();
+}
+
 fn request() -> Vec<u8> {
     let target = target();
     serde_json::to_vec(&NotesReplace {

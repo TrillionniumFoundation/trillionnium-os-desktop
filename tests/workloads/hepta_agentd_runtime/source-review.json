@@ -1,15 +1,57 @@
 {
   "desktop": {
-    "head": "0187bd578f6786c40c812c13976e4889a1aba835",
-    "tree": "335007e4f94114c6a26506d9448faf0d43c4245c"
+    "head": "65800188415606451666fec3cfe94ecb5abdc2f6",
+    "tree": "ff2af1b22a2cc26efa579066c327e693b91b1262"
   },
   "hepta": {
-    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
-    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+    "head": "a6b3506da75fb9b37c1078b5490178cc8c2f137d",
+    "tree": "f4f5314e1fba99a3f9c83cc63bcc883e4e850e30"
   },
   "schema": "hepta.native-original-runtime-source-review.v1",
-  "scope": "Reviewed source profile for original no-turn Agentd lifecycle on the IPC/physical-owner, fallible-page-table and watchdog fixed ordinary0187 kernel with frozen originalb3 userspace. All changed functional kernel/lib/build/control inputs since7d are additionally bound. This source review is not build, execution, production, fullF1 or G2 evidence; historical7d receipts remain separate.",
+  "scope": "Explicit original no-turn Agentd lifecycle source combination: Desktop 658001 (Bee plus native-target offline metadata repair, Multiboot2 ACPI direct-map parity, optional pixel-framebuffer support advertisement and EGA-text rejection) with Hepta A6/runtime489. Exact selected bytes and complete clean trees are independently verified. Ineffective 90d boot-info retention was removed; historical build/device results remain separate. This review grants no execution, full F1, G2 or physical-hardware qualification. Runner identity is independent from this compiled source pair.",
   "source_files": [
+    {
+      "git_blob": "7391a75bb825384b2198f715ba7d0add0392af8c",
+      "path": "kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/README.md",
+      "repository": "desktop",
+      "sha256": "68bd87a728e83b2590068d1e0ded28cb87b897b7619a4bfbe6f9f19f0365ae59"
+    },
+    {
+      "git_blob": "68eeb87f99e29878bc2f7613f204208438143c64",
+      "path": "kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/accept_and_accept4.scml",
+      "repository": "desktop",
+      "sha256": "8975cfb5b15699ab719f36b2e7d1468f324dc6ab2252b7f0d1ff2e09213c63b9"
+    },
+    {
+      "git_blob": "1ec12b16ccd70f963cc011ec1a75f829eeca929a",
+      "path": "kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/connect.scml",
+      "repository": "desktop",
+      "sha256": "32ba0069f90f13a891345cbf9d7f292994e6979c90a2c9cf48ba18f9ca7f53f9"
+    },
+    {
+      "git_blob": "c6ec40e8c15d609fb24875b1708b70e5e1477151",
+      "path": "kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/sendto_and_sendmsg.scml",
+      "repository": "desktop",
+      "sha256": "fffa45333df8c3de696bcd0d0c81b5a2300d44312eca7ac0b9f7be5929b7dd91"
+    },
+    {
+      "git_blob": "faf7ae6ac311aadd20e1a855077208fb50d70c90",
+      "path": "kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/socket.scml",
+      "repository": "desktop",
+      "sha256": "ef55de6583d34631fa2fe0c704665a72d485db38ad2cd4dcfcae0a71b198da6c"
+    },
+    {
+      "git_blob": "127ccccea09f1a8f751099b542d26242aee601fe",
+      "path": "kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/socketpair.scml",
+      "repository": "desktop",
+      "sha256": "0abf20c81538f383532bc67f9d6c4c3ae756a1c47a573a1c9f9dff23d71cfdc0"
+    },
+    {
+      "git_blob": "9f791f33ca391e86780d0aa793193ca8ce49a709",
+      "path": "kernel/asterinas/kernel/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "7e52bf18cb1d6f6932bfc3d2127a8abd1fc405648b5d01a47877408cb800089c"
+    },
     {
       "git_blob": "7dd467280ef2141d30572757345ee787703ff5ea",
       "path": "kernel/asterinas/kernel/comps/drm/src/gem/shmem.rs",
@@ -17,10 +59,16 @@
       "sha256": "e258a3394b47e688a1923741dc4bb30873e68fd4c7b0ede318e5a6b0c372b672"
     },
     {
-      "git_blob": "e7e28c4fff16383721aab062ed9a6cb54171f5de",
+      "git_blob": "5eb8cafdf8dd31ef4d74b3c33b39e3a9e9ed0fd5",
       "path": "kernel/asterinas/kernel/core/Cargo.toml",
       "repository": "desktop",
-      "sha256": "618cf96993869809d29e8370fbe86db9a711b463cad847e84bd3ea9899fa5289"
+      "sha256": "882ed8ae6b868644218ac4b20c0e56a89537eb378d91d1dd5e3c80d5da6fff38"
+    },
+    {
+      "git_blob": "191e511f95d4bebc9c580670e70e1daf2657f791",
+      "path": "kernel/asterinas/kernel/core/comps/console/src/lib.rs",
+      "repository": "desktop",
+      "sha256": "e7ba3d9c8bb140110f671df08384b6d352483cbf524870c60067f664afc2921a"
     },
     {
       "git_blob": "fda4ed98101c3b110eacd37cfcf6c1e244a539c0",
@@ -107,10 +155,28 @@
       "sha256": "84145dac9058d6241cf49ab81f8a4906ba8e3bf6f2048636fd93e1cc47b85328"
     },
     {
-      "git_blob": "538ae9e49d0b657c021d2b94ab3f27b82bfd5690",
+      "git_blob": "824f69da273c22aefa4074786b1d4d4444b29d27",
+      "path": "kernel/asterinas/kernel/core/comps/systree/src/lib.rs",
+      "repository": "desktop",
+      "sha256": "6c350387fbd35373ce9850692827cb3dbdcd9847308a0b26a07a0274fb9b88c5"
+    },
+    {
+      "git_blob": "e7a427c045fc95eee35375d30698eed08ac7a5f1",
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "repository": "desktop",
+      "sha256": "d8c7f8517403ba2b85ee33f352bba163a376f563c6aad1ad31f6293ea5760a54"
+    },
+    {
+      "git_blob": "b758a9fe2dfcf4a0b6145ff380257568123e0644",
       "path": "kernel/asterinas/kernel/core/src/error.rs",
       "repository": "desktop",
-      "sha256": "00497f8085b631d759e0619854049f4bf3147e4290f3efd9ac9574bb3c1a0a91"
+      "sha256": "d72ff9ba5fbbf697c078595f66a1667c70bb2bedcf8790b27293a19e984e7b66"
+    },
+    {
+      "git_blob": "a86f6f7a09058b6386b52919e6dd8f117c0ebd6d",
+      "path": "kernel/asterinas/kernel/core/src/events/epoll/file.rs",
+      "repository": "desktop",
+      "sha256": "d8259d40dcd9ca3325d8446075f938af8ec28c0c12324182f6345ee899b750c1"
     },
     {
       "git_blob": "35ead8c712f69604bad3947d00fd9ddf78a20960",
@@ -119,34 +185,46 @@
       "sha256": "1443627be55bfd5cf57f0af3d04b15da2d5713771826560146e5caefe86fc232"
     },
     {
-      "git_blob": "731041a725a5fcbf41f6ad091c9c6e7d12265e54",
+      "git_blob": "07b35c1b098ee0b28367df2d8f1677096d8534e1",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
       "repository": "desktop",
-      "sha256": "de7a965e79882b55a490506275f820d19ad54b9c4c83c19e5fc5d3936898d157"
+      "sha256": "8c59a4648a32f0af8790de1cfaece5e72e2780bb8e4c9e20007626a3fd6d76d3"
     },
     {
-      "git_blob": "8698ea00f389e2cd118166ac954eff4c75f260c1",
+      "git_blob": "e8c5c68d5121a1600d7cadacfbd36dc6519c9a52",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs",
+      "repository": "desktop",
+      "sha256": "e950dfd43e642506a5fcd0daba90101b62143d7b573599ec12687e512a4c5127"
+    },
+    {
+      "git_blob": "f8ce548a05eabbcc24e87ee500bf5515cf620323",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
       "repository": "desktop",
-      "sha256": "dc5ebb6f8695c45bf4f826bba8aac3b57aaef716e07a3fc30ae798456e1abf4d"
+      "sha256": "70ddfeef53e138a28baa274949c740be4d9baa0ff32e6d99f3b1051dc21da0b8"
     },
     {
-      "git_blob": "957b5d1f6ccdfd0c7fedaa0b67a7dc998bc67b34",
+      "git_blob": "5b56609e311ee07f6cd18d9658ca0cc6170671eb",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control.rs",
       "repository": "desktop",
-      "sha256": "d0d304bb5fd442e7342f50c166c7833b306eede7503dfcfb00d631f5afc40690"
+      "sha256": "22ba256c12a6e60d6bca9e2437567f22cd9882dc73b87543641406b1cc925cac"
     },
     {
-      "git_blob": "44d1ac7e19e2fe48a79c491d002f23236729cb63",
+      "git_blob": "607fefaa5cd4e3be2e17bd2d5ffcebb550b293ab",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control/successor.rs",
+      "repository": "desktop",
+      "sha256": "c03dacccf798f5e6701e12d74d2c823a08a18fd4f1c4ba6568c425f9a6836bcb"
+    },
+    {
+      "git_blob": "66d024ea12cad668a50ef342c03e386057ee8d50",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control/tests.rs",
       "repository": "desktop",
-      "sha256": "021faafce614a2dc302b612ca97afd16fc5df81c0a597f14c3347fdd6053fd27"
+      "sha256": "e0e91d6d05268ff1bfa2b034dfcbd1a532880bd12a1d46245b26e1dabc8f9307"
     },
     {
-      "git_blob": "a06956ae9161ba97de72fdfba2046c141a6c03c9",
+      "git_blob": "b26d14ac2a5062ba837f1247d1d9d3f2d511cc64",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control/watchdog.rs",
       "repository": "desktop",
-      "sha256": "e2a3c48cc9105b474677245bad01a89e3364c9bcd218f9024815d8508522b3ef"
+      "sha256": "aa76b66dfcc69f1df8f7f13586e9425502b4e870c7c4b79c119b54aef875512e"
     },
     {
       "git_blob": "31c9b38a11a8834f798c7abc0de2de6450d0b3ee",
@@ -155,22 +233,136 @@
       "sha256": "6f762742bd7edc3a6932de645717fe33b1e58479bf783e95522a0f48db5a9691"
     },
     {
+      "git_blob": "107d1ca5811d2d97a432fa31a646a45f6e3a9570",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/memory.rs",
+      "repository": "desktop",
+      "sha256": "72dda570b9d2124977d5296628806812d76d1c970cc3973f4ab73880f9775700"
+    },
+    {
+      "git_blob": "c7714a0e78bca46202319f4d703fef81595d3ccf",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/memory/tests.rs",
+      "repository": "desktop",
+      "sha256": "8e9b3d7a345ed89c285d106eb0d0d288c8d3956be31f9fd6206778b8cee1fbd7"
+    },
+    {
+      "git_blob": "0bc7784e378cd4fffd81cc62dd6c385338f20a71",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs",
+      "repository": "desktop",
+      "sha256": "75579f150ee87bd3074463f666b00dc3d0860db6dd6134b53e965d703296f1ee"
+    },
+    {
+      "git_blob": "670af92eadb36880c289c54803a5a8f85d972250",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "repository": "desktop",
+      "sha256": "5610fdc689beb80cd097cfc427186310d48296507d874aa63c2b1be23ff5c803"
+    },
+    {
+      "git_blob": "67d501e59e74d70d2f8473efba5c753f33f2e505",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/fs.rs",
+      "repository": "desktop",
+      "sha256": "7aac29f6b4d775dc268c14009d668eafb24a8c82c95219a370e57c62fd10da4b"
+    },
+    {
       "git_blob": "b68cce8cce58ba1309246657e14a16672bdbe2ad",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs.rs",
       "repository": "desktop",
       "sha256": "791221600f12817f17c06d9652d475a574e3a5afdf059065890fc660624f4666"
     },
     {
-      "git_blob": "951447c690b7f8905e669bf04db9afd7cde5caba",
+      "git_blob": "a76410c099bafd8d6b16180bc4ddd585da500876",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/permission_tests.rs",
       "repository": "desktop",
-      "sha256": "7d91ac5c708cbea2fa4f6db9ebad0f153c95f3a75acd73a5750766202d51ccb7"
+      "sha256": "a65f3971c393a3af773a74f5d31a8d80228c5a3d8575a3d30446d544ade84022"
     },
     {
-      "git_blob": "3dd4dec5e6eedfbd19b59978422589dbdc530009",
+      "git_blob": "eb1284ab48d7c4c7eae3d14cef62313d0172f941",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/dir/mod.rs",
+      "repository": "desktop",
+      "sha256": "5b8078ecb288293ebf5c3d9da13ffa38306d7cb874cf5ac73fe169989189d8e0"
+    },
+    {
+      "git_blob": "48f185046c36fb07b17c68194f39f5b14311679d",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/auxv.rs",
+      "repository": "desktop",
+      "sha256": "9680d0b4cd34670031ba051de7d9a9a43cec5d10e74042234c73d38f171d34f6"
+    },
+    {
+      "git_blob": "130bb0c927f44ec3f4c8606f2194a66d1c8b02f7",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/environ.rs",
+      "repository": "desktop",
+      "sha256": "5d977e600b326b474f6df4792fbb623ab476307942ec9f59729e9a5a867e7667"
+    },
+    {
+      "git_blob": "a56e3492425f314564d86c3e62907772197a1159",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/exe.rs",
+      "repository": "desktop",
+      "sha256": "cfc98bad854e5d661c15fb6850ada6d5e04bcd5fcd43b6307e6231adac3a8714"
+    },
+    {
+      "git_blob": "e80b8524fffc4d062342bd228430315f08b47e8a",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/fd.rs",
+      "repository": "desktop",
+      "sha256": "979f6fd950089a538a7cf5b36689fe27421e648995a7bffb398c289c3a041b39"
+    },
+    {
+      "git_blob": "bef0ba9760ceef35fe91b7d86f3eea90cb94ce8d",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/maps.rs",
+      "repository": "desktop",
+      "sha256": "452d48c197f440a1cc45c439ada92cc85682bb0c68992cf391e69abd4c5c2793"
+    },
+    {
+      "git_blob": "95b7515dd12eb5b1e7b0869d463e5de36d4dc0c7",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "repository": "desktop",
+      "sha256": "2dcc833f869aa98acf8f46292b80f872c5e124f9e4d508bf69b7cf35dc3d0812"
+    },
+    {
+      "git_blob": "5abcda23e7776542b74541dee085c44ba15a92ac",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/ns.rs",
+      "repository": "desktop",
+      "sha256": "617ded15ef0855fe256be96621a547dd9ccac3be5c70a7eb35f73041c23522f3"
+    },
+    {
+      "git_blob": "0699d66b5377ac29328caf5d879c92ff60771820",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/stat.rs",
+      "repository": "desktop",
+      "sha256": "1ebc69c668c5c9a90cdaac99d5fe2d066041ab2a2533fcd8bd51c2c3b0a10eb5"
+    },
+    {
+      "git_blob": "0fd5ce8653cc03f877dfecddcc6ad0537293d3b7",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/status.rs",
+      "repository": "desktop",
+      "sha256": "4cfa36e9fa04fe442e8d8e3bbdc16eadd0004d9a56640d4779648bcf20ed0bfe"
+    },
+    {
+      "git_blob": "f0abaccdbd6981476e8646065c1cb639c4a30367",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/sys/kernel/mod.rs",
+      "repository": "desktop",
+      "sha256": "049ad77118aa4ca73450a8b3005b9073cce45c3c1d861abe6c5c7cb726916f51"
+    },
+    {
+      "git_blob": "f22ac0bf4da3ebc74cf66946c84f877367a315c0",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/sys/kernel/random.rs",
+      "repository": "desktop",
+      "sha256": "fdc503c91a7974c0458dce36007e68634162c88f2d37ead6992b87c4a8468bb4"
+    },
+    {
+      "git_blob": "324b5f4d55c2e2a15e0082c1091b15180ca40ab1",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/template/dir.rs",
+      "repository": "desktop",
+      "sha256": "aa40fce438fbacf688c231be268f6594ea70723aa74789fc17a2e465b74abaa7"
+    },
+    {
+      "git_blob": "d2d46ec9c795dca116b5208c8292f17f75058cfb",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/template/mod.rs",
+      "repository": "desktop",
+      "sha256": "4b8c2c990359037480479ce96d4de4af7de995e0262beb0d498909aa37e32148"
+    },
+    {
+      "git_blob": "9ccfc7a8dcfd1a416565a4c4961ac2601000b5f1",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs",
       "repository": "desktop",
-      "sha256": "4cc39dcd44062841760c762e56628c4042bc605d0d0347ca3505236cb099c68a"
+      "sha256": "c999cb87724f8e5cf0b9613f34206d99f33112387d17288389db0d40563ea593"
     },
     {
       "git_blob": "917318293bd941a31b2639094a06021fea5cbc4d",
@@ -179,22 +371,40 @@
       "sha256": "1addee8dfb9ffb796bfe54c692fb32ed84cb94b3a1b9d2882fba8f2dc3202690"
     },
     {
-      "git_blob": "84ad5e564b6dece9dfb74e7c7f680f195612e6e9",
+      "git_blob": "58768cdc381aaad93189d6113cc119940ba0dc11",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs/sgid_tests.rs",
+      "repository": "desktop",
+      "sha256": "5d3bd05a169d963137f6db3160166ab0be991b885655c2628fcf413276d1d590"
+    },
+    {
+      "git_blob": "6bbd165304ece5c8a56080bf70e98851c447e556",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/memfd/permission_tests.rs",
+      "repository": "desktop",
+      "sha256": "c5b9db3f6746d4235d2384121d348425a07b0c69d4f6c04dbe3d685c5deb73be"
+    },
+    {
+      "git_blob": "ce37f0f49a87ac9a0f4894dfc7c26f331952e63f",
       "path": "kernel/asterinas/kernel/core/src/fs/pipe/common.rs",
       "repository": "desktop",
-      "sha256": "547d74a0df97262a9ab09fe961315aa8e9a5725147be16e6641b26390b4e1c9b"
+      "sha256": "ab77e7d5dd1497f618552120707df0947d51dbaf610e500a88455216d936441b"
     },
     {
-      "git_blob": "7a6b9367fe4c3ca3b73d9c44446ea36fb794d182",
+      "git_blob": "db07a6c28b0d4618c67d567b99eb7fe3c3a1dfdd",
+      "path": "kernel/asterinas/kernel/core/src/fs/utils/mod.rs",
+      "repository": "desktop",
+      "sha256": "9962c27ab77ab7887470f4f9f4d9775b101ebe02bc69b40e600d8a38283412f8"
+    },
+    {
+      "git_blob": "f56aa6ffae1d7d534d45fb87bd1b8974ca570e19",
       "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/inode.rs",
       "repository": "desktop",
-      "sha256": "6178bc88330ba7d27ce5701c9d28b8088f3fedad061ada9b075ac9491150e274"
+      "sha256": "db32ede3bf55c2a313e37be0c891b03cda65cf456c0349bd4232c6b4eacec794"
     },
     {
-      "git_blob": "5f72a47307ea5851e3ca8602a0f5c11c9bfd264d",
+      "git_blob": "f86fa757d6b532624d8360c3fcfda55c529cb672",
       "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/permission_attrs.rs",
       "repository": "desktop",
-      "sha256": "81a0032665b3f8e0a4c62feab1d0853e7aa2f628a552064a46a0574ca6d9dc8a"
+      "sha256": "484d33c1ec8342c3375a9e82adc3b7595cf3dea68b0182aa4e367f20948b1e91"
     },
     {
       "git_blob": "ceed294b71146054258e80be65f061fbf1a2eefa",
@@ -207,6 +417,12 @@
       "path": "kernel/asterinas/kernel/core/src/fs/vfs/path/mount.rs",
       "repository": "desktop",
       "sha256": "ea3c153b8a913a5d3073b3d299ae90873f75491b5dff522dd2e59af7a3dcb1bb"
+    },
+    {
+      "git_blob": "e84d93420ae22c0535ac3b0228a311445daa2d82",
+      "path": "kernel/asterinas/kernel/core/src/lib.rs",
+      "repository": "desktop",
+      "sha256": "f130837017e2bd89af730a62a3d753020122d62e41429fccb2bb9560bbfcedb9"
     },
     {
       "git_blob": "7963e0ffedf36c034b32596167ec3e9190ec0489",
@@ -227,58 +443,238 @@
       "sha256": "92323bcb6cc809ea48232c94eda160bda5129b931616c0994b11e472c2bd4617"
     },
     {
-      "git_blob": "654754062d4b2ef83b6eed9010193364790fc714",
+      "git_blob": "40d2b92f77b3972e396f1d85bcbe2a673ed1f6ea",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/cred.rs",
+      "repository": "desktop",
+      "sha256": "56cc98c651753b1422f9dc52fb67a682c6896601aa4b2ef95b55f7f4a8697f75"
+    },
+    {
+      "git_blob": "3b70b81b88b386217eb2314fdaab3653027f97fb",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/cred/tests.rs",
+      "repository": "desktop",
+      "sha256": "0133f4a1c51e8eb8ab615453ab096cd699f4ef3e6ce05a03e1698eec8b26c8d0"
+    },
+    {
+      "git_blob": "c9bee6ae61db06197570f07317a2e24eb0d768e8",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg.rs",
+      "repository": "desktop",
+      "sha256": "b18b08fb0f2c0261017bd4d250e35ef1605241b7816ffe6bde1ad391f20b1999"
+    },
+    {
+      "git_blob": "d6066341bbead5e5423df9d489895ebe45551a3a",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg/ownership_tests.rs",
+      "repository": "desktop",
+      "sha256": "74bba1571b0163f4ee4fe760c102400de150d17a417142616b2865c43a1c92e1"
+    },
+    {
+      "git_blob": "9247dab9f3d518236bf4b224986b62aec2b6caf2",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message.rs",
+      "repository": "desktop",
+      "sha256": "95c3d5ae2493499b857b0b1d7b8045791d1132dc8931a837763c60b9c987e397"
+    },
+    {
+      "git_blob": "9dd5997d250e921674a307c3a65451beb25317d3",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message/tests.rs",
+      "repository": "desktop",
+      "sha256": "3fbd65a3cc20f2b0602a9838f96679115930c71f980e6d8f27c9d98e64426b55"
+    },
+    {
+      "git_blob": "08b4a0c1938c366fe109bfd3ee6296b827f8f109",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/socket.rs",
+      "repository": "desktop",
+      "sha256": "44bd1b5ad94ee2b2490756c75946950d6c0857c0ac95c2d1276fcd40ca78fc49"
+    },
+    {
+      "git_blob": "c81581ef4576c5d6b5ce5308e79c6cf95d672224",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/mod.rs",
+      "repository": "desktop",
+      "sha256": "7c832766249bdfa9ed699fdb8521478d084f241fdb252cc94dd9f61154120484"
+    },
+    {
+      "git_blob": "d52328ed6cc607d835a213d5e3ad5ad85e703c42",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/ownership.rs",
+      "repository": "desktop",
+      "sha256": "6e53f8a7757a376a2dac821b22acc6c642353bb51a1b91f78396af522d9d122a"
+    },
+    {
+      "git_blob": "090e8b00776e23583ee47832edd0782124699aac",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/ownership/tests.rs",
+      "repository": "desktop",
+      "sha256": "2b98fb67e5c60839924e1884c5a1a98efa5941cbdc439b1ce242ff38e35cc7ed"
+    },
+    {
+      "git_blob": "2e174fad99a059e217cde4a494553ef317f3a386",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
       "repository": "desktop",
-      "sha256": "44f90c11b36081988a2a584c8f6d27b932e6284c783edeca44cc5a972a0bcc41"
+      "sha256": "e2ddd7cef95c40b847400d8a4a8a979319a5cd2c3afbb30262987ef1d52d24c2"
     },
     {
-      "git_blob": "1fa78413575de7d07d8923adb26ac361c28b398b",
+      "git_blob": "7458b2221b06493f8f557a2fb2eea7e5f92ca522",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected/queue_tests.rs",
+      "repository": "desktop",
+      "sha256": "de81cbe94b5aedf758646ba7e306fb42c979d84cf884f1c56adbd4db2e67629c"
+    },
+    {
+      "git_blob": "f889a381ccf12a0bbd8435db99c4b150c539d63a",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/init.rs",
       "repository": "desktop",
-      "sha256": "0acaedcfb3917c1201b40af6c19912444fdfd33f3e3ecd121b43864abf20f54c"
+      "sha256": "353822bda3b39c5fa554eaec62cc51a5dfe5060e48ed7c4cbc97bfd98e66c6f0"
     },
     {
-      "git_blob": "09fe2d268f09d9e01780ca86fcc4c1614468ba2b",
+      "git_blob": "552560f23024b43167bd20c63332ee671dba8b87",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/listener.rs",
       "repository": "desktop",
-      "sha256": "6a615eced8a03015ddd2731bf91a0bfac3f5b97b7319e2826d7da72a2ddaa28d"
+      "sha256": "f219c0385e24bd97904541ce589be3cc4a89afbf0c65cf9c505d55ce63485e0c"
     },
     {
-      "git_blob": "b137731b0a28174a07a6cf4e66d2fb1188f01702",
+      "git_blob": "8dfd8e92aad39ec37c9a9ee8e594996ff057c8c8",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
       "repository": "desktop",
-      "sha256": "4642aaf17143083d80f497a8a8bc7cc66f90c45c3c10584c23a2222730be8d2b"
+      "sha256": "87de1865667be2e6bac4a2a813fb1655f2ea288cc5db4e9a75a7da827628476f"
     },
     {
-      "git_blob": "330df657ac96166fd64d664f0b14e51cba3c6d0e",
+      "git_blob": "fc56c797bba3f2c023dc0f7b66396cf080032c7b",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/util/message_header.rs",
+      "repository": "desktop",
+      "sha256": "55a9c3df8d8b841d721bb7f498b765045d9882ba22d73b1560fa42295eab7c17"
+    },
+    {
+      "git_blob": "5de69bc18350e7492ddbddc1dfab726f1b24a637",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/util/message_header/allocation_tests.rs",
+      "repository": "desktop",
+      "sha256": "76f05b5fa6250785dba7d88b1d0a44cb4e43df6b3e4eb18d27160fb11b55d570"
+    },
+    {
+      "git_blob": "149c99e85c11beb7372c92e1280fd7acd20da0a4",
+      "path": "kernel/asterinas/kernel/core/src/net/socket/util/mod.rs",
+      "repository": "desktop",
+      "sha256": "4ffd65cf37d3321901c5db5c0d4d61b3226231f0b324c6bd82f2c7a816898244"
+    },
+    {
+      "git_blob": "3bff95d5a23457efdc5f32eec91f2e396629644a",
+      "path": "kernel/asterinas/kernel/core/src/process/credentials/credentials_.rs",
+      "repository": "desktop",
+      "sha256": "5dd71747b74d1ad4cbf78ee75470efff07c7633c80c24b8b7c217ab89efca2d3"
+    },
+    {
+      "git_blob": "362894628e7aff2e650c41eb400641432808ecd6",
+      "path": "kernel/asterinas/kernel/core/src/process/credentials/static_cap.rs",
+      "repository": "desktop",
+      "sha256": "28785f573775059d52231c4dd2d1ad7432cd7d8b0ea21452e2af8dacd96cbb1a"
+    },
+    {
+      "git_blob": "799e8fef19be5f89d43e614848f57db8a66357e2",
       "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
       "repository": "desktop",
-      "sha256": "79c31ccd4aff258b53be7e4290d8f80c88048c7b7d1f118665764fb1563013d0"
+      "sha256": "cbc6243c0da997dd6f8da1356a50d9133c9c2e9e1bf95b7fe85840f511ae1ab5"
     },
     {
-      "git_blob": "ab9157286c3e675ee4fa82742d26142d06340495",
+      "git_blob": "a5413803c504d3348fae50fbdd26997d8adaf955",
+      "path": "kernel/asterinas/kernel/core/src/process/kill.rs",
+      "repository": "desktop",
+      "sha256": "9aa10b98c4065355a75146137bb14854e56eaf5d3c8d5433f95d560a2c8a442a"
+    },
+    {
+      "git_blob": "817d21cce706ba4133259bd0e5fb571499dc8492",
       "path": "kernel/asterinas/kernel/core/src/process/mod.rs",
       "repository": "desktop",
-      "sha256": "af9d7a079f9448459ae22ba9ca2ea468aa2048f0ce27230a1e333ed7e9d161b1"
+      "sha256": "402cba15fb3bb79b86154aea3eae7f66dd7861bb874387278bfb5e1317704fb4"
     },
     {
-      "git_blob": "3f83c187c69ac491a2155edc4ceba504945df850",
+      "git_blob": "094f5e0acafd13617cc15680670369a07ffb55d8",
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/alien_access.rs",
+      "repository": "desktop",
+      "sha256": "494eb19613f9fd1cc3a44f043087b7bc4dce7625998287914c6b250d3a2d74f5"
+    },
+    {
+      "git_blob": "8c9450d16758f426cd18665b0771652e869ed3d5",
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/credentials_edit.rs",
+      "repository": "desktop",
+      "sha256": "4f8e654cb11646ee5a8b7ee66260aec28f5c01b06be45dc9531ccb2ea6df6764"
+    },
+    {
+      "git_blob": "4e33c918cbc33c5b800bae766a7f8e6f67685a1c",
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/credentials_edit/tests.rs",
+      "repository": "desktop",
+      "sha256": "5125ef65a9115cc389adf1508155e63b81cfaae41865d150c87e60bdbf971979"
+    },
+    {
+      "git_blob": "bbe76185aaa6b1238024ad6131c1b76b8b6a42c8",
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "repository": "desktop",
+      "sha256": "a23486cfe59ade9e81bde5511e682916b7148f6176468a0d4d0ad19f7ae576e4"
+    },
+    {
+      "git_blob": "0cf1ebdbac0421450f3ebf8d6ff7f6d63b4e7edd",
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs",
+      "repository": "desktop",
+      "sha256": "c582bc54d983b5299cd8b5d1e47e196a40ddb32b11c64c16745a6df7e8093bb4"
+    },
+    {
+      "git_blob": "a7bbc19ff2f6f58ce258ad6db7b3318c9b645a86",
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs",
+      "repository": "desktop",
+      "sha256": "5f5a0933289eb228e4926c8d356ec746cc348b251dbaab2190a8c5b00e2cdf9f"
+    },
+    {
+      "git_blob": "167e6dac060ecb68e941175bb7af40f7f1005b54",
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/util.rs",
+      "repository": "desktop",
+      "sha256": "8c7672c8a61c4083089bb963e4cc216d5c743e72947313f52416aa751ba98ed1"
+    },
+    {
+      "git_blob": "3e1176428ba8a8be350bcbef83d56525cd208382",
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "repository": "desktop",
+      "sha256": "fcd13478d392941948ce686f38e8d3a5682edea1ac6afb8acb956963457db2bc"
+    },
+    {
+      "git_blob": "99318f81b4bc6fc0fe5888e972703e60f7e5bacc",
       "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
       "repository": "desktop",
-      "sha256": "b59625d431ac69c3d3657178d08048f92a54e66fce09eb9aa3f6e3c8ed17c355"
+      "sha256": "7f3681ed5a976554c99a816880ef7beaa93d2cf8c5527702ab439a7df46cb5b4"
     },
     {
-      "git_blob": "cd3d8bdefb1982ff82900583134d35b264a6a930",
+      "git_blob": "8023f2c932b9a3dceea7f03782b5eb1851649fdb",
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs",
+      "repository": "desktop",
+      "sha256": "ff20980441541d20257287499366b971837e00f0616275473ed28a32bb3a46c0"
+    },
+    {
+      "git_blob": "04c68fc893077f0f496110827ec593af8efb9817",
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs",
+      "repository": "desktop",
+      "sha256": "9f8ce5bf5c58f374758e5aa417b19e7f8ba4985e7c4f773b0052bff9d8d8ab33"
+    },
+    {
+      "git_blob": "235670257194cb24789cbac1f28d8c22deb41a5a",
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher/tests.rs",
+      "repository": "desktop",
+      "sha256": "614c3d95dd70fdb5656134a50a794f65287fb3589c4e43c6d5fadafd3a0ab7c1"
+    },
+    {
+      "git_blob": "178710396da65cdcd89c1169b8d1c4a36cf33fc7",
       "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs",
       "repository": "desktop",
-      "sha256": "6cfb6c4718c5b7f31a0aa925b2bcd2fefa07ad102d38aa30b3a055fbcdfe75a9"
+      "sha256": "adcdef8c423758b57efd772eb8975b1687c886490d0e0249b567dc7ee704216e"
     },
     {
-      "git_blob": "7c429c36df9a57a3c9b3afb499179232adc238a1",
+      "git_blob": "1e72ae25be46e7906432ac04d146e47088587651",
       "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
       "repository": "desktop",
-      "sha256": "c9a854a2a4f50bf3c5f341bd26b76fa8c137c8e7bdcf633e1098ab63e1b0c202"
+      "sha256": "209665ee132f1556a0d61db8aff30f58c70c383a4d143c04e710825f2e57be66"
+    },
+    {
+      "git_blob": "19a5dff0e7ada34aabf033f73f88d5d1a7b1f00b",
+      "path": "kernel/asterinas/kernel/core/src/process/process/trusted_control.rs",
+      "repository": "desktop",
+      "sha256": "af3ab3910a526c7faa71c84f55b12fdf0b184565a9bb0933c4355420edabc049"
+    },
+    {
+      "git_blob": "a7114c6a255102759d2979fbd39d1e3babc1431f",
+      "path": "kernel/asterinas/kernel/core/src/process/process/trusted_control/successor_tests.rs",
+      "repository": "desktop",
+      "sha256": "ef01df2c92df6717cf97218ec6bb7efa501f259d0d93c71c7430f9cb39eb3270"
     },
     {
       "git_blob": "42366b6170ab6b77b84586c53d3a7033383297d9",
@@ -287,28 +683,46 @@
       "sha256": "a4d0b6f2ef21a6b5a0b2b77ebcdc1a0a4b1e347a5a3ef73345922a90f9162a02"
     },
     {
+      "git_blob": "406379e799a7f350473b9e2744427a937063962b",
+      "path": "kernel/asterinas/kernel/core/src/process/process_vm/mod.rs",
+      "repository": "desktop",
+      "sha256": "6c36bc788663fee2ad83e2492f7ffcbb15f6c1d0748d630633ef91b1ce07c269"
+    },
+    {
       "git_blob": "846c947fdda16597f723b7e0cb9b600d5e4efa44",
       "path": "kernel/asterinas/kernel/core/src/process/program_loader/arg_budget.rs",
       "repository": "desktop",
       "sha256": "40e538d452bcd3413de2ed114a0d3969f7f6682b6b3a1364ec8a7cdd3bc1b674"
     },
     {
-      "git_blob": "524c86ecfb63d69e68052c3e7b0c3afed83ff634",
+      "git_blob": "42c401586399e3e6722f37a46fc5c2baf3cd6bb0",
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+      "repository": "desktop",
+      "sha256": "52ea70236a81b1856e5a49eb418c8f0b2d47af0935cfd1472169a3bfa50a45ba"
+    },
+    {
+      "git_blob": "9da692d6d8ce83680566d2ecac3e4ab4462f6d51",
       "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs",
       "repository": "desktop",
-      "sha256": "a9665ff343bc0aedc9858f314d39425a2a43c46a277c9b12d5f71e1b81c6bf4a"
+      "sha256": "8b80e74c8d0975a5cd1cecd43858a5e7820f7392bd3fa0b2cee55b2dd6de3b34"
     },
     {
-      "git_blob": "e254b2234de78f16f715e7e3d2ea0ef07bf977e1",
+      "git_blob": "5a6d3a08d4eea95e478fdc6956e318aa82219e76",
       "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
       "repository": "desktop",
-      "sha256": "4bf79f32ed8869f876a1944602a42f5275a2343506e9eead724f6d5a9fcedf85"
+      "sha256": "6d0bdb86ba56396efdda34fd760fbccb22cd9c9fe4ba787c43449ee48d8edac7"
     },
     {
-      "git_blob": "a8771425f55fc150399297c5198d4dbd7feecadc",
+      "git_blob": "d95f7a4f1f6cc79ca6f55061e65a11b8fe90c3ab",
       "path": "kernel/asterinas/kernel/core/src/process/signal/mod.rs",
       "repository": "desktop",
-      "sha256": "823e60d6944328dba6616782c7dd0782b83260ec63d5839804ef0e2eaff1b261"
+      "sha256": "47db36a280f55e793cb92a722daf401ba8ae8d85d5b046b090756f5e17fc782e"
+    },
+    {
+      "git_blob": "598eeb73cb6cb7c86c527b9f711e5b5d00244a80",
+      "path": "kernel/asterinas/kernel/core/src/process/signal/owned_tests.rs",
+      "repository": "desktop",
+      "sha256": "9dc51565051147b881d37bc457e3cadc776f8b0b69e6f4bcabdd925d4a41c09c"
     },
     {
       "git_blob": "d79242c9a96fe10880830012292135cb7ad572b2",
@@ -317,16 +731,34 @@
       "sha256": "62fb1f8277b95c9ab5856367a952a23878181a04858114060d4267414703e9cd"
     },
     {
-      "git_blob": "2dacd5e22738a44b0b5db3dadc7e1bf3f676de79",
+      "git_blob": "54d9927a71f0484459abdc3f4b3944cf0d4f8de5",
       "path": "kernel/asterinas/kernel/core/src/process/signal/pending.rs",
       "repository": "desktop",
-      "sha256": "a816a4793ee6fc656e2a9a393ea5f016ed098f87b8fbe8e99e8d08ada014c82c"
+      "sha256": "47533f922dcf9a1d95c0bc35383e949121bd4097974b5199a056011a40438eb9"
     },
     {
-      "git_blob": "07beae24365b0f494fb9b598a9072a25fe87183d",
+      "git_blob": "094ee7264b32741f62d9961b8c80ddd7c4bc7571",
+      "path": "kernel/asterinas/kernel/core/src/process/signal/sig_num.rs",
+      "repository": "desktop",
+      "sha256": "eaf881f8fa19ece6154b3abf2cae96c0195f21d80506c262d93511793b7f2f1f"
+    },
+    {
+      "git_blob": "9c098574f1295efa2ebc21774e0c25b02d5cab9e",
       "path": "kernel/asterinas/kernel/core/src/process/signal/sig_queues.rs",
       "repository": "desktop",
-      "sha256": "724604f9a141921ad15be5c959f16e878f9f74b70a744f069952a1475806df75"
+      "sha256": "ed0ee3fee83899b03f275eee447e74cae4b5408d0ccd067b57d46281ccd5c596"
+    },
+    {
+      "git_blob": "e74c7fcef5e80c7b50f464d44076d0dab88f6f37",
+      "path": "kernel/asterinas/kernel/core/src/process/signal/signals/mod.rs",
+      "repository": "desktop",
+      "sha256": "ed4f95775515979e428da933d9c17663a9923c8ca71f2c3fe562dcbfd25538dd"
+    },
+    {
+      "git_blob": "a2416e0bd10c4fbc2ff7b35729de51a762fe46a5",
+      "path": "kernel/asterinas/kernel/core/src/process/signal/signals/owned.rs",
+      "repository": "desktop",
+      "sha256": "39112ed73b660d131011a2b4a65f73311bc53dd5901ceeeb043869579ab0df59"
     },
     {
       "git_blob": "e340b3496a23ba1c595cd3ae4046261d72ce1b87",
@@ -335,10 +767,46 @@
       "sha256": "b86ba21a4086265cddfe2c506f125dd023393ed347d69a1256add244b3063d3f"
     },
     {
-      "git_blob": "a61341186fb61d99cef7df64f489a46d17494c19",
+      "git_blob": "c77b4fb656436cf60128e5b3ad8daf303bb3faee",
       "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
       "repository": "desktop",
-      "sha256": "bc6b5f79f3278fa6984fbeb6bc0b0949c43979cf95847c73263f35e8ded2449f"
+      "sha256": "27c1aa749b7739e9a29802f63d0bdb611f1ad5c862dc7d4f7a5087c78ea21cc9"
+    },
+    {
+      "git_blob": "b85b7b79d5269bce30ec12749437e7cf71fb69f3",
+      "path": "kernel/asterinas/kernel/core/src/security/lsm/modules/capability.rs",
+      "repository": "desktop",
+      "sha256": "52ce6f885608f4781bee962e4bc73edb808d18b433b16741e002a0a8c0ff4876"
+    },
+    {
+      "git_blob": "c4deaa15157ceb6bb527eeb87177ca77ebc042c7",
+      "path": "kernel/asterinas/kernel/core/src/security/lsm/modules/yama.rs",
+      "repository": "desktop",
+      "sha256": "9a75b8b2e8690b4417729f53d5962dd2d45d2441dcfb5a143563e9de5fbd1d55"
+    },
+    {
+      "git_blob": "29a2531a597c53903b1204d109cb3abb9c426a19",
+      "path": "kernel/asterinas/kernel/core/src/syscall/arch/generic.rs",
+      "repository": "desktop",
+      "sha256": "dead8b1ce60c15698402dea170d028e443b0e52551e5510791e83a43fdde568a"
+    },
+    {
+      "git_blob": "7d9f04bd3fd6ee88eb7b14fdd88aa57c772f8d19",
+      "path": "kernel/asterinas/kernel/core/src/syscall/arch/x86.rs",
+      "repository": "desktop",
+      "sha256": "f2c6d3faeb0abe50fe91dcb5b03f4f18cd7df7f51b88cbd7b83f32fc06ce66db"
+    },
+    {
+      "git_blob": "7360681258e8f948b5a379b533b1b6f239aebb1f",
+      "path": "kernel/asterinas/kernel/core/src/syscall/capset.rs",
+      "repository": "desktop",
+      "sha256": "9e9b05c0b5e24c4d6cca3e9d8e7a8e2e029ce7eb8c458957b8ef02fe7013e886"
+    },
+    {
+      "git_blob": "311fe36f6b827dca2ed87a22e6578f3d76895e5c",
+      "path": "kernel/asterinas/kernel/core/src/syscall/kill.rs",
+      "repository": "desktop",
+      "sha256": "9651a345be66c1dd91a76a871a4f32d25cc166a8b109b5d06b25ea905ace6e49"
     },
     {
       "git_blob": "58051aded356464cf131318673345b95d5902734",
@@ -347,10 +815,124 @@
       "sha256": "bd9004078bf15cab0da17b58d139aae7b02198d403274e831beff59c03985818"
     },
     {
-      "git_blob": "efbdd899c58c7c19baa383a7a0b9d6bcce553019",
+      "git_blob": "05efccb261ad2c9dc9e5f232637b27769ad9e99b",
+      "path": "kernel/asterinas/kernel/core/src/syscall/mod.rs",
+      "repository": "desktop",
+      "sha256": "f8f26dfa97c35959ecd0fb23804636aab66f39daeae614b787b20dacb4623469"
+    },
+    {
+      "git_blob": "407585eb3c27982c714fdec1ac10a40e5a80714c",
+      "path": "kernel/asterinas/kernel/core/src/syscall/pidfd_getfd.rs",
+      "repository": "desktop",
+      "sha256": "f2e0b4d6fb3f8ba7ed2711d0ad96d3b4ae173c8d5d662de840cac803d51a0cac"
+    },
+    {
+      "git_blob": "7c148d1534520dd3176db353be9560fd949c1985",
+      "path": "kernel/asterinas/kernel/core/src/syscall/pidfd_send_signal.rs",
+      "repository": "desktop",
+      "sha256": "a19dcd1fb9454769c52df3fc0ba9cf180457c4e72771a86de104143d02ca0ea1"
+    },
+    {
+      "git_blob": "b15bc73058b2c819d06b90b5ab2dda64e45f2f8b",
+      "path": "kernel/asterinas/kernel/core/src/syscall/prctl.rs",
+      "repository": "desktop",
+      "sha256": "a72306d660999acc33bae5f4ee878b79d33da7c159223384e743a691b436789b"
+    },
+    {
+      "git_blob": "2e7d049a6cceea57a81a9944507f83fd12bb0611",
+      "path": "kernel/asterinas/kernel/core/src/syscall/ptrace.rs",
+      "repository": "desktop",
+      "sha256": "9cbf1342684afa501995d7c309eed727aad8264a17be4e5199d8d129e0427b69"
+    },
+    {
+      "git_blob": "98ef787ace28215201a9a1b1f02cd4f77a2084f2",
+      "path": "kernel/asterinas/kernel/core/src/syscall/rt_sigqueueinfo.rs",
+      "repository": "desktop",
+      "sha256": "167dbf29a3cff85a74505d5ebc9758bbc2b3c50008401428eb1c2b60faae035f"
+    },
+    {
+      "git_blob": "b3171d5962dd7f5834ec6476dd9499b04c0f5bb2",
+      "path": "kernel/asterinas/kernel/core/src/syscall/rt_sigtimedwait.rs",
+      "repository": "desktop",
+      "sha256": "3ed26f823e8fe47cb92df288e16f07e3ca0dcdde4687e7d314de74816bd3a214"
+    },
+    {
+      "git_blob": "36a81f96950bb95fd0b997dea2eac6ae9fb5fafb",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setfsgid.rs",
+      "repository": "desktop",
+      "sha256": "87ee2e9d3048ef397b45cff29600b0c9387eb222799b5e2b5b141f0bf4fa0bb2"
+    },
+    {
+      "git_blob": "072976e9db841950546aba44a7f853994c09cdd1",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setfsuid.rs",
+      "repository": "desktop",
+      "sha256": "08805d2c37f05b4e15dbdc0c600564456b68f6f24d9599caec771cd763242e8b"
+    },
+    {
+      "git_blob": "794f297f1821669528e4bc20adff350f0255cf1d",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setgid.rs",
+      "repository": "desktop",
+      "sha256": "d328d2613ab3801f553ae569d02205a4186b2df60fbe83b8a743125ffd066c84"
+    },
+    {
+      "git_blob": "2114b0d6696084321315c7fa71428aef0bb3b7f2",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setgroups.rs",
+      "repository": "desktop",
+      "sha256": "5af3a425cefceed21cd1a31b7d72a0a29599fe6034371131d0bd7889204eeb38"
+    },
+    {
+      "git_blob": "6d4b4a5d929b2e17af0c19d64b5295e88a09d319",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setregid.rs",
+      "repository": "desktop",
+      "sha256": "d8346676ec2ed257043640b4b09a798d4950bbe10c1914c96aa307dbea862aa9"
+    },
+    {
+      "git_blob": "bd246afa3eb933054babf15070cf12f6a23dd500",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setresgid.rs",
+      "repository": "desktop",
+      "sha256": "b24ff02c65a589687d52af30d287813e43858dcd45678689abc6788fc1782592"
+    },
+    {
+      "git_blob": "037476fe5fe0d8a4adc19db47b2f84f92823ef1e",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setresuid.rs",
+      "repository": "desktop",
+      "sha256": "1f2ccdcc55852606473e4038aa3dc99817e1e22051746278a485451f78af046e"
+    },
+    {
+      "git_blob": "db3c8233584090b3c737fd581679245a24f25469",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setreuid.rs",
+      "repository": "desktop",
+      "sha256": "225bb0cddc5cc398e2236c9ae0903217fe31f9a1f9404c2248ccfcbed28b26df"
+    },
+    {
+      "git_blob": "45163fcb3e8e8cb54a7cf0dd2d2acb86247f618c",
+      "path": "kernel/asterinas/kernel/core/src/syscall/setuid.rs",
+      "repository": "desktop",
+      "sha256": "770428ddb4f2016dcb5215522e58c5eb785198d5a07221598a6a2c857b7ebe3d"
+    },
+    {
+      "git_blob": "2562b16e92c58c1f9a9534f39a4daa61353e92b5",
+      "path": "kernel/asterinas/kernel/core/src/syscall/signalfd.rs",
+      "repository": "desktop",
+      "sha256": "19b1dea144c58cd86140ed8e92d4cd2ed267632ad68e01d6782d9869c8110cc7"
+    },
+    {
+      "git_blob": "7d2361e0b5948041996b5c76a68c522db19dbc4f",
+      "path": "kernel/asterinas/kernel/core/src/syscall/socket.rs",
+      "repository": "desktop",
+      "sha256": "62a1d8e2e9bc0df84eacc35d0a8c54c070c7d41b116a7dd4a58bfcbf4769ae40"
+    },
+    {
+      "git_blob": "8a63c6ef5b63e71e67a95d22a94534bd096cd50f",
       "path": "kernel/asterinas/kernel/core/src/syscall/socketpair.rs",
       "repository": "desktop",
-      "sha256": "ecb440dd55c99c02d565586faa4bd87fc97ad9c30f3661caaaf8ac6d005a95f6"
+      "sha256": "38a9482a671ae6884fe8908ce90f4da83130146d0a1c05f5f46fe79e942f4409"
+    },
+    {
+      "git_blob": "ffbb579cc39070051bcd6f3cbf450b9371d7aa3e",
+      "path": "kernel/asterinas/kernel/core/src/syscall/tgkill.rs",
+      "repository": "desktop",
+      "sha256": "edea518013c4bcc2928db82469e8212c8e5ef63136d5073cd30c0a737cef126d"
     },
     {
       "git_blob": "704a6b2441a8771ecfab070a064a4b572e9ae0f4",
@@ -359,10 +941,10 @@
       "sha256": "db8486793dbf116a721c33cb8c38e8eefbc3feebbb7388447138a8860a552616"
     },
     {
-      "git_blob": "e3683cf41d6b0536c8134011b9af74d7755d542d",
+      "git_blob": "5471404466f22a58d473115fbbce6a4333038087",
       "path": "kernel/asterinas/kernel/core/src/thread/exception.rs",
       "repository": "desktop",
-      "sha256": "4e895794d546aee22bcd0a115092007db8852364c3001930aa368b0a30816ce8"
+      "sha256": "6d448517b174b593a7794092c9d6511dd419fd0d3d27a33d2ee3efbcd238bbd6"
     },
     {
       "git_blob": "12cc005fd26a3f36adbdd754febfad65978da581",
@@ -375,6 +957,24 @@
       "path": "kernel/asterinas/kernel/core/src/thread/task.rs",
       "repository": "desktop",
       "sha256": "385e42886791234c85148fecbfd27676ae7a232d8a8196f613585f4533519822"
+    },
+    {
+      "git_blob": "da309781a80bd5442a7ae6da42624c3d60290c91",
+      "path": "kernel/asterinas/kernel/core/src/util/boot_identity.rs",
+      "repository": "desktop",
+      "sha256": "824aa0cf193d76dbf2896c3ec5980486ad34f3efb4f030f8f31a6a456036c923"
+    },
+    {
+      "git_blob": "0688b98fa62cbe969a5098a43e6ae18ce91242a9",
+      "path": "kernel/asterinas/kernel/core/src/util/mod.rs",
+      "repository": "desktop",
+      "sha256": "045fbbb0e2ba7104e77e7d8af3a57a7cf004aba4f1e2a5571a33ffac72dfbc42"
+    },
+    {
+      "git_blob": "9d63ceab0e5575f8cc55e998897d0ea5900d54b7",
+      "path": "kernel/asterinas/kernel/core/src/util/random.rs",
+      "repository": "desktop",
+      "sha256": "4111cf26b1f707a9bbc4c411d06109038c72fcbc87ada017474875361fa9d9f2"
     },
     {
       "git_blob": "c27fa205cd84b1f821e5b8ddbb4934ddc51132a4",
@@ -395,10 +995,10 @@
       "sha256": "d7d85a0e3ac16a62363bf26c9186d69350263ed4aa3c367eb949c168196bfc7f"
     },
     {
-      "git_blob": "c421130b7334a0651609df9b632196a45bd4ec42",
+      "git_blob": "6e8b5eaa22ed177cd4e04872215f8cda2260f224",
       "path": "kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs",
       "repository": "desktop",
-      "sha256": "db08c24d2be1bbfba93114a6e7c8c1545df92e9e85515db5c912787209f2a28d"
+      "sha256": "7a4b6a3c48cbe32a8417e1f968ef48ce3b27da0df84fbaf1f602574ba8bba8ca"
     },
     {
       "git_blob": "0ae09f5d7f6dcb92c20605dd834fb600af7db535",
@@ -407,10 +1007,28 @@
       "sha256": "d06763a7d5b643083b3ca7ff67198c68879545917c701af524f63378ae9fe25c"
     },
     {
-      "git_blob": "acfba6b97fb18561109d3bb9c91d93abf0bb6ba5",
+      "git_blob": "821ef54ae3bc406b1aed624030802127215d73d5",
       "path": "kernel/asterinas/kernel/core/src/vm/user_memory.rs",
       "repository": "desktop",
-      "sha256": "d82df6324dc6098f90edf602c32dc7c9432d58c3df2fe6d11fd5d3756e835057"
+      "sha256": "664339abea8db237eb226d37cb2b28753f9c5954d3f80913ea056adc35079588"
+    },
+    {
+      "git_blob": "dfde6e527671bf7b8cf2162c2f977c9ca514a7ed",
+      "path": "kernel/asterinas/kernel/core/src/vm/user_memory/hierarchy.rs",
+      "repository": "desktop",
+      "sha256": "256967cf8878d044be604ff11deba24a7d2df15aa9348d8d6aba28acb91e64fd"
+    },
+    {
+      "git_blob": "7d4dfca8d668411c6e0fed664b3d0f978de645f4",
+      "path": "kernel/asterinas/kernel/core/src/vm/user_memory/hierarchy/tests.rs",
+      "repository": "desktop",
+      "sha256": "a01dc973ff7e94239ce560610257c13dfd16ea5a76610264af43fffaa7ed2894"
+    },
+    {
+      "git_blob": "be805c11d824371db53f2f9faa8f6095139eca2c",
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/fault_allocation_tests.rs",
+      "repository": "desktop",
+      "sha256": "74b15c5c8863ac83cc6369635988a00a9f9bf45dc34d52e955b3af55fced085d"
     },
     {
       "git_blob": "a723586e0299fe0b1e73e5b87efd8e3d8e49d9ab",
@@ -419,28 +1037,34 @@
       "sha256": "395dd948e8558f329a160c42d7f48161513adb1bf1f32c63bd03910b4ebd386d"
     },
     {
-      "git_blob": "6c6ed8a187c665e94b010a013d8caf1da3d5eea7",
+      "git_blob": "517c9cbb2aa5b531fa67e5f6679b31997d7c79d0",
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/mod.rs",
+      "repository": "desktop",
+      "sha256": "a6abcd447f353599644e5a2590609fa59eacf4481464e463e77b6bc85e36662c"
+    },
+    {
+      "git_blob": "46a7f0a3da110020f7c18f6b50d7566178e746bd",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
       "repository": "desktop",
-      "sha256": "b93554d238e1fd8386540dd70872f108a14353f8d827a3b86833ec59015927ba"
+      "sha256": "b317cb91e6a77a5bf7d0dad71e1c818ce0a45fa677b0e6aa8c6eb1e4cf98e60f"
     },
     {
-      "git_blob": "bed32673e1967543ea5ca5a8c66bfd6b28257606",
+      "git_blob": "9d5f52adca1c9acc451823bc1926ef947dc871ce",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/fork.rs",
       "repository": "desktop",
-      "sha256": "143b9194f90edcb1d80313337f1ceeda7c9b39c2915b4194e684713b9308bea1"
+      "sha256": "e76ad73b7036255fbc5e6769cff131d60ac515bad12f76c7ee643d74dc1249b0"
     },
     {
-      "git_blob": "84f886706891e11b57a7a13c4aefbe01dffab739",
+      "git_blob": "7df9277b3a0b4c558f1e897268d81d93a9e8684d",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs",
       "repository": "desktop",
-      "sha256": "30b2bd7bd8f7a947a26cb6fee8980f5261dccba61c16ed536ac2de422e2db592"
+      "sha256": "52a009e46f75c0c7d8a8c6234f238154f3d8de380247dcbe61505276fdfc7463"
     },
     {
-      "git_blob": "8d7ea4912d03bf7fa04a4c5573a68832f02cea41",
+      "git_blob": "976b0316667f67c68cd2e4cdb0736f4179cd3ff1",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/page_fault.rs",
       "repository": "desktop",
-      "sha256": "00bdd15130f7efa6d213489682c8e293d14b6120ab6474ac32065f9a10f696a5"
+      "sha256": "bcc23d62d8e180085c47837a8f19ca4561a3c7b84c64cbbf9aebec637879895e"
     },
     {
       "git_blob": "b6e0dbc9109ff974708a494f6bad954d957c8663",
@@ -509,6 +1133,24 @@
       "sha256": "cffbb4dd72452dddb9a8a8c8403933572cd82645fc682508971338553ccf2733"
     },
     {
+      "git_blob": "7b3eadce2e6e4ffd3d5ed28071d0b3f8bc33fa25",
+      "path": "kernel/asterinas/ostd/src/arch/x86/boot/multiboot2/acpi_region_tests.rs",
+      "repository": "desktop",
+      "sha256": "5f3fb660086e83ae441a150b2af7a1f24ec6e69d602e62a4797ce28954d3424a"
+    },
+    {
+      "git_blob": "6620153ebdc642cd7667e1792ee16588c487ed2c",
+      "path": "kernel/asterinas/ostd/src/arch/x86/boot/multiboot2/header.S",
+      "repository": "desktop",
+      "sha256": "a22dbca2d2367ec8bab46f43c5245e1cdf5004941bef0d46260e5eab517054c5"
+    },
+    {
+      "git_blob": "7538ffb5d8f25089948d573e610d34dbe7b237c3",
+      "path": "kernel/asterinas/ostd/src/arch/x86/boot/multiboot2/mod.rs",
+      "repository": "desktop",
+      "sha256": "8d0af42cfc2ddd412dddcc70c0d7d2529359dc0d5f4df06cc90b140ef261b8f1"
+    },
+    {
       "git_blob": "ee87410ee400d7c0b82450407accfb601b38d7ab",
       "path": "kernel/asterinas/ostd/src/arch/x86/cpu/context/mod.rs",
       "repository": "desktop",
@@ -533,16 +1175,22 @@
       "sha256": "3e24a80b6e545d3494c0900a2e74d7f90882dc050fb3f3b8eeb2f732b2221b41"
     },
     {
-      "git_blob": "5d363abad87c80e09e61aec05db2f89af63b1003",
-      "path": "kernel/asterinas/ostd/src/mm/page_table/cursor/mod.rs",
+      "git_blob": "5a73115e32dc0d21ec5ce61f9c0e575706ab5a21",
+      "path": "kernel/asterinas/ostd/src/mm/page_table/cursor/locking.rs",
       "repository": "desktop",
-      "sha256": "a3d449aa53162c2b6fdf4f95d72ba98833f0bd723720ec2c80b7437e2712c91b"
+      "sha256": "9da87be6c460a3b6e4bfc9e4649fd1e4c96c10ed623b459ca2e061ae9c2d0bcf"
     },
     {
-      "git_blob": "5c2ac0576a4ef75f023c6a9f448f7934da469ff5",
+      "git_blob": "8b6411f7ece33077368fd8e1cc8efb4edcc68642",
+      "path": "kernel/asterinas/ostd/src/mm/page_table/cursor/mod.rs",
+      "repository": "desktop",
+      "sha256": "60f4f7b19455eb44568461cd2d1bbcfb036cb116bfa43dadaf6d54a6277ae34a"
+    },
+    {
+      "git_blob": "db86a7e7789dcf2ce0e69fa5d3d544aa3e704623",
       "path": "kernel/asterinas/ostd/src/mm/page_table/mod.rs",
       "repository": "desktop",
-      "sha256": "f1ca91c6a7b7cb959bd6a90444ad39716fc4e72c12b75474c19943652d655189"
+      "sha256": "b2474824d417ee0ff10379c97139a3517447a882ddde613761bf6dd22aee43ed"
     },
     {
       "git_blob": "453358594980ddbe3a94d36cc76a5af4336edcee",
@@ -551,22 +1199,22 @@
       "sha256": "24df3b9ad141ba3855dd2a2f819ea447634b2566cc5a670d92e14ec75d4c6a59"
     },
     {
-      "git_blob": "848f19083a16a420eb288abee005327035b22e94",
+      "git_blob": "2fcb95c89ec160b010a1f01213bd132a02f0b23d",
       "path": "kernel/asterinas/ostd/src/mm/page_table/node/mod.rs",
       "repository": "desktop",
-      "sha256": "b84952d32f5568970411bc2f0bfbddc52e228faf41617943821b60a5d574b811"
+      "sha256": "a88799609e5156cfa86ca0b4b6e70539ae35cbe663fb733869bdf95a352c230c"
     },
     {
-      "git_blob": "563565113e47abf42174fe9be30de56ed83355ca",
+      "git_blob": "aa20a0288ea90fea87f4fd49e173ee4c39931c1c",
       "path": "kernel/asterinas/ostd/src/mm/vm_space.rs",
       "repository": "desktop",
-      "sha256": "8a4dfc23127ec347556cdb033385efbf5211c6f2894fde295f6b01a0e15d140f"
+      "sha256": "26bf4726a6a981ab95f6c200c0f78fb68227094eb42d146b11c35ade9f899e42"
     },
     {
-      "git_blob": "380f5b886709fe42b9c96bc937a86e4621ecdab4",
+      "git_blob": "dce3d611f955692a6c5c38f30f4ab295fbc8a24b",
       "path": "kernel/asterinas/ostd/src/mm/vm_space/recovery_tests.rs",
       "repository": "desktop",
-      "sha256": "abf70b7c04f8b2968cfbf8dff5392722ce63779b1ba7f8c088fd98aa7acc0b26"
+      "sha256": "2cb277d62f5022cad7db52cca30708cc92b721e5495aaedc883f4e782537f47f"
     },
     {
       "git_blob": "e129226ecb2011e35113b2c8d76eadf6c0b6d0cf",
@@ -593,6 +1241,12 @@
       "sha256": "e438e1242fe5be5e5886d05936a43666299504e20747ed37d5694d93def3f3e0"
     },
     {
+      "git_blob": "cad6c596b94465a804e22251c0c814625a398194",
+      "path": "kernel/asterinas/test/initramfs/src/regression/process/cgroup.sh",
+      "repository": "desktop",
+      "sha256": "8fea76572d6bd55b9ade3b37cde2c70ec376cdd8a4d63b001728080fefe8677d"
+    },
+    {
       "git_blob": "0b5b44dcaf6614df7135cbbb5001bb45a986b5d0",
       "path": "kernel/asterinas/test/initramfs/src/regression/process/execve/execve_args.c",
       "repository": "desktop",
@@ -605,16 +1259,40 @@
       "sha256": "e012246fd9b24e2e8554c617d29d3a126952bf5a4744244c8c471f4fc21aea70"
     },
     {
-      "git_blob": "e423f6e549fe60e8496ec159463dbc1c324c256c",
-      "path": "services/hepta-os/Cargo.lock",
+      "git_blob": "9960c487a5b1aab73e20e5296d116aba0f527ada",
+      "path": "libs/os-control/API_CONTRACT.md",
       "repository": "desktop",
-      "sha256": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175"
+      "sha256": "1c686647574b956405ce05cdd6fe18df294e5a6f21205eaea068e61f541c6e7b"
     },
     {
-      "git_blob": "0be14ffcedfda978c1ea7dbdf8d31a44d2e3060a",
+      "git_blob": "17c11c7967c9b04bb249ca1418a21beb03d06971",
+      "path": "libs/os-control/README.md",
+      "repository": "desktop",
+      "sha256": "7aa6330f35372fb045db57942deb62db1ff1ef34dcca17f09f74c6e4daa2db92"
+    },
+    {
+      "git_blob": "349d0b063b97b322e84b464e5746ce5c849e4f6e",
+      "path": "libs/os-control/src/management.rs",
+      "repository": "desktop",
+      "sha256": "502421945f0f4d5e7ebaa20ac96e80461a763b3732c45e57db51c673e10ec77d"
+    },
+    {
+      "git_blob": "e7135b1165ab3bbe7ca64c9878dba9902c384268",
+      "path": "libs/os-control/tests/management_owner_identity.rs",
+      "repository": "desktop",
+      "sha256": "c56f3d8f424e8f8c978c752794598b8e1e8be64c3354a91d2a7887f65a74f451"
+    },
+    {
+      "git_blob": "d81f850a9c01061e349f7bcf86e607d6ae249fa6",
+      "path": "services/hepta-os/Cargo.lock",
+      "repository": "desktop",
+      "sha256": "0dab17d434279fcb7d86b1dbf5d9ba74d7ce758b1fb7a73119fc41b2df91e892"
+    },
+    {
+      "git_blob": "8ba64829aeb074a7ea8099448fd6d69a6e04884e",
       "path": "services/hepta-os/Cargo.toml",
       "repository": "desktop",
-      "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b"
+      "sha256": "9f21646f37cfc5b30770a7333e371d311982bfcccd8509baeded217e9ad2a688"
     },
     {
       "git_blob": "3ad1475511aede466456cd5a1d3749ccb87c0f2f",
@@ -641,22 +1319,58 @@
       "sha256": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c"
     },
     {
+      "git_blob": "e0d6a3e8905c6799d23370bdeb4f7aad40319685",
+      "path": "support/build/README.md",
+      "repository": "desktop",
+      "sha256": "31857a30518075165c2b53c814b85fafafdfd77ed11b3d2c9b85a0cac1c650fa"
+    },
+    {
       "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
       "path": "support/build/check-boot.py",
       "repository": "desktop",
       "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
     },
     {
-      "git_blob": "caebd3c13516704713967dbdbb31c1d7c797751e",
+      "git_blob": "d478c78d95fdec2a0290c21f340fb3c5265fd4b3",
       "path": "support/build/kernel.sh",
       "repository": "desktop",
-      "sha256": "627ccc5a367ae6b8f585d3d7d50969160dd2f098b40608a6ac6be93d0fbc4ef0"
+      "sha256": "b834b13583caabc5552cd975db0ebdde3fca6cf14935a225f3306af44455e024"
     },
     {
-      "git_blob": "120e218878c3f799e73e90a55936cbc815767a62",
+      "git_blob": "f0d6870dcce9bd065883c2f10b843bbf2324eba9",
+      "path": "support/build/kernel_workspace_inventory.py",
+      "repository": "desktop",
+      "sha256": "35fa0c302649054b0b662bb36741635904c906b50187070d7749f9601d9cfafc"
+    },
+    {
+      "git_blob": "7aba128f9b3b3f76521c19291da1c77b4cea13b7",
+      "path": "support/build/ktest/README.md",
+      "repository": "desktop",
+      "sha256": "3351c16bf236078766197cb9e90bd0f7d53cd6963a4d0a1e73485e474dc947f9"
+    },
+    {
+      "git_blob": "6b9e29f8f8feb300477299f3e3c21cd5904f6708",
+      "path": "support/build/ktest/check-g2.py",
+      "repository": "desktop",
+      "sha256": "33a621e24bc0e4d0c2dfae1fb5e3e9ea7600e1aa68ccc9f8309e12186e2f4b16"
+    },
+    {
+      "git_blob": "1b572b1b6aade76b5585def81fdd73e8a1ec15e0",
+      "path": "support/build/ktest/check-permission-smp.py",
+      "repository": "desktop",
+      "sha256": "c98790e36f2c3684a9d62bc6e3c7f5525d26774dd8eab2226429ab4134b311b8"
+    },
+    {
+      "git_blob": "d8b609454bfa600360ae1a3fb5d622f3957c3b62",
+      "path": "support/build/ktest/check-report.py",
+      "repository": "desktop",
+      "sha256": "73d7eacb8effb28e246b0644f549b9bdf9cef4b16312e6927e49959576a08214"
+    },
+    {
+      "git_blob": "bac8e1d494e81a689f56820ac9fb5afc9924a3bf",
       "path": "support/build/ktest/check.py",
       "repository": "desktop",
-      "sha256": "e92b681fff49b8529f600bafc4b6e433b309259101a4ed614d6cb84bb93eeb68"
+      "sha256": "40bc2570ba6ae36c420aef6b1f4dbac279f1e0e5254c4a3a2bec03abee57b7d3"
     },
     {
       "git_blob": "bbca01569aa559ef14682ea9b3a5914d47e8985d",
@@ -677,22 +1391,46 @@
       "sha256": "7aabdd20efc9af8ee2d1e3554ea1bd7ff7ce2d272c62b24036a8148d2dae3059"
     },
     {
-      "git_blob": "66c6b1707aefce13e66283695d2bfd61cf7ed9a2",
+      "git_blob": "c8729d722be02ad34d5fb77a183698b2c625ba23",
       "path": "support/build/ktest/record-qemu.py",
       "repository": "desktop",
-      "sha256": "315e283a55d6f8bb23ddbde01e12239c3f9699fd53fb3c48935b13a426fe9853"
+      "sha256": "299d9fa69bf61e3102ff652c0c7d46c2f238e743bf822a2fb46b99c412a78914"
     },
     {
-      "git_blob": "4ef879e66c9e83e50f8a45bcbc5a2a8a01340723",
+      "git_blob": "1de45c8583fe0a14d6b134e40df2632fbeafd804",
       "path": "support/build/ktest/run.py",
       "repository": "desktop",
-      "sha256": "d1e0c252ba764e5c433bbe0be049ed20ff42c2563f20ba1411dc8b490a728226"
+      "sha256": "e5aaa49fa9eec2ce16c7c56272cceb6b9a96af3b1b274d17b8b7ed7aa2178b11"
     },
     {
-      "git_blob": "727a1a322b52a3581cc0f255a258f0dc38ef2a52",
+      "git_blob": "827f5cfe816d01a4909ef65253cf8ee86ab69fc1",
+      "path": "support/build/ktest/test_check_g2.py",
+      "repository": "desktop",
+      "sha256": "80077dfd577f3bd011c7228edd079720e538af12c611faf495d236dfdeb11530"
+    },
+    {
+      "git_blob": "84434cb2178a3a211f02cb68268e53ddcb91a539",
+      "path": "support/build/ktest/test_cpu_owner_gate.py",
+      "repository": "desktop",
+      "sha256": "d6e6a213bfecf0314a870b70ba1404b03709eeaaad3f93ca0f44195dafc04b85"
+    },
+    {
+      "git_blob": "7c585da62a16b2816306ea49b948af13b5fec39b",
+      "path": "support/build/ktest/test_report.py",
+      "repository": "desktop",
+      "sha256": "45f2a006d23f7ef4bcbdf26ec9285e1564577162ec79b371ff4974c42662cc8d"
+    },
+    {
+      "git_blob": "0fee5b13d1ecde27e0f2fc25cf53a304a89878da",
       "path": "support/build/minimal.mk",
       "repository": "desktop",
-      "sha256": "59ad6337dc4618986108e7c178f3b2977859cf2d301c2f732c0b6468bc5ebb8b"
+      "sha256": "2ac6879a72d83bf635cc574a3415c59102fec52438204b9640714e4ccb560899"
+    },
+    {
+      "git_blob": "fd538acbcd376ed94552a882d9da539dd689bdb6",
+      "path": "support/build/prepare-trusted-image.py",
+      "repository": "desktop",
+      "sha256": "e32bdb36078a2f8ff0e8d6f18f24329d4b0dad1bc1e0e93ffb426644c196e09b"
     },
     {
       "git_blob": "7e5d23fb3532907d914c59fe61357521641b645f",
@@ -707,10 +1445,22 @@
       "sha256": "436df978f61cf84f82045e3498343e5cbbce02ee7d48971c762e753a1b0331ba"
     },
     {
-      "git_blob": "ddebd6c5a8e6c610ba4e8e7ea2f69d75e5d1232c",
+      "git_blob": "908e12307513e1fbd9feca9288f67a355769b235",
+      "path": "support/build/tests/test_g1d_build_profile.py",
+      "repository": "desktop",
+      "sha256": "ebb7742a4def4ec8f52451d626a71e77dd59ac968812b105bcf3241b382f476a"
+    },
+    {
+      "git_blob": "43b0159701a26a4e49b97f93acc7597d3f42200e",
       "path": "support/build/tests/test_ktest_checker.py",
       "repository": "desktop",
-      "sha256": "f7a907cd4190858c0c947b226c03dc40aa58fe9e95105f9b6a59a7a88abdb3c8"
+      "sha256": "d86470684fc5a530d02988a5a74836b324020ed9ffe2cce872daa52bd8b22c0f"
+    },
+    {
+      "git_blob": "b502c4f0b3c4eaa980d2339764cdfb16fb992ad5",
+      "path": "support/build/tests/test_ktest_recorder.py",
+      "repository": "desktop",
+      "sha256": "19e054c0b615e66f5372d9c3918ad103a2ec9e82b554576a8bbf24b610f498f2"
     },
     {
       "git_blob": "f29f54e139795a2c02fa73bb74a415baf55dfee8",
@@ -719,16 +1469,22 @@
       "sha256": "0404c3fa3587744b821cc7a98a6d2f565991ea1ec5ef5103a858d1f69f0f0f03"
     },
     {
-      "git_blob": "36a9e04b692bcacb019b3722fe3625701f94e952",
+      "git_blob": "ebd94db69d9b476dd6fe2ef71409049b19170c2a",
       "path": "support/build/tests/test_reserve_source_inputs.py",
       "repository": "desktop",
-      "sha256": "946acd0481c7a8faa84a9694db8a215dbe3275830650686464de0b05db8ffd2c"
+      "sha256": "75bdc18eee2c3bcd79d2af117fcc27d3cae73eb92285b035014fc87b1b96e70c"
     },
     {
-      "git_blob": "da856bc836571a9e997dfa3b65049bb9b281036c",
+      "git_blob": "03cde416d13b2aa45e9ab33a15e00cf77ecf18ef",
+      "path": "support/build/tests/test_source_readme.py",
+      "repository": "desktop",
+      "sha256": "6ad7272ac472b57e5b74cf013789632bfdae31249bbacc36dbfc6cce0e43b1c8"
+    },
+    {
+      "git_blob": "bd02dde110dcff39c98898d9724189254d480006",
       "path": "support/build/verify-source.py",
       "repository": "desktop",
-      "sha256": "da72a66c9ffc4a6b7277f7f52085025465064349d98e62d4685c63a25ec940db"
+      "sha256": "b2316499ac611b0df145e1aece38559582c3e8bead5882b09d7fbed98d56d97d"
     },
     {
       "git_blob": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
@@ -743,10 +1499,226 @@
       "sha256": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5"
     },
     {
-      "git_blob": "b6d48c43b62f749e281c08810352014608406258",
+      "git_blob": "b4eb2d27846d92a6bc50f56a210c446b86ee0061",
       "path": "tests/integration/hepta/run_original_agentd.py",
       "repository": "desktop",
-      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+      "sha256": "f201671fb280e8f7d13c524de3983b905c8dadae6b362eac978d79ee67a42788"
+    },
+    {
+      "git_blob": "b8df0a51c4c86e90f2fb1734856f794aae3bef08",
+      "path": "tests/kernel/control/G1D_USER_MEMORY.md",
+      "repository": "desktop",
+      "sha256": "17ebddec13f5a0d52f7dc32bd312593d0f92a9cbe74296c4deea58d30d358919"
+    },
+    {
+      "git_blob": "66ba9ba4a7a78d995eba6844d05e50cdb9dc7456",
+      "path": "tests/kernel/control/NATIVE_AUTHORITY_BOOT_ID.md",
+      "repository": "desktop",
+      "sha256": "2725a1c68d0fbdb0dcf57df674ea61cfaa9d5a60afa24e727bb127747b94da10"
+    },
+    {
+      "git_blob": "e4919af725f16d2878e831b86f1758571a00d90d",
+      "path": "tests/kernel/control/NATIVE_PROCESS_PRIVILEGES.md",
+      "repository": "desktop",
+      "sha256": "21ecc5ba0efb283e637b93fb7d8be49aa985dd33d19e5f8cb05ade356560a223"
+    },
+    {
+      "git_blob": "8c34ea2447101802e9593967019020324942aeed",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/.gitattributes",
+      "repository": "desktop",
+      "sha256": "836d2df5c78b93c05d124dd9382208485bb53af56327bf7c86225437588adcfc"
+    },
+    {
+      "git_blob": "fe6cfacec373659a297fbebbee2ebfa2e59eb4de",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/README.md",
+      "repository": "desktop",
+      "sha256": "36ee5aa4c2900b1625c69e80a34f8dc6586709b9dd0257552d95cf6c5474dfaa"
+    },
+    {
+      "git_blob": "620aa14b6a1f204ad80583bf0fca34060c16e35e",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-leaf/candidate_kernel.sha256",
+      "repository": "desktop",
+      "sha256": "24fb5b2cfa92db61d580218131d97c24da37501a002aaa8f1bb96e1a367cab54"
+    },
+    {
+      "git_blob": "602ddb4bc0d3c556f21d7c20491403c3152496f9",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-leaf/probe.c",
+      "repository": "desktop",
+      "sha256": "caf741d13e2b7431e4ad19ddca0bffc63f541aa1139705a5101ec9d6501b14f2"
+    },
+    {
+      "git_blob": "915a88c9d078e658df5c8f7a76e8dac74bc18111",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-leaf/result.json",
+      "repository": "desktop",
+      "sha256": "ff2897aabc9666fc6721128429869b8d3142f4beb16eb4eba14f9662803674c4"
+    },
+    {
+      "git_blob": "a7c4191e715f99f7f7c2f14edf64dc2854d103de",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-leaf/serial-1.log",
+      "repository": "desktop",
+      "sha256": "8e3b6cfb06cee3c32a64e6c5abdc433662c6c216a0ee10d9e20574c3978830ac"
+    },
+    {
+      "git_blob": "ca59c97b5ea0de96b299971a2c7e2c8537ec1e72",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-leaf/serial-2.log",
+      "repository": "desktop",
+      "sha256": "b4655fbdf28b457dfb8cfe04b7677fae48f128cd68a1d76acff4553618238750"
+    },
+    {
+      "git_blob": "0e31bedbc830344062d15069157f9274ac689f26",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-leaf/serial-3.log",
+      "repository": "desktop",
+      "sha256": "4fe3a203c41083c5e751954bc29e522dd80ee82c7835306f231e93a3080ff5f2"
+    },
+    {
+      "git_blob": "620aa14b6a1f204ad80583bf0fca34060c16e35e",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-parent/candidate_kernel.sha256",
+      "repository": "desktop",
+      "sha256": "24fb5b2cfa92db61d580218131d97c24da37501a002aaa8f1bb96e1a367cab54"
+    },
+    {
+      "git_blob": "a4d0617771bea78467aa4a42679c5616a5291392",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-parent/probe.c",
+      "repository": "desktop",
+      "sha256": "a3a7ff09b27da033ca1b271a796967946af8a0454ce6570cfb7d6a7f1347ce2c"
+    },
+    {
+      "git_blob": "645ef142f03fb23b1da137f209c3a9483c1d7653",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-parent/result.json",
+      "repository": "desktop",
+      "sha256": "1e5e57b76ed0b30912080ac4b612a356fb79069707f5f90440b95a75cc804de6"
+    },
+    {
+      "git_blob": "16189584273ba149318345bfa3e311af596b3381",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-parent/serial-1.log",
+      "repository": "desktop",
+      "sha256": "0ed2995b6cb02dfb7ed37a4fee60c4020e840c8f252184973bdc3754c1818a1f"
+    },
+    {
+      "git_blob": "cd058311e686e817f1a5bf8694d6bd7ce5adf25a",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-parent/serial-2.log",
+      "repository": "desktop",
+      "sha256": "e78e911081251e3090297ce91534fd35026472689aec5576533c11098bef1531"
+    },
+    {
+      "git_blob": "5d1ea2ed22f307fc4096db5f27f9773cde8c9c1e",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-parent/serial-3.log",
+      "repository": "desktop",
+      "sha256": "4dfbb3f7bada788ee3fd1249a60144a31e232ef223b871de67eb914cf89e2028"
+    },
+    {
+      "git_blob": "620aa14b6a1f204ad80583bf0fca34060c16e35e",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-rt/candidate_kernel.sha256",
+      "repository": "desktop",
+      "sha256": "24fb5b2cfa92db61d580218131d97c24da37501a002aaa8f1bb96e1a367cab54"
+    },
+    {
+      "git_blob": "7ebbd144d0fa5ca650b21dcdd933004e8d4b9eca",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-rt/probe.c",
+      "repository": "desktop",
+      "sha256": "679cc1cac5bb566237c04db6bd53826e94c390f16d63634caf4733c21052a349"
+    },
+    {
+      "git_blob": "f9768f9722884599ae0e0e09ea8cfe6637966e53",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-rt/result.json",
+      "repository": "desktop",
+      "sha256": "e567a6963e81c465af7a9dcfad142aa76f3815205894300f416cf4d780b8467d"
+    },
+    {
+      "git_blob": "4370aa36e408f518c4fd4c1f4f42ce1814ba18da",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-rt/serial-1.log",
+      "repository": "desktop",
+      "sha256": "848c000fd203a19eddf55276738ad52043a563911ac4ed0b43cb66fb34922d79"
+    },
+    {
+      "git_blob": "4c732ff8eaa59e8d8729503d585a3ffcbd71ede4",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-rt/serial-2.log",
+      "repository": "desktop",
+      "sha256": "9774517ed0b1159719c082e99d960bcd6263f1ed131b43d5e261747d68ea86da"
+    },
+    {
+      "git_blob": "4c326b35f0ddfa6c7ca143a1f8c4ee0ee997ce10",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/budget-rt/serial-3.log",
+      "repository": "desktop",
+      "sha256": "541aaab619836c07752c36076946bcd6bbdaa7e351d4a2a131f1cd45bed3e455"
+    },
+    {
+      "git_blob": "4890ff3c52df1ad5724c5282a31476d3bca9699a",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/capsule.json",
+      "repository": "desktop",
+      "sha256": "4219350336c08828a63c163d0176ebb909a1a8172a3946b4988b529909f2732f"
+    },
+    {
+      "git_blob": "043a2305c84c3652586275cb741df2454ba38163",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/cargo-version.log",
+      "repository": "desktop",
+      "sha256": "1fd7bd42db99cffe020290fbdd2995474bca84729f7817172227917917b0dd55"
+    },
+    {
+      "git_blob": "57ae93b480d4f957dd2d3ecf5504bc494506896d",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/execution.json",
+      "repository": "desktop",
+      "sha256": "d67c3ae56a6fc3577ba439027154b22f74aa68fc3363987d4f245d1519153d88"
+    },
+    {
+      "git_blob": "ebe1a1de17c646bd047ef4059e0027c0d9aea5a7",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/operator-terminal.json",
+      "repository": "desktop",
+      "sha256": "e8c238ac614e4830b923af5f6cff7cdc859742ecb00714f4ca0fc0654dd74c5a"
+    },
+    {
+      "git_blob": "a18a8a571a08a08146469e8ac0f42298af0b4fcb",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/ordinary-build-and-queryabi.log",
+      "repository": "desktop",
+      "sha256": "bc9b3b289c6a82fa9a89eb0fb4d798e25c3b392a5d9117e6174804609095084b"
+    },
+    {
+      "git_blob": "8b5c4ebc572149a432893633b697d19e22662d15",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/ordinary-queryabi/product-boot/command.sh",
+      "repository": "desktop",
+      "sha256": "4f114734a67b7f8551a019d38de79b97bd193d506b6f34082e5a5d146982b45f"
+    },
+    {
+      "git_blob": "7479372bbe3545386c1343d95a709b7a709af84d",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/ordinary-queryabi/product-boot/environment.log",
+      "repository": "desktop",
+      "sha256": "d659fd546793feba5c4d1de00493b273cbb5b201b4857f4ba752d326698100db"
+    },
+    {
+      "git_blob": "507aa6a1af3ede6b6a5a5138912e880d19d589de",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/ordinary-queryabi/product-boot/qemu.json",
+      "repository": "desktop",
+      "sha256": "018a72b2e0083be9383dac4f9553da381a3e043301e392477eb4c097cac790fc"
+    },
+    {
+      "git_blob": "0079c80d40faac3315ef8653766fac1c68583966",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/ordinary-queryabi/product-boot/source-inputs.json",
+      "repository": "desktop",
+      "sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524"
+    },
+    {
+      "git_blob": "4b972994439d95814972dacd00bb319bfb0e0100",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/ordinary-queryabi/result.json",
+      "repository": "desktop",
+      "sha256": "719faedba6902d6ac7defcfde242e9bd6e1a9321bbcd00f263667448f88c1c7b"
+    },
+    {
+      "git_blob": "559d7bd2d555f9c69061517ca219462ca4a21004",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/ordinary-queryabi/serial.log",
+      "repository": "desktop",
+      "sha256": "3ab168f28e52e14f6a3f2c551c39a54d858d4a7a818199622fab57e150462587"
+    },
+    {
+      "git_blob": "0f333ec672b9c2cc67a616ec4d52ef68974d6a97",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/qemu-version.log",
+      "repository": "desktop",
+      "sha256": "8f79ffd97970d85d6833a0ccc87f5d6e7182f8f52101c741dfa2fb6374670b18"
+    },
+    {
+      "git_blob": "a244d8a076dd216d76931024e5370d18479a7905",
+      "path": "tests/kernel/control/evidence/2026-10-24-ordinary-smp2/rustc-version.log",
+      "repository": "desktop",
+      "sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212"
     },
     {
       "git_blob": "7ce4294feaa35908b5be84c5ba3e967e66c36360",
@@ -755,10 +1727,46 @@
       "sha256": "9c153d5cd5206ec1eee78995a8a9c4365c40ed1a8c64132baf80450db3642dff"
     },
     {
+      "git_blob": "d83a912868e4c411e220e70c62bd0b3a83059c7f",
+      "path": "tests/kernel/control/proc_boot_identity.c",
+      "repository": "desktop",
+      "sha256": "72f2fcdbee56f37e8e165472d3f31d136ac74119ee8960ca44ead10b8bf9d8fa"
+    },
+    {
+      "git_blob": "4cfeedacb8743d612e9c9dee96d4f6b7314bb444",
+      "path": "tests/kernel/control/proc_process_privileges.c",
+      "repository": "desktop",
+      "sha256": "7e711cefe6cc212beb2b0590dd54507b8b954ce75bb38a6c9a2bf98b133b2236"
+    },
+    {
       "git_blob": "284d8c191390e137efcf605de7a338f9be643f8e",
       "path": "tests/kernel/control/run_g1d_watchdog_guest.py",
       "repository": "desktop",
       "sha256": "ffa3b6761fa0e84b84cb8372f8ff56260ddb34c94a021b3f98fd0e158f229b1b"
+    },
+    {
+      "git_blob": "0e98b97cb967b53e2dc1396f921871dc83878105",
+      "path": "tests/kernel/control/run_g1d_workload_negative.py",
+      "repository": "desktop",
+      "sha256": "09b931a1428d076bb9375b07f97a95a08016f3db0c866d568458252b951c11ae"
+    },
+    {
+      "git_blob": "ded4298465f8c37b0180f10245f1258df091406c",
+      "path": "tests/kernel/control/run_proc_boot_identity.py",
+      "repository": "desktop",
+      "sha256": "4b2b62ce0384aedb8d08a4a2724c1a1c034fe80c221ee2925a2a3c36c5f7ba3f"
+    },
+    {
+      "git_blob": "b18d6dc382b44ae55c40352e3c6dbd5821c01e89",
+      "path": "tests/kernel/control/run_proc_process_privileges.py",
+      "repository": "desktop",
+      "sha256": "0efa7a584631d193632e793b8ba3029dabbe296beb1f3e6e69a945e0d4bb9b42"
+    },
+    {
+      "git_blob": "f4a491037402e7979c06e55e6aa9d5cdd9fc6140",
+      "path": "tests/kernel/control/test_g1d_guest.py",
+      "repository": "desktop",
+      "sha256": "1758abcba70f15870a9fd12aaedb0b9638de3ba9828f136e7bbbc14fd9403e3f"
     },
     {
       "git_blob": "c4b2885f38a6ce08c13f36258f5407c9dc5e8b54",
@@ -803,16 +1811,16 @@
       "sha256": "9b87b8b3e54e3c2bc3dc0141a2c8982907aa5316b26cb78ffd7dd50a09277e71"
     },
     {
-      "git_blob": "58ae370892b9a12004e636c5c461c11a22c68633",
+      "git_blob": "c3d02a1637f079b8e5f8cb9bca5c5a9edb942350",
       "path": "codex-rs/hepta-agentd/src/config.rs",
       "repository": "hepta",
-      "sha256": "a5e08e510c106ec795b06c06cec144e8b67a7650b75a442d236162570d23fc4f"
+      "sha256": "fdf74741856c1ae93bf22338dae73a057b2286de8c9f18953f1ab966cf37a8d6"
     },
     {
-      "git_blob": "01ccc1398e49fdd01cfdb48cff2b62b4d25e8119",
+      "git_blob": "d6dbdcfca4ed85d7f9a13be5fa143de8cf561984",
       "path": "codex-rs/hepta-agentd/src/final_use_issuer.rs",
       "repository": "hepta",
-      "sha256": "4a4c14308918a753087e0adc97ce4cd7f494a873a77ac214bb5bc5c369773380"
+      "sha256": "09ca7b5b6d50540ea93e10468ff481d3be2bbe28173663566c8a901885267a84"
     },
     {
       "git_blob": "074e3fa53b1ba0bb4523dc827eef02ad8a5bfaa4",
@@ -821,16 +1829,16 @@
       "sha256": "df0550f88a57cc2899eed33dc3bfa38a46871bd9849ace01db4e9c210f365388"
     },
     {
-      "git_blob": "5e3c5fba361c30071afec7c969f5720b624bb662",
+      "git_blob": "796752f3ac7990739942fddb3693363da08a193a",
       "path": "codex-rs/hepta-agentd/src/lib.rs",
       "repository": "hepta",
-      "sha256": "17d994df31d925b82b312dd66c41def5714c286d67aed853f8b540edd3530009"
+      "sha256": "af29880548e4061813196de22a76a3350efd3c0e4c3e3167a41aa26e66bfa553"
     },
     {
-      "git_blob": "60595420f4bf42089b5745830ac611df1c7ec2c2",
+      "git_blob": "199b6999659a026ea45d497b36412aad852fb39c",
       "path": "codex-rs/hepta-agentd/src/main.rs",
       "repository": "hepta",
-      "sha256": "00f3134561b2f5773c1f114fba897e369db9f2c4f28192086596a37bf93ba319"
+      "sha256": "7689847067988f4ca838f65be92b1045fb4d54f3c56c6aac97faebcc92bcac04"
     },
     {
       "git_blob": "5fca295975820a2ab10308b82eaf0bf7d31e6f7a",
@@ -839,28 +1847,28 @@
       "sha256": "30ecb92c79ec9a0718d54a59bace10f8f6568cd2927abf926117c406ec996374"
     },
     {
-      "git_blob": "1eea5d16451b2d776987eaf913c6f7a5ef195b9d",
+      "git_blob": "3e554d364d992c20ca53628b3f0852d5cb296782",
       "path": "codex-rs/hepta-agentd/src/production_composition.rs",
       "repository": "hepta",
-      "sha256": "c34dc7bcbc2a6d625054d018f07eb6eca3e3382fea635a2b03133520551eaa95"
+      "sha256": "82acddc7bcfb717e1a88cfd51be0551c25cda2b9473077a2addbb4cca67e4dfd"
     },
     {
-      "git_blob": "f881d7c4d20a189d781977da09237f8c82dc4012",
+      "git_blob": "a5d0a68eeaa2acb1166bde4c83b1413e3502425d",
       "path": "codex-rs/hepta-agentd/src/production_writer_host.rs",
       "repository": "hepta",
-      "sha256": "9cbf7ebd1be6c93bbee336c56a020861f85e295778683a729aa8eceaddbd1ecb"
+      "sha256": "4c0f695c94e92a7290b13665e6d529f1645782a259ffa18c3437c204a7d737b6"
     },
     {
-      "git_blob": "7f7241d8d7b1ad978cd6a07db785f3b0e4af612d",
+      "git_blob": "11fcbc8bfeb61f71f37b05c36cd94a5b69d02390",
       "path": "codex-rs/hepta-agentd/src/runtime.rs",
       "repository": "hepta",
-      "sha256": "b2eb80954a210d2f21ce93d40926b84f13d4859a6145c429ae0ec28b59ea5e41"
+      "sha256": "adad24f57741679d9e72d9eed13f8808608d42df5e7f1f5a0465eb02b7164cab"
     },
     {
-      "git_blob": "0a17007f64bbbded6b8acfe9c1a79e7023b0054f",
+      "git_blob": "94479da2b82c420aac701d361e5ea465209a2eed",
       "path": "codex-rs/hepta-agentd/src/state.rs",
       "repository": "hepta",
-      "sha256": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a"
+      "sha256": "f34066b3f198c9ae067cad7c54bae48a098f6dca9b22cdb2e976b6810f22d89b"
     },
     {
       "git_blob": "4e8ab6ced19748d22b543a6dbded5d9942ea463c",
@@ -869,10 +1877,10 @@
       "sha256": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e"
     },
     {
-      "git_blob": "b17115eb5cffff5f890f34a786534c588d0d3aa5",
+      "git_blob": "381eb62a857886261bca178c17078b8700dc2d67",
       "path": "codex-rs/hepta-fleet/src/registry.rs",
       "repository": "hepta",
-      "sha256": "714b160817bf07b71d11af569a6849769395df00b3769988898e7aff29880753"
+      "sha256": "151978d0b49603db694c05cd6781029e3547cb93c9aa2637ae13342d77cfdef3"
     },
     {
       "git_blob": "7e3ea376f749ea270a1507d9603607d162f85799",
@@ -881,22 +1889,22 @@
       "sha256": "dad3d8f409364c3ae2b0203c1967d363a298dfc6d1c4b9161c31684e4f239f28"
     },
     {
-      "git_blob": "459e0402ca95dfcfca717f0e80d5c23c9716c26f",
+      "git_blob": "acdef8a83d9c839f51cab152d12d9c96a3b5e80f",
       "path": "codex-rs/hepta-memory/src/production_hos2_owner.rs",
       "repository": "hepta",
-      "sha256": "3ca6597e9161f61bdbe084f0c86b0a8815a5e1e8b44a9958012175565cc143c2"
+      "sha256": "89674d42bb2a51c6bb154d3480d0f826aa5ee44e1c14a6f9769b9470471ed39a"
     },
     {
-      "git_blob": "1e2b49fba38bdf10a0a451c7f241522178bbe369",
+      "git_blob": "7cfe9fc89cdf32cfd175ed599c4f5f726fdc5d00",
       "path": "codex-rs/hepta-memory/src/production_notes_owner.rs",
       "repository": "hepta",
-      "sha256": "5f9af75b787fae99397c0dfdb14af2d055e3fc7e92a51019d8143b36ef8eab48"
+      "sha256": "9662687eb4f364c25aa3bb5de8be9fc8ff3661e6b0cb7ac6de2e2e5d46e4d097"
     },
     {
-      "git_blob": "9b0e30030df87549b2837733bfebf0403c238eca",
+      "git_blob": "fe2574613686100041b3d772d79c30340106fef4",
       "path": "codex-rs/hepta-memory/src/production_writer.rs",
       "repository": "hepta",
-      "sha256": "fb0bcfa6f1cb6d84ae5dcb91903faa859ebca6b2de71ddb822140acbf819cac6"
+      "sha256": "5aa593eddbb41c98c2744a1a9627c1895590ec33e2e8e3dc34333ca676ed9c14"
     },
     {
       "git_blob": "30d3a88e199578ace3e2fb0387e86d0c467e3806",
@@ -911,10 +1919,10 @@
       "sha256": "b665da8b86a1d9f9b93b4c438e597090e7041d1dcf7f16d64405b5e5c3e97188"
     },
     {
-      "git_blob": "290a1c2d0324868c649df6945b73ea1b74a85c1d",
+      "git_blob": "6ee63d32334248f5d07676b4f191e0bd691372a2",
       "path": "codex-rs/hepta-supervisor/src/driver.rs",
       "repository": "hepta",
-      "sha256": "aa6349e8b868ed07e0271f6c4045a2e98099dd6a81880eb06c79f4290d18a32b"
+      "sha256": "64afdaa718df0cdee7a15db9e253b290e65a8b8d6b44a182b9998c6c6597479e"
     },
     {
       "git_blob": "f854f1a0c40024a5fe01ea42b5139d8c77bfc778",
@@ -929,15 +1937,15 @@
       "sha256": "41a6deb682fa12fd2c8220dd69df00ae08e3c1cf4823d1bcd673bb0bf4864975"
     },
     {
-      "git_blob": "d02b9b9b02af2b03f3904277f5028e1fb52672b4",
+      "git_blob": "58e8c701afd759917335ba299ae4431e5ca5adcf",
       "path": "codex-rs/hepta-supervisor/src/unix.rs",
       "repository": "hepta",
-      "sha256": "6d25f074cf050bc94b39a60634ac42a7c2a73fd096aab931ce3846a5577fba99"
+      "sha256": "5b8be63a884a4572167c320197222b7b67b8665d2a8e00a1f595f3693f4bc600"
     }
   ],
   "userspace_toolchain": {
-    "channel": "1.95.0",
+    "channel": "1.96.0",
     "manifest": "codex-rs/rust-toolchain.toml",
-    "sha256": "570656042681cfd8795403a455baf9a33035331a07db0645e866bbcea89a3d64"
+    "sha256": "e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380"
   }
 }

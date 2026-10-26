@@ -67,3 +67,6 @@ RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-sessio
 scope. Use [HEPTA_OBSERVER](../../support/ui/HEPTA_OBSERVER.md),
 [NOTES_ORGAN](../../support/ui/NOTES_ORGAN.md) and
 [BOUNDARIES](../../support/ui/BOUNDARIES.md) when changing runtime integration.
+
+The versioned original Session lifetime and Root-required durable storage
+contract is specified in [NOTES-LIFETIME](../NOTES-LIFETIME.md).

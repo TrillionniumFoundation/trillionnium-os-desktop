@@ -92,6 +92,9 @@ impl ObjectiveBridge {
                 if view.client_intent_id.as_deref() != command.client_intent_id() {
                     return Err(ObjectiveHostIssue::IdentityMismatch);
                 }
+                if let Some(document) = &view.notes_document {
+                    document.validate()?;
+                }
                 if let Some(retained) = &view.retained_intents {
                     retained.validate()?;
                     if !matches!(command, ObjectiveCommand::Availability {}) {
@@ -139,6 +142,54 @@ mod tests {
     use std::os::unix::net::UnixListener;
     use std::sync::atomic::{AtomicUsize, Ordering};
     static NEXT: AtomicUsize = AtomicUsize::new(1);
+
+    #[test]
+    fn bridge_preserves_readback_and_refuses_malformed_document_identity() {
+        let path = std::env::temp_dir().join(format!(
+            "trill-objective-readback-{}-{}.sock",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        let listener = UnixListener::bind(&path).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+        let bridge = ObjectiveBridge {
+            endpoint: Some((path.clone(), std::process::id())),
+            runtime: Some(Builder::new_current_thread().enable_all().build().unwrap()),
+        };
+        let expected: ObjectiveObservation = serde_json::from_str(include_str!(
+            "../../../tests/ui/notes-document-observation-v1.json"
+        ))
+        .unwrap();
+        let mut invalid = expected.clone();
+        invalid.notes_document.as_mut().unwrap().target.task_id = 0;
+        let replies = [expected.clone(), invalid];
+        let server = std::thread::spawn(move || {
+            for response in replies {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut frame = String::new();
+                BufReader::new(stream.try_clone().unwrap())
+                    .read_line(&mut frame)
+                    .unwrap();
+                assert!(matches!(
+                    serde_json::from_str::<ObjectiveCommand>(&frame).unwrap(),
+                    ObjectiveCommand::Status { .. }
+                ));
+                let mut bytes = serde_json::to_vec(&response).unwrap();
+                bytes.push(b'\n');
+                stream.write_all(&bytes).unwrap();
+            }
+        });
+        let command = ObjectiveCommand::Status {
+            client_intent_id: "original-intent".into(),
+        };
+        assert_eq!(bridge.request(command.clone()), expected);
+        let refused = bridge.request(command);
+        assert_eq!(refused.issue, Some(ObjectiveHostIssue::IdentityMismatch));
+        assert!(refused.notes_document.is_none());
+        assert!(refused.run.is_none());
+        server.join().unwrap();
+        std::fs::remove_file(path).unwrap();
+    }
 
     #[test]
     fn bridge_checks_fixed_peer_before_forwarding_and_preserves_typed_reply() {

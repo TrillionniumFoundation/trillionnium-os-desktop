@@ -116,10 +116,13 @@ jobs:
             --rustup "$(command -v rustup)" \
             --output-dir "$ACCEPTANCE_DIR"
           python3 - "$ACCEPTANCE_DIR/report.json" <<'PY'
+          import hashlib
           import json
           import sys
           from pathlib import Path
           report = json.loads(Path(sys.argv[1]).read_text())
+          readme = Path('README.md').read_bytes()
+          readme_sha256 = hashlib.sha256(readme).hexdigest()
           required = {
               'golden_hos2', 'golden_edges', 'golden_transport',
               'python_discovery', 'python', 'python_optimized',
@@ -133,7 +136,10 @@ jobs:
               or report.get('success') is not True
               or report.get('not_executed')
               or report.get('original_inputs_unchanged') is not True
-              or report.get('readme_bytes') != 0
+              or type(report.get('readme_bytes')) is not int
+              or report.get('readme_bytes') != len(readme)
+              or report.get('input_sha256', {}).get('README.md') != readme_sha256
+              or report.get('original_input_sha256_after', {}).get('README.md') != readme_sha256
               or set(seen) != required
               or len(seen) != len(required)
               or not all(step.get('passed') is True for step in checks)):

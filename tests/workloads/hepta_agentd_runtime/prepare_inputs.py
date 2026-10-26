@@ -28,6 +28,7 @@ import reviewed_toolchain as toolchain
 import dependency_artifacts
 
 require, sha, save = gate.require, gate.sha, gate.save
+NATIVE_TARGET = "x86_64-unknown-linux-gnu"
 
 
 def git(source, *arguments):
@@ -216,16 +217,18 @@ def build_userspace(args, roots, out, report, source_files, receipt, environment
                 ("observer", roots["desktop"], observer_target, roots["desktop"] / "services/hepta-os/Cargo.toml"),
                 ("agentd", roots["hepta"] / "codex-rs", original_target, roots["hepta"] / "codex-rs/Cargo.toml")):
             steps.append(("fetch-" + name, cwd, target,
-                          ["fetch", "--locked", "--target", "x86_64-unknown-linux-gnu", "--manifest-path", str(manifest)]))
+                          ["fetch", "--locked", "--target", NATIVE_TARGET, "--manifest-path", str(manifest)]))
     steps += [
         ("observer", roots["desktop"], observer_target,
          ["build", "--locked", "--offline", "--manifest-path", str(roots["desktop"] / "services/hepta-os/Cargo.toml"), "--bin", "hepta-observe"]),
         ("agentd", roots["hepta"] / "codex-rs", original_target,
          ["build", "--locked", "--offline", "--profile", "dev-small", "--no-default-features", "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd", "-j1"]),
         ("fixture-resolution", fixture, original_target,
-         ["metadata", "--offline", "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
+         ["metadata", "--offline", "--filter-platform", NATIVE_TARGET, "--format-version", "1",
+          "--manifest-path", str(fixture / "Cargo.toml")]),
         ("fixture-locked-metadata", fixture, original_target,
-         ["metadata", "--locked", "--offline", "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
+         ["metadata", "--locked", "--offline", "--filter-platform", NATIVE_TARGET, "--format-version", "1",
+          "--manifest-path", str(fixture / "Cargo.toml")]),
         ("fixture", fixture, original_target,
          ["build", "--locked", "--offline", "--profile", "dev-small", "--manifest-path", str(fixture / "Cargo.toml"), "-j1"]),
     ]

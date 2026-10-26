@@ -10,19 +10,34 @@ The preedit-only product does not advertise PasteText.
 The original Hepta input owner, ImeRouter, TextInput, ChatWorkspace, Agentd
 and writer paths remain in their pinned original source. The SDK patch makes
 the existing XIM callbacks the preferred input-context style and retains that
-context when optional callback spot forwarding is unsupported. A positioning
-warning never grants composition or execution authority.
+context when optional callback spot forwarding is unsupported. It also makes
+window focus gain/loss conditional on real state transitions: a redundant X11
+visibility notification cannot restore an old caret or cancel live preedit,
+and repeated loss cannot overwrite the saved editor. Actual SDK Window and
+drawn TextInput regressions cover duplicate gain/loss, true loss/return and
+other-window isolation. The explicit candidate also treats desktop IME
+composition as one transaction: previews never enter undo/redo history or
+committed checkpoints; a commit records one net edit; cancellation restores
+the original selected text and selection. Legal edits beside composition use
+committed UTF-8 coordinates without consuming adjacent combining characters.
+The original drawn TextInput event regressions cover commit/cancel, ordinary
+typing, consecutive compositions, selection direction, boundary edits and
+checkpoint restoration. A positioning warning never grants composition or
+execution authority.
 
 ## Frozen inputs and the integrated companion
 
 The profile freezes the executing Hepta commit/tree and preparation-helper
-commit/tree plus both helper scripts' SHA256. The current candidate study uses
-7ea execution source and aa6 preparation tools. These are explicitly separate
-roles; no Agentd dependency is moved to a different source than the UI. The
-final integrated companion must replace both profile identities with the
-same reviewed commit/tree and update every existing Hepta dependency pin and
-lock together. The builder checks all Hepta sources in the actual UI graph
-and all five committed product lockfiles against that single execution pin.
+commit/tree plus both helper scripts' SHA256. Execution and preparation must
+use that same integrated original Hepta companion. The helper permits only
+the four reviewed Window/TextInput source/test files in this preedit profile;
+arbitrary widget changes and clipboard-profile widget changes remain refused. The
+complete SDK tree, exact patch/manifest bytes and helper scripts are checked
+independently. Changing the companion requires updating both profile
+identities and every existing Hepta
+dependency pin and lock together. The builder checks all Hepta sources in the
+actual UI graph and all five committed product lockfiles against that single
+execution pin.
 Original-owner ancestry and Notes protocol goldens remain mandatory through
 the existing release source verifier.
 
@@ -58,8 +73,16 @@ cargo +1.96.0 --config /absolute/evidence/preedit-overrides.toml metadata \
   > /absolute/evidence/candidate-native-metadata.json
 ```
 
-Review and commit the candidate's `ui/Cargo.lock`. No source file, global Cargo
-configuration or cached SDK checkout may be edited as part of resolution.
+For the single-source product build, generate this lock with Cargo in a
+separate source copy and retain it as the tracked
+`support/ui/preedit-sdk/Cargo.lock`. Keep `ui/Cargo.lock` as the Git SDK
+resolution used by ordinary CI. Pass `--committed-preedit-lock` to the product
+builder: it clones the exact clean Desktop commit, substitutes only that
+tracked lock in its disposable build copy, and verifies all other tracked and
+untracked source both before and after compilation. The receipt records the
+base commit/tree, actual lock hash and the sole changed path. The Root builder
+checks that lock against the same original commit. No source file, global
+Cargo configuration or cached SDK checkout may be edited during resolution.
 The helper prepares a new full SDK checkout, verifies the complete patched
 Git tree and generates an override for every original resolved SDK crate.
 Partial overrides, another SDK tree, or an old clipboard profile are refused.
@@ -79,11 +102,10 @@ python3 -B support/ui/build_text_product.py --profile preedit-callbacks \
   --liberation-source /absolute/verified-liberation-source.tar.gz
 ```
 
-For the final single companion, `--sdk-helper-repo` can be omitted when the
-helper and executing repository are the same frozen checkout. The current
-two-role candidate needs the explicit helper path. Changing either frozen
-identity requires new complete source/build/runtime evidence, not just a
-changed command argument.
+`--sdk-helper-repo` can be omitted when preparation and execution use that
+same frozen checkout. An explicit helper path must identify the same reviewed
+commit/tree. Changing the frozen identity requires new complete
+source/build/runtime evidence, not just a changed command argument.
 
 The builder retains the original metadata and exact Cargo config, generates
 a fresh SDK receipt from its actual build metadata, and re-verifies the full
@@ -93,6 +115,47 @@ workspace tests. Existing observer/support/text-host contract tests retain
 their own committed locks and original source graphs; all still use the one
 frozen Hepta execution revision. No unused SDK patch is inserted into those
 unrelated workspace locks.
+
+The canonical builder tests every UI workspace target with `--all-targets`
+and denies native workspace Clippy warnings. For this explicit profile it also
+selects `-p trill-shell -p makepad-widgets --lib` with the same preedit feature
+and all-SDK config, then runs `window::focus_tests` (4 tests) and `text_input::`
+(35 tests). The former covers duplicate native focus notifications; the latter
+covers transient previews, one-step commit undo/redo, cancellation, selection
+affinity, legal edits outside the preview and committed checkpoints. The
+receipt requires the actual named widget tests and their exact pass counts;
+Cargo's successful zero-test feature-anchor suite is insufficient.
+
+The native CI workflow runs the same scoped SDK regressions as an additional
+component after the default Git-SDK checks. `preedit_component.py` verifies the
+actual default metadata/cache receipt, creates new Desktop and clean Hepta
+source clones, and invokes the same pinned canonical helper to prepare all
+102 SDK overrides. Only Cargo generates the disposable UI path lock. A
+`finally` guard restores its original bytes on success, rejected/failed tests
+or caught termination; the original checkout and lock are never edited.
+Original source caches and the complete prepared source/config/graph are
+checked again. Normal Cargo caches and the build target may be reused; no
+global Cargo configuration is written.
+
+For a clean checkout with the default CI metadata/source receipts already
+available, the component can also be run directly:
+
+```sh
+python3 -I -B support/ui/preedit_component.py \
+  --metadata /absolute/evidence/native-metadata.json \
+  --source-receipt /absolute/evidence/native-source-before.json \
+  --work-dir /absolute/new-disposable-preedit-sources \
+  --output /absolute/new-preedit-component-evidence --jobs 1
+python3 -I -B support/ui/test_preedit_component.py
+python3 -I -B -O support/ui/test_preedit_component.py
+```
+
+Both directories must be new and outside the source checkouts. The component
+retains commands, pass counts, logs and source/SDK/lock hashes, and rejects
+missing, zero, ignored, failed or incorrectly scoped tests. Its receipt claims
+unit regression coverage only; it does not execute a window, IBus, original
+Root, production effects or the default product's five binaries. The complete
+packaged-window gate below is still required.
 
 The pure original `source-profile.json` and its verification receipt remain
 unchanged in meaning. `package-source-profile.json` adds the separately

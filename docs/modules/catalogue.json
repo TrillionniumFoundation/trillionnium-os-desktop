@@ -1,0 +1,541 @@
+{
+  "schema_version": 1,
+  "scope": "Current working-tree documentation contracts; all non-archived first-party Cargo manifests plus the exact explicit kernel workspace members. Not execution evidence.",
+  "kernel_workspace": "kernel/asterinas/Cargo.toml",
+  "kernel_handbooks": [
+    "docs/modules/kernel-workspace/kernel-components.md",
+    "docs/modules/kernel-workspace/kernel-libraries.md",
+    "docs/modules/kernel-workspace/ostd-and-tooling.md"
+  ],
+  "packages": [
+    {
+      "manifest": "libs/os-abi/Cargo.toml",
+      "package": "hos2-os-abi",
+      "entry": "libs/os-abi/README.md",
+      "technical": [
+        "docs/NATIVE_ABI.md"
+      ],
+      "development": [
+        "libs/os-abi/README.md",
+        "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md"
+      ],
+      "owner": "The codec owns byte interpretation only; the kernel profile owns availability and the original Hepta owner owns authority and durable outcomes.",
+      "failure_recovery": "Reject malformed frames without assigning effect authority; uncertain effects are queried through the real owner rather than replayed by the codec.",
+      "current_scope": "Bounded no_std wire encoding/decoding and host acceptance; successful parsing does not establish native execution.",
+      "sources": [
+        "libs/os-abi/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "libs/os-control/Cargo.toml",
+      "package": "os-control",
+      "entry": "libs/os-control/README.md",
+      "technical": [
+        "libs/os-control/API_CONTRACT.md"
+      ],
+      "development": [
+        "libs/os-control/README.md",
+        "tests/control/VALIDATION.md"
+      ],
+      "owner": "ControlCoreWith owns boot-local delivery identity and pins the actual resource allocation; Hepta retains durable logical identity.",
+      "failure_recovery": "Pending or ambiguous callbacks fence replay and retirement; only the original resource owner can reconcile a possible effect.",
+      "current_scope": "Host state machine, public lock injection and portable no_std compilation; actual kernel IRQ/preemption/SMP and fsync need independent gates.",
+      "sources": [
+        "libs/os-control/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "services/hepta-os/Cargo.toml",
+      "package": "hepta-os-observer",
+      "entry": "services/hepta-os/README.md",
+      "technical": [
+        "services/hepta-os/CONTRACT.md",
+        "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+        "services/hepta-os/OBJECTIVE_HISTORY.md",
+        "services/hepta-os/CPU_DELIVERY.md"
+      ],
+      "development": [
+        "services/hepta-os/RUN.md"
+      ],
+      "owner": "A trusted host provides expected Agentd identity and endpoint; this client owns no signer, policy, process launcher or persistent operation state.",
+      "failure_recovery": "One transport attempt can leave an unknown result; retain the original request and query original history instead of repeating submission.",
+      "current_scope": "Linux observer plus explicit Objective/history/CPU features; no default device startup and no qualified Windows, Android or Asterinas transport.",
+      "sources": [
+        "services/hepta-os/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "services/hepta-session-host/Cargo.toml",
+      "package": "hepta-session-host",
+      "entry": "services/hepta-session-host/README.md",
+      "technical": [
+        "services/hepta-session-host/README.md",
+        "services/hepta-session-host/TEXT_SESSION.md",
+        "support/ui/DEPENDENCIES.md",
+        "services/hepta-session-host/src/product_root/README.md",
+        "services/hepta-session-host/src/product_root/RECOVERY.md",
+        "support/ui/ROOT_PRODUCT.md",
+        "support/ui/NATIVE_HUMAN.md"
+      ],
+      "development": [
+        "services/hepta-session-host/README.md",
+        "services/hepta-session-host/TEXT_SESSION.md",
+        "services/hepta-session-host/src/product_root/README.md"
+      ],
+      "owner": "Original Root, Fleet, Supervisor, writer and authenticated text session retain authority; the library injects original adapters and the explicit product-root entry composes these same owners.",
+      "failure_recovery": "PersistenceUnknown fences sends. The explicit entry permits one same-boot clean Current recovery after actual owner and Session retirement and lease expiry; partial or repeated ceremonies refuse without replay.",
+      "current_scope": "Trusted Linux embedding plus the feature-gated fresh product Root and bounded existing-state recovery; final installed model, input and accessibility acceptance remain separate from source and component checks.",
+      "sources": [
+        "services/hepta-session-host/src/lib.rs",
+        "services/hepta-session-host/src/bin/hepta-desktop-root.rs",
+        "services/hepta-session-host/src/product_root/mod.rs"
+      ]
+    },
+    {
+      "manifest": "support/ui/Cargo.toml",
+      "package": "trill-ui-boundary",
+      "entry": "support/ui/README.md",
+      "technical": [
+        "support/ui/BOUNDARIES.md",
+        "support/ui/INTEGRATION_CONTRACTS.md"
+      ],
+      "development": [
+        "support/ui/README.md",
+        "support/ui/RUN.md"
+      ],
+      "owner": "Pure model values describe process, compositor, GPU, Android and permission observations; the trusted platform owners retain real resources.",
+      "failure_recovery": "Generation changes invalidate modeled surfaces; stale observations stay stale until a fresh owner observation arrives.",
+      "current_scope": "Pure contract model and packaging support; model success does not prove actual compositor, input method, device reset or permission enforcement.",
+      "sources": [
+        "support/ui/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "support/vmm/device_lifecycle/Cargo.toml",
+      "package": "a09-device-lifecycle",
+      "entry": "support/vmm/device_lifecycle/README.md",
+      "technical": [
+        "support/vmm/device_lifecycle/README.md",
+        "support/vmm/GATES.md"
+      ],
+      "development": [
+        "support/vmm/device_lifecycle/README.md"
+      ],
+      "owner": "The model tracks generation and lifecycle states; actual IOMMU, DMA, interrupt and reset ownership remains with future platform adapters.",
+      "failure_recovery": "Revoke/quiesce/reset ordering is explicit; an unknown or failed device transition cannot be reclassified as successful cleanup.",
+      "current_scope": "Executable lifecycle model only; no physical DMA pin, IOMMU map, IRQ or device reset implementation.",
+      "sources": [
+        "support/vmm/device_lifecycle/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "tests/control/backend_no_std/Cargo.toml",
+      "package": "os-control-backend-no-std",
+      "entry": "tests/control/backend_no_std/VALIDATION.md",
+      "technical": [
+        "tests/control/backend_no_std/VALIDATION.md",
+        "libs/os-control/API_CONTRACT.md"
+      ],
+      "development": [
+        "tests/control/backend_no_std/VALIDATION.md"
+      ],
+      "owner": "A downstream fixture implements only the public lock API and borrows synthetic owners; it grants no kernel or Hepta authority.",
+      "failure_recovery": "Compile-time assertions reject Send guard or public API regressions; failed builds retain their original diagnostic rather than changing backend semantics.",
+      "current_scope": "Independent bare no_std compilation and public handle checks, without an executable, scheduler, allocator or crash-durability proof.",
+      "sources": [
+        "tests/control/backend_no_std/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "tests/control/loom/Cargo.toml",
+      "package": "os-control-loom",
+      "entry": "tests/control/loom/README.md",
+      "technical": [
+        "tests/control/loom/README.md",
+        "libs/os-control/API_CONTRACT.md"
+      ],
+      "development": [
+        "tests/control/loom/README.md",
+        "tests/control/VALIDATION.md"
+      ],
+      "owner": "The driver stages actual production modules and changes only synchronization for modeled fixture threads or the public backend.",
+      "failure_recovery": "Keep staged sources and failed interleavings; a model counterexample needs an implementation fix rather than a skipped schedule.",
+      "current_scope": "Bounded host interleaving exploration; real kernel locking, process death and persistent Hepta recovery are independent.",
+      "sources": [
+        "tests/control/loom/models.rs",
+        "tests/control/loom/models_public.rs",
+        "tests/control/loom/run-models.py"
+      ]
+    },
+    {
+      "manifest": "tests/ui/Cargo.toml",
+      "package": "trillionnium-ui-contracts",
+      "entry": "tests/ui/README.md",
+      "technical": [
+        "tests/ui/README.md",
+        "support/ui/INTEGRATION_CONTRACTS.md"
+      ],
+      "development": [
+        "tests/ui/README.md",
+        "tests/ui/TESTPLAN.md"
+      ],
+      "owner": "Dependency-free host models own fixture state only; real Session, Notes and original Hepta owners are exercised by separate process tools.",
+      "failure_recovery": "Assert generation/identity separation, storage refusal and unknown outcomes; preserve raw failures and do not infer owner terminality from a frame marker.",
+      "current_scope": "Contract models and separately scoped host/window harnesses; physical devices and production effects require their exact execution inputs.",
+      "sources": [
+        "tests/ui/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "tests/workloads/linux/rust/Cargo.toml",
+      "package": "a04-tokio-workload",
+      "entry": "tests/workloads/linux/rust/README.md",
+      "technical": [
+        "tests/workloads/linux/rust/README.md",
+        "docs/LINUX_COMPATIBILITY.md"
+      ],
+      "development": [
+        "tests/workloads/linux/rust/README.md",
+        "tests/workloads/linux/FULL_UBUNTU_PROFILE.md"
+      ],
+      "owner": "The executable owns a caller-selected scratch socket/files and fixture threads using ordinary process permissions.",
+      "failure_recovery": "Mismatch or I/O failure exits with error; after a crash retain inputs and select a fresh scratch directory before an explicit cleanup.",
+      "current_scope": "Small std/Tokio Linux ABI probe; a host run does not qualify the guest binary, complete ABI, Agentd or a desktop session.",
+      "sources": [
+        "tests/workloads/linux/rust/src/main.rs"
+      ]
+    },
+    {
+      "manifest": "ui/Cargo.toml",
+      "package": null,
+      "entry": "ui/README.md",
+      "technical": [
+        "support/ui/INTEGRATION_CONTRACTS.md",
+        "docs/SOURCES.md#hepta-native-organ",
+        "support/ui/DEPENDENCIES.md"
+      ],
+      "development": [
+        "ui/README.md",
+        "support/ui/RUN.md"
+      ],
+      "owner": "Cargo workspace coordinates five Rust host processes/libraries; original Hepta authority and application data remain with their existing owners.",
+      "failure_recovery": "Build feature/lock/resource combinations together; refuse mismatched resources and reconcile original identities after uncertain dispatch.",
+      "current_scope": "Linux native egui baseline and explicit original Makepad feature; Asterinas display/input and mobile builds require separate platform gates.",
+      "sources": [
+        "ui/core/src/lib.rs",
+        "ui/session/src/main.rs",
+        "ui/shell/src/main.rs",
+        "ui/app-window/src/main.rs",
+        "ui/broker/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "ui/app-window/Cargo.toml",
+      "package": "trill-app-window",
+      "entry": "ui/app-window/README.md",
+      "technical": [
+        "support/ui/NOTES_ORGAN.md",
+        "support/ui/NOTES_DURABILITY.md",
+        "support/ui/ACCESSIBILITY.md"
+      ],
+      "development": [
+        "ui/app-window/README.md",
+        "tests/ui/TESTPLAN.md"
+      ],
+      "owner": "A bounded application worker serializes Notes text, CAS revision, checkpoint and exact app receipts; Hepta owns operation terminality.",
+      "failure_recovery": "Failed synchronization freezes mutation; normal close waits for the last save ACK, while explicit stop-waiting closes without cancelling, repeating or rolling back an edit. Old incarnation recovery keeps its exclusive store and recovery-only channel.",
+      "current_scope": "Native Notes, Calculator and restricted Terminal; durable Notes are explicit and ordinary saved-text reopening creates a new target copy.",
+      "sources": [
+        "ui/app-window/src/main.rs"
+      ]
+    },
+    {
+      "manifest": "ui/broker/Cargo.toml",
+      "package": "trill-ui-broker",
+      "entry": "ui/broker/README.md",
+      "technical": [
+        "support/ui/NOTES_ORGAN.md",
+        "support/ui/INTEGRATION_CONTRACTS.md"
+      ],
+      "development": [
+        "ui/broker/README.md",
+        "support/ui/RUN.md"
+      ],
+      "owner": "The broker owns bounded host admission and private target exchange; original authority, identity and durable receipt retirement remain with Hepta.",
+      "failure_recovery": "Frame/correlation errors poison the effect stream; a separate recovery datagram observes and acknowledges the exact retained receipt.",
+      "current_scope": "Same-UID host prototype and trusted-owner target seams, without an issuer, kernel CapSpace or replacement effect ledger.",
+      "sources": [
+        "ui/broker/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "ui/core/Cargo.toml",
+      "package": "trill-ui-core",
+      "entry": "ui/core/README.md",
+      "technical": [
+        "support/ui/CHAT_WORKSPACE.md",
+        "support/ui/NOTES_MODEL.md",
+        "support/ui/NOTES_ORGAN.md",
+        "support/ui/NOTES_DURABILITY.md"
+      ],
+      "development": [
+        "ui/core/README.md",
+        "ui/README.md"
+      ],
+      "owner": "Typed wire/identity models and the application-owned Notes store are shared by consumers; they do not sign or own original Hepta effects.",
+      "failure_recovery": "Validate bounded checkpoints, custody and exclusive incarnation locks; storage ambiguity remains frozen and stale observations cannot become fresh success.",
+      "current_scope": "Shared host contracts, private Notes protocol and synchronized app storage; no A05 permission or production authorization mechanism.",
+      "sources": [
+        "ui/core/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "ui/session/Cargo.toml",
+      "package": "trill-session",
+      "entry": "ui/session/README.md",
+      "technical": [
+        "ui/session/OBJECTIVE_BRIDGE.md",
+        "ui/session/OBJECTIVE_SUBMISSION.md",
+        "support/ui/NOTES_ORGAN.md"
+      ],
+      "development": [
+        "ui/session/README.md",
+        "support/ui/RUN.md"
+      ],
+      "owner": "Session owns host child process lifecycle, socket generation and bounded workers; original Root/Agentd supplies trusted submission and Notes bootstrap authority.",
+      "failure_recovery": "Connection I/O has one finite deadline; restart creates a new generation, and lost replies require observation instead of implicit successful cancellation or resend.",
+      "current_scope": "Linux host process/observer/Objective bridge and explicit private Notes reservation/bootstrap; standalone Session installs no production effect owner.",
+      "sources": [
+        "ui/session/src/lib.rs"
+      ]
+    },
+    {
+      "manifest": "ui/shell/Cargo.toml",
+      "package": "trill-shell",
+      "entry": "ui/shell/README.md",
+      "technical": [
+        "ui/shell/OBSERVATION_FRESHNESS.md",
+        "services/hepta-session-host/TEXT_SESSION.md",
+        "support/ui/NATIVE_MAKEPAD.md"
+      ],
+      "development": [
+        "ui/shell/README.md",
+        "support/ui/PRODUCT.md"
+      ],
+      "owner": "Shell renders local drafts and original owner projections; optional Makepad borrows the existing ChatWorkspace and authenticated Root text session.",
+      "failure_recovery": "Restore drafts separately from execution state; recover navigation under the same original request identities and keep unknown cards from minting replacement sends.",
+      "current_scope": "Rust native host presentation, local draft persistence and opt-in authenticated native text path; actual input/accessibility/platform gates remain separate.",
+      "sources": [
+        "ui/shell/src/main.rs"
+      ]
+    }
+  ],
+  "domains": [
+    {
+      "id": "A00",
+      "sources": [
+        "support/release/organ_release_profile.py",
+        "support/ui/verify_product_dependencies.py"
+      ],
+      "technical": [
+        "docs/ARCHITECTURE.md",
+        "support/ui/DEPENDENCIES.md"
+      ],
+      "development": [
+        "docs/agents/ORGAN_RELEASE_PROFILE.md",
+        "support/ui/PRODUCT.md"
+      ],
+      "owner": "Release tools bind original sources and artifacts; original Root/Agentd retains production authority and deployment inputs.",
+      "failure_recovery": "Refuse mixed sources, locks or resources; install rollback cannot clear an uncertain operation or issue another grant.",
+      "current_scope": "Source/package integrity and install/upgrade procedures; combined execution and production authority have separate evidence."
+    },
+    {
+      "id": "A01",
+      "sources": [
+        "support/build/verify-source.py",
+        "support/build/ktest/run.py"
+      ],
+      "technical": [
+        "docs/ARCHITECTURE.md",
+        "docs/modules/kernel-workspace/README.md"
+      ],
+      "development": [
+        "support/build/README.md",
+        "support/build/ktest/README.md"
+      ],
+      "owner": "Pinned toolchain, original OSDK and strict runner own build and test discovery; real resource state remains in the kernel.",
+      "failure_recovery": "Retain raw exits, timeouts, full test inventory and ignored cases; filtered or soft-skipped paths cannot be marked complete.",
+      "current_scope": "Explicit kernel source/build/boot and scoped native runners; platform and whole-product qualification are independent."
+    },
+    {
+      "id": "A02",
+      "sources": [
+        "libs/os-abi/src/lib.rs"
+      ],
+      "technical": [
+        "docs/NATIVE_ABI.md"
+      ],
+      "development": [
+        "libs/os-abi/README.md",
+        "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md"
+      ],
+      "owner": "The codec owns byte interpretation only; the kernel profile owns availability and the original Hepta owner owns authority and durable outcomes.",
+      "failure_recovery": "Reject malformed frames without assigning effect authority; uncertain effects are queried through the real owner rather than replayed by the codec.",
+      "current_scope": "Bounded no_std wire encoding/decoding and host acceptance; successful parsing does not establish native execution."
+    },
+    {
+      "id": "A03",
+      "sources": [
+        "libs/os-control/src/lib.rs"
+      ],
+      "technical": [
+        "libs/os-control/API_CONTRACT.md"
+      ],
+      "development": [
+        "libs/os-control/README.md",
+        "tests/control/VALIDATION.md"
+      ],
+      "owner": "ControlCoreWith owns boot-local delivery identity and pins the actual resource allocation; Hepta retains durable logical identity.",
+      "failure_recovery": "Pending or ambiguous callbacks fence replay and retirement; only the original resource owner can reconcile a possible effect.",
+      "current_scope": "Host state machine, public lock injection and portable no_std compilation; actual kernel IRQ/preemption/SMP and fsync need independent gates."
+    },
+    {
+      "id": "A04",
+      "sources": [
+        "compat/linux/compare.py",
+        "support/rootfs/capture.py",
+        "tests/workloads/linux/run_sqlite_restart_guest.py"
+      ],
+      "technical": [
+        "docs/LINUX_COMPATIBILITY.md",
+        "compat/linux/GAPS.md"
+      ],
+      "development": [
+        "support/rootfs/README.md",
+        "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+        "tests/workloads/linux/SQLITE_GUEST_RESTART.md"
+      ],
+      "owner": "Guest filesystem, ELF loader and process ABI own Linux behavior; rootfs tooling binds the exact supplied binaries.",
+      "failure_recovery": "Keep writeback, permission and restart failures with the exact image; host success cannot replace a failed guest result.",
+      "current_scope": "Linux ABI/rootfs/storage probes; complete original Agentd and UI guest deployment require their own dependency and runtime gates."
+    },
+    {
+      "id": "A05",
+      "sources": [
+        "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs"
+      ],
+      "technical": [
+        "docs/NATIVE_ABI.md",
+        "docs/ASTERINAS_PROCESS_IMAGE_G1C.md"
+      ],
+      "development": [
+        "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+        "docs/agents/G1C_TRUSTED_OBSERVE_PROFILE.md",
+        "docs/agents/G1D_TRUSTED_CONTROL_PROFILE.md"
+      ],
+      "owner": "The kernel authenticates actual process images and profile-specific namespaces; labels cannot confer a trusted role.",
+      "failure_recovery": "Copyin/copyout, generation and lifecycle failures remain explicit; unknown delivery uses the original namespace observation.",
+      "current_scope": "Ordinary QueryAbi, G1-c observation and explicit three-role G1-d control experiment have distinct compiled profiles."
+    },
+    {
+      "id": "A06",
+      "sources": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs"
+      ],
+      "technical": [
+        "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "docs/SECURITY_AND_RECOVERY.md"
+      ],
+      "development": [
+        "docs/agents/CGROUP_MEMORY_ADMISSION.md",
+        "docs/agents/G1D_WATCHDOG.md",
+        "tests/kernel/control/G1D_BOUNDED_RECOVERY.md"
+      ],
+      "owner": "Original scheduler/accounting and memory owners enforce actual limits; recovery follows the original kernel lifecycle and locks.",
+      "failure_recovery": "Settle actual usage under its owner lock and keep unsupported/refused behavior explicit; finite recovery is not global physical reservation.",
+      "current_scope": "CPU enforcement/accounting plus experimental memory/watchdog paths; SMP, all-process reservation and complete recovery need separate gates."
+    },
+    {
+      "id": "A07",
+      "sources": [
+        "services/hepta-session-host/src/lib.rs"
+      ],
+      "technical": [
+        "services/hepta-session-host/README.md",
+        "services/hepta-session-host/TEXT_SESSION.md",
+        "support/ui/DEPENDENCIES.md"
+      ],
+      "development": [
+        "services/hepta-session-host/README.md",
+        "services/hepta-session-host/TEXT_SESSION.md"
+      ],
+      "owner": "The injected original ProductionObjectiveSender, Agentd writer and authenticated Root text session retain authority and permanent send fencing.",
+      "failure_recovery": "PersistenceUnknown fences new sends; recover the same retained identity with an independent current-cut ACK and query the original owner.",
+      "current_scope": "Trusted Linux embedding and authenticated original text adapter; no default production checkpoint provider, issuer or second database."
+    },
+    {
+      "id": "A08",
+      "sources": [
+        "support/android/device_organ.py",
+        "support/android/receiver/build_receiver.py",
+        "support/android/verify_source_integrity.py"
+      ],
+      "technical": [
+        "docs/ANDROID_COMPATIBILITY.md",
+        "compat/android/INTERFACES.md",
+        "support/android/DEVICE_ORGAN.md"
+      ],
+      "development": [
+        "support/android/README.md",
+        "support/android/receiver/README.md"
+      ],
+      "owner": "Existing Android helper/runner and original effect owner retain exact device, window, snapshot and authority bindings.",
+      "failure_recovery": "Reject stale snapshots, signer drift and ambiguous readback; adapter retries cannot supply missing authorization.",
+      "current_scope": "AOSP/ABI host tools, read-only adapter and strict receiver candidate; actual signed installation and production effects need exact-device runs."
+    },
+    {
+      "id": "A09",
+      "sources": [
+        "support/hardware/probe.py",
+        "support/vmm/acceptance.py",
+        "support/vmm/kernel_join_gate.py"
+      ],
+      "technical": [
+        "docs/HARDWARE_AND_DRIVERS.md",
+        "support/vmm/GATES.md",
+        "support/vmm/PROVENANCE.md"
+      ],
+      "development": [
+        "support/hardware/DECISION.md",
+        "tests/hardware/RUN.md",
+        "support/vmm/device_lifecycle/README.md"
+      ],
+      "owner": "Actual platform drivers must own DMA pins, IOMMU mappings, interrupts and reset; inventory/model values grant no hardware authority.",
+      "failure_recovery": "Quiesce and revoke before reset/release; unknown state needs a verified platform recovery path rather than modeled success.",
+      "current_scope": "Read-only inventory, lifecycle models and explicit hardware gates; physical GPU, IOMMU and mobile BSP remain target-specific."
+    },
+    {
+      "id": "A10",
+      "sources": [
+        "ui/core/src/lib.rs",
+        "ui/session/src/main.rs",
+        "ui/shell/src/main.rs",
+        "ui/app-window/src/main.rs",
+        "ui/broker/src/lib.rs"
+      ],
+      "technical": [
+        "support/ui/INTEGRATION_CONTRACTS.md",
+        "docs/SOURCES.md#hepta-native-organ",
+        "support/ui/DEPENDENCIES.md"
+      ],
+      "development": [
+        "ui/README.md",
+        "support/ui/RUN.md"
+      ],
+      "owner": "Cargo workspace coordinates five Rust host processes/libraries; original Hepta authority and application data remain with their existing owners.",
+      "failure_recovery": "Build feature/lock/resource combinations together; refuse mismatched resources and reconcile original identities after uncertain dispatch.",
+      "current_scope": "Linux native egui baseline and explicit original Makepad feature; Asterinas display/input and mobile builds require separate platform gates."
+    }
+  ]
+}

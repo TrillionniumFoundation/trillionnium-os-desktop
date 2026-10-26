@@ -49,13 +49,41 @@ enum Mode {
 /// The caller must then close it and recover from the original on-disk state.
 pub struct NotesStore {
     directory: File,
-    _lock: File,
+    _lock: IncarnationLock,
     document: NotesDocument,
     mode: Mode,
     frozen: bool,
 }
 
+struct IncarnationLock(File);
+
+impl std::ops::Deref for IncarnationLock {
+    type Target = File;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Drop for IncarnationLock {
+    fn drop(&mut self) {
+        // A concurrent fork can retain the open description until exec even
+        // though its fd is CLOEXEC. Retiring this owner must release its lock
+        // now, rather than wait for an unrelated child's inherited fd to close.
+        let _ = unsafe { libc::flock(self.0.as_raw_fd(), libc::LOCK_UN) };
+    }
+}
+
 impl NotesStore {
+    /// Preflight only: the existing canonical private storage root is opened
+    /// with the original UID/directory guards. No document or lock is created.
+    pub fn validate_existing_storage_root(root: &Path) -> io::Result<()> {
+        if root.canonicalize()? != root {
+            return Err(io::Error::other("Notes storage root must be canonical"));
+        }
+        let _directory = open_root(root, false)?;
+        Ok(())
+    }
     /// Create a fresh incarnation. Existing names are never reset or adopted,
     /// including a partially created directory left by a crashed predecessor.
     pub fn create(root: &Path, target: NotesTargetIdentity) -> io::Result<Self> {
@@ -409,12 +437,12 @@ fn open_file(directory: &File, name: &str, flags: libc::c_int) -> io::Result<Fil
     Ok(file)
 }
 
-fn lock_directory(directory: &File) -> io::Result<File> {
+fn lock_directory(directory: &File) -> io::Result<IncarnationLock> {
     let lock = open_file(directory, "lock", libc::O_RDWR | libc::O_CREAT)?;
     if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
         return Err(io::Error::last_os_error());
     }
-    Ok(lock)
+    Ok(IncarnationLock(lock))
 }
 
 fn replace_checkpoint(directory: &File, bytes: &[u8]) -> io::Result<()> {
@@ -449,3 +477,7 @@ fn replace_checkpoint(directory: &File, bytes: &[u8]) -> io::Result<()> {
     }
     directory.sync_all()
 }
+
+#[cfg(test)]
+#[path = "notes_store_lock_tests.rs"]
+mod lock_tests;

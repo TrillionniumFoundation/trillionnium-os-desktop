@@ -435,20 +435,27 @@ class RootWorkloadNegativeTests(unittest.TestCase):
             negative.verify_delta(before, after, original, changed + b"other edit")
 
     def test_formatted_credential_selection_and_current_source_remain_exact(self):
-        # PR #252 changed layout without changing the production credentials.
-        # Exercise the actual tracked source as well as both exact spellings.
+        # Formatting and explicit workload-ID construction must still select
+        # exactly one reviewed workload expression in the tracked source.
         for before, after in negative.SELECTIONS:
             original = b"before\n" + before + b"after\n"
             self.assertEqual(negative.mutation(original), b"before\n" + after + b"after\n")
-            for extra in (before, after, negative.BEFORE, negative.FORMATTED_BEFORE):
+            for extra in (after, *(selection[0] for selection in negative.SELECTIONS)):
                 with self.assertRaises(ValueError):
                     negative.mutation(original + extra)
         path = negative.ROOT / negative.SOURCE
         source = path.read_bytes()
         changed = negative.mutation(source)
-        self.assertEqual(source.count(b"workload_credentials()?"), 1)
-        self.assertNotIn(b"workload_credentials()?", changed)
+        self.assertEqual(source.count(negative.IDENTIFIED_BEFORE), 1)
+        self.assertEqual(changed, source.replace(negative.IDENTIFIED_BEFORE, negative.IDENTIFIED_AFTER, 1))
+        self.assertNotIn(b"workload_credentials(WORKLOAD_ID)?", changed)
         self.assertEqual(path.read_bytes(), source, "the control must not edit the production source")
+
+    def test_unreviewed_workload_identity_is_not_a_valid_mutation_target(self):
+        for call in (b"workload_credentials(0)?", b"workload_credentials(OTHER_ID)?"):
+            source = negative.IDENTIFIED_BEFORE.replace(b"workload_credentials(WORKLOAD_ID)?", call)
+            with self.assertRaisesRegex(ValueError, "absent or ambiguous"):
+                negative.mutation(source)
 
 
 if __name__ == "__main__":

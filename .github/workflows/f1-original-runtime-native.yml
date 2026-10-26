@@ -126,6 +126,45 @@ jobs:
           git -C "$F1_CI_ROOT/desktop-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/desktop-source.txt"
           git -C "$F1_CI_ROOT/hepta-source" rev-parse HEAD HEAD^{tree} > "$F1_CI_ROOT/identity/hepta-source.txt"
 
+      - name: Fetch immutable upstream objects required by the original source verifier
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYCODE' 2>&1 | tee "$F1_CI_ROOT/logs/upstream-source-objects.log"
+          import json, os, re, subprocess
+          from pathlib import Path
+          root = Path(os.environ["F1_CI_ROOT"])
+          desktop = root / "desktop-source"
+          lock = desktop / "support/upstream-lock.json"
+          if lock.is_symlink() or not lock.is_file():
+              raise SystemExit("original upstream lock must be a regular source file")
+          kernel = json.loads(lock.read_bytes())["kernel"]
+          if (kernel.get("repository") != "asterinas/asterinas"
+              or any(not isinstance(kernel.get(field), str)
+                     or re.fullmatch(r"[0-9a-f]{40}", kernel[field]) is None
+                     for field in ("commit", "tree"))):
+              raise SystemExit("invalid immutable upstream source identity")
+          def git(*arguments):
+              return subprocess.check_output(["git", "-C", str(desktop), *arguments], text=True).strip()
+          before = git("rev-parse", "HEAD", "HEAD^{tree}")
+          if before.splitlines()[0] != os.environ["DESKTOP_SOURCE_PIN"] or git("status", "--porcelain=v1", "--untracked-files=all"):
+              raise SystemExit("reviewed Desktop source must remain exact before fetching upstream objects")
+          # A depth-one Desktop checkout lacks the original upstream root tree
+          # and lock seed. Fetch their exact immutable commit without changing
+          # any working file or weakening verify-source.py's Git-blob checks.
+          subprocess.run(["git", "-C", str(desktop), "-c", "credential.helper=", "-c", "core.askPass=",
+                          "fetch", "--depth=1", "--no-tags",
+                          "https://github.com/asterinas/asterinas.git", kernel["commit"]], check=True)
+          if git("rev-parse", kernel["commit"] + "^{tree}") != kernel["tree"]:
+              raise SystemExit("fetched upstream commit does not match the immutable tree")
+          git("cat-file", "-e", kernel["tree"] + "^{tree}")
+          if git("rev-parse", "HEAD", "HEAD^{tree}") != before or git("status", "--porcelain=v1", "--untracked-files=all"):
+              raise SystemExit("fetching upstream objects changed the reviewed Desktop source")
+          receipt = {"repository": kernel["repository"], "commit": kernel["commit"], "tree": kernel["tree"],
+                     "desktop_identity_unchanged": True, "tracked_files_unchanged": True}
+          (root / "identity/upstream-source.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          print(json.dumps(receipt, sort_keys=True))
+          PYCODE
+
       - name: Fetch the exact original VDSO and verify its bytes
         run: |
           set -euo pipefail

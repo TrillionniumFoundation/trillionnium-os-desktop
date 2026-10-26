@@ -22,6 +22,9 @@ sys.path.insert(0, str(HERE / "product"))
 import organ_release_profile as source_profile
 import desktop
 import preedit_source
+import preedit_component
+from build_target_lease import TargetLease
+import prepared_build_source
 
 
 def digest(path):
@@ -95,7 +98,9 @@ def controlled_environment(profile, target, jobs, tools, inherited=None):
     removed = []
     for key in list(env):
         if (key in {"RUSTC", "RUSTDOC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTC_BOOTSTRAP",
-                    "RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS"}
+                    "RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS",
+                    "DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS", "IBUS_ADDRESS"}
+                or key.startswith(("TRILL_", "HEPTA_"))
                 or key.startswith(("CARGO_BUILD_", "CARGO_PROFILE_", "CARGO_TARGET_"))
                 or re.match(r"^(?:(?:HOST|TARGET)_)?(?:CC|CXX|AR|CFLAGS|CXXFLAGS|CPPFLAGS|LDFLAGS)(?:_|$)", key)):
             removed.append(key)
@@ -203,7 +208,22 @@ def build(args):
         sdk_original, sdk_config = output / "sdk-original-metadata.json", output / "sdk-overrides.toml"
     logs = output / "logs"
     logs.mkdir(mode=0o700)
-    target = output / "target"
+    build_root = REPO
+    prepared_copy, prepared_lock, prepared_receipt = None, None, None
+    if args.committed_preedit_lock:
+        require(preedit, "A committed prepared lock requires the explicit preedit profile")
+        prepared_copy, prepared_lock, prepared_receipt = prepared_build_source.prepare(
+            os_repo, output / "desktop-source", identity, source_profile.Repository,
+            logs / "prepared-source.log")
+        build_root = prepared_copy.path
+    target = Path(args.target_dir).absolute() if args.target_dir else output / "target"
+    require(target.resolve() == target
+            and not any(target.is_relative_to(root) for root in
+                        (os_repo.path, hepta_repo.path, build_root)),
+            "Cargo target cache must be canonical and outside all build source checkouts")
+    if preedit:
+        require(not any(target.is_relative_to(root) for root in (sdk_helper, sdk_root_hint)),
+                "Cargo target cache must be outside the helper and prepared SDK")
     tools = {name: str(Path(subprocess.check_output(
         ["rustup", "which", "--toolchain", profile["toolchain"], name], text=True).strip()).resolve(strict=True))
         for name in ("cargo", "rustc", "rustdoc")}
@@ -213,6 +233,7 @@ def build(args):
                "hepta": hepta_identity, "profile": profile,
                "profile_sha256": digest(profile_path), "cargo_profile": args.build_profile,
                "commands": [], "locks": {}, "binaries": {},
+               "cargo_target_reused": bool(args.target_dir),
                "toolchain_executables": {name: {"path": path, "sha256": digest(path)} for name, path in tools.items()},
                "ambient_overrides_removed": removed,
                "native_input_paths": {key: env[key] for key in ("PKG_CONFIG_PATH", "PKG_CONFIG_LIBDIR",
@@ -228,7 +249,11 @@ def build(args):
 
     def run(name, command, machine_output=False):
         if command[0] == "cargo" and sdk_config is not None and "ui/Cargo.toml" in command:
-            command = [command[0], "--config", str(sdk_config), *command[1:]]
+            # Clippy forwards its own arguments to Cargo; a global --config
+            # before the subcommand can be lost by that forwarding.
+            command = ([command[0], "clippy", "--config", str(sdk_config), *command[2:]]
+                       if command[1] == "clippy"
+                       else [command[0], "--config", str(sdk_config), *command[1:]])
         if command[0] in tools:
             command = [tools[command[0]], *command[1:]]
         start = time.monotonic()
@@ -238,14 +263,22 @@ def build(args):
         save()
         print("Running " + name, flush=True)
         with stdout.open("xb") as out, stderr.open("xb") as err:
-            result = subprocess.run(command, cwd=REPO, env=env, stdin=subprocess.DEVNULL, stdout=out, stderr=err)
+            result = subprocess.run(command, cwd=build_root, env=env, stdin=subprocess.DEVNULL, stdout=out, stderr=err)
         entry.update(exit_code=result.returncode, seconds=round(time.monotonic() - start, 3),
                      stdout_sha256=digest(stdout), stderr_sha256=digest(stderr))
         save()
         require(result.returncode == 0, f"{name} failed with exit {result.returncode}; retain {stderr} and {stdout}")
         return stdout
 
+    target_lease = None
     try:
+        target_lease = TargetLease(target)
+        receipt["target_cache_lease"] = target_lease.record()
+        if prepared_receipt is not None:
+            receipt["declared_build_source"] = prepared_receipt
+            declared = output / "declared-build-source.json"
+            desktop.atomic_write(declared, source_profile.canonical(prepared_receipt))
+            env["TRILL_UI_DECLARED_BUILD_SOURCE"] = str(declared)
         save()
         manifest_bytes = source_profile.canonical(manifest)
         (output / "source-profile.json").write_bytes(manifest_bytes)
@@ -253,12 +286,13 @@ def build(args):
         (output / "source-verification.json").write_bytes(source_profile.canonical(source_receipt))
         for relative in ("ui/Cargo.lock", "services/hepta-session-host/Cargo.lock",
                          "services/hepta-os/Cargo.lock", "support/ui/Cargo.lock", "tests/ui/Cargo.lock"):
-            receipt["locks"][relative] = validate_hepta_lock(REPO / relative, args.hepta_commit)
+            receipt["locks"][relative] = validate_hepta_lock(build_root / relative, args.hepta_commit)
         compiler = run("compiler", ["rustc", "--version", "--verbose"])
         require(compiler.read_text().splitlines()[0].startswith("rustc " + profile["toolchain"] + " "), "Unexpected Rust compiler")
         require("host: " + profile["target"] in compiler.read_text(), "Unexpected Rust host target")
         run("cargo", ["cargo", "--version"])
         common = ["--locked"] + (["--offline"] if args.offline else [])
+        compiled = common + (["--release"] if args.build_profile == "release" else [])
         feature = ["--features", profile["cargo_feature"]]
         metadata = run("native-metadata", ["cargo", "metadata", "--manifest-path", "ui/Cargo.toml",
             "--format-version", "1", *common, *feature], machine_output=True)
@@ -282,13 +316,21 @@ def build(args):
         receipt["source_caches"] = verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile, sdk_profile)
         run("rustfmt", ["cargo", "fmt", "--manifest-path", "ui/Cargo.toml", "--all", "--", "--check"])
         for name, path, features in (
-            ("native-ui-tests", "ui/Cargo.toml", ["--workspace", *feature]),
+            ("native-ui-tests", "ui/Cargo.toml", ["--workspace", "--all-targets", *feature]),
             ("native-text-tests", "services/hepta-session-host/Cargo.toml", ["--features", "native-text", "--lib"]),
             ("observer-tests", "services/hepta-os/Cargo.toml", []),
             ("support-tests", "support/ui/Cargo.toml", []),
             ("host-contract-tests", "tests/ui/Cargo.toml", []),
         ):
-            run(name, ["cargo", "test", "--manifest-path", path, *common, *features])
+            run(name, ["cargo", "test", "--manifest-path", path, *compiled, *features])
+        if preedit:
+            receipt["sdk_regressions"] = {}
+            for name, command, test_filter, expected in preedit_component.sdk_test_commands(profile, compiled):
+                log = run(name, command)
+                receipt["sdk_regressions"][name] = preedit_component.require_test_results(log.read_text(), expected, test_filter)
+                save()
+        run("native-ui-clippy", ["cargo", "clippy", "--manifest-path", "ui/Cargo.toml",
+            "--workspace", "--all-targets", *compiled, *feature, "--", "-D", "warnings"])
         command = ["cargo", "build", "--manifest-path", "ui/Cargo.toml", "--workspace", "--bins", *common, *feature]
         if args.build_profile == "release":
             command.append("--release")
@@ -310,6 +352,8 @@ def build(args):
         require(len(resource_files) == profile["resource_files"], "Resource inventory differs from this exact profile")
         receipt["resources"] = {name: digest(resources / name) for name in resource_files}
         os_repo.check(args.desktop_commit, args.desktop_tree)
+        if prepared_copy is not None:
+            prepared_build_source.verify(prepared_copy, identity, prepared_lock)
         hepta_repo.check(args.hepta_commit, args.hepta_tree)
         require(verify_source_caches(graph, args.hepta_commit, args.hepta_tree, profile, sdk_profile) == receipt["source_caches"],
                 "Actual Cargo source caches changed while building")
@@ -322,7 +366,7 @@ def build(args):
         for name, executable in receipt["toolchain_executables"].items():
             require(digest(executable["path"]) == executable["sha256"], "Compiler executable changed: " + name)
         for path, checksum in receipt["locks"].items():
-            require(digest(REPO / path) == checksum, "Cargo lock changed while building: " + path)
+            require(digest(build_root / path) == checksum, "Cargo lock changed while building: " + path)
         for name in desktop.PROGRAMS:
             binary = target / args.build_profile / name
             require(binary.is_file() and not binary.is_symlink(), "Missing native binary: " + name)
@@ -347,6 +391,9 @@ def build(args):
         receipt.update(status="failed", exit_code=1, error=str(error))
         save()
         raise
+    finally:
+        if target_lease is not None:
+            target_lease.close()
 
 
 def main():
@@ -362,6 +409,9 @@ def main():
     parser.add_argument("--sdk-original-metadata")
     parser.add_argument("--sdk-cargo-config")
     parser.add_argument("--sdk-helper-repo")
+    parser.add_argument("--target-dir", help="Explicit canonical Cargo cache outside the frozen source checkouts")
+    parser.add_argument("--committed-preedit-lock", action="store_true",
+                        help="Build only the declared tracked prepared lock in a verified disposable source copy")
     try:
         return build(parser.parse_args())
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, source_profile.ProfileError, desktop.ProductError) as error:

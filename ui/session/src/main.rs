@@ -4,6 +4,8 @@ mod deadline;
 mod hepta;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
+#[cfg(target_os = "linux")]
+mod notes_lifetime;
 mod objective_bridge;
 
 use std::collections::BTreeMap;
@@ -130,6 +132,8 @@ impl DisplayTracker {
 }
 
 struct Session {
+    #[cfg(target_os = "linux")]
+    notes_durable_required: bool,
     objective: objective_bridge::ObjectiveBridge,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
@@ -158,6 +162,8 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            #[cfg(target_os = "linux")]
+            notes_durable_required: false,
             objective: objective_bridge::ObjectiveBridge::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
@@ -293,6 +299,7 @@ impl Session {
             .arg("--notes-incarnation")
             .arg(&identity.incarnation)
             .stdin(Stdio::from(OwnedFd::from(child_bootstrap)));
+        notes_lifetime::attach(command, &identity, self.notes_durable_required)?;
         Ok(target)
     }
 
@@ -345,6 +352,10 @@ impl Session {
         // No arbitrary command strings, shell expansion, user paths or elevated rights.
         let mut command = self.child_command(id, workspace, app);
         command.stdin(Stdio::null());
+        #[cfg(target_os = "linux")]
+        command
+            .env_remove(trill_ui_core::notes_lifetime::FD_ENV_V1)
+            .env_remove(trill_ui_core::notes_lifetime::META_ENV_V1);
         #[cfg(target_os = "linux")]
         let notes_target = {
             let enabled = app == AppKind::Notes;
@@ -794,7 +805,11 @@ fn serve_request(stream: &mut deadline::DeadlineStream, session: &mut Session) -
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum NotesBootstrapMode { None, Direct, Reserved }
+enum NotesBootstrapMode {
+    None,
+    Direct,
+    Reserved,
+}
 
 fn notes_bootstrap_requested(
     args: impl IntoIterator<Item = std::ffi::OsString>,
@@ -802,8 +817,12 @@ fn notes_bootstrap_requested(
     let mut args = args.into_iter();
     match args.next() {
         None => Ok(NotesBootstrapMode::None),
-        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Direct),
-        Some(flag) if flag == "--notes-root-bootstrap-stdin" && args.next().is_none() => Ok(NotesBootstrapMode::Reserved),
+        Some(flag) if flag == "--notes-bootstrap-stdin" && args.next().is_none() => {
+            Ok(NotesBootstrapMode::Direct)
+        }
+        Some(flag) if flag == "--notes-root-bootstrap-stdin" && args.next().is_none() => {
+            Ok(NotesBootstrapMode::Reserved)
+        }
         _ => Err(io::Error::new(
             io::ErrorKind::InvalidInput,
             "expected no arguments, --notes-bootstrap-stdin or --notes-root-bootstrap-stdin",
@@ -814,10 +833,19 @@ fn notes_bootstrap_requested(
 fn main() -> io::Result<()> {
     let requested = notes_bootstrap_requested(std::env::args_os().skip(1))?;
     #[cfg(target_os = "linux")]
+    if requested == NotesBootstrapMode::Reserved {
+        notes_lifetime::require_durable_storage()?;
+    }
+    #[cfg(target_os = "linux")]
     let notes_bootstrap = match requested {
         NotesBootstrapMode::None => None,
-        NotesBootstrapMode::Direct => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?),
-        NotesBootstrapMode::Reserved => Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?.with_root_startup_reservation()),
+        NotesBootstrapMode::Direct => {
+            Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?)
+        }
+        NotesBootstrapMode::Reserved => Some(
+            notes_bootstrap::NotesBootstrap::from_inherited_stdin()?
+                .with_root_startup_reservation(),
+        ),
     };
     #[cfg(not(target_os = "linux"))]
     if requested != NotesBootstrapMode::None {
@@ -843,7 +871,7 @@ fn main() -> io::Result<()> {
                 return Err(io::Error::new(
                     io::ErrorKind::AddrInUse,
                     "session service already running",
-                ))
+                ));
             }
             Err(e) if e.kind() == io::ErrorKind::ConnectionRefused => fs::remove_file(&socket)?,
             Err(e) => return Err(e),
@@ -859,6 +887,10 @@ fn main() -> io::Result<()> {
         app_binary.display()
     );
     let mut session = Session::new(app_binary)?;
+    #[cfg(target_os = "linux")]
+    {
+        session.notes_durable_required = requested == NotesBootstrapMode::Reserved;
+    }
     session.hepta = hepta::HeptaMonitor::from_env();
     #[cfg(target_os = "linux")]
     if let Some(bootstrap) = notes_bootstrap {
@@ -899,9 +931,18 @@ mod tests {
     #[test]
     fn notes_bootstrap_is_explicit_startup_and_never_a_public_request() {
         use std::ffi::OsString;
-        assert_eq!(notes_bootstrap_requested(Vec::<OsString>::new()).unwrap(), NotesBootstrapMode::None);
-        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Direct);
-        assert_eq!(notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(), NotesBootstrapMode::Reserved);
+        assert_eq!(
+            notes_bootstrap_requested(Vec::<OsString>::new()).unwrap(),
+            NotesBootstrapMode::None
+        );
+        assert_eq!(
+            notes_bootstrap_requested([OsString::from("--notes-bootstrap-stdin")]).unwrap(),
+            NotesBootstrapMode::Direct
+        );
+        assert_eq!(
+            notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(),
+            NotesBootstrapMode::Reserved
+        );
         assert!(notes_bootstrap_requested([
             OsString::from("--notes-bootstrap-stdin"),
             OsString::from("extra")
@@ -1288,6 +1329,29 @@ mod tests {
         else {
             panic!("expected owned host child");
         };
+        // The request deadline is not proof that /bin/true was scheduled.
+        // Observe real exit first, retaining the same Child in the Session.
+        // try_wait caches its ExitStatus but does not project TaskRecord or
+        // retire the children entry; the timeout exchange must still do that.
+        let mut exited = false;
+        for _ in 0..100 {
+            if session
+                .children
+                .get_mut(&task.id)
+                .unwrap()
+                .try_wait()
+                .unwrap()
+                .is_some()
+            {
+                exited = true;
+                break;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        assert!(exited, "owned /bin/true must exit within the fixture bound");
+        assert_eq!(session.tasks[&task.id].state, TaskState::Running);
+        assert!(session.children.contains_key(&task.id));
+
         let (mut incomplete, stream) = UnixStream::pair().unwrap();
         // One ordinary partial frame, followed by no more input. This is a
         // controlled transport-timeout fixture with no retrying sender.

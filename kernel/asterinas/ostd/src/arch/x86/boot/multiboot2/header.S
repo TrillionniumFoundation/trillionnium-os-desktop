@@ -38,6 +38,19 @@ info_request:
     .long  15           // ACPI (new) request
 info_request_end:
 
+    // Tag: optional framebuffer support, without a fixed hardware mode.
+    // Multiboot2 3.1.10: the tag advertises framebuffer support to the loader;
+    // zero width/height/depth leave the mode choice to its actual configuration.
+    .balign 8
+mb2_framebuffer_tag_start:
+    .short 5
+    .short 1
+    .long mb2_framebuffer_tag_end - mb2_framebuffer_tag_start
+    .long 0
+    .long 0
+    .long 0
+mb2_framebuffer_tag_end:
+
     // Tag: header end
     .align 8
     .short 0            // type: tags end

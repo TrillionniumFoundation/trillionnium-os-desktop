@@ -12,7 +12,7 @@ import build_text_product as product
 class TextProductProfileTests(unittest.TestCase):
     def setUp(self):
         self.profile = json.loads(Path(__file__).with_name("linux-text-profile.json").read_text())
-        self.hepta = "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9"
+        self.hepta = json.loads(Path(__file__).with_name("HEPTA_SHARED_PRESENTER.json").read_text())["commit"]
         source = "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=" + self.hepta + "#" + self.hepta
         sdk = "git+" + self.profile["makepad_repository"] + "?rev=" + self.profile["makepad_commit"] + "#" + self.profile["makepad_commit"]
         entries = (("trill-shell", None, ["hepta-native-makepad"]),

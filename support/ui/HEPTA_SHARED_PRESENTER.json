@@ -1,111 +1,549 @@
 {
-  "schema": "trillionnium.original-shared-presenter.v1",
-  "repository": "TrillionniumFoundation/hepta-private-ci",
-  "commit": "7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9",
-  "tree": "cf53a7c0e7ad57772238b614b673d176386ddfe5",
+  "commit": "6d7ed132d72755e1414c96ee239117dc945e670a",
+  "contract": "One original Hepta source for the Rust presenter, native UI, Core thread tools, Root human admission and physical recovery. Source selection grants no runtime authority; each feature and installed package requires its own exact-source execution evidence.",
   "desktop_base": {
     "commit": "64736996d310d597ffba513ee109264cd5f5f83f",
-    "tree": "363700005afb52d2ac88aab709c3e0d0f78bcc0a",
-    "pull_request": 251
+    "pull_request": 251,
+    "tree": "363700005afb52d2ac88aab709c3e0d0f78bcc0a"
   },
-  "contract": "Exact original Git packages at the current Desktop dependency pin. This shared-presenter-only gate keeps Makepad and the authenticated owner disabled; the full native-presentation baseline and explicit native-clipboard-sdk candidate have separate feature/source qualification.",
   "files": [
     {
-      "path": "LICENSE",
+      "bytes": 10926,
       "git_blob": "4606e72e042564097e8780d66c1d4dcb611869bd",
-      "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc",
-      "bytes": 10926
+      "path": "LICENSE",
+      "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc"
     },
     {
-      "path": "NOTICE",
+      "bytes": 242,
       "git_blob": "2805899d56d0332d175cfc613c67d45d6f006db7",
-      "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915",
-      "bytes": 242
+      "path": "NOTICE",
+      "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915"
     },
     {
+      "bytes": 64892,
+      "git_blob": "8f535947db7ff5e838df08580116e4f141dab99b",
       "path": "apps/hepta-control-ui/rust/Cargo.lock",
-      "git_blob": "9f67bba876e4a6a0eb1a0f4b0233099fe12f833d",
-      "sha256": "f36f04937f028452bc94c5e54c5bf956366165a93cabf0f03695bc7a7276818d",
-      "bytes": 64892
+      "sha256": "99d22c4031512530e66b1e1cbec256d069e6e613e158f37d247d9307de265734"
     },
     {
+      "bytes": 1073,
+      "git_blob": "eaf6ff5f3ac4eddeddfca0167646848bb470c42e",
       "path": "apps/hepta-control-ui/rust/Cargo.toml",
-      "git_blob": "dfba027468d7b99bfea24913e1569ed77624a1a5",
-      "sha256": "d4731340e402680bfffbd0cfe6f5743ba980dc1c7205ad8dc376b002b0829b8a",
-      "bytes": 1073
+      "sha256": "617ce125c02d4cc5cc85447f3bc0e1473f85a0aa1bb6e00b3b3769c3a014d897"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/Cargo.toml",
+      "bytes": 270,
       "git_blob": "3d77b4ccc8ad8f3d464f0ff5fec69a838980665b",
-      "sha256": "b3ae31e06c79323bc0f2bf245f066125ce45d61418460ed64847abe2caa9ea41",
-      "bytes": 270
+      "path": "apps/hepta-control-ui/rust/core/Cargo.toml",
+      "sha256": "b3ae31e06c79323bc0f2bf245f066125ce45d61418460ed64847abe2caa9ea41"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/src/chat.rs",
+      "bytes": 16211,
       "git_blob": "e121fd668bc2675ff26e5355ee5e9f45162d62d4",
-      "sha256": "260927262d58effe76aa63b57a2e1576df77e86e00b111381265ecd2e0a2d20d",
-      "bytes": 16211
+      "path": "apps/hepta-control-ui/rust/core/src/chat.rs",
+      "sha256": "260927262d58effe76aa63b57a2e1576df77e86e00b111381265ecd2e0a2d20d"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/src/chat/basic_tests.rs",
+      "bytes": 1452,
       "git_blob": "d535e51221065cd82ba219278dc49d2c817a0357",
-      "sha256": "157ad9b1bc8fc4cce81bab5ff5ee50b2d6e79ac8a8d5201f6c924a06814eedf4",
-      "bytes": 1452
+      "path": "apps/hepta-control-ui/rust/core/src/chat/basic_tests.rs",
+      "sha256": "157ad9b1bc8fc4cce81bab5ff5ee50b2d6e79ac8a8d5201f6c924a06814eedf4"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/src/chat/integration_tests.rs",
+      "bytes": 5357,
       "git_blob": "c66c62304e08c52e266416800132f646880d904e",
-      "sha256": "7d39d8152abf6c732ddad36c6fd91370dccb8ac34b99fe8a2c12b1872bbac768",
-      "bytes": 5357
+      "path": "apps/hepta-control-ui/rust/core/src/chat/integration_tests.rs",
+      "sha256": "7d39d8152abf6c732ddad36c6fd91370dccb8ac34b99fe8a2c12b1872bbac768"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/src/chat/partition_tests.rs",
+      "bytes": 2418,
       "git_blob": "be33a7fdb8babfe08fdd558ffe34e6fc69ce6476",
-      "sha256": "f743b8671422575449d84fcd303af3788cd87cb38b809f0a71371cd67c08a03e",
-      "bytes": 2418
+      "path": "apps/hepta-control-ui/rust/core/src/chat/partition_tests.rs",
+      "sha256": "f743b8671422575449d84fcd303af3788cd87cb38b809f0a71371cd67c08a03e"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/src/chat_owner.rs",
+      "bytes": 23452,
       "git_blob": "4d732f91ff4e3157d2fdae115bf813f75234bffb",
-      "sha256": "b52e8db8fae2949650d35973e57f1d219f415b6e652b85fd7007199eb84b2e32",
-      "bytes": 23452
+      "path": "apps/hepta-control-ui/rust/core/src/chat_owner.rs",
+      "sha256": "b52e8db8fae2949650d35973e57f1d219f415b6e652b85fd7007199eb84b2e32"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/src/chat_owner_tests.rs",
+      "bytes": 18961,
       "git_blob": "f3d391e1549a4f9ca1f3a0512efbc770699a8817",
-      "sha256": "18098150a2ca4d6d2bc7f8c25eddab453a5e0cff0712a703b9a05819bc939ed4",
-      "bytes": 18961
+      "path": "apps/hepta-control-ui/rust/core/src/chat_owner_tests.rs",
+      "sha256": "18098150a2ca4d6d2bc7f8c25eddab453a5e0cff0712a703b9a05819bc939ed4"
     },
     {
-      "path": "apps/hepta-control-ui/rust/core/src/chat_timeline.rs",
+      "bytes": 10840,
       "git_blob": "191990a9458b20fcb70b69a21afcc2271091b7aa",
-      "sha256": "8833777a27a7c1d7abf0b8f90c53954a91e1f9983239dbb560a6b4b5737369a6",
-      "bytes": 10840
+      "path": "apps/hepta-control-ui/rust/core/src/chat_timeline.rs",
+      "sha256": "8833777a27a7c1d7abf0b8f90c53954a91e1f9983239dbb560a6b4b5737369a6"
     },
     {
-      "path": "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml",
+      "bytes": 1153,
       "git_blob": "e56bb0547f1c0a1c8b4b4cf8d001a53cfeed0e3f",
-      "sha256": "533a4af9311e5688b2bb9cec96e859c936a1c6c3564715afe692c4bcee965be4",
-      "bytes": 1153
+      "path": "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml",
+      "sha256": "533a4af9311e5688b2bb9cec96e859c936a1c6c3564715afe692c4bcee965be4"
     },
     {
-      "path": "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt",
+      "bytes": 1097,
       "git_blob": "7f77de13d6a3a5b2a7b35bfb249b7902317c2045",
-      "sha256": "7c370204a7507a3c33398d6377aa69691991b0582a3d92ace8d27d8819b223f7",
-      "bytes": 1097
+      "path": "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt",
+      "sha256": "7c370204a7507a3c33398d6377aa69691991b0582a3d92ace8d27d8819b223f7"
     },
     {
-      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation.rs",
+      "bytes": 11625,
+      "git_blob": "bb76507a7b2ec6749c1ab8afb5d55edb7ca76342",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/chat_controls.rs",
+      "sha256": "869893d4af9ede8c40bc64b8d5381d43906ba9e7f2f1b550a22b1834fc9d41f7"
+    },
+    {
+      "bytes": 8345,
+      "git_blob": "d8eb424f4fbeff3fdf52c5d4c6dd477c1da7461d",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/mod.rs",
+      "sha256": "c8876b1d247781535fa8917f137a38f69e69ea5fc8aca2aa7310253fde160dc8"
+    },
+    {
+      "bytes": 10125,
+      "git_blob": "908790fafdc738ee1efafa39659ff943c58763bb",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/render.rs",
+      "sha256": "ad68353e3dd2531638a710767fb0972a7629d4939478486e25a3a96c17e87145"
+    },
+    {
+      "bytes": 15597,
       "git_blob": "f7e3aa347a2088ab2d2ec495184344d24a2b67f2",
-      "sha256": "809c4c1117836bf2b1932a25fd0edd78d747914d52f93502930c8a959f7f57b8",
-      "bytes": 15597
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation.rs",
+      "sha256": "809c4c1117836bf2b1932a25fd0edd78d747914d52f93502930c8a959f7f57b8"
     },
     {
-      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation_tests.rs",
+      "bytes": 22554,
       "git_blob": "e97b7f56059122aef731a6c056c1d144345ebe53",
-      "sha256": "6f3ea57649bf67ac2312ea16994afded3dac934f0a5aeac4ac5bf0bdc2db499f",
-      "bytes": 22554
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation_tests.rs",
+      "sha256": "6f3ea57649bf67ac2312ea16994afded3dac934f0a5aeac4ac5bf0bdc2db499f"
+    },
+    {
+      "bytes": 2853,
+      "git_blob": "5b5b4c410d0dd05fa3fa5fab1c3cbcec62f0348b",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/robrix/composer_transaction.rs",
+      "sha256": "99f48be41a32614652efa3d28a94cf382b6fbf1a844ca7dc58e9f60734178ba5"
+    },
+    {
+      "bytes": 8314,
+      "git_blob": "62641393a2d524ec105cd29b64c753348ff824f1",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/robrix/composer_transaction_tests.rs",
+      "sha256": "d0fd6fa46c233a76623f3ae009cf4fa8ba2361f3617989bd0e311a9ac4fddb48"
+    },
+    {
+      "bytes": 42727,
+      "git_blob": "3649ebca22824a133259db5afcb6136025221743",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/robrix/room.rs",
+      "sha256": "c33e04f94c99c970bc9c224430e4b4f105313d8921a6afc1b260df6132abc667"
+    },
+    {
+      "bytes": 23123,
+      "git_blob": "44ed3a2a87df18bb01c07a5a2c2b3676e7b5d743",
+      "path": "codex-rs/Cargo.toml",
+      "sha256": "1e131ebf9562ec67c07f9a2977f1667c081eaa7011f18c823409bc10139135f9"
+    },
+    {
+      "bytes": 3334,
+      "git_blob": "c1aed97d294f7df49a9e6f3003be2e1330549d04",
+      "path": "codex-rs/hepta-agentd/HUMAN_TEXT_PROVENANCE.md",
+      "sha256": "dff0d9317c06740f0e5310fd2b938a5f1bde828fa5b3b41aced356fa93ef025e"
+    },
+    {
+      "bytes": 1095,
+      "git_blob": "bb11c42070f19a982efaec31204bbc516305f64f",
+      "path": "codex-rs/hepta-agentd/LINUX_PRODUCT_PROFILE.md",
+      "sha256": "5f7bf67c5ace6a60985f503b695c7a6de7938faf18bafaeb8e2803f392762bc7"
+    },
+    {
+      "bytes": 18245,
+      "git_blob": "e3e380f5e014defe6e66b354aa79c0c82eb53477",
+      "path": "codex-rs/hepta-agentd/NOTES_ORIGINAL_THREAD.md",
+      "sha256": "335b61fb7186d5f8a65f8b40a6951e3de5a64312e2335128088fae614bbb6718"
+    },
+    {
+      "bytes": 20365,
+      "git_blob": "d1932e9fd2480941ca6e09ede8d8a57b8830a823",
+      "path": "codex-rs/hepta-agentd/PRODUCTION_LAUNCHER.md",
+      "sha256": "420336dc0dc8eaffb6cc80596184ccce8babddc42cb11a38d93505b38759dd93"
+    },
+    {
+      "bytes": 18289,
+      "git_blob": "4cc2637eb2450958d33c585478671979d6a946a6",
+      "path": "codex-rs/hepta-agentd/src/app_runtime.rs",
+      "sha256": "949addc08febbe06a97d1c9b43a746c6301421905f1e514ac65e4c22a6ce7106"
+    },
+    {
+      "bytes": 12746,
+      "git_blob": "b3b5b57a126fecc485e4048bb4435f6e8f2ebe19",
+      "path": "codex-rs/hepta-agentd/src/authority_host_checkpoint_material.rs",
+      "sha256": "0c3ff171c029e71a7a1be8e354dbc79cc2e7a1c0cfd9accef5e96fe24cc04e0b"
+    },
+    {
+      "bytes": 4589,
+      "git_blob": "9c6cd4beb9a0d3169dcbac9e1364917eec3cf84b",
+      "path": "codex-rs/hepta-agentd/src/authority_host_checkpoint_material_recovery.rs",
+      "sha256": "e9b639b4c463b71d240263b09a623fc47a145d4ce13c3412bf999755b93cf6e3"
+    },
+    {
+      "bytes": 7048,
+      "git_blob": "50cbe55f7af1969f68d9c98e7ec9317b38b3c8dc",
+      "path": "codex-rs/hepta-agentd/src/authority_host_listeners.rs",
+      "sha256": "8d55a7e5dbb51f26b51cc2c4d2c2c77cf6208bf61613019e21fb4e479acc82ee"
+    },
+    {
+      "bytes": 4661,
+      "git_blob": "1a18b2c2d8ca6f8c706173f869808949c2417a72",
+      "path": "codex-rs/hepta-agentd/src/authority_host_listeners_tests.rs",
+      "sha256": "73dd1400c810d966ca4baf26d2c434b446bcb18b5295d4ea8990cc654dabf140"
+    },
+    {
+      "bytes": 7936,
+      "git_blob": "2ef5de6d0c71f7ad2092b66dbdfa4f7d4bc15c29",
+      "path": "codex-rs/hepta-agentd/src/authority_host_logind.rs",
+      "sha256": "4e55ae898584999aa454468a94510e711f39276b529eb0bedc72c0ce4f172029"
+    },
+    {
+      "bytes": 15074,
+      "git_blob": "c2afc2f93070dddfd1145b3a2ab8f219742e3b69",
+      "path": "codex-rs/hepta-agentd/src/authority_host_material_recovery.rs",
+      "sha256": "d0144589b31e21e7bdf5424ba234e5f91606e58348bee2703aab92f64acd8f9f"
+    },
+    {
+      "bytes": 16891,
+      "git_blob": "00ddcea5e19a209921d9b98c061d583a693f358e",
+      "path": "codex-rs/hepta-agentd/src/authority_host_native_launch.rs",
+      "sha256": "a85727c5b9762aa5b75d2ee60b9b4d9d1b70a8e968e7aff3b4bce962f9653f80"
+    },
+    {
+      "bytes": 1294,
+      "git_blob": "3a7be45325189e32f0326020f3b9ecf7e1c06dcd",
+      "path": "codex-rs/hepta-agentd/src/authority_host_notes_successor.rs",
+      "sha256": "dcc9457e1012292acdc7285bdda5914a6991afbca51108f443ead56e681f47a4"
+    },
+    {
+      "bytes": 13421,
+      "git_blob": "20128d548743a240a41a83b17a13c269a8b13a94",
+      "path": "codex-rs/hepta-agentd/src/authority_host_session.rs",
+      "sha256": "53929e28ba4616256f7771b2ae3e42082406aeead52c00016608cd95dfd8b356"
+    },
+    {
+      "bytes": 6182,
+      "git_blob": "b7a7eee2d80f21fc6add4f0ff213385b21281c48",
+      "path": "codex-rs/hepta-agentd/src/authority_host_session_material.rs",
+      "sha256": "1cf1defff7b89d37c5fd8fefc02d9dc17a368d5b808670101c53e6f45935f158"
+    },
+    {
+      "bytes": 2962,
+      "git_blob": "9f6afb94f771ed50aafd9631dfffa1dee1268281",
+      "path": "codex-rs/hepta-agentd/src/authority_host_writer_rotate.rs",
+      "sha256": "ae716f2be969f6409311cda4f4600e7e275d34d947c7ab8203af8bfed3c855d2"
+    },
+    {
+      "bytes": 32889,
+      "git_blob": "6cbd95bc13c3780fa60ce8abeedd5db8192cee47",
+      "path": "codex-rs/hepta-agentd/src/config.rs",
+      "sha256": "2c57d938f359268c56bbbfbe880be0fb96051d842281bdc0ca5a2414bbeca754"
+    },
+    {
+      "bytes": 4044,
+      "git_blob": "e29645a0d9eadd01e793cb5fa968d60f3629b115",
+      "path": "codex-rs/hepta-agentd/src/config_root_late_writer.rs",
+      "sha256": "0af2fae5ed7e72d4ab281f46fb9c255528e9da928ee3ed72f7ec64ecfce3ab05"
+    },
+    {
+      "bytes": 4076,
+      "git_blob": "d88ff4784d11fe5fc02b3bbd39580636383c9b80",
+      "path": "codex-rs/hepta-agentd/src/deployment_text_human.rs",
+      "sha256": "6f4e43b5f9a7b10a4fec3ad29443fab3077b52091878fdf05b65b058908bf504"
+    },
+    {
+      "bytes": 26762,
+      "git_blob": "54a81397d6d537390522e988b783c91a8fe12e3e",
+      "path": "codex-rs/hepta-agentd/src/lib.rs",
+      "sha256": "f7fbb70e2f9b64cccc2dbb42cdf25b33abe67504fa53b8bd27dd7d12726324de"
+    },
+    {
+      "bytes": 2166,
+      "git_blob": "d79730cd6c57253524a22eee46531f79b6e81368",
+      "path": "codex-rs/hepta-agentd/src/notes_launch_mode.rs",
+      "sha256": "0ca5e89287891690a838fa4ab611e26fa104f867bf7ffbd547efc40b31eb0405"
+    },
+    {
+      "bytes": 27044,
+      "git_blob": "48e3d3275caf07c6014fc9d6e9b644b618a12710",
+      "path": "codex-rs/hepta-agentd/src/notes_literal_adapter.rs",
+      "sha256": "cb15809adaa3bd120488753114c01d613180134dd18abc680d1d2129b859598b"
+    },
+    {
+      "bytes": 8662,
+      "git_blob": "fcc4b610360208fc1e9969a52c63b8d7276cf7af",
+      "path": "codex-rs/hepta-agentd/src/notes_literal_read.rs",
+      "sha256": "cfcb47a4993fd53c19e70b13e055ee9632ee6ffa9e60ef258683d9f74193cd9f"
+    },
+    {
+      "bytes": 16744,
+      "git_blob": "5673d5aad61a98a82257f11e867261222915f7f5",
+      "path": "codex-rs/hepta-agentd/src/notes_recovery_process.rs",
+      "sha256": "f8bd5726ad115137673c168a7c5549bbb79ff96ac8a4ec3f5bd8208628b64a4a"
+    },
+    {
+      "bytes": 3569,
+      "git_blob": "4c72f99ec4879a1b9bbea2977b3472f0a67745fc",
+      "path": "codex-rs/hepta-agentd/src/notes_recovery_selection.rs",
+      "sha256": "860f44b0db324b41bab9b875688adb0258ef1c852aff10ea3219520ea8078f6c"
+    },
+    {
+      "bytes": 1236,
+      "git_blob": "e97bbfbb201ddd72e9ca993efa7bd7af5a85613d",
+      "path": "codex-rs/hepta-agentd/src/notes_recovery_selection_tests.rs",
+      "sha256": "9c65c51c6b5549bd00e3e5fbcf19f2d877a9948135f51ef38f0784dafadfc6e8"
+    },
+    {
+      "bytes": 3706,
+      "git_blob": "dfe69fe5a78cbcb7f16d3530e429d4f0658da209",
+      "path": "codex-rs/hepta-agentd/src/notes_runtime_recovery.rs",
+      "sha256": "3181aa342726e0e1f4e4d1d2e423a5f3155644652ba684407c9266eefc438d1c"
+    },
+    {
+      "bytes": 9927,
+      "git_blob": "d7c6b4110dfb7d5efde8862e6c7e7c5e4cd8fc7a",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_execution.rs",
+      "sha256": "6efacf39bd1da20c1892219f391f896b2080de326955f5741d58c8eb2576c59a"
+    },
+    {
+      "bytes": 2913,
+      "git_blob": "13e734b8b9a066a99444b37c6e9a0102f13b7b99",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_execution_tests.rs",
+      "sha256": "4414216863325ed6c86f1403bd81294274543c5eb6bda8f19db043bc48ae62be"
+    },
+    {
+      "bytes": 5204,
+      "git_blob": "c614689aaf1802029afda9ff754017350a7e8fe2",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_human.rs",
+      "sha256": "b3241b682afe320afaab98c256b2f0f7a545dae2337064131f66378779fc73fb"
+    },
+    {
+      "bytes": 6816,
+      "git_blob": "d76c5eb5fde22954aae26bbb2d95c76a1017390a",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_proof.rs",
+      "sha256": "0ddd985f0c8dddf0c835081283b70b51db6c3b7827e38d1164ed22e41e804ea3"
+    },
+    {
+      "bytes": 16406,
+      "git_blob": "380a0fb5ae3a36f7288bf458fce6f9c3e992f00f",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_recorded.rs",
+      "sha256": "2489ba7b417f142ac8dbc9dd7ad50e5252be853362aa961081747cceefad7652"
+    },
+    {
+      "bytes": 8013,
+      "git_blob": "412c29a741c2673b796093e17b53d1eaea4fed93",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_recorded_tests.rs",
+      "sha256": "f123f449a5294f870da0a25599a1e9e97958ad4132d43011105108d7edea8f32"
+    },
+    {
+      "bytes": 27108,
+      "git_blob": "f376e51cd2aa8cd38a3327801cc6719d833d24df",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_runtime.rs",
+      "sha256": "3e263d46c7b3190021b43f159c021f0f3d1105819c515d09bb6275c563a79078"
+    },
+    {
+      "bytes": 15976,
+      "git_blob": "2fe2e42ace22d6685f9d4f4d99750e01cfbc7067",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_seed.rs",
+      "sha256": "4adffd0d0d83342cd2ba60e3aed8af25c483ded476440cce22a67c1cea3353a4"
+    },
+    {
+      "bytes": 4946,
+      "git_blob": "510fa62d82f96790ee4f5fc8610d478a5ae4034b",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_seed_tests.rs",
+      "sha256": "a2e71796b9ffdacc630c6f22d5b9613868fc485482ff29ba170fd2bab9929878"
+    },
+    {
+      "bytes": 7455,
+      "git_blob": "adeeeee4f7780eb4cfbf2c6080db73af5800540a",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_status.rs",
+      "sha256": "f37b0170bccf6061b77ec199c2eacd534da824e1900c6f3fcdd858ef56938faa"
+    },
+    {
+      "bytes": 10539,
+      "git_blob": "e102c8405f0f7f3dd7cf3f1cfd5318f06db46f67",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_status_tests.rs",
+      "sha256": "3402f541ba6549889751f07681e99e804b68360a247e3782e2d4541442737f84"
+    },
+    {
+      "bytes": 16299,
+      "git_blob": "c32d0180dff979ee75e7ab77ebe06deb31c4d449",
+      "path": "codex-rs/hepta-agentd/src/notes_thread_tool.rs",
+      "sha256": "7bba5e74f222749ad4a1225c8f7e21e59930bd172375c510b1990138c0d8f62a"
+    },
+    {
+      "bytes": 6326,
+      "git_blob": "ad1c2169d6fedce74e1825f9017f84e53772ca61",
+      "path": "codex-rs/hepta-agentd/src/notes_ui_wire.rs",
+      "sha256": "372953fe8721869795784ca8dba3d4f35a02d1686ada3c0a8a438544a7afad09"
+    },
+    {
+      "bytes": 13386,
+      "git_blob": "bcf38b09e1bfd385e5bd1f5113c1d6f70a811a84",
+      "path": "codex-rs/hepta-agentd/src/notes_ui_worker.rs",
+      "sha256": "4d09f4474a4b26670a53331370bb4663d69515291207dd332be7299c7c3a05bd"
+    },
+    {
+      "bytes": 13943,
+      "git_blob": "b7156618fd68ce781d5d72407ebd4cdbf2c8462e",
+      "path": "codex-rs/hepta-agentd/src/production_launcher.rs",
+      "sha256": "b8a73f2f93dec5c61d31e794e147020ed1643a54fc52eb430645adab6b9ea29b"
+    },
+    {
+      "bytes": 6176,
+      "git_blob": "d17f77ef95cac62ce5b88d1b634bebd7d6cdb2e7",
+      "path": "codex-rs/hepta-agentd/src/production_notes_deployment.rs",
+      "sha256": "8d95d4e287dde9ec7f5ad122368d7ed56a8141709579807cfd69098687f045ac"
+    },
+    {
+      "bytes": 9872,
+      "git_blob": "14edf9349b0a52aaf57cd9b64cf262e4bad1d54e",
+      "path": "codex-rs/hepta-agentd/src/root_notes_reservation.rs",
+      "sha256": "64b891582c0ec778a9db13fc395b525bf44866fd6e79353a723274b5355229dc"
+    },
+    {
+      "bytes": 13206,
+      "git_blob": "e3bc25d6e93e700c327f9a58d0aa626ca77865c2",
+      "path": "codex-rs/hepta-agentd/src/root_notes_startup.rs",
+      "sha256": "753ae8fac2fd26b55bf6b5586111bb4226dee94711f5bc25981a8b0832f7d0b8"
+    },
+    {
+      "bytes": 4960,
+      "git_blob": "deb83fae10fb7799d7faf1d3514a26aaf3488222",
+      "path": "codex-rs/hepta-agentd/src/root_production_writer_handoff.rs",
+      "sha256": "8ab8237504696c0f8835771c25c327e670d926306cfe5953838c5b0790c663f6"
+    },
+    {
+      "bytes": 25911,
+      "git_blob": "0e7777b3bbe13eab7aedf74b9d6fe6b84cf82b43",
+      "path": "codex-rs/hepta-agentd/src/runtime.rs",
+      "sha256": "fe5c9b0078a78cbb045926df2dbcd4e3ebd303240deafb90009da1ca3fbb7b56"
+    },
+    {
+      "bytes": 37054,
+      "git_blob": "8121e010c00f0da23d8412adadc4a3725ded58ca",
+      "path": "codex-rs/hepta-agentd/src/runtime_tests.rs",
+      "sha256": "5241e522a7e0d9dd9c77c211a89aea3ffdbed468cee28bb49015547cddc276da"
+    },
+    {
+      "bytes": 591,
+      "git_blob": "d4f77dda3997335fb6767554c10f2ef0a147ca4b",
+      "path": "codex-rs/hepta-agentd/tests/fixtures/notes-document-observation-v1.json",
+      "sha256": "23de9d7ce6f95d1cd4a913ab01a4690e59b9f261fa69f515b47d283535ba5439"
+    },
+    {
+      "bytes": 5131,
+      "git_blob": "ad21b4dbf71b255e8e52ca058ba54263f12dadad",
+      "path": "codex-rs/hepta-agentd/tests/fixtures/notes-model-v1.json",
+      "sha256": "3d011551020a77df728d3c79c5b04639c3f79e2fb2db1bc8f38a3c1a60a1c88f"
+    },
+    {
+      "bytes": 21045,
+      "git_blob": "e9e125b925e97a59448c801893d3d243eb9b4f2f",
+      "path": "codex-rs/hepta-memory/OBJECTIVE_SENDER.md",
+      "sha256": "6cb7ab31398b36d7664d1f5e69ca4f744911d46c6894ebbff53342b007487e6e"
+    },
+    {
+      "bytes": 11851,
+      "git_blob": "4bf00bf3ff07fd9a56eebb379cfc11ef7b419f23",
+      "path": "codex-rs/hepta-memory/src/cognitive_checkpoint_image.rs",
+      "sha256": "1c8289add747fca408cbab4715e123ba407ae60dff3ebc7395a01c0e9ab137a5"
+    },
+    {
+      "bytes": 11122,
+      "git_blob": "f658f9c2c21de11bbfb7002a4101af6cc7182041",
+      "path": "codex-rs/hepta-memory/src/cognitive_checkpoint_install.rs",
+      "sha256": "c93838f00aa765e35b9c0a6e95acd345569e0ff1a734707709c6feb99a55461b"
+    },
+    {
+      "bytes": 27881,
+      "git_blob": "7191498ccf25d19a9876fc87f4e84b209a7d6e15",
+      "path": "codex-rs/hepta-memory/src/lib.rs",
+      "sha256": "c86cebb643a00f467fb7d6cade86e37204fd5273784fa0cf5e16342b95e7472c"
+    },
+    {
+      "bytes": 21482,
+      "git_blob": "d8a71ee48ec31a8f2c55d687efd33ea2be224269",
+      "path": "codex-rs/hepta-memory/src/objective_sender.rs",
+      "sha256": "e434562b4e52315bd89c10990f26ae6e2c9e3c53b9831ecb9026b25607cd4b1b"
+    },
+    {
+      "bytes": 12778,
+      "git_blob": "51e7c799814b30b34cc9cca82b770a92f093ea1e",
+      "path": "codex-rs/hepta-memory/src/objective_sender_crash_tests.rs",
+      "sha256": "761f68a8e763b53cf177c36bd80ff313f10f1dac262ecfcefb14c4a61fc27b18"
+    },
+    {
+      "bytes": 9062,
+      "git_blob": "9718aa2116358c00f2b922d1e3637ac8ef224f57",
+      "path": "codex-rs/hepta-memory/src/objective_sender_integrity.rs",
+      "sha256": "b6dca3632ac83505aa265fec4564052763e11e6ad45610ab4fa0b487cdbaecc2"
+    },
+    {
+      "bytes": 12136,
+      "git_blob": "147086013aa9760821fe4da9d1c7ba49d01f6662",
+      "path": "codex-rs/hepta-memory/src/objective_sender_model.rs",
+      "sha256": "0c1f1eca73a01388378f4f0d52cb315f0a993178d8ca609196410784910e724b"
+    },
+    {
+      "bytes": 4566,
+      "git_blob": "e1575876d69cd01c06eacde52a5f5dd9e00bd3ad",
+      "path": "codex-rs/hepta-memory/src/objective_sender_model_tests.rs",
+      "sha256": "7ddf25160be49f0ce9ed1dfcb700774f8486315de5eb18a39a06edd227c5b1bc"
+    },
+    {
+      "bytes": 8154,
+      "git_blob": "56874586b346c6a611e61af478506716405aa75f",
+      "path": "codex-rs/hepta-memory/src/objective_sender_read.rs",
+      "sha256": "71c6b68a8a29708e3a7ac2e8850d80994f850e00c695c839d59e1976cc534464"
+    },
+    {
+      "bytes": 12029,
+      "git_blob": "b82f733910fe7b808b2e0e38bb5e03a38732bd99",
+      "path": "codex-rs/hepta-memory/src/objective_sender_store.rs",
+      "sha256": "20186aabbd7b337f3cc95b1c3cce0b748b3e21fc6ffda5eb0bd4dcaefeb75b59"
+    },
+    {
+      "bytes": 31046,
+      "git_blob": "01bf5d64f2d9e704795c45a7efbd1f72f9628dac",
+      "path": "codex-rs/hepta-memory/src/objective_sender_tests.rs",
+      "sha256": "476da6bf5d9f135d3fd17ecd7338b725494545c47dd4450aaf45e4d5e8526622"
+    },
+    {
+      "bytes": 5131,
+      "git_blob": "ad21b4dbf71b255e8e52ca058ba54263f12dadad",
+      "path": "codex-rs/hepta-memory/tests/fixtures/notes-model-v1.json",
+      "sha256": "3d011551020a77df728d3c79c5b04639c3f79e2fb2db1bc8f38a3c1a60a1c88f"
+    },
+    {
+      "bytes": 5701,
+      "git_blob": "f9445dcaac07f91ba098bdeb3779a85fab0dd367",
+      "path": "codex-rs/hepta-objective/src/lib.rs",
+      "sha256": "0599f3d77b2e0512453ad1aecf5499c96b0cde1b10789e10788d9b637395c426"
+    },
+    {
+      "bytes": 8024,
+      "git_blob": "9a6d23b96e693513be6a1531b8c16bea348dd47e",
+      "path": "codex-rs/hepta-objective/src/notes_literal_source.rs",
+      "sha256": "d57be8ebd5803607e2094b4382fe11cffea5440d5563632b62eb85fc64405fca"
+    },
+    {
+      "bytes": 5025,
+      "git_blob": "78915636890e29124f2a1d243eb944f50a8ede25",
+      "path": "codex-rs/third_party/aws-config-1.12.0/Cargo.toml",
+      "sha256": "8632d6df9723cbe85b6adaa27ae248c8bfaa9c4ae9fe910a3f15c75da71f117e"
     }
   ],
-  "initial_pull_request": 3067
+  "initial_pull_request": 3067,
+  "repository": "TrillionniumFoundation/hepta-private-ci",
+  "schema": "trillionnium.original-shared-presenter.v1",
+  "tree": "31bdc72c4a077458c78f48226decfad28b73e04b"
 }

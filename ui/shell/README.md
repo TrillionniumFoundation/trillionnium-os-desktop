@@ -1,5 +1,13 @@
 # trill-shell
 
+The original-thread Notes product launches Makepad with `--notes-ui original-thread`.
+Notes writes and previous-result checks then use the original chat tools. This
+presentation option hides the separate literal Objective controls and rejects
+their cached callbacks without dispatch, so their Refresh action cannot query a
+new document and masquerade as the previous model operation. The default
+`objective` presentation keeps the existing local bridge. This option only
+removes controls; it supplies no authority or thread identity.
+
 The native Rust presentation process, with egui/eframe and the explicitly
 selected original Makepad renderer. Workspace/Chat is the default entry;
 Tasks, Context and Console are workspace views.
@@ -15,7 +23,9 @@ owner, live task observation or delivery. See [product recovery](../../support/u
 for configuration, shutdown, corruption and concurrent-window behavior.
 [hepta_panel.rs](src/hepta_panel.rs) presents runtime observations.
 [objective_panel.rs](src/objective_panel.rs) presents bounded original-owner
-Objective status, cancellation and navigation recovery.
+Objective status, cancellation, Notes controls and navigation recovery.
+[native_makepad.rs](src/native_makepad.rs) adapts the original Makepad ports to
+those same Desktop actions and the existing conversation workspace.
 
 Session restart preserves the existing caller IDs and queries them through the
 new trusted transport. Shell process restart reads navigation IDs from the
@@ -27,10 +37,45 @@ and an unfinished/unknown request prevents minting a replacement ID. The previou
 request list only selects which original status to query. Cancellation controls
 are bound to the selected intent identity and remain stable when history appears.
 
-Unsaved drafts are local state. The current mainline chat is not a submitted
-Hepta Objective. Never infer an owner receipt from a local animation, a queued
+Unsaved drafts remain local until an explicit action submits them through the
+configured original host. The Notes action below is a bounded Objective request;
+ordinary local conversation editing does not submit one. Never infer an owner receipt from a local animation, a queued
 UI action, a first-frame marker or a running host PID. The original owner must
 provide operation outcomes and reconciliation.
+
+## Shared Notes controls
+
+Both renderers use `ObjectivePanel`'s `notes_controls_view`,
+`write_note_from_draft`, `refresh_notes_controls` and `cancel_note_request`.
+Write sends one literal-text Notes Objective through the existing Session
+bridge. It preserves the complete draft and refuses quoted context, empty or
+over-4096-byte text, active composition, incomplete recovery navigation, stale
+readiness, a host issue or an unfinished original request. A fresh known pending
+application receipt also blocks a new write until the original request is
+reconciled. Refresh only queries original availability/status; Cancel queues
+one cancellation of the same original intent. Queue rejection is reported,
+and uncertain delivery never creates a replacement intent or a repeated cancel.
+
+The Makepad adapter implements the original `NativeNotesView` and
+`request_write_note` / `request_notes_refresh` / `request_notes_cancel` ports.
+It additionally checks the current room identity, source epoch, composition,
+window state and visible Conversations page before forwarding an action.
+The host rechecks readiness when the callback executes. The exact original API
+and dependency pin are recorded in [DEPENDENCIES](../../support/ui/DEPENDENCIES.md).
+
+Status displays the original request state separately from the current Notes
+document's target, revision, short text digest and pending-receipt flag. That
+readback has its own freshness clock; it is neither an exact operation receipt
+nor evidence that a succeeded run saved the current document. Observed text is
+never copied into the draft. On Session replacement the old document snapshot
+is cleared, while original intent IDs remain available for status recovery.
+
+Passive polling alternates availability with bounded, fair status rotation
+over retained unresolved original IDs, including earlier requests. A full read
+queue keeps the selected status for the next attempt; it cannot consume action
+capacity. Polling never submits, cancels or replays an effect. See the
+[Notes ownership and recovery contract](../../support/ui/NOTES_ORGAN.md) and
+[durability manual](../../support/ui/NOTES_DURABILITY.md).
 
 ## Failure and input handling
 
@@ -47,11 +92,20 @@ layout test do not establish a working input method or accessibility bridge.
 
 ```sh
 RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-shell --locked
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked objective_panel
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked --features hepta-native-makepad native_makepad::notes_tests
+cargo +1.96.0 clippy --manifest-path ui/Cargo.toml -p trill-shell --all-targets --locked --features hepta-native-makepad -- -D warnings
 ```
 
 See [workspace setup](../README.md), [Chat contract](../../support/ui/CHAT_WORKSPACE.md)
 and [host test plan](../../tests/ui/TESTPLAN.md) for owned-window and compositor
 checks. If CARGO_TARGET_DIR is set, use its debug directory for the binaries.
+Shared regressions cover readiness/issue and pending-receipt gates, independent
+readback freshness, fair recovery under a full read queue, and Session
+migration. Native callback regressions cover source fences, one original
+intent and preservation of the complete draft. These commands specify scope;
+actual source-paired results belong in the build receipt.
+
 ## Original Makepad renderer
 
 The optional Linux `hepta-native-makepad` feature starts the original Hepta

@@ -8,11 +8,14 @@ native windows. Each Asterinas display/input or mobile target requires its own
 execution evidence.
 
 The original UI/core, Agentd host dependencies and all four original AccessKit
-patches resolve from Hepta `7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9`
-(tree `cf53a7c0e7ad57772238b614b673d176386ddfe5`). The patch entries live in
+patches resolve from Hepta `489f7096b0e5754968a30fa4477bb4417d24834f`
+(tree `4731de9117065bd773b2fcee92c815ff896b8488`). The patch entries live in
 this workspace's Cargo root because Cargo does not inherit dependency-workspace
 patches. The [fixed source map](../docs/SOURCES.md#hepta-native-organ) links the
 same original modules and their development contracts.
+The current [dependency contract](../support/ui/DEPENDENCIES.md) describes both
+Cargo roots, source checks and lock updates. Results from the historical
+`7ea3df4` combination remain attached to that older source.
 
 Normal `hepta-native-makepad` keeps original SDK 337566c8 and the 54-file bundle.
 The separate `hepta-native-clipboard-sdk` feature requires the exact all-SDK

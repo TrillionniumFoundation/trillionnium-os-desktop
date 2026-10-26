@@ -28,6 +28,7 @@ fn start_worker() -> (
             receiver,
             output_clone,
             egui::Context::default(),
+            None,
         )
     });
     (sender, output, handle)
@@ -124,6 +125,7 @@ impl SavedDocumentFixture {
                 receiver,
                 projection,
                 egui::Context::default(),
+                None,
             )
         });
         (sender, output, thread)
@@ -239,20 +241,47 @@ fn effect_expired_in_the_durable_catalog_queue_never_executes() {
     let (reply, response) = mpsc::sync_channel(1);
     // Expire while still queued, before starting the owner. This exercises the
     // real durable/catalog queue without depending on filesystem timing.
-    sender.send(Command::Protocol(Pending {
-        bytes: mutation(), recovery: false, expires_at: Instant::now(), reply,
-    })).unwrap();
-    let handle = std::thread::spawn(move || run(Document::Durable(document), Some(root),
-        receiver, projection, egui::Context::default()));
-    assert!(response.recv_timeout(Duration::from_secs(2)).unwrap().is_none());
+    sender
+        .send(Command::Protocol(Pending {
+            bytes: mutation(),
+            recovery: false,
+            expires_at: Instant::now(),
+            reply,
+        }))
+        .unwrap();
+    let handle = std::thread::spawn(move || {
+        run(
+            Document::Durable(document),
+            Some(root),
+            receiver,
+            projection,
+            egui::Context::default(),
+            None,
+        )
+    });
+    assert!(response
+        .recv_timeout(Duration::from_secs(2))
+        .unwrap()
+        .is_none());
     let state = observe(&sender);
     assert_eq!(state["revision"], 0);
     assert_eq!(state["text_sha256"], sha256_hex(b""));
     assert_eq!(state["receipt_pending"], false);
-    assert_eq!(output.lock().unwrap().saved_documents.as_ref().unwrap().0, 29);
-    let fresh = exchange(&sender, mutation(), false, Instant::now() + Duration::from_secs(2)).unwrap();
-    assert!(matches!(NotesResponse::parse_exact(&fresh).unwrap().result,
-        NotesResult::Applied { revision: 1, .. }));
+    assert_eq!(
+        output.lock().unwrap().saved_documents.as_ref().unwrap().0,
+        29
+    );
+    let fresh = exchange(
+        &sender,
+        mutation(),
+        false,
+        Instant::now() + Duration::from_secs(2),
+    )
+    .unwrap();
+    assert!(matches!(
+        NotesResponse::parse_exact(&fresh).unwrap().result,
+        NotesResult::Applied { revision: 1, .. }
+    ));
     drop(sender);
     handle.join().unwrap();
 }

@@ -140,6 +140,7 @@ impl Fixture {
             expected_peer_uid: fs::metadata(root.path()).unwrap().uid(),
             expected_peer_pid: std::process::id(),
             endpoint_identity: path.to_str().unwrap().to_owned(),
+            original_notes_thread: None,
         };
         let original = serde_json::to_string(&json!({
             "issuer_id": "test-only-original-issuer", "key_epoch": 3,
