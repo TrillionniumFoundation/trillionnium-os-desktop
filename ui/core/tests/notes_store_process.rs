@@ -45,7 +45,12 @@ fn fork_inherits_the_lock_until_exec_even_after_the_parent_store_is_dropped() {
         let release_fd = release_child.as_raw_fd();
         let mut command = Command::new(std::env::current_exe().unwrap());
         command
-            .args(["--ignored", "--exact", "exec_then_wait_fixture", "--nocapture"])
+            .args([
+                "--ignored",
+                "--exact",
+                "exec_then_wait_fixture",
+                "--nocapture",
+            ])
             .env("TRILL_NOTES_INHERITED_LOCK_CHILD", "1")
             .stdin(Stdio::piped())
             .stdout(Stdio::null())
@@ -93,13 +98,18 @@ fn fork_inherits_the_lock_until_exec_even_after_the_parent_store_is_dropped() {
         receipt
     );
     assert!(recovered.apply_exact(&request()).is_err());
-    assert!(recovered.local_edit("must not restore effect access".into()).is_err());
+    assert!(recovered
+        .local_edit("must not restore effect access".into())
+        .is_err());
 }
 
 #[test]
 #[ignore = "subprocess fixture, launched explicitly by its parent test"]
 fn exec_then_wait_fixture() {
-    assert_eq!(std::env::var("TRILL_NOTES_INHERITED_LOCK_CHILD").unwrap(), "1");
+    assert_eq!(
+        std::env::var("TRILL_NOTES_INHERITED_LOCK_CHILD").unwrap(),
+        "1"
+    );
     let _ = std::io::stdin().read(&mut [0]);
 }
 
@@ -111,7 +121,12 @@ fn restored_copy_survives_process_death_while_original_receipt_remains_recoverab
     let receipt = original.apply_exact(&request()).unwrap();
     drop(original);
     let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--ignored", "--exact", "restore_then_wait_fixture", "--nocapture"])
+        .args([
+            "--ignored",
+            "--exact",
+            "restore_then_wait_fixture",
+            "--nocapture",
+        ])
         .env("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT", &root.0)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -177,7 +192,12 @@ fn durable_receipt_survives_sigkill_before_delivery() {
     let _serial = PROCESS_SCENARIO.lock().unwrap();
     let root = Directory::new();
     let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--ignored", "--exact", "persist_then_wait_fixture", "--nocapture"])
+        .args([
+            "--ignored",
+            "--exact",
+            "persist_then_wait_fixture",
+            "--nocapture",
+        ])
         .env("TRILL_NOTES_TEST_CHILD_ROOT", &root.0)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

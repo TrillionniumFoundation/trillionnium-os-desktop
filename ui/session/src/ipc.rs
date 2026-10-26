@@ -82,8 +82,9 @@ impl Connection {
                     write_frame(
                         &mut output,
                         &Response::Error {
-                            message: "Session snapshot is too large; no task state is being asserted"
-                                .into(),
+                            message:
+                                "Session snapshot is too large; no task state is being asserted"
+                                    .into(),
                             session_instance: session.instance.clone(),
                         },
                     )?;

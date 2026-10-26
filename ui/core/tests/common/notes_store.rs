@@ -72,7 +72,10 @@ pub(super) fn reopened_target() -> NotesTargetIdentity {
     }
 }
 
-pub(super) fn read_state(store: &mut NotesStore, identity: &NotesTargetIdentity) -> serde_json::Value {
+pub(super) fn read_state(
+    store: &mut NotesStore,
+    identity: &NotesTargetIdentity,
+) -> serde_json::Value {
     let raw = serde_json::to_vec(&serde_json::json!({
         "schema_version": 1, "action": "read_document_state", "target": identity,
         "request_id": "e".repeat(32),

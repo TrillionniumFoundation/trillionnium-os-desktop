@@ -34,9 +34,8 @@ use trill_ui_core::notes::{
     NotesChannelObservation, NotesDestinationObservation, NotesTargetIdentity,
 };
 use trill_ui_core::{
-    socket_path, unix_ms, AppKind, HostResources,
-    HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
-    Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
+    socket_path, unix_ms, AppKind, HostResources, HostWaylandObservation, Request, Response,
+    TaskRecord, TaskState, WaylandSocketStatus, Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
 };
 
 #[cfg(test)]
