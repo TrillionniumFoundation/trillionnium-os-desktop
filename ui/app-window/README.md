@@ -77,3 +77,6 @@ The [executed ordinary reopen probe](../../tests/ui/evidence/2026-10-24-notes-re
 records real close/reopen, picker selection, independent AT-SPI readback,
 continued editing and unchanged source storage, with exact binaries and
 actual window captures. It remains separate from production effect recovery.
+
+The versioned original Session lifetime and Root-required durable storage
+contract is specified in [NOTES-LIFETIME](../NOTES-LIFETIME.md).

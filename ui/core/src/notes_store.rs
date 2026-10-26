@@ -75,6 +75,15 @@ impl Drop for IncarnationLock {
 }
 
 impl NotesStore {
+    /// Preflight only: the existing canonical private storage root is opened
+    /// with the original UID/directory guards. No document or lock is created.
+    pub fn validate_existing_storage_root(root: &Path) -> io::Result<()> {
+        if root.canonicalize()? != root {
+            return Err(io::Error::other("Notes storage root must be canonical"));
+        }
+        let _directory = open_root(root, false)?;
+        Ok(())
+    }
     /// Create a fresh incarnation. Existing names are never reset or adopted,
     /// including a partially created directory left by a crashed predecessor.
     pub fn create(root: &Path, target: NotesTargetIdentity) -> io::Result<Self> {

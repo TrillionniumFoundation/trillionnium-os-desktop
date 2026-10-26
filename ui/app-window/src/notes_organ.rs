@@ -56,9 +56,24 @@ pub struct NotesAppChannel {
 }
 
 impl NotesAppChannel {
+    /// A retired Session cannot keep a document owner alive through the
+    /// ordinary unsaved-draft close cancellation path.
+    pub fn close_if_session_ended(&self, ctx: &egui::Context) -> bool {
+        let ended = self
+            .worker
+            .lifetime
+            .as_ref()
+            .is_some_and(trill_ui_core::notes_lifetime::SessionLifetime::has_ended);
+        if ended {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        }
+        ended
+    }
+
     pub fn from_inherited_stdin(
         ctx: egui::Context,
         target: NotesTargetIdentity,
+        lifetime: Option<trill_ui_core::notes_lifetime::SessionLifetime>,
     ) -> io::Result<Self> {
         // stdin is a known, process-owned descriptor. Duplicate it before
         // constructing UnixStream; dropping this worker never closes stdin.
@@ -75,7 +90,7 @@ impl NotesAppChannel {
                 "Notes app handoff identity mismatch",
             ));
         }
-        let worker = worker::start(ctx.clone(), target)?;
+        let worker = worker::start(ctx.clone(), target, lifetime)?;
         let sender = worker.sender.clone();
         let effect_sender = sender.clone();
         let effect_ctx = ctx.clone();

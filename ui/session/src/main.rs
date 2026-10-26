@@ -4,6 +4,8 @@ mod deadline;
 mod hepta;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
+#[cfg(target_os = "linux")]
+mod notes_lifetime;
 mod objective_bridge;
 
 use std::collections::BTreeMap;
@@ -130,6 +132,8 @@ impl DisplayTracker {
 }
 
 struct Session {
+    #[cfg(target_os = "linux")]
+    notes_durable_required: bool,
     objective: objective_bridge::ObjectiveBridge,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
@@ -158,6 +162,8 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            #[cfg(target_os = "linux")]
+            notes_durable_required: false,
             objective: objective_bridge::ObjectiveBridge::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
@@ -293,6 +299,7 @@ impl Session {
             .arg("--notes-incarnation")
             .arg(&identity.incarnation)
             .stdin(Stdio::from(OwnedFd::from(child_bootstrap)));
+        notes_lifetime::attach(command, &identity, self.notes_durable_required)?;
         Ok(target)
     }
 
@@ -345,6 +352,10 @@ impl Session {
         // No arbitrary command strings, shell expansion, user paths or elevated rights.
         let mut command = self.child_command(id, workspace, app);
         command.stdin(Stdio::null());
+        #[cfg(target_os = "linux")]
+        command
+            .env_remove(trill_ui_core::notes_lifetime::FD_ENV_V1)
+            .env_remove(trill_ui_core::notes_lifetime::META_ENV_V1);
         #[cfg(target_os = "linux")]
         let notes_target = {
             let enabled = app == AppKind::Notes;
@@ -822,6 +833,10 @@ fn notes_bootstrap_requested(
 fn main() -> io::Result<()> {
     let requested = notes_bootstrap_requested(std::env::args_os().skip(1))?;
     #[cfg(target_os = "linux")]
+    if requested == NotesBootstrapMode::Reserved {
+        notes_lifetime::require_durable_storage()?;
+    }
+    #[cfg(target_os = "linux")]
     let notes_bootstrap = match requested {
         NotesBootstrapMode::None => None,
         NotesBootstrapMode::Direct => {
@@ -856,7 +871,7 @@ fn main() -> io::Result<()> {
                 return Err(io::Error::new(
                     io::ErrorKind::AddrInUse,
                     "session service already running",
-                ))
+                ));
             }
             Err(e) if e.kind() == io::ErrorKind::ConnectionRefused => fs::remove_file(&socket)?,
             Err(e) => return Err(e),
@@ -872,6 +887,10 @@ fn main() -> io::Result<()> {
         app_binary.display()
     );
     let mut session = Session::new(app_binary)?;
+    #[cfg(target_os = "linux")]
+    {
+        session.notes_durable_required = requested == NotesBootstrapMode::Reserved;
+    }
     session.hepta = hepta::HeptaMonitor::from_env();
     #[cfg(target_os = "linux")]
     if let Some(bootstrap) = notes_bootstrap {

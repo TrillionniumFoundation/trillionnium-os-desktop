@@ -13,6 +13,7 @@ fn channel() -> (
         sender,
         projection: projection.clone(),
         durable: true,
+        lifetime: None,
     });
     (channel, receiver, projection)
 }

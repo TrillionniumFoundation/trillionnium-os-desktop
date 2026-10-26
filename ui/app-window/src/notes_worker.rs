@@ -8,7 +8,12 @@ use std::path::PathBuf;
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Instant;
 use trill_ui_core::notes::{NotesDocument, NotesTargetIdentity};
+use trill_ui_core::notes_lifetime::{SessionLifetime, StorageRequirement};
 use trill_ui_core::notes_store::{NotesStore, SavedNotesDocument, SavedNotesListing};
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "notes_lifetime_tests.rs"]
+mod lifetime_tests;
 
 pub(super) enum Command {
     Protocol(Pending),
@@ -94,10 +99,27 @@ pub(super) struct Connection {
     pub sender: mpsc::SyncSender<Command>,
     pub projection: Arc<Mutex<Projection>>,
     pub durable: bool,
+    pub lifetime: Option<SessionLifetime>,
 }
 
-pub(super) fn start(ctx: egui::Context, target: NotesTargetIdentity) -> io::Result<Connection> {
+pub(super) fn start(
+    ctx: egui::Context,
+    target: NotesTargetIdentity,
+    lifetime: Option<SessionLifetime>,
+) -> io::Result<Connection> {
+    if let Some(lifetime) = &lifetime {
+        lifetime.check_alive()?;
+    }
     let root = std::env::var_os("TRILL_NOTES_STATE_DIR").map(PathBuf::from);
+    if lifetime
+        .as_ref()
+        .is_some_and(|l| l.storage_requirement() == StorageRequirement::DurableRequired)
+    {
+        NotesStore::validate_existing_storage_root(
+            root.as_ref()
+                .ok_or_else(|| io::Error::other("Root Notes lifetime requires durable storage"))?,
+        )?;
+    }
     let document = if let Some(root) = &root {
         Document::Durable(NotesStore::create(root, target)?)
     } else {
@@ -107,15 +129,17 @@ pub(super) fn start(ctx: egui::Context, target: NotesTargetIdentity) -> io::Resu
     let projection = Arc::new(Mutex::new(Projection::default()));
     let output = projection.clone();
     let (sender, receiver) = mpsc::sync_channel(4);
+    let worker_lifetime = lifetime.clone();
     std::thread::Builder::new()
         .name("notes-document-owner".into())
         .spawn(move || {
-            run(document, root, receiver, output, ctx);
+            run(document, root, receiver, output, ctx, worker_lifetime);
         })?;
     Ok(Connection {
         sender,
         projection,
         durable,
+        lifetime,
     })
 }
 
@@ -125,9 +149,23 @@ fn run(
     receiver: mpsc::Receiver<Command>,
     output: Arc<Mutex<Projection>>,
     ctx: egui::Context,
+    lifetime: Option<SessionLifetime>,
 ) {
     let mut projection = Projection::default();
-    while let Ok(command) = receiver.recv() {
+    loop {
+        if lifetime.as_ref().is_some_and(SessionLifetime::has_ended) {
+            ctx.request_repaint();
+            return;
+        }
+        let command = match receiver.recv_timeout(std::time::Duration::from_millis(50)) {
+            Ok(command) => command,
+            Err(mpsc::RecvTimeoutError::Timeout) => continue,
+            Err(mpsc::RecvTimeoutError::Disconnected) => return,
+        };
+        if lifetime.as_ref().is_some_and(SessionLifetime::has_ended) {
+            ctx.request_repaint();
+            return;
+        }
         let reply = match command {
             Command::Protocol(pending) => {
                 let result = if Instant::now() < pending.expires_at {
@@ -168,6 +206,10 @@ fn run(
                 None
             }
         };
+        if lifetime.as_ref().is_some_and(SessionLifetime::has_ended) {
+            ctx.request_repaint();
+            return;
+        }
         projection.version = projection.version.saturating_add(1);
         projection.text = document.text().to_owned();
         projection.revision = document.revision();

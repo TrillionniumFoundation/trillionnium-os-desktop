@@ -37,6 +37,14 @@ impl eframe::App for ClientWindow {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self
+            .notes_organ
+            .as_ref()
+            .is_some_and(|organ| organ.close_if_session_ended(ctx))
+        {
+            // Original Session ended: do not run input/edit/close-cancel paths.
+            return;
+        }
         self.notes_input.begin_activation(ctx, &mut self.activation);
         self.terminal_preedit_active = self.activation.composing();
         let mut notes_updated = false;
@@ -516,7 +524,9 @@ fn parse_arguments() -> Result<
             Some(identity)
         }
         _ => {
-            return Err("Notes destination requires both identity fields and Notes app kind".into())
+            return Err(
+                "Notes destination requires both identity fields and Notes app kind".into(),
+            );
         }
     };
     Ok((kind, workspace, task_id, notes))
@@ -527,6 +537,15 @@ fn main() -> eframe::Result {
         eprintln!("trill-app-window: {error}");
         std::process::exit(2);
     });
+    let notes_lifetime = notes_target
+        .as_ref()
+        .map(|target| trill_ui_core::notes_lifetime::SessionLifetime::from_environment(target))
+        .transpose()
+        .unwrap_or_else(|error| {
+            eprintln!("trill-app-window: {error}");
+            std::process::exit(2);
+        })
+        .flatten();
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([740.0, 560.0]),
         ..Default::default()
@@ -538,7 +557,11 @@ fn main() -> eframe::Result {
             host_fonts::install(&cc.egui_ctx);
             let notes_organ = notes_target
                 .map(|target| {
-                    notes_organ::NotesAppChannel::from_inherited_stdin(cc.egui_ctx.clone(), target)
+                    notes_organ::NotesAppChannel::from_inherited_stdin(
+                        cc.egui_ctx.clone(),
+                        target,
+                        notes_lifetime,
+                    )
                 })
                 .transpose()?;
             Ok(Box::new(ClientWindow {

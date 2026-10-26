@@ -11,3 +11,6 @@ trill-ui-core.workspace = true
 eframe.workspace = true
 ab_glyph.workspace = true
 serde_json.workspace = true
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+libc.workspace = true

@@ -28,6 +28,7 @@ fn start_worker() -> (
             receiver,
             output_clone,
             egui::Context::default(),
+            None,
         )
     });
     (sender, output, handle)
@@ -124,6 +125,7 @@ impl SavedDocumentFixture {
                 receiver,
                 projection,
                 egui::Context::default(),
+                None,
             )
         });
         (sender, output, thread)
@@ -254,6 +256,7 @@ fn effect_expired_in_the_durable_catalog_queue_never_executes() {
             receiver,
             projection,
             egui::Context::default(),
+            None,
         )
     });
     assert!(response
