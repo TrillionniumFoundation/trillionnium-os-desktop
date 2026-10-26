@@ -19,7 +19,8 @@ TEMPLATE = "tests/workloads/hepta_agentd_runtime/source-review.json"
 SCHEMA = "hepta.native-original-runtime-source-review.v1"
 REPOSITORY = "TrillionniumFoundation/hepta-private-ci"
 LIMIT = 1024 * 1024
-PACKAGES = ("hepta-agentd", "hepta-memory", "hepta-fleet", "hepta-paths", "hepta-supervisor")
+PACKAGES = ("hepta-agentd", "hepta-memory", "hepta-fleet", "hepta-paths", "hepta-supervisor",
+            "hepta-contracts", "hepta-types", "hepta-cognitive-store", "hepta-cognitive-read", "hepta-cognitive-types")
 MANIFESTS = ("ui/Cargo.toml", "ui/core/Cargo.toml", "services/hepta-session-host/Cargo.toml")
 ENV = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "GIT_CONFIG_NOSYSTEM": "1",
        "GIT_CONFIG_GLOBAL": os.devnull, "GIT_TERMINAL_PROMPT": "0"}
@@ -158,6 +159,7 @@ def derive(desktop, hepta):
             names.add(("desktop", relative(name.decode())))
     names.add(("desktop", CONTRACT))
     names.update(("desktop", name) for name in MANIFESTS)
+    names.add(("hepta", "codex-rs/Cargo.toml"))
     names.add(("hepta", "codex-rs/Cargo.lock"))
     manifest = "codex-rs/rust-toolchain.toml"
     names.add(("hepta", manifest))

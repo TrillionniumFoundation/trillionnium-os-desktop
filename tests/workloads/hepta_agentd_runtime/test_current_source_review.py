@@ -26,9 +26,12 @@ class SourceFixture:
             path.mkdir()
             self.git(path, "init", "--quiet")
         self.put(self.hepta, "codex-rs/rust-toolchain.toml", '[toolchain]\nchannel = "1.96.0"\n')
+        self.put(self.hepta, "codex-rs/Cargo.toml", '[workspace]\nresolver = "2"\n')
         self.put(self.hepta, "codex-rs/Cargo.lock", "# Actual original lock\n")
         self.put(self.hepta, "codex-rs/hepta-agentd/src/old_owner.rs", "original owner\n")
         self.put(self.hepta, "codex-rs/hepta-agentd/src/new_authority.rs", "new actual authority module\n")
+        self.put(self.hepta, "codex-rs/hepta-contracts/src/final_use.rs", "original FinalUse callee\n")
+        self.put(self.hepta, "codex-rs/hepta-cognitive-store/src/lib.rs", "original cognitive store facade\n")
         self.commit(self.hepta)
         self.contract = {"schema": "trillionnium.original-shared-presenter.v1", "repository": source.REPOSITORY,
                          "commit": self.git(self.hepta, "rev-parse", "HEAD"),
@@ -95,6 +98,9 @@ class CurrentSourceReviewTests(SourceFixture, unittest.TestCase):
         selected = {(item["repository"], item["path"]) for item in review["source_files"]}
         self.assertTrue({(item["repository"], item["path"]) for item in self.template["source_files"]} <= selected)
         self.assertIn(("hepta", "codex-rs/hepta-agentd/src/new_authority.rs"), selected)
+        self.assertIn(("hepta", "codex-rs/hepta-contracts/src/final_use.rs"), selected)
+        self.assertIn(("hepta", "codex-rs/hepta-cognitive-store/src/lib.rs"), selected)
+        self.assertIn(("hepta", "codex-rs/Cargo.toml"), selected)
         self.assertEqual(self.external(review), review)
         self.assertEqual((self.desktop / source.TEMPLATE).read_bytes(), before)
         self.assertEqual(self.git(self.desktop, "status", "--porcelain=v1", "--untracked-files=all"), "")
@@ -113,7 +119,8 @@ class CurrentSourceReviewTests(SourceFixture, unittest.TestCase):
         changed = copy.deepcopy(review)
         changed["source_files"].pop()
         mutations.append(changed)
-        for name in ("original_fixture.rs", "codex-rs/hepta-agentd/src/new_authority.rs"):
+        for name in ("original_fixture.rs", "codex-rs/hepta-agentd/src/new_authority.rs",
+                     "codex-rs/hepta-contracts/src/final_use.rs", "codex-rs/hepta-cognitive-store/src/lib.rs"):
             changed = copy.deepcopy(review)
             changed["source_files"] = [item for item in changed["source_files"] if item["path"] != name]
             mutations.append(changed)
