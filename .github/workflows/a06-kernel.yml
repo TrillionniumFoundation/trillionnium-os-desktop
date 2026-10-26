@@ -196,7 +196,7 @@ jobs:
         run: |
           set -euo pipefail
           for control in clocksource-drop-fraction vdso-drop-fraction vdso-skip-fault-mode \
-              handoff-drop-tail handoff-eligibility-first dequeue-drop-owner; do
+              handoff-drop-tail-runtime-v2 handoff-eligibility-first-runtime-v2 dequeue-drop-owner-switch-v2; do
             # The first mutation rebuilt the original shared OSDK target.
             # Every later control verifies the saved green ELF against the
             # original successful QEMU record before changing any source.

@@ -1,0 +1,21 @@
+diff --git a/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs b/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
+--- a/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
++++ b/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
+@@ -1135,15 +1135,8 @@
+         debug_assert!(self.dequeued.is_none());
+         assert!(self.switching.is_none());
+         let task = current.0.0.clone();
+-        self.dequeued = Some(SwitchedOut {
+-            entity: current.0,
+-            runtime: current.1,
+-            state: if self.dequeue_exiting {
+-                OutgoingState::Exiting
+-            } else {
+-                OutgoingState::Waiting { woken: false }
+-            },
+-        });
++        // NEGATIVE CONTROL: discard the retained outgoing owner before selection.
++        drop(current);
+         Some(task)
+     }
+ }

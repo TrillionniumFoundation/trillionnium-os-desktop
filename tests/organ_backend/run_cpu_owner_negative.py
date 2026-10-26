@@ -75,6 +75,21 @@ CONTROLS = {
         'cpu_handoff_eligibility_first_negative.patch',
         '8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c',
         SCHED_PATH, {HANDOFF_PREFIX + HANDOFF_NAMES[1]}, 201),
+    # Runtime/physical-switch counterparts retain the historical controls above.
+    # Only fixed, reviewed mutations are selectable; the original full gate and
+    # exact negative failure oracle below are shared without alteration.
+    'handoff-drop-tail-runtime-v2': (
+        'cpu_runtime_handoff_drop_tail_negative.patch',
+        '9f5bc059e5709ce82d1798856683c54e530346aaf17ff5da279c77cd46509d00',
+        SCHED_PATH, {HANDOFF_PREFIX + name for name in HANDOFF_NAMES}, 396),
+    'handoff-eligibility-first-runtime-v2': (
+        'cpu_runtime_handoff_eligibility_first_negative.patch',
+        '2d88254668e077f34087ab6df7f15aee142912ad42ecaf660f7a7a48cbe24b17',
+        SCHED_PATH, {HANDOFF_PREFIX + HANDOFF_NAMES[1]}, 396),
+    'dequeue-drop-owner-switch-v2': (
+        'cpu_switch_dequeue_drop_owner_negative.patch',
+        '50e3a5a8cbf86c9c955f7bd63ece479896612d9447375cc253e4596971f3982f',
+        SCHED_PATH, {HANDOFF_PREFIX + name for name in HANDOFF_NAMES[2:]}, 396),
     'dequeue-drop-owner': (
         'cpu_dequeue_drop_owner_negative.patch',
         'b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd',
