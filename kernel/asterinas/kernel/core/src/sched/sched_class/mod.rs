@@ -363,7 +363,7 @@ impl CpuRunQueueFixture {
         task: Arc<Task>,
     ) -> core::result::Result<(), Arc<Task>> {
         let _irq_guard = disable_local();
-        self.rq.fair.groups.enqueue(task, Some(EnqueueFlags::Spawn))
+        self.rq.fair.try_enqueue(task, Some(EnqueueFlags::Spawn))
     }
 
     pub(crate) fn group_state(&self, id: usize) -> (u64, usize, bool) {

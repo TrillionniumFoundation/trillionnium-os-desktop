@@ -282,9 +282,16 @@ impl FairClassRq {
     }
 
     pub(super) fn enqueue(&mut self, task: Arc<Task>, flags: Option<EnqueueFlags>) {
-        self.groups
-            .enqueue(task, flags)
+        self.try_enqueue(task, flags)
             .unwrap_or_else(|_| panic!("runnable task lacks prepared group admission"));
+    }
+
+    pub(super) fn try_enqueue(
+        &mut self,
+        task: Arc<Task>,
+        flags: Option<EnqueueFlags>,
+    ) -> core::result::Result<(), Arc<Task>> {
+        self.groups.enqueue(task, flags)
     }
 
     pub(super) fn len(&self) -> usize {
