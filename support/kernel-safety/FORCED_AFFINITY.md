@@ -14,8 +14,8 @@ calling `set_thread_affinity`. A nonself target is held by a strong Thread and
 Process; the caller must own its real/effective UID or pass the existing LSM
 `SYS_NICE` check in the target user namespace. The PID-table guard does not span
 those checks or administration. Getters retain their separate read path. This
-stage preserves the independent P1 target identity gate; P2/P3 priority limit
-and user-policy snapshot changes require a later combined-source integration.
+receiving composition preserves P1/P2/P3 target identity, priority limits and
+user-policy snapshots; see [the strict receiving profile](../../tests/kernel/network/RECEIVING_FORCE_PROFILE.md).
 
 The sleepable administration view serializes writers. Cold preparation chooses
 an allowed destination and reserves physical FAIR/RT and throttle slots using
