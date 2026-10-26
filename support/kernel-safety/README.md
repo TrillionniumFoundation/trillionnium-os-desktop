@@ -3,8 +3,9 @@
 Status: development candidate based on main `38227d33fd3ed668f0424bc153e0d3d811731597`. This directory documents the implementation and its acceptance boundaries. The test evidence is generated separately by the commands below; the presence of this document is not a passing result or production qualification.
 
 The [physical page budget](PAGE_MEMORY.md) now includes private/COW and VMO/cache
-pages, [user page tables](PAGE_TABLE_MEMORY.md), and [POSIX kernel stack
-frames](KERNEL_STACK_MEMORY.md). The `hepta.anon.*` interface and its first-stage
+pages, [user page tables](PAGE_TABLE_MEMORY.md), [POSIX kernel stack
+frames](KERNEL_STACK_MEMORY.md), and [Unix stream/pipe physical
+buffers](IPC_BUFFER_MEMORY.md). The `hepta.anon.*` interface and its first-stage
 scope below remain unchanged. Neither interface is full Linux `memory.max`.
 
 The following documents each contain development entry points, technical
