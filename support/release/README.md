@@ -97,13 +97,17 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 
 ## Native owner source profile
 
-Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 163
-Desktop/kernel roles and 136 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
+Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 170
+Desktop/kernel roles and 137 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
 settlement modules, their development/technical contracts and guest probes.
 The affinity owner, permission/race contract and SMP probe/runner are required
 roles, as are the Session observer and reconnect regressions and their module
 contract. This keeps the target-process lifetime fix and bounded private test
 socket paths inside the reviewed source combination.
+The scheduling-policy access owner, all three mutation syscall entries and the
+actual cross-user probe/runner/contract are required roles as well. The original
+Hepta recovered-writer integration oracle is bound separately: its close barrier,
+wrong-cut refusal and authenticated lease advancement must survive the pair.
 It preserves the five protocol
 goldens and adds the real native entry/runner, bounded ELF loader, per-frame
 kernel-stack accounting, actual proc credentials, SGID inode publication,

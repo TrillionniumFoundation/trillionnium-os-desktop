@@ -198,7 +198,7 @@ class PairExecutionTests(unittest.TestCase):
     def test_v3_missing_recovery_or_migration_source_blocks_before_execution(self):
         self.prepare_expanded_profile(3)
         original = json.loads(self.manifest.read_text())
-        for role in ("agentd_arg0_dispatch", "supervisor_intent_recovery_cli", "supervisor_signed_recovery_oracle",
+        for role in ("agentd_recovered_writer_oracle", "agentd_arg0_dispatch", "supervisor_intent_recovery_cli", "supervisor_signed_recovery_oracle",
                      "supervisor_protocol_gate", "automation_migration_0016", "automation_timer_migration"):
             manifest = copy.deepcopy(original)
             manifest["sources"]["hepta"] = [entry for entry in manifest["sources"]["hepta"]

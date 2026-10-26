@@ -46,6 +46,13 @@ HEPTA_ROLES_V2 = HEPTA_ROLES | {
 }
 GOLDEN_ROLES_V2 = GOLDEN_ROLES | {"desktop_x11"}
 OS_ROLES_V3 = OS_ROLES_V2 | {
+    'kernel_policy_authorization_contract',
+    'kernel_policy_authorization_probe',
+    'kernel_policy_authorization_runner',
+    'kernel_policy_setattr',
+    'kernel_policy_setparam',
+    'kernel_policy_setscheduler',
+    'kernel_policy_syscall_access',
     'kernel_affinity_contract',
     'kernel_affinity_owner',
     'kernel_affinity_probe',
@@ -170,6 +177,7 @@ OS_ROLES_V3 = OS_ROLES_V2 | {
     'kernel_waiter_notification',
 }
 HEPTA_ROLES_V3 = HEPTA_ROLES_V2 | {
+    'agentd_recovered_writer_oracle',
     'agentd_arg0_dispatch',
     "root_launch", "root_writer_proof", "root_issuer_client", "cognitive_store_entry",
     "agent_protocol_entry", "agent_protocol_history", "learning_ledger_entry", "learning_run_start",
