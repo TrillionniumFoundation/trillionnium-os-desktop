@@ -83,3 +83,32 @@ to the destination floor. It neither copies a different CPU's historical floor
 nor resets earned debt to zero. Rebase only an exclusively held, unpublished
 Task; rollback restores its original value. These controlled helpers do not
 change a Task's original CPUmax owner or create a fresh quota window.
+
+## Sleepable policy administration prerequisite
+
+`SchedAdministration` owns a per-Task sleepable mutex and exposes the production
+policy mutators. `setscheduler`, `setattr` and `setparam` use the separate
+`update_sched_attr_with` writer helper. The original getter helper and policy
+spinlock reads stay independent; holding the writer guard does not force a
+reader to wait. Direct SchedAttr policy construction mutators are available only
+in controlled ktests, not through production crate APIs. Thread construction
+initializes its policy before publication.
+
+All six accessor call sites are ordinary syscall handlers. Input copying occurs
+before the writer callback; getter output copying follows its read callback.
+The writer resolves a strong Thread and releases the PID table before entering
+the sleepable guard. Its identity/namespace permission gate must precede the
+guard and keep the original strong Process alive through mutation; that security
+work is an independent change, not granted by possession of an admin view.
+
+The future affinity transaction can hold the same admin view from capacity
+preparation through placement, pinning its actual policy/priority. The lock order
+is administration mutex, at most one rq spinlock, then the existing short policy
+spinlock. The rq/timer/handoff paths never acquire the administration mutex.
+`update_policy` callbacks still run under the policy spinlock and must be pure:
+copy the old policy, release that spinlock, read credentials/RLIMIT and validate,
+then set the new policy while administration remains held.
+
+Three controlled tests exercise read access during administration, a genuinely
+sleeping/woken second writer Task, and rejection of an uncontended IRQ-off call.
+They add no owner/capability/RLIMIT permission claim and do not enable migration.
