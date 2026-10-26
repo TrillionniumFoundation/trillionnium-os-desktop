@@ -117,7 +117,8 @@ class PairExecutionTests(unittest.TestCase):
                                    "codex-hepta-cognitive-store", "codex-hepta-contracts", "codex-state",
                                    "codex-hepta-agent-protocol", "codex-hepta-learning-ledger",
                                    "codex-git-utils", "codex-hepta-memory-extension",
-                                   "codex-hepta-automation", "codex-hepta-fleet", "codex-hepta-supervisor"})
+                                   "codex-hepta-automation", "codex-hepta-fleet", "codex-hepta-supervisor",
+                                   "codex-arg0"})
         self.assertIn("--locked", tests)
         root = next(step[3] for step in steps if step[0] == "hepta-root-build")
         self.assertIn("hepta-authority-host", root)
@@ -126,7 +127,7 @@ class PairExecutionTests(unittest.TestCase):
         self.assertIn("hepta-supervisor-intent-recovery", recovery)
         self.assertIn("--locked", recovery)
 
-    def test_v3_actual_dispatch_runs_twelve_owners_and_all_three_hepta_binaries(self):
+    def test_v3_actual_dispatch_runs_thirteen_owners_and_all_three_hepta_binaries(self):
         self.prepare_expanded_profile(3)
         with patch.object(runner, "execute_step", side_effect=self.execute_fixture):
             self.assertEqual(self.run_pair("--required-schema", "3", "--execute-host", "--offline"), 0)
@@ -141,7 +142,7 @@ class PairExecutionTests(unittest.TestCase):
                          "-p", "codex-hepta-learning-ledger", "-p", "codex-git-utils",
                          "-p", "codex-hepta-memory-extension", "-p", "codex-hepta-automation",
                          "-p", "codex-hepta-fleet", "-p", "codex-hepta-supervisor",
-                         "--test-threads", "2", "--retries", "0", "--cargo-profile", "dev-small"])
+                         "-p", "codex-arg0", "--test-threads", "2", "--retries", "0", "--cargo-profile", "dev-small"])
         binaries = {
             "hepta-build": ("codex-hepta-agentd", "codex-hepta-agentd"),
             "hepta-root-build": ("codex-hepta-agentd", "hepta-authority-host"),
@@ -197,7 +198,7 @@ class PairExecutionTests(unittest.TestCase):
     def test_v3_missing_recovery_or_migration_source_blocks_before_execution(self):
         self.prepare_expanded_profile(3)
         original = json.loads(self.manifest.read_text())
-        for role in ("supervisor_intent_recovery_cli", "supervisor_signed_recovery_oracle",
+        for role in ("agentd_arg0_dispatch", "supervisor_intent_recovery_cli", "supervisor_signed_recovery_oracle",
                      "supervisor_protocol_gate", "automation_migration_0016", "automation_timer_migration"):
             manifest = copy.deepcopy(original)
             manifest["sources"]["hepta"] = [entry for entry in manifest["sources"]["hepta"]

@@ -98,7 +98,7 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 ## Native owner source profile
 
 Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 163
-Desktop/kernel roles and 135 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
+Desktop/kernel roles and 136 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
 settlement modules, their development/technical contracts and guest probes.
 The affinity owner, permission/race contract and SMP probe/runner are required
 roles, as are the Session observer and reconnect regressions and their module
@@ -133,15 +133,18 @@ unsigned exact-digest file still cannot settle an ambiguous production outcome.
 A new commit label cannot reuse old role bytes, omit a migration or alias a
 recovery role to another required source.
 
-The fixed schema-3 host lane directly tests all twelve original owning packages:
+The fixed schema-3 host lane directly tests all thirteen original owning packages:
 `codex-hepta-agentd`, `codex-hepta-memory`, `codex-hepta-cognitive-store`,
 `codex-hepta-contracts`, `codex-state`, `codex-hepta-agent-protocol`,
 `codex-hepta-learning-ledger`, `codex-git-utils`, `codex-hepta-memory-extension`,
-`codex-hepta-automation`, `codex-hepta-fleet` and `codex-hepta-supervisor`.
+`codex-hepta-automation`, `codex-hepta-fleet`, `codex-hepta-supervisor` and
+`codex-arg0`.
 It separately builds the original `codex-hepta-agentd`, `hepta-authority-host`
 and `hepta-supervisor-intent-recovery` binaries. The recovery CLI has its own
 `hepta-recovery-build` log and must compile before the owning tests can qualify.
-A failed binary build stops the lane. `--build-host` selects the UI and all three
+The original arg0 helper/runtime dispatcher has its own required source role and
+direct owning-package tests; an empty native path bundle cannot stand in for
+that executable setup. A failed binary build stops the lane. `--build-host` selects the UI and all three
 Hepta build steps and continues to record only `host-builds`, never a test pass.
 The host lane retains locked dependencies, explicit toolchains,
 separate external caches, no test retries, and source checks before and after

@@ -26,7 +26,8 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_v
         owning_packages += ["codex-hepta-contracts", "codex-state",
                             "codex-hepta-agent-protocol", "codex-hepta-learning-ledger",
                             "codex-git-utils", "codex-hepta-memory-extension",
-                            "codex-hepta-automation", "codex-hepta-fleet", "codex-hepta-supervisor"]
+                            "codex-hepta-automation", "codex-hepta-fleet", "codex-hepta-supervisor",
+                            "codex-arg0"]
     package_flags = [flag for package in owning_packages for flag in ("-p", package)]
     steps = [
         ("ui-build", os_root, "1.88.0",

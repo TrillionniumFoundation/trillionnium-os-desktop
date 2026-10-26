@@ -170,6 +170,7 @@ OS_ROLES_V3 = OS_ROLES_V2 | {
     'kernel_waiter_notification',
 }
 HEPTA_ROLES_V3 = HEPTA_ROLES_V2 | {
+    'agentd_arg0_dispatch',
     "root_launch", "root_writer_proof", "root_issuer_client", "cognitive_store_entry",
     "agent_protocol_entry", "agent_protocol_history", "learning_ledger_entry", "learning_run_start",
     'agentd_checkpoint_transport',
