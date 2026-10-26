@@ -11,7 +11,7 @@ use ostd::{
     arch::read_tsc as sched_clock,
     cpu::{CpuId, CpuSet, PinCurrentCpu, all_cpus},
     irq::disable_local,
-    sync::{LocalIrqDisabled, SpinLock},
+    sync::{LocalIrqDisabled, Mutex, SpinLock},
     task::{
         AtomicCpuId, Task,
         scheduler::{
@@ -32,6 +32,7 @@ use crate::{
     thread::{AsThread, Thread},
 };
 
+mod administration;
 mod clock;
 mod policy;
 mod time;
@@ -41,13 +42,14 @@ mod idle;
 mod real_time;
 mod stop;
 
+pub(crate) use self::{
+    administration::SchedAdministration,
+    policy::{LinuxSchedPolicy, SchedPolicy},
+    real_time::{RealTimePolicy, RealTimePriority},
+};
 use self::{
     clock::CpuClockSample,
     policy::{SchedPolicyKind, SchedPolicyState},
-};
-pub(crate) use self::{
-    policy::{LinuxSchedPolicy, SchedPolicy},
-    real_time::{RealTimePolicy, RealTimePriority},
 };
 
 type SchedEntity = (Arc<Task>, Arc<Thread>);
@@ -397,6 +399,7 @@ trait SchedClassRq: Send + fmt::Debug {
 /// scheduling class.
 #[derive(Debug)]
 pub(crate) struct SchedAttr {
+    administration: Mutex<administration::AdministrationState>,
     policy: SchedPolicyState,
     last_cpu: AtomicCpuId,
     real_time: real_time::RealTimeAttr,
@@ -407,6 +410,7 @@ impl SchedAttr {
     /// Constructs a new `SchedAttr` with the given scheduling policy.
     pub(crate) fn new(policy: SchedPolicy) -> Self {
         Self {
+            administration: Mutex::new(administration::AdministrationState::new(policy)),
             policy: SchedPolicyState::new(policy),
             last_cpu: AtomicCpuId::default(),
             real_time: {
@@ -436,7 +440,7 @@ impl SchedAttr {
     ///
     /// Specifically for real-time policies, if the new policy doesn't
     /// specify a base slice factor for RR, the old one will be kept.
-    pub(crate) fn set_policy(&self, policy: SchedPolicy) {
+    fn apply_policy(&self, policy: SchedPolicy) {
         self.policy.set(policy, |policy| match policy {
             SchedPolicy::RealTime { rt_prio, rt_policy } => {
                 self.real_time.update(rt_prio.get(), rt_policy);
@@ -446,7 +450,8 @@ impl SchedAttr {
         });
     }
 
-    pub(crate) fn update_policy<T>(&self, f: impl FnOnce(&mut SchedPolicy) -> T) -> T {
+    #[cfg(ktest)]
+    fn apply_policy_update<T>(&self, f: impl FnOnce(&mut SchedPolicy) -> T) -> T {
         self.policy.update(|policy| {
             let ret = f(policy);
             match *policy {
@@ -458,6 +463,12 @@ impl SchedAttr {
             }
             ret
         })
+    }
+
+    // Controlled queue fixtures construct non-live policies without sleeping.
+    #[cfg(ktest)]
+    pub(crate) fn set_policy(&self, policy: SchedPolicy) {
+        self.apply_policy(policy);
     }
 
     pub(crate) fn last_cpu(&self) -> Option<CpuId> {

@@ -165,7 +165,16 @@ pub(super) fn read_linux_sched_attr_from_user(
     // If `attr.size` is modified concurrently, we should use the original size.
     attr.size = user_size;
 
-    // TODO: Check whether `sched_flags` is valid.
+    const KNOWN_FLAGS: u64 = 0x7f;
+    if attr.sched_flags & !KNOWN_FLAGS != 0 {
+        return_errno_with_message!(Errno::EINVAL, "unknown scheduling attribute flags");
+    }
+    if attr.sched_flags != 0 {
+        return_errno_with_message!(
+            Errno::EOPNOTSUPP,
+            "scheduling attribute flags are not implemented"
+        );
+    }
 
     Ok(attr)
 }
@@ -219,14 +228,15 @@ pub(super) fn access_sched_attr_with<T>(
 pub(super) fn update_sched_attr_with<T>(
     tid: Tid,
     ctx: &Context,
-    f: impl FnOnce(&SchedAttr) -> Result<T>,
+    f: impl FnOnce(&mut crate::sched::SchedAdministration<'_>, &crate::process::Process) -> Result<T>,
 ) -> Result<T> {
     if tid.cast_signed() < 0 {
         return_errno_with_message!(Errno::EINVAL, "all negative TIDs are not valid");
     }
     if tid == 0 {
         // The running context already retains its own Process and Thread.
-        return f(ctx.thread.sched_attr());
+        let mut admin = ctx.thread.sched_attr().administer();
+        return f(&mut admin, &ctx.process);
     }
     let thread = {
         let table = pid_table::pid_table_mut();
@@ -246,7 +256,10 @@ pub(super) fn update_sched_attr_with<T>(
             CapSet::SYS_NICE,
         ))?;
     }
-    let result = f(thread.sched_attr());
+    drop(target_cred);
+    let mut admin = thread.sched_attr().administer();
+    let result = f(&mut admin, &target_process);
+    drop(admin);
     // Preserve the actual target Process until the authorized mutation ends.
     drop(target_process);
     result

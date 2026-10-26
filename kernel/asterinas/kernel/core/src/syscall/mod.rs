@@ -140,6 +140,7 @@ mod sched_get_priority_min;
 mod sched_getattr;
 mod sched_getparam;
 mod sched_getscheduler;
+mod sched_permissions;
 mod sched_setattr;
 mod sched_setparam;
 mod sched_setscheduler;
