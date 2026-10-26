@@ -22,6 +22,7 @@ on:
       - "tests/kernel/control/**"
       - "tests/kernel/safety/**"
       - "tests/kernel/network/**"
+      - "tests/kernel/vdso-cpu/**"
       - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
@@ -47,6 +48,7 @@ on:
       - "tests/kernel/control/**"
       - "tests/kernel/safety/**"
       - "tests/kernel/network/**"
+      - "tests/kernel/vdso-cpu/**"
       - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
@@ -337,6 +339,24 @@ jobs:
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
 
+      - name: Verify pinned libc and vDSO CPU identity on one, two and four CPUs
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          for cpus in 1 2 4; do
+            if python3 -I -B tests/kernel/vdso-cpu/run.py \
+                --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+                --cc /usr/bin/gcc-13 --qemu /usr/bin/qemu-system-x86_64 \
+                --smp "$cpus" --timeout 120 \
+                --output "${RUNNER_TEMP}/a06-vdso-cpu-smp${cpus}"; then
+              :
+            else
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0
+
       - name: Verify scoped kernel safety on the same ordinary ELF with 2 and 4 CPUs
         shell: bash
         run: |
@@ -615,6 +635,7 @@ jobs:
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
+            ${{ runner.temp }}/a06-vdso-cpu-smp*
             ${{ runner.temp }}/a06-safety-runner-checks
             ${{ runner.temp }}/a06-kernel-safety-smp2
             ${{ runner.temp }}/a06-kernel-safety-smp4
