@@ -8,6 +8,9 @@ use std::os::unix::net::UnixStream;
 use std::path::Path;
 use std::time::Instant;
 
+#[path = "admin_grant.rs"]
+mod grants;
+
 pub(super) fn run(mut args: impl Iterator<Item = OsString>) -> Result<()> {
     if unsafe { libc::getuid() } != 0 || unsafe { libc::geteuid() } != 0 {
         return Err("actual Root required for original administrative client".into());
@@ -23,7 +26,7 @@ pub(super) fn run(mut args: impl Iterator<Item = OsString>) -> Result<()> {
     {
         return Err("original Root administrative descriptor mismatch".into());
     }
-    let action = parse_action(args)?;
+    let command = grants::parse_command(args)?;
     let inode = admin::socket_identity(&descriptor.socket)?;
     let end = Instant::now() + admin::EXCHANGE_TIMEOUT;
     let mut stream = connect_before(&descriptor.socket, end)?;
@@ -46,7 +49,7 @@ pub(super) fn run(mut args: impl Iterator<Item = OsString>) -> Result<()> {
     let request = RootAdminRequest {
         schema_version: 1,
         expected_instance: descriptor.instance.clone(),
-        action,
+        action: command.action,
     };
     admin::write_frame_before(&mut stream, &serde_json::to_vec(&request)?, end)?;
     let response = admin::read_frame_before(&mut stream, end)?;
@@ -63,11 +66,10 @@ pub(super) fn run(mut args: impl Iterator<Item = OsString>) -> Result<()> {
     if *returned != serde_json::to_value(&descriptor.instance)? {
         return Err("original Root response instance changed".into());
     }
+    let outcome = grants::finish_response(&value, command.export.as_deref());
+    // Preserve any actual first-store receipt even for partial/unknown outcome.
     println!("{}", serde_json::to_string_pretty(&value)?);
-    match value["status"].as_str() {
-        Some("observed" | "writer_revoked") => Ok(()),
-        _ => Err("request refused or outcome unknown; no mutation retry".into()),
-    }
+    outcome
 }
 
 fn connect_before(path: &Path, end: Instant) -> Result<UnixStream> {

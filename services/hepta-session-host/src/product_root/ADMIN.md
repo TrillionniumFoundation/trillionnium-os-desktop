@@ -52,3 +52,32 @@ Parser/frame/lifetime tests are ordinary component checks. Actual Root
 same-object/registry/clock tests and final installed product tests need their
 own exact-source results. Neither this document nor an API's existence records
 an installed product pass.
+
+The same finite client also supports the actual issued-artifact path:
+
+```sh
+hepta-desktop-root admin --instance-file <same descriptor> observe-grant --latest \
+  --export-grant <new Root0600 file under Root0700 parent>
+hepta-desktop-root admin --instance-file <same descriptor> observe-grant \
+  --grant-id <actual original signed grant ID>
+hepta-desktop-root admin --instance-file <same descriptor> revoke-grant \
+  --signed-grant-file <actual exported artifact> \
+  --expected-effect-lease-revision <original version> \
+  --expected-issuer-head-revision <original observed version> \
+  --reason-sha256 <nonzero lowercase 64-hex reason digest>
+```
+
+Export verifies the exact captured bytes/digest and strict artifact shape, then
+creates and synchronizes a new private file without replacement or re-signing.
+The file is an existing artifact, never a Root/admin capability. Its signature,
+current original issuer epoch/time and complete existing Notes lease/policy
+binding are independently verified by the original live Root before either CAS.
+Evicted/missed/restarted observations remain Unknown; latest never substitutes an
+older successful capture after a newer capture was lost.
+
+The exact revoke reports success only when both original stores returned and
+both existing protected consumer frontiers confirmed the same issuer head via
+the original authenticated observation/synchronization path. A known first-store
+receipt remains printed even if the second store or synchronization is unknown.
+The client exits unsuccessfully for partial/pending/unknown and never retries.
+Expiry or writer process exit is not recorded as precise effect/grant revoke.
