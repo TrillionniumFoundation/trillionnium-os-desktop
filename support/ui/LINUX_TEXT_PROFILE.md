@@ -72,6 +72,57 @@ paths are recorded as native inputs; changing them requires a new build.
 These checks describe local build inputs and assume the build host and Git/Cargo
 tools operate normally; the receipt is not remote attestation of a hostile host.
 
+## Explicit reuse of one builder target
+
+The default remains a new output directory with a new `output/target`. A failed
+builder attempt may have useful dependency objects without a passing test or
+package. Reuse that exact target only by supplying both explicit arguments:
+
+```sh
+# Append to the complete build invocation above; NEW_OUTPUT must still not exist.
+--output /absolute/NEW_OUTPUT \
+--target-cache /absolute/PRIOR_OUTPUT/target \
+--target-cache-receipt /absolute/PRIOR_OUTPUT/build-receipt.json
+```
+
+The target and receipt must be canonical, ordinary paths owned by the current
+UID, without permissions allowing other users to write them. The prior receipt
+must identify that exact target, have a completed success or failure status,
+and retain the original compiler, Cargo, metadata and attempted UI-test logs
+with matching hashes. An arbitrary prefilled target or unfinished attempt is
+not admitted. Legacy receipts prove current ownership and the recorded path
+and bytes; they do not attest a historical creator UID.
+
+The target must not overlap the current output, Desktop, Hepta, verified Cargo
+source checkouts, SDK helper or prepared SDK tree. One nonblocking `flock` lease
+covers metadata, targeted invalidation, all tests, Clippy, build and packaging;
+child commands retain the lease even if the Python parent exits. This is a
+dedicated builder cache: stop other Cargo users of the directory before opting
+in, because an unrelated Cargo command does not acquire this builder lease.
+
+Reuse requires identical Hepta commit/tree, SDK source profile, compiler
+paths/hashes, all five lock hashes, build profile, effective compiler settings
+and native input paths. A new Hepta pin or lock set requires a fresh build.
+Desktop source may change: the builder first resolves all five manifest graphs
+and runs scoped `cargo clean --package` for every in-repository path package,
+including local dependencies, to prevent preserved source timestamps from
+reusing stale local binaries. Git/registry dependencies and unrelated cache
+files are retained. Rust incremental compilation is explicitly disabled.
+
+Every existing source, SDK, compiler and lock check still runs. Every formatting,
+test, Clippy, build, resource and packaging command still executes and produces
+new logs. No previous passing result is inherited. `target_cache` in the new
+receipt records the prior receipt hash and source pair, current UID, directory
+identity, invalidated packages, `cold_build: false`, and
+`prior_pass_reused: false`. The old receipt and logs stay unchanged; only its
+explicitly selected target becomes a mutable cache. A small lease journal in
+that directory binds subsequent reuse to the latest completed receipt. An
+interrupted lease is refused; it is not silently repaired or relabelled.
+Formatting and metadata failures before invalidation leave the previous cache
+journal intact. Once invalidation starts, a failure before the UI compilation/
+test attempt does not qualify the new target for another reuse; use a fresh
+build instead of falling back to an older receipt.
+
 ## Install the explicit renderer
 
 The build writes a user-owned mode0600 `linux-text-config.json` with renderer
@@ -100,10 +151,15 @@ those deployment inputs.
 
 ```sh
 python3 -B -m unittest discover -s support/ui -p 'test_text_product_profile.py' -v
+python3 -B -m unittest discover -s support/ui -p 'test_target_cache.py' -v
 ```
 
 These focused tests reject a default-egui metadata graph, a disconnected text
 feature, mixed revisions, a substituted owner, duplicate original owners and
 the separate patched SDK. The actual build command remains the executable
 verification of compiler and package behavior.
+The cache tests use real files and competing processes. When Cargo is available,
+the freshness regression changes local Rust source while restoring its old
+timestamp, verifies that scoped invalidation exposes the compile failure, and
+checks that the external dependency artifact and unrelated cache bytes survive.
 

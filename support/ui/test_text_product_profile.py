@@ -145,7 +145,8 @@ class ActualSourceCacheTests(unittest.TestCase):
         inherited = {"RUSTC": "/different/compiler", "RUSTDOC": "/different/docs", "RUSTC_WRAPPER": "/wrapper",
                      "CARGO_ENCODED_RUSTFLAGS": "--cfg\x1fsubstituted", "CARGO_BUILD_RUSTC_WRAPPER": "/wrapper",
                      "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "--cfg substituted",
-                     "RUSTC_BOOTSTRAP": "1", "CFLAGS": "-DSUBSTITUTED", "CARGO_HOME": "/existing/cache"}
+                     "RUSTC_BOOTSTRAP": "1", "CARGO_INCREMENTAL": "1", "CFLAGS": "-DSUBSTITUTED",
+                     "CARGO_HOME": "/existing/cache"}
         env, removed = product.controlled_environment({"toolchain": "1.96.0"}, self.root / "target", 2, tools, inherited)
         self.assertEqual(env["RUSTC"], tools["rustc"])
         self.assertEqual(env["RUSTDOC"], tools["rustdoc"])
@@ -155,6 +156,8 @@ class ActualSourceCacheTests(unittest.TestCase):
         self.assertNotIn("CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS", env)
         self.assertNotIn("CFLAGS", env)
         self.assertEqual(env["CARGO_HOME"], "/existing/cache")
+        self.assertEqual(env["CARGO_INCREMENTAL"], "0")
+        self.assertIn("CARGO_INCREMENTAL", removed)
         self.assertIn("CARGO_BUILD_RUSTC_WRAPPER", removed)
 
 
