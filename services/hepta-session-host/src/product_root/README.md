@@ -185,6 +185,15 @@ SQLite pool shutdown is not a Root crash or a power-loss test.
 
 ## Verification
 
+The optional `product-linux` Cargo profile is an explicit size candidate for
+the original Root companion and Hepta runtime. It selects size optimization,
+one codegen unit and thin LTO while retaining unwind behavior and all selected
+features. The product builder accepts `--build-profile product-linux` and
+records the profile and bounded compiler concurrency. Actual stripped ELF
+measurements must pass the existing archive gates; compilation alone does not
+qualify a package or a running product. The native UI retains its own declared
+build profile and receipt within the same source combination.
+
 The packet and inheritance tests use real Unix kernel credentials and FD
 lifetimes. They qualify transport rejection/cleanup only, never Root, logind,
 model, signing, or product deployment. Original-owner tests remain in Hepta

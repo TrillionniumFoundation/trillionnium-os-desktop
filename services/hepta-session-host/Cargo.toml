@@ -56,6 +56,14 @@ opt-level = 0
 debug = "none"
 strip = "symbols"
 
+[profile.product-linux]
+inherits = "release"
+opt-level = "s"
+codegen-units = 1
+lto = "thin"
+debug = "line-tables-only"
+strip = false
+
 [patch.crates-io]
 aws-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
 # Cargo applies patches only from the root workspace. Keep the original

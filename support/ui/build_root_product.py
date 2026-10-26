@@ -191,7 +191,7 @@ def main():
     for name in ("desktop-package", "desktop-build", "hepta-repo", "hepta-target", "root-target", "output"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--offline", action="store_true")
-    parser.add_argument("--build-profile", choices=("release", "dev-small"), default="release")
+    parser.add_argument("--build-profile", choices=("release", "product-linux", "dev-small"), default="release")
     parser.add_argument("--jobs", type=int, choices=range(1, 9), default=1,
                         help="Explicit bounded compiler concurrency, retained in the build receipt")
     try:
