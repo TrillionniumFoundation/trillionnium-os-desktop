@@ -57,6 +57,9 @@ impl Session {
             .env_clear()
             .envs(&environment)
             .env("PATH", "/usr/bin:/bin")
+            // The final Notes App must open its original durable store. Keep
+            // this application setting out of the native human UI environment.
+            .env("TRILL_NOTES_STATE_DIR", fresh.user.join("notes"))
             .stdin(Stdio::from(File::from(std::os::fd::OwnedFd::from(
                 child_pair,
             ))))

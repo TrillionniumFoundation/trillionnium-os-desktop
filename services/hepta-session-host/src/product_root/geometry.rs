@@ -120,10 +120,10 @@ impl Fresh {
             ResourceBudget::local_default(),
         )?)?;
         let user = inputs.prefix.join("u");
-        // Root retains the parent entries; the owner gets only the three
+        // Root retains the parent entries; the owner gets only these four
         // private child directories. It cannot redirect a later Root create.
         fs::directory_new(&user, 0o750, Some((0, inputs.gid)))?;
-        for name in ["home", "state", "replay"] {
+        for name in ["home", "state", "replay", "notes"] {
             fs::directory_new(&user.join(name), 0o700, Some((inputs.uid, inputs.gid)))?;
         }
         Ok(Self {
