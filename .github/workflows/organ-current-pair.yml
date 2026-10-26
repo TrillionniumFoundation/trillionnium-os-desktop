@@ -96,6 +96,7 @@ jobs:
             --os-repo "$PWD" --hepta-repo "$GITHUB_WORKSPACE/hepta" \
             --os-head "$DESKTOP_SHA" --os-tree "$(git rev-parse HEAD^{tree})" \
             --manifest support/release/profiles/current-organ-source.json \
+            --required-schema 3 \
             --output-dir "$RUNNER_TEMP/organ-pair" --execute-host
 
       - name: Retain exact-pair receipt and full host logs
