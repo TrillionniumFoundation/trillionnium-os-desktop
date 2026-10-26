@@ -27,6 +27,7 @@ import root_bundle
 import organ_release_profile as source_profile
 import build_text_product
 import verify_product_dependencies
+from build_target_lease import TargetLease
 
 
 def digest(path):
@@ -130,7 +131,11 @@ def build(args):
         desktop.require(result.returncode == 0, f"{name} failed; retain {stderr}")
         return stdout
 
+    target_leases = []
     try:
+        for target in sorted(targets.values()):
+            target_leases.append(TargetLease(target))
+        receipt["target_cache_leases"] = [lease.record() for lease in target_leases]
         save()
         common = ["--locked"] + (["--offline"] if args.offline else [])
         compiler = run("compiler", ["rustc", "--version", "--verbose"], hepta_repo.path, targets["hepta"])
@@ -176,6 +181,9 @@ def build(args):
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, desktop.ProductError,
             source_profile.ProfileError) as error:
         receipt.update(status="failed", error=str(error)); save(); raise
+    finally:
+        for lease in reversed(target_leases):
+            lease.close()
 
 
 def main():

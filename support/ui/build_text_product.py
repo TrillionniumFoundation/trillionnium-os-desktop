@@ -23,6 +23,7 @@ import organ_release_profile as source_profile
 import desktop
 import preedit_source
 import preedit_component
+from build_target_lease import TargetLease
 import prepared_build_source
 
 
@@ -269,7 +270,10 @@ def build(args):
         require(result.returncode == 0, f"{name} failed with exit {result.returncode}; retain {stderr} and {stdout}")
         return stdout
 
+    target_lease = None
     try:
+        target_lease = TargetLease(target)
+        receipt["target_cache_lease"] = target_lease.record()
         if prepared_receipt is not None:
             receipt["declared_build_source"] = prepared_receipt
             declared = output / "declared-build-source.json"
@@ -387,6 +391,9 @@ def build(args):
         receipt.update(status="failed", exit_code=1, error=str(error))
         save()
         raise
+    finally:
+        if target_lease is not None:
+            target_lease.close()
 
 
 def main():

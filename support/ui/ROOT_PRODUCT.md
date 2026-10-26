@@ -33,6 +33,11 @@ It does not accept a replacement owner dependency or rewrite a committed lock.
 It records the actual distribution bytes after GNU `strip --strip-unneeded`.
 `--jobs` selects 1–8 compiler jobs, defaults to one, and is retained in the
 receipt. It changes build concurrency only.
+Each product builder holds an exclusive advisory cache lease across all Cargo
+commands and packaging, so another cooperating builder cannot replace its
+final binaries between commands. Root builds reserve both caches in a fixed
+order and refuse contention. Direct Cargo commands must leave those caches
+alone until the builder finishes; Cargo's per-command lock alone is insufficient.
 
 [product/root_bundle.py](product/root_bundle.py) packages both parts and verifies
 their complete file sets. `desktop/` retains its original package manifest and

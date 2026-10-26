@@ -124,6 +124,8 @@ jobs:
             2>&1 | tee "$evidence/prepared-build-source-optimized-tests.log"
           python3 -B -m unittest discover -s support/ui/product -p test_root_bundle.py \
             2>&1 | tee "$evidence/root-bundle-tests.log"
+          python3 -I -B support/ui/test_build_target_lease.py \
+            2>&1 | tee "$evidence/product-cache-lease-tests.log"
           python3 -I -B support/ui/verify_product_dependencies.py \
             | tee "$evidence/product-dependencies.json"
 
