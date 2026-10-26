@@ -158,6 +158,41 @@ pub trait Scheduler<T = Task>: Sync + Send {
 
     /// Gets a mutable access to the local runqueue of the current CPU.
     fn mut_local_rq_with(&self, f: &mut dyn FnMut(&mut dyn LocalRunQueue<T>));
+
+    /// Closes the outgoing execution segment after its context was saved.
+    ///
+    /// Called on the incoming stack with IRQs disabled and no runqueue lock.
+    /// OSTD still owns a strong reference and has NOT released the outgoing
+    /// context for another CPU. The implementation must not block or allocate.
+    /// Returning true requests a local preemption point after switch cleanup;
+    /// the physical switch has already occurred and cannot be cancelled here.
+    fn finish_switch(&self, _previous: &Arc<T>) -> bool {
+        false
+    }
+
+    /// Transfers a previously reserved outgoing task after context release.
+    ///
+    /// OSTD has stored `switched_to_cpu = false` with Release ordering and
+    /// still holds the previous strong reference. IRQs remain disabled. A
+    /// scheduler requiring exclusive ownership must keep the task out of all
+    /// selectable queues until this call; the flag alone does not guarantee
+    /// that another CPU has not already acquired a prematurely published task.
+    /// Return a CPU that should be notified, after all runqueue locks are gone.
+    fn complete_switch(&self, _previous: &Arc<T>) -> Option<CpuId> {
+        None
+    }
+}
+
+pub(super) fn finish_switch(previous: &Arc<Task>) {
+    if scheduler_singleton().finish_switch(previous) {
+        cpu_local::set_need_preempt();
+    }
+}
+
+pub(super) fn complete_switch(previous: &Arc<Task>) {
+    if let Some(cpu) = scheduler_singleton().complete_switch(previous) {
+        set_need_preempt(cpu);
+    }
 }
 
 /// A per-CPU, local runqueue.

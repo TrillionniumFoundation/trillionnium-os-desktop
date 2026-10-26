@@ -117,6 +117,10 @@ pub(super) unsafe fn after_switching_to() {
         // it to NULL after the read.
         let prev_task = unsafe { Arc::from_raw(prev) };
 
+        // The context is fully saved but cannot yet be acquired elsewhere.
+        // Settle its original execution owner before releasing that exclusion.
+        super::scheduler::finish_switch(&prev_task);
+
         // Allows it to be switched on a CPU again, if anyone wants to.
         prev_task.switched_to_cpu.store(false, Ordering::Release);
 
@@ -129,6 +133,10 @@ pub(super) unsafe fn after_switching_to() {
         handler();
     }
 
+    if let Some(previous) = prev.as_ref() {
+        super::scheduler::complete_switch(previous);
+    }
+
     // See `switch_to_task`, where we forgot an IRQ guard.
     crate::arch::irq::enable_local();
 
@@ -136,4 +144,8 @@ pub(super) unsafe fn after_switching_to() {
     // We drop it after enabling the IRQ in case dropping user-provided
     // resources would violate the atomic mode.
     drop(prev);
+
+    // A quota tail or completed wake can request preemption. Consume it only
+    // after IRQ restoration and safe destruction of the previous reference.
+    super::scheduler::might_preempt();
 }
