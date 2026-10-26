@@ -33,20 +33,10 @@ pub(super) fn current_task() -> Option<NonNull<Task>> {
 ///
 /// # Panics
 ///
-/// This function will panic if called while holding preemption locks or with
-/// local IRQ disabled.
+/// The caller must prepare the reschedule in sleepable context before making
+/// its decision, then retain this IRQ guard from that decision through here.
 #[track_caller]
-pub(super) fn switch_to_task(next_task: Arc<Task>) {
-    super::atomic_mode::might_sleep();
-
-    // SAFETY: RCU read-side critical sections disables preemption. By the time
-    // we reach this point, we have already checked that preemption is enabled.
-    unsafe {
-        crate::sync::finish_grace_period();
-    }
-
-    let irq_guard = crate::irq::disable_local();
-
+pub(super) fn switch_to_task(next_task: Arc<Task>, irq_guard: DisabledLocalIrqGuard) {
     before_switching_to(&next_task, &irq_guard);
 
     // `before_switching_to` guarantees that from now on, and while the next task is running on the
