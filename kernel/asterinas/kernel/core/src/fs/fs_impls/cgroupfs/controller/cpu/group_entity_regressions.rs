@@ -621,3 +621,49 @@ fn prepared_route_refuses_a_task_without_a_live_process() {
         "a retained accounting fallback is not a live routing binding"
     );
 }
+
+#[ktest]
+fn pinned_cpu_route_rejects_a_mixed_control_request_before_any_change() {
+    let fixture = Fixture::new("w4a-route-mixed");
+    let cpuset_was_active = fixture
+        .root
+        .controller()
+        .active_set()
+        .contains_type(super::super::SubCtrlType::CpuSet);
+    if !cpuset_was_active {
+        fixture
+            .root
+            .store_attr("cgroup.subtree_control", "+cpuset")
+            .unwrap();
+    }
+    fixture
+        .parent
+        .store_attr("cgroup.subtree_control", "+cpuset")
+        .unwrap();
+    let rq = fixture.runqueue();
+    let p = Arc::downcast::<CgroupNode>(fixture.leaves[0].parent().unwrap()).unwrap();
+    let before = p.controller().active_set().bits();
+    let refused = matches!(
+        p.store_attr("cgroup.subtree_control", "+cpuset -cpu"),
+        Err(Error::ResourceUnavailable)
+    );
+    let unchanged = p.controller().active_set().bits() == before;
+    drop(rq);
+    p.store_attr("cgroup.subtree_control", "-cpuset").unwrap();
+    fixture
+        .parent
+        .store_attr("cgroup.subtree_control", "-cpuset")
+        .unwrap();
+    if !cpuset_was_active {
+        fixture
+            .root
+            .store_attr("cgroup.subtree_control", "-cpuset")
+            .unwrap();
+    }
+    drop(fixture);
+    assert!(refused, "the CPU route must refuse replacement");
+    assert!(
+        unchanged,
+        "a rejected mixed request already changed another controller"
+    );
+}
