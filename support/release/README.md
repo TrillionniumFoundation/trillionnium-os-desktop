@@ -103,8 +103,8 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 
 ## Native owner source profile
 
-Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 272
-Desktop/kernel roles and 144 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
+Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 274
+Desktop/kernel roles and 146 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
 settlement modules, their development/technical contracts and guest probes.
 The affinity owner, permission/race contract and SMP probe/runner are required
 roles, as are the Session observer and reconnect regressions and their module
@@ -175,9 +175,16 @@ and inheritance, and their real guest/host regressions. It binds the three
 physical entropy entries, the module-documentation audit/evidence and UI contract,
 and A02/A06 workflows and their actual runners, oracles and three new runtime
 negative controls. Existing paths retain one role each; no alias is introduced.
-The seven added Hepta roles bind the original owner-status diagnostic and its
-oracle, deployment issuer and Root implementations/tests, and production-authority
-regressions. They are original source paths, not replacement fixture implementations.
+The added Hepta roles bind the original owner-status diagnostic and its oracle,
+deployment issuer and Root implementations/tests, production-authority regressions,
+and the actual protected-clock observation boundary tests and Root service contract.
+The production clock and writer keep their existing roles rather than aliases.
+They are original source paths, not replacement fixture implementations. A08's
+actual Java/JNI/build-tool preflight workflow and Android source-audit oracle are
+also required; their source identity does not assert Android transactions or native
+qualification. The minimum-horizon contract retains the fixed 500ms v2 freshness
+and one-second durable ceiling; only separate exact-source tests can qualify its
+runtime behavior.
 
 This is a finite source-identity contract. It does not claim complete module
 coverage, full `memory.max`, live non-root hierarchical `cpu.weight`, phone/GPU

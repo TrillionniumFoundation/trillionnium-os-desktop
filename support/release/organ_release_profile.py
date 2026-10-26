@@ -277,6 +277,8 @@ OS_ROLES_V3 = OS_ROLES_V2 | {
     'receiving_tests_kernel_task_handoff_readme_md',
     'receiving_tests_kernel_task_handoff_run',
     'ui_development_contract',
+    'ci_a08_host_workflow',
+    'kernel_android_source_audit_oracle',
 }
 HEPTA_ROLES_V3 = HEPTA_ROLES_V2 | {
     'agentd_recovered_writer_oracle',
@@ -374,6 +376,8 @@ HEPTA_ROLES_V3 = HEPTA_ROLES_V2 | {
     'production_authority_oracle',
     'root_owner_status_oracle',
     'root_owner_status_predicate',
+    'root_clock_observation_oracle',
+    'root_service_contract',
 }
 GOLDEN_ROLES_V3 = GOLDEN_ROLES_V2
 

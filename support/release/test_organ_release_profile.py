@@ -238,10 +238,12 @@ class SourceCombinationTests(unittest.TestCase):
                    "module_documentation_public_evidence", "kernel_runtime_negative_runner",
                    "kernel_runtime_negative_oracle", "kernel_runtime_handoff_drop_tail_control",
                    "kernel_runtime_handoff_eligibility_control", "kernel_switch_dequeue_owner_control",
-                   "ci_a02_workflow", "ci_a06_workflow"},
+                   "ci_a02_workflow", "ci_a06_workflow", "ci_a08_host_workflow",
+                   "kernel_android_source_audit_oracle"},
             "hepta": {"root_owner_status_predicate", "root_owner_status_oracle",
                       "deployment_issuer", "deployment_issuer_oracle", "deployment_issuer_root",
-                      "deployment_issuer_root_oracle", "production_authority_oracle"},
+                      "deployment_issuer_root_oracle", "production_authority_oracle",
+                      "root_clock_observation_oracle", "root_service_contract"},
         }
         for side, roles in required.items():
             for role in roles:
@@ -446,6 +448,8 @@ class CheckedInSourceMapTests(unittest.TestCase):
                 "kernel_switch_dequeue_owner_control": "tests/organ_backend/cpu_switch_dequeue_drop_owner_negative.patch",
                 "ci_a02_workflow": ".github/workflows/a02-pinned-host-acceptance.yml",
                 "ci_a06_workflow": ".github/workflows/a06-kernel.yml",
+                "ci_a08_host_workflow": ".github/workflows/a08-host.yml",
+                "kernel_android_source_audit_oracle": "tests/workloads/android/test_kernel_source_audit.py",
             },
             "hepta": {
                 "root_owner_status_predicate": "codex-rs/hepta-agentd/src/authority_host_owner_status.rs",
@@ -455,6 +459,8 @@ class CheckedInSourceMapTests(unittest.TestCase):
                 "deployment_issuer_root": "codex-rs/hepta-agentd/src/deployment_issuer_root.rs",
                 "deployment_issuer_root_oracle": "codex-rs/hepta-agentd/src/deployment_issuer_root_tests.rs",
                 "production_authority_oracle": "codex-rs/hepta-agentd/src/production_authority_tests.rs",
+                "root_clock_observation_oracle": "codex-rs/hepta-contracts/src/authority_host_clock_observation_tests.rs",
+                "root_service_contract": "codex-rs/hepta-agentd/ROOT_SERVICE.md",
             },
         }
         for side, entries in critical.items():
