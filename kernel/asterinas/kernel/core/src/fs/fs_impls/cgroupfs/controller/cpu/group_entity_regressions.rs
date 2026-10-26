@@ -432,11 +432,17 @@ fn prepared_route_keeps_an_empty_node_until_the_last_queue_is_retired() {
     // b has no CurrentRuntime; only its prepared, currently empty task slots
     // can retain it once all real memberships/final-charge backups are gone.
     let p = Arc::downcast::<CgroupNode>(fixture.leaves[1].parent().unwrap()).unwrap();
-    let refused = p.remove_child("b").is_err();
+    let refused = fixture.leaves[1]
+        .mark_as_dead(&mut CgroupMembership::write_lock())
+        .is_err();
     if !refused {
+        p.remove_child("b").unwrap();
         fixture.leaves[1] = Arc::downcast::<CgroupNode>(p.create_child("b").unwrap()).unwrap();
     }
     drop(rq);
+    fixture.leaves[1]
+        .mark_as_dead(&mut CgroupMembership::write_lock())
+        .unwrap();
     p.remove_child("b").unwrap();
     fixture.leaves[1] = Arc::downcast::<CgroupNode>(p.create_child("b").unwrap()).unwrap();
     drop(fixture);
