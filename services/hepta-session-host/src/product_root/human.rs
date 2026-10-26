@@ -39,6 +39,23 @@ pub(super) fn capture(
     environment: &std::collections::BTreeMap<String, String>,
 ) -> Result<(std::path::PathBuf, OwnedFd)> {
     process::alive(owner_pidfd)?;
+    let config: codex_hepta_agentd::HostAuthorityServiceConfig = fs::read_root_json(&files.config)?;
+    let writer_expiry = config
+        .writer
+        .as_ref()
+        .ok_or("original registered writer absent")?
+        .authority_lease
+        .expires_at_unix_ms;
+    let now = u64::try_from(
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_millis(),
+    )?;
+    let human_lifetime_ms = writer_expiry
+        .checked_sub(now)
+        .filter(|left| *left > 0)
+        .ok_or("original writer expired before human capture")?
+        .min(inputs.lifetime_ms);
     let template = fresh.admin.join("native-template.json");
     let profile = fresh.admin.join("native-human.json");
     fs::json_new(
@@ -48,7 +65,7 @@ pub(super) fn capture(
             "program_sha256":fs::digest(&inputs.programs.shell)?,
             "arguments":["--renderer","makepad"], "working_directory":&fresh.user,
             "environment": environment, "socket_path": fresh.prefix.join("r/root-text.sock"),
-            "route":&files.route, "human_lifetime_ms": inputs.lifetime_ms,
+            "route":&files.route, "human_lifetime_ms": human_lifetime_ms,
             "can_interrupt":true, "can_resolve_approvals":false,
         }),
     )?;
@@ -147,7 +164,10 @@ pub(super) fn capture(
         return Err("original human provider failed".into());
     }
     let actual: HostAuthorityNativeProfile = fs::read_root_json(&profile)?;
-    if actual.route != files.route || actual.expires_at_ms == 0 {
+    if actual.route != files.route
+        || actual.expires_at_ms <= now
+        || actual.expires_at_ms > writer_expiry
+    {
         return Err("Root human profile differs from the original seeded route".into());
     }
     fs::write_new(

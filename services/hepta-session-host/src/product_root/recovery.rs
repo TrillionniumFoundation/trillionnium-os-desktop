@@ -157,3 +157,7 @@ fn session_lifetime(pid: u32, birth: &str, uid: u32) -> Result<CognitiveCheckpoi
         process_start_ticks: fields[2].parse()?,
     })
 }
+
+#[cfg(test)]
+#[path = "recovery_tests.rs"]
+mod tests;

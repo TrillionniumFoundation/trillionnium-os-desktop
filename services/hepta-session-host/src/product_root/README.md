@@ -8,7 +8,9 @@ partial prefix is an error and is never treated as a recovery bootstrap.
 
 ## Operator input
 
-The only command is `initialize --config <absolute-file>`. The input must be a
+Fresh creation uses `initialize --config <absolute-file>`. Exact existing-state
+recovery uses the separately specified [RECOVERY](RECOVERY.md) command; no
+existing prefix is accepted by initialize. The input must be a
 Root0600, single-link regular file under a Root0700 directory. Its ancestors,
 installed programs, provider script and public source inputs must be physical,
 Root-owned, and reject shared writes. Executable paths must resolve directly to
@@ -27,7 +29,7 @@ fields:
 | `makepad_resources` | Installed canonical Root-owned Makepad resource directory |
 | `environment` | Bounded original display inputs described below |
 | `locale` | `zh-CN` or `en-US`, equal to the consumed preference document |
-| `lifetime_ms` | Explicit nonzero Root/human maximum, at most 300000 |
+| `lifetime_ms` | Original issuer maximum, 120000–300000; writer and human remain within the actual lease |
 | `grant_lifetime_ms` | Explicit nonzero Notes maximum, at most 30000 and no greater than lifetime |
 
 The expected package layout is configurable through those absolute paths.
@@ -39,7 +41,9 @@ freeze files are real package inputs, not caller-supplied digest strings.
 The only accepted display environment keys are `DISPLAY`, `WAYLAND_DISPLAY`,
 `XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS`, `XAUTHORITY`, `LANG`, and
 `LC_ALL`. The actual private owner runtime directory and an explicit display
-are required. An existing `trillionnium-ui/session.sock` is refused. The entry
+are required. Initialize refuses an existing `trillionnium-ui/session.sock`. Recovery proves
+original Session retirement and leaves stale handling to original Session
+startup locking; it never overwrites a live endpoint. The entry
 creates private owner home/state directories and supplies the installed
 Makepad resources and explicit draft recovery setting. Inherited provider
 environment values are cleared before any runtime threads exist.
@@ -67,7 +71,8 @@ must name that exact profile. There is no model or provider fallback.
 | Module | Responsibility |
 | --- | --- |
 | `config`, `fs` | Bounded explicit inputs and physical file custody |
-| `geometry` | New bind mount, OS-random canonical UUID and original Fleet registration |
+| `geometry`, `geometry_existing` | Disjoint fresh creation and exact existing bind/source/UID custody |
+| `recovery`, `recovery_authority`, `recovery_sockets` | One same-boot original owner handoff, actual lease window and stale-only Root rendezvous retirement |
 | `process`, `supervisor` | Held real children, one original driver spawn and original stop/reap |
 | `seed` | Actual original Core Start/Resume, observed model/catalog receipt and graceful seed shutdown |
 | `packet`, `session` | Same-Root anonymous pair, actual Session and credential-checked metadata peek |
@@ -84,7 +89,10 @@ FD numbers. Additional startup/recovery modes need their own explicit contract.
 
 ## Technical sequence
 
-1. Validate custody and create the new dedicated geometry and actual bind
+1. Validate custody and create a separate Root:peer runtime parent mode02710
+   for all five original Root lanes and the native human text lane; the per-Agent
+   control parent remains its original Root02750 after handoff. Create the new
+   dedicated geometry and actual bind
    identity. Use original `FleetRegistry::initialize/register`; no serialized
    lifecycle transition is written by this module.
 2. In the same genuinely new Core home, consume the public preferences/prompts,
@@ -160,3 +168,7 @@ model, signing, or product deployment. Original-owner tests remain in Hepta
 and run through its `just test` workflow. The final product entry needs a
 same-source package/typecheck and actual installed acceptance after source
 freeze; no fixture or zero-selected test result satisfies it.
+
+Human capture uses the actual remaining writer lease, and the returned profile
+expiry must not exceed that original writer expiry. The provider and Hepta
+native launcher independently repeat the same cap; no field renews authority.

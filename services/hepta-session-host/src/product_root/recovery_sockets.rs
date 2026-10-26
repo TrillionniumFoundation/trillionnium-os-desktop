@@ -101,3 +101,7 @@ fn stale(path: &Path, uid: u32, gid: u32, mode: u32) -> Result<()> {
     std::fs::File::open(path.parent().ok_or("socket parent absent")?)?.sync_all()?;
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "recovery_sockets_tests.rs"]
+mod tests;
