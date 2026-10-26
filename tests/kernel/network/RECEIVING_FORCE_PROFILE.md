@@ -11,8 +11,8 @@ historical engine after checking its literal SHA256. Only that private instance
 adds the new profile name and data selector. The original `check_sources`,
 source head/tree checks, ordinary build, ELF and artifact verification, nonce,
 initramfs transform and Unix oracle execute unchanged. No verifier is replaced.
-The public historical module and old engine, manifest and profile tests retain
-their exact original bytes. Legacy profile names still delegate to the original
+The public historical module, old engine, manifest and production profile data
+retain their exact original bytes. Legacy profile names still delegate to the original
 selector and honestly reject this composition.
 
 Seventy fixed code-owned roles bind complete source bytes: original IPC backing
@@ -44,11 +44,16 @@ cgroup owner and must not be used to label the new evidence.
 The receiving host suite checks actual reviewed bytes, all 70 missing/drifting
 path negatives, engine-byte tampering, unique paths, unknown names, mutation
 refusal, old-profile refusal and original IPC owner coverage. Its synthetic
-negatives prove source admission only. The historical M5 host test asserting
-that the *working source* equals the old M5 profile remains unchanged and is
-applicable to the frozen M5 tree; this new composition deliberately cannot satisfy
-that old positive assertion. Its manifest and synthetic negative checks remain
-separately usable. Real ordinary guests are still required for both selections.
+negatives prove source admission only. The old M5 positive host check now uses a fixed self-contained snapshot of all
+13 original source files from `fd66b01eae13c3e24d15f48e7ba15b5180ae310d` (tree
+`1af95deec4d6b07475c56e21a0c71b6f87e94c9f`). Its gzip fixture has fixed SHA256
+`0745d146a7d0bb6c89c0d290bdc368eb296005e252bc27000fce833466f1a5a7`.
+The test verifies actual complete source bytes against each original Git blob
+and SHA, then invokes the unchanged old source checker. It also explicitly
+requires old-profile rejection and new-profile acceptance of the current source.
+The original historical mutation and missing/drift negatives remain unchanged;
+no test is skipped or allowed to fail. Full related host suites run normally and
+with Python optimization. Real ordinary guests are still required for both selections.
 
 The receiving merge preserves the actual target Process/namespace `SYS_NICE`
 gate and all seven affinity permission cases. P2/P3 setters update declared nice

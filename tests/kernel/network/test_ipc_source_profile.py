@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MPL-2.0
 """Source-admission regressions only; synthetic dictionaries never prove a guest."""
+import base64
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -20,14 +22,42 @@ class IpcSourceProfile(unittest.TestCase):
         for name, sha in old.items():
             self.assertEqual(required[name], sha)
 
-    def test_ipc_profile_matches_reviewed_actual_sources(self):
-        root = HERE.parents[2]
+    def test_ipc_profile_accepts_bound_real_historical_source_bytes(self):
+        # Exported from the original M5 Git blobs, not synthesized from the
+        # profile dictionary. Portable CI needs no access to old branch refs.
+        encoded = (HERE / "controls/ipc-memory-v1-source.json.gz").read_bytes()
+        self.assertEqual(hashlib.sha256(encoded).hexdigest(),
+                         "0745d146a7d0bb6c89c0d290bdc368eb296005e252bc27000fce833466f1a5a7")
+        fixture = json.loads(gzip.decompress(encoded))
+        self.assertEqual(fixture["schema"], "asterinas.ipc-memory-v1-historical-source.v1")
+        self.assertEqual(fixture["source_head"], "fd66b01eae13c3e24d15f48e7ba15b5180ae310d")
+        self.assertEqual(fixture["source_tree"], "1af95deec4d6b07475c56e21a0c71b6f87e94c9f")
         required = runner.required_sources("positive", "ipc-memory-v1")
-        for name, sha in runner.IPC_SOURCE_SHA.items():
-            self.assertEqual(hashlib.sha256((root / name).read_bytes()).hexdigest(), sha, name)
-            self.assertEqual(required[name], sha)
+        self.assertEqual(len(fixture["files"]), len(required))
+        self.assertEqual({row["path"] for row in fixture["files"]}, set(required))
+        historical = {"files": {}}
+        for row in fixture["files"]:
+            data = base64.b64decode(row["content_base64"], validate=True)
+            self.assertIn(row["mode"], ("100644", "100755"))
+            git_blob = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+            self.assertEqual(git_blob, row["git_blob"], row["path"])
+            sha = hashlib.sha256(data).hexdigest()
+            self.assertEqual(sha, row["sha256"], row["path"])
+            self.assertEqual(sha, required[row["path"]], row["path"])
+            historical["files"][row["path"]] = {"sha256": sha}
+        self.assertEqual(runner.check_sources(historical, "positive", "ipc-memory-v1"), required)
         self.assertNotEqual(required[runner.CONNECTED], runner.CONNECTED_SHA["positive"])
         self.assertNotEqual(required[runner.SOCKET], runner.SOCKET_SHA)
+
+    def test_receiving_working_source_is_rejected_by_old_and_accepted_by_new_profile(self):
+        import run_unix_stream_receiving_guest as receiving
+        root = HERE.parents[2]
+        current = {"files": {path: {"sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
+                             for _, path, _ in receiving.OWNERS}}
+        with self.assertRaisesRegex(ValueError, "cgroupfs/mod.rs"):
+            runner.check_sources(current, "positive", "ipc-memory-v1")
+        expected = receiving.required_sources("positive", receiving.PROFILE)
+        self.assertEqual(receiving.check_sources(current, "positive", receiving.PROFILE), expected)
 
     def test_historical_mutations_cannot_use_new_production_profile(self):
         for variant in ("race-fixed", "race-stale", "aux-zero-progress"):
