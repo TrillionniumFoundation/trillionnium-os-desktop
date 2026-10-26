@@ -131,8 +131,9 @@ FD numbers. Additional startup/recovery modes need their own explicit contract.
    using the remaining cumulative deadline. The listeners are already open
    when Agentd performs its original single bounded connect; no retry or
    synthetic readiness file substitutes for the actual bind. A partial bind
-   or failed callback closes only this invocation's retained socket guards
-   and cannot release the bootstrap. Serve through that same prepared Root,
+   never invokes the callback. A callback error closes only this invocation's
+   retained socket guards and does not retry a possibly delivered handoff.
+   Serve through that same prepared Root,
    without reopening exclusive issuer or clock owners.
    The sealed model mode includes the mandatory typed seed.
    Agentd resumes on its actual tool connection and compares original thread,
