@@ -83,8 +83,8 @@ jobs:
 
           suite = unittest.defaultTestLoader.discover("support/release", pattern="test_*.py")
           count = suite.countTestCases()
-          if count < 41:
-              raise SystemExit(f"Expected at least 41 source/pair-runner regression tests; found {count}")
+          if count < 49:
+              raise SystemExit(f"Expected at least 49 source/pair-runner regression tests; found {count}")
           result = unittest.TextTestRunner(verbosity=2).run(suite)
           if not result.wasSuccessful() or result.testsRun != count or result.skipped:
               raise SystemExit("Release-profile suite failed, did not run completely, or skipped tests")

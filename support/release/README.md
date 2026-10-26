@@ -96,7 +96,7 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 
 ## Native owner source profile
 
-Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 153
+Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 156
 Desktop/kernel roles and 135 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
 settlement modules, their development/technical contracts and guest probes.
 It preserves the five protocol
