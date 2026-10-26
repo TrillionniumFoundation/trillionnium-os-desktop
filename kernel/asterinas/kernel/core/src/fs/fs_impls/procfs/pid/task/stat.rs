@@ -2,7 +2,7 @@
 
 #![short_vis_path::add(pid)]
 
-use core::{sync::atomic::Ordering, time::Duration};
+use core::time::Duration;
 
 use aster_util::printer::VmPrinter;
 use ostd::timer::TIMER_FREQ;
@@ -20,8 +20,7 @@ use crate::{
         posix_thread::{AsPosixThread, SleepingState, alien_access::AlienAccessMode},
         signal::{HandlePendingSignal, sig_action::SigAction, sig_mask::SigMask},
     },
-    sched::{LinuxSchedPolicy, RealTimePriority, SchedPolicy},
-    thread::Thread,
+    sched::{SchedPolicy, UserSchedSnapshot},
     time::NSEC_PER_SEC,
     vm::vmar::RssType,
 };
@@ -196,8 +195,11 @@ impl ProcFileOps for StatFileOps {
             )
         };
 
-        let (priority, rt_priority, policy) = sched_values(&thread);
-        let nice = process.nice().load(Ordering::Relaxed).value().get();
+        // All earlier temporary locks are released; no TaskSet/VMAR guard is
+        // held across this short canonical reader snapshot.
+        let sched = thread.sched_attr().user_snapshot();
+        let (priority, rt_priority, policy) = sched_values(sched);
+        let nice = sched.nice().value().get();
         let num_threads = process.tasks().lock().as_slice().len();
         let itrealvalue =
             duration_to_jiffies(process.timer_manager().alarm_timer().lock().remain());
@@ -382,33 +384,13 @@ fn duration_to_jiffies(duration: Duration) -> u64 {
 }
 
 /// Returns the `priority`, `rt_priority`, and `policy` values for `/proc/<pid>/stat`.
-fn sched_values(thread: &Thread) -> (i32, u8, i32) {
-    const MAX_RT_PRIORITY: u8 = RealTimePriority::MAX.get();
-    const RT_PRIORITY_LIMIT: u8 = MAX_RT_PRIORITY + 1;
-    const NICE_TO_PRIORITY_OFFSET: i32 = 20;
-
-    let policy = thread.sched_attr().policy();
-
-    let (priority, rt_priority) = match policy {
-        SchedPolicy::Stop => (-i32::from(MAX_RT_PRIORITY) - 1, MAX_RT_PRIORITY),
-        SchedPolicy::RealTime { rt_prio, .. } => {
-            // `SchedPolicy` stores real-time priorities in the scheduler's
-            // internal order, where smaller values have higher priority.
-            // This is the reverse of Linux's user-visible RT priority
-            // used by `/proc/<pid>/stat`.
-            // For example, an internal RT priority of 1 is reported as 99.
-            // FIXME: Use the same conversion helper (i.e., `rt_to_static`)
-            // as the `sched*` syscalls once it is available outside the
-            // `syscall` module.
-            let rt_priority = RT_PRIORITY_LIMIT - rt_prio.get();
-            (-i32::from(rt_priority) - 1, rt_priority)
-        }
-        SchedPolicy::Fair(nice) => (NICE_TO_PRIORITY_OFFSET + nice.value().get() as i32, 0),
-        SchedPolicy::Idle => (NICE_TO_PRIORITY_OFFSET, 0),
+fn sched_values(snapshot: UserSchedSnapshot) -> (i32, u8, i32) {
+    let rt_priority = snapshot.static_priority() as u8;
+    let priority = match snapshot.policy() {
+        SchedPolicy::Stop | SchedPolicy::RealTime { .. } => -i32::from(rt_priority) - 1,
+        _ => 20 + i32::from(snapshot.nice().value().get()),
     };
-    let linux_policy = LinuxSchedPolicy::from(policy);
-
-    (priority, rt_priority, linux_policy as i32)
+    (priority, rt_priority, snapshot.linux_policy() as i32)
 }
 
 /// Returns the ignored and caught standard-signal masks for `/proc/<pid>/stat`.

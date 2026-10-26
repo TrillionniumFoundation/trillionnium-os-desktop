@@ -43,6 +43,18 @@ pub(super) struct AdministrationState {
 }
 
 impl AdministrationState {
+    fn snapshot(&self, policy: SchedPolicy) -> UserSchedSnapshot {
+        UserSchedSnapshot {
+            policy,
+            nice: self.nice,
+            linux_policy: if self.user_idle {
+                LinuxSchedPolicy::Idle
+            } else {
+                policy.into()
+            },
+        }
+    }
+
     pub(super) fn new(policy: SchedPolicy) -> Self {
         Self {
             nice: match policy {
@@ -61,7 +73,10 @@ pub(crate) struct SchedAdministration<'a> {
 
 impl SchedAttr {
     pub(crate) fn user_snapshot(&self) -> UserSchedSnapshot {
-        self.administer().snapshot()
+        // Readers serialize the short state cut, not a writer's pending migration.
+        ostd::task::atomic_mode::might_sleep();
+        let state = self.administration.lock();
+        state.snapshot(self.policy())
     }
 
     /// Construct unpublished attributes from an existing coherent observation.
@@ -92,15 +107,14 @@ impl Deref for SchedAdministration<'_> {
 
 impl SchedAdministration<'_> {
     pub(crate) fn snapshot(&self) -> UserSchedSnapshot {
-        let policy = self.policy();
-        UserSchedSnapshot {
-            policy,
-            nice: self.state.nice,
-            linux_policy: if self.state.user_idle {
-                LinuxSchedPolicy::Idle
-            } else {
-                policy.into()
-            },
+        self.state.snapshot(self.policy())
+    }
+
+    /// Change static nice without changing an RT or declared Idle class.
+    pub(crate) fn set_nice(&mut self, nice: Nice) {
+        self.state.nice = nice;
+        if matches!(self.policy(), SchedPolicy::Fair(_)) && !self.state.user_idle {
+            self.attr.apply_policy(SchedPolicy::Fair(nice));
         }
     }
 

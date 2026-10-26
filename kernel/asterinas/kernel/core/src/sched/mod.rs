@@ -7,7 +7,7 @@ mod stats;
 #[cfg(ktest)]
 pub(crate) use self::sched_class::{CpuRunQueueFixture, CpuRuntimeFixture};
 pub(crate) use self::{
-    nice::{AtomicNice, Nice},
+    nice::Nice,
     sched_class::{
         LinuxSchedPolicy, RealTimePolicy, RealTimePriority, SchedAdministration, SchedAttr,
         SchedPolicy, UserSchedSnapshot, init, init_on_each_cpu,

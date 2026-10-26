@@ -114,3 +114,28 @@ fn copied_user_snapshot_reconstructs_static_nice_declared_idle_and_rt_priority()
         normal19
     );
 }
+
+#[ktest]
+fn static_nice_updates_publish_fair_but_preserve_rt_and_declared_idle_class() {
+    let attr = SchedAttr::new(SchedPolicy::Fair(Nice::try_from(8).unwrap()));
+    let mut admin = attr.administer();
+    admin.set_nice(Nice::try_from(9).unwrap());
+    assert_eq!(attr.policy(), SchedPolicy::Fair(Nice::try_from(9).unwrap()));
+    let rt = SchedPolicy::RealTime {
+        rt_prio: super::super::RealTimePriority::new(90),
+        rt_policy: super::super::RealTimePolicy::Fifo,
+    };
+    admin.set_policy(rt);
+    admin.set_nice(Nice::try_from(-5).unwrap());
+    assert_eq!(attr.policy(), rt);
+    assert_eq!(admin.snapshot().nice(), Nice::try_from(-5).unwrap());
+    admin.set_user_idle();
+    admin.set_nice(Nice::try_from(4).unwrap());
+    assert_eq!(attr.policy(), SchedPolicy::Fair(Nice::MAX));
+    assert_eq!(admin.snapshot().linux_policy(), LinuxSchedPolicy::Idle);
+    assert_eq!(admin.snapshot().nice(), Nice::try_from(4).unwrap());
+    attr.set_last_cpu(ostd::cpu::CpuId::current_racy());
+    let child = SchedAttr::from_user_snapshot(admin.snapshot());
+    assert_eq!(child.last_cpu(), None);
+    assert_eq!(child.user_snapshot(), admin.snapshot());
+}

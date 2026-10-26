@@ -31,7 +31,7 @@ use crate::{
         posix_thread::{PosixThread, ThreadLocal, allocate_posix_tid},
         stats::PROCESS_CREATION_COUNTER,
     },
-    sched::Nice,
+    sched::UserSchedSnapshot,
     thread::{AsThread, Tid},
     vm::vmar::{Vmar, VmarHandle},
 };
@@ -306,9 +306,12 @@ pub(crate) fn clone_child(
     clone_args: CloneArgs,
 ) -> Result<Tid> {
     clone_args.check(ctx)?;
+    // Capture before membership, TaskSet, PID-table and TSYNC locks. Only this
+    // copyable scheduling cut is inherited, never live queues or CPU debt.
+    let sched_snapshot = ctx.thread.sched_attr().user_snapshot();
 
     if clone_args.flags.contains(CloneFlags::CLONE_THREAD) {
-        let child_task = clone_child_task(ctx, parent_context, clone_args)?;
+        let child_task = clone_child_task(ctx, parent_context, clone_args, sched_snapshot)?;
         let child_thread = child_task.as_thread().unwrap();
         child_thread.run();
 
@@ -336,7 +339,7 @@ pub(crate) fn clone_child(
             None
         };
 
-        let child_process = clone_child_process(ctx, parent_context, clone_args)?;
+        let child_process = clone_child_process(ctx, parent_context, clone_args, sched_snapshot)?;
 
         // Use the same cgroup snapshot that was charged above to avoid
         // a mismatch if the parent migrates concurrently.
@@ -378,6 +381,7 @@ fn clone_child_task(
     ctx: &Context,
     parent_context: &UserContext,
     clone_args: CloneArgs,
+    sched_snapshot: UserSchedSnapshot,
 ) -> Result<Arc<Task>> {
     let clone_flags = clone_args.flags;
 
@@ -478,6 +482,7 @@ fn clone_child_task(
             credentials,
             child_vmar,
         )
+        .user_sched_snapshot(sched_snapshot)
         .process(posix_thread.weak_process().clone())
         .sig_mask(sig_mask)
         .file_table(child_file_table)
@@ -530,6 +535,7 @@ fn clone_child_process(
     ctx: &Context,
     parent_context: &UserContext,
     clone_args: CloneArgs,
+    sched_snapshot: UserSchedSnapshot,
 ) -> Result<Arc<Process>> {
     let Context {
         process,
@@ -597,9 +603,6 @@ fn clone_child_process(
     // Inherit the parent's resource limits
     let child_resource_limits = process.resource_limits().clone();
 
-    // Inherit the parent's nice value
-    let child_nice = process.nice().load(Ordering::Relaxed);
-
     // Inherit the parent's OOM score adjustment
     let child_oom_score_adj = process.oom_score_adj().load(Ordering::Relaxed);
 
@@ -627,6 +630,7 @@ fn clone_child_process(
                 credentials,
                 child_vmar,
             )
+            .user_sched_snapshot(sched_snapshot)
             .sig_mask(child_sig_mask)
             .file_table(child_file_table)
             .fs(child_fs)
@@ -654,7 +658,6 @@ fn clone_child_process(
             child_tid,
             child_vmar_arc,
             child_resource_limits,
-            child_nice,
             child_oom_score_adj,
             child_sig_dispositions,
             child_user_ns,
@@ -858,7 +861,6 @@ fn create_child_process(
     pid: Pid,
     vmar: Arc<Vmar>,
     resource_limits: ResourceLimits,
-    nice: Nice,
     oom_score_adj: i16,
     sig_dispositions: Arc<Mutex<SigDispositions>>,
     user_ns: Arc<UserNamespace>,
@@ -868,7 +870,6 @@ fn create_child_process(
         pid,
         vmar,
         resource_limits,
-        nice,
         oom_score_adj,
         sig_dispositions,
         user_ns,

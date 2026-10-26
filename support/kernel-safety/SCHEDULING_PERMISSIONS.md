@@ -69,17 +69,47 @@ profiles. Use exact-source ordinary product receipts; retain failed runs and
 separate source manifests. Controlled kernel tests are not physical CPU
 migration, real-time latency, phone hardware or production-authority evidence.
 
-## Follow-up priority API stage
+## Per-thread priority and inheritance
 
-This policy stage does **not** complete `setpriority`: its original owner check
-is missing, RLIMIT_NICE is incorrectly narrowed/interpreted as a signed nice,
-and its process-local nice write does not update live Fair scheduling. Its
-`getpriority`/clone shadow also diverges from thread policy. Those routes need
-their own real guest before/after tests and must use the same administration
-state and live policy publication. They remain explicit defects until that
-subsequent stage is integrated and verified.
+`setpriority` and `getpriority` select a real TID for PRIO_PROCESS; zero means
+this calling thread. PGRP collects actual group threads. USER filters each
+thread's real UID, including different UIDs within a thread group. Selection
+retains strong Thread and Process identities, then releases the PID table,
+process-group and TaskSet locks before credentials, snapshots or administration.
+There is no process-local nice shadow.
 
-Policy reference: [sched(7)](https://man7.org/linux/man-pages/man7/sched.7.html).
-Implementation reference: [Linux v6.17 scheduling syscalls](https://github.com/torvalds/linux/blob/v6.17/kernel/sched/syscalls.c),
-in particular `user_check_sched_setscheduler`, `_sched_setscheduler` and
-`is_nice_reduction`.
+Every mutation checks target real/effective owner or the original target-user-
+namespace SYS_NICE hook before administration. An unauthorized owner receives
+EPERM. Under administration, an increase checks the target's full-width soft
+RLIMIT_NICE using `20 - requested_nice`; lack of the required privilege returns
+EACCES. SYS_NICE permits otherwise disallowed increases. Each permitted target
+is updated even if another target fails; a later success does not erase an
+error, and the last failure wins, matching Linux v6.17 `set_one_prio`.
+
+Normal nice updates publish the actual Fair state and weight. RT and declared
+Idle updates change only static nice, preserving class and RT priority. Query
+and `/proc/<pid>/task/<tid>/stat` obtain the same canonical read snapshot. The
+proc read takes it before any VMAR guard and after earlier temporary locks end.
+`user_snapshot` takes only the short administration-state mutex and policy
+spinlock directly; it never calls writer `administer` or waits for a pending
+placement request. The rq hot path remains unchanged.
+
+Fork and CLONE_THREAD capture a copyable UserSchedSnapshot before cgroup,
+TaskSet, PID-table or TSYNC locks. POSIX construction installs it into a fresh,
+unpublished SchedAttr. This inherits declared class, static nice and RT
+parameters, not a live mutex, pending placement, affinity generation, last CPU,
+runqueue state or accumulated CPU debt. The kernel-thread constructor continues
+to build a new attribute from its explicit policy.
+
+The separate `priority-inheritance` guest probe checks normal/RT/Idle parents,
+real pthread inheritance, non-leader selection, group/user partial success,
+UID 0 without capabilities, nonzero/infinite limits and proc/query consistency.
+Its first frozen probe-only stage retained P2 kernel bytes and actually reported
+106 failed assertions out of 184. These failures remain before evidence;
+implementation success requires running the same probe on the changed source.
+
+Priority API reference: [Linux v6.17 sys.c](https://github.com/torvalds/linux/blob/v6.17/kernel/sys.c)
+and [getpriority/setpriority](https://man7.org/linux/man-pages/man2/setpriority.2.html).
+
+Scheduling policy references: [sched(7)](https://man7.org/linux/man-pages/man7/sched.7.html)
+and [Linux v6.17 scheduling syscalls](https://github.com/torvalds/linux/blob/v6.17/kernel/sched/syscalls.c).

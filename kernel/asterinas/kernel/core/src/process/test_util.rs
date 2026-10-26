@@ -13,7 +13,6 @@ use super::{
 use crate::{
     fs::{cgroupfs::CgroupMembership, pseudofs::SockFs},
     prelude::*,
-    sched::Nice,
     thread::AsThread,
     time::clocks,
     util::random,
@@ -68,7 +67,6 @@ fn new_unstarted_process_with_vmar_and_threads(
         pid,
         vmar.clone_arc(),
         new_resource_limits_for_init(),
-        Nice::default(),
         0,
         Arc::new(Mutex::new(SigDispositions::default())),
         UserNamespace::get_init_singleton().clone(),
