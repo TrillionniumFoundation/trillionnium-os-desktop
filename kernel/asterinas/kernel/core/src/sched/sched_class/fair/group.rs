@@ -64,12 +64,17 @@ impl Node {
     }
 
     fn count(&self) -> usize {
-        self.tasks.len() + self.children.len() + 1
+        self.tasks
+            .len()
+            .saturating_add(self.children.len())
+            .saturating_add(1)
     }
 
     fn period(&self) -> u64 {
-        (base_slice_clocks() * self.count().max(1) as u64).max(min_period_clocks())
-            * u64::from((1 + num_cpus()).ilog2())
+        base_slice_clocks()
+            .saturating_mul(self.count().max(1) as u64)
+            .max(min_period_clocks())
+            .saturating_mul(u64::from((1 + num_cpus()).ilog2()))
     }
 
     fn vtime_slice(&self) -> u64 {
@@ -391,9 +396,11 @@ impl GroupTree {
             } else {
                 self.nodes[node.current_child.unwrap()].period_delta
             };
-            if elapsed
-                > node.period() * current_weight
-                    / (node.task_weight + node.child_weight + current_weight)
+            let total = u128::from(node.task_weight)
+                + u128::from(node.child_weight)
+                + u128::from(current_weight);
+            let slice = u128::from(node.period()) * u128::from(current_weight) / total;
+            if u128::from(elapsed) > slice
                 || current_key > node.min_vruntime.saturating_add(node.vtime_slice())
             {
                 return true;
