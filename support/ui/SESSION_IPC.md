@@ -48,6 +48,35 @@ existing bounded exchange are outside a hard real-time guarantee. The per-peer
 I/O allowance and bounded connection count are not authentication between
 mutually hostile processes sharing a UID.
 
+### Remaining synchronous Objective queue delay
+
+`ObjectiveBridge::request` still performs its fixed authenticated exchange on
+the Session thread with `Runtime::block_on` and a 150 ms timeout. Four accepted
+`ObjectiveAvailability` requests whose configured endpoint accepts but does
+not reply can therefore occupy that thread for approximately 600 ms. A ready
+snapshot accepted behind them can exhaust its original 500 ms allowance before
+dispatch and close without a response. This is a source-level, reproducible
+failure case for slow parsed requests; the partial-input and blocked-output
+regressions do not establish fairness for every business request.
+
+The isolated diagnostic below uses the actual Session binary and a private
+synthetic endpoint, checks the kernel peer PID/UID, and forwards only read-only
+availability commands. A barrier snapshot proves the affected connections
+were accepted before the four requests are sent. It records the binary digest,
+actual bridge call count, snapshot closure and recovery under the same Session
+generation with no tasks. Exit zero means this limitation was reproduced; it
+is not a product acceptance gate or evidence about a deployed original owner.
+
+```sh
+python3 tests/ui/reproduce-objective-ipc-delay.py ui/target/debug/trill-session
+```
+
+Actual UI/gateway acceptance must measure this behavior with the configured
+original host and real concurrent read traffic. Until that evidence exists,
+Notes refresh and Session responsiveness under a slow original host remain an
+open product risk. This diagnostic neither changes the original owner/writer
+nor submits, cancels or automatically repeats an effect.
+
 ## Development and regression evidence
 
 From the repository root:

@@ -6,7 +6,10 @@ original dependency package identities retained from Hepta's Cargo.lock. It
 contains no raw SQL, substitute database, production authority verifier, lease,
 or owner test hooks. The initial `source-review.json` froze clean Hepta b3d3f2d4 and its full Git
 tree. The current source review remains independent of the Agentd lifecycle
-lane and binds the exact Hepta head, tree and selected file identities.
+lane and selects Hepta `760363e06c5f4a115de039ffa7bd7e7767bd1fd9`, tree
+`87bcc851d794c89ede183353e7493461b931ebed`, with all 14 selected source-file
+identities re-frozen from that commit. This source selection requires new build
+and host/native execution records; the historical b3 results do not transfer.
 
 The fixture performs ten checks in order:
 
@@ -58,9 +61,11 @@ Preparation uses the exact installed Rust version in this lane's
 original explicit resolver and dev-small profile. That record binds the
 `codex-rs/rust-toolchain.toml` bytes by SHA-256 and the parsed stable channel.
 Both the actual Cargo and rustc version responses must match; an unrelated or
-stale installed compiler is rejected. The original b3 profile used 1.95.0; a
-new 1.96.0 source requires an explicit updated review and new execution
-evidence. Updating the runtime lane's review does not update this lane. An optional `--target` is an exclusively
+stale installed compiler is rejected. This Hepta760363e0 profile uses 1.96.0;
+the manifest SHA256 is
+`e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380`.
+The original b3 profile used 1.95.0 and retains its historical identity.
+Updating the runtime lane's review does not update this lane. An optional `--target` is an exclusively
 leased build cache, not a source checkout. The external root omits only the
 same exact, inactive duplicate SSH tungstenite patch alias as the original
 Agentd fixture; the fixed crates-io target remains unused and checked. It then

@@ -31,15 +31,23 @@ It does not qualify later integrated source trees.
 ## Current fresh-build profile
 
 The current `source-review.json` selects Desktop
-`0187bd578f6786c40c812c13976e4889a1aba835` / tree
-`335007e4f94114c6a26506d9448faf0d43c4245c` and Hepta
-`b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` / tree
-`b035a577969cb503d7c09620694a6b6c54178c97`. It additionally binds the IPC physical-frame, explicit page-table and watchdog
-changes. This updated profile has not yet executed; earlier 7d/b3 lifecycle
-results remain source-specific. It includes the UDP, exec
-argument, family user-frame, initial-stack and readonly fixes and the Oct 23
-original-owner recovery/issuer/composition stack. The 154 selected source
-identities are a review input, not a runtime receipt.
+`f36664310b7bb0074a16846f2c1c600e90844f05` / tree
+`c4d59e190a746a1b32d374f94f5ab5d1503fc9e1` and Hepta
+`760363e06c5f4a115de039ffa7bd7e7767bd1fd9` / tree
+`87bcc851d794c89ede183353e7493461b931ebed`. This is the integrated Desktop
+source with the fixed Hepta companion, original owner and existing ordinary
+kernel profile. The full source trees and all 154 selected source-file identities
+have been re-frozen from those exact commits. This updated profile requires new
+build and guest execution records; earlier 0187/b3 and 7d/b3 lifecycle results
+remain source-specific. These identities are review inputs, not runtime receipts.
+
+This freeze also does not close the current host UI's
+[synchronous Objective queue-delay risk](../../../support/ui/SESSION_IPC.md#remaining-synchronous-objective-queue-delay).
+The bounded transport protects against incomplete input and blocked readers;
+four slow 150 ms availability exchanges can still exhaust a later accepted
+snapshot's 500 ms deadline. Its isolated read-only reproducer and the separate
+real original-host/UI latency gate must not be counted as F1 guest lifecycle
+or production Notes acceptance.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source
@@ -99,8 +107,9 @@ match. Preparation then checks the actual Cargo and rustc `--version` output
 against this same channel. A binary at an expected path with a different
 version is rejected. The native workflow resolves its installation and binary
 paths from that review; it does not keep a second hard-coded userspace version.
-The initial b3 source uses Rust 1.95.0; a later 1.96.0 source needs its own
-explicit source/toolchain review before it can run. Named moving channels,
+The current Hepta760363e0 source uses Rust 1.96.0, with manifest SHA256
+`e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380`.
+The initial b3 source used 1.95.0 and retains its historical identity. Named moving channels,
 missing toolchain identities, stale hashes and version mismatches are refused.
 
 The runner's commit and the compiled Desktop commit may differ. The runner

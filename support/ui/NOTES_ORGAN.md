@@ -84,6 +84,17 @@ interleaving the current request and separate availability reads within the
 a query, retains its selection on a full queue and never consumes action
 capacity, submits an effect or generates another ID.
 
+This passive query rotation is a UI selection guarantee, not a bound on every
+Session response. The Session still runs each parsed Objective bridge exchange
+synchronously with a 150 ms timeout. Four stalled availability queries can consume
+more than another accepted peer's 500 ms deadline, including a ready snapshot.
+The [isolated read-only queue-delay diagnostic](SESSION_IPC.md#remaining-synchronous-objective-queue-delay)
+records that boundary without an original owner, Notes bootstrap or effect.
+The actual original-host/UI combination still needs concurrent-read latency
+evidence before its production responsiveness can be accepted. A lost reply
+does not establish a failed operation; the existing original-ID observation
+and no-automatic-replay rules continue to apply.
+
 The current-document readback is a separate projection containing target
 identity, its own observation time, revision, short text digest and pending
 receipt status. It does not import document text into the composer. Its own
