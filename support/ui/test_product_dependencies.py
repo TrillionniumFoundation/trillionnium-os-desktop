@@ -53,7 +53,8 @@ class ProductDependencies(unittest.TestCase):
         reference = lock_bytes(packages)
         owner_manifests = {}
         for package in packages:
-            dependencies = {d.split(" ", 1)[0] for d in package.get("dependencies", [])} & guard.CRITICAL_PACKAGES
+            dependencies = {d.split(" ", 1)[0] for d in package.get("dependencies", [])
+                            if guard.is_critical(d.split(" ", 1)[0])}
             if package.get("source") is None and dependencies:
                 name = f'codex-rs/reference-fixtures/{package["name"]}/Cargo.toml'
                 owner_manifests[name] = ('[package]\nname = ' + json.dumps(package["name"])
@@ -128,11 +129,11 @@ class ProductDependencies(unittest.TestCase):
         original = self.original_checkout()
         path = self.root / "ui/Cargo.lock"
         packages = guard.tomllib.loads(path.read_text())["package"]
-        packages = [p for p in packages if p["name"] not in guard.CRITICAL_PACKAGES]
+        packages = [p for p in packages if not guard.is_critical(p["name"])]
         for package in packages:
             if "dependencies" in package:
                 package["dependencies"] = [d for d in package["dependencies"]
-                    if d.split(" ", 1)[0] not in guard.CRITICAL_PACKAGES]
+                    if not guard.is_critical(d.split(" ", 1)[0])]
         path.write_bytes(lock_bytes(packages))
         with self.assertRaisesRegex(ValueError, "Missing mandatory original owner dependency"):
             guard.verify(self.root, original)
@@ -288,6 +289,68 @@ class CriticalLockedGraph(unittest.TestCase):
     def check(self, packages=None):
         return guard.verify_critical_graph(lock_bytes(self.packages if packages is None else packages),
                                            self.reference, "consumer")
+
+    def aws_graph(self):
+        def package(name, version, dependencies=()):
+            return {"name": name, "version": version,
+                    "source": "registry+https://github.com/rust-lang/crates.io-index",
+                    "checksum": hashlib.sha256((name + version).encode()).hexdigest(),
+                    "dependencies": list(dependencies)}
+        config = {"name": "aws-config", "version": "1.12.0", "dependencies": ["aws-types"]}
+        types = package("aws-types", "1.6.0", ("aws-smithy-schema",))
+        schema = package("aws-smithy-schema", "0.2.1")
+        reference = guard.LockedGraph(lock_bytes(self.packages + [config, types, schema]), "AWS reference")
+        consumer = copy.deepcopy(self.packages + [config, types, schema])
+        consumer[-3]["source"] = "git+original"
+        consumer.append({"name": "original-owner", "version": "0.0.0", "source": "git+original",
+                         "dependencies": ["aws-config"]})
+        mandatory = {("original-owner", "0.0.0"): {"aws-config": guard.package_identity(config)},
+                     ("aws-config", "1.12.0"): {"aws-types": guard.package_identity(types)}}
+        return reference, consumer, mandatory
+
+    def test_aws_vendor_path_maps_only_to_selected_original_git_source(self):
+        reference, packages, mandatory = self.aws_graph()
+        result = guard.verify_critical_graph(lock_bytes(packages), reference, "consumer", mandatory, "git+original")
+        self.assertEqual(len(result["original_owner_edges"]), 2)
+        self.assertIn("aws-config", {node["name"] for node in result["nodes"]})
+        for replacement in ("registry+https://github.com/rust-lang/crates.io-index", "git+foreign"):
+            changed = copy.deepcopy(packages)
+            next(p for p in changed if p["name"] == "aws-config")["source"] = replacement
+            with self.subTest(source=replacement), self.assertRaisesRegex(ValueError, "Critical package differs"):
+                guard.verify_critical_graph(lock_bytes(changed), reference, "consumer", mandatory, "git+original")
+
+    def test_newer_aws_config_cannot_bypass_carried_patch(self):
+        reference, packages, mandatory = self.aws_graph()
+        config = next(p for p in packages if p["name"] == "aws-config")
+        config.update(version="1.13.0", source="registry+https://github.com/rust-lang/crates.io-index", checksum="0" * 64)
+        with self.assertRaisesRegex(ValueError, "Critical package differs"):
+            guard.verify_critical_graph(lock_bytes(packages), reference, "consumer", mandatory, "git+original")
+
+    def test_aws_types_and_schema_drift_are_not_version_compatibility_assumptions(self):
+        reference, original, mandatory = self.aws_graph()
+        for family, version in (("aws-types", "1.7.0"), ("aws-smithy-schema", "1.1.0")):
+            packages = copy.deepcopy(original)
+            next(p for p in packages if p["name"] == family)["version"] = version
+            with self.subTest(family=family), self.assertRaisesRegex(ValueError, "Critical dependency edge differs|Critical package differs"):
+                guard.verify_critical_graph(lock_bytes(packages), reference, "consumer", mandatory, "git+original")
+
+    def test_aws_edge_cannot_switch_between_two_allowed_schema_nodes(self):
+        reference, packages, mandatory = self.aws_graph()
+        extra = dict(next(p for p in packages if p["name"] == "aws-smithy-schema"), version="1.1.0", checksum="1" * 64)
+        upstream = copy.deepcopy(reference.packages) + [extra]
+        next(p for p in upstream if p["name"] == "aws-types")["dependencies"] = ["aws-smithy-schema 0.2.1"]
+        reference = guard.LockedGraph(lock_bytes(upstream), "two schema nodes")
+        packages.append(extra)
+        next(p for p in packages if p["name"] == "aws-types")["dependencies"] = ["aws-smithy-schema 1.1.0"]
+        with self.assertRaisesRegex(ValueError, "Critical dependency edge differs"):
+            guard.verify_critical_graph(lock_bytes(packages), reference, "consumer", mandatory, "git+original")
+
+    def test_whole_aws_family_removal_does_not_erase_original_required_patch(self):
+        reference, packages, mandatory = self.aws_graph()
+        packages = [p for p in packages if not p["name"].startswith("aws-")]
+        packages[-1]["dependencies"] = []
+        with self.assertRaisesRegex(ValueError, "Missing mandatory original owner dependency"):
+            guard.verify_critical_graph(lock_bytes(packages), reference, "consumer", mandatory, "git+original")
 
     def test_exact_edges_allow_independent_syn3(self):
         result = self.check()

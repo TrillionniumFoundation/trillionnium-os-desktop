@@ -83,6 +83,18 @@ CRITICAL_EDGES = {
 }
 
 
+def is_critical(name):
+    return name in CRITICAL_PACKAGES or name.startswith("aws-")
+
+
+def original_identity(identity, owner_source):
+    # Cargo records original workspace/vendor packages as path nodes upstream,
+    # and as the selected Git source in downstream product locks.
+    if identity[2] is None and owner_source is not None:
+        return identity[:2] + (owner_source, identity[3])
+    return identity
+
+
 def package_identity(package):
     return tuple(package.get(key) for key in ("name", "version", "source", "checksum"))
 
@@ -115,7 +127,7 @@ class LockedGraph:
         # A deleted critical node must not turn a dangling reference into N/A.
         for package in self.packages:
             for dependency in package.get("dependencies", []):
-                if dependency.split(" ", 1)[0] in CRITICAL_PACKAGES:
+                if is_critical(dependency.split(" ", 1)[0]):
                     self.resolve(dependency)
 
     def resolve(self, dependency):
@@ -131,13 +143,16 @@ class LockedGraph:
 
     def edges(self, package):
         result = {}
-        selected = CRITICAL_EDGES[package["name"]]
+        fixed = CRITICAL_EDGES.get(package["name"])
+        selected = fixed if fixed is not None else {
+            d.split(" ", 1)[0] for d in package.get("dependencies", [])
+            if is_critical(d.split(" ", 1)[0])}
         for dependency in package.get("dependencies", []):
             name = dependency.split(" ", 1)[0]
             if name in selected:
                 require(name not in result, f"Duplicate critical edge: {self.label}: {name}")
                 result[name] = package_identity(self.resolve(dependency))
-        required = selected - {"prettyplease"}
+        required = fixed - {"prettyplease"} if fixed is not None else set()
         require(required <= result.keys(),
                 f"Missing critical edge: {self.label}: {package['name']}")
         return result
@@ -145,19 +160,26 @@ class LockedGraph:
 
 def verify_critical_graph(data, reference, label, owner_edges=None, owner_source=None):
     graph = LockedGraph(data, label)
-    allowed = {package_identity(p): p for p in reference.packages
-               if p["name"] in CRITICAL_PACKAGES}
+    allowed = {original_identity(package_identity(p), owner_source): p for p in reference.packages
+               if is_critical(p["name"])}
     nodes, edges = [], []
     for package in graph.packages:
-        if package["name"] not in CRITICAL_PACKAGES:
+        if not is_critical(package["name"]):
             continue
         identity = package_identity(package)
         require(identity in allowed,
                 f"Critical package differs from original lock: {label}: {identity}")
         actual = graph.edges(package)
-        expected = reference.edges(allowed[identity])
-        require(actual == {key: value for key, value in expected.items()
-                           if key != "prettyplease" or key in actual},
+        expected = {key: original_identity(value, owner_source)
+                    for key, value in reference.edges(allowed[identity]).items()}
+        # AWS external optional features may select fewer edges than the
+        # upstream workspace. Every present edge must keep its exact identity;
+        # original owners' mandatory edges are checked from tracked manifests.
+        selected_expected = ({key: value for key, value in expected.items() if key in actual}
+                             if package["name"].startswith("aws-") else
+                             {key: value for key, value in expected.items()
+                              if key != "prettyplease" or key in actual})
+        require(actual == selected_expected,
                 f"Critical dependency edge differs from original lock: {label}: {identity[:2]}")
         if package["name"] == "bindgen" and "prettyplease" in actual:
             printer = graph.resolve(next(d for d in package["dependencies"]
@@ -172,6 +194,7 @@ def verify_critical_graph(data, reference, label, owner_edges=None, owner_source
         if owner_source is None or package.get("source") != owner_source:
             continue
         for name, expected in (owner_edges or {}).get((package["name"], package["version"]), {}).items():
+            expected = original_identity(expected, owner_source)
             matches = [dependency for dependency in package.get("dependencies", [])
                        if dependency.split(" ", 1)[0] == name]
             require(len(matches) == 1,
@@ -195,7 +218,7 @@ def mandatory_owner_edges(root, reference):
     """
     owners = {(p["name"], p["version"]): p for p in reference.packages
               if p.get("source") is None and any(
-                  d.split(" ", 1)[0] in CRITICAL_PACKAGES for d in p.get("dependencies", []))}
+                  is_critical(d.split(" ", 1)[0]) for d in p.get("dependencies", []))}
     workspace = tomllib.loads((root / "codex-rs/Cargo.toml").read_text())["workspace"]
     records, result, found = [], {}, set()
     entries = git_output(root, "ls-tree", "-r", "-z", "HEAD", "--", "codex-rs").split(b"\0")
@@ -237,7 +260,7 @@ def mandatory_owner_edges(root, reference):
                     inherited = workspace.get("dependencies", {}).get(alias, {}) if options.get("workspace") else {}
                     inherited = inherited if isinstance(inherited, dict) else {}
                     target = options.get("package", inherited.get("package", alias))
-                    if target in CRITICAL_PACKAGES:
+                    if is_critical(target):
                         mandatory.add(target)
         edges = {}
         for dependency in owners[identity].get("dependencies", []):

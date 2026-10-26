@@ -68,6 +68,16 @@ dependency into a successful not-applicable result. Optional dependencies of
 external packages still require Cargo's actual locked feature resolution;
 the static check does not replace it. Missing or ambiguous edges are refused.
 
+The same reference now covers the complete `aws-*` family. In particular,
+carrying an `aws-config` patch table does not prove Cargo selected it: a newer
+registry release can bypass the original vendor patch. The full check requires
+the actual original Git/vendor package identity, exact SDK/Smithy versions and
+checksums, and the original dependency edges. Upstream local vendor identities
+map only to the selected downstream Git source. External optional edges may be
+absent, but present edges cannot silently switch between reference versions.
+This prevents the observed `aws-types`/Smithy schema mismatch in a fresh product
+root and rejects an unpatched registry configuration package before compilation.
+
 An early CI job without an original checkout may run
 `python3 -I -B support/ui/verify_product_dependencies.py --source-only`.
 This is a source preflight with `critical_graph_checked=false`, not a full
@@ -104,6 +114,14 @@ controlled source-copy workflow; its path SDK remains distinct from the
 ordinary Git SDK lock. The dependency regressions exercise these mismatches,
 ambiguous and deleted nodes, source/checksum substitutions and tracked
 reference-lock tampering in both normal and optimized Python.
+
+For AWS convergence, first select the reference configuration package with
+Cargo's precise update so the original patch is actually used. Then derive the
+parent-before-dependency order from the current lock, update only drifting
+family nodes to reference versions and reread the lock after each command.
+Verify the final Git/vendor identity as well as versions; a successful command
+or a present patch declaration alone is insufficient. Generate the prepared
+SDK lock independently again after the ordinary roots have converged.
 
 The immutable source selection supplies no production issuer, owner lease,
 checkpoint service, Root process or device permission. Runtime readiness comes
