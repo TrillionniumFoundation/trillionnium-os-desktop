@@ -193,13 +193,19 @@ project's source qualification or an original-owner end-to-end transaction.
 ## Schema 4: closed expanded source and owning-package contract
 
 The unpublished schema-4 tooling stage has its own literal role sets and
-`support/release/organ_source_map_v4.json`. Its initial 300 OS / 201 Hepta roles
+`support/release/organ_source_map_v4.json`. Its current 309 OS / 201 Hepta roles
 preserve all V3 paths and add the reviewed CPU/GDT/Unix owners, observation and
 checkpoint diagnostic paths, thread-store fixtures, compression and rollout
 components, and release tool/map/oracle/document ownership. It is a source
 contract preparation, not a new current source pair or completed runtime lane.
-Retirement-profile and OAuth additions wait for actual finalized files; the
-checker never tolerates a missing file to reserve a future role.
+The nine-role retirement extension names the finalized page-table activation,
+managed-root retirement, real charged-root oracle, technical contract, new Unix
+profile/oracle/contract and CAB84 archive/exporter. Other changed task/thread and
+marker files reuse their existing roles. The original 300/201 tool receipts stay
+frozen under their own source identities. This source extension does not claim
+a completed retirement or native matrix. Future OAuth additions wait for actual
+finalized files; the checker never tolerates a missing file to reserve a future
+role.
 
 A code-owned canonical-map SHA fixes the whole V4 role-to-path and golden
 mapping. The ordinary structural checks still reject unknown/omitted roles,

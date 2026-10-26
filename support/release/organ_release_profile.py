@@ -390,6 +390,9 @@ OS_ROLES_V4 = OS_ROLES_V3 | {
     'kernel_vdso_cpu_probe_contract',
     'kernel_vdso_cpu_probe_runner',
     'kernel_vdso_cpu_probe_source',
+    'ostd_page_table_activation',
+    'ostd_page_table_node_ownership',
+    'ostd_vmspace_retirement_oracle',
     'ostd_x86_gdt',
     'ostd_x86_gdt_oracle',
     'release_development_contract',
@@ -400,7 +403,9 @@ OS_ROLES_V4 = OS_ROLES_V3 | {
     'release_source_profile_oracle',
     'release_source_profile_tool',
     'release_technical_contract',
+    'unix_cpunode_fixture_exporter',
     'unix_cpunode_guest_runner',
+    'unix_cpunode_historical_fixture',
     'unix_cpunode_profile_contract',
     'unix_cpunode_profile_oracle',
     'unix_post1138_fixture_exporter',
@@ -409,6 +414,10 @@ OS_ROLES_V4 = OS_ROLES_V3 | {
     'unix_post1138_profile_oracle',
     'unix_receiving_fixture_exporter',
     'unix_receiving_historical_fixture',
+    'unix_retirement_guest_runner',
+    'unix_retirement_profile_contract',
+    'unix_retirement_profile_oracle',
+    'vmspace_retirement_contract',
 }
 HEPTA_ROLES_V4 = HEPTA_ROLES_V3 | {
     'agentd_checkpoint_unix_oracle',
@@ -468,7 +477,7 @@ HEPTA_ROLES_V4 = HEPTA_ROLES_V3 | {
     'zstd_windows_include_patch',
 }
 GOLDEN_ROLES_V4 = GOLDEN_ROLES_V3
-SOURCE_MAP_V4_SHA256 = '7b0d0c83a41c7592bed1ac68f5547d617cd5350e2e75ee0f313312a30cfa7a70'
+SOURCE_MAP_V4_SHA256 = '1dd512f913d0b1be214858c2d1879679ee6c57675cc35cd7546f5f36c6deebd2'
 
 
 

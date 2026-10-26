@@ -470,6 +470,9 @@
       "ostd_live_task_scheduler_info": "kernel/asterinas/ostd/src/task/scheduler/info.rs",
       "ostd_live_task_scheduler_mod": "kernel/asterinas/ostd/src/task/scheduler/mod.rs",
       "ostd_live_task_scheduler_switch_tests": "kernel/asterinas/ostd/src/task/scheduler/switch_tests.rs",
+      "ostd_page_table_activation": "kernel/asterinas/ostd/src/mm/page_table/mod.rs",
+      "ostd_page_table_node_ownership": "kernel/asterinas/ostd/src/mm/page_table/node/mod.rs",
+      "ostd_vmspace_retirement_oracle": "kernel/asterinas/ostd/src/task/processor_retirement_tests.rs",
       "ostd_x86_gdt": "kernel/asterinas/ostd/src/arch/x86/trap/gdt.rs",
       "ostd_x86_gdt_oracle": "kernel/asterinas/ostd/src/arch/x86/trap/gdt_tests.rs",
       "receiving_support_android_binder_threads_md": "support/android/BINDER_THREADS.md",
@@ -518,7 +521,9 @@
       "ui_development_contract": "ui/README.md",
       "ui_lock": "ui/Cargo.lock",
       "ui_workspace": "ui/Cargo.toml",
+      "unix_cpunode_fixture_exporter": "tests/kernel/network/export_cpunode_source_fixture.py",
       "unix_cpunode_guest_runner": "tests/kernel/network/run_unix_stream_cpunode_guest.py",
+      "unix_cpunode_historical_fixture": "tests/kernel/network/controls/post1138-cpunode-v1-source.json.gz",
       "unix_cpunode_profile_contract": "tests/kernel/network/POST1138_CPUNODE_PROFILE.md",
       "unix_cpunode_profile_oracle": "tests/kernel/network/test_cpunode_source_profile.py",
       "unix_post1138_fixture_exporter": "tests/kernel/network/export_post1138_source_fixture.py",
@@ -526,7 +531,11 @@
       "unix_post1138_historical_fixture": "tests/kernel/network/controls/post1138-kernel-v1-source.json.gz",
       "unix_post1138_profile_oracle": "tests/kernel/network/test_post1138_source_profile.py",
       "unix_receiving_fixture_exporter": "tests/kernel/network/export_receiving_source_fixture.py",
-      "unix_receiving_historical_fixture": "tests/kernel/network/controls/receiving-force-v1-source.json.gz"
+      "unix_receiving_historical_fixture": "tests/kernel/network/controls/receiving-force-v1-source.json.gz",
+      "unix_retirement_guest_runner": "tests/kernel/network/run_unix_stream_retirement_guest.py",
+      "unix_retirement_profile_contract": "tests/kernel/network/POST1138_VM_RETIREMENT_PROFILE.md",
+      "unix_retirement_profile_oracle": "tests/kernel/network/test_retirement_source_profile.py",
+      "vmspace_retirement_contract": "support/kernel-safety/VMSPACE_RETIREMENT.md"
     }
   }
 }
