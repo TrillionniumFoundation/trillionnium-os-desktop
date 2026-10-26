@@ -47,6 +47,7 @@ jobs:
       CARGO_INCREMENTAL: '0'
       RUST_BACKTRACE: '1'
       GIT_TERMINAL_PROMPT: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -127,6 +128,9 @@ jobs:
             --features trill-shell/hepta-native-makepad \
             --filter-platform x86_64-unknown-linux-gnu \
             > "$evidence/native-metadata.json" 2> "$evidence/native-metadata.stderr.log"
+          cargo metadata --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features native-text --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            > "$evidence/native-text-metadata-before.json" 2> "$evidence/native-text-metadata-before.stderr.log"
           python3 -I -B - <<'PY' 2>&1 | tee "$evidence/native-source-validation.log"
           import json, os, sys
           from pathlib import Path
@@ -272,6 +276,9 @@ jobs:
           caches = product.verify_source_caches(metadata, source['commit'], source['tree'], profile)
           checked = dependencies.verify(Path.cwd(), Path(caches['hepta']['root']))
           host = json.loads((evidence / 'native-text-metadata-after.json').read_text())
+          host_before = json.loads((evidence / 'native-text-metadata-before.json').read_text())
+          if host != host_before:
+              raise SystemExit('Standalone native-text source graph changed during CI')
           host_packages = [p for p in host['packages'] if p['name'] == 'hepta-session-host']
           if len(host_packages) != 1:
               raise SystemExit('Expected one standalone original host adapter package')
