@@ -89,20 +89,48 @@ static void participant_quota(void){
     CHECK(close(ready[0])==0&&close(ready[1])==0);close_endpoint(e);
     puts("binder_threads_eight_actual_participants_ninth_zero_consumption_reject_exit_refund\tPASS");
 }
-struct budget {struct endpoint endpoint;int sent,go;unsigned code;};
+struct budget {struct endpoint endpoint;int sent,go;unsigned code;int complete_first;};
 static void *budget_caller(void *data){
-    struct budget *b=data;send_number(b->endpoint.fd,BC_TRANSACTION,0,b->code);token(b->sent);wait_token(b->go);CHECK(receive(b->endpoint.fd).kind==BR_TRANSACTION_COMPLETE);CHECK(receive(b->endpoint.fd).kind==BR_DEAD_REPLY);return NULL;
+    struct budget *b=data;send_number(b->endpoint.fd,BC_TRANSACTION,0,b->code);
+    if(b->complete_first)CHECK(receive(b->endpoint.fd).kind==BR_TRANSACTION_COMPLETE);
+    token(b->sent);wait_token(b->go);
+    if(!b->complete_first)CHECK(receive(b->endpoint.fd).kind==BR_TRANSACTION_COMPLETE);
+    CHECK(receive(b->endpoint.fd).kind==BR_DEAD_REPLY);return NULL;
 }
-static void budget_client(int inherited,int all_sent,int release,int all_dead,int new_ready){
+static void budget_client(int inherited,int all_sent,int release,int all_dead,int new_ready,int complete_first){
     CHECK(close(inherited)==0);struct endpoint e=endpoint();int sent[2],go[2];CHECK(pipe(sent)==0&&pipe(go)==0);struct budget a[8];pthread_t t[8];
-    for(unsigned i=0;i<8;i++){a[i]=(struct budget){.endpoint=e,.sent=sent[1],.go=go[0],.code=400+i};CHECK(pthread_create(&t[i],NULL,budget_caller,&a[i])==0);}for(unsigned i=0;i<8;i++)wait_token(sent[0]);token(all_sent);wait_token(release);for(unsigned i=0;i<8;i++)token(go[1]);for(unsigned i=0;i<8;i++)CHECK(pthread_join(t[i],NULL)==0);
+    for(unsigned i=0;i<8;i++){
+        a[i]=(struct budget){.endpoint=e,.sent=sent[1],.go=go[0],.code=400+i,.complete_first=complete_first};CHECK(pthread_create(&t[i],NULL,budget_caller,&a[i])==0);
+        // In this variant each completion is consumed before the next send.
+        // There are eight pending calls, but the completion queue peaks at one.
+        if(complete_first)wait_token(sent[0]);
+    }
+    if(!complete_first){for(unsigned i=0;i<8;i++)wait_token(sent[0]);}
+    token(all_sent);wait_token(release);for(unsigned i=0;i<8;i++)token(go[1]);for(unsigned i=0;i<8;i++)CHECK(pthread_join(t[i],NULL)==0);
     token(all_dead);wait_token(new_ready);send_number(e.fd,BC_TRANSACTION,0,499);CHECK(receive(e.fd).kind==BR_TRANSACTION_COMPLETE);struct message m=receive(e.fd);CHECK(m.kind==BR_REPLY&&m.tr.code==1499);free_buffer(e.fd,m.tr.data.ptr.buffer);close_endpoint(e);_exit(0);
 }
-static void terminal_budget(void){
-    struct endpoint manager=endpoint();CHECK(ioctl(manager.fd,BINDER_SET_CONTEXT_MGR,0)==0);command(manager.fd,BC_ENTER_LOOPER);int sent[2],release[2],dead[2],new_ready[2];CHECK(pipe(sent)==0&&pipe(release)==0&&pipe(dead)==0&&pipe(new_ready)==0);
-    pid_t child=fork();CHECK(child>=0);if(child==0)budget_client(manager.fd,sent[1],release[0],dead[1],new_ready[0]);wait_token(sent[0]);close_endpoint(manager);token(release[1]);wait_token(dead[0]);
-    manager=endpoint();CHECK(ioctl(manager.fd,BINDER_SET_CONTEXT_MGR,0)==0);command(manager.fd,BC_ENTER_LOOPER);token(new_ready[1]);struct message m=receive(manager.fd);CHECK(m.kind==BR_TRANSACTION&&m.tr.code==499);send_number(manager.fd,BC_REPLY,0,1499);CHECK(receive(manager.fd).kind==BR_TRANSACTION_COMPLETE);free_buffer(manager.fd,m.tr.data.ptr.buffer);wait_child(child);close_endpoint(manager);
-    int *pipes[]={sent,release,dead,new_ready};for(unsigned i=0;i<4;i++)CHECK(close(pipes[i][0])==0&&close(pipes[i][1])==0);
-    puts("binder_threads_eight_outgoing_calls_sixteen_real_complete_dead_events_and_refund\tPASS");
+struct terminal_receiver {int fd,ready,incoming,exit_go;};
+static void *terminal_receiver(void *data){
+    struct terminal_receiver *r=data;command(r->fd,BC_ENTER_LOOPER);token(r->ready);struct message m=receive(r->fd);CHECK(m.kind==BR_TRANSACTION&&m.tr.code>=400&&m.tr.code<408);token(r->incoming);wait_token(r->exit_go);return NULL;
 }
-int main(void){setbuf(stdout,NULL);alarm(35);lifecycle_case(0,0);lifecycle_case(1,0);lifecycle_case(0,1);lifecycle_case(1,1);lifecycle_case(0,2);lifecycle_case(1,2);participant_quota();terminal_budget();printf("binder_thread_lifetime_parent_checks=%u\n",checks);return 0;}
+static void terminal_budget(int worker_exit){
+    struct endpoint manager=endpoint();CHECK(ioctl(manager.fd,BINDER_SET_CONTEXT_MGR,0)==0);if(!worker_exit)command(manager.fd,BC_ENTER_LOOPER);
+    int sent[2],release[2],dead[2],new_ready[2],start[2],ready[2],incoming[2],exit_go[2];int *pipes[]={sent,release,dead,new_ready,start,ready,incoming,exit_go};for(unsigned i=0;i<8;i++)CHECK(pipe(pipes[i])==0);
+    pid_t child=fork();CHECK(child>=0);if(child==0){wait_token(start[0]);budget_client(manager.fd,sent[1],release[0],dead[1],new_ready[0],worker_exit);}
+    pthread_t receivers[8];struct terminal_receiver r={.fd=manager.fd,.ready=ready[1],.incoming=incoming[1],.exit_go=exit_go[0]};
+    if(worker_exit){for(unsigned i=0;i<8;i++)CHECK(pthread_create(&receivers[i],NULL,terminal_receiver,&r)==0);for(unsigned i=0;i<8;i++)wait_token(ready[0]);}
+    token(start[1]);wait_token(sent[0]);
+    if(worker_exit){
+        for(unsigned i=0;i<8;i++)wait_token(incoming[0]);
+        for(unsigned i=0;i<8;i++)token(exit_go[1]);
+        for(unsigned i=0;i<8;i++)CHECK(pthread_join(receivers[i],NULL)==0);
+        struct binder_version version={0};CHECK(ioctl(manager.fd,BINDER_VERSION,&version)==0&&version.protocol_version==8);
+        // All eight real receiving threads exited, the process/open still live,
+        // and the original callers have not drained any of their dead replies.
+    }else close_endpoint(manager);
+    token(release[1]);wait_token(dead[0]);if(worker_exit)close_endpoint(manager);
+    manager=endpoint();CHECK(ioctl(manager.fd,BINDER_SET_CONTEXT_MGR,0)==0);command(manager.fd,BC_ENTER_LOOPER);token(new_ready[1]);struct message m=receive(manager.fd);CHECK(m.kind==BR_TRANSACTION&&m.tr.code==499);send_number(manager.fd,BC_REPLY,0,1499);CHECK(receive(manager.fd).kind==BR_TRANSACTION_COMPLETE);free_buffer(manager.fd,m.tr.data.ptr.buffer);wait_child(child);close_endpoint(manager);
+    for(unsigned i=0;i<8;i++)CHECK(close(pipes[i][0])==0&&close(pipes[i][1])==0);
+    printf("binder_threads_terminal_budget complete_read_before_exit=%d actual_receiver_thread_exits=%d real_completion_dead_records=16_and_refund\tPASS\n",worker_exit,worker_exit?8:0);
+}
+int main(void){setbuf(stdout,NULL);alarm(35);lifecycle_case(0,0);lifecycle_case(1,0);lifecycle_case(0,1);lifecycle_case(1,1);lifecycle_case(0,2);lifecycle_case(1,2);participant_quota();terminal_budget(0);terminal_budget(1);printf("binder_thread_lifetime_parent_checks=%u\n",checks);return 0;}

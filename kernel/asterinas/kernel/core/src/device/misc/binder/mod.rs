@@ -523,6 +523,13 @@ impl Device for BinderDevice {
         let process = current!();
         let image = current_userspace!().vmar_snapshot();
         let pollee = Arc::new(Pollee::new());
+        // Logical terminal reservations also need physical storage. Retiring
+        // a worker or endpoint must not allocate while appending dead replies.
+        // Complete admission before publishing anything or locking DOMAIN.
+        let mut queue = VecDeque::new();
+        if queue.try_reserve_exact(MAX_QUEUE).is_err() {
+            return_errno!(Errno::ENOMEM);
+        }
         let mut d = domain().lock();
         d.reap();
         if d.endpoints.len() >= MAX_ENDPOINTS {
@@ -539,7 +546,7 @@ impl Device for BinderDevice {
                 threads: BTreeMap::new(),
                 pollee: pollee.clone(),
                 mapping: None,
-                queue: VecDeque::new(),
+                queue,
                 prepared: None,
                 preparing: None,
                 nodes: BTreeMap::new(),

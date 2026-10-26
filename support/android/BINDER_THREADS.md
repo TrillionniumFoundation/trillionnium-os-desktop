@@ -40,6 +40,16 @@ identity so cleanup cannot substitute another event during unlocked FD work.
 Outgoing terminal replies and incoming reply-completions reserve their bounded
 queue space before publication. Failed admission refunds it atomically.
 
+The sixteen queue slots have physical backing reserved fallibly during open,
+before DOMAIN is acquired or the endpoint is published. Failure returns ENOMEM
+without publishing an endpoint. Logical reply/terminal reservations then ensure
+that no producer exceeds that preallocated storage. Queue retain/remove/pop do
+not shrink it. A logical reservation alone was insufficient: with eight pending
+calls whose completion events had already been read, later worker exits could
+otherwise grow a small VecDeque while appending dead replies. No system allocator
+failure was injected to certify that old path; the allocation was found by
+independent source review and closed before acceptance.
+
 An active copyout or unlocked FD reservation is distinguished from a retained
 EFAULT descriptor. Blocking writes keep their original unpublished command and
 wait for active preparation to finish; blocking reads wait and reselect work.
@@ -93,6 +103,11 @@ original node from another worker, and owner death notification. It admits
 eight actual participants, rejects the ninth with zero consumed command bytes,
 then proves admission after actual exit. Eight simultaneous outgoing calls
 retain their sixteen completion/dead events and subsequently reuse the endpoint.
+Both termination orders are exercised: completions retained while a manager
+endpoint closes, and serialized send/completion consumption followed by eight
+actual receiving-thread exits while callers hold their dead replies unread.
+The second order keeps the completion queue peak at one before retirement and
+confirms that the original process/open still lives after all eight workers exit.
 `thread_work_probe.c` fails node and death descriptor copyout in one actual
 thread, exits it, then requires another thread to receive the exact original
 pointer/cookie or cookie handshake. A duplicate owner acknowledgement is denied.
