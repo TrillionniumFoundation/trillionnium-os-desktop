@@ -103,8 +103,8 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 
 ## Native owner source profile
 
-Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 170
-Desktop/kernel roles and 137 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
+Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 272
+Desktop/kernel roles and 144 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
 settlement modules, their development/technical contracts and guest probes.
 The affinity owner, permission/race contract and SMP probe/runner are required
 roles, as are the Session observer and reconnect regressions and their module
@@ -161,11 +161,38 @@ separate external caches, no test retries, and source checks before and after
 execution. Schemas 1 and 2 retain their earlier three-package host lane and
 exact required role sets. Removing a schema-3 role, aliasing two roles to one
 source or changing only a version number to downgrade a map fails before host
-execution. A complete valid historical map and manifest intentionally remain
-verifiable. A current release that requires the expanded checks must explicitly
+execution. Schemas 1 and 2 remain verifiable with their unchanged role sets. Earlier
+schema-3 maps/manifests must be checked with their matching original frozen
+version of this tool and source map; the expanded schema-3 role set deliberately
+rejects an earlier incomplete role set. A current release that requires the expanded checks must explicitly
 pass `--required-schema 3`; the runner then rejects an otherwise valid historical
 profile before executing host commands. The current-profile CI and manifest must
 adopt that requirement together.
+
+The receiving expansion binds the actual FAIR/RT administration, cold capacity,
+physical switch and affinity transaction, cgroup CPU owners, user-policy limits
+and inheritance, and their real guest/host regressions. It binds the three
+physical entropy entries, the module-documentation audit/evidence and UI contract,
+and A02/A06 workflows and their actual runners, oracles and three new runtime
+negative controls. Existing paths retain one role each; no alias is introduced.
+The seven added Hepta roles bind the original owner-status diagnostic and its
+oracle, deployment issuer and Root implementations/tests, and production-authority
+regressions. They are original source paths, not replacement fixture implementations.
+
+This is a finite source-identity contract. It does not claim complete module
+coverage, full `memory.max`, live non-root hierarchical `cpu.weight`, phone/GPU
+support, real deployment grants or successful execution of each newly bound
+file. Thirteen owning packages, five goldens, nineteen original migrations and
+all seven disabled-production inputs retain their existing rules. Full test and
+runtime qualification still require the exact final source/ELF combination.
+
+The earlier current manifest is preserved byte-for-byte as
+[`2026-10-26-organ-source-8542-fef6-v3.json`](profiles/2026-10-26-organ-source-8542-fef6-v3.json).
+Its SHA256 is `d76299cd6fa63f7e1fa3de21e850f696986d6348094706ac727aa3f92e10eed4`.
+Use the original `85425721` tools/map and its named source pair to verify that
+archived schema-3 artifact. Updating these mandatory roles does not regenerate
+`current-organ-source.json`; that file remains the prior reviewed pin until a
+separate explicit final-pair generation and review.
 
 The checked-in `current-organ-source.json` names its reviewed source pair.
 Changes to required roles or source bytes require deliberate regeneration and

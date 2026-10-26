@@ -89,6 +89,18 @@ class PairExecutionTests(unittest.TestCase):
         self.assertEqual(self.receipt()["source"]["schema_version"], 2)
         self.assertEqual(self.receipt()["qualification"], "source-only")
 
+    def test_default_v3_selection_cannot_fall_back_after_receiving_role_omission(self):
+        self.prepare_expanded_profile(3)
+        incomplete = copy.deepcopy(self.mapping)
+        incomplete["sources"]["os"].pop("kernel_runtime_handoff_drop_tail_control")
+        fixtures.write(self.os, "support/release/organ_source_map_v3.json",
+                       runner.profile.canonical(incomplete))
+        fixtures.commit(self.os, "omit required receiving control from default v3 map")
+        with patch.object(runner, "execute_step", side_effect=AssertionError("unexpected execution")):
+            self.assertEqual(self.run_pair("--execute-host"), 1)
+        self.assertEqual(self.dispatched, [])
+        self.assertFalse(self.output.exists())
+
     def test_wrong_pin_prevents_any_execution_or_output(self):
         manifest = json.loads(self.manifest.read_text())
         manifest["hepta"]["commit"] = "0" * 40

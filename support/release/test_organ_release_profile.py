@@ -227,6 +227,48 @@ class SourceCombinationTests(unittest.TestCase):
                 self.verify(relabeled)
             manifest, _ = self.build()
 
+    def test_v3_receiving_boundaries_cannot_be_omitted_or_aliased(self):
+        self.upgrade_to_version(3)
+        original = copy.deepcopy(self.mapping)
+        required = {
+            "os": {"kernel_live_sched_sched_class_administration",
+                   "kernel_live_sched_sched_class_request", "kernel_live_sched_sched_class_transfer",
+                   "kernel_live_syscall_sched_permissions", "kernel_entropy_getrandom",
+                   "kernel_entropy_device_memory", "kernel_entropy_source",
+                   "module_documentation_public_evidence", "kernel_runtime_negative_runner",
+                   "kernel_runtime_negative_oracle", "kernel_runtime_handoff_drop_tail_control",
+                   "kernel_runtime_handoff_eligibility_control", "kernel_switch_dequeue_owner_control",
+                   "ci_a02_workflow", "ci_a06_workflow"},
+            "hepta": {"root_owner_status_predicate", "root_owner_status_oracle",
+                      "deployment_issuer", "deployment_issuer_oracle", "deployment_issuer_root",
+                      "deployment_issuer_root_oracle", "production_authority_oracle"},
+        }
+        for side, roles in required.items():
+            for role in roles:
+                for mutation in ("omit", "alias"):
+                    self.mapping = copy.deepcopy(original)
+                    entries = self.mapping["sources"][side]
+                    if mutation == "omit":
+                        entries.pop(role)
+                    else:
+                        entries[role] = entries["kernel_capability" if side == "os" else "root_service"]
+                    with self.subTest(side=side, role=role, mutation=mutation), self.assertRaises(profile.ProfileError):
+                        self.build()
+
+    def test_v3_receiving_and_issuer_byte_changes_require_new_manifest(self):
+        self.upgrade_to_version(3)
+        manifest, _ = self.build()
+        for side, role in (("os", "kernel_live_sched_sched_class_administration"),
+                           ("os", "kernel_runtime_handoff_drop_tail_control"),
+                           ("hepta", "deployment_issuer_root")):
+            path = self.mapping["sources"][side][role]
+            repository = getattr(self, side)
+            write(repository, path, (repository / path).read_bytes() + b"changed owner bytes\n")
+            commit(repository, "change receiving owner or negative control")
+            with self.subTest(side=side, role=role), self.assertRaisesRegex(profile.ProfileError, "manifest mismatch"):
+                self.verify(manifest)
+            manifest, _ = self.build()
+
     def test_wrong_os_head_rejected(self):
         args = list(self.inputs())
         args[2] = "0" * 40
@@ -376,6 +418,63 @@ class CheckedInSourceMapTests(unittest.TestCase):
         for role, path in mapping["sources"]["os"].items():
             with self.subTest(role=role, path=path):
                 repo.file(path)
+
+
+    def test_v3_default_map_keeps_receiving_entropy_docs_and_issuer_roles(self):
+        release = Path(__file__).resolve().parent
+        mapping = profile.load_json(release / "organ_source_map_v3.json")
+        critical = {
+            "os": {
+                "kernel_live_sched_sched_class_request": "kernel/asterinas/kernel/core/src/sched/sched_class/request.rs",
+                "kernel_entropy_getrandom": "kernel/asterinas/kernel/core/src/syscall/getrandom.rs",
+                "kernel_entropy_device_memory": "kernel/asterinas/kernel/core/src/device/mem/file.rs",
+                "kernel_entropy_source": "kernel/asterinas/kernel/core/src/util/random.rs",
+                "module_documentation_audit_markdown": "docs/agents/MODULE_DOCUMENTATION_2026_10_26.md",
+                "module_documentation_audit_json": "docs/agents/MODULE_DOCUMENTATION_2026_10_26.json",
+                "module_documentation_public_evidence": "results/goal-progress/2026-10-26-public-summaries/MODULE_DOCS_EVIDENCE.json",
+                "ui_development_contract": "ui/README.md",
+                "kernel_runtime_negative_runner": "tests/organ_backend/run_cpu_owner_negative.py",
+                "kernel_runtime_negative_oracle": "tests/organ_backend/test_cpu_owner_negative.py",
+                "kernel_runtime_handoff_drop_tail_control": "tests/organ_backend/cpu_runtime_handoff_drop_tail_negative.patch",
+                "kernel_runtime_handoff_eligibility_control": "tests/organ_backend/cpu_runtime_handoff_eligibility_first_negative.patch",
+                "kernel_switch_dequeue_owner_control": "tests/organ_backend/cpu_switch_dequeue_drop_owner_negative.patch",
+                "ci_a02_workflow": ".github/workflows/a02-pinned-host-acceptance.yml",
+                "ci_a06_workflow": ".github/workflows/a06-kernel.yml",
+            },
+            "hepta": {
+                "root_owner_status_predicate": "codex-rs/hepta-agentd/src/authority_host_owner_status.rs",
+                "root_owner_status_oracle": "codex-rs/hepta-agentd/src/authority_host_owner_status_tests.rs",
+                "deployment_issuer": "codex-rs/hepta-agentd/src/deployment_issuer.rs",
+                "deployment_issuer_oracle": "codex-rs/hepta-agentd/src/deployment_issuer_tests.rs",
+                "deployment_issuer_root": "codex-rs/hepta-agentd/src/deployment_issuer_root.rs",
+                "deployment_issuer_root_oracle": "codex-rs/hepta-agentd/src/deployment_issuer_root_tests.rs",
+                "production_authority_oracle": "codex-rs/hepta-agentd/src/production_authority_tests.rs",
+            },
+        }
+        for side, entries in critical.items():
+            mandatory = profile.roles_for_version(3)[0 if side == "os" else 1]
+            for role, path in entries.items():
+                with self.subTest(side=side, role=role):
+                    self.assertIn(role, mandatory)
+                    self.assertEqual(mapping["sources"][side][role], path)
+
+    def test_archived_v3_keeps_original_bytes_and_requires_original_role_tools(self):
+        release = Path(__file__).resolve().parent
+        raw = (release / "profiles/2026-10-26-organ-source-8542-fef6-v3.json").read_bytes()
+        self.assertEqual(profile.sha256(raw), "d76299cd6fa63f7e1fa3de21e850f696986d6348094706ac727aa3f92e10eed4")
+        archive = profile.load_json_bytes(raw, "archived reviewed v3")
+        self.assertEqual(archive["schema_version"], 3)
+        self.assertEqual(archive["hepta"]["commit"], "fef6a641228aad80b2716db05c7f265adf6511d7")
+        self.assertEqual(archive["production"], profile.PRODUCTION)
+        old_map = {
+            "schema_version": 3,
+            "sources": {side: {item["role"]: item["path"] for item in entries}
+                        for side, entries in archive["sources"].items()},
+            "goldens": {item["role"]: {"os": item["os_path"], "hepta": item["hepta_path"]}
+                        for item in archive["goldens"]},
+        }
+        with self.assertRaisesRegex(profile.ProfileError, "source map requires exactly"):
+            profile.check_map(old_map)
 
 
 if __name__ == "__main__":
