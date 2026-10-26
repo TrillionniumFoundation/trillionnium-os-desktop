@@ -9,8 +9,9 @@ The original administrator and human checks still run after installation.
 
 Freeze one clean Desktop commit/tree and one clean Hepta commit/tree after
 updating [the shared dependency contract](DEPENDENCIES.md). All three Desktop
-manifests, both product locks, the native resource profile and its source-tool
-checkout must select that same Hepta commit. The prepared Makepad SDK must pass
+manifests, every Hepta entry in the five ordinary Cargo locks and the declared
+prepared UI lock, the native resource profile and its source-tool checkout must
+select that same Hepta commit. The prepared Makepad SDK must pass
 the complete original source verifier; a default SDK build cannot inherit its
 input-method or accessibility evidence.
 
@@ -30,6 +31,8 @@ resolved Cargo source, immutable locks and compiler identities, then builds:
 The builder accepts two explicit cache directories outside either checkout.
 It does not accept a replacement owner dependency or rewrite a committed lock.
 It records the actual distribution bytes after GNU `strip --strip-unneeded`.
+`--jobs` selects 1–8 compiler jobs, defaults to one, and is retained in the
+receipt. It changes build concurrency only.
 
 [product/root_bundle.py](product/root_bundle.py) packages both parts and verifies
 their complete file sets. `desktop/` retains its original package manifest and
