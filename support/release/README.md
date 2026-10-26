@@ -79,7 +79,7 @@ the Desktop consumer, native HOS2 owner, original Root service/issuer/clock/fron
 checkpoint coordinator, SQLite pool guard and commit gate.
 
 The source-profile builder selects this map with `--source-map`; the pair runner
-selects one of the two fixed map filenames from the manifest's integer schema
+selects one of the fixed map filenames from the manifest's integer schema
 version. Missing roles, byte drift, an unsupported version or a version downgrade
 cannot remove those checks. Schema 1 and its map remain available for historical
 manifests. A schema-2 tool does not make a historical schema-1 pin describe new code:
@@ -90,3 +90,38 @@ inputs unconfigured in a source receipt. An independently tested Root fixture or
 a successful compilation does not promote those fields. Actual deployment,
 original-owner GUI tests, persistent guest storage, trusted-role execution and
 cross-kernel Unknown recovery require separate evidence for the same final pair.
+
+## Native owner source profile
+
+Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 110
+Desktop/kernel roles and 92 original Hepta roles. It preserves the five protocol
+goldens and adds the real native entry/runner, bounded ELF loader, per-frame
+kernel-stack accounting, actual proc credentials, SGID inode publication,
+interruptible group stops, original Root composition, Current publisher and cold
+read-only SQLite recovery. Each role names one distinct tracked regular source
+file. Source identity covers a file's bytes, not a claim that every behavior in
+that file has been audited or dynamically exercised.
+
+The fixed schema-3 host lane directly tests the original `codex-hepta-agentd`,
+`codex-hepta-memory`, `codex-hepta-cognitive-store`, `codex-hepta-contracts` and
+`codex-state`, `codex-hepta-agent-protocol` and `codex-hepta-learning-ledger`
+packages. It also builds the original `hepta-authority-host` service binary in a
+separate recorded build step. It retains locked dependencies, explicit toolchains,
+separate external caches, no test retries, and source checks before and after
+execution. Schemas 1 and 2 retain their earlier three-package host lane and
+exact required role sets. Removing a schema-3 role, aliasing two roles to one
+source or changing only a version number to downgrade a map fails before host
+execution. A complete valid historical map and manifest intentionally remain
+verifiable. A current release that requires the expanded checks must explicitly
+pass `--required-schema 3`; the runner then rejects an otherwise valid historical
+profile before executing host commands. The current-profile CI and manifest must
+adopt that requirement together.
+
+The checked-in `current-organ-source.json` remains an earlier source pin until
+a new manifest is deliberately generated and reviewed against both frozen
+commits. Adding schema-3 support does not update that pin or qualify a new pair.
+The new manifest still records `source-only` and disabled production authority.
+Only a later successful host run earns `host-build-tests`; native application,
+same-disk restart/history, GUI device effects and real deployment evidence must
+be recorded independently. A prior native failure and a successful compiler
+run cannot be relabelled as a passing original-owner guest.

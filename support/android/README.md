@@ -14,8 +14,14 @@ ordinary four-CPU guest passed filtering, SIGSYS handler/return, TSYNC and
 setuid-exec race checks. These
 runtime receipts remain separate from the source scan.
 
-This stage does not implement Binder or Android
-SELinux policy. It does not qualify Android boot, APKs, phone hardware or CTS.
+The separate [bounded Binder byte transport](BINDER_BYTES.md) now provides
+real cross-process request/reply mappings and lifecycle checks. Its guest
+runbook is [tests/kernel/binder/README.md](../../tests/kernel/binder/README.md).
+It deliberately refuses objects, descriptor transfer, death notifications and
+thread pools; those Android compatibility requirements remain open.
+
+These stages do not implement Android SELinux policy. They do not qualify
+Android boot, APKs, phone hardware or CTS.
 The source auditor continues to inspect immutable commits, so an uncommitted
 seccomp implementation is deliberately absent from its selected-commit scan.
 The checkpoints below remain historical evidence of the earlier source state.

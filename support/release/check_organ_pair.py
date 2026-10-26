@@ -18,10 +18,15 @@ profile = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(profile)
 
 
-def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small"):
+def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_version=1):
     """Commands are code-owned; a manifest cannot inject an executable or flags."""
     network = ["--offline"] if offline else []
-    return [
+    owning_packages = ["codex-hepta-agentd", "codex-hepta-memory", "codex-hepta-cognitive-store"]
+    if schema_version == 3:
+        owning_packages += ["codex-hepta-contracts", "codex-state",
+                            "codex-hepta-agent-protocol", "codex-hepta-learning-ledger"]
+    package_flags = [flag for package in owning_packages for flag in ("-p", package)]
+    steps = [
         ("ui-build", os_root, "1.88.0",
          ["cargo", "build", "--manifest-path", "ui/Cargo.toml", "--workspace",
           "--bins", "--locked", *network]),
@@ -36,10 +41,15 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small"):
           "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd",
           "--profile", hepta_profile, "--locked", *network]),
         ("hepta-tests", hepta_root, "1.95.0",
-         ["just", "test", "--locked", *network, "-p", "codex-hepta-agentd",
-          "-p", "codex-hepta-memory", "-p", "codex-hepta-cognitive-store",
+         ["just", "test", "--locked", *network, *package_flags,
           "--test-threads", "2", "--retries", "0", "--cargo-profile", hepta_profile]),
     ]
+    if schema_version == 3:
+        steps.insert(4, ("hepta-root-build", hepta_root, "1.95.0",
+                         ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
+                          "-p", "codex-hepta-agentd", "--bin", "hepta-authority-host",
+                          "--profile", hepta_profile, "--locked", *network]))
+    return steps
 
 
 def execute_step(step, output, environment, timeout, targets=None):
@@ -97,6 +107,8 @@ def main(argv=None):
     parser.add_argument("--os-head", required=True)
     parser.add_argument("--os-tree", required=True)
     parser.add_argument("--manifest", required=True)
+    parser.add_argument("--required-schema", type=int, choices=(1, 2, 3),
+                        help="require one schema for a current release; historical verification otherwise remains available")
     parser.add_argument("--output-dir", required=True)
     execution = parser.add_mutually_exclusive_group()
     execution.add_argument("--execute-host", action="store_true",
@@ -125,6 +137,8 @@ def main(argv=None):
         manifest = profile.load_json_bytes(raw_manifest, args.manifest)
         if not isinstance(manifest, dict):
             raise profile.ProfileError("manifest must be an object")
+        if args.required_schema is not None and manifest.get("schema_version") != args.required_schema:
+            raise profile.ProfileError(f"current release requires schema {args.required_schema}")
         mapping = profile.load_json(os_repo.path / "support/release" /
                                     profile.source_map_name(manifest.get("schema_version")))
         before = profile.verify_manifest(manifest, os_repo, hepta_repo, args.os_head,
@@ -145,7 +159,8 @@ def main(argv=None):
             receipt["qualification"] = "none"
             receipt["passed"] = False
             (output / "pair-receipt.json").write_bytes(profile.canonical(receipt))
-            for step in host_steps(os_repo.path, hepta_repo.path, args.offline, args.hepta_profile):
+            for step in host_steps(os_repo.path, hepta_repo.path, args.offline, args.hepta_profile,
+                                   manifest["schema_version"]):
                 if args.build_host and not step[0].endswith("-build"):
                     continue
                 print(f"Running {step[0]}; log: {output / (step[0] + '.log')}", flush=True)

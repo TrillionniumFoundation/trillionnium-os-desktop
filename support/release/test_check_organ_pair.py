@@ -73,6 +73,36 @@ class PairExecutionTests(unittest.TestCase):
             self.assertEqual(self.run_pair("--execute-host"), 1)
         self.assertFalse(self.output.exists())
 
+    def test_v3_selects_fixed_native_owner_map(self):
+        fixtures.SourceCombinationTests.upgrade_to_version(self, 3)
+        fixtures.write(self.os, "support/release/organ_source_map_v3.json",
+                       runner.profile.canonical(self.mapping))
+        fixtures.commit(self.os, "review v3 native owner map")
+        with patch.object(runner.profile, "HISTORY_OWNER", self.owner):
+            manifest, _ = runner.profile.create_manifest(*fixtures.SourceCombinationTests.inputs(self))
+        self.manifest.write_bytes(runner.profile.canonical(manifest))
+        with patch.object(runner, "execute_step", side_effect=AssertionError("unexpected execution")):
+            self.assertEqual(self.run_pair("--required-schema", "3"), 0)
+        self.assertEqual(self.receipt()["source"]["schema_version"], 3)
+        self.assertEqual(self.receipt()["qualification"], "source-only")
+
+    def test_required_schema_blocks_a_valid_historical_manifest_before_execution(self):
+        with patch.object(runner, "execute_step", side_effect=AssertionError("unexpected execution")):
+            self.assertEqual(self.run_pair("--required-schema", "3", "--execute-host"), 1)
+        self.assertFalse(self.output.exists())
+
+    def test_v3_host_commands_cover_original_sqlite_and_root_contract_owners(self):
+        steps = runner.host_steps(self.os, self.hepta, False, schema_version=3)
+        tests = next(step[3] for step in steps if step[0] == "hepta-tests")
+        packages = {tests[index + 1] for index, flag in enumerate(tests) if flag == "-p"}
+        self.assertEqual(packages, {"codex-hepta-agentd", "codex-hepta-memory",
+                                   "codex-hepta-cognitive-store", "codex-hepta-contracts", "codex-state",
+                                   "codex-hepta-agent-protocol", "codex-hepta-learning-ledger"})
+        self.assertIn("--locked", tests)
+        root = next(step[3] for step in steps if step[0] == "hepta-root-build")
+        self.assertIn("hepta-authority-host", root)
+        self.assertIn("--locked", root)
+
     def test_actual_nonzero_child_never_qualifies_pair(self):
         step = ("failure", self.os, "1.95.0", [sys.executable, "-c", "raise SystemExit(7)"])
         with patch.object(runner, "host_steps", return_value=[step]):

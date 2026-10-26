@@ -44,6 +44,8 @@ jobs:
           for path in README.md \
             support/release/organ_release_profile.py \
             support/release/organ_source_map.json \
+            support/release/organ_source_map_v2.json \
+            support/release/organ_source_map_v3.json \
             support/release/test_organ_release_profile.py \
             support/release/check_organ_pair.py \
             support/release/test_check_organ_pair.py; do
@@ -59,12 +61,15 @@ jobs:
 
           source = Path("support/release")
           api = runpy.run_path(str(source / "organ_release_profile.py"))
-          mapping = api["load_json"](source / "organ_source_map.json")
-          api["check_map"](mapping)
-          print("Committed map schema passed: "
-                f"{len(mapping['sources']['os'])} OS roles, "
-                f"{len(mapping['sources']['hepta'])} Hepta roles, "
-                f"{len(mapping['goldens'])} golden pairs.")
+          for version in (1, 2, 3):
+              mapping = api["load_json"](source / api["source_map_name"](version))
+              if type(mapping.get("schema_version")) is not int or mapping["schema_version"] != version:
+                  raise SystemExit("Map file does not declare its fixed schema")
+              api["check_map"](mapping)
+              print(f"Committed map schema {version} passed: "
+                    f"{len(mapping['sources']['os'])} OS roles, "
+                    f"{len(mapping['sources']['hepta'])} Hepta roles, "
+                    f"{len(mapping['goldens'])} golden pairs.")
           print("Map structure only; mapped repository bytes and real ancestry are not qualified here.")
           PY
 
@@ -78,8 +83,8 @@ jobs:
 
           suite = unittest.defaultTestLoader.discover("support/release", pattern="test_*.py")
           count = suite.countTestCases()
-          if count < 28:
-              raise SystemExit(f"Expected at least 28 source/pair-runner regression tests; found {count}")
+          if count < 38:
+              raise SystemExit(f"Expected at least 38 source/pair-runner regression tests; found {count}")
           result = unittest.TextTestRunner(verbosity=2).run(suite)
           if not result.wasSuccessful() or result.testsRun != count or result.skipped:
               raise SystemExit("Release-profile suite failed, did not run completely, or skipped tests")

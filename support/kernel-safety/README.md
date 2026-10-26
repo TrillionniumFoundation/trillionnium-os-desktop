@@ -2,7 +2,28 @@
 
 Status: development candidate based on main `38227d33fd3ed668f0424bc153e0d3d811731597`. This directory documents the implementation and its acceptance boundaries. The test evidence is generated separately by the commands below; the presence of this document is not a passing result or production qualification.
 
-The second-stage [physical page budget](PAGE_MEMORY.md) adds a separate `hepta.page.*` combined ceiling for private/COW and VMO/cache pages. The `hepta.anon.*` interface and its first-stage scope below remain unchanged. Neither interface is full Linux `memory.max`.
+The [physical page budget](PAGE_MEMORY.md) now includes private/COW and VMO/cache
+pages, [user page tables](PAGE_TABLE_MEMORY.md), and [POSIX kernel stack
+frames](KERNEL_STACK_MEMORY.md). The `hepta.anon.*` interface and its first-stage
+scope below remain unchanged. Neither interface is full Linux `memory.max`.
+
+The following documents each contain development entry points, technical
+ownership rules, reproduction commands and explicit qualification boundaries:
+
+- [Requester DMA domains](DMA_DOMAINS.md): private VT-d tables and actual
+  cross-requester denial within a restricted topology.
+- [Boot identity](BOOT_ID.md): the same HOS2/procfs UUID and missing-entropy refusal.
+- [Bounded native executable loader](G2_NATIVE_LOADER.md): immutable input,
+  complete LOAD validation and a separate original-application acceptance lane.
+- [Proc credential status](PROC_STATUS.md) and [SGID inode creation](SGID_CREATION.md):
+  actual retained credentials and pre-publication owner/mode decisions.
+- [Group stops and restored waits](GROUP_STOP.md): real task stops, futex and
+  semaphore completion, and preserved absolute deadlines.
+- [Persistent native storage](NATIVE_PERSISTENCE.md): generated private ext2,
+  bind identity, UID isolation and actual VM-process crash/reopen.
+
+These are individual stage contracts. Their presence and independent component
+passes do not establish that one final original Hepta/native pair has passed.
 
 ## Changes and invariants
 
@@ -84,8 +105,12 @@ The probes exercise commoncap denial/allowance, SO_PEERCRED/SO_PEERGROUPS before
 
 ## Remaining work before full memory isolation
 
-1. Define charge ownership for shared VMOs, page cache/writeback, kernel allocations, page tables and DMA; retain charges independently of the current task.
-2. Handle migration/reparenting and shared ownership under bounded, reviewed lock ordering. Keep account lifetimes through in-flight I/O, TLB release, caches and device completion.
+1. Extend the implemented private/COW, VMO/cache, user-table and POSIX-stack
+   ownership to remaining heap/slab objects, IPC, delegated/system work, shared
+   kernel tables, filesystem metadata and DMA. Preserve original owners through
+   their real final references; do not relabel the partial budget `memory.max`.
+2. Extend migration/reparenting and shared ownership coverage under bounded,
+   reviewed lock ordering, including writeback, asynchronous I/O and devices.
 3. Establish fixed global/root/recovery reserve pools that workload allocations cannot consume, including metadata and fault-handling memory.
 4. Specify bounded reclaim and OOM behavior, safe limit reduction, cancellation, overflow behavior, and observability under pressure.
 5. Extend the bounded multithread/SMP and process-tree coverage to long-running contention, group enable/disable/deletion, shared-memory and page-cache bypass attempts, physical OOM rollback, stalled-CPU RCU behavior, and recovery after adversarial pressure.

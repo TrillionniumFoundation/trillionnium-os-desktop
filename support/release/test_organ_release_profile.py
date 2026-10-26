@@ -76,13 +76,17 @@ class SourceCombinationTests(unittest.TestCase):
         return profile.create_manifest(*self.inputs(hepta))
 
     def upgrade_to_v2(self):
-        self.mapping["schema_version"] = 2
-        for name, roles in (("os", profile.OS_ROLES_V2), ("hepta", profile.HEPTA_ROLES_V2)):
+        SourceCombinationTests.upgrade_to_version(self, 2)
+
+    def upgrade_to_version(self, version):
+        self.mapping["schema_version"] = version
+        os_roles, hepta_roles, golden_roles = profile.roles_for_version(version)
+        for name, roles in (("os", os_roles), ("hepta", hepta_roles)):
             for role in roles - set(self.mapping["sources"][name]):
                 path = f"{name}/{role}.rs"
                 self.mapping["sources"][name][role] = path
                 write(getattr(self, name), path, (role + " source\n").encode())
-        for role in profile.GOLDEN_ROLES_V2 - set(self.mapping["goldens"]):
+        for role in golden_roles - set(self.mapping["goldens"]):
             paths = {name: f"goldens/{role}.json" for name in ("os", "hepta")}
             self.mapping["goldens"][role] = paths
             for name, path in paths.items():
@@ -135,9 +139,35 @@ class SourceCombinationTests(unittest.TestCase):
             self.build()
 
     def test_noninteger_or_unknown_schema_is_rejected(self):
-        for version in (True, 1.0, 2.0, "2", None, 0, 3):
+        for version in (True, 1.0, 2.0, 3.0, "2", None, 0, 4):
             self.mapping["schema_version"] = version
             with self.subTest(version=version), self.assertRaisesRegex(profile.ProfileError, "unsupported source map"):
+                self.build()
+
+    def test_v3_native_owner_pair_keeps_exact_full_roles_and_protocol_goldens(self):
+        self.upgrade_to_version(3)
+        manifest, receipt = self.build()
+        self.assertEqual(manifest["schema_version"], 3)
+        self.assertEqual(receipt["schema_version"], 3)
+        for side, roles in (("os", profile.OS_ROLES_V3), ("hepta", profile.HEPTA_ROLES_V3)):
+            self.assertEqual({entry["role"] for entry in manifest["sources"][side]}, roles)
+        self.assertEqual({entry["role"] for entry in manifest["goldens"]}, profile.GOLDEN_ROLES_V2)
+        self.assertEqual(self.verify(manifest)["source_checks"], "passed")
+        self.assertEqual(manifest["production"], profile.PRODUCTION)
+
+    def test_v3_cannot_omit_publishers_downgrade_or_alias_a_required_source(self):
+        self.upgrade_to_version(3)
+        original = copy.deepcopy(self.mapping)
+        for mutate in (
+            lambda value: value["sources"]["hepta"].pop("root_composition"),
+            lambda value: value["sources"]["hepta"].pop("cognitive_current_publisher"),
+            lambda value: value.update(schema_version=2),
+            lambda value: value["sources"]["hepta"].update(
+                cognitive_current_publisher=value["sources"]["hepta"]["root_composition"]),
+        ):
+            self.mapping = copy.deepcopy(original)
+            mutate(self.mapping)
+            with self.assertRaises(profile.ProfileError):
                 self.build()
 
     def test_wrong_os_head_rejected(self):
