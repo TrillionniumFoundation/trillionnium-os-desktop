@@ -177,6 +177,24 @@ pub struct Waker {
 }
 
 impl Waiter {
+    /// Prepares a waiter and waker in sleepable context without committing an
+    /// operation if their allocation fails. The current Task must exist.
+    pub fn try_new_pair() -> crate::Result<(Self, Arc<Waker>)> {
+        crate::task::atomic_mode::might_sleep();
+        let task = Task::current().ok_or(crate::Error::InvalidArgs)?.cloned();
+        let waker = Arc::try_new(Waker {
+            has_woken: AtomicBool::new(false),
+            task,
+        })
+        .map_err(|_| crate::Error::NoMemory)?;
+        Ok((
+            Self {
+                waker: waker.clone(),
+            },
+            waker,
+        ))
+    }
+
     /// Creates a waiter and its associated [`Waker`].
     pub fn new_pair() -> (Self, Arc<Waker>) {
         let waker = Arc::new(Waker {
@@ -286,6 +304,20 @@ impl Waker {
 mod test {
     use super::*;
     use crate::{prelude::*, task::TaskOptions};
+
+    #[ktest]
+    fn prepared_waiter_keeps_a_wake_before_wait() {
+        let (waiter, waker) = Waiter::try_new_pair().unwrap();
+        assert!(waker.wake_up());
+        waiter.wait();
+    }
+
+    #[ktest]
+    #[should_panic(expected = "This function might break atomic mode")]
+    fn prepared_waiter_rejects_atomic_preparation() {
+        let _irq = crate::irq::disable_local();
+        let _ = Waiter::try_new_pair();
+    }
 
     fn queue_wake<F>(wake: F)
     where

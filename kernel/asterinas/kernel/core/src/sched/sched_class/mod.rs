@@ -36,6 +36,7 @@ mod administration;
 mod capacity;
 mod clock;
 mod policy;
+mod request;
 mod time;
 mod transfer;
 
@@ -532,6 +533,7 @@ trait SchedClassRq: Send + fmt::Debug {
 #[derive(Debug)]
 pub(crate) struct SchedAttr {
     administration: Mutex<administration::AdministrationState>,
+    affinity_request: SpinLock<Option<Arc<request::AffinityRequest<'static>>>>,
     policy: SchedPolicyState,
     last_cpu: AtomicCpuId,
     real_time: real_time::RealTimeAttr,
@@ -543,6 +545,7 @@ impl SchedAttr {
     pub(crate) fn new(policy: SchedPolicy) -> Self {
         Self {
             administration: Mutex::new(administration::AdministrationState::new(policy)),
+            affinity_request: SpinLock::new(None),
             policy: SchedPolicyState::new(policy),
             last_cpu: AtomicCpuId::default(),
             real_time: {

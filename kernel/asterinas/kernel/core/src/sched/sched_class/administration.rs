@@ -40,6 +40,7 @@ impl UserSchedSnapshot {
 pub(super) struct AdministrationState {
     nice: Nice,
     user_idle: bool,
+    affinity_generation: u64,
 }
 
 impl AdministrationState {
@@ -62,6 +63,7 @@ impl AdministrationState {
                 _ => Nice::default(),
             },
             user_idle: false,
+            affinity_generation: 0,
         }
     }
 }
@@ -85,15 +87,25 @@ impl SchedAttr {
         attr.administration = ostd::sync::Mutex::new(AdministrationState {
             nice: snapshot.nice(),
             user_idle: snapshot.linux_policy() == LinuxSchedPolicy::Idle,
+            affinity_generation: 0,
         });
         attr
     }
 
     pub(crate) fn administer(&self) -> SchedAdministration<'_> {
         ostd::task::atomic_mode::might_sleep();
-        SchedAdministration {
-            attr: self,
-            state: self.administration.lock(),
+        loop {
+            let state = self.administration.lock();
+            if let Some(request) = self.affinity_request()
+                && request.outcome().is_none()
+            {
+                // Placement pins policy without stranding a sleeping controller's
+                // administration mutex behind its migrated realtime target.
+                drop(state);
+                let _ = request.wait();
+                continue;
+            }
+            return SchedAdministration { attr: self, state };
         }
     }
 }
@@ -106,6 +118,16 @@ impl Deref for SchedAdministration<'_> {
 }
 
 impl SchedAdministration<'_> {
+    pub(super) fn next_affinity_generation(&mut self) -> ostd::Result<u64> {
+        let next = self
+            .state
+            .affinity_generation
+            .checked_add(1)
+            .ok_or(ostd::Error::Overflow)?;
+        self.state.affinity_generation = next;
+        Ok(next)
+    }
+
     pub(crate) fn snapshot(&self) -> UserSchedSnapshot {
         self.state.snapshot(self.policy())
     }

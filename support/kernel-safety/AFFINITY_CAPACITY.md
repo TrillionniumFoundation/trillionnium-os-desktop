@@ -101,8 +101,11 @@ the sleepable guard. Its identity/namespace permission gate must precede the
 guard and keep the original strong Process alive through mutation; that security
 work is an independent change, not granted by possession of an admin view.
 
-The future affinity transaction can hold the same admin view from capacity
-preparation through placement, pinning its actual policy/priority. The lock order
+The affinity transaction holds administration during cold preparation and atomic
+request/mask installation, then releases it before waiting. An active request
+pins policy/priority: a later writer drops administration before waiting for that
+request and retries acquisition afterwards. This avoids a migrated RT target
+starving a lower-priority control thread which still owns its mutex. The lock order
 is administration mutex, at most one rq spinlock, then the existing short policy
 spinlock. The rq/timer/handoff paths never acquire the administration mutex.
 `update_policy` callbacks still run under the policy spinlock and must be pure:
@@ -112,3 +115,24 @@ then set the new policy while administration remains held.
 Three controlled tests exercise read access during administration, a genuinely
 sleeping/woken second writer Task, and rejection of an uncontended IRQ-off call.
 They add no owner/capability/RLIMIT permission claim and do not enable migration.
+
+## Request and notification preparation
+
+A private request records a checked monotonic per-Task attempt generation and a
+single destination capacity ticket. It stores no strong target Task. Claim moves
+that ticket once; completion preserves the first terminal result and returns any
+unclaimed capacity for cancellation outside all rq locks. It is volatile kernel
+coordination, not a native delivery record or membership generation.
+
+Request Arc allocation is fallible and cold. An external affinity caller can
+prepare its one waiter with OSTD's safe `Waiter::try_new_pair` before publishing
+effects, avoiding a new waiter/queue allocation after activation. Self callers
+must yield rather than park on their own placement. Other policy writers yield
+without holding administration while a placement is pending. Such waiting still
+consumes their ordinary CPU budget; it is not a new reserved recovery service.
+
+Request and complete mask are installed under one request-slot spinlock, without
+acquiring an rq there. Every producer must consult that slot before publication.
+Retirement compares Arc identity so a delayed old completion cannot clear a newer
+request. Completed preparation/retired request storage must be destroyed outside
+the request/rq locks. These primitives alone do not enable forced migration.

@@ -59,6 +59,12 @@ pub(super) struct MigrationCapacity<'a> {
 }
 
 impl MigrationCapacity<'_> {
+    pub(super) fn destination(&self) -> CpuId {
+        self.cpu
+    }
+    pub(super) fn placement(&self) -> Placement {
+        self.placement
+    }
     pub(super) fn consume(&mut self, rq: &mut PerCpuClassRqSet) {
         assert!(self.live && rq.cpu == self.cpu);
         assert_eq!(
