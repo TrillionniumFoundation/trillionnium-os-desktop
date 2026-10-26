@@ -8,8 +8,9 @@ use super::{
 };
 use crate::{
     prelude::*,
-    process::pid_table,
+    process::{credentials::capabilities::CapSet, pid_table, posix_thread::AsPosixThread},
     sched::{LinuxSchedPolicy, Nice, RealTimePolicy, SchedAttr, SchedPolicy},
+    security::lsm::hooks as lsm_hooks,
     thread::Tid,
     util::CopyCompat,
 };
@@ -211,6 +212,44 @@ pub(super) fn access_sched_attr_with<T>(
         return_errno_with_message!(Errno::ESRCH, "the target thread does not exist");
     };
     f(thread.sched_attr())
+}
+
+/// Authorize target ownership before any scheduling-policy mutation.
+/// Read-only scheduling getters deliberately retain their separate helper.
+pub(super) fn update_sched_attr_with<T>(
+    tid: Tid,
+    ctx: &Context,
+    f: impl FnOnce(&SchedAttr) -> Result<T>,
+) -> Result<T> {
+    if tid.cast_signed() < 0 {
+        return_errno_with_message!(Errno::EINVAL, "all negative TIDs are not valid");
+    }
+    if tid == 0 {
+        // The running context already retains its own Process and Thread.
+        return f(ctx.thread.sched_attr());
+    }
+    let thread = {
+        let table = pid_table::pid_table_mut();
+        table.get_thread(tid).ok_or(Error::with_message(
+            Errno::ESRCH,
+            "the target thread does not exist",
+        ))?
+    };
+    let target = thread.as_posix_thread().ok_or(Errno::EPERM)?;
+    let target_process = target.weak_process().upgrade().ok_or(Errno::ESRCH)?;
+    let target_cred = target.credentials();
+    let caller_euid = ctx.posix_thread.credentials().euid();
+    if caller_euid != target_cred.ruid() && caller_euid != target_cred.euid() {
+        lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+            target_process.user_ns().lock().as_ref(),
+            ctx.posix_thread,
+            CapSet::SYS_NICE,
+        ))?;
+    }
+    let result = f(thread.sched_attr());
+    // Preserve the actual target Process until the authorized mutation ends.
+    drop(target_process);
+    result
 }
 
 pub(super) fn sys_sched_getattr(

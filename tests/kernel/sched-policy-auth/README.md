@@ -23,3 +23,7 @@ or implement physical migration. The policy-state and namespace checks must
 remain independent of future writer-administration serialization.
 
 Linux API permission reference: [sched(7)](https://man7.org/linux/man-pages/man7/sched.7.html).
+
+The write helper releases the PID table before credentials and the namespace
+capability hook, then holds the original target Process through the complete
+mutation. The three read helpers keep their existing cross-user behavior.
