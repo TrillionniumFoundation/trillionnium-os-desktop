@@ -539,7 +539,7 @@ fn main() -> eframe::Result {
     });
     let notes_lifetime = notes_target
         .as_ref()
-        .map(|target| trill_ui_core::notes_lifetime::SessionLifetime::from_environment(target))
+        .map(trill_ui_core::notes_lifetime::SessionLifetime::from_environment)
         .transpose()
         .unwrap_or_else(|error| {
             eprintln!("trill-app-window: {error}");
