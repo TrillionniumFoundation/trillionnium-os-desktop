@@ -18,21 +18,21 @@ eframe = { version = "=0.31.1", default-features = false, features = ["glow", "d
 ab_glyph = "=0.2.32"
 
 [patch.crates-io]
-aws-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
+aws-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
 # Original UI and its four accessibility crates must resolve from one Hepta source.
-accesskit = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-accesskit_consumer = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-accesskit_atspi_common = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-accesskit_unix = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
+accesskit = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+accesskit_consumer = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+accesskit_atspi_common = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+accesskit_unix = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
 # Cargo applies patches only from the root workspace. Keep the original
 # Hepta graph and its security fixes when Agentd is a native UI dependency.
-i18n-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-secret-service = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-zbus-secret-service-keyring-store = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-anymap2 = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-imbl = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-matrix-sdk-sqlite = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
-matrix-sdk-crypto = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "6252abb7bc5a21569e300c29b417717448a827d8" }
+i18n-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+secret-service = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+zbus-secret-service-keyring-store = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+anymap2 = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+imbl = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+matrix-sdk-sqlite = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
+matrix-sdk-crypto = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "125ff7ad098f5f4ba6bfc020cb905095bff695ae" }
 crossterm = { git = "https://github.com/openai-oss-forks/crossterm", rev = "45fecb9508105988f42fe6ff0441783ed3717f92" }
 tokio-tungstenite = { git = "https://github.com/openai-oss-forks/tokio-tungstenite", rev = "0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186" }
 tungstenite = { git = "https://github.com/openai-oss-forks/tungstenite-rs", rev = "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f" }
