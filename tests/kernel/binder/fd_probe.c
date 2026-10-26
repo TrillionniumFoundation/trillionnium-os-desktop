@@ -14,6 +14,7 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #define MAP_BYTES (16u * 4096u)
@@ -396,7 +397,23 @@ static void client_process(int inherited, int rollback_ready) {
     CHECK(close(pending[0]) == 0); completion(&own);
     CHECK(receive(&own).kind == BR_DEAD_REPLY);
     await_byte(rollback_ready, 'r');
-    CHECK(write(pending[1], "Z", 1) == -1 && errno == EPIPE);
+    // FD-slot refund was already checked before rollback_ready. Actual
+    // FileLike destruction runs on its prebuilt task and may be scheduled
+    // after that byte; require real EPIPE within a fixed bound, not in the
+    // very first scheduling slice. Capture errno only for this actual write.
+    struct timespec began, now; CHECK(clock_gettime(CLOCK_MONOTONIC, &began) == 0);
+    for (;;) {
+        ssize_t written = write(pending[1], "Z", 1); int write_error = errno;
+        if (written == -1 && write_error == EPIPE) break;
+        CHECK(clock_gettime(CLOCK_MONOTONIC, &now) == 0);
+        int64_t elapsed_ns = (int64_t)(now.tv_sec - began.tv_sec) * INT64_C(1000000000)
+                           + now.tv_nsec - began.tv_nsec;
+        if (written != 1 || elapsed_ns >= INT64_C(1000000000))
+            fprintf(stderr, "Binder actual pipe cleanup rc=%zd error=%d elapsed_ns=%lld\n",
+                    written, write_error, (long long)elapsed_ns);
+        CHECK(written == 1 && elapsed_ns < INT64_C(1000000000));
+        usleep(1000);
+    }
     CHECK(close(pending[1]) == 0);
     CHECK(ref_command(&own, BC_RELEASE, handles.accept) == 0 && ref_command(&own, BC_RELEASE, handles.deny) == 0);
     close_endpoint(&own);
