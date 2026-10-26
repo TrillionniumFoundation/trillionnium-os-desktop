@@ -16,6 +16,19 @@ metadata/source/package procedure is in [PRODUCT](PRODUCT.md). Never combine
 the candidate feature with an unprepared SDK or merge its path lock into the
 baseline.
 
+The current Linux Notes product candidate selects the distinct
+`trill-shell/hepta-native-preedit-sdk` feature through
+[linux-preedit-profile.json](linux-preedit-profile.json). Build it with
+`build_text_product.py --profile preedit-callbacks --committed-preedit-lock`
+and the explicit source inputs described in [PRODUCT](PRODUCT.md). Its
+reviewed SDK provides original XIM preedit callbacks and focus/undo handling;
+the declared source copy uses the separately tracked prepared lock while the
+ordinary Git SDK lock remains unchanged. Do not combine the clipboard and
+preedit candidate features. The preedit feature does not enable the separate
+native `PasteText` UI capability. Run the owned-window qualification with
+`--atomic-editable-text`, the actual build receipt and `--packaged-binary`;
+unit regressions and prepared resources alone do not qualify live IME input.
+
 ## Run the owned-window qualification
 
 First inventory installed dependencies without connecting to an existing user
