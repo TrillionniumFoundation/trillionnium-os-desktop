@@ -194,6 +194,39 @@ class SourceCombinationTests(unittest.TestCase):
         with self.assertRaisesRegex(profile.ProfileError, "manifest mismatch"):
             self.verify(manifest)
 
+    def test_v3_recovery_and_migration_roles_cannot_be_omitted_or_aliased(self):
+        self.upgrade_to_version(3)
+        original = copy.deepcopy(self.mapping)
+        recovery = {"supervisor_intent_recovery_cli", "supervisor_signed_recovery_oracle",
+                    "supervisor_protocol_gate", "supervisor_signed_authority"}
+        migrations = {role for role in profile.HEPTA_ROLES_V3
+                      if role.startswith("automation_") and "migration" in role}
+        for role in sorted(recovery | migrations):
+            for mutation in ("omit", "alias"):
+                self.mapping = copy.deepcopy(original)
+                entries = self.mapping["sources"]["hepta"]
+                if mutation == "omit":
+                    entries.pop(role)
+                else:
+                    entries[role] = entries["root_service"]
+                with self.subTest(role=role, mutation=mutation), self.assertRaises(profile.ProfileError):
+                    self.build()
+
+    def test_v3_new_commit_cannot_relabel_old_recovery_or_migration_bytes(self):
+        self.upgrade_to_version(3)
+        manifest, _ = self.build()
+        for role in ("supervisor_intent_recovery_cli", "supervisor_signed_recovery_oracle",
+                     "automation_timer_migration", "automation_migration_0016"):
+            path = self.mapping["sources"]["hepta"][role]
+            write(self.hepta, path, (self.hepta / path).read_bytes() + b"changed recovery or migration\n")
+            commit(self.hepta, "change original recovery or migration source")
+            relabeled = copy.deepcopy(manifest)
+            relabeled["hepta"] = {"commit": git(self.hepta, "rev-parse", "HEAD"),
+                                  "tree": git(self.hepta, "rev-parse", "HEAD^{tree}")}
+            with self.subTest(role=role), self.assertRaisesRegex(profile.ProfileError, "manifest mismatch"):
+                self.verify(relabeled)
+            manifest, _ = self.build()
+
     def test_wrong_os_head_rejected(self):
         args = list(self.inputs())
         args[2] = "0" * 40

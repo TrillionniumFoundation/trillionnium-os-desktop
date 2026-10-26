@@ -1,5 +1,6 @@
 """Exercise pair provenance and actual command failures with temporary Git DAGs."""
 
+import copy
 import importlib.util
 import json
 from pathlib import Path
@@ -32,6 +33,29 @@ class PairExecutionTests(unittest.TestCase):
         self.manifest = self.root / "profile.json"
         self.manifest.write_bytes(runner.profile.canonical(manifest))
         self.owner = fixtures.profile.HISTORY_OWNER
+        self.dispatched = []
+        self.fail_step = None
+        self.real_execute_step = runner.execute_step
+
+    def prepare_expanded_profile(self, version):
+        fixtures.SourceCombinationTests.upgrade_to_version(self, version)
+        fixtures.write(self.os, f"support/release/{runner.profile.source_map_name(version)}",
+                       runner.profile.canonical(self.mapping))
+        fixtures.commit(self.os, "review expanded source map")
+        with patch.object(runner.profile, "HISTORY_OWNER", self.owner):
+            manifest, _ = runner.profile.create_manifest(*fixtures.SourceCombinationTests.inputs(self))
+        self.manifest.write_bytes(runner.profile.canonical(manifest))
+
+    def execute_fixture(self, step, output, environment, timeout, targets=None):
+        # Exercise real bounded child execution without requiring Cargo in this
+        # temporary-Git tool test. Retain the actual code-owned dispatch separately.
+        self.dispatched.append(step)
+        name, cwd, toolchain, _ = step
+        exit_code = 13 if name == self.fail_step else 0
+        child = (name, cwd, toolchain, [sys.executable, "-c",
+                 "import sys; print('fixture command'); raise SystemExit(int(sys.argv[1]))",
+                 str(exit_code)])
+        return self.real_execute_step(child, output, environment, timeout, targets)
 
     def arguments(self):
         return ["--os-repo", str(self.os), "--hepta-repo", str(self.hepta),
@@ -74,13 +98,7 @@ class PairExecutionTests(unittest.TestCase):
         self.assertFalse(self.output.exists())
 
     def test_v3_selects_fixed_native_owner_map(self):
-        fixtures.SourceCombinationTests.upgrade_to_version(self, 3)
-        fixtures.write(self.os, "support/release/organ_source_map_v3.json",
-                       runner.profile.canonical(self.mapping))
-        fixtures.commit(self.os, "review v3 native owner map")
-        with patch.object(runner.profile, "HISTORY_OWNER", self.owner):
-            manifest, _ = runner.profile.create_manifest(*fixtures.SourceCombinationTests.inputs(self))
-        self.manifest.write_bytes(runner.profile.canonical(manifest))
+        self.prepare_expanded_profile(3)
         with patch.object(runner, "execute_step", side_effect=AssertionError("unexpected execution")):
             self.assertEqual(self.run_pair("--required-schema", "3"), 0)
         self.assertEqual(self.receipt()["source"]["schema_version"], 3)
@@ -97,11 +115,113 @@ class PairExecutionTests(unittest.TestCase):
         packages = {tests[index + 1] for index, flag in enumerate(tests) if flag == "-p"}
         self.assertEqual(packages, {"codex-hepta-agentd", "codex-hepta-memory",
                                    "codex-hepta-cognitive-store", "codex-hepta-contracts", "codex-state",
-                                   "codex-hepta-agent-protocol", "codex-hepta-learning-ledger"})
+                                   "codex-hepta-agent-protocol", "codex-hepta-learning-ledger",
+                                   "codex-git-utils", "codex-hepta-memory-extension",
+                                   "codex-hepta-automation", "codex-hepta-fleet", "codex-hepta-supervisor"})
         self.assertIn("--locked", tests)
         root = next(step[3] for step in steps if step[0] == "hepta-root-build")
         self.assertIn("hepta-authority-host", root)
         self.assertIn("--locked", root)
+        recovery = next(step[3] for step in steps if step[0] == "hepta-recovery-build")
+        self.assertIn("hepta-supervisor-intent-recovery", recovery)
+        self.assertIn("--locked", recovery)
+
+    def test_v3_actual_dispatch_runs_twelve_owners_and_all_three_hepta_binaries(self):
+        self.prepare_expanded_profile(3)
+        with patch.object(runner, "execute_step", side_effect=self.execute_fixture):
+            self.assertEqual(self.run_pair("--required-schema", "3", "--execute-host", "--offline"), 0)
+        self.assertEqual([step[0] for step in self.dispatched],
+                         ["ui-build", "ui-tests", "adapter-tests", "hepta-build",
+                          "hepta-root-build", "hepta-recovery-build", "hepta-tests"])
+        tests = self.dispatched[-1][3]
+        self.assertEqual(tests, ["just", "test", "--locked", "--offline",
+                         "-p", "codex-hepta-agentd", "-p", "codex-hepta-memory",
+                         "-p", "codex-hepta-cognitive-store", "-p", "codex-hepta-contracts",
+                         "-p", "codex-state", "-p", "codex-hepta-agent-protocol",
+                         "-p", "codex-hepta-learning-ledger", "-p", "codex-git-utils",
+                         "-p", "codex-hepta-memory-extension", "-p", "codex-hepta-automation",
+                         "-p", "codex-hepta-fleet", "-p", "codex-hepta-supervisor",
+                         "--test-threads", "2", "--retries", "0", "--cargo-profile", "dev-small"])
+        binaries = {
+            "hepta-build": ("codex-hepta-agentd", "codex-hepta-agentd"),
+            "hepta-root-build": ("codex-hepta-agentd", "hepta-authority-host"),
+            "hepta-recovery-build": ("codex-hepta-supervisor", "hepta-supervisor-intent-recovery"),
+        }
+        for name, cwd, toolchain, argv in self.dispatched:
+            if name not in binaries:
+                continue
+            package, binary = binaries[name]
+            with self.subTest(binary=binary):
+                self.assertEqual(cwd, self.hepta)
+                self.assertEqual(toolchain, "1.95.0")
+                self.assertEqual(argv, ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
+                                       "-p", package, "--bin", binary, "--profile", "dev-small",
+                                       "--locked", "--offline"])
+        self.assertEqual(self.receipt()["qualification"], "host-build-tests")
+
+    def test_v3_build_only_dispatches_recovery_binary_without_claiming_tests(self):
+        self.prepare_expanded_profile(3)
+        with patch.object(runner, "execute_step", side_effect=self.execute_fixture):
+            self.assertEqual(self.run_pair("--required-schema", "3", "--build-host"), 0)
+        self.assertEqual([step[0] for step in self.dispatched],
+                         ["ui-build", "hepta-build", "hepta-root-build", "hepta-recovery-build"])
+        self.assertEqual(self.receipt()["qualification"], "host-builds")
+
+    def test_v3_failed_real_recovery_build_child_cannot_qualify_or_run_tests(self):
+        self.prepare_expanded_profile(3)
+        self.fail_step = "hepta-recovery-build"
+        with patch.object(runner, "execute_step", side_effect=self.execute_fixture):
+            self.assertEqual(self.run_pair("--required-schema", "3", "--execute-host"), 1)
+        self.assertEqual(self.dispatched[-1][0], "hepta-recovery-build")
+        self.assertNotIn("hepta-tests", [step[0] for step in self.dispatched])
+        receipt = self.receipt()
+        self.assertFalse(receipt["passed"])
+        self.assertEqual(receipt["qualification"], "none")
+        self.assertEqual(receipt["steps"][-1]["exit_code"], 13)
+
+    def test_v3_manifest_cannot_inject_commands_owners_binaries_or_profile(self):
+        self.prepare_expanded_profile(3)
+        original = json.loads(self.manifest.read_text())
+        for key, value in (("host_commands", [["/fixture/attacker"]]),
+                           ("owning_packages", ["codex-hepta-agentd"]),
+                           ("hepta_binaries", ["codex-hepta-agentd"]),
+                           ("hepta_profile", "unlocked-fixture")):
+            manifest = copy.deepcopy(original)
+            manifest[key] = value
+            self.manifest.write_bytes(runner.profile.canonical(manifest))
+            with self.subTest(injection=key), patch.object(
+                    runner, "execute_step", side_effect=AssertionError("unverified execution")):
+                self.assertEqual(self.run_pair("--required-schema", "3", "--execute-host"), 1)
+            self.assertFalse(self.output.exists())
+
+    def test_v3_missing_recovery_or_migration_source_blocks_before_execution(self):
+        self.prepare_expanded_profile(3)
+        original = json.loads(self.manifest.read_text())
+        for role in ("supervisor_intent_recovery_cli", "supervisor_signed_recovery_oracle",
+                     "supervisor_protocol_gate", "automation_migration_0016", "automation_timer_migration"):
+            manifest = copy.deepcopy(original)
+            manifest["sources"]["hepta"] = [entry for entry in manifest["sources"]["hepta"]
+                                             if entry["role"] != role]
+            self.manifest.write_bytes(runner.profile.canonical(manifest))
+            with self.subTest(omitted=role), patch.object(
+                    runner, "execute_step", side_effect=AssertionError("unverified execution")):
+                self.assertEqual(self.run_pair("--required-schema", "3", "--execute-host"), 1)
+            self.assertFalse(self.output.exists())
+
+    def test_historical_host_dispatch_keeps_original_three_owners_and_binary(self):
+        for version in (1, 2):
+            if version == 2:
+                self.prepare_expanded_profile(2)
+            self.output = self.root / f"execution-v{version}"
+            self.dispatched = []
+            with self.subTest(version=version), patch.object(
+                    runner, "execute_step", side_effect=self.execute_fixture):
+                self.assertEqual(self.run_pair("--execute-host"), 0)
+            self.assertEqual([step[0] for step in self.dispatched],
+                             ["ui-build", "ui-tests", "adapter-tests", "hepta-build", "hepta-tests"])
+            tests = self.dispatched[-1][3]
+            self.assertEqual([tests[index + 1] for index, flag in enumerate(tests) if flag == "-p"],
+                             ["codex-hepta-agentd", "codex-hepta-memory", "codex-hepta-cognitive-store"])
 
     def test_actual_nonzero_child_never_qualifies_pair(self):
         step = ("failure", self.os, "1.95.0", [sys.executable, "-c", "raise SystemExit(7)"])

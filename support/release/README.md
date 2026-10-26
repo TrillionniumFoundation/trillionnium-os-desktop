@@ -31,8 +31,8 @@ python3 -I -B support/release/check_organ_pair.py \
   --output-dir /absolute/path/to/new-pair-receipt
 ```
 
-Add `--execute-host` to build the actual UI binaries and original Agentd, then
-run UI, adapter, Agentd, memory and cognitive-store tests. Add `--offline` only
+Add `--execute-host` to build the actual UI binaries and original Hepta programs,
+then run UI, adapter and the schema-selected owning-package tests. Add `--offline` only
 after the exact committed dependencies are cached. A missing dependency is a
 failure; the runner never replaces a lockfile or reduces the Hepta workspace.
 The output directory must be new and outside both repositories. Each command
@@ -42,7 +42,10 @@ Cargo caches; source verification and locked dependency resolution still run.
 Use `--build-host` for a binary-only rebuild (for example after final formatting);
 it records `host-builds` and does not claim to have run tests. It cannot be
 combined with `--execute-host`. `--hepta-profile dev` can reuse an existing
-debug test cache; the default `dev-small` keeps CI binary sizes smaller.
+debug test cache; the default `dev-small` keeps CI binary sizes smaller. The real
+paired-process fixtures require repeated full-file sealing, so their small-artifact
+profile and bounded test-watchdog evidence must accompany runtime claims; a
+large-debug-ELF timeout is not a successful run.
 
 ## Technical contract
 
@@ -94,7 +97,7 @@ cross-kernel Unknown recovery require separate evidence for the same final pair.
 ## Native owner source profile
 
 Schema 3 uses [`organ_source_map_v3.json`](organ_source_map_v3.json), with 153
-Desktop/kernel roles and 92 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
+Desktop/kernel roles and 135 original Hepta roles. It also binds the actual Binder object and file lifecycle and FAIR execution-interval
 settlement modules, their development/technical contracts and guest probes.
 It preserves the five protocol
 goldens and adds the real native entry/runner, bounded ELF loader, per-frame
@@ -113,11 +116,29 @@ probe, protocol, host tests and immutable historical control files are also
 bound under distinct roles. These source checks do not claim complete
 `memory.max`, general kernel-heap charging or a protected recovery reserve.
 
-The fixed schema-3 host lane directly tests the original `codex-hepta-agentd`,
-`codex-hepta-memory`, `codex-hepta-cognitive-store`, `codex-hepta-contracts` and
-`codex-state`, `codex-hepta-agent-protocol` and `codex-hepta-learning-ledger`
-packages. It also builds the original `hepta-authority-host` service binary in a
-separate recorded build step. It retains locked dependencies, explicit toolchains,
+The 43 recovery additions bind the original Supervisor's durable intent,
+release transaction, independent recovery verifier, actual daemon mutation gate
+and typed Unix process driver; the legacy recovery CLI, real CLI/daemon and
+paired-process regression fixtures, restart cases, package feature manifest,
+technical contract and recovery runbook; and the original Fleet immutable-bundle
+owner and copy regression. They also bind the changed Git/recall fixture sources,
+Automation's actual store and historical migration regressions, every one of its
+19 real SQL migration inputs, and the code-owned Nextest execution policy. An
+unsigned exact-digest file still cannot settle an ambiguous production outcome.
+A new commit label cannot reuse old role bytes, omit a migration or alias a
+recovery role to another required source.
+
+The fixed schema-3 host lane directly tests all twelve original owning packages:
+`codex-hepta-agentd`, `codex-hepta-memory`, `codex-hepta-cognitive-store`,
+`codex-hepta-contracts`, `codex-state`, `codex-hepta-agent-protocol`,
+`codex-hepta-learning-ledger`, `codex-git-utils`, `codex-hepta-memory-extension`,
+`codex-hepta-automation`, `codex-hepta-fleet` and `codex-hepta-supervisor`.
+It separately builds the original `codex-hepta-agentd`, `hepta-authority-host`
+and `hepta-supervisor-intent-recovery` binaries. The recovery CLI has its own
+`hepta-recovery-build` log and must compile before the owning tests can qualify.
+A failed binary build stops the lane. `--build-host` selects the UI and all three
+Hepta build steps and continues to record only `host-builds`, never a test pass.
+The host lane retains locked dependencies, explicit toolchains,
 separate external caches, no test retries, and source checks before and after
 execution. Schemas 1 and 2 retain their earlier three-package host lane and
 exact required role sets. Removing a schema-3 role, aliasing two roles to one

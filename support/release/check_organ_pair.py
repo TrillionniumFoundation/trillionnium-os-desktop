@@ -24,7 +24,9 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_v
     owning_packages = ["codex-hepta-agentd", "codex-hepta-memory", "codex-hepta-cognitive-store"]
     if schema_version == 3:
         owning_packages += ["codex-hepta-contracts", "codex-state",
-                            "codex-hepta-agent-protocol", "codex-hepta-learning-ledger"]
+                            "codex-hepta-agent-protocol", "codex-hepta-learning-ledger",
+                            "codex-git-utils", "codex-hepta-memory-extension",
+                            "codex-hepta-automation", "codex-hepta-fleet", "codex-hepta-supervisor"]
     package_flags = [flag for package in owning_packages for flag in ("-p", package)]
     steps = [
         ("ui-build", os_root, "1.88.0",
@@ -48,6 +50,10 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_v
         steps.insert(4, ("hepta-root-build", hepta_root, "1.95.0",
                          ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
                           "-p", "codex-hepta-agentd", "--bin", "hepta-authority-host",
+                          "--profile", hepta_profile, "--locked", *network]))
+        steps.insert(5, ("hepta-recovery-build", hepta_root, "1.95.0",
+                         ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
+                          "-p", "codex-hepta-supervisor", "--bin", "hepta-supervisor-intent-recovery",
                           "--profile", hepta_profile, "--locked", *network]))
     return steps
 
