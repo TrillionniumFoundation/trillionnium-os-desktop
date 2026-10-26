@@ -18,15 +18,22 @@ SELinux/Binder MAC policy is claimed.
 
 ## Supported protocol
 
-An open is bound to the original `Process`, `Thread`, and VMAR allocation identity.
-It cannot be operated through fork, SCM_RIGHTS to another process, another thread,
-or after exec. PID/TID numbers are not authority identities. This restricted
-profile has one participating thread per open, not a Binder thread pool.
+An open is bound to the original `Process` and VMAR allocation identity. It
+cannot be operated through fork, SCM_RIGHTS to another process, or after exec.
+D1 admits at most eight actual participating Thread allocations in that process,
+each with a checked monotonic identity, incoming call, outgoing call and manual
+looper state. PID/TID numbers are not authority identities. An ordinary worker's
+exit does not close the other workers or the endpoint's objects. The current D1
+implementation and its acceptance status are detailed in [BINDER_THREADS.md](BINDER_THREADS.md);
+this paragraph does not qualify automatic thread-pool spawning.
 
-The device supports `BINDER_VERSION` (8), `BINDER_SET_MAX_THREADS` (0 or 1),
+The device supports `BINDER_VERSION` (8), `BINDER_SET_MAX_THREADS` (zero only),
 `BINDER_SET_CONTEXT_MGR` (legacy ignored argument), `BINDER_WRITE_READ` and
-`BINDER_THREAD_EXIT`. A context manager must map its receive area and enter its
-looper before clients can send. The write stream supports `BC_TRANSACTION`,
+`BINDER_THREAD_EXIT`. A context manager must map its receive area and have a manually entered actual
+worker before clients can send. The automatic-thread quota may only be zero:
+nonzero values conservatively return EOPNOTSUPP until actual spawn/register
+support exists. Manual ENTER_LOOPER participants are independent of that disabled
+automatic quota, subject to the eight-participant bound. The write stream supports `BC_TRANSACTION`,
 `BC_REPLY`, `BC_FREE_BUFFER`, `BC_ENTER_LOOPER`, `BC_EXIT_LOOPER`, the four
 handle reference commands (`BC_INCREFS`, `BC_ACQUIRE`, `BC_RELEASE`, `BC_DECREFS`),
 exact owner acknowledgements (`BC_INCREFS_DONE`, `BC_ACQUIRE_DONE`), and
@@ -38,10 +45,11 @@ A synchronous call produces a transaction-complete event for the sender and a
 `BR_REPLY` for the original caller. Sender PID and effective UID come from the
 current kernel credentials; user-supplied sender fields are ignored. As in Linux,
 a synchronous reply exposes sender PID zero and the responding effective UID. There is
-one outstanding outgoing call per endpoint and no nested call. Delivery order is
+one outstanding outgoing call per actual participant and no nested call. Delivery order is
 owned by the driver's queue, not by a userspace test ledger.
 
-Limits are 64 live endpoints, 16 queued events per endpoint, 32 commands per
+Limits are 64 live endpoints, eight participants per endpoint, 16 shared event
+slots (including reserved terminal/completion work), 32 commands per
 4096-byte write stream, one page of payload per transaction, and at most 16 live
 receive buffers. Mapping lengths are page aligned and at most 1 MiB. Receive
 pages are allocated through the original cgroup page allocator and retain their
@@ -80,8 +88,13 @@ the manager can still receive those already prepared bytes; replying to that
 now absent incoming caller returns EINVAL. The descriptor must not be replaced
 by a newer caller's event during copyout.
 
-Any partial unmap or complete unmap closes the endpoint. `BINDER_THREAD_EXIT`,
-owner thread death and release also invalidate it. The old context manager is
+Any partial unmap or complete unmap closes the endpoint. Process death, original
+image exec teardown and final file release also invalidate it. `BINDER_THREAD_EXIT`
+and actual thread exit retire only that participant's calls. The normal exit
+path notifies Binder after publishing the real Thread exit state and releasing
+TaskSet/cgroup locks, before waking a joining sibling. Retained Thread Arcs do not
+keep that participant alive. A dead receiving worker causes a dead reply only
+for its own pending synchronous caller. The old context manager is
 not reused by a later manager. An outstanding call to a manager that closes
 without replying receives `BR_DEAD_REPLY`; an already queued reply remains a
 reply. Endpoint allocation identities are monotonic and checked for exhaustion.
@@ -107,7 +120,7 @@ Nodes retain their original FD acceptance flag across handle forwarding and
 return to the owner; an existing pointer cannot change cookie or flags.
 
 An object node is a real kernel allocation with a monotonic allocation identity.
-Its owner is the original endpoint, whose original Process/Thread/VMAR identity
+Its owner is the original endpoint, whose original Process/VMAR identity
 is enforced. The userspace pointer and cookie are opaque local object labels,
 never kernel addresses or authority tokens. Re-exporting an existing pointer with
 a different cookie fails. Receiving a foreign object creates a per-endpoint,
@@ -132,8 +145,10 @@ from aggregate node state. The first two require matching pending pointer/cookie
 acknowledgements. Invalid, duplicate and mismatched acknowledgements fail.
 Reference work is scanned independently of the transaction queue, so a full queue
 cannot discard required owner notifications. Release/decref work waits for pending
-acknowledgements. Closing, exec's receive mapping teardown, thread exit, queued
-sender death and endpoint unmap drop their actual queued/buffer/user contributions.
+acknowledgements. Closing, exec's receive mapping teardown and endpoint unmap drop their actual
+queued/buffer/user contributions. Participant exit removes its queued work and
+unpublished transaction preparation, while delivered buffers, explicit handles
+and local nodes remain process resources until their own release.
 A prepared front event remains stable when its sender dies.
 
 Additional bounds are 32 metadata objects per payload, 16 local nodes per owner,
@@ -285,9 +300,9 @@ Acknowledged, then ClearQueued when clearing an acknowledged record. An already
 closed original owner starts a new subscription in DeadQueued. Closing a live
 original endpoint queues exactly one death for each attached Live record; a
 replacement process, VMAR, endpoint or node with the same pointer/cookie cannot
-satisfy it. This endpoint's existing lifetime rules include owner thread exit,
-explicit thread-exit ioctl, successful exec teardown, unmap and final release;
-it is still the restricted single-thread-per-open profile.
+satisfy it. This endpoint's lifetime rules include process death, successful exec teardown,
+unmap and final release. D1 thread exit retires only that participant and cannot
+manufacture a process object's death notification.
 
 CLEAR checks the exact handle/cookie and detaches immediately. For a still-live
 or already acknowledged record, it queues clear-complete. For a queued or delivered

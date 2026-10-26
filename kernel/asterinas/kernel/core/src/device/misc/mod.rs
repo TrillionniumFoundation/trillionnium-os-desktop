@@ -10,6 +10,7 @@ use spin::Once;
 use super::registry::char::{MajorIdOwner, acquire_major};
 
 mod binder;
+pub(crate) use binder::thread_exited as binder_thread_exited;
 mod hepta_control;
 mod hwrng;
 pub(crate) use hepta_control::boot_id as hepta_boot_id;

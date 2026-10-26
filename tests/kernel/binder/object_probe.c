@@ -73,7 +73,7 @@ static struct endpoint endpoint(void) {
     CHECK(e.fd >= 0);
     struct binder_version version = {0};
     CHECK(ioctl(e.fd, BINDER_VERSION, &version) == 0 && version.protocol_version == 8);
-    unsigned threads = 1;
+    unsigned threads = 0;
     CHECK(ioctl(e.fd, BINDER_SET_MAX_THREADS, &threads) == 0);
     e.mapping = mmap(NULL, MAP_BYTES, PROT_READ, MAP_PRIVATE, e.fd, 0);
     CHECK(e.mapping != MAP_FAILED);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 //! Bounded synchronous Binder transactions and owned object references.
 //!
-//! One participating thread per open, one outgoing call per open, no nested
+//! Bounded actual threads per open, one outgoing call per thread, no nested
 //! calls, FD arrays, oneway, or MAC labels.
 //! The device node is root:root 0600. This is not Android boot qualification.
 //!
@@ -53,6 +53,7 @@ const MAX_QUEUE: usize = 16;
 const MAX_STREAM: usize = 4096;
 const MAX_MAPPING: usize = 1024 * 1024;
 const MAX_BUFFERS: usize = 16;
+const MAX_THREADS: usize = 8;
 static DOMAIN: Once<Mutex<Domain>> = Once::new();
 static WAKE: Once<WaitQueue> = Once::new();
 static MAJOR: Once<char::MajorIdOwner> = Once::new();
@@ -62,24 +63,69 @@ fn domain() -> &'static Mutex<Domain> {
 
 struct Domain {
     next: u64,
+    next_thread: u64,
+    next_call: u64,
     next_node: u64,
     nodes: BTreeMap<u64, Weak<Node>>,
     manager: Option<u64>,
     endpoints: BTreeMap<u64, Endpoint>,
 }
 struct Endpoint {
-    owner: Weak<Thread>,
+    owner: Weak<Process>,
+    threads: BTreeMap<u64, Participant>,
     pollee: Arc<Pollee>,
     mapping: Option<ReceiveArea>,
-    queue: VecDeque<Event>,
+    queue: VecDeque<Queued>,
     prepared: Option<Prepared>,
-    preparing: bool,
+    preparing: Option<Preparing>,
     nodes: BTreeMap<u64, Arc<Node>>,
     handles: Handles,
     deaths: Subscriptions,
-    outgoing: Option<u64>,
+}
+struct Participant {
+    owner: Weak<Thread>,
+    outgoing: Option<Outgoing>,
     incoming: Option<Incoming>,
     looper: bool,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Route {
+    endpoint: u64,
+    thread: u64,
+}
+#[derive(Clone, Copy)]
+struct Outgoing {
+    call: u64,
+    destination: u64,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct QueueKey {
+    call: u64,
+    kind: u8,
+}
+#[derive(Clone, Copy)]
+struct Preparing {
+    thread: u64,
+    key: QueueKey,
+}
+#[derive(Clone)]
+struct Queued {
+    call: u64,
+    recipient: Option<u64>,
+    event: Event,
+}
+impl Queued {
+    fn key(&self) -> QueueKey {
+        QueueKey {
+            call: self.call,
+            kind: match &self.event {
+                Event::Complete => 0,
+                Event::Dead => 1,
+                Event::Request { .. } => 2,
+                Event::Reply { .. } => 3,
+            },
+        }
+    }
 }
 struct ReceiveArea {
     base: usize,
@@ -87,19 +133,22 @@ struct ReceiveArea {
     used: Vec<Option<Vec<Arc<Reference>>>>,
 }
 struct Prepared {
+    owner: Option<u64>,
+    buffer: Option<usize>,
     bytes: Vec<u8>,
     action: ReadAction,
     fds: Option<Arc<PendingFds>>,
 }
 #[derive(Clone, Copy)]
 enum ReadAction {
-    Queue,
+    Queue(QueueKey),
     Node,
     Death(DeathDelivery),
 }
 #[derive(Clone, Copy)]
 struct Incoming {
-    sender: u64,
+    sender: Route,
+    call: u64,
     accepts_fds: bool,
 }
 #[derive(Clone)]
@@ -107,7 +156,7 @@ enum Event {
     Complete,
     Dead,
     Request {
-        sender: u64,
+        sender: Route,
         transaction: Transaction,
         payload: Payload,
     },
@@ -130,7 +179,7 @@ impl Domain {
             .filter_map(|(&id, e)| {
                 e.owner
                     .upgrade()
-                    .filter(|t| !t.is_exited())
+                    .filter(|p| !p.status().is_zombie())
                     .is_none()
                     .then_some(id)
             })
@@ -138,14 +187,140 @@ impl Domain {
         for id in dead {
             self.close(id);
         }
+        let threads: Vec<_> = self
+            .endpoints
+            .iter()
+            .flat_map(|(&id, endpoint)| {
+                endpoint.threads.iter().filter_map(move |(&token, thread)| {
+                    thread
+                        .owner
+                        .upgrade()
+                        .filter(|t| !t.is_exited())
+                        .is_none()
+                        .then_some(Route {
+                            endpoint: id,
+                            thread: token,
+                        })
+                })
+            })
+            .collect();
+        for route in threads {
+            self.retire_thread(route);
+        }
         for endpoint in self.endpoints.values_mut() {
             if endpoint.prepared.is_none() {
                 endpoint.nodes.retain(|_, node| !node.idle());
             }
         }
-        // Prune local ownership first so the weak registry counts actual live
-        // allocations in this reap, including dead owners referenced elsewhere.
         self.nodes.retain(|_, node| node.strong_count() > 0);
+    }
+    fn participant(&mut self, id: u64, owner: &Arc<Thread>) -> Result<u64> {
+        let endpoint = self.endpoint(id)?;
+        if let Some((&token, _)) = endpoint.threads.iter().find(|(_, t)| {
+            t.owner
+                .upgrade()
+                .is_some_and(|t| Arc::ptr_eq(&t, owner) && !t.is_exited())
+        }) {
+            return Ok(token);
+        }
+        if endpoint.threads.len() >= MAX_THREADS {
+            return_errno!(Errno::ENOSPC);
+        }
+        let token = self.next_thread;
+        self.next_thread = token.checked_add(1).ok_or_else(|| {
+            Error::with_message(Errno::ENOSPC, "Binder thread identity exhausted")
+        })?;
+        self.endpoint(id)?.threads.insert(
+            token,
+            Participant {
+                owner: Arc::downgrade(owner),
+                outgoing: None,
+                incoming: None,
+                looper: false,
+            },
+        );
+        Ok(token)
+    }
+    fn live_call(&self, route: Route, call: u64, destination: u64) -> bool {
+        self.endpoints
+            .get(&route.endpoint)
+            .and_then(|e| e.threads.get(&route.thread))
+            .is_some_and(|thread| {
+                thread.owner.upgrade().is_some_and(|t| !t.is_exited())
+                    && thread
+                        .outgoing
+                        .is_some_and(|o| o.call == call && o.destination == destination)
+            })
+    }
+    fn dead_reply(&mut self, route: Route, call: u64, destination: u64) {
+        if !self.live_call(route, call, destination) {
+            return;
+        }
+        let endpoint = self.endpoints.get_mut(&route.endpoint).unwrap();
+        if !endpoint.terminal_queued(route.thread, call) {
+            endpoint.queue.push_back(Queued {
+                call,
+                recipient: Some(route.thread),
+                event: Event::Dead,
+            });
+            debug_assert!(endpoint.budget_used() <= MAX_QUEUE);
+        }
+    }
+    fn retire_thread(&mut self, route: Route) {
+        let Some(endpoint) = self.endpoints.get_mut(&route.endpoint) else {
+            return;
+        };
+        let Some(old) = endpoint.threads.remove(&route.thread) else {
+            return;
+        };
+        if endpoint.preparing.is_some_and(|p| p.thread == route.thread) {
+            endpoint.preparing = None;
+        }
+        if endpoint
+            .prepared
+            .as_ref()
+            .is_some_and(|p| p.owner == Some(route.thread))
+        {
+            if matches!(
+                endpoint.prepared.as_ref().unwrap().action,
+                ReadAction::Queue(_)
+            ) {
+                let prepared = endpoint.prepared.take().unwrap();
+                if let ReadAction::Queue(key) = prepared.action {
+                    endpoint.queue.retain(|q| q.key() != key);
+                }
+                if let Some(address) = prepared.buffer {
+                    if !endpoint.discard_unpublished(address) {
+                        self.close(route.endpoint);
+                        return;
+                    }
+                }
+            } else {
+                // Ref/death work belongs to the process, not the exiting worker.
+                // Keep its exact prepared bytes and pending acknowledgement.
+                endpoint.prepared.as_mut().unwrap().owner = None;
+            }
+        }
+        endpoint.queue.retain(|q| q.recipient != Some(route.thread));
+        for peer in self.endpoints.values_mut() {
+            let preserved = peer.preserved_key();
+            peer.queue.retain(|q| {
+                preserved == Some(q.key())
+                    || !matches!(&q.event, Event::Request { sender, .. } if *sender == route)
+            });
+            for thread in peer.threads.values_mut() {
+                if thread
+                    .incoming
+                    .is_some_and(|incoming| incoming.sender == route)
+                {
+                    thread.incoming = None;
+                }
+            }
+        }
+        if let Some(incoming) = old.incoming {
+            self.dead_reply(incoming.sender, incoming.call, route.endpoint);
+        }
+        self.notify();
     }
     fn close(&mut self, id: u64) {
         let Some(old) = self.endpoints.remove(&id) else {
@@ -157,36 +332,37 @@ impl Domain {
         }
         for endpoint in self.endpoints.values_mut() {
             endpoint.deaths.owner_closed(id);
-            // A prepared descriptor may currently be copied outside DOMAIN.
-            // Keep its front event and buffer stable even if its sender exits;
-            // removing it here would make the copyout commit pop another call.
-            let preserve_front = endpoint.preparing
-                || endpoint
-                    .prepared
-                    .as_ref()
-                    .is_some_and(|p| matches!(p.action, ReadAction::Queue));
-            let mut first = true;
-            endpoint.queue.retain(|event| {
-                let preserve = first && preserve_front;
-                first = false;
-                preserve || !matches!(event, Event::Request {sender, ..} if *sender == id)
+            let preserved = endpoint.preserved_key();
+            endpoint.queue.retain(|q| {
+                preserved == Some(q.key())
+                    || !matches!(&q.event, Event::Request { sender, .. } if sender.endpoint == id)
             });
-            if endpoint
-                .incoming
-                .is_some_and(|incoming| incoming.sender == id)
-            {
-                endpoint.incoming = None;
+            let dead: Vec<_> = endpoint
+                .threads
+                .iter_mut()
+                .filter_map(|(&token, thread)| {
+                    if thread
+                        .incoming
+                        .is_some_and(|incoming| incoming.sender.endpoint == id)
+                    {
+                        thread.incoming = None;
+                    }
+                    thread
+                        .outgoing
+                        .filter(|o| o.destination == id)
+                        .map(|o| (token, o.call))
+                })
+                .collect();
+            for (thread, call) in dead {
+                if !endpoint.terminal_queued(thread, call) {
+                    endpoint.queue.push_back(Queued {
+                        call,
+                        recipient: Some(thread),
+                        event: Event::Dead,
+                    });
+                }
             }
-            if endpoint.outgoing == Some(id)
-                && !endpoint
-                    .queue
-                    .iter()
-                    .any(|e| matches!(e, Event::Reply { .. }))
-            {
-                // This slot was reserved with the outgoing request; at most a
-                // completion plus one terminal event can be pending for a caller.
-                endpoint.queue.push_back(Event::Dead);
-            }
+            debug_assert!(endpoint.budget_used() <= MAX_QUEUE);
         }
         self.notify();
     }
@@ -288,6 +464,39 @@ fn close(id: u64) {
     domain().lock().close(id);
 }
 
+/// Called after the actual Thread exit flag is published and TaskSet/cgroup
+/// locks are released, before clear_child_tid can wake a joining sibling.
+/// Retained Arcs cannot keep an exited participant or its caller suspended.
+pub(crate) fn thread_exited(owner: &Arc<Thread>) {
+    let _drain = Drain;
+    let Some(domain) = DOMAIN.get() else {
+        return;
+    };
+    let mut d = domain.lock();
+    let routes: Vec<_> = d
+        .endpoints
+        .iter()
+        .flat_map(|(&id, endpoint)| {
+            endpoint
+                .threads
+                .iter()
+                .filter_map(move |(&token, participant)| {
+                    participant
+                        .owner
+                        .upgrade()
+                        .is_some_and(|thread| Arc::ptr_eq(&thread, owner))
+                        .then_some(Route {
+                            endpoint: id,
+                            thread: token,
+                        })
+                })
+        })
+        .collect();
+    for route in routes {
+        d.retire_thread(route);
+    }
+}
+
 #[derive(Debug)]
 struct BinderDevice {
     id: DeviceId,
@@ -304,7 +513,6 @@ impl Device for BinderDevice {
     }
     fn open(&self) -> Result<Box<dyn PerOpenFileOps>> {
         let _drain = Drain;
-        let owner = current_thread!();
         let process = current!();
         let image = current_userspace!().vmar_snapshot();
         let pollee = Arc::new(Pollee::new());
@@ -320,23 +528,20 @@ impl Device for BinderDevice {
         d.endpoints.insert(
             id,
             Endpoint {
-                owner: Arc::downgrade(&owner),
+                owner: Arc::downgrade(&process),
+                threads: BTreeMap::new(),
                 pollee: pollee.clone(),
                 mapping: None,
                 queue: VecDeque::new(),
                 prepared: None,
-                preparing: false,
+                preparing: None,
                 nodes: BTreeMap::new(),
                 handles: Handles::default(),
                 deaths: Subscriptions::default(),
-                outgoing: None,
-                incoming: None,
-                looper: false,
             },
         );
         Ok(Box::new(BinderFile {
             id,
-            owner: Arc::downgrade(&owner),
             process: Arc::downgrade(&process),
             image,
             pollee,
@@ -345,7 +550,6 @@ impl Device for BinderDevice {
 }
 struct BinderFile {
     id: u64,
-    owner: Weak<Thread>,
     process: Weak<Process>,
     image: VmarSnapshot,
     pollee: Arc<Pollee>,
@@ -358,21 +562,21 @@ impl Drop for BinderFile {
 impl BinderFile {
     fn check_owner(&self) -> Result<()> {
         if !self
-            .owner
+            .process
             .upgrade()
-            .is_some_and(|owner| Arc::ptr_eq(&owner, &current_thread!()))
-            || !self
-                .process
-                .upgrade()
-                .is_some_and(|owner| Arc::ptr_eq(&owner, &current!()))
+            .is_some_and(|owner| Arc::ptr_eq(&owner, &current!()))
             || !self.image.ptr_eq(&current_userspace!().vmar_snapshot())
         {
             return_errno_with_message!(
                 Errno::EPERM,
-                "Binder file belongs to its original thread and image"
+                "Binder file belongs to its original process and image"
             );
         }
         Ok(())
+    }
+    fn participant(&self, d: &mut Domain) -> Result<u64> {
+        d.reap();
+        d.participant(self.id, &current_thread!())
     }
     fn commands(&self, wire: &WriteRead) -> Result<Vec<(usize, Command)>> {
         if wire.write_consumed > wire.write_size
@@ -518,20 +722,20 @@ impl BinderFile {
     }
     fn execute(&self, command: Command) -> Result<()> {
         let mut d = domain().lock();
-        d.reap();
-        if d.endpoint(self.id)?.prepared.is_some() || d.endpoint(self.id)?.preparing {
+        let thread = self.participant(&mut d)?;
+        if d.endpoint(self.id)?.prepared.is_some() || d.endpoint(self.id)?.preparing.is_some() {
             return_errno!(Errno::EBUSY);
         }
         match command {
             Command::Enter => {
-                let e = d.endpoint(self.id)?;
+                let e = d.endpoint(self.id)?.threads.get_mut(&thread).unwrap();
                 if e.looper {
                     return_errno!(Errno::EINVAL);
                 }
                 e.looper = true;
             }
             Command::Exit => {
-                let e = d.endpoint(self.id)?;
+                let e = d.endpoint(self.id)?.threads.get_mut(&thread).unwrap();
                 if e.incoming.is_some() || e.outgoing.is_some() {
                     return_errno!(Errno::EBUSY);
                 }
@@ -618,35 +822,56 @@ impl BinderFile {
                 files,
             } => {
                 let own = d.endpoint(self.id)?;
-                if own.mapping.is_none() || own.queue.len() >= MAX_QUEUE {
+                if own.mapping.is_none() {
                     return_errno!(Errno::EAGAIN);
                 }
+                let participant = own.threads.get(&thread).unwrap();
                 if reply {
-                    let incoming = own.incoming.ok_or_else(|| {
-                        Error::with_message(Errno::EINVAL, "Binder reply has no incoming call")
+                    let incoming = participant.incoming.ok_or_else(|| {
+                        Error::with_message(
+                            Errno::EINVAL,
+                            "Binder reply has no incoming call on this thread",
+                        )
                     })?;
                     if !files.is_empty() && !incoming.accepts_fds {
                         return_errno!(Errno::EPERM);
                     }
-                    let destination = incoming.sender;
-                    let peer = d.endpoint(destination)?;
-                    if peer.outgoing != Some(self.id) {
+                    if !d.live_call(incoming.sender, incoming.call, self.id) {
                         return_errno!(Errno::EINVAL);
                     }
-                    if peer.queue.len() >= MAX_QUEUE {
-                        return_errno!(Errno::EAGAIN);
+                    if d.endpoint(incoming.sender.endpoint)?
+                        .terminal_queued(incoming.sender.thread, incoming.call)
+                    {
+                        return_errno!(Errno::EINVAL);
                     }
+                    // Admission reserved both the caller's terminal slot and
+                    // this receiver's completion slot. Publication consumes
+                    // those reservations without a new capacity race.
                     let payload = d.payload(self.id, bytes, offsets, objects, files, None)?;
-                    d.endpoint(destination)?.queue.push_back(Event::Reply {
-                        transaction,
-                        payload,
+                    let peer = d.endpoint(incoming.sender.endpoint)?;
+                    peer.queue.push_back(Queued {
+                        call: incoming.call,
+                        recipient: Some(incoming.sender.thread),
+                        event: Event::Reply {
+                            transaction,
+                            payload,
+                        },
                     });
+                    debug_assert!(peer.budget_used() <= MAX_QUEUE);
                     let own = d.endpoint(self.id)?;
-                    own.incoming = None;
-                    own.queue.push_back(Event::Complete);
+                    own.threads.get_mut(&thread).unwrap().incoming = None;
+                    own.queue.push_back(Queued {
+                        call: incoming.call,
+                        recipient: Some(thread),
+                        event: Event::Complete,
+                    });
+                    debug_assert!(own.budget_used() <= MAX_QUEUE);
                 } else {
-                    if own.incoming.is_some() || own.outgoing.is_some() {
+                    if participant.incoming.is_some() || participant.outgoing.is_some() {
                         return_errno!(Errno::EBUSY);
+                    }
+                    if own.budget_used() > MAX_QUEUE - 2 {
+                        return_errno!(Errno::EAGAIN);
                     }
                     let target = if transaction.target == 0 {
                         None
@@ -664,14 +889,23 @@ impl BinderFile {
                     {
                         return_errno!(Errno::EPERM);
                     }
+                    let call = d.next_call;
+                    d.next_call = call.checked_add(1).ok_or_else(|| {
+                        Error::with_message(Errno::ENOSPC, "Binder call identity exhausted")
+                    })?;
                     let destination = if let Some(node) = &target {
                         if !d.endpoints.contains_key(&node.owner) {
                             let own = d.endpoint(self.id)?;
-                            if own.queue.len() > MAX_QUEUE - 2 {
-                                return_errno!(Errno::EAGAIN);
-                            }
-                            own.queue.push_back(Event::Complete);
-                            own.queue.push_back(Event::Dead);
+                            own.queue.push_back(Queued {
+                                call,
+                                recipient: Some(thread),
+                                event: Event::Complete,
+                            });
+                            own.queue.push_back(Queued {
+                                call,
+                                recipient: Some(thread),
+                                event: Event::Dead,
+                            });
                             d.notify();
                             return Ok(());
                         }
@@ -690,18 +924,34 @@ impl BinderFile {
                         return_errno!(Errno::EOPNOTSUPP);
                     }
                     let peer = d.endpoint(destination)?;
-                    if peer.mapping.is_none() || !peer.looper || peer.queue.len() >= MAX_QUEUE - 1 {
+                    if peer.mapping.is_none()
+                        || !peer.threads.values().any(|t| t.looper)
+                        || peer.budget_used() >= MAX_QUEUE - 1
+                    {
                         return_errno!(Errno::EAGAIN);
                     }
                     let payload = d.payload(self.id, bytes, offsets, objects, files, target)?;
-                    d.endpoint(destination)?.queue.push_back(Event::Request {
-                        sender: self.id,
-                        transaction,
-                        payload,
+                    d.endpoint(destination)?.queue.push_back(Queued {
+                        call,
+                        recipient: None,
+                        event: Event::Request {
+                            sender: Route {
+                                endpoint: self.id,
+                                thread,
+                            },
+                            transaction,
+                            payload,
+                        },
                     });
                     let own = d.endpoint(self.id)?;
-                    own.outgoing = Some(destination);
-                    own.queue.push_back(Event::Complete);
+                    own.threads.get_mut(&thread).unwrap().outgoing =
+                        Some(Outgoing { call, destination });
+                    own.queue.push_back(Queued {
+                        call,
+                        recipient: Some(thread),
+                        event: Event::Complete,
+                    });
+                    debug_assert!(own.budget_used() <= MAX_QUEUE);
                 }
             }
         }
@@ -709,42 +959,44 @@ impl BinderFile {
         Ok(())
     }
     fn try_read(&self, pointer: usize, capacity: usize) -> Result<usize> {
-        // Pin a front event before dropping DOMAIN to reserve target FDs. A
-        // sender may die in this gap; close() preserves that exact front event.
-        // File-table lookup/allocation/destruction never runs under DOMAIN.
-        let files = {
+        // One explicit endpoint-wide preparation slot remains in D1. Its
+        // transaction descriptor and FD reservations never migrate to a sibling.
+        let (thread, files) = {
             let mut d = domain().lock();
-            d.reap();
+            let thread = self.participant(&mut d)?;
             let e = d.endpoint(self.id)?;
-            if e.preparing {
+            if e.preparing.is_some() {
                 return_errno!(Errno::EBUSY);
             }
-            if e.prepared.is_none()
-                && !e.nodes.values().any(|node| node.has_work())
-                && !e.deaths.has_work()
-            {
-                let files = match e.queue.front() {
-                    Some(Event::Request { payload, .. } | Event::Reply { payload, .. })
-                        if !payload.files.is_empty() =>
-                    {
-                        Some(payload.files.clone())
+            if let Some(prepared) = e.prepared.as_mut() {
+                if prepared.owner.is_some_and(|owner| owner != thread) {
+                    return_errno!(Errno::EBUSY);
+                }
+                prepared.owner = Some(thread);
+                (thread, None)
+            } else if e.nodes.values().any(|node| node.has_work()) || e.deaths.has_work() {
+                (thread, None)
+            } else {
+                let files = e.read_index(thread).and_then(|index| {
+                    let queued = &e.queue[index];
+                    match &queued.event {
+                        Event::Request { payload, .. } | Event::Reply { payload, .. }
+                            if !payload.files.is_empty() =>
+                        {
+                            Some((queued.key(), payload.files.clone()))
+                        }
+                        _ => None,
                     }
-                    _ => None,
-                };
-                if files.is_some() {
+                });
+                if let Some((key, files)) = files {
                     if capacity < 68 {
                         return_errno!(Errno::ENOSPC);
                     }
-                    if matches!(e.queue.front(), Some(Event::Request { .. }))
-                        && e.incoming.is_some()
-                    {
-                        return_errno!(Errno::EBUSY);
-                    }
-                    e.preparing = true;
+                    e.preparing = Some(Preparing { thread, key });
+                    (thread, Some(files))
+                } else {
+                    (thread, None)
                 }
-                files
-            } else {
-                None
             }
         };
         let new_fds = if let Some(files) = files {
@@ -753,7 +1005,9 @@ impl BinderFile {
                 Err(error) => {
                     let mut d = domain().lock();
                     if let Some(e) = d.endpoints.get_mut(&self.id) {
-                        e.preparing = false;
+                        if e.preparing.is_some_and(|p| p.thread == thread) {
+                            e.preparing = None;
+                        }
                     }
                     d.notify();
                     return Err(error);
@@ -765,19 +1019,31 @@ impl BinderFile {
         let (output, fds) = {
             let mut d = domain().lock();
             d.reap();
-            let sender_alive = match d
-                .endpoints
-                .get(&self.id)
-                .and_then(|endpoint| endpoint.queue.front())
-            {
-                Some(Event::Request { sender, .. }) => d.endpoints.contains_key(sender),
-                _ => true,
-            };
             let e = d.endpoint(self.id)?;
-            e.preparing = false;
+            if !e.threads.contains_key(&thread) {
+                return_errno!(Errno::ECONNREFUSED);
+            }
+            let reserved_key = if new_fds.is_some() {
+                let preparing = e.preparing.take().ok_or_else(|| {
+                    Error::with_message(Errno::ECONNREFUSED, "Binder preparation retired")
+                })?;
+                if preparing.thread != thread {
+                    return_errno!(Errno::EBUSY);
+                }
+                Some(preparing.key)
+            } else {
+                if e.preparing.is_some() {
+                    return_errno!(Errno::EBUSY);
+                }
+                None
+            };
+            if e.prepared
+                .as_ref()
+                .is_some_and(|p| p.owner.is_some_and(|owner| owner != thread))
+            {
+                return_errno!(Errno::EBUSY);
+            }
             if e.prepared.is_none() {
-                // A reserved front transaction completes its preparation even
-                // if new reference work appeared while DOMAIN was unlocked.
                 if new_fds.is_none() && e.nodes.values().any(|node| node.has_work()) {
                     if capacity < 20 {
                         return_errno!(Errno::ENOSPC);
@@ -790,6 +1056,8 @@ impl BinderFile {
                     let mut bytes = command.to_ne_bytes().to_vec();
                     bytes.extend_from_slice(object.as_bytes());
                     e.prepared = Some(Prepared {
+                        owner: Some(thread),
+                        buffer: None,
                         bytes,
                         action: ReadAction::Node,
                         fds: None,
@@ -802,24 +1070,40 @@ impl BinderFile {
                     let mut bytes = delivery.command().to_ne_bytes().to_vec();
                     bytes.extend_from_slice(&delivery.cookie.to_ne_bytes());
                     e.prepared = Some(Prepared {
+                        owner: Some(thread),
+                        buffer: None,
                         bytes,
                         action: ReadAction::Death(delivery),
                         fds: None,
                     });
                 } else {
-                    let Some(event) = e.queue.front().cloned() else {
-                        return_errno!(Errno::EAGAIN);
-                    };
-                    let needed = if matches!(event, Event::Request { .. } | Event::Reply { .. }) {
-                        68
+                    let index = if let Some(key) = reserved_key {
+                        e.queue.iter().position(|queued| queued.key() == key)
                     } else {
-                        4
-                    };
+                        e.read_index(thread)
+                    }
+                    .ok_or_else(|| {
+                        Error::with_message(Errno::EAGAIN, "No Binder work for this actual thread")
+                    })?;
+                    let queued = e.queue[index].clone();
+                    let key = queued.key();
+                    let needed =
+                        if matches!(&queued.event, Event::Request { .. } | Event::Reply { .. }) {
+                            68
+                        } else {
+                            4
+                        };
                     if capacity < needed {
                         return_errno!(Errno::ENOSPC);
                     }
+                    let sender_alive = match &queued.event {
+                        Event::Request { sender, .. } => d.live_call(*sender, queued.call, self.id),
+                        _ => true,
+                    };
+                    let e = d.endpoint(self.id)?;
                     let mut output = Vec::with_capacity(needed);
-                    match event {
+                    let mut buffer = None;
+                    match queued.event {
                         Event::Complete => {
                             output.extend_from_slice(&BR_TRANSACTION_COMPLETE.to_ne_bytes())
                         }
@@ -829,23 +1113,28 @@ impl BinderFile {
                             mut transaction,
                             payload,
                         } => {
-                            if e.incoming.is_some() {
+                            let participant = e.threads.get(&thread).unwrap();
+                            if participant.incoming.is_some()
+                                || participant.outgoing.is_some()
+                                || !participant.looper
+                            {
                                 return_errno!(Errno::EBUSY);
                             }
                             if !payload.files.is_empty() && new_fds.is_none() {
-                                // A new FD front may have arrived between the
-                                // two locks. Retry via the reservation stage;
-                                // never publish untranslated source FD values.
                                 return_errno!(Errno::EAGAIN);
                             }
-                            transaction.buffer =
-                                e.reserve(self.id, &payload, new_fds.as_deref())? as u64;
+                            let address = e.reserve(self.id, &payload, new_fds.as_deref())?;
+                            buffer = Some(address);
+                            transaction.buffer = address as u64;
                             transaction.offsets =
                                 transaction.buffer + transaction.data_size.next_multiple_of(8);
-                            e.incoming = sender_alive.then_some(Incoming {
-                                sender,
-                                accepts_fds: transaction.flags & TF_ACCEPT_FDS != 0,
-                            });
+                            e.threads.get_mut(&thread).unwrap().incoming =
+                                sender_alive.then_some(Incoming {
+                                    sender,
+                                    call: queued.call,
+                                    accepts_fds: transaction.flags & TF_ACCEPT_FDS != 0,
+                                });
+                            debug_assert!(e.budget_used() <= MAX_QUEUE);
                             output.extend_from_slice(&BR_TRANSACTION.to_ne_bytes());
                             output.extend_from_slice(transaction.as_bytes());
                         }
@@ -853,14 +1142,21 @@ impl BinderFile {
                             mut transaction,
                             payload,
                         } => {
+                            if !e
+                                .threads
+                                .get(&thread)
+                                .unwrap()
+                                .outgoing
+                                .is_some_and(|o| o.call == queued.call)
+                            {
+                                return_errno!(Errno::EINVAL);
+                            }
                             if !payload.files.is_empty() && new_fds.is_none() {
-                                // A new FD front may have arrived between the
-                                // two locks. Retry via the reservation stage;
-                                // never publish untranslated source FD values.
                                 return_errno!(Errno::EAGAIN);
                             }
-                            transaction.buffer =
-                                e.reserve(self.id, &payload, new_fds.as_deref())? as u64;
+                            let address = e.reserve(self.id, &payload, new_fds.as_deref())?;
+                            buffer = Some(address);
+                            transaction.buffer = address as u64;
                             transaction.offsets =
                                 transaction.buffer + transaction.data_size.next_multiple_of(8);
                             output.extend_from_slice(&BR_REPLY.to_ne_bytes());
@@ -868,13 +1164,16 @@ impl BinderFile {
                         }
                     }
                     e.prepared = Some(Prepared {
+                        owner: Some(thread),
+                        buffer,
                         bytes: output,
-                        action: ReadAction::Queue,
+                        action: ReadAction::Queue(key),
                         fds: new_fds.clone(),
                     });
                 }
             }
-            let prepared = e.prepared.as_ref().unwrap();
+            let prepared = d.endpoint(self.id)?.prepared.as_mut().unwrap();
+            prepared.owner = Some(thread);
             (prepared.bytes.clone(), prepared.fds.clone())
         };
         if capacity < output.len() {
@@ -884,10 +1183,27 @@ impl BinderFile {
         {
             let mut d = domain().lock();
             let e = d.endpoint(self.id)?;
+            if !e.prepared.as_ref().is_some_and(|p| p.owner == Some(thread)) {
+                return_errno!(Errno::ECONNREFUSED);
+            }
             match e.prepared.take().unwrap().action {
-                ReadAction::Queue => {
-                    if matches!(e.queue.pop_front(), Some(Event::Reply { .. } | Event::Dead)) {
-                        e.outgoing = None;
+                ReadAction::Queue(key) => {
+                    let index = e
+                        .queue
+                        .iter()
+                        .position(|queued| queued.key() == key)
+                        .ok_or_else(|| {
+                            Error::with_message(
+                                Errno::ECONNREFUSED,
+                                "Prepared Binder event retired",
+                            )
+                        })?;
+                    let queued = e.queue.remove(index).unwrap();
+                    if matches!(queued.event, Event::Reply { .. } | Event::Dead) {
+                        let participant = e.threads.get_mut(&thread).unwrap();
+                        if participant.outgoing.is_some_and(|o| o.call == queued.call) {
+                            participant.outgoing = None;
+                        }
                     }
                 }
                 ReadAction::Death(delivery) => e.deaths.commit(delivery)?,
@@ -895,9 +1211,6 @@ impl BinderFile {
             }
             d.notify();
         }
-        // Reservations are still hidden through descriptor copyout and domain
-        // commit. Once published, the receiver owns these actual open files;
-        // returning the receive buffer must never close installed descriptors.
         if let Some(fds) = fds {
             fds.install();
         }
@@ -943,6 +1256,67 @@ impl BinderFile {
     }
 }
 impl Endpoint {
+    fn terminal_queued(&self, thread: u64, call: u64) -> bool {
+        self.queue.iter().any(|q| {
+            q.recipient == Some(thread)
+                && q.call == call
+                && matches!(q.event, Event::Reply { .. } | Event::Dead)
+        })
+    }
+    fn budget_used(&self) -> usize {
+        self.queue.len()
+            + self
+                .threads
+                .iter()
+                .map(|(&token, thread)| {
+                    usize::from(thread.incoming.is_some())
+                        + usize::from(
+                            thread
+                                .outgoing
+                                .is_some_and(|call| !self.terminal_queued(token, call.call)),
+                        )
+                })
+                .sum::<usize>()
+    }
+    fn read_index(&self, thread: u64) -> Option<usize> {
+        let participant = self.threads.get(&thread)?;
+        self.queue.iter().position(|queued| match queued.recipient {
+            Some(recipient) => recipient == thread,
+            None => {
+                participant.looper
+                    && participant.incoming.is_none()
+                    && participant.outgoing.is_none()
+                    && matches!(queued.event, Event::Request { .. })
+            }
+        })
+    }
+    fn preserved_key(&self) -> Option<QueueKey> {
+        self.prepared
+            .as_ref()
+            .and_then(|p| match p.action {
+                ReadAction::Queue(key) => Some(key),
+                _ => None,
+            })
+            .or_else(|| self.preparing.map(|p| p.key))
+    }
+    fn discard_unpublished(&mut self, address: usize) -> bool {
+        let Some(area) = &mut self.mapping else {
+            return false;
+        };
+        let Some(offset) = address.checked_sub(area.base) else {
+            return false;
+        };
+        let slot = offset / PAGE_SIZE;
+        if offset % PAGE_SIZE != 0 || slot >= area.used.len() || area.used[slot].is_none() {
+            return false;
+        }
+        if area.frames[slot].write_bytes(0, &[0; PAGE_SIZE]).is_err() {
+            return false;
+        }
+        area.used[slot] = None;
+        self.prune_handles();
+        true
+    }
     fn prune_handles(&mut self) {
         if let Some(area) = &self.mapping {
             let removed = self.handles.prune(&area.used);
@@ -1047,18 +1421,27 @@ impl Pollable for BinderFile {
         }
         self.pollee.poll_with(mask, poller, || {
             let mut d = domain().lock();
-            d.reap();
+            let thread = match self.participant(&mut d) {
+                Ok(thread) => thread,
+                Err(_) => return IoEvents::HUP | IoEvents::ERR,
+            };
             match d.endpoints.get(&self.id) {
                 None => IoEvents::HUP | IoEvents::ERR,
                 Some(e) => {
                     IoEvents::OUT
-                        | if e.queue.is_empty()
-                            && !e.nodes.values().any(|node| node.has_work())
-                            && !e.deaths.has_work()
+                        | if e.preparing.is_none()
+                            && match &e.prepared {
+                                Some(p) => p.owner.is_none_or(|owner| owner == thread),
+                                None => {
+                                    e.read_index(thread).is_some()
+                                        || e.nodes.values().any(|node| node.has_work())
+                                        || e.deaths.has_work()
+                                }
+                            }
                         {
-                            IoEvents::empty()
-                        } else {
                             IoEvents::IN
+                        } else {
+                            IoEvents::empty()
                         }
                 }
             }
@@ -1102,7 +1485,9 @@ impl PerOpenFileOps for BinderFile {
             }
             SET_MAX_THREADS => {
                 let value: u32 = current_userspace!().read_val(raw.arg())?;
-                if value > 1 {
+                // D1 implements manually entered workers. An automatic pool
+                // quota must not return success before spawn/register exists.
+                if value != 0 {
                     return_errno!(Errno::EOPNOTSUPP);
                 }
                 Ok(0)
@@ -1132,7 +1517,12 @@ impl PerOpenFileOps for BinderFile {
                 Ok(0)
             }
             THREAD_EXIT => {
-                close(self.id);
+                let mut d = domain().lock();
+                let thread = self.participant(&mut d)?;
+                d.retire_thread(Route {
+                    endpoint: self.id,
+                    thread,
+                });
                 Ok(0)
             }
             WRITE_READ => self.write_read(raw.arg(), false),
@@ -1199,6 +1589,8 @@ pub(super) fn init_in_first_kthread() {
     DOMAIN.call_once(|| {
         Mutex::new(Domain {
             next: 1,
+            next_thread: 1,
+            next_call: 1,
             next_node: 1,
             nodes: BTreeMap::new(),
             manager: None,

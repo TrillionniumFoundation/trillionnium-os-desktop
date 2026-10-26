@@ -27,7 +27,7 @@ static struct endpoint endpoint(void) {
     CHECK(e.fd>=0);
     struct binder_version version={0};
     CHECK(ioctl(e.fd,BINDER_VERSION,&version)==0 && version.protocol_version==8);
-    unsigned threads=1;
+    unsigned threads=0;
     CHECK(ioctl(e.fd,BINDER_SET_MAX_THREADS,&threads)==0);
     e.map=mmap(NULL,MAP_BYTES,PROT_READ,MAP_PRIVATE,e.fd,0);
     CHECK(e.map!=MAP_FAILED);
@@ -139,14 +139,14 @@ static void unsupported(struct endpoint *e) {
     CHECK(mmap(NULL,4096,PROT_READ|PROT_WRITE,MAP_PRIVATE,e->fd,0)==MAP_FAILED&&errno==EACCES);
     CHECK(mmap(NULL,4096,PROT_READ,MAP_PRIVATE,e->fd,0)==MAP_FAILED&&errno==EBUSY);
 }
-static void *foreign_thread(void *arg) {
+static void *same_process_thread(void *arg) {
     struct binder_version version={0}; int fd=*(int *)arg;
-    CHECK(ioctl(fd,BINDER_VERSION,&version)==-1&&errno==EPERM);
+    CHECK(ioctl(fd,BINDER_VERSION,&version)==0&&version.protocol_version==8);
     return NULL;
 }
 static void roundtrip(void) {
     struct endpoint server=endpoint(); make_manager(&server); unsupported(&server);
-    pthread_t thread;CHECK(pthread_create(&thread,NULL,foreign_thread,&server.fd)==0);CHECK(pthread_join(thread,NULL)==0);
+    pthread_t thread;CHECK(pthread_create(&thread,NULL,same_process_thread,&server.fd)==0);CHECK(pthread_join(thread,NULL)==0);
     int ready[2];CHECK(pipe(ready)==0);
     pid_t client=fork();CHECK(client>=0);
     if(client==0) {

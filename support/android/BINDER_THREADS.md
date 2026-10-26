@@ -1,13 +1,16 @@
 # Binder D1: actual-thread synchronous transaction ownership
 
-Status: implementation work in progress. The test-only starting revision keeps
+Status: D1 implementation in progress; full acceptance remains pending. The
+starting test-only revision `5be72c51b3ab398f29d018bcd436aed7774d0bd8` kept
 the kernel identical to Desktop `a0a9da78d81801f4198e72073771e9318ffcfa0d`.
-No passing D1 guest evidence exists at that revision.
+Its actual SMP4 guest failed on two real sibling workers (PID19, TID21/TID22)
+sharing FD7: BINDER_VERSION returned EPERM. The ordinary product gate passed;
+the Binder thread fixture returned exit1. That receipt remains a failure.
 
-The current driver binds one open to one actual thread. Opening several Binder
+The pre-D1 driver binds one open to one actual thread. Opening several Binder
 files does not exercise a Binder thread pool. D1 first separates original
 Process/image ownership from actual participating Thread allocation identities.
-The intended limit is eight participating threads per open, with the existing
+The D1 implementation limits admission to eight participating threads per open, with the existing
 sixteen-event and sixteen-buffer limits shared by the entire endpoint. Returns
 and completions belong to the original calling thread; only the worker that
 received an incoming synchronous request may reply. Thread identity must use
@@ -20,9 +23,12 @@ incoming work to its receiving thread; `BINDER_THREAD_EXIT` retires that thread.
 D1 retains the existing bounded rejection of nested and oneway calls.
 
 This stage uses manually entered actual workers. Automatic worker requests and
-registration are a later stage. It must not claim those interfaces work merely
-because a setter returns success. The exact supported automatic-thread quota
-semantics must be documented with implementation and positive/negative tests.
+registration are a later stage. BINDER_SET_MAX_THREADS accepts zero to keep that
+automatic mechanism disabled and rejects every nonzero value with EOPNOTSUPP.
+Manual ENTER_LOOPER workers are subject to the separate eight-participant bound,
+not an invented automatic quota. BC_REGISTER_LOOPER and BR_SPAWN_LOOPER remain
+unimplemented. The older byte/object fixtures now explicitly select zero;
+accepting one without any automatic behavior is no longer represented as support.
 
 The single endpoint-wide prepared-copyout slot remains an explicit limitation:
 its original thread alone may retry a transaction descriptor after EFAULT.
