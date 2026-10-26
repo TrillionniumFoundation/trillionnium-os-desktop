@@ -139,3 +139,75 @@ fn static_nice_updates_publish_fair_but_preserve_rt_and_declared_idle_class() {
     assert_eq!(child.last_cpu(), None);
     assert_eq!(child.user_snapshot(), admin.snapshot());
 }
+
+#[ktest]
+fn declared_policy_updates_preserve_affinity_attempt_generation() {
+    let attr = SchedAttr::new(SchedPolicy::default());
+    let mut admin = attr.administer();
+    assert_eq!(admin.next_affinity_generation().unwrap(), 1);
+    admin.set_nice(Nice::try_from(7).unwrap());
+    admin.set_user_idle();
+    assert_eq!(admin.snapshot().nice(), Nice::try_from(7).unwrap());
+    assert_eq!(admin.next_affinity_generation().unwrap(), 2);
+    admin.set_policy(SchedPolicy::Fair(Nice::try_from(3).unwrap()));
+    assert_eq!(admin.next_affinity_generation().unwrap(), 3);
+    assert_eq!(admin.snapshot().nice(), Nice::try_from(3).unwrap());
+}
+
+#[ktest]
+fn inherited_user_snapshot_has_fresh_affinity_ownership_state() {
+    let original = SchedAttr::new(SchedPolicy::default());
+    {
+        let mut admin = original.administer();
+        admin.set_nice(Nice::try_from(6).unwrap());
+        admin.set_user_idle();
+        assert_eq!(admin.next_affinity_generation().unwrap(), 1);
+    }
+    original.set_last_cpu(ostd::cpu::CpuId::bsp());
+    let snapshot = original.user_snapshot();
+    let child = SchedAttr::from_user_snapshot(snapshot);
+    assert_eq!(child.user_snapshot(), snapshot);
+    assert_eq!(child.last_cpu(), None);
+    assert!(child.affinity_request().is_none());
+    assert_eq!(child.administer().next_affinity_generation().unwrap(), 1);
+    assert_eq!(original.administer().next_affinity_generation().unwrap(), 2);
+}
+
+#[ktest]
+fn snapshot_reader_does_not_wait_for_pending_affinity_writer_pin() {
+    use super::super::{ClassScheduler, capacity::Placement, request::AffinityRequest};
+    // A stable private controlled container, not the live global scheduler or
+    // an authorization bypass. Its one capacity ticket is refunded below.
+    static QUEUES: spin::Once<ClassScheduler> = spin::Once::new();
+    let queues = QUEUES.call_once(ClassScheduler::new);
+    let attr = Arc::new(SchedAttr::new(SchedPolicy::default()));
+    let capacity = queues
+        .reserve_migration_capacity(ostd::cpu::CpuId::bsp(), Placement::Fair)
+        .unwrap();
+    let request = AffinityRequest::new(1, capacity, None).unwrap();
+    *attr.affinity_request.lock() = Some(request.clone());
+    let finished = Arc::new(AtomicBool::new(false));
+    let reader = TaskOptions::new({
+        let attr = attr.clone();
+        let finished = finished.clone();
+        move || {
+            assert_eq!(attr.user_snapshot().nice(), Nice::default());
+            finished.store(true, Ordering::Release);
+        }
+    })
+    .spawn()
+    .unwrap();
+    for _ in 0..8 {
+        Task::yield_now();
+    }
+    let read_before_request_completion = finished.load(Ordering::Acquire);
+    // Always finish and join the controlled work before reporting a failure.
+    drop(request.finish(Ok(())).unused_capacity);
+    drop(attr.affinity_request.lock().take());
+    for _ in 0..8 {
+        Task::yield_now();
+    }
+    assert!(finished.load(Ordering::Acquire));
+    drop(reader);
+    assert!(read_before_request_completion);
+}
