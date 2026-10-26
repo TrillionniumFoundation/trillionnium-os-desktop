@@ -30,9 +30,26 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Install the exact reviewed compiler for real offline metadata regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel=$(python3 -I -B - <<'PY'
+          import importlib.util, json
+          from pathlib import Path
+          directory = Path("tests/workloads/hepta_agentd_runtime")
+          spec = importlib.util.spec_from_file_location("f1_reviewed_toolchain", directory / "reviewed_toolchain.py")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          print(module.reviewed_channel(json.loads((directory / "source-review.json").read_bytes())))
+          PY
+          )
+          rustup toolchain install "$channel" --profile minimal
 
       - name: Verify runtime input boundaries and strict lifecycle oracle
         shell: bash

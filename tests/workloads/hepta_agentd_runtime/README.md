@@ -31,15 +31,26 @@ It does not qualify later integrated source trees.
 ## Current fresh-build profile
 
 The current `source-review.json` selects Desktop
-`0187bd578f6786c40c812c13976e4889a1aba835` / tree
-`335007e4f94114c6a26506d9448faf0d43c4245c` and Hepta
-`b3d3f2d4b01f123d7ac17575c27fb54d00094f7f` / tree
-`b035a577969cb503d7c09620694a6b6c54178c97`. It additionally binds the IPC physical-frame, explicit page-table and watchdog
-changes. This updated profile has not yet executed; earlier 7d/b3 lifecycle
-results remain source-specific. It includes the UDP, exec
-argument, family user-frame, initial-stack and readonly fixes and the Oct 23
-original-owner recovery/issuer/composition stack. The 154 selected source
-identities are a review input, not a runtime receipt.
+`65800188415606451666fec3cfe94ecb5abdc2f6` / tree
+`ff2af1b22a2cc26efa579066c327e693b91b1262` and Hepta
+`a6b3506da75fb9b37c1078b5490178cc8c2f137d` / tree
+`f4f5314e1fba99a3f9c83cc63bcc883e4e850e30`, using the exact reviewed
+Rust 1.96.0 manifest. It adds every changed functional kernel, control,
+build and original fixture input since the earlier `0187` Desktop review.
+The 322 selected identities bind current input bytes; they are not a whole
+Hepta audit, build result or runtime receipt. Historical `0187` / `b3` and
+`7d` / `b3` executions retain their original identities. The current profile
+requires a new source-bound build and execution.
+
+This Desktop candidate includes the native-target metadata repair and the
+Multiboot2 ACPI reservation parity change, the optional framebuffer-support
+header tag and rejection of EGA text cells as pixel framebuffers. The optional
+request leaves width, height and depth to the real bootloader configuration.
+Actual GRUB device boots exposed an
+ACPI-table page fault above the permanent direct-map extent after xAPIC setup.
+The earlier `90d` boot-information retention hypothesis did not repair that
+failure and was removed. Its separate ordinary-build pass and device failure
+cannot qualify this candidate or be silently converted into new evidence.
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source
@@ -90,6 +101,28 @@ moving identity, unreviewed repository, dirty source, or incorrect Desktop pin.
 Current F1/G2 and hardware qualification remain open until their own real
 execution receipts exist. Host tests validate the runner, not the daemon.
 
+### Native metadata uses the same platform as dependency prefetch
+
+The actual native run `40219859406`, job `121248874603`, built the original
+observer and Agentd, then failed before fixture compilation or guest execution:
+unfiltered offline Cargo metadata tried to download the Android-only
+`android_system_properties` 0.1.6 archive. Its preceding locked dependency
+prefetch had correctly selected `x86_64-unknown-linux-gnu`. The official
+117,000,163-byte artifact has SHA256
+`f2e170972fa6c0c737f429c6e3050911ae42067f52b7d4453fd8a326af3127b6`;
+the retained `frozen-inputs/fixture-resolution.log` contains the concrete error.
+
+Both fixture metadata commands now select that same native platform. Offline
+mode, the original resolver/features, lock seed and lock-identity checks remain
+in force. This is metadata about the actual compiled platform, not a dependency
+substitution or a complete F1 result. `test_metadata_platform.py` uses actual
+Cargo and a fresh local registry with a deliberately absent foreign-target
+archive: the unfiltered command fails, the filtered command succeeds without
+changing the lock, and both commands emitted by the real preparation function
+must behave correctly. The unrelated owner-build boundary is stubbed only in
+that unit test; it does not execute or qualify an owner. The host workflow
+installs the exact compiler from this source review for this regression.
+
 ## Reviewed userspace toolchain and runner identity
 
 The current `source-review.json` also requires `userspace_toolchain` with one
@@ -99,8 +132,9 @@ match. Preparation then checks the actual Cargo and rustc `--version` output
 against this same channel. A binary at an expected path with a different
 version is rejected. The native workflow resolves its installation and binary
 paths from that review; it does not keep a second hard-coded userspace version.
-The initial b3 source uses Rust 1.95.0; a later 1.96.0 source needs its own
-explicit source/toolchain review before it can run. Named moving channels,
+The historical b3 source uses Rust 1.95.0. The current a6 source has its own
+explicit Rust 1.96.0 source/toolchain review; the old 1.95.0 identity cannot
+be used for that build. Named moving channels,
 missing toolchain identities, stale hashes and version mismatches are refused.
 
 The runner's commit and the compiled Desktop commit may differ. The runner
