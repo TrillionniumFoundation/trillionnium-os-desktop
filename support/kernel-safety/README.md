@@ -20,6 +20,9 @@ ownership rules, reproduction commands and explicit qualification boundaries:
   actual retained credentials and pre-publication owner/mode decisions.
 - [Group stops and restored waits](GROUP_STOP.md): real task stops, futex and
   semaphore completion, and preserved absolute deadlines.
+- [FAIR execution intervals](FAIR_RUNTIME.md): complete original task runtime
+  settlement across ticks, direct handoffs, waits and exits. This prerequisite
+  does not enable hierarchical `cpu.weight` scheduling.
 - [Persistent native storage](NATIVE_PERSISTENCE.md): generated private ext2,
   bind identity, UID isolation and actual VM-process crash/reopen.
 

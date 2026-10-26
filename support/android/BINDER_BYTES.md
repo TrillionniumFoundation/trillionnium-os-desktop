@@ -196,9 +196,9 @@ and is not passing evidence. The replacement check actually reads the excluded
 fork mapping in a child and verifies SIGSEGV. The initial OSDK setup failure
 likewise remains distinct from executed kernel tests.
 
-Subsequent stages must add real object reference ownership and translation before
-service-manager compatibility, then descriptor installation/rollback, death
-registration, nested transactions and thread-pool lifecycle. Each requires
+The bounded object stage above provides real reference ownership and translation.
+Service-manager compatibility still requires descriptor installation/rollback,
+death registration, nested transactions and thread-pool lifecycle. Each requires
 negative and exit-race tests on actual processes. None should be represented by
 returning success from an otherwise unimplemented ioctl.
 
