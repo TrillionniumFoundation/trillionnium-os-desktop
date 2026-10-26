@@ -16,6 +16,15 @@ the unchanged trusted image bounds and mapping checks. A too-large or dynamic
 result remains a failed profile check with its real build, ELF and log retained.
 No size limit, supplier, feature or profile is weakened to make the result pass.
 
+The original target and retained unstripped ELF are not used as strip output.
+Only a fresh copy in the private packaging directory is temporarily owner-only
+read/write/execute (`0700`) while the original symbol/strip script runs. That
+copy returns to read/execute (`0555`) on success or failure. Starting strip on a
+`0555` copy fails under ordinary filesystem permissions; making the retained
+unstripped evidence writable is not the remedy. Existing or symlinked output
+paths are refused. These staging permissions do not change the release profile,
+features, original packaging arguments, image limits or G2 admission.
+
 Both repositories must be clean at explicitly supplied full commit and tree
 identities. Before/after snapshots verify every tracked byte against its actual
 Git blob, including files hidden from `git status` by `assume-unchanged`.

@@ -3,12 +3,80 @@
 
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 from types import SimpleNamespace
 import unittest
 
 import build_original_entry as build
+
+
+class PackagingPermissionsTests(unittest.TestCase):
+    """Actual small ELF/strip operations, never a Rust/Agentd qualification."""
+
+    def setUp(self):
+        self.cc, self.strip = shutil.which("cc"), shutil.which("strip")
+        if not self.cc or not self.strip or not Path("/proc/self/status").is_file():
+            self.skipTest("Linux C compiler and real strip are required")
+        status = Path("/proc/self/status").read_text()
+        effective = int(next(line.split()[1] for line in status.splitlines() if line.startswith("CapEff:")), 16)
+        if effective & ((1 << 1) | (1 << 2)):
+            self.skipTest("permission regression requires no DAC override/read-search capabilities")
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name).resolve()
+        source = self.root / "probe.c"
+        source.write_text("volatile int retained_value = 7;\nint main(void) { return retained_value; }\n")
+        self.product = self.root / "original"
+        subprocess.run([self.cc, "-g", "-no-pie", str(source), "-o", str(self.product)],
+                       check=True, capture_output=True, timeout=30, env=build.BASE_ENV)
+        self.frozen = self.root / "probe.unstripped"
+        self.original = build.freeze(self.product, self.frozen)
+        self.destination = self.root / "packaged"
+
+    def test_readonly_copy_reproduces_failure_then_private_staging_strips_and_refreezes(self):
+        old = self.root / "readonly"
+        build.freeze(self.product, old)
+        result = subprocess.run([self.strip, "--strip-debug", "--strip-unneeded", str(old)],
+                                capture_output=True, text=True, timeout=30, env=build.BASE_ENV)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Permission denied", result.stderr)
+        with build.packaging_copy(self.product, self.destination) as staged:
+            self.assertEqual(staged.stat().st_mode & 0o7777, 0o700)
+            subprocess.run([self.strip, "--strip-debug", "--strip-unneeded", str(staged)],
+                           check=True, capture_output=True, timeout=30, env=build.BASE_ENV)
+        self.assertEqual(self.destination.stat().st_mode & 0o7777, 0o555)
+        self.assertLess(self.destination.stat().st_size, self.original["bytes"])
+        self.assertEqual(build.digest(self.product), self.original["sha256"])
+        self.assertEqual(build.digest(self.frozen), self.original["sha256"])
+        self.assertEqual(self.frozen.stat().st_mode & 0o7777, 0o555)
+        self.assertNotEqual(self.destination.stat().st_ino, self.product.stat().st_ino)
+
+    def test_failed_real_strip_refreezes_only_its_staging_copy(self):
+        invalid = self.root / "invalid-product"
+        invalid.write_bytes(b"not an ELF")
+        with self.assertRaises(subprocess.CalledProcessError):
+            with build.packaging_copy(invalid, self.destination) as staged:
+                subprocess.run([self.strip, "--strip-debug", "--strip-unneeded", str(staged)],
+                               check=True, capture_output=True, timeout=30, env=build.BASE_ENV)
+        self.assertEqual(self.destination.stat().st_mode & 0o7777, 0o555)
+        self.assertEqual(invalid.read_bytes(), b"not an ELF")
+        self.assertEqual(build.digest(self.frozen), self.original["sha256"])
+
+    def test_existing_file_or_symlink_cannot_be_reused_as_writable_packaging_input(self):
+        self.destination.write_bytes(b"retained old evidence")
+        with self.assertRaisesRegex(ValueError, "must be new"):
+            with build.packaging_copy(self.product, self.destination):
+                self.fail("existing evidence became writable")
+        self.assertEqual(self.destination.read_bytes(), b"retained old evidence")
+        self.destination.unlink()
+        self.destination.symlink_to(self.frozen)
+        with self.assertRaisesRegex(ValueError, "must be new"):
+            with build.packaging_copy(self.product, self.destination):
+                self.fail("symlink became writable")
+        self.assertEqual(build.digest(self.frozen), self.original["sha256"])
+        self.assertEqual(self.frozen.stat().st_mode & 0o7777, 0o555)
 
 
 class SourceAndEntryTests(unittest.TestCase):
