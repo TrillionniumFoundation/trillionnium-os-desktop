@@ -171,7 +171,7 @@ pub(super) fn initialize(path: &Path) -> Result<()> {
         owner: session_owner,
         pair: application_pair,
         end,
-        target: _,
+        target,
         environment,
     } = staged;
     let prepared = prepared.with_notes_startup_from_session_before(
@@ -197,6 +197,7 @@ pub(super) fn initialize(path: &Path) -> Result<()> {
             "registration":registration, "original_thread_seed":seed,
             "objective_profile":&files.objective,
             "notes_state_dir":fresh.user.join("notes"),
+            "notes_target":target,
             "session_pid":session_owner.pid(), "session_birth":packet::pinned_metadata(&session_owner.pidfd, session_owner.pid())?,
             "bootstrap_model_turn_sent":false,
         }),
