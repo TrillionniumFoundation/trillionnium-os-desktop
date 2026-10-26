@@ -6,6 +6,11 @@ one actual, active, local physical systemd-logind user session for the UID in an
 existing original daemon configuration. It uses the Root-owned system bus and
 the checked loginctl executable inode, retains that login's actual leader pidfd,
 and rechecks its start identity and session after the original native diagnostic.
+With `--lifetime-channel-fd`, it also transfers that same held leader descriptor
+and bounded capture receipt to its actual UID0 parent over the original unnamed
+Unix datagram pair. It verifies the kernel peer credentials before sending.
+The receiver must verify the sender's original child credentials, descriptor
+count, exact receipt/profile hash and source before installing the lifetime.
 It requires the original supervisor's already-held daemon pidfd as input; a PID
 lookup cannot supply a replacement owner descriptor.
 
@@ -39,5 +44,6 @@ remain separate required acceptance gates.
 
 Run trust-boundary tests from `support/ui/product` with
 `python3 -m unittest test_native_human`. Two filesystem cases require explicit
-real Root execution and are reported as skipped for ordinary users. Parser
+real Root execution; additional Root cases cover shared ancestry refusal and
+actual pidfd transfer to the original parent. They are skipped for ordinary users. Parser
 fixtures are local boundary tests, never authenticated production evidence.

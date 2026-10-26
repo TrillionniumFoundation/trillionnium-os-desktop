@@ -2,6 +2,8 @@
 import copy
 import json
 import os
+import array
+import socket
 from pathlib import Path
 import subprocess
 import tempfile
@@ -111,6 +113,42 @@ class HumanProviderTests(unittest.TestCase):
 
 @unittest.skipUnless(os.geteuid() == 0, 'These file cases require explicit real Root test execution')
 class ProtectedFileTests(unittest.TestCase):
+    def test_actual_root_parent_receives_the_same_held_process_descriptor(self):
+        parent, child = socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)
+        parent.settimeout(3)
+        parent.setsockopt(socket.SOL_SOCKET, socket.SO_PASSCRED, 1)
+        held = os.pidfd_open(os.getpid())
+        received = []
+        try:
+            program = ('import native_human as h,sys;'
+                       'h.handoff_login_lifetime(int(sys.argv[1]),int(sys.argv[2]),'
+                       '{"scope":"kernel descriptor transport test only","production_ready":False})')
+            process = subprocess.Popen(['/usr/bin/python3', '-B', '-c', program,
+                                        str(child.fileno()), str(held)],
+                                       pass_fds=(child.fileno(), held),
+                                       stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+            packet, ancillary, flags, _ = parent.recvmsg(16384, socket.CMSG_SPACE(4) + socket.CMSG_SPACE(12), socket.MSG_CMSG_CLOEXEC)
+            self.assertFalse(flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC))
+            self.assertFalse(json.loads(packet)['production_ready'])
+            for level, kind, data in ancillary:
+                if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS:
+                    values = array.array('i')
+                    values.frombytes(data)
+                    received.extend(values)
+                if level == socket.SOL_SOCKET and kind == socket.SCM_CREDENTIALS:
+                    import struct
+                    self.assertEqual(struct.unpack('3i', data), (process.pid, 0, 0))
+            self.assertEqual(len(received), 1)
+            human.inherited_owner(received[0], {'peer_pid': os.getpid()})
+            self.assertEqual(process.wait(timeout=3), 0, process.stderr.read().decode())
+            process.stderr.close()
+        finally:
+            parent.close()
+            child.close()
+            os.close(held)
+            for descriptor in received:
+                os.close(descriptor)
+
     def test_actual_protected_read_refuses_symlink_hardlink_and_shared_mode(self):
         with tempfile.TemporaryDirectory(dir='/run') as directory:
             root = Path(directory)

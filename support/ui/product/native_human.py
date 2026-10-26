@@ -7,6 +7,7 @@ replace the original Root launcher's checks. The daemon pidfd must be inherited
 from the original supervisor, never rediscovered by this program.
 """
 import argparse
+import array
 from contextlib import ExitStack
 import hashlib
 import json
@@ -15,6 +16,8 @@ from pathlib import Path
 import re
 import select
 import stat
+import socket
+import struct
 import subprocess
 import sys
 import time
@@ -275,11 +278,32 @@ def prepare(args):
                                  | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)
             os.close(descriptor)
             pending_created = True
-            return prepare_profile(args, config, registration, template, session,
-                                   leader, start, leader_fd, program, output, pending)
+            receipt = prepare_profile(args, config, registration, template, session,
+                                      leader, start, leader_fd, program, output, pending)
+            if args.lifetime_channel_fd is not None:
+                handoff_login_lifetime(args.lifetime_channel_fd, leader_fd, receipt)
+            return receipt
         finally:
             if pending_created:
                 pending.unlink(missing_ok=True)
+
+
+def handoff_login_lifetime(descriptor, leader_fd, receipt):
+    require(type(descriptor) is int and descriptor >= 3,
+            'Original inherited Root lifetime channel required')
+    with socket.socket(fileno=os.dup(descriptor)) as channel:
+        require(channel.family == socket.AF_UNIX
+                and channel.getsockopt(socket.SOL_SOCKET, socket.SO_TYPE) == socket.SOCK_DGRAM,
+                'Original lifetime channel must be a connected Unix datagram pair')
+        pid, uid, _ = struct.unpack('3i', channel.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))
+        require(uid == 0 and pid == os.getppid(),
+                'Lifetime channel peer must be the actual Root parent')
+        packet = canonical(receipt)
+        require(len(packet) <= 16384, 'Original human metadata bound')
+        alive(leader_fd)
+        rights = array.array('i', [leader_fd]).tobytes()
+        require(channel.sendmsg([packet], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, rights)]) == len(packet),
+                'Original login lifetime handoff is uncertain')
 
 
 def prepare_profile(args, config, registration, template, session, leader, start,
@@ -352,6 +376,7 @@ def main():
     parser.add_argument('--authority-host-sha256', required=True)
     parser.add_argument('--owner-pidfd', type=int, default=0)
     parser.add_argument('--logind-session')
+    parser.add_argument('--lifetime-channel-fd', type=int)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     try:
