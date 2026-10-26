@@ -223,9 +223,13 @@ arbitrary FileLike destructor. Each retained snapshot's separate task drops its
 actual file and returns its permit only when that close finishes. A socket with
 SO_LINGER can therefore block its own task without blocking unrelated descriptor
 refunds or Binder requests. There are at most 256 such outstanding cleanup tasks;
-the current default stack size is 128 pages per task, so this deliberately bounded
-stage can reserve up to 128 MiB for their stacks. Android-scale reclamation policy
-and stack-pool optimization remain future work.
+the current default stack size is 128 pages per task, so 256 admitted prebuilt
+tasks account for 128 MiB of stack pages. Exited tasks can still retain charged
+frames through scheduler/RCU references after the file permit returns. The
+128 MiB figure describes admitted prebuilt tasks, not a hard global physical
+stack ceiling; those deferred frames keep their original account charge until
+actual final destruction. Android-scale reclamation policy and stack-pool
+optimization remain future work.
 
 This coordinator is necessary because unmap and final image teardown retire
 endpoints while still holding a VMAR lock; cleanup does not depend on a future
