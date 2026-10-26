@@ -2,7 +2,8 @@
 
 This stage introduces a real `/dev/binder` device for Linux's 64-bit Binder v8
 wire layout. It implements bounded synchronous transactions to the context manager
-at handle 0 and to transferred strong object handles. Independently opened
+at handle 0 and to transferred strong object handles, including actual open-file
+transfer when the target or original caller accepts it. Independently opened
 endpoints exchange actual transactions, object references and replies through
 kernel-owned receive pages. This restricted profile is not Android boot
 qualification.
@@ -98,8 +99,10 @@ The supported metadata objects are 24-byte strong/weak local Binder objects and
 strong/weak remote handle objects. Offset arrays use native 64-bit entries;
 offsets must be eight-byte aligned, strictly ordered, nonoverlapping, and fully
 inside the snapshotted data. Data rounded up to eight bytes plus the offset array
-must fit in one receive page. This bounded profile accepts zero object flags;
-priority/security labels and FD acceptance are not silently ignored.
+must fit in one receive page. Local/remote Binder objects allow only the
+`FLAT_BINDER_FLAG_ACCEPTS_FDS` flag; priority and security flags are rejected.
+Nodes retain their original FD acceptance flag across handle forwarding and
+return to the owner; an existing pointer cannot change cookie or flags.
 
 An object node is a real kernel allocation with a monotonic allocation identity.
 Its owner is the original endpoint, whose original Process/Thread/VMAR identity
@@ -136,7 +139,7 @@ Additional bounds are 32 metadata objects per payload, 16 local nodes per owner,
 by another endpoint), 128 live descriptors per endpoint, 32 explicit references
 per strength per descriptor and 4096 contributions per node. Node and handle
 identities are checked for integer exhaustion and are never reused. The full
-payload is preflighted before publishing any node or contribution; receive
+payload's object references are preflighted before publishing any node or contribution; receive
 handle allocation is drafted and committed only after a receive slot is available.
 Metadata uses the bounded kernel heap; these caps do not claim Android's full
 memory-pressure policy.
@@ -156,13 +159,106 @@ copyout retry, reference underflow/acknowledgements, last-reference owner work a
 dead-owner identity nonreuse. The original byte probe remains required, including
 its real cgroup mapping-admission rollback. No probe runs on the host.
 
+## Actual open-file transfer and receive transaction
+
+`BINDER_TYPE_FD` transfers a snapshot of the sender's actual `Arc<dyn FileLike>`.
+The source FD is looked up while parsing outside DOMAIN. A later close, numeric
+FD reuse, path rename or new open cannot substitute a different file. This
+profile requires zero FD object padding/flags/cookie and a nonnegative 32-bit
+FD; FD arrays and pointer/buffer objects remain rejected.
+
+Request FDs require the resolved target node's original
+`FLAT_BINDER_FLAG_ACCEPTS_FDS`. The legacy context manager has no such flag and
+rejects request FDs with EPERM; `BINDER_SET_CONTEXT_MGR_EXT` is still unsupported.
+Reply FDs require `TF_ACCEPT_FDS` on the original received request, not a flag
+chosen by the replying process. Acceptance and CLOEXEC reservation are constrained
+by `binder_translate_fd` and `binder_apply_fd_fixups` in the
+[Linux v6.17 driver](https://github.com/torvalds/linux/blob/v6.17/drivers/android/binder.c).
+The delayed installation across a failed userspace descriptor copy described
+below is this profile's explicit contract; it is not a claim of identical Linux
+copy-fault timing. Rejected FD replies leave the incoming call
+available for a valid ordinary reply. No Hepta authorization rule or device DAC
+changes as a result of this IPC compatibility feature.
+
+Receiving an FD message pins its exact queue front before dropping DOMAIN and
+reserves all target descriptors using the original file table's reservation API.
+Every target FD has CLOEXEC. If any reservation fails, all earlier reservations
+are released outside DOMAIN and no file is installed. A failed user descriptor
+copy retains the exact prepared bytes, receive buffer and still-hidden FD
+reservations; retry uses the same numbers and does not install a second batch.
+Reserved descriptors return EBADF to lookup/close and cannot be stolen by another
+allocation. After successful descriptor copy, DOMAIN commits the event, then
+the reservations install the original FileLike objects outside DOMAIN. Returning
+the receive buffer or closing the Binder endpoint does not close already
+installed FDs. The final `binder_write_read` transport copyout can still fail
+after commit/installation; this remains an IPC transport, not an exactly-once
+operation ledger.
+
+Both domain-lock reacquisition and receive preparation conservatively reject an
+FD payload without a complete reservation batch, including a new front that
+arrives between locks. If a sender exits while reservations are being created,
+its pinned descriptor can still be delivered and freed, but no dead incoming
+reply stack is installed. This prevents a dead sender from blocking future
+requests. Endpoint allocation identities and the single original thread/image
+rule remain in force through this two-stage preparation.
+
+There are at most 256 retained FD snapshots globally, including queued/prepared
+messages and deferred destruction. The 32-object/page/queue limits also apply to
+FD objects. FileLike and reservation destruction never takes a file-table lock
+under DOMAIN. Before looking up and retaining a source FileLike, the sender
+acquires a global permit and prepares a charged cleanup stack/task through
+`ThreadOptions::try_build` and the existing `PreparedTaskStack` admission API.
+Budget, physical allocation and mapping failures return an error before message
+publication; dropping an unstarted task refunds its permit. The cleanup stack is
+charged to the original source account and each frame retains that charge until
+its real final destruction. This covers these particular cleanup tasks, not all
+system kernel stacks or complete `memory.max` isolation. Normal bounded metadata
+continues to use the kernel heap.
+
+`files.rs` uses two bounded, preallocated retirement vectors. A dedicated kernel
+coordinator drains outside DOMAIN/VMAR/retirement locks, and ordinary Binder
+open/poll/write-read paths may also drain. They refund hidden descriptor
+reservations and schedule already prepared cleanup tasks; they never wait for an
+arbitrary FileLike destructor. Each retained snapshot's separate task drops its
+actual file and returns its permit only when that close finishes. A socket with
+SO_LINGER can therefore block its own task without blocking unrelated descriptor
+refunds or Binder requests. There are at most 256 such outstanding cleanup tasks;
+the current default stack size is 128 pages per task, so this deliberately bounded
+stage can reserve up to 128 MiB for their stacks. Android-scale reclamation policy
+and stack-pool optimization remain future work.
+
+This coordinator is necessary because unmap and final image teardown retire
+endpoints while still holding a VMAR lock; cleanup does not depend on a future
+userspace request. Its initial stack allocation is also fallible. If initialization
+cannot prepare it, ordinary byte/object IPC remains available and FD snapshots
+return ENOMEM. A draining flag serializes concurrent scheduling without recursive
+cleanup stacks or lost retirements.
+
+`object_run.py` also runs `fd_probe.c` in the same isolated ordinary guest. It
+verifies source close/reuse against actual file contents and shared file offsets,
+FD acceptance and rejection, CLOEXEC, two-FD EMFILE rollback at the second
+reservation, repeated EFAULT with hidden stable reservations, exactly one actual
+installation, live FDs after FREE/endpoint close, and prepared-close release by
+observing EPIPE on the original pipe. A 128-round concurrent enqueue test checks
+real FD request/reply transfer and alternating reads from the same file object.
+`cleanup_probe.c` holds eight real 32-FD messages, confirms that the 257th
+snapshot fails with zero consumption and no ghost event, then observes actual FD
+transfer recovering after cleanup. It also establishes a multi-second TCP
+SO_LINGER close in the guest and checks that retiring an equivalent prepared TCP
+FD leaves another pipe's real EPIPE and descriptor refunds under one second. This
+is a real socket destructor, not a timer substituted for file cleanup. A native
+kernel test refuses stack admission and checks that the task callback was never
+run and the unpublished global permit was returned.
+The kernel core reference tests and original byte/resource-admission guest gate
+remain required. Android service-manager startup, thread pools and boot are
+separate outstanding gates.
+
 ## Explicitly unsupported
 
-FD/FD-array translation, scatter/gather, oneway calls, priority inheritance, nested calls,
+FD arrays, scatter/gather, oneway calls, priority inheritance, nested calls,
 thread-pool spawning, death subscriptions and transaction security contexts are
-rejected. `BINDER_SET_CONTEXT_MGR_EXT` is not a fake success. The supported byte
-profile uses zero transaction flags; even a request accepting FD replies must
-wait for a future implemented FD contract. Unknown ioctls return ENOTTY;
+rejected. `BINDER_SET_CONTEXT_MGR_EXT` is not a fake success. The supported transaction flags are zero or `TF_ACCEPT_FDS`. Other flags are
+rejected; accepting FD replies does not imply support for oneway or scatter/gather. Unknown ioctls return ENOTTY;
 recognized but unimplemented protocol commands return EOPNOTSUPP.
 
 Do not use this driver's presence or version as an Android compatibility gate.

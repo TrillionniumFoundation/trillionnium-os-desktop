@@ -5,7 +5,7 @@
 //! never DOMAIN; queued payloads and failed receive copyouts therefore retain
 //! the same contribution without recursive locking or duplicate increments.
 
-use super::uapi::*;
+use super::{files::FileObject, uapi::*};
 use crate::prelude::*;
 
 pub(super) const MAX_OBJECTS: usize = 32;
@@ -20,6 +20,7 @@ pub(super) struct Node {
     pub(super) owner: u64,
     pub(super) pointer: u64,
     pub(super) cookie: u64,
+    pub(super) flags: u32,
     state: Mutex<NodeState>,
 }
 #[derive(Default)]
@@ -52,12 +53,13 @@ impl NodeState {
     }
 }
 impl Node {
-    pub(super) fn new(id: u64, owner: u64, pointer: u64, cookie: u64) -> Self {
+    pub(super) fn new(id: u64, owner: u64, pointer: u64, cookie: u64, flags: u32) -> Self {
         Self {
             id,
             owner,
             pointer,
             cookie,
+            flags,
             state: Mutex::new(NodeState::default()),
         }
     }
@@ -164,6 +166,7 @@ pub(super) struct Payload {
     pub(super) bytes: Vec<u8>,
     pub(super) offsets: Vec<u64>,
     pub(super) objects: Vec<Object>,
+    pub(super) files: Vec<FileObject>,
     pub(super) target: Option<Arc<Reference>>,
 }
 impl Payload {
@@ -274,7 +277,7 @@ mod tests {
     use super::*;
     #[ktest]
     fn actual_reference_drop_and_acknowledgement() {
-        let node = Arc::new(Node::new(1, 9, 0x1234, 0x5678));
+        let node = Arc::new(Node::new(1, 9, 0x1234, 0x5678, 0));
         let reference = Reference::new(node.clone(), true);
         let shared = reference.clone();
         assert_eq!(node.prepare_work().unwrap().0, BR_INCREFS);
@@ -294,7 +297,7 @@ mod tests {
     }
     #[ktest]
     fn buffer_reference_retention_and_nonreuse() {
-        let node = Arc::new(Node::new(2, 9, 0x1234, 0x5678));
+        let node = Arc::new(Node::new(2, 9, 0x1234, 0x5678, 0));
         let mut handles = Handles::default();
         let first = handles.descriptor(&node).unwrap();
         let mut buffers = vec![Some(vec![Reference::new(node.clone(), true)])];

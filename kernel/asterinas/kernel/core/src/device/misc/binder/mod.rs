@@ -2,7 +2,7 @@
 //! Bounded synchronous Binder transactions and owned object references.
 //!
 //! One participating thread per open, one outgoing call per open, no nested
-//! calls, FD translation, death subscriptions, oneway, or MAC labels.
+//! calls, FD arrays, death subscriptions, oneway, or MAC labels.
 //! The device node is root:root 0600. This is not Android boot qualification.
 //!
 //! Lock order: VMAR -> DOMAIN. DOMAIN never acquires VMAR/process locks or
@@ -10,11 +10,13 @@
 //! domain lock and copied after releasing it. Mapping frames are owned, charged
 //! UFrames, not user addresses. A failed output copy retains the prepared event.
 
+mod files;
 mod objects;
 mod uapi;
 use core::time::Duration;
 
 use device_id::{DeviceId, MinorId};
+use files::{Drain, FileObject, PendingFds, RetainedFile};
 use objects::*;
 use ostd::{
     mm::{UFrame, VmIo},
@@ -69,10 +71,11 @@ struct Endpoint {
     mapping: Option<ReceiveArea>,
     queue: VecDeque<Event>,
     prepared: Option<Prepared>,
+    preparing: bool,
     nodes: BTreeMap<u64, Arc<Node>>,
     handles: Handles,
     outgoing: Option<u64>,
-    incoming: Option<u64>,
+    incoming: Option<Incoming>,
     looper: bool,
 }
 struct ReceiveArea {
@@ -83,6 +86,12 @@ struct ReceiveArea {
 struct Prepared {
     bytes: Vec<u8>,
     queue: bool,
+    fds: Option<Arc<PendingFds>>,
+}
+#[derive(Clone, Copy)]
+struct Incoming {
+    sender: u64,
+    accepts_fds: bool,
 }
 #[derive(Clone)]
 enum Event {
@@ -141,14 +150,18 @@ impl Domain {
             // A prepared descriptor may currently be copied outside DOMAIN.
             // Keep its front event and buffer stable even if its sender exits;
             // removing it here would make the copyout commit pop another call.
-            let preserve_front = endpoint.prepared.as_ref().is_some_and(|p| p.queue);
+            let preserve_front =
+                endpoint.preparing || endpoint.prepared.as_ref().is_some_and(|p| p.queue);
             let mut first = true;
             endpoint.queue.retain(|event| {
                 let preserve = first && preserve_front;
                 first = false;
                 preserve || !matches!(event, Event::Request {sender, ..} if *sender == id)
             });
-            if endpoint.incoming == Some(id) {
+            if endpoint
+                .incoming
+                .is_some_and(|incoming| incoming.sender == id)
+            {
                 endpoint.incoming = None;
             }
             if endpoint.outgoing == Some(id)
@@ -175,6 +188,7 @@ impl Domain {
         bytes: Vec<u8>,
         offsets: Vec<u64>,
         objects: Vec<(usize, FlatObject)>,
+        files: Vec<FileObject>,
         target: Option<Arc<Node>>,
     ) -> Result<Payload> {
         let endpoint = self.endpoints.get(&sender).unwrap();
@@ -190,7 +204,7 @@ impl Domain {
                     .get(&object.value)
                     .or_else(|| new_nodes.get(&object.value))
                 {
-                    if node.cookie != object.cookie {
+                    if node.cookie != object.cookie || node.flags != object.flags {
                         return_errno!(Errno::EINVAL);
                     }
                     node.clone()
@@ -200,7 +214,13 @@ impl Domain {
                     {
                         return_errno!(Errno::ENOSPC);
                     }
-                    let node = Arc::new(Node::new(next, sender, object.value, object.cookie));
+                    let node = Arc::new(Node::new(
+                        next,
+                        sender,
+                        object.value,
+                        object.cookie,
+                        object.flags,
+                    ));
                     next = next.checked_add(1).ok_or_else(|| {
                         Error::with_message(Errno::ENOSPC, "Binder node identity exhausted")
                     })?;
@@ -239,6 +259,7 @@ impl Domain {
         Ok(Payload {
             bytes,
             offsets,
+            files,
             objects: translated
                 .into_iter()
                 .map(|(offset, node, strong)| Object {
@@ -269,6 +290,7 @@ impl Device for BinderDevice {
         Some(DevtmpfsNodeMeta::new("binder").unwrap())
     }
     fn open(&self) -> Result<Box<dyn PerOpenFileOps>> {
+        let _drain = Drain;
         let owner = current_thread!();
         let process = current!();
         let image = current_userspace!().vmar_snapshot();
@@ -290,6 +312,7 @@ impl Device for BinderDevice {
                 mapping: None,
                 queue: VecDeque::new(),
                 prepared: None,
+                preparing: false,
                 nodes: BTreeMap::new(),
                 handles: Handles::default(),
                 outgoing: None,
@@ -359,7 +382,10 @@ impl BinderFile {
             let command = match command {
                 TRANSACTION | REPLY => {
                     let mut tr = read::<Transaction>(&input, &mut cursor)?;
-                    if tr.flags != 0 || tr.cookie != 0 || (command == REPLY && tr.target != 0) {
+                    if tr.flags & !TF_ACCEPT_FDS != 0
+                        || tr.cookie != 0
+                        || (command == REPLY && tr.target != 0)
+                    {
                         return_errno_with_message!(
                             Errno::EOPNOTSUPP,
                             "Binder flags or reply target unsupported"
@@ -381,6 +407,7 @@ impl BinderFile {
                     current_userspace!().read_bytes(tr.offsets as usize, &mut raw_offsets)?;
                     let mut offsets = Vec::new();
                     let mut objects = Vec::new();
+                    let mut files = Vec::new();
                     let mut cursor = 0;
                     let mut previous_end = 0;
                     while cursor < raw_offsets.len() {
@@ -395,8 +422,12 @@ impl BinderFile {
                         let object = read::<FlatObject>(&bytes, &mut object_end)?;
                         if !matches!(
                             object.kind,
-                            TYPE_BINDER | TYPE_WEAK_BINDER | TYPE_HANDLE | TYPE_WEAK_HANDLE
-                        ) || object.flags != 0
+                            TYPE_BINDER
+                                | TYPE_WEAK_BINDER
+                                | TYPE_HANDLE
+                                | TYPE_WEAK_HANDLE
+                                | TYPE_FD
+                        ) || object.flags & !ACCEPTS_FDS != 0
                         {
                             return_errno!(Errno::EOPNOTSUPP);
                         }
@@ -406,7 +437,20 @@ impl BinderFile {
                             return_errno!(Errno::EINVAL);
                         }
                         offsets.push(offset);
-                        objects.push((offset_usize, object));
+                        if object.kind == TYPE_FD {
+                            if object.flags != 0
+                                || object.cookie != 0
+                                || object.value > u32::MAX as u64
+                            {
+                                return_errno!(Errno::EINVAL);
+                            }
+                            files.push(FileObject {
+                                offset: offset_usize,
+                                file: RetainedFile::snapshot(object.value)?,
+                            });
+                        } else {
+                            objects.push((offset_usize, object));
+                        }
                         previous_end = object_end;
                     }
                     let task = Task::current().unwrap();
@@ -427,6 +471,7 @@ impl BinderFile {
                         bytes,
                         offsets,
                         objects,
+                        files,
                     }
                 }
                 INCREFS | ACQUIRE | RELEASE | DECREFS => Command::Reference {
@@ -454,7 +499,7 @@ impl BinderFile {
     fn execute(&self, command: Command) -> Result<()> {
         let mut d = domain().lock();
         d.reap();
-        if d.endpoint(self.id)?.prepared.is_some() {
+        if d.endpoint(self.id)?.prepared.is_some() || d.endpoint(self.id)?.preparing {
             return_errno!(Errno::EBUSY);
         }
         match command {
@@ -528,15 +573,20 @@ impl BinderFile {
                 bytes,
                 offsets,
                 objects,
+                files,
             } => {
                 let own = d.endpoint(self.id)?;
                 if own.mapping.is_none() || own.queue.len() >= MAX_QUEUE {
                     return_errno!(Errno::EAGAIN);
                 }
                 if reply {
-                    let destination = own.incoming.ok_or_else(|| {
+                    let incoming = own.incoming.ok_or_else(|| {
                         Error::with_message(Errno::EINVAL, "Binder reply has no incoming call")
                     })?;
+                    if !files.is_empty() && !incoming.accepts_fds {
+                        return_errno!(Errno::EPERM);
+                    }
+                    let destination = incoming.sender;
                     let peer = d.endpoint(destination)?;
                     if peer.outgoing != Some(self.id) {
                         return_errno!(Errno::EINVAL);
@@ -544,7 +594,7 @@ impl BinderFile {
                     if peer.queue.len() >= MAX_QUEUE {
                         return_errno!(Errno::EAGAIN);
                     }
-                    let payload = d.payload(self.id, bytes, offsets, objects, None)?;
+                    let payload = d.payload(self.id, bytes, offsets, objects, files, None)?;
                     d.endpoint(destination)?.queue.push_back(Event::Reply {
                         transaction,
                         payload,
@@ -565,6 +615,13 @@ impl BinderFile {
                             &own.mapping.as_ref().unwrap().used,
                         )?)
                     };
+                    if !files.is_empty()
+                        && !target
+                            .as_ref()
+                            .is_some_and(|node| node.flags & ACCEPTS_FDS != 0)
+                    {
+                        return_errno!(Errno::EPERM);
+                    }
                     let destination = if let Some(node) = &target {
                         if !d.endpoints.contains_key(&node.owner) {
                             let own = d.endpoint(self.id)?;
@@ -594,7 +651,7 @@ impl BinderFile {
                     if peer.mapping.is_none() || !peer.looper || peer.queue.len() >= MAX_QUEUE - 1 {
                         return_errno!(Errno::EAGAIN);
                     }
-                    let payload = d.payload(self.id, bytes, offsets, objects, target)?;
+                    let payload = d.payload(self.id, bytes, offsets, objects, files, target)?;
                     d.endpoint(destination)?.queue.push_back(Event::Request {
                         sender: self.id,
                         transaction,
@@ -610,17 +667,73 @@ impl BinderFile {
         Ok(())
     }
     fn try_read(&self, pointer: usize, capacity: usize) -> Result<usize> {
-        let output = {
+        // Pin a front event before dropping DOMAIN to reserve target FDs. A
+        // sender may die in this gap; close() preserves that exact front event.
+        // File-table lookup/allocation/destruction never runs under DOMAIN.
+        let files = {
             let mut d = domain().lock();
             d.reap();
             let e = d.endpoint(self.id)?;
-            if let Some(prepared) = &e.prepared {
-                prepared.bytes.clone()
+            if e.preparing {
+                return_errno!(Errno::EBUSY);
+            }
+            if e.prepared.is_none() && !e.nodes.values().any(|node| node.has_work()) {
+                let files = match e.queue.front() {
+                    Some(Event::Request { payload, .. } | Event::Reply { payload, .. })
+                        if !payload.files.is_empty() =>
+                    {
+                        Some(payload.files.clone())
+                    }
+                    _ => None,
+                };
+                if files.is_some() {
+                    if capacity < 68 {
+                        return_errno!(Errno::ENOSPC);
+                    }
+                    if matches!(e.queue.front(), Some(Event::Request { .. }))
+                        && e.incoming.is_some()
+                    {
+                        return_errno!(Errno::EBUSY);
+                    }
+                    e.preparing = true;
+                }
+                files
             } else {
-                // Owner reference work is bounded by local node count, not
-                // dropped when the transaction queue is full. State changes
-                // once at preparation and survives an EFAULT copyout retry.
-                if e.nodes.values().any(|node| node.has_work()) {
+                None
+            }
+        };
+        let new_fds = if let Some(files) = files {
+            match PendingFds::reserve(files) {
+                Ok(fds) => Some(fds),
+                Err(error) => {
+                    let mut d = domain().lock();
+                    if let Some(e) = d.endpoints.get_mut(&self.id) {
+                        e.preparing = false;
+                    }
+                    d.notify();
+                    return Err(error);
+                }
+            }
+        } else {
+            None
+        };
+        let (output, fds) = {
+            let mut d = domain().lock();
+            d.reap();
+            let sender_alive = match d
+                .endpoints
+                .get(&self.id)
+                .and_then(|endpoint| endpoint.queue.front())
+            {
+                Some(Event::Request { sender, .. }) => d.endpoints.contains_key(sender),
+                _ => true,
+            };
+            let e = d.endpoint(self.id)?;
+            e.preparing = false;
+            if e.prepared.is_none() {
+                // A reserved front transaction completes its preparation even
+                // if new reference work appeared while DOMAIN was unlocked.
+                if new_fds.is_none() && e.nodes.values().any(|node| node.has_work()) {
                     if capacity < 20 {
                         return_errno!(Errno::ENOSPC);
                     }
@@ -632,10 +745,10 @@ impl BinderFile {
                     let mut bytes = command.to_ne_bytes().to_vec();
                     bytes.extend_from_slice(object.as_bytes());
                     e.prepared = Some(Prepared {
-                        bytes: bytes.clone(),
+                        bytes,
                         queue: false,
+                        fds: None,
                     });
-                    bytes
                 } else {
                     let Some(event) = e.queue.front().cloned() else {
                         return_errno!(Errno::EAGAIN);
@@ -662,10 +775,20 @@ impl BinderFile {
                             if e.incoming.is_some() {
                                 return_errno!(Errno::EBUSY);
                             }
-                            transaction.buffer = e.reserve(self.id, &payload)? as u64;
+                            if !payload.files.is_empty() && new_fds.is_none() {
+                                // A new FD front may have arrived between the
+                                // two locks. Retry via the reservation stage;
+                                // never publish untranslated source FD values.
+                                return_errno!(Errno::EAGAIN);
+                            }
+                            transaction.buffer =
+                                e.reserve(self.id, &payload, new_fds.as_deref())? as u64;
                             transaction.offsets =
                                 transaction.buffer + transaction.data_size.next_multiple_of(8);
-                            e.incoming = Some(sender);
+                            e.incoming = sender_alive.then_some(Incoming {
+                                sender,
+                                accepts_fds: transaction.flags & TF_ACCEPT_FDS != 0,
+                            });
                             output.extend_from_slice(&BR_TRANSACTION.to_ne_bytes());
                             output.extend_from_slice(transaction.as_bytes());
                         }
@@ -673,7 +796,14 @@ impl BinderFile {
                             mut transaction,
                             payload,
                         } => {
-                            transaction.buffer = e.reserve(self.id, &payload)? as u64;
+                            if !payload.files.is_empty() && new_fds.is_none() {
+                                // A new FD front may have arrived between the
+                                // two locks. Retry via the reservation stage;
+                                // never publish untranslated source FD values.
+                                return_errno!(Errno::EAGAIN);
+                            }
+                            transaction.buffer =
+                                e.reserve(self.id, &payload, new_fds.as_deref())? as u64;
                             transaction.offsets =
                                 transaction.buffer + transaction.data_size.next_multiple_of(8);
                             output.extend_from_slice(&BR_REPLY.to_ne_bytes());
@@ -681,28 +811,39 @@ impl BinderFile {
                         }
                     }
                     e.prepared = Some(Prepared {
-                        bytes: output.clone(),
+                        bytes: output,
                         queue: true,
+                        fds: new_fds.clone(),
                     });
-                    output
                 }
             }
+            let prepared = e.prepared.as_ref().unwrap();
+            (prepared.bytes.clone(), prepared.fds.clone())
         };
         if capacity < output.len() {
             return_errno!(Errno::ENOSPC);
         }
         current_userspace!().write_bytes(pointer, &output)?;
-        let mut d = domain().lock();
-        let e = d.endpoint(self.id)?;
-        if e.prepared.take().unwrap().queue
-            && matches!(e.queue.pop_front(), Some(Event::Reply { .. } | Event::Dead))
         {
-            e.outgoing = None;
+            let mut d = domain().lock();
+            let e = d.endpoint(self.id)?;
+            if e.prepared.take().unwrap().queue
+                && matches!(e.queue.pop_front(), Some(Event::Reply { .. } | Event::Dead))
+            {
+                e.outgoing = None;
+            }
+            d.notify();
         }
-        d.notify();
+        // Reservations are still hidden through descriptor copyout and domain
+        // commit. Once published, the receiver owns these actual open files;
+        // returning the receive buffer must never close installed descriptors.
+        if let Some(fds) = fds {
+            fds.install();
+        }
         Ok(output.len())
     }
     fn write_read(&self, pointer: usize, nonblocking: bool) -> Result<i32> {
+        let _drain = Drain;
         let mut wire: WriteRead = current_userspace!().read_val(pointer)?;
         let commands = self.commands(&wire)?;
         let outcome = (|| {
@@ -746,7 +887,10 @@ impl Endpoint {
             self.handles.prune(&area.used);
         }
     }
-    fn reserve(&mut self, id: u64, payload: &Payload) -> Result<usize> {
+    fn reserve(&mut self, id: u64, payload: &Payload, fds: Option<&PendingFds>) -> Result<usize> {
+        if !payload.files.is_empty() && fds.is_none() {
+            return_errno!(Errno::EAGAIN);
+        }
         let area = self.mapping.as_mut().ok_or_else(|| {
             Error::with_message(Errno::ECONNREFUSED, "Binder receive mapping gone")
         })?;
@@ -770,7 +914,7 @@ impl Endpoint {
                     (false, true) => TYPE_HANDLE,
                     (false, false) => TYPE_WEAK_HANDLE,
                 },
-                flags: 0,
+                flags: node.flags,
                 value: if local {
                     node.pointer
                 } else {
@@ -780,6 +924,9 @@ impl Endpoint {
             };
             bytes[object.offset..object.offset + size_of::<FlatObject>()]
                 .copy_from_slice(flat.as_bytes());
+        }
+        if let Some(fds) = fds {
+            fds.encode(&mut bytes);
         }
         bytes.resize(bytes.len().next_multiple_of(8), 0);
         for offset in &payload.offsets {
@@ -810,6 +957,7 @@ enum Command {
         bytes: Vec<u8>,
         offsets: Vec<u64>,
         objects: Vec<(usize, FlatObject)>,
+        files: Vec<FileObject>,
     },
 }
 fn read<T: Pod>(input: &[u8], cursor: &mut usize) -> Result<T> {
@@ -825,6 +973,7 @@ fn read<T: Pod>(input: &[u8], cursor: &mut usize) -> Result<T> {
 }
 impl Pollable for BinderFile {
     fn poll(&self, mask: IoEvents, poller: Option<&mut PollHandle>) -> IoEvents {
+        let _drain = Drain;
         if self.check_owner().is_err() {
             return (IoEvents::ERR | IoEvents::HUP) & mask;
         }
@@ -975,6 +1124,7 @@ impl MappedObject for BinderMapping {
     }
 }
 pub(super) fn init_in_first_kthread() {
+    files::init();
     DOMAIN.call_once(|| {
         Mutex::new(Domain {
             next: 1,

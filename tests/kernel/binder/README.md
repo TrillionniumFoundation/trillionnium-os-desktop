@@ -11,8 +11,9 @@ The implemented profile is described in
 This gate is independent of the historical A08 primitive ioctl/layout checks.
 A byte-only pass does not qualify object IPC. `object_run.py` runs both the
 original byte/budget probe and the three-process object/handle probe against the
-same ordinary kernel. Object qualification still does not qualify Android boot,
-file-descriptor transfer, thread pools, Android service registration, SELinux
+same ordinary kernel. It now also runs `fd_probe.c` for actual open-file transfer
+and failed receive cleanup. These gates still do not qualify Android boot,
+FD arrays, thread pools, Android service registration, SELinux
 policy, or a Hepta device effect.
 
 Run from this checkout with its own source-built OSDK, pinned toolchain, external
@@ -59,3 +60,17 @@ notifications, malformed input/underflow rejection, copyout retry and old-owner
 death without identity reuse. Its helpers consume and acknowledge actual BR
 reference work; they never inject a synthetic kernel result. Guest fixtures have
 an alarm bound and are only compiled on the host.
+
+The FD probe uses original open files and pipes, not a proxy. It verifies
+acceptance rules, CLOEXEC, shared offsets after source FD reuse, two-FD EMFILE
+rollback, repeated EFAULT with the same hidden reservations, installed descriptor
+lifetime after FREE/endpoint close, prepared-close release and 128 concurrent
+enqueue/request/reply cycles. An ordinary-byte-only invocation does not validate
+these additional capabilities.
+
+The same runner includes `cleanup_probe.c`: 256 real queued snapshots saturate
+the global prebuilt-cleanup permit bound, a further snapshot is rejected before
+publication, and later actual FD transfer recovers. A real TCP SO_LINGER baseline
+must take at least 1.5 seconds; cleanup of an equivalent prepared socket must
+leave independent descriptor refunds and pipe EPIPE below one second. No mocked
+file destructor or host network is used; the sockets use guest loopback only.
