@@ -263,3 +263,33 @@ fn bounded(path: &str, max: u64) -> io::Result<String> {
 fn invalid(message: &str) -> io::Error {
     io::Error::new(io::ErrorKind::PermissionDenied, message)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn concurrent_spawn_does_not_clear_session_parent_descriptor_cloexec() {
+        let source = SessionLifetimeSource::capture_current(
+            NotesTargetIdentity {
+                session_instance: "9".repeat(32),
+                task_id: 1,
+                incarnation: "a".repeat(32),
+            },
+            StorageRequirement::Optional,
+        )
+        .unwrap();
+        let raw = source.descriptor.as_raw_fd();
+        let before = unsafe { libc::fcntl(raw, libc::F_GETFD) };
+        assert!(before >= 0 && before & libc::FD_CLOEXEC != 0);
+        let mut command = Command::new("/bin/true");
+        source.inherit_into(&mut command).unwrap();
+        assert_eq!(unsafe { libc::fcntl(raw, libc::F_GETFD) }, before);
+        assert!(std::thread::spawn(move || {
+            assert!(command.status().unwrap().success());
+            assert_eq!(unsafe { libc::fcntl(raw, libc::F_GETFD) }, before);
+        })
+        .join()
+        .is_ok());
+    }
+}
