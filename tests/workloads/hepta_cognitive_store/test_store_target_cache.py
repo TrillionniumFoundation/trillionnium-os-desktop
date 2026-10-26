@@ -131,6 +131,33 @@ class StoreTargetCacheTests(unittest.TestCase):
         ):
             preparation.main(["--hepta-source", str(self.source), "--target", str(self.cache)])
 
+    def test_offline_metadata_uses_the_prefetched_native_target_and_checks_original_lock(self):
+        self.out.mkdir()
+        runner = self.out / "runner"
+        runner.mkdir()
+        (runner / "Cargo.lock").write_bytes(b"controlled fixture lock, not build evidence")
+        target, record = self.select()
+        calls = []
+        def bounded(command, cwd, environment, log, timeout):
+            calls.append(command)
+            if "build" in command:
+                raise RuntimeError("controlled stop before compilation")
+        report = {"commands": [], "cargo_targets": record}
+        with self.helpers.target_cache_lease(target, record["targets"]["store"]), \
+             mock.patch.object(preparation, "prepare_runner", return_value={}), \
+             mock.patch.object(preparation.HELPER, "bounded_command", side_effect=bounded), \
+             mock.patch.object(preparation, "verify_lock", return_value={}) as verify_lock, \
+             self.assertRaisesRegex(RuntimeError, "controlled stop"):
+            preparation.build_store(self.source, self.out, {}, report, target, {},
+                                    {"cargo": {"path": "/fixed/cargo"}}, self.helpers)
+        self.assertEqual(verify_lock.call_count, 2)
+        for command in calls[:2]:
+            self.assertEqual(command[command.index("--filter-platform") + 1], self.helpers.USERSPACE_TARGET)
+            self.assertIn("--offline", command)
+            self.assertNotIn("--no-deps", command)
+        self.assertIn("--locked", calls[1])
+        self.assertIn("--locked", calls[2])
+
 
 if __name__ == "__main__":
     unittest.main()

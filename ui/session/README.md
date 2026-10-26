@@ -9,14 +9,14 @@ table or infer task completion from a window.
 [main.rs](src/main.rs) owns spawn, kill requests, wait/reap, Session generation
 and finite task retention. [hepta.rs](src/hepta.rs) manages the explicitly
 configured read-only observer. [notes_bootstrap.rs](src/notes_bootstrap.rs)
-handles the trusted parent's private Notes bootstrap v2, including separate effect and recovery descriptors. [deadline.rs](src/deadline.rs) supplies one monotonic deadline across partial reads and response writes.
+handles the trusted parent's private Notes bootstrap v2, including separate effect and recovery descriptors. [deadline.rs](src/deadline.rs) supplies one monotonic deadline across partial reads and response writes. [ipc.rs](src/ipc.rs) advances bounded nonblocking peers without giving a reply a fresh deadline.
 
 The socket is under an absolute private XDG_RUNTIME_DIR. Both peers check
 kernel-reported UID; same-UID hostile processes remain outside this prototype's
 trust boundary. A Session restart creates a new generation. Detached tasks
 must not be represented as reattached or successfully cancelled.
 
-An accepted connection has one 500 ms I/O allowance; partial progress does not renew it. The owner loop reaps exited children around every connection. This bounds transport occupancy, not Linux scheduling or process-creation time. A lost response after dispatch leaves the real action outcome intact and requires a fresh snapshot. The startup advisory lock protects competing Session starters; it is not a credential.
+An accepted connection has one 500 ms I/O allowance; partial progress does not renew it. Each tick reaps exited children and advances at most 32 accepted peers with bounded reads and writes. An incomplete request or blocked reader cannot occupy the whole loop until its timeout. This bounds transport occupancy, not Linux scheduling or process-creation time. A lost response after dispatch leaves the real action outcome intact and requires a fresh snapshot. The startup advisory lock protects competing Session starters; it is not a credential. See [IPC scheduling](../../support/ui/SESSION_IPC.md) for exact limits and the real-binary regression.
 
 Standalone Session does not install a production Hepta effect owner. The
 private Notes bootstrap is separate from public Snapshot/Launch/Cancel.

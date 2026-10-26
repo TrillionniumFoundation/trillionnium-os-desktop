@@ -2,6 +2,7 @@
 //! It is not a Wayland compositor and it grants no kernel permissions.
 mod deadline;
 mod hepta;
+mod ipc;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
 mod objective_bridge;
@@ -18,22 +19,30 @@ use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::time::{Duration, Instant};
+use std::time::Duration;
+#[cfg(test)]
+use std::time::Instant;
 
 #[cfg(target_os = "linux")]
 use trill_ui_broker::notes::NotesTarget;
 #[cfg(target_os = "linux")]
 use trill_ui_core::host_peer;
+#[cfg(test)]
 use trill_ui_core::host_peer::require_same_uid_peer;
 #[cfg(target_os = "linux")]
 use trill_ui_core::notes::{
     NotesChannelObservation, NotesDestinationObservation, NotesTargetIdentity,
 };
 use trill_ui_core::{
-    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
+    socket_path, unix_ms, AppKind, HostResources,
     HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
     Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
 };
+
+#[cfg(test)]
+use ipc::{serve_one as serve_connection, serve_one_until as serve_connection_until};
+#[cfg(test)]
+use trill_ui_core::{parse_host_request, read_frame, write_frame};
 
 // Linux flock(2) is advisory; it provides a crash-released startup mutex,
 // NOT authentication or isolation from another process with the same UID.
@@ -735,64 +744,6 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
 // Shared by the request read and response write; partial I/O never restarts it.
 const EXCHANGE_BUDGET: Duration = Duration::from_millis(500);
 
-fn serve_connection(stream: UnixStream, session: &mut Session) -> io::Result<()> {
-    serve_connection_until(stream, session, Instant::now() + EXCHANGE_BUDGET)
-}
-
-fn serve_connection_until(
-    stream: UnixStream,
-    session: &mut Session,
-    deadline: Instant,
-) -> io::Result<()> {
-    // Invalid/malformed peers must not prevent reaping independent apps.
-    // A valid Request::Snapshot/Cancel already refreshes in handle(), but
-    // rejected frames never reach handle(). Refresh before parsing every peer.
-    session.refresh();
-    let result = (|| {
-        require_same_uid_peer(&stream)?;
-        let mut stream = deadline::DeadlineStream::new(stream, deadline);
-        serve_request(&mut stream, session)
-    })();
-    // A child may exit while the request is incomplete or its response cannot
-    // be delivered. Reap on every return path before accepting the next peer.
-    session.refresh();
-    result
-}
-
-fn serve_request(stream: &mut deadline::DeadlineStream, session: &mut Session) -> io::Result<()> {
-    let response = match read_frame(&mut *stream) {
-        Ok(frame) => match parse_host_request(&frame) {
-            // Parsing a bounded frame must not allow an expired exchange to
-            // begin a launch/cancel effect after its read allowance elapsed.
-            Ok(command) => {
-                stream.remaining()?;
-                session.handle(command)
-            }
-            Err(error) => Response::Error {
-                message: format!("Invalid IPC request: {error}"),
-                session_instance: session.instance.clone(),
-            },
-        },
-        Err(error) => Response::Error {
-            message: format!("Invalid IPC frame: {error}"),
-            session_instance: session.instance.clone(),
-        },
-    };
-    // Never emit a partial/truncated JSON frame or silently lose lifecycle
-    // provenance if a future TaskRecord field makes a snapshot too large.
-    match write_frame(&mut *stream, &response) {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == io::ErrorKind::InvalidData => write_frame(
-            &mut *stream,
-            &Response::Error {
-                message: "Session snapshot is too large; no task state is being asserted".into(),
-                session_instance: session.instance.clone(),
-            },
-        ),
-        Err(error) => Err(error),
-    }
-}
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum NotesBootstrapMode {
     None,
@@ -877,27 +828,15 @@ fn main() -> io::Result<()> {
     if let Some(bootstrap) = notes_bootstrap {
         session.start_bootstrapped_notes(bootstrap)?;
     }
-    // Reap children even while the shell/client is stopped. Blocking
-    // incoming() would accumulate zombies until the GUI reconnects.
+    // Every tick reaps children and advances bounded nonblocking peers.
+    // A partial request or blocked reader cannot monopolize the owner loop.
     listener.set_nonblocking(true)?;
+    let mut server = ipc::Server::default();
     loop {
-        match listener.accept() {
-            Ok((stream, _addr)) => {
-                stream.set_nonblocking(false)?;
-                if let Err(e) = serve_connection(stream, &mut session) {
-                    eprintln!("session request error: {e}");
-                }
-            }
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                session.refresh();
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
-            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
-            Err(e) => {
-                eprintln!("session accept error: {e}");
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
+        if let Err(error) = server.tick(&listener, &mut session) {
+            eprintln!("session accept error: {error}");
         }
+        std::thread::sleep(Duration::from_millis(10));
     }
 }
 

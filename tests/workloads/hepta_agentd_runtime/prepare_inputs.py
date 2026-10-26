@@ -5,7 +5,9 @@ Default mode only validates fixed clean source checkouts and the caller-retained
 ordinary kernel build receipt. --execute builds with the reviewed installed Rust, offline
 dependencies, and a new output directory. Both existing Cargo target caches can
 be selected explicitly and leased exclusively. --fetch-dependencies explicitly
-warms the two original locked dependency graphs first. No built binary is launched.
+warms the two original locked Linux dependency graphs first. Fixture metadata
+uses that same reviewed target, without requiring unrelated Android/Windows
+packages in the offline cache. No built binary is launched.
 """
 import argparse
 from contextlib import ExitStack, contextmanager
@@ -28,6 +30,7 @@ import reviewed_toolchain as toolchain
 import dependency_artifacts
 
 require, sha, save = gate.require, gate.sha, gate.save
+USERSPACE_TARGET = "x86_64-unknown-linux-gnu"
 
 
 def git(source, *arguments):
@@ -216,16 +219,18 @@ def build_userspace(args, roots, out, report, source_files, receipt, environment
                 ("observer", roots["desktop"], observer_target, roots["desktop"] / "services/hepta-os/Cargo.toml"),
                 ("agentd", roots["hepta"] / "codex-rs", original_target, roots["hepta"] / "codex-rs/Cargo.toml")):
             steps.append(("fetch-" + name, cwd, target,
-                          ["fetch", "--locked", "--target", "x86_64-unknown-linux-gnu", "--manifest-path", str(manifest)]))
+                          ["fetch", "--locked", "--target", USERSPACE_TARGET, "--manifest-path", str(manifest)]))
     steps += [
         ("observer", roots["desktop"], observer_target,
          ["build", "--locked", "--offline", "--manifest-path", str(roots["desktop"] / "services/hepta-os/Cargo.toml"), "--bin", "hepta-observe"]),
         ("agentd", roots["hepta"] / "codex-rs", original_target,
          ["build", "--locked", "--offline", "--profile", "dev-small", "--no-default-features", "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd", "-j1"]),
         ("fixture-resolution", fixture, original_target,
-         ["metadata", "--offline", "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
+         ["metadata", "--offline", "--filter-platform", USERSPACE_TARGET,
+          "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
         ("fixture-locked-metadata", fixture, original_target,
-         ["metadata", "--locked", "--offline", "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
+         ["metadata", "--locked", "--offline", "--filter-platform", USERSPACE_TARGET,
+          "--format-version", "1", "--manifest-path", str(fixture / "Cargo.toml")]),
         ("fixture", fixture, original_target,
          ["build", "--locked", "--offline", "--profile", "dev-small", "--manifest-path", str(fixture / "Cargo.toml"), "-j1"]),
     ]

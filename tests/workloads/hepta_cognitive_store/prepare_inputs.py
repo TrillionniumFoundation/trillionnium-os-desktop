@@ -2,7 +2,8 @@
 """Build an external fixture against fixed, clean, unchanged Hepta libraries.
 
 The default performs source preflight only. --execute performs offline builds;
-no daemon, model, provider, or store process is launched by this preparer.
+metadata selects the same Linux target as the original native userspace lane.
+No daemon, model, provider, or store process is launched by this preparer.
 """
 import argparse
 from contextlib import nullcontext
@@ -188,8 +189,10 @@ def build_store(source, out, review, report, target, environment, versions, help
     runner = out / "runner"
     omission = prepare_runner(source, runner)
     commands = [
-        ("resolution", ["metadata", "--offline", "--format-version", "1"]),
-        ("locked-metadata", ["metadata", "--locked", "--offline", "--format-version", "1"]),
+        ("resolution", ["metadata", "--offline", "--filter-platform", "x86_64-unknown-linux-gnu",
+                        "--format-version", "1"]),
+        ("locked-metadata", ["metadata", "--locked", "--offline", "--filter-platform", "x86_64-unknown-linux-gnu",
+                             "--format-version", "1"]),
         ("build", ["build", "--locked", "--offline", "--profile", "dev-small"]),
         ("clippy", ["clippy", "--locked", "--offline", "--profile", "dev-small", "--", "-D", "warnings"]),
     ]

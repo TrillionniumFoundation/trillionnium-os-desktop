@@ -127,6 +127,12 @@ jobs:
             --features trill-shell/hepta-native-makepad \
             --filter-platform x86_64-unknown-linux-gnu \
             > "$evidence/native-metadata.json" 2> "$evidence/native-metadata.stderr.log"
+          # The standalone host has a different lock and optional Agentd graph.
+          # Resolve it before any test can fail: the always() offline postcheck
+          # must compare a graph that was actually fetched in this invocation.
+          cargo metadata --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features native-text --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            > "$evidence/native-text-metadata.json" 2> "$evidence/native-text-metadata.stderr.log"
           python3 -I -B - <<'PY' 2>&1 | tee "$evidence/native-source-validation.log"
           import json, os, sys
           from pathlib import Path
@@ -272,6 +278,9 @@ jobs:
           caches = product.verify_source_caches(metadata, source['commit'], source['tree'], profile)
           checked = dependencies.verify(Path.cwd(), Path(caches['hepta']['root']))
           host = json.loads((evidence / 'native-text-metadata-after.json').read_text())
+          host_before = json.loads((evidence / 'native-text-metadata.json').read_text())
+          if host != host_before:
+              raise SystemExit('Standalone native-text dependency graph changed during CI')
           host_packages = [p for p in host['packages'] if p['name'] == 'hepta-session-host']
           if len(host_packages) != 1:
               raise SystemExit('Expected one standalone original host adapter package')

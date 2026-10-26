@@ -61,6 +61,7 @@ The targeted regression commands are:
 
 ```sh
 RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-core --test notes_store --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-core --test notes_store_process --locked
 RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-app-window --locked notes_organ::worker::tests
 ```
 
@@ -70,6 +71,20 @@ UTF-8 previews, failed destination writes, actual restoring-process SIGKILL and
 an intervening original effect on the worker queue. They do not by themselves
 qualify a real compositor window, physical power failure, or production Hepta
 authorization.
+
+The normal store suite remains parallel. Process creation and SIGKILL scenarios
+live in the separate `notes_store_process` test executable, whose process
+scenarios serialize with each other. Its ignored fixture functions are launched
+explicitly by their parent tests; running only the ignored fixtures is not a
+standalone test command. This separation matters because `O_CLOEXEC` closes a
+descriptor at exec, not at fork. An unrelated test child paused before exec can
+retain a shared flock open-file description after another test drops its store.
+The deterministic `fork_inherits_the_lock_until_exec_even_after_the_parent_store_is_dropped`
+regression holds that exact boundary, verifies immediate `WouldBlock` while the
+child retains the lock, then verifies recovery after exec while the child is
+still alive. It checks the original receipt and continued rejection of effects;
+neither production acquisition retries nor a global single-threaded test run
+are used to hide lock contention.
 
 ## Native close and committed input
 
@@ -139,7 +154,10 @@ hard links, foreign ownership and group/world permissions.
 Creation is exclusive. An existing incarnation directory, including one left
 by interrupted initialization, is never reset or silently adopted. A process
 holds the incarnation's `flock` throughout its lifetime. A competing recovery
-process is refused while that lock is held.
+process is refused immediately while that lock is held. The lock descriptor is
+close-on-exec. If an owner forks, the lock also remains held by the inherited
+open-file description until that child closes it, executes another program, or
+exits; dropping the parent's store alone does not release that inherited holder.
 
 For a changed state the worker writes a separate file, synchronizes it,
 atomically renames it to `document.json`, and synchronizes the containing
