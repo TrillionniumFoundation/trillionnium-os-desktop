@@ -1,10 +1,14 @@
 # Native accessibility and input acceptance
 
-The Rust eframe/egui renderer enables the locked `accesskit` backend. On Linux,
-AccessKit publishes its semantic tree to AT-SPI. Notes, the objective composer,
-Calculator numeric fields and IME probe, and the restricted Terminal editor
-link their visible labels to their edit controls. This remains an egui renderer;
-it does not add a WebView, Makepad runtime, mobile port or Asterinas compositor.
+The Rust eframe/egui app renderer enables the locked `accesskit` backend. On
+Linux, AccessKit publishes its semantic tree to AT-SPI. Notes, Calculator
+numeric fields and IME probe, and the restricted Terminal editor link their
+visible labels to their edit controls. The egui shell composer has the same
+label contract. The prepared native product shell instead uses the shared
+Makepad presenter and its separate [native input and accessibility
+contract](NATIVE_MAKEPAD.md). Each renderer requires acceptance on its own
+final packaged ELF; results from the egui Calculator do not qualify the
+Makepad shell, a mobile port or the Asterinas compositor.
 
 All effect controls use the shared `ActivationGuard`. A focused fresh
 Enter/Space, a primary pointer click or an explicit AccessKit action can
