@@ -25,6 +25,7 @@ fn fixture() -> (DesktopComposition, Receiver<Request>, Receiver<Request>) {
         .observe("current-session", ready, Instant::now());
     let composition = DesktopComposition {
         desktop,
+        notes_ui: NotesUiMode::Objective,
         refresh_pending: false,
         closed: false,
         displayed_recovery_warning: None,
@@ -34,6 +35,21 @@ fn fixture() -> (DesktopComposition, Receiver<Request>, Receiver<Request>) {
         last_native_tab: NativeWorkspaceTab::Conversations,
     };
     (composition, requests, observations)
+}
+
+#[test]
+fn original_thread_mode_hides_literal_controls_and_rejects_cached_actions_without_dispatch() {
+    let (mut composition, requests, observations) = fixture();
+    let source = source(&composition);
+    let draft = composition.workspace().draft().clone();
+    composition.notes_ui = NotesUiMode::OriginalThread;
+    assert!(composition.notes_view().is_none());
+    assert!(composition.request_write_note(source).is_err());
+    assert!(composition.request_notes_refresh(source).is_err());
+    assert!(composition.request_notes_cancel(source).is_err());
+    assert!(requests.try_recv().is_err());
+    assert!(observations.try_recv().is_err());
+    assert_eq!(composition.workspace().draft(), &draft);
 }
 
 fn source(composition: &DesktopComposition) -> RoomKey {

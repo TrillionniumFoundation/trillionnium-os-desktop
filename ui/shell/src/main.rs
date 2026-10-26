@@ -62,6 +62,7 @@ struct StartupOptions {
     page_explicit: bool,
     hepta_layout_probe: bool,
     renderer: Renderer,
+    notes_ui: NotesUiMode,
     workspace: Workspace,
     workspace_explicit: bool,
 }
@@ -72,6 +73,13 @@ enum Renderer {
     Makepad,
 }
 
+/// Presentation restriction only; this option never grants Notes authority.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum NotesUiMode {
+    Objective,
+    OriginalThread,
+}
+
 fn parse_startup_options(
     args: impl IntoIterator<Item = String>,
 ) -> Result<StartupOptions, &'static str> {
@@ -80,11 +88,13 @@ fn parse_startup_options(
         page_explicit: false,
         hepta_layout_probe: false,
         renderer: Renderer::Egui,
+        notes_ui: NotesUiMode::Objective,
         workspace: Workspace::Personal,
         workspace_explicit: false,
     };
     let mut page_selected = false;
     let mut renderer_selected = false;
+    let mut notes_ui_selected = false;
     let mut workspace_selected = false;
     let mut args = args.into_iter();
     while let Some(arg) = args.next() {
@@ -105,6 +115,14 @@ fn parse_startup_options(
                     _ => return Err("--workspace requires personal, research or build"),
                 };
                 workspace_selected = true;
+            }
+            "--notes-ui" if !notes_ui_selected => {
+                options.notes_ui = match args.next().as_deref() {
+                    Some("objective") => NotesUiMode::Objective,
+                    Some("original-thread") => NotesUiMode::OriginalThread,
+                    _ => return Err("--notes-ui requires objective or original-thread"),
+                };
+                notes_ui_selected = true;
             }
             "--page" if !page_selected => {
                 options.page = match args.next().as_deref() {
@@ -127,6 +145,9 @@ fn parse_startup_options(
     }
     if options.hepta_layout_probe && options.page != Page::Hepta {
         return Err("--hepta-layout-probe requires --page hepta");
+    }
+    if options.notes_ui == NotesUiMode::OriginalThread && options.renderer != Renderer::Makepad {
+        return Err("original-thread Notes presentation requires --renderer makepad");
     }
     if options.renderer == Renderer::Makepad
         && (options.hepta_layout_probe
@@ -1182,7 +1203,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(options) => options,
         Err(message) => {
             eprintln!("trill-shell: {message}");
-            eprintln!("Usage: trill-shell [--renderer egui|makepad] [--workspace personal|research|build] [--page conversation|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe]");
+            eprintln!("Usage: trill-shell [--renderer egui|makepad] [--notes-ui objective|original-thread] [--workspace personal|research|build] [--page conversation|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe]");
             std::process::exit(2);
         }
     };
@@ -1869,6 +1890,30 @@ mod startup_tests {
         assert!(parse(&["--page", "unknown"]).is_err());
         assert!(parse(&["--page"]).is_err());
         assert!(parse(&["--page", "hepta", "--page", "conversation"]).is_err());
+    }
+
+    #[test]
+    fn original_thread_notes_mode_is_explicit_and_cannot_be_silently_ignored() {
+        let parse = |args: &[&str]| parse_startup_options(args.iter().map(|arg| (*arg).to_owned()));
+        assert!(parse(&[]).unwrap().notes_ui == NotesUiMode::Objective);
+        assert!(
+            parse(&["--renderer", "makepad", "--notes-ui", "original-thread"])
+                .unwrap()
+                .notes_ui
+                == NotesUiMode::OriginalThread
+        );
+        assert!(parse(&["--notes-ui", "original-thread"]).is_err());
+        assert!(parse(&["--notes-ui", "unknown"]).is_err());
+        assert!(parse(&["--notes-ui"]).is_err());
+        assert!(parse(&[
+            "--renderer",
+            "makepad",
+            "--notes-ui",
+            "original-thread",
+            "--notes-ui",
+            "objective"
+        ])
+        .is_err());
     }
 }
 

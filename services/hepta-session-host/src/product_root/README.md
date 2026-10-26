@@ -136,6 +136,9 @@ FD numbers. Additional startup/recovery modes need their own explicit contract.
    child. Verify its kernel credentials, exact public receipt/profile hash and
    one held login leader. The original Root independently verifies and retains
    that same physical login before launching the actual Makepad shell.
+   This model product explicitly selects the Shell's original-thread Notes
+   presentation. It hides the separate literal Objective buttons; saved-result
+   queries belong to the original chat tools, not a new Session target.
 9. The same prepared Root first completes native child registration and binds
    all five real authority listeners with the original custody checks. Only
    its successful ready callback sends the held bootstrap once to Agentd,

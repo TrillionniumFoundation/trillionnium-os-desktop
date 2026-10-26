@@ -1,6 +1,6 @@
 //! Moves the existing Desktop state into the original Hepta Makepad App.
 //! No task/health observation can create chat authority or a transcript.
-use super::{Desktop, Page, StartupOptions, WorkspaceTab};
+use super::{Desktop, NotesUiMode, Page, StartupOptions, WorkspaceTab};
 use hepta_session_host::text::TextChatAdapter;
 use std::fmt::Write;
 use std::sync::Arc;
@@ -13,6 +13,7 @@ use trill_ui_core::shared_chat::{ChatWorkspace, NativeWorkspaceTab, RoomKey};
 
 struct DesktopComposition {
     desktop: Desktop,
+    notes_ui: NotesUiMode,
     refresh_pending: bool,
     closed: bool,
     displayed_recovery_warning: Option<String>,
@@ -50,6 +51,9 @@ impl DesktopComposition {
 
     fn validate_notes_source(&self, source: RoomKey) -> Result<(), String> {
         self.validate_source(source)?;
+        if self.notes_ui == NotesUiMode::OriginalThread {
+            return Err("请在当前对话中保存笔记或核对上次结果。".into());
+        }
         if self.workspace().tab != NativeWorkspaceTab::Conversations
             || self.workspace().navigation_open
         {
@@ -169,7 +173,7 @@ impl NativeChatComposition for DesktopComposition {
     }
 
     fn notes_view(&self) -> Option<NativeNotesView> {
-        if self.closed {
+        if self.closed || self.notes_ui == NotesUiMode::OriginalThread {
             return None;
         }
         let view = self.desktop.notes_controls_view();
@@ -361,6 +365,7 @@ pub(super) fn run(options: StartupOptions) -> Result<(), String> {
     let root = super::native_resources::verified_root()?;
     let mut composition = DesktopComposition {
         desktop: Desktop::from_options(options),
+        notes_ui: options.notes_ui,
         refresh_pending: true,
         closed: false,
         displayed_recovery_warning: None,

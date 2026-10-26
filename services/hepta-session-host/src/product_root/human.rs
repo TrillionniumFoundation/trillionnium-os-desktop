@@ -63,7 +63,7 @@ pub(super) fn capture(
         &json!({
             "schema_version":1, "program":&inputs.programs.shell,
             "program_sha256":fs::digest(&inputs.programs.shell)?,
-            "arguments":["--renderer","makepad"], "working_directory":&fresh.user,
+            "arguments":["--renderer","makepad","--notes-ui","original-thread"], "working_directory":&fresh.user,
             "environment": environment, "socket_path": fresh.prefix.join("r/root-text.sock"),
             "route":&files.route, "human_lifetime_ms": human_lifetime_ms,
             "can_interrupt":true, "can_resolve_approvals":false,

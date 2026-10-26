@@ -1,5 +1,13 @@
 # trill-shell
 
+The original-thread Notes product launches Makepad with `--notes-ui original-thread`.
+Notes writes and previous-result checks then use the original chat tools. This
+presentation option hides the separate literal Objective controls and rejects
+their cached callbacks without dispatch, so their Refresh action cannot query a
+new document and masquerade as the previous model operation. The default
+`objective` presentation keeps the existing local bridge. This option only
+removes controls; it supplies no authority or thread identity.
+
 The native Rust presentation process, with egui/eframe and the explicitly
 selected original Makepad renderer. Workspace/Chat is the default entry;
 Tasks, Context and Console are workspace views.
