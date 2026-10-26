@@ -358,3 +358,90 @@ fn prepared_group_queue_refuses_an_unadmitted_task_without_losing_it_or_growing(
     drop(task);
     drop(process);
 }
+
+#[ktest]
+fn prepared_route_keeps_deep_cpu_topology_until_the_last_queue_is_retired() {
+    let fixture = Fixture::new("w4a-route-toggle");
+    let rq = fixture.runqueue();
+    let p = Arc::downcast::<CgroupNode>(fixture.leaves[0].parent().unwrap()).unwrap();
+    let original = cpu(fixture.leaves[0].controller());
+    let refused = p.store_attr("cgroup.subtree_control", "-cpu").is_err();
+    let unchanged = Arc::ptr_eq(&original, &cpu(fixture.leaves[0].controller()));
+    // Preserve cleanup on the old implementation too: its actual acceptance
+    // is recorded by the deferred assertion, never hidden by a cleanup panic.
+    if !refused {
+        p.store_attr("cgroup.subtree_control", "+cpu").unwrap();
+    }
+    drop(rq);
+    p.store_attr("cgroup.subtree_control", "-cpu").unwrap();
+    p.store_attr("cgroup.subtree_control", "+cpu").unwrap();
+    drop(fixture);
+    assert!(
+        refused,
+        "prepared route allowed its CPU incarnation to be replaced"
+    );
+    assert!(
+        unchanged,
+        "refusal must leave the original CPU incarnation installed"
+    );
+}
+
+#[ktest]
+fn prepared_route_pins_inactive_raw_cpu_levels_before_normalization() {
+    let fixture = Fixture::new("w4a-route-inactive");
+    let p = Arc::downcast::<CgroupNode>(fixture.leaves[0].parent().unwrap()).unwrap();
+    p.store_attr("cgroup.subtree_control", "-cpu").unwrap();
+    let effective = CpuSchedulingGroup::for_task(&fixture.tasks[0]).unwrap();
+    let parent = effective.parent().unwrap();
+    let groups = [(parent, 0), (effective, 1)];
+    let bindings = [(fixture.tasks[0].clone(), 2)];
+    let rq = CpuRunQueueFixture::with_groups(
+        fixture.tasks[0].clone(),
+        fixture.start,
+        &groups,
+        &bindings,
+    )
+    .unwrap();
+    let original = cpu(fixture.leaves[0].controller());
+    let refused = p.store_attr("cgroup.subtree_control", "+cpu").is_err();
+    let unchanged = Arc::ptr_eq(&original, &cpu(fixture.leaves[0].controller()));
+    if !refused {
+        p.store_attr("cgroup.subtree_control", "-cpu").unwrap();
+    }
+    drop(rq);
+    p.store_attr("cgroup.subtree_control", "+cpu").unwrap();
+    drop(fixture);
+    assert!(
+        refused,
+        "normalization discarded an inactive raw incarnation lease"
+    );
+    assert!(
+        unchanged,
+        "rejected activation replaced an inactive raw incarnation"
+    );
+}
+
+#[ktest]
+fn prepared_route_keeps_an_empty_node_until_the_last_queue_is_retired() {
+    let mut fixture = Fixture::new("w4a-route-rmdir");
+    let rq = fixture.runqueue();
+    for (process, task) in fixture.processes.iter().zip(&fixture.tasks) {
+        CgroupMembership::write_lock().move_process_to_root(process);
+        task.as_posix_thread().unwrap().set_cpu_cgroup(None);
+    }
+    // b has no CurrentRuntime; only its prepared, currently empty task slots
+    // can retain it once all real memberships/final-charge backups are gone.
+    let p = Arc::downcast::<CgroupNode>(fixture.leaves[1].parent().unwrap()).unwrap();
+    let refused = p.remove_child("b").is_err();
+    if !refused {
+        fixture.leaves[1] = Arc::downcast::<CgroupNode>(p.create_child("b").unwrap()).unwrap();
+    }
+    drop(rq);
+    p.remove_child("b").unwrap();
+    fixture.leaves[1] = Arc::downcast::<CgroupNode>(p.create_child("b").unwrap()).unwrap();
+    drop(fixture);
+    assert!(
+        refused,
+        "prepared task slots allowed their original node to be removed"
+    );
+}
