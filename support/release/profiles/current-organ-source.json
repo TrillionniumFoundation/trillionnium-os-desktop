@@ -37,8 +37,8 @@
     }
   ],
   "hepta": {
-    "commit": "f79cada8cbf47b862ab8b00b80724c6fbe0c193e",
-    "tree": "1be4f7aea1b0a99d37b0d8f6913b815de395bde4"
+    "commit": "e5379be5be6e75e302b1cbdeefa6e0140dec9f49",
+    "tree": "2b474c8e7b97d56a25fe9ac1fcde6eea303c57fe"
   },
   "original_history_owner": "995b6fb9ef73ada7c3348b01deb28940a2c4a2d1",
   "os_identity_binding": "explicit_caller_head_and_tree_in_verification_receipt",
@@ -57,7 +57,7 @@
   },
   "qualification": "source-only",
   "schema_version": 3,
-  "source_map_sha256": "7fddc8ff20d0e768ad018a814d4d60994995c43615b53c5ba47bb574ca6d42f2",
+  "source_map_sha256": "a3df5d9a7ab4764ac6054f2c92e99aeb826688cfc09a50e2e504354f95164a61",
   "sources": {
     "hepta": [
       {
@@ -516,11 +516,11 @@
         "sha256": "b807df52a26ed220f507dc5dee0e2bca36eea6c06e33d4d27f6b31aa37ee4e50"
       },
       {
-        "bytes": 12685,
-        "git_blob": "e83c09cd693de9c59dadfcc26dc6b7db8c768702",
+        "bytes": 13483,
+        "git_blob": "3b7e0dfbf7f1fa6c0c1bf7c14166530d314d9ede",
         "path": "codex-rs/hepta-agentd/src/bin/native_owner_qualification/agent.rs",
         "role": "native_owner_agent",
-        "sha256": "5aa61c6d15283da546916a88bc8e4c9fe8737b0333758b1cbec92554e7650848"
+        "sha256": "c1ab43d803e5ea9450ab3dc89d47a5229222e9489c3395051c9ccc5e7fdfddfd"
       },
       {
         "bytes": 8543,
@@ -530,11 +530,11 @@
         "sha256": "8ba11684c03e2497aa4cfcb1f285815ec79285567af5c30ed6c656a2390c477c"
       },
       {
-        "bytes": 9061,
-        "git_blob": "b8c6122c9b07fd3d87238b7d2a424c613fd64019",
+        "bytes": 9577,
+        "git_blob": "ead0380571ba8d334ec4046da8dbc28b1162cb53",
         "path": "codex-rs/hepta-agentd/NATIVE_OWNER_QUALIFICATION.md",
         "role": "native_owner_contract",
-        "sha256": "621db5ff25bbaa67341752785c20b02e808a63327e94b01e4141086d431cde19"
+        "sha256": "37d42716520429c9e60734467eb5ae5ffe4c1921966ec8974856f428b72115e2"
       },
       {
         "bytes": 1439,
@@ -1090,6 +1090,34 @@
         "path": "libs/os-abi/src/lib.rs",
         "role": "hos2_wire",
         "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f"
+      },
+      {
+        "bytes": 1303,
+        "git_blob": "f3250625351311a0a8cd964e06bcd840662eb11c",
+        "path": "tests/kernel/affinity-auth/README.md",
+        "role": "kernel_affinity_contract",
+        "sha256": "6a1d45b0ac43db1441e8dff47556a1b62b7b2e6f4025211da81c334ef4fd30b8"
+      },
+      {
+        "bytes": 5182,
+        "git_blob": "50d20bf0757643c3e91373b4a72666b86f453cc8",
+        "path": "kernel/asterinas/kernel/core/src/syscall/sched_affinity.rs",
+        "role": "kernel_affinity_owner",
+        "sha256": "d0187c3b291bcaf474b4829a678a81286e1f20d03b19d42808e66d42e9d0b67a"
+      },
+      {
+        "bytes": 4110,
+        "git_blob": "8f3d174c66bccbbf163cce4c647a5a03690a1535",
+        "path": "tests/kernel/affinity-auth/probe.c",
+        "role": "kernel_affinity_probe",
+        "sha256": "1f953a27be06e22d88cc6075b9a3e674e20c85629e3529b705cf543f52158b78"
+      },
+      {
+        "bytes": 624,
+        "git_blob": "f756c822dc1fb4d09118136dfda619ac0a151592",
+        "path": "tests/kernel/affinity-auth/run.py",
+        "role": "kernel_affinity_runner",
+        "sha256": "466be551a6f609e473a840baf8934c40549b762809061cd99613e1ac8d8ec26f"
       },
       {
         "bytes": 38212,
@@ -2072,6 +2100,13 @@
         "sha256": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef"
       },
       {
+        "bytes": 1845,
+        "git_blob": "fce17a8d211d4e161d8bda3cc7ae348890ca5667",
+        "path": "ui/session/README.md",
+        "role": "session_development_contract",
+        "sha256": "9f4974f2b18bad885d68a22b7532c3b1628da3d526596e19897ef0de4497cf62"
+      },
+      {
         "bytes": 64219,
         "git_blob": "3ad0bdb762baca77aab567671a9fb922a284f6e9",
         "path": "ui/session/src/main.rs",
@@ -2084,6 +2119,20 @@
         "path": "ui/session/src/ipc.rs",
         "role": "session_ipc",
         "sha256": "8bb05a5e97795369b69ef47431b7be72377ec0f8ba92413420476d7ee70d9021"
+      },
+      {
+        "bytes": 5499,
+        "git_blob": "0cebae5d83f0a49016bab1ef2dfc10bcc15f915d",
+        "path": "ui/session/tests/hepta_observer.rs",
+        "role": "session_observer_oracle",
+        "sha256": "f5c5a5c58e320178df20518cec2a3fbdedab5be18d50e144fab10a65c6f66b27"
+      },
+      {
+        "bytes": 13027,
+        "git_blob": "08e64887db3fab05ab0f66b77f2daa4110047d32",
+        "path": "ui/session/tests/ipc_reconnect.rs",
+        "role": "session_reconnect_oracle",
+        "sha256": "7b49cc431bb1e19ceb915c37b6f81d11d835164d1dac6d5b3e2f7d50cb81e6d6"
       },
       {
         "bytes": 84850,
