@@ -269,7 +269,13 @@ fn restored_copy_survives_process_death_while_original_receipt_remains_recoverab
     let receipt = original.apply_exact(&request()).unwrap();
     drop(original);
     let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--exact", "restore_then_wait_fixture", "--nocapture"])
+        .args([
+            "--exact",
+            "restore_then_wait_fixture",
+            "--nocapture",
+            "--format=terse",
+            "--test-threads=1",
+        ])
         .env("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT", &root.0)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -460,7 +466,13 @@ fn failed_storage_freezes_effects_until_independent_recovery() {
 fn durable_receipt_survives_sigkill_before_delivery() {
     let root = Directory::new();
     let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--exact", "persist_then_wait_fixture", "--nocapture"])
+        .args([
+            "--exact",
+            "persist_then_wait_fixture",
+            "--nocapture",
+            "--format=terse",
+            "--test-threads=1",
+        ])
         .env("TRILL_NOTES_TEST_CHILD_ROOT", &root.0)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
