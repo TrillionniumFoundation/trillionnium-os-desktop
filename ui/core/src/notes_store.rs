@@ -55,6 +55,15 @@ pub struct NotesStore {
     frozen: bool,
 }
 
+impl Drop for NotesStore {
+    fn drop(&mut self) {
+        // A concurrent fork can retain the open description until exec even
+        // though its fd is CLOEXEC. Retiring this owner must release its lock
+        // now, rather than wait for an unrelated child's inherited fd to close.
+        let _ = unsafe { libc::flock(self._lock.as_raw_fd(), libc::LOCK_UN) };
+    }
+}
+
 impl NotesStore {
     /// Create a fresh incarnation. Existing names are never reset or adopted,
     /// including a partially created directory left by a crashed predecessor.
@@ -449,3 +458,7 @@ fn replace_checkpoint(directory: &File, bytes: &[u8]) -> io::Result<()> {
     }
     directory.sync_all()
 }
+
+#[cfg(test)]
+#[path = "notes_store_lock_tests.rs"]
+mod lock_tests;
