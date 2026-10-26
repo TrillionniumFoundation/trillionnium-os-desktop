@@ -1,5 +1,7 @@
 //! Finite Linux first-product Root composition. Existing/partial state is an
 //! error. The original libraries own authority, lifecycle, queues and effects.
+mod admin;
+mod admin_client;
 mod authority;
 mod config;
 mod fs;
@@ -27,6 +29,10 @@ use std::os::unix::net::UnixDatagram;
 use std::path::Path;
 
 pub(super) type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+pub(super) fn administer(args: impl Iterator<Item = OsString>) -> Result<()> {
+    admin_client::run(args)
+}
 
 pub(super) fn initialize(path: &Path) -> Result<()> {
     root_environment()?;
@@ -285,13 +291,12 @@ fn run(
         }),
     )?;
     let (profile, leader) = human::capture(&inputs, &fresh, &files, &human_owner, &environment)?;
-    let prepared = prepared.with_original_logind_session(&profile, leader)?;
+    let mut prepared = prepared.with_original_logind_session(&profile, leader)?;
+    let admin_capability = prepared.enable_root_admin()?;
+    let admin_lane = admin::Lane::bind(&fresh.admin, admin_capability)?;
     // Same retained issuer/clock/Root instance. No open-only CLI child replaces it.
-    let result = prepared.launch_native_with_ready(
-        &files.config,
-        &files.registration,
-        &profile,
-        move || {
+    let result = admin_lane.serve_during(|| {
+        prepared.launch_native_with_ready(&files.config, &files.registration, &profile, move || {
             // Human/login checks, native spawn and registration are complete,
             // and all five original Root listeners can now accept. Release
             // only this one inherited episode, without reconnect or renewal.
@@ -302,8 +307,9 @@ fn run(
                 packet::remaining(end).map_err(|error| std::io::Error::other(error.to_string()))?,
             )
             .map_err(std::io::Error::other)
-        },
-    );
+        })
+    });
+    drop(admin_lane);
     drop(monitor); // Original Supervisor stop/kill/reap only its actual child.
     drop(session_owner);
     drop(runtime);
