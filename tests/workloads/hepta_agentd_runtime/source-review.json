@@ -1,14 +1,14 @@
 {
   "desktop": {
-    "head": "774df6c2abab4274bcc8081d23018dbd22613d7b",
-    "tree": "a40ec27901b55bba84514fd9c9d0fa59dd6b2401"
+    "head": "2507bbf6ab57176f71885ed1492a75b4325d8fb9",
+    "tree": "3997b29c3dbcad01f210b10cd9388c05ce64ed2c"
   },
   "hepta": {
     "head": "760363e06c5f4a115de039ffa7bd7e7767bd1fd9",
     "tree": "87bcc851d794c89ede183353e7493461b931ebed"
   },
   "schema": "hepta.native-original-runtime-source-review.v1",
-  "scope": "Source identity freeze for Desktop 774df6c2abab4274bcc8081d23018dbd22613d7b and unchanged Hepta 760363e06c5f4a115de039ffa7bd7e7767bd1fd9. The complete Git trees and 374 selected kernel, original-owner, build, toolchain, safety, G1-d and UI release source files are bound. The separately pinned runner must match the reviewed code inputs and build these exact clean source commits. Preedit lock materialization creates a separately identified child of this Desktop source; its package and window receipts must name that child. This review is not build, execution, production, full F1 or G2 evidence; all prior receipts retain their original identities.",
+  "scope": "Source identity freeze for Desktop 2507bbf6ab57176f71885ed1492a75b4325d8fb9 and unchanged Hepta 760363e06c5f4a115de039ffa7bd7e7767bd1fd9. The complete Git trees and 380 selected kernel, original-owner, build, toolchain, safety, G1-d, UI release and documentation guard source files are bound. The separately pinned runner must match the reviewed code inputs and build these exact clean source commits. Preedit lock materialization creates a separately identified child of this Desktop source; its package and window receipts must name that child. This review is not build, execution, production, full F1 or G2 evidence; all prior receipts retain their original identities.",
   "source_files": [
     {
       "git_blob": "9762d850a553c80275c801865ff70ecf58a51c56",
@@ -51,6 +51,24 @@
       "path": ".github/workflows/organ-release-profile.yml",
       "repository": "desktop",
       "sha256": "ee085c844b37b092f920dcdef6eb0cc2a29ad752b86edbf870b4504e244bdb69"
+    },
+    {
+      "git_blob": "e453c0bea755bd18bf9f8794fff4c0356a5465f7",
+      "path": "README.md",
+      "repository": "desktop",
+      "sha256": "7b05a1ac62cbb6d659e3f966ce9ce04dd58afa59e0dff24a4d9c290abe2cd712"
+    },
+    {
+      "git_blob": "e62d9add284847a1f36ae9a179b903a315e54685",
+      "path": "docs/CURRENT_CAPABILITIES.md",
+      "repository": "desktop",
+      "sha256": "b6064b091c84222b421fe48fdd044cb8e50b379a92e0d7d8e14222bd4bd0920b"
+    },
+    {
+      "git_blob": "31e2d704f675e2e2690556f6b438d8395e3dd0fa",
+      "path": "docs/modules/catalogue.json",
+      "repository": "desktop",
+      "sha256": "3cf390cdb7316368990a17368943874e5a56db474057fd8efd5fd2b804e7cedb"
     },
     {
       "git_blob": "7dd467280ef2141d30572757345ee787703ff5ea",
@@ -695,6 +713,12 @@
       "sha256": "0e1128e928c2ca4016b9b3ba0d68119bbf71bb336a1870d6a7cc926f662a579b"
     },
     {
+      "git_blob": "3caaeec7fdb25af55699e0fe26b863d7570a968e",
+      "path": "support/android/receiver/README.md",
+      "repository": "desktop",
+      "sha256": "521058d82b7a9208b0c3495f1be351758d2b7ebd910df0f7c7f670a421ba211c"
+    },
+    {
       "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
       "path": "support/build/check-boot.py",
       "repository": "desktop",
@@ -783,6 +807,18 @@
       "path": "support/build/verify-source.py",
       "repository": "desktop",
       "sha256": "b2316499ac611b0df145e1aece38559582c3e8bead5882b09d7fbed98d56d97d"
+    },
+    {
+      "git_blob": "978e647769212bd09d3553d9646b8c30b44c2b92",
+      "path": "support/docs/check_modules.py",
+      "repository": "desktop",
+      "sha256": "fb9e6488e5c5362a9d2a7848b5c5b0cc4929747780470b6e8b62b3266826ee43"
+    },
+    {
+      "git_blob": "e851859d46d4bb4deb5a76bdca0cc49ee11d7013",
+      "path": "support/docs/test_check_modules.py",
+      "repository": "desktop",
+      "sha256": "93e82c7f0528d3ed28425b8db252b22f87e7761600f44e8444ef2d11e068c355"
     },
     {
       "git_blob": "5d73830345f43a8a98ffbedc509b95fc9a48ab97",
