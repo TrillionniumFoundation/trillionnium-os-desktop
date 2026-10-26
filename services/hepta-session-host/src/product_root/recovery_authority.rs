@@ -31,7 +31,7 @@ pub(super) fn writer_expiry(now: u64, issuer_expiry: u64) -> Result<u64> {
 
 pub(super) fn wait_retirement(existing: &Existing) -> Result<u64> {
     let config = &existing.config;
-    config.required_bind.verify()?;
+    super::geometry::verify_existing_bind(&config.required_bind)?;
     // The original registry can initialize missing paths: refuse those before
     // calling it. Clock/frontier open their existing protected owners only.
     for name in ["authority-leases.lock", "authority-leases.json"] {

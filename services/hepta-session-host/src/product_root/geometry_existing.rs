@@ -3,7 +3,7 @@ use super::*;
 use codex_hepta_agentd::{HostAuthorityRegistration, HostAuthorityServiceConfig};
 
 impl Product {
-    pub(super) fn open_existing(
+    pub(in crate::product_root) fn open_existing(
         inputs: &Inputs,
         config: &HostAuthorityServiceConfig,
         prior: &HostAuthorityRegistration,
@@ -83,7 +83,7 @@ impl Product {
             inode: bind.inode,
             owned,
         };
-        bind.verify()?;
+        verify_existing_bind(bind)?;
         let fleet = HeptaFleetRoot::parse(inputs.prefix.join("f"))?;
         let registry = FleetRegistry::open_existing(fleet.clone())?;
         let agent = prior.registered_identity.agent_id.clone();
@@ -118,4 +118,32 @@ impl Product {
             mount,
         })
     }
+}
+
+pub(in crate::product_root) fn verify_existing_bind(
+    bind: &HostAuthorityBindIdentity,
+) -> Result<()> {
+    fs::root_directory(&bind.mountpoint)?;
+    fs::root_directory(&bind.source_path)?;
+    let source = std::fs::symlink_metadata(&bind.source_path)?;
+    let target = std::fs::metadata(&bind.mountpoint)?;
+    if (source.dev(), source.ino()) != (bind.device, bind.inode)
+        || (target.dev(), target.ino()) != (bind.device, bind.inode)
+        || source.mode() & 0o7777 != 0o700
+        || target.mode() & 0o7777 != 0o700
+    {
+        return Err("original bind geometry changed".into());
+    }
+    let mut mounts = String::new();
+    std::io::Read::take(std::fs::File::open("/proc/self/mountinfo")?, 1_048_577)
+        .read_to_string(&mut mounts)?;
+    let path = bind.mountpoint.to_str().ok_or("mount path is not UTF-8")?;
+    if mounts.len() > 1_048_576
+        || !mounts
+            .lines()
+            .any(|line| line.split_whitespace().nth(4) == Some(path))
+    {
+        return Err("the exact original Root bind is not mounted".into());
+    }
+    Ok(())
 }

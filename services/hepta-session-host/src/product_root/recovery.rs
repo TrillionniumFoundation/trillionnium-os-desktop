@@ -64,6 +64,11 @@ impl Existing {
             fs::read_root_json(&admin.join("original-thread-seed.json"))?;
         let proof = fs::read_root_json(&admin.join("original-writer-proof.json"))?;
         let profile: Value = fs::read_root_json(&admin.join("notes-startup.json"))?;
+        let layout = codex_hepta_paths::HeptaFleetRoot::parse(
+            registration.registered_identity.fleet_root.clone(),
+        )?
+        .layout()
+        .agent(&registration.registered_identity.agent_id);
         if composition.schema != "trill.original-desktop-root.composition.v1"
             || composition.scope.len() > 4096
             || composition.bootstrap_model_turn_sent
@@ -72,13 +77,8 @@ impl Existing {
             || serde_json::to_value(&composition.original_thread_seed)?
                 != serde_json::to_value(&seed)?
             || composition.notes_state_dir != inputs.prefix.join("u/notes")
-            || composition.objective_profile
-                != registration
-                    .registered_identity
-                    .identity()?
-                    .home_root
-                    .join("notes-thread-profile.json")
-            || seed.codex_home != registration.registered_identity.identity()?.home_root
+            || composition.objective_profile != layout.home_root().join("notes-thread-profile.json")
+            || seed.codex_home != layout.home_root()
             || profile["interaction"]["seed"] != serde_json::to_value(&seed)?
             || profile["interaction"]["kind"] != "original_thread_tool_v1"
             || profile["bindings"]["model_tuple_digest"] != seed.model_tuple_digest()?.to_string()

@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 
 #[path = "geometry_existing.rs"]
 mod existing;
+pub(super) use existing::verify_existing_bind;
 
 pub(super) struct Product {
     pub prefix: PathBuf,
