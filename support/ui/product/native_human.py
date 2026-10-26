@@ -177,7 +177,7 @@ def local_session(expected_uid, selected=None):
                 'Invalid logind session listing')
         if selected is not None and session_id != selected:
             continue
-        text = loginctl(['show-session', session_id, '--property=' + ','.join(SESSION_FIELDS)])
+        text = loginctl(['show-session', session_id, *('--property=' + field for field in SESSION_FIELDS)])
         properties = no_duplicates(line.split('=', 1) for line in text.splitlines() if '=' in line)
         try:
             candidates.append(validate_session(properties, expected_uid))

@@ -77,6 +77,7 @@ class HumanProviderTests(unittest.TestCase):
         def logind(arguments):
             if arguments[0] == 'list-sessions':
                 return '19 1000 user seat0\n20 1000 user seat1\n'
+            self.assertEqual(arguments[2:], ['--property=' + field for field in human.SESSION_FIELDS])
             return '\n'.join(f'{key}={value}' for key, value in
                              dict(self.session, Id=arguments[1]).items())
         with patch.object(human, 'loginctl', side_effect=logind):
