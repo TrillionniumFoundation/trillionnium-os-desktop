@@ -106,6 +106,7 @@ impl Inputs {
             "XDG_RUNTIME_DIR",
             "DBUS_SESSION_BUS_ADDRESS",
             "XAUTHORITY",
+            "XMODIFIERS",
             "LANG",
             "LC_ALL",
         ];
@@ -115,6 +116,13 @@ impl Inputs {
             .any(|(k, v)| !allowed.contains(&k.as_str()) || v.len() > 4096 || v.contains('\0'))
         {
             return Err("only bounded original display/session inputs are accepted".into());
+        }
+        if self
+            .environment
+            .get("XMODIFIERS")
+            .is_some_and(|value| value != "@im=ibus")
+        {
+            return Err("the original IBus session is the only native XIM selector".into());
         }
         let runtime = self
             .environment
