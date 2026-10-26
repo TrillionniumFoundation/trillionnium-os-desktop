@@ -195,6 +195,7 @@ pub(super) fn initialize(path: &Path) -> Result<()> {
             "schema":"trill.original-desktop-root.composition.v1",
             "scope":"fresh Root bootstrap and original process composition; model/Notes effect acceptance requires original runtime receipts",
             "registration":registration, "original_thread_seed":seed,
+            "objective_profile":&files.objective,
             "session_pid":session_owner.pid(), "session_birth":packet::pinned_metadata(&session_owner.pidfd, session_owner.pid())?,
             "bootstrap_model_turn_sent":false,
         }),
