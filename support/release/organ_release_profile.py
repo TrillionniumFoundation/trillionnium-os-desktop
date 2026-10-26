@@ -381,10 +381,102 @@ HEPTA_ROLES_V3 = HEPTA_ROLES_V2 | {
 }
 GOLDEN_ROLES_V3 = GOLDEN_ROLES_V2
 
+# Schema4 is a new closed contract. Historical role sets/maps are unchanged.
+OS_ROLES_V4 = OS_ROLES_V3 | {
+    'kernel_cgroup_membership_tree',
+    'kernel_cpu_bandwidth_contract',
+    'kernel_cpu_scheduling_route',
+    'kernel_vdso_cpu_identity_contract',
+    'kernel_vdso_cpu_probe_contract',
+    'kernel_vdso_cpu_probe_runner',
+    'kernel_vdso_cpu_probe_source',
+    'ostd_x86_gdt',
+    'ostd_x86_gdt_oracle',
+    'release_development_contract',
+    'release_pair_execution_oracle',
+    'release_pair_execution_tool',
+    'release_schema4_oracle',
+    'release_source_map_v4',
+    'release_source_profile_oracle',
+    'release_source_profile_tool',
+    'release_technical_contract',
+    'unix_cpunode_guest_runner',
+    'unix_cpunode_profile_contract',
+    'unix_cpunode_profile_oracle',
+    'unix_post1138_fixture_exporter',
+    'unix_post1138_guest_runner',
+    'unix_post1138_historical_fixture',
+    'unix_post1138_profile_oracle',
+    'unix_receiving_fixture_exporter',
+    'unix_receiving_historical_fixture',
+}
+HEPTA_ROLES_V4 = HEPTA_ROLES_V3 | {
+    'agentd_checkpoint_unix_oracle',
+    'agentd_mainline_convergence_contract',
+    'agentd_runtime_task_wiring',
+    'app_server_exports_experimental',
+    'app_server_exports_stable',
+    'app_server_protocol_schema_contract',
+    'app_server_turn_recovery_wire',
+    'bazel_dependency_lock',
+    'cognitive_checkpoint_diagnostic',
+    'cognitive_checkpoint_diagnostic_oracle',
+    'cognitive_checkpoint_suite',
+    'cognitive_memory_module_root',
+    'core_plugins_startup_archive_oracle',
+    'core_plugins_startup_archive_owner',
+    'dependency_security_contract',
+    'kernel_authority_boundary_contract',
+    'kernel_authority_boundary_inventory',
+    'kernel_authority_callers_oracle',
+    'objective_sender_fixture_support',
+    'rollout_compression_oracle',
+    'rollout_fixture_contract',
+    'rollout_fixture_support',
+    'rollout_metadata_oracle',
+    'rollout_module_root',
+    'rollout_recorder_oracle',
+    'rollout_reference_index_oracle',
+    'rollout_reference_suite',
+    'rollout_session_index_oracle',
+    'rollout_state_db_oracle',
+    'root_authority_progress_oracle',
+    'root_host_checkpoint_clock_oracle',
+    'root_observation_progress_oracle',
+    'root_observation_progress_owner',
+    'root_observation_task_label_oracle',
+    'runtime_callers_inventory',
+    'thread_store_archive_owner',
+    'thread_store_delete_owner',
+    'thread_store_development_contract',
+    'thread_store_fixture_support',
+    'thread_store_history_materialization_oracle',
+    'thread_store_history_read_oracle',
+    'thread_store_list_owner',
+    'thread_store_local_module',
+    'thread_store_metadata_update_owner',
+    'thread_store_model_context_oracle',
+    'thread_store_pending_metadata_oracle',
+    'thread_store_read_owner',
+    'thread_store_revert_oracle',
+    'thread_store_rollout_lineage_oracle',
+    'thread_store_rollout_migration_oracle',
+    'thread_store_rollout_migration_startup_oracle',
+    'thread_store_sections_oracle',
+    'thread_store_unarchive_owner',
+    'thread_store_writer_lock_oracle',
+    'zstd_windows_include_patch',
+}
+GOLDEN_ROLES_V4 = GOLDEN_ROLES_V3
+SOURCE_MAP_V4_SHA256 = '7b0d0c83a41c7592bed1ac68f5547d617cd5350e2e75ee0f313312a30cfa7a70'
+
+
 
 def roles_for_version(version):
-    if type(version) is not int or version not in (1, 2, 3):
+    if type(version) is not int or version not in (1, 2, 3, 4):
         raise ProfileError("unsupported source map schema_version")
+    if version == 4:
+        return OS_ROLES_V4, HEPTA_ROLES_V4, GOLDEN_ROLES_V4
     if version == 3:
         return OS_ROLES_V3, HEPTA_ROLES_V3, GOLDEN_ROLES_V3
     if version == 2:
@@ -395,7 +487,7 @@ def roles_for_version(version):
 def source_map_name(version):
     roles_for_version(version)
     return {1: "organ_source_map.json", 2: "organ_source_map_v2.json",
-            3: "organ_source_map_v3.json"}[version]
+            3: "organ_source_map_v3.json", 4: "organ_source_map_v4.json"}[version]
 
 PRODUCTION = {
     "activation": "disabled",
@@ -489,6 +581,8 @@ def check_map(mapping):
     for name in ("os", "hepta"):
         if len({paths[name] for paths in goldens.values()}) != len(golden_roles):
             raise ProfileError(f"{name} golden roles must name distinct files")
+    if mapping["schema_version"] == 4 and sha256(canonical(mapping)) != SOURCE_MAP_V4_SHA256:
+        raise ProfileError("schema4 source map differs from the code-owned literal path contract")
 
 
 class Repository:
@@ -569,6 +663,13 @@ def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tre
     check_map(mapping)
     os_identity = os_repo.check(os_head, os_tree)
     hepta_identity = hepta_repo.check(hepta_head, hepta_tree)
+    if mapping["schema_version"] == 4:
+        # The fixed map is itself a tracked OS source, not an operator-selected
+        # replacement. It contains paths, never its own source/manifest hash.
+        stored_bytes, _ = os_repo.file("support/release/organ_source_map_v4.json")
+        stored_map = load_json_bytes(stored_bytes, "checked-in schema4 source map")
+        if canonical(stored_map) != canonical(mapping):
+            raise ProfileError("checked-in schema4 map differs from the reviewed map")
     proof = hepta_repo.prove_history()
     sources = {}
     for name, repo in (("os", os_repo), ("hepta", hepta_repo)):

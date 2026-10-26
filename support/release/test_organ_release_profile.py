@@ -139,7 +139,7 @@ class SourceCombinationTests(unittest.TestCase):
             self.build()
 
     def test_noninteger_or_unknown_schema_is_rejected(self):
-        for version in (True, 1.0, 2.0, 3.0, "2", None, 0, 4):
+        for version in (True, 1.0, 2.0, 3.0, 4.0, "2", None, 0, 5):
             self.mapping["schema_version"] = version
             with self.subTest(version=version), self.assertRaisesRegex(profile.ProfileError, "unsupported source map"):
                 self.build()

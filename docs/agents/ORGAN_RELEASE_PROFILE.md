@@ -189,3 +189,49 @@ module to construct controllable Git histories. The production CLI has no
 history-owner override and always requires the original full commit above.
 These tests qualify the release-profile tool; they do not stand in for either
 project's source qualification or an original-owner end-to-end transaction.
+
+## Schema 4: closed expanded source and owning-package contract
+
+The unpublished schema-4 tooling stage has its own literal role sets and
+`support/release/organ_source_map_v4.json`. Its initial 300 OS / 201 Hepta roles
+preserve all V3 paths and add the reviewed CPU/GDT/Unix owners, observation and
+checkpoint diagnostic paths, thread-store fixtures, compression and rollout
+components, and release tool/map/oracle/document ownership. It is a source
+contract preparation, not a new current source pair or completed runtime lane.
+Retirement-profile and OAuth additions wait for actual finalized files; the
+checker never tolerates a missing file to reserve a future role.
+
+A code-owned canonical-map SHA fixes the whole V4 role-to-path and golden
+mapping. The ordinary structural checks still reject unknown/omitted roles,
+invalid or duplicate paths and duplicate JSON keys first. `create_manifest`
+then verifies the tracked OS V4 map has those same reviewed contents. Records
+are read from regular committed blobs, with exact worktree bytes, clean status,
+full identities and the existing original-history-owner ancestry proof.
+Neither an operator-selected path/hash nor an ancestry waiver is introduced.
+A shallow checkout is usable only when the original existing ancestry proof
+actually succeeds; unknown ancestry is rejected even if its owner object was
+copied into the object store.
+
+The map contains repository paths, not a manifest hash. The manifest retains
+`os_identity_binding: explicit_caller_head_and_tree_in_verification_receipt`;
+committing a manifest changes the OS identity subsequently bound by the external
+receipt without making the manifest contain its own hash. This also permits the
+release checker, fixed V4 map and regressions to be explicit mandatory OS source
+roles. Creation writes new outputs outside both source repositories and never
+updates the current pin automatically.
+
+V4's code-owned host test list is exactly the original thirteen V3 packages plus
+five directly tested owners: `codex-app-server-protocol`, `codex-thread-store`,
+`codex-core-plugins`, `codex-rollout`, and `codex-file-system`. The original three
+Hepta binary builds, profile/toolchain/lock rules and post-command source
+recheck remain. Node/SDK provenance and native/device/authority receipts are
+separate qualifications. No additional future OAuth owning package is inferred.
+
+V1, V2 and V3 remain separate historical contracts, including their maps,
+23/20/4, 41/43/5 and 274/146/5 source/golden counts respectively, their exact host
+command lists, and all archived manifest bytes. V4 keeps the same five goldens,
+nineteen automation migration roles and seven disabled production inputs.
+Historical artifacts continue to identify their own source/tool version; a new
+schema or source head cannot turn them into receipts for a later composition.
+Once a V4 release contract is frozen, later role/path expansions require a new
+reviewed schema rather than loosening that published acceptance set.
