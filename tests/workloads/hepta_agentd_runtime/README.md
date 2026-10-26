@@ -130,6 +130,30 @@ lifecycle result to a new source pair. The historical retained-source profile
 and its execution records remain unchanged. The separate CognitiveStore lane
 has its own source review and must be updated and executed independently.
 
+### Git source verification boundary
+
+The native preparation's Git queries retain their fixed environment and
+30-second deadline. They disable repository fsmonitor hooks, the untracked
+cache and replacement objects, and avoid optional index-refresh writes. Git
+directory, worktree, index and configuration overrides from the caller's
+environment are not inherited. Both source roots must have their exact reviewed
+HEAD/tree, no assume-unchanged or skip-worktree flags, and clean full tracked and
+untracked status; a sparse checkout is not a complete source input. Every
+selected file's actual bytes and original Git blob remain checked, followed by
+the original toolchain check. The kernel qualification's full tracked-byte
+snapshots remain mandatory and unchanged.
+
+`test_source_git.py` uses actual temporary repositories, a real configured
+monitor hook, hidden index flags and replacement objects. It checks that the
+hook is not invoked and that modified tracked files outside the selected blob
+list still fail. These are host verification regressions, not native execution
+receipts. If the initial source scan exceeds 30 seconds, preflight fails before
+build output is created. Later source-check failures cannot produce a success
+receipt either. Such a timeout does not establish its environmental
+cause or a dirty source tree; disabling caches is not evidence that a monitor
+caused an earlier timeout. Preserve the failed attempt when retrying the same
+reviewed sources, and record the runner revision separately from compiled inputs.
+
 ## Original owners and precise scope
 
 The fixture is the existing

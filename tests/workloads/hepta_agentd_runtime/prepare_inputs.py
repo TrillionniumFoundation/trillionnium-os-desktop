@@ -31,7 +31,12 @@ require, sha, save = gate.require, gate.sha, gate.save
 
 
 def git(source, *arguments):
-    result = subprocess.run(["git", "-C", str(source), *arguments], env=gate.abi.ENV,
+    # Verify the actual worktree and objects, without repository monitor hooks
+    # or index-refresh side effects. Keep the fixed environment and deadline.
+    environment = {key: value for key, value in gate.abi.ENV.items() if not key.startswith("GIT_")}
+    environment.update(GIT_NO_REPLACE_OBJECTS="1", GIT_TERMINAL_PROMPT="0", GIT_OPTIONAL_LOCKS="0")
+    result = subprocess.run(["git", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false",
+                             "-C", str(source), *arguments], env=environment,
                             capture_output=True, text=True, timeout=30, check=False)
     require(result.returncode == 0, "git source verification failed: " + result.stderr.strip())
     return result.stdout.strip()
@@ -44,7 +49,11 @@ def verify_sources(roots):
         require(git(source, "rev-parse", "--show-toplevel") == str(source), "source must be its Git root")
         require(git(source, "rev-parse", "HEAD") == gate.SOURCES[name]["head"], "unreviewed " + name + " commit")
         require(git(source, "rev-parse", "HEAD^{tree}") == gate.SOURCES[name]["tree"], "unreviewed " + name + " tree")
-        require(not git(source, "status", "--porcelain=v1", "--untracked-files=all"), "dirty " + name + " source")
+        flags = git(source, "ls-files", "-v", "-z").split("\0")
+        require(not any(item and (item[0].islower() or item[0] == "S") for item in flags),
+                name + " assume-unchanged/skip-worktree flags hide source changes")
+        require(not git(source, "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"),
+                "dirty " + name + " source")
     for item in review["source_files"]:
         source = roots[item["repository"]]
         path = source / item["path"]
