@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -23,6 +25,41 @@ import organ_release_profile as source_profile
 import desktop
 import preedit_source
 import preedit_component
+
+
+def reviewed_tools(hepta_root, environment):
+    """Use the existing five-executable check, including Clippy's compiler."""
+    path = REPO / "tests/workloads/hepta_agentd_runtime/reviewed_toolchain.py"
+    spec = importlib.util.spec_from_file_location("product_reviewed_toolchain", path)
+    module = importlib.util.module_from_spec(spec)
+    # Read the tracked helper directly; an ignored cached .pyc is not source.
+    exec(compile(path.read_bytes(), str(path), "exec"), module.__dict__)
+    review = {"userspace_toolchain": {
+        "channel": "1.96.0", "manifest": "codex-rs/rust-toolchain.toml",
+        "sha256": "e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380"}}
+    bound, identities = module.clippy_environment(hepta_root, review, environment)
+    rustup = shutil.which("rustup", path=environment.get("PATH"))
+    require(rustup is not None, "The selected toolchain requires its existing rustup resolver")
+    # Nested source builders resolve the same reviewed installation again.
+    # Keep rustup available; compile and custom-subcommand calls remain bound
+    # to the independently identified absolute executables below.
+    bound["PATH"] += os.pathsep + str(Path(rustup).absolute().parent)
+    tools = {name: value["path"] for name, value in identities.items()}
+    # Like Clippy, fmt is a Cargo subcommand. Bind its adjacent executable
+    # rather than allowing CARGO_HOME/bin to select another rustup proxy.
+    for name in ("cargo-fmt", "rustfmt"):
+        executable = Path(tools["cargo"]).parent / name
+        tools[name] = str(executable)
+        module.executable_digest(executable)
+    bound["RUSTFMT"] = tools["rustfmt"]
+    return module, bound, identities, tools
+
+
+def tool_command(command, tools):
+    """Clippy/fmt keep their subcommand token when executed directly."""
+    if command[0] == "cargo" and len(command) > 1 and command[1] in ("clippy", "fmt"):
+        return [tools["cargo-" + command[1]], *command[1:]]
+    return [tools[command[0]], *command[1:]] if command[0] in tools else command
 
 
 def digest(path):
@@ -205,16 +242,15 @@ def build(args):
     logs = output / "logs"
     logs.mkdir(mode=0o700)
     target = output / "target"
-    tools = {name: str(Path(subprocess.check_output(
-        ["rustup", "which", "--toolchain", profile["toolchain"], name], text=True).strip()).resolve(strict=True))
-        for name in ("cargo", "rustc", "rustdoc")}
-    env, removed = controlled_environment(profile, target, args.jobs, tools)
+    tool_guard, bound, identities, tools = reviewed_tools(hepta_repo.path, os.environ)
+    env, removed = controlled_environment(profile, target, args.jobs, tools, bound)
     receipt = {"schema": "trill.linux-text-build-receipt.v1", "status": "running",
                "source_commit": identity["commit"], "source_tree": identity["tree"],
                "hepta": hepta_identity, "profile": profile,
                "profile_sha256": digest(profile_path), "cargo_profile": args.build_profile,
                "commands": [], "locks": {}, "binaries": {},
                "toolchain_executables": {name: {"path": path, "sha256": digest(path)} for name, path in tools.items()},
+               "reviewed_compiler_identities": identities,
                "ambient_overrides_removed": removed,
                "native_input_paths": {key: env[key] for key in ("PKG_CONFIG_PATH", "PKG_CONFIG_LIBDIR",
                    "LIBRARY_PATH", "LD_LIBRARY_PATH", "CMAKE_PREFIX_PATH", "CMAKE_TOOLCHAIN_FILE") if key in env},
@@ -228,14 +264,14 @@ def build(args):
         desktop.atomic_write(output / "build-receipt.json", source_profile.canonical(receipt))
 
     def run(name, command, machine_output=False):
-        if command[0] == "cargo" and sdk_config is not None and "ui/Cargo.toml" in command:
+        if command[0] == "cargo" and sdk_config is not None and "ui/Cargo.toml" in command and command[1] != "fmt":
             # Clippy forwards its own arguments to Cargo; a global --config
             # before the subcommand can be lost by that forwarding.
             command = ([command[0], "clippy", "--config", str(sdk_config), *command[2:]]
                        if command[1] == "clippy"
                        else [command[0], "--config", str(sdk_config), *command[1:]])
-        if command[0] in tools:
-            command = [tools[command[0]], *command[1:]]
+        command = tool_command(command, tools)
+        tool_guard.verify_executables(identities)
         start = time.monotonic()
         stdout, stderr = logs / (name + (".json" if machine_output else ".log")), logs / (name + ".stderr.log")
         entry = {"name": name, "command": command, "stdout": stdout.name, "stderr": stderr.name}
@@ -334,6 +370,7 @@ def build(args):
                 "Prepared SDK source/config/metadata changed while building")
         for name, executable in receipt["toolchain_executables"].items():
             require(digest(executable["path"]) == executable["sha256"], "Compiler executable changed: " + name)
+        tool_guard.verify_executables(identities)
         for path, checksum in receipt["locks"].items():
             require(digest(REPO / path) == checksum, "Cargo lock changed while building: " + path)
         for name in desktop.PROGRAMS:

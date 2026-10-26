@@ -11,12 +11,13 @@ and exact shared document-readback fixture. Both repositories decode
 `notes-document-observation-v1.json`; a mismatched fixture is rejected before
 Cargo runs. The snapshot is separate from an operation's terminal receipt.
 
-The integration baseline is Desktop PR265 `4db81c63037f54c2a107c822d2cbc436150d8134`
-and original Hepta `489f7096b0e5754968a30fa4477bb4417d24834f`, tree
-`4731de9117065bd773b2fcee92c815ff896b8488`. The Desktop build commit must be
+This release convergence retains Desktop PR267 product/owner contracts and
+selects original Hepta `760363e06c5f4a115de039ffa7bd7e7767bd1fd9`, tree
+`87bcc851d794c89ede183353e7493461b931ebed`. The Desktop build commit must be
 recorded separately by the actual build receipt; this document does not grant
 later source edits the baseline's test results. Both product Cargo roots use
-Rust 1.96.0. The prior `7ea3df4` combination remains historical evidence.
+Rust 1.96.0. Hepta `489f7096` remains the historical baseline; the new companion changes
+only native build/report tooling. Prior runs are not relabeled as this pair.
 
 ## Development and source checks
 

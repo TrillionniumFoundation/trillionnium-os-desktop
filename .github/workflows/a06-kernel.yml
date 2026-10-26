@@ -20,6 +20,8 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "tests/kernel/safety/**"
+      - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -42,6 +44,8 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "tests/kernel/safety/**"
+      - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -318,6 +322,30 @@ jobs:
             --expected-source-tree "$(git rev-parse HEAD^{tree})" \
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
+
+      - name: Verify credential and selected-frame safety on the same SMP product
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-safety-checks"
+          mkdir "$checks"
+          python3 -I -B tests/kernel/safety/test_runner.py \
+            > "$checks/runner-tests.log" 2>&1
+          python3 -I -B -O tests/kernel/safety/test_runner.py \
+            > "$checks/runner-tests-optimized.log" 2>&1
+          # Both boots reuse the exact successful ordinary product. Retain
+          # the second raw result even if the first safety guest fails.
+          status=0
+          for smp in 2 4; do
+            if ! python3 -I -B tests/kernel/safety/run.py \
+              --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+              --cc /usr/bin/gcc-13 --qemu /usr/bin/qemu-system-x86_64 \
+              --smp "$smp" --timeout 300 \
+              --output "${RUNNER_TEMP}/a06-safety-smp$smp"; then
+              status=1
+            fi
+          done
+          exit "$status"
 
       - name: Verify all 43 local UDP checks on Linux and the same ordinary product
         shell: bash
@@ -597,6 +625,9 @@ jobs:
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
+            ${{ runner.temp }}/a06-safety-checks
+            ${{ runner.temp }}/a06-safety-smp2
+            ${{ runner.temp }}/a06-safety-smp4
             ${{ runner.temp }}/a04-sqlite-restart
             ${{ runner.temp }}/a06-udp-checks
             ${{ runner.temp }}/a06-udp-linux

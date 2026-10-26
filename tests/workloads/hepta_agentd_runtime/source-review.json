@@ -1,15 +1,75 @@
 {
   "desktop": {
-    "head": "0187bd578f6786c40c812c13976e4889a1aba835",
-    "tree": "335007e4f94114c6a26506d9448faf0d43c4245c"
+    "head": "2507bbf6ab57176f71885ed1492a75b4325d8fb9",
+    "tree": "3997b29c3dbcad01f210b10cd9388c05ce64ed2c"
   },
   "hepta": {
-    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
-    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+    "head": "760363e06c5f4a115de039ffa7bd7e7767bd1fd9",
+    "tree": "87bcc851d794c89ede183353e7493461b931ebed"
   },
   "schema": "hepta.native-original-runtime-source-review.v1",
-  "scope": "Reviewed source profile for original no-turn Agentd lifecycle on the IPC/physical-owner, fallible-page-table and watchdog fixed ordinary0187 kernel with frozen originalb3 userspace. All changed functional kernel/lib/build/control inputs since7d are additionally bound. This source review is not build, execution, production, fullF1 or G2 evidence; historical7d receipts remain separate.",
+  "scope": "Source identity freeze for Desktop 2507bbf6ab57176f71885ed1492a75b4325d8fb9 and unchanged Hepta 760363e06c5f4a115de039ffa7bd7e7767bd1fd9. The complete Git trees and 380 selected kernel, original-owner, build, toolchain, safety, G1-d, UI release and documentation guard source files are bound. The separately pinned runner must match the reviewed code inputs and build these exact clean source commits. Preedit lock materialization creates a separately identified child of this Desktop source; its package and window receipts must name that child. This review is not build, execution, production, full F1 or G2 evidence; all prior receipts retain their original identities.",
   "source_files": [
+    {
+      "git_blob": "9762d850a553c80275c801865ff70ecf58a51c56",
+      "path": ".github/workflows/a06-kernel.yml",
+      "repository": "desktop",
+      "sha256": "1db30cf8a1a82492306a246fff4505700220ad980c3fca7bb1c2501aaa934a93"
+    },
+    {
+      "git_blob": "49f5565e7bb5552ad8404a7fc9cee1c7a3684d2b",
+      "path": ".github/workflows/a08-host.yml",
+      "repository": "desktop",
+      "sha256": "1756920e645b2790f42f785fe874dbdac514df4471d89a358b958f7d5b468726"
+    },
+    {
+      "git_blob": "ea3b4042632b713b81ad88ac8f5a299d0b798f7c",
+      "path": ".github/workflows/a10-host.yml",
+      "repository": "desktop",
+      "sha256": "1a847533ef22fee10a309f031bc85ad3617b6d317ee513ac0f7d2b8ef395b3a5"
+    },
+    {
+      "git_blob": "98d0b0c5a911e0bb006ec2dc9623ffb021f1527a",
+      "path": ".github/workflows/g1d-trusted-control.yml",
+      "repository": "desktop",
+      "sha256": "159f7576c2449e4e4f30a6b713e9918de9df956d356daba4ff51a79f0e9912dc"
+    },
+    {
+      "git_blob": "8d4d6f29db60742ca69a4dc0c22c02fca914964a",
+      "path": ".github/workflows/hepta-native-release.yml",
+      "repository": "desktop",
+      "sha256": "a28ebd79d41a29e03878d01342abcabef7c12d9933edb740f11ebea6e28fc39d"
+    },
+    {
+      "git_blob": "9917a0513bbb300129446c93c7d5a9e0e016d42b",
+      "path": ".github/workflows/hepta-native-ui.yml",
+      "repository": "desktop",
+      "sha256": "9b459388a372a838a04fabf48006fa0be1583031bcfed5c1144eeea50ad24ad8"
+    },
+    {
+      "git_blob": "194e6ddb936f74eee9c3a6601fa446a20a0a861e",
+      "path": ".github/workflows/organ-release-profile.yml",
+      "repository": "desktop",
+      "sha256": "ee085c844b37b092f920dcdef6eb0cc2a29ad752b86edbf870b4504e244bdb69"
+    },
+    {
+      "git_blob": "e453c0bea755bd18bf9f8794fff4c0356a5465f7",
+      "path": "README.md",
+      "repository": "desktop",
+      "sha256": "7b05a1ac62cbb6d659e3f966ce9ce04dd58afa59e0dff24a4d9c290abe2cd712"
+    },
+    {
+      "git_blob": "e62d9add284847a1f36ae9a179b903a315e54685",
+      "path": "docs/CURRENT_CAPABILITIES.md",
+      "repository": "desktop",
+      "sha256": "b6064b091c84222b421fe48fdd044cb8e50b379a92e0d7d8e14222bd4bd0920b"
+    },
+    {
+      "git_blob": "31e2d704f675e2e2690556f6b438d8395e3dd0fa",
+      "path": "docs/modules/catalogue.json",
+      "repository": "desktop",
+      "sha256": "3cf390cdb7316368990a17368943874e5a56db474057fd8efd5fd2b804e7cedb"
+    },
     {
       "git_blob": "7dd467280ef2141d30572757345ee787703ff5ea",
       "path": "kernel/asterinas/kernel/comps/drm/src/gem/shmem.rs",
@@ -17,10 +77,10 @@
       "sha256": "e258a3394b47e688a1923741dc4bb30873e68fd4c7b0ede318e5a6b0c372b672"
     },
     {
-      "git_blob": "e7e28c4fff16383721aab062ed9a6cb54171f5de",
+      "git_blob": "5eb8cafdf8dd31ef4d74b3c33b39e3a9e9ed0fd5",
       "path": "kernel/asterinas/kernel/core/Cargo.toml",
       "repository": "desktop",
-      "sha256": "618cf96993869809d29e8370fbe86db9a711b463cad847e84bd3ea9899fa5289"
+      "sha256": "882ed8ae6b868644218ac4b20c0e56a89537eb378d91d1dd5e3c80d5da6fff38"
     },
     {
       "git_blob": "fda4ed98101c3b110eacd37cfcf6c1e244a539c0",
@@ -107,10 +167,10 @@
       "sha256": "84145dac9058d6241cf49ab81f8a4906ba8e3bf6f2048636fd93e1cc47b85328"
     },
     {
-      "git_blob": "538ae9e49d0b657c021d2b94ab3f27b82bfd5690",
+      "git_blob": "b758a9fe2dfcf4a0b6145ff380257568123e0644",
       "path": "kernel/asterinas/kernel/core/src/error.rs",
       "repository": "desktop",
-      "sha256": "00497f8085b631d759e0619854049f4bf3147e4290f3efd9ac9574bb3c1a0a91"
+      "sha256": "d72ff9ba5fbbf697c078595f66a1667c70bb2bedcf8790b27293a19e984e7b66"
     },
     {
       "git_blob": "35ead8c712f69604bad3947d00fd9ddf78a20960",
@@ -119,34 +179,34 @@
       "sha256": "1443627be55bfd5cf57f0af3d04b15da2d5713771826560146e5caefe86fc232"
     },
     {
-      "git_blob": "731041a725a5fcbf41f6ad091c9c6e7d12265e54",
+      "git_blob": "07b35c1b098ee0b28367df2d8f1677096d8534e1",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
       "repository": "desktop",
-      "sha256": "de7a965e79882b55a490506275f820d19ad54b9c4c83c19e5fc5d3936898d157"
+      "sha256": "8c59a4648a32f0af8790de1cfaece5e72e2780bb8e4c9e20007626a3fd6d76d3"
     },
     {
-      "git_blob": "8698ea00f389e2cd118166ac954eff4c75f260c1",
+      "git_blob": "f8ce548a05eabbcc24e87ee500bf5515cf620323",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
       "repository": "desktop",
-      "sha256": "dc5ebb6f8695c45bf4f826bba8aac3b57aaef716e07a3fc30ae798456e1abf4d"
+      "sha256": "70ddfeef53e138a28baa274949c740be4d9baa0ff32e6d99f3b1051dc21da0b8"
     },
     {
-      "git_blob": "957b5d1f6ccdfd0c7fedaa0b67a7dc998bc67b34",
+      "git_blob": "5b56609e311ee07f6cd18d9658ca0cc6170671eb",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control.rs",
       "repository": "desktop",
-      "sha256": "d0d304bb5fd442e7342f50c166c7833b306eede7503dfcfb00d631f5afc40690"
+      "sha256": "22ba256c12a6e60d6bca9e2437567f22cd9882dc73b87543641406b1cc925cac"
     },
     {
-      "git_blob": "44d1ac7e19e2fe48a79c491d002f23236729cb63",
+      "git_blob": "66d024ea12cad668a50ef342c03e386057ee8d50",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control/tests.rs",
       "repository": "desktop",
-      "sha256": "021faafce614a2dc302b612ca97afd16fc5df81c0a597f14c3347fdd6053fd27"
+      "sha256": "e0e91d6d05268ff1bfa2b034dfcbd1a532880bd12a1d46245b26e1dabc8f9307"
     },
     {
-      "git_blob": "a06956ae9161ba97de72fdfba2046c141a6c03c9",
+      "git_blob": "b26d14ac2a5062ba837f1247d1d9d3f2d511cc64",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control/watchdog.rs",
       "repository": "desktop",
-      "sha256": "e2a3c48cc9105b474677245bad01a89e3364c9bcd218f9024815d8508522b3ef"
+      "sha256": "aa76b66dfcc69f1df8f7f13586e9425502b4e870c7c4b79c119b54aef875512e"
     },
     {
       "git_blob": "31c9b38a11a8834f798c7abc0de2de6450d0b3ee",
@@ -161,16 +221,16 @@
       "sha256": "791221600f12817f17c06d9652d475a574e3a5afdf059065890fc660624f4666"
     },
     {
-      "git_blob": "951447c690b7f8905e669bf04db9afd7cde5caba",
+      "git_blob": "a76410c099bafd8d6b16180bc4ddd585da500876",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ext2/inode/attrs/permission_tests.rs",
       "repository": "desktop",
-      "sha256": "7d91ac5c708cbea2fa4f6db9ebad0f153c95f3a75acd73a5750766202d51ccb7"
+      "sha256": "a65f3971c393a3af773a74f5d31a8d80228c5a3d8575a3d30446d544ade84022"
     },
     {
-      "git_blob": "3dd4dec5e6eedfbd19b59978422589dbdc530009",
+      "git_blob": "9ccfc7a8dcfd1a416565a4c4961ac2601000b5f1",
       "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/ramfs/fs.rs",
       "repository": "desktop",
-      "sha256": "4cc39dcd44062841760c762e56628c4042bc605d0d0347ca3505236cb099c68a"
+      "sha256": "c999cb87724f8e5cf0b9613f34206d99f33112387d17288389db0d40563ea593"
     },
     {
       "git_blob": "917318293bd941a31b2639094a06021fea5cbc4d",
@@ -179,22 +239,22 @@
       "sha256": "1addee8dfb9ffb796bfe54c692fb32ed84cb94b3a1b9d2882fba8f2dc3202690"
     },
     {
-      "git_blob": "84ad5e564b6dece9dfb74e7c7f680f195612e6e9",
+      "git_blob": "ce37f0f49a87ac9a0f4894dfc7c26f331952e63f",
       "path": "kernel/asterinas/kernel/core/src/fs/pipe/common.rs",
       "repository": "desktop",
-      "sha256": "547d74a0df97262a9ab09fe961315aa8e9a5725147be16e6641b26390b4e1c9b"
+      "sha256": "ab77e7d5dd1497f618552120707df0947d51dbaf610e500a88455216d936441b"
     },
     {
-      "git_blob": "7a6b9367fe4c3ca3b73d9c44446ea36fb794d182",
+      "git_blob": "f56aa6ffae1d7d534d45fb87bd1b8974ca570e19",
       "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/inode.rs",
       "repository": "desktop",
-      "sha256": "6178bc88330ba7d27ce5701c9d28b8088f3fedad061ada9b075ac9491150e274"
+      "sha256": "db32ede3bf55c2a313e37be0c891b03cda65cf456c0349bd4232c6b4eacec794"
     },
     {
-      "git_blob": "5f72a47307ea5851e3ca8602a0f5c11c9bfd264d",
+      "git_blob": "f86fa757d6b532624d8360c3fcfda55c529cb672",
       "path": "kernel/asterinas/kernel/core/src/fs/vfs/fs_apis/permission_attrs.rs",
       "repository": "desktop",
-      "sha256": "81a0032665b3f8e0a4c62feab1d0853e7aa2f628a552064a46a0574ca6d9dc8a"
+      "sha256": "484d33c1ec8342c3375a9e82adc3b7595cf3dea68b0182aa4e367f20948b1e91"
     },
     {
       "git_blob": "ceed294b71146054258e80be65f061fbf1a2eefa",
@@ -227,58 +287,58 @@
       "sha256": "92323bcb6cc809ea48232c94eda160bda5129b931616c0994b11e472c2bd4617"
     },
     {
-      "git_blob": "654754062d4b2ef83b6eed9010193364790fc714",
+      "git_blob": "2e174fad99a059e217cde4a494553ef317f3a386",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
       "repository": "desktop",
-      "sha256": "44f90c11b36081988a2a584c8f6d27b932e6284c783edeca44cc5a972a0bcc41"
+      "sha256": "e2ddd7cef95c40b847400d8a4a8a979319a5cd2c3afbb30262987ef1d52d24c2"
     },
     {
-      "git_blob": "1fa78413575de7d07d8923adb26ac361c28b398b",
+      "git_blob": "f889a381ccf12a0bbd8435db99c4b150c539d63a",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/init.rs",
       "repository": "desktop",
-      "sha256": "0acaedcfb3917c1201b40af6c19912444fdfd33f3e3ecd121b43864abf20f54c"
+      "sha256": "353822bda3b39c5fa554eaec62cc51a5dfe5060e48ed7c4cbc97bfd98e66c6f0"
     },
     {
-      "git_blob": "09fe2d268f09d9e01780ca86fcc4c1614468ba2b",
+      "git_blob": "552560f23024b43167bd20c63332ee671dba8b87",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/listener.rs",
       "repository": "desktop",
-      "sha256": "6a615eced8a03015ddd2731bf91a0bfac3f5b97b7319e2826d7da72a2ddaa28d"
+      "sha256": "f219c0385e24bd97904541ce589be3cc4a89afbf0c65cf9c505d55ce63485e0c"
     },
     {
-      "git_blob": "b137731b0a28174a07a6cf4e66d2fb1188f01702",
+      "git_blob": "8dfd8e92aad39ec37c9a9ee8e594996ff057c8c8",
       "path": "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
       "repository": "desktop",
-      "sha256": "4642aaf17143083d80f497a8a8bc7cc66f90c45c3c10584c23a2222730be8d2b"
+      "sha256": "87de1865667be2e6bac4a2a813fb1655f2ea288cc5db4e9a75a7da827628476f"
     },
     {
-      "git_blob": "330df657ac96166fd64d664f0b14e51cba3c6d0e",
+      "git_blob": "799e8fef19be5f89d43e614848f57db8a66357e2",
       "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
       "repository": "desktop",
-      "sha256": "79c31ccd4aff258b53be7e4290d8f80c88048c7b7d1f118665764fb1563013d0"
+      "sha256": "cbc6243c0da997dd6f8da1356a50d9133c9c2e9e1bf95b7fe85840f511ae1ab5"
     },
     {
-      "git_blob": "ab9157286c3e675ee4fa82742d26142d06340495",
+      "git_blob": "817d21cce706ba4133259bd0e5fb571499dc8492",
       "path": "kernel/asterinas/kernel/core/src/process/mod.rs",
       "repository": "desktop",
-      "sha256": "af9d7a079f9448459ae22ba9ca2ea468aa2048f0ce27230a1e333ed7e9d161b1"
+      "sha256": "402cba15fb3bb79b86154aea3eae7f66dd7861bb874387278bfb5e1317704fb4"
     },
     {
-      "git_blob": "3f83c187c69ac491a2155edc4ceba504945df850",
+      "git_blob": "99318f81b4bc6fc0fe5888e972703e60f7e5bacc",
       "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
       "repository": "desktop",
-      "sha256": "b59625d431ac69c3d3657178d08048f92a54e66fce09eb9aa3f6e3c8ed17c355"
+      "sha256": "7f3681ed5a976554c99a816880ef7beaa93d2cf8c5527702ab439a7df46cb5b4"
     },
     {
-      "git_blob": "cd3d8bdefb1982ff82900583134d35b264a6a930",
+      "git_blob": "178710396da65cdcd89c1169b8d1c4a36cf33fc7",
       "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_roles.rs",
       "repository": "desktop",
-      "sha256": "6cfb6c4718c5b7f31a0aa925b2bcd2fefa07ad102d38aa30b3a055fbcdfe75a9"
+      "sha256": "adcdef8c423758b57efd772eb8975b1687c886490d0e0249b567dc7ee704216e"
     },
     {
-      "git_blob": "7c429c36df9a57a3c9b3afb499179232adc238a1",
+      "git_blob": "1e72ae25be46e7906432ac04d146e47088587651",
       "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
       "repository": "desktop",
-      "sha256": "c9a854a2a4f50bf3c5f341bd26b76fa8c137c8e7bdcf633e1098ab63e1b0c202"
+      "sha256": "209665ee132f1556a0d61db8aff30f58c70c383a4d143c04e710825f2e57be66"
     },
     {
       "git_blob": "42366b6170ab6b77b84586c53d3a7033383297d9",
@@ -293,22 +353,22 @@
       "sha256": "40e538d452bcd3413de2ed114a0d3969f7f6682b6b3a1364ec8a7cdd3bc1b674"
     },
     {
-      "git_blob": "524c86ecfb63d69e68052c3e7b0c3afed83ff634",
+      "git_blob": "9da692d6d8ce83680566d2ecac3e4ab4462f6d51",
       "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs",
       "repository": "desktop",
-      "sha256": "a9665ff343bc0aedc9858f314d39425a2a43c46a277c9b12d5f71e1b81c6bf4a"
+      "sha256": "8b80e74c8d0975a5cd1cecd43858a5e7820f7392bd3fa0b2cee55b2dd6de3b34"
     },
     {
-      "git_blob": "e254b2234de78f16f715e7e3d2ea0ef07bf977e1",
+      "git_blob": "5a6d3a08d4eea95e478fdc6956e318aa82219e76",
       "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
       "repository": "desktop",
-      "sha256": "4bf79f32ed8869f876a1944602a42f5275a2343506e9eead724f6d5a9fcedf85"
+      "sha256": "6d0bdb86ba56396efdda34fd760fbccb22cd9c9fe4ba787c43449ee48d8edac7"
     },
     {
-      "git_blob": "a8771425f55fc150399297c5198d4dbd7feecadc",
+      "git_blob": "d95f7a4f1f6cc79ca6f55061e65a11b8fe90c3ab",
       "path": "kernel/asterinas/kernel/core/src/process/signal/mod.rs",
       "repository": "desktop",
-      "sha256": "823e60d6944328dba6616782c7dd0782b83260ec63d5839804ef0e2eaff1b261"
+      "sha256": "47db36a280f55e793cb92a722daf401ba8ae8d85d5b046b090756f5e17fc782e"
     },
     {
       "git_blob": "d79242c9a96fe10880830012292135cb7ad572b2",
@@ -317,16 +377,16 @@
       "sha256": "62fb1f8277b95c9ab5856367a952a23878181a04858114060d4267414703e9cd"
     },
     {
-      "git_blob": "2dacd5e22738a44b0b5db3dadc7e1bf3f676de79",
+      "git_blob": "54d9927a71f0484459abdc3f4b3944cf0d4f8de5",
       "path": "kernel/asterinas/kernel/core/src/process/signal/pending.rs",
       "repository": "desktop",
-      "sha256": "a816a4793ee6fc656e2a9a393ea5f016ed098f87b8fbe8e99e8d08ada014c82c"
+      "sha256": "47533f922dcf9a1d95c0bc35383e949121bd4097974b5199a056011a40438eb9"
     },
     {
-      "git_blob": "07beae24365b0f494fb9b598a9072a25fe87183d",
+      "git_blob": "9c098574f1295efa2ebc21774e0c25b02d5cab9e",
       "path": "kernel/asterinas/kernel/core/src/process/signal/sig_queues.rs",
       "repository": "desktop",
-      "sha256": "724604f9a141921ad15be5c959f16e878f9f74b70a744f069952a1475806df75"
+      "sha256": "ed0ee3fee83899b03f275eee447e74cae4b5408d0ccd067b57d46281ccd5c596"
     },
     {
       "git_blob": "e340b3496a23ba1c595cd3ae4046261d72ce1b87",
@@ -335,10 +395,10 @@
       "sha256": "b86ba21a4086265cddfe2c506f125dd023393ed347d69a1256add244b3063d3f"
     },
     {
-      "git_blob": "a61341186fb61d99cef7df64f489a46d17494c19",
+      "git_blob": "c77b4fb656436cf60128e5b3ad8daf303bb3faee",
       "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
       "repository": "desktop",
-      "sha256": "bc6b5f79f3278fa6984fbeb6bc0b0949c43979cf95847c73263f35e8ded2449f"
+      "sha256": "27c1aa749b7739e9a29802f63d0bdb611f1ad5c862dc7d4f7a5087c78ea21cc9"
     },
     {
       "git_blob": "58051aded356464cf131318673345b95d5902734",
@@ -347,10 +407,10 @@
       "sha256": "bd9004078bf15cab0da17b58d139aae7b02198d403274e831beff59c03985818"
     },
     {
-      "git_blob": "efbdd899c58c7c19baa383a7a0b9d6bcce553019",
+      "git_blob": "8a63c6ef5b63e71e67a95d22a94534bd096cd50f",
       "path": "kernel/asterinas/kernel/core/src/syscall/socketpair.rs",
       "repository": "desktop",
-      "sha256": "ecb440dd55c99c02d565586faa4bd87fc97ad9c30f3661caaaf8ac6d005a95f6"
+      "sha256": "38a9482a671ae6884fe8908ce90f4da83130146d0a1c05f5f46fe79e942f4409"
     },
     {
       "git_blob": "704a6b2441a8771ecfab070a064a4b572e9ae0f4",
@@ -359,10 +419,10 @@
       "sha256": "db8486793dbf116a721c33cb8c38e8eefbc3feebbb7388447138a8860a552616"
     },
     {
-      "git_blob": "e3683cf41d6b0536c8134011b9af74d7755d542d",
+      "git_blob": "5471404466f22a58d473115fbbce6a4333038087",
       "path": "kernel/asterinas/kernel/core/src/thread/exception.rs",
       "repository": "desktop",
-      "sha256": "4e895794d546aee22bcd0a115092007db8852364c3001930aa368b0a30816ce8"
+      "sha256": "6d448517b174b593a7794092c9d6511dd419fd0d3d27a33d2ee3efbcd238bbd6"
     },
     {
       "git_blob": "12cc005fd26a3f36adbdd754febfad65978da581",
@@ -395,10 +455,10 @@
       "sha256": "d7d85a0e3ac16a62363bf26c9186d69350263ed4aa3c367eb949c168196bfc7f"
     },
     {
-      "git_blob": "c421130b7334a0651609df9b632196a45bd4ec42",
+      "git_blob": "6e8b5eaa22ed177cd4e04872215f8cda2260f224",
       "path": "kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs",
       "repository": "desktop",
-      "sha256": "db08c24d2be1bbfba93114a6e7c8c1545df92e9e85515db5c912787209f2a28d"
+      "sha256": "7a4b6a3c48cbe32a8417e1f968ef48ce3b27da0df84fbaf1f602574ba8bba8ca"
     },
     {
       "git_blob": "0ae09f5d7f6dcb92c20605dd834fb600af7db535",
@@ -407,10 +467,10 @@
       "sha256": "d06763a7d5b643083b3ca7ff67198c68879545917c701af524f63378ae9fe25c"
     },
     {
-      "git_blob": "acfba6b97fb18561109d3bb9c91d93abf0bb6ba5",
+      "git_blob": "821ef54ae3bc406b1aed624030802127215d73d5",
       "path": "kernel/asterinas/kernel/core/src/vm/user_memory.rs",
       "repository": "desktop",
-      "sha256": "d82df6324dc6098f90edf602c32dc7c9432d58c3df2fe6d11fd5d3756e835057"
+      "sha256": "664339abea8db237eb226d37cb2b28753f9c5954d3f80913ea056adc35079588"
     },
     {
       "git_blob": "a723586e0299fe0b1e73e5b87efd8e3d8e49d9ab",
@@ -419,28 +479,28 @@
       "sha256": "395dd948e8558f329a160c42d7f48161513adb1bf1f32c63bd03910b4ebd386d"
     },
     {
-      "git_blob": "6c6ed8a187c665e94b010a013d8caf1da3d5eea7",
+      "git_blob": "46a7f0a3da110020f7c18f6b50d7566178e746bd",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
       "repository": "desktop",
-      "sha256": "b93554d238e1fd8386540dd70872f108a14353f8d827a3b86833ec59015927ba"
+      "sha256": "b317cb91e6a77a5bf7d0dad71e1c818ce0a45fa677b0e6aa8c6eb1e4cf98e60f"
     },
     {
-      "git_blob": "bed32673e1967543ea5ca5a8c66bfd6b28257606",
+      "git_blob": "9d5f52adca1c9acc451823bc1926ef947dc871ce",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/fork.rs",
       "repository": "desktop",
-      "sha256": "143b9194f90edcb1d80313337f1ceeda7c9b39c2915b4194e684713b9308bea1"
+      "sha256": "e76ad73b7036255fbc5e6769cff131d60ac515bad12f76c7ee643d74dc1249b0"
     },
     {
-      "git_blob": "84f886706891e11b57a7a13c4aefbe01dffab739",
+      "git_blob": "7df9277b3a0b4c558f1e897268d81d93a9e8684d",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/mod.rs",
       "repository": "desktop",
-      "sha256": "30b2bd7bd8f7a947a26cb6fee8980f5261dccba61c16ed536ac2de422e2db592"
+      "sha256": "52a009e46f75c0c7d8a8c6234f238154f3d8de380247dcbe61505276fdfc7463"
     },
     {
-      "git_blob": "8d7ea4912d03bf7fa04a4c5573a68832f02cea41",
+      "git_blob": "976b0316667f67c68cd2e4cdb0736f4179cd3ff1",
       "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/page_fault.rs",
       "repository": "desktop",
-      "sha256": "00bdd15130f7efa6d213489682c8e293d14b6120ab6474ac32065f9a10f696a5"
+      "sha256": "bcc23d62d8e180085c47837a8f19ca4561a3c7b84c64cbbf9aebec637879895e"
     },
     {
       "git_blob": "b6e0dbc9109ff974708a494f6bad954d957c8663",
@@ -533,16 +593,16 @@
       "sha256": "3e24a80b6e545d3494c0900a2e74d7f90882dc050fb3f3b8eeb2f732b2221b41"
     },
     {
-      "git_blob": "5d363abad87c80e09e61aec05db2f89af63b1003",
+      "git_blob": "8b6411f7ece33077368fd8e1cc8efb4edcc68642",
       "path": "kernel/asterinas/ostd/src/mm/page_table/cursor/mod.rs",
       "repository": "desktop",
-      "sha256": "a3d449aa53162c2b6fdf4f95d72ba98833f0bd723720ec2c80b7437e2712c91b"
+      "sha256": "60f4f7b19455eb44568461cd2d1bbcfb036cb116bfa43dadaf6d54a6277ae34a"
     },
     {
-      "git_blob": "5c2ac0576a4ef75f023c6a9f448f7934da469ff5",
+      "git_blob": "db86a7e7789dcf2ce0e69fa5d3d544aa3e704623",
       "path": "kernel/asterinas/ostd/src/mm/page_table/mod.rs",
       "repository": "desktop",
-      "sha256": "f1ca91c6a7b7cb959bd6a90444ad39716fc4e72c12b75474c19943652d655189"
+      "sha256": "b2474824d417ee0ff10379c97139a3517447a882ddde613761bf6dd22aee43ed"
     },
     {
       "git_blob": "453358594980ddbe3a94d36cc76a5af4336edcee",
@@ -551,22 +611,22 @@
       "sha256": "24df3b9ad141ba3855dd2a2f819ea447634b2566cc5a670d92e14ec75d4c6a59"
     },
     {
-      "git_blob": "848f19083a16a420eb288abee005327035b22e94",
+      "git_blob": "2fcb95c89ec160b010a1f01213bd132a02f0b23d",
       "path": "kernel/asterinas/ostd/src/mm/page_table/node/mod.rs",
       "repository": "desktop",
-      "sha256": "b84952d32f5568970411bc2f0bfbddc52e228faf41617943821b60a5d574b811"
+      "sha256": "a88799609e5156cfa86ca0b4b6e70539ae35cbe663fb733869bdf95a352c230c"
     },
     {
-      "git_blob": "563565113e47abf42174fe9be30de56ed83355ca",
+      "git_blob": "aa20a0288ea90fea87f4fd49e173ee4c39931c1c",
       "path": "kernel/asterinas/ostd/src/mm/vm_space.rs",
       "repository": "desktop",
-      "sha256": "8a4dfc23127ec347556cdb033385efbf5211c6f2894fde295f6b01a0e15d140f"
+      "sha256": "26bf4726a6a981ab95f6c200c0f78fb68227094eb42d146b11c35ade9f899e42"
     },
     {
-      "git_blob": "380f5b886709fe42b9c96bc937a86e4621ecdab4",
+      "git_blob": "dce3d611f955692a6c5c38f30f4ab295fbc8a24b",
       "path": "kernel/asterinas/ostd/src/mm/vm_space/recovery_tests.rs",
       "repository": "desktop",
-      "sha256": "abf70b7c04f8b2968cfbf8dff5392722ce63779b1ba7f8c088fd98aa7acc0b26"
+      "sha256": "2cb277d62f5022cad7db52cca30708cc92b721e5495aaedc883f4e782537f47f"
     },
     {
       "git_blob": "e129226ecb2011e35113b2c8d76eadf6c0b6d0cf",
@@ -605,16 +665,16 @@
       "sha256": "e012246fd9b24e2e8554c617d29d3a126952bf5a4744244c8c471f4fc21aea70"
     },
     {
-      "git_blob": "e423f6e549fe60e8496ec159463dbc1c324c256c",
+      "git_blob": "d81f850a9c01061e349f7bcf86e607d6ae249fa6",
       "path": "services/hepta-os/Cargo.lock",
       "repository": "desktop",
-      "sha256": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175"
+      "sha256": "0dab17d434279fcb7d86b1dbf5d9ba74d7ce758b1fb7a73119fc41b2df91e892"
     },
     {
-      "git_blob": "0be14ffcedfda978c1ea7dbdf8d31a44d2e3060a",
+      "git_blob": "8ba64829aeb074a7ea8099448fd6d69a6e04884e",
       "path": "services/hepta-os/Cargo.toml",
       "repository": "desktop",
-      "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b"
+      "sha256": "9f21646f37cfc5b30770a7333e371d311982bfcccd8509baeded217e9ad2a688"
     },
     {
       "git_blob": "3ad1475511aede466456cd5a1d3749ccb87c0f2f",
@@ -641,22 +701,40 @@
       "sha256": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c"
     },
     {
+      "git_blob": "7b3d243374bdd6de963d13f2637bb62666f3cd1e",
+      "path": "services/hepta-session-host/Cargo.lock",
+      "repository": "desktop",
+      "sha256": "3f2ff696a14564b4a70ce25542b0516ef7676f4fbe53e06e1fb9803af57bef96"
+    },
+    {
+      "git_blob": "64040140513d0322466fb4f93f88beff878cad95",
+      "path": "services/hepta-session-host/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "0e1128e928c2ca4016b9b3ba0d68119bbf71bb336a1870d6a7cc926f662a579b"
+    },
+    {
+      "git_blob": "3caaeec7fdb25af55699e0fe26b863d7570a968e",
+      "path": "support/android/receiver/README.md",
+      "repository": "desktop",
+      "sha256": "521058d82b7a9208b0c3495f1be351758d2b7ebd910df0f7c7f670a421ba211c"
+    },
+    {
       "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
       "path": "support/build/check-boot.py",
       "repository": "desktop",
       "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
     },
     {
-      "git_blob": "caebd3c13516704713967dbdbb31c1d7c797751e",
+      "git_blob": "d478c78d95fdec2a0290c21f340fb3c5265fd4b3",
       "path": "support/build/kernel.sh",
       "repository": "desktop",
-      "sha256": "627ccc5a367ae6b8f585d3d7d50969160dd2f098b40608a6ac6be93d0fbc4ef0"
+      "sha256": "b834b13583caabc5552cd975db0ebdde3fca6cf14935a225f3306af44455e024"
     },
     {
-      "git_blob": "120e218878c3f799e73e90a55936cbc815767a62",
+      "git_blob": "bac8e1d494e81a689f56820ac9fb5afc9924a3bf",
       "path": "support/build/ktest/check.py",
       "repository": "desktop",
-      "sha256": "e92b681fff49b8529f600bafc4b6e433b309259101a4ed614d6cb84bb93eeb68"
+      "sha256": "40bc2570ba6ae36c420aef6b1f4dbac279f1e0e5254c4a3a2bec03abee57b7d3"
     },
     {
       "git_blob": "bbca01569aa559ef14682ea9b3a5914d47e8985d",
@@ -677,22 +755,22 @@
       "sha256": "7aabdd20efc9af8ee2d1e3554ea1bd7ff7ce2d272c62b24036a8148d2dae3059"
     },
     {
-      "git_blob": "66c6b1707aefce13e66283695d2bfd61cf7ed9a2",
+      "git_blob": "c8729d722be02ad34d5fb77a183698b2c625ba23",
       "path": "support/build/ktest/record-qemu.py",
       "repository": "desktop",
-      "sha256": "315e283a55d6f8bb23ddbde01e12239c3f9699fd53fb3c48935b13a426fe9853"
+      "sha256": "299d9fa69bf61e3102ff652c0c7d46c2f238e743bf822a2fb46b99c412a78914"
     },
     {
-      "git_blob": "4ef879e66c9e83e50f8a45bcbc5a2a8a01340723",
+      "git_blob": "1de45c8583fe0a14d6b134e40df2632fbeafd804",
       "path": "support/build/ktest/run.py",
       "repository": "desktop",
-      "sha256": "d1e0c252ba764e5c433bbe0be049ed20ff42c2563f20ba1411dc8b490a728226"
+      "sha256": "e5aaa49fa9eec2ce16c7c56272cceb6b9a96af3b1b274d17b8b7ed7aa2178b11"
     },
     {
-      "git_blob": "727a1a322b52a3581cc0f255a258f0dc38ef2a52",
+      "git_blob": "0fee5b13d1ecde27e0f2fc25cf53a304a89878da",
       "path": "support/build/minimal.mk",
       "repository": "desktop",
-      "sha256": "59ad6337dc4618986108e7c178f3b2977859cf2d301c2f732c0b6468bc5ebb8b"
+      "sha256": "2ac6879a72d83bf635cc574a3415c59102fec52438204b9640714e4ccb560899"
     },
     {
       "git_blob": "7e5d23fb3532907d914c59fe61357521641b645f",
@@ -707,10 +785,10 @@
       "sha256": "436df978f61cf84f82045e3498343e5cbbce02ee7d48971c762e753a1b0331ba"
     },
     {
-      "git_blob": "ddebd6c5a8e6c610ba4e8e7ea2f69d75e5d1232c",
+      "git_blob": "43b0159701a26a4e49b97f93acc7597d3f42200e",
       "path": "support/build/tests/test_ktest_checker.py",
       "repository": "desktop",
-      "sha256": "f7a907cd4190858c0c947b226c03dc40aa58fe9e95105f9b6a59a7a88abdb3c8"
+      "sha256": "d86470684fc5a530d02988a5a74836b324020ed9ffe2cce872daa52bd8b22c0f"
     },
     {
       "git_blob": "f29f54e139795a2c02fa73bb74a415baf55dfee8",
@@ -719,16 +797,442 @@
       "sha256": "0404c3fa3587744b821cc7a98a6d2f565991ea1ec5ef5103a858d1f69f0f0f03"
     },
     {
-      "git_blob": "36a9e04b692bcacb019b3722fe3625701f94e952",
+      "git_blob": "ebd94db69d9b476dd6fe2ef71409049b19170c2a",
       "path": "support/build/tests/test_reserve_source_inputs.py",
       "repository": "desktop",
-      "sha256": "946acd0481c7a8faa84a9694db8a215dbe3275830650686464de0b05db8ffd2c"
+      "sha256": "75bdc18eee2c3bcd79d2af117fcc27d3cae73eb92285b035014fc87b1b96e70c"
     },
     {
-      "git_blob": "da856bc836571a9e997dfa3b65049bb9b281036c",
+      "git_blob": "bd02dde110dcff39c98898d9724189254d480006",
       "path": "support/build/verify-source.py",
       "repository": "desktop",
-      "sha256": "da72a66c9ffc4a6b7277f7f52085025465064349d98e62d4685c63a25ec940db"
+      "sha256": "b2316499ac611b0df145e1aece38559582c3e8bead5882b09d7fbed98d56d97d"
+    },
+    {
+      "git_blob": "978e647769212bd09d3553d9646b8c30b44c2b92",
+      "path": "support/docs/check_modules.py",
+      "repository": "desktop",
+      "sha256": "fb9e6488e5c5362a9d2a7848b5c5b0cc4929747780470b6e8b62b3266826ee43"
+    },
+    {
+      "git_blob": "e851859d46d4bb4deb5a76bdca0cc49ee11d7013",
+      "path": "support/docs/test_check_modules.py",
+      "repository": "desktop",
+      "sha256": "93e82c7f0528d3ed28425b8db252b22f87e7761600f44e8444ef2d11e068c355"
+    },
+    {
+      "git_blob": "5d73830345f43a8a98ffbedc509b95fc9a48ab97",
+      "path": "support/release/organ_release_profile.py",
+      "repository": "desktop",
+      "sha256": "8f3c52b5602d42e3ebd0e04f9489b6771cae228d27851c34eb6384dbea84c8f1"
+    },
+    {
+      "git_blob": "c2291d4408f03a2dee44b230bc9c96c332b7cf56",
+      "path": "support/release/organ_source_map.json",
+      "repository": "desktop",
+      "sha256": "01f07e59d9bcdd01dd16b2f840eef8e8745c0b6cb9ce1dfe243b052ff60db715"
+    },
+    {
+      "git_blob": "01cacafb9260961f76955335fc80d3740787cce1",
+      "path": "support/release/profiles/2026-10-22-organ-source.json",
+      "repository": "desktop",
+      "sha256": "260139110c06921db6a156c1f072c55d0a3218f4b8da523b509adad4471e5667"
+    },
+    {
+      "git_blob": "99030c1cba272e7d63cc910059856662982ebba6",
+      "path": "support/release/test_organ_release_profile.py",
+      "repository": "desktop",
+      "sha256": "511554429c4ae71c7fd4f046e398f2284efd23a93689ffc52d8cffbc02d7650c"
+    },
+    {
+      "git_blob": "b168e59168a5402656ac996125efcdca5b8a6128",
+      "path": "support/ui/ACCESSIBILITY.md",
+      "repository": "desktop",
+      "sha256": "a3147d4f5a653624d8651614e490fdbab7fe9ab806543392e0d15f18c4d4caba"
+    },
+    {
+      "git_blob": "2555c7ba1af4ef45d76e1b40279357c02edf9748",
+      "path": "support/ui/BOUNDARIES.md",
+      "repository": "desktop",
+      "sha256": "1a5b4c5768dbef6f1da23d48929f93f61fd553e6bf3b4d2e8e216d5a7950c4bd"
+    },
+    {
+      "git_blob": "04b5b63b9c004b64b24d84bcd1d152e96ec1234a",
+      "path": "support/ui/CHAT_WORKSPACE.md",
+      "repository": "desktop",
+      "sha256": "3834447a99f228cf17a93249fb3cc70c9b3c080d474274c3e57d806f8a473ec4"
+    },
+    {
+      "git_blob": "ed4e9036a58f52af13e357f69893946c97f882f6",
+      "path": "support/ui/CJK_RENDERING.md",
+      "repository": "desktop",
+      "sha256": "1d803bb819fa8807908d97aa0e0cdae5a44e27a1cc486402dae61c104ae0acec"
+    },
+    {
+      "git_blob": "e7abb0e25cc21f85981cafd6e3818386ace49f40",
+      "path": "support/ui/Cargo.lock",
+      "repository": "desktop",
+      "sha256": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614"
+    },
+    {
+      "git_blob": "0f65439cafe0a85301e84cb6255c1a4a8f7c8c5c",
+      "path": "support/ui/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "877f6c52c402d579a2b7fcb51de5562004c545b4fd67d69c68d50e9157a9c5cd"
+    },
+    {
+      "git_blob": "81aa1cdd809d3bc16cedda484043343ab970ba1f",
+      "path": "support/ui/DEPENDENCIES.md",
+      "repository": "desktop",
+      "sha256": "30a6762b61b5e2cd37d49e8467fde305856e89ecb284d82ab2b96afa6b7d82dd"
+    },
+    {
+      "git_blob": "a0ca179350509c0379f8b3ec3165bdc97296df5f",
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "repository": "desktop",
+      "sha256": "36133cf7cccfeef6a275398c3fa93e471437c85541d051d4b0d7d587eeb6a255"
+    },
+    {
+      "git_blob": "9fd15af580badd9464e9662f6086723034d6c27a",
+      "path": "support/ui/HEPTA_SHARED_PRESENTER.json",
+      "repository": "desktop",
+      "sha256": "dd1cbc67b40b21c45af8f9c5a66cb7eca7797a27f2addba5cb4f0645237b16be"
+    },
+    {
+      "git_blob": "3d9871357b33e215939758ffbe613761179bc454",
+      "path": "support/ui/HEPTA_SHARED_PRESENTER.md",
+      "repository": "desktop",
+      "sha256": "cdf982fd547493269c5ea74d49b6e84edff62110aad683d79abbb18931a94f82"
+    },
+    {
+      "git_blob": "0d5893fcca30934c0608807a004ea53632e367de",
+      "path": "support/ui/INTEGRATION_CONTRACTS.md",
+      "repository": "desktop",
+      "sha256": "159d8732897e16185a45638bf56583950b7102049bbaa8565356ad62bc72d4ee"
+    },
+    {
+      "git_blob": "e541273cc0abf399c628640e2ea3c411ef81d2ba",
+      "path": "support/ui/LINUX_TEXT_PROFILE.md",
+      "repository": "desktop",
+      "sha256": "44fcacacba6bebdefc68b55da1382943f8486bc4044ca5ec5cb6bde4d53a3b81"
+    },
+    {
+      "git_blob": "9c82697fe3c11199564ab57d31c9bc01ef08084a",
+      "path": "support/ui/NATIVE_MAKEPAD.md",
+      "repository": "desktop",
+      "sha256": "1ab30dfc0d5a5c6177a19c7588fb3130cdd16be9eeb19e2d646ed1bac813f20f"
+    },
+    {
+      "git_blob": "98e5c2f6425b256c1c31ecb5cac53662ad344dd6",
+      "path": "support/ui/NOTES_DURABILITY.md",
+      "repository": "desktop",
+      "sha256": "b4b6936721d046a5a8c6db277f8ad08c731f630a3bca95cdf1265d2df796c520"
+    },
+    {
+      "git_blob": "2ce77318eea9c3debc06fd198796b67b7a88ecea",
+      "path": "support/ui/NOTES_ORGAN.md",
+      "repository": "desktop",
+      "sha256": "a613eeee0c7f6a4b6224281aa591bb04fd42a4aa338419532b95636110b119be"
+    },
+    {
+      "git_blob": "b52fdd1e6dd626ca65de54fa75087dac3e824723",
+      "path": "support/ui/OBJECTIVE_UI.md",
+      "repository": "desktop",
+      "sha256": "221298cbd73df6add0dc453c695cf934c1f8ebc647f01f47d18376688c31d27c"
+    },
+    {
+      "git_blob": "a63fb0aabe51913d16cbc59921a2c4c399dca3fd",
+      "path": "support/ui/ORIGINAL_HEPTA_SHELL.md",
+      "repository": "desktop",
+      "sha256": "cd5b4c6323d3493f01c599737e4d3156f45a842177ba7c710c925aefac3a33a2"
+    },
+    {
+      "git_blob": "e804acd499b3e70a003ceb801c3ae8913d4fde9a",
+      "path": "support/ui/PREEDIT_RELEASE.md",
+      "repository": "desktop",
+      "sha256": "8f25771fcdfa13b0b0c79a2c2323e6b8c466553cc2eb88351847aae0e9e87977"
+    },
+    {
+      "git_blob": "8a6fb04291cdfeb5437ca106e8d4b2a7e4fc60e1",
+      "path": "support/ui/PREEDIT_TEXT_PROFILE.md",
+      "repository": "desktop",
+      "sha256": "aa0f3db7999c4b25ec0525f06c5e6996cca60232a3e70a8b4f56e86e285e2325"
+    },
+    {
+      "git_blob": "252532f356345f1e3f7e609762c79c8b0b00ea20",
+      "path": "support/ui/PRODUCT.md",
+      "repository": "desktop",
+      "sha256": "bef3fef27c3fa2108fc17b256441eab2506d0f718b5c92e7670907ca3cbf6673"
+    },
+    {
+      "git_blob": "7f8816f46315a9d9df7cd5db593a6fba69619591",
+      "path": "support/ui/README.md",
+      "repository": "desktop",
+      "sha256": "0f75ccd51e2f6f25772733c7a5b4e60cc6dd983aae7be0d71bae7aa998b17a8b"
+    },
+    {
+      "git_blob": "5d26a254c691c40d70378e66e6429a1882524943",
+      "path": "support/ui/RUN.md",
+      "repository": "desktop",
+      "sha256": "524f9afc3bbef4ad0b0aaad23d84e94c403e7923f6d93dc7a5550039a43aa866"
+    },
+    {
+      "git_blob": "f48f8a1e45169cc412019c580c35d96a333384aa",
+      "path": "support/ui/SESSION_IPC.md",
+      "repository": "desktop",
+      "sha256": "6d693616349d5e4c49a1d9fb502a4f148800d421e4f293ca4f6744e54344e0ce"
+    },
+    {
+      "git_blob": "e04cd4e61780d3ec14c9c5230123a716d2fe029b",
+      "path": "support/ui/X11_IME.md",
+      "repository": "desktop",
+      "sha256": "ad6ae287a2f38b3680d062f31639c40318c3c449532249d25d518f1aa1ac675d"
+    },
+    {
+      "git_blob": "d980da63ec33107e941e450db720dd3550e97a22",
+      "path": "support/ui/build_text_product.py",
+      "repository": "desktop",
+      "sha256": "5848ec20e77fa30dffbaaeaa66fa464173de42222a921465778bfc72462c1203"
+    },
+    {
+      "git_blob": "64372432d1059849bd327bfb65cef957fdc8f6e9",
+      "path": "support/ui/ci/README.md",
+      "repository": "desktop",
+      "sha256": "705a05dd7cde9254bd55bdb239de6c17a4d15cb585148b1f87fb5149c2d19887"
+    },
+    {
+      "git_blob": "eac7ef0dcad85eaaa99d9fd653c0471a5da15e15",
+      "path": "support/ui/ci/a10-host.yml",
+      "repository": "desktop",
+      "sha256": "d649334b1bf98fa268a941a37b30d064ca5ec191c451f9ec09be053e2b0337f8"
+    },
+    {
+      "git_blob": "4606e72e042564097e8780d66c1d4dcb611869bd",
+      "path": "support/ui/licenses/HEPTA-LICENSE.txt",
+      "repository": "desktop",
+      "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc"
+    },
+    {
+      "git_blob": "2805899d56d0332d175cfc613c67d45d6f006db7",
+      "path": "support/ui/licenses/HEPTA-NOTICE.txt",
+      "repository": "desktop",
+      "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915"
+    },
+    {
+      "git_blob": "7f77de13d6a3a5b2a7b35bfb249b7902317c2045",
+      "path": "support/ui/licenses/ROBRIX-MIT.txt",
+      "repository": "desktop",
+      "sha256": "7c370204a7507a3c33398d6377aa69691991b0582a3d92ace8d27d8819b223f7"
+    },
+    {
+      "git_blob": "bba1f82f7fb519a398496d1644d0968a7e7fb85c",
+      "path": "support/ui/linux-preedit-profile.json",
+      "repository": "desktop",
+      "sha256": "8da281d72ff53ce6feaf984cb79fc32a6ca31f2d3871581c3886fb52a6398c6f"
+    },
+    {
+      "git_blob": "c5b2512689f3bf9c97897d0f4d9a9f38689e7495",
+      "path": "support/ui/linux-text-profile.json",
+      "repository": "desktop",
+      "sha256": "9ead18837d54dd5abdd8d021d52eeecb928d71af092ac432acdaf3baa25e01f5"
+    },
+    {
+      "git_blob": "00d1f6f45ccc2dcb66d703f44c356bc4825783f6",
+      "path": "support/ui/package-host-binaries.sh",
+      "repository": "desktop",
+      "sha256": "b0978b165374a4161c3ec39a8c9e557d693e70d505767e3f91d19d314a35cbfb"
+    },
+    {
+      "git_blob": "f3ae2dec725e41a65feb50f602194975da0cd771",
+      "path": "support/ui/preedit-sdk/.gitattributes",
+      "repository": "desktop",
+      "sha256": "a0de5aae8c16a120fd3ddc31072fadcb187c57a28371f17b8387e7dd270fe61d"
+    },
+    {
+      "git_blob": "dd6ae93f5b90b582a85dabf52bfd2422667f98a0",
+      "path": "support/ui/preedit-sdk/LICENSE-MIT",
+      "repository": "desktop",
+      "sha256": "3855d73a873244ec424ac5781d5d8fc8e2a789ff9d2f1cb804bec585a64ea88f"
+    },
+    {
+      "git_blob": "d6f22af995283dc1c7fabbb6d3877a8c03f8a159",
+      "path": "support/ui/preedit-sdk/MANIFEST.json",
+      "repository": "desktop",
+      "sha256": "7476afc9408cea0e5e97824a597fab9156d8b934419a18c49f9c42fe963ecf4c"
+    },
+    {
+      "git_blob": "51155d1c6f4c2079ffb22c8acf7c53b02fd5ba7a",
+      "path": "support/ui/preedit-sdk/NATIVE-SDK-PATCH.json",
+      "repository": "desktop",
+      "sha256": "9144da0b344323fc1746aae0b4e909706f1fc2df064df83119008c771bfa9f82"
+    },
+    {
+      "git_blob": "321707dc9df3ca087fdd01b672c82c3863a3d085",
+      "path": "support/ui/preedit-sdk/README.md",
+      "repository": "desktop",
+      "sha256": "84f7b253ce978645a20b852ac5a754b2011197b85a4f053699e7631f46e3787f"
+    },
+    {
+      "git_blob": "e535c4543afc747df17a0ac5bbcd6d6ca048ccb4",
+      "path": "support/ui/preedit-sdk/native-preedit-callbacks.patch",
+      "repository": "desktop",
+      "sha256": "c12d933adb12f83c5611e343841d3834876093473a0036df1683caf835a7a7a6"
+    },
+    {
+      "git_blob": "00af2b2c4538011eacc1110c9cd97bc35316f178",
+      "path": "support/ui/preedit-sdk/sdk-num-traits-path.patch",
+      "repository": "desktop",
+      "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"
+    },
+    {
+      "git_blob": "d97590ba995ad572d13aaad0970172cebcfa178e",
+      "path": "support/ui/preedit_component.py",
+      "repository": "desktop",
+      "sha256": "1f976b95f7e65e669035ecadf04d0f89fda0a71d777f069f09b1b2a790858588"
+    },
+    {
+      "git_blob": "b36d5b989bf1392203a1e2d582f406473393a00f",
+      "path": "support/ui/preedit_source.py",
+      "repository": "desktop",
+      "sha256": "e53bc697aa4f5d3718ac81508849085f7285ff67956f95dbf3ab71e8350c1dbc"
+    },
+    {
+      "git_blob": "63b9c9666d4b971aca371b57555aa0175139b127",
+      "path": "support/ui/prepare_native_makepad.py",
+      "repository": "desktop",
+      "sha256": "dfb4ab2d961c158d001b76647c5dd1b987d836ce183837894f2d2edf0eb069ad"
+    },
+    {
+      "git_blob": "00480e1ef67f768f8148646eb967b1530d9d5b93",
+      "path": "support/ui/prepare_native_sdk.py",
+      "repository": "desktop",
+      "sha256": "d2f178fe00fe3d5eb5c145b6267f040cbe7537d5ebfc15f958e4e273e9d5ff44"
+    },
+    {
+      "git_blob": "c18dd8d83ceed1806b50b0aaa46beb7e335fff13",
+      "path": "support/ui/product/.gitignore",
+      "repository": "desktop",
+      "sha256": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b"
+    },
+    {
+      "git_blob": "37cb7da6a909a3821f569e1fe0fef46ff8315cbb",
+      "path": "support/ui/product/acceptance_identity.py",
+      "repository": "desktop",
+      "sha256": "6df4eab28a8382af010e57ece7fa6fd4da84d036c890dcc00d02f831298417ac"
+    },
+    {
+      "git_blob": "73639c850446e624fddf59fde3ff464b5ce28ecd",
+      "path": "support/ui/product/desktop.py",
+      "repository": "desktop",
+      "sha256": "54225348d8995a2ce2785154e4d62e5c6a86fe879d8d6adf6614b8ee1ad72b09"
+    },
+    {
+      "git_blob": "1d5ef5ee54133e8e78b26ef555ba1f3e9d578a48",
+      "path": "support/ui/product/native_sdk.py",
+      "repository": "desktop",
+      "sha256": "923f7ea7420d92efd1c310bccc071c8a8beb4923789f371d2a9025378b9ff1d2"
+    },
+    {
+      "git_blob": "0d5a5538362c03c5098f547460ac2f6af10ce3ef",
+      "path": "support/ui/product/smoke_installed.py",
+      "repository": "desktop",
+      "sha256": "4a48ad470fbe0dce27ed8a5822a51bc5f6799acbd7f9a855876427c5168dfc5b"
+    },
+    {
+      "git_blob": "d76864c6f17bac30786c728c768e8881c9b34dcb",
+      "path": "support/ui/product/test_acceptance_identity.py",
+      "repository": "desktop",
+      "sha256": "c87cd6460a9f0e21df5e88f1bbac9588b3fc0fda34ef269f6c857fa26f962c30"
+    },
+    {
+      "git_blob": "828ba38162bc309129a70bd7eeff72423665a6c5",
+      "path": "support/ui/product/test_desktop.py",
+      "repository": "desktop",
+      "sha256": "ca1448ccde2aa52ac445d2527dd0ec43e19d3d40df3b8a5fc73c1504a9ce263f"
+    },
+    {
+      "git_blob": "3a462efaa61a64a0c3f4263bf05e7a1418772c61",
+      "path": "support/ui/product/test_host_archive.py",
+      "repository": "desktop",
+      "sha256": "47f35e36696fa1e7b122490f3ecccd09787a66f0b90da2ea3a0280a544150f44"
+    },
+    {
+      "git_blob": "a3df6c710973f3f855e05e362c3353e9541396a5",
+      "path": "support/ui/product/test_install_recovery.py",
+      "repository": "desktop",
+      "sha256": "dc17208dacb4e43bf19257e01473ba6f1225d2d43f694d095ad49fe5027b21bd"
+    },
+    {
+      "git_blob": "b265bcc4033232926a9f1efb46de6dfa0213bbcf",
+      "path": "support/ui/product/test_preedit_sdk.py",
+      "repository": "desktop",
+      "sha256": "d26d346ab856faf9ee385895d480764f871ecda9465ab8a855317854d2290261"
+    },
+    {
+      "git_blob": "f856d1db32e8055ed1c496c79698e0f818f4540b",
+      "path": "support/ui/release_preedit.py",
+      "repository": "desktop",
+      "sha256": "616ef83ab7e6eab2ba014bea814c3179d77eeae85ae90472579986679897d646"
+    },
+    {
+      "git_blob": "2cd8ac8204c5bdf718a5c2a13f687cb8422a7efe",
+      "path": "support/ui/smoke-cleanup.sh",
+      "repository": "desktop",
+      "sha256": "d07887b58a7bc15608b72a20a55ea2bc8d08e60732cc302eed26bfe22833f75c"
+    },
+    {
+      "git_blob": "ac8236ea3dbe3889c99423571aea5b55d42163f1",
+      "path": "support/ui/src/android.rs",
+      "repository": "desktop",
+      "sha256": "a1b9060368a38f39faa83956d09b694ce2d497b7b111d480e868d36f4d8e8882"
+    },
+    {
+      "git_blob": "ddf8a09e9d9cff6a0d60b6f105801c9f486a67ac",
+      "path": "support/ui/src/lib.rs",
+      "repository": "desktop",
+      "sha256": "908be28ace59e107ffd0b05f499367cb523aa7ba166848f641072e14c5aaaf41"
+    },
+    {
+      "git_blob": "41837023baf1cb25e7234c85b7a0ee6c00ec88e1",
+      "path": "support/ui/src/permission.rs",
+      "repository": "desktop",
+      "sha256": "2f39e753a6df05448a3e3756fdc67513acefcb6df8c20df648741d90bd534f60"
+    },
+    {
+      "git_blob": "b24bbc2c5babe35c87175b8170807890c1f5e940",
+      "path": "support/ui/test_preedit_component.py",
+      "repository": "desktop",
+      "sha256": "5e3e8b594591277560d1f09a0a885e6013776c3dd53213900d87e6ad3221e95d"
+    },
+    {
+      "git_blob": "1085d2b9153f376a0b05cdfb6b66321834657f75",
+      "path": "support/ui/test_preedit_product_profile.py",
+      "repository": "desktop",
+      "sha256": "c628196228429413480101adf3c86fae3b17e7326d22818ddbf7afa88d24bf63"
+    },
+    {
+      "git_blob": "1fb41665fb01bcaed31b763ae1682a31b295e724",
+      "path": "support/ui/test_preedit_release.py",
+      "repository": "desktop",
+      "sha256": "7dc1dc08a20634ac6c864b88f9eab97a72e833aeb16c5692c9f8953bb29afe8e"
+    },
+    {
+      "git_blob": "421ca4c0a602534f25878478b597170fc9c6a9a5",
+      "path": "support/ui/test_product_dependencies.py",
+      "repository": "desktop",
+      "sha256": "968f15155ff7537bfa576760f4ada6081632dde59418128dfa2963cba37b30cd"
+    },
+    {
+      "git_blob": "bc8ea47eb8d25351a6d9069fded183052d734a8c",
+      "path": "support/ui/test_text_product_profile.py",
+      "repository": "desktop",
+      "sha256": "2a2661a858cdb7149760fc8c27baa3420b37fb2214c5f171bba739442caaa1a7"
+    },
+    {
+      "git_blob": "bea6051b617e2888c7afc84919826b3b1296214c",
+      "path": "support/ui/verify_product_dependencies.py",
+      "repository": "desktop",
+      "sha256": "90711633fea184faeabfa3169cb98c331d23932bc4835e41aaf8c5f56b9fcfb9"
     },
     {
       "git_blob": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
@@ -743,10 +1247,22 @@
       "sha256": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5"
     },
     {
-      "git_blob": "b6d48c43b62f749e281c08810352014608406258",
+      "git_blob": "b4eb2d27846d92a6bc50f56a210c446b86ee0061",
       "path": "tests/integration/hepta/run_original_agentd.py",
       "repository": "desktop",
-      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+      "sha256": "f201671fb280e8f7d13c524de3983b905c8dadae6b362eac978d79ee67a42788"
+    },
+    {
+      "git_blob": "65aacd773b4e17f852d818c1e28fa9be69dead60",
+      "path": "tests/kernel/control/g1d_init.c",
+      "repository": "desktop",
+      "sha256": "b00ce7532c0f65f953e304302e54004d1850fbcb40f389b94c753838ea73c016"
+    },
+    {
+      "git_blob": "66d4966f3a7266f2447335ff030a07c3b8d54ff4",
+      "path": "tests/kernel/control/g1d_pids.c",
+      "repository": "desktop",
+      "sha256": "69f6bc1a6935f1cb03667033956c2b0f3c330c6cdb9920d06e46fe99667d1b57"
     },
     {
       "git_blob": "7ce4294feaa35908b5be84c5ba3e967e66c36360",
@@ -755,16 +1271,490 @@
       "sha256": "9c153d5cd5206ec1eee78995a8a9c4365c40ed1a8c64132baf80450db3642dff"
     },
     {
+      "git_blob": "f35d0d0b78dc488daece154ab569fab13aab1c91",
+      "path": "tests/kernel/control/run_g1c_guest.py",
+      "repository": "desktop",
+      "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1"
+    },
+    {
+      "git_blob": "6162e021086ea083afcad185585cfac42b54737b",
+      "path": "tests/kernel/control/run_g1d_guest.py",
+      "repository": "desktop",
+      "sha256": "d6f7d6218463346d3d3c3800924370f76bcba4238d2e4c808cffd3626e7201c3"
+    },
+    {
       "git_blob": "284d8c191390e137efcf605de7a338f9be643f8e",
       "path": "tests/kernel/control/run_g1d_watchdog_guest.py",
       "repository": "desktop",
       "sha256": "ffa3b6761fa0e84b84cb8372f8ff56260ddb34c94a021b3f98fd0e158f229b1b"
     },
     {
+      "git_blob": "0e98b97cb967b53e2dc1396f921871dc83878105",
+      "path": "tests/kernel/control/run_g1d_workload_negative.py",
+      "repository": "desktop",
+      "sha256": "09b931a1428d076bb9375b07f97a95a08016f3db0c866d568458252b951c11ae"
+    },
+    {
+      "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93",
+      "path": "tests/kernel/control/run_queryabi_candidate_guest.py",
+      "repository": "desktop",
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5"
+    },
+    {
+      "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719",
+      "path": "tests/kernel/control/run_queryabi_guest.py",
+      "repository": "desktop",
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268"
+    },
+    {
+      "git_blob": "f4a491037402e7979c06e55e6aa9d5cdd9fc6140",
+      "path": "tests/kernel/control/test_g1d_guest.py",
+      "repository": "desktop",
+      "sha256": "1758abcba70f15870a9fd12aaedb0b9638de3ba9828f136e7bbbc14fd9403e3f"
+    },
+    {
       "git_blob": "c4b2885f38a6ce08c13f36258f5407c9dc5e8b54",
       "path": "tests/kernel/control/test_g1d_watchdog_guest.py",
       "repository": "desktop",
       "sha256": "af95a7d6e35deeb91e0752dc512917522d693446e0681bd260b88e3ab02a9011"
+    },
+    {
+      "git_blob": "b111afd3c3eff10116f8bf4168cad2ada01ab33e",
+      "path": "tests/kernel/network/run_unix_stream_guest.py",
+      "repository": "desktop",
+      "sha256": "81d84a3c3d2a476c7b1eb467f04254b1613a4b5b7f82066ab4b5c9e839d9f1c0"
+    },
+    {
+      "git_blob": "b636a2c55183e726399da7167ecb35d2cd80161e",
+      "path": "tests/kernel/safety/commoncap_probe.c",
+      "repository": "desktop",
+      "sha256": "032c6f49b642c2c7c01dc24e178c369c552625999f93f967c2a57a0ba767d6cc"
+    },
+    {
+      "git_blob": "d8fa7776837c5dcda26839f502b50997ffacdc15",
+      "path": "tests/kernel/safety/frame_budget_probe.c",
+      "repository": "desktop",
+      "sha256": "9cadf45c875be55baf498ea7a2c43eaf9733b4ac20ddad7fa7465a05b410c873"
+    },
+    {
+      "git_blob": "08379fb4b7f2fe0f0e89a4a0445e6dd55306ee33",
+      "path": "tests/kernel/safety/lifecycle/lifecycle_credentials.c",
+      "repository": "desktop",
+      "sha256": "09d2bc15ef187a6a25fe6df0f4a0410bab86d78252019df5a27a9484b7dced09"
+    },
+    {
+      "git_blob": "343aad2db7be0331a809e081849f660d7e8b83a6",
+      "path": "tests/kernel/safety/lifecycle/lifecycle_local.c",
+      "repository": "desktop",
+      "sha256": "fbb3e9f3da263c3e4bd6735536f2b97c728188cc985ab31e25ca2014cff3ab1a"
+    },
+    {
+      "git_blob": "09ff08aaca908778196df298494e28f1a909b96b",
+      "path": "tests/kernel/safety/lifecycle/lifecycle_main.c",
+      "repository": "desktop",
+      "sha256": "104f75cd2673b7638782c6567362d69fda48b48a73ae8a2b128ce296e8fa5b77"
+    },
+    {
+      "git_blob": "d1bffb859b5fd659e9b32a8822268c4e7eea670a",
+      "path": "tests/kernel/safety/lifecycle/lifecycle_paths.c",
+      "repository": "desktop",
+      "sha256": "3afef7e7d0acd01332322be0dd2adf169f6a576baf72aff14cf3e1f4ee98fbe6"
+    },
+    {
+      "git_blob": "6624a18ab39eb6c26f5482f74f31ef6d11b28929",
+      "path": "tests/kernel/safety/lifecycle/lifecycle_probe.h",
+      "repository": "desktop",
+      "sha256": "0d757e2217ff4f03903f4d4742adc6b99a9e5015fbdb74ebff78e0def7e815c6"
+    },
+    {
+      "git_blob": "073f7092029b95dccd8edd385992088747955af7",
+      "path": "tests/kernel/safety/ptrace_dumpable_probe.c",
+      "repository": "desktop",
+      "sha256": "b27ee2cee441ef4a1442b0c4cf4753c559dc63df98d8b31752a9625f26dd099c"
+    },
+    {
+      "git_blob": "602a579b63ce750884ea616dff4d0c6cdbf0a165",
+      "path": "tests/kernel/safety/run.py",
+      "repository": "desktop",
+      "sha256": "86779696dcb0e5d63f76c14ced0a95abae981063fceda4647c1d859449f1e7db"
+    },
+    {
+      "git_blob": "6c86336629ef579d3b85ce7e4d344bbc3cfb1618",
+      "path": "tests/kernel/safety/socket_snapshot_probe.c",
+      "repository": "desktop",
+      "sha256": "fb22b50c27a8773b86ff47e85dda922a0338aac7a42cea833fa0271ad89dffef"
+    },
+    {
+      "git_blob": "91ad3809803cf7abac6af014f62695e74967c576",
+      "path": "tests/kernel/safety/test_runner.py",
+      "repository": "desktop",
+      "sha256": "f259e074a4c8a5d59985f7ad8b0acbd70339d094d54ba15061c3bd02de903f18"
+    },
+    {
+      "git_blob": "18391871eab4124cc9d20bd4a367ff40040f4e77",
+      "path": "tests/ui/Cargo.lock",
+      "repository": "desktop",
+      "sha256": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940"
+    },
+    {
+      "git_blob": "13d806deb3174928e281be58f92d0053ac83de40",
+      "path": "tests/ui/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "f9924d58ec95c5c805ed26a12cb39c27839e4cb7d4e82c70ce375458976cfe3d"
+    },
+    {
+      "git_blob": "c6fae5f4616aedce4e056144b8f4fa0124860962",
+      "path": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "repository": "desktop",
+      "sha256": "df434ca840e1aedf000e512646eab427ec18e4252b8296bff3e20611843ac133"
+    },
+    {
+      "git_blob": "f375b5593c4ea675057b880a4eb203bb9cdf9f7f",
+      "path": "tests/ui/README.md",
+      "repository": "desktop",
+      "sha256": "d483aab53d65471bc479b69bf92748d7f73baaf5be2e5646f143886d7c056540"
+    },
+    {
+      "git_blob": "44aaf1b0359a2dc7a799cbf674dc7b3b7f46c1ba",
+      "path": "tests/ui/TESTPLAN.md",
+      "repository": "desktop",
+      "sha256": "e24e01a9728aec55f86fd1742da25534c2725133b761415d4a8d7628e474b4cb"
+    },
+    {
+      "git_blob": "d75fc3145ddd0a5b24e798b72137905755eaaed1",
+      "path": "tests/ui/accesskit-smoke.py",
+      "repository": "desktop",
+      "sha256": "07a5e7028597c111f89b423cf8bf386c278e644e4366a9940e557be33d9cb785"
+    },
+    {
+      "git_blob": "c2f0a91eaea1a44cf6769f4f3701f6100b11a9fe",
+      "path": "tests/ui/accesskit-smoke.sh",
+      "repository": "desktop",
+      "sha256": "309bfe0e597689ecae8ca6658a8fbf4a5367c691d62c88a0cd9254fdd63b1e91"
+    },
+    {
+      "git_blob": "84b408c9dcce06527c2c1bb0aca06220087f0a65",
+      "path": "tests/ui/check-host.sh",
+      "repository": "desktop",
+      "sha256": "ce8bb16db1b070b69a0439520c346d8dcc5e46490aafb6a9d477ca652e4c629e"
+    },
+    {
+      "git_blob": "453ef9e2c127c620b03539193286fa4495cf6d79",
+      "path": "tests/ui/compositor-restart.sh",
+      "repository": "desktop",
+      "sha256": "3c8a76f53f44c6d46a5a05aee65067ddb484d878446e4543203ed9da5aa37609"
+    },
+    {
+      "git_blob": "c5ab1bde32fda2d9388fb2f8276f41eb47700653",
+      "path": "tests/ui/headless-weston.sh",
+      "repository": "desktop",
+      "sha256": "16d0c7866c311cac9e61eec86e70e43e16e83f5558adbfcdca936e91a08e1549"
+    },
+    {
+      "git_blob": "f3e8093a253ee30c12cda27c37bc081fa421636c",
+      "path": "tests/ui/native-makepad/GTK_IBUS_CONTROL.md",
+      "repository": "desktop",
+      "sha256": "0959640e656b81fde2f5339ce87b19e7dea4a4964820559784d4dc5a9d507b01"
+    },
+    {
+      "git_blob": "a2d85b3536993fade9be95325460069a9edb5b70",
+      "path": "tests/ui/native-makepad/capture.py",
+      "repository": "desktop",
+      "sha256": "52ca6135d52375d3050d1a91e4cd0ab26c80dd8e30caaca49533ce6e0f490dad"
+    },
+    {
+      "git_blob": "dd9d36ade44912e5a8b444fad94cfccca6819fcf",
+      "path": "tests/ui/native-makepad/ibus_client.py",
+      "repository": "desktop",
+      "sha256": "a54d45c601e9397ea669149da4bad0155f37b17f971b9340637392389b77c7ac"
+    },
+    {
+      "git_blob": "c76107ff54d91084021a6bc6fd73bf61e296a9e0",
+      "path": "tests/ui/native-makepad/inventory.py",
+      "repository": "desktop",
+      "sha256": "c2631009f3621a2f9fd5340b602c103073b874927b66056399e6b4f787d5ac50"
+    },
+    {
+      "git_blob": "2b796aa2af38999dbaf55b7f8fda2c245d9314e5",
+      "path": "tests/ui/native-makepad/preedit_gate.py",
+      "repository": "desktop",
+      "sha256": "2722678417cd5d5c3dd6c7cfe25b6dcf5670e322a596984eb9aa52d4ceecabb9"
+    },
+    {
+      "git_blob": "46a51011e7aa6c4b3db6fdc38395fdfe1898170c",
+      "path": "tests/ui/native-makepad/probe_gtk_ibus.py",
+      "repository": "desktop",
+      "sha256": "04813246ec0b36306afcd271f5a6d5cd4c1824be5cf0b4b2c5c17716eb1e3cc6"
+    },
+    {
+      "git_blob": "335a70fab3c9f4ebbffc8fe5aa6c3fbfb0de3869",
+      "path": "tests/ui/native-makepad/qualify.py",
+      "repository": "desktop",
+      "sha256": "960eb6fe9b58c472f2b2ff0083fa27db0341e6886de1da4bf0c664aa8d61b8c4"
+    },
+    {
+      "git_blob": "b291bb821b4ea87fe16db86ca9f6e52c392075b9",
+      "path": "tests/ui/native-makepad/test_build_artifacts.py",
+      "repository": "desktop",
+      "sha256": "70c389fdc6dca2182d80f07387275394d6ddee528796f014ae3fa4febf70f96e"
+    },
+    {
+      "git_blob": "e12241df98b5391a3978a3edcf3ccbc667eca2ec",
+      "path": "tests/ui/native-makepad/test_preedit_gate.py",
+      "repository": "desktop",
+      "sha256": "7ff2451fac3af69ea61a59a527c503ef462d37fe78cf06239c14eed66a4b2652"
+    },
+    {
+      "git_blob": "76e002d4ad334961c103fbbe2e2f699da8cb699d",
+      "path": "tests/ui/native-makepad/test_probe_gtk_ibus.py",
+      "repository": "desktop",
+      "sha256": "c118084858cbb48e5d5135b1fe8a0bd93dec15ec8df6fe9eccb13621f010ac0e"
+    },
+    {
+      "git_blob": "396b85c9b76fdf1f4511ee65d29484595395e185",
+      "path": "tests/ui/notes-bootstrap-v1.json",
+      "repository": "desktop",
+      "sha256": "d40539976b9c47b7b8cd9248312f949fd6489492116a36dbd2cef385ebefec49"
+    },
+    {
+      "git_blob": "45f9d4aa2a9856d2432b97b2ea5b87bd4e777a21",
+      "path": "tests/ui/notes-bootstrap-v2.json",
+      "repository": "desktop",
+      "sha256": "740396286f1b6db8e2bc49904a9a4d3cdea6db05bd348c5985059b2c158cdcc5"
+    },
+    {
+      "git_blob": "d4f77dda3997335fb6767554c10f2ef0a147ca4b",
+      "path": "tests/ui/notes-document-observation-v1.json",
+      "repository": "desktop",
+      "sha256": "23de9d7ce6f95d1cd4a913ab01a4690e59b9f261fa69f515b47d283535ba5439"
+    },
+    {
+      "git_blob": "d4a4b1cd9cbfc8520213b39f61edd3ab3107a3c2",
+      "path": "tests/ui/notes-recovery-v1.json",
+      "repository": "desktop",
+      "sha256": "e08ec8f070ba551d4d51a295e189a7f834bd83800194b806e5ed1918a9462f85"
+    },
+    {
+      "git_blob": "890900633edf6415cc0009e2bc395bb9751c0cc1",
+      "path": "tests/ui/notes-target-v1.json",
+      "repository": "desktop",
+      "sha256": "62209831263db1f4219d2a212718b84e0739da2c9040d398ddeadf87e5f77cdf"
+    },
+    {
+      "git_blob": "e4dc9dcee45ce46585da0142e0241c094d9bad06",
+      "path": "tests/ui/objective-transport-rejection-v1.json",
+      "repository": "desktop",
+      "sha256": "80fa24065c2ff1c80989040e36af427c7ec68e9a8252de542b17f4391d6b2609"
+    },
+    {
+      "git_blob": "afd305c778fa12a690befe7bf2756fa77c63b4d0",
+      "path": "tests/ui/probe-chat-workspace.py",
+      "repository": "desktop",
+      "sha256": "b4c42994a8ef39db88a586f753127f51fd83c6c0df69da0f9e598bba94afa4de"
+    },
+    {
+      "git_blob": "a3f367ee204c7ac151ea17e142fcb68164927608",
+      "path": "tests/ui/probe-cjk-pixels.py",
+      "repository": "desktop",
+      "sha256": "38f01b3f4cd2bf2a6b3866a96210484d8cdae25fd295347fe10f2c2e90a2d0fd"
+    },
+    {
+      "git_blob": "19263e547a790275fe721635b96957e7bb067b97",
+      "path": "tests/ui/probe-hepta-session.py",
+      "repository": "desktop",
+      "sha256": "0c7e7f95448df6f995fd95870660dc496de78871704defa1ba28bd996c28e605"
+    },
+    {
+      "git_blob": "346f6fe5ea4d9cf41057fd6ec1fb247c3c26e938",
+      "path": "tests/ui/probe-hepta-wayland.py",
+      "repository": "desktop",
+      "sha256": "8bdba59347cb4422756c5af1eb5047f1da0e6583ded23054e1541b17ce5d377b"
+    },
+    {
+      "git_blob": "d7d4889736f26bdb9bde155c7987a6ef20e9718a",
+      "path": "tests/ui/probe-original-hepta-shell.py",
+      "repository": "desktop",
+      "sha256": "971c8a92ca2fe205784f2ebde3c4dceaf4615527f20df256071995157aa68265"
+    },
+    {
+      "git_blob": "2300cfb6c069bc5c317c48b3e56eb04ddaec18ff",
+      "path": "tests/ui/probe-original-objective-shell.py",
+      "repository": "desktop",
+      "sha256": "c1e1c94f42f0a30cd694f458259667ca9ec111503e269325acf5e976a4d3af32"
+    },
+    {
+      "git_blob": "c37b42d364bde111b70dcd2faab93e296fd509b1",
+      "path": "tests/ui/probe-x11-ime.py",
+      "repository": "desktop",
+      "sha256": "c648ff0f841ba1fbe5088c453c57083b9eec4267b4f398c75e6be651d82758e4"
+    },
+    {
+      "git_blob": "3f79b1cfb46c3cde4bc1894b803e2c74a1565331",
+      "path": "tests/ui/replay-packaged-host.sh",
+      "repository": "desktop",
+      "sha256": "eff4809dc9feeabb987918ba268c90f71630ae706130be3c792209d7214e9c79"
+    },
+    {
+      "git_blob": "80b9162eedcbde64a1414f5b4e4bafd79b98cb09",
+      "path": "tests/ui/reproduce-objective-ipc-delay.py",
+      "repository": "desktop",
+      "sha256": "b434523d2f75ed1c9871f7e816af516d8105debcef659caf9271cc29d061c5ab"
+    },
+    {
+      "git_blob": "5a6bc3daba3871d3322b192b429589de18db972f",
+      "path": "tests/ui/smoke-wayland.sh",
+      "repository": "desktop",
+      "sha256": "67058d7268d5f3f37ec8fbb1213ecc9ac79fe7686acf9486a668b2cccf114cab"
+    },
+    {
+      "git_blob": "11a221369a696de73319bc37eabe70cf5d55dcba",
+      "path": "tests/ui/smoke-x11.sh",
+      "repository": "desktop",
+      "sha256": "f922661295027be216c080b5bfed0f2f011d8ff9e6d4da337085628125e29d61"
+    },
+    {
+      "git_blob": "8245247d8169a2c2f5717fde8e0aba8b2db4b55b",
+      "path": "tests/ui/src/lib.rs",
+      "repository": "desktop",
+      "sha256": "8575f0cf415a5a114e504d51ae20b8a2e76c0011cdbd42b2538bc11c30bc3328"
+    },
+    {
+      "git_blob": "5d5143b54c72e96f874834021c957c31378c3384",
+      "path": "tests/ui/test-cross-uid-peer.sh",
+      "repository": "desktop",
+      "sha256": "e5643ed02b14bfc7872d1695b178ac84da9c3b9deb5bb186999d07c9dfc6d634"
+    },
+    {
+      "git_blob": "1bbdeb83673bfc54cfa95329274de9e561ba222e",
+      "path": "tests/ui/test-notes-bootstrap-ipc.py",
+      "repository": "desktop",
+      "sha256": "60d95290bc15815a69d8b652916a1633a8df253e7efae1e3d3e91aa588a6383b"
+    },
+    {
+      "git_blob": "239d125e9bb687a3a85c787a78ce80da2436ed33",
+      "path": "tests/ui/test-notes-crash-recovery.py",
+      "repository": "desktop",
+      "sha256": "56b3a3b1cfb1c2cdf16f828a03c627dd02bab6568fe130014a4d8217a8a341a7"
+    },
+    {
+      "git_blob": "8ba5fa799f9e3438d716f274569710c35ce429c5",
+      "path": "tests/ui/test-notes-reopen-x11.py",
+      "repository": "desktop",
+      "sha256": "95907e85a9dee3b373f223207e8e5f63b3dbba930eacc5d906d1fafd8c1f7635"
+    },
+    {
+      "git_blob": "2144e43764a75d84ff35adbba6c2799e95cdb0a9",
+      "path": "tests/ui/test-package-host-binaries.sh",
+      "repository": "desktop",
+      "sha256": "7ed24857e39d0a210553fb68df9f051e1dc90b132e693c9879aabda26767806a"
+    },
+    {
+      "git_blob": "7182bfbda545ee2aab554d770a472854283d1fc5",
+      "path": "tests/ui/test-rogue-session-server.sh",
+      "repository": "desktop",
+      "sha256": "96b8205f1a9e984694be38c1f81d13de702f78c6d694300388be4ee98ca3225c"
+    },
+    {
+      "git_blob": "45c70ebf1fb26b03db6addf33ab1679b93530fc6",
+      "path": "tests/ui/test-runtime-owner.sh",
+      "repository": "desktop",
+      "sha256": "8d7761b6a4bdc3bafe00cdf0b5a1cda35aac0fada91a965c467aaa9909192734"
+    },
+    {
+      "git_blob": "e56d046bcf04c5208d46dac22bee66972f38a228",
+      "path": "tests/ui/test-session-fairness.py",
+      "repository": "desktop",
+      "sha256": "33e3c0e84270cc8ab44dee6233caaf3208b58549633832720bf62358a8bdd23e"
+    },
+    {
+      "git_blob": "64a781e0ce9d11bea406345c9526cd6455fd3581",
+      "path": "tests/ui/test-session-lock.py",
+      "repository": "desktop",
+      "sha256": "3185000ce1c10221e4599b22546ea914d61e2d77b208a04a88109fcc7066293b"
+    },
+    {
+      "git_blob": "f33da51e973e58192b1a19c6bb87e22bd4c7a70c",
+      "path": "tests/ui/test-smoke-cleanup.sh",
+      "repository": "desktop",
+      "sha256": "1bab1129ae57d7e37d7176732592f8fb518c0ac3eec2c38fd80818809541aabc"
+    },
+    {
+      "git_blob": "7f0771c9cacaad7e959ecfc54d6f1d1403d38101",
+      "path": "tests/ui/test-strict-request-ipc.py",
+      "repository": "desktop",
+      "sha256": "9a101661e71f9b704f93640e55cd3631dae690cbc91dc25e7cdc8c0e91ab3cd0"
+    },
+    {
+      "git_blob": "54f1c45389722fc0173c04607dfc63290ea67514",
+      "path": "tests/ui/test-zombie-liveness.sh",
+      "repository": "desktop",
+      "sha256": "21b7728f7ddd9bc3f66377bc01596baf555e731a6533600fce3e995c0e285cce"
+    },
+    {
+      "git_blob": "dd7a00e85ecc25cde93a6c6d6657ad4c1e2b6d2d",
+      "path": "tests/ui/test_original_hepta_shell.py",
+      "repository": "desktop",
+      "sha256": "d5dc7d525d2594089edce981397f919dd04a50e4f5d345402f2a45f92d7fc3a5"
+    },
+    {
+      "git_blob": "d3995ba372fb9ab936f1d9361e6f1b22f38fe9b3",
+      "path": "tests/ui/test_original_objective_shell.py",
+      "repository": "desktop",
+      "sha256": "212c1a6f3ba9f4af4fed7584eca9317052614ac8ad454781594b150e37e69325"
+    },
+    {
+      "git_blob": "c7988afe5286d7436cf3d0add73412438d731ae2",
+      "path": "tests/ui/test_shared_presenter_source.py",
+      "repository": "desktop",
+      "sha256": "631cff726a071f2d56fe111425eb29e1fea8968c400b1cec413943abd0cf100e"
+    },
+    {
+      "git_blob": "13926143b0bd8aacd442a81f0a9eac76ea9012f1",
+      "path": "tests/ui/test_wire_compatibility.py",
+      "repository": "desktop",
+      "sha256": "22d2d82a13651da4308a40c1167efe2b98a6cd5465e81d676c894367a21063b6"
+    },
+    {
+      "git_blob": "d86c1fae3cb97fda0df23e5482fa035f0525acd0",
+      "path": "tests/ui/tests/contract.rs",
+      "repository": "desktop",
+      "sha256": "87ad2cbbbf6cf9956909a7a6a5ab5a4dcdd1acf3d008676e2d9846175499b34c"
+    },
+    {
+      "git_blob": "82d4f454f7a8edef7a3c3af0fd560870a75da5b8",
+      "path": "tests/ui/verify_shared_presenter.py",
+      "repository": "desktop",
+      "sha256": "795221ef4049636eb737f91603c969715bc84d53d8edf3ea9f169751509b8938"
+    },
+    {
+      "git_blob": "0e9b4b0f1bf95597a77dfae5c0396c0c8364d5e8",
+      "path": "tests/ui/verify_wire_compatibility.py",
+      "repository": "desktop",
+      "sha256": "cfbfb04215ed7b4583327728e797b115578aca9322a22e5d60eb5c81a3e8d692"
+    },
+    {
+      "git_blob": "16c6be153e5da3b5307990279a401a7acf3a347b",
+      "path": "tests/ui/wire-compatibility-aligned-v1.json",
+      "repository": "desktop",
+      "sha256": "68390137800fdfc080bfe358b00eaeab4bf85ab9692933e43eee182adf23e59a"
+    },
+    {
+      "git_blob": "c3675d86248769e81b951c3f669f7382254e1285",
+      "path": "tests/ui/wire-compatibility-v1.json",
+      "repository": "desktop",
+      "sha256": "1e4ced2871836a18177f166de7394b7f32d8de98af6fd6f1b4206ef28b2f85dd"
+    },
+    {
+      "git_blob": "98d5a744edcaa105de6fe1059b528ab3147d5982",
+      "path": "tests/ui/x11-ime-actions.json",
+      "repository": "desktop",
+      "sha256": "4d3147798e1e135a0cffc9d9e51fb44f3268bda8c5f8a44cb291d8140c5a0d64"
+    },
+    {
+      "git_blob": "6cf6b4405929a51436472e64133dc9f7020469f3",
+      "path": "tests/ui/x11-ime-client.py",
+      "repository": "desktop",
+      "sha256": "784ecf35860b6e6c2bde73b650a5da00261f57a864a0c4fe0fa19f01a8c5e1d0"
     },
     {
       "git_blob": "993f89c2cf5ccd9345ad16f17b482d45656c338b",
@@ -803,16 +1793,322 @@
       "sha256": "9b87b8b3e54e3c2bc3dc0141a2c8982907aa5316b26cb78ffd7dd50a09277e71"
     },
     {
-      "git_blob": "58ae370892b9a12004e636c5c461c11a22c68633",
-      "path": "codex-rs/hepta-agentd/src/config.rs",
-      "repository": "hepta",
-      "sha256": "a5e08e510c106ec795b06c06cec144e8b67a7650b75a442d236162570d23fc4f"
+      "git_blob": "628ea7e3ecf20c1d1bd2fcc01b2e6f451d6ecf4b",
+      "path": "tests/workloads/hepta_agentd_runtime/agentd_runtime_probe.c",
+      "repository": "desktop",
+      "sha256": "8ed829ba92b35ca38c18fbc280c69f2afb6052b27db939f10e65d1a7b663ecb3"
     },
     {
-      "git_blob": "01ccc1398e49fdd01cfdb48cff2b62b4d25e8119",
+      "git_blob": "3e01b66b7331bd85f82055bddea5fa6da3e2470f",
+      "path": "tests/workloads/hepta_agentd_runtime/build_kernel.py",
+      "repository": "desktop",
+      "sha256": "ef246d2174c59f8cf4927a96d23ed71fd3cd9ca4cd2ecb1fbbb38b45951207f4"
+    },
+    {
+      "git_blob": "4fa4fc5a8c45b08a5e6d12507d4e8dfaaa033be8",
+      "path": "tests/workloads/hepta_agentd_runtime/dependency_artifacts.py",
+      "repository": "desktop",
+      "sha256": "17548538e8b9d6c7f8547f8fa65701853d5dd33a1d81c41f43e9f028a9fc699b"
+    },
+    {
+      "git_blob": "336362b249d179ae4abcb999fa3bea03b8a5f999",
+      "path": "tests/workloads/hepta_agentd_runtime/kernel_profile.py",
+      "repository": "desktop",
+      "sha256": "fb8693be2b04ddb83870354070dd2acf32da8322b3e506109d57bcf460760f5b"
+    },
+    {
+      "git_blob": "37706da6020cfd37c9546369812034338fd85a7a",
+      "path": "tests/workloads/hepta_agentd_runtime/prepare_inputs.py",
+      "repository": "desktop",
+      "sha256": "965a62dc29be082bb3598d439db36c7d634488cf02c397e9dd01defd923cfdda"
+    },
+    {
+      "git_blob": "cbba8fdac9afdbf83f69c71688cf690347310b7c",
+      "path": "tests/workloads/hepta_agentd_runtime/reviewed_toolchain.py",
+      "repository": "desktop",
+      "sha256": "78612a9bee0d3dc35fc16709245518acb9cd24f342d06dc0ce297c535fcc0583"
+    },
+    {
+      "git_blob": "4327ad0169ef565c24ef14f0755dfcc0f3b9b099",
+      "path": "tests/workloads/hepta_agentd_runtime/run_agentd_runtime.py",
+      "repository": "desktop",
+      "sha256": "12bbfd94fee5f0e57750d9e2305d4a9e2666e07ee25e549f4dfa98868f78bf81"
+    },
+    {
+      "git_blob": "4bbdf27ff538cc04c8f0e02b0d230add25863c11",
+      "path": "tests/workloads/hepta_cognitive_store/prepare_inputs.py",
+      "repository": "desktop",
+      "sha256": "93f6a7be04f862c0478a5b6096960872ca29b133369fa9eb310e393697c08372"
+    },
+    {
+      "git_blob": "d942193e4887f18b904bb69a697031b360f4fd05",
+      "path": "tests/workloads/hepta_cognitive_store/run_host.py",
+      "repository": "desktop",
+      "sha256": "e6778275f299847b12f8446b6bf0cbf63d68babd4818f2f4dbc52d1d35243722"
+    },
+    {
+      "git_blob": "c237115dbc1b6e7b66a8f0822b3d6b5f058a415d",
+      "path": "tests/workloads/hepta_cognitive_store/run_native.py",
+      "repository": "desktop",
+      "sha256": "cea4d3a1e0661848fd6f62f54b66b9bc90671f053fdcd0d4acd7feb2f9fffba4"
+    },
+    {
+      "git_blob": "63ea97006e93c31523c09bc809611402f2f494d5",
+      "path": "tests/workloads/hepta_cognitive_store/store_probe.rs",
+      "repository": "desktop",
+      "sha256": "da045dbef1cd37246a31917d779b4ee35c3b1c60e45bf8060e179d7aa24fe7ea"
+    },
+    {
+      "git_blob": "0354460e5a93e892ad94941c17162a45db94c0a7",
+      "path": "tests/workloads/hepta_cognitive_store/store_runtime_probe.c",
+      "repository": "desktop",
+      "sha256": "a40f62b06c80158d107243a376ccb81329372353f1a4484b66ac3f2179ee6380"
+    },
+    {
+      "git_blob": "d2600423bfe1b868eae836c552e6337161c434a3",
+      "path": "tests/workloads/hepta_cognitive_store/test_store_toolchain.py",
+      "repository": "desktop",
+      "sha256": "733e08d3c60477260dbd0e1177340edcc7f033593c0431731ff1cac53eb21f92"
+    },
+    {
+      "git_blob": "9ea033650e31297fe751b01ff1fe096002db09df",
+      "path": "ui/Cargo.lock",
+      "repository": "desktop",
+      "sha256": "bc59c047cfc05246742feac4aceeba0950df17abf3c138e16a2350eb3c7e12c3"
+    },
+    {
+      "git_blob": "e6c23b26c5e7202a36e2328345cd62e0e9f3b38f",
+      "path": "ui/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "b56bd624b98970d4ddbb20e545d4f06401d5782a65425ebd200c131348de67ab"
+    },
+    {
+      "git_blob": "f29f405b29ea0a53ff5ad6224e1d0a98b258a5e8",
+      "path": "ui/core/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "1ae6ea44289f2760f73f4ab4e9642839fa95904ac28e8e3984908003729d8589"
+    },
+    {
+      "git_blob": "d169f3f1ecfb4b58c67656bd8e3bad0bad59e56a",
+      "path": "ui/shell/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "cb30ea98a0024cb11f8162d3a2c1a2605df5dd9e75bd3a2e1aa9bc18bcc97256"
+    },
+    {
+      "git_blob": "4606e72e042564097e8780d66c1d4dcb611869bd",
+      "path": "LICENSE",
+      "repository": "hepta",
+      "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc"
+    },
+    {
+      "git_blob": "2805899d56d0332d175cfc613c67d45d6f006db7",
+      "path": "NOTICE",
+      "repository": "hepta",
+      "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915"
+    },
+    {
+      "git_blob": "9f67bba876e4a6a0eb1a0f4b0233099fe12f833d",
+      "path": "apps/hepta-control-ui/rust/Cargo.lock",
+      "repository": "hepta",
+      "sha256": "f36f04937f028452bc94c5e54c5bf956366165a93cabf0f03695bc7a7276818d"
+    },
+    {
+      "git_blob": "dfba027468d7b99bfea24913e1569ed77624a1a5",
+      "path": "apps/hepta-control-ui/rust/Cargo.toml",
+      "repository": "hepta",
+      "sha256": "d4731340e402680bfffbd0cfe6f5743ba980dc1c7205ad8dc376b002b0829b8a"
+    },
+    {
+      "git_blob": "3d77b4ccc8ad8f3d464f0ff5fec69a838980665b",
+      "path": "apps/hepta-control-ui/rust/core/Cargo.toml",
+      "repository": "hepta",
+      "sha256": "b3ae31e06c79323bc0f2bf245f066125ce45d61418460ed64847abe2caa9ea41"
+    },
+    {
+      "git_blob": "e121fd668bc2675ff26e5355ee5e9f45162d62d4",
+      "path": "apps/hepta-control-ui/rust/core/src/chat.rs",
+      "repository": "hepta",
+      "sha256": "260927262d58effe76aa63b57a2e1576df77e86e00b111381265ecd2e0a2d20d"
+    },
+    {
+      "git_blob": "d535e51221065cd82ba219278dc49d2c817a0357",
+      "path": "apps/hepta-control-ui/rust/core/src/chat/basic_tests.rs",
+      "repository": "hepta",
+      "sha256": "157ad9b1bc8fc4cce81bab5ff5ee50b2d6e79ac8a8d5201f6c924a06814eedf4"
+    },
+    {
+      "git_blob": "c66c62304e08c52e266416800132f646880d904e",
+      "path": "apps/hepta-control-ui/rust/core/src/chat/integration_tests.rs",
+      "repository": "hepta",
+      "sha256": "7d39d8152abf6c732ddad36c6fd91370dccb8ac34b99fe8a2c12b1872bbac768"
+    },
+    {
+      "git_blob": "be33a7fdb8babfe08fdd558ffe34e6fc69ce6476",
+      "path": "apps/hepta-control-ui/rust/core/src/chat/partition_tests.rs",
+      "repository": "hepta",
+      "sha256": "f743b8671422575449d84fcd303af3788cd87cb38b809f0a71371cd67c08a03e"
+    },
+    {
+      "git_blob": "4d732f91ff4e3157d2fdae115bf813f75234bffb",
+      "path": "apps/hepta-control-ui/rust/core/src/chat_owner.rs",
+      "repository": "hepta",
+      "sha256": "b52e8db8fae2949650d35973e57f1d219f415b6e652b85fd7007199eb84b2e32"
+    },
+    {
+      "git_blob": "f3d391e1549a4f9ca1f3a0512efbc770699a8817",
+      "path": "apps/hepta-control-ui/rust/core/src/chat_owner_tests.rs",
+      "repository": "hepta",
+      "sha256": "18098150a2ca4d6d2bc7f8c25eddab453a5e0cff0712a703b9a05819bc939ed4"
+    },
+    {
+      "git_blob": "191990a9458b20fcb70b69a21afcc2271091b7aa",
+      "path": "apps/hepta-control-ui/rust/core/src/chat_timeline.rs",
+      "repository": "hepta",
+      "sha256": "8833777a27a7c1d7abf0b8f90c53954a91e1f9983239dbb560a6b4b5737369a6"
+    },
+    {
+      "git_blob": "e56bb0547f1c0a1c8b4b4cf8d001a53cfeed0e3f",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml",
+      "repository": "hepta",
+      "sha256": "533a4af9311e5688b2bb9cec96e859c936a1c6c3564715afe692c4bcee965be4"
+    },
+    {
+      "git_blob": "7f77de13d6a3a5b2a7b35bfb249b7902317c2045",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt",
+      "repository": "hepta",
+      "sha256": "7c370204a7507a3c33398d6377aa69691991b0582a3d92ace8d27d8819b223f7"
+    },
+    {
+      "git_blob": "e94fdfb7a5b908d5a474f59a06a565cc8b6e5e85",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/resources/fonts/MANIFEST.json",
+      "repository": "hepta",
+      "sha256": "fb9e49a7f14b742ac7e390ceee9be115ad6e04a5f852eec67fb0a126870070a3"
+    },
+    {
+      "git_blob": "bb76507a7b2ec6749c1ab8afb5d55edb7ca76342",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/chat_controls.rs",
+      "repository": "hepta",
+      "sha256": "869893d4af9ede8c40bc64b8d5381d43906ba9e7f2f1b550a22b1834fc9d41f7"
+    },
+    {
+      "git_blob": "d8eb424f4fbeff3fdf52c5d4c6dd477c1da7461d",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/mod.rs",
+      "repository": "hepta",
+      "sha256": "c8876b1d247781535fa8917f137a38f69e69ea5fc8aca2aa7310253fde160dc8"
+    },
+    {
+      "git_blob": "908790fafdc738ee1efafa39659ff943c58763bb",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/native_presentation/render.rs",
+      "repository": "hepta",
+      "sha256": "ad68353e3dd2531638a710767fb0972a7629d4939478486e25a3a96c17e87145"
+    },
+    {
+      "git_blob": "f7e3aa347a2088ab2d2ec495184344d24a2b67f2",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation.rs",
+      "repository": "hepta",
+      "sha256": "809c4c1117836bf2b1932a25fd0edd78d747914d52f93502930c8a959f7f57b8"
+    },
+    {
+      "git_blob": "e97b7f56059122aef731a6c056c1d144345ebe53",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/presentation_tests.rs",
+      "repository": "hepta",
+      "sha256": "6f3ea57649bf67ac2312ea16994afded3dac934f0a5aeac4ac5bf0bdc2db499f"
+    },
+    {
+      "git_blob": "5b5b4c410d0dd05fa3fa5fab1c3cbcec62f0348b",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/robrix/composer_transaction.rs",
+      "repository": "hepta",
+      "sha256": "99f48be41a32614652efa3d28a94cf382b6fbf1a844ca7dc58e9f60734178ba5"
+    },
+    {
+      "git_blob": "62641393a2d524ec105cd29b64c753348ff824f1",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/robrix/composer_transaction_tests.rs",
+      "repository": "hepta",
+      "sha256": "d0fd6fa46c233a76623f3ae009cf4fa8ba2361f3617989bd0e311a9ac4fddb48"
+    },
+    {
+      "git_blob": "3649ebca22824a133259db5afcb6136025221743",
+      "path": "apps/hepta-control-ui/rust/robrix-ui/src/robrix/room.rs",
+      "repository": "hepta",
+      "sha256": "c33e04f94c99c970bc9c224430e4b4f105313d8921a6afc1b260df6132abc667"
+    },
+    {
+      "git_blob": "9ff3b36079d9b36730b6919ae298f535bc43c3a2",
+      "path": "apps/hepta-control-ui/test/native-accessibility-smoke.py",
+      "repository": "hepta",
+      "sha256": "f1eb707c074836cbb58da556e1451c6bfc71c258640c518e740d2396f4c83073"
+    },
+    {
+      "git_blob": "523663d02296980c3ccb8accc2982293be658b39",
+      "path": "apps/hepta-control-ui/test/native-clipboard-owner.py",
+      "repository": "hepta",
+      "sha256": "1a6ec043ca29209081ad06a80f4c25b000c99847be1f22a1753cfdce28ac0bb9"
+    },
+    {
+      "git_blob": "32c7c346720cd3579cb2c145e7cbc43efd71535d",
+      "path": "apps/hepta-control-ui/test/native-editable-text-smoke.py",
+      "repository": "hepta",
+      "sha256": "1415af60ccdfe8dd3cccd256c65ca437ec763c794a20281d7d1059a80059298f"
+    },
+    {
+      "git_blob": "a4c1621dccec5fa8a9f66b16da4c84b0b960b5aa",
+      "path": "apps/hepta-control-ui/test/prepare-native-clipboard-sdk.py",
+      "repository": "hepta",
+      "sha256": "f485b2d50ed290255ea80953aa25a2b80045ff5a9be9f37dbe5858f61ac03be3"
+    },
+    {
+      "git_blob": "5e9d5b211cd3c8be7b155513ca4ed321db01ffa1",
+      "path": "apps/hepta-control-ui/test/test_native_clipboard_sdk.py",
+      "repository": "hepta",
+      "sha256": "902647e46b4032a3ae6cfb607cb62ee434e18085fbb48f7da7f9717f1a947af4"
+    },
+    {
+      "git_blob": "7747885bc4899844104225c39c7e82361b8b78e9",
+      "path": "apps/hepta-control-ui/test/test_native_preedit_sdk.py",
+      "repository": "hepta",
+      "sha256": "f2cf003f9fb47396cf5f3b66f404c383c21d700bb0983d2250e28809310c9912"
+    },
+    {
+      "git_blob": "0be725cdd51eb650535d3e8d7741c9f890dfd16d",
+      "path": "apps/hepta-control-ui/test/test_x11_client_owner.py",
+      "repository": "hepta",
+      "sha256": "4f741e17ee10672840a4863eb5f013d6c83f9d797047449259f101d8ae934907"
+    },
+    {
+      "git_blob": "63ebc9ae6f8371ee67562996b5399143ea481f8a",
+      "path": "apps/hepta-control-ui/test/verify-native-clipboard-sdk.py",
+      "repository": "hepta",
+      "sha256": "8a9c1b508eddb7e44e133780721d48c3df597d4150ce653d16ab23d665329334"
+    },
+    {
+      "git_blob": "1efdb965e58169c23bf10eba6462f3af0780f5e3",
+      "path": "apps/hepta-control-ui/test/x11_client_owner.py",
+      "repository": "hepta",
+      "sha256": "65744abe7717e9d9e5d018306114452df00990aed490e700ccfb3ea98ee20fbd"
+    },
+    {
+      "git_blob": "f35b936d2dca0b17aea21b47a238ce577f692e7f",
+      "path": "apps/hepta-native/resources/NATIVE-ASSETS.json",
+      "repository": "hepta",
+      "sha256": "77242df60cef56281baf2d84efd1e0a08deae9d78ebc91bff91e4cb96b985065"
+    },
+    {
+      "git_blob": "41e67042ed8bc0acb42b6eec29c7874d96ff649a",
+      "path": "apps/hepta-native/resources/NATIVE-DEPENDENCIES.json",
+      "repository": "hepta",
+      "sha256": "f4a734c3fb3e2522b343f2ae00abdbade635ba8fa894caa687755f046f6c56c0"
+    },
+    {
+      "git_blob": "c3d02a1637f079b8e5f8cb9bca5c5a9edb942350",
+      "path": "codex-rs/hepta-agentd/src/config.rs",
+      "repository": "hepta",
+      "sha256": "fdf74741856c1ae93bf22338dae73a057b2286de8c9f18953f1ab966cf37a8d6"
+    },
+    {
+      "git_blob": "d6dbdcfca4ed85d7f9a13be5fa143de8cf561984",
       "path": "codex-rs/hepta-agentd/src/final_use_issuer.rs",
       "repository": "hepta",
-      "sha256": "4a4c14308918a753087e0adc97ce4cd7f494a873a77ac214bb5bc5c369773380"
+      "sha256": "09ca7b5b6d50540ea93e10468ff481d3be2bbe28173663566c8a901885267a84"
     },
     {
       "git_blob": "074e3fa53b1ba0bb4523dc827eef02ad8a5bfaa4",
@@ -821,16 +2117,28 @@
       "sha256": "df0550f88a57cc2899eed33dc3bfa38a46871bd9849ace01db4e9c210f365388"
     },
     {
-      "git_blob": "5e3c5fba361c30071afec7c969f5720b624bb662",
+      "git_blob": "796752f3ac7990739942fddb3693363da08a193a",
       "path": "codex-rs/hepta-agentd/src/lib.rs",
       "repository": "hepta",
-      "sha256": "17d994df31d925b82b312dd66c41def5714c286d67aed853f8b540edd3530009"
+      "sha256": "af29880548e4061813196de22a76a3350efd3c0e4c3e3167a41aa26e66bfa553"
     },
     {
-      "git_blob": "60595420f4bf42089b5745830ac611df1c7ec2c2",
+      "git_blob": "199b6999659a026ea45d497b36412aad852fb39c",
       "path": "codex-rs/hepta-agentd/src/main.rs",
       "repository": "hepta",
-      "sha256": "00f3134561b2f5773c1f114fba897e369db9f2c4f28192086596a37bf93ba319"
+      "sha256": "7689847067988f4ca838f65be92b1045fb4d54f3c56c6aac97faebcc92bcac04"
+    },
+    {
+      "git_blob": "2e78d4b24359acc0806d5d59a697e7489962af25",
+      "path": "codex-rs/hepta-agentd/src/notes_ui_wire.rs",
+      "repository": "hepta",
+      "sha256": "80a32fbac92ac80bc9d8fcbb69e40df22191f1038b41a5b1f13c91d00e9e3d68"
+    },
+    {
+      "git_blob": "bcf38b09e1bfd385e5bd1f5113c1d6f70a811a84",
+      "path": "codex-rs/hepta-agentd/src/notes_ui_worker.rs",
+      "repository": "hepta",
+      "sha256": "4d09f4474a4b26670a53331370bb4663d69515291207dd332be7299c7c3a05bd"
     },
     {
       "git_blob": "5fca295975820a2ab10308b82eaf0bf7d31e6f7a",
@@ -839,28 +2147,34 @@
       "sha256": "30ecb92c79ec9a0718d54a59bace10f8f6568cd2927abf926117c406ec996374"
     },
     {
-      "git_blob": "1eea5d16451b2d776987eaf913c6f7a5ef195b9d",
+      "git_blob": "3e554d364d992c20ca53628b3f0852d5cb296782",
       "path": "codex-rs/hepta-agentd/src/production_composition.rs",
       "repository": "hepta",
-      "sha256": "c34dc7bcbc2a6d625054d018f07eb6eca3e3382fea635a2b03133520551eaa95"
+      "sha256": "82acddc7bcfb717e1a88cfd51be0551c25cda2b9473077a2addbb4cca67e4dfd"
     },
     {
-      "git_blob": "f881d7c4d20a189d781977da09237f8c82dc4012",
+      "git_blob": "a5d0a68eeaa2acb1166bde4c83b1413e3502425d",
       "path": "codex-rs/hepta-agentd/src/production_writer_host.rs",
       "repository": "hepta",
-      "sha256": "9cbf7ebd1be6c93bbee336c56a020861f85e295778683a729aa8eceaddbd1ecb"
+      "sha256": "4c0f695c94e92a7290b13665e6d529f1645782a259ffa18c3437c204a7d737b6"
     },
     {
-      "git_blob": "7f7241d8d7b1ad978cd6a07db785f3b0e4af612d",
+      "git_blob": "11fcbc8bfeb61f71f37b05c36cd94a5b69d02390",
       "path": "codex-rs/hepta-agentd/src/runtime.rs",
       "repository": "hepta",
-      "sha256": "b2eb80954a210d2f21ce93d40926b84f13d4859a6145c429ae0ec28b59ea5e41"
+      "sha256": "adad24f57741679d9e72d9eed13f8808608d42df5e7f1f5a0465eb02b7164cab"
     },
     {
-      "git_blob": "0a17007f64bbbded6b8acfe9c1a79e7023b0054f",
+      "git_blob": "94479da2b82c420aac701d361e5ea465209a2eed",
       "path": "codex-rs/hepta-agentd/src/state.rs",
       "repository": "hepta",
-      "sha256": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a"
+      "sha256": "f34066b3f198c9ae067cad7c54bae48a098f6dca9b22cdb2e976b6810f22d89b"
+    },
+    {
+      "git_blob": "d4f77dda3997335fb6767554c10f2ef0a147ca4b",
+      "path": "codex-rs/hepta-agentd/tests/fixtures/notes-document-observation-v1.json",
+      "repository": "hepta",
+      "sha256": "23de9d7ce6f95d1cd4a913ab01a4690e59b9f261fa69f515b47d283535ba5439"
     },
     {
       "git_blob": "4e8ab6ced19748d22b543a6dbded5d9942ea463c",
@@ -869,10 +2183,10 @@
       "sha256": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e"
     },
     {
-      "git_blob": "b17115eb5cffff5f890f34a786534c588d0d3aa5",
+      "git_blob": "381eb62a857886261bca178c17078b8700dc2d67",
       "path": "codex-rs/hepta-fleet/src/registry.rs",
       "repository": "hepta",
-      "sha256": "714b160817bf07b71d11af569a6849769395df00b3769988898e7aff29880753"
+      "sha256": "151978d0b49603db694c05cd6781029e3547cb93c9aa2637ae13342d77cfdef3"
     },
     {
       "git_blob": "7e3ea376f749ea270a1507d9603607d162f85799",
@@ -881,22 +2195,34 @@
       "sha256": "dad3d8f409364c3ae2b0203c1967d363a298dfc6d1c4b9161c31684e4f239f28"
     },
     {
-      "git_blob": "459e0402ca95dfcfca717f0e80d5c23c9716c26f",
+      "git_blob": "acdef8a83d9c839f51cab152d12d9c96a3b5e80f",
       "path": "codex-rs/hepta-memory/src/production_hos2_owner.rs",
       "repository": "hepta",
-      "sha256": "3ca6597e9161f61bdbe084f0c86b0a8815a5e1e8b44a9958012175565cc143c2"
+      "sha256": "89674d42bb2a51c6bb154d3480d0f826aa5ee44e1c14a6f9769b9470471ed39a"
     },
     {
-      "git_blob": "1e2b49fba38bdf10a0a451c7f241522178bbe369",
+      "git_blob": "7cfe9fc89cdf32cfd175ed599c4f5f726fdc5d00",
       "path": "codex-rs/hepta-memory/src/production_notes_owner.rs",
       "repository": "hepta",
-      "sha256": "5f9af75b787fae99397c0dfdb14af2d055e3fc7e92a51019d8143b36ef8eab48"
+      "sha256": "9662687eb4f364c25aa3bb5de8be9fc8ff3661e6b0cb7ac6de2e2e5d46e4d097"
     },
     {
-      "git_blob": "9b0e30030df87549b2837733bfebf0403c238eca",
+      "git_blob": "fe2574613686100041b3d772d79c30340106fef4",
       "path": "codex-rs/hepta-memory/src/production_writer.rs",
       "repository": "hepta",
-      "sha256": "fb0bcfa6f1cb6d84ae5dcb91903faa859ebca6b2de71ddb822140acbf819cac6"
+      "sha256": "5aa593eddbb41c98c2744a1a9627c1895590ec33e2e8e3dc34333ca676ed9c14"
+    },
+    {
+      "git_blob": "c504451a263fc6519bf5a034e24cb54227cb5884",
+      "path": "codex-rs/hepta-objective/src/lib.rs",
+      "repository": "hepta",
+      "sha256": "b7bc0dc3d13720700ad24a9e893d2c0534789cefb11284079f271c9c54525465"
+    },
+    {
+      "git_blob": "7b82c55caff196834ad1ba9b4435b2d63a7132a3",
+      "path": "codex-rs/hepta-objective/src/notes_literal_source.rs",
+      "repository": "hepta",
+      "sha256": "fbd4d7ae1ec0d3b95398d7dc275c540fd3d005b880ada22199ef15f25cc1d019"
     },
     {
       "git_blob": "30d3a88e199578ace3e2fb0387e86d0c467e3806",
@@ -911,10 +2237,10 @@
       "sha256": "b665da8b86a1d9f9b93b4c438e597090e7041d1dcf7f16d64405b5e5c3e97188"
     },
     {
-      "git_blob": "290a1c2d0324868c649df6945b73ea1b74a85c1d",
+      "git_blob": "6ee63d32334248f5d07676b4f191e0bd691372a2",
       "path": "codex-rs/hepta-supervisor/src/driver.rs",
       "repository": "hepta",
-      "sha256": "aa6349e8b868ed07e0271f6c4045a2e98099dd6a81880eb06c79f4290d18a32b"
+      "sha256": "64afdaa718df0cdee7a15db9e253b290e65a8b8d6b44a182b9998c6c6597479e"
     },
     {
       "git_blob": "f854f1a0c40024a5fe01ea42b5139d8c77bfc778",
@@ -929,15 +2255,45 @@
       "sha256": "41a6deb682fa12fd2c8220dd69df00ae08e3c1cf4823d1bcd673bb0bf4864975"
     },
     {
-      "git_blob": "d02b9b9b02af2b03f3904277f5028e1fb52672b4",
+      "git_blob": "58e8c701afd759917335ba299ae4431e5ca5adcf",
       "path": "codex-rs/hepta-supervisor/src/unix.rs",
       "repository": "hepta",
-      "sha256": "6d25f074cf050bc94b39a60634ac42a7c2a73fd096aab931ce3846a5577fba99"
+      "sha256": "5b8be63a884a4572167c320197222b7b67b8665d2a8e00a1f595f3693f4bc600"
+    },
+    {
+      "git_blob": "dd6ae93f5b90b582a85dabf52bfd2422667f98a0",
+      "path": "third_party/makepad-patches/preedit-callbacks/LICENSE-MIT",
+      "repository": "hepta",
+      "sha256": "3855d73a873244ec424ac5781d5d8fc8e2a789ff9d2f1cb804bec585a64ea88f"
+    },
+    {
+      "git_blob": "d6f22af995283dc1c7fabbb6d3877a8c03f8a159",
+      "path": "third_party/makepad-patches/preedit-callbacks/MANIFEST.json",
+      "repository": "hepta",
+      "sha256": "7476afc9408cea0e5e97824a597fab9156d8b934419a18c49f9c42fe963ecf4c"
+    },
+    {
+      "git_blob": "321707dc9df3ca087fdd01b672c82c3863a3d085",
+      "path": "third_party/makepad-patches/preedit-callbacks/README.md",
+      "repository": "hepta",
+      "sha256": "84f7b253ce978645a20b852ac5a754b2011197b85a4f053699e7631f46e3787f"
+    },
+    {
+      "git_blob": "e535c4543afc747df17a0ac5bbcd6d6ca048ccb4",
+      "path": "third_party/makepad-patches/preedit-callbacks/native-preedit-callbacks.patch",
+      "repository": "hepta",
+      "sha256": "c12d933adb12f83c5611e343841d3834876093473a0036df1683caf835a7a7a6"
+    },
+    {
+      "git_blob": "00af2b2c4538011eacc1110c9cd97bc35316f178",
+      "path": "third_party/makepad-patches/preedit-callbacks/sdk-num-traits-path.patch",
+      "repository": "hepta",
+      "sha256": "5a1778061979f444063ba0d0c9b9dce1815c345e242eb87178252a6779c6ea1c"
     }
   ],
   "userspace_toolchain": {
-    "channel": "1.95.0",
+    "channel": "1.96.0",
     "manifest": "codex-rs/rust-toolchain.toml",
-    "sha256": "570656042681cfd8795403a455baf9a33035331a07db0645e866bbcea89a3d64"
+    "sha256": "e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380"
   }
 }

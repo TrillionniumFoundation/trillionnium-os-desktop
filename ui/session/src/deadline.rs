@@ -21,6 +21,36 @@ impl DeadlineStream {
     pub(super) fn remaining(&self) -> io::Result<Duration> {
         remaining_at(self.deadline, Instant::now())
     }
+
+    pub(super) fn deadline(&self) -> Instant {
+        self.deadline
+    }
+
+    /// A full hangup differs from a legitimate request-side half-close.
+    #[cfg(target_os = "linux")]
+    pub(super) fn peer_disconnected(&self) -> io::Result<bool> {
+        use std::os::fd::AsRawFd;
+        let mut descriptor = libc::pollfd {
+            fd: self.stream.as_raw_fd(),
+            events: 0,
+            revents: 0,
+        };
+        // SAFETY: one initialized pollfd borrows this live socket for a
+        // zero-timeout observation. No pointer or fd outlives the call.
+        if unsafe { libc::poll(&mut descriptor, 1, 0) } < 0 {
+            let error = io::Error::last_os_error();
+            if error.kind() != io::ErrorKind::Interrupted {
+                return Err(error);
+            }
+        }
+        Ok(descriptor.revents & (libc::POLLHUP | libc::POLLERR) != 0)
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    pub(super) fn peer_disconnected(&self) -> io::Result<bool> {
+        // Other Unix platforms still enforce the same absolute deadline.
+        Ok(false)
+    }
 }
 
 fn remaining_at(deadline: Instant, now: Instant) -> io::Result<Duration> {
@@ -69,6 +99,17 @@ impl Write for DeadlineStream {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn full_disconnect_is_distinct_from_a_valid_request_half_close() {
+        let (peer, stream) = UnixStream::pair().unwrap();
+        let stream = DeadlineStream::new(stream, Instant::now() + Duration::from_secs(1));
+        peer.shutdown(std::net::Shutdown::Write).unwrap();
+        assert!(!stream.peer_disconnected().unwrap());
+        drop(peer);
+        assert!(stream.peer_disconnected().unwrap());
+    }
 
     #[test]
     fn a_shared_monotonic_budget_never_renews_after_partial_io() {

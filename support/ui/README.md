@@ -33,6 +33,9 @@ For product changes read [PRODUCT](PRODUCT.md), for native rendering read
 path read [NOTES_DURABILITY](NOTES_DURABILITY.md). Packaging verifies the
 Cargo-resolved original resources and notices. A failed resource check must
 stop startup; it must not replace original resources with whatever is cached.
+The [derived preedit release](PREEDIT_RELEASE.md) keeps the baseline lock intact
+and qualifies one exact prepared-profile package with the original real input
+gates; its receipt retains the original production-authority boundary.
 
 ## Failure and recovery boundary
 

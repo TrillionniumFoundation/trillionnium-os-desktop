@@ -8,7 +8,7 @@ writer, outbox and operation-history ownership.
 
 | Need | Entry point |
 | --- | --- |
-| Current candidate capabilities, evidence and unqualified product gates | [Current capabilities](docs/CURRENT_CAPABILITIES.md) |
+| Frozen sources, dated execution results and remaining product gates | [Source and evidence index](docs/CURRENT_CAPABILITIES.md#source-evidence-2026-10-26) |
 | System boundaries and component ownership | [Architecture](docs/ARCHITECTURE.md) |
 | Hepta integration and original owners | [Hepta integration](docs/HEPTA_INTEGRATION.md) |
 | Development and technical documentation by delivery area | [Module index](docs/INDEX.md) |
@@ -21,6 +21,7 @@ writer, outbox and operation-history ownership.
 | Session and Notes integration | [Notes organ](support/ui/NOTES_ORGAN.md) |
 | Pinning and verifying one complete OS/Hepta source pair | [Release profile](docs/agents/ORGAN_RELEASE_PROFILE.md) |
 | Exact current Hepta source and cross-repository module contracts | [Native organ source map](docs/SOURCES.md#hepta-native-organ) |
+| Derive and qualify the original Makepad preedit package | [Preedit release procedure](support/ui/PREEDIT_RELEASE.md) |
 
 ## Two repositories, one execution authority
 
@@ -42,26 +43,35 @@ every shipped file digest and `effects_authorized: false`.
 ## Linux host entry point
 
 The current product candidate pins the original Hepta UI/core, host packages
-and Hepta-carried patches to [Hepta `7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9),
-tree `cf53a7c0e7ad57772238b614b673d176386ddfe5`, and uses Rust 1.96.0.
+and Hepta-carried patches to [Hepta `760363e06c5f4a115de039ffa7bd7e7767bd1fd9`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/760363e06c5f4a115de039ffa7bd7e7767bd1fd9),
+tree `87bcc851d794c89ede183353e7493461b931ebed`, and uses Rust 1.96.0.
 The UI Cargo root explicitly patches all four original AccessKit crates to this
 same source. `services/hepta-os` remains a local protocol/transport crate; it
 does not acquire a fictitious Hepta Git dependency.
+The [dependency contract](support/ui/DEPENDENCIES.md) and
+[source map](docs/SOURCES.md#hepta-native-organ) are the canonical source checks.
 
-The [latest scoped component executions](results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
-cover the original text thread, Legacy history, client/protocol and default
+The [2026-10-26 source and evidence index](docs/CURRENT_CAPABILITIES.md#source-evidence-2026-10-26)
+records frozen code D5 `774df6c2`, review metadata R5 `f25411ea`, the D5 host
+execution and its separately identified preedit child `60c246de`. That child's
+debug package passed 17 isolated X11/IBus/AT-SPI checks. D3's earlier receipts
+retain their original source identities. These are dated observations, not
+qualification of later commits, a production deployment or a fully green PR.
+
+The [2026-10-24 v10/v11 component archive](results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
+covers the original text thread, Legacy history, client/protocol and default
 original Makepad/AccessKit packages. Exact counts and ignored/unselected tests
-are in [current capabilities](docs/CURRENT_CAPABILITIES.md). These results do not
+are retained in the dated sections of [the capability index](docs/CURRENT_CAPABILITIES.md). Those earlier results do not
 qualify the final combined Desktop workspace, release binaries, a real native
 window, an installed production deployment or a signed Android receiver. The
 final source profile must additionally bind the complete Desktop commit/tree,
 actual Cargo-generated locks, features, binary hashes and execution receipts.
 
 The original runtime contracts are pinned beside their owners:
-[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
-[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
-[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
-and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/7ea3df4e2ebaaa1052f8e01169ef0b5763beeda9/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
+[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/760363e06c5f4a115de039ffa7bd7e7767bd1fd9/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
+[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/760363e06c5f4a115de039ffa7bd7e7767bd1fd9/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
+[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/760363e06c5f4a115de039ffa7bd7e7767bd1fd9/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
+and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/760363e06c5f4a115de039ffa7bd7e7767bd1fd9/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
 
 Use the [product guide](support/ui/PRODUCT.md) to wrap verified native binaries
 and install them for the current user. The generated `trillionnium-desktop`

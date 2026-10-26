@@ -9,6 +9,8 @@ SPEC = importlib.util.spec_from_file_location("check_modules", Path(__file__).wi
 checker = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(checker)
 
+DOMAIN_IDS = ("A00", "A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09", "A10")
+
 
 class NavigationTests(unittest.TestCase):
     def setUp(self):
@@ -110,13 +112,37 @@ class CoverageTests(unittest.TestCase):
             self.assertTrue(any("missing source" in error for error in self.check()))
 
     def test_domain_contract_and_duplicate_identity(self):
-        domain = {"id": "A00", **self.record}
-        self.assertEqual(checker.check_domains(self.root, {"domains": [domain]})[0], [])
-        errors = checker.check_domains(self.root, {"domains": [domain, domain]})[0]
+        domains = [{"id": identity, **self.record} for identity in DOMAIN_IDS]
+        self.assertEqual(checker.check_domains(self.root, {"domains": domains})[0], [])
+        self.assertEqual(checker.check_domains(self.root, {"domains": domains[::-1]})[0], [])
+        errors = checker.check_domains(self.root, {"domains": domains + [domains[0]]})[0]
         self.assertTrue(any("duplicate development domain" in error for error in errors))
 
     def test_absent_cross_module_domain_map_fails(self):
-        self.assertTrue(checker.check_domains(self.root, {})[0])
+        errors = checker.check_domains(self.root, {})[0]
+        self.assertEqual(set(errors), {"missing development domain: " + identity for identity in DOMAIN_IDS})
+
+    def test_each_required_domain_cannot_be_removed(self):
+        for missing in DOMAIN_IDS:
+            with self.subTest(missing=missing):
+                domains = [{"id": identity, **self.record} for identity in DOMAIN_IDS if identity != missing]
+                errors = checker.check_domains(self.root, {"domains": domains})[0]
+                self.assertEqual(errors, ["missing development domain: " + missing])
+
+    def test_unexpected_domain_cannot_extend_documented_scope(self):
+        domains = [{"id": identity, **self.record} for identity in DOMAIN_IDS]
+        for extra in ("A11", "A99"):
+            with self.subTest(extra=extra):
+                records = domains + [{"id": extra, **self.record}]
+                errors = checker.check_domains(self.root, {"domains": records})[0]
+                self.assertEqual(errors, ["unexpected development domain: " + extra])
+
+    def test_replacement_cannot_hide_missing_domain_at_same_count(self):
+        domains = [{"id": identity, **self.record} for identity in DOMAIN_IDS if identity != "A10"]
+        domains.append({"id": "A11", **self.record})
+        self.assertEqual(len(domains), 11)
+        errors = checker.check_domains(self.root, {"domains": domains})[0]
+        self.assertEqual(set(errors), {"missing development domain: A10", "unexpected development domain: A11"})
 
     def test_kernel_section_needs_unique_labels_and_own_sources(self):
         base = self.root / "kernel/asterinas"

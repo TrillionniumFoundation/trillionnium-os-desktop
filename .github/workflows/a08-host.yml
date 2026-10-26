@@ -40,13 +40,13 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a08"
           python3 support/android/verify_source_integrity.py \
             --out "$RUNNER_TEMP/a08/source-integrity.json"
-      - name: Install actual Java and JNI host build tools
+      - name: Install actual Java, JNI and receiver host dependencies
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            build-essential openjdk-17-jdk-headless
+            build-essential openjdk-17-jdk-headless python3-pil
           test -x /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
           test -f /usr/lib/jvm/java-17-openjdk-amd64/include/jni.h
           printf '%s\n' /usr/lib/jvm/java-17-openjdk-amd64/bin >> "$GITHUB_PATH"
@@ -57,6 +57,7 @@ jobs:
           set -euo pipefail
           git rev-parse HEAD
           python3 --version
+          python3 -c 'from PIL import Image, ImageChops; print("Pillow", Image.__version__)'
           javac -version
           java -version
           python3 support/android/verify_host.py \

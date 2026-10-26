@@ -7,8 +7,8 @@ through an injected original authority. It provides no issuer or database owner.
 An unconfigured standalone Session remains unavailable.
 
 All original Hepta dependencies and Hepta-carried patches in this crate are
-fixed at `489f7096b0e5754968a30fa4477bb4417d24834f`, tree
-`4731de9117065bd773b2fcee92c815ff896b8488`, matching the native UI source.
+fixed at `760363e06c5f4a115de039ffa7bd7e7767bd1fd9`, tree
+`87bcc851d794c89ede183353e7493461b931ebed`, matching the native UI source.
 The [fixed cross-repository map](../../docs/SOURCES.md#hepta-native-organ) and
 [latest scoped executions](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
 keep component tests separate from the final combined workspace, installed

@@ -16,6 +16,7 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOGUE = "docs/modules/catalogue.json"
+REQUIRED_DOMAINS = frozenset(f"A{index:02d}" for index in range(11))
 HANDBOOK_LABELS = (
     "**职责与接口。**", "**状态、所有权与失败边界。**",
     "**开发与回归。**", "**实际覆盖与待验证。**",
@@ -182,8 +183,10 @@ def check_domains(root, catalogue):
         record_errors, record_documents = check_contract(root, record, identity)
         errors.extend(record_errors)
         documents.update(record_documents)
-    if not identities:
-        errors.append("missing cross-module development domains")
+    for identity in sorted(REQUIRED_DOMAINS - identities):
+        errors.append("missing development domain: " + identity)
+    for identity in sorted(identities - REQUIRED_DOMAINS):
+        errors.append("unexpected development domain: " + identity)
     return errors, documents, identities
 
 

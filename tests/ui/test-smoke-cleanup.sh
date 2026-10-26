@@ -9,7 +9,19 @@ root="$(mktemp -d "${TMPDIR:-/tmp}/a10-cleanup.XXXXXXXX")"
 runtime="$root/ours"
 other_runtime="$root/other"
 mkdir -m 700 "$runtime" "$other_runtime"
-cp /bin/sleep "$root/trill-app-window"
+# Build a real, directly owned ELF instead of renaming a host multicall applet.
+# GNU and uutils can dispatch a copied sleep differently, even with exec -a.
+# The original cleanup checks still require this exact /proc/<pid>/exe path.
+cat > "$root/fixture.c" <<'C'
+#include <unistd.h>
+
+int main(void) {
+    sleep(30);
+    return 0;
+}
+C
+cc -std=c11 -O2 -Wall -Wextra -Werror "$root/fixture.c" -o "$root/trill-app-window"
+sleep_exe="$(readlink -f /bin/sleep)"
 ours=""
 other=""
 different=""
@@ -21,9 +33,9 @@ cleanup_fixture() {
 }
 trap cleanup_fixture EXIT
 
-env XDG_RUNTIME_DIR="$runtime" "$root/trill-app-window" 30 &
+XDG_RUNTIME_DIR="$runtime" "$root/trill-app-window" &
 ours=$!
-env XDG_RUNTIME_DIR="$other_runtime" "$root/trill-app-window" 30 &
+XDG_RUNTIME_DIR="$other_runtime" "$root/trill-app-window" &
 other=$!
 # Matching runtime is insufficient when the executable is not the app.
 env XDG_RUNTIME_DIR="$runtime" /bin/sleep 30 &
@@ -35,7 +47,7 @@ for _ in {1..100}; do
     a="$(readlink "/proc/$ours/exe" 2>/dev/null || true)"
     b="$(readlink "/proc/$other/exe" 2>/dev/null || true)"
     c="$(readlink "/proc/$different/exe" 2>/dev/null || true)"
-    if [[ "$a" == "$root/trill-app-window" && "$b" == "$root/trill-app-window" && "$c" == */sleep ]]; then
+    if [[ "$a" == "$root/trill-app-window" && "$b" == "$root/trill-app-window" && "$c" == "$sleep_exe" ]]; then
         ready=1
         break
     fi

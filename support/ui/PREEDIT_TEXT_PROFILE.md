@@ -7,6 +7,13 @@ and 54 files. The clipboard candidate retains its own feature, source tree,
 patches and notices. The two candidate Cargo features are mutually exclusive.
 The preedit-only product does not advertise PasteText.
 
+The default package CI now uses [the derived release entry point](PREEDIT_RELEASE.md):
+`release_preedit.py` materializes the reviewed path lock in a detached worktree,
+freezes that exact source and runs the original builder plus all 17 packaged
+input checks. The main Git-SDK lock remains usable without a prepared SDK.
+The manual preparation/build commands below describe the same explicit source
+boundary for diagnostic and independently frozen candidates.
+
 The original Hepta input owner, ImeRouter, TextInput, ChatWorkspace, Agentd
 and writer paths remain in their pinned original source. The SDK patch makes
 the existing XIM callbacks the preferred input-context style and retains that

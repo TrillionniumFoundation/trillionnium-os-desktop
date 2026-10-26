@@ -342,6 +342,10 @@ pub enum Request {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Response {
+    ObjectiveTransportRejected {
+        rejection: objective::ObjectiveTransportRejection,
+        session_instance: String,
+    },
     Objective {
         observation: objective::ObjectiveObservation,
         session_instance: String,

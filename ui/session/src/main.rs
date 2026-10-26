@@ -2,9 +2,11 @@
 //! It is not a Wayland compositor and it grants no kernel permissions.
 mod deadline;
 mod hepta;
+mod ipc;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
 mod objective_bridge;
+mod objective_forwarder;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -24,16 +26,21 @@ use std::time::{Duration, Instant};
 use trill_ui_broker::notes::NotesTarget;
 #[cfg(target_os = "linux")]
 use trill_ui_core::host_peer;
+#[cfg(test)]
 use trill_ui_core::host_peer::require_same_uid_peer;
 #[cfg(target_os = "linux")]
 use trill_ui_core::notes::{
     NotesChannelObservation, NotesDestinationObservation, NotesTargetIdentity,
 };
 use trill_ui_core::{
-    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
-    HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
-    Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
+    socket_path, unix_ms, AppKind, HostResources, HostWaylandObservation, Request, Response,
+    TaskRecord, TaskState, WaylandSocketStatus, Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
 };
+
+#[cfg(test)]
+use ipc::{serve_one as serve_connection, serve_one_until as serve_connection_until};
+#[cfg(test)]
+use trill_ui_core::{parse_host_request, read_frame, write_frame};
 
 // Linux flock(2) is advisory; it provides a crash-released startup mutex,
 // NOT authentication or isolation from another process with the same UID.
@@ -130,7 +137,7 @@ impl DisplayTracker {
 }
 
 struct Session {
-    objective: objective_bridge::ObjectiveBridge,
+    objective: objective_forwarder::ObjectiveForwarder,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -148,6 +155,11 @@ struct Session {
     first_frame_rx: Receiver<u64>,
 }
 
+enum SessionReply {
+    Ready(Response),
+    Objective(objective_forwarder::PendingReply),
+}
+
 impl Session {
     fn new(app_binary: PathBuf) -> io::Result<Self> {
         // A generation fence must not silently degrade to PID + clock time:
@@ -158,7 +170,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
-            objective: objective_bridge::ObjectiveBridge::from_environment(),
+            objective: objective_forwarder::ObjectiveForwarder::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -503,53 +515,63 @@ impl Session {
         &self,
         expected_instance: String,
         command: trill_ui_core::objective::ObjectiveCommand,
-    ) -> Response {
+        deadline: Instant,
+    ) -> SessionReply {
         if expected_instance != self.instance {
-            return Response::Error {
+            return SessionReply::Ready(Response::Error {
                 message: "Stale Session; Objective command not forwarded".into(),
                 session_instance: self.instance.clone(),
-            };
+            });
         }
-        Response::Objective {
-            observation: self.objective.request(command),
-            session_instance: self.instance.clone(),
-        }
+        SessionReply::Objective(self.objective.request(command, deadline))
     }
 
-    fn handle(&mut self, request: Request) -> Response {
+    fn handle(&mut self, request: Request, deadline: Instant) -> SessionReply {
         self.refresh();
-        match request {
-            Request::ObjectiveAvailability { expected_instance } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Availability {},
-            ),
+        let response = match request {
+            Request::ObjectiveAvailability { expected_instance } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Availability {},
+                    deadline,
+                );
+            }
             Request::ObjectiveSubmit {
                 client_intent_id,
                 text,
                 expected_instance,
-            } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Submit {
-                    intent: trill_ui_core::objective::ObjectiveIntent {
-                        client_intent_id,
-                        text,
+            } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Submit {
+                        intent: trill_ui_core::objective::ObjectiveIntent {
+                            client_intent_id,
+                            text,
+                        },
                     },
-                },
-            ),
+                    deadline,
+                );
+            }
             Request::ObjectiveStatus {
                 client_intent_id,
                 expected_instance,
-            } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Status { client_intent_id },
-            ),
+            } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Status { client_intent_id },
+                    deadline,
+                );
+            }
             Request::ObjectiveCancel {
                 client_intent_id,
                 expected_instance,
-            } => self.objective_request(
-                expected_instance,
-                trill_ui_core::objective::ObjectiveCommand::Cancel { client_intent_id },
-            ),
+            } => {
+                return self.objective_request(
+                    expected_instance,
+                    trill_ui_core::objective::ObjectiveCommand::Cancel { client_intent_id },
+                    deadline,
+                );
+            }
             Request::Snapshot => {
                 let observation = self.display.observe(probe_host_wayland());
                 Response::Snapshot {
@@ -587,7 +609,8 @@ impl Session {
                     self.cancel(id)
                 }
             }
-        }
+        };
+        SessionReply::Ready(response)
     }
 }
 
@@ -735,64 +758,6 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
 // Shared by the request read and response write; partial I/O never restarts it.
 const EXCHANGE_BUDGET: Duration = Duration::from_millis(500);
 
-fn serve_connection(stream: UnixStream, session: &mut Session) -> io::Result<()> {
-    serve_connection_until(stream, session, Instant::now() + EXCHANGE_BUDGET)
-}
-
-fn serve_connection_until(
-    stream: UnixStream,
-    session: &mut Session,
-    deadline: Instant,
-) -> io::Result<()> {
-    // Invalid/malformed peers must not prevent reaping independent apps.
-    // A valid Request::Snapshot/Cancel already refreshes in handle(), but
-    // rejected frames never reach handle(). Refresh before parsing every peer.
-    session.refresh();
-    let result = (|| {
-        require_same_uid_peer(&stream)?;
-        let mut stream = deadline::DeadlineStream::new(stream, deadline);
-        serve_request(&mut stream, session)
-    })();
-    // A child may exit while the request is incomplete or its response cannot
-    // be delivered. Reap on every return path before accepting the next peer.
-    session.refresh();
-    result
-}
-
-fn serve_request(stream: &mut deadline::DeadlineStream, session: &mut Session) -> io::Result<()> {
-    let response = match read_frame(&mut *stream) {
-        Ok(frame) => match parse_host_request(&frame) {
-            // Parsing a bounded frame must not allow an expired exchange to
-            // begin a launch/cancel effect after its read allowance elapsed.
-            Ok(command) => {
-                stream.remaining()?;
-                session.handle(command)
-            }
-            Err(error) => Response::Error {
-                message: format!("Invalid IPC request: {error}"),
-                session_instance: session.instance.clone(),
-            },
-        },
-        Err(error) => Response::Error {
-            message: format!("Invalid IPC frame: {error}"),
-            session_instance: session.instance.clone(),
-        },
-    };
-    // Never emit a partial/truncated JSON frame or silently lose lifecycle
-    // provenance if a future TaskRecord field makes a snapshot too large.
-    match write_frame(&mut *stream, &response) {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == io::ErrorKind::InvalidData => write_frame(
-            &mut *stream,
-            &Response::Error {
-                message: "Session snapshot is too large; no task state is being asserted".into(),
-                session_instance: session.instance.clone(),
-            },
-        ),
-        Err(error) => Err(error),
-    }
-}
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum NotesBootstrapMode {
     None,
@@ -877,27 +842,15 @@ fn main() -> io::Result<()> {
     if let Some(bootstrap) = notes_bootstrap {
         session.start_bootstrapped_notes(bootstrap)?;
     }
-    // Reap children even while the shell/client is stopped. Blocking
-    // incoming() would accumulate zombies until the GUI reconnects.
+    // Every tick reaps children and advances bounded nonblocking peers.
+    // A partial request or blocked reader cannot monopolize the owner loop.
     listener.set_nonblocking(true)?;
+    let mut server = ipc::Server::default();
     loop {
-        match listener.accept() {
-            Ok((stream, _addr)) => {
-                stream.set_nonblocking(false)?;
-                if let Err(e) = serve_connection(stream, &mut session) {
-                    eprintln!("session request error: {e}");
-                }
-            }
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                session.refresh();
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
-            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
-            Err(e) => {
-                eprintln!("session accept error: {e}");
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
+        if let Err(error) = server.tick(&listener, &mut session) {
+            eprintln!("session accept error: {error}");
         }
+        std::thread::sleep(Duration::from_millis(10));
     }
 }
 
@@ -1550,11 +1503,14 @@ mod tests {
         let session = fixture.session.as_mut().unwrap();
         session.cancellation_fixture_socket = Some(socket);
         let expected_instance = session.instance.clone();
-        let Response::Task { task, .. } = session.handle(Request::Launch {
-            workspace: Workspace::Build,
-            app: AppKind::Notes,
-            expected_instance: expected_instance.clone(),
-        }) else {
+        let SessionReply::Ready(Response::Task { task, .. }) = session.handle(
+            Request::Launch {
+                workspace: Workspace::Build,
+                app: AppKind::Notes,
+                expected_instance: expected_instance.clone(),
+            },
+            Instant::now() + EXCHANGE_BUDGET,
+        ) else {
             panic!("expected real child launch");
         };
         assert_eq!(task.state, TaskState::Running, "{}", task.detail);
@@ -1598,12 +1554,15 @@ mod tests {
         control.read_exact(&mut ready).unwrap();
         assert_eq!(&ready, b"TRILL_CANCEL_READY\n");
 
-        let Response::Task {
+        let SessionReply::Ready(Response::Task {
             task: requested, ..
-        } = session.handle(Request::Cancel {
-            id: task.id,
-            expected_instance,
-        })
+        }) = session.handle(
+            Request::Cancel {
+                id: task.id,
+                expected_instance,
+            },
+            Instant::now() + EXCHANGE_BUDGET,
+        )
         else {
             panic!("expected bounded cancellation acknowledgement");
         };

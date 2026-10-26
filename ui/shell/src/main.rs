@@ -144,9 +144,62 @@ fn parse_startup_options(
 #[derive(Debug)]
 struct BridgeReply {
     is_action: bool,
+    objective_request: Option<ObjectiveRequestReceipt>,
     result: Result<Response, String>,
     request_started_at: Instant,
     received_at: Instant,
+}
+
+#[derive(Debug)]
+struct ObjectiveRequestReceipt {
+    sequence: u64,
+    session: String,
+    request: trill_ui_core::objective::ObjectiveTransportRequest,
+}
+
+impl ObjectiveRequestReceipt {
+    fn for_request(message: &Request, sequence: u64) -> Option<Self> {
+        use trill_ui_core::objective::ObjectiveTransportRequest as Identity;
+        let (session, request) = match message {
+            Request::ObjectiveAvailability { expected_instance } => {
+                (expected_instance, Identity::Availability {})
+            }
+            Request::ObjectiveSubmit {
+                client_intent_id,
+                expected_instance,
+                ..
+            } => (
+                expected_instance,
+                Identity::Submit {
+                    client_intent_id: client_intent_id.clone(),
+                },
+            ),
+            Request::ObjectiveStatus {
+                client_intent_id,
+                expected_instance,
+            } => (
+                expected_instance,
+                Identity::Status {
+                    client_intent_id: client_intent_id.clone(),
+                },
+            ),
+            Request::ObjectiveCancel {
+                client_intent_id,
+                expected_instance,
+            } => (
+                expected_instance,
+                Identity::Cancel {
+                    client_intent_id: client_intent_id.clone(),
+                },
+            ),
+            _ => return None,
+        };
+        Some(Self {
+            sequence,
+            session: session.clone(),
+            request,
+        })
+    }
 }
 
 struct Bridge {
@@ -171,6 +224,7 @@ impl Bridge {
         let (outgoing, rx) = mpsc::sync_channel(16);
         let waker: BridgeWaker = Arc::new(Mutex::new(None));
         let worker_waker = Arc::clone(&waker);
+        let mut sequence = 0_u64;
         // The worker, not egui, waits for the Unix socket. After each IPC,
         // prioritized actions are handled before the coalesced next poll.
         std::thread::spawn(move || loop {
@@ -192,10 +246,16 @@ impl Bridge {
                     },
                 },
             };
+            let Some(next_sequence) = sequence.checked_add(1) else {
+                break;
+            };
+            sequence = next_sequence;
+            let objective_request = ObjectiveRequestReceipt::for_request(&message, sequence);
             let request_started_at = Instant::now();
             let result = transport(&message);
             let reply = BridgeReply {
                 is_action,
+                objective_request,
                 result,
                 request_started_at,
                 // Stamp before a full queue can block this worker. UI dequeue
@@ -469,12 +529,20 @@ impl Desktop {
         let mut received = false;
         while let Ok(BridgeReply {
             is_action,
+            objective_request,
             result,
             request_started_at,
             received_at,
         }) = self.bridge.rx.try_recv()
         {
             received = true;
+            if !matches!(&result, Ok(Response::ObjectiveTransportRejected { .. })) {
+                if let Some(receipt) = &objective_request {
+                    if self.session_instance.as_deref() == Some(receipt.session.as_str()) {
+                        self.objectives.transport_returned(receipt);
+                    }
+                }
+            }
             match result {
                 Ok(Response::Snapshot {
                     tasks,
@@ -535,6 +603,20 @@ impl Desktop {
                         }
                     }
                     self.tasks = tasks;
+                }
+                Ok(Response::ObjectiveTransportRejected {
+                    rejection,
+                    session_instance,
+                }) => {
+                    if let Some(receipt) = &objective_request {
+                        if self.session_instance.as_deref() == Some(session_instance.as_str())
+                            && receipt.session == session_instance
+                            && receipt.request == rejection.request
+                            && self.objectives.transport_rejected(receipt, &rejection)
+                        {
+                            self.notice("请求尚未发出，已有状态和草稿已保留。请刷新后手动重试。");
+                        }
+                    }
                 }
                 Ok(Response::Objective {
                     observation,
@@ -1209,6 +1291,7 @@ fn queued_reply(is_action: bool, result: Result<Response, String>) -> BridgeRepl
     let now = Instant::now();
     BridgeReply {
         is_action,
+        objective_request: None,
         result,
         request_started_at: now,
         received_at: now,
@@ -1314,6 +1397,7 @@ mod observation_freshness_tests {
         sender
             .send(BridgeReply {
                 is_action: false,
+                objective_request: None,
                 request_started_at,
                 received_at,
                 result: Ok(Response::Snapshot {

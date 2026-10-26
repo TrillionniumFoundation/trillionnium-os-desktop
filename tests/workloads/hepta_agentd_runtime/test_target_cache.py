@@ -232,6 +232,17 @@ class TargetCacheTests(unittest.TestCase):
         self.assertEqual(len(receipt["commands"]), 5)
         self.assertTrue(all(step["status"] == "passed" for step in receipt["command_records"]))
         self.assertFalse(receipt["runtime_executed"])
+        metadata = [step for step in receipt["command_records"] if "metadata" in step["argv"]]
+        self.assertEqual(len(metadata), 2)
+        for step in metadata:
+            # The original lock still includes every identity; only metadata
+            # downloads are limited to the target prefetched for this guest.
+            arguments = step["argv"]
+            self.assertEqual(arguments[arguments.index("--filter-platform") + 1],
+                             "x86_64-unknown-linux-gnu")
+            self.assertIn("--offline", arguments)
+            self.assertNotIn("--no-deps", arguments)
+        self.assertIn("--locked", metadata[1]["argv"])
 
 
 if __name__ == "__main__":

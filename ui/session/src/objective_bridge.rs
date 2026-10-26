@@ -1,10 +1,75 @@
 //! Fixed trusted-host transport. Renderer messages never select a peer or carry authority.
 use std::os::unix::fs::{FileTypeExt, MetadataExt};
 use std::path::PathBuf;
-use std::time::Duration;
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::runtime::{Builder, Runtime};
 use trill_ui_core::objective::*;
+
+const WAITING: u8 = 0;
+const ABANDONED: u8 = 1;
+const SENDING: u8 = 2;
+
+/// A local transport admission race, never original-owner cancellation.
+pub(super) struct RequestPermit {
+    deadline: Instant,
+    state: AtomicU8,
+    stopped: Arc<AtomicBool>,
+}
+
+impl RequestPermit {
+    pub(super) fn new(deadline: Instant, stopped: Arc<AtomicBool>) -> Self {
+        Self {
+            deadline,
+            state: AtomicU8::new(WAITING),
+            stopped,
+        }
+    }
+
+    pub(super) fn abandon(&self) {
+        // Once first-write admission wins, an effect may already have reached
+        // the original owner. Closing a client cannot revoke that possibility.
+        let _ =
+            self.state
+                .compare_exchange(WAITING, ABANDONED, Ordering::AcqRel, Ordering::Acquire);
+    }
+
+    fn waiting(&self) -> bool {
+        Instant::now() < self.deadline
+            && !self.stopped.load(Ordering::Acquire)
+            && self.state.load(Ordering::Acquire) == WAITING
+    }
+
+    fn begin_send(&self) -> Result<(), ObjectiveHostIssue> {
+        if !self.waiting() {
+            return Err(ObjectiveHostIssue::TransportUnknown);
+        }
+        self.state
+            .compare_exchange(WAITING, SENDING, Ordering::AcqRel, Ordering::Acquire)
+            .map_err(|_| ObjectiveHostIssue::TransportUnknown)?;
+        if Instant::now() >= self.deadline || self.stopped.load(Ordering::SeqCst) {
+            return Err(ObjectiveHostIssue::TransportUnknown);
+        }
+        Ok(())
+    }
+}
+
+pub(super) fn transport_unknown(command: &ObjectiveCommand) -> ObjectiveObservation {
+    let mut view = ObjectiveObservation::new(
+        command.client_intent_id().map(str::to_owned),
+        ObjectiveStage::Unavailable,
+    );
+    if matches!(command, ObjectiveCommand::Submit { .. }) {
+        view.stage = ObjectiveStage::SubmitUnknown;
+    }
+    if matches!(command, ObjectiveCommand::Cancel { .. }) {
+        view.cancellation = ObjectiveCancellation::Unknown;
+    }
+    view.issue = Some(ObjectiveHostIssue::TransportUnknown);
+    view
+}
 
 pub(super) struct ObjectiveBridge {
     endpoint: Option<(PathBuf, u32)>,
@@ -32,7 +97,15 @@ impl ObjectiveBridge {
         Self { endpoint, runtime }
     }
 
-    pub(super) fn request(&self, command: ObjectiveCommand) -> ObjectiveObservation {
+    pub(super) fn configured(&self) -> bool {
+        self.endpoint.is_some() && self.runtime.is_some()
+    }
+
+    pub(super) fn request_until(
+        &self,
+        command: ObjectiveCommand,
+        permit: &RequestPermit,
+    ) -> ObjectiveObservation {
         let mut unknown = ObjectiveObservation::new(
             command.client_intent_id().map(str::to_owned),
             ObjectiveStage::Unavailable,
@@ -45,8 +118,14 @@ impl ObjectiveBridge {
             unknown.issue = Some(ObjectiveHostIssue::Unavailable);
             return unknown;
         };
+        if !permit.waiting() {
+            return transport_unknown(&command);
+        }
+        let deadline = permit
+            .deadline
+            .min(Instant::now() + Duration::from_millis(150));
         let result = runtime.block_on(async {
-            tokio::time::timeout(Duration::from_millis(150), async {
+            tokio::time::timeout_at(tokio::time::Instant::from_std(deadline), async {
                 let metadata = tokio::fs::symlink_metadata(path)
                     .await
                     .map_err(|_| ObjectiveHostIssue::Unavailable)?;
@@ -70,6 +149,10 @@ impl ObjectiveBridge {
                 let mut frame =
                     serde_json::to_vec(&command).map_err(|_| ObjectiveHostIssue::InvalidIntent)?;
                 frame.push(b'\n');
+                // Validation and peer authentication may have yielded. Check
+                // the original exchange budget and abandonment again before
+                // the only first-write attempt; no retry follows uncertainty.
+                permit.begin_send()?;
                 stream
                     .write_all(&frame)
                     .await
@@ -123,6 +206,25 @@ impl ObjectiveBridge {
                 unknown
             }
         }
+    }
+
+    #[cfg(test)]
+    pub(super) fn at_endpoint(path: PathBuf, pid: u32) -> Self {
+        Self {
+            endpoint: Some((path, pid)),
+            runtime: Some(Builder::new_current_thread().enable_all().build().unwrap()),
+        }
+    }
+
+    #[cfg(test)]
+    fn request(&self, command: ObjectiveCommand) -> ObjectiveObservation {
+        self.request_until(
+            command,
+            &RequestPermit::new(
+                Instant::now() + Duration::from_millis(150),
+                Arc::new(AtomicBool::new(false)),
+            ),
+        )
     }
 }
 

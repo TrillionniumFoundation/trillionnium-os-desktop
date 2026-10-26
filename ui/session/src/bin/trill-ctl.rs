@@ -41,7 +41,9 @@ fn observe_generation() -> Result<String, String> {
 fn acknowledged(response: &Response) -> bool {
     match response {
         Response::Snapshot { .. } => true,
-        Response::Error { .. } | Response::Objective { .. } => false,
+        Response::Error { .. }
+        | Response::Objective { .. }
+        | Response::ObjectiveTransportRejected { .. } => false,
         Response::Task { task, .. } => !matches!(
             task.state,
             TaskState::Failed | TaskState::Partial | TaskState::Unknown | TaskState::Pending,
@@ -129,6 +131,15 @@ mod tests {
         }));
         assert!(!acknowledged(&Response::Error {
             message: "not attempted".into(),
+            session_instance: "test".into(),
+        }));
+        assert!(!acknowledged(&Response::ObjectiveTransportRejected {
+            rejection: trill_ui_core::objective::ObjectiveTransportRejection {
+                request: trill_ui_core::objective::ObjectiveTransportRequest::Submit {
+                    client_intent_id: "not-enqueued".into(),
+                },
+                reason: trill_ui_core::objective::ObjectiveTransportRejectionReason::Capacity,
+            },
             session_instance: "test".into(),
         }));
     }

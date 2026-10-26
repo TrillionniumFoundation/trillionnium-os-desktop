@@ -1,95 +1,18 @@
 #![cfg(target_os = "linux")]
 
 use std::fs;
-use std::io::{BufRead, BufReader, Read, Write};
-use std::os::unix::fs::{symlink, PermissionsExt};
+use std::os::unix::fs::symlink;
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
-use std::sync::mpsc;
-use std::time::Duration;
+#[path = "common/notes_store.rs"]
+mod common;
+use common::*;
 use trill_ui_core::notes::*;
 use trill_ui_core::notes_recovery::*;
 use trill_ui_core::notes_store::{NotesStore, MAX_SAVED_NOTES};
 
-struct Directory(PathBuf);
-
-impl Directory {
-    fn new() -> Self {
-        let mut random = [0_u8; 16];
-        fs::File::open("/dev/urandom")
-            .unwrap()
-            .read_exact(&mut random)
-            .unwrap();
-        let suffix = random
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect::<String>();
-        let path = std::env::temp_dir().join(format!("trill-notes-store-{suffix}"));
-        fs::create_dir(&path).unwrap();
-        fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
-        Self(path)
-    }
-}
-
-impl Drop for Directory {
-    fn drop(&mut self) {
-        let _ = fs::remove_dir_all(&self.0);
-    }
-}
-
-fn target() -> NotesTargetIdentity {
-    NotesTargetIdentity {
-        session_instance: "a".repeat(32),
-        task_id: 1,
-        incarnation: "b".repeat(32),
-    }
-}
-
-fn request() -> Vec<u8> {
-    let target = target();
-    serde_json::to_vec(&NotesReplace {
-        schema_version: NOTES_SCHEMA_VERSION,
-        action: NotesReplaceAction::ReplaceNote,
-        operation_id: "original-writer-operation".into(),
-        destination_id: target.destination_id(),
-        target,
-        expected_revision: 0,
-        text: "重启后仍可核对的原始效果".into(),
-    })
-    .unwrap()
-}
-
-fn query() -> Vec<u8> {
-    serde_json::to_vec(&NotesObserve {
-        schema_version: NOTES_SCHEMA_VERSION,
-        action: NotesObserveAction::Observe,
-        target: target(),
-        operation_id: "original-writer-operation".into(),
-        payload_sha256: sha256_hex(&request()),
-    })
-    .unwrap()
-}
-
 fn document_directory(root: &Directory) -> PathBuf {
     root.0
         .join(format!("{}-1-{}", "a".repeat(32), "b".repeat(32)))
-}
-
-fn reopened_target() -> NotesTargetIdentity {
-    NotesTargetIdentity {
-        session_instance: "c".repeat(32),
-        task_id: 2,
-        incarnation: "d".repeat(32),
-    }
-}
-
-fn read_state(store: &mut NotesStore, identity: &NotesTargetIdentity) -> serde_json::Value {
-    let raw = serde_json::to_vec(&serde_json::json!({
-        "schema_version": 1, "action": "read_document_state", "target": identity,
-        "request_id": "e".repeat(32),
-    }))
-    .unwrap();
-    serde_json::from_slice(&store.recovery_exact(&raw).unwrap()).unwrap()
 }
 
 #[test]
@@ -263,73 +186,6 @@ fn saved_picker_is_bounded_and_keeps_utf8_previews_intact() {
 }
 
 #[test]
-fn restored_copy_survives_process_death_while_original_receipt_remains_recoverable() {
-    let root = Directory::new();
-    let mut original = NotesStore::create(&root.0, target()).unwrap();
-    let receipt = original.apply_exact(&request()).unwrap();
-    drop(original);
-    let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--exact", "restore_then_wait_fixture", "--nocapture"])
-        .env("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT", &root.0)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    let output = child.stdout.take().unwrap();
-    let (send, receive) = mpsc::channel();
-    let reader = std::thread::spawn(move || {
-        for line in BufReader::new(output).lines() {
-            if line.is_ok_and(|line| line == "NOTES_RESTORED_BEFORE_EXIT") {
-                let _ = send.send(());
-                return;
-            }
-        }
-    });
-    let committed = receive.recv_timeout(Duration::from_secs(10));
-    let _ = child.kill();
-    let status = child.wait().unwrap();
-    reader.join().unwrap();
-    assert!(
-        committed.is_ok(),
-        "restoring child did not persist within the deadline"
-    );
-    assert!(!status.success());
-    let mut restored = NotesStore::recover(&root.0, &reopened_target()).unwrap();
-    assert_eq!(restored.text(), "重启后仍可核对的原始效果");
-    assert_eq!(restored.revision(), 1);
-    assert_eq!(
-        read_state(&mut restored, &reopened_target())["receipt_pending"],
-        false
-    );
-    assert!(restored.apply_exact(&request()).is_err());
-    let mut original = NotesStore::recover(&root.0, &target()).unwrap();
-    assert_eq!(
-        NotesResponse::parse_exact(&original.recovery_exact(&query()).unwrap()).unwrap(),
-        receipt
-    );
-}
-
-#[test]
-fn restore_then_wait_fixture() {
-    let Some(root) = std::env::var_os("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT") else {
-        return;
-    };
-    let root = PathBuf::from(root);
-    let mut copy = NotesStore::create(&root, reopened_target()).unwrap();
-    let selected = NotesStore::saved_documents(&root, &reopened_target())
-        .unwrap()
-        .documents
-        .remove(0);
-    copy.restore_saved_text(&root, &selected, 0).unwrap();
-    println!("NOTES_RESTORED_BEFORE_EXIT");
-    std::io::stdout().flush().unwrap();
-    let mut one = [0_u8; 1];
-    let _ = std::io::stdin().read(&mut one);
-    drop(copy);
-}
-
-#[test]
 fn recovery_preserves_exact_receipt_and_retirement_without_restoring_effects() {
     let root = Directory::new();
     let mut app = NotesStore::create(&root.0, target()).unwrap();
@@ -454,60 +310,4 @@ fn failed_storage_freezes_effects_until_independent_recovery() {
             current_revision: 0
         }
     ));
-}
-
-#[test]
-fn durable_receipt_survives_sigkill_before_delivery() {
-    let root = Directory::new();
-    let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--exact", "persist_then_wait_fixture", "--nocapture"])
-        .env("TRILL_NOTES_TEST_CHILD_ROOT", &root.0)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    let output = child.stdout.take().unwrap();
-    let (send, receive) = mpsc::channel();
-    let reader = std::thread::spawn(move || {
-        for line in BufReader::new(output).lines() {
-            if line.is_ok_and(|line| line == "NOTES_DURABLE_BEFORE_REPLY") {
-                let _ = send.send(());
-                return;
-            }
-        }
-    });
-    let committed = receive.recv_timeout(Duration::from_secs(10));
-    let _ = child.kill();
-    let status = child.wait().unwrap();
-    reader.join().unwrap();
-    assert!(
-        committed.is_ok(),
-        "child did not persist before the bounded deadline"
-    );
-    assert!(!status.success());
-    let mut recovered = NotesStore::recover(&root.0, &target()).unwrap();
-    let observed =
-        NotesResponse::parse_exact(&recovered.recovery_exact(&query()).unwrap()).unwrap();
-    let mut expected = NotesDocument::new(target()).unwrap();
-    assert_eq!(observed, expected.apply_exact(&request()).unwrap());
-    assert_eq!(recovered.text(), "重启后仍可核对的原始效果");
-    assert_eq!(recovered.revision(), 1);
-    assert!(recovered.apply_exact(&request()).is_err());
-}
-
-#[test]
-fn persist_then_wait_fixture() {
-    let Some(root) = std::env::var_os("TRILL_NOTES_TEST_CHILD_ROOT") else {
-        return;
-    };
-    let mut store = NotesStore::create(&PathBuf::from(root), target()).unwrap();
-    store.apply_exact(&request()).unwrap();
-    // No effect receipt is delivered. The parent kills this real process
-    // while it still holds the incarnation lock, then opens recovery alone.
-    println!("NOTES_DURABLE_BEFORE_REPLY");
-    std::io::stdout().flush().unwrap();
-    let mut one = [0_u8; 1];
-    let _ = std::io::stdin().read(&mut one);
-    drop(store);
 }
