@@ -1,5 +1,5 @@
 //! The actual non-Root Session and metadata-only initial reservation peek.
-use super::{Result, config::Inputs, fs, geometry::Fresh, packet, process};
+use super::{Result, config::Inputs, fs, geometry::Product, packet, process};
 use codex_hepta_memory::NotesTargetIdentity;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -17,7 +17,7 @@ pub(super) struct Session {
     pub environment: BTreeMap<String, String>,
 }
 
-pub(super) fn environment(inputs: &Inputs, fresh: &Fresh) -> BTreeMap<String, String> {
+pub(super) fn environment(inputs: &Inputs, fresh: &Product) -> BTreeMap<String, String> {
     let mut environment = inputs.environment.clone();
     environment.insert("HOME".into(), fresh.user.join("home").display().to_string());
     environment.insert(
@@ -33,7 +33,7 @@ pub(super) fn environment(inputs: &Inputs, fresh: &Fresh) -> BTreeMap<String, St
 }
 
 impl Session {
-    pub(super) fn spawn(inputs: &Inputs, fresh: &Fresh) -> Result<Self> {
+    pub(super) fn spawn(inputs: &Inputs, fresh: &Product) -> Result<Self> {
         let (pair, child_pair) = UnixDatagram::pair()?;
         // Must precede spawn. Root remains the original anonymous pair creator.
         packet::passcred(&pair)?;

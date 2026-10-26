@@ -1,5 +1,5 @@
 //! Actual original Core Start/Resume before the bounded Root/Session episode.
-use super::{Result, config::Inputs, fs, geometry::Fresh, process::ChildOwner};
+use super::{Result, config::Inputs, fs, geometry::Product, process::ChildOwner};
 use codex_app_server_client::{
     RemoteAppServerClient, RemoteAppServerConnectArgs, RemoteAppServerEndpoint,
 };
@@ -30,7 +30,7 @@ struct PromptRegistry {
     developer_instructions: String,
 }
 
-pub(super) async fn create(inputs: &Inputs, fresh: &Fresh) -> Result<NotesThreadSeedReceipt> {
+pub(super) async fn create(inputs: &Inputs, fresh: &Product) -> Result<NotesThreadSeedReceipt> {
     let home = fresh.record.layout.home_root();
     let preferences: Preferences = fs::read_root_document(&inputs.sources.preferences)?;
     let prompts: PromptRegistry = fs::read_root_document(&inputs.sources.prompt_registry)?;

@@ -1,4 +1,4 @@
-//! Fresh trusted Root composition of the ORIGINAL Supervisor and Unix driver.
+//! Product trusted Root composition of the ORIGINAL Supervisor and Unix driver.
 //! The supervisor owns Registry transitions/leases/health; no JSON writer does.
 use std::collections::BTreeSet;
 use std::io;
@@ -38,6 +38,8 @@ mod tests;
 pub(super) struct OneOriginalSpawn {
     driver: UnixProcessDriver,
     consumed: bool,
+    armed: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    command: AgentCommand,
 }
 
 impl ProcessDriver for OneOriginalSpawn {
@@ -47,7 +49,10 @@ impl ProcessDriver for OneOriginalSpawn {
         &mut self,
         spec: &SpawnSpec,
     ) -> std::result::Result<SpawnedProcess<Self::Process>, ProcessDriverError> {
-        if self.consumed {
+        if self.consumed
+            || !self.armed.swap(false, std::sync::atomic::Ordering::AcqRel)
+            || spec.command != self.command
+        {
             return Err(ProcessDriverError::new(
                 "original fresh Root spawn capability is consumed",
             ));
@@ -60,7 +65,7 @@ impl ProcessDriver for OneOriginalSpawn {
         &mut self,
         _spec: &AdoptSpec,
     ) -> std::result::Result<Adoption<Self::Process>, ProcessDriverError> {
-        // Fresh deployment never adopts a serialized PID. Successor recovery
+        // Product deployment never adopts a serialized PID. Successor recovery
         // needs its independent original retirement/material handoff.
         Ok(Adoption::Rejected)
     }
@@ -209,17 +214,61 @@ pub(super) fn start_original(
     uid: u32,
     gid: u32,
 ) -> Result<OriginalOwner> {
+    start_registered(registry, agent, command, rights, uid, gid, Admission::Fresh)
+}
+
+pub(super) fn start_successor(
+    registry: FleetRegistry,
+    agent: &AgentId,
+    command: AgentCommand,
+    rights: &[BorrowedFd<'_>],
+    uid: u32,
+    gid: u32,
+) -> Result<OriginalOwner> {
+    start_registered(
+        registry,
+        agent,
+        command,
+        rights,
+        uid,
+        gid,
+        Admission::Successor,
+    )
+}
+
+enum Admission {
+    Fresh,
+    Successor,
+}
+
+fn start_registered(
+    registry: FleetRegistry,
+    agent: &AgentId,
+    command: AgentCommand,
+    rights: &[BorrowedFd<'_>],
+    uid: u32,
+    gid: u32,
+    admission: Admission,
+) -> Result<OriginalOwner> {
     // SAFETY: these calls only read actual process credentials.
     if unsafe { libc::getuid() } != 0 || unsafe { libc::geteuid() } != 0 || uid == 0 || gid == 0 {
         return Err("explicit Root and actual non-Root product owner are required".into());
     }
     let before = registry.load_agent(agent)?;
-    if registry.load()?.agents.len() != 1 || before.lifecycle.generation != 0 {
+    if registry.load()?.agents.len() != 1
+        || match admission {
+            Admission::Fresh => before.lifecycle.generation != 0,
+            Admission::Successor => before.lifecycle.generation == 0,
+        }
+    {
         return Err("fresh original Supervisor entry refuses existing lifecycle history".into());
     }
+    let armed = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let driver = OneOriginalSpawn {
         driver: UnixProcessDriver::new(256)?,
         consumed: false,
+        armed: armed.clone(),
+        command: command.clone(),
     };
     let (supervisor, recovery) = Supervisor::recover(
         registry.clone(),
@@ -235,6 +284,16 @@ pub(super) fn start_original(
         supervisor,
         agent: agent.clone(),
     };
+    if supervisor
+        .supervisor
+        .snapshot(agent)
+        .is_some_and(|s| s.active)
+    {
+        return Err("original Supervisor still has an active predecessor".into());
+    }
+    // No spawn is allowed during recovery/adoption of historical state.
+    // Arm only this explicit new FD episode after all original fences load.
+    armed.store(true, std::sync::atomic::Ordering::Release);
     let inheritance = InheritOnce::new(rights)?;
     let start = supervisor.supervisor.start(agent, command, Instant::now());
     drop(inheritance);

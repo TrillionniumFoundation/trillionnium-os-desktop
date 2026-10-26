@@ -12,7 +12,10 @@ use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 
-pub(super) struct Fresh {
+#[path = "geometry_existing.rs"]
+mod existing;
+
+pub(super) struct Product {
     pub prefix: PathBuf,
     pub admin: PathBuf,
     pub authority: PathBuf,
@@ -24,16 +27,18 @@ pub(super) struct Fresh {
     mount: FreshMount,
 }
 
-struct FreshMount {
+pub(super) struct FreshMount {
     path: PathBuf,
     device: u64,
     inode: u64,
+    owned: bool,
 }
 
 impl Drop for FreshMount {
     fn drop(&mut self) {
-        if std::fs::metadata(&self.path)
-            .is_ok_and(|m| m.dev() == self.device && m.ino() == self.inode)
+        if self.owned
+            && std::fs::metadata(&self.path)
+                .is_ok_and(|m| m.dev() == self.device && m.ino() == self.inode)
             && let Ok(path) = CString::new(self.path.as_os_str().as_bytes())
         {
             // SAFETY: this invocation created this exact pinned mount. No force
@@ -48,7 +53,7 @@ impl Drop for FreshMount {
     }
 }
 
-impl Fresh {
+impl Product {
     pub(super) fn create(inputs: &Inputs) -> Result<Self> {
         // SAFETY: only reads real credentials.
         if unsafe { libc::getuid() } != 0 || unsafe { libc::geteuid() } != 0 {
@@ -64,6 +69,7 @@ impl Fresh {
             return Err("fresh entry refuses an existing or partial deployment".into());
         }
         fs::directory_new(&inputs.prefix, 0o750, Some((0, inputs.gid)))?;
+        fs::directory_new(&inputs.prefix.join("r"), 0o2710, Some((0, inputs.gid)))?;
         let admin = inputs.prefix.join("admin");
         fs::directory_new(&admin, 0o700, None)?;
         let source = inputs.prefix.join("a");
@@ -90,6 +96,7 @@ impl Fresh {
             path: target.clone(),
             device: metadata.dev(),
             inode: metadata.ino(),
+            owned: true,
         };
         let bind = HostAuthorityBindIdentity {
             mountpoint: target.clone(),

@@ -1,6 +1,6 @@
 //! Actual trusted logind provider child and one held login-leader handoff.
 use super::{
-    Result, authority::RegistrationFiles, config::Inputs, fs, geometry::Fresh, packet, process,
+    Result, authority::RegistrationFiles, config::Inputs, fs, geometry::Product, packet, process,
     supervisor::InheritOnce,
 };
 use codex_hepta_agentd::HostAuthorityNativeProfile;
@@ -33,7 +33,7 @@ struct Receipt {
 
 pub(super) fn capture(
     inputs: &Inputs,
-    fresh: &Fresh,
+    fresh: &Product,
     files: &RegistrationFiles,
     owner_pidfd: &OwnedFd,
     environment: &std::collections::BTreeMap<String, String>,
@@ -47,7 +47,7 @@ pub(super) fn capture(
             "schema_version":1, "program":&inputs.programs.shell,
             "program_sha256":fs::digest(&inputs.programs.shell)?,
             "arguments":["--renderer","makepad"], "working_directory":&fresh.user,
-            "environment": environment, "socket_path": fresh.record.layout.run_root().join("root-text.sock"),
+            "environment": environment, "socket_path": fresh.prefix.join("r/root-text.sock"),
             "route":&files.route, "human_lifetime_ms": inputs.lifetime_ms,
             "can_interrupt":true, "can_resolve_approvals":false,
         }),

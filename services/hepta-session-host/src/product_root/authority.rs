@@ -1,5 +1,5 @@
-//! Fresh explicit Root administration through the ORIGINAL authority factories.
-use super::{Result, config::Inputs, fs, geometry::Fresh};
+//! Product explicit Root administration through the ORIGINAL authority factories.
+use super::{Result, config::Inputs, fs, geometry::Product};
 use codex_hepta_agentd::{
     AgentdIdentity, DeploymentFinalUseIssuer, DeploymentGrantPolicy, HostAuthorityBootstrap,
     HostAuthorityConsumerConfig, HostAuthorityConsumersConfig, HostAuthorityRegistration,
@@ -29,7 +29,10 @@ pub(super) struct RegistrationFiles {
     pub signer_id: String,
 }
 
-pub(super) fn identity(registration: &HostAuthorityRegistration, fresh: &Fresh) -> AgentdIdentity {
+pub(super) fn identity(
+    registration: &HostAuthorityRegistration,
+    fresh: &Product,
+) -> AgentdIdentity {
     let i = &registration.registered_identity;
     AgentdIdentity {
         agent_id: i.agent_id.clone(),
@@ -47,7 +50,7 @@ pub(super) fn identity(registration: &HostAuthorityRegistration, fresh: &Fresh) 
 
 pub(super) fn initialize(
     inputs: &Inputs,
-    fresh: &Fresh,
+    fresh: &Product,
     registration: &HostAuthorityRegistration,
     seed: &NotesThreadSeedReceipt,
     target: &NotesTargetIdentity,
@@ -58,18 +61,7 @@ pub(super) fn initialize(
     let actual = identity(registration, fresh);
     let signer_id = format!("desktop-root-{}", fresh.agent.as_str());
     let root_lease_id = format!("{signer_id}.issuer");
-    let artifacts = json!({
-        "schema":"trill.original-product-artifacts.v1",
-        "agentd":fs::digest(&inputs.programs.agentd)?,
-        "app_server":fs::digest(&inputs.programs.app_server)?,
-        "authority_host":fs::digest(&inputs.programs.authority_host)?,
-        "session":fs::digest(&inputs.programs.session)?,
-        "shell":fs::digest(&inputs.programs.shell)?,
-        "app_window":fs::digest(&inputs.programs.app_window)?,
-        "human_provider":fs::digest(&inputs.programs.human_provider)?,
-        "sdk":fs::digest(&inputs.sources.sdk)?,
-        "source_freeze":fs::digest(&inputs.sources.source_freeze)?,
-    });
+    let artifacts = artifacts(inputs)?;
     let artifact_set = Digest32::of_bytes(&serde_json::to_vec(&artifacts)?);
     fs::json_new(&fresh.admin.join("actual-artifacts.json"), &artifacts)?;
     let policies = vec![
@@ -147,11 +139,14 @@ pub(super) fn initialize(
                     payload_sha256: artifact_set.into_array(),
                 },
                 issued_at_unix_ms: now,
-                expires_at_unix_ms: original.expires_at_unix_ms,
+                expires_at_unix_ms: super::recovery_authority::writer_expiry(
+                    now,
+                    original.expires_at_unix_ms,
+                )?,
             },
         }
     }; // Release the same original administrative clock/registry before open.
-    let run = fresh.record.layout.run_root();
+    let run = fresh.prefix.join("r");
     let config = HostAuthorityServiceConfig {
         schema_version: 1,
         state_dir: fresh.authority.clone(),
@@ -242,4 +237,20 @@ pub(super) fn initialize(
         verifying_key: initialized.verifying_key,
         signer_id,
     })
+}
+
+pub(super) fn artifacts(inputs: &Inputs) -> Result<serde_json::Value> {
+    Ok(json!({
+        "schema":"trill.original-product-artifacts.v1",
+        "agentd":fs::digest(&inputs.programs.agentd)?,
+        "app_server":fs::digest(&inputs.programs.app_server)?,
+        "authority_host":fs::digest(&inputs.programs.authority_host)?,
+        "session":fs::digest(&inputs.programs.session)?,
+        "shell":fs::digest(&inputs.programs.shell)?,
+        "app_window":fs::digest(&inputs.programs.app_window)?,
+        "notes_recovery":fs::digest(&inputs.programs.app_window.with_file_name("trill-notes-recovery"))?,
+        "human_provider":fs::digest(&inputs.programs.human_provider)?,
+        "sdk":fs::digest(&inputs.sources.sdk)?,
+        "source_freeze":fs::digest(&inputs.sources.source_freeze)?,
+    }))
 }

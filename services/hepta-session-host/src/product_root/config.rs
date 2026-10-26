@@ -1,11 +1,11 @@
 //! Explicit administrator inputs. No principal, PID, signature, grant or head is input.
 use super::Result;
 use super::fs;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Inputs {
     pub schema: String,
@@ -21,7 +21,7 @@ pub(super) struct Inputs {
     pub grant_lifetime_ms: u64,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Programs {
     pub agentd: PathBuf,
@@ -34,7 +34,7 @@ pub(super) struct Programs {
     pub human_provider: PathBuf,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Sources {
     pub runtime_body: PathBuf,
@@ -47,11 +47,17 @@ pub(super) struct Sources {
 impl Inputs {
     pub(super) fn read(path: &Path) -> Result<Self> {
         let value: Self = fs::read_root_json(path)?;
-        value.validate()?;
+        value.validate(/*fresh*/ true)?;
         Ok(value)
     }
 
-    fn validate(&self) -> Result<()> {
+    pub(super) fn read_recovery(path: &Path) -> Result<Self> {
+        let value: Self = fs::read_root_json(path)?;
+        value.validate(/*fresh*/ false)?;
+        Ok(value)
+    }
+
+    fn validate(&self, fresh: bool) -> Result<()> {
         if self.schema != "trill.original-desktop-root.initialize.v1"
             || self.prefix.parent() != Some(Path::new("/var/lib/trill"))
             || !self
@@ -66,7 +72,7 @@ impl Inputs {
                 })
             || matches!(self.uid, 0 | u32::MAX)
             || matches!(self.gid, 0 | u32::MAX)
-            || !(1..=300_000).contains(&self.lifetime_ms)
+            || !(120_000..=300_000).contains(&self.lifetime_ms)
             || !(1..=30_000).contains(&self.grant_lifetime_ms)
             || self.grant_lifetime_ms > self.lifetime_ms
             || !matches!(self.locale.as_str(), "zh-CN" | "en-US")
@@ -74,6 +80,7 @@ impl Inputs {
             return Err("invalid explicit fresh Root inputs".into());
         }
         let p = &self.programs;
+        let notes_recovery = p.app_window.with_file_name("trill-notes-recovery");
         for program in [
             &p.agentd,
             &p.app_server,
@@ -81,6 +88,7 @@ impl Inputs {
             &p.session,
             &p.shell,
             &p.app_window,
+            &notes_recovery,
             &p.python,
         ] {
             fs::root_file(program, true)?;
@@ -130,7 +138,7 @@ impl Inputs {
             .ok_or("the actual original XDG_RUNTIME_DIR is required")?;
         fs::user_directory(Path::new(runtime), self.uid)?;
         let session = Path::new(runtime).join("trillionnium-ui/session.sock");
-        if std::fs::symlink_metadata(&session).is_ok() {
+        if fresh && std::fs::symlink_metadata(&session).is_ok() {
             return Err("an existing Session socket is never replaced".into());
         }
         if self.environment.get("WAYLAND_DISPLAY").is_none()
