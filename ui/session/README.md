@@ -21,6 +21,11 @@ From the repository root:
 cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-session --locked -j 2
 ```
 
+Executable IPC fixtures keep their private runtime names short under the
+configured `TMPDIR`, leaving room for the real Unix socket pathname. They retain
+mode 0700 and surface Session startup errors. A long build-temporary directory
+must not make a fixture exit before its observation or reconnect check runs.
+
 Development and technical contracts: [Session IPC and lifecycle](../../support/ui/SESSION_IPC.md),
 [Notes persistence and recovery](../../support/ui/NOTES_PERSISTENCE.md),
 [runtime observer](../../support/ui/HEPTA_OBSERVER.md),
