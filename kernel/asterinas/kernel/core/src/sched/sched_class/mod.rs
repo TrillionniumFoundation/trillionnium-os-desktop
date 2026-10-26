@@ -33,6 +33,7 @@ use crate::{
 };
 
 mod administration;
+mod capacity;
 mod clock;
 mod policy;
 mod time;
@@ -154,12 +155,14 @@ pub(crate) struct ClassScheduler {
 /// scheduling classes in its corresponding CPU core. The current task of this CPU
 /// core is also stored in this structure.
 struct PerCpuClassRqSet {
+    cpu: CpuId,
     stop: stop::StopClassRq,
     real_time: real_time::RealTimeClassRq,
     fair: fair::FairClassRq,
     idle: idle::IdleClassRq,
     // Runqueue-local parked tasks; no userspace syscall is required to refill.
     throttled: Vec<Arc<Task>>,
+    throttled_reserved: usize,
     current: Option<(SchedEntity, CurrentRuntime)>,
     // dequeue_current() changes runnable state before OSTD selects the next
     // task. Move (not copy) the same accounting segment here until handoff,
@@ -745,11 +748,13 @@ impl ClassScheduler {
 impl PerCpuClassRqSet {
     fn new(cpu: CpuId) -> Self {
         Self {
+            cpu,
             stop: stop::StopClassRq::new(),
             real_time: real_time::RealTimeClassRq::new(cpu),
             fair: fair::FairClassRq::new(cpu),
             idle: idle::IdleClassRq::new(),
             throttled: Vec::new(),
+            throttled_reserved: 0,
             current: None,
             dequeued: None,
             dequeue_exiting: false,
@@ -834,7 +839,7 @@ impl PerCpuClassRqSet {
                 if task_cpu_eligible(previous, now.boottime_ns) {
                     self.enqueue_entity(pending.previous.entity, None);
                 } else {
-                    self.throttled.push(pending.previous.entity.0);
+                    self.park_throttled(pending.previous.entity.0);
                 }
                 None
             }
@@ -844,6 +849,19 @@ impl PerCpuClassRqSet {
                 None
             }
         }
+    }
+
+    fn park_throttled(&mut self, task: Arc<Task>) {
+        let required = self
+            .throttled
+            .len()
+            .checked_add(self.throttled_reserved)
+            .and_then(|count| count.checked_add(1))
+            .expect("throttled capacity overflow");
+        if required > self.throttled.capacity() {
+            self.throttled.reserve(required - self.throttled.len());
+        }
+        self.throttled.push(task);
     }
 
     fn replenish_throttled(&mut self, now: CpuClockSample) {
@@ -880,7 +898,7 @@ impl PerCpuClassRqSet {
                 let thread = task.as_thread().unwrap().clone();
                 return Some(SelectedEntity::other((task, thread)));
             }
-            self.throttled.push(task);
+            self.park_throttled(task);
         }
         for _ in 0..self.fair.len() {
             let (task, selection) = self.fair.select_next().unwrap();
@@ -892,7 +910,7 @@ impl PerCpuClassRqSet {
                 });
             }
             self.fair.cancel(selection);
-            self.throttled.push(task);
+            self.park_throttled(task);
         }
         self.idle.pick_next().and_then(|task| {
             task.as_thread()
@@ -972,7 +990,7 @@ impl PerCpuClassRqSet {
                 if let Some(selection) = next.fair.take() {
                     self.fair.cancel(selection);
                 }
-                self.throttled.push(next.entity.0);
+                self.park_throttled(next.entity.0);
                 now = cut;
                 continue;
             }
@@ -1011,7 +1029,7 @@ impl PerCpuClassRqSet {
                         if task_cpu_eligible(&old.entity.0, cut.boottime_ns) {
                             self.enqueue_entity(old.entity, None);
                         } else {
-                            self.throttled.push(old.entity.0);
+                            self.park_throttled(old.entity.0);
                         }
                     } else {
                         old.entity.0.cpu().set_to_none();

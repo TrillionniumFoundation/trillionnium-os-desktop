@@ -10,6 +10,8 @@ use ostd::{Error, Result};
 use super::*;
 use crate::fs::cgroupfs::CpuSchedulingGroup;
 
+#[cfg(ktest)]
+mod capacity_tests;
 mod prepare;
 
 pub(super) type GroupId = usize;
@@ -28,6 +30,7 @@ struct Node {
     queued_tasks: usize,
     admitted_tasks: usize,
     admitted_children: usize,
+    reserved_incoming: usize,
     queued: bool,
     current: bool,
     current_child: Option<GroupId>,
@@ -54,6 +57,7 @@ impl Node {
             queued_tasks: 0,
             admitted_tasks: 0,
             admitted_children: 0,
+            reserved_incoming: 0,
             queued: false,
             current: false,
             current_child: None,
@@ -104,6 +108,61 @@ pub(in crate::sched::sched_class) struct GroupTree {
 }
 
 impl GroupTree {
+    pub(super) fn root_migration_supported(&self) -> bool {
+        self.legacy_root && self.nodes.len() == 1 && self.bindings.is_empty()
+    }
+
+    pub(super) fn root_capacity_need(&self) -> Result<FairCapacityNeed> {
+        if !self.root_migration_supported() {
+            return Err(Error::InvalidArgs);
+        }
+        let node = &self.nodes[0];
+        let required = node
+            .tasks
+            .len()
+            .checked_add(node.reserved_incoming)
+            .and_then(|n| n.checked_add(1))
+            .ok_or(Error::Overflow)?;
+        Ok(FairCapacityNeed {
+            required,
+            capacity: node.tasks.capacity(),
+        })
+    }
+
+    pub(super) fn can_install_root_capacity(&self, prepared: &PreparedFairCapacity) -> bool {
+        self.root_capacity_need().is_ok_and(|need| {
+            need.required <= need.capacity
+                || prepared
+                    .storage
+                    .as_ref()
+                    .is_some_and(|storage| storage.capacity() >= need.required)
+        })
+    }
+
+    pub(super) fn install_and_reserve_root(&mut self, prepared: &mut PreparedFairCapacity) {
+        assert!(self.can_install_root_capacity(prepared));
+        let node = &mut self.nodes[0];
+        let required = node.tasks.len() + node.reserved_incoming + 1;
+        if node.tasks.capacity() < required {
+            let mut replacement = prepared.storage.take().unwrap();
+            let mut retired = core::mem::replace(&mut node.tasks, BinaryHeap::new()).into_vec();
+            assert!(replacement.is_empty() && replacement.capacity() >= required);
+            replacement.append(&mut retired);
+            node.tasks = BinaryHeap::from(replacement);
+            // The caller drops the empty retired allocation only after rq
+            // unlock and IRQ restoration; no Task ownership was duplicated.
+            prepared.storage = Some(retired);
+        }
+        node.reserved_incoming += 1;
+    }
+
+    pub(super) fn release_root_reservation(&mut self) {
+        assert!(self.root_migration_supported());
+        let reserved = &mut self.nodes[0].reserved_incoming;
+        assert!(*reserved > 0);
+        *reserved -= 1;
+    }
+
     pub(super) fn root() -> Self {
         Self {
             nodes: vec![Node::new(None, None)],
@@ -159,6 +218,10 @@ impl GroupTree {
         let node = &mut self.nodes[leaf];
         if !self.legacy_root {
             assert!(node.tasks.len() < node.admitted_tasks);
+        } else {
+            // Existing legacy growth remains available to ordinary producers,
+            // but no wake/current requeue may consume a migration's slot.
+            node.tasks.reserve(node.reserved_incoming + 1);
         }
         let attr = &task.as_thread().unwrap().sched_attr().fair;
         let floor = node.min_vruntime
@@ -169,7 +232,8 @@ impl GroupTree {
             };
         let (_, weight) = attr.fetch_weight();
         let vruntime = attr.vruntime.fetch_max(floor, Ordering::Relaxed).max(floor);
-        node.tasks.push(Reverse(FairQueueItem(task, vruntime)));
+        node.tasks
+            .push(Reverse(FairQueueItem(task, vruntime, weight)));
         node.task_weight += weight;
         let mut id = Some(leaf);
         while let Some(at) = id {
@@ -220,10 +284,11 @@ impl GroupTree {
                 (a, b) => a.or(b),
             };
             if task_key.is_some_and(|key| child.is_none_or(|candidate| key <= candidate.0)) {
-                let Reverse(FairQueueItem(task, key)) = self.nodes[id].tasks.pop().unwrap();
+                let Reverse(FairQueueItem(task, key, accounted_weight)) =
+                    self.nodes[id].tasks.pop().unwrap();
                 self.nodes[id].pending_task_key = Some(key);
-                let (weight, _) = task.as_thread().unwrap().sched_attr().fair.fetch_weight();
-                self.nodes[id].task_weight -= weight;
+                let _ = task.as_thread().unwrap().sched_attr().fair.fetch_weight();
+                self.nodes[id].task_weight -= accounted_weight;
                 let mut at = Some(id);
                 while let Some(index) = at {
                     self.nodes[index].queued_tasks -= 1;

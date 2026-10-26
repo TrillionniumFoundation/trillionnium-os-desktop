@@ -226,7 +226,9 @@ impl FairRuntime {
 ///
 /// This structure is used to provide the capability for keying in the
 /// run queue implemented by `BTreeSet` in the `FairClassRq`.
-struct FairQueueItem(Arc<Task>, u64);
+// Cache the exact weight debited to this queue. A pending nice update may be
+// consumed elsewhere before an arbitrary control-path removal or rollback.
+struct FairQueueItem(Arc<Task>, u64, u64);
 
 impl core::fmt::Debug for FairQueueItem {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -273,7 +275,51 @@ pub(super) struct FairClassRq {
     pub(super) groups: group::GroupTree,
 }
 
+pub(super) struct FairCapacityNeed {
+    pub(super) required: usize,
+    pub(super) capacity: usize,
+}
+
+pub(super) struct PreparedFairCapacity {
+    storage: Option<alloc::vec::Vec<Reverse<FairQueueItem>>>,
+}
+
+impl FairCapacityNeed {
+    pub(super) fn allocate(self) -> ostd::Result<PreparedFairCapacity> {
+        ostd::task::atomic_mode::might_sleep();
+        let storage = if self.required > self.capacity {
+            let mut slots = alloc::vec::Vec::new();
+            slots
+                .try_reserve_exact(self.required)
+                .map_err(|_| ostd::Error::NoMemory)?;
+            Some(slots)
+        } else {
+            None
+        };
+        Ok(PreparedFairCapacity { storage })
+    }
+}
+
 impl FairClassRq {
+    pub(super) fn root_migration_supported(&self) -> bool {
+        self.groups.root_migration_supported()
+    }
+
+    pub(super) fn capacity_need(&self) -> ostd::Result<FairCapacityNeed> {
+        self.groups.root_capacity_need()
+    }
+
+    pub(super) fn can_install_capacity(&self, prepared: &PreparedFairCapacity) -> bool {
+        self.groups.can_install_root_capacity(prepared)
+    }
+
+    pub(super) fn install_and_reserve(&mut self, prepared: &mut PreparedFairCapacity) {
+        self.groups.install_and_reserve_root(prepared);
+    }
+
+    pub(super) fn release_reservation(&mut self) {
+        self.groups.release_root_reservation();
+    }
     pub(crate) fn new(cpu: CpuId) -> Self {
         Self {
             cpu,

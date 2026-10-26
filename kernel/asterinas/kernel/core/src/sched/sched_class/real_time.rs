@@ -10,6 +10,7 @@ use core::{
 use aster_util::ranged_integer::RangedU8;
 use bitvec::{BitArr, bitarr};
 use ostd::{
+    Error, Result,
     cpu::CpuId,
     task::{
         Task,
@@ -89,6 +90,7 @@ impl RealTimeAttr {
 struct PrioArray {
     map: BitArr![for 100],
     queue: [VecDeque<Arc<Task>>; 100],
+    reserved: [usize; 100],
 }
 
 impl core::fmt::Debug for PrioArray {
@@ -111,7 +113,18 @@ impl core::fmt::Debug for PrioArray {
 
 impl PrioArray {
     fn enqueue(&mut self, thread: Arc<Task>, prio: u8) {
-        let queue = &mut self.queue[usize::from(prio)];
+        let priority = usize::from(prio);
+        let queue = &mut self.queue[priority];
+        let required = queue
+            .len()
+            .checked_add(self.reserved[priority])
+            .and_then(|count| count.checked_add(1))
+            .expect("RT queue capacity overflow");
+        if required > queue.capacity() {
+            // Ordinary enqueue retains its legacy growth path, but cannot
+            // consume the slots promised to a prepared transfer.
+            queue.reserve(required - queue.len());
+        }
         let is_empty = queue.is_empty();
         queue.push_back(thread);
         if is_empty {
@@ -136,6 +149,41 @@ impl PrioArray {
         let prio = self.map.iter_ones().next()?;
         Some(prio as u8)
     }
+}
+
+/// A cold allocation snapshot for one priority in both physical RT arrays.
+#[derive(Clone, Copy, Debug)]
+pub(super) struct RtCapacityNeed {
+    pub(super) priority: u8,
+    pub(super) required: [usize; 2],
+    pub(super) capacity: [usize; 2],
+}
+
+impl RtCapacityNeed {
+    /// Allocate replacement storage before disabling IRQs or locking a queue.
+    pub(super) fn allocate(&self) -> Result<PreparedRtCapacity> {
+        ostd::task::atomic_mode::might_sleep();
+        let mut prepared = PreparedRtCapacity {
+            buffers: array::from_fn(|_| None),
+        };
+        for index in 0..2 {
+            if self.required[index] <= self.capacity[index] {
+                continue;
+            }
+            let mut buffer = VecDeque::new();
+            buffer
+                .try_reserve_exact(self.required[index])
+                .map_err(|_| Error::NoMemory)?;
+            prepared.buffers[index] = Some(buffer);
+        }
+        Ok(prepared)
+    }
+}
+
+/// Empty replacement/retired buffers, retained for destruction outside the rq.
+#[derive(Debug)]
+pub(super) struct PreparedRtCapacity {
+    pub(super) buffers: [Option<VecDeque<Arc<Task>>>; 2],
 }
 
 /// The per-cpu run queue for the REAL-TIME scheduling class.
@@ -166,6 +214,7 @@ impl RealTimeClassRq {
             array: array::from_fn(|_| PrioArray {
                 map: bitarr![0; 100],
                 queue: array::from_fn(|_| VecDeque::new()),
+                reserved: [0; 100],
             }),
             nr_running: 0,
         }
@@ -181,6 +230,77 @@ impl RealTimeClassRq {
 
     fn swap_arrays(&mut self) {
         self.index = !self.index;
+    }
+
+    pub(super) fn capacity_need(&self, priority: u8) -> Result<RtCapacityNeed> {
+        if !(RealTimePriority::MIN.get()..=RealTimePriority::MAX.get()).contains(&priority) {
+            return Err(Error::InvalidArgs);
+        }
+        let mut required = [0; 2];
+        let mut capacity = [0; 2];
+        for index in 0..2 {
+            let array = &self.array[index];
+            let queue = &array.queue[usize::from(priority)];
+            required[index] = queue
+                .len()
+                .checked_add(array.reserved[usize::from(priority)])
+                .and_then(|count| count.checked_add(1))
+                .ok_or(Error::Overflow)?;
+            capacity[index] = queue.capacity();
+        }
+        Ok(RtCapacityNeed {
+            priority,
+            required,
+            capacity,
+        })
+    }
+
+    pub(super) fn can_install_capacity(&self, prepared: &PreparedRtCapacity, priority: u8) -> bool {
+        let Ok(need) = self.capacity_need(priority) else {
+            return false;
+        };
+        (0..2).all(|index| {
+            need.required[index] <= need.capacity[index]
+                || prepared.buffers[index].as_ref().is_some_and(|buffer| {
+                    buffer.is_empty() && buffer.capacity() >= need.required[index]
+                })
+        })
+    }
+
+    /// The caller revalidates and installs while holding the same rq lock.
+    /// Both physical arrays retain a slot, even if active/inactive flips later.
+    pub(super) fn install_and_reserve(&mut self, prepared: &mut PreparedRtCapacity, priority: u8) {
+        assert!(
+            self.can_install_capacity(prepared, priority),
+            "RT capacity must be revalidated before installation"
+        );
+        let priority = usize::from(priority);
+        for index in 0..2 {
+            let array = &mut self.array[index];
+            let queue = &mut array.queue[priority];
+            let required = queue.len() + array.reserved[priority] + 1;
+            if required > queue.capacity() {
+                let mut buffer = prepared.buffers[index].take().unwrap();
+                // Revalidation proves append cannot grow this empty buffer.
+                buffer.append(queue);
+                core::mem::swap(queue, &mut buffer);
+                // The retired allocation is empty and is dropped by the cold
+                // caller only after releasing the rq lock and IRQ guard.
+                prepared.buffers[index] = Some(buffer);
+            }
+            array.reserved[priority] += 1;
+        }
+    }
+
+    pub(super) fn release_reservation(&mut self, priority: u8) {
+        let priority = usize::from(priority);
+        assert!(
+            priority < 100 && self.array.iter().all(|array| array.reserved[priority] > 0),
+            "RT capacity reservation already released"
+        );
+        for array in &mut self.array {
+            array.reserved[priority] -= 1;
+        }
     }
 }
 
@@ -236,3 +356,6 @@ impl SchedClassRq for RealTimeClassRq {
         }
     }
 }
+
+#[cfg(ktest)]
+mod capacity_tests;
