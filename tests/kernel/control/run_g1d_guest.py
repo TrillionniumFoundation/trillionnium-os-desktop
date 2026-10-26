@@ -492,8 +492,12 @@ def boot(args, output, kernel, bios, initramfs, name, binary):
     directory = output / name
     directory.mkdir(mode=0o700)
     (directory / "initramfs.cpio.gz").write_bytes(initramfs)
+    # The unchanged old-root control waits for the real 30-second heartbeat
+    # deadline. Per-syscall INFO logs can exceed the 8 MiB evidence bound during
+    # that wait. Loader/role println! and G1D_ writes are independent of this
+    # filter; retain WARN/ERROR and every original verdict/timeout unchanged.
     argv = [binary, "-kernel", str(output / "product-kernel.elf"), "-initrd", str(directory / "initramfs.cpio.gz"),
-            "-append", "earlycon console=ttyS0 loglevel=info rdinit=/test/g1d-init SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+            "-append", "earlycon console=ttyS0 loglevel=warn rdinit=/test/g1d-init SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
             "-machine", "q35", "-accel", "tcg", "-cpu", "max", "-bios", str(output / "bios.bin"),
             "-m", "512M", "-smp", "1", "-nodefaults", "-no-user-config", "-no-reboot", "-nographic",
             "-display", "none", "-monitor", "none", "-serial", "stdio", "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]

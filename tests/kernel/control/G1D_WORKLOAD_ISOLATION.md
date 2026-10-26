@@ -126,6 +126,18 @@ manager observes the missing heartbeat and powers off at
 other assertion, unexpected success or unrecognized record. An arbitrary
 failure does not qualify the negative kernel.
 
+All positive, old-root and altered-image boots use the same `loglevel=warn`
+kernel argument. The sealed-loader and role-activation records use unconditional
+kernel `println!`; the `G1D_` records use guest writes. These observations,
+WARN/ERROR diagnostics and panic detection remain available. Informational
+per-syscall tracing is excluded because the unchanged old-root probe waits for
+the manager's full 30-second heartbeat deadline, whose 2 ms polling otherwise
+can exceed the original 8 MiB serial admission bound. The bound, wait, two exact
+failure observations and required QEMU exit 33 remain unchanged. Complete raw
+serial is retained; over-limit earlier logs are not trimmed or reclassified as
+passing. A logging-profile change requires fresh positive and old-root runs,
+including both altered-image controls for each kernel.
+
 CI retains both kernels, unchanged probe, source identities, build records and
 all six guest logs. Run the commands in
 [the G1-d workflow](../../../.github/workflows/g1d-trusted-control.yml) only in a
