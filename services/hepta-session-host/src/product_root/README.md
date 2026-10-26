@@ -67,6 +67,16 @@ original ThreadStart API. The product's finite public provider is
 `http://127.0.0.1:18083/v1`, Responses, without OpenAI authentication. Preferences
 must name that exact profile. There is no model or provider fallback.
 
+The newly created Core home also receives the original finite Notes execution
+configuration and an `environments.toml` that disables both the default and
+local execution environments. Shell, general agent, browser, computer, plugin,
+MCP and other Core tool sources are disabled. The three original Notes dynamic
+tools retain their existing Root authority path. The schema-2 seed records the
+exact configuration bytes and execution profile in its model tuple. Original
+Start and Resume must report Never/read-only permissions, and the effective
+Core config is independently observed. Old schema-1 seeds and changed config
+files are refused; no migration creates a replacement thread automatically.
+
 ## Development and module ownership
 
 | Module | Responsibility |

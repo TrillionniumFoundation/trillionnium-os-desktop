@@ -10,6 +10,12 @@ receives a read-only channel. A wrong or unknown selector is an error, never a
 new dispatch or successful outcome. The original thread must Resume and compare
 its real seed/model/provider/catalog metadata on the final original client.
 
+The original schema-2 seed must still verify its exact Core configuration and
+disabled environment files before any recovery stage is created. Schema-1
+seeds do not establish the finite execution profile and are refused, as are
+changed file bytes. Recovery never repairs the configuration or creates a new
+thread to bypass this refusal.
+
 Only same-boot, clean physical Current is supported. Original typed kernel
 retirement observation must prove both the old Agentd and Session gone. A live
 predecessor, unavailable birth/boot, live App lock, changed artifacts, missing

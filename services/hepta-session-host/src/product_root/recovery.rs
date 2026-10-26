@@ -62,6 +62,7 @@ impl Existing {
         let composition: Composition = fs::read_root_json(&admin.join("actual-composition.json"))?;
         let seed: NotesThreadSeedReceipt =
             fs::read_root_json(&admin.join("original-thread-seed.json"))?;
+        seed.verify_persisted()?;
         let proof = fs::read_root_json(&admin.join("original-writer-proof.json"))?;
         let profile: Value = fs::read_root_json(&admin.join("notes-startup.json"))?;
         let layout = codex_hepta_paths::HeptaFleetRoot::parse(

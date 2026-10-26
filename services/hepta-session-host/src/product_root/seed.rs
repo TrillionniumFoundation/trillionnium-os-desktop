@@ -4,7 +4,8 @@ use codex_app_server_client::{
     RemoteAppServerClient, RemoteAppServerConnectArgs, RemoteAppServerEndpoint,
 };
 use codex_hepta_agentd::{
-    NotesThreadSeedOptions, NotesThreadSeedReceipt, seed_original_notes_thread,
+    NotesThreadSeedOptions, NotesThreadSeedReceipt, ORIGINAL_NOTES_THREAD_ENVIRONMENTS_CONFIG,
+    ORIGINAL_NOTES_THREAD_EXECUTION_CONFIG, seed_original_notes_thread,
 };
 use codex_utils_absolute_path::AbsolutePathBuf;
 use serde::Deserialize;
@@ -51,7 +52,14 @@ pub(super) async fn create(inputs: &Inputs, fresh: &Product) -> Result<NotesThre
     }
     // This is public, fixed product configuration in a genuinely new Core
     // home. It neither reads nor copies existing provider credentials.
-    fs::write_new(&home.join("config.toml"), b"model = \"qwen38-flash-next-uc\"\nmodel_provider = \"hepta_local\"\n[model_providers.hepta_local]\nname = \"Hepta local Responses\"\nbase_url = \"http://127.0.0.1:18083/v1\"\nwire_api = \"responses\"\nrequires_openai_auth = false\n")?;
+    let config = format!(
+        "model = \"qwen38-flash-next-uc\"\nmodel_provider = \"hepta_local\"\n{ORIGINAL_NOTES_THREAD_EXECUTION_CONFIG}\n[model_providers.hepta_local]\nname = \"Hepta local Responses\"\nbase_url = \"http://127.0.0.1:18083/v1\"\nwire_api = \"responses\"\nrequires_openai_auth = false\n"
+    );
+    fs::write_new(&home.join("config.toml"), config.as_bytes())?;
+    fs::write_new(
+        &home.join("environments.toml"),
+        ORIGINAL_NOTES_THREAD_ENVIRONMENTS_CONFIG.as_bytes(),
+    )?;
     let path = fresh.prefix.join("seed.sock");
     if std::fs::symlink_metadata(&path).is_ok() {
         return Err("seed socket already exists".into());
