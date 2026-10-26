@@ -3,22 +3,25 @@
 This is the Android compatibility development entry point. See the repository
 root README for the current Desktop/Hepta product status.
 
-## Current kernel work — 2026-10-25
+## Current kernel work — 2026-10-26
 
 The first native x86-64 seccomp stage now has real install and syscall-dispatch
 paths, immutable inherited filters, strict mode and ALLOW/ERRNO/TRAP/KILL actions.
 Its implementation, limitations and ordinary-kernel reproduction commands are
-documented in [SECCOMP.md](SECCOMP.md). The latest native core suite passed 304
-tests, followed by 305 tests with thread-group synchronization. The actual
+documented in [SECCOMP.md](SECCOMP.md). Its initial recorded native core suite passed
+304 tests, followed by 305 tests with thread-group synchronization. The actual
 ordinary four-CPU guest passed filtering, SIGSYS handler/return, TSYNC and
 setuid-exec race checks. These
 runtime receipts remain separate from the source scan.
 
-The separate [bounded Binder byte transport](BINDER_BYTES.md) now provides
-real cross-process request/reply mappings and lifecycle checks. Its guest
+The separate [bounded Binder transport](BINDER_BYTES.md) now provides
+real cross-process request/reply mappings, object handles and strong/weak
+reference ownership, actual open-file transfer with descriptor rollback,
+and bounded death subscriptions with clear acknowledgements. Its guest
 runbook is [tests/kernel/binder/README.md](../../tests/kernel/binder/README.md).
-It deliberately refuses objects, descriptor transfer, death notifications and
-thread pools; those Android compatibility requirements remain open.
+It remains a synchronous single-thread-per-open profile with unique death
+cookies. Thread pools, nested/oneway transactions and FD arrays remain open.
+Individual source-bound component suites do not establish Android compatibility.
 
 These stages do not implement Android SELinux policy. They do not qualify
 Android boot, APKs, phone hardware or CTS.

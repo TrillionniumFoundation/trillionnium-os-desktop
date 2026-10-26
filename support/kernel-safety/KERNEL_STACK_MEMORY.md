@@ -46,6 +46,15 @@ migrates immediately. Kernel/system tasks using `TaskOptions::build` keep their
 existing uncharged path; processless initial tasks also have no inferred owner.
 Delegated worker ownership requires a separate explicit design.
 
+The later [Binder file-transfer stage](../android/BINDER_BYTES.md) adds the
+specific `ThreadOptions::try_build` path: it prepares a stack using this same
+source-account charger before publishing each retained file cleanup task.
+Those frames keep their original charge through final Task/RCU destruction.
+Its 256 admitted-file permits bound logical cleanup ownership, not all physical
+stack tails: a permit can be refunded before the exited Task's final stack
+reference is reclaimed. Other `TaskOptions::build` users remain uncharged;
+this exception does not establish general worker delegation or a global reserve.
+
 ## Release and recovery limits
 
 Each real physical frame carries its original charge independently. Dropping
