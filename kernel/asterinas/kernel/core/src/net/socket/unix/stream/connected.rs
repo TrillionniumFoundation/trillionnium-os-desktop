@@ -20,7 +20,9 @@ use crate::{
     process::signal::Pollee,
     util::{
         MultiRead, MultiWrite,
-        ring_buffer::{ProducerU8Ext, RbConsumer, RbProducer, RingBuffer, RingBufferU8Ext},
+        ring_buffer::{
+            ProducerU8Ext, RbConsumer, RbProducer, RingBuffer, RingBufferU8Ext, new_ipc_ring_buffer,
+        },
     },
 };
 
@@ -32,6 +34,13 @@ pub(super) struct Connected {
 }
 
 impl Connected {
+    pub(super) fn prepare_buffers() -> Result<[RingBuffer<u8>; 2]> {
+        Ok([
+            new_ipc_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE)?,
+            new_ipc_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE)?,
+        ])
+    }
+
     pub(super) fn new_pair(
         addr: Option<UnixSocketAddrBound>,
         peer_addr: Option<UnixSocketAddrBound>,
@@ -39,9 +48,11 @@ impl Connected {
         peer_state: EndpointState,
         cred: SocketCred,
         peer_cred: SocketCred,
+        buffers: [RingBuffer<u8>; 2],
     ) -> (Connected, Connected) {
-        let (this_writer, peer_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
-        let (peer_writer, this_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
+        let [this_buffer, peer_buffer] = buffers;
+        let (this_writer, peer_reader) = this_buffer.split();
+        let (peer_writer, this_reader) = peer_buffer.split();
 
         let this_inner = Inner {
             addr: Once::new(),

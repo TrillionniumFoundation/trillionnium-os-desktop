@@ -39,7 +39,7 @@ fn page_budget_combines_three_real_frame_classes_and_refunds_last_reference() {
     assert_eq!(used(&root), 3 * PAGE_SIZE);
     assert_eq!(
         leaf.state.lock().kinds,
-        [PAGE_SIZE, PAGE_SIZE, PAGE_SIZE, 0, 0]
+        [PAGE_SIZE, PAGE_SIZE, PAGE_SIZE, 0, 0, 0]
     );
     assert!(allocate(&leaf, PageKind::AnonymousVmo).is_err());
     let held = shared.clone();
@@ -47,10 +47,10 @@ fn page_budget_combines_three_real_frame_classes_and_refunds_last_reference() {
     assert_eq!(used(&leaf), 3 * PAGE_SIZE);
     drop(held);
     assert_eq!(used(&leaf), 2 * PAGE_SIZE);
-    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, 0, PAGE_SIZE, 0, 0]);
+    assert_eq!(leaf.state.lock().kinds, [PAGE_SIZE, 0, PAGE_SIZE, 0, 0, 0]);
     drop((private, file));
     assert_eq!(used(&root), 0);
-    assert_eq!(leaf.state.lock().kinds, [0; 5]);
+    assert_eq!(leaf.state.lock().kinds, [0; 6]);
 }
 
 #[ktest]
@@ -61,7 +61,7 @@ fn page_budget_ancestor_denial_rolls_back_the_class_and_total() {
     let held = allocate(&root, PageKind::Private).unwrap();
     assert!(allocate(&leaf, PageKind::FileCache).is_err());
     assert_eq!(used(&leaf), 0);
-    assert_eq!(leaf.state.lock().kinds, [0; 5]);
+    assert_eq!(leaf.state.lock().kinds, [0; 6]);
     assert_eq!(root.state.lock().denied, 1);
     drop(held);
     let next = allocate(&leaf, PageKind::FileCache).unwrap();
@@ -215,7 +215,7 @@ fn page_budget_stack_split_preserves_ancestors_and_final_frame_ownership() {
         .collect::<Vec<_>>();
     for owner in [&root, &leaf] {
         assert_eq!(used(owner), 3 * PAGE_SIZE);
-        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, 3 * PAGE_SIZE]);
+        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, 3 * PAGE_SIZE, 0]);
     }
     // The unused reservation tail is real owned budget, independent of the
     // initialized physical frames. This does not force allocator-global OOM.
@@ -224,11 +224,85 @@ fn page_budget_stack_split_preserves_ancestors_and_final_frame_ownership() {
     drop(frames);
     for owner in [&root, &leaf] {
         assert_eq!(used(owner), PAGE_SIZE);
-        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, PAGE_SIZE]);
+        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, PAGE_SIZE, 0]);
     }
     drop(held);
     for owner in [&root, &leaf] {
         assert_eq!(used(owner), 0);
-        assert_eq!(owner.state.lock().kinds, [0; 5]);
+        assert_eq!(owner.state.lock().kinds, [0; 6]);
     }
+}
+
+#[ktest]
+fn page_budget_ipc_ring_preserves_actual_frame_and_endpoint_ownership() {
+    use ring_buffer::RingBuffer;
+
+    let root = PageMemoryBudget::new(None);
+    let leaf = PageMemoryBudget::new(Some(root.clone()));
+    let bytes = 4 * PAGE_SIZE;
+    let segment = allocate_ipc_segment(leaf.charge(PageKind::Ipc, bytes).unwrap()).unwrap();
+    let ring = RingBuffer::<u8>::from_segment(bytes, segment).unwrap();
+    let held = ring.segment().slice(&(0..PAGE_SIZE));
+    let (mut producer, mut consumer) = ring.split();
+    assert_eq!(producer.push_slice(&[0x5a; 128]), Some(()));
+    let mut output = [0; 128];
+    assert_eq!(consumer.pop_slice(&mut output), Some(()));
+    assert_eq!(output, [0x5a; 128]);
+    drop(producer);
+    for owner in [&root, &leaf] {
+        assert_eq!(used(owner), bytes);
+        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, 0, bytes]);
+    }
+    drop(consumer);
+    for owner in [&root, &leaf] {
+        assert_eq!(used(owner), PAGE_SIZE);
+        assert_eq!(owner.state.lock().kinds, [0, 0, 0, 0, 0, PAGE_SIZE]);
+    }
+    drop(held);
+    assert_eq!(used(&root), 0);
+    assert_eq!(used(&leaf), 0);
+}
+
+#[ktest]
+fn page_budget_ipc_second_buffer_denial_and_invalid_geometry_refund() {
+    use ring_buffer::RingBuffer;
+
+    let root = PageMemoryBudget::new(None);
+    let leaf = PageMemoryBudget::new(Some(root.clone()));
+    let bytes = 16 * PAGE_SIZE;
+    root.set_max(bytes).unwrap();
+    let first = allocate_ipc_segment(leaf.charge(PageKind::Ipc, bytes).unwrap()).unwrap();
+    assert!(leaf.charge(PageKind::Ipc, bytes).is_err());
+    assert_eq!(used(&root), bytes);
+    assert_eq!(used(&leaf), bytes);
+    assert_eq!(root.state.lock().denied, 1);
+    assert_eq!(leaf.state.lock().denied, 0);
+    drop(first);
+    assert_eq!(used(&root), 0);
+    assert_eq!(used(&leaf), 0);
+
+    let segment = allocate_ipc_segment(leaf.charge(PageKind::Ipc, 2 * PAGE_SIZE).unwrap()).unwrap();
+    assert!(RingBuffer::<u8>::from_segment(PAGE_SIZE, segment).is_err());
+    assert_eq!(used(&root), 0);
+    assert_eq!(used(&leaf), 0);
+    assert!(RingBuffer::<u8>::storage_bytes(0).is_err());
+    assert!(RingBuffer::<u8>::storage_bytes(usize::MAX).is_err());
+    assert!(RingBuffer::<u8>::storage_bytes(1usize << (usize::BITS - 1)).is_err());
+}
+
+#[ktest]
+fn page_budget_ipc_unsatisfiable_physical_segment_refunds_whole_reservation() {
+    // The fixed OSDK guest has 512 MiB. This single 1 TiB request cannot be
+    // satisfied; it exercises allocator refusal without exhausting other users.
+    let bytes = 1usize << 40;
+    let root = PageMemoryBudget::new(None);
+    let leaf = PageMemoryBudget::new(Some(root.clone()));
+    let charge = leaf.charge(PageKind::Ipc, bytes).unwrap();
+    assert_eq!(used(&root), bytes);
+    assert_eq!(used(&leaf), bytes);
+    assert!(matches!(allocate_ipc_segment(charge), Err(error) if error.error() == Errno::ENOMEM));
+    assert_eq!(used(&root), 0);
+    assert_eq!(used(&leaf), 0);
+    assert_eq!(root.state.lock().kinds, [0; 6]);
+    assert_eq!(leaf.state.lock().kinds, [0; 6]);
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
-//! Physical private/COW and VMO page accounting, not Linux `memory.max`.
+//! Physical page ownership for covered user, stack and IPC allocation paths,
+//! not Linux `memory.max`.
 //! Kernel heap allocations, DMA and allocations without a process are
 //! excluded. A frame keeps its first allocating process's original account.
 
@@ -8,7 +9,11 @@ use aster_systree::{
     Error as AttrError, MAX_ATTR_SIZE, Result as AttrResult, SysAttrSetBuilder, SysPerms, SysStr,
 };
 use aster_util::printer::VmPrinter;
-use ostd::sync::LocalIrqDisabled;
+use ostd::{
+    impl_untyped_frame_meta_for,
+    mm::{FrameAllocOptions, USegment},
+    sync::LocalIrqDisabled,
+};
 
 use super::super::{CgroupSysNode, CgroupSystem};
 use crate::{prelude::*, process::Process};
@@ -21,6 +26,7 @@ pub(crate) enum PageKind {
     FileCache = 2,
     PageTable = 3,
     KernelStack = 4,
+    Ipc = 5,
 }
 
 #[derive(Debug)]
@@ -32,7 +38,7 @@ pub(crate) struct PageMemoryBudget {
 #[derive(Debug)]
 struct State {
     current: usize,
-    kinds: [usize; 5],
+    kinds: [usize; 6],
     max: usize,
     denied: u64,
 }
@@ -43,7 +49,7 @@ impl PageMemoryBudget {
             parent,
             state: SpinLock::new(State {
                 current: 0,
-                kinds: [0; 5],
+                kinds: [0; 6],
                 max: usize::MAX,
                 denied: 0,
             }),
@@ -133,8 +139,8 @@ impl PageMemoryBudget {
             "hepta.page.events" => writeln!(printer, "max {denied}")?,
             "hepta.page.stat" => writeln!(
                 printer,
-                "private {}\nanonymous_vmo {}\nfile_cache {}\npage_table {}\nkernel_stack {}",
-                kinds[0], kinds[1], kinds[2], kinds[3], kinds[4]
+                "private {}\nanonymous_vmo {}\nfile_cache {}\npage_table {}\nkernel_stack {}\nipc {}",
+                kinds[0], kinds[1], kinds[2], kinds[3], kinds[4], kinds[5]
             )?,
             _ => return Err(AttrError::AttributeError),
         }
@@ -172,6 +178,8 @@ pub(crate) struct PageCharge {
     kind: PageKind,
     bytes: usize,
 }
+
+impl_untyped_frame_meta_for!(PageCharge);
 
 impl PageCharge {
     pub(super) fn unaccounted(kind: PageKind, bytes: usize) -> Self {
@@ -220,6 +228,25 @@ pub(crate) fn charge_current_pages(kind: PageKind, bytes: usize) -> Result<PageC
         }
     };
     owner.charge(kind, bytes)
+}
+
+/// Allocates real IPC buffer frames after reserving the creating process's
+/// original account. Each frame retains its own charge through all peer/FD
+/// references; closing one endpoint cannot refund still-live backing memory.
+pub(crate) fn alloc_ipc_segment(bytes: usize) -> Result<USegment> {
+    if bytes == 0 || !bytes.is_multiple_of(PAGE_SIZE) || bytes > isize::MAX as usize {
+        return_errno!(Errno::EINVAL);
+    }
+    let charge = charge_current_pages(PageKind::Ipc, bytes)?;
+    allocate_ipc_segment(charge)
+}
+
+fn allocate_ipc_segment(mut charge: PageCharge) -> Result<USegment> {
+    let bytes = charge.bytes;
+    Ok(FrameAllocOptions::new()
+        .zeroed(false)
+        .alloc_segment_with(bytes / PAGE_SIZE, |_| charge.split_page())?
+        .into())
 }
 
 /// Runs under the page-table cursor's atomic guard. Membership reads use RCU;

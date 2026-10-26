@@ -1,6 +1,6 @@
 # Physical page budget, staged isolation
 
-This is a development-stage extension of the reviewed private-anonymous/COW budget, now including the third-stage user page-table paths in [PAGE_TABLE_MEMORY.md](PAGE_TABLE_MEMORY.md) and fourth-stage POSIX task stacks in [KERNEL_STACK_MEMORY.md](KERNEL_STACK_MEMORY.md). It does **not** implement Linux `memory.max`, total RSS, all physical memory isolation, an OOM killer or a global recovery reserve. Standard `memory.max` remains unsupported. A later integrated build must rerun the actual guest tests; this document is not a passing result.
+This is a development-stage extension of the reviewed private-anonymous/COW budget, now including the third-stage user page-table paths in [PAGE_TABLE_MEMORY.md](PAGE_TABLE_MEMORY.md), fourth-stage POSIX task stacks in [KERNEL_STACK_MEMORY.md](KERNEL_STACK_MEMORY.md) and fifth-stage stream/pipe buffers in [IPC_BUFFER_MEMORY.md](IPC_BUFFER_MEMORY.md). It does **not** implement Linux `memory.max`, total RSS, all physical memory isolation, an OOM killer or a global recovery reserve. Standard `memory.max` remains unsupported. A later integrated build must rerun the actual guest tests; this document is not a passing result.
 
 ## Interfaces and owners
 
@@ -15,6 +15,7 @@ The new combined ceiling accounts these paths:
 | `file_cache` | New backend VMO cache pages for filesystem/block cache I/O | First allocating process's cgroup; mappings, cache entries and in-flight I/O all retain the charge |
 | `page_table` | New user page-table root and intermediate frames | Allocating process's cgroup captured for each node; original account retained through final node release |
 | `kernel_stack` | New POSIX task kernel-stack physical frames | Creating process's cgroup captured once per stack; each frame retains its token through final reference release |
+| `ipc` | AF_UNIX stream/seqpacket connection rings and anonymous/named pipe rings | Creating process's cgroup captured per ring; each physical frame retains its original account through both endpoints and inherited/transferred references |
 
 `current` is the sum of these categories in the account and its descendants. This is physical allocation ownership, not the sum of mappings or a process's resident set. A VMO page first populated outside a constrained subtree does not become that subtree's charge when reused. Migration affects future allocations; existing pages retain their original accounts. A delegated worker charges its own process, not an implicit caller. Allocations with no current process remain excluded.
 
@@ -41,6 +42,7 @@ A complete controller still needs explicit ownership for kernel allocations and 
 | User page tables | OSTD fallible node allocator and per-node token, kernel fault/fork/exec/remap paths | Implemented incrementally in [PAGE_TABLE_MEMORY.md](PAGE_TABLE_MEMORY.md); still excludes shared kernel mappings and non-process allocations |
 | Kernel object/slab memory | `osdk/deps/heap-allocator/src/allocator.rs`, per-CPU caches and global slab pools | Define shared slab versus object ownership, fallible allocation for workload-induced objects, worker delegation and recursion-free accounting; a global byte counter is insufficient |
 | Kernel stacks | OSTD task/stack allocation | POSIX task frames now covered in [KERNEL_STACK_MEMORY.md](KERNEL_STACK_MEMORY.md); system/delegated ownership and protected scheduler/fault-handler capacity remain unfinished |
+| IPC buffers and metadata | Shared ring-buffer crate, AF_UNIX and pipe owners | Stream/seqpacket and pipe physical rings now covered in [IPC_BUFFER_MEMORY.md](IPC_BUFFER_MEMORY.md); datagram payloads, TTY/event rings, ancillary/queue/slab metadata remain unfinished |
 | DMA buffers | OSTD `mm/dma/{dma_coherent,dma_stream,util}.rs` | Explicit driver/request owner plus buffer charge lifetime through hardware completion; independent of IOMMU address authorization |
 | Filesystem metadata outside VMO | For example `Ext2::open` directly allocates the group-descriptor segment | Account these direct frames and in-memory inode/extent structures; the new `file_cache` class does not cover every byte induced by file activity |
 | Processless work | Boot, IRQs and kernel workers | Explicit system/delegated accounts; no inference from an absent current process |

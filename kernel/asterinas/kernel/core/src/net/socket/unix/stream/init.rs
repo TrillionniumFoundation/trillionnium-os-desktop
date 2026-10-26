@@ -54,7 +54,13 @@ impl Init {
         peer_addr: UnixSocketAddrBound,
         pollee: Pollee,
         peer_cred: SocketCred,
-    ) -> (Connected, Connected) {
+    ) -> Result<(Connected, Connected), (Error, Self)> {
+        // Finish both physical-buffer admissions before consuming the bound
+        // Init state. A failed connect must remain retryable on this socket.
+        let buffers = match Connected::prepare_buffers() {
+            Ok(buffers) => buffers,
+            Err(error) => return Err((error, self)),
+        };
         let Init {
             addr,
             is_read_shutdown,
@@ -71,9 +77,10 @@ impl Init {
             EndpointState::new(Pollee::new(), is_write_shutdown.into_inner()),
             cred,
             peer_cred,
+            buffers,
         );
 
-        (this_conn, peer_conn)
+        Ok((this_conn, peer_conn))
     }
 
     pub(super) fn listen(

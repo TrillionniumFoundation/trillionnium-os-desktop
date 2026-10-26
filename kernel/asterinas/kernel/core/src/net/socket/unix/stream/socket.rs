@@ -186,11 +186,15 @@ impl UnixStreamSocket {
         })
     }
 
-    pub(crate) fn new_pair(is_nonblocking: bool, socket_type: SockType) -> (Arc<Self>, Arc<Self>) {
+    pub(crate) fn new_pair(
+        is_nonblocking: bool,
+        socket_type: SockType,
+    ) -> Result<(Arc<Self>, Arc<Self>)> {
         debug_assert!(
             socket_type == SockType::SOCK_STREAM || socket_type == SockType::SOCK_SEQPACKET
         );
 
+        let buffers = Connected::prepare_buffers()?;
         let cred = SocketCred::<ReadDupOp>::new_current();
 
         let (conn_a, conn_b) = Connected::new_pair(
@@ -200,11 +204,12 @@ impl UnixStreamSocket {
             EndpointState::default(),
             cred.dup().restrict(),
             cred.restrict(),
+            buffers,
         );
-        (
+        Ok((
             Self::new_connected(conn_a, OptionSet::new(), is_nonblocking, socket_type),
             Self::new_connected(conn_b, OptionSet::new(), is_nonblocking, socket_type),
-        )
+        ))
     }
 
     pub(super) fn new_connected(
