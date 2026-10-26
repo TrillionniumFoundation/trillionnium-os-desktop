@@ -81,6 +81,9 @@ static void authorization(int target_cpu) {
     close(report[0]);
     check("handoff_affinity_denied_target_stays_original_cpu", got && observed == initial);
     check("handoff_affinity_authorization_children_reaped", join(target) && attacker_ok && owner_ok);
+    errno = 0;
+    int gone = sched_setaffinity(target, sizeof(original), &original);
+    check("affinity_reaped_target_esrch", gone == -1 && errno == ESRCH);
 }
 int main(void) {
     setvbuf(stdout, NULL, _IOLBF, 0); alarm(40);

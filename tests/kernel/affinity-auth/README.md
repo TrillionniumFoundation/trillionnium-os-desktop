@@ -9,6 +9,10 @@ the denied request. Every child is reaped. Target CPU is read through the real
 The setter checks the caller's effective UID against the target's real/effective
 UID, otherwise invokes the existing LSM `SYS_NICE` check in the target process's
 user namespace before storing the mask. No PID-table lock spans that check.
+The target process is strongly retained through authorization and the store;
+an expired process returns `ESRCH` without unwrapping a dead weak reference.
+The actual guest also requires `ESRCH` after reaping the target. That case does
+not claim a deliberately synchronized hit of the intermediate lookup/reap race.
 This is an authorization prerequisite, not a claim of forced live migration or
 hierarchical `cpu.weight` support.
 

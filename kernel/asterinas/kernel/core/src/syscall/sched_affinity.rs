@@ -61,10 +61,10 @@ pub(super) fn sys_sched_setaffinity(
                 "the target thread does not exist",
             ))?;
         let target = thread.as_posix_thread().ok_or(Errno::EPERM)?;
+        let target_process = target.weak_process().upgrade().ok_or(Errno::ESRCH)?;
         let target_cred = target.credentials();
         let caller_euid = ctx.posix_thread.credentials().euid();
         if caller_euid != target_cred.ruid() && caller_euid != target_cred.euid() {
-            let target_process = target.process();
             lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
                 target_process.user_ns().lock().as_ref(),
                 ctx.posix_thread,
