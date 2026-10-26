@@ -5,6 +5,11 @@ with the Rust Makepad Desktop. The original Session owns Notes and its two
 private application channels. Packaging metadata does not grant an operation.
 The original administrator and human checks still run after installation.
 
+The external [recovery qualification tools](RECOVERY_QUALIFICATION.md) observe
+the original App and can lose one selected reply body without modifying its
+installed ELF. Their process fixtures do not replace genuine Root, human,
+model, original-thread or durable owner-receipt acceptance.
+
 ## Source and package contract
 
 Freeze one clean Desktop commit/tree and one clean Hepta commit/tree after
