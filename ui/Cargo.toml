@@ -11,27 +11,28 @@ rust-version = "1.96"
 trill-ui-core = { path = "core" }
 trill-ui-broker = { path = "broker" }
 serde = { version = "=1.0.229", features = ["derive"] }
-serde_json = "=1.0.151"
+serde_json = "=1.0.154"
 sha2 = "=0.10.9"
-libc = "=0.2.190"
+libc = "=0.2.191"
 eframe = { version = "=0.31.1", default-features = false, features = ["glow", "default_fonts", "wayland", "x11", "accesskit"] }
 ab_glyph = "=0.2.32"
 
 [patch.crates-io]
+aws-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
 # Original UI and its four accessibility crates must resolve from one Hepta source.
-accesskit = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-accesskit_consumer = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-accesskit_atspi_common = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-accesskit_unix = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
+accesskit = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+accesskit_consumer = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+accesskit_atspi_common = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+accesskit_unix = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
 # Cargo applies patches only from the root workspace. Keep the original
 # Hepta graph and its security fixes when Agentd is a native UI dependency.
-i18n-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-secret-service = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-zbus-secret-service-keyring-store = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-anymap2 = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-imbl = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-matrix-sdk-sqlite = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
-matrix-sdk-crypto = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "489f7096b0e5754968a30fa4477bb4417d24834f" }
+i18n-config = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+secret-service = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+zbus-secret-service-keyring-store = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+anymap2 = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+imbl = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+matrix-sdk-sqlite = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
+matrix-sdk-crypto = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "a059c6aa618d1e049d98607be746350eac88755f" }
 crossterm = { git = "https://github.com/openai-oss-forks/crossterm", rev = "45fecb9508105988f42fe6ff0441783ed3717f92" }
 tokio-tungstenite = { git = "https://github.com/openai-oss-forks/tokio-tungstenite", rev = "0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186" }
 tungstenite = { git = "https://github.com/openai-oss-forks/tungstenite-rs", rev = "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f" }
