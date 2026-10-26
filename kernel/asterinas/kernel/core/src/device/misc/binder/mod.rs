@@ -174,38 +174,41 @@ impl Domain {
         WAKE.get().unwrap().wake_all();
     }
     fn reap(&mut self) {
-        let dead: Vec<_> = self
-            .endpoints
-            .iter()
-            .filter_map(|(&id, e)| {
-                e.owner
-                    .upgrade()
-                    .filter(|p| !p.status().is_zombie())
-                    .is_none()
-                    .then_some(id)
-            })
-            .collect();
-        for id in dead {
+        // Bounded scratch uses the existing kernel stack, including when reap
+        // discovers an exited thread whose allocation is retained elsewhere.
+        let mut dead = [0; MAX_ENDPOINTS];
+        let mut count = 0;
+        for (&id, endpoint) in &self.endpoints {
+            if endpoint
+                .owner
+                .upgrade()
+                .filter(|p| !p.status().is_zombie())
+                .is_none()
+            {
+                dead[count] = id;
+                count += 1;
+            }
+        }
+        for id in dead[..count].iter().copied() {
             self.close(id);
         }
-        let threads: Vec<_> = self
-            .endpoints
-            .iter()
-            .flat_map(|(&id, endpoint)| {
-                endpoint.threads.iter().filter_map(move |(&token, thread)| {
-                    thread
-                        .owner
-                        .upgrade()
-                        .filter(|t| !t.is_exited())
-                        .is_none()
-                        .then_some(Route {
-                            endpoint: id,
-                            thread: token,
-                        })
-                })
-            })
-            .collect();
-        for route in threads {
+        let mut threads = [Route {
+            endpoint: 0,
+            thread: 0,
+        }; MAX_ENDPOINTS * MAX_THREADS];
+        let mut count = 0;
+        for (&id, endpoint) in &self.endpoints {
+            for (&token, thread) in &endpoint.threads {
+                if thread.owner.upgrade().filter(|t| !t.is_exited()).is_none() {
+                    threads[count] = Route {
+                        endpoint: id,
+                        thread: token,
+                    };
+                    count += 1;
+                }
+            }
+        }
+        for route in threads[..count].iter().copied() {
             self.retire_thread(route);
         }
         for endpoint in self.endpoints.values_mut() {
@@ -338,23 +341,21 @@ impl Domain {
                 preserved == Some(q.key())
                     || !matches!(&q.event, Event::Request { sender, .. } if sender.endpoint == id)
             });
-            let dead: Vec<_> = endpoint
-                .threads
-                .iter_mut()
-                .filter_map(|(&token, thread)| {
-                    if thread
-                        .incoming
-                        .is_some_and(|incoming| incoming.sender.endpoint == id)
-                    {
-                        thread.incoming = None;
-                    }
-                    thread
-                        .outgoing
-                        .filter(|o| o.destination == id)
-                        .map(|o| (token, o.call))
-                })
-                .collect();
-            for (thread, call) in dead {
+            let mut dead = [(0, 0); MAX_THREADS];
+            let mut count = 0;
+            for (&token, thread) in &mut endpoint.threads {
+                if thread
+                    .incoming
+                    .is_some_and(|incoming| incoming.sender.endpoint == id)
+                {
+                    thread.incoming = None;
+                }
+                if let Some(outgoing) = thread.outgoing.filter(|o| o.destination == id) {
+                    dead[count] = (token, outgoing.call);
+                    count += 1;
+                }
+            }
+            for (thread, call) in dead[..count].iter().copied() {
                 if !endpoint.terminal_queued(thread, call) {
                     endpoint.queue.push_back(Queued {
                         call,
@@ -469,31 +470,36 @@ fn close(id: u64) {
 /// locks are released, before clear_child_tid can wake a joining sibling.
 /// Retained Arcs cannot keep an exited participant or its caller suspended.
 pub(crate) fn thread_exited(owner: &Arc<Thread>) {
+    if !owner.is_exited() {
+        return;
+    }
     let _drain = Drain;
     let Some(domain) = DOMAIN.get() else {
         return;
     };
     let mut d = domain.lock();
-    let routes: Vec<_> = d
-        .endpoints
-        .iter()
-        .flat_map(|(&id, endpoint)| {
-            endpoint
-                .threads
-                .iter()
-                .filter_map(move |(&token, participant)| {
-                    participant
-                        .owner
-                        .upgrade()
-                        .is_some_and(|thread| Arc::ptr_eq(&thread, owner))
-                        .then_some(Route {
-                            endpoint: id,
-                            thread: token,
-                        })
-                })
-        })
-        .collect();
-    for route in routes {
+    // One actual Thread has at most one participant per endpoint. Do not add
+    // an infallible heap allocation to real thread exit.
+    let mut routes = [Route {
+        endpoint: 0,
+        thread: 0,
+    }; MAX_ENDPOINTS];
+    let mut count = 0;
+    for (&id, endpoint) in &d.endpoints {
+        if let Some((&token, _)) = endpoint.threads.iter().find(|(_, participant)| {
+            participant
+                .owner
+                .upgrade()
+                .is_some_and(|thread| Arc::ptr_eq(&thread, owner))
+        }) {
+            routes[count] = Route {
+                endpoint: id,
+                thread: token,
+            };
+            count += 1;
+        }
+    }
+    for route in routes[..count].iter().copied() {
         d.retire_thread(route);
     }
 }
@@ -1384,7 +1390,7 @@ impl Endpoint {
     fn prune_handles(&mut self) {
         if let Some(area) = &self.mapping {
             let removed = self.handles.prune(&area.used);
-            self.deaths.cancel_handles(&removed);
+            self.deaths.cancel_handles(removed.as_slice());
         }
     }
     fn reserve(&mut self, id: u64, payload: &Payload, fds: Option<&PendingFds>) -> Result<usize> {

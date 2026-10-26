@@ -1,6 +1,8 @@
 # Binder D1: actual-thread synchronous transaction ownership
 
-Status: D1 implementation in progress; full acceptance remains pending. The
+Status: bounded D1 manual-thread implementation; acceptance requires the
+same-source guest/Core receipt for the frozen revision. Automatic thread pools
+and Android remain unsupported. The
 starting test-only revision `5be72c51b3ab398f29d018bcd436aed7774d0bd8` kept
 the kernel identical to Desktop `a0a9da78d81801f4198e72073771e9318ffcfa0d`.
 Its actual SMP4 guest failed on two real sibling workers (PID19, TID21/TID22)
@@ -55,6 +57,16 @@ Six thread-exit/EFAULT/real object/FD lifetime rows and participant quota/refund
 passed before that contention failure. The passing basic run at `dd799201` did
 not certify that race fixed. Both receipts remain separate from later results.
 
+Real exit notification, endpoint closure and thread reap use fixed scratch
+storage, not newly allocated collection vectors. Reap can collect at most
+512 route pairs (8 KiB) and 64 endpoint IDs (512 bytes). An actual thread's exit
+uses at most 64 route pairs (1 KiB); endpoint closure uses eight terminal pairs
+(128 bytes). Handle pruning returns at most 128 descriptors in a fixed result
+instead of a Vec, including unpublished-buffer rollback on actual exit. This
+keeps the new lifecycle scratch bounded on the existing 128-page kernel stack;
+it is not a claim that the entire kernel has complete stack/memory isolation.
+Descriptor-capacity and nonreuse are checked at the full 128-handle boundary.
+
 Object nodes, handles, delivered buffers, reference notifications and death
 subscriptions remain endpoint/process resources. A worker exit must release
 its unpublished transaction buffers and hidden FD reservations without killing
@@ -73,6 +85,35 @@ first run against the unchanged kernel to retain the real EPERM failure, then
 rerun after D1 implementation. Exit, EFAULT, FD/ref/death lifetime and capacity
 tests must be added before declaring the stage accepted, followed by the
 existing five Binder probes and complete Core guest suite.
+
+`thread_lifetime_probe.c` covers explicit and actual pthread exit with delivered
+buffers, EFAULT cancellation, original-thread FD retry, sibling EBUSY, hidden FD
+slot refund, the original file's shared offsets, continued calls through the
+original node from another worker, and owner death notification. It admits
+eight actual participants, rejects the ninth with zero consumed command bytes,
+then proves admission after actual exit. Eight simultaneous outgoing calls
+retain their sixteen completion/dead events and subsequently reuse the endpoint.
+`thread_work_probe.c` fails node and death descriptor copyout in one actual
+thread, exits it, then requires another thread to receive the exact original
+pointer/cookie or cookie handshake. A duplicate owner acknowledgement is denied.
+The shared fixture header is included in the source snapshots along with each
+compiled C entry point. Counts from these focused fixtures are not the product's
+complete test count.
+
+Run the ordinary source/artifact gate first, then use its retained receipt:
+
+```sh
+python3 -I -B tests/kernel/binder/thread_run.py --smp 4 \
+  --output /path/to/new-thread-evidence --product-evidence /path/to/ordinary-evidence
+python3 -I -B tests/kernel/binder/object_run.py --smp 4 \
+  --output /path/to/new-existing-binder-evidence --product-evidence /path/to/ordinary-evidence
+python3 -I -B support/build/ktest/run.py --crate aster-core --skip-osdk-install \
+  --output /path/to/new-core-evidence
+```
+
+The build must use this checkout's OSDK and pinned nightly. The runners refuse
+source/artifact drift; every output directory must be fresh. Retain failures and
+actual ELF/serial/lock digests. A later source revision needs its own receipt.
 
 This is a kernel IPC compatibility component. Android servicemanager, automatic
 thread pools, MAC policy, device support and Android boot remain unqualified.

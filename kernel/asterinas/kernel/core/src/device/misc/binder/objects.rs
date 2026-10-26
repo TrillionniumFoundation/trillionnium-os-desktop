@@ -15,6 +15,18 @@ const MAX_HANDLES: usize = 128;
 const MAX_USER_REFS: usize = 32;
 const MAX_NODE_REFS: usize = 4096;
 
+/// Handle removal also runs during unpublished-buffer rollback on real exit.
+/// Its result is bounded by the descriptor admission limit, without allocating.
+pub(super) struct PrunedHandles {
+    descriptors: [u32; MAX_HANDLES],
+    len: usize,
+}
+impl PrunedHandles {
+    pub(super) fn as_slice(&self) -> &[u32] {
+        &self.descriptors[..self.len]
+    }
+}
+
 pub(super) struct Node {
     pub(super) id: u64,
     pub(super) owner: u64,
@@ -257,8 +269,11 @@ impl Handles {
         }
         Ok(())
     }
-    pub(super) fn prune(&mut self, buffers: &[Option<Vec<Arc<Reference>>>]) -> Vec<u32> {
-        let mut removed = Vec::new();
+    pub(super) fn prune(&mut self, buffers: &[Option<Vec<Arc<Reference>>>]) -> PrunedHandles {
+        let mut removed = PrunedHandles {
+            descriptors: [0; MAX_HANDLES],
+            len: 0,
+        };
         self.entries.retain(|&descriptor, h| {
             let keep = !h.strong.is_empty()
                 || !h.weak.is_empty()
@@ -268,7 +283,8 @@ impl Handles {
                     .flatten()
                     .any(|r| r.node.id == h.node.id);
             if !keep {
-                removed.push(descriptor);
+                removed.descriptors[removed.len] = descriptor;
+                removed.len += 1;
             }
             keep
         });
@@ -317,5 +333,22 @@ mod tests {
         handles.prune(&buffers);
         assert!(handles.resolve(first as u64, false, &buffers).is_err());
         assert!(handles.descriptor(&node).unwrap() > first);
+    }
+    #[ktest]
+    fn full_descriptor_prune_reports_every_removed_handle_without_reuse() {
+        let mut handles = Handles::default();
+        let mut descriptors = Vec::new();
+        for id in 1..=MAX_HANDLES as u64 {
+            let node = Arc::new(Node::new(id, 9, id, id, 0));
+            descriptors.push(handles.descriptor(&node).unwrap());
+        }
+        let next = Arc::new(Node::new(129, 9, 129, 129, 0));
+        assert!(handles.descriptor(&next).is_err());
+        let removed = handles.prune(&[]);
+        assert_eq!(removed.as_slice(), descriptors.as_slice());
+        for descriptor in &descriptors {
+            assert!(handles.resolve(*descriptor as u64, false, &[]).is_err());
+        }
+        assert!(handles.descriptor(&next).unwrap() > *descriptors.last().unwrap());
     }
 }
