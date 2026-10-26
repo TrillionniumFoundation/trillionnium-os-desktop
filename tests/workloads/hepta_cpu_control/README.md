@@ -16,6 +16,15 @@ the unchanged trusted image bounds and mapping checks. A too-large or dynamic
 result remains a failed profile check with its real build, ELF and log retained.
 No size limit, supplier, feature or profile is weakened to make the result pass.
 
+The original target and retained unstripped ELF are not used as strip output.
+Only a fresh copy in the private packaging directory is temporarily owner-only
+read/write/execute (`0700`) while the original symbol/strip script runs. That
+copy returns to read/execute (`0555`) on success or failure. Starting strip on a
+`0555` copy fails under ordinary filesystem permissions; making the retained
+unstripped evidence writable is not the remedy. Existing or symlinked output
+paths are refused. These staging permissions do not change the release profile,
+features, original packaging arguments, image limits or G2 admission.
+
 Both repositories must be clean at explicitly supplied full commit and tree
 identities. Before/after snapshots verify every tracked byte against its actual
 Git blob, including files hidden from `git status` by `assume-unchanged`.
@@ -52,6 +61,45 @@ Even on success the result keeps `executed_binary`, `native_role_verified`,
 `persistent_cpu_verified`, `recovery_verified` and `g2_complete` false. The
 build is the input to the runtime gate and does not replace it.
 
+### Explicit OpenSSL static private archive
+
+Some system OpenSSL metadata names `-l:libjitterentropy.a` directly in
+`libcrypto.pc`'s `Libs.private`. The locked Rust `pkg-config` dependency emits
+that form as a build-script `rustc-link-arg`; when emitted for a library it may
+be absent from the final executable link. This builder can supply that one
+original dependency explicitly after verifying its source:
+
+```sh
+  --static-private-archive /usr/lib/x86_64-linux-gnu/libjitterentropy.a \
+  --expected-static-private-archive-sha256 "$INDEPENDENT_ARCHIVE_SHA256"
+```
+
+Add both options to the invocation above only when the installed OpenSSL
+metadata actually requires this archive. The builder requires the direct token
+and actual static `pkg-config` output to agree, refuses other `-l:` inputs,
+checks all three OpenSSL modules' original library and `.pc` directories, and
+requires a canonical, ordinary archive with the independently supplied SHA256.
+It records `libssl.a`, `libcrypto.a`, the archive, metadata, query output and
+native tool bytes before and after the build. The linker record identifies the
+selected Rust toolchain's `gcc-ld/ld.lld` and `rust-lld`, not the host's unrelated
+default `ld.bfd`. This records installed tool identities; it does not trace the
+final linker subprocess. `linker_execution_observed` remains false. A prior
+run's actual linker log cannot be treated as an execution trace for this run.
+
+The archive is copied byte-for-byte into the new evidence directory. The final
+tracked target alone uses `cargo rustc` with one `-C link-arg` pointing to that
+copy; the dependency RUSTFLAGS, Cargo lock, default features, release profile
+and cache remain unchanged. A new output path forces a final-target relink
+without assuming that Cargo fingerprints arbitrary archive contents. The
+`static-private-before.json`, `static-private-after.json` and
+`result.json.static_private_archive` records bind the original inputs and the
+retained final-link copy; any changed input fails the postcheck.
+
+This optional path still runs the original packaging and unchanged 8 MiB
+file/16 MiB LOAD-map checks. Their outcome is measured, not assumed. The current
+G2 consumer deliberately rejects the additional `cargo rustc` command shape;
+this measurement path does not extend G2 admission or prove native authority.
+
 ## Native authority handoff that the runtime must prove
 
 `/dev/hepta-control` binds its open file to the exact original `Process` and
@@ -84,5 +132,8 @@ python3 -B -m unittest discover -s tests/workloads/hepta_cpu_control -p 'test_*.
 ```
 
 These checks exercise actual temporary Git repositories, metadata selection,
-exclusive file locking and failed subprocess evidence. They do not build the
-Hepta entry or execute a native guest.
+exclusive file locking and failed subprocess evidence. Static-private guard
+tests use real C object/archive files and actual input mutations, with explicitly
+synthetic `pkg-config` and LLD query replies. They do not build OpenSSL or the
+Hepta entry, validate the host's actual pkg-config resolution, or execute a
+native guest.

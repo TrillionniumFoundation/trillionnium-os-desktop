@@ -16,6 +16,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import shutil
 import signal
 import stat
@@ -29,6 +30,7 @@ TARGET = "x86_64-unknown-linux-gnu"
 PACKAGE = "codex-hepta-agentd"
 STATIC_FLAGS = "-C target-feature=+crt-static -C relocation-model=static -C link-arg=-no-pie"
 BASE_ENV = {"PATH": "/usr/bin:/bin:/usr/sbin:/sbin", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"}
+PRIVATE_ARCHIVE = "libjitterentropy.a"
 
 
 def require(condition, message):
@@ -176,6 +178,170 @@ def freeze(source, destination):
     return {"path": destination.name, "bytes": destination.stat().st_size, "sha256": before}
 
 
+@contextmanager
+def packaging_copy(source, destination):
+    """Allow the original strip script to edit only its fresh private copy."""
+    require(not destination.exists() and not destination.is_symlink(), "packaging copy must be new")
+    freeze(source, destination)
+    destination.chmod(0o700)
+    try:
+        yield destination
+    finally:
+        require(destination.is_file() and not destination.is_symlink()
+                and destination.stat().st_nlink == 1, "packaging product must remain an unaliased regular file")
+        destination.chmod(0o555)
+
+
+def native_file(path, *, executable=False, archive=False, canonical=False):
+    """Record the selected native input and its resolved bytes, including aliases."""
+    path = Path(path)
+    require(path.is_absolute(), "absolute native input required")
+    resolved = path.resolve(strict=True)
+    require(not canonical or (resolved == path and not path.is_symlink()), "canonical unlinked native input required")
+    descriptor = os.open(resolved, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
+    with os.fdopen(descriptor, "rb") as stream:
+        before = os.fstat(stream.fileno())
+        require(stat.S_ISREG(before.st_mode) and 0 < before.st_size <= 512 * 1024**2,
+                "bounded regular native input required")
+        require(not executable or before.st_mode & stat.S_IXUSR, "native tool is not executable")
+        header = stream.read(8)
+        require(not archive or header == b"!<arch>\n", "self-contained regular ar archive required; thin archives refused")
+        stream.seek(0)
+        value = hashlib.file_digest(stream, "sha256").hexdigest()
+        after = os.fstat(stream.fileno())
+        keys = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_mode")
+        require(all(getattr(before, key) == getattr(after, key) for key in keys), "native input changed while reading")
+    require(path.resolve(strict=True) == resolved, "native input alias changed while reading")
+    return {"path": str(path), "resolved_path": str(resolved), "bytes": before.st_size,
+            "sha256": value, "device": before.st_dev, "inode": before.st_ino,
+            "mtime_ns": before.st_mtime_ns, "mode": stat.S_IMODE(before.st_mode)}
+
+
+def pkg_tokens(value):
+    require(isinstance(value, str) and len(value) <= 128 * 1024 and "\0" not in value,
+            "bounded pkg-config output required")
+    return shlex.split(value)
+
+
+def require_private_token(libs, private_fields, token):
+    for module in ("openssl", "libcrypto"):
+        tokens = pkg_tokens(libs[module])
+        require(token in tokens and {item for item in tokens if item.startswith("-l:")} == {token},
+                "actual static pkg-config output must require only the selected colon-named archive: " + module)
+    # This correction is explicitly for a direct libcrypto Libs.private input,
+    # not a user-supplied linker option or an unrelated .pc dependency.
+    require(pkg_tokens(private_fields).count(token) == 1,
+            "libcrypto.pc must directly name the selected archive once in Libs.private")
+
+
+def static_private_snapshot(args, environment):
+    """Close the one observed pkg-config `-l:libjitterentropy.a` propagation gap."""
+    supplied = (getattr(args, "static_private_archive", None),
+                getattr(args, "expected_static_private_archive_sha256", None))
+    require(not any(supplied) or all(supplied), "static private archive and its explicit SHA256 must be supplied together")
+    if not any(supplied):
+        return None
+    archive, expected = supplied
+    require(archive.name == PRIVATE_ARCHIVE and re.fullmatch(r"[0-9a-f]{64}", expected),
+            "only the explicit libjitterentropy.a private dependency and a full SHA256 are supported")
+    selected = native_file(archive, archive=True, canonical=True)
+    require(selected["sha256"] == expected, "static private archive differs from its explicit SHA256")
+    paths = {}
+    for name in ("pkg-config", "cc", "ar"):
+        selected_tool = shutil.which(name, path=environment["PATH"])
+        require(selected_tool is not None, "required native tool is missing: " + name)
+        paths[name] = Path(selected_tool).absolute()
+    linker_root = args.toolchain_bin.parent / "lib/rustlib" / TARGET / "bin"
+    paths.update({"ld.lld": linker_root / "gcc-ld/ld.lld", "rust-lld": linker_root / "rust-lld"})
+    tools = {name: native_file(path, executable=True) for name, path in paths.items()}
+    require(all(Path(tools[name]["resolved_path"]).is_relative_to(args.toolchain_bin.parent)
+                for name in ("ld.lld", "rust-lld")), "Rust LLD must remain inside the selected toolchain")
+    queries = []
+
+    def query(name, *arguments):
+        command = [str(paths[name]), *arguments]
+        result = subprocess.run(command, env=environment, stdin=subprocess.DEVNULL, capture_output=True,
+                                text=True, timeout=30, check=False)
+        require(result.returncode == 0 and len(result.stdout) <= 128 * 1024 and len(result.stderr) <= 128 * 1024,
+                "native dependency query failed: " + " ".join(command))
+        queries.append({"argv": command, "exit_code": result.returncode,
+                        "stdout": result.stdout, "stderr": result.stderr})
+        return result.stdout.strip()
+
+    versions = {name: query(name, "--version") for name in ("pkg-config", "cc", "ar", "ld.lld")}
+    require("LLD" in versions["ld.lld"], "selected Rust linker does not identify itself as LLD")
+    modules, libs = {}, {}
+    libdir = archive.parent
+    for name in ("openssl", "libssl", "libcrypto"):
+        directory = Path(query("pkg-config", "--variable=libdir", name))
+        pc_directory = Path(query("pkg-config", "--variable=pcfiledir", name))
+        require(directory.is_absolute() and directory.resolve(strict=True) == libdir,
+                "private archive must come from each original OpenSSL pkg-config library directory")
+        require(pc_directory.is_absolute(), "absolute original pkg-config source directory required")
+        pc = (pc_directory / (name + ".pc")).resolve(strict=True)
+        require(pc.parent == (libdir / "pkgconfig").resolve(strict=True),
+                "OpenSSL metadata must come from its original library pkgconfig directory")
+        modules[name] = {"version": query("pkg-config", "--modversion", name),
+                         "libdir": str(directory), "pc": native_file(pc, canonical=True)}
+        libs[name] = query("pkg-config", "--static", "--libs", name)
+    require(len({item["version"] for item in modules.values()}) == 1, "OpenSSL .pc module versions differ")
+    crypto_pc = Path(modules["libcrypto"]["pc"]["path"]).read_text()
+    fields = re.findall(r"^Libs\.private\s*:\s*(.*)$", crypto_pc.replace("\\\n", ""), re.MULTILINE)
+    require(len(fields) == 1, "one direct libcrypto Libs.private field required")
+    token = "-l:" + archive.name
+    require_private_token(libs, fields[0], token)
+    libraries = {name: native_file(libdir / (name + ".a"), archive=True, canonical=True)
+                 for name in ("libssl", "libcrypto")}
+    members = query("ar", "t", str(archive)).splitlines()
+    require(members and all(name and "/" not in name and "\\" not in name for name in members),
+            "private archive must contain local object members")
+    # Queries must not change their own tool, metadata or library inputs.
+    for item in [selected, *tools.values(), *libraries.values(), *(item["pc"] for item in modules.values())]:
+        require(native_file(Path(item["path"])) == item, "native dependency input changed during verification")
+    return {"schema": "hepta.original-static-private-archive.v1", "token": token,
+            "expected_sha256": expected, "archive": selected, "modules": modules,
+            "libraries": libraries, "tools": tools, "tool_versions": versions,
+            "static_libs": libs, "private_field": fields[0], "queries": queries,
+            "archive_members": members,
+            "linker": "selected Rust gcc-ld/ld.lld and rust-lld identities; not a final-link execution trace",
+            "linker_execution_observed": False}
+
+
+def freeze_private_archive(snapshot, output):
+    destination = output / "static-private-inputs" / PRIVATE_ARCHIVE
+    destination.parent.mkdir(mode=0o700)
+    source = Path(snapshot["archive"]["path"])
+    descriptor = os.open(source, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
+    with os.fdopen(descriptor, "rb") as incoming:
+        raw = incoming.read(snapshot["archive"]["bytes"] + 1)
+    require(len(raw) == snapshot["archive"]["bytes"] and hashlib.sha256(raw).hexdigest() == snapshot["expected_sha256"],
+            "private archive changed before freezing")
+    with destination.open("xb") as outgoing:
+        outgoing.write(raw)
+    destination.chmod(0o444)
+    retained = native_file(destination, archive=True, canonical=True)
+    require(retained["sha256"] == snapshot["expected_sha256"], "private archive changed while freezing")
+    return retained
+
+
+def check_private_unchanged(before, after, link_input):
+    require(after == before, "original static private dependency closure changed during build")
+    require(link_input is not None and native_file(Path(link_input["path"]), archive=True, canonical=True) == link_input,
+            "frozen final-link archive changed or was not retained")
+
+
+def build_command(cargo, entry_kind, entry, jobs, private_link_input=None):
+    command = [cargo, "rustc" if private_link_input else "build", "--manifest-path", "codex-rs/Cargo.toml",
+               "--locked", "--offline", "--release", "--target", TARGET, "-p", PACKAGE,
+               "--" + entry_kind, entry, "-j" + str(jobs)]
+    if private_link_input:
+        # A task-owned, byte-identical copy makes the final-bin fingerprint new
+        # for every run. Cargo does not otherwise track an arbitrary link-arg
+        # file's content. All dependency RUSTFLAGS/cache keys stay unchanged.
+        command.extend(["--", "-C", "link-arg=" + private_link_input["path"]])
+    return command
+
+
 def environment(args, toolchain):
     cargo = args.toolchain_bin / "cargo"
     rustc = args.toolchain_bin / "rustc"
@@ -235,6 +401,7 @@ def execute(args, report):
     temporary.mkdir(mode=0o700)
     env.update(TMPDIR=str(temporary), RUNNER_TEMP=str(temporary))
     cargo = args.toolchain_bin / "cargo"
+    private_before, private_link_input = None, None
     try:
         with target_lease(args.target_cache) as lease:
             cache_had_artifacts = any(
@@ -253,8 +420,15 @@ def execute(args, report):
             require(target["path"] in source_files and source_files[target["path"]]["sha256"] == target["entry_sha256"],
                     "entry is not a frozen tracked original source file")
             report["original_entry"] = target
-            command = [cargo, "build", "--manifest-path", "codex-rs/Cargo.toml", "--locked", "--offline", "--release",
-                       "--target", TARGET, "-p", PACKAGE, "--" + args.entry_kind, args.entry, "-j" + str(args.jobs)]
+            private_before = static_private_snapshot(args, env)
+            if private_before is not None:
+                report["static_private_archive"] = {"before": private_before, "link_input": None,
+                    "unchanged": False, "dependency_rustflags_changed": False,
+                    "scope": "explicit original pkg-config private dependency; final original target only"}
+                save(args.output / "static-private-before.json", private_before)
+                private_link_input = freeze_private_archive(private_before, args.output)
+                report["static_private_archive"]["link_input"] = private_link_input
+            command = build_command(cargo, args.entry_kind, args.entry, args.jobs, private_link_input)
             run(command, args.hepta_source, env, args.output, "build.log", report, args.timeout)
             release = args.target_cache / TARGET / "release"
             product = release / ("examples" if args.entry_kind == "example" else "") / args.entry
@@ -262,12 +436,11 @@ def execute(args, report):
             report["built"] = True
             packaged = args.output / "packaged"
             packaged.mkdir(mode=0o700)
-            freeze(product, packaged / args.entry)
             script = args.hepta_source / ".github/scripts/archive-release-symbols-and-strip-binaries.sh"
             package_command = ["/bin/bash", script, "--target", TARGET, "--artifact-name", "hepta-original-native-entry",
                                "--release-dir", packaged, "--archive-dir", args.output / "symbols-dist", "--binaries", args.entry]
-            run(package_command, args.hepta_source, env, args.output, "original-packaging.log", report, 600)
-            binary = packaged / args.entry
+            with packaging_copy(product, packaged / args.entry) as binary:
+                run(package_command, args.hepta_source, env, args.output, "original-packaging.log", report, 600)
             report["product"] = {"path": "packaged/" + args.entry, "bytes": binary.stat().st_size, "sha256": digest(binary)}
             report["packaged"] = True
             run(["/usr/bin/readelf", "-W", "-h", "-l", "-d", binary], args.hepta_source, env, args.output,
@@ -283,12 +456,29 @@ def execute(args, report):
             for item in dependencies.values():
                 require(digest(Path(item["path"])) == item["sha256"], "original dependency input changed during build")
     finally:
-        after = {name: source_snapshot(root, getattr(args, name + "_head"), getattr(args, name + "_tree"))
-                 for name, root in roots.items()}
-        save(args.output / "source-after.json", after)
-        require(after == before, "source inputs changed during original build")
-        report["source_inputs_unchanged"] = True
+        failures = []
+        try:
+            after = {name: source_snapshot(root, getattr(args, name + "_head"), getattr(args, name + "_tree"))
+                     for name, root in roots.items()}
+            save(args.output / "source-after.json", after)
+            require(after == before, "source inputs changed during original build")
+            report["source_inputs_unchanged"] = True
+            for item in [*versions.values(), *dependencies.values()]:
+                require(digest(Path(item["path"])) == item["sha256"], "original tool/dependency input changed during build")
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            failures.append(str(error))
+        if private_before is not None:
+            try:
+                private_after = static_private_snapshot(args, env)
+                save(args.output / "static-private-after.json", private_after)
+                check_private_unchanged(private_before, private_after, private_link_input)
+                report["static_private_archive"].update(after=private_after, unchanged=True)
+            except (OSError, ValueError, subprocess.SubprocessError) as error:
+                failures.append(str(error))
+        if failures:
+            report["postcheck_errors"] = failures
         save(args.output / "result.json", report)
+        require(not failures, "; ".join(failures))
 
 
 def main(argv=None):
@@ -307,6 +497,10 @@ def main(argv=None):
     parser.add_argument("--v8-bindings", type=Path)
     parser.add_argument("--expected-v8-archive-sha256")
     parser.add_argument("--expected-v8-bindings-sha256")
+    parser.add_argument("--static-private-archive", type=Path,
+                        help="Explicit original libcrypto Libs.private libjitterentropy.a; no arbitrary linker flags")
+    parser.add_argument("--expected-static-private-archive-sha256",
+                        help="Independent full SHA256 for --static-private-archive; both options are required together")
     parser.add_argument("--jobs", type=int, choices=range(1, 9), default=2)
     parser.add_argument("--timeout", type=int, choices=range(1, 7201), default=7200)
     parser.add_argument("--output", type=Path, required=True)
