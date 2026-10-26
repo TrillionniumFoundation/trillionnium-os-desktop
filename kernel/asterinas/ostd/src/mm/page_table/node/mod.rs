@@ -119,9 +119,12 @@ impl<C: PageTableConfig> PageTableNode<C> {
         // SAFETY: The safety is upheld by the caller.
         unsafe { activate_page_table(self.clone().into_raw()) };
 
-        // Restore and drop the last activated page table.
-        // SAFETY: The physical address is valid and points to a forgotten page table node.
-        drop(unsafe { Self::from_raw(last_activated_paddr) });
+        // The old root may use a different page-table configuration (user or
+        // kernel). Release its processor reference through its actual metadata.
+        // SAFETY: Every managed active root owns exactly one Frame forgotten by
+        // an earlier activation on this CPU. The new hardware root is installed,
+        // so restoring that reference once cannot free an active old root.
+        drop(unsafe { Frame::<dyn AnyFrameMeta>::from_raw(last_activated_paddr) });
     }
 
     /// Activates the (root) page table assuming it is the first activation.

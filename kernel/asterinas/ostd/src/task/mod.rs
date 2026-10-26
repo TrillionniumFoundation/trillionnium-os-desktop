@@ -31,20 +31,24 @@ pub use self::{
 use crate::{
     arch::task::TaskContext,
     irq::{DisabledLocalIrqGuard, InterruptLevel},
+    mm::vm_space::RetiredVmSpace,
     prelude::*,
 };
 
 static PRE_SCHEDULE_HANDLER: Once<fn(&DisabledLocalIrqGuard)> = Once::new();
 
-static POST_SCHEDULE_HANDLER: Once<fn()> = Once::new();
+static POST_SCHEDULE_HANDLER: Once<fn() -> Option<RetiredVmSpace>> = Once::new();
 
 /// Injects a handler to be executed before scheduling.
 pub fn inject_pre_schedule_handler(handler: fn(&DisabledLocalIrqGuard)) {
     PRE_SCHEDULE_HANDLER.call_once(|| handler);
 }
 
-/// Injects a handler to be executed after scheduling.
-pub fn inject_post_schedule_handler(handler: fn()) {
+/// Injects a handler executed after scheduling with IRQs disabled.
+///
+/// Its returned VM-space retirement is owned by the new task until IRQs are
+/// restored; arbitrary frame metadata destructors must not run in the handler.
+pub fn inject_post_schedule_handler(handler: fn() -> Option<RetiredVmSpace>) {
     POST_SCHEDULE_HANDLER.call_once(|| handler);
 }
 

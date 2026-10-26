@@ -90,6 +90,16 @@ pub struct VmSpace {
     iomems: SpinLock<Vec<IoMem>>,
 }
 
+/// An inactive local VM-space reference retained for destruction outside atomic mode.
+///
+/// A scheduling handler returns this token to OSTD rather than dropping it with
+/// IRQs disabled. It owns no CPU-local state and can be dropped after migration.
+#[must_use = "retain the old VM space until IRQs and preemption permit destruction"]
+#[derive(Debug)]
+pub struct RetiredVmSpace {
+    _vm_space: Arc<VmSpace>,
+}
+
 impl VmSpace {
     /// Creates a new VM address space.
     pub fn new() -> Self {
@@ -154,6 +164,19 @@ impl VmSpace {
 
     /// Activates the page table on the current CPU.
     pub fn activate(self: &Arc<Self>) {
+        #[cfg(target_arch = "x86_64")]
+        {
+            // The transition's IRQ guard has been released before destroying
+            // the old space. Scheduling handlers must retain the token instead.
+            drop(self.activate_retiring_old());
+        }
+
+        #[cfg(not(target_arch = "x86_64"))]
+        self.activate_legacy();
+    }
+
+    #[cfg(not(target_arch = "x86_64"))]
+    fn activate_legacy(self: &Arc<Self>) {
         let preempt_guard = disable_preempt();
         let cpu = preempt_guard.current_cpu();
 
@@ -178,6 +201,70 @@ impl VmSpace {
         }
 
         self.pt.activate();
+    }
+
+    /// Activates this space and returns the previous local space for later destruction.
+    ///
+    /// The caller must retain the returned token until it can destroy arbitrary
+    /// frame metadata outside atomic mode. In a scheduling handler, return it to
+    /// OSTD so that the new task owns it through IRQ restoration.
+    #[cfg(target_arch = "x86_64")]
+    pub fn activate_retiring_old(self: &Arc<Self>) -> Option<RetiredVmSpace> {
+        Self::switch_active(Some(self))
+    }
+
+    /// Switches this CPU to the kernel-only page table and retires its user space.
+    ///
+    /// An idle task or a kernel thread without an associated user space calls
+    /// this after a switch. The returned token must survive until destruction is
+    /// allowed outside atomic mode. This retirement protocol is currently x86-only.
+    #[cfg(target_arch = "x86_64")]
+    pub fn deactivate_current() -> Option<RetiredVmSpace> {
+        Self::switch_active(None)
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    fn switch_active(next: Option<&Arc<Self>>) -> Option<RetiredVmSpace> {
+        // IRQ exclusion also pins the CPU and prevents an interrupt from seeing
+        // a half-published CR3/slot/CPU-set transition.
+        let irq_guard = crate::irq::disable_local();
+        let cpu = irq_guard.current_cpu();
+        let next_ptr = next.map_or(core::ptr::null(), Arc::as_ptr);
+        let last_ptr = ACTIVATED_VM_SPACE.load();
+        if last_ptr == next_ptr {
+            return None;
+        }
+
+        let retired = if last_ptr.is_null() {
+            None
+        } else {
+            Some(RetiredVmSpace {
+                // SAFETY: The CPU-local slot owns one Arc created by into_raw.
+                // IRQ exclusion makes this the sole consumer of that ownership.
+                // Keep it alive across the actual hardware-root replacement.
+                _vm_space: unsafe { Arc::from_raw(last_ptr) },
+            })
+        };
+
+        let owned_next = if let Some(next) = next {
+            // Pair with the flusher's release load before using the new table.
+            next.cpus.add(cpu, Ordering::Acquire);
+            next.pt.activate();
+            Arc::into_raw(Arc::clone(next))
+        } else {
+            // Unlike first_activate_unchecked, this releases the old managed
+            // root's processor Frame only after installing the kernel root.
+            KERNEL_PAGE_TABLE.get().unwrap().activate();
+            core::ptr::null()
+        };
+
+        ACTIVATED_VM_SPACE.store(owned_next);
+        if let Some(retired) = &retired {
+            // The old table is no longer loaded and x86 CR3 has invalidated its
+            // non-global translations. Never exclude this CPU before that cut.
+            retired._vm_space.cpus.remove(cpu, Ordering::Release);
+        }
+        retired
     }
 
     /// Creates a reader to read data from the user space of the current task.

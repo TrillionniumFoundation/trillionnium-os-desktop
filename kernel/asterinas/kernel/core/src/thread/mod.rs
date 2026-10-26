@@ -8,6 +8,7 @@ use aster_util::per_cpu_counter::PerCpuCounter;
 use ostd::{
     cpu::{AtomicCpuSet, CpuId, CpuSet},
     irq::DisabledLocalIrqGuard,
+    mm::vm_space::RetiredVmSpace,
     task::Task,
 };
 
@@ -37,7 +38,7 @@ fn pre_schedule_handler(irq_guard: &DisabledLocalIrqGuard) {
     thread_local.supp_user_context().before_schedule(irq_guard);
 }
 
-fn post_schedule_handler() {
+fn post_schedule_handler() -> Option<RetiredVmSpace> {
     // No races because preemption shouldn't happen in pre-/post-schedule handlers.
     CONTEXT_SWITCH_COUNTER
         .get()
@@ -45,16 +46,33 @@ fn post_schedule_handler() {
         .add_on_cpu(CpuId::current_racy(), 1);
 
     let task = Task::current().unwrap();
-    if let Some(thread_local) = task.as_thread_local() {
-        let vmar = thread_local.vmar().borrow();
-        if let Some(vmar) = vmar.as_ref() {
-            vmar.vm_space().activate()
-        }
-    } else if let Some(vmar) = task
-        .as_kernel_thread()
-        .and_then(|kernel_thread| kernel_thread.vmar())
+    let vm_space = if let Some(thread_local) = task.as_thread_local() {
+        thread_local
+            .vmar()
+            .borrow()
+            .as_ref()
+            .map(|vmar| vmar.vm_space().clone())
+    } else {
+        task.as_kernel_thread()
+            .and_then(|kernel_thread| kernel_thread.vmar())
+            .map(|vmar| vmar.vm_space().clone())
+    };
+
+    #[cfg(target_arch = "x86_64")]
     {
-        vmar.vm_space().activate();
+        if let Some(vm_space) = vm_space {
+            vm_space.activate_retiring_old()
+        } else {
+            ostd::mm::VmSpace::deactivate_current()
+        }
+    }
+
+    #[cfg(not(target_arch = "x86_64"))]
+    {
+        if let Some(vm_space) = vm_space {
+            vm_space.activate();
+        }
+        None
     }
 }
 

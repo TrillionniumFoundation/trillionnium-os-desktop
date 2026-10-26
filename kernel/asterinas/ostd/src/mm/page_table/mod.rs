@@ -342,6 +342,14 @@ impl PageTable<UserPtConfig> {
 }
 
 impl PageTable<KernelPtConfig> {
+    /// Activates the initialized kernel-only page table on this CPU.
+    #[cfg(target_arch = "x86_64")]
+    pub(in crate::mm) fn activate(&self) {
+        // SAFETY: This table owns the shared kernel mappings. The old managed
+        // root's processor reference is released only after switching CR3.
+        unsafe { self.root.activate() };
+    }
+
     /// Creates a new kernel page table.
     pub(in crate::mm) fn new_kernel_page_table() -> Self {
         let kpt = Self::empty();
