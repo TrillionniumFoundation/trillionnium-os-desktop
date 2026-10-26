@@ -203,3 +203,62 @@ complete original Agentd shutdown, HOS2/G2, full E, a combined cross-branch
 release, full A06/OSTD/SMP, display/input or physical-device qualification.
 Future implementation changes require a new same-source run of the relevant
 original gates; this documentation commit is not another kernel execution.
+
+## Later fixed source compositions
+
+`ipc-memory-v1` and `receiving-force-v1` retain their historical production
+hashes and the original engine. The receiving profile's 70 complete source
+files are also preserved in `controls/receiving-force-v1-source.json.gz`, exported
+from real commit `f009818a2606111ad79773d473c5acbd8cab2720` and tree
+`b077d2c955dc19c9f45fcf7971808d3f38f27f3f`. Tests decode this fixed archive in
+memory, verify its compressed SHA256, unique safe paths, regular Git modes and
+every Git blob/content hash, then use those actual historical bytes for the
+old positive and individual missing/drifting-owner negatives. No fixture path
+is extracted. An independent export can be reproduced where those Git objects
+are available:
+
+```sh
+python3 -I -B tests/kernel/network/export_receiving_source_fixture.py --check
+```
+
+`run_unix_stream_post1138_guest.py` adds the separate positive-only
+`post-1138-kernel-v1` profile for the component composition assembled at
+`f33bec2a4740f133a79ddba677bebf099e3491b8`. Adding this profile, its tests and
+fixture produces a new validation commit; the assembly-only tuple is not an
+execution receipt for that later commit. The new private engine executes the
+same hash-checked original engine bytes. Only its private profile list and
+fixed required-source lookup are extended. Source snapshots, build/lock/ELF,
+nonce, original oracle, timeout and result checks remain the original engine's.
+There is no runtime manifest input or current-hash wildcard.
+
+The fixed table has 76 unique roles and actual paths. In addition to the
+previous 70 required owners, six boundaries are explicit:
+
+| Added owner | Protection |
+| --- | --- |
+| `controller/cpu/scheduling_route.rs` | Strict-current raw CPU/node lifetime pin, inactive ancestors and final cold refund. |
+| `cgroupfs/systree_node.rs` | Actual membership/retirement entry points and mixed-write preflight before any controller change. |
+| `controller/cpu/group_entity_regressions.rs` | Real component lifecycle, RCU retirement, stale owner and checked rollback controls. |
+| `sched/sched_class/switch_tests.rs` | Actual enqueue single-selection regression and physical handoff ownership controls. |
+| `support/kernel-safety/FAIR_GROUP_ENTITIES.md` | Lock/drop contract and the disabled live-routing/weight boundary. |
+| `docs/ASTERINAS_CPU_BANDWIDTH_N0.md` | Original quota/share thresholds and the spawn-placement contract. |
+
+The table covers every one of the 13 component paths changed between 1138 and
+the assembly above. Host tests require the current composition to be refused
+by both historical strict profiles and admitted by the new profile. Every
+missing/drifting new owner, duplicate role/path, historical variant and unknown
+profile is rejected. These are source-admission checks; new guest execution
+still requires the exact reviewed validation commit/tree and fresh evidence:
+
+```sh
+python3 -I -B tests/kernel/network/run_unix_stream_post1138_guest.py \
+  --expected-source-head REVIEWED_VALIDATION_COMMIT \
+  --expected-source-tree REVIEWED_VALIDATION_TREE \
+  --target-dir /external/fresh-or-reviewed-kernel-target \
+  --output /external/new-unix-evidence \
+  --source-profile post-1138-kernel-v1 --variant positive --selection all
+```
+
+Run `shutdown_race` separately with new evidence. This source profile does not
+enable live group weights, native authority, production operations or physical
+device support. All earlier receipts keep their original source identities.

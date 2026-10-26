@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MPL-2.0
 """Fixed-source admission checks. These host tests do not execute a guest."""
+import base64
+import gzip
 import hashlib
+import json
 from pathlib import Path
 import sys
 import unittest
@@ -18,6 +21,35 @@ class ReceivingSourceProfile(unittest.TestCase):
         root = HERE.parents[2]
         return {"files": {path: {"sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
                           for _, path, _ in receiving.OWNERS}}
+
+    def historical(self):
+        # Real f009 Git blobs keep the historical positive independent of the
+        # current checkout. Decode in memory; never extract fixture paths.
+        encoded = (HERE / "controls/receiving-force-v1-source.json.gz").read_bytes()
+        self.assertEqual(hashlib.sha256(encoded).hexdigest(),
+                         "78e24888c39e163cd9af33171f490f69b4e00421d839587fb4c604bc07b4fae3")
+        fixture = json.loads(gzip.decompress(encoded))
+        self.assertEqual(fixture["schema"], "asterinas.receiving-force-v1-historical-source.v1")
+        self.assertEqual(fixture["source_head"], "f009818a2606111ad79773d473c5acbd8cab2720")
+        self.assertEqual(fixture["source_tree"], "b077d2c955dc19c9f45fcf7971808d3f38f27f3f")
+        expected = {path: (role, sha) for role, path, sha in receiving.OWNERS}
+        self.assertEqual(len(fixture["files"]), 70)
+        self.assertEqual({row["path"] for row in fixture["files"]}, set(expected))
+        self.assertEqual(len({row["role"] for row in fixture["files"]}), 70)
+        result = {"files": {}}
+        for row in fixture["files"]:
+            path = Path(row["path"])
+            self.assertFalse(path.is_absolute())
+            self.assertNotIn("..", path.parts)
+            self.assertIn(row["mode"], ("100644", "100755"))
+            data = base64.b64decode(row["content_base64"], validate=True)
+            self.assertEqual(hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest(),
+                             row["git_blob"], row["path"])
+            actual = hashlib.sha256(data).hexdigest()
+            self.assertEqual((row["role"], actual), expected[row["path"]])
+            self.assertEqual(actual, row["sha256"])
+            result["files"][row["path"]] = {"sha256": actual}
+        return result
 
     def test_public_historical_profiles_and_original_checker_are_untouched(self):
         self.assertEqual(historical.SOURCE_PROFILES, ("legacy", "ipc-memory-v1"))
@@ -56,13 +88,14 @@ class ReceivingSourceProfile(unittest.TestCase):
                      "syscall.sched_permissions", "inherit.process.clone"):
             self.assertIn(name, roles)
 
-    def test_receiving_profile_accepts_actual_reviewed_composition(self):
+    def test_receiving_profile_accepts_bound_real_historical_composition(self):
         expected = receiving.required_sources("positive", receiving.PROFILE)
-        self.assertEqual(receiving.check_sources(self.actual(), "positive", receiving.PROFILE), expected)
+        self.assertEqual(receiving.check_sources(self.historical(), "positive", receiving.PROFILE), expected)
         self.assertEqual(set(expected), {path for _, path, _ in receiving.OWNERS})
 
     def test_every_missing_and_drifting_owner_is_refused(self):
-        actual = self.actual()
+        actual = self.historical()
+        receiving.check_sources(actual, "positive", receiving.PROFILE)
         for role, path, _ in receiving.OWNERS:
             with self.subTest(role=role, change="missing"):
                 changed = {"files": dict(actual["files"])}
@@ -94,7 +127,7 @@ class ReceivingSourceProfile(unittest.TestCase):
         for name in historical.required_sources("positive", "ipc-memory-v1"):
             self.assertIn(name, new)
         # A historical cgroup owner cannot be smuggled into a new receipt.
-        changed = self.actual()
+        changed = self.historical()
         cgroup = "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/mod.rs"
         changed["files"][cgroup] = {"sha256": historical.IPC_SOURCE_SHA[cgroup]}
         with self.assertRaises(ValueError):

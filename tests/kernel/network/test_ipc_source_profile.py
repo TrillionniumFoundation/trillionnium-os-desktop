@@ -49,15 +49,18 @@ class IpcSourceProfile(unittest.TestCase):
         self.assertNotEqual(required[runner.CONNECTED], runner.CONNECTED_SHA["positive"])
         self.assertNotEqual(required[runner.SOCKET], runner.SOCKET_SHA)
 
-    def test_receiving_working_source_is_rejected_by_old_and_accepted_by_new_profile(self):
+    def test_current_source_is_rejected_by_historical_profiles_and_accepted_by_post_profile(self):
         import run_unix_stream_receiving_guest as receiving
+        import run_unix_stream_post1138_guest as post
         root = HERE.parents[2]
         current = {"files": {path: {"sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
-                             for _, path, _ in receiving.OWNERS}}
+                             for _, path, _ in post.OWNERS}}
         with self.assertRaisesRegex(ValueError, "cgroupfs/mod.rs"):
             runner.check_sources(current, "positive", "ipc-memory-v1")
-        expected = receiving.required_sources("positive", receiving.PROFILE)
-        self.assertEqual(receiving.check_sources(current, "positive", receiving.PROFILE), expected)
+        with self.assertRaisesRegex(ValueError, "cgroupfs/mod.rs"):
+            receiving.check_sources(current, "positive", receiving.PROFILE)
+        expected = post.required_sources("positive", post.PROFILE)
+        self.assertEqual(post.check_sources(current, "positive", post.PROFILE), expected)
 
     def test_historical_mutations_cannot_use_new_production_profile(self):
         for variant in ("race-fixed", "race-stale", "aux-zero-progress"):
