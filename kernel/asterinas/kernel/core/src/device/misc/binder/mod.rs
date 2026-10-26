@@ -2,7 +2,7 @@
 //! Bounded synchronous Binder transactions and owned object references.
 //!
 //! One participating thread per open, one outgoing call per open, no nested
-//! calls, FD arrays, death subscriptions, oneway, or MAC labels.
+//! calls, FD arrays, oneway, or MAC labels.
 //! The device node is root:root 0600. This is not Android boot qualification.
 //!
 //! Lock order: VMAR -> DOMAIN. DOMAIN never acquires VMAR/process locks or
@@ -10,11 +10,13 @@
 //! domain lock and copied after releasing it. Mapping frames are owned, charged
 //! UFrames, not user addresses. A failed output copy retains the prepared event.
 
+mod death;
 mod files;
 mod objects;
 mod uapi;
 use core::time::Duration;
 
+use death::{Delivery as DeathDelivery, Subscriptions};
 use device_id::{DeviceId, MinorId};
 use files::{Drain, FileObject, PendingFds, RetainedFile};
 use objects::*;
@@ -74,6 +76,7 @@ struct Endpoint {
     preparing: bool,
     nodes: BTreeMap<u64, Arc<Node>>,
     handles: Handles,
+    deaths: Subscriptions,
     outgoing: Option<u64>,
     incoming: Option<Incoming>,
     looper: bool,
@@ -85,8 +88,14 @@ struct ReceiveArea {
 }
 struct Prepared {
     bytes: Vec<u8>,
-    queue: bool,
+    action: ReadAction,
     fds: Option<Arc<PendingFds>>,
+}
+#[derive(Clone, Copy)]
+enum ReadAction {
+    Queue,
+    Node,
+    Death(DeathDelivery),
 }
 #[derive(Clone, Copy)]
 struct Incoming {
@@ -147,11 +156,15 @@ impl Domain {
             self.manager = None;
         }
         for endpoint in self.endpoints.values_mut() {
+            endpoint.deaths.owner_closed(id);
             // A prepared descriptor may currently be copied outside DOMAIN.
             // Keep its front event and buffer stable even if its sender exits;
             // removing it here would make the copyout commit pop another call.
-            let preserve_front =
-                endpoint.preparing || endpoint.prepared.as_ref().is_some_and(|p| p.queue);
+            let preserve_front = endpoint.preparing
+                || endpoint
+                    .prepared
+                    .as_ref()
+                    .is_some_and(|p| matches!(p.action, ReadAction::Queue));
             let mut first = true;
             endpoint.queue.retain(|event| {
                 let preserve = first && preserve_front;
@@ -315,6 +328,7 @@ impl Device for BinderDevice {
                 preparing: false,
                 nodes: BTreeMap::new(),
                 handles: Handles::default(),
+                deaths: Subscriptions::default(),
                 outgoing: None,
                 incoming: None,
                 looper: false,
@@ -482,6 +496,12 @@ impl BinderFile {
                     strong: command == ACQUIRE_DONE,
                     object: read::<PtrCookie>(&input, &mut cursor)?,
                 },
+                REQUEST_DEATH_NOTIFICATION | CLEAR_DEATH_NOTIFICATION => Command::Death {
+                    request: command == REQUEST_DEATH_NOTIFICATION,
+                    handle: read::<u32>(&input, &mut cursor)?,
+                    cookie: read::<u64>(&input, &mut cursor)?,
+                },
+                DEAD_BINDER_DONE => Command::DeathDone(read::<u64>(&input, &mut cursor)?),
                 FREE_BUFFER => Command::Free(read::<u64>(&input, &mut cursor)? as usize),
                 ENTER_LOOPER => Command::Enter,
                 EXIT_LOOPER => Command::Exit,
@@ -517,6 +537,28 @@ impl BinderFile {
                 }
                 e.looper = false;
             }
+            Command::Death {
+                request,
+                handle,
+                cookie,
+            } => {
+                let e = d.endpoint(self.id)?;
+                let buffers = &e
+                    .mapping
+                    .as_ref()
+                    .ok_or_else(|| Error::with_message(Errno::EINVAL, "Binder has no mapping"))?
+                    .used;
+                let node = e.handles.resolve(handle as u64, false, buffers)?;
+                if request {
+                    let alive = d.endpoints.contains_key(&node.owner);
+                    d.endpoint(self.id)?
+                        .deaths
+                        .request(handle, node, cookie, alive)?;
+                } else {
+                    d.endpoint(self.id)?.deaths.clear(handle, cookie)?;
+                }
+            }
+            Command::DeathDone(cookie) => d.endpoint(self.id)?.deaths.done(cookie)?,
             Command::Reference { command, handle } => {
                 let e = d.endpoint(self.id)?;
                 let buffers = &e
@@ -677,7 +719,10 @@ impl BinderFile {
             if e.preparing {
                 return_errno!(Errno::EBUSY);
             }
-            if e.prepared.is_none() && !e.nodes.values().any(|node| node.has_work()) {
+            if e.prepared.is_none()
+                && !e.nodes.values().any(|node| node.has_work())
+                && !e.deaths.has_work()
+            {
                 let files = match e.queue.front() {
                     Some(Event::Request { payload, .. } | Event::Reply { payload, .. })
                         if !payload.files.is_empty() =>
@@ -746,7 +791,19 @@ impl BinderFile {
                     bytes.extend_from_slice(object.as_bytes());
                     e.prepared = Some(Prepared {
                         bytes,
-                        queue: false,
+                        action: ReadAction::Node,
+                        fds: None,
+                    });
+                } else if new_fds.is_none() && e.deaths.has_work() {
+                    if capacity < 12 {
+                        return_errno!(Errno::ENOSPC);
+                    }
+                    let delivery = e.deaths.prepare().unwrap();
+                    let mut bytes = delivery.command().to_ne_bytes().to_vec();
+                    bytes.extend_from_slice(&delivery.cookie.to_ne_bytes());
+                    e.prepared = Some(Prepared {
+                        bytes,
+                        action: ReadAction::Death(delivery),
                         fds: None,
                     });
                 } else {
@@ -812,7 +869,7 @@ impl BinderFile {
                     }
                     e.prepared = Some(Prepared {
                         bytes: output,
-                        queue: true,
+                        action: ReadAction::Queue,
                         fds: new_fds.clone(),
                     });
                 }
@@ -827,10 +884,14 @@ impl BinderFile {
         {
             let mut d = domain().lock();
             let e = d.endpoint(self.id)?;
-            if e.prepared.take().unwrap().queue
-                && matches!(e.queue.pop_front(), Some(Event::Reply { .. } | Event::Dead))
-            {
-                e.outgoing = None;
+            match e.prepared.take().unwrap().action {
+                ReadAction::Queue => {
+                    if matches!(e.queue.pop_front(), Some(Event::Reply { .. } | Event::Dead)) {
+                        e.outgoing = None;
+                    }
+                }
+                ReadAction::Death(delivery) => e.deaths.commit(delivery)?,
+                ReadAction::Node => (),
             }
             d.notify();
         }
@@ -884,7 +945,8 @@ impl BinderFile {
 impl Endpoint {
     fn prune_handles(&mut self) {
         if let Some(area) = &self.mapping {
-            self.handles.prune(&area.used);
+            let removed = self.handles.prune(&area.used);
+            self.deaths.cancel_handles(&removed);
         }
     }
     fn reserve(&mut self, id: u64, payload: &Payload, fds: Option<&PendingFds>) -> Result<usize> {
@@ -943,6 +1005,12 @@ enum Command {
     Enter,
     Exit,
     Free(usize),
+    Death {
+        request: bool,
+        handle: u32,
+        cookie: u64,
+    },
+    DeathDone(u64),
     Reference {
         command: u32,
         handle: u32,
@@ -984,7 +1052,10 @@ impl Pollable for BinderFile {
                 None => IoEvents::HUP | IoEvents::ERR,
                 Some(e) => {
                     IoEvents::OUT
-                        | if e.queue.is_empty() && !e.nodes.values().any(|node| node.has_work()) {
+                        | if e.queue.is_empty()
+                            && !e.nodes.values().any(|node| node.has_work())
+                            && !e.deaths.has_work()
+                        {
                             IoEvents::empty()
                         } else {
                             IoEvents::IN

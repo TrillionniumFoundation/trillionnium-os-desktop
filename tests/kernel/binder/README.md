@@ -74,3 +74,14 @@ publication, and later actual FD transfer recovers. A real TCP SO_LINGER baselin
 must take at least 1.5 seconds; cleanup of an equivalent prepared socket must
 leave independent descriptor refunds and pipe EPIPE below one second. No mocked
 file destructor or host network is used; the sockets use guest loopback only.
+
+## Death subscription gate
+
+`object_run.py` also compiles `death_probe.c` for real owner/subscriber processes.
+It verifies SIGKILL/exec identity, wrong-cookie and duplicate acknowledgement
+rejection, 32-record saturation/refund, attached last-reference cancellation,
+CLEAR-detached owed handshakes, small reads, EFAULT retry, poll and preserved
+ordinary requests while their admission queue is full. Sixteen actual child
+close/CLEAR races report which legal ordering occurred; deterministic death-first
+cases still require Dead → Done → ClearDone. Single-thread-per-open and unique
+cookie restrictions are deliberate; Android thread pools and boot remain open.

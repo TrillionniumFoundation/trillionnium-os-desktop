@@ -29,7 +29,9 @@ The device supports `BINDER_VERSION` (8), `BINDER_SET_MAX_THREADS` (0 or 1),
 looper before clients can send. The write stream supports `BC_TRANSACTION`,
 `BC_REPLY`, `BC_FREE_BUFFER`, `BC_ENTER_LOOPER`, `BC_EXIT_LOOPER`, the four
 handle reference commands (`BC_INCREFS`, `BC_ACQUIRE`, `BC_RELEASE`, `BC_DECREFS`),
-and exact owner acknowledgements (`BC_INCREFS_DONE`, `BC_ACQUIRE_DONE`).
+exact owner acknowledgements (`BC_INCREFS_DONE`, `BC_ACQUIRE_DONE`), and
+`BC_REQUEST_DEATH_NOTIFICATION`, `BC_CLEAR_DEATH_NOTIFICATION`,
+`BC_DEAD_BINDER_DONE` for nonzero object handles.
 
 A synchronous call produces a transaction-complete event for the sender and a
 `BR_TRANSACTION` for the manager. The manager's reply produces its completion and
@@ -257,10 +259,73 @@ The kernel core reference tests and original byte/resource-admission guest gate
 remain required. Android service-manager startup, thread pools and boot are
 separate outstanding gates.
 
+## Bounded death subscriptions
+
+The wire commands use the native 64-bit UAPI's packed 12-byte handle/cookie pair,
+parsed as a four-byte handle followed by an eight-byte cookie. `BC_DEAD_BINDER_DONE`
+uses an eight-byte cookie. `BR_DEAD_BINDER` and
+`BR_CLEAR_DEATH_NOTIFICATION_DONE` return four-byte command plus eight-byte cookie.
+No C packed pointer is dereferenced by the safe Rust driver. The reference
+cleanup, CLEAR detachment and dead/clear ordering were checked against
+`binder_cleanup_ref_olocked`, the death command cases, and death work in the
+[Linux v6.17 driver](https://github.com/torvalds/linux/blob/v6.17/drivers/android/binder.c).
+
+`death.rs` owns at most 32 records per endpoint, including detached records still
+awaiting an acknowledgement. Each record holds the resolved original node
+allocation and original owner endpoint identity, a monotonic checked delivery ID,
+and the subscriber's cookie. It contributes no strong or weak reference and
+cannot keep a handle callable. Every handle has at most one attached subscription.
+Because DONE carries only a cookie, this bounded profile rejects duplicate cookies
+within an endpoint until the earlier record finishes. Invalid handles, mismatched
+cookies, duplicate subscriptions and premature/duplicate acknowledgements return
+errors. Handle 0 and unimplemented freeze notifications are not silently accepted.
+
+The implemented state progression is Live, DeadQueued, DeadDelivered,
+Acknowledged, then ClearQueued when clearing an acknowledged record. An already
+closed original owner starts a new subscription in DeadQueued. Closing a live
+original endpoint queues exactly one death for each attached Live record; a
+replacement process, VMAR, endpoint or node with the same pointer/cookie cannot
+satisfy it. This endpoint's existing lifetime rules include owner thread exit,
+explicit thread-exit ioctl, successful exec teardown, unmap and final release;
+it is still the restricted single-thread-per-open profile.
+
+CLEAR checks the exact handle/cookie and detaches immediately. For a still-live
+or already acknowledged record, it queues clear-complete. For a queued or delivered
+death, it retains the pending clear and requires the actual sequence
+`BR_DEAD_BINDER`, `BC_DEAD_BINDER_DONE`, `BR_CLEAR_DEATH_NOTIFICATION_DONE`.
+It does not cancel an already triggered death. Last buffer/user reference removal
+prunes the handle and cancels any still-attached record, including queued or
+already delivered work. A detached record instead keeps its owed handshake even
+if that handle is subsequently pruned. Endpoint closure cancels all its records.
+
+Death work uses the bounded record scan independently of ordinary transaction
+queue admission, so a full request queue cannot discard it. Node reference work
+is considered first, then death work, then transaction work; this is the profile's
+explicit scheduling order, not a claim of identical Linux global work ordering.
+Poll observes pending death/clear work. Preparing a death read does not mark it
+delivered. Insufficient output capacity or EFAULT keeps the same exact prepared
+notification; the state commits only after successful copyout. As with the rest
+of this profile, commands while an EFAULT-prepared read is outstanding return
+EBUSY until that event is read successfully. Final write-read transport copyout
+can still fail after event commit; this remains outside an exactly-once ledger.
+
+`death_probe.c` uses independently opened endpoints in real owner/subscriber
+processes. Its gate checks actual SIGKILL and exec, subscriber death, 32-record
+saturation/refund, forged handles/cookies and duplicate DONE, weak/buffer/user
+reference lifetime, attached cancellation versus detached owed work, small read,
+EFAULT retry, poll and death delivery with all 15 ordinary request admission slots
+occupied while preserving the original queued request. Sixteen real child-owner
+close/CLEAR races accept only the two legal linearizations and print the observed
+ordering counts; deterministic queued/delivered cases separately require death
+before clear-complete. A new image's old FD is rejected and a replacement node
+cannot redirect the old handle. Native state tests cover capacity, attachment,
+detachment and copyout-commit acknowledgement gates. These tests do not qualify
+Android thread pools, Binder freeze support, oneway IPC or Android boot.
+
 ## Explicitly unsupported
 
 FD arrays, scatter/gather, oneway calls, priority inheritance, nested calls,
-thread-pool spawning, death subscriptions and transaction security contexts are
+thread-pool spawning, freeze subscriptions and transaction security contexts are
 rejected. `BINDER_SET_CONTEXT_MGR_EXT` is not a fake success. The supported transaction flags are zero or `TF_ACCEPT_FDS`. Other flags are
 rejected; accepting FD replies does not imply support for oneway or scatter/gather. Unknown ioctls return ENOTTY;
 recognized but unimplemented protocol commands return EOPNOTSUPP.
@@ -268,12 +333,13 @@ recognized but unimplemented protocol commands return EOPNOTSUPP.
 Do not use this driver's presence or version as an Android compatibility gate.
 The historical A08 primitive probe requests two maximum threads and may correctly
 fail against this restricted profile. Keep its result separate. Android boot,
-servicemanager objects, framework services, FD/death semantics and MAC policy
-remain unqualified until exercised by their own actual guest suites.
+servicemanager integration, framework services, complete FD/death conformance and
+MAC policy remain separate unqualified gates. The bounded object/FD/death subset
+above has its own actual guest suites; this does not qualify those broader gates.
 
-## Qualification and next work
+## Historical initial byte qualification and current next work
 
-The real guest probe is `tests/kernel/binder/binder_probe.c`; its runner reuses
+The initial byte-only guest probe is `tests/kernel/binder/binder_probe.c`; its runner reuses
 the existing source/artifact-bound ordinary kernel boot harness. It checks
 cross-process payload/reply bytes, sender identity, inherited-FD and foreign-thread
 rejection, read-only/fork/remap boundaries, unsupported operations, output faults,
@@ -284,7 +350,8 @@ kernel ELF `8988f7c8519cadfe81204bbaa9ceddafa3ad13790ec22108a069a21262cfc5fc`
 passed the SMP2 byte/lifetime suite and the expanded SMP4 suite. The final SMP4
 run reports 557 parent assertions, plus child-process payload/identity checks;
 its source and artifact snapshots are unchanged. All execution is inside the
-ordinary guest, with Android/object/FD/death-conformance flags still false.
+ordinary guest; that initial receipt kept Android/object/FD/death-conformance
+flags false and must not be relabelled as later-stage evidence.
 The initial Binder stage's native kernel rerun passed 313 tests with zero failures, covering the
 owner/queue/file-status refinements. The targeted Rust formatting check and
 static C compilation with warnings treated as errors also passed. Existing
@@ -296,11 +363,12 @@ and is not passing evidence. The replacement check actually reads the excluded
 fork mapping in a child and verifies SIGSEGV. The initial OSDK setup failure
 likewise remains distinct from executed kernel tests.
 
-The bounded object stage above provides real reference ownership and translation.
-Service-manager compatibility still requires descriptor installation/rollback,
-death registration, nested transactions and thread-pool lifecycle. Each requires
-negative and exit-race tests on actual processes. None should be represented by
-returning success from an otherwise unimplemented ioctl.
+The bounded object-reference, descriptor installation/rollback and death stages
+above now have separate actual guest suites. Outstanding work includes Android
+service-manager integration, FD arrays, nested transactions, oneway IPC and
+thread-pool lifecycle. Each requires negative and exit-race tests on actual
+processes. None should be represented by returning success from an otherwise
+unimplemented ioctl.
 
 The receiver's page-table admission is fallible. Each `MapHandle::map_frame`
 error must reach mmap before `ReceiveArea` is installed. If a later frame fails,

@@ -128,7 +128,7 @@ static void unsupported(struct endpoint *e) {
     CHECK(write_commands(e->fd,stream,sizeof stream,NULL)==-1&&errno==EFAULT);
     CHECK(write_commands(e->fd,stream,67,NULL)==-1&&errno==EINVAL);
     command=BC_REQUEST_DEATH_NOTIFICATION;memcpy(stream,&command,4);
-    CHECK(write_commands(e->fd,stream,4,NULL)==-1&&errno==EOPNOTSUPP);
+    CHECK(write_commands(e->fd,stream,4,NULL)==-1&&errno==EINVAL);
     CHECK(mprotect(e->map,4096,PROT_NONE)==0);
     CHECK(mprotect(e->map,4096,PROT_READ)==0);
     CHECK(mprotect(e->map,MAP_BYTES,PROT_READ|PROT_WRITE)==-1&&errno==EACCES);

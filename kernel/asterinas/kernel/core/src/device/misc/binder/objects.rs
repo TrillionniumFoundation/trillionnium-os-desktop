@@ -257,16 +257,22 @@ impl Handles {
         }
         Ok(())
     }
-    pub(super) fn prune(&mut self, buffers: &[Option<Vec<Arc<Reference>>>]) {
-        self.entries.retain(|_, h| {
-            !h.strong.is_empty()
+    pub(super) fn prune(&mut self, buffers: &[Option<Vec<Arc<Reference>>>]) -> Vec<u32> {
+        let mut removed = Vec::new();
+        self.entries.retain(|&descriptor, h| {
+            let keep = !h.strong.is_empty()
                 || !h.weak.is_empty()
                 || buffers
                     .iter()
                     .flatten()
                     .flatten()
-                    .any(|r| r.node.id == h.node.id)
+                    .any(|r| r.node.id == h.node.id);
+            if !keep {
+                removed.push(descriptor);
+            }
+            keep
         });
+        removed
     }
 }
 
