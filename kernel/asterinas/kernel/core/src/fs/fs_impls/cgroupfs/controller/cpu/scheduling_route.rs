@@ -37,7 +37,7 @@ impl CpuSchedulingRoute {
             .weak_process()
             .upgrade()
             .ok_or(ostd::Error::InvalidArgs)?;
-        let owner = CpuChargeOwner::from_cgroup(process.cgroup().get().cloned());
+        let owner = CpuChargeOwner::from_cgroup(process.cgroup().get().map(|node| node.clone()));
         let mut at = Some(owner.cpu.as_ref());
         while let Some(cpu) = at {
             if cpu
