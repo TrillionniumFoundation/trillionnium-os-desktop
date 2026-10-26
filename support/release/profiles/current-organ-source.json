@@ -37,8 +37,8 @@
     }
   ],
   "hepta": {
-    "commit": "e5379be5be6e75e302b1cbdeefa6e0140dec9f49",
-    "tree": "2b474c8e7b97d56a25fe9ac1fcde6eea303c57fe"
+    "commit": "fef6a641228aad80b2716db05c7f265adf6511d7",
+    "tree": "88f0bcfd1a55002d1e6e0f5002e67b905639e4d4"
   },
   "original_history_owner": "995b6fb9ef73ada7c3348b01deb28940a2c4a2d1",
   "os_identity_binding": "explicit_caller_head_and_tree_in_verification_receipt",
@@ -57,7 +57,7 @@
   },
   "qualification": "source-only",
   "schema_version": 3,
-  "source_map_sha256": "a3df5d9a7ab4764ac6054f2c92e99aeb826688cfc09a50e2e504354f95164a61",
+  "source_map_sha256": "83e468fd8fa56a556bf5fcfec4a1d6554bb21184da514465e1d795545de4ca35",
   "sources": {
     "hepta": [
       {
@@ -73,6 +73,13 @@
         "path": "codex-rs/hepta-agent-protocol/src/objective_history.rs",
         "role": "agent_protocol_history",
         "sha256": "166b680eebf5ac99da848ad51aaa28cf0e1c703571a6dabab53669f974fdc7b5"
+      },
+      {
+        "bytes": 26762,
+        "git_blob": "b6e65edeef6b2fe0c1e52f5b47b643891b21bc20",
+        "path": "codex-rs/arg0/src/lib.rs",
+        "role": "agentd_arg0_dispatch",
+        "sha256": "7fec93a108ceb11fd0fef17d34d4c3cf7e2c4ac6ea4d810ad0b878a76e448a75"
       },
       {
         "bytes": 8911,
@@ -94,6 +101,13 @@
         "path": "codex-rs/hepta-agentd/src/lib.rs",
         "role": "agentd_module_wiring",
         "sha256": "1e6efa39907be69915ec2a9cd46531c97083e4fa12aad5377cdc1d351b924ed5"
+      },
+      {
+        "bytes": 18261,
+        "git_blob": "57fed91d1fd3c9bbac3a0b7024710921a6673ec5",
+        "path": "codex-rs/hepta-agentd/tests/cognitive_store_product_writer.rs",
+        "role": "agentd_recovered_writer_oracle",
+        "sha256": "7db22b05cc045ba8f8f5ed76da017e4eb109824f71b202ff6c771c17782999f4"
       },
       {
         "bytes": 568,
@@ -516,11 +530,11 @@
         "sha256": "b807df52a26ed220f507dc5dee0e2bca36eea6c06e33d4d27f6b31aa37ee4e50"
       },
       {
-        "bytes": 13483,
-        "git_blob": "3b7e0dfbf7f1fa6c0c1bf7c14166530d314d9ede",
+        "bytes": 15365,
+        "git_blob": "435c4b0e5e3cdf085afd0d8d5158f1bb3ce91632",
         "path": "codex-rs/hepta-agentd/src/bin/native_owner_qualification/agent.rs",
         "role": "native_owner_agent",
-        "sha256": "c1ab43d803e5ea9450ab3dc89d47a5229222e9489c3395051c9ccc5e7fdfddfd"
+        "sha256": "3af7eff25d114bae7cf42cd294f24b257b4051a5d55049daf4fcfd568beece80"
       },
       {
         "bytes": 8543,
@@ -530,18 +544,18 @@
         "sha256": "8ba11684c03e2497aa4cfcb1f285815ec79285567af5c30ed6c656a2390c477c"
       },
       {
-        "bytes": 9577,
-        "git_blob": "ead0380571ba8d334ec4046da8dbc28b1162cb53",
+        "bytes": 10279,
+        "git_blob": "c32e6fe08753095c478a52c4545bad15de1685c8",
         "path": "codex-rs/hepta-agentd/NATIVE_OWNER_QUALIFICATION.md",
         "role": "native_owner_contract",
-        "sha256": "37d42716520429c9e60734467eb5ae5ffe4c1921966ec8974856f428b72115e2"
+        "sha256": "f895459886dcaaa46fd6863dadf54d2cdf00d49314949707c06191733045f95c"
       },
       {
-        "bytes": 1439,
-        "git_blob": "d3434feee6e9049da7bb1704af6f698d5f4151b5",
+        "bytes": 1548,
+        "git_blob": "38c6afcdd4e794bbb644f4eceab262c3bcbdbe71",
         "path": "codex-rs/hepta-agentd/src/bin/hepta-native-owner-qualification.rs",
         "role": "native_owner_entry",
-        "sha256": "b2a38b39db24f815bb7670ad05e10ff1d353a28acf96624b2a5bfabeffddbaea"
+        "sha256": "2196d84d56f74f9a22a231e8f4406279d445c16d0eb598b973e0288237d8e9a1"
       },
       {
         "bytes": 17509,
@@ -1622,6 +1636,55 @@
         "path": "kernel/asterinas/kernel/core/src/fs/pipe/common.rs",
         "role": "kernel_pipe_buffer_owner",
         "sha256": "a3ac4014b42166deb0578444f18b0721e0c1c340448e7c3708b323f6941c8ba4"
+      },
+      {
+        "bytes": 1852,
+        "git_blob": "04623995164059a1846e317132c37ccf86d5b737",
+        "path": "tests/kernel/sched-policy-auth/README.md",
+        "role": "kernel_policy_authorization_contract",
+        "sha256": "aee26f07e5477c85208377c646ed5d77272e1328ef06babf4cf8837931eab1d5"
+      },
+      {
+        "bytes": 4478,
+        "git_blob": "59d70e35dc56bce1d3a1894a3b917b7c2d044303",
+        "path": "tests/kernel/sched-policy-auth/probe.c",
+        "role": "kernel_policy_authorization_probe",
+        "sha256": "8f191b55b8d8438b25314d9a8b949067e94d0a83f37cc8724bdd9d772f08e616"
+      },
+      {
+        "bytes": 636,
+        "git_blob": "04467bcdf50e194669fd02ac2e7d8b5d1145a028",
+        "path": "tests/kernel/sched-policy-auth/run.py",
+        "role": "kernel_policy_authorization_runner",
+        "sha256": "06694018f4e3cab334d1e8f2b88424ea06e994321ad15097794e416225239190"
+      },
+      {
+        "bytes": 840,
+        "git_blob": "7f783e808f40d7b3a5edcec1026b79e7daa34bba",
+        "path": "kernel/asterinas/kernel/core/src/syscall/sched_setattr.rs",
+        "role": "kernel_policy_setattr",
+        "sha256": "9357a675ff4cb8af543def52eaefadc1aba89bf1c1095c6c4db7b89f60642d96"
+      },
+      {
+        "bytes": 1156,
+        "git_blob": "ac226a2384edc0432e13f3c8f2ea503a12ef7813",
+        "path": "kernel/asterinas/kernel/core/src/syscall/sched_setparam.rs",
+        "role": "kernel_policy_setparam",
+        "sha256": "e99d600d3d1125cb803329e882c9ba3412a17c8a65e7912cb04a74bc96b73372"
+      },
+      {
+        "bytes": 794,
+        "git_blob": "51ea440698912a976264bc8c98613c0d17595688",
+        "path": "kernel/asterinas/kernel/core/src/syscall/sched_setscheduler.rs",
+        "role": "kernel_policy_setscheduler",
+        "sha256": "919ff50446ddddd2c250162c212d6d1a9e70b202d470ab7061e33b8d2e894b08"
+      },
+      {
+        "bytes": 9545,
+        "git_blob": "174efadbb5e2e29e44159db02d4bf0eae7fe970f",
+        "path": "kernel/asterinas/kernel/core/src/syscall/sched_getattr.rs",
+        "role": "kernel_policy_syscall_access",
+        "sha256": "6e5e3fbfe70c59a39d18ff4d0238cda153769e5cbde1692b74050ab5f6189041"
       },
       {
         "bytes": 20839,
