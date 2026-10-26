@@ -97,10 +97,12 @@ def verify_engine(data):
         raise ValueError("historical Unix engine bytes changed")
 
 
-verify_engine(ENGINE.read_bytes())
+engine_bytes = ENGINE.read_bytes()
+verify_engine(engine_bytes)
 spec = importlib.util.spec_from_file_location("_receiving_unix_engine", ENGINE)
 engine = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(engine)
+# Execute exactly the checked bytes, rather than rereading through the loader.
+exec(compile(engine_bytes, str(ENGINE), "exec"), engine.__dict__)
 original_required_sources = engine.required_sources
 original_profiles = engine.SOURCE_PROFILES
 
