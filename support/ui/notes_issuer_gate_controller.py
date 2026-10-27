@@ -134,8 +134,15 @@ def tool_sources():
     result = {}
     for name in names:
         path = directory / name
-        require(path.stat().st_size <= 65536, "tool_source_bound")
-        result[name] = digest(path.read_bytes())
+        fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
+        try:
+            info = os.fstat(fd)
+            require(stat.S_ISREG(info.st_mode) and 0 < info.st_size <= 65536, "tool_source_bound")
+            raw = os.pread(fd, 65537, 0)
+            require(len(raw) == info.st_size, "tool_source_size_changed")
+            result[name] = digest(raw)
+        finally:
+            os.close(fd)
     return result
 
 
@@ -211,7 +218,11 @@ def run(binding, output, seconds, cancelled):
             admin.close()
         if channel is not None: channel.close()
         for process in reversed(held): process.close()
-        result["tool_sources_after"] = tool_sources()
+        try:
+            result["tool_sources_after"] = tool_sources()
+        except (OSError, ValueError) as error:
+            result["tool_sources_after"] = None
+            result["tool_source_check_error"] = str(error)
         result["tool_source_unchanged"] = result["tool_sources_before"] == result["tool_sources_after"]
         if not result["tool_source_unchanged"]: result["status"] = "tool_source_changed_outcome_unknown"
         result["finished_monotonic"] = time.monotonic()
@@ -226,9 +237,15 @@ def main():
     parser.add_argument("--seconds",type=float,default=120)
     args=parser.parse_args(); cancelled=[False]
     for number in (signal.SIGINT,signal.SIGTERM): signal.signal(number,lambda *_:cancelled.__setitem__(0,True))
-    try: result=run(load_binding(args.binding),args.output,args.seconds,lambda:cancelled[0])
+    try:
+        binding = load_binding(args.binding)
     except (OSError,ValueError) as error:
         result=dict(status="unexecuted",reason=str(error),product_qualified=False,consumer_first_use_revoked_proven=False)
+    else:
+        try: result=run(binding,args.output,args.seconds,lambda:cancelled[0])
+        except (OSError,ValueError) as error:
+            result=dict(status="outcome_unknown",reason=str(error),product_qualified=False,
+                        consumer_first_use_revoked_proven=False,cleanup_or_evidence_requires_attention=True)
     print(json.dumps(result,sort_keys=True))
     return 0 if result["status"]=="original_body_released_after_confirmed_revoke" else 1
 
