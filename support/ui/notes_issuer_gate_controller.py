@@ -18,7 +18,7 @@ import time
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from notes_fault_contract import Refused, exact_json, fields, require, uint
+from notes_fault_contract import Refused, digest, exact_json, fields, require, uint
 from notes_fault_linux import HeldProcess, READS, WRITES, SYSGOOD
 from notes_issuer_gate_contract import IssuerTransaction, selector
 from notes_issuer_gate_linux import IssuerTrace, POLLS, select_issuer, poll_descriptors
@@ -126,6 +126,19 @@ def load_binding(path):
     return value
 
 
+def tool_sources():
+    directory = Path(__file__).resolve(strict=True).parent
+    names = ("notes_fault_contract.py", "notes_fault_linux.py", "notes_issuer_gate_contract.py",
+             "notes_issuer_gate_receipts.py", "notes_issuer_gate_linux.py", "notes_issuer_gate_admin.py",
+             "notes_issuer_gate_controller.py")
+    result = {}
+    for name in names:
+        path = directory / name
+        require(path.stat().st_size <= 65536, "tool_source_bound")
+        result[name] = digest(path.read_bytes())
+    return result
+
+
 def run(binding, output, seconds, cancelled):
     require(os.getuid() == os.geteuid() == 0, "actual_uid_zero_required")
     require(0 < seconds <= 180, "issuer_arm_bound")
@@ -136,7 +149,7 @@ def run(binding, output, seconds, cancelled):
                   consumer_first_use_revoked_proven=False, status="unexecuted", body_released=False,
                   body_shutdown=False, mutation_attempted=False, syscall_result_modified=False,
                   desktop_commit=binding["desktop_commit"], hepta_commit=binding["hepta_commit"],
-                  started_monotonic=time.monotonic())
+                  started_monotonic=time.monotonic(), tool_sources_before=tool_sources())
     held, channel, trace, admin, capture = [], None, None, None, None
     try:
         for role in ("root", "agentd"):
@@ -198,6 +211,9 @@ def run(binding, output, seconds, cancelled):
             admin.close()
         if channel is not None: channel.close()
         for process in reversed(held): process.close()
+        result["tool_sources_after"] = tool_sources()
+        result["tool_source_unchanged"] = result["tool_sources_before"] == result["tool_sources_after"]
+        if not result["tool_source_unchanged"]: result["status"] = "tool_source_changed_outcome_unknown"
         result["finished_monotonic"] = time.monotonic()
         write_new(output/"result.json", json.dumps(result, ensure_ascii=False, indent=2).encode()+b"\n")
     return result
