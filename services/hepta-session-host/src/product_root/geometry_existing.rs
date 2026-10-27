@@ -7,6 +7,7 @@ impl Product {
         inputs: &Inputs,
         config: &HostAuthorityServiceConfig,
         prior: &HostAuthorityRegistration,
+        preparation: Arc<super::super::recovery_preparation::RecoveryPreparation>,
     ) -> Result<Self> {
         fs::root_directory(&inputs.prefix)?;
         let admin = inputs.prefix.join("admin");
@@ -87,14 +88,17 @@ impl Product {
         let fleet = HeptaFleetRoot::parse(inputs.prefix.join("f"))?;
         let registry = FleetRegistry::open_existing(fleet.clone())?;
         let agent = prior.registered_identity.agent_id.clone();
-        let record = registry.load_agent(&agent)?;
+        // Original Fleet validates its complete transition history. A normal
+        // Running/Draining/Stopped advances lifecycle generation, not spawn;
+        // any later Starting, gap or corrupt transition still refuses recovery.
+        let record =
+            registry.load_agent_for_spawn(&agent, prior.registered_identity.spawn_generation)?;
         if registry.load()?.agents.len() != 1
             || prior.registered_identity.fleet_root != fleet.as_path()
             || prior.registered_identity.workspace != inputs.prefix.join("w")
             || record.manifest.workspace.as_path() != prior.registered_identity.workspace
             || serde_json::to_value(&record.manifest.resources)?
                 != serde_json::to_value(&prior.registered_identity.resources)?
-            || record.lifecycle.generation != prior.registered_identity.spawn_generation
         {
             return Err(
                 "original Fleet identity/generation differs; no fresh or later recovery fallback"
@@ -116,6 +120,7 @@ impl Product {
             record,
             user,
             mount,
+            _recovery_preparation: Some(preparation),
         })
     }
 }

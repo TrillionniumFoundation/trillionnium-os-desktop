@@ -1,5 +1,5 @@
-//! Finite Linux first-product Root composition. Existing/partial state is an
-//! error. The original libraries own authority, lifecycle, queues and effects.
+//! Finite Linux first-product Root composition. Only exact pre-spawn recovery
+//! preparation may resume. Original libraries own authority and effects.
 mod admin;
 mod admin_client;
 mod authority;
@@ -11,6 +11,7 @@ mod packet;
 mod process;
 mod recovery;
 mod recovery_authority;
+mod recovery_preparation;
 mod recovery_sockets;
 mod replay;
 mod seed;
@@ -92,6 +93,9 @@ fn run(
     runtime: tokio::runtime::Runtime,
     previous: Option<(recovery::Existing, u64)>,
 ) -> Result<()> {
+    if let Some((old, _)) = &previous {
+        old.consume_spawn()?;
+    }
     // Only now begins the one 30-second Session/Root bootstrap episode.
     let staged = session::Session::spawn(&inputs, &fresh)?;
     let (deployment, consumer) = session::deployment()?;

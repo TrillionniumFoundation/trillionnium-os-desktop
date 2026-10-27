@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "crates": [
+    {
+      "passed": true,
+      "guests": [
+        {
+          "crate": "aster-block",
+          "declared": 24,
+          "passed": 24,
+          "failed": 0,
+          "filtered": 0,
+          "soft_skipped": 0,
+          "soft_skip_reasons": [],
+          "exercised_passed_lower_bound": 24,
+          "observed_test_starts": 24,
+          "required_permission_tests": [],
+          "required_core_tests": [],
+          "required_allocator_tests": [],
+          "allocator_exhaustion": null,
+          "required_mlsdisk_tests": [],
+          "mlsdisk_media_durability_qualified": null,
+          "required_ostd_tests": [],
+          "raw_qemu_exit": 33,
+          "guest": "guest-001",
+          "required_partition_tests": [
+            "aster_block::partition::table::tests::ieee_crc_matches_known_vectors_and_incremental_updates",
+            "aster_block::partition::table::tests::valid_gpt_preserves_slots_and_last_partial_sector",
+            "aster_block::partition::table::tests::entries_crossing_sectors_and_larger_than_sectors_are_supported",
+            "aster_block::partition::table::tests::unused_array_padding_is_not_part_of_gpt_crc",
+            "aster_block::partition::table::tests::zero_short_and_misaligned_entry_sizes_are_rejected_without_array_reads",
+            "aster_block::partition::table::tests::oversized_array_dimensions_are_bounded_before_io_or_allocation",
+            "aster_block::partition::table::tests::invalid_header_size_revision_reserved_and_crc_are_rejected",
+            "aster_block::partition::table::tests::gpt_locations_usable_ranges_and_overflow_are_rejected_before_array_io",
+            "aster_block::partition::table::tests::gpt_reversed_outside_and_overlapping_partitions_are_rejected",
+            "aster_block::partition::table::tests::corrupt_primary_header_or_array_uses_valid_backup_without_writes",
+            "aster_block::partition::table::tests::corrupt_backup_uses_valid_primary_without_writes",
+            "aster_block::partition::table::tests::two_valid_but_conflicting_gpt_copies_are_rejected",
+            "aster_block::partition::table::tests::crc_covers_unused_entries_and_large_entry_extensions",
+            "aster_block::partition::table::tests::io_failure_is_propagated_or_recovered_only_from_a_valid_gpt_copy",
+            "aster_block::partition::table::tests::protective_mbr_in_another_slot_still_selects_gpt",
+            "aster_block::partition::table::tests::valid_legacy_mbr_with_zero_chs_wins_over_stale_backup_gpt",
+            "aster_block::partition::table::tests::mbr_out_of_device_and_overlapping_ranges_are_rejected",
+            "aster_block::partition::table::tests::valid_ebr_chain_uses_base_relative_links_and_sector_relative_data",
+            "aster_block::partition::table::tests::self_and_multi_sector_ebr_cycles_terminate_without_partial_results",
+            "aster_block::partition::table::tests::oversized_ebr_chain_stops_at_the_discovery_limit",
+            "aster_block::partition::table::tests::ebr_bad_signature_io_and_links_are_rejected",
+            "aster_block::partition::table::tests::ebr_data_must_stay_in_container_and_not_cover_metadata_or_other_data",
+            "aster_block::partition::table::tests::empty_devices_and_unpartitioned_media_have_no_partitions",
+            "aster_block::partition::table::tests::malformed_headers_never_request_a_sector_outside_the_device"
+          ],
+          "physical_media_qualified": false
+        }
+      ]
+    }
+  ]
+}

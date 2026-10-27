@@ -17,15 +17,29 @@ The actual Desktop commit and tree belong to the build receipt. The earlier
 PR265 / `489f7096` build remains historical evidence and supplies no test result
 to this combination. All product compilation uses Rust 1.96.0; the common
 resolution is serde 1.0.229, serde_json 1.0.154, tokio 1.53.3 and libc 0.2.191.
-Both Cargo roots carry the original AWS configuration patch together with the
-other original dependency security patches. The Notes model fixture, document
+The UI and Session host Cargo roots carry the original AWS configuration patch
+together with the other original dependency security patches. Full verification
+covers the six lock roots listed below. The Notes model fixture, document
 readback fixture and prepared SDK helper must match that same source.
 
 ## Selected source and current qualification (2026-10-27)
 
-The selected Hepta source is [`de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c), tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`. Desktop source-pin convergence starts from `1813bac14a829cd83ef3d5fdda4e96e71955190e`, tree `db199ec4e58bc645f0a10c13852950a7a3f7439e`. Cargo must regenerate and verify the six lock roots before the final clean Desktop commit/tree is recorded in the actual selection and build receipt.
+The selected Hepta source is [`4223fc77944e9beb5651df063158b22ae1a4f701`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/4223fc77944e9beb5651df063158b22ae1a4f701), tree `7c19c9903d4e82baf3a61111214ff3fe46605cef`. The original Cargo 1.96.0 actually resolved all six roots in independent source/cache directories. Full original source-byte and critical dependency verification passed, followed by the original builder's actual Git-cache and prepared native graph checks. The [source-pair record](../../results/integration/2026-10-27-source-pin/README.md) retains exact lock/source hashes and commands. Ordinary updates were online; subsequent metadata checks were locked/offline. Three roots without Hepta dependencies retain unchanged locks. The paired Desktop recovery callsite uses original Fleet's validated spawn history. This source-resolution result does not compile or qualify the final product; each build must record its actual clean Desktop commit/tree, selected features and binary hashes.
+
+The previous Desktop [`94234e6a63858dcf7312025f6e20c85e00cc07f6`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/94234e6a63858dcf7312025f6e20c85e00cc07f6), tree `13b211835e776adf0aa450d168b40a97fa39b842`, selected Hepta `de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c`, tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`. Its completed six-lock and native CI results below remain historical and do not transfer to 4223fc7.
 
 The canonical SDK helper and prepared SDK tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf` remain selected. Ordinary Git SDK locks and the explicit `trill-shell/hepta-native-preedit-sdk` prepared lock stay separate. The earlier `baf73bf0` / FD convergence returned zero for all 14 Cargo commands and verified six graphs, 123 required source files and 219 original manifests; those observations remain tied to that earlier pair.
+
+The exact 942/de0 combination completed three GitHub workflows successfully:
+[native UI 40464606453](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/40464606453),
+[Session host 40464584916](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/40464584916)
+and [release source profile 40464413024](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/40464413024).
+Native UI recorded 394 Rust passes and five ignored tests across its UI,
+native-text and product-root invocations, built all five debug UI programs,
+checked Clippy and ran the prepared SDK component. Its retained artifacts are
+logs, metadata and binary hashes, not an installed release package. The
+optimized distribution build, real login/model/Notes operation and installed
+input/accessibility checks remain separate execution gates.
 
 On original FD `fd6d8d3fcd9aee36711381adf74b6ba7162cda1b`, type checking, strict Clippy, 26 custody/stream/recovery tests, four original Supervisor tests, the complete 475 ordinary Agentd tests and 17 Memory tests passed. Two original ignored Root-preparation tests separately passed under actual UID0. The scoped `just fix` zero in 94.159 seconds without source changes and `just fmt` zero also belong to FD. These results do not qualify a successor installation or production Notes effect.
 

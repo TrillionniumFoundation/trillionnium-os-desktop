@@ -17,6 +17,9 @@ SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
 CRATES = {"ostd": "ostd", "aster-core": "kernel/core",
           "osdk-frame-allocator": "osdk/deps/frame-allocator",
           "aster-mlsdisk": "kernel/core/comps/mlsdisk"}
+# Explicit opt-in suites do not change the existing four-crate default gate.
+OPTIONAL_CRATES = {"aster-block": "kernel/core/comps/block"}
+ALL_CRATES = {**CRATES, **OPTIONAL_CRATES}
 
 
 def digest(path):
@@ -50,14 +53,14 @@ def generated_manifest(upstream, crate):
     testing OSTD or the frame allocator, including the default-features flag.
     """
     root = tomllib.loads((upstream / "Cargo.toml").read_text())
-    target = tomllib.loads((upstream / CRATES[crate] / "Cargo.toml").read_text())
+    target = tomllib.loads((upstream / ALL_CRATES[crate] / "Cargo.toml").read_text())
     package = target["package"]
     version = package["version"]
     if isinstance(version, dict):
         version = root["workspace"]["package"]["version"]
     text = ['[workspace]', '', '[package]', f'name = "{crate}-osdk-bin"',
             f'version = "{version}"', 'edition = "2024"', '']
-    dependencies = {crate: {"path": str(upstream / CRATES[crate]), "default-features": False}}
+    dependencies = {crate: {"path": str(upstream / ALL_CRATES[crate]), "default-features": False}}
     for name, relative in (("osdk-test-kernel", "osdk/deps/test-kernel"),
                            ("osdk-frame-allocator", "osdk/deps/frame-allocator"),
                            ("osdk-heap-allocator", "osdk/deps/heap-allocator"),
@@ -104,7 +107,7 @@ def package_key(package):
 
 def audit_packages(packages, seed_set, crate):
     """Permit the OSDK base plus one exact local G1-a package, no external drift."""
-    expected = [(f"{crate}-osdk-bin", "0.1.0" if crate in ("aster-core", "aster-mlsdisk") else "0.19.0", "", "")]
+    expected = [(f"{crate}-osdk-bin", "0.1.0" if crate in ("aster-core", "aster-mlsdisk", "aster-block") else "0.19.0", "", "")]
     if crate == "aster-core":
         expected.append(("os-control", "0.1.0", "", ""))
         native = [p for p in packages if p["name"] == "os-control"]
@@ -138,8 +141,12 @@ def main():
     here = Path(__file__).resolve().parent
     parser.add_argument("--upstream", type=Path, default=here.parents[2] / "kernel/asterinas")
     parser.add_argument("--output-dir", type=Path, default=here / "locks")
-    parser.add_argument("--crate", choices=CRATES, action="append")
+    parser.add_argument("--crate", choices=ALL_CRATES, action="append")
+    parser.add_argument("--bootstrap-optional", action="store_true",
+                        help="create a new optional suite lock offline from the immutable seed; never resolve newer packages")
     args = parser.parse_args()
+    if args.bootstrap_optional and (not args.crate or any(crate not in OPTIONAL_CRATES for crate in args.crate)):
+        parser.error("--bootstrap-optional requires explicitly selected optional crates only")
     upstream = args.upstream.resolve()
     seed_bytes = original_seed(upstream)
     seed_packages = tomllib.loads(seed_bytes.decode())["package"]
@@ -155,13 +162,22 @@ def main():
             # The original Git seed stays fixed. The working root lock is an
             # explicit local derivative, not the source of this normalization.
             # Fetch only the audited test graph here, with Cargo still --locked.
-            bootstrap = (here / "locks" / f"{crate}.Cargo.lock").read_bytes()
-            audit_packages(tomllib.loads(bootstrap.decode())["package"], seed_set, crate)
-            (work / "Cargo.lock").write_bytes(bootstrap)
-            prefetch = ["cargo", f"+{TOOLCHAIN}", "fetch", "--locked"]
-            checked_cargo(prefetch, cwd=work, label=f"{crate} prefetch audited derived lock")
-            if (work / "Cargo.lock").read_bytes() != bootstrap:
-                raise SystemExit(f"{crate}: locked prefetch changed its input lock")
+            bootstrap = None
+            commands = []
+            if not args.bootstrap_optional:
+                bootstrap = (here / "locks" / f"{crate}.Cargo.lock").read_bytes()
+                audit_packages(tomllib.loads(bootstrap.decode())["package"], seed_set, crate)
+                (work / "Cargo.lock").write_bytes(bootstrap)
+                prefetch = ["cargo", f"+{TOOLCHAIN}", "fetch", "--locked"]
+                checked_cargo(prefetch, cwd=work, label=f"{crate} prefetch audited derived lock")
+                commands.append(prefetch)
+                if (work / "Cargo.lock").read_bytes() != bootstrap:
+                    raise SystemExit(f"{crate}: locked prefetch changed its input lock")
+            # A new optional graph has no committed bootstrap lock yet. This
+            # explicit first normalization is offline, still begins with the
+            # immutable seed and still audits every resulting package below.
+            # Missing cache entries fail; this never falls back to resolution
+            # from the network or to another crate's test-base lock.
             (work / "Cargo.lock").write_bytes(seed_bytes)
             command = ["cargo", f"+{TOOLCHAIN}", "metadata", "--offline",
                        "--format-version", "1", "--filter-platform", "x86_64-unknown-none"]
@@ -169,6 +185,7 @@ def main():
                                    label=f"{crate} offline metadata normalization")
             locked = checked_cargo([*command, "--locked"], cwd=work,
                                    label=f"{crate} locked offline metadata audit")
+            commands.extend((command, [*command, "--locked"]))
             normalized = (work / "Cargo.lock").read_bytes()
             packages = tomllib.loads(normalized.decode())["package"]
             expected = audit_packages(packages, seed_set, crate)
@@ -184,15 +201,16 @@ def main():
                       "seed_package_count": len(seed_packages), "package_count": len(packages),
                       "added_local_package": expected[0][0], "external_drift": [],
                       "added_local_packages": [p[0] for p in expected],
-                      "prefetch_lock_sha256": hashlib.sha256(bootstrap).hexdigest(),
+                      "prefetch_lock_sha256": hashlib.sha256(bootstrap).hexdigest() if bootstrap is not None else None,
+                      "optional_seed_bootstrap": args.bootstrap_optional,
                       "metadata_exit": result.returncode, "locked_metadata_exit": locked.returncode,
-                      "commands": [prefetch, command, [*command, "--locked"]],
+                      "commands": commands,
                       "generated_manifest": manifest.replace(str(upstream), "${ASTERINAS}"),
                       "resolved_features": {node["id"].replace(str(upstream), "${ASTERINAS}").replace(str(upstream.parents[1]), "${PROJECT}").replace(str(work), "${TEST_BASE}"): node["features"]
                                             for node in metadata["resolve"]["nodes"]},
                       "generator_inputs_sha256": {name: digest(upstream / name) for name in
                           ("osdk/src/base_crate/mod.rs", "osdk/src/base_crate/Cargo.toml.template",
-                           "osdk/src/commands/test.rs", "Cargo.toml", f"{CRATES[crate]}/Cargo.toml")}}
+                           "osdk/src/commands/test.rs", "Cargo.toml", f"{ALL_CRATES[crate]}/Cargo.toml")}}
             (args.output_dir / f"{crate}.json").write_text(json.dumps(report, indent=2) + "\n")
             print(f"{crate}: {len(packages)} packages, sha256={digest(output)}, no external drift")
 

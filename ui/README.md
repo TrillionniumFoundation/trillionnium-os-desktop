@@ -8,23 +8,35 @@ native windows. Each Asterinas display/input or mobile target requires its own
 execution evidence.
 
 The original UI/core, Agentd host dependencies and all four original AccessKit
-patches resolve from Hepta `489f7096b0e5754968a30fa4477bb4417d24834f`
-(tree `4731de9117065bd773b2fcee92c815ff896b8488`). The patch entries live in
+patches resolve from the immutable Hepta commit/tree selected by
+[HEPTA_SHARED_PRESENTER.json](../support/ui/HEPTA_SHARED_PRESENTER.json).
+The patch entries live in
 this workspace's Cargo root because Cargo does not inherit dependency-workspace
 patches. The [fixed source map](../docs/SOURCES.md#hepta-native-organ) links the
 same original modules and their development contracts.
-The current [dependency contract](../support/ui/DEPENDENCIES.md) describes both
-Cargo roots, source checks and lock updates. Results from the historical
+The current [dependency contract](../support/ui/DEPENDENCIES.md) describes five
+ordinary Cargo lock roots and the explicit prepared-preedit SDK lock, source
+checks and lock updates. Results from the historical
 `7ea3df4` combination remain attached to that older source.
 
 Normal `hepta-native-makepad` keeps original SDK 337566c8 and the 54-file bundle.
 The separate `hepta-native-clipboard-sdk` feature requires the exact all-SDK
 override, a separate candidate worktree/lock and the 61-file bundle; only that
 candidate advertises native PasteText. See [the two profiles](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate).
-Latest original UI 43/43 and AccessKit 54/54 results are scoped default-SDK
+The earlier original UI 43/43 and AccessKit 54/54 results are scoped default-SDK
 package tests, not a full Desktop workspace, release or real window result;
 their [exact execution record](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
 does not qualify the clipboard candidate or installed production.
+
+The later frozen Desktop `94234e6a` / Hepta `de0ddaa4` combination completed
+[native UI CI run 40464606453](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/40464606453):
+394 Rust tests passed and five remained ignored across the recorded UI,
+native-text and product-root invocations. The same run built the five debug
+UI binaries, checked Clippy and exercised the prepared-preedit SDK component.
+It did not produce an installed release or run a physical-human/model Notes
+operation. Current source and qualification are recorded in
+[CURRENT_CAPABILITIES](../docs/CURRENT_CAPABILITIES.md); successor builds retain
+their own exact commit, features, locks and receipts.
 
 ## Modules
 
@@ -64,4 +76,6 @@ workspace names are presentation labels, not security domains.
 [CHAT_WORKSPACE](../support/ui/CHAT_WORKSPACE.md) owns draft/context semantics;
 [NOTES_ORGAN](../support/ui/NOTES_ORGAN.md) owns target execution and uncertain
 outcomes. The original Hepta owner retains durable operation authority.
-Current product qualification is recorded in [STATUS](../docs/STATUS.md).
+Current product qualification is recorded in
+[CURRENT_CAPABILITIES](../docs/CURRENT_CAPABILITIES.md), with historical receipts
+in [STATUS](../docs/STATUS.md).

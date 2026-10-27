@@ -141,6 +141,8 @@ jobs:
           python3 -I support/build/ktest/prepare-locks.py --output-dir "$prepared"
           cmp "$prepared/ostd.Cargo.lock" support/build/ktest/locks/ostd.Cargo.lock
           cmp "$prepared/aster-core.Cargo.lock" support/build/ktest/locks/aster-core.Cargo.lock
+          python3 -I support/build/ktest/prepare-locks.py --crate aster-block --output-dir "$prepared"
+          cmp "$prepared/aster-block.Cargo.lock" support/build/ktest/locks/aster-block.Cargo.lock
 
       - name: Verify complete kernel-report host regressions
         run: |
@@ -158,6 +160,16 @@ jobs:
           mkdir -p "${RUNNER_TEMP}"
           python3 -I support/build/ktest/run.py --output "$out"
           python3 -I -B support/build/ktest/check-report.py "$out"
+
+      - name: Run the complete partition parser suite in a separate real guest
+        shell: bash
+        env:
+          A01_KTEST_TIMEOUT: "300"
+        run: |
+          set -euo pipefail
+          python3 -I -B -m unittest discover -s support/build/ktest -p 'test_partition_gate.py' -v
+          python3 -I -B support/build/ktest/run.py --crate aster-block --skip-osdk-install \
+            --output "${RUNNER_TEMP}/a06-partition-ktest"
 
       - name: Prove the CPU owner regression fails under the frozen old behavior
         shell: bash
@@ -595,6 +607,7 @@ jobs:
             ${{ runner.temp }}/a06-boot-params
             ${{ runner.temp }}/a06-exfat-kernel-support
             ${{ runner.temp }}/a06-ktest
+            ${{ runner.temp }}/a06-partition-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a04-sqlite-restart

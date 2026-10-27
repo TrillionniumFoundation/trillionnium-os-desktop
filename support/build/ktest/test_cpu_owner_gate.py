@@ -41,14 +41,16 @@ class CpuOwnerGateTests(unittest.TestCase):
             "timed_out": False, "crate": "aster-core",
         }))
 
-    def test_retains_all_previous_names_and_adds_eight(self):
-        self.assertEqual(CHECKER.MINIMUM_CORE_TESTS, 373)
-        self.assertEqual(len(CHECKER.REQUIRED_CORE_TESTS), 134)
+    def test_retains_current_baseline_and_all_required_names(self):
+        self.assertEqual(CHECKER.MINIMUM_CORE_TESTS, 377)
+        self.assertEqual(len(CHECKER.REQUIRED_CORE_TESTS), 138)
         retained = [name for name in CHECKER.REQUIRED_CORE_TESTS
                     if name not in (*CHECKER.CPU_OWNER_CONTINUITY_TESTS, *CHECKER.CPU_SUCCESSOR_TESTS)]
-        self.assertEqual(len(retained), 126)
+        # The retained inventory also includes the two trusted-entropy and
+        # two cpu.weight regressions added after the original 373-test gate.
+        self.assertEqual(len(retained), 130)
         digest = hashlib.sha256(json.dumps(retained, separators=(",", ":")).encode()).hexdigest()
-        self.assertEqual(digest, "57a8097d6d45abd2629a9fa5f1cd4749473d5ea8ef0756bdc6d235a382fb0500")
+        self.assertEqual(digest, "1f35e178846b0bc0d70d9adc595e05fff567585d52c3a49bc51df7ada9e50e0a")
 
     def test_every_successor_case_is_mandatory(self):
         self.assertEqual(len(CHECKER.CPU_SUCCESSOR_TESTS), 5)
@@ -67,15 +69,16 @@ class CpuOwnerGateTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         CHECKER.check_guest(self.guest, "aster-core", False)
 
-    def test_previous_368_denominator_is_rejected(self):
-        self.write(self.names[:368])
-        with self.assertRaisesRegex(ValueError, "shrank"):
-            CHECKER.check_guest(self.guest, "aster-core", False)
+    def test_previous_core_denominators_are_rejected(self):
+        for count in (368, 373, 375, 376):
+            self.write(self.names[:count])
+            with self.subTest(count=count), self.assertRaisesRegex(ValueError, "shrank"):
+                CHECKER.check_guest(self.guest, "aster-core", False)
 
     def test_complete_new_inventory(self):
         self.write()
         result = CHECKER.check_guest(self.guest, "aster-core", False)
-        self.assertEqual(result["passed"], 373)
+        self.assertEqual(result["passed"], 377)
         self.assertEqual(result["required_core_tests"], list(CHECKER.REQUIRED_CORE_TESTS))
 
     def test_missing_or_repeated_new_test(self):

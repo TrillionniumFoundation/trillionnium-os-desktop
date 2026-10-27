@@ -14,7 +14,10 @@ The integrated Linux product and its blocking host workflow use Rust
 receipts retain their original source scope. The Asterinas kernel keeps its
 separate pinned nightly toolchain. Required host dependencies include network/cached crates,
 Linux Wayland (or X11), OpenGL/Mesa including llvmpipe for software rendering,
-libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
+libxkbcommon, its X11 runtime library when using X11 (`libxkbcommon-x11-0`
+on Ubuntu), a system Chinese font, and a Chinese IME such as Fcitx5.
+The X11 library is loaded at runtime; a successful Cargo build does not prove
+it is installed. The required real X11 first-frame gate exercises that path.
 The UI workspace declares Rust **1.96** and pins the original Hepta dependency
 patches at its Cargo root. The native renderers include AccessKit; see
 [`ACCESSIBILITY.md`](ACCESSIBILITY.md) for the AT-SPI gate and its limits.

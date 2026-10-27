@@ -84,6 +84,7 @@ files are refused; no migration creates a replacement thread automatically.
 | `config`, `fs` | Bounded explicit inputs and physical file custody |
 | `geometry`, `geometry_existing` | Disjoint fresh creation and exact existing bind/source/UID custody |
 | `recovery`, `recovery_authority`, `recovery_sockets` | One same-boot original owner handoff, actual lease window and stale-only Root rendezvous retirement |
+| `recovery_preparation` | Exclusive preparation ownership, exact pre-spawn reentry and durable consumption of the first spawn attempt; the guard remains held through mount cleanup |
 | `process`, `supervisor` | Held real children, one original driver spawn and original stop/reap |
 | `seed` | Actual original Core Start/Resume, observed model/catalog receipt and graceful seed shutdown |
 | `packet`, `session` | Same-Root anonymous pair, actual Session and credential-checked metadata peek |

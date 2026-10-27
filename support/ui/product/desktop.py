@@ -351,6 +351,7 @@ def pack(archive, expected_desktop, profile_path, output, makepad_resources=None
                     "qualification": "linux-host-package", "effects_authorized": False,
                     "files": files}
         (package / "manifest.json").write_bytes(json_bytes(manifest))
+        (package / "manifest.json").chmod(0o644)
         verify_package(package)
         built = Path(temp) / "product.tar.gz"
         with tarfile.open(built, "w:gz") as tar:

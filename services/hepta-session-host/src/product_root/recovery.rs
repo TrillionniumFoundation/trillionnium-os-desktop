@@ -1,4 +1,6 @@
-//! One explicit same-boot recovery episode. No fresh fallback or effect replay.
+//! One same-boot recovery with repeatable preparation before child creation.
+//! No fresh fallback, repeated spawn or effect replay.
+use super::recovery_preparation::RecoveryPreparation;
 use super::{Result, authority, config::Inputs, fs, geometry::Product};
 use codex_hepta_agentd::{
     HostAuthorityRegistration, HostAuthorityServiceConfig, HostSignedWriterAuthorizationV1,
@@ -8,6 +10,7 @@ use codex_hepta_memory::{CognitiveCheckpointPeerLifetime, NotesTargetIdentity};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 /// A request to select original records after the canonical owner has opened.
 /// Root does not resolve latest by reading the database or inventing an ID.
@@ -71,12 +74,14 @@ pub(super) struct Existing {
     pub target: NotesTargetIdentity,
     pub profile: Value,
     pub selection: RecoverySelection,
+    preparation: Arc<RecoveryPreparation>,
 }
 
 impl Existing {
     pub(super) fn open(inputs: &Inputs, selection: RecoverySelection) -> Result<(Self, Product)> {
         selection.validate()?;
         let admin = inputs.prefix.join("admin");
+        let preparation = Arc::new(RecoveryPreparation::acquire(&admin)?);
         let original_inputs: Inputs = fs::read_root_json(&admin.join("original-inputs.json"))?;
         let mut expected = serde_json::to_value(original_inputs)?;
         let mut actual = serde_json::to_value(inputs)?;
@@ -148,18 +153,15 @@ impl Existing {
                 process_start_ticks: registration.process_start_ticks,
             })?;
         let _session_retired = RetiredCheckpointPublisher::observe(session)?;
-        let mut product = Product::open_existing(inputs, &config, &registration)?;
+        let mut product =
+            Product::open_existing(inputs, &config, &registration, preparation.clone())?;
         let artifacts: Value = fs::read_root_json(&admin.join("actual-artifacts.json"))?;
         if artifacts != authority::artifacts(inputs)? {
             return Err(
                 "recovery executable/source artifacts differ from original frozen files".into(),
             );
         }
-        let stage = admin.join("recovery");
-        // Existing means partial or an already consumed episode. No new target
-        // is reserved on retry, even if policy CAS might already have committed.
-        fs::directory_new(&stage, 0o700, None)?;
-        product.admin = stage;
+        product.admin = preparation.directory.clone();
         let old = Self {
             config,
             registration,
@@ -168,8 +170,9 @@ impl Existing {
             target: composition.notes_target,
             profile,
             selection,
+            preparation,
         };
-        old.stage(&product, "00-admitted", &serde_json::json!({"original_owner":old.registration,
+        old.preparation.admit(&serde_json::json!({"original_owner":old.registration,
             "old_target":old.target,"original_thread":old.seed,"operation_selector":old.selection,
             "scope":"same-boot existing state selected; no recovery success or operation outcome asserted"}))?;
         Ok((old, product))
@@ -181,7 +184,14 @@ impl Existing {
         name: &str,
         value: &impl serde::Serialize,
     ) -> Result<()> {
+        if name == "05-old-sockets-retired" {
+            return self.preparation.sockets_retired(value);
+        }
         fs::json_new(&product.admin.join(format!("{name}.json")), value)
+    }
+
+    pub(super) fn consume_spawn(&self) -> Result<()> {
+        self.preparation.consume_spawn()
     }
 }
 

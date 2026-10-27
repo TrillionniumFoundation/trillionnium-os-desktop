@@ -120,7 +120,9 @@ class G2CoreEvidenceTests(unittest.TestCase):
                 with self.subTest(minimum=minimum), self.assertRaisesRegex(ValueError, "373-test core gate"):
                     checker.check_guest(self.guest)
             checker.original.MINIMUM_CORE_TESTS = original_minimum
-            checker.original.REQUIRED_CORE_TESTS = original_required[:-1]
+            # The compatibility guard requires at least 134 names. With the
+            # expanded current inventory, dropping one no longer crosses it.
+            checker.original.REQUIRED_CORE_TESTS = original_required[:133]
             with self.assertRaisesRegex(ValueError, "373-test core gate"):
                 checker.check_guest(self.guest)
             for missing in (*checker.CONTINUITY_TESTS, *checker.CPU_SUCCESSOR_TESTS):

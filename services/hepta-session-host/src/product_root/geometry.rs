@@ -11,6 +11,7 @@ use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 #[path = "geometry_existing.rs"]
 mod existing;
@@ -26,6 +27,9 @@ pub(super) struct Product {
     pub record: AgentRecord,
     pub user: PathBuf,
     mount: FreshMount,
+    // Fields drop in declaration order: keep recovery serialization until the
+    // exact mount's cleanup has finished, including all error returns.
+    _recovery_preparation: Option<Arc<super::recovery_preparation::RecoveryPreparation>>,
 }
 
 pub(super) struct FreshMount {
@@ -144,6 +148,7 @@ impl Product {
             record,
             user,
             mount,
+            _recovery_preparation: None,
         })
     }
 

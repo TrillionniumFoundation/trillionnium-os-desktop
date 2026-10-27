@@ -26,6 +26,7 @@ else:
 PACKAGE = 'local.pocket4.actions.v2'
 HELPER = '/usr/local/libexec/android-digitalis-observe-helper'
 CONTROL = '/usr/bin/droidloomctl'
+APK_MAX_BYTES = 4 * 1024 * 1024
 
 
 def require(condition, code):
@@ -50,28 +51,78 @@ def pinned_file(path, expected, owner):
     return raw
 
 
+def apk_snapshot(path):
+    """Measure one bounded held inode; later pathnames cannot change its bytes."""
+    # O_NONBLOCK ensures a substituted FIFO cannot block before fstat rejects
+    # it. Do not resolve() the input: that would silently follow a symlink.
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK)
+    try:
+        before = os.fstat(fd)
+        require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+                'APK_INPUT_NOT_ONE_REGULAR_FILE')
+        require(0 < before.st_size <= APK_MAX_BYTES, 'APK_INPUT_SIZE_UNQUALIFIED')
+        chunks, remaining = [], APK_MAX_BYTES + 1
+        while remaining:
+            chunk = os.read(fd, min(64 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b''.join(chunks)
+        after = os.fstat(fd)
+    finally:
+        os.close(fd)
+    fields = ('st_dev', 'st_ino', 'st_mode', 'st_nlink', 'st_uid', 'st_gid',
+              'st_size', 'st_mtime_ns', 'st_ctime_ns')
+    require(tuple(getattr(before, field) for field in fields)
+            == tuple(getattr(after, field) for field in fields)
+            and len(raw) == before.st_size, 'APK_CHANGED_DURING_SNAPSHOT')
+    return raw, {
+        'observed_source_path': str(Path(path).absolute()),
+        'source_device': before.st_dev, 'source_inode': before.st_ino,
+        'source_mtime_ns': before.st_mtime_ns, 'source_ctime_ns': before.st_ctime_ns,
+        'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+    }
+
+
 def check_apks(sdk, original, candidate):
     tools = Path(sdk).resolve() / 'build-tools/35.0.1'
-    require(build_receiver.sha(original) == build_receiver.ORIGINAL_APK_SHA256, 'ORIGINAL_APK_PIN_MISMATCH')
-    baseline = build_receiver.certificates(tools / 'apksigner', original)
-    candidate_certs = build_receiver.certificates(tools / 'apksigner', candidate)
-    require(baseline == candidate_certs, 'ORIGINAL_SIGNER_IDENTITY_MISMATCH')
-    metadata = build_receiver.run([tools / 'aapt', 'dump', 'badging', candidate])
-    package = re.search(r"^package: name='([^']+)' versionCode='([^']+)'", metadata, re.M)
-    require(package is not None and package.group(1) == PACKAGE, 'CANDIDATE_PACKAGE_MISMATCH')
-    require(not re.search(r'^uses-permission(?:-sdk-\d+)?:', metadata, re.M), 'UNREVIEWED_CANDIDATE_PERMISSIONS')
-    manifest = build_receiver.run([tools / 'aapt', 'dump', 'xmltree', candidate, 'AndroidManifest.xml'])
-    require('local.pocket4.actions.v2.ActionRunner' in manifest or '.ActionRunner' in manifest,
-            'ORIGINAL_INSTRUMENTATION_MISSING')
-    require('E: activity ' not in manifest and 'E: service ' not in manifest
-            and 'E: provider ' not in manifest and 'E: receiver ' not in manifest,
-            'UNREVIEWED_CANDIDATE_COMPONENT')
+    original_raw, original_identity = apk_snapshot(original)
+    require(original_identity['sha256'] == build_receiver.ORIGINAL_APK_SHA256, 'ORIGINAL_APK_PIN_MISMATCH')
+    candidate_raw, candidate_identity = apk_snapshot(candidate)
+    # All external inspectors consume these private copies of the same held-FD
+    # reads. Reopening either caller pathname for a later tool or final hash
+    # could otherwise combine one APK's signer/manifest with another's hash.
+    with tempfile.TemporaryDirectory(prefix='original-android-apk-snapshots-') as scratch:
+        original_copy, candidate_copy = [Path(scratch) / name for name in ('original.apk', 'candidate.apk')]
+        for path, raw in ((original_copy, original_raw), (candidate_copy, candidate_raw)):
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC, 0o600)
+            with os.fdopen(fd, 'wb') as target:
+                target.write(raw)
+        baseline = build_receiver.certificates(tools / 'apksigner', original_copy)
+        candidate_certs = build_receiver.certificates(tools / 'apksigner', candidate_copy)
+        require(baseline == candidate_certs, 'ORIGINAL_SIGNER_IDENTITY_MISMATCH')
+        metadata = build_receiver.run([tools / 'aapt', 'dump', 'badging', candidate_copy])
+        package = re.search(r"^package: name='([^']+)' versionCode='([^']+)'", metadata, re.M)
+        require(package is not None and package.group(1) == PACKAGE, 'CANDIDATE_PACKAGE_MISMATCH')
+        require(not re.search(r'^uses-permission(?:-sdk-\d+)?:', metadata, re.M), 'UNREVIEWED_CANDIDATE_PERMISSIONS')
+        manifest = build_receiver.run([tools / 'aapt', 'dump', 'xmltree', candidate_copy, 'AndroidManifest.xml'])
+        require('local.pocket4.actions.v2.ActionRunner' in manifest or '.ActionRunner' in manifest,
+                'ORIGINAL_INSTRUMENTATION_MISSING')
+        require('E: activity ' not in manifest and 'E: service ' not in manifest
+                and 'E: provider ' not in manifest and 'E: receiver ' not in manifest,
+                'UNREVIEWED_CANDIDATE_COMPONENT')
     return {
         'package': PACKAGE, 'version_code': package.group(2),
-        'original_apk_sha256': build_receiver.sha(original),
-        'candidate_apk_sha256': build_receiver.sha(candidate),
+        'original_apk_sha256': original_identity['sha256'],
+        'candidate_apk_sha256': candidate_identity['sha256'],
         'original_signer_sha256': baseline, 'candidate_signer_sha256': candidate_certs,
         'signer_identity_matches_original': True,
+        'apk_input_binding': {
+            'scope': 'held-file snapshots only; source path freshness, installed package, '
+                     'strict receiver source and device effects are not qualified',
+            'original': original_identity, 'candidate': candidate_identity,
+        },
     }
 
 
@@ -100,7 +151,7 @@ def installed(args):
             # Fixed read operation through the exact original namespace FDs.
             # No APK installation, package stop, launch or UI command occurs.
             raw = cell.run(['/system/bin/cat', path], timeout=15)
-            require(0 < len(raw) <= 4 * 1024 * 1024, 'INSTALLED_APK_SIZE_UNQUALIFIED')
+            require(0 < len(raw) <= APK_MAX_BYTES, 'INSTALLED_APK_SIZE_UNQUALIFIED')
             require(hashlib.sha256(raw).hexdigest() == baseline['candidate_apk_sha256'], 'INSTALLED_APK_HASH_MISMATCH')
             with tempfile.TemporaryDirectory(prefix='original-android-apk-check-') as scratch:
                 copy = Path(scratch) / 'installed.apk'
