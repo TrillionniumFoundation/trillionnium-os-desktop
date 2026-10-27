@@ -1,0 +1,358 @@
+name: Frozen Desktop original Root fixture qualification
+
+# Supplement only: the two existing ignored fixtures run on this disposable
+# GitHub host. No target installation, human login, model or Notes acceptance.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/hepta-root-fixture-qualification.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hepta-root-fixtures-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  original-root-fixtures:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+        working-directory: product
+    env:
+      SOURCE_SHA: e24c5b58ca7e015ce43645645c388731e6e3186d
+      SOURCE_TREE: 770770d2e5be43b00e82691d86ad0ff053f740ec
+      TESTED_SHA: e24c5b58ca7e015ce43645645c388731e6e3186d
+      HEPTA_SHA: 4223fc77944e9beb5651df063158b22ae1a4f701
+      HEPTA_TREE: 7c19c9903d4e82baf3a61111214ff3fe46605cef
+      HEPTA_CI_LANE: source-head
+      WORKFLOW_SHA: ${{ github.workflow_sha }}
+      RUSTUP_TOOLCHAIN: '1.96.0'
+      CARGO_BUILD_JOBS: '1'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+      CARGO_INCREMENTAL: '0'
+      RUST_BACKTRACE: '1'
+      GIT_TERMINAL_PROMPT: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out the exact workflow implementation
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: qualification
+          persist-credentials: false
+      - name: Check out the frozen product
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: product
+          persist-credentials: false
+
+      - name: Freeze source, original fixture bytes and ordinary build identity
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/hepta-root-fixture-evidence"
+          mkdir "$evidence"
+          printf 'EVIDENCE=%s\nCARGO_TARGET_DIR=%s/hepta-root-fixtures/target\n' \
+            "$evidence" "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          EVIDENCE="$evidence" python3 -I -B - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          root = Path.cwd().resolve()
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          assert os.getuid() == os.geteuid() != 0
+          assert (git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')) == (
+              os.environ['SOURCE_SHA'], os.environ['SOURCE_TREE'])
+          assert not git('status', '--porcelain=v1', '--untracked-files=all')
+          workflow = root.parent / 'qualification'
+          assert subprocess.check_output(['git', '-C', str(workflow), 'rev-parse', 'HEAD'],
+                                         text=True).strip() == os.environ['WORKFLOW_SHA']
+          paths = [
+              'ui/Cargo.lock', 'services/hepta-session-host/Cargo.lock',
+              'services/hepta-os/Cargo.lock', 'support/ui/Cargo.lock',
+              'support/ui/preedit-sdk/Cargo.lock', 'tests/ui/Cargo.lock',
+              'services/hepta-session-host/src/product_root/recovery_tests.rs',
+              'services/hepta-session-host/src/product_root/recovery_sockets_tests.rs',
+              'support/ui/HEPTA_SHARED_PRESENTER.json']
+          hashes = {}
+          for name in paths:
+              subprocess.run(['git', 'ls-files', '--error-unmatch', '--', name], check=True)
+              path = root / name
+              assert path.is_file() and not path.is_symlink()
+              hashes[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+          record = {'source_sha': git('rev-parse', 'HEAD'), 'source_tree': git('rev-parse', 'HEAD^{tree}'),
+                    'workflow_sha': os.environ['WORKFLOW_SHA'], 'runner_uid': os.getuid(),
+                    'runner_euid': os.geteuid(), 'files_sha256': hashes,
+                    'scope': 'two original privileged Linux fixtures only', 'product_qualified': False}
+          (Path(os.environ['EVIDENCE']) / 'source-before.json').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+
+      - name: Reuse the original Native UI toolchain and Linux build environment
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy \
+            2>&1 | tee "$EVIDENCE/toolchain-install.log"
+          sudo apt-get update 2>&1 | tee "$EVIDENCE/apt-update.log"
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential pkg-config cmake clang perl binutils libssl-dev libcap-dev bubblewrap \
+            libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libgl1-mesa-dev libegl1-mesa-dev libgbm-dev \
+            libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxinerama-dev libxext-dev \
+            libasound2-dev libpulse-dev libudev-dev util-linux \
+            2>&1 | tee "$EVIDENCE/apt-install.log"
+          rustc -Vv | tee "$EVIDENCE/rustc.log"
+          cargo -Vv | tee "$EVIDENCE/cargo.log"
+          # As in hepta-native-ui.yml, Cargo uses its original pinned dependency
+          # and V8 download path. No replacement token, V8 resolver or source.
+          python3 -I -B - <<'PY'
+          import os
+          from pathlib import Path
+          out = Path(os.environ['EVIDENCE'])
+          assert 'release: 1.96.0' in (out / 'rustc.log').read_text().splitlines()
+          assert 'host: x86_64-unknown-linux-gnu' in (out / 'rustc.log').read_text().splitlines()
+          assert (out / 'cargo.log').read_text().startswith('cargo 1.96.0 ')
+          PY
+
+      - name: Resolve the original graph and build the original test ELF as the runner
+        run: |
+          set -euo pipefail
+          cargo metadata --manifest-path services/hepta-session-host/Cargo.toml --locked \
+            --features product-root --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            > "$EVIDENCE/product-root-metadata.json" 2> "$EVIDENCE/product-root-metadata.stderr.log"
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, stat, subprocess, sys
+          from pathlib import Path
+          root, out = Path.cwd().resolve(), Path(os.environ['EVIDENCE'])
+          assert os.getuid() == os.geteuid() != 0
+          metadata = json.loads((out / 'product-root-metadata.json').read_text())
+          expected = 'git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=' + os.environ['HEPTA_SHA'] + '#' + os.environ['HEPTA_SHA']
+          originals = [p for p in metadata['packages'] if 'TrillionniumFoundation/hepta-private-ci' in (p.get('source') or '')]
+          assert originals and all(p['source'] == expected for p in originals)
+          assert {'codex-hepta-agentd', 'codex-hepta-memory', 'codex-hepta-fleet'} <= {p['name'] for p in originals}
+          hosts = [p for p in metadata['packages'] if p['name'] == 'hepta-session-host']
+          assert len(hosts) == 1 and Path(hosts[0]['manifest_path']).resolve() == root / 'services/hepta-session-host/Cargo.toml'
+          nodes = [n for n in metadata['resolve']['nodes'] if n['id'] == hosts[0]['id']]
+          assert len(nodes) == 1 and {'product-root', 'native-text'} <= set(nodes[0]['features'])
+          roots = {subprocess.check_output(['git', '-C', str(Path(p['manifest_path']).parent),
+                                           'rev-parse', '--show-toplevel'], text=True).strip() for p in originals}
+          assert len(roots) == 1
+          hepta = Path(roots.pop()).resolve()
+          sys.path.insert(0, str(root / 'support/ui'))
+          import verify_product_dependencies as dependencies
+          from build_text_product import cache_git
+          flags = cache_git(hepta, 'ls-files', '-v', '-z').split(b'\0')
+          assert not any(item and (item[:1].islower() or item[:1] == b'S') for item in flags)
+          assert not cache_git(hepta, 'status', '--porcelain=v1', '--untracked-files=no', '--ignore-submodules=none')
+          checked = dependencies.verify(root, hepta)
+          checked['original_hepta_tracked_clean'] = True
+          assert (checked['hepta_commit'], checked['hepta_tree']) == (os.environ['HEPTA_SHA'], os.environ['HEPTA_TREE'])
+          (out / 'original-dependencies-before.json').write_text(json.dumps(checked, indent=2) + '\n')
+          recorder = hepta / 'scripts/hepta_ci_exec.py'
+          recorder_bytes = subprocess.check_output(['git', '-C', str(hepta), 'show', os.environ['HEPTA_SHA'] + ':scripts/hepta_ci_exec.py'])
+          assert recorder.read_bytes() == recorder_bytes
+          command = ['cargo', 'test', '--manifest-path', 'services/hepta-session-host/Cargo.toml',
+                     '--locked', '--features', 'product-root', '--bin', 'hepta-desktop-root',
+                     '--no-run', '--message-format=json']
+          subprocess.run([sys.executable, str(recorder), '--output', str(out / 'build-command.json'),
+                          '--timeout-seconds', '3600', '--', *command], check=True)
+          record = json.loads((out / 'build-command.json').read_text())
+          assert record['status'] == 'passed' and record['exit_code'] == 0 and record['before'] == record['after']
+          executables = []
+          for line in (out / record['log_file']).read_text().splitlines():
+              try:
+                  entry = json.loads(line)
+              except ValueError:
+                  continue
+              if (entry.get('reason') == 'compiler-artifact' and entry.get('profile', {}).get('test')
+                      and entry.get('target', {}).get('name') == 'hepta-desktop-root' and entry.get('executable')):
+                  assert Path(entry['target']['src_path']).resolve() == root / 'services/hepta-session-host/src/bin/hepta-desktop-root.rs'
+                  executables.append(Path(entry['executable']))
+          assert len(executables) == 1
+          binary = executables[0]
+          assert binary.resolve(strict=True) == binary and binary.is_relative_to(Path(os.environ['CARGO_TARGET_DIR']))
+          assert stat.S_ISREG(binary.stat().st_mode)
+          with binary.open('rb') as stream:
+              assert stream.read(4) == b'\x7fELF'
+              stream.seek(0)
+              sha = hashlib.file_digest(stream, 'sha256').hexdigest()
+          (out / 'test-binary.json').write_text(json.dumps({
+              'path': str(binary), 'sha256': sha, 'bytes': binary.stat().st_size,
+              'hepta_root': str(hepta), 'recorder_sha256': hashlib.sha256(recorder_bytes).hexdigest(),
+              'runner_uid': os.getuid(), 'runner_euid': os.geteuid()}, indent=2) + '\n')
+          PY
+
+      - name: Execute only the two original ignored fixtures with actual EUID zero
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, re, subprocess, sys
+          from pathlib import Path
+          out = Path(os.environ['EVIDENCE'])
+          binary = json.loads((out / 'test-binary.json').read_text())
+          recorder = Path(binary['hepta_root']) / 'scripts/hepta_ci_exec.py'
+          assert os.getuid() == os.geteuid() == binary['runner_uid'] != 0
+          assert hashlib.sha256(recorder.read_bytes()).hexdigest() == binary['recorder_sha256']
+          names = [
+              'product_root::recovery::tests::live_original_session_is_refused_and_actual_exit_can_be_observed',
+              'product_root::recovery_sockets::tests::live_foreign_or_rebound_socket_is_not_removed_but_exact_stale_socket_retires']
+          def record(label, command, minimum=0, seconds=150):
+              path = out / (label + '.json')
+              code = subprocess.run([sys.executable, str(recorder), '--output', str(path),
+                                     '--timeout-seconds', str(seconds), '--minimum-tests', str(minimum),
+                                     '--', *command]).returncode
+              result = json.loads(path.read_text())
+              raw = (out / result['log_file']).read_bytes()
+              assert hashlib.sha256(raw).hexdigest() == result['log_sha256']
+              assert result['tested_sha'] == os.environ['SOURCE_SHA']
+              return code, result, raw.decode()
+          def passed(result):
+              return (result['status'] == 'passed' and result['exit_code'] == 0 and
+                      not result['timed_out'] and not result['output_limit_exceeded'] and
+                      result['before'] == result['after'] and not result['before']['dirty'])
+          inventories = {}
+          for label, args in [('all-tests', []), ('original-ignored', ['--ignored'])]:
+              code, result, text = record(label, [binary['path'], '--list', '--format=terse', *args])
+              assert code == 0 and passed(result)
+              listed = [line[:-6] for line in text.splitlines() if line.endswith(': test')]
+              assert len(listed) == len(set(listed))
+              inventories[label] = listed
+          assert len(inventories['all-tests']) == 27 and set(names) <= set(inventories['all-tests'])
+          assert set(inventories['original-ignored']) == set(names)
+          (out / 'original-test-inventory.json').write_text(json.dumps(inventories, indent=2) + '\n')
+          stage = '/run/trill-root-fixture-ci-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT']
+          staged = stage + '/original-product-root-tests'
+          for label, command in [
+              ('actual-root-uid', ['sudo', '-n', '--', '/usr/bin/id', '-u']),
+              ('private-root-stage', ['sudo', '-n', '--', '/usr/bin/mkdir', '--mode=0700', '--', stage]),
+              ('stage-original-elf', ['sudo', '-n', '--', '/usr/bin/install', '--mode=0500', '--', binary['path'], staged]),
+              ('staged-elf-before', ['sudo', '-n', '--', '/usr/bin/sha256sum', '--', staged])]:
+              code, result, text = record(label, command)
+              assert code == 0 and passed(result)
+              if label == 'actual-root-uid':
+                  assert text.strip() == '0'
+              if label == 'staged-elf-before':
+                  assert text.split()[0] == binary['sha256']
+          results = []
+          for index, name in enumerate(names, 1):
+              command = ['sudo', '-n', '--', '/usr/bin/env', '-i', 'PATH=/usr/bin:/bin',
+                         'LANG=C', 'LC_ALL=C', 'RUST_BACKTRACE=1', '/usr/bin/timeout',
+                         '--signal=TERM', '--kill-after=5s', '120s', staged,
+                         '--ignored', '--exact', name, '--test-threads=1']
+              code, result, text = record('root-fixture-' + str(index), command, minimum=1)
+              terminal = re.findall(r'^test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; 26 filtered out;', text, re.MULTILINE)
+              ok = (code == 0 and passed(result) and len(terminal) == 1 and text.count('test ' + name + ' ... ok') == 1
+                    and result['observed_passed_tests'] == 1 and result['observed_failed_tests'] == 0)
+              results.append({'name': name, 'passed': ok, 'originally_ignored': True,
+                              'observed_passed': result['observed_passed_tests'],
+                              'observed_failed': result['observed_failed_tests'],
+                              'command_record': 'root-fixture-' + str(index) + '.json'})
+          code, result, text = record('staged-elf-after', ['sudo', '-n', '--', '/usr/bin/sha256sum', '--', staged])
+          assert code == 0 and passed(result) and text.split()[0] == binary['sha256']
+          summary = {'schema': 'trill.original-root-fixtures-ci.v1', 'source_sha': os.environ['SOURCE_SHA'],
+                     'hepta_sha': os.environ['HEPTA_SHA'], 'workflow_sha': os.environ['WORKFLOW_SHA'],
+                     'status': 'passed' if all(r['passed'] for r in results) else 'failed',
+                     'original_declared_tests': 27, 'original_ignored_tests': names, 'explicit_root_tests': results,
+                     'ordinary_tests_not_run_here': 25, 'fixture_executable_sha256': binary['sha256'],
+                     'root_is_disposable_github_runner': True, 'product_qualified': False,
+                     'target_installation_or_notes_qualified': False}
+          (out / 'fixture-summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+          assert summary['status'] == 'passed'
+          PY
+
+      - name: Require unchanged source, locks, original fixtures and Hepta dependencies
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, subprocess, sys
+          from pathlib import Path
+          root, out = Path.cwd().resolve(), Path(os.environ['EVIDENCE'])
+          before = json.loads((out / 'source-before.json').read_text())
+          after = {'source_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                   'source_tree': subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip(),
+                   'status': subprocess.check_output(['git', 'status', '--porcelain=v1', '--untracked-files=all'], text=True).strip(),
+                   'files_sha256': {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in before['files_sha256']}}
+          (out / 'source-after.json').write_text(json.dumps(after, indent=2) + '\n')
+          assert not after['status'] and all(after[k] == before[k] for k in ('source_sha', 'source_tree', 'files_sha256'))
+          binary = json.loads((out / 'test-binary.json').read_text())
+          sys.path.insert(0, str(root / 'support/ui'))
+          import verify_product_dependencies as dependencies
+          from build_text_product import cache_git
+          hepta = Path(binary['hepta_root'])
+          flags = cache_git(hepta, 'ls-files', '-v', '-z').split(b'\0')
+          assert not any(item and (item[:1].islower() or item[:1] == b'S') for item in flags)
+          assert not cache_git(hepta, 'status', '--porcelain=v1', '--untracked-files=no', '--ignore-submodules=none')
+          checked = dependencies.verify(root, hepta)
+          checked['original_hepta_tracked_clean'] = True
+          (out / 'original-dependencies-after.json').write_text(json.dumps(checked, indent=2) + '\n')
+          assert checked == json.loads((out / 'original-dependencies-before.json').read_text())
+          assert json.loads((out / 'fixture-summary.json').read_text())['status'] == 'passed'
+          PY
+
+      - name: Remove only the known private Root staging file and empty directory
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+          out = Path(os.environ['EVIDENCE'])
+          run_id, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
+          assert os.getuid() == os.geteuid() != 0 and re.fullmatch(r'[0-9]+', run_id) and re.fullmatch(r'[0-9]+', attempt)
+          stage = '/run/trill-root-fixture-ci-' + run_id + '-' + attempt
+          record = {'stage': stage, 'status': 'not-created', 'recursive_cleanup': False}
+          try:
+              receipt = out / 'private-root-stage.json'
+              if receipt.exists():
+                  created = json.loads(receipt.read_text())
+                  assert created['command'] == ['sudo', '-n', '--', '/usr/bin/mkdir', '--mode=0700', '--', stage]
+                  assert created['tested_sha'] == os.environ['SOURCE_SHA']
+                  assert created['status'] == 'passed' and created['command_exit_code'] == 0
+                  expected = json.loads((out / 'test-binary.json').read_text())['sha256']
+                  cleanup = '''import hashlib, os, stat, sys
+          from pathlib import Path
+          assert os.getuid() == os.geteuid() == 0
+          stage = Path(sys.argv[1])
+          info = stage.lstat()
+          assert stat.S_ISDIR(info.st_mode) and info.st_uid == info.st_gid == 0 and stat.S_IMODE(info.st_mode) == 0o700
+          names = {p.name for p in stage.iterdir()}
+          assert names <= {'original-product-root-tests'}, 'unknown entries retained'
+          if names:
+              target = stage / 'original-product-root-tests'
+              info = target.lstat()
+              assert stat.S_ISREG(info.st_mode) and info.st_uid == info.st_gid == 0 and info.st_nlink == 1 and stat.S_IMODE(info.st_mode) == 0o500
+              with target.open('rb') as stream:
+                  assert hashlib.file_digest(stream, 'sha256').hexdigest() == sys.argv[2], 'changed ELF retained'
+              target.unlink()
+          stage.rmdir()
+          print('removed known original ELF and empty private stage')
+          '''
+                  command = ['sudo', '-n', '--', '/usr/bin/env', '-i', 'PATH=/usr/bin:/bin', 'LANG=C', 'LC_ALL=C',
+                             '/usr/bin/python3', '-I', '-B', '-c', cleanup, stage, expected]
+                  record['command'] = command
+                  result = subprocess.run(command, capture_output=True, text=True, timeout=30)
+                  record.update(exit_code=result.returncode, stdout=result.stdout, stderr=result.stderr)
+                  assert result.returncode == 0
+                  record['status'] = 'passed'
+          except Exception as error:
+              record.update(status='failed', error=str(error))
+              raise
+          finally:
+              (out / 'root-stage-cleanup.json').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+
+      - name: Retain source-bound commands, raw logs and exact fixture terminal records
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: desktop-e24-original-root-fixtures-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/hepta-root-fixture-evidence/
+          if-no-files-found: error
+          retention-days: 14
