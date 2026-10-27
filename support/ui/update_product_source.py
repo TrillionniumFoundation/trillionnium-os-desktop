@@ -16,6 +16,8 @@ import subprocess
 import sys
 
 sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).parent))
+from root_admin_sources import ROOT_ADMIN_SOURCE_FILES
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "support/release"))
 import organ_release_profile as source_profile
@@ -102,7 +104,7 @@ def main():
         original.check(args.commit, tree)
         path = ROOT / "support/ui/HEPTA_SHARED_PRESENTER.json"
         source = source_profile.load_json(path)
-        names = {entry["path"] for entry in source["files"]} | set(ORIGINAL_FILES)
+        names = {entry["path"] for entry in source["files"]} | set(ORIGINAL_FILES) | ROOT_ADMIN_SOURCE_FILES
         records = [original.file(name)[1] for name in sorted(names)]
         # The model and wire fixtures must already match the reviewed owners.
         for name in ("codex-rs/hepta-agentd/tests/fixtures/notes-model-v1.json",

@@ -81,3 +81,25 @@ its original status/receipt readback, unchanged old document/receipt identity,
 and proof that the prior effect was not repeated. Headless contract/transport
 checks, type checks, Root component fixtures and final installed product runs
 must be reported separately. This entry does not qualify reboot or power loss.
+
+## Live administrative result reconciliation
+
+[ADMIN.md](ADMIN.md) documents the separate same-instance local management lane.
+Its `observe-grant-state --signed-grant-file <actual original artifact>` reads the
+exact original effect lease/revocation, issuer head and consumer synchronization
+after a lost/partial revoke reply. It neither redispatches Notes nor performs
+another CAS. An expired artifact is read-only evidence and grants no use; the
+original Root/owner/human/issuer lifetime remains mandatory. Writer revoke,
+expiry and process retirement are distinct from precise signed-grant revoke.
+
+Fresh initialization publishes its administrative descriptor under `admin/`;
+the admitted explicit recovery episode uses `admin/recovery/`. An old descriptor
+cannot connect as a new Root instance. If its Root has exited, preserve the
+artifact and unknown outcome; never create an open-only authority service to
+interpret an old descriptor as a live capability. This entry still requires
+its original retirement/expiry/adoption rules and does not silently turn an
+App-only exit into a new owner/recovery ceremony.
+
+The lane and CLI are implemented and have separately scoped component checks.
+Actual same-live-Root positive/revoke causality, App/Session/owner exit and final
+installed GUI/model acceptance require their own exact-source execution record.

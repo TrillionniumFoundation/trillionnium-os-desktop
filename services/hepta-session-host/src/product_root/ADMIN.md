@@ -96,3 +96,25 @@ artifact can identify this read-only result, explicitly labelled `grant_expired`
 it never authorizes mutation. The original Root/owner/human/issuer lifetime and
 current issuer epoch remain mandatory. A missing record is Unknown and never
 created, and a returned DTO cannot be supplied in place of a Root capability.
+
+## Development and scoped checks
+
+After selecting one clean compatible Hepta/Desktop combination and regenerating
+its real Cargo locks, compile the explicit product entry and run its finite
+parser/frame/artifact/outcome tests:
+
+```sh
+cargo check --manifest-path services/hepta-session-host/Cargo.toml \
+  --features product-root --bin hepta-desktop-root --tests --locked --offline
+cargo test --manifest-path services/hepta-session-host/Cargo.toml \
+  --features product-root --bin hepta-desktop-root --locked --offline \
+  product_root::admin_client:: -- --test-threads=1
+python3 support/docs/check_modules.py
+```
+
+Hepta's selected crate-local `ROOT_ADMIN.md` gives its original lease, actual
+signature/epoch, weak lifetime, cumulative-deadline and session-resource scopes.
+Use its `just test` recipe, one test thread and zero retries. Root-only physical
+and installed-package cases must be invoked explicitly with their real objects;
+ordinary parser/store cases cannot stand in for them. A candidate test result
+never upgrades an earlier timeout/failure or another source combination.

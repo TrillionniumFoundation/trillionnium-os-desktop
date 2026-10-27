@@ -118,3 +118,24 @@ source identities and ELF SHA256 records from that exact source. The Cargo
 target directory and binary files are not uploaded. This workflow qualifies
 compilation and tests; it does not start an original Root, install production
 authority or claim window, visual, input-method or physical-device acceptance.
+
+## Original live Root administrative sources
+
+`root_admin_sources.py` defines the single mandatory source set used by both
+`update_product_source.py` and `verify_product_dependencies.py`. It includes
+Root administration, actual-issue observation, strict signed-grant validation,
+original two-store revoke/readback, original session retirement, registered-file
+custody and explicit-unlock admission, their scoped regressions and caller gate.
+Omitting a callee or its gate cannot become an accepted presenter-only profile.
+The source set grants no runtime authority or installed-product qualification.
+
+After choosing the final clean compatible Hepta head, run the existing updater
+against that exact checkout. It reads real tracked bytes/identities and unions
+the mandatory files into `HEPTA_SHARED_PRESENTER.json`. Do not hand-add records,
+borrow a foreign Cargo lock, or retain an old source proof for a new API. The
+previous pre-admin source profile is expected to fail the new mandatory check.
+Regenerate all ordinary/prepared Cargo roots from the selected source, preserve
+the exact SDK source and upstream security patches, then run the complete
+original dependency/source/manifest checks against that actual Hepta checkout.
+[ROOT_PRODUCT.md](ROOT_PRODUCT.md) and the [administrative entry](../../services/hepta-session-host/src/product_root/ADMIN.md)
+describe the corresponding product and development limits.
