@@ -111,11 +111,12 @@ class OriginalRootAdmin:
                                     str(self.descriptor.path), *args], pass_fds=(self.cli.fd,),
                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                    env={"LANG":"C.UTF-8", "PATH":"/usr/bin:/bin"}, close_fds=True)
-        selector = selectors.DefaultSelector()
+        selector = None
         raw, error = bytearray(), bytearray()
-        selector.register(process.stdout, selectors.EVENT_READ, raw)
-        selector.register(process.stderr, selectors.EVENT_READ, error)
         try:
+            selector = selectors.DefaultSelector()
+            selector.register(process.stdout, selectors.EVENT_READ, raw)
+            selector.register(process.stderr, selectors.EVENT_READ, error)
             while selector.get_map():
                 require(not cancelled() and time.monotonic() < end, "gate_admin_deadline")
                 for key, _ in selector.select(min(0.005, max(0, end-time.monotonic()))):
@@ -127,15 +128,19 @@ class OriginalRootAdmin:
             code = process.wait(timeout=max(0.000001, end-time.monotonic()))
             require(time.monotonic() < end, "gate_admin_deadline")
         finally:
-            selector.close()
-            if process.poll() is None: process.kill()  # Only this tool's own CLI child.
-            process.wait(timeout=1)
-            process.stdout.close(); process.stderr.close()
-            self.steps.append({"step":label, "pid":process.pid, "exit":process.returncode,
-                               "stdout_sha256":digest(raw), "stderr_sha256":digest(error),
-                               "finished_monotonic":time.monotonic()})
-            write_new(self.output / (label+".json"), bytes(raw))
-            # No arbitrary error text, model content, argv or environment in receipts.
+            try:
+                if selector is not None: selector.close()
+            finally:
+                try:
+                    if process.poll() is None: process.kill()  # Only this tool's own CLI child.
+                    process.wait(timeout=1)
+                finally:
+                    process.stdout.close(); process.stderr.close()
+                    self.steps.append({"step":label, "pid":process.pid, "exit":process.returncode,
+                                       "stdout_sha256":digest(raw), "stderr_sha256":digest(error),
+                                       "finished_monotonic":time.monotonic()})
+                    write_new(self.output / (label+".json"), bytes(raw))
+                    # No arbitrary error text, model content, argv or environment in receipts.
         self.verify()
         require(code == 0, "original_admin_cli_refused_or_unknown")
         return exact_json(bytes(raw), 65536)

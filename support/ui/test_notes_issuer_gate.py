@@ -140,5 +140,156 @@ class GateContractTests(unittest.TestCase):
             with self.subTest(change=mutate):
                 with self.assertRaises(Refused): check(value)
 
+class GateUnwindTests(unittest.TestCase):
+    """Dependency controls only; no actual Root, pidfd or ptrace is selected."""
+
+    def run_selected_control(self, failure=None, *, real_wait_timeout=False,
+                             verify_failure=None, shutdown_failure=None, selector_failure=False):
+        import os
+        from pathlib import Path
+        import socket
+        import subprocess
+        import sys
+        import tempfile
+        import time
+        import types
+        from unittest.mock import patch
+        import notes_issuer_gate_admin as admin_module
+        import notes_issuer_gate_controller as controller
+
+        events, children, actual_errors = [], [], []
+        capture_tx, body = capture_pair()
+        capture = capture_tx.write_entry(body, len(body))
+
+        class Held:
+            identity = {}
+            def __init__(self, _): pass
+            def verify(self, **_): pass
+            def close(self): pass
+
+        class Channel:
+            fd = 44
+            identity = types.SimpleNamespace(st_ino=6)
+            def __init__(self): self.socket = self
+            def shutdown(self, how):
+                events.append(("shutdown", how))
+                if shutdown_failure is not None: raise shutdown_failure
+            def verify(self):
+                if verify_failure is not None: raise verify_failure
+            def close(self): pass
+
+        class Trace:
+            def __init__(self, *_):
+                self.attached = self.stopped = self.issuer_body_held = True
+                self.cleanup_failed = False
+                self.events = []
+                self.stops = 1
+                self.total_pause = self.max_pause = self.omitted_events = 0
+            def verify(self): pass
+            def close(self):
+                if self.attached:
+                    events.append(("detach",))
+                    self.events.append({"detached_monotonic": time.monotonic()})
+                self.attached = self.stopped = False
+
+        def scan(trace, *_):
+            trace.selected_capture = capture
+            return capture, time.monotonic() + .4
+
+        with tempfile.TemporaryDirectory(prefix="trill-issuer-unwind-control-") as temporary:
+            directory = Path(temporary)
+            with open(sys.executable, "rb") as executable:
+                admin = admin_module.OriginalRootAdmin.__new__(admin_module.OriginalRootAdmin)
+                admin.instance, admin.steps, admin.mutation_attempted = {}, [], False
+                admin.output = directory / "run"
+                admin.cli = types.SimpleNamespace(fd=executable.fileno())
+                admin.descriptor = types.SimpleNamespace(path=directory / "fixture-unused-instance")
+                admin.verify = lambda: None
+                admin.close = lambda: None
+                original_popen = subprocess.Popen
+
+                def start_owned_child(*_, **__):
+                    # Only this current-UID Python child runs. It closes its own
+                    # output pipes, then remains alive to exercise Popen.wait's
+                    # real TimeoutExpired (not a fake CLI/Root response).
+                    child = original_popen([sys.executable, "-I", "-B", "-c",
+                        "import os,time;os.close(1);os.close(2);time.sleep(2)"],
+                        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, close_fds=True)
+                    children.append(child)
+                    return child
+
+                def revoke(_, __, end, cancelled):
+                    admin.mutation_attempted = True
+                    if real_wait_timeout or selector_failure:
+                        try:
+                            return admin.call("owned-child-timeout", [], end, cancelled)
+                        except BaseException as error:
+                            actual_errors.append(type(error))
+                            raise
+                    raise failure
+
+                admin.revoke_held_original = revoke
+                bound = dict(root={}, agentd={}, desktop_commit="a"*40, hepta_commit="b"*40,
+                             issuer_path="fixture-unused", request_timeout_ms=500,
+                             selector=original()[0], reason_sha256="06"*32)
+                patches = [patch.object(controller.os, "getuid", return_value=0),
+                    patch.object(controller.os, "geteuid", return_value=0),
+                    patch.object(controller, "private_parent"),
+                    # These are dependency controls for unwind ordering. Avoid
+                    # unrelated fixture fsync latency consuming the fake scan's
+                    # finite budget before the real child wait is reached.
+                    # Production writes and its original deadline are unchanged.
+                    patch.object(controller, "write_new", side_effect=lambda path, raw: path.write_bytes(raw)),
+                    patch.object(controller, "HeldProcess", Held),
+                    patch.object(controller, "OriginalRootAdmin", return_value=admin),
+                    patch.object(controller, "select_issuer", return_value=(1, (271, []), Channel(), 1)),
+                    patch.object(controller, "IssuerTrace", Trace),
+                    patch.object(controller, "scan_to_grant", scan)]
+                if real_wait_timeout or selector_failure:
+                    patches.append(patch.object(admin_module.subprocess, "Popen", side_effect=start_owned_child))
+                if selector_failure:
+                    patches.append(patch.object(admin_module.selectors, "DefaultSelector",
+                                                side_effect=RuntimeError("fixture selector setup")))
+                for selected in patches: selected.start()
+                try:
+                    result = controller.run(bound, directory / "run", 1, lambda: False)
+                finally:
+                    for selected in reversed(patches): selected.stop()
+            self.assertEqual(result["status"], "outcome_unknown")
+            self.assertTrue(result["mutation_attempted"])
+            self.assertEqual(result["body_shutdown"], verify_failure is None and shutdown_failure is None)
+            self.assertTrue(result["selected_body_resumed_on_cleanup"])
+            if verify_failure is not None or shutdown_failure is not None:
+                self.assertIn("shutdown_reason", result)
+            self.assertFalse(result["body_released"])
+            self.assertFalse(result["product_qualified"])
+            self.assertFalse(result["consumer_first_use_revoked_proven"])
+            expected_events = ([] if verify_failure is not None else [("shutdown", socket.SHUT_WR)]) + [("detach",)]
+            self.assertEqual(events, expected_events)
+            self.assertTrue(result["tool_source_unchanged"])
+            for child in children:
+                self.assertIsNotNone(child.returncode)
+                with self.assertRaises(ChildProcessError): os.waitpid(child.pid, os.WNOHANG)
+            return actual_errors
+
+    def test_all_catchable_unwinds_shutdown_the_selected_body_before_detach(self):
+        import subprocess
+        for failure in (subprocess.TimeoutExpired("fixture", 0), RuntimeError("fixture"),
+                        KeyError("fixture"), KeyboardInterrupt(), SystemExit(7)):
+            with self.subTest(exception=type(failure).__name__):
+                self.run_selected_control(failure)
+
+    def test_shutdown_or_verification_failure_cannot_claim_zero_body_or_success(self):
+        self.run_selected_control(RuntimeError("fixture abort"), verify_failure=RuntimeError("fixture verify"))
+        self.run_selected_control(RuntimeError("fixture abort"), shutdown_failure=RuntimeError("fixture shutdown"))
+
+    def test_real_owned_child_is_reaped_if_selector_setup_raises(self):
+        self.assertEqual(self.run_selected_control(selector_failure=True), [RuntimeError])
+
+    def test_real_owned_child_wait_timeout_is_unknown_and_reaped(self):
+        import subprocess
+        self.assertEqual(self.run_selected_control(real_wait_timeout=True), [subprocess.TimeoutExpired])
+
 
 if __name__=="__main__": unittest.main()

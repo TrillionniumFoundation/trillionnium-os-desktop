@@ -190,7 +190,9 @@ def run(binding, output, seconds, cancelled):
                 and result["release_cleanup_finished_monotonic"] < end and not cancelled(),
                 "original_request_deadline_during_detach")
         result["status"] = "original_body_released_after_confirmed_revoke"
-    except (OSError, ValueError, ChildProcessError, TimeoutError) as error:
+    except BaseException as error:
+        # Every catchable unwind must reach shutdown-before-detach below.
+        # In particular subprocess.TimeoutExpired is not built-in TimeoutError.
         if capture is None and trace is not None:
             capture = getattr(trace, "selected_capture", None)
             if capture is not None:
@@ -198,16 +200,23 @@ def run(binding, output, seconds, cancelled):
                                      ("request_raw", "response_raw", "signed_raw", "signed")}
         result.update(status="outcome_unknown" if capture is not None else "unexecuted",
                       reason=str(error), errno=getattr(error,"errno",None))
-        if trace is not None and getattr(trace, "issuer_body_held", False) and trace.stopped:
-            try:
-                channel.verify()
-                channel.socket.shutdown(socket.SHUT_WR)
-                result.update(body_shutdown=True, shutdown_monotonic=time.monotonic())
-            except (OSError, ValueError) as shutdown_error:
-                result["shutdown_reason"] = str(shutdown_error)
     finally:
         if trace is not None:
+            # A normal release already detached above. Any still-held selected
+            # BODY must be shut down before cleanup can resume its syscall,
+            # including unexpected exceptions and Python-level cancellation.
+            held_for_cleanup = getattr(trace, "issuer_body_held", False) and trace.stopped
+            if held_for_cleanup:
+                result["status"] = "outcome_unknown"
+                try:
+                    channel.verify()
+                    channel.socket.shutdown(socket.SHUT_WR)
+                    result.update(body_shutdown=True, shutdown_monotonic=time.monotonic())
+                except BaseException as shutdown_error:
+                    result["shutdown_reason"] = str(shutdown_error)
             trace.close()
+            result["selected_body_resumed_on_cleanup"] = bool(held_for_cleanup
+                and not trace.attached and not trace.stopped)
             result["tracing"] = dict(stops=trace.stops, total_stopped_seconds=trace.total_pause,
                 max_stop_seconds=trace.max_pause, events=trace.events, omitted_events=trace.omitted_events,
                 detached=not trace.attached and not trace.stopped)

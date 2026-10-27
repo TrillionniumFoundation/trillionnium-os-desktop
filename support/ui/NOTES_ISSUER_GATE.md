@@ -123,6 +123,14 @@ resends the operation. A failure during detach can already have resumed the
 body; the result preserves `body_released` rather than claiming zero bytes.
 Blocking kernel I/O/cleanup can itself exceed the budget; any such late
 completion fails the result, without widening the original deadline.
+Every catchable Python unwind, including a real CLI `TimeoutExpired`,
+`KeyboardInterrupt` or `SystemExit`, reaches the same verified socket shutdown
+before detaching a still-held selected body. Failure to verify or shut down
+remains Unknown and records the failure; it cannot prove that zero bytes were
+received. `selected_body_resumed_on_cleanup` records that a selected held body
+was actually detached during abort cleanup. `body_released=false` alone is never
+zero-byte evidence; even `body_shutdown=true` requires independent peer readback.
+Abrupt process termination and machine failure cannot guarantee this cleanup.
 
 ## Running and review artifacts
 
@@ -174,3 +182,10 @@ production Root path/node/peer/pidfd_getfd or actual Root admin responses.
 Cleanup fixtures exercise actual signal delivery, nonleader exec and
 cancellation from read-one. All children are reaped; source snapshots before
 and after must agree. No fixture starts product Root, GUI or model.
+
+Unwind controls use explicit dependency shims, not product Root identities.
+They exercise real current-UID child `Popen.wait` timeout and selector setup
+cleanup, plus Python interruption and shutdown failure. Their fixture artifact
+writes omit fsync to reach the intended exception deterministically; production
+writes and clocks are untouched. These controls establish cleanup ordering, not
+Root timing, signature verification, original admin execution or consumer state.
