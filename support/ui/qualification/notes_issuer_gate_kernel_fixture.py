@@ -184,7 +184,15 @@ def one(scenario):
                     peer_control.sendall(b"g"); return
                 time.sleep(.001)
         producer=threading.Thread(target=produce); producer.start()
-        chosen,_,_=original(); transaction=IssuerTransaction(chosen)
+        chosen,_,_=original()
+        class SlowObservation(IssuerTransaction):
+            def write_entry(self, raw, length):
+                capture = super().write_entry(raw, length)
+                if capture is not None:
+                    # Actual observer stall; clocks and the original peer keep running.
+                    time.sleep(max(0, self.first_byte_monotonic+.503-time.monotonic()))
+                return capture
+        transaction=(SlowObservation if scenario=="late-parser" else IssuerTransaction)(chosen)
         try:
             capture,deadline=scan_to_grant(trace,channel,transaction,time.monotonic()+3,500,lambda:False)
             result.update(capture={k:v for k,v in capture.items() if not isinstance(v,bytes) and k!="signed"},
@@ -201,16 +209,22 @@ def one(scenario):
             trace.close(); released=True
         except Refused as error:
             result["refusal"]=str(error)
+            if getattr(trace,"issuer_body_held",False):
+                result["selected_capture_preserved"]=getattr(trace,"selected_capture",None) is not None
+                result["gate_outcome"]="unknown_original_request_deadline"
+                channel.socket.shutdown(socket.SHUT_WR)
             trace.close(); released=True
             result["actual_peer_prefix"]=line(peer_control)
         report=line(root_control); peer=line(peer_control)
         result.update(actual_issuer=report,actual_peer=peer)
         expected=encode(original()[2])
         result["passed"]=(result["actual_peer_prefix"]["header_bytes"]==4
-            and (scenario in ("abort","deadline-abort") and peer["body_bytes"]==0 and report.get("body_write_errno")==errno.EPIPE
-                 or scenario not in ("abort","deadline-abort") and peer["body_bytes"]==len(expected) and peer["body_sha256"]==digest(expected))
+            and (scenario in ("abort","deadline-abort","late-parser") and peer["body_bytes"]==0 and report.get("body_write_errno")==errno.EPIPE
+                 or scenario not in ("abort","deadline-abort","late-parser") and peer["body_bytes"]==len(expected) and peer["body_sha256"]==digest(expected))
             and (scenario=="partial-body" and result.get("refusal")=="not_complete_first_grant_body"
-                 or scenario!="partial-body" and result.get("other_thread_progress_while_issuer_stopped",0)>0)
+                 or scenario=="late-parser" and result.get("refusal")=="original_request_deadline"
+                 and result.get("selected_capture_preserved") is True
+                 or scenario not in ("partial-body","late-parser") and result.get("other_thread_progress_while_issuer_stopped",0)>0)
             and not trace.attached and not trace.cleanup_failed)
     finally:
         if trace is not None: trace.close()
@@ -249,11 +263,11 @@ if __name__=="__main__":
     args.output.mkdir(mode=0o700)
     before=source_snapshot()
     result=dict(scope="own unprivileged child/kernel tracing fixtures only",product_qualified=False,cases=[])
-    for scenario in ("release","read-one","abort","deadline-abort","partial-body"):
+    for scenario in ("release","read-one","abort","deadline-abort","late-parser","partial-body"):
         try: result["cases"].append(one(scenario))
         except BaseException as error:
             result["error"]=str(error); break
-    result["passed"]=len(result["cases"])==5 and all(case["passed"] for case in result["cases"])
+    result["passed"]=len(result["cases"])==6 and all(case["passed"] for case in result["cases"])
     result.update(source_before=before,source_after=source_snapshot())
     result["source_unchanged"]=result["source_before"]==result["source_after"]
     result["passed"]=result["passed"] and result["source_unchanged"]
