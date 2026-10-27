@@ -11,7 +11,7 @@ use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdout, Command, Stdio};
 use std::time::{Duration, Instant};
-use trill_ui_core::notes::{NotesTargetIdentity, sha256_hex};
+use trill_ui_core::notes::{sha256_hex, NotesTargetIdentity};
 
 pub(super) const HELPER_SHA_ENV: &str = "TRILL_NOTES_READBACK_HELPER_SHA256";
 const MAX_HELPER_BYTES: u64 = 128 * 1024 * 1024;
@@ -139,7 +139,9 @@ impl Standby {
         target: NotesTargetIdentity,
         peer: &UnixDatagram,
     ) -> io::Result<()> {
-        target.validate().map_err(io::Error::other)?;
+        target
+            .validate()
+            .map_err(|_| invalid("original Notes target identity"))?;
         if target.task_id != 1
             || self.binding.is_some()
             || self.consumed
@@ -258,6 +260,7 @@ impl Standby {
                 Ok(())
             });
         }
+        let deadline = Instant::now() + Duration::from_secs(2);
         let mut child = command.spawn()?;
         let setup = (|| {
             let ready = child
@@ -287,7 +290,7 @@ impl Standby {
             child,
             ready,
             filled: 0,
-            deadline: Instant::now() + Duration::from_secs(2),
+            deadline,
             confirmed: false,
         });
         Ok(())
