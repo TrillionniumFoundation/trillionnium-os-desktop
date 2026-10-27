@@ -2,13 +2,17 @@
 
 ## 2026-10-27 产品整改与当前选源
 
-当前 Hepta 为已发布 `fd6d8d3fcd9aee36711381adf74b6ba7162cda1b` / tree `755e3264fb49a7fedf56a4d2a77befca7af8c384`，显式 preedit SDK prepared tree 仍为 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。本轮以 Desktop `baf73bf04d022ba66949a137bd60448dad659e7e` / tree `35fb7d704d95d6badfb0fe887c49f66c3d7313e0` 启动收敛，Cargo 14 条实际命令 exit 0，五个普通根和独立 prepared lock 的六根图、123份必需来源及219个原 manifest 核验通过。新锁与文档待统一冻结，最终干净 Desktop commit/tree 和构建收据尚未产生。
+当前选定 Hepta 为 `de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c` / tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`，显式 preedit SDK prepared tree 保持 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。本轮源pin收敛基线为 Desktop `1813bac14a829cd83ef3d5fdda4e96e71955190e` / tree `db199ec4e58bc645f0a10c13852950a7a3f7439e`；六根锁须由真实Cargo重新生成、解析与核验。最终干净Desktop commit/tree取锁生成后的新提交和实际selection，不以本段自指。
 
-fd 的 scoped `just fix` 实际 exit 0 / 94.159秒、无自动修改，格式检查 exit 0；type→strict Clippy→custody→Supervisor→完整 Agentd→17项 Memory 实际检查链仍在执行，未授新源运行资格。旧 a9/H8d 原生 UI 全部16条实际命令已 exit 0，不再处于文本测试运行中；这些结果只属于旧配对。H8d / `bb5677f6` 的 Session 双 owner 负控是历史失败，effects=0，不证明重复效果。103/26/24项静态检查与84文档/858链接只属于 `e9642b55`，不转移到当前源码。
+原 FD `fd6d8d3fcd9aee36711381adf74b6ba7162cda1b` 的 type、严格Clippy、26项custody/流/恢复、4项原Supervisor、完整475项普通Agentd与17项Memory已实际通过；两个原ignored Root preparation测试在真实UID0分别通过。scoped `just fix` 0/94.159秒且无自动修改、`just fmt` 0也属于FD。当前后继保留其Rust运行实现，旧执行不转授后继的最终安装或生产资格。
 
-最终同源 UI/runtime/Root 构建、安装包、真实 Root/人类/模型的授权 Notes 保存和原 thread 回读仍待完成。Windows原91项保持83 PASS、7 FAIL、1 LEAK，773整体FAIL保留；独立 Windows 修复候选须自己完成原生验收。Android原签名私钥未恢复，Asterinas最终体积、完整F1/G2与产品闭环仍未闭合。当前开发与技术入口见[当前能力](CURRENT_CAPABILITIES.md#2026-10-27-当前配对与产品整改)、[固定来源](SOURCES.md#hepta-native-organ)与[模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)；生产资格仍未取得。
+原FD云端contract gate因历史implementation-map的祖先/源码观察失配而失败。`00d173380e2d1425f83040fae848773ac0a440aa` 的37份导航/状态元数据迁移不改Rust、Cargo或校验脚本，原production qualification两段实际exit 0。当前de0仅再改一行测试夹具，使原删symbol负例明确进入被测能力分支，不恢复生产能力声明、不修改verifier；Lane D 20项已全部实际通过，完整后继资格以收尾原收据为准。
 
-下文按时间保留原记录；其中“当前”、README 空文件规则和测试数只描述各节来源，不覆盖本节的选源和执行状态。
+`baf73bf0` / FD 的Cargo14命令及六根图、123份必需来源/219个manifest核验属于旧依赖配对。旧a9/H8d原生UI全部16条实际命令exit 0；H8d / `bb5677f6` 双owner负控effects=0；`e9642b55` 的103/26/24项静态检查与84文档/858链接均按原来源保留。
+
+最终同源UI/runtime/Root构建与安装、真实Root/人类/模型授权Notes保存和原thread回读仍待完成。Windows历史原91项83 PASS、7 FAIL、1 LEAK及773整体FAIL保留；独立0ba5的真实Windows run40460595505正在执行，GNU通过与helper构建不替代原生功能终态。Android原签名私钥未恢复，Asterinas最终体积、完整F1/G2与产品闭环仍未闭合。[当前能力](CURRENT_CAPABILITIES.md#2026-10-27-当前配对与产品整改)、[固定来源](SOURCES.md#hepta-native-organ)与[模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)列出开发技术入口；生产资格仍未取得。
+
+下文按时间保留原记录；其中“当前”、README空文件规则和测试数仅描述各节来源，不覆盖本节。
 
 ## 2026-10-24 Linux host 当前来源与 scoped 验收
 

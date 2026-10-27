@@ -3,24 +3,28 @@
 <a id="2026-10-26-产品整改的当前来源"></a>
 ## 2026-10-27 当前配对与产品整改
 
-当前 Hepta 来源固定为已发布的 [`fd6d8d3fcd9aee36711381adf74b6ba7162cda1b`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/fd6d8d3fcd9aee36711381adf74b6ba7162cda1b) / tree `755e3264fb49a7fedf56a4d2a77befca7af8c384`。本轮 Cargo 收敛从 Desktop `baf73bf04d022ba66949a137bd60448dad659e7e` / tree `35fb7d704d95d6badfb0fe887c49f66c3d7313e0` 启动；Cargo 生成的锁与本轮文档尚待统一冻结，最终 Desktop commit/tree 必须由干净源码和构建收据重新绑定。显式 preedit SDK prepared tree 保持 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`，不改用默认 SDK 或 clipboard profile。
+当前选定 Hepta 来源为 [`de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c) / tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`。本轮源 pin 收敛基线为 Desktop `1813bac14a829cd83ef3d5fdda4e96e71955190e` / tree `db199ec4e58bc645f0a10c13852950a7a3f7439e`；实际 Cargo 重新生成六根锁并验证后，再统一冻结最终 Desktop commit/tree，由实际 selection 与构建收据绑定。显式 preedit SDK prepared tree 保持 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`，不改用默认 SDK 或 clipboard profile。
 
-本轮 Cargo 14 条实际命令均 exit 0，五个普通 Cargo 根与独立 SDK stage/prepared lock 已完成六根完整核验；123 份必需来源、219 个原 Hepta manifest 及六根依赖图检查通过。原 AWS、owner/bridge、SDK helper 与来源角色继续使用同一合同。依赖与更新步骤见 [DEPENDENCIES](../support/ui/DEPENDENCIES.md) 和 [SOURCES](SOURCES.md)。这些结果不包含新组合的编译、运行或安装资格。
+原 `baf73bf0` / Hepta FD 配对的 Cargo 14 条实际命令均 exit 0，五个普通 Cargo 根与独立 SDK stage/prepared lock 已完成六根完整核验；123 份必需来源、219 个原 Hepta manifest 及六根依赖图检查通过。这些结果不转授当前 de0 配对；当前六根锁仍须真实生成。原 AWS、owner/bridge、SDK helper 与来源角色继续使用同一合同。依赖与更新步骤见 [DEPENDENCIES](../support/ui/DEPENDENCIES.md) 和 [SOURCES](SOURCES.md)。这些结果不包含新组合的编译、运行或安装资格。
 
 桌面 Shell 使用 Rust/Makepad，Notes 窗口使用 Rust/egui；会话与工具执行接原 Hepta Core/App Server。AI 界面的状态来自原 thread 的事件、授权结果和文档回读。输入框文本、模型回答、原操作收据和当前文档分别展示，模型说“已保存”不能替代 Notes 效果证据。[模块索引](modules/README.md)提供开发步骤和技术合同；[原生交接表](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)对应各模块的实现与交接入口。
 
 | 本轮工作 | 已取得的证据 | 尚未完成的验收 |
 | --- | --- | --- |
-| 当前依赖与来源 | `baf73bf0` 起始源码 / Hepta `fd6d8d3f` 的实际 Cargo 14 命令与六根来源/依赖检查通过，SDK tree 保持 `6b422b31`。 | 冻结包含新锁和文档的干净 Desktop 提交，再绑定最终构建、安装包与运行收据。 |
+| 当前依赖与来源 | 当前源 pin 选定上述 de0 / SDK 组合；原 `baf73bf0` / Hepta FD 的14条 Cargo命令、六根图与123份来源/219个manifest检查均已实际通过，但只属于该旧配对。 | 为 de0 真实生成与验证六根锁，冻结最终 Desktop，再绑定最终构建、安装与运行收据。 |
 | 历史静态检查 | Desktop `e9642b55` 的普通/优化脚本各103项、fresh-cache各26项、来源合同各24项、84份模块文档/858链接通过，见[逐源记录](../results/integration/2026-10-27-current-blockers/desktop-e964-static.json)。 | 这些计数仅属于 e964 / H8d 旧静态来源，不移继给 fd 或最终 Desktop。 |
 | 原 App 退出后的回读 | `8467f0dd` 保留同一只读恢复端点；原 App 被其 owner 确认退出后只启动固定字节 helper。旧组件六项、Session52项及同8d747的 Root 严格 Clippy 见[组件交接](../results/integration/2026-10-26-product-readiness/app-only-component-handoff.json)与[原始回执](../results/integration/2026-10-26-product-readiness/root-8467-8d747-clippy.json)。当前选源包含这条后继代码。 | 旧组件结果不证明新最终包；真实 Root/人类会话/模型中的 App 退出与原身份回读仍待执行。 |
-| 回读来源合同 | `adf609b8` 增加 Session回读、固定helper和Root会话三个必需来源角色；旧普通/优化各24项见[回执](../results/integration/2026-10-26-product-readiness/desktop-adf-source-profile.json)。当前 fd 合同继续保留这些来源。 | 来源清单不会建立效果权限或恢复旧写者。 |
-| Root 生命周期 | fd 包含原 Session、完整 worker future 与实际阻塞同步任务的同 File custody，以及两条流的私有非等待准入；原 strong_count guard、身份与期限保持。scoped `just fix` 实际 exit 0 / 94.159秒、无自动修改，`just fmt` exit 0。 | 当前 type→strict Clippy→custody→Supervisor→完整 Agentd→17项 Memory 检查链仍在执行，未取得新源运行资格。历史 H8d / `bb5677f6` [负控失败](../results/integration/2026-10-27-current-blockers/root-session-bb567-negative-selected.json)仅证明两个 owner 状态并存、effects=0；不得写成重复效果。 |
-| Linux 产品 | 旧 a9/H8d 原生 UI 流水全部16条实际命令均已 exit 0，已结束；只属于旧配对。旧 runtime 控制器遗失不能用日志 Finished 补成退出码，旧 Root 队列在未编译时取消的记录保留。 | fd 新 UI 与 runtime、Root 产品构建、最终安装包，以及真实人类和模型的一次授权 Notes 保存、原 thread 回读、丢回复/撤销/退出/重连/并发编辑、物理输入和读屏仍待同源完成。 |
-| Windows | `37831e03` 原91项保持83 PASS、7 FAIL、1 LEAK；另两组各3/3、backend独立8/9，见[原分类](../results/integration/2026-10-26-product-readiness/windows-378-qualification.json)。`773d34e1` [原生诊断](../results/integration/2026-10-27-current-blockers/NATIVE-REPORT.md)保留原私有签名文件完整身份/DACL与LF输出事实。 | 773整体FAIL与未到backend断言的junction失败保留。独立原生验证器与夹具修复仍须最终 Windows 源码实测；collector1 PASS不证明功能，不提高原91计数，不继承 Linux fd 资格。 |
+| 回读来源合同 | `adf609b8` 增加 Session回读、固定helper和Root会话三个必需来源角色；旧普通/优化各24项见[回执](../results/integration/2026-10-26-product-readiness/desktop-adf-source-profile.json)。当前合同继续保留这些来源。 | 来源清单不会建立效果权限或恢复旧写者。 |
+| Root 生命周期 | 原 FD `fd6d8d3f` 的 type、严格 Clippy、26项 custody/流/恢复、4项原 Supervisor、完整475项普通Agentd及17项Memory已实际通过；另两个原 ignored Root preparation 测试在真实UID0分别通过。当前后继保留同File custody、两条流的私有非等待准入及原 strong_count/身份/期限规则。 | 这些执行收据仍绑定原FD；当前后继的构建、安装、生产Root和真实Notes闭环另验。历史 H8d / `bb5677f6` [负控失败](../results/integration/2026-10-27-current-blockers/root-session-bb567-negative-selected.json)仅证明两个owner状态并存、effects=0，不证明重复效果。 |
+| Linux 产品 | 旧 a9/H8d 原生 UI 流水全部16条实际命令均已 exit 0，已结束；只属于旧配对。旧 runtime 控制器遗失不能用日志 Finished 补成退出码，旧 Root 队列在未编译时取消的记录保留。 | 最终当前配对的 UI/runtime/Root 产品构建、最终安装包，以及真实人类和模型的一次授权 Notes 保存、原 thread 回读、丢回复/撤销/退出/重连/并发编辑、物理输入和读屏仍待同源完成。 |
+| Windows | `37831e03` 原91项保持83 PASS、7 FAIL、1 LEAK；另两组各3/3、backend独立8/9，见[原分类](../results/integration/2026-10-26-product-readiness/windows-378-qualification.json)。`773d34e1` [原生诊断](../results/integration/2026-10-27-current-blockers/NATIVE-REPORT.md)保留原私有签名文件完整身份/DACL与LF输出事实。 | 773整体FAIL与未到backend断言的junction失败保留。独立 `0ba5adf2` 候选的严格GNU检查通过，真实Windows [run40460595505](https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/40460595505)已构建真实helper，原91与独立4+4+2控制按其实际终态记录；尚未取得本次功能结果。collector1 PASS不证明功能，不提高原91计数，不继承Linux资格。 |
 | Android / Asterinas | 原 Android APK/cert 已核实；严格 receiver 保留原 signer 要求。Asterinas继续提取唯一原 owner 的必要闭包。 | 原 Android 私钥未恢复、候选未安装；Native 最终 ELF 文件8MiB/LOAD16MiB门禁、完整F1/G2、资源恢复与真实驱动仍未闭链。 |
 
 历史收据见[精选组件证据](../results/integration/2026-10-26-product-readiness/evidence-index.json)。`production_ready` 仍为 false；当前源码选择、静态检查或正在执行的任务都不构成完整产品验收。下文保留较早来源的历史实测，不把旧结果转授本轮。
+
+Desktop `5b2f2db2` / FD 的实际 UI builder 与云端 native UI CI 均在 Session 的两处格式检查失败，未进入 UI 编译。后继 `1813bac1` 只按原 workspace edition 2021 格式化该文件，整个 UI workspace 的原格式检查已实际 exit 0；原 runtime 与 Root cache warm 自然结束后的真实结果仍由各自收据记录。
+
+原 FD 云端 contract gate 的失败原因是历史 implementation-map 观察锚点与当前祖先/源码不符。`00d173380e2d1425f83040fae848773ac0a440aa` 只迁移37份导航/状态元数据，原 production qualification 两段实际 exit 0，未修改 Rust、Cargo 或校验脚本。当前 de0 再对一个测试夹具显式声明待测能力，保留生产撤回状态与原拒绝校验；Lane D 20项实际全部通过，完整后继资格收尾仍由其原收据记录。以上均不授予安装、生产效果或输入法资格。
 
 ## 历史归档与较早边界
 
