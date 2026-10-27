@@ -31,8 +31,12 @@ impl Fixture {
     }
 
     fn build(vm: VmarHandle, init: OomInit<'_>) -> Self {
+        let mut pid = allocate_posix_tid();
+        if pid == INIT_PROCESS_PID {
+            pid = allocate_posix_tid();
+        }
         let process = Process::new(
-            allocate_posix_tid(),
+            pid,
             vm.clone_arc(),
             new_resource_limits_for_init(),
             init,
@@ -81,7 +85,6 @@ impl Fixture {
             OomInit::Fork {
                 parent: &self.process,
                 flags,
-                current: self.read(),
             },
         );
         if flags.contains(CloneFlags::CLONE_VFORK) {
@@ -265,4 +268,88 @@ fn exit_vm_unbinding_removes_membership_before_last_process_reference_drops() {
     parent.write(300, parent.writer(root)).unwrap();
     assert_eq!(peer.read(), 200);
     assert_eq!(parent.read(), 300);
+}
+
+#[ktest]
+fn clone_and_privileged_write_publish_one_of_two_complete_authority_cuts() {
+    use core::sync::atomic::{AtomicBool, Ordering};
+
+    use ostd::cpu::CpuId;
+
+    use crate::thread::kernel_thread::ThreadOptions;
+
+    let mut parent = Fixture::new();
+    let root = parent.add_writer(Credentials::new_root());
+    let user = parent.add_writer(user_credentials());
+    parent.write(200, parent.writer(root)).unwrap();
+    let parent = Arc::new(parent);
+    let started = Arc::new([AtomicBool::new(false), AtomicBool::new(false)]);
+    let finished = Arc::new([AtomicBool::new(false), AtomicBool::new(false)]);
+    let child = Arc::new(Mutex::new(None));
+    let transition = TRANSITIONS.lock();
+    let workers = (0..2)
+        .map(|index| {
+            let parent = parent.clone();
+            let started = started.clone();
+            let finished = finished.clone();
+            let child = child.clone();
+            ThreadOptions::new(move || {
+                started[index].store(true, Ordering::Release);
+                if index == 0 {
+                    parent.write(-100, parent.writer(root)).unwrap();
+                } else {
+                    *child.lock() = Some(parent.fork(CloneFlags::empty()));
+                }
+                finished[index].store(true, Ordering::Release);
+            })
+            .cpu_affinity(CpuId::current_racy().into())
+            .spawn()
+        })
+        .collect::<Vec<_>>();
+    for _ in 0..256 {
+        Task::yield_now();
+        if started.iter().all(|flag| flag.load(Ordering::Acquire)) {
+            break;
+        }
+    }
+    let both_started = started.iter().all(|flag| flag.load(Ordering::Acquire));
+    let neither_completed = finished.iter().all(|flag| !flag.load(Ordering::Acquire));
+    // This is the actual production transition barrier, not a test-only
+    // permission override. Either waiter may win when the barrier opens.
+    drop(transition);
+    for worker in workers {
+        worker.join();
+    }
+    assert!(both_started);
+    assert!(neither_completed);
+    assert!(finished.iter().all(|flag| flag.load(Ordering::Acquire)));
+    let child = child.lock().take().unwrap();
+    let cut = child.read();
+    assert!(cut == 200 || cut == -100);
+    child.write(i32::from(cut), parent.writer(user)).unwrap();
+    assert_eq!(
+        child
+            .write(i32::from(cut) - 1, parent.writer(user))
+            .unwrap_err()
+            .error(),
+        Errno::EACCES
+    );
+    assert_eq!(child.read(), cut);
+}
+
+#[ktest]
+fn last_adjustment_owner_drops_without_waiting_for_the_transition_in_atomic_mode() {
+    let fixture = Fixture::new();
+    let adjustment = OomScoreAdj::new(
+        allocate_posix_tid(),
+        &fixture.vm.clone_arc(),
+        OomInit::Initial(0),
+    );
+    let weak = Arc::downgrade(&adjustment.0);
+    let transition = TRANSITIONS.lock();
+    let irq = ostd::irq::disable_local();
+    drop(adjustment);
+    assert!(weak.upgrade().is_none());
+    drop(irq);
+    drop(transition);
 }

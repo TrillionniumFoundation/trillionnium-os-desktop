@@ -606,7 +606,6 @@ fn clone_child_process(
     let child_oom_score_adj = super::oom_adjustment::OomInit::Fork {
         parent: process,
         flags: clone_flags,
-        current: process.oom_score_adj().read(),
     };
 
     let child_tid = allocate_posix_tid();

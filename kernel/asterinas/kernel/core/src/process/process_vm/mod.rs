@@ -278,7 +278,9 @@ impl<'a> ProcessVmarGuard<'a> {
     /// If the `new_vmar` is `None`, this method will remove the
     /// current VMAR.
     pub(super) fn set_vmar(&mut self, new_vmar: Option<Arc<Vmar>>) -> Option<Arc<Vmar>> {
-        core::mem::replace(&mut *self.inner, new_vmar)
+        self.process
+            .oom_score_adj()
+            .replace_vm(&mut *self.inner, new_vmar)
     }
 
     /// Returns a reader for reading contents from
