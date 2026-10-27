@@ -1,0 +1,31 @@
+[
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "install",
+      "--locked",
+      "cargo-osdk",
+      "--path",
+      "osdk"
+    ],
+    "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-product-delivery-d343c35-20261027/kernel/asterinas"
+  },
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-product-delivery-d343c35-20261027/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0"
+    ],
+    "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-product-delivery-d343c35-20261027/kernel/asterinas/kernel/core/comps/block",
+    "lock_sha256": "b07ed64d57dd1122530f689ea6d4fb348c04f28b1a0e34589c67cc7c8fd1fc5d"
+  }
+]

@@ -147,17 +147,24 @@ against the selected block test-base lock after the run. The optional result
 qualifies only the stated decoder suite; `check-report.py` continues to
 require the original four crates for a complete default report.
 
-At implementation time the local host has Rust 1.99.1 but no pinned kernel
-nightly. The host decoder tests and oracle tests have run; the actual pinned
-lock generation, kernel compilation and native gate must retain their own
-subsequent evidence. Adding these commands is not a native pass.
+The first local implementation check used Rust 1.99.1: all 24 decoder cases
+passed in debug and optimized builds (with overflow checks disabled in the
+latter), and all seven gate-oracle cases passed. Three unrelated stale
+CPU/G2 fixtures failed on both that worktree and the untouched `94234e6a`
+baseline. A separate fixture correction preserved the production 377-test
+gate and original inventories; the integrated host directory then passed
+all 41 cases.
 
-The local implementation check ran all 24 decoder cases in both debug and
-optimized builds with overflow checks disabled in the latter; both runs passed.
-All seven new gate-oracle cases passed. The complete existing ktest host
-directory ran 41 cases with three failures: two CPU-owner fixtures still
-expect the old 373 count while the retained gate is 377, and one G2 stale-gate
-fixture still targets that older contract. The same three failures were
-reproduced against the untouched `94234e6a` baseline; this partition change
-does not lower the 377-test gate or rewrite those unrelated fixtures. These
-host results are distinct from the pending pinned kernel and guest records.
+The subsequent [2026-10-27 pinned execution](../../results/integration/2026-10-27-partition-validation/README.md)
+used Desktop `d343c35da641f86a3fa0ff6c4293d4948bbe0b2e`, with only the two
+newly generated block test-base files untracked. Original nightly Cargo
+generated the 118-package lock from the immutable seed with no external
+drift. The same pinned nightly passed the 24 host cases, built the original
+OSDK from that checkout, compiled `aster-block`, and ran all 24 required
+cases in the real q35/TCG/one-vCPU guest: zero failures, filtered cases or
+soft skips, raw QEMU exit 33. The recorded raw serial and QEMU evidence
+revalidate with the original checker. Original kernel and OSDK locks remained
+unchanged. These are kernel-mode parser tests using controlled readers;
+physical-media, virtio I/O, DMA, power-loss, SMP and whole-product acceptance
+remain separate. A06 CI now selects this optional suite explicitly in
+addition to its unchanged four-crate default gate.

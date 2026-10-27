@@ -257,6 +257,37 @@ python3 support/android/receiver/qualify_receiver.py apk \
   --candidate-apk /tmp/android-organ-original-signed-build/actions-v2.apk
 ```
 
+Both `apk` and `installed` first capture the original and candidate APK through
+one held file descriptor each. Inputs must be single-link regular files of
+1 byte to 4 MiB; symlinks, directories, FIFOs, oversized files, and changes in
+identity, size, timestamps or metadata during the bounded read are rejected.
+The original fixed hash, signer verification, candidate manifest inspection,
+and reported hashes all describe these same captured bytes. `apksigner` and
+`aapt` read mode-0600 copies in one private temporary directory, which is
+removed on success or failure. Neither inspector reopens a caller's APK path.
+
+`apk_input_binding` records each source path observed at capture, its device
+and inode, timestamps, byte length and snapshot SHA256. The original paths may
+subsequently be replaced; this record does not assert their later contents.
+It also does not prove that the candidate DEX came from a particular reviewed
+build, that a strict receiver is installed, or that any native effect is
+qualified. Installed-package identity remains a separate read below. The
+existing unconditional `organ-set-text` rejection is unchanged.
+
+The focused host regressions use actual temporary files and path replacements
+with synthetic signature/Android metadata inspectors:
+
+```sh
+python3 -B -m unittest tests.workloads.android.test_receiver_qualification \
+  tests.workloads.android.test_receiver_effect_boundary -v
+python3 -B -O -m unittest tests.workloads.android.test_receiver_qualification \
+  tests.workloads.android.test_receiver_effect_boundary -v
+```
+
+They verify snapshot binding, mid-read changes, nonregular/aliased/size-invalid
+inputs, signature failures and the unchanged pre-dispatch effect guard. They
+do not execute Android tooling, sign an APK, install a package or use ADB.
+
 After an independently coordinated original-package update, installed-source
 verification uses the existing original root inspection capability. This
 inspector never invokes sudo or changes permissions to acquire that capability;
