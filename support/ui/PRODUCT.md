@@ -333,6 +333,12 @@ lock replacement races.
 package corruption, traversal/alias refusal, installation, upgrade/rollback,
 managed-file protection and user-data preservation in private temporary paths.
 Its ELF fixtures test installation mechanics, not the Rust runtime.
+Run this command from the repository root. The equivalent module-directory
+command is `python3 -m unittest discover -s . -p 'test_*.py'` from
+`support/ui/product`; inherited-descriptor subprocesses locate their reviewed
+module independently of the caller's working directory. Root-only custody
+and descriptor cases require a real Linux Root test environment and skip for
+ordinary users; those fixture results do not qualify an installed Root.
 
 The real acceptance harness requires two distinct real package directories,
 externally supplied build-manifest SHA256 pins, the expected full source

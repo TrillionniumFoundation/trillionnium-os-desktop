@@ -42,8 +42,12 @@ receipt. A native diagnostic reports `production_ready=false`. A real model
 operation, original Notes effect and independent exact result/recovery checks
 remain separate required acceptance gates.
 
-Run trust-boundary tests from `support/ui/product` with
-`python3 -m unittest test_native_human`. Two filesystem cases require explicit
-real Root execution; additional Root cases cover shared ancestry refusal and
-actual pidfd transfer to the original parent. They are skipped for ordinary users. Parser
-fixtures are local boundary tests, never authenticated production evidence.
+Run trust-boundary tests from the repository root with
+`python3 -m unittest discover -s support/ui/product -p test_native_human.py`, or
+from `support/ui/product` with `python3 -m unittest test_native_human`.
+Both run the same cases. The descriptor child uses the actual provider module
+directory; sockets, received FDs and the child process are closed/reaped even
+when transport or assertions fail. Two filesystem cases require explicit real
+Root execution; additional Root cases cover shared ancestry refusal and actual
+pidfd transfer to the original parent. They are skipped for ordinary users.
+Parser fixtures are local boundary tests, never authenticated production evidence.
