@@ -335,15 +335,22 @@
       "id": "A00",
       "sources": [
         "support/release/organ_release_profile.py",
-        "support/ui/verify_product_dependencies.py"
+        "support/ui/verify_product_dependencies.py",
+        "support/ui/notes_fault_controller.py",
+        "support/ui/notes_fault_linux.py",
+        "support/ui/notes_fault_contract.py",
+        "support/ui/qualification/notes_fault_socket_fixture.py",
+        "support/ui/qualification/notes_fault_cleanup_fixture.py"
       ],
       "technical": [
         "docs/ARCHITECTURE.md",
-        "support/ui/DEPENDENCIES.md"
+        "support/ui/DEPENDENCIES.md",
+        "support/ui/RECOVERY_QUALIFICATION.md"
       ],
       "development": [
         "docs/agents/ORGAN_RELEASE_PROFILE.md",
-        "support/ui/PRODUCT.md"
+        "support/ui/PRODUCT.md",
+        "support/ui/RECOVERY_QUALIFICATION.md"
       ],
       "owner": "Release tools bind original sources and artifacts; original Root/Agentd retains production authority and deployment inputs.",
       "failure_recovery": "Refuse mixed sources, locks or resources; install rollback cannot clear an uncertain operation or issue another grant.",
