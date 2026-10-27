@@ -36,6 +36,15 @@ The paired Desktop callsite now asks original Fleet to validate the original
 spawn through its complete lifecycle history. A later Starting transition,
 missing history or invalid transition is not accepted as the old spawn.
 
+The separate [frozen Hepta Rust 1.96 qualification](hepta-rust196-qualification.json)
+records hosted-runner execution against exactly 4223/tree7c19: four Fleet,
+24 Agentd policy/reconciler, three UID-0 Memory installation-reentry and one
+original Current CAS reentry tests passed. Other filtered tests are not counted.
+Original `just fmt` and the owning-package `just fix` returned zero with the
+same clean source before and after. The workflow identity is separate from
+the tested product identity; this is original component qualification, not a
+deployed Desktop or device result.
+
 This record qualifies source selection and actual Cargo resolution only.
 It does not compile the final Desktop callsite, install a release, exercise a
 physical login or Notes effect, or establish resident/cross-boot recovery.

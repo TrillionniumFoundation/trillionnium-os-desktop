@@ -6,6 +6,10 @@
 
 本候选包含原 Fleet spawn 历史核对、原 CognitiveStore 精确物理安装重入、Desktop 恢复准备的排他锁和 spawn 消耗边界；原 Current CAS、writer、operation 与 authority 仍是唯一 owner。恢复准备可在尚未消耗 spawn 的完整原观察上重入，已有 `06-spawn-consumed` 后仍拒绝再次创建子进程；这不是正式常驻服务或跨 boot 恢复。Hepta 的 [owner PR4066](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4066)、[CPU final-use PR4068](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4068) 和[独立 Rust1.96 资格 PR4069](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4069) 分别保留源码和原执行范围。原生策略仍是显式接入，默认 host 未启用它，也没有 AI 性能收益结论。
 
+固定 4223 的 [Rust1.96 原资格作业](https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/40480248962/job/122108458755)已通过：Fleet 4项、Agentd策略/同K-D恢复24项、真实UID0的Memory安装重入3项及原Current CAS重入1项，选定32项全部成功；其余过滤项不计成功。原 `just fmt` 与三个 owning package 的 `just fix` 均返回0，前后源码保持同一clean SHA/tree；[保留收据](../results/integration/2026-10-27-source-pin/hepta-rust196-qualification.json)区分 workflow 与产品身份。这补上原完整Agentd编译和选定夹具的1.96资格，仍不代表安装、物理登录、Notes效果或设备资格。
+
+942/de0 的优化 UI builder 已实际完成，但后续严格归档检查拒绝唯一的 `manifest.json`：实际mode0600，原消费者要求普通文件0644或可执行文件0755。打包器在写manifest后遗漏固定权限，受umask影响。本候选只补manifest显式0644；[修前/修后证据](../results/integration/2026-10-27-package-manifest-mode/result.json)记录0000/0002/0077三场景原先分别产生0666/0664/0600并失败，修后原打包回归46项通过。旧包与原失败收据保持原样；最终新包仍须重新执行原构建、打包和验证。
+
 Asterinas 的 GPT/EBR 生产解析器已有[固定 nightly、真实 QEMU guest 24/24](../results/integration/2026-10-27-partition-validation/README.md)证据，覆盖有界结构/CRC/备份冲突与 EBR 拒绝路径；这是 kernel-mode 解析测试，不是实际磁盘、virtio/DMA、掉电、多核或完整 Hepta guest 资格。Android qualifier 改为让 signer/aapt 与结果摘要消费同一份受限 APK 快照；54项 host 回归在普通与优化 Python 下通过，原 signer 和真实安装资格仍未闭合。
 
 **本候选尚未取得完整产品资格。** 首先完成同一最终包的真实本地登录、原线程与 authority、Notes 效果、独立文档观察、原 operation 持久终态，再逐项验收丢回复、撤销、并发编辑和进程中断。丢回复与 App-only 恢复后的通道只用于原结果回查，各故障场景使用独立 episode。优化包、安装、输入/读屏、正式续期/轮换/升级/跨 boot、真实设备 adapter 及同预算 AI 对照仍分别要求实际证据。

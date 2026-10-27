@@ -4,6 +4,8 @@ import io
 import json
 import os
 import struct
+import subprocess
+import sys
 import types
 from pathlib import Path
 import tarfile
@@ -73,6 +75,37 @@ class ProductTests(unittest.TestCase):
             for name, record in result["binaries"].items():
                 data = archive.extractfile("trillionnium-desktop/bin/" + name).read()
                 self.assertEqual(record, {"sha256": desktop.digest(data), "bytes": len(data)})
+
+    def test_pack_regular_file_modes_do_not_depend_on_umask(self):
+        binary_archive = self.make_archive("a" * 40, b"umask packaging fixture")
+        program = (
+            "import os, sys; sys.path.insert(0, sys.argv[1]); import desktop; "
+            "os.umask(int(sys.argv[2], 8)); "
+            "desktop.pack(sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])"
+        )
+        for mask in (0o000, 0o002, 0o077):
+            with self.subTest(umask=f"{mask:04o}"):
+                output = self.root / f"umask-{mask:04o}.tar.gz"
+                subprocess.run([
+                    sys.executable, "-I", "-B", "-c", program,
+                    str(Path(desktop.__file__).resolve().parent), f"{mask:04o}",
+                    str(binary_archive), "a" * 40, str(self.root / "profile.json"), str(output),
+                ], check=True, capture_output=True, text=True)
+                extracted = self.root / f"umask-{mask:04o}"
+                extracted.mkdir()
+                with tarfile.open(output) as archive:
+                    members = archive.getmembers()
+                    self.assertEqual(archive.getmember("trillionnium-desktop/manifest.json").mode, 0o644)
+                    for member in members:
+                        self.assertTrue(member.isdir() or member.isfile(), member.name)
+                        if member.isfile():
+                            self.assertIn(member.mode, (0o644, 0o755), member.name)
+                            self.assertGreaterEqual(member.size, 0, member.name)
+                            self.assertLessEqual(member.size, desktop.MAX_FILE, member.name)
+                    archive.extractall(extracted, filter="data")
+                package = extracted / "trillionnium-desktop"
+                self.assertEqual((package / "manifest.json").stat().st_mode & 0o7777, 0o644)
+                self.assertEqual(desktop.verify_package(package)["desktop_commit"], "a" * 40)
 
     def resource_fixture(self):
         resources = self.root / "resources"
