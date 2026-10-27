@@ -115,6 +115,45 @@ the original receipt; status/readback uses the same run, call and document
 identity. Document format and migration rules are in
 [NOTES_DURABILITY.md](NOTES_DURABILITY.md).
 
+## Same live Root administration
+
+The explicit Root launcher retains an opaque administrative capability from its
+same prepared service. Its private `root-admin.sock` and write-once instance
+descriptor are described in [the administrative development/technical entry](../../services/hepta-session-host/src/product_root/ADMIN.md).
+The finite `hepta-desktop-root admin --instance-file <Root0600 descriptor>`
+client connects only to that already-live original Root, with actual peer
+credentials, boot/birth, retained process handle and episode nonce checks. It
+cannot initialize or reopen an issuer, clock, service, owner or lease.
+
+`observe` reads the original physical Current and writer lease/frontiers.
+`observe-grant` selects the bounded volatile observation of an actual original
+Notes issue result and can export its same signed bytes into a new Root0600
+file. `revoke-grant` verifies that original artifact against the same current
+issuer, fixed Notes policy and complete existing effect lease, then performs
+the original effect and exact-head grant revocation CAS. Only the original
+authenticated observation/consumer synchronization can confirm both protected
+consumer frontiers. Pending/Unknown and partial first-store results are explicit;
+no unsigned administrative reply updates consumer authority and no mutation
+is automatically retried. `observe-grant-state --signed-grant-file <same file>`
+reads the original independent lease/revocation/head after a lost reply. An
+expired artifact identifies an observation only and cannot authorize mutation.
+`revoke-writer` is separately named and never substitutes for precise revoke.
+
+The original 30-second bootstrap, at most 180-second writer and original
+120–300-second issuer windows remain in force. Administrative exchanges add no
+time: a single cumulative deadline is capped at one second and the original
+transport timeout; precise revoke is also clamped to its original grant expiry.
+Root/owner/UI/human termination or expiry invalidates the capability. Recreating
+a descriptor or retaining artifact bytes cannot revive an old instance.
+
+The selected Hepta crate's `ROOT_ADMIN.md` contains the original-object and
+source-closure constraints and scoped tests. Desktop's [ADMIN.md](../../services/hepta-session-host/src/product_root/ADMIN.md)
+contains actual CLI syntax and local component checks. These are development
+entries, not an assertion that actual Root/GUI/model revocation has run. Product
+qualification must distinguish a not-yet-spent original grant refused specifically
+as Revoked after authenticated synchronization from an already-spent replay,
+expiry, transport failure or process exit.
+
 ## Recovery and acceptance
 
 Root retains a bounded, immutable SQLite image independently of Agentd before

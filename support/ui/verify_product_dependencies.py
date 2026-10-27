@@ -10,6 +10,9 @@ import re
 import subprocess
 import tomllib
 
+sys.path.insert(0, str(Path(__file__).parent))
+from root_admin_sources import require_root_admin_sources
+
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "support/ui/HEPTA_SHARED_PRESENTER.json"
 REPOSITORY = "https://github.com/TrillionniumFoundation/hepta-private-ci"
@@ -407,6 +410,7 @@ def verify(root=ROOT, hepta_root=None, *, source_only=False):
             "Unexpected original repository")
     require(REQUIRED_FILES <= {entry["path"] for entry in source["files"]},
             "Source contract omits the shared literal Notes compiler or original composer transaction")
+    require_root_admin_sources(source["files"])
     files = {entry["path"]: entry for entry in source["files"]}
     require(len(files) == len(source["files"]), "Duplicate original source identity")
     for original, local in MIRRORED_FIXTURES.items():
