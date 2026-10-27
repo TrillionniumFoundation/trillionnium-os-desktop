@@ -131,3 +131,9 @@ not inject a fault; the original operation may already have executed. The
 acceptance record must bind source/binary checks, controller observations,
 original broker uncertainty, owner/helper receipt readback, document identity,
 revision/hash and later process recovery.
+
+The separate [original issuer reply gate](NOTES_ISSUER_GATE.md) qualifies the
+external boundary for revoking a still-undelivered original Notes grant. It
+uses the same actual process/exec/signal cleanup primitives, with the issuer
+poll-two/read-one idle contract and original live Root CLI. Its component
+results are not installed consumer-revocation acceptance.

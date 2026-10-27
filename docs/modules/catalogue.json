@@ -349,17 +349,27 @@
         "support/ui/notes_fault_linux.py",
         "support/ui/notes_fault_contract.py",
         "support/ui/qualification/notes_fault_socket_fixture.py",
-        "support/ui/qualification/notes_fault_cleanup_fixture.py"
+        "support/ui/qualification/notes_fault_cleanup_fixture.py",
+        "support/ui/notes_issuer_gate_contract.py",
+        "support/ui/notes_issuer_gate_receipts.py",
+        "support/ui/notes_issuer_gate_linux.py",
+        "support/ui/notes_issuer_gate_admin.py",
+        "support/ui/notes_issuer_gate_controller.py",
+        "support/ui/test_notes_issuer_gate.py",
+        "support/ui/qualification/notes_issuer_gate_kernel_fixture.py",
+        "support/ui/qualification/notes_issuer_gate_cleanup_fixture.py"
       ],
       "technical": [
         "docs/ARCHITECTURE.md",
         "support/ui/DEPENDENCIES.md",
-        "support/ui/RECOVERY_QUALIFICATION.md"
+        "support/ui/RECOVERY_QUALIFICATION.md",
+        "support/ui/NOTES_ISSUER_GATE.md"
       ],
       "development": [
         "docs/agents/ORGAN_RELEASE_PROFILE.md",
         "support/ui/PRODUCT.md",
-        "support/ui/RECOVERY_QUALIFICATION.md"
+        "support/ui/RECOVERY_QUALIFICATION.md",
+        "support/ui/NOTES_ISSUER_GATE.md"
       ],
       "owner": "Release tools bind original sources and artifacts; original Root/Agentd retains production authority and deployment inputs.",
       "failure_recovery": "Refuse mixed sources, locks or resources; install rollback cannot clear an uncertain operation or issue another grant.",
