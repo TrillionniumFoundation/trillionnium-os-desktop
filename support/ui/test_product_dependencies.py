@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -38,6 +39,12 @@ class ProductDependencies(unittest.TestCase):
     def test_full_verification_cannot_silently_become_source_only(self):
         with self.assertRaisesRegex(ValueError, "requires the original Hepta checkout"):
             guard.verify(self.root)
+
+    def test_public_isolated_cli_loads_the_original_root_source_policy(self):
+        result = subprocess.run([sys.executable, "-I", "-B", str(guard.ROOT / "support/ui/verify_product_dependencies.py"),
+                                 "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(result.returncode, 0, result.stderr.decode())
+        self.assertIn(b"--hepta-root", result.stdout)
 
     def original_checkout(self):
         """Build an actual Git fixture; no external checkout/network is needed."""

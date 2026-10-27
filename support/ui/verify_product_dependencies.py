@@ -7,11 +7,14 @@ import json
 import os
 from pathlib import Path
 import re
+import runpy
 import subprocess
 import tomllib
 
-sys.path.insert(0, str(Path(__file__).parent))
-from root_admin_sources import require_root_admin_sources
+# Read this adjacent source directly, including under isolated Python. A
+# cached helper must not replace the reviewed mandatory-source policy.
+require_root_admin_sources = runpy.run_path(
+    str(Path(__file__).with_name("root_admin_sources.py")))["require_root_admin_sources"]
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "support/ui/HEPTA_SHARED_PRESENTER.json"
