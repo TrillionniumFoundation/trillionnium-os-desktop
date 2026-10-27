@@ -80,6 +80,17 @@ Silently-ignored flags:
 For more information,
 see [the man page](https://man7.org/linux/man-pages/man2/newfstatat.2.html).
 
+### `writev` on sockets
+
+A nonempty socket vector is submitted as one send operation.
+A positive partial return does not also generate a Unix stream `SIGPIPE`.
+Empty vectors retain their zero-byte result,
+and user-vector validation still precedes the send.
+Faults after valid copied bytes preserve a positive partial result.
+Offset-based `pwritev` on sockets continues to return `ESPIPE`.
+Other file types retain their existing vector loop;
+this change does not claim atomicity for those implementations.
+
 ### `preadv2` and `pwritev2`
 
 Supported functionality in SCML:

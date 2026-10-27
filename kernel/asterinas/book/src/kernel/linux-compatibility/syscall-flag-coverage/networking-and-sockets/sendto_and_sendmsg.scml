@@ -14,6 +14,12 @@ struct mmsg_hdr = {
     msg_len
 };
 
+// MSG_NOSIGNAL is additionally supported on AF_UNIX STREAM/SEQPACKET fds.
+// STREAM EPIPE without progress signals the calling thread unless suppressed;
+// SEQPACKET does not use that STREAM signal rule. This descriptor-dependent
+// scope cannot be expressed by a flags-only rule for every socket family.
+// Keep the generic matches conservative; see README.md for the precise scope.
+
 // Send message on a socket
 sendto(
     sockfd, buf, len,

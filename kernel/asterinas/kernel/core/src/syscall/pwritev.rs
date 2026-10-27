@@ -4,6 +4,7 @@ use super::SyscallReturn;
 use crate::{
     fs,
     fs::file::file_table::{RawFileDesc, get_file_fast},
+    net::socket::util::{MessageHeader, SendFlags},
     prelude::*,
     util::VmReaderArray,
 };
@@ -149,6 +150,24 @@ fn do_sys_writev(
 
     let user_space = ctx.user_space();
     let mut reader_array = VmReaderArray::from_user_io_vecs(&user_space, io_vec_ptr, io_vec_count)?;
+    // A socket vector is one send operation. Splitting it across file.write
+    // calls could queue SIGPIPE for a later EPIPE after earlier progress while
+    // this syscall returns a positive byte count. Keep empty-vector behavior
+    // and all original user-iovec validation before entering this branch.
+    if let Some(socket) = file.as_socket()
+        && !reader_array.readers_mut().is_empty()
+    {
+        let written = socket.sendmsg(
+            &mut reader_array,
+            MessageHeader::new(None, Vec::new()),
+            SendFlags::empty(),
+        )?;
+        if written > 0 {
+            fs::vfs::notify::on_modify(&file);
+        }
+        return Ok(written);
+    }
+
     for reader in reader_array.readers_mut() {
         debug_assert!(reader.has_remain());
 
