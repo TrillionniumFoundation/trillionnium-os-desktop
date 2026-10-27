@@ -291,5 +291,91 @@ class GateUnwindTests(unittest.TestCase):
         import subprocess
         self.assertEqual(self.run_selected_control(real_wait_timeout=True), [subprocess.TimeoutExpired])
 
+class GateSourceCacheTests(unittest.TestCase):
+    """CLI source-cache controls in disposable copies, without Root operations."""
+
+    def cache_case(self, entry_name, module_name, mode):
+        import importlib.util
+        from pathlib import Path
+        import py_compile
+        import shutil
+        import subprocess
+        import sys
+        import tempfile
+        source = Path(__file__).resolve().parent
+        modules = ("notes_fault_contract.py", "notes_fault_linux.py",
+                   "notes_issuer_gate_contract.py", "notes_issuer_gate_receipts.py",
+                   "notes_issuer_gate_linux.py", "notes_issuer_gate_admin.py",
+                   "notes_issuer_gate_controller.py", "test_notes_issuer_gate.py")
+        fixtures = ("notes_issuer_gate_kernel_fixture.py", "notes_issuer_gate_cleanup_fixture.py")
+        with tempfile.TemporaryDirectory(prefix="trill-issuer-cache-control-") as temporary:
+            root = Path(temporary)
+            copied = root / "support/ui"
+            (copied / "qualification").mkdir(parents=True)
+            for member in modules: shutil.copyfile(source / member, copied / member)
+            for member in fixtures:
+                shutil.copyfile(source / "qualification" / member, copied / "qualification" / member)
+            poison = root / "untrusted.py"
+            poison.write_text('raise RuntimeError("ignored-issuer-cache-must-not-execute")\n')
+            actual_source = copied / module_name
+            cached = Path(importlib.util.cache_from_source(str(actual_source)))
+            cached.parent.mkdir(exist_ok=True)
+            py_compile.compile(str(poison), cfile=str(cached), doraise=True,
+                               invalidation_mode=mode)
+            if mode == py_compile.PycInvalidationMode.TIMESTAMP:
+                raw = bytearray(cached.read_bytes())
+                info = actual_source.stat()
+                raw[8:12] = int(info.st_mtime).to_bytes(4, "little")
+                raw[12:16] = info.st_size.to_bytes(4, "little")
+                cached.write_bytes(raw)
+            entry = copied / entry_name
+            command = [sys.executable, "-I", "-B", *(["-O"] * sys.flags.optimize), str(entry), "--help"]
+            protected = subprocess.run(command, capture_output=True)
+            self.assertEqual(protected.returncode, 0, protected.stderr)
+            text = entry.read_text()
+            weakened = text.replace("sys.pycache_prefix = _source_cache", "sys.pycache_prefix = _old_cache")
+            self.assertNotEqual(text, weakened)
+            # Only the disposable negative copy: remove all entry guards so
+            # an inner controller guard cannot mask an outer fixture failure.
+            # This establishes that -B alone still reads the poisoned cache.
+            for relative in ("notes_issuer_gate_controller.py", *("qualification/" + name for name in fixtures)):
+                local = copied / relative
+                local.write_text(local.read_text().replace("sys.pycache_prefix = _source_cache",
+                                                         "sys.pycache_prefix = _old_cache"))
+            if mode == py_compile.PycInvalidationMode.TIMESTAMP:
+                # If the poisoned module itself is an entry, guard removal
+                # changed its size. Keep the negative cache timestamp-valid.
+                raw = bytearray(cached.read_bytes())
+                info = actual_source.stat()
+                raw[8:12] = int(info.st_mtime).to_bytes(4, "little")
+                raw[12:16] = info.st_size.to_bytes(4, "little")
+                cached.write_bytes(raw)
+            negative = subprocess.run(command, capture_output=True)
+            self.assertNotEqual(negative.returncode, 0)
+            self.assertIn(b"ignored-issuer-cache-must-not-execute", negative.stderr)
+
+    def test_controller_complete_import_closure_ignores_valid_cache(self):
+        import py_compile
+        for module in ("notes_fault_contract.py", "notes_fault_linux.py", "notes_issuer_gate_contract.py",
+                       "notes_issuer_gate_receipts.py", "notes_issuer_gate_linux.py", "notes_issuer_gate_admin.py"):
+            for mode in (py_compile.PycInvalidationMode.TIMESTAMP, py_compile.PycInvalidationMode.UNCHECKED_HASH):
+                with self.subTest(module=module, mode=mode.name):
+                    self.cache_case("notes_issuer_gate_controller.py", module, mode)
+
+    def test_fixture_complete_import_closures_ignore_valid_cache(self):
+        import py_compile
+        entries = {
+            "qualification/notes_issuer_gate_kernel_fixture.py": ("notes_fault_contract.py", "notes_fault_linux.py",
+                "notes_issuer_gate_contract.py", "notes_issuer_gate_receipts.py", "notes_issuer_gate_linux.py",
+                "notes_issuer_gate_admin.py", "notes_issuer_gate_controller.py", "test_notes_issuer_gate.py"),
+            "qualification/notes_issuer_gate_cleanup_fixture.py": ("notes_fault_contract.py", "notes_fault_linux.py",
+                "notes_issuer_gate_linux.py"),
+        }
+        for entry, modules in entries.items():
+            for module in modules:
+                for mode in (py_compile.PycInvalidationMode.TIMESTAMP, py_compile.PycInvalidationMode.UNCHECKED_HASH):
+                    with self.subTest(entry=entry, module=module, mode=mode.name):
+                        self.cache_case(entry, module, mode)
+
 
 if __name__=="__main__": unittest.main()

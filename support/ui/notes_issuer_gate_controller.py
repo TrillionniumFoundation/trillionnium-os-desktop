@@ -14,15 +14,24 @@ import signal
 import socket
 import stat
 import sys
+import tempfile
 import time
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from notes_fault_contract import Refused, digest, exact_json, fields, require, uint
-from notes_fault_linux import HeldProcess, READS, WRITES, SYSGOOD
-from notes_issuer_gate_contract import IssuerTransaction, selector
-from notes_issuer_gate_linux import IssuerTrace, POLLS, select_issuer, poll_descriptors
-from notes_issuer_gate_admin import OriginalRootAdmin, RootFile, private_parent, write_new
+with tempfile.TemporaryDirectory(prefix="trill-issuer-source-") as _source_cache:
+    _old_cache = sys.pycache_prefix
+    try:
+        # -B prevents writes but can still execute ignored cached bytecode.
+        # A fresh private prefix forces this complete local import closure to source.
+        sys.pycache_prefix = _source_cache
+        from notes_fault_contract import Refused, digest, exact_json, fields, require, uint
+        from notes_fault_linux import HeldProcess, READS, WRITES, SYSGOOD
+        from notes_issuer_gate_contract import IssuerTransaction, selector
+        from notes_issuer_gate_linux import IssuerTrace, POLLS, select_issuer, poll_descriptors
+        from notes_issuer_gate_admin import OriginalRootAdmin, RootFile, private_parent, write_new
+    finally:
+        sys.pycache_prefix = _old_cache
 
 
 def scan_to_grant(trace, channel, transaction, arm_end, timeout_ms, cancelled):

@@ -18,6 +18,10 @@ single-thread ptrace cleanup implementation. A Root0600 binding fixes the
 actual boot, concrete Desktop/Hepta source IDs, exact Root/Agentd process
 identity and executable hashes. Those input source strings do not establish
 binary provenance: the installation receipt must do that separately.
+The controller and both fixture entry points load their complete local import
+closure under a new private empty `pycache_prefix`. `-B` alone only disables
+cache writes and does not prevent timestamp/hash-valid ignored caches from
+executing. Source hashes therefore cannot be replaced by cached tool bodies.
 
 The accepted issuer socket must have the exact original named path, Root0660
 node, original Agentd group and Root02710 runtime parent. Its real

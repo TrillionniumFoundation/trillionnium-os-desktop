@@ -26,12 +26,18 @@ import time
 sys.dont_write_bytecode=True
 BASE=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(BASE/"support/ui"))
-from notes_fault_contract import Refused, digest, require
-from notes_fault_linux import HeldProcess, proc_identity, LIBC
-from notes_issuer_gate_linux import IssuerTrace, snapshot, pidfd_target
-from notes_issuer_gate_contract import IssuerTransaction
-from notes_issuer_gate_controller import scan_to_grant
-from test_notes_issuer_gate import original, encode
+with tempfile.TemporaryDirectory(prefix="trill-issuer-kernel-source-") as _source_cache:
+    _old_cache = sys.pycache_prefix
+    try:
+        sys.pycache_prefix = _source_cache
+        from notes_fault_contract import Refused, digest, require
+        from notes_fault_linux import HeldProcess, proc_identity, LIBC
+        from notes_issuer_gate_linux import IssuerTrace, snapshot, pidfd_target
+        from notes_issuer_gate_contract import IssuerTransaction
+        from notes_issuer_gate_controller import scan_to_grant
+        from test_notes_issuer_gate import original, encode
+    finally:
+        sys.pycache_prefix = _old_cache
 
 
 def read_exact(stream,count):

@@ -13,9 +13,15 @@ import time
 sys.dont_write_bytecode=True
 BASE=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(BASE/"support/ui"))
-from notes_fault_contract import Refused, require
-from notes_fault_linux import LIBC, HeldProcess, proc_identity, SEIZE
-from notes_issuer_gate_linux import IssuerTrace, snapshot
+with tempfile.TemporaryDirectory(prefix="trill-issuer-cleanup-source-") as _source_cache:
+    _old_cache = sys.pycache_prefix
+    try:
+        sys.pycache_prefix = _source_cache
+        from notes_fault_contract import Refused, require
+        from notes_fault_linux import LIBC, HeldProcess, proc_identity, SEIZE
+        from notes_issuer_gate_linux import IssuerTrace, snapshot
+    finally:
+        sys.pycache_prefix = _old_cache
 
 
 def child(scenario,inputfd,lifefd,directory):
