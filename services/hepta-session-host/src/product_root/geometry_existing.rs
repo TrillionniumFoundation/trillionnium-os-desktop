@@ -7,6 +7,7 @@ impl Product {
         inputs: &Inputs,
         config: &HostAuthorityServiceConfig,
         prior: &HostAuthorityRegistration,
+        preparation: Arc<super::super::recovery_preparation::RecoveryPreparation>,
     ) -> Result<Self> {
         fs::root_directory(&inputs.prefix)?;
         let admin = inputs.prefix.join("admin");
@@ -116,6 +117,7 @@ impl Product {
             record,
             user,
             mount,
+            _recovery_preparation: Some(preparation),
         })
     }
 }

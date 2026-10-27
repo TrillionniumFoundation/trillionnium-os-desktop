@@ -16,6 +16,8 @@ TOOLCHAIN = "nightly-2026-07-21"
 CRATES = {"ostd": "ostd", "aster-core": "kernel/core",
           "osdk-frame-allocator": "osdk/deps/frame-allocator",
           "aster-mlsdisk": "kernel/core/comps/mlsdisk"}
+OPTIONAL_CRATES = {"aster-block": "kernel/core/comps/block"}
+ALL_CRATES = {**CRATES, **OPTIONAL_CRATES}
 
 
 def digest(path):
@@ -30,7 +32,7 @@ def run(command, cwd, env, log):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--crate", choices=CRATES, action="append")
+    parser.add_argument("--crate", choices=ALL_CRATES, action="append")
     parser.add_argument("--output", type=Path, help="must not already exist")
     parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
     parser.add_argument("--permission-attr-smp", action="store_true",
@@ -57,7 +59,7 @@ def main():
         args.crate = ["aster-core"]
         args.test_name = "permission_attr_smp"
     if args.test_name:
-        for crate in ("osdk-frame-allocator", "aster-mlsdisk"):
+        for crate in ("osdk-frame-allocator", "aster-mlsdisk", "aster-block"):
             if crate in (args.crate or CRATES):
                 parser.error(f"{crate} requires its complete unfiltered default N0 suite")
     profile = "permission-attr-smp" if args.permission_attr_smp else "default"
@@ -167,9 +169,9 @@ def main():
                 command.append(args.test_name)
             if features:
                 command.append("--features=" + ",".join(features))
-            commands.append({"argv": command, "cwd": str(upstream / CRATES[crate]), "lock_sha256": digest(lock_path)})
+            commands.append({"argv": command, "cwd": str(upstream / ALL_CRATES[crate]), "lock_sha256": digest(lock_path)})
             (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
-            code = run(command, upstream / CRATES[crate], env, target / "osdk-test.log")
+            code = run(command, upstream / ALL_CRATES[crate], env, target / "osdk-test.log")
             (target / "osdk-exit-code.txt").write_text(str(code) + "\n")
             generated = upstream / "target/osdk" / f"{crate}-test-base" / "Cargo.lock"
             if generated.exists():

@@ -381,6 +381,54 @@ def check_mlsdisk_tests(qemu, serial, section, summary, starts, declared, allow_
             raise ValueError("mlsdisk named test lacks its own terminal ok result")
 
 
+REQUIRED_PARTITION_TESTS = tuple("aster_block::partition::table::tests::" + name for name in (
+    "ieee_crc_matches_known_vectors_and_incremental_updates",
+    "valid_gpt_preserves_slots_and_last_partial_sector",
+    "entries_crossing_sectors_and_larger_than_sectors_are_supported",
+    "unused_array_padding_is_not_part_of_gpt_crc",
+    "zero_short_and_misaligned_entry_sizes_are_rejected_without_array_reads",
+    "oversized_array_dimensions_are_bounded_before_io_or_allocation",
+    "invalid_header_size_revision_reserved_and_crc_are_rejected",
+    "gpt_locations_usable_ranges_and_overflow_are_rejected_before_array_io",
+    "gpt_reversed_outside_and_overlapping_partitions_are_rejected",
+    "corrupt_primary_header_or_array_uses_valid_backup_without_writes",
+    "corrupt_backup_uses_valid_primary_without_writes",
+    "two_valid_but_conflicting_gpt_copies_are_rejected",
+    "crc_covers_unused_entries_and_large_entry_extensions",
+    "io_failure_is_propagated_or_recovered_only_from_a_valid_gpt_copy",
+    "protective_mbr_in_another_slot_still_selects_gpt",
+    "valid_legacy_mbr_with_zero_chs_wins_over_stale_backup_gpt",
+    "mbr_out_of_device_and_overlapping_ranges_are_rejected",
+    "valid_ebr_chain_uses_base_relative_links_and_sector_relative_data",
+    "self_and_multi_sector_ebr_cycles_terminate_without_partial_results",
+    "oversized_ebr_chain_stops_at_the_discovery_limit",
+    "ebr_bad_signature_io_and_links_are_rejected",
+    "ebr_data_must_stay_in_container_and_not_cover_metadata_or_other_data",
+    "empty_devices_and_unpartitioned_media_have_no_partitions",
+    "malformed_headers_never_request_a_sector_outside_the_device",
+))
+
+
+def check_partition_tests(qemu, serial, section, summary, starts, declared, allow_filtered):
+    if allow_filtered:
+        raise ValueError("partition gate never permits filtered qualification")
+    check_fixed_n0_profile(qemu, "partition")
+    if len(HEAD.findall(serial)) != 1 or section.find("[ktest runner] All crates tested.") < summary.end():
+        raise ValueError("partition suite must finish before the runner completion marker")
+    if declared != len(REQUIRED_PARTITION_TESTS) or sorted(starts) != sorted(REQUIRED_PARTITION_TESTS):
+        raise ValueError("partition gate requires every reviewed decoder regression exactly once")
+    if "[skipped:" in serial.lower():
+        raise ValueError("partition suite cannot pass with any soft-skipped test")
+    records = list(re.finditer(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE))
+    for index, record in enumerate(records):
+        end = records[index + 1].start() if index + 1 < len(records) else summary.start()
+        if record.end() >= end or end > summary.start():
+            raise ValueError("partition result appears outside the target test sequence")
+        block = section[record.end():end].rstrip("\n")
+        if not re.search(r"(?:\A|\n)[ \t]+ok[ \t]*\Z", block):
+            raise ValueError("partition named test lacks its own terminal ok")
+
+
 def check_guest(guest, crate, allow_filtered=False):
     qemu = json.loads((guest / "qemu.json").read_text())
     raw_serial = (guest / "serial.log").read_bytes()
@@ -421,6 +469,8 @@ def check_guest(guest, crate, allow_filtered=False):
             qemu, serial, section, summary, starts, declared, allow_filtered)
     if crate == "aster-mlsdisk":
         check_mlsdisk_tests(qemu, serial, section, summary, starts, declared, allow_filtered)
+    if crate == "aster-block":
+        check_partition_tests(qemu, serial, section, summary, starts, declared, allow_filtered)
     if crate == "aster-core" and not allow_filtered:
         missing = [name for name in REQUIRED_CORE_TESTS if starts.count(name) != 1]
         if missing:
@@ -477,7 +527,9 @@ def check_guest(guest, crate, allow_filtered=False):
             "required_mlsdisk_tests": list(REQUIRED_MLSDISK_TESTS) if crate == "aster-mlsdisk" else [],
             "mlsdisk_media_durability_qualified": False if crate == "aster-mlsdisk" else None,
             "required_ostd_tests": list(REQUIRED_OSTD_TESTS) if crate == "ostd" and not allow_filtered else [],
-            "raw_qemu_exit": 33, "guest": guest.name}
+            "raw_qemu_exit": 33, "guest": guest.name,
+            **({"required_partition_tests": list(REQUIRED_PARTITION_TESTS),
+                "physical_media_qualified": False} if crate == "aster-block" else {})}
 
 
 def main():

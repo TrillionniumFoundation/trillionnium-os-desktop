@@ -177,6 +177,28 @@ because the upstream test-kernel dependency also depends on OSTD.
 No test result is claimed by adding these entry points. Consult actual saved
 guest evidence for the completed, failed or filtered tests of each invocation.
 
+## Optional partition-decoder gate
+
+`--crate aster-block` selects the bounded GPT/MBR/EBR decoder's 24 regressions.
+It is deliberately outside the existing four-crate default. Its strict N0
+checker accepts no filter, missing/substituted test, soft skip or absent
+individual terminal result. The complete default aggregate still requires
+the same four original crates.
+
+On the pinned build host, the first block test-base lock is generated with
+`prepare-locks.py --crate aster-block --bootstrap-optional`. This opt-in path
+normalizes offline from the original immutable seed and audits every package;
+only the local `aster-block-osdk-bin 0.1.0` test base may be added. It cannot
+replace another suite's lock or skip that suite's locked prefetch. Retain the
+real generated lock and metadata report before using the normal
+`prepare-locks.py --crate aster-block` and
+`run.py --crate aster-block --output /absolute/new/evidence` commands.
+
+See [partition-table validation](../../../docs/agents/PARTITION_TABLE_VALIDATION.md)
+for format policy, explicit resource bounds, host commands and native evidence
+limits. A successful host decoder run does not compile the block I/O adapter
+or establish a guest/physical-disk result.
+
 
 ## Complete MLSDisk gate
 

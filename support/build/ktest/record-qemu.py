@@ -20,11 +20,11 @@ def main():
     profile = os.environ.get("A01_KTEST_PROFILE", "default")
     crate = os.environ["A01_KTEST_CRATE"]
     test_name = os.environ.get("A01_KTEST_TEST_NAME") or None
-    if crate not in ("ostd", "aster-core", "osdk-frame-allocator", "aster-mlsdisk"):
+    if crate not in ("ostd", "aster-core", "osdk-frame-allocator", "aster-mlsdisk", "aster-block"):
         raise SystemExit("unknown kernel-test crate")
     if profile not in ("default", "permission-attr-smp"):
         raise SystemExit("unknown fixed kernel-test profile")
-    if crate in ("osdk-frame-allocator", "aster-mlsdisk") and (profile != "default" or test_name is not None):
+    if crate in ("osdk-frame-allocator", "aster-mlsdisk", "aster-block") and (profile != "default" or test_name is not None):
         raise SystemExit(f"{crate} requires its complete unfiltered default N0 suite")
     vcpus = 2 if profile == "permission-attr-smp" else 1
     if profile == "permission-attr-smp" and os.environ["A01_KTEST_CRATE"] != "aster-core":

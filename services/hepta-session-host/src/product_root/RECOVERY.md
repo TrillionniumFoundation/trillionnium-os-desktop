@@ -64,14 +64,27 @@ The successor receives at most `min(180s, issuer remaining - 60s)`. Expiry stops
 writing through the original runtime. No automatic new authority is issued.
 A deployment created without a separate writer/issuer window is refused.
 
-This first product entry admits one recovery episode. Root creates
-`admin/recovery` once, with write-once public stage observations. Those files are
-not an effect ledger or a source of authority: original issuer/registry/Current
-and Notes records remain the only authorities. Any existing recovery directory,
-including a failure after policy CAS but before sealing/bootstrap, is refused.
-A second invocation must not reserve another target or replay an uncertain
-step. General partial-ceremony reconciliation and repeated recovery remain
-unsupported; preserving these records is necessary for a later exact protocol.
+This first product entry admits one child-creation episode. Before that boundary,
+the same recovery command can resume interrupted preparation: waiting for the
+actual old writer expiry and rechecking/removing stale rendezvous. It first holds
+an exclusive `admin/recovery.lock` until the invocation and its exact mount
+cleanup finish, including failed admission or startup. It revalidates the
+original deployment, boot, actual process retirement and owner state on every
+attempt. An existing `00-admitted.json` must match the complete original owner,
+Notes target, thread and exact operation selector; a changed selector is refused.
+The optional `05-old-sockets-retired.json` must match the newly performed stale
+socket inspection. Neither file is rewritten to make a later attempt fit.
+
+Immediately before the first Session spawn, Root durably creates
+`06-spawn-consumed.json`. Its presence, including an incomplete file, refuses
+another attempt. Legacy Session logs, writer files, unknown stages, malformed
+observations, aliases or changed custody also refuse preparation re-entry.
+Thus a lost reply cannot grant another spawn or repeat a possible writer/policy
+CAS. These files coordinate preparation, not authority or effects; original
+issuer/registry/Current and Notes records remain the only authorities. General
+reconciliation after child creation, repeated successful recovery, renewed
+authority and cross-boot recovery remain unsupported. Preserve the consumed
+episode for the original owner's explicit reconciliation protocol.
 
 Stage files distinguish admission, stale endpoint retirement, actual original
 writer rotation, actual physical Current and bootstrap handoff. They do not
