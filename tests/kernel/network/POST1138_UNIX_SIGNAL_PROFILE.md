@@ -1,14 +1,16 @@
 # Post-1138 Unix signal source profile
 
-`post-1138-unix-signal-v1` binds the Unix STREAM SIGPIPE and vectored-copy repair
+`post-1138-unix-signal-v2` binds the Unix STREAM SIGPIPE and vectored-copy repair
 to the previous retirement, CPU route, first-spawn and CPUNODE composition.
-Its 129 unique literal role/path/SHA256 rows retain all 90 previous paths.
+Its 132 unique literal role/path/SHA256 rows retain all 90 previous paths.
 Only the two changed Unix stream owners and A06 execution metadata change
 their inherited hashes. New rows bind sendmmsg/writev, the 42-case guest probe,
 runner and host oracle, compatibility documentation, the contract and previous
 wrapper. Entry points, flags, iovec/error conversion, the current-thread bridge,
 user-task signal return and the complete existing signal module are explicit
-dependencies. This selection is supplemented by whole-tree source admission.
+dependencies. Three further rows bind the existing FileLike downcast and both
+Unix socket re-export modules. This selection is supplemented by whole-tree
+source admission.
 
 `run_unix_stream_signal_guest.py` checks the historical engine's fixed SHA256
 before executing exactly those bytes in a private module. It adds one fixed
@@ -16,6 +18,14 @@ positive profile. Original head/tree admission, ordinary build and ELF checks,
 artifact and nonce checks, boot parameters, timeouts and Unix oracles retain
 their implementations. Historical mutations cannot use this profile, and no
 operator hash or manifest can extend it. Duplicate roles and paths are errors.
+
+Only Unix `SOCK_STREAM` uses the aggregated writev dispatch. An immutable type
+getter and the existing FileLike downcast exclude SEQPACKET, TCP, UDP and vsock;
+those transports retain their previous vector loop and are not newly qualified
+for complete Linux vector semantics. The discarded a25 v1 candidate aggregated
+all sockets and introduced a source-confirmed vsock partial-fault regression.
+Its frozen tree and receipts remain separate; it ran no final matrix. The v2
+profile explicitly refuses the previous v1 profile name.
 
 The old 90/84/76 wrappers and historical engine remain unchanged. The previous
 90-role positive host tests read complete actual Git blobs from
@@ -45,7 +55,7 @@ must use the new wrapper and match the independently verified ordinary product:
 python3 -I -B tests/kernel/network/run_unix_stream_signal_guest.py \
   --expected-source-head FULL_HEAD --expected-source-tree FULL_TREE \
   --target-dir /independent/kernel/target --output /new/evidence/unix-all \
-  --source-profile post-1138-unix-signal-v1 --variant positive --selection all
+  --source-profile post-1138-unix-signal-v2 --variant positive --selection all
 ```
 
 Repeat with `--selection shutdown_race` and a new output directory. Capture

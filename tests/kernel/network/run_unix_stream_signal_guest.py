@@ -14,10 +14,10 @@ import sys
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 ENGINE = HERE / "run_unix_stream_guest.py"
-PROFILE = "post-1138-unix-signal-v1"
+PROFILE = "post-1138-unix-signal-v2"
 ENGINE_SHA256 = '57bd6b8b5f9f9ca1d90b86ab9c9af182b66fd54761db9c844dcc64fcdbc5a3a0'
 
-# Reviewed exact 9ef Unix signal composition plus test-only lint and A06 execution metadata; every role/path/hash is literal code.
+# Reviewed exact narrow 6b92 Unix STREAM composition plus A06 execution metadata; every role/path/hash is literal code.
 OWNERS = (
     ('oracle.parser', 'tests/kernel/network/unix_stream_oracle.py', 'eefb0f272d2c396ea6fa87c0af827f795b115ca7607c6746abf80975fe544489'),
     ('guard.historical-manifest', 'tests/kernel/network/controls/manifest.json', 'e13376b03d1f3bd85aa9746bbf6b28bf99a1c8da4f8105d37d7a2dada2be844e'),
@@ -31,7 +31,7 @@ OWNERS = (
     ('ipc.connected', 'kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs', '9d75fe097c1ecc8fa768c09d53ce0357fb0eb024100c495adf9d86f68b5a9eec'),
     ('ipc.init', 'kernel/asterinas/kernel/core/src/net/socket/unix/stream/init.rs', 'd3c6163b7bd23dc7f8d57b136c4a09b868a13c1c70094e89f943d462640e6eac'),
     ('ipc.listener', 'kernel/asterinas/kernel/core/src/net/socket/unix/stream/listener.rs', '6a615eced8a03015ddd2731bf91a0bfac3f5b97b7319e2826d7da72a2ddaa28d'),
-    ('ipc.socket', 'kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs', 'fe7b2b0537e181c1157a10f0c417719e8fc627c043d04688d611c383be4cc03a'),
+    ('ipc.socket', 'kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs', 'faf968e06abc5581ad5f806f3e9d5999efbf731671e22783c302794f4bffd021'),
     ('ipc.socketpair', 'kernel/asterinas/kernel/core/src/syscall/socketpair.rs', 'ecb440dd55c99c02d565586faa4bd87fc97ad9c30f3661caaaf8ac6d005a95f6'),
     ('ipc.ring-wrapper', 'kernel/asterinas/kernel/core/src/util/ring_buffer.rs', 'c4c98b949380893cc71b02182e27db7286413766931b5d9c82b44f56a623c15e'),
     ('ipc.ring-crate', 'kernel/asterinas/kernel/libs/ring-buffer/src/lib.rs', '5e3375c47397446479681274e2a8bce3c7e778b9e4291eb97b4410fea2494839'),
@@ -111,16 +111,16 @@ OWNERS = (
     ('guard.cpunode-historical-profile', 'tests/kernel/network/run_unix_stream_cpunode_guest.py', '82a62dee3e0c97763f20e766f721fc3afbf4d4a3f29bfb53738689a4511fae2c'),
     ('guard.vm-retirement-historical-profile', 'tests/kernel/network/run_unix_stream_retirement_guest.py', '39db5e319345ad22383b266f4daae3c11b6938f1fd82115722397405156d9ddb'),
     ('unix.signal.sendmmsg-entry', 'kernel/asterinas/kernel/core/src/syscall/sendmmsg.rs', '806256cdbb5f6217d38c6e911359a742ce11ddb5780d83c2f6267187c83a3f38'),
-    ('unix.signal.writev-entry', 'kernel/asterinas/kernel/core/src/syscall/pwritev.rs', '75bb3094802f1e83edad363ecd4ae8f9fcd4a346e937c1809a6426c55a4f3bba'),
-    ('contract.unix-signal', 'support/kernel-safety/UNIX_SOCKET_SIGPIPE.md', '884076f3f86e5582ebdda967ad2089dcdf92e014120d4111f05a840e3875bdcf'),
+    ('unix.signal.writev-entry', 'kernel/asterinas/kernel/core/src/syscall/pwritev.rs', '608c5004f0105579af7295d76c8ed5ee1673bbedf3b2d28d69dd22864f83d99b'),
+    ('contract.unix-signal', 'support/kernel-safety/UNIX_SOCKET_SIGPIPE.md', '1e2897c40a3cf6614cce2a4721eeeee3f61a5a28f0efedc1a8a73ce4797ff347'),
     ('oracle.unix-signal.probe-c', 'tests/kernel/unix-signal/probe.c', 'e08180d2d460723afab0ee8923c9f9eaf17c41bc40f45b5966c5683a84b7c09f'),
     ('oracle.unix-signal.run-py', 'tests/kernel/unix-signal/run.py', '9ccec5fdf9b0cc54e64519e992a15d3ef856b7929901639bfebcf794948b2850'),
     ('oracle.unix-signal.test_run-py', 'tests/kernel/unix-signal/test_run.py', '8a6086f3abca19f4549a2fae8ccebe77ce079d0a35c09379523326217275ad5b'),
     ('oracle.unix-signal.README-md', 'tests/kernel/unix-signal/README.md', '44df7be54804ebca8ac883069741541294f7057649d598bacc6df9451b3bc950'),
     ('contract.compat.networking-and-sockets.README-md', 'kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/README.md', '078bed4813d07b8efb5b61bc12d0f4c2df74fa66629d1e4e982dfde057dc87d9'),
     ('contract.compat.networking-and-sockets.sendto_and_sendmsg-scml', 'kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/networking-and-sockets/sendto_and_sendmsg.scml', 'd0abd77aa5d448591c8dc1cdd4c0e708bc3653d6e3e49ef2156bb845cb11102e'),
-    ('contract.compat.file-and-directory-operations.README-md', 'kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/file-and-directory-operations/README.md', '965d54489d7494770f228f73dc8fb93c39786bb379125811ca21c6120318612c'),
-    ('contract.compat.file-and-directory-operations.fully_covered-scml', 'kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/file-and-directory-operations/fully_covered.scml', '0d94c38ba4771cab33da8634ccb11d464a3010107941bf7333c680a7cb40cbbe'),
+    ('contract.compat.file-and-directory-operations.README-md', 'kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/file-and-directory-operations/README.md', '01d9bdd4453fcf92ba2f08042bdb5afa84562b4f3ef2d5096d96940d33e59683'),
+    ('contract.compat.file-and-directory-operations.fully_covered-scml', 'kernel/asterinas/book/src/kernel/linux-compatibility/syscall-flag-coverage/file-and-directory-operations/fully_covered.scml', '5578024247880cf2e5d511e68118981ed1b07a30d2b2c62d55891649d2a25e93'),
     ('unix.signal.dependency.socket-filelike-write', 'kernel/asterinas/kernel/core/src/net/socket/mod.rs', 'be5926e00f1386f4c1cbdc707c34bc0eba2d07bbe92787193878770254a18970'),
     ('unix.signal.dependency.send-flags', 'kernel/asterinas/kernel/core/src/net/socket/util/message_flags.rs', '3480122ccc58d6aea409ee5efbe9ebff200954b32c22d0d6c09845bf572c4095'),
     ('unix.signal.dependency.sendto-entry', 'kernel/asterinas/kernel/core/src/syscall/sendto.rs', '735227ea1e528bc1d66b48c72608ffdb186136d0fafa7c3a9ab7e3fde2ac296f'),
@@ -148,6 +148,9 @@ OWNERS = (
     ('unix.signal.module.signals.raw', 'kernel/asterinas/kernel/core/src/process/signal/signals/raw.rs', '13cc6f38b9e9814c261209c27d32cc2048918f8b582f83785622e941b3e3268f'),
     ('unix.signal.module.signals.seccomp', 'kernel/asterinas/kernel/core/src/process/signal/signals/seccomp.rs', 'e213d058f036a60283bcd5eedff7a87e0b12022b88258628581094e6e70911e6'),
     ('unix.signal.module.signals.user', 'kernel/asterinas/kernel/core/src/process/signal/signals/user.rs', '77499e05489f91af85ef2317bc43f1046aab2a9d20fb5be30ed400c8805ef259'),
+    ('unix.signal.dependency.filelike-downcast', 'kernel/asterinas/kernel/core/src/fs/file/file_handle.rs', '48724b5e3c2a6d455718518a58550679bf8b5c592847bff29fa8f0c66e440b8a'),
+    ('unix.signal.dependency.unix-public-reexport', 'kernel/asterinas/kernel/core/src/net/socket/unix/mod.rs', '05c4f11c3702ef2ce60ac80e88e1cd21316e609a91733f11d87d5d00d2c259fb'),
+    ('unix.signal.dependency.unix-stream-reexport', 'kernel/asterinas/kernel/core/src/net/socket/unix/stream/mod.rs', 'f2ce8b9c6bf49908257cc939a3aa618a11e8971a0ef5767c9537a32c6f027f92'),
 )
 
 

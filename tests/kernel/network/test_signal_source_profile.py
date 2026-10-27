@@ -24,9 +24,9 @@ class Post1138UnixSignalSourceProfile(unittest.TestCase):
                           for _, path, _ in post.OWNERS}}
 
     def test_fixed_roles_are_unique_regular_current_sources(self):
-        self.assertEqual(len(post.OWNERS), 129)
-        self.assertEqual(len({r for r, _, _ in post.OWNERS}), 129)
-        self.assertEqual(len({p for _, p, _ in post.OWNERS}), 129)
+        self.assertEqual(len(post.OWNERS), 132)
+        self.assertEqual(len({r for r, _, _ in post.OWNERS}), 132)
+        self.assertEqual(len({p for _, p, _ in post.OWNERS}), 132)
         for role, name, sha in post.OWNERS:
             with self.subTest(role=role):
                 self.assertFalse(Path(name).is_absolute())
@@ -79,6 +79,8 @@ class Post1138UnixSignalSourceProfile(unittest.TestCase):
                     post.required_sources(variant, post.PROFILE)
         with self.assertRaisesRegex(ValueError, "unknown production source profile"):
             post.required_sources("positive", "unknown-post-profile")
+        with self.assertRaisesRegex(ValueError, "unknown production source profile"):
+            post.required_sources("positive", "post-1138-unix-signal-v1")
 
     def test_old_strict_profiles_reject_the_current_composition(self):
         actual = self.actual()
@@ -186,6 +188,11 @@ class Post1138UnixSignalSourceProfile(unittest.TestCase):
         changed.update({
             "kernel/asterinas/kernel/core/src/net/socket/unix/stream/socket.rs",
             "kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected.rs",
+        })
+        changed.update({
+            'kernel/asterinas/kernel/core/src/fs/file/file_handle.rs',
+            'kernel/asterinas/kernel/core/src/net/socket/unix/mod.rs',
+            'kernel/asterinas/kernel/core/src/net/socket/unix/stream/mod.rs',
         })
         self.assertTrue(changed.issubset(paths))
 
