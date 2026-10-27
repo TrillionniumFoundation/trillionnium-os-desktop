@@ -1,0 +1,70 @@
+{
+  "schema": "trill.actual-source-profile-regression.v1",
+  "started_utc": "2026-10-27T03:04:09.028761+00:00",
+  "before": {
+    "head": "adf609b8aecc84e699a426c17b0f3f75a9c64cde",
+    "tree": "844056589ca5b0e62aaf309f7ac86225f2e4d709",
+    "status": ""
+  },
+  "steps": [
+    {
+      "name": "normal",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/release",
+        "-p",
+        "test_organ_release_profile.py"
+      ],
+      "exit_code": 0,
+      "seconds": 21.888813396974,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 124,
+        "sha256": "d5777f99068d2dac9320e55753381e8bef0b449125812baab3fdb997343e1080"
+      }
+    },
+    {
+      "name": "optimized",
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/release",
+        "-p",
+        "test_organ_release_profile.py"
+      ],
+      "exit_code": 0,
+      "seconds": 20.876903975993628,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 124,
+        "sha256": "0f38ebb69d6e587549c77c7b95aa07026358af3aae89244fcad9622713f78948"
+      }
+    }
+  ],
+  "product_qualified": false,
+  "after": {
+    "head": "adf609b8aecc84e699a426c17b0f3f75a9c64cde",
+    "tree": "844056589ca5b0e62aaf309f7ac86225f2e4d709",
+    "status": ""
+  },
+  "finished_utc": "2026-10-27T03:04:51.967920+00:00",
+  "passed": true
+}

@@ -1,0 +1,127 @@
+{
+  "started_utc": "2026-10-27T02:35:17.560681+00:00",
+  "before": {
+    "head": "8467f0ddfe36358c95c8ccbf2734ae425ca55527",
+    "tree": "62ada288b320cb2ae8abdf6302b5fba5d4ad4945",
+    "status": ""
+  },
+  "steps": [
+    {
+      "name": "support-normal",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 29.53517188099795,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 186,
+        "sha256": "fa2805a59f60ae05e33184592255660139a2212d7a647f4424ce7187d773d291"
+      }
+    },
+    {
+      "name": "support-optimized",
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 40.62849416700192,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 186,
+        "sha256": "7862a4dc033ae2ecb9118b3f4b6baa399ee8a7f538fb528e27a511e400c10c02"
+      }
+    },
+    {
+      "name": "full-six-root",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "support/ui/verify_product_dependencies.py",
+        "--hepta-root",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/final-ci-repairs-hepta-20261026"
+      ],
+      "exit_code": 0,
+      "seconds": 3.2726738899946213,
+      "stdout": {
+        "bytes": 1377710,
+        "sha256": "3a72af3b2a75cb9b8957d69e32962533512e138c0534a30e4f3f1bf9a3768f6f"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "module-docs",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "support/docs/check_modules.py"
+      ],
+      "exit_code": 0,
+      "seconds": 1.3228372249868698,
+      "stdout": {
+        "bytes": 470,
+        "sha256": "3a152699ed24d4fdb66dfca390b1a00289db1216e8473c4c724ebc60cb77ba56"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.012971950985956937,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "scope": "Static/source/manifest graph and script regressions only; no product runtime acceptance.",
+  "after": {
+    "head": "8467f0ddfe36358c95c8ccbf2734ae425ca55527",
+    "tree": "62ada288b320cb2ae8abdf6302b5fba5d4ad4945",
+    "status": ""
+  },
+  "passed": true,
+  "finished_utc": "2026-10-27T02:36:32.584475+00:00"
+}

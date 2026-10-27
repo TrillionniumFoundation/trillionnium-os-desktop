@@ -1,5 +1,24 @@
 # 当前能力、源码与验收边界
 
+## 2026-10-26 产品整改的当前来源
+
+当前正在打包的明确组合是 Desktop `a9a57eaae209b655234dc431a43f8e686ae3a6aa` / tree `f00decf60917470186adda9de60eb47ca54d046b` 与 Hepta `8d74739915cd12499f9c280d8d6f52a33b668bdf` / tree `85306350fa533285c9ec1c629a5321c232c5207c`。显式 preedit SDK 绑定 prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`；其独立锁已经提交，不能通过换成默认 SDK 或 clipboard profile 继承资格。唯一依赖组合见 [DEPENDENCIES](../support/ui/DEPENDENCIES.md) 和 [SOURCES](SOURCES.md)。实际来源检查覆盖六个 Cargo 根、219 个原 Hepta manifest 和123份必需来源；缺失原 owner/bridge、替代 registry 包或只有源码证明均不能通过完整依赖图门禁。
+
+桌面 Shell 使用 Rust/Makepad，Notes 窗口使用 Rust/egui；会话与工具执行接原 Hepta Core/App Server。AI 界面的状态来自原 thread 的事件、授权结果和文档回读。输入框文本、模型回答、原操作收据和当前文档分别展示，模型说“已保存”不能替代 Notes 效果证据。[模块索引](modules/README.md)提供开发步骤和技术合同；[原生交接表](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)对应各模块的实现与交接入口。
+
+| 本轮工作 | 已取得的证据 | 尚未完成的验收 |
+| --- | --- | --- |
+| 依赖与来源 | Desktop 后继 `8467f0dd` 的普通/优化脚本各86项、六根依赖检查和83份模块文档/855链接通过，见[逐源记录](../results/integration/2026-10-26-product-readiness/desktop-8467-static.json)。 | 文档提交及后继源码不自动继承安装包或运行资格。 |
+| 原 App 退出后的回读 | `8467f0dd` 保留同一个只读恢复端点；原 App 被其 owner 确认退出后，只启动固定字节的只读 helper。组件六项、Session52项通过，见[组件交接](../results/integration/2026-10-26-product-readiness/app-only-component-handoff.json)；同8d747正式 Git 依赖的 Root 全目标严格 Clippy 通过，见[原始回执](../results/integration/2026-10-26-product-readiness/root-8467-8d747-clippy.json)。 | 当前a9安装包尚未包含这个后继。真实 Root/人类会话/模型中的 App 退出及原身份回读仍待执行。 |
+| 回读来源合同 | `adf609b8` 增加 Session回读、固定helper和Root会话三个必需来源角色；普通/优化各24项通过，见[来源合同回执](../results/integration/2026-10-26-product-readiness/desktop-adf-source-profile.json)。 | 来源清单不会建立效果权限或恢复旧写者。 |
+| Linux 产品 | 同源原生 UI 工作区测试已经通过；完整打包和原Root四个程序的正式构建仍在推进。 | 最终安装、真实人类与模型的一次授权 Notes 保存、原thread回读，以及丢回复/撤销/退出/重连/并发编辑、物理输入和读屏，均不得计为已验收。 |
+| Windows | `37831e03` 的原91项为83 PASS、7 FAIL、1 LEAK；另两组各3/3，backend独立8/9，见[完整分类](../results/integration/2026-10-26-product-readiness/windows-378-qualification.json)。 | LEAK不计通过；签名原始输出合同、真实隔离能力及junction夹具仍有缺口，不能把诊断成功计为功能通过。 |
+| Android / Asterinas | 原 Android APK/cert 已核实；严格 receiver 候选保留原签名要求。Asterinas继续拆出唯一原 owner 的必要闭包。 | 原 Android 私钥未恢复，候选未安装；原生最终ELF仍未满足8MiB/LOAD16MiB门禁，完整F1/G2、资源恢复及真实驱动尚未闭合。 |
+
+以上收据是[精选组件证据](../results/integration/2026-10-26-product-readiness/evidence-index.json)，不构成完整产品验收。`production_ready` 仍为 false。下文保留较早来源的历史实测，不把旧结果转授本轮。
+
+## 历史归档与较早边界
+
 本实施线来自 PR #257。最新已归档源码为 `39c1eaf89a211b91e5e687ceaf86fd033567e536` / tree `41afddf4360f18ad50d62f9647de6f2e4f602a0e`，其[Process successor内核两套实测](../results/integration/2026-10-24-asterinas-integration/kernel-process-successor/publication.json)通过，整流水455.040秒：普通core373/required134，G2 core387=完整373+原Root3+新增11，两套均无失败、过滤或软跳过，原始QEMU退出33。新增G2内核回归覆盖launcher准备与取消、子进程allocation释放门槛、世代重放与精确Root ACK门槛、history-only原namespace保留，以及原watchdog receipt在同一owner最终切换点的保存；原CPU连续性3项与successor prepare/commit5项在两套中继续逐项通过。799744字节旧静态ELF仍仅作G2编译输入，本流水未执行原Hepta owner或原生launcher用户态闭环。[f6e837c6两套CPU successor证据](../results/integration/2026-10-24-asterinas-integration/kernel-cpu-successor/publication.json)独立保留；本轮未运行allocator、MLSDisk、OSTD、ordinary产品QueryAbi/socket或watchdog六轮，它们最近的[完整同源证据仍属于824720ea](../results/integration/2026-10-24-asterinas-integration/kernel-owner-continuity/publication.json)，不转授39c1eaf8。原生daemon/writer/FinalUse与Supervisor/pidfd闭环、Root先持久保存再AckSaved、失回复与跨boot恢复、300秒有限grant后续续约及长期持久CPU控制仍待各自最终源码实测。0f6300e4、824720ea、f6e837c6及更早档案全部保留。
 
 较早 `d5a21bb7` 的[缺页准入与 fallible 页表组合](../results/integration/2026-10-23-audit-closure/kernel-vmar-d5a21/publication.json)及其[首次 fixture 失败](../results/integration/2026-10-23-audit-closure/kernel-vmar-689c-failure/publication.json)继续保留。`0187bd57` / Hepta `b3d3f2d4` 另有原 daemon/store 和 Linux32 实测，`f3d54e5b` 有原 A10 十一项 Linux-host 执行体。每项结果只属于其明确来源，不给后续分支、远端 main 或部署环境转授资格。F1 CI 的源码选择现由同一份 `source-review.json` 提供，已修复旧 workflow pin 与 review 不一致；[68 项 host 回归和真实环境输出核对](../results/integration/2026-10-24-asterinas-integration/f1-source-pair/validation.json)只证明来源选择修复。

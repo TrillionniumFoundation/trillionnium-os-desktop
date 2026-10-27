@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-10-26 产品整改
+
+本轮构建固定 Desktop `a9a57eaa` / Hepta `8d747399` 和显式 preedit SDK。原生 UI 工作区已通过；最终安装与真实 Root、人类会话、模型的一次授权 Notes 操作仍待完成。后继 `8467f0dd` 的原 App 退出后只读回读已通过组件和正式依赖检查，`adf609b8` 已补齐它的必需来源角色；两者尚未并入当前a9安装包。Windows实际91项为83 PASS、7 FAIL、1 LEAK；Android原签名私钥未恢复，Asterinas最终体积与完整F1/G2仍未闭合。具体来源、逐项收据和开发/技术入口见[当前能力](CURRENT_CAPABILITIES.md#2026-10-26-产品整改的当前来源)。生产资格仍未取得。
+
 当前候选的能力与未取得资格集中在 [CURRENT_CAPABILITIES](CURRENT_CAPABILITIES.md)。下表记录最新逐源验收；下文按时间保留原记录，“当前”、README 空文件规则及测试数均只描述各节来源。
 
 ## 2026-10-24 Linux host 当前来源与 scoped 验收

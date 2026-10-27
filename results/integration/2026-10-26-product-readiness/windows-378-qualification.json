@@ -1,0 +1,1213 @@
+{
+  "schema": "hepta.windows-378-actual-artifact-observations.v1",
+  "head": "37831e03f2acd55fafcd29b5f0be4fcf6d38adf5",
+  "tree": "fbba7592caae973264644ed1c5a66e36d9febf68",
+  "runId": 40435184554,
+  "jobId": 121962057050,
+  "runConclusion": "failure",
+  "artifactId": 12706081417,
+  "artifactBytes": 53766,
+  "artifactSha256": "09f6367ae1459f3c5e3e3afba8baff8581440b37519dbccc19ac48328b66d8ff",
+  "artifactMembers": [
+    "hepta-windows-current-ci/compiler.txt",
+    "hepta-windows-current-ci/groups.json",
+    "hepta-windows-current-ci/git-process-cleanup.log",
+    "hepta-windows-current-ci/operator-native.log",
+    "hepta-windows-current-ci/original-protected-owner.log",
+    "hepta-windows-current-ci/receipt.json",
+    "hepta-windows-current-ci/retained-mcp.log",
+    "hepta-windows-current-ci/retained-windows-identity.log",
+    "hepta-windows-current-ci/sandbox-original-failures.log",
+    "hepta-windows-current-ci/shadow-native.log",
+    "hepta-windows-current-ci/source-before.json",
+    "hepta-windows-current-ci/temporary-environment.json",
+    "hepta-windows-final-safety/groups.json",
+    "hepta-windows-final-safety/legacy-readonly-refusal-controls.log",
+    "hepta-windows-final-safety/legacy-workspace-refusal-controls.log",
+    "hepta-windows-final-safety/receipt.json",
+    "hepta-windows-private-artifacts/groups.json",
+    "hepta-windows-private-artifacts/receipt.json",
+    "hepta-windows-private-artifacts/retained-private-artifact-controls.log",
+    "hepta-windows-real-test-helpers/after-receipt.json",
+    "hepta-windows-real-test-helpers/build-receipt.json",
+    "hepta-windows-real-test-helpers/build.log"
+  ],
+  "sourceBeforeAfterClean": true,
+  "original91ExactSetMatchesActualF900AndEc6": true,
+  "original91": {
+    "status": "FAIL_DECLARED_WINDOWS_SCOPE",
+    "counts": {
+      "PASS": 83,
+      "FAIL": 7,
+      "LEAK": 1
+    },
+    "groups": [
+      {
+        "id": "retained-windows-identity",
+        "package": "codex-state",
+        "counts": {
+          "PASS": 8
+        },
+        "exactIds": [
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::cold_image_windows_reconnects_to_original_immutable_copy"
+          ],
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_bundle_is_read_only_and_same_handles"
+          ],
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_does_not_repair_existing_shared_home"
+          ],
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_extra_links_for_each_component"
+          ],
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_foreign_read_grants"
+          ],
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_new_sidecar_and_mutated_bytes"
+          ],
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_parent_junction_and_replacement"
+          ],
+          [
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_replacement_uses_file_id_even_with_same_metadata"
+          ]
+        ],
+        "actual": [
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::cold_image_windows_reconnects_to_original_immutable_copy"
+          ],
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_bundle_is_read_only_and_same_handles"
+          ],
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_does_not_repair_existing_shared_home"
+          ],
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_extra_links_for_each_component"
+          ],
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_foreign_read_grants"
+          ],
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_new_sidecar_and_mutated_bytes"
+          ],
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_rejects_parent_junction_and_replacement"
+          ],
+          [
+            "PASS",
+            "codex-state",
+            "sqlite_recovery::windows::tests::retained_windows_replacement_uses_file_id_even_with_same_metadata"
+          ]
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "durationSeconds": 491.547,
+        "logSha256": "40e7c8cc6a4eab796851a3f58fb7d276519544db16d48b51f0c35ee79fd67ec7"
+      },
+      {
+        "id": "git-process-cleanup",
+        "package": "codex-git-utils",
+        "counts": {
+          "PASS": 2
+        },
+        "exactIds": [
+          [
+            "codex-git-utils",
+            "git_process::tests::timed_out_exited_git_wrapper_does_not_leave_child_process_running"
+          ],
+          [
+            "codex-git-utils",
+            "git_process::tests::timed_out_git_wrapper_does_not_leave_child_process_running"
+          ]
+        ],
+        "actual": [
+          [
+            "PASS",
+            "codex-git-utils",
+            "git_process::tests::timed_out_exited_git_wrapper_does_not_leave_child_process_running"
+          ],
+          [
+            "PASS",
+            "codex-git-utils",
+            "git_process::tests::timed_out_git_wrapper_does_not_leave_child_process_running"
+          ]
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "durationSeconds": 222.781,
+        "logSha256": "0e19845f8fdf224d79cc69f1e40e46560b795526fc2259234ed13fd8c949f4f6"
+      },
+      {
+        "id": "retained-mcp",
+        "package": "codex-mcp",
+        "counts": {
+          "PASS": 3
+        },
+        "exactIds": [
+          [
+            "codex-mcp",
+            "connection_manager::tests::retained_binding_tests::retained_binding_holds_catalog_until_original_server_budget_expires"
+          ],
+          [
+            "codex-mcp",
+            "connection_manager::tests::retained_binding_tests::retained_binding_preserves_tool_environment_and_catalog_fences"
+          ],
+          [
+            "codex-mcp",
+            "connection_manager::tests::retained_binding_tests::retained_binding_refuses_disabled_tools_and_original_shutdown"
+          ]
+        ],
+        "actual": [
+          [
+            "PASS",
+            "codex-mcp",
+            "connection_manager::tests::retained_binding_tests::retained_binding_holds_catalog_until_original_server_budget_expires"
+          ],
+          [
+            "PASS",
+            "codex-mcp",
+            "connection_manager::tests::retained_binding_tests::retained_binding_preserves_tool_environment_and_catalog_fences"
+          ],
+          [
+            "PASS",
+            "codex-mcp",
+            "connection_manager::tests::retained_binding_tests::retained_binding_refuses_disabled_tools_and_original_shutdown"
+          ]
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "durationSeconds": 646.812,
+        "logSha256": "e5879a68328434d22f07c7fb65bd8445487b41225c55ec6da7e00f89900c664f"
+      },
+      {
+        "id": "original-protected-owner",
+        "package": "codex-hepta-memory",
+        "counts": {
+          "PASS": 14
+        },
+        "exactIds": [
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::gate_tests::recovered_generation_keeps_its_exclusive_store_fence_after_checkpoint_failure"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::barrier_tests::protected_checkpoint_barrier_cancelled_acquisition_cannot_return_write_mode"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::barrier_tests::protected_checkpoint_barrier_excludes_writers_without_dirtying_current"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::barrier_tests::protected_checkpoint_barrier_never_commits_even_if_query_only_is_disabled"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_acknowledges_exact_terminal_cut_without_an_objective"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_cancelled_publication_retains_receipt_and_never_reopens_writer"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_holds_original_sqlite_lock_through_synchronous_metadata_ack"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_managed_owner_without_bound_capability_cannot_fall_back_to_local_commit"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_revoked_after_current_ack_keeps_application_receipt"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_waits_for_bound_whole_owner_publication"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::observation_tests::protected_checkpoint_read_only_polling_preserves_current_and_rejects_writes"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::protected_checkpoint_invalidates_current_before_normal_owner_writes_and_can_republish"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::protected_checkpoint_lost_current_ack_fences_waiting_and_previously_checked_out_connections"
+          ],
+          [
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::protected_checkpoint_mismatched_dirty_ack_never_opens_commit_permission"
+          ]
+        ],
+        "actual": [
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::gate_tests::recovered_generation_keeps_its_exclusive_store_fence_after_checkpoint_failure"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::barrier_tests::protected_checkpoint_barrier_cancelled_acquisition_cannot_return_write_mode"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::barrier_tests::protected_checkpoint_barrier_excludes_writers_without_dirtying_current"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::barrier_tests::protected_checkpoint_barrier_never_commits_even_if_query_only_is_disabled"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_acknowledges_exact_terminal_cut_without_an_objective"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_cancelled_publication_retains_receipt_and_never_reopens_writer"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_holds_original_sqlite_lock_through_synchronous_metadata_ack"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_managed_owner_without_bound_capability_cannot_fall_back_to_local_commit"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_revoked_after_current_ack_keeps_application_receipt"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::notes_retirement_tests::notes_retirement_waits_for_bound_whole_owner_publication"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::observation_tests::protected_checkpoint_read_only_polling_preserves_current_and_rejects_writes"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::protected_checkpoint_invalidates_current_before_normal_owner_writes_and_can_republish"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::protected_checkpoint_lost_current_ack_fences_waiting_and_previously_checked_out_connections"
+          ],
+          [
+            "PASS",
+            "codex-hepta-memory",
+            "production_writer::objective_sender::protected_checkpoint_tests::protected_checkpoint_mismatched_dirty_ack_never_opens_commit_permission"
+          ]
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "durationSeconds": 313.219,
+        "logSha256": "0fb29193a3fac3552778e80e9f85a61781d615b1af97669b96e1ebcacb15c99a"
+      },
+      {
+        "id": "operator-native",
+        "package": "codex-hepta-operator-acceptance",
+        "counts": {
+          "PASS": 24,
+          "FAIL": 2
+        },
+        "exactIds": [
+          [
+            "codex-hepta-operator-acceptance",
+            "ceremony::tests::v1_paths_are_exact_and_sidecar_is_a_strict_child"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "durable::windows::tests::hardlinked_artifacts_are_rejected_before_reading_or_hashing"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "durable::windows::tests::hardlinks_added_after_open_are_rejected"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "durable::windows::tests::path_replacement_after_open_is_rejected"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::exact_head_and_predecessor_binding_is_required"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::expiry_is_half_open_and_never_creates_acceptance"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::fresh_head_scoped_challenge_reaches_ready_without_authority"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::independently_signed_challenge_is_verified_but_not_accepted"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::policy_and_revocation_files_must_be_canonical"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::revocation_digest_change_invalidates_existing_challenge"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::revocation_is_external_and_fail_closed_before_challenge_issuance"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "manifest_inventory::tests::manifest_parser_requires_sorted_safe_unique_paths"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "manifest_inventory::tests::verified_manifest_rejects_extra_files_and_hardlinks"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "preflight::tests::every_missing_or_wrong_formal_environment_pin_is_rejected"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::durable_time_watermark_rejects_clock_rollback"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::exact_challenge_boundary_accepts_only_operator_acceptance"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::exact_replay_returns_same_receipt_and_conflicting_claim_fails"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::final_consumption_at_expiry_creates_no_claim_or_receipt"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::read_only_lock_never_creates_missing_state"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::receipt_repeated_authority_must_match_exact_boundary"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::unknown_or_noncanonical_stored_json_is_rejected"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "tests::validity_window_is_half_open_and_policy_bounded"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "trust::tests::sshsig_verifies_only_exact_namespace_against_pinned_policy"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "trust::tests::trust_policy_digest_is_external_and_fail_closed"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "trust::tests::trust_policy_pins_store_principal_fingerprint_and_allowed_signers"
+          ],
+          [
+            "codex-hepta-operator-acceptance",
+            "trust::tests::weak_ed25519_public_key_is_rejected_before_openssh"
+          ]
+        ],
+        "actual": [
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "ceremony::tests::v1_paths_are_exact_and_sidecar_is_a_strict_child"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "durable::windows::tests::hardlinked_artifacts_are_rejected_before_reading_or_hashing"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "durable::windows::tests::hardlinks_added_after_open_are_rejected"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "durable::windows::tests::path_replacement_after_open_is_rejected"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::exact_head_and_predecessor_binding_is_required"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::expiry_is_half_open_and_never_creates_acceptance"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::fresh_head_scoped_challenge_reaches_ready_without_authority"
+          ],
+          [
+            "FAIL",
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::independently_signed_challenge_is_verified_but_not_accepted"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::policy_and_revocation_files_must_be_canonical"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::revocation_digest_change_invalidates_existing_challenge"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "g5_trust::tests::revocation_is_external_and_fail_closed_before_challenge_issuance"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "manifest_inventory::tests::manifest_parser_requires_sorted_safe_unique_paths"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "manifest_inventory::tests::verified_manifest_rejects_extra_files_and_hardlinks"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "preflight::tests::every_missing_or_wrong_formal_environment_pin_is_rejected"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::durable_time_watermark_rejects_clock_rollback"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::exact_challenge_boundary_accepts_only_operator_acceptance"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::exact_replay_returns_same_receipt_and_conflicting_claim_fails"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::final_consumption_at_expiry_creates_no_claim_or_receipt"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::read_only_lock_never_creates_missing_state"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::receipt_repeated_authority_must_match_exact_boundary"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::unknown_or_noncanonical_stored_json_is_rejected"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "tests::validity_window_is_half_open_and_policy_bounded"
+          ],
+          [
+            "FAIL",
+            "codex-hepta-operator-acceptance",
+            "trust::tests::sshsig_verifies_only_exact_namespace_against_pinned_policy"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "trust::tests::trust_policy_digest_is_external_and_fail_closed"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "trust::tests::trust_policy_pins_store_principal_fingerprint_and_allowed_signers"
+          ],
+          [
+            "PASS",
+            "codex-hepta-operator-acceptance",
+            "trust::tests::weak_ed25519_public_key_is_rejected_before_openssh"
+          ]
+        ],
+        "exitCode": 1,
+        "passed": false,
+        "durationSeconds": 40.406,
+        "logSha256": "c6d2bd176d1f6b58d4e32ef2e9882ea814a1147eb2132acf42e0d57d30f53c1b"
+      },
+      {
+        "id": "shadow-native",
+        "package": "codex-hepta-shadow-qualification",
+        "counts": {
+          "PASS": 31
+        },
+        "exactIds": [
+          [
+            "codex-hepta-shadow-qualification",
+            "child_tests::drains_and_bounds_stderr_while_hashing_the_full_stream"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "child_tests::persists_inbound_wire_before_rejecting_invalid_json"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "driver_tests::app_and_mcp_fsm_persist_before_every_sample_write"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "driver_tests::failed_pipe_write_keeps_durable_pre_send_and_poisoned_fsm"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "importer_tests::imports_exactly_four_artifacts_and_writes_a_checkpoint"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "importer_tests::inventories_all_broken_samples_before_checkpointing_failure"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "lane_e_closure_tests::lane_e_causal_candidate_chain_is_digest_bound_and_deny_all"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "loopback_tests::persists_exact_http_requests_and_responses"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "observer_tests::rejects_noncanonical_input_before_writing_an_artifact"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "observer_tests::rejects_out_of_order_or_incomplete_runs_without_minting_tokens"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "observer_tests::returns_tokens_only_after_four_private_durable_pairs"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "oracle_tests::loads_the_embedded_frozen_oracle"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "oracle_tests::rejects_nonofficial_or_mutated_oracle_bytes"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "product_receipts_tests::validates_exact_row_and_rejects_index_drift"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "report_tests::inventories_import_semantic_duplicate_and_missing_failures"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "report_tests::writes_an_exact_report_with_no_authority"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "request_tests::parses_the_frozen_app_server_pair"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "request_tests::parses_the_frozen_mcp_pair"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "request_tests::rejects_noncanonical_or_multiline_requests"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "runtime_tests::creates_private_surface_layouts_and_strict_configs"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "runtime_tests::rejects_an_unpinned_product_binary"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "sealer_tests::rejects_a_checkpoint_changed_before_sealing"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "sealer_tests::seals_a_complete_checkpoint_with_every_gate_disabled"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "sealer_tests::seals_a_failed_checkpoint_without_losing_failures"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "semantic_verifier_tests::normalizes_dynamic_identity_and_matches_oracle_bytes"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "semantic_verifier_tests::rejects_semantic_or_identity_divergence"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "session_tests::extracts_only_bounded_dynamic_identifiers"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "session_tests::requires_an_explicit_response_result"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "transport_tests::detects_transport_artifact_changes_after_capture"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "trial_tests::rejects_an_unbounded_trial_before_creating_runtime_state"
+          ],
+          [
+            "codex-hepta-shadow-qualification",
+            "value_learning_tests::objective_to_ndu_to_independent_learning_ledger_is_replayable_and_revocable"
+          ]
+        ],
+        "actual": [
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "child_tests::drains_and_bounds_stderr_while_hashing_the_full_stream"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "child_tests::persists_inbound_wire_before_rejecting_invalid_json"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "driver_tests::app_and_mcp_fsm_persist_before_every_sample_write"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "driver_tests::failed_pipe_write_keeps_durable_pre_send_and_poisoned_fsm"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "importer_tests::imports_exactly_four_artifacts_and_writes_a_checkpoint"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "importer_tests::inventories_all_broken_samples_before_checkpointing_failure"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "lane_e_closure_tests::lane_e_causal_candidate_chain_is_digest_bound_and_deny_all"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "loopback_tests::persists_exact_http_requests_and_responses"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "observer_tests::rejects_noncanonical_input_before_writing_an_artifact"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "observer_tests::rejects_out_of_order_or_incomplete_runs_without_minting_tokens"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "observer_tests::returns_tokens_only_after_four_private_durable_pairs"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "oracle_tests::loads_the_embedded_frozen_oracle"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "oracle_tests::rejects_nonofficial_or_mutated_oracle_bytes"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "product_receipts_tests::validates_exact_row_and_rejects_index_drift"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "report_tests::inventories_import_semantic_duplicate_and_missing_failures"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "report_tests::writes_an_exact_report_with_no_authority"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "request_tests::parses_the_frozen_app_server_pair"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "request_tests::parses_the_frozen_mcp_pair"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "request_tests::rejects_noncanonical_or_multiline_requests"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "runtime_tests::creates_private_surface_layouts_and_strict_configs"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "runtime_tests::rejects_an_unpinned_product_binary"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "sealer_tests::rejects_a_checkpoint_changed_before_sealing"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "sealer_tests::seals_a_complete_checkpoint_with_every_gate_disabled"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "sealer_tests::seals_a_failed_checkpoint_without_losing_failures"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "semantic_verifier_tests::normalizes_dynamic_identity_and_matches_oracle_bytes"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "semantic_verifier_tests::rejects_semantic_or_identity_divergence"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "session_tests::extracts_only_bounded_dynamic_identifiers"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "session_tests::requires_an_explicit_response_result"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "transport_tests::detects_transport_artifact_changes_after_capture"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "trial_tests::rejects_an_unbounded_trial_before_creating_runtime_state"
+          ],
+          [
+            "PASS",
+            "codex-hepta-shadow-qualification",
+            "value_learning_tests::objective_to_ndu_to_independent_learning_ledger_is_replayable_and_revocable"
+          ]
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "durationSeconds": 128.485,
+        "logSha256": "1874230f201fe4c0d95b870da0cb0b0de16f6683dd6c4f20fed3284007b756ad"
+      },
+      {
+        "id": "sandbox-original-failures",
+        "package": "codex-windows-sandbox",
+        "counts": {
+          "FAIL": 5,
+          "LEAK": 1,
+          "PASS": 1
+        },
+        "exactIds": [
+          [
+            "codex-windows-sandbox",
+            "token::tests::workspace_capabilities_deny_writes_and_deletes_under_broad_identity_aces"
+          ],
+          [
+            "codex-windows-sandbox",
+            "unified_exec::tests::acl_setup_tests::legacy_capture_rejects_deny_acl_setup_failure_before_spawn"
+          ],
+          [
+            "codex-windows-sandbox",
+            "unified_exec::tests::acl_setup_tests::legacy_session_rejects_deny_acl_setup_failure_before_spawn"
+          ],
+          [
+            "codex-windows-sandbox",
+            "unified_exec::tests::elevated_non_tty_cmd_forwards_env_output_and_exit"
+          ],
+          [
+            "codex-windows-sandbox",
+            "unified_exec::tests::legacy_non_tty_cmd_emits_output"
+          ],
+          [
+            "codex-windows-sandbox",
+            "unified_exec::tests::legacy_non_tty_cmd_rejects_deny_read_overrides"
+          ],
+          [
+            "codex-windows-sandbox",
+            "unified_exec::tests::legacy_workspace_write_delete_is_limited_to_writable_roots"
+          ]
+        ],
+        "actual": [
+          [
+            "FAIL",
+            "codex-windows-sandbox",
+            "token::tests::workspace_capabilities_deny_writes_and_deletes_under_broad_identity_aces"
+          ],
+          [
+            "FAIL",
+            "codex-windows-sandbox",
+            "unified_exec::tests::acl_setup_tests::legacy_capture_rejects_deny_acl_setup_failure_before_spawn"
+          ],
+          [
+            "FAIL",
+            "codex-windows-sandbox",
+            "unified_exec::tests::acl_setup_tests::legacy_session_rejects_deny_acl_setup_failure_before_spawn"
+          ],
+          [
+            "LEAK",
+            "codex-windows-sandbox",
+            "unified_exec::tests::elevated_non_tty_cmd_forwards_env_output_and_exit"
+          ],
+          [
+            "FAIL",
+            "codex-windows-sandbox",
+            "unified_exec::tests::legacy_non_tty_cmd_emits_output"
+          ],
+          [
+            "PASS",
+            "codex-windows-sandbox",
+            "unified_exec::tests::legacy_non_tty_cmd_rejects_deny_read_overrides"
+          ],
+          [
+            "FAIL",
+            "codex-windows-sandbox",
+            "unified_exec::tests::legacy_workspace_write_delete_is_limited_to_writable_roots"
+          ]
+        ],
+        "exitCode": 1,
+        "passed": false,
+        "durationSeconds": 75.828,
+        "logSha256": "cf0837a73a18f28e447671177579425c7561e92896e1c58de7fb3abbedef9790"
+      }
+    ]
+  },
+  "sixIndependentScopes": [
+    {
+      "id": "legacy-workspace-refusal-controls",
+      "package": "codex-windows-sandbox",
+      "counts": {
+        "PASS": 3
+      },
+      "exactIds": [
+        [
+          "codex-windows-sandbox",
+          "legacy_workspace_unavailable_tests::legacy_ambient_workspace_capture_never_reaches_process_creation"
+        ],
+        [
+          "codex-windows-sandbox",
+          "legacy_workspace_unavailable_tests::legacy_ambient_workspace_preflight_refuses_before_acl_setup"
+        ],
+        [
+          "codex-windows-sandbox",
+          "legacy_workspace_unavailable_tests::legacy_ambient_workspace_returns_no_token"
+        ]
+      ],
+      "actual": [
+        [
+          "PASS",
+          "codex-windows-sandbox",
+          "legacy_workspace_unavailable_tests::legacy_ambient_workspace_capture_never_reaches_process_creation"
+        ],
+        [
+          "PASS",
+          "codex-windows-sandbox",
+          "legacy_workspace_unavailable_tests::legacy_ambient_workspace_preflight_refuses_before_acl_setup"
+        ],
+        [
+          "PASS",
+          "codex-windows-sandbox",
+          "legacy_workspace_unavailable_tests::legacy_ambient_workspace_returns_no_token"
+        ]
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "durationSeconds": 3.422,
+      "logSha256": "82ec99ec560164abac1232d73493f4cd0e6119b59e0cb4f33a2409cf2665c70f"
+    },
+    {
+      "id": "legacy-readonly-refusal-controls",
+      "package": "codex-windows-sandbox",
+      "counts": {
+        "PASS": 3
+      },
+      "exactIds": [
+        [
+          "codex-windows-sandbox",
+          "legacy_readonly_unavailable_tests::legacy_ambient_readonly_capture_never_reaches_process_creation"
+        ],
+        [
+          "codex-windows-sandbox",
+          "legacy_readonly_unavailable_tests::legacy_ambient_readonly_preflight_refuses_before_acl_setup"
+        ],
+        [
+          "codex-windows-sandbox",
+          "legacy_readonly_unavailable_tests::legacy_ambient_readonly_returns_no_token"
+        ]
+      ],
+      "actual": [
+        [
+          "PASS",
+          "codex-windows-sandbox",
+          "legacy_readonly_unavailable_tests::legacy_ambient_readonly_capture_never_reaches_process_creation"
+        ],
+        [
+          "PASS",
+          "codex-windows-sandbox",
+          "legacy_readonly_unavailable_tests::legacy_ambient_readonly_preflight_refuses_before_acl_setup"
+        ],
+        [
+          "PASS",
+          "codex-windows-sandbox",
+          "legacy_readonly_unavailable_tests::legacy_ambient_readonly_returns_no_token"
+        ]
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "durationSeconds": 2.875,
+      "logSha256": "1c5ce0b52247ce3d7aeec67f09698223b167e4b1e6714d4cff359985b5ee6ace"
+    }
+  ],
+  "nineIndependentScope": {
+    "status": "FAIL_NEW_PRIVATE_ARTIFACT_CONTROLS",
+    "counts": {
+      "PASS": 8,
+      "FAIL": 1
+    },
+    "groups": [
+      {
+        "id": "retained-private-artifact-controls",
+        "package": "codex-utils-path",
+        "counts": {
+          "PASS": 8,
+          "FAIL": 1
+        },
+        "exactIds": [
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_atomic_replace_uses_original_retained_directory"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_checked_names_and_case_aliases_have_no_effect"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_directory_acl_change_invalidates_original_custody"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_foreign_read_directory_is_refused_without_acl_repair"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_hardlink_cannot_be_read_hashed_or_replaced"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_private_roundtrip_flush_and_read_only_custody"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_reparse_directory_is_refused_before_child_effect"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_retained_directory_replacement_fails_closed"
+          ],
+          [
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_sidecar_lock_excludes_second_writer_until_drop"
+          ]
+        ],
+        "actual": [
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_atomic_replace_uses_original_retained_directory"
+          ],
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_checked_names_and_case_aliases_have_no_effect"
+          ],
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_directory_acl_change_invalidates_original_custody"
+          ],
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_foreign_read_directory_is_refused_without_acl_repair"
+          ],
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_hardlink_cannot_be_read_hashed_or_replaced"
+          ],
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_private_roundtrip_flush_and_read_only_custody"
+          ],
+          [
+            "FAIL",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_reparse_directory_is_refused_before_child_effect"
+          ],
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_retained_directory_replacement_fails_closed"
+          ],
+          [
+            "PASS",
+            "codex-utils-path",
+            "private_artifacts_windows::tests::native_sidecar_lock_excludes_second_writer_until_drop"
+          ]
+        ],
+        "exitCode": 1,
+        "passed": false,
+        "durationSeconds": 4.891,
+        "logSha256": "a96f9f9bc2e5f3e531a7d4a1185bdc9c24ee7ac1ac0e5eeaa47520ac789eb2f5"
+      }
+    ]
+  },
+  "helperBuildAndAfter": {
+    "buildStatus": "BUILT_REAL_TEST_HELPERS",
+    "afterPassed": true,
+    "builtTargetFiles": {
+      "codex-command-runner": {
+        "path": "D:\\a\\_temp\\hepta-windows-current-target\\dev-small\\codex-command-runner.exe",
+        "bytes": 24116736,
+        "sha256": "ce43be7748654beee0c0a742c3107c92432d2bbecffd5f8ebcdf72a5faea268b"
+      },
+      "codex-windows-sandbox-setup": {
+        "path": "D:\\a\\_temp\\hepta-windows-current-target\\dev-small\\codex-windows-sandbox-setup.exe",
+        "bytes": 35408896,
+        "sha256": "e6a777d3650f11ba5fba3bd2b612330648491a57406eaaecf1edadfa64b738c4"
+      }
+    },
+    "compilerFiles": {
+      "cargo": {
+        "path": "C:\\Users\\runneradmin\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+        "bytes": 31347200,
+        "sha256": "122f18d28a63fa358f3db266abee1ff1d8aabf0ab7f2dd9ac38a38da99977ae5"
+      },
+      "rustc": {
+        "path": "C:\\Users\\runneradmin\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "bytes": 111104,
+        "sha256": "acb138286bbe20c6cf3ec39a7e0a68c3fab0cd949baa2912cf466514d0d531ab"
+      },
+      "rustdoc": {
+        "path": "C:\\Users\\runneradmin\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustdoc.exe",
+        "bytes": 11650560,
+        "sha256": "53229c6208c9557babfbf01570950998a4de3dd95bb6a68b7ab4a07e634ef763"
+      }
+    },
+    "actualLaunchedImageOrDedicatedIsolationNotProvenByTheseReceipts": true
+  },
+  "nativeCompiler": "rustc 1.96.0 (ac68faa20 2026-05-25)\r\nbinary: rustc\r\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\r\ncommit-date: 2026-05-25\r\nhost: x86_64-pc-windows-msvc\r\nrelease: 1.96.0\r\nLLVM version: 22.1.2\r\n",
+  "rawWindowsLockSha256": "593823dde77991824f350ac65cdf33cf25e01be23330060a4fd27cad6f6e966d",
+  "trackedLfLockSha256": "70277c4dc37a343bf1c7ee8edcb23d4f961cc81ecca7067af01c71f9e89b8be5",
+  "originalOwnerTimingSourcesUnchanged": true,
+  "syntheticParserStdoutExcluded": true,
+  "failedRecapsNotDoubleCounted": true,
+  "leakIsIndependentNonPassingState": true,
+  "nextestPassedLeakySummaryNeverCountsAsPurePass": true,
+  "testRetries": 0,
+  "noScopeCountsAggregated": true,
+  "productionAuthorityGranted": false,
+  "finalIntegratedLinuxProductQualified": false,
+  "observationsValidatedEvenWhenFunctionsFail": true
+}
