@@ -78,8 +78,9 @@ class OomSourceProfile(unittest.TestCase):
             post.required_sources("positive", signal.PROFILE)
 
     def test_unknown_profile_and_mutations_are_refused(self):
-        with self.assertRaisesRegex(ValueError, "unknown production source profile"):
-            post.required_sources("positive", "unknown-oom-profile")
+        for profile in ("unknown-oom-profile", "post-1138-oom-adjustment-v1"):
+            with self.subTest(profile=profile), self.assertRaisesRegex(ValueError, "unknown production source profile"):
+                post.required_sources("positive", profile)
         for variant in historical.oracle.VARIANTS:
             if variant != "positive":
                 with self.subTest(variant=variant), self.assertRaises(ValueError):
@@ -119,6 +120,7 @@ class OomSourceProfile(unittest.TestCase):
             "tests/kernel/oom-adjustment/README.md",
             "tests/kernel/network/run_unix_stream_signal_guest.py",
             "tests/kernel/network/test_signal_source_profile.py",
+            "tests/kernel/network/test_ipc_source_profile.py",
             "tests/kernel/network/controls/post1138-unix-signal-v2-source.json.gz",
             "kernel/asterinas/kernel/core/src/security/lsm/hooks/capability.rs",
             "kernel/asterinas/kernel/core/src/process/credentials/credentials_.rs",

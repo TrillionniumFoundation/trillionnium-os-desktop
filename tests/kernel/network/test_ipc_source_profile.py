@@ -51,7 +51,8 @@ class IpcSourceProfile(unittest.TestCase):
 
     def test_current_source_is_rejected_by_historical_profiles_and_accepted_by_post_profile(self):
         import run_unix_stream_receiving_guest as receiving
-        import run_unix_stream_signal_guest as post
+        import run_unix_stream_signal_guest as signal
+        import run_unix_stream_oom_guest as post
         root = HERE.parents[2]
         current = {"files": {path: {"sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
                              for _, path, _ in post.OWNERS}}
@@ -68,6 +69,14 @@ class IpcSourceProfile(unittest.TestCase):
             r"kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/mod[.]rs$",
         ):
             receiving.check_sources(current, "positive", receiving.PROFILE)
+        # The frozen e7ed signal profile must refuse current OOM clone bytes.
+        # Its authentic historical positive remains a separate fixture test.
+        with self.assertRaisesRegex(
+            ValueError,
+            r"^reviewed variant input mismatch: "
+            r"kernel/asterinas/kernel/core/src/process/clone[.]rs$",
+        ):
+            signal.check_sources(current, "positive", signal.PROFILE)
         expected = post.required_sources("positive", post.PROFILE)
         self.assertEqual(post.check_sources(current, "positive", post.PROFILE), expected)
 

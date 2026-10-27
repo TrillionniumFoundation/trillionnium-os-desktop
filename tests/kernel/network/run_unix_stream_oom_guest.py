@@ -14,11 +14,11 @@ import sys
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 ENGINE = HERE / "run_unix_stream_guest.py"
-PROFILE = "post-1138-oom-adjustment-v1"
+PROFILE = "post-1138-oom-adjustment-v2"
 ENGINE_SHA256 = '57bd6b8b5f9f9ca1d90b86ab9c9af182b66fd54761db9c844dcc64fcdbc5a3a0'
 
 # Frozen cd40 OOM prerequisite plus independent owned QA; inherited e7ed role identities stay explicit.
-ROLE_COUNT = 181
+ROLE_COUNT = 182
 OWNERS = (
     ('oracle.parser', 'tests/kernel/network/unix_stream_oracle.py', 'eefb0f272d2c396ea6fa87c0af827f795b115ca7607c6746abf80975fe544489'),
     ('guard.historical-manifest', 'tests/kernel/network/controls/manifest.json', 'e13376b03d1f3bd85aa9746bbf6b28bf99a1c8da4f8105d37d7a2dada2be844e'),
@@ -195,12 +195,13 @@ OWNERS = (
     ('oom.prerequisite.40.probe.c', 'tests/kernel/oom-adjustment/probe.c', '4091b648226f1bd86dc369c2003ed584a34d660ba03d15d6dbdaa30e54c1cfc9'),
     ('oom.prerequisite.41.run.py', 'tests/kernel/oom-adjustment/run.py', 'a0a35908baac81652bfae469adfd637a1f78b5e29edb77429baedaf30a443075'),
     ('oom.prerequisite.42.test_run.py', 'tests/kernel/oom-adjustment/test_run.py', '8e079a3db00df337bfdbd49ac6148562d7ca992e1c6a15c5ca9191d8b8c98241'),
-    ('oom.prerequisite.43.README.md', 'tests/kernel/oom-adjustment/README.md', '299e531097cde6bd2f1c8488c912b11e9839249e1ee5442e0e52c371024c3890'),
+    ('oom.prerequisite.43.README.md', 'tests/kernel/oom-adjustment/README.md', 'dc25811d9e1ba4512fbdce174f9ca967b2aea1f2904da97bce0821419de279d8'),
     ('oom.prerequisite.44.run_unix_stream_signal_guest.py', 'tests/kernel/network/run_unix_stream_signal_guest.py', 'a048b15695d6d3c6c588d823acc54d603d2b7d0cd59dcb1e1a57a1dd93868649'),
     ('oom.prerequisite.45.test_signal_source_profile.py', 'tests/kernel/network/test_signal_source_profile.py', 'aeb6cccc821e8443996f6baab56e03c5b6dbfa212571310d8fb1fd6537eb9419'),
     ('oom.prerequisite.46.post1138-unix-signal-v2-source.json.gz', 'tests/kernel/network/controls/post1138-unix-signal-v2-source.json.gz', '43463606da436086832779a397cde98fe68c4fed0ac2eb58b606b8f891da09e0'),
-    ('oom.prerequisite.47.test_oom_source_profile.py', 'tests/kernel/network/test_oom_source_profile.py', '72bff9b75910facc0cd82df8a5d16c1cb69d223fdfa1eb14692f1fef9915a500'),
-    ('oom.prerequisite.48.POST1138_OOM_ADJUSTMENT_PROFILE.md', 'tests/kernel/network/POST1138_OOM_ADJUSTMENT_PROFILE.md', 'e888f6f66b41f645184a07699726a1ffd8a17fa68f9805c25cc3e94ca23f606b'),
+    ('oom.prerequisite.47.test_oom_source_profile.py', 'tests/kernel/network/test_oom_source_profile.py', 'af6d68f058dac07b1ce3d4459400c0ef1b6fb560adb868ca66f2c74ae0f0c2fc'),
+    ('oom.prerequisite.48.POST1138_OOM_ADJUSTMENT_PROFILE.md', 'tests/kernel/network/POST1138_OOM_ADJUSTMENT_PROFILE.md', '5713570102f92c28a5c05d68b947bb029f06e0a56c06e007aa79ab94e77bc261'),
+    ('oom.aggregate.current-source-profile', 'tests/kernel/network/test_ipc_source_profile.py', 'eae6b636d89f439f3569a834c1de99b1b71a3b7be738b18cc935e6ef9205b7f0'),
 )
 
 

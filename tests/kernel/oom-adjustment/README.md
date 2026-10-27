@@ -1,8 +1,12 @@
 # Owned OOM adjustment qualification
 
-This is a source-prepared fixture. No compilation, Linux-host run, native guest
-or ordinary guest result is claimed. It hardens a prerequisite; `memory.max`
-remains unsupported and its existing refusal oracle stays unchanged.
+This guest fixture remains uncompiled and unexecuted on Linux or a guest.
+The first `07bff624` host source suite actually ran 84 Python tests with one
+aggregate-profile import error. The QA-only `post-1138-oom-adjustment-v2` source
+revision fixes that integration error, preserves the failed evidence, and awaits
+new host qualification. No native or ordinary guest result is claimed. This
+hardens a prerequisite; `memory.max` remains unsupported and its existing
+refusal oracle stays unchanged.
 
 The C binary has a required private marker and argument. The runner injects the
 marker into a disposable, networkless ordinary guest and never executes the
