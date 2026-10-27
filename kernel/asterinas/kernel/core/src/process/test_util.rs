@@ -67,7 +67,7 @@ fn new_unstarted_process_with_vmar_and_threads(
         pid,
         vmar.clone_arc(),
         new_resource_limits_for_init(),
-        0,
+        super::oom_adjustment::OomInit::Initial(0),
         Arc::new(Mutex::new(SigDispositions::default())),
         UserNamespace::get_init_singleton().clone(),
     );

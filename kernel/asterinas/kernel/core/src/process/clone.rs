@@ -603,8 +603,11 @@ fn clone_child_process(
     // Inherit the parent's resource limits
     let child_resource_limits = process.resource_limits().clone();
 
-    // Inherit the parent's OOM score adjustment
-    let child_oom_score_adj = process.oom_score_adj().load(Ordering::Relaxed);
+    let child_oom_score_adj = super::oom_adjustment::OomInit::Fork {
+        parent: process,
+        flags: clone_flags,
+        current: process.oom_score_adj().read(),
+    };
 
     let child_tid = allocate_posix_tid();
 
@@ -861,7 +864,7 @@ fn create_child_process(
     pid: Pid,
     vmar: Arc<Vmar>,
     resource_limits: ResourceLimits,
-    oom_score_adj: i16,
+    oom_score_adj: super::oom_adjustment::OomInit<'_>,
     sig_dispositions: Arc<Mutex<SigDispositions>>,
     user_ns: Arc<UserNamespace>,
     thread_builder: PosixThreadBuilder,

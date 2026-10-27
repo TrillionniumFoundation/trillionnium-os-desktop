@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use core::{
-    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, Ordering},
+    sync::atomic::{AtomicBool, AtomicU32, Ordering},
     time::Duration,
 };
 
@@ -9,6 +9,7 @@ use ostd::timer::Jiffies;
 
 use self::{image::ProcessImageState, timer_manager::PosixTimerManager};
 use super::{
+    oom_adjustment::{OomInit, OomScoreAdj},
     pid_table::{self, PidTable},
     posix_thread::{AsPosixThread, FIRST_POSIX_TID},
     process_vm::ProcessVmarGuard,
@@ -124,7 +125,7 @@ pub struct Process {
     cgroup: RcuOption<Arc<CgroupNode>>,
     /// The adjustment value of the out-of-memory (OOM) killer score.
     // FIXME: Support OOM killer.
-    oom_score_adj: AtomicI16,
+    oom_score_adj: OomScoreAdj,
 
     // Child reaper attribute
     /// Whether the process is a child subreaper.
@@ -242,10 +243,11 @@ impl Process {
         vmar: Arc<Vmar>,
 
         resource_limits: ResourceLimits,
-        oom_score_adj: i16,
+        oom_score_adj: OomInit<'_>,
         sig_dispositions: Arc<Mutex<SigDispositions>>,
         user_ns: Arc<UserNamespace>,
     ) -> Arc<Self> {
+        let oom_score_adj = OomScoreAdj::new(pid, &vmar, oom_score_adj);
         Arc::new_cyclic(|process_ref: &Weak<Process>| {
             // SIGCHID does not interrupt pauser. Child process will
             // resume paused parent when doing exit.
@@ -268,7 +270,7 @@ impl Process {
                 reaped_children_stats: Mutex::new(ReapedChildrenStats::default()),
                 resource_limits,
                 cgroup: RcuOption::new(None),
-                oom_score_adj: AtomicI16::new(oom_score_adj),
+                oom_score_adj,
                 is_child_subreaper: AtomicBool::new(false),
                 has_child_subreaper: AtomicBool::new(false),
                 sig_dispositions: Mutex::new(sig_dispositions),
@@ -339,7 +341,7 @@ impl Process {
         self.tasks.lock().main().as_thread().unwrap().clone()
     }
 
-    pub(crate) fn oom_score_adj(&self) -> &AtomicI16 {
+    pub(crate) fn oom_score_adj(&self) -> &OomScoreAdj {
         &self.oom_score_adj
     }
 

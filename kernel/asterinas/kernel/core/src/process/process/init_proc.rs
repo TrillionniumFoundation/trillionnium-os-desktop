@@ -218,7 +218,7 @@ fn allocate_initial_process(
 ) -> Result<(Arc<Process>, VmarHandle)> {
     let pid = allocate_posix_tid();
     let vmar = VmarHandle::try_new(ProcessVm::new(executable_path.clone()))?;
-    let oom_score_adj = 0;
+    let oom_score_adj = crate::process::oom_adjustment::OomInit::Initial(0);
     let sig_dispositions = Arc::new(Mutex::new(SigDispositions::default()));
     let user_ns = UserNamespace::get_init_singleton().clone();
 
