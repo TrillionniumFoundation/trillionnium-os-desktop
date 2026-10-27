@@ -18,9 +18,9 @@ import run_unix_stream_receiving_guest as receiving
 
 class ReceivingSourceProfile(unittest.TestCase):
     def actual(self):
-        root = HERE.parents[2]
-        return {"files": {path: {"sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
-                          for _, path, _ in receiving.OWNERS}}
+        # Keep this historical receiving composition's original refusal check
+        # on its own real f009 bytes as later Unix owners evolve.
+        return self.historical()
 
     def historical(self):
         # Real f009 Git blobs keep the historical positive independent of the

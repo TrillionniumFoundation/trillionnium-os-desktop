@@ -51,13 +51,22 @@ class IpcSourceProfile(unittest.TestCase):
 
     def test_current_source_is_rejected_by_historical_profiles_and_accepted_by_post_profile(self):
         import run_unix_stream_receiving_guest as receiving
-        import run_unix_stream_retirement_guest as post
+        import run_unix_stream_signal_guest as post
         root = HERE.parents[2]
         current = {"files": {path: {"sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
                              for _, path, _ in post.OWNERS}}
-        with self.assertRaisesRegex(ValueError, "cgroupfs/mod.rs"):
+        first_changed_owner = (
+            r"^reviewed variant input mismatch: "
+            r"kernel/asterinas/kernel/core/src/net/socket/unix/stream/connected[.]rs$"
+        )
+        with self.assertRaisesRegex(ValueError, first_changed_owner):
             runner.check_sources(current, "positive", "ipc-memory-v1")
-        with self.assertRaisesRegex(ValueError, "cgroupfs/mod.rs"):
+        # This profile checks its production cgroup owner before IPC owners.
+        with self.assertRaisesRegex(
+            ValueError,
+            r"^reviewed variant input mismatch: "
+            r"kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/mod[.]rs$",
+        ):
             receiving.check_sources(current, "positive", receiving.PROFILE)
         expected = post.required_sources("positive", post.PROFILE)
         self.assertEqual(post.check_sources(current, "positive", post.PROFILE), expected)

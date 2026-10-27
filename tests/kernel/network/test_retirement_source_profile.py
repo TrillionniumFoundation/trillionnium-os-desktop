@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MPL-2.0
 """Source admission only; these checks execute no kernel or native guest."""
+import base64
+import gzip
 import hashlib
+import json
 from pathlib import Path
 import sys
 import unittest
@@ -19,13 +22,42 @@ import run_unix_stream_retirement_guest as post
 
 class Post1138VmRetirementSourceProfile(unittest.TestCase):
     def actual(self):
-        return {"files": {path: {"sha256": hashlib.sha256((HERE.parents[2] / path).read_bytes()).hexdigest()}
-                          for _, path, _ in post.OWNERS}}
+        return self.historical()
 
-    def test_fixed_roles_are_unique_regular_current_sources(self):
+    def historical(self):
+        # Real b446 Git blobs keep the historical positive independent of the
+        # current checkout. Decode in memory; never extract fixture paths.
+        encoded = (HERE / "controls/post1138-vm-retirement-v1-source.json.gz").read_bytes()
+        self.assertEqual(hashlib.sha256(encoded).hexdigest(),
+                         "3c09c6fe5743b1fbe8d376a5e2beefb29fb2f0d25a4b47cfe8be68430fdea6fa")
+        fixture = json.loads(gzip.decompress(encoded))
+        self.assertEqual(fixture["schema"], "asterinas.post1138-vm-retirement-v1-historical-source.v1")
+        self.assertEqual(fixture["source_head"], "b4462f1ba75d594efefb7133800493950eb74654")
+        self.assertEqual(fixture["source_tree"], "9b2ce82a5a49317d2cda365357fe6c61560042d0")
+        expected = {path: (role, sha) for role, path, sha in post.OWNERS}
+        self.assertEqual(len(fixture["files"]), 90)
+        self.assertEqual({row["path"] for row in fixture["files"]}, set(expected))
+        self.assertEqual(len({row["role"] for row in fixture["files"]}), 90)
+        result = {"files": {}}
+        for row in fixture["files"]:
+            path = Path(row["path"])
+            self.assertFalse(path.is_absolute())
+            self.assertNotIn("..", path.parts)
+            self.assertIn(row["mode"], ("100644", "100755"))
+            data = base64.b64decode(row["content_base64"], validate=True)
+            self.assertEqual(hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest(),
+                             row["git_blob"], row["path"])
+            actual = hashlib.sha256(data).hexdigest()
+            self.assertEqual((row["role"], actual), expected[row["path"]])
+            self.assertEqual(actual, row["sha256"])
+            result["files"][row["path"]] = {"sha256": actual}
+        return result
+
+    def test_fixed_roles_are_unique_regular_historical_sources(self):
         self.assertEqual(len(post.OWNERS), 90)
         self.assertEqual(len({r for r, _, _ in post.OWNERS}), 90)
         self.assertEqual(len({p for _, p, _ in post.OWNERS}), 90)
+        actual = self.actual()
         for role, name, sha in post.OWNERS:
             with self.subTest(role=role):
                 self.assertFalse(Path(name).is_absolute())
@@ -33,7 +65,7 @@ class Post1138VmRetirementSourceProfile(unittest.TestCase):
                 path = HERE.parents[2] / name
                 self.assertTrue(path.is_file())
                 self.assertFalse(path.is_symlink())
-                self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), sha)
+                self.assertEqual(actual["files"][name]["sha256"], sha)
 
     def test_accepts_the_actual_reviewed_composition(self):
         required = post.required_sources("positive", post.PROFILE)

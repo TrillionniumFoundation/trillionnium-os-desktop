@@ -23,6 +23,7 @@ on:
       - "tests/kernel/safety/**"
       - "tests/kernel/network/**"
       - "tests/kernel/vdso-cpu/**"
+      - "tests/kernel/unix-signal/**"
       - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
@@ -49,6 +50,7 @@ on:
       - "tests/kernel/safety/**"
       - "tests/kernel/network/**"
       - "tests/kernel/vdso-cpu/**"
+      - "tests/kernel/unix-signal/**"
       - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
@@ -338,6 +340,29 @@ jobs:
             --expected-source-tree "$(git rev-parse HEAD^{tree})" \
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
+
+      - name: Verify Unix stream SIGPIPE and per-call suppression on one and two CPUs
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-unix-signal-checks"
+          mkdir -p "$checks"
+          python3 -I -B -m unittest discover -s tests/kernel/unix-signal -p 'test_*.py' \
+            > "$checks/normal.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/kernel/unix-signal -p 'test_*.py' \
+            > "$checks/optimized.log" 2>&1
+          failed=0
+          for cpus in 1 2; do
+            if python3 -I -B tests/kernel/unix-signal/run.py \
+              --smp "$cpus" --cc gcc-13 --qemu qemu-system-x86_64 --timeout 120 \
+              --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+              --output "${RUNNER_TEMP}/a06-unix-signal-smp${cpus}"; then
+              :
+            else
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0
 
       - name: Verify pinned libc and vDSO CPU identity on one, two and four CPUs
         shell: bash
@@ -636,6 +661,8 @@ jobs:
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a06-vdso-cpu-smp*
+            ${{ runner.temp }}/a06-unix-signal-checks
+            ${{ runner.temp }}/a06-unix-signal-smp*
             ${{ runner.temp }}/a06-safety-runner-checks
             ${{ runner.temp }}/a06-kernel-safety-smp2
             ${{ runner.temp }}/a06-kernel-safety-smp4
