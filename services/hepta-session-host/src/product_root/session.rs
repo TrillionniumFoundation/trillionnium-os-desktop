@@ -60,6 +60,15 @@ impl Session {
             // The final Notes App must open its original durable store. Keep
             // this application setting out of the native human UI environment.
             .env("TRILL_NOTES_STATE_DIR", fresh.user.join("notes"))
+            .env(
+                "TRILL_NOTES_READBACK_HELPER_SHA256",
+                fs::digest(
+                    &inputs
+                        .programs
+                        .app_window
+                        .with_file_name("trill-notes-recovery"),
+                )?,
+            )
             .stdin(Stdio::from(File::from(std::os::fd::OwnedFd::from(
                 child_pair,
             ))))
