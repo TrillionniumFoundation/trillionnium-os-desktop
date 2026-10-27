@@ -192,12 +192,13 @@ project's source qualification or an original-owner end-to-end transaction.
 
 ## Schema 4: closed expanded source and owning-package contract
 
-The unpublished schema-4 tooling stage has its own literal role sets and
-`support/release/organ_source_map_v4.json`. Its current 309 OS / 201 Hepta roles
+The schema-4 current candidate has its own literal role sets and
+`support/release/organ_source_map_v4.json`. Its current 312 OS / 201 Hepta roles
 preserve all V3 paths and add the reviewed CPU/GDT/Unix owners, observation and
 checkpoint diagnostic paths, thread-store fixtures, compression and rollout
 components, and release tool/map/oracle/document ownership. It is a source
-contract preparation, not a new current source pair or completed runtime lane.
+contract with an explicit current-only CI entry point. A source manifest still
+records `source-only`; separate real receipts establish each runtime lane.
 The nine-role retirement extension names the finalized page-table activation,
 managed-root retirement, real charged-root oracle, technical contract, new Unix
 profile/oracle/contract and CAB84 archive/exporter. Other changed task/thread and
@@ -206,6 +207,12 @@ frozen under their own source identities. This source extension does not claim
 a completed retirement or native matrix. Future OAuth additions wait for actual
 finalized files; the checker never tolerates a missing file to reserve a future
 role.
+
+The final three OS roles bind `organ-current-pair.yml`,
+`organ-release-profile.yml` and the exact previous current V3 manifest archived
+as `2026-10-26-organ-source-1138-f397-v3.json`. The archive preserves SHA256
+`805fdc48788d467d3eef27f4f573ee441d3250258e019f3e67a2c60336e77e3f`;
+none of the older archives is overwritten or used as a new runtime receipt.
 
 A code-owned canonical-map SHA fixes the whole V4 role-to-path and golden
 mapping. The ordinary structural checks still reject unknown/omitted roles,
@@ -226,12 +233,46 @@ release checker, fixed V4 map and regressions to be explicit mandatory OS source
 roles. Creation writes new outputs outside both source repositories and never
 updates the current pin automatically.
 
+`check_current_contract` validates the current V4 declaration before CI emits a
+Hepta pin. It checks exact manifest fields, strict integer schema, complete
+commit/tree identities, the original history-owner declaration, fixed canonical
+map seal, exact role/path and golden sets, source digest/size shapes and the
+seven disabled production inputs. This is a structural preflight. Only
+`verify_manifest` with both repositories proves actual bytes, clean caller
+identities and original ancestry. A declaration cannot choose commands, owning
+packages, hash exceptions or an OS identity embedded in its own manifest.
+
+The pair workflow then requires schema 4 and dispatches its code-owned V4 map.
+The source-profile workflow still checks maps 1, 2 and 3, and additionally checks
+map 4 and the current contract. Both CI callers are mandatory source roles.
+Every mapped OS path can trigger the current pair job. Regression fixtures
+execute the actual CI Python blocks and bash command expansion over real
+temporary Git DAGs; bounded child programs exercise the real source verifier
+and host dispatcher without pretending to execute Rust packages in tool tests.
+
+The switch uses two commits: freeze all code/map/docs and the old-current
+archive, generate/review a candidate outside both repositories, then commit only
+the current manifest. The external verification receipt must be recreated for
+that final OS commit. The self-binding field above remains unchanged and the
+manifest never carries its own OS head/tree. Final tool/host/GUI qualification
+must refer to that exact final caller identity.
+
 V4's code-owned host test list is exactly the original thirteen V3 packages plus
 five directly tested owners: `codex-app-server-protocol`, `codex-thread-store`,
 `codex-core-plugins`, `codex-rollout`, and `codex-file-system`. The original three
 Hepta binary builds, profile/toolchain/lock rules and post-command source
 recheck remain. Node/SDK provenance and native/device/authority receipts are
 separate qualifications. No additional future OAuth owning package is inferred.
+
+The earlier ac96 Desktop / 97c Hepta pair actually passed seven host steps,
+2,821 Hepta cases with 55 skips, and three isolated GUI cases with 352 unselected
+cases. Those original receipts remain immutable; a newer pin requires fresh
+bindings. The GUI used an explicit qualification issuer and owned display and
+temporary storage. Its lost-reply and SIGKILL recovery observations do not
+qualify physical power loss, the native durable authority chain or production
+deployment inputs. The ordinary kernel surface remains query-only and all
+seven real production inputs remain disabled. The independently qualified b446
+kernel component is referenced under its actual source identity.
 
 V1, V2 and V3 remain separate historical contracts, including their maps,
 23/20/4, 41/43/5 and 274/146/5 source/golden counts respectively, their exact host

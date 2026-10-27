@@ -5,31 +5,27 @@ on:
     paths:
       - 'ui/**'
       - 'services/hepta-os/**'
-      - 'support/release/**'
-      - 'tests/ui/**'
+      - 'support/**'
+      - 'tests/**'
       - 'kernel/**'
       - 'libs/**'
-      - 'support/build/**'
-      - 'support/kernel-safety/**'
-      - 'support/android/**'
-      - 'tests/kernel/**'
-      - 'tests/integration/hepta/**'
-      - '.github/workflows/organ-current-pair.yml'
+      - 'docs/**'
+      - 'results/goal-progress/**'
+      - '.github/workflows/**'
+      - 'README.md'
   push:
     branches: [main]
     paths:
       - 'ui/**'
       - 'services/hepta-os/**'
-      - 'support/release/**'
-      - 'tests/ui/**'
+      - 'support/**'
+      - 'tests/**'
       - 'kernel/**'
       - 'libs/**'
-      - 'support/build/**'
-      - 'support/kernel-safety/**'
-      - 'support/android/**'
-      - 'tests/kernel/**'
-      - 'tests/integration/hepta/**'
-      - '.github/workflows/organ-current-pair.yml'
+      - 'docs/**'
+      - 'results/goal-progress/**'
+      - '.github/workflows/**'
+      - 'README.md'
   workflow_dispatch:
 
 permissions:
@@ -57,12 +53,13 @@ jobs:
         working-directory: desktop
         run: |
           python3 -I -B - <<'PY'
-          import json, os, re
+          import os, runpy
           from pathlib import Path
-          manifest = json.loads(Path('support/release/profiles/current-organ-source.json').read_bytes())
-          pin = manifest['hepta']['commit']
-          if not re.fullmatch('[0-9a-f]{40}', pin):
-              raise SystemExit('A complete reviewed Hepta commit is required')
+          source = Path('support/release')
+          api = runpy.run_path(str(source / 'organ_release_profile.py'))
+          mapping = api['load_json'](source / 'organ_source_map_v4.json')
+          manifest = api['load_json'](source / 'profiles/current-organ-source.json')
+          pin = api['check_current_contract'](manifest, mapping)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write(f'hepta_sha={pin}\n')
           PY
@@ -96,7 +93,7 @@ jobs:
             --os-repo "$PWD" --hepta-repo "$GITHUB_WORKSPACE/hepta" \
             --os-head "$DESKTOP_SHA" --os-tree "$(git rev-parse HEAD^{tree})" \
             --manifest support/release/profiles/current-organ-source.json \
-            --required-schema 3 \
+            --required-schema 4 \
             --output-dir "$RUNNER_TEMP/organ-pair" --execute-host
 
       - name: Retain exact-pair receipt and full host logs

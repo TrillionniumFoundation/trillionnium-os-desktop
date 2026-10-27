@@ -1,9 +1,14 @@
 """Schema4 closed maps and owning dispatch, using real temporary Git histories."""
 import copy
+import fnmatch
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
+import re
+import subprocess
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -257,6 +262,212 @@ class Schema4PairTests(unittest.TestCase):
         self.assertFalse(self.receipt()["passed"])
 
 
+def workflow_run_block(path, step_name):
+    """Read a real literal run block without needing a YAML dependency."""
+    text = path.read_text()
+    marker = "      - name: " + step_name + "\n"
+    if text.count(marker) != 1:
+        raise AssertionError("workflow step missing or repeated: " + step_name)
+    block = text.split(marker, 1)[1].split("\n      - ", 1)[0]
+    script = block.split("        run: |\n", 1)[1]
+    return "\n".join(line[10:] if line.startswith("          ") else line
+                     for line in script.splitlines()) + "\n"
+
+
+class CurrentWorkflowTests(unittest.TestCase):
+    setUp_pair = pair_tests.PairExecutionTests.setUp
+    execute_fixture = pair_tests.PairExecutionTests.execute_fixture
+
+    def setUp(self):
+        self.setUp_pair()
+        fx = pair_tests.fixtures
+        install_fixed_v4(self, fx)
+        for path in ("support/release/organ_release_profile.py", "support/release/check_organ_pair.py",
+                     ".github/workflows/organ-current-pair.yml",
+                     ".github/workflows/organ-release-profile.yml",
+                     "support/release/organ_source_map.json", "support/release/organ_source_map_v2.json",
+                     "support/release/organ_source_map_v3.json"):
+            fx.write(self.os, path, (HERE.parents[1] / path).read_bytes())
+        fx.commit(self.os, "copy the actual reviewed release tools and CI callers")
+        self.manifest = self.os / "support/release/profiles/current-organ-source.json"
+        self.publish_manifest(4)
+
+    def publish_manifest(self, version):
+        mapping = self.mapping if version == 4 else runner.profile.load_json(HERE / runner.profile.source_map_name(version))
+        fx = pair_tests.fixtures
+        with patch.object(runner.profile, "HISTORY_OWNER", self.owner):
+            manifest, _ = runner.profile.create_manifest(
+                runner.profile.Repository(self.os, "os"), runner.profile.Repository(self.hepta, "hepta"),
+                fx.git(self.os, "rev-parse", "HEAD"), fx.git(self.os, "rev-parse", "HEAD^{tree}"),
+                fx.git(self.hepta, "rev-parse", "HEAD"), fx.git(self.hepta, "rev-parse", "HEAD^{tree}"), mapping)
+        fx.write(self.os, "support/release/profiles/current-organ-source.json", runner.profile.canonical(manifest))
+        fx.commit(self.os, "commit a source manifest with external OS identity binding")
+        # Prove the historical fixture is really accepted with its explicit
+        # mapping before testing the stricter current-only CI boundary.
+        with patch.object(runner.profile, "HISTORY_OWNER", self.owner):
+            runner.profile.verify_manifest(
+                manifest, runner.profile.Repository(self.os, "os"), runner.profile.Repository(self.hepta, "hepta"),
+                fx.git(self.os, "rev-parse", "HEAD"), fx.git(self.os, "rev-parse", "HEAD^{tree}"), mapping)
+        return manifest
+
+    def run_ci_python(self, workflow, step):
+        run = workflow_run_block(self.os / workflow, step)
+        start = "python3 -I -B - <<'PY'\n"
+        self.assertEqual(run.count(start), 1)
+        python = run.split(start, 1)[1].split("\nPY", 1)[0]
+        # Only the test process substitutes its real temporary-Git ancestor,
+        # exactly like the existing fixture patch; production has no override.
+        prefix = ("import runpy as _fixture_runpy\n"
+                  "_fixture_original = _fixture_runpy.run_path\n"
+                  "def _fixture_load(*args, **kwargs):\n"
+                  "    result = _fixture_original(*args, **kwargs)\n"
+                  "    if 'check_current_contract' in result:\n"
+                  f"        result['check_current_contract'].__globals__['HISTORY_OWNER'] = {self.owner!r}\n"
+                  "    return result\n"
+                  "_fixture_runpy.run_path = _fixture_load\n")
+        output = self.root / "github-output"
+        if output.exists():
+            output.unlink()
+        result = subprocess.run([sys.executable, "-I", "-B", "-c", prefix + python],
+                                cwd=self.os, env=dict(os.environ, GITHUB_OUTPUT=str(output)),
+                                capture_output=True, text=True, timeout=30)
+        return result, output
+
+    def run_pin_reader(self):
+        return self.run_ci_python(".github/workflows/organ-current-pair.yml",
+                                  "Read the single reviewed Hepta pin")
+
+    def current_ci_dispatch(self):
+        # Let bash resolve the actual workflow's quoting, Git tree expression
+        # and environment. Capture only Python's argv, then run the real source
+        # verifier/dispatcher with bounded fixture children as in earlier tests.
+        helpers = self.root / "dispatch-helpers"
+        helpers.mkdir()
+        capture = self.root / "python-argv.json"
+        executable = helpers / "python3"
+        executable.write_text(f"#!{sys.executable}\nimport json, os, sys\n"
+                              "with open(os.environ['FIXTURE_CAPTURE_ARGV'], 'x') as stream:\n"
+                              "    json.dump(sys.argv[1:], stream)\n")
+        executable.chmod(0o755)
+        temporary = self.root / "runner-temp"
+        temporary.mkdir()
+        run = workflow_run_block(self.os / ".github/workflows/organ-current-pair.yml",
+                                  "Build and test the complete original source pair")
+        env = dict(os.environ, PATH=str(helpers) + os.pathsep + os.environ.get("PATH", ""),
+                   FIXTURE_CAPTURE_ARGV=str(capture), GITHUB_WORKSPACE=str(self.root),
+                   DESKTOP_SHA=pair_tests.fixtures.git(self.os, "rev-parse", "HEAD"), RUNNER_TEMP=str(temporary))
+        subprocess.run(["bash", "-c", run], cwd=self.os, env=env, capture_output=True, check=True, timeout=30)
+        args = json.loads(capture.read_text())
+        self.assertEqual(args[:3], ["-I", "-B", "support/release/check_organ_pair.py"])
+        self.output = temporary / "organ-pair"
+        return args[3:]
+
+    def run_captured_pair(self, args):
+        previous = Path.cwd()
+        try:
+            os.chdir(self.os)
+            return runner.main(args)
+        finally:
+            os.chdir(previous)
+
+    def test_pin_reader_executes_current_gate_before_emitting_the_exact_pin(self):
+        result, output = self.run_pin_reader()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(output.read_text(), "hepta_sha=" + pair_tests.fixtures.git(self.hepta, "rev-parse", "HEAD") + "\n")
+
+    def test_pin_reader_rejects_missing_and_valid_historical_manifests(self):
+        self.manifest.unlink()
+        pair_tests.fixtures.commit(self.os, "remove current input")
+        result, output = self.run_pin_reader()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(output.exists())
+        self.publish_manifest(3)
+        result, output = self.run_pin_reader()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(output.exists())
+
+    def test_pin_reader_rejects_map_seal_and_production_tampering(self):
+        original = self.manifest.read_bytes()
+        map_path = self.os / "support/release/organ_source_map_v4.json"
+        original_map = map_path.read_bytes()
+        changes = (lambda m: m["production"].update(activation="enabled"),
+                   lambda m: m["production"].update(effects_authorized=True),
+                   lambda m: m["production"]["unconfigured"].pop(),
+                   lambda m: m.update(source_map_sha256="0" * 64),
+                   lambda m: m.update(schema_version=4.0))
+        for change in changes:
+            manifest = json.loads(original)
+            change(manifest)
+            self.manifest.write_bytes(runner.profile.canonical(manifest))
+            pair_tests.fixtures.commit(self.os, "tamper current declaration")
+            result, output = self.run_pin_reader()
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(output.exists())
+        self.manifest.write_bytes(original)
+        broken = json.loads(original_map)
+        broken["sources"]["os"]["release_current_pair_ci"] = "different/caller.yml"
+        map_path.write_bytes(runner.profile.canonical(broken))
+        pair_tests.fixtures.commit(self.os, "replace a code-owned CI path")
+        result, output = self.run_pin_reader()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(output.exists())
+
+    def test_pin_reader_rejects_duplicate_json_keys_and_incomplete_git_identities(self):
+        original = self.manifest.read_bytes()
+        duplicate = original.replace(b'"schema_version": 4', b'"schema_version": 3, "schema_version": 4')
+        self.assertNotEqual(duplicate, original)
+        self.manifest.write_bytes(duplicate)
+        pair_tests.fixtures.commit(self.os, "duplicate the current schema field")
+        result, output = self.run_pin_reader()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(output.exists())
+        manifest = json.loads(original)
+        manifest["hepta"]["commit"] = "main"
+        self.manifest.write_bytes(runner.profile.canonical(manifest))
+        pair_tests.fixtures.commit(self.os, "replace complete reviewed pin with a branch name")
+        result, output = self.run_pin_reader()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(output.exists())
+
+    def test_profile_ci_executes_current_and_all_historical_map_checks(self):
+        workflow = ".github/workflows/organ-release-profile.yml"
+        step = "Require inputs and validate the committed source-map schema"
+        result, _ = self.run_ci_python(workflow, step)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for version in (1, 2, 3, 4):
+            self.assertIn(f"Committed map schema {version} passed:", result.stdout)
+        self.assertIn("Committed current schema4 contract passed.", result.stdout)
+        manifest = json.loads(self.manifest.read_text())
+        manifest["production"]["activation"] = "enabled"
+        self.manifest.write_bytes(runner.profile.canonical(manifest))
+        pair_tests.fixtures.commit(self.os, "activate production in a current declaration")
+        result, _ = self.run_ci_python(workflow, step)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn("Committed current schema4 contract passed.", result.stdout)
+
+    def test_actual_ci_dispatch_qualifies_only_the_v4_fixed_host_lane(self):
+        args = self.current_ci_dispatch()
+        with patch.object(runner.profile, "HISTORY_OWNER", self.owner), patch.object(
+                runner, "execute_step", side_effect=self.execute_fixture):
+            self.assertEqual(self.run_captured_pair(args), 0)
+        receipt = json.loads((self.output / "pair-receipt.json").read_text())
+        self.assertEqual(receipt["source"]["schema_version"], 4)
+        self.assertEqual(receipt["qualification"], "host-build-tests")
+        self.assertEqual(len(self.dispatched), 7)
+        argv = next(step[3] for step in self.dispatched if step[0] == "hepta-tests")
+        packages = [argv[i + 1] for i, value in enumerate(argv) if value == "-p"]
+        self.assertEqual(len(packages), len(set(packages)))
+        self.assertEqual(len(packages), 18)
+
+    def test_actual_ci_dispatch_rejects_valid_v3_before_any_child_or_output(self):
+        self.publish_manifest(3)
+        args = self.current_ci_dispatch()
+        with patch.object(runner.profile, "HISTORY_OWNER", self.owner), patch.object(
+                runner, "execute_step", side_effect=AssertionError("historical current input executed")):
+            self.assertEqual(self.run_captured_pair(args), 1)
+        self.assertFalse(self.output.exists())
+
+
 class Schema4HistoricalContractTests(unittest.TestCase):
     def test_fixed_v4_map_has_distinct_real_os_sources(self):
         mapping = profile.load_json(HERE / "organ_source_map_v4.json")
@@ -265,6 +476,27 @@ class Schema4HistoricalContractTests(unittest.TestCase):
         for role, path in mapping["sources"]["os"].items():
             with self.subTest(role=role):
                 repo.file(path)
+
+    def test_previous_current_archive_keeps_the_real_v3_bytes(self):
+        path = HERE / "profiles/2026-10-26-organ-source-1138-f397-v3.json"
+        self.assertEqual(profile.sha256(path.read_bytes()),
+                         "805fdc48788d467d3eef27f4f573ee441d3250258e019f3e67a2c60336e77e3f")
+        manifest = profile.load_json(path)
+        self.assertEqual(manifest["schema_version"], 3)
+        self.assertEqual(manifest["hepta"]["commit"], "f397005492549817d4851ea2a4639a0bda16dfb7")
+        self.assertEqual({row["role"] for row in manifest["sources"]["os"]}, profile.OS_ROLES_V3)
+        self.assertEqual({row["role"] for row in manifest["sources"]["hepta"]}, profile.HEPTA_ROLES_V3)
+
+    def test_every_mapped_source_path_can_trigger_the_current_pair_ci(self):
+        workflow = (HERE.parents[1] / ".github/workflows/organ-current-pair.yml").read_text()
+        groups = re.findall(r"    paths:\n((?:      - [^\n]+\n)+)", workflow)
+        self.assertEqual(len(groups), 2)
+        mapping = profile.load_json(HERE / "organ_source_map_v4.json")
+        for group in groups:
+            patterns = [json.loads('"' + line.split("'", 2)[1] + '"') for line in group.splitlines()]
+            for role, path in mapping["sources"]["os"].items():
+                with self.subTest(role=role):
+                    self.assertTrue(any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns), path)
 
     def test_legacy_role_maps_archives_and_host_commands_keep_exact_contracts(self):
         # Literal values exported from the real frozen CAB Git objects. Keep

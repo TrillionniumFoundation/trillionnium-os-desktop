@@ -383,6 +383,9 @@ GOLDEN_ROLES_V3 = GOLDEN_ROLES_V2
 
 # Schema4 is a new closed contract. Historical role sets/maps are unchanged.
 OS_ROLES_V4 = OS_ROLES_V3 | {
+    'release_current_pair_ci',
+    'release_previous_current_v3_archive',
+    'release_source_contract_ci',
     'kernel_cgroup_membership_tree',
     'kernel_cpu_bandwidth_contract',
     'kernel_cpu_scheduling_route',
@@ -477,7 +480,7 @@ HEPTA_ROLES_V4 = HEPTA_ROLES_V3 | {
     'zstd_windows_include_patch',
 }
 GOLDEN_ROLES_V4 = GOLDEN_ROLES_V3
-SOURCE_MAP_V4_SHA256 = '1dd512f913d0b1be214858c2d1879679ee6c57675cc35cd7546f5f36c6deebd2'
+SOURCE_MAP_V4_SHA256 = '1cf6ecf0e6c3e715bef7f50f80cee25522c00dde1cab22ac52ed82bf1f1ae38d'
 
 
 
@@ -592,6 +595,77 @@ def check_map(mapping):
             raise ProfileError(f"{name} golden roles must name distinct files")
     if mapping["schema_version"] == 4 and sha256(canonical(mapping)) != SOURCE_MAP_V4_SHA256:
         raise ProfileError("schema4 source map differs from the code-owned literal path contract")
+
+
+def check_current_contract(manifest, mapping):
+    """Check the current V4 declaration before selecting its Hepta checkout.
+
+    This gate returns the declared pin, not a source qualification. Actual
+    repository bytes, clean identities and original ancestry still require
+    verify_manifest with both repositories.
+    """
+    check_map(mapping)
+    if mapping["schema_version"] != 4:
+        raise ProfileError("current contract requires the fixed schema4 map")
+    expected_keys = {"schema_version", "qualification", "os_identity_binding", "hepta",
+                     "original_history_owner", "source_map_sha256", "production", "sources", "goldens"}
+    if not isinstance(manifest, dict) or set(manifest) != expected_keys:
+        raise ProfileError("current contract requires the exact source-manifest fields")
+    if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 4:
+        raise ProfileError("current contract requires schema4; historical profiles need an explicit historical path")
+    if (manifest["qualification"] != "source-only"
+            or manifest["os_identity_binding"] != "explicit_caller_head_and_tree_in_verification_receipt"
+            or manifest["original_history_owner"] != HISTORY_OWNER
+            or manifest["source_map_sha256"] != SOURCE_MAP_V4_SHA256):
+        raise ProfileError("current contract identity, history owner or map seal differs")
+    if canonical(manifest["production"]) != canonical(PRODUCTION):
+        raise ProfileError("current contract must retain all seven disabled production inputs")
+    hepta = manifest["hepta"]
+    if not isinstance(hepta, dict) or set(hepta) != {"commit", "tree"}:
+        raise ProfileError("current contract requires one exact Hepta commit/tree")
+    for kind in ("commit", "tree"):
+        full_oid(hepta[kind], f"current Hepta {kind}")
+
+    def digest_and_size(row, label):
+        if not isinstance(row["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+            raise ProfileError(f"current contract has an invalid {label} SHA256")
+        if type(row["bytes"]) is not int or row["bytes"] < 0:
+            raise ProfileError(f"current contract has an invalid {label} size")
+
+    sources = manifest["sources"]
+    if not isinstance(sources, dict) or set(sources) != {"os", "hepta"}:
+        raise ProfileError("current contract requires both source role sets")
+    for side in ("os", "hepta"):
+        rows = sources[side]
+        if not isinstance(rows, list) or len(rows) != len(mapping["sources"][side]):
+            raise ProfileError(f"current contract has an incomplete {side} role set")
+        seen = set()
+        for row in rows:
+            if not isinstance(row, dict) or set(row) != {"role", "path", "git_blob", "sha256", "bytes"}:
+                raise ProfileError(f"current contract has invalid {side} source fields")
+            role = row["role"]
+            if not isinstance(role, str) or role in seen or role not in mapping["sources"][side]:
+                raise ProfileError(f"current contract has an unknown or duplicate {side} role")
+            seen.add(role)
+            if row["path"] != mapping["sources"][side][role]:
+                raise ProfileError(f"current contract changes the reviewed {side}.{role} path")
+            full_oid(row["git_blob"], f"current {side}.{role} blob")
+            digest_and_size(row, f"{side}.{role}")
+    rows = manifest["goldens"]
+    if not isinstance(rows, list) or len(rows) != len(mapping["goldens"]):
+        raise ProfileError("current contract requires all five golden pairs")
+    seen = set()
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != {"role", "os_path", "hepta_path", "sha256", "bytes"}:
+            raise ProfileError("current contract has invalid golden fields")
+        role = row["role"]
+        if not isinstance(role, str) or role in seen or role not in mapping["goldens"]:
+            raise ProfileError("current contract has an unknown or duplicate golden role")
+        seen.add(role)
+        if any(row[f"{side}_path"] != mapping["goldens"][role][side] for side in ("os", "hepta")):
+            raise ProfileError(f"current contract changes golden {role} paths")
+        digest_and_size(row, role)
+    return hepta["commit"]
 
 
 class Repository:

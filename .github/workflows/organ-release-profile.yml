@@ -5,11 +5,15 @@ on:
     paths:
       - 'support/release/**'
       - '.github/workflows/organ-release-profile.yml'
+      - '.github/workflows/organ-current-pair.yml'
+      - 'README.md'
   push:
     branches: [main]
     paths:
       - 'support/release/**'
       - '.github/workflows/organ-release-profile.yml'
+      - '.github/workflows/organ-current-pair.yml'
+      - 'README.md'
   workflow_dispatch:
 
 permissions:
@@ -46,6 +50,10 @@ jobs:
             support/release/organ_source_map.json \
             support/release/organ_source_map_v2.json \
             support/release/organ_source_map_v3.json \
+            support/release/organ_source_map_v4.json \
+            support/release/test_source_schema4.py \
+            support/release/profiles/current-organ-source.json \
+            support/release/profiles/2026-10-26-organ-source-1138-f397-v3.json \
             support/release/test_organ_release_profile.py \
             support/release/check_organ_pair.py \
             support/release/test_check_organ_pair.py; do
@@ -61,7 +69,7 @@ jobs:
 
           source = Path("support/release")
           api = runpy.run_path(str(source / "organ_release_profile.py"))
-          for version in (1, 2, 3):
+          for version in (1, 2, 3, 4):
               mapping = api["load_json"](source / api["source_map_name"](version))
               if type(mapping.get("schema_version")) is not int or mapping["schema_version"] != version:
                   raise SystemExit("Map file does not declare its fixed schema")
@@ -70,7 +78,11 @@ jobs:
                     f"{len(mapping['sources']['os'])} OS roles, "
                     f"{len(mapping['sources']['hepta'])} Hepta roles, "
                     f"{len(mapping['goldens'])} golden pairs.")
-          print("Map structure only; mapped repository bytes and real ancestry are not qualified here.")
+          api["check_current_contract"](
+              api["load_json"](source / "profiles/current-organ-source.json"),
+              api["load_json"](source / "organ_source_map_v4.json"))
+          print("Committed current schema4 contract passed.")
+          print("Map/declaration structure only; mapped repository bytes and real ancestry are not qualified here.")
           PY
 
       - name: Run the real temporary-Git regression suite without skipped tests
@@ -83,8 +95,8 @@ jobs:
 
           suite = unittest.defaultTestLoader.discover("support/release", pattern="test_*.py")
           count = suite.countTestCases()
-          if count < 49:
-              raise SystemExit(f"Expected at least 49 source/pair-runner regression tests; found {count}")
+          if count < 80:
+              raise SystemExit(f"Expected at least 80 source/pair-runner regression tests; found {count}")
           result = unittest.TextTestRunner(verbosity=2).run(suite)
           if not result.wasSuccessful() or result.testsRun != count or result.skipped:
               raise SystemExit("Release-profile suite failed, did not run completely, or skipped tests")
