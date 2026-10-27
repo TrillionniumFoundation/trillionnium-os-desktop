@@ -123,7 +123,6 @@ fn continuation(kill: bool) {
         for line in BufReader::new(stdout).lines() {
             if line.is_ok_and(|line| line == "ORIGINAL_APP_STORED") {
                 let _ = sender.send(());
-                return;
             }
         }
     });
@@ -132,8 +131,10 @@ fn continuation(kill: bool) {
         let _ = application.0.kill();
         let _ = application.0.wait();
     }
-    reader.join().unwrap();
-    ready.unwrap();
+    if let Err(error) = ready {
+        reader.join().unwrap();
+        panic!("original fixture did not persist: {error}");
+    }
     assert!(
         standby.after_reap(&mut application.0).is_err(),
         "live App must retain its own receipt lane"
@@ -144,6 +145,7 @@ fn continuation(kill: bool) {
         original_owner.send(b"exit").unwrap();
     }
     let exit = application.0.wait().unwrap();
+    reader.join().unwrap();
     assert_eq!(exit.success(), !kill);
     standby.after_reap(&mut application.0).unwrap();
     let payload = mutation();
