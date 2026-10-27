@@ -4,6 +4,10 @@ Session owns host application processes and serves the bounded host IPC socket.
 The CLI is a client of that socket. Shell does not own the application process
 table or infer task completion from a window.
 
+[Original Notes readback after App exit](NOTES_READBACK.md) describes the
+Root-reserved same-peer continuation, strict artifact/lifetime checks, failure
+semantics, developer checks and installed acceptance requirements.
+
 ## Code and lifecycle
 
 [main.rs](src/main.rs) owns spawn, kill requests, wait/reap, Session generation
