@@ -8,7 +8,7 @@ mod notes_readback;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::os::fd::{BorrowedFd, OwnedFd};
-use std::os::unix::fs::DirBuilderExt;
+use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
 use std::os::unix::net::UnixDatagram;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
@@ -71,10 +71,25 @@ fn mutation() -> Vec<u8> {
 
 fn continuation(kill: bool) {
     let root = Directory::new();
-    let helper = PathBuf::from(env!("CARGO_BIN_EXE_trill-notes-recovery"))
+    let built_helper = PathBuf::from(env!("CARGO_BIN_EXE_trill-notes-recovery"))
         .canonicalize()
         .unwrap();
-    let helper_sha = sha256_hex(&std::fs::read(&helper).unwrap());
+    // Cargo's executable can be hard-linked and group-writable in its cache.
+    // Model the package's separate private installed inode with identical bytes;
+    // do not weaken the production custody check to accept the build artifact.
+    let raw_helper = std::fs::read(&built_helper).unwrap();
+    let helper = root.0.join("installed-notes-recovery");
+    let mut installed = std::fs::OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .mode(0o500)
+        .open(&helper)
+        .unwrap();
+    installed.write_all(&raw_helper).unwrap();
+    installed.sync_all().unwrap();
+    drop(installed);
+    let helper_sha = sha256_hex(&raw_helper);
+    assert_eq!(sha256_hex(&std::fs::read(&helper).unwrap()), helper_sha);
     let mut standby =
         notes_readback::Standby::prepare(&helper, &helper_sha, root.0.clone()).unwrap();
     let (original_owner, original_app_peer) = UnixDatagram::pair().unwrap();
@@ -94,6 +109,7 @@ fn continuation(kill: bool) {
                 "--nocapture",
             ])
             .env("TRILL_READBACK_COMPONENT_ROOT", &root.0)
+            .env_remove(notes_readback::HELPER_SHA_ENV)
             .stdin(Stdio::from(OwnedFd::from(original_app_peer)))
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
