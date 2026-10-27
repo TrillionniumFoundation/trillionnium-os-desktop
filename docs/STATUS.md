@@ -1,10 +1,14 @@
 # 当前状态
 
-## 2026-10-26 产品整改
+## 2026-10-27 产品整改与当前选源
 
-Desktop 后继 `e9642b55` 已集成原 App 退出后只读回读和外部 issuer gate，实际普通/优化各103项、fresh-cache各26项、来源合同各24项、六根依赖及84文档/858链接通过。它仍固定 Hepta `8d747399`；新实际负控证明原 Root Session 仍有效时 replacement 可取同一 owner 锁，效果数0。最小生命周期修复与正常退出后的恢复交接正在验证，旧组合暂不进行最终安装。a9/H8d的原生 UI 工作区测试已通过，文本测试仍在运行；最终同源构建、真实 Root/人类/模型 Notes 保存及原thread回读仍待完成。Windows原91项保持83 PASS、7 FAIL、1 LEAK；新773原生诊断定位到Windows生产验证缺口，未授予功能资格。Android原签名私钥未恢复，Asterinas体积与完整F1/G2仍未闭合。逐源收据和开发/技术入口见[当前能力](CURRENT_CAPABILITIES.md#2026-10-26-产品整改的当前来源)；生产资格仍未取得。
+当前 Hepta 为已发布 `fd6d8d3fcd9aee36711381adf74b6ba7162cda1b` / tree `755e3264fb49a7fedf56a4d2a77befca7af8c384`，显式 preedit SDK prepared tree 仍为 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。本轮以 Desktop `baf73bf04d022ba66949a137bd60448dad659e7e` / tree `35fb7d704d95d6badfb0fe887c49f66c3d7313e0` 启动收敛，Cargo 14 条实际命令 exit 0，五个普通根和独立 prepared lock 的六根图、123份必需来源及219个原 manifest 核验通过。新锁与文档待统一冻结，最终干净 Desktop commit/tree 和构建收据尚未产生。
 
-当前候选的能力与未取得资格集中在 [CURRENT_CAPABILITIES](CURRENT_CAPABILITIES.md)。下表记录最新逐源验收；下文按时间保留原记录，“当前”、README 空文件规则及测试数均只描述各节来源。
+fd 的 scoped `just fix` 实际 exit 0 / 94.159秒、无自动修改，格式检查 exit 0；type→strict Clippy→custody→Supervisor→完整 Agentd→17项 Memory 实际检查链仍在执行，未授新源运行资格。旧 a9/H8d 原生 UI 全部16条实际命令已 exit 0，不再处于文本测试运行中；这些结果只属于旧配对。H8d / `bb5677f6` 的 Session 双 owner 负控是历史失败，effects=0，不证明重复效果。103/26/24项静态检查与84文档/858链接只属于 `e9642b55`，不转移到当前源码。
+
+最终同源 UI/runtime/Root 构建、安装包、真实 Root/人类/模型的授权 Notes 保存和原 thread 回读仍待完成。Windows原91项保持83 PASS、7 FAIL、1 LEAK，773整体FAIL保留；独立 Windows 修复候选须自己完成原生验收。Android原签名私钥未恢复，Asterinas最终体积、完整F1/G2与产品闭环仍未闭合。当前开发与技术入口见[当前能力](CURRENT_CAPABILITIES.md#2026-10-27-当前配对与产品整改)、[固定来源](SOURCES.md#hepta-native-organ)与[模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)；生产资格仍未取得。
+
+下文按时间保留原记录；其中“当前”、README 空文件规则和测试数只描述各节来源，不覆盖本节的选源和执行状态。
 
 ## 2026-10-24 Linux host 当前来源与 scoped 验收
 

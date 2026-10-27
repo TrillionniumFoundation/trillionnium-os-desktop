@@ -21,6 +21,16 @@ Both Cargo roots carry the original AWS configuration patch together with the
 other original dependency security patches. The Notes model fixture, document
 readback fixture and prepared SDK helper must match that same source.
 
+## Selected source and current qualification (2026-10-27)
+
+The current Hepta source is [`fd6d8d3fcd9aee36711381adf74b6ba7162cda1b`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/fd6d8d3fcd9aee36711381adf74b6ba7162cda1b), tree `755e3264fb49a7fedf56a4d2a77befca7af8c384`. Cargo convergence started from Desktop `baf73bf04d022ba66949a137bd60448dad659e7e`, tree `35fb7d704d95d6badfb0fe887c49f66c3d7313e0`. The new Cargo-generated locks and documentation await one clean Desktop freeze; that final commit/tree must be bound by the new build receipt.
+
+All 14 actual Cargo commands returned zero. The five ordinary roots and the separately staged prepared SDK lock passed full six-root verification, including 123 required source files, 219 original Hepta manifests and the original owner/bridge/AWS graph. The canonical SDK helper and prepared SDK tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf` remain selected. Ordinary Git SDK locks and the explicit `trill-shell/hepta-native-preedit-sdk` prepared lock stay separate.
+
+On fd, scoped `just fix` returned zero in 94.159 seconds with no automatic source changes, and `just fmt` returned zero. The actual type, strict Clippy, custody, Supervisor, full Agentd and 17-case Memory chain is still running. This dependency pass supplies no compile, runtime, installed-product or real Root/Notes qualification.
+
+The old a9/H8d UI pipeline has finished all 16 actual commands with zero return codes; its results remain tied to that old pair. The e964 static counts (103/26/24 tests, 84 documents and 858 links) and the H8d Session coexistence negative (effects=0) are historical evidence only. Windows original failures, the unrecovered Android signer and the open Native link/guest/product gates remain unchanged. See [current capabilities](../../docs/CURRENT_CAPABILITIES.md) for the separate execution limits.
+
 ## Development and source checks
 
 The shared source contract covers the original dependency manifests and all five ordinary product lock roots and the explicit prepared lock:
@@ -110,7 +120,7 @@ uses. Run `python3 support/ui/update_product_source.py --hepta-root
 It updates all three original dependency manifests, canonical file hashes and
 preedit helper identity; it neither resolves locks nor grants runtime authority. Run `cargo update --workspace --manifest-path ...`
 for each Cargo root to preserve unaffected locked versions where resolution
-permits. Verify the actual metadata, original source checkout and all five locks,
+permits. Verify the actual metadata, original source checkout, all five ordinary locks and the separately generated prepared SDK lock,
 then execute the owning packages' tests and native feature build. Preserve
 the original logs and the final commit, tree, compiler and binary hashes.
 
@@ -173,7 +183,8 @@ reviewed SDK regression coverage without changing the default product source
 or claiming its binaries were executed with that SDK. See
 [PREEDIT_TEXT_PROFILE.md](PREEDIT_TEXT_PROFILE.md) for ownership and commands.
 
-The final gate checks all five committed product locks, checkout commit/tree,
+The final gate checks all five ordinary committed product locks, the separate
+committed prepared SDK lock, checkout commit/tree,
 tracked and untracked source cleanliness, actual native graph/cache identities
 and standalone `native-text` resolution again. Artifacts retain logs, metadata,
 source identities and ELF SHA256 records from that exact source. The Cargo
