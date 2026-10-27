@@ -68,8 +68,10 @@ artifact. Pure parsing checks shape, identity, epoch, nonce and time shape,
 ## Revocation and release
 
 `notes_issuer_gate_admin.py` executes the held, Root-owned, SHA-pinned actual
-`hepta-desktop-root` ELF. It does not search PATH, create a replacement Root
-or accept a caller's `revoked=true` response. The held Root0600 descriptor
+`hepta-desktop-root` ELF. Its held file must match the held live Root's actual
+executable device/inode, size/timestamps and SHA, rechecked for every CLI call.
+A separately pinned Root-owned ELF is insufficient. It does not search PATH,
+create a replacement Root or accept a caller's `revoked=true` response. The held Root0600 descriptor
 must identify the same actual Root PID, birth, boot and episode nonce.
 
 At the held original body, it performs these original CLI commands in order:

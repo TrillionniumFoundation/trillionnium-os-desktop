@@ -101,6 +101,8 @@ class OriginalRootAdmin:
 
     def verify(self):
         self.root.verify(tracer=os.getpid())
+        require(identity(self.cli.info) == identity(self.root.executable)
+                and self.cli.sha256 == self.root.sha256, "admin_cli_not_held_root_image")
         self.cli.verify(); self.descriptor.verify()
 
     def call(self, label, args, end, cancelled):

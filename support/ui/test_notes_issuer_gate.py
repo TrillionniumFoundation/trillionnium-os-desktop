@@ -378,4 +378,44 @@ class GateSourceCacheTests(unittest.TestCase):
                         self.cache_case(entry, module, mode)
 
 
+class GateCliImageTests(unittest.TestCase):
+    def test_only_the_held_live_process_image_is_the_original_cli(self):
+        # A real current-UID process/image control, never a product Root. Only
+        # the descriptor verifier is a shim; both ELF files and pidfd are real.
+        import hashlib
+        import os
+        from pathlib import Path
+        import platform
+        import types
+        import notes_issuer_gate_admin as admin_module
+        from notes_fault_linux import HeldProcess, proc_identity
+        if platform.system() != "Linux" or platform.machine() != "x86_64":
+            self.skipTest("Linux x86_64 original gate image contract")
+        process = proc_identity(os.getpid())
+        executable = Path("/proc/self/exe").resolve(strict=True)
+        other = Path("/usr/bin/true").resolve(strict=True)
+        original_sha = hashlib.sha256(executable.read_bytes()).hexdigest()
+        held = HeldProcess(dict(pid=os.getpid(), start_ticks=process["start_ticks"],
+            uid=os.getuid(), gid=os.getgid(), executable=str(executable), sha256=original_sha))
+        try:
+            same = admin_module.RootFile(executable, 128*1024*1024, expected_sha=original_sha)
+            different = admin_module.RootFile(other, 128*1024*1024,
+                expected_sha=hashlib.sha256(other.read_bytes()).hexdigest())
+            try:
+                actual = admin_module.OriginalRootAdmin.__new__(admin_module.OriginalRootAdmin)
+                actual.root = held
+                actual.descriptor = types.SimpleNamespace(verify=lambda: None)
+                actual.cli = same
+                actual.verify()
+                actual.cli = different
+                with self.assertRaisesRegex(Refused, "admin_cli_not_held_root_image"):
+                    actual.verify()
+                actual.cli = same
+                actual.verify()  # Failed selection cannot replace either held image.
+            finally:
+                different.close(); same.close()
+        finally:
+            held.close()
+
+
 if __name__=="__main__": unittest.main()
