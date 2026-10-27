@@ -34,9 +34,9 @@ use trill_ui_core::notes::{
     NotesChannelObservation, NotesDestinationObservation, NotesTargetIdentity,
 };
 use trill_ui_core::{
-    AppKind, HostResources, HostWaylandObservation, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS, Request,
-    Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace, parse_host_request,
-    read_frame, socket_path, unix_ms, write_frame,
+    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
+    HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
+    Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
 };
 
 // Linux flock(2) is advisory; it provides a crash-released startup mutex,
@@ -1001,13 +1001,11 @@ mod tests {
             notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(),
             NotesBootstrapMode::Reserved
         );
-        assert!(
-            notes_bootstrap_requested([
-                OsString::from("--notes-bootstrap-stdin"),
-                OsString::from("extra")
-            ])
-            .is_err()
-        );
+        assert!(notes_bootstrap_requested([
+            OsString::from("--notes-bootstrap-stdin"),
+            OsString::from("extra")
+        ])
+        .is_err());
         assert!(notes_bootstrap_requested([OsString::from("--notes-export")]).is_err());
         for request in [
             br#"{"type":"notes_bootstrap","fd":0}"#.as_slice(),
