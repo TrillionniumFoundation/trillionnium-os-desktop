@@ -6,7 +6,7 @@ use crate::{
     fs::file::file_table::{RawFileDesc, get_file_fast},
     net::socket::{
         Socket,
-        unix::stream::UnixStreamSocket,
+        unix::UnixStreamSocket,
         util::{MessageHeader, SendFlags},
     },
     prelude::*,
