@@ -61,6 +61,7 @@ def scan_to_grant(trace, channel, transaction, arm_end, timeout_ms, cancelled):
                     capture = transaction.write_entry(raw, args[2])
                     if capture is not None:
                         trace.issuer_body_held = True
+                        trace.selected_capture = capture
                         require(channel.owner_fd is not None, "issuer_original_owner_poll_not_observed")
                         require(request_end is not None and time.monotonic() < request_end, "original_request_deadline")
                         channel.verify(); trace.verify()
@@ -170,6 +171,11 @@ def run(binding, output, seconds, cancelled):
                 "original_request_deadline_during_detach")
         result["status"] = "original_body_released_after_confirmed_revoke"
     except (OSError, ValueError, ChildProcessError, TimeoutError) as error:
+        if capture is None and trace is not None:
+            capture = getattr(trace, "selected_capture", None)
+            if capture is not None:
+                result["capture"] = {key:value for key,value in capture.items() if key not in
+                                     ("request_raw", "response_raw", "signed_raw", "signed")}
         result.update(status="outcome_unknown" if capture is not None else "unexecuted",
                       reason=str(error), errno=getattr(error,"errno",None))
         if trace is not None and getattr(trace, "issuer_body_held", False) and trace.stopped:

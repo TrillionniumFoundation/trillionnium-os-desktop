@@ -91,6 +91,10 @@ Only after all four steps and identity/deadline checks does detach resume the
 completion times. It means a body syscall was resumed, not that the client
 received it or a consumer rejected it. A spent grant, expiry, another grant,
 Pending, a partial CAS or a caller-made receipt cannot count as the scenario.
+`unexecuted` means the gate did not reach its selected body, not that the
+original operation could not have proceeded. Reconcile original identities
+whenever an outcome is uncertain; never repeat submission to obtain a test.
+
 The independent acceptance must show this original, previously undelivered
 grant's **first actual consumer entry rejected as Revoked**, before expiry.
 
