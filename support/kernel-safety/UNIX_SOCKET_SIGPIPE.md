@@ -30,9 +30,19 @@ ESPIPE boundary are unchanged. Each sendmmsg message remains a separate send;
 this is not a rule suppressing all signals whenever a batch returns a positive
 message count.
 
+Unix STREAM payload copying commits the prefix actually copied before a later
+user-memory fault. The private transaction copies each physical ring segment
+and uses the fault's copied-byte count; it does not infer delivery from reader
+consumption. A fault before any copied byte remains an error with no published
+data. The wrapping second segment retains progress from the first. Both the
+plain stream and stream-with-ancillary paths use this transaction; SEQPACKET,
+the shared producer helper, TCP and UDP keep their prior copy paths.
+
 The production queue uses the same current-thread UserSignal construction as
 the local FIFO implementation. It does not look up another process or inspect
 procfs. One Core ktest exercises its no-POSIX-target path without an unwrap.
+Three additional Core tests use real rings to check a linear fault prefix,
+wrapping faults, a zero-copy error and the packet path without a partial commit.
 The real guest probe in tests/kernel/unix-signal has 42 closed cases with owned
 default-disposition children, handlers, per-call suppression, SEQPACKET,
 nonblocking partial writes, partial writev, empty vectors, later bad user data
