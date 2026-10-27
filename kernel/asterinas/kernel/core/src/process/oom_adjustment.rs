@@ -56,3 +56,6 @@ impl OomScoreAdj {
 
 const OOM_SCORE_ADJ_MIN: i32 = -1000;
 const OOM_SCORE_ADJ_MAX: i32 = 1000;
+
+#[cfg(ktest)]
+mod tests;
