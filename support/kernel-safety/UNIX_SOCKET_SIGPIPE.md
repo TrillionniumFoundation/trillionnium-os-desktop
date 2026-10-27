@@ -20,13 +20,17 @@ sending; applying a blanket all-socket EPIPE signal rule would be incorrect.
 References: [send(2)](https://man7.org/linux/man-pages/man2/send.2.html) and the
 [Linux stable Unix socket source](https://github.com/gregkh/linux/blob/v6.2.10/net/unix/af_unix.c).
 
-A socket writev vector is one logical send operation. The syscall passes the
+A Unix STREAM writev vector is one logical send operation. The syscall passes the
 existing validated VmReaderArray to sendmsg once. Splitting the vector into
 file.write calls could otherwise queue SIGPIPE on a later EPIPE after earlier
 bytes were accepted, while writev returns a positive count. Empty vectors and
 initial user-iovec validation keep their prior behavior. Later copy faults
-retain successful progress. Non-socket vector loops and offset pwritev's
-ESPIPE boundary are unchanged. Each sendmmsg message remains a separate send;
+retain successful progress. The fast path uses the existing FileLike downcast
+to UnixStreamSocket and checks its immutable SOCK_STREAM type; it does not
+infer a protocol from an address or option. Other transports, SEQPACKET,
+non-socket vector loops and offset pwritev's ESPIPE boundary are unchanged.
+This does not qualify those other transports' complete Linux vector semantics.
+Each sendmmsg message remains a separate send;
 this is not a rule suppressing all signals whenever a batch returns a positive
 message count.
 

@@ -506,10 +506,7 @@ fn write_stream_payload(writer: &mut RbProducer<u8>, reader: &mut dyn MultiRead)
 
 #[cfg(ktest)]
 mod stream_copy_tests {
-    use ostd::{
-        mm::{Infallible, VmReader, VmWriter},
-        prelude::ktest,
-    };
+    use ostd::{mm::Infallible, prelude::ktest};
 
     use super::*;
 
@@ -518,7 +515,7 @@ mod stream_copy_tests {
         copied: usize,
     }
 
-    impl crate::util::ReadCString for FaultAfterPrefix {
+    impl ReadCString for FaultAfterPrefix {
         fn read_cstring_until_nul(&mut self, _max_len: usize) -> Result<Option<CString>> {
             unreachable!("binary stream copy must not read a C string")
         }

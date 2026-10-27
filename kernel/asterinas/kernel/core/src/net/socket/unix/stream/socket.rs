@@ -310,6 +310,11 @@ impl UnixStreamSocket {
         }
     }
 
+    /// Returns whether this concrete Unix socket is a byte stream.
+    pub(crate) fn is_byte_stream(&self) -> bool {
+        self.socket_type == SockType::SOCK_STREAM
+    }
+
     fn is_seqpacket(&self) -> bool {
         self.socket_type == SockType::SOCK_SEQPACKET
     }

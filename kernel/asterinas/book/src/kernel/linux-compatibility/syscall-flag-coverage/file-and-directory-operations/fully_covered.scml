@@ -28,8 +28,9 @@ pwrite64(fd, buf, count, offset);
 // Read/write data into multiple buffers
 readv(fd, iov, iovcnt);
 preadv(fd, iov, iovcnt, offset);
-// Socket writev vectors are one send; positive partial progress does not also
-// trigger Unix STREAM SIGPIPE. Offset socket writes retain ESPIPE.
+// Unix STREAM writev vectors are one send; positive partial progress does not
+// also trigger SIGPIPE. Other transports/SEQPACKET retain their existing loop.
+// Offset socket writes retain ESPIPE.
 writev(fd, iov, iovcnt);
 pwritev(fd, iov, iovcnt, offset);
 
