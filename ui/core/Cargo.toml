@@ -16,8 +16,8 @@ hepta-native-clipboard-sdk = ["hepta-native-makepad", "hepta-robrix-ui/native-cl
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
-hepta-control-core = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "8d74739915cd12499f9c280d8d6f52a33b668bdf", optional = true }
-hepta-robrix-ui = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "8d74739915cd12499f9c280d8d6f52a33b668bdf", default-features = false, optional = true }
+hepta-control-core = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "fd6d8d3fcd9aee36711381adf74b6ba7162cda1b", optional = true }
+hepta-robrix-ui = { git = "https://github.com/TrillionniumFoundation/hepta-private-ci", rev = "fd6d8d3fcd9aee36711381adf74b6ba7162cda1b", default-features = false, optional = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libc.workspace = true
