@@ -81,3 +81,18 @@ the original authenticated observation/synchronization path. A known first-store
 receipt remains printed even if the second store or synchronization is unknown.
 The client exits unsuccessfully for partial/pending/unknown and never retries.
 Expiry or writer process exit is not recorded as precise effect/grant revoke.
+
+After a lost/partial revoke reply, read the original two-store result without
+resending a mutation:
+
+```sh
+hepta-desktop-root admin --instance-file <same descriptor> observe-grant-state \
+  --signed-grant-file <same actual exported artifact>
+```
+
+It reads the actual exact effect lease/revocation and protected frontier, current
+original issuer head and original consumer synchronization. An expired original
+artifact can identify this read-only result, explicitly labelled `grant_expired`;
+it never authorizes mutation. The original Root/owner/human/issuer lifetime and
+current issuer epoch remain mandatory. A missing record is Unknown and never
+created, and a returned DTO cannot be supplied in place of a Root capability.
