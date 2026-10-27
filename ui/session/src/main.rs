@@ -6,6 +6,8 @@ mod hepta;
 mod notes_bootstrap;
 #[cfg(target_os = "linux")]
 mod notes_lifetime;
+#[cfg(target_os = "linux")]
+mod notes_readback;
 mod objective_bridge;
 
 use std::collections::BTreeMap;
@@ -32,9 +34,9 @@ use trill_ui_core::notes::{
     NotesChannelObservation, NotesDestinationObservation, NotesTargetIdentity,
 };
 use trill_ui_core::{
-    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
-    HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
-    Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
+    AppKind, HostResources, HostWaylandObservation, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS, Request,
+    Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace, parse_host_request,
+    read_frame, socket_path, unix_ms, write_frame,
 };
 
 // Linux flock(2) is advisory; it provides a crash-released startup mutex,
@@ -148,6 +150,8 @@ struct Session {
     // Standalone Session installs no Hepta authority or production owner.
     #[cfg(target_os = "linux")]
     notes_targets: BTreeMap<u64, NotesTarget>,
+    #[cfg(target_os = "linux")]
+    notes_readback: Option<notes_readback::Standby>,
     first_frame_tx: Sender<u64>,
     first_frame_rx: Receiver<u64>,
 }
@@ -176,6 +180,8 @@ impl Session {
             children: BTreeMap::new(),
             #[cfg(target_os = "linux")]
             notes_targets: BTreeMap::new(),
+            #[cfg(target_os = "linux")]
+            notes_readback: None,
             first_frame_tx,
             first_frame_rx,
         })
@@ -272,7 +278,7 @@ impl Session {
     }
 
     #[cfg(target_os = "linux")]
-    fn prepare_notes_target(&self, id: u64, command: &mut Command) -> io::Result<NotesTarget> {
+    fn prepare_notes_target(&mut self, id: u64, command: &mut Command) -> io::Result<NotesTarget> {
         let mut random = [0u8; 16];
         File::open("/dev/urandom")?.read_exact(&mut random)?;
         let incarnation: String = random.iter().map(|byte| format!("{byte:02x}")).collect();
@@ -283,6 +289,11 @@ impl Session {
         };
         let (parent, child) = UnixStream::pair()?;
         let (recovery_parent, recovery_child) = std::os::unix::net::UnixDatagram::pair()?;
+        if id == 1 {
+            if let Some(readback) = &mut self.notes_readback {
+                readback.bind(identity.clone(), &recovery_child)?;
+            }
+        }
         let (bootstrap, child_bootstrap) = std::os::unix::net::UnixDatagram::pair()?;
         let raw = serde_json::to_vec(&identity).map_err(io::Error::other)?;
         trill_ui_core::notes_private_unix::send_channels(
@@ -355,7 +366,8 @@ impl Session {
         #[cfg(target_os = "linux")]
         command
             .env_remove(trill_ui_core::notes_lifetime::FD_ENV_V1)
-            .env_remove(trill_ui_core::notes_lifetime::META_ENV_V1);
+            .env_remove(trill_ui_core::notes_lifetime::META_ENV_V1)
+            .env_remove(notes_readback::HELPER_SHA_ENV);
         #[cfg(target_os = "linux")]
         let notes_target = {
             let enabled = app == AppKind::Notes;
@@ -389,6 +401,23 @@ impl Session {
             .spawn();
         match spawn {
             Ok(mut child) => {
+                #[cfg(target_os = "linux")]
+                if id == 1 {
+                    if let Some(readback) = &mut self.notes_readback {
+                        if let Err(error) = readback.pin_original(&mut child) {
+                            let _ = child.kill();
+                            let _ = child.wait();
+                            self.notes_readback.take();
+                            task.detail = format!("Original Notes lifetime pin failed: {error}");
+                            task.transition(TaskState::Failed);
+                            self.tasks.insert(id, task.clone());
+                            return Response::Task {
+                                task,
+                                session_instance: self.instance.clone(),
+                            };
+                        }
+                    }
+                }
                 #[cfg(target_os = "linux")]
                 if let Some(target) = notes_target {
                     task.notes_destination = Some(NotesDestinationObservation {
@@ -439,6 +468,15 @@ impl Session {
         for (&id, child) in &mut self.children {
             match child.try_wait() {
                 Ok(Some(exit)) => {
+                    #[cfg(target_os = "linux")]
+                    if id == 1 {
+                        if let Some(readback) = &mut self.notes_readback {
+                            if let Err(error) = readback.after_reap(child) {
+                                eprintln!("original Notes readback unavailable: {error}");
+                                self.notes_readback.take();
+                            }
+                        }
+                    }
                     if let Some(task) = self.tasks.get_mut(&id) {
                         settle_exit(task, exit);
                     }
@@ -465,6 +503,13 @@ impl Session {
                 {
                     notes.channel = NotesChannelObservation::ChildExited;
                 }
+            }
+        }
+        #[cfg(target_os = "linux")]
+        if let Some(readback) = &mut self.notes_readback {
+            if let Err(error) = readback.refresh() {
+                eprintln!("original Notes readback unavailable: {error}");
+                self.notes_readback.take();
             }
         }
     }
@@ -890,6 +935,19 @@ fn main() -> io::Result<()> {
     #[cfg(target_os = "linux")]
     {
         session.notes_durable_required = requested == NotesBootstrapMode::Reserved;
+        if requested == NotesBootstrapMode::Reserved {
+            let expected = std::env::var(notes_readback::HELPER_SHA_ENV).map_err(|_| {
+                io::Error::other("Root Notes profile requires its actual readback helper digest")
+            })?;
+            let root = std::env::var_os("TRILL_NOTES_STATE_DIR")
+                .map(PathBuf::from)
+                .ok_or_else(|| io::Error::other("Root Notes durable storage is missing"))?;
+            session.notes_readback = Some(notes_readback::Standby::prepare(
+                &session.app_binary.with_file_name("trill-notes-recovery"),
+                &expected,
+                root,
+            )?);
+        }
     }
     session.hepta = hepta::HeptaMonitor::from_env();
     #[cfg(target_os = "linux")]
@@ -943,11 +1001,13 @@ mod tests {
             notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(),
             NotesBootstrapMode::Reserved
         );
-        assert!(notes_bootstrap_requested([
-            OsString::from("--notes-bootstrap-stdin"),
-            OsString::from("extra")
-        ])
-        .is_err());
+        assert!(
+            notes_bootstrap_requested([
+                OsString::from("--notes-bootstrap-stdin"),
+                OsString::from("extra")
+            ])
+            .is_err()
+        );
         assert!(notes_bootstrap_requested([OsString::from("--notes-export")]).is_err());
         for request in [
             br#"{"type":"notes_bootstrap","fd":0}"#.as_slice(),
