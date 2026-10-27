@@ -18,6 +18,7 @@ OS_ROLES = {
     "session_entry", "session_bootstrap", "notes_app", "notes_app_target",
     "session_contract", "objective_contract", "history_contract", "cpu_contract",
     "notes_recovery", "notes_private_handoff",
+    "session_readback", "notes_recovery_helper", "root_session_readback",
 }
 HEPTA_ROLES = {
     "production_writer_host", "notes_channel", "notes_bootstrap", "notes_owner",

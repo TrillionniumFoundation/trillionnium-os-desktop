@@ -130,6 +130,27 @@ class SourceCombinationTests(unittest.TestCase):
         self.assertFalse(receipt["production"]["effects_authorized"])
         self.assertIn("protected_authority_clock", manifest["production"]["unconfigured"])
 
+    def test_app_only_readback_sources_are_required_and_remain_source_only(self):
+        shipped = profile.load_json(Path(__file__).with_name("organ_source_map.json"))
+        roles = {
+            "session_readback": "ui/session/src/notes_readback.rs",
+            "notes_recovery_helper": "ui/app-window/src/bin/trill-notes-recovery.rs",
+            "root_session_readback": "services/hepta-session-host/src/product_root/session.rs",
+        }
+        for role, path in roles.items():
+            with self.subTest(role=role):
+                self.assertEqual(shipped["sources"]["os"][role], path)
+                missing = copy.deepcopy(self.mapping)
+                del missing["sources"]["os"][role]
+                with self.assertRaisesRegex(profile.ProfileError, "source map requires exactly"):
+                    profile.check_map(missing)
+        manifest, receipt = self.build()
+        recorded = {entry["role"]: entry for entry in manifest["sources"]["os"]}
+        for role in roles:
+            self.assertEqual(recorded[role]["path"], self.mapping["sources"]["os"][role])
+        self.assertEqual(manifest["production"]["activation"], "disabled")
+        self.assertFalse(receipt["production"]["effects_authorized"])
+
     def test_committed_recovery_golden_byte_mismatch_rejected(self):
         path = self.mapping["goldens"]["notes_recovery"]["hepta"]
         write(self.hepta, path, (self.hepta / path).read_bytes() + b" ")
