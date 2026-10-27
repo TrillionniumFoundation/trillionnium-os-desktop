@@ -26,11 +26,11 @@ jobs:
         shell: bash
         working-directory: product
     env:
-      SOURCE_SHA: e24c5b58ca7e015ce43645645c388731e6e3186d
-      SOURCE_TREE: 770770d2e5be43b00e82691d86ad0ff053f740ec
-      TESTED_SHA: e24c5b58ca7e015ce43645645c388731e6e3186d
-      HEPTA_SHA: 4223fc77944e9beb5651df063158b22ae1a4f701
-      HEPTA_TREE: 7c19c9903d4e82baf3a61111214ff3fe46605cef
+      SOURCE_SHA: 745c0731aed270ee394145c6767371a6af47f49f
+      SOURCE_TREE: fa70b1b95206d25775009c6965245d34051468a4
+      TESTED_SHA: 745c0731aed270ee394145c6767371a6af47f49f
+      HEPTA_SHA: a39a0871d9601ffccb5e0d95d8f39d54b3a63360
+      HEPTA_TREE: e03f9b3eca364222029298496d3e4f1f5e1bf5de
       HEPTA_CI_LANE: source-head
       WORKFLOW_SHA: ${{ github.workflow_sha }}
       RUSTUP_TOOLCHAIN: '1.96.0'
@@ -352,7 +352,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: desktop-e24-original-root-fixtures-${{ github.run_id }}-${{ github.run_attempt }}
+          name: desktop-745c073-original-root-fixtures-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/hepta-root-fixture-evidence/
           if-no-files-found: error
           retention-days: 14
