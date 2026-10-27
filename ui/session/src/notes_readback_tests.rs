@@ -108,3 +108,29 @@ fn readback_refuses_noninitial_targets_and_a_child_that_was_not_pinned_alive() {
     assert!(prepared.after_reap(&mut exited).is_err());
     assert!(!prepared.consumed);
 }
+
+#[test]
+fn sealed_bytes_must_match_the_original_digest_not_only_the_source_observation() {
+    let expected = b"\x7fELForiginal";
+    let changed = b"\x7fELFmodified";
+    assert_eq!(expected.len(), changed.len());
+    // SAFETY: creates a new test-owned anonymous file, never a product handle.
+    let raw = unsafe {
+        libc::memfd_create(
+            c"readback-image-negative".as_ptr(),
+            libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING,
+        )
+    };
+    assert!(raw >= 0);
+    // SAFETY: owns exactly the descriptor returned above.
+    let mut file = unsafe { File::from_raw_fd(raw) };
+    file.write_all(changed).unwrap();
+    // SAFETY: the file is held exclusively throughout mode/seal setup.
+    assert_eq!(unsafe { libc::fchmod(raw, 0o500) }, 0);
+    let seals = libc::F_SEAL_WRITE | libc::F_SEAL_GROW | libc::F_SEAL_SHRINK | libc::F_SEAL_SEAL;
+    assert_eq!(unsafe { libc::fcntl(raw, libc::F_ADD_SEALS, seals) }, 0);
+    assert!(
+        verify_sealed_program(&mut file, &sha256_hex(expected), expected.len() as u64).is_err()
+    );
+    verify_sealed_program(&mut file, &sha256_hex(changed), changed.len() as u64).unwrap();
+}

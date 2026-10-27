@@ -3,7 +3,7 @@
 //! permits the one sealed helper to inherit that App's same recovery socket.
 
 use std::fs::{File, OpenOptions};
-use std::io::{self, Read, Write};
+use std::io::{self, Read, Seek, Write};
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::os::unix::net::UnixDatagram;
@@ -122,6 +122,7 @@ impl Standby {
         {
             return Err(io::Error::last_os_error());
         }
+        verify_sealed_program(&mut executable, expected, bytes.len() as u64)?;
         Ok(Self {
             executable,
             root,
@@ -286,6 +287,14 @@ impl Standby {
                 return Err(error);
             }
         };
+        if Instant::now() >= deadline {
+            let _ = child.kill();
+            let _ = child.wait();
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "original Notes readback start deadline",
+            ));
+        }
         self.running = Some(Running {
             child,
             ready,
@@ -354,6 +363,39 @@ impl Drop for Standby {
 
 fn invalid(message: &'static str) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, message)
+}
+
+fn verify_sealed_program(file: &mut File, expected: &str, length: u64) -> io::Result<()> {
+    let metadata = file.metadata()?;
+    let required = libc::F_SEAL_WRITE | libc::F_SEAL_GROW | libc::F_SEAL_SHRINK | libc::F_SEAL_SEAL;
+    // SAFETY: read-only queries of this same still-owned anonymous ELF file.
+    let seals = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GET_SEALS) };
+    let uid = unsafe { libc::geteuid() };
+    if !metadata.is_file()
+        || metadata.uid() != uid
+        || metadata.nlink() != 0
+        || metadata.mode() & 0o777 != 0o500
+        || metadata.len() != length
+        || length > MAX_HELPER_BYTES
+        || seals < 0
+        || seals & required != required
+    {
+        return Err(invalid("sealed Notes readback executable custody"));
+    }
+    file.rewind()?;
+    let mut actual = Vec::new();
+    Read::by_ref(file)
+        .take(MAX_HELPER_BYTES + 1)
+        .read_to_end(&mut actual)?;
+    if actual.len() as u64 != length
+        || sha256_hex(&actual) != expected
+        || !actual.starts_with(b"\x7fELF")
+    {
+        return Err(invalid(
+            "sealed Notes readback executable identity mismatch",
+        ));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
