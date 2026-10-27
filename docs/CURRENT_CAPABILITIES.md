@@ -1,7 +1,17 @@
 # 当前能力、源码与验收边界
 
+## 2026-10-27 审计修复候选：Linux 产品先行
+
+当前 Hepta 来源为 [`4223fc77944e9beb5651df063158b22ae1a4f701`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/4223fc77944e9beb5651df063158b22ae1a4f701) / tree `7c19c9903d4e82baf3a61111214ff3fe46605cef`。原 Rust/Cargo 1.96.0 已实际完成五个普通入口和独立 prepared UI 入口的六根锁解析，随后通过完整原源码字节、关键依赖图、实际 Cargo Git checkout 和 prepared native graph 核对。普通更新使用在线 Cargo，后续 metadata 使用 `--locked --offline`；没有手改锁内来源。三根不依赖 Hepta 的锁保持原字节。原 SDK `337566c8` 与 prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf` 不变，详见[本次来源与命令收据](../results/integration/2026-10-27-source-pin/README.md)。最终 Desktop commit/tree、编译结果、资源与二进制由后续实际构建收据绑定。
+
+本候选包含原 Fleet spawn 历史核对、原 CognitiveStore 精确物理安装重入、Desktop 恢复准备的排他锁和 spawn 消耗边界；原 Current CAS、writer、operation 与 authority 仍是唯一 owner。恢复准备可在尚未消耗 spawn 的完整原观察上重入，已有 `06-spawn-consumed` 后仍拒绝再次创建子进程；这不是正式常驻服务或跨 boot 恢复。Hepta 的 [owner PR4066](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4066)、[CPU final-use PR4068](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4068) 和[独立 Rust1.96 资格 PR4069](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4069) 分别保留源码和原执行范围。原生策略仍是显式接入，默认 host 未启用它，也没有 AI 性能收益结论。
+
+Asterinas 的 GPT/EBR 生产解析器已有[固定 nightly、真实 QEMU guest 24/24](../results/integration/2026-10-27-partition-validation/README.md)证据，覆盖有界结构/CRC/备份冲突与 EBR 拒绝路径；这是 kernel-mode 解析测试，不是实际磁盘、virtio/DMA、掉电、多核或完整 Hepta guest 资格。Android qualifier 改为让 signer/aapt 与结果摘要消费同一份受限 APK 快照；54项 host 回归在普通与优化 Python 下通过，原 signer 和真实安装资格仍未闭合。
+
+**本候选尚未取得完整产品资格。** 首先完成同一最终包的真实本地登录、原线程与 authority、Notes 效果、独立文档观察、原 operation 持久终态，再逐项验收丢回复、撤销、并发编辑和进程中断。丢回复与 App-only 恢复后的通道只用于原结果回查，各故障场景使用独立 episode。优化包、安装、输入/读屏、正式续期/轮换/升级/跨 boot、真实设备 adapter 及同预算 AI 对照仍分别要求实际证据。
+
 <a id="2026-10-26-产品整改的当前来源"></a>
-## 2026-10-27 当前配对与产品整改
+## 2026-10-27 942/de0 配对检查点（历史）
 
 当前选定 Hepta 来源为 [`de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c) / tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`。Desktop [`94234e6a63858dcf7312025f6e20c85e00cc07f6`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/94234e6a63858dcf7312025f6e20c85e00cc07f6) / tree `13b211835e776adf0aa450d168b40a97fa39b842` 已完成并提交六根锁收敛，完整原源码字节及关键依赖图验证通过；不再把真实生成六锁列为当前阻塞。每次后继构建仍由实际 selection 与构建收据绑定自己的完整 Desktop commit/tree、features、锁和产物。显式 preedit SDK prepared tree 保持 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`，不改用默认 SDK 或 clipboard profile。
 
