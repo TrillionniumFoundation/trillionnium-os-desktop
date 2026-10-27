@@ -2,7 +2,7 @@
 
 ## 2026-10-26 产品整改
 
-本轮构建固定 Desktop `a9a57eaa` / Hepta `8d747399` 和显式 preedit SDK。原生 UI 工作区已通过；最终安装与真实 Root、人类会话、模型的一次授权 Notes 操作仍待完成。后继 `8467f0dd` 的原 App 退出后只读回读已通过组件和正式依赖检查，`adf609b8` 已补齐它的必需来源角色；两者尚未并入当前a9安装包。Windows实际91项为83 PASS、7 FAIL、1 LEAK；Android原签名私钥未恢复，Asterinas最终体积与完整F1/G2仍未闭合。具体来源、逐项收据和开发/技术入口见[当前能力](CURRENT_CAPABILITIES.md#2026-10-26-产品整改的当前来源)。生产资格仍未取得。
+Desktop 后继 `e9642b55` 已集成原 App 退出后只读回读和外部 issuer gate，实际普通/优化各103项、fresh-cache各26项、来源合同各24项、六根依赖及84文档/858链接通过。它仍固定 Hepta `8d747399`；新实际负控证明原 Root Session 仍有效时 replacement 可取同一 owner 锁，效果数0。最小生命周期修复与正常退出后的恢复交接正在验证，旧组合暂不进行最终安装。a9/H8d的原生 UI 工作区测试已通过，文本测试仍在运行；最终同源构建、真实 Root/人类/模型 Notes 保存及原thread回读仍待完成。Windows原91项保持83 PASS、7 FAIL、1 LEAK；新773原生诊断定位到Windows生产验证缺口，未授予功能资格。Android原签名私钥未恢复，Asterinas体积与完整F1/G2仍未闭合。逐源收据和开发/技术入口见[当前能力](CURRENT_CAPABILITIES.md#2026-10-26-产品整改的当前来源)；生产资格仍未取得。
 
 当前候选的能力与未取得资格集中在 [CURRENT_CAPABILITIES](CURRENT_CAPABILITIES.md)。下表记录最新逐源验收；下文按时间保留原记录，“当前”、README 空文件规则及测试数均只描述各节来源。
 

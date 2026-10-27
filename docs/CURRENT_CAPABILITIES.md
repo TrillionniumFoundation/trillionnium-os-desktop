@@ -2,17 +2,18 @@
 
 ## 2026-10-26 产品整改的当前来源
 
-当前正在打包的明确组合是 Desktop `a9a57eaae209b655234dc431a43f8e686ae3a6aa` / tree `f00decf60917470186adda9de60eb47ca54d046b` 与 Hepta `8d74739915cd12499f9c280d8d6f52a33b668bdf` / tree `85306350fa533285c9ec1c629a5321c232c5207c`。显式 preedit SDK 绑定 prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`；其独立锁已经提交，不能通过换成默认 SDK 或 clipboard profile 继承资格。唯一依赖组合见 [DEPENDENCIES](../support/ui/DEPENDENCIES.md) 和 [SOURCES](SOURCES.md)。实际来源检查覆盖六个 Cargo 根、219 个原 Hepta manifest 和123份必需来源；缺失原 owner/bridge、替代 registry 包或只有源码证明均不能通过完整依赖图门禁。
+当前依赖合同仍固定 Desktop 构建来源 `a9a57eaae209b655234dc431a43f8e686ae3a6aa` / tree `f00decf60917470186adda9de60eb47ca54d046b` 与 Hepta `8d74739915cd12499f9c280d8d6f52a33b668bdf` / tree `85306350fa533285c9ec1c629a5321c232c5207c`，但实际 Root Session 负控已发现原会话仍有效时可再次取得同一 owner 锁；这组源码暂不用于最终安装验收。最小修复正在验证，最终配对须重新运行 Cargo、来源检查和构建。显式 preedit SDK 绑定 prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`；其独立锁已经提交，不能通过换成默认 SDK 或 clipboard profile 继承资格。依赖组合见 [DEPENDENCIES](../support/ui/DEPENDENCIES.md) 和 [SOURCES](SOURCES.md)。实际来源检查覆盖六个 Cargo 根、219 个原 Hepta manifest 和123份必需来源；缺失原 owner/bridge、替代 registry 包或只有源码证明均不能通过完整依赖图门禁。
 
 桌面 Shell 使用 Rust/Makepad，Notes 窗口使用 Rust/egui；会话与工具执行接原 Hepta Core/App Server。AI 界面的状态来自原 thread 的事件、授权结果和文档回读。输入框文本、模型回答、原操作收据和当前文档分别展示，模型说“已保存”不能替代 Notes 效果证据。[模块索引](modules/README.md)提供开发步骤和技术合同；[原生交接表](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)对应各模块的实现与交接入口。
 
 | 本轮工作 | 已取得的证据 | 尚未完成的验收 |
 | --- | --- | --- |
-| 依赖与来源 | Desktop 后继 `8467f0dd` 的普通/优化脚本各86项、六根依赖检查和83份模块文档/855链接通过，见[逐源记录](../results/integration/2026-10-26-product-readiness/desktop-8467-static.json)。 | 文档提交及后继源码不自动继承安装包或运行资格。 |
+| 依赖与来源 | Desktop 后继 `e9642b55` 已集成 App-only 回读、外部 issuer gate 与来源角色；普通/优化脚本各103项、fresh-cache各26项、来源合同各24项、六根依赖及84份模块文档/858链接通过，见[逐源记录](../results/integration/2026-10-27-current-blockers/desktop-e964-static.json)。 | 后继仍固定有缺陷的H8d；静态通过不替代生命周期修复或最终安装运行。 |
 | 原 App 退出后的回读 | `8467f0dd` 保留同一个只读恢复端点；原 App 被其 owner 确认退出后，只启动固定字节的只读 helper。组件六项、Session52项通过，见[组件交接](../results/integration/2026-10-26-product-readiness/app-only-component-handoff.json)；同8d747正式 Git 依赖的 Root 全目标严格 Clippy 通过，见[原始回执](../results/integration/2026-10-26-product-readiness/root-8467-8d747-clippy.json)。 | 当前a9安装包尚未包含这个后继。真实 Root/人类会话/模型中的 App 退出及原身份回读仍待执行。 |
 | 回读来源合同 | `adf609b8` 增加 Session回读、固定helper和Root会话三个必需来源角色；普通/优化各24项通过，见[来源合同回执](../results/integration/2026-10-26-product-readiness/desktop-adf-source-profile.json)。 | 来源清单不会建立效果权限或恢复旧写者。 |
-| Linux 产品 | 同源原生 UI 工作区测试已经通过；完整打包和原Root四个程序的正式构建仍在推进。 | 最终安装、真实人类与模型的一次授权 Notes 保存、原thread回读，以及丢回复/撤销/退出/重连/并发编辑、物理输入和读屏，均不得计为已验收。 |
-| Windows | `37831e03` 的原91项为83 PASS、7 FAIL、1 LEAK；另两组各3/3，backend独立8/9，见[完整分类](../results/integration/2026-10-26-product-readiness/windows-378-qualification.json)。 | LEAK不计通过；签名原始输出合同、真实隔离能力及junction夹具仍有缺口，不能把诊断成功计为功能通过。 |
+| Root 生命周期 | 原生产源码加测试夹具 `bb5677f6` 的[实际负控](../results/integration/2026-10-27-current-blockers/root-session-bb567-negative-selected.json)失败：replacement持同一inode锁期间原clock/verifier仍有效。 | 只证明两个owner状态共存，效果数0。修复须同时保证原worker/阻塞同步任务未结束时不放锁，以及旧会话退出后即使保留已fence的只读句柄也能正常交接；不能放宽原guard或期限。 |
+| Linux 产品 | a9/H8d原生 UI 工作区测试实际通过，文本测试仍在运行。旧runtime控制器遗失，日志Finished不能补成实际退出码；旧Root队列已在未启动编译时取消。 | 修复后重新构建同源安装包，再做真实人类与模型的一次授权 Notes 保存、原thread回读，以及丢回复/撤销/退出/重连/并发编辑、物理输入和读屏。 |
+| Windows | `37831e03` 的原91项为83 PASS、7 FAIL、1 LEAK；另两组各3/3，backend独立8/9，见[原分类](../results/integration/2026-10-26-product-readiness/windows-378-qualification.json)。新 `773d34e1` [原生诊断](../results/integration/2026-10-27-current-blockers/NATIVE-REPORT.md)证明原签名程序写预创建私有文件可保留完整身份/DACL并产生原LF输出。 | 773整体FAIL：collector1 PASS不证明功能；生产验证仍缺Windows继承句柄合同，junction1 FAIL尚未到backend断言。原runner LEAK与其余原失败仍待修复，未重跑或提高原91计数。 |
 | Android / Asterinas | 原 Android APK/cert 已核实；严格 receiver 候选保留原签名要求。Asterinas继续拆出唯一原 owner 的必要闭包。 | 原 Android 私钥未恢复，候选未安装；原生最终ELF仍未满足8MiB/LOAD16MiB门禁，完整F1/G2、资源恢复及真实驱动尚未闭合。 |
 
 以上收据是[精选组件证据](../results/integration/2026-10-26-product-readiness/evidence-index.json)，不构成完整产品验收。`production_ready` 仍为 false。下文保留较早来源的历史实测，不把旧结果转授本轮。
