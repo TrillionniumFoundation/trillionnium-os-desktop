@@ -301,17 +301,21 @@
       "technical": [
         "ui/session/OBJECTIVE_BRIDGE.md",
         "ui/session/OBJECTIVE_SUBMISSION.md",
-        "support/ui/NOTES_ORGAN.md"
+        "support/ui/NOTES_ORGAN.md",
+        "ui/session/NOTES_READBACK.md"
       ],
       "development": [
         "ui/session/README.md",
-        "support/ui/RUN.md"
+        "support/ui/RUN.md",
+        "ui/session/NOTES_READBACK.md"
       ],
       "owner": "Session owns host child process lifecycle, socket generation and bounded workers; original Root/Agentd supplies trusted submission and Notes bootstrap authority.",
-      "failure_recovery": "Connection I/O has one finite deadline; restart creates a new generation, and lost replies require observation instead of implicit successful cancellation or resend.",
+      "failure_recovery": "Connection I/O has one finite deadline; restart creates a new generation, and lost replies require observation instead of implicit successful cancellation or resend. Root-reserved App-only exit can continue the same original recovery datagram after owned-child reap and held-pidfd death; failure consumes the readback slot without effect replay.",
       "current_scope": "Linux host process/observer/Objective bridge and explicit private Notes reservation/bootstrap; standalone Session installs no production effect owner.",
       "sources": [
-        "ui/session/src/lib.rs"
+        "ui/session/src/lib.rs",
+        "ui/session/src/main.rs",
+        "ui/session/src/notes_readback.rs"
       ]
     },
     {

@@ -84,6 +84,13 @@ must be reported separately. This entry does not qualify reboot or power loss.
 
 ## Live administrative result reconciliation
 
+For an App-only exit while the original Session/Agentd/Root remain live,
+[Session's original recovery-peer continuation](../../../../ui/session/NOTES_READBACK.md)
+keeps the exact original receipt readback available without starting a new
+owner or creating a new writable target. It does not enter this full recovery
+ceremony. Its helper is read/acknowledgement only; installed original-thread
+reconciliation still requires its own actual acceptance record.
+
 [ADMIN.md](ADMIN.md) documents the separate same-instance local management lane.
 Its `observe-grant-state --signed-grant-file <actual original artifact>` reads the
 exact original effect lease/revocation, issuer head and consumer synchronization
