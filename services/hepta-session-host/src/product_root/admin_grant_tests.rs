@@ -32,6 +32,15 @@ fn finite_grant_selectors_refuse_ambiguity_and_duplicate_flags() -> Result<()> {
     );
     for bad in [
         vec!["observe-grant"],
+        vec!["observe-grant-state"],
+        vec!["observe-grant-state", "--signed-grant-file"],
+        vec![
+            "observe-grant-state",
+            "--signed-grant-file",
+            "/not-opened",
+            "--signed-grant-file",
+            "/other",
+        ],
         vec!["observe-grant", "--latest", "--grant-id", "original:1:2"],
         vec!["observe-grant", "--grant-id", ""],
         vec!["observe-grant", "--latest", "--latest"],

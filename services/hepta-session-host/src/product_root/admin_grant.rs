@@ -14,6 +14,7 @@ pub(super) fn parse_command(args: impl Iterator<Item = OsString>) -> Result<Comm
     let mut args = args.peekable();
     match args.peek().and_then(|value| value.to_str()) {
         Some("observe-grant") => observe(args),
+        Some("observe-grant-state") => observe_state(args),
         Some("revoke-grant") => revoke(args),
         _ => Ok(Command {
             action: parse_action(args)?,
@@ -95,11 +96,7 @@ fn revoke(mut args: impl Iterator<Item = OsString>) -> Result<Command> {
     finish(&mut args)?;
     // Artifact only: same issuer independently verifies signature/epoch/binding
     // and reads the exact EXISTING lease. No client-issued replacement exists.
-    let signed_grant: SignedFinalUseGrant = fs::read_root_json(&file)?;
-    signed_grant.grant.signing_bytes()?;
-    if serde_json::to_vec(&signed_grant)?.len() > 8 * 1024 {
-        return Err("original grant artifact bound".into());
-    }
+    let signed_grant = load_original_artifact(&file)?;
     Ok(Command {
         action: RootAdminAction::RevokeOriginalNotesGrant {
             signed_grant: Box::new(signed_grant),
@@ -111,9 +108,35 @@ fn revoke(mut args: impl Iterator<Item = OsString>) -> Result<Command> {
     })
 }
 
+fn observe_state(mut args: impl Iterator<Item = OsString>) -> Result<Command> {
+    expected(&mut args, "observe-grant-state")?;
+    expected(&mut args, "--signed-grant-file")?;
+    let file = PathBuf::from(args.next().ok_or("missing original signed grant file")?);
+    finish(&mut args)?;
+    Ok(Command {
+        action: RootAdminAction::ObserveOriginalNotesGrant {
+            signed_grant: Box::new(load_original_artifact(&file)?),
+        },
+        export: None,
+    })
+}
+
+fn load_original_artifact(file: &Path) -> Result<SignedFinalUseGrant> {
+    let signed: SignedFinalUseGrant = fs::read_root_json(file)?;
+    signed.grant.signing_bytes()?;
+    if serde_json::to_vec(&signed)?.len() > 8 * 1024 {
+        return Err("original grant artifact bound".into());
+    }
+    Ok(signed)
+}
+
 pub(super) fn finish_response(value: &serde_json::Value, export: Option<&Path>) -> Result<()> {
     match value["status"].as_str() {
-        Some("observed" | "writer_revoked") if export.is_none() => Ok(()),
+        Some("observed" | "writer_revoked" | "original_notes_grant_observed")
+            if export.is_none() =>
+        {
+            Ok(())
+        }
         Some("issued_notes_grant_observed") => {
             let observation = &value["observation"];
             if observation["status"] != "captured" {
