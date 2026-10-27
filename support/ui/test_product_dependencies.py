@@ -46,16 +46,19 @@ class ProductDependencies(unittest.TestCase):
         source_path = self.root / guard.SOURCE
         source = json.loads(source_path.read_text())
         old_commit = source["commit"]
-        packages = guard.tomllib.loads((self.root / "ui/Cargo.lock").read_text())["package"]
+        packages = [p for p in guard.tomllib.loads((self.root / "ui/Cargo.lock").read_text())["package"]
+                    if p.get("source") is not None]
         for package in packages:
             if guard.REPOSITORY in package.get("source", ""):
                 del package["source"]
         reference = lock_bytes(packages)
+        graph = guard.LockedGraph(reference, "original source fixture")
         owner_manifests = {}
         for package in packages:
             dependencies = {d.split(" ", 1)[0] for d in package.get("dependencies", [])
-                            if guard.is_critical(d.split(" ", 1)[0])}
-            if package.get("source") is None and dependencies:
+                            if guard.is_critical(d.split(" ", 1)[0])
+                            or graph.resolve(d).get("source") is None}
+            if package.get("source") is None:
                 name = f'codex-rs/reference-fixtures/{package["name"]}/Cargo.toml'
                 owner_manifests[name] = ('[package]\nname = ' + json.dumps(package["name"])
                     + '\nversion = ' + json.dumps(package["version"]) + '\n[dependencies]\n'
@@ -124,6 +127,68 @@ class ProductDependencies(unittest.TestCase):
         path.write_bytes(path.read_bytes() + b"\n")
         with self.assertRaisesRegex(ValueError, "Changed original source: codex-rs/Cargo.lock"):
             guard.verify(self.root, original)
+
+    def test_full_public_entry_binds_intermediate_owner_identity_and_required_bridges(self):
+        original = self.original_checkout()
+        # These are public-entry mutations of each actual consumer lock, not
+        # hand-constructed AWS graphs. Deleting the bridge and every AWS node
+        # must still fail at an original nonoptional predecessor edge.
+        for name in ("ui/Cargo.lock", "services/hepta-session-host/Cargo.lock",
+                     "support/ui/preedit-sdk/Cargo.lock"):
+            path = self.root / name
+            original_bytes = path.read_bytes()
+            baseline = guard.tomllib.loads(original_bytes.decode())["package"]
+            for mutation in ("registry", "version", "checksum", "delete"):
+                with self.subTest(lock=name, mutation=mutation):
+                    packages = copy.deepcopy(baseline)
+                    owner = next(p for p in packages if p["name"] == "codex-aws-auth")
+                    if mutation == "registry":
+                        owner.update(source="registry+https://github.com/rust-lang/crates.io-index",
+                                     checksum="0" * 64)
+                    elif mutation == "version":
+                        owner["version"] = "0.0.1"
+                    elif mutation == "checksum":
+                        owner["checksum"] = "0" * 64
+                    else:
+                        removed = {"codex-aws-auth"} | {p["name"] for p in packages
+                                                       if p["name"].startswith("aws-")}
+                        packages = [p for p in packages if p["name"] not in removed]
+                        for package in packages:
+                            if "dependencies" in package:
+                                package["dependencies"] = [d for d in package["dependencies"]
+                                    if d.split(" ", 1)[0] not in removed]
+                    path.write_bytes(lock_bytes(packages))
+                    with self.assertRaisesRegex(ValueError,
+                            "Original owner identity differs|Missing mandatory original owner dependency|Mandatory original owner edge differs"):
+                        guard.verify(self.root, original)
+                    path.write_bytes(original_bytes)
+
+    def test_tracked_intermediate_manifest_cannot_erase_mandatory_edge(self):
+        original = self.original_checkout()
+        path = original / "codex-rs/reference-fixtures/codex-aws-auth/Cargo.toml"
+        path.write_bytes(path.read_bytes().replace(b'aws-config = "*"', b''))
+        with self.assertRaisesRegex(ValueError, "Changed original source|Changed tracked original dependency manifest"):
+            guard.verify(self.root, original)
+
+    def test_outer_sdk_only_cut_cannot_erase_local_consumer_original_dependencies(self):
+        original = self.original_checkout()
+        for name in ("ui/Cargo.lock", "support/ui/preedit-sdk/Cargo.lock"):
+            path = self.root / name
+            data = path.read_bytes()
+            packages = guard.tomllib.loads(data.decode())["package"]
+            kept = guard.LOCKS[name]
+            removed = {p["name"] for p in packages
+                       if guard.is_critical(p["name"]) or
+                       (guard.REPOSITORY in p.get("source", "") and p["name"] not in kept)}
+            packages = [p for p in packages if p["name"] not in removed]
+            for package in packages:
+                if "dependencies" in package:
+                    package["dependencies"] = [d for d in package["dependencies"]
+                                                if d.split(" ", 1)[0] not in removed]
+            path.write_bytes(lock_bytes(packages))
+            with self.subTest(lock=name), self.assertRaisesRegex(ValueError, "Missing original consumer dependency"):
+                guard.verify(self.root, original)
+            path.write_bytes(data)
 
     def test_whole_critical_family_removal_cannot_become_not_applicable(self):
         original = self.original_checkout()
@@ -266,6 +331,81 @@ def lock_bytes(packages):
         rows.append("\n[[package]]")
         rows.extend(f"{key} = {json.dumps(value)}" for key, value in package.items())
     return ("\n".join(rows) + "\n").encode()
+
+
+class OriginalManifestBridges(unittest.TestCase):
+    def test_workspace_alias_outside_codex_target_build_and_absent_optional_owner(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            files = {
+                "codex-rs/Cargo.toml": '''[workspace]
+members = ["owner"]
+[workspace.package]
+version = "1.0.0"
+[workspace.dependencies]
+renamed = { package = "bridge", path = "../apps/bridge" }
+''',
+                "codex-rs/owner/Cargo.toml": '''[package]
+name = "original-owner"
+version.workspace = true
+[dependencies]
+renamed.workspace = true
+optional-bridge = { path = "../../apps/optional", optional = true }
+[target.'cfg(windows)'.build-dependencies]
+renamed.workspace = true
+[dev-dependencies]
+aws-types = "*"
+''',
+                "apps/bridge/Cargo.toml": '''[package]
+name = "bridge"
+version.workspace = true
+workspace = "../../codex-rs"
+[dependencies]
+aws-config = "*"
+''',
+                "apps/optional/Cargo.toml": '''[package]
+name = "optional-bridge"
+version = "1.0.0"
+[dependencies]
+aws-types = "*"
+''',
+            }
+            for name, text in files.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text)
+            def git(*args):
+                return subprocess.check_output(["git", "-C", str(root), *args], stderr=subprocess.DEVNULL)
+            git("init", "--quiet")
+            git("add", ".")
+            git("-c", "user.name=Dependency test", "-c", "user.email=test@example.invalid",
+                "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "Original manifests")
+            packages = [
+                {"name": "original-owner", "version": "1.0.0", "dependencies": ["bridge", "optional-bridge", "aws-types"]},
+                {"name": "bridge", "version": "1.0.0", "dependencies": ["aws-config"]},
+                {"name": "optional-bridge", "version": "1.0.0", "dependencies": ["aws-types"]},
+                {"name": "aws-config", "version": "1.0.0", "source": "registry+original", "checksum": "a" * 64},
+                {"name": "aws-types", "version": "1.0.0", "source": "registry+original", "checksum": "b" * 64},
+            ]
+            reference = guard.LockedGraph(lock_bytes(packages), "original manifests")
+            edges, records = guard.mandatory_owner_edges(root, reference)
+            self.assertEqual(set(edges["original-owner", "1.0.0"]), {"bridge"})
+            self.assertEqual(set(edges["bridge", "1.0.0"]), {"aws-config"})
+            self.assertEqual({r["path"] for r in records}, set(files))
+            consumer = copy.deepcopy(packages[:2] + packages[3:4])
+            for package in consumer[:2]:
+                package["source"] = "git+original"
+            consumer[0]["dependencies"] = ["bridge"]
+            self.assertTrue(guard.verify_critical_graph(lock_bytes(consumer), reference,
+                            "absent optional owner", edges, "git+original")["checked"])
+            consumer[0]["dependencies"] = []
+            consumer = [p for p in consumer if p["name"] == "original-owner"]
+            with self.assertRaisesRegex(ValueError, "Missing mandatory original owner dependency"):
+                guard.verify_critical_graph(lock_bytes(consumer), reference, "missing bridge", edges, "git+original")
+            path = root / "apps/bridge/Cargo.toml"
+            path.write_text(path.read_text().replace('aws-config = "*"', ''))
+            with self.assertRaisesRegex(ValueError, "Changed tracked original dependency manifest"):
+                guard.mandatory_owner_edges(root, reference)
 
 
 class CriticalLockedGraph(unittest.TestCase):
@@ -414,6 +554,17 @@ class CriticalLockedGraph(unittest.TestCase):
         self.packages[0]["dependencies"] = ["prettyplease", "syn"]
         with self.assertRaisesRegex(ValueError, "ambiguous lock dependency"):
             self.check()
+
+    def test_git_dependency_reference_resolves_only_one_precise_checkout(self):
+        package = {"name": "original-library", "version": "1.0.0",
+                   "source": "git+https://example.invalid/repo?rev=abc#" + "a" * 40}
+        graph = guard.LockedGraph(lock_bytes([package]), "git source")
+        dependency = "original-library 1.0.0 (git+https://example.invalid/repo?rev=abc)"
+        self.assertEqual(graph.resolve(dependency), package)
+        second = dict(package, source=package["source"].split("#")[0] + "#" + "b" * 40)
+        graph = guard.LockedGraph(lock_bytes([package, second]), "ambiguous git source")
+        with self.assertRaisesRegex(ValueError, "ambiguous lock dependency"):
+            graph.resolve(dependency)
 
     def test_deleted_critical_package_is_not_not_applicable(self):
         packages = [copy.deepcopy(self.packages[7])]

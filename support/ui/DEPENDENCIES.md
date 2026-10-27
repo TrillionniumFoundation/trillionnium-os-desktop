@@ -62,7 +62,17 @@ package identity; an unrelated Syn version used by another macro is allowed.
 Every zstd, zstd-safe and zstd-sys node and chain must match that reference,
 including source and checksum. A second obsolete version cannot hide beside
 an accepted version. The check also reads the original owners' tracked Cargo
-manifests and binds their mandatory incoming edges to that exact lock.
+manifests and binds their mandatory incoming edges to that exact lock. It
+validates every original owner's complete name, version, Git source and
+checksum identity before selecting edges. Mandatory original path/workspace
+bridges are checked as well as direct critical-family edges: replacing or
+deleting an intermediate owner cannot remove its checks. Workspace aliases,
+inherited versions, manifests outside `codex-rs` and target build dependencies
+are resolved from regular tracked files whose current bytes match Git.
+Each consumer's actual local package identity and nonoptional direct original
+dependencies anchor that graph, so retaining only the outer UI SDK packages
+cannot erase the entire inner owner layer. Optional original dependencies
+remain optional; dev dependencies do not become mandatory production edges.
 Removing an entire family and its incoming references cannot turn a required
 dependency into a successful not-applicable result. Optional dependencies of
 external packages still require Cargo's actual locked feature resolution;

@@ -40,6 +40,14 @@ LOCKS = {
     "tests/ui/Cargo.lock": set(),
     "support/ui/preedit-sdk/Cargo.lock": {"hepta-control-core", "hepta-robrix-ui"},
 }
+# These locks contain the actual local product consumers. Cargo locks their
+# nonoptional direct Git dependencies. Anchor that
+# layer too, so deleting all inner original owners cannot become N/A.
+LOCAL_CONSUMERS = {
+    "ui/Cargo.lock": ("ui/core/Cargo.toml", "services/hepta-session-host/Cargo.toml"),
+    "support/ui/preedit-sdk/Cargo.lock": ("ui/core/Cargo.toml", "services/hepta-session-host/Cargo.toml"),
+    "services/hepta-session-host/Cargo.lock": ("services/hepta-session-host/Cargo.toml",),
+}
 SHARED_VERSIONS = {"serde": "1.0.229", "serde_json": "1.0.154", "tokio": "1.53.3", "libc": "0.2.191"}
 REQUIRED_FILES = {
     "codex-rs/Cargo.lock",
@@ -136,7 +144,9 @@ class LockedGraph:
         name, version, source = match.groups()
         candidates = [p for p in self.by_name.get(name, [])
                       if (version is None or p["version"] == version)
-                      and (source is None or p.get("source") == source)]
+                      and (source is None or p.get("source") == source
+                           or (source.startswith("git+") and "#" not in source
+                               and p.get("source", "").split("#", 1)[0] == source))]
         require(len(candidates) == 1,
                 f"Missing or ambiguous lock dependency: {self.label}: {dependency}")
         return candidates[0]
@@ -190,9 +200,25 @@ def verify_critical_graph(data, reference, label, owner_edges=None, owner_source
         edges.extend({"from": identity_record(identity), "to": identity_record(target)}
                      for target in actual.values())
     incoming = []
+    # Check identities before choosing edges. Looking up only present packages
+    # at the expected source lets a registry/version/checksum substitution make
+    # an original intermediate owner disappear from the checks below.
+    original_owners = {original_identity(package_identity(p), owner_source)
+                       for p in reference.packages if p.get("source") is None}
+    original_owners.update((name, version, owner_source, None)
+                           for name, version in (owner_edges or {}))
+    owner_names = {identity[0] for identity in original_owners}
     for package in graph.packages:
-        if owner_source is None or package.get("source") != owner_source:
+        if owner_source is None:
             continue
+        identity = package_identity(package)
+        if package["name"] in owner_names:
+            require(identity in original_owners,
+                    f"Original owner identity differs: {label}: {identity}")
+        if package.get("source") != owner_source:
+            continue
+        require(identity in original_owners,
+                f"Unknown original owner identity: {label}: {identity}")
         for name, expected in (owner_edges or {}).get((package["name"], package["version"]), {}).items():
             expected = original_identity(expected, owner_source)
             matches = [dependency for dependency in package.get("dependencies", [])
@@ -210,24 +236,24 @@ def verify_critical_graph(data, reference, label, owner_edges=None, owner_source
 
 
 def mandatory_owner_edges(root, reference):
-    """Read mandatory original-owner edges from actual tracked manifests.
+    """Bind original owners and mandatory bridges to tracked Cargo manifests.
 
     Optional features of unrelated external packages are not inferred from
-    the upstream workspace's broader lock. Cargo's locked metadata remains
-    required to verify those selected consumer features.
+    the upstream workspace's broader lock. Only owners present in a consumer
+    require their nonoptional normal/build (including target) dependencies.
+    Dev dependencies and absent optional local packages are not made mandatory.
+    Cargo's locked metadata still verifies selected consumer features.
     """
-    owners = {(p["name"], p["version"]): p for p in reference.packages
-              if p.get("source") is None and any(
-                  is_critical(d.split(" ", 1)[0]) for d in p.get("dependencies", []))}
-    workspace = tomllib.loads((root / "codex-rs/Cargo.toml").read_text())["workspace"]
-    records, result, found = [], {}, set()
-    entries = git_output(root, "ls-tree", "-r", "-z", "HEAD", "--", "codex-rs").split(b"\0")
+    originals = {(p["name"], p["version"]): p for p in reference.packages
+                 if p.get("source") is None}
+    records, manifests = [], {}
+    entries = git_output(root, "ls-tree", "-r", "-z", "HEAD").split(b"\0")
     for entry in entries:
         if not entry:
             continue
         header, raw_name = entry.split(b"\t", 1)
         name = raw_name.decode()
-        if not name.endswith("/Cargo.toml"):
+        if name != "Cargo.toml" and not name.endswith("/Cargo.toml"):
             continue
         mode, kind, blob = header.decode().split()
         require(kind == "blob" and mode == "100644", f"Original manifest is not a tracked regular file: {name}")
@@ -238,19 +264,59 @@ def mandatory_owner_edges(root, reference):
         data = path.read_bytes()
         actual = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
         require(actual == blob, f"Changed tracked original dependency manifest: {name}")
-        manifest = tomllib.loads(data.decode())
+        manifests[name] = tomllib.loads(data.decode())
+        records.append({"path": name, "git_blob": blob, "sha256": hashlib.sha256(data).hexdigest()})
+
+    def manifest_path(directory, relative):
+        path = Path(os.path.normpath(str(Path(directory) / relative / "Cargo.toml")))
+        require(not path.is_absolute() and ".." not in path.parts,
+                f"Original dependency escapes the repository: {relative}")
+        name = path.as_posix()
+        require(name in manifests, f"Original dependency manifest is missing: {name}")
+        return name
+
+    def workspace_for(name):
+        manifest = manifests[name]
+        explicit = manifest.get("package", {}).get("workspace")
+        if explicit is not None:
+            candidate = manifest_path(Path(name).parent, explicit)
+            require("workspace" in manifests[candidate], f"Missing original workspace: {candidate}")
+            return candidate, manifests[candidate]["workspace"]
+        for directory in (Path(name).parent, *Path(name).parent.parents):
+            candidate = (directory / "Cargo.toml").as_posix()
+            if candidate in manifests and "workspace" in manifests[candidate]:
+                return candidate, manifests[candidate]["workspace"]
+        return None, {}
+
+    owners, identities = {}, {}
+    for name, manifest in manifests.items():
         package = manifest.get("package", {})
+        if not package:
+            continue
+        _, workspace = workspace_for(name)
         version = package.get("version")
         if isinstance(version, dict) and version.get("workspace"):
             version = workspace["package"]["version"]
         identity = (package.get("name"), version)
-        if identity not in owners:
-            continue
-        require(identity not in found, f"Ambiguous original owner manifest: {identity}")
-        found.add(identity)
+        require(all(isinstance(value, str) for value in identity), f"Invalid original owner manifest: {name}")
+        require(identity not in owners, f"Ambiguous original owner manifest: {identity}")
+        owners[identity] = name
+        identities[name] = identity + (None, None)
+    require(originals.keys() <= owners.keys(), "Original owner manifest is missing")
+
+    result = {}
+    for identity, name in owners.items():
+        manifest = manifests[name]
+        workspace_name, workspace = workspace_for(name)
+        owner = originals.get(identity)
+        locked = {}
+        if owner is not None:
+            for dependency in owner.get("dependencies", []):
+                target = reference.resolve(dependency)
+                locked.setdefault(target["name"], []).append(package_identity(target))
         tables = [manifest]
         tables.extend(manifest.get("target", {}).values())
-        mandatory = set()
+        edges = {}
         for table in tables:
             for key in ("dependencies", "build-dependencies"):
                 for alias, dependency in table.get(key, {}).items():
@@ -259,19 +325,29 @@ def mandatory_owner_edges(root, reference):
                         continue
                     inherited = workspace.get("dependencies", {}).get(alias, {}) if options.get("workspace") else {}
                     inherited = inherited if isinstance(inherited, dict) else {}
-                    target = options.get("package", inherited.get("package", alias))
-                    if is_critical(target):
-                        mandatory.add(target)
-        edges = {}
-        for dependency in owners[identity].get("dependencies", []):
-            target = dependency.split(" ", 1)[0]
-            if target in mandatory:
-                require(target not in edges, f"Ambiguous original owner dependency: {identity}: {target}")
-                edges[target] = package_identity(reference.resolve(dependency))
-        require(mandatory <= edges.keys(), f"Original owner lock omits mandatory dependencies: {identity}")
+                    effective = inherited | options
+                    target = effective.get("package", alias)
+                    if "path" in effective:
+                        base = workspace_name if "path" in inherited else name
+                        target_path = manifest_path(Path(base).parent, effective["path"])
+                        expected = identities.get(target_path)
+                        require(expected is not None and expected[0] == target,
+                                f"Original path dependency identity differs: {name}: {alias}")
+                    else:
+                        candidates = locked.get(target, [])
+                        if not is_critical(target):
+                            candidates = [item for item in candidates if item[2] is None]
+                            if not candidates:
+                                continue
+                        elif owner is None:
+                            candidates = [package_identity(p) for p in reference.by_name.get(target, [])]
+                        require(len(candidates) == 1,
+                                f"Missing or ambiguous original mandatory lock edge: {identity}: {target}")
+                        expected = candidates[0]
+                    require(target not in edges or edges[target] == expected,
+                            f"Ambiguous original owner dependency: {identity}: {target}")
+                    edges[target] = expected
         result[identity] = edges
-        records.append({"path": name, "git_blob": blob, "sha256": hashlib.sha256(data).hexdigest()})
-    require(found == owners.keys(), "Original critical owner manifest is missing")
     return result, records
 
 
@@ -284,6 +360,36 @@ def reference_lock(hepta_root, files):
     require(tracked == f"100644 blob {blob}\t{name}" and entry["git_blob"] == blob,
             "Original Cargo lock is not the recorded tracked regular blob")
     return data
+
+
+def verify_consumer_edges(root, data, label, owners, owner_source):
+    graph = LockedGraph(data, label)
+    checked = []
+    for name in LOCAL_CONSUMERS.get(label, ()):
+        manifest = tomllib.loads((root / name).read_text())
+        package = manifest["package"]
+        identity = (package["name"], package["version"], None, None)
+        matches = graph.by_name.get(package["name"], [])
+        require(len(matches) == 1 and package_identity(matches[0]) == identity,
+                f"Local product consumer identity differs: {label}: {name}")
+        locked = matches[0]
+        tables = [manifest]
+        tables.extend(manifest.get("target", {}).values())
+        for table in tables:
+            for key in ("dependencies", "build-dependencies"):
+                for alias, dependency in table.get(key, {}).items():
+                    if (not isinstance(dependency, dict) or dependency.get("git") != REPOSITORY
+                            or dependency.get("optional", False)):
+                        continue
+                    target = dependency.get("package", alias)
+                    candidates = [(n, version, owner_source, None) for n, version in owners if n == target]
+                    require(len(candidates) == 1, f"Ambiguous original consumer target: {name}: {target}")
+                    edges = [d for d in locked.get("dependencies", []) if d.split(" ", 1)[0] == target]
+                    require(len(edges) == 1, f"Missing original consumer dependency: {label}: {name} -> {target}")
+                    actual = package_identity(graph.resolve(edges[0]))
+                    require(actual == candidates[0], f"Original consumer dependency differs: {label}: {name} -> {target}")
+                    checked.append({"manifest": name, "from": identity_record(identity), "to": identity_record(actual)})
+    return checked
 
 
 def verify(root=ROOT, hepta_root=None, *, source_only=False):
@@ -370,9 +476,12 @@ def verify(root=ROOT, hepta_root=None, *, source_only=False):
         reference = LockedGraph(data, "original Hepta Cargo.lock")
         verify_critical_graph(data, reference, "original Hepta Cargo.lock")
         owner_edges, owner_manifests = mandatory_owner_edges(hepta_root, reference)
+        consumer_edges = {name: verify_consumer_edges(root, (root / name).read_bytes(), name,
+                                                     owner_edges, expected) for name in LOCKS}
         critical = {"reference_lock_sha256": hashlib.sha256(data).hexdigest(),
                     "hepta_commit": commit, "hepta_tree": tree,
                     "original_owner_manifests": owner_manifests,
+                    "local_consumer_edges": consumer_edges,
                     "roots": {name: verify_critical_graph((root / name).read_bytes(), reference, name,
                                                          owner_edges, expected)
                               for name in LOCKS}}
