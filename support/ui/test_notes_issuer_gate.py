@@ -319,7 +319,7 @@ class GateSourceCacheTests(unittest.TestCase):
             poison.write_text('raise RuntimeError("ignored-issuer-cache-must-not-execute")\n')
             actual_source = copied / module_name
             cached = Path(importlib.util.cache_from_source(str(actual_source)))
-            cached.parent.mkdir(exist_ok=True)
+            cached.parent.mkdir(parents=True, exist_ok=True)
             py_compile.compile(str(poison), cfile=str(cached), doraise=True,
                                invalidation_mode=mode)
             if mode == py_compile.PycInvalidationMode.TIMESTAMP:
@@ -329,7 +329,11 @@ class GateSourceCacheTests(unittest.TestCase):
                 raw[12:16] = info.st_size.to_bytes(4, "little")
                 cached.write_bytes(raw)
             entry = copied / entry_name
-            command = [sys.executable, "-I", "-B", *(["-O"] * sys.flags.optimize), str(entry), "--help"]
+            # cache_from_source used this process's prefix; make the child use
+            # that exact prefix too, including a caller's isolated -X prefix.
+            cache_flags = ["-X", "pycache_prefix=" + sys.pycache_prefix] if sys.pycache_prefix is not None else []
+            command = [sys.executable, "-I", "-B", *cache_flags,
+                       *(["-O"] * sys.flags.optimize), str(entry), "--help"]
             protected = subprocess.run(command, capture_output=True)
             self.assertEqual(protected.returncode, 0, protected.stderr)
             text = entry.read_text()

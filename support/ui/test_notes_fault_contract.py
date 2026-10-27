@@ -124,10 +124,11 @@ class PartialReplyBoundary(unittest.TestCase):
             poison = root / "untrusted.py"
             poison.write_text('raise RuntimeError("ignored-cache-must-not-execute")\n')
             cached = Path(importlib.util.cache_from_source(str(root / "notes_fault_linux.py")))
-            cached.parent.mkdir()
+            cached.parent.mkdir(parents=True)
             py_compile.compile(str(poison), cfile=str(cached), doraise=True,
                                invalidation_mode=py_compile.PycInvalidationMode.UNCHECKED_HASH)
-            command = [sys.executable, "-I", "-B", *(["-O"] * sys.flags.optimize),
+            cache_flags = ["-X", "pycache_prefix=" + sys.pycache_prefix] if sys.pycache_prefix is not None else []
+            command = [sys.executable, "-I", "-B", *cache_flags, *(["-O"] * sys.flags.optimize),
                        str(root / "notes_fault_controller.py"), "--help"]
             actual = subprocess.run(command, capture_output=True)
             self.assertEqual(actual.returncode, 0, actual.stderr)
