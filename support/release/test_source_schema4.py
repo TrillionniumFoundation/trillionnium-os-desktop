@@ -11,6 +11,7 @@ import subprocess
 import sys
 import unittest
 from unittest.mock import patch
+import zlib
 
 HERE = Path(__file__).resolve().parent
 
@@ -152,18 +153,18 @@ class Schema4SourceTests(unittest.TestCase):
 
     def test_original_history_object_and_real_ancestry_are_still_required(self):
         with patch.object(profile, "HISTORY_OWNER", "1" * 40):
-            with self.assertRaisesRegex(profile.ProfileError, "owner object missing"):
+            with self.assertRaisesRegex(profile.ProfileError, "owner path"):
                 self.build()
         unrelated = fixtures.git(self.hepta, "commit-tree", fixtures.git(self.hepta, "rev-parse", "HEAD^{tree}"),
                                  "-m", "unrelated original owner")
         with patch.object(profile, "HISTORY_OWNER", unrelated):
-            with self.assertRaisesRegex(profile.ProfileError, "ancestry unproven or nonancestor"):
+            with self.assertRaisesRegex(profile.ProfileError, "owner path"):
                 self.build()
         shallow = self.root / "schema4-shallow-unknown"
         fixtures.git(self.root, "clone", "--quiet", "--depth", "1", self.hepta.as_uri(), str(shallow))
         raw = profile.Repository(self.hepta, "hepta").git("cat-file", "commit", profile.HISTORY_OWNER)
         fixtures.git(shallow, "hash-object", "-w", "-t", "commit", "--stdin", input_bytes=raw)
-        with self.assertRaisesRegex(profile.ProfileError, "ancestry unproven or nonancestor"):
+        with self.assertRaisesRegex(profile.ProfileError, "nonshallow"):
             self.build(shallow)
 
     def test_hidden_flags_and_dirty_sources_still_prevent_a_v4_receipt(self):
@@ -183,6 +184,471 @@ class Schema4SourceTests(unittest.TestCase):
                          "explicit_caller_head_and_tree_in_verification_receipt")
         self.assertEqual(before["hepta"], after["hepta"])
         self.assertEqual(after["production"], profile.PRODUCTION)
+
+
+class Schema4OwnerClosureTests(unittest.TestCase):
+    setUp = Schema4SourceTests.setUp
+    inputs = fixtures.SourceCombinationTests.inputs
+    build = fixtures.SourceCombinationTests.build
+
+    def commit_object(self, repo, parents, label):
+        tree = fixtures.git(repo, "rev-parse", "HEAD^{tree}")
+        # Keep each known parent earlier without making an unavailable side
+        # branch newer than the real owner. Equal dates can change Git's fast
+        # ancestor walk order around an unavailable pre-owner parent.
+        dates = [1700000000]
+        for parent in parents:
+            result = subprocess.run(["git", "-C", str(repo), "cat-file", "commit", parent],
+                                    capture_output=True, check=False)
+            match = re.search(rb"^committer .* (\d+) [+-]\d{4}$", result.stdout, re.MULTILINE)
+            if match:
+                dates.append(int(match.group(1)))
+        stamp = max(dates) + 1
+        raw = (f"tree {tree}\n" + "".join(f"parent {parent}\n" for parent in parents)
+               + f"author Source fixture <source-fixture@example.invalid> {stamp} +0000\n"
+               + f"committer Source fixture <source-fixture@example.invalid> {stamp} +0000\n"
+               + f"\n{label}\n").encode()
+        return fixtures.git(repo, "hash-object", "-w", "-t", "commit", "--stdin", input_bytes=raw)
+
+    def use_head(self, repo, head):
+        fixtures.git(repo, "update-ref", "HEAD", head)
+        self.assertEqual(fixtures.git(repo, "status", "--porcelain"), "")
+
+    def remove_object(self, repo, oid):
+        path = Path(fixtures.git(repo, "rev-parse", "--git-path", f"objects/{oid[:2]}/{oid[2:]}"))
+        if not path.is_absolute():
+            path = repo / path
+        path.unlink()  # Only the newly created temporary fixture's loose object.
+        self.assertEqual(fixtures.git(repo, "status", "--porcelain"), "")
+
+    def test_receipt_records_exact_owner_scope_without_full_repository_claim(self):
+        _, receipt = self.build()
+        closure = receipt.get("git_object_closure", {})
+        self.assertEqual(set(closure), {"os", "hepta"})
+        self.assertEqual(closure["hepta"]["scope"], "selected_owner_ancestry_path")
+        self.assertEqual(closure["hepta"]["proof_version"], 2)
+        self.assertEqual(receipt["original_history_proof"]["method"], "verified_sha1_parent_path")
+        self.assertEqual(closure["hepta"]["owner"], profile.HISTORY_OWNER)
+        self.assertEqual(closure["os"]["scope"], "current_tree")
+        for proof in closure.values():
+            self.assertIsNone(proof["whole_repository_history_complete"])
+            self.assertEqual(proof["earlier_history"], "not_verified")
+            self.assertEqual(proof["missing_objects"], 0)
+            self.assertGreater(proof["object_count"], 0)
+
+    def test_unavailable_parent_before_exact_owner_does_not_expand_the_scope(self):
+        owner = self.commit_object(self.hepta, ["1" * 40], "exact owner with unavailable older parent")
+        tip = self.commit_object(self.hepta, [owner], "descendant")
+        self.use_head(self.hepta, tip)
+        fixtures.git(self.hepta, "merge-base", "--is-ancestor", owner, "HEAD")
+        self.assertEqual(fixtures.git(self.hepta, "rev-parse", "--is-shallow-repository"), "false")
+        with patch.object(profile, "HISTORY_OWNER", owner):
+            _, receipt = self.build()
+        self.assertEqual(receipt["source_checks"], "passed")
+
+    def test_missing_blob_before_owner_is_outside_the_bounded_proof(self):
+        fixtures.write(self.hepta, "older.txt", b"unavailable pre-owner blob\n")
+        fixtures.commit(self.hepta, "older blob")
+        oid = fixtures.git(self.hepta, "rev-parse", "HEAD:older.txt")
+        fixtures.git(self.hepta, "rm", "--quiet", "older.txt")
+        owner = fixtures.commit(self.hepta, "exact owner after removing older blob")
+        tip = self.commit_object(self.hepta, [owner], "descendant of exact owner")
+        self.use_head(self.hepta, tip)
+        self.remove_object(self.hepta, oid)
+        with patch.object(profile, "HISTORY_OWNER", owner):
+            _, receipt = self.build()
+        self.assertEqual(receipt["source_checks"], "passed")
+
+    def test_missing_unselected_merge_parent_is_explicitly_unverified(self):
+        tip = self.commit_object(self.hepta, [profile.HISTORY_OWNER, "1" * 40], "missing merge parent")
+        self.use_head(self.hepta, tip)
+        _, receipt = self.build()
+        side = receipt["git_object_closure"]["hepta"]["unselected_merge_parents"]
+        self.assertEqual([(row["parent"], row["verification"]) for row in side],
+                         [("1" * 40, "not_verified")])
+
+    def test_unselected_side_history_is_not_a_required_owner_path(self):
+        side = self.commit_object(self.hepta, ["1" * 40], "side with missing intermediate")
+        tip = self.commit_object(self.hepta, [profile.HISTORY_OWNER, side], "merge with present side tip")
+        self.use_head(self.hepta, tip)
+        _, receipt = self.build()
+        rows = receipt["git_object_closure"]["hepta"]["unselected_merge_parents"]
+        self.assertEqual([(row["parent"], row["verification"]) for row in rows],
+                         [(side, "not_verified")])
+
+    def test_unselected_external_root_does_not_falsify_the_owner_chain(self):
+        other = self.commit_object(self.hepta, [], "unrelated root")
+        tip = self.commit_object(self.hepta, [profile.HISTORY_OWNER, other], "merge external root")
+        self.use_head(self.hepta, tip)
+        _, receipt = self.build()
+        rows = receipt["git_object_closure"]["hepta"]["unselected_merge_parents"]
+        self.assertEqual(rows[0]["parent"], other)
+        self.assertEqual(rows[0]["verification"], "not_verified")
+
+    def test_missing_owner_tree_blob_is_refused_even_after_current_deletion(self):
+        fixtures.write(self.hepta, "owner-only.txt", b"required original-owner blob\n")
+        owner = fixtures.commit(self.hepta, "exact owner with its own blob")
+        oid = fixtures.git(self.hepta, "rev-parse", "HEAD:owner-only.txt")
+        fixtures.git(self.hepta, "rm", "--quiet", "owner-only.txt")
+        fixtures.commit(self.hepta, "current tree no longer includes owner blob")
+        self.remove_object(self.hepta, oid)
+        with patch.object(profile, "HISTORY_OWNER", owner):
+            with self.assertRaisesRegex(profile.ProfileError, "tree/blob closure"):
+                self.build()
+
+    def test_missing_historical_blob_inside_owner_range_is_refused(self):
+        fixtures.write(self.hepta, "range-only.txt", b"required range blob\n")
+        fixtures.commit(self.hepta, "add range blob")
+        oid = fixtures.git(self.hepta, "rev-parse", "HEAD:range-only.txt")
+        tree = fixtures.git(self.hepta, "rev-parse", "HEAD^{tree}")
+        fixtures.git(self.hepta, "rm", "--quiet", "range-only.txt")
+        fixtures.commit(self.hepta, "remove range blob from current tree")
+        self.remove_object(self.hepta, oid)
+        listed = fixtures.git(self.hepta, "rev-list", "--objects", "--missing=print", tree)
+        self.assertIn("?" + oid, listed)  # The command exited zero despite missing data.
+        with self.assertRaisesRegex(profile.ProfileError, "tree/blob closure"):
+            self.build()
+
+    def test_missing_intermediate_tree_inside_owner_range_is_refused(self):
+        fixtures.write(self.hepta, "range-dir/only.txt", b"required intermediate tree\n")
+        fixtures.commit(self.hepta, "add range tree")
+        oid = fixtures.git(self.hepta, "rev-parse", "HEAD:range-dir")
+        fixtures.git(self.hepta, "rm", "--quiet", "-r", "range-dir")
+        fixtures.commit(self.hepta, "remove range tree from current checkout")
+        self.remove_object(self.hepta, oid)
+        with self.assertRaisesRegex(profile.ProfileError, "tree/blob closure"):
+            self.build()
+
+    def test_missing_current_unmapped_os_blob_is_refused(self):
+        fixtures.write(self.os, "unmapped.txt", b"required current unmapped blob\n")
+        fixtures.commit(self.os, "add current unmapped blob")
+        oid = fixtures.git(self.os, "rev-parse", "HEAD:unmapped.txt")
+        self.remove_object(self.os, oid)
+        with self.assertRaisesRegex(profile.ProfileError, "tree/blob closure"):
+            self.build()
+
+    def test_replace_ref_cannot_invent_a_real_owner_path(self):
+        original = fixtures.git(self.hepta, "rev-parse", "HEAD")
+        tip = self.commit_object(self.hepta, ["1" * 40], "no real owner path")
+        self.use_head(self.hepta, tip)
+        fixtures.git(self.hepta, "update-ref", f"refs/replace/{tip}", original)
+        with self.assertRaisesRegex(profile.ProfileError, "owner path|replacement ref"):
+            self.build()
+
+    def test_v4_shallow_flag_is_still_refused_when_ancestry_is_present(self):
+        shallow = self.root / "shallow-proven-owner"
+        fixtures.git(self.root, "clone", "--quiet", "--depth", "2", self.hepta.as_uri(), str(shallow))
+        owner = fixtures.git(shallow, "rev-parse", "HEAD^")
+        with patch.object(profile, "HISTORY_OWNER", owner):
+            with self.assertRaisesRegex(profile.ProfileError, "nonshallow"):
+                self.build(shallow)
+
+    def test_complete_local_alternates_are_allowed(self):
+        alternate = self.root / "complete-alternate"
+        fixtures.git(self.root, "clone", "--quiet", "--shared", str(self.hepta), str(alternate))
+        self.assertTrue((alternate / ".git/objects/info/alternates").is_file())
+        _, receipt = self.build(alternate)
+        self.assertEqual(receipt["source_checks"], "passed")
+
+
+class Schema4OwnerPathProofTests(unittest.TestCase):
+    setUp = Schema4OwnerClosureTests.setUp
+    inputs = Schema4OwnerClosureTests.inputs
+    build = Schema4OwnerClosureTests.build
+    commit_object = Schema4OwnerClosureTests.commit_object
+    use_head = Schema4OwnerClosureTests.use_head
+    remove_object = Schema4OwnerClosureTests.remove_object
+
+    def test_real_join_keeps_the_owner_as_second_parent_and_old_line_unknown(self):
+        # Real local DAG matching de489's structure, not a mocked Git result.
+        side = self.commit_object(self.hepta, ["1" * 40], "older mainline")
+        tip = self.commit_object(self.hepta, [side, profile.HISTORY_OWNER], "join two histories")
+        self.use_head(self.hepta, tip)
+        _, receipt = self.build()
+        proof = receipt["git_object_closure"]["hepta"]
+        self.assertEqual(proof["path_commits_owner_to_head"], [profile.HISTORY_OWNER, tip])
+        self.assertEqual(proof["path_edges"],
+                         [{"child": tip, "parent": profile.HISTORY_OWNER, "parent_index": 1}])
+        self.assertEqual([(r["commit"], r["parent"], r["parent_index"], r["verification"])
+                          for r in proof["unselected_merge_parents"]],
+                         [(tip, side, 0, "not_verified")])
+        self.assertFalse(proof["all_parent_graph_verified"])
+        self.assertIsNone(proof["whole_repository_history_complete"])
+
+    def test_same_batch_missing_side_does_not_discard_the_real_owner(self):
+        tip = self.commit_object(self.hepta, ["1" * 40, profile.HISTORY_OWNER], "missing first parent")
+        self.use_head(self.hepta, tip)
+        _, receipt = self.build()
+        proof = receipt["git_object_closure"]["hepta"]
+        self.assertEqual(proof["path_edges"][0]["parent_index"], 1)
+        self.assertEqual(proof["unselected_merge_parents"][0]["local_object_observation"], "missing")
+
+    def test_bfs_uses_the_first_real_parent_path_and_records_both_edges(self):
+        first = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "first owner descendant")
+        second = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "second owner descendant")
+        tip = self.commit_object(self.hepta, [first, second], "two equal-length real owner paths")
+        self.use_head(self.hepta, tip)
+        _, receipt = self.build()
+        proof = receipt["git_object_closure"]["hepta"]
+        self.assertEqual(proof["path_commits_owner_to_head"], [profile.HISTORY_OWNER, first, tip])
+        self.assertEqual(proof["path_edges"],
+                         [{"child": first, "parent": profile.HISTORY_OWNER, "parent_index": 0},
+                          {"child": tip, "parent": first, "parent_index": 0}])
+        self.assertEqual(proof["unselected_merge_parents"][0]["parent"], second)
+
+    def test_missing_unique_path_commit_is_refused(self):
+        middle = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "required middle")
+        tip = self.commit_object(self.hepta, [middle], "unique descendant")
+        self.use_head(self.hepta, tip)
+        self.remove_object(self.hepta, middle)
+        with self.assertRaisesRegex(profile.ProfileError, "owner path"):
+            self.build()
+
+    def test_no_owner_path_cannot_use_an_unrelated_available_root(self):
+        root = self.commit_object(self.hepta, [], "other history root")
+        self.use_head(self.hepta, root)
+        with self.assertRaisesRegex(profile.ProfileError, "owner path"):
+            self.build()
+
+    def test_selected_chain_blob_failure_does_not_search_another_path(self):
+        fixtures.write(self.hepta, "first-path-only.txt", b"required selected chain bytes\n")
+        fixtures.commit(self.hepta, "first owner tree")
+        first = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "first owner path")
+        missing = fixtures.git(self.hepta, "rev-parse", "HEAD:first-path-only.txt")
+        fixtures.git(self.hepta, "rm", "--quiet", "first-path-only.txt")
+        fixtures.commit(self.hepta, "complete current and alternative tree")
+        second = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "complete alternative")
+        tip = self.commit_object(self.hepta, [first, second], "prefer first parent")
+        self.use_head(self.hepta, tip)
+        self.remove_object(self.hepta, missing)
+        with self.assertRaisesRegex(profile.ProfileError, "tree/blob closure"):
+            self.build()
+
+    def test_selected_chain_directory_tree_failure_does_not_search_another_path(self):
+        fixtures.write(self.hepta, "first-path-dir/only.txt", b"selected directory tree\n")
+        fixtures.commit(self.hepta, "first path directory")
+        first = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "first tree path")
+        missing = fixtures.git(self.hepta, "rev-parse", "HEAD:first-path-dir")
+        fixtures.git(self.hepta, "rm", "--quiet", "-r", "first-path-dir")
+        fixtures.commit(self.hepta, "complete alternative current tree")
+        second = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "complete alternative")
+        tip = self.commit_object(self.hepta, [first, second], "prefer first tree path")
+        self.use_head(self.hepta, tip)
+        self.remove_object(self.hepta, missing)
+        with self.assertRaisesRegex(profile.ProfileError, "tree/blob closure"):
+            self.build()
+
+    def test_wrong_type_side_candidate_is_fatal_even_with_an_owner_path(self):
+        blob = fixtures.git(self.hepta, "hash-object", "-w", "--stdin", input_bytes=b"not a commit\n")
+        tip = self.commit_object(self.hepta, [blob, profile.HISTORY_OWNER], "wrong type parent")
+        self.use_head(self.hepta, tip)
+        with self.assertRaisesRegex(profile.ProfileError, "commit|type"):
+            self.build()
+
+    def test_sha_correct_late_parent_header_cannot_forge_an_owner_edge(self):
+        tree = fixtures.git(self.hepta, "rev-parse", "HEAD^{tree}")
+        raw = (f"tree {tree}\nauthor Fixture <fixture@example.invalid> 1700000000 +0000\n"
+               f"committer Fixture <fixture@example.invalid> 1700000000 +0000\n"
+               f"parent {profile.HISTORY_OWNER}\n\nnot a real Git parent block\n").encode()
+        tip = fixtures.git(self.hepta, "hash-object", "--literally", "-w", "-t", "commit", "--stdin",
+                           input_bytes=raw)
+        self.use_head(self.hepta, tip)
+        with self.assertRaisesRegex(profile.ProfileError, "late parent|commit header"):
+            self.build()
+
+    def test_malformed_intermediate_cr_headers_cannot_create_git_parent_edges(self):
+        tree = fixtures.git(self.hepta, "rev-parse", "HEAD^{tree}")
+        other = self.commit_object(self.hepta, [], "available unrelated root")
+        common = (b"author Fixture <fixture@example.invalid> 1700000000 +0000\n"
+                  b"committer Fixture <fixture@example.invalid> 1700000000 +0000\n\nmalformed middle\n")
+        for label, headers in (
+            ("bare-tree-CR", f"tree {tree}\rparent {profile.HISTORY_OWNER}\n"),
+            ("tree-CRLF", f"tree {tree}\r\nparent {profile.HISTORY_OWNER}\n"),
+            ("bare-parent-CR", f"tree {tree}\nparent {other}\rparent {profile.HISTORY_OWNER}\n"),
+        ):
+            with self.subTest(malformed=label):
+                raw = headers.encode() + common
+                middle = fixtures.git(self.hepta, "hash-object", "--literally", "-w", "-t", "commit",
+                                      "--stdin", input_bytes=raw)
+                # Keep HEAD ordinary so Git's preliminary HEAD lookup cannot
+                # substitute for validating this malformed intermediate body.
+                tip = self.commit_object(self.hepta, [middle], "ordinary HEAD above malformed " + label)
+                self.use_head(self.hepta, tip)
+                with self.assertRaises(profile.ProfileError):
+                    self.build()
+
+    def test_historical_blob_hash_is_verified_beyond_missing_enumeration(self):
+        fixtures.write(self.hepta, "historical-only.txt", b"selected historical bytes\n")
+        fixtures.commit(self.hepta, "required historical object")
+        blob = fixtures.git(self.hepta, "rev-parse", "HEAD:historical-only.txt")
+        fixtures.git(self.hepta, "rm", "--quiet", "historical-only.txt")
+        fixtures.commit(self.hepta, "historical blob no longer in current tree")
+        path = self.hepta / ".git/objects" / blob[:2] / blob[2:]
+        replacement = b"altered historical bytes\n"
+        # This loose object belongs to this test's new TemporaryDirectory Git store.
+        path.chmod(0o600)
+        path.write_bytes(zlib.compress(f"blob {len(replacement)}\0".encode() + replacement))
+        self.assertEqual(fixtures.git(self.hepta, "status", "--porcelain"), "")
+        with self.assertRaisesRegex(profile.ProfileError, "object identity differs"):
+            self.build()
+
+    def test_truncated_owned_historical_object_fails_the_real_git_stream(self):
+        fixtures.write(self.hepta, "truncated-only.txt", b"historical stream body\n" * 100)
+        fixtures.commit(self.hepta, "historical stream object")
+        blob = fixtures.git(self.hepta, "rev-parse", "HEAD:truncated-only.txt")
+        fixtures.git(self.hepta, "rm", "--quiet", "truncated-only.txt")
+        fixtures.commit(self.hepta, "complete current tree without historical file")
+        path = self.hepta / ".git/objects" / blob[:2] / blob[2:]
+        # Git creates even owned loose objects read-only; corrupt only this fixture.
+        path.chmod(0o600)
+        path.write_bytes(path.read_bytes()[:-3])  # Owned loose zlib body only.
+        with self.assertRaises(profile.ProfileError):
+            self.build()
+
+    def test_selected_historical_tree_entry_kind_must_match_its_object(self):
+        current_tree = fixtures.git(self.hepta, "rev-parse", "HEAD^{tree}")
+        blob = fixtures.git(self.hepta, "hash-object", "-w", "--stdin", input_bytes=b"not a directory\n")
+        detached = fixtures.git(self.hepta, "mktree", input_bytes=f"100644 blob {blob}\tchild\n".encode())
+        for label, entry in (
+            ("file-to-tree", b"100644 file\0" + bytes.fromhex(current_tree)),
+            ("directory-to-blob", b"40000 directory\0" + bytes.fromhex(blob)),
+            ("file-to-detached-tree", b"100644 hidden\0" + bytes.fromhex(detached)),
+        ):
+            with self.subTest(wrong_kind=label):
+                tree = fixtures.git(self.hepta, "hash-object", "--literally", "-w", "-t", "tree",
+                                    "--stdin", input_bytes=entry)
+                raw = (f"tree {tree}\nparent {profile.HISTORY_OWNER}\n"
+                       "author Fixture <fixture@example.invalid> 1700000000 +0000\n"
+                       "committer Fixture <fixture@example.invalid> 1700000000 +0000\n\n"
+                       "historical tree with a wrong-kind entry\n").encode()
+                middle = fixtures.git(self.hepta, "hash-object", "--literally", "-w", "-t", "commit",
+                                      "--stdin", input_bytes=raw)
+                tip = self.commit_object(self.hepta, [middle], "ordinary current tree above " + label)
+                self.use_head(self.hepta, tip)
+                # Source-only risk probe: actual Git rev-list may already
+                # refuse it. No claim that the previous gate accepted it.
+                with self.assertRaises(profile.ProfileError):
+                    self.build()
+
+    def test_gitlink_is_an_unverified_external_commit_edge_without_local_target_history(self):
+        foreign = "7" * 40
+        self.assertNotEqual(subprocess.run(["git", "-C", str(self.hepta), "cat-file", "-e", foreign],
+                                          capture_output=True).returncode, 0)
+        tree = fixtures.git(self.hepta, "hash-object", "--literally", "-w", "-t", "tree", "--stdin",
+                            input_bytes=b"160000 submodule\0" + bytes.fromhex(foreign))
+        raw = (f"tree {tree}\nparent {profile.HISTORY_OWNER}\n"
+               "author Fixture <fixture@example.invalid> 1700000000 +0000\n"
+               "committer Fixture <fixture@example.invalid> 1700000000 +0000\n\n"
+               "external submodule history is not a tree/blob closure input\n").encode()
+        middle = fixtures.git(self.hepta, "hash-object", "-w", "-t", "commit", "--stdin", input_bytes=raw)
+        tip = self.commit_object(self.hepta, [middle], "ordinary source above external gitlink")
+        self.use_head(self.hepta, tip)
+        _, receipt = self.build()
+        proof = receipt["git_object_closure"]["hepta"]
+        self.assertTrue(proof["tree_blob_entry_types_verified"])
+        self.assertEqual(proof["gitlink_edge_count"], 1)
+        self.assertEqual(proof["gitlink_edges_sha256"], profile.sha256(profile.canonical([
+            {"tree": tree, "entry_index": 0, "commit": foreign, "verification": "not_verified"}])))
+        self.assertFalse(proof["gitlink_target_objects_verified"])
+        self.assertEqual(proof["gitlink_subrepository_history"], "not_verified")
+
+    def test_current_unmapped_mode_is_checked_when_git_filemode_is_disabled(self):
+        fixtures.write(self.os, "unmapped-mode.txt", b"all current source modes\n")
+        fixtures.commit(self.os, "unmapped current mode")
+        fixtures.git(self.os, "config", "core.filemode", "false")
+        (self.os / "unmapped-mode.txt").chmod(0o755)
+        self.assertEqual(fixtures.git(self.os, "status", "--porcelain"), "")
+        with self.assertRaisesRegex(profile.ProfileError, "current source.*mode"):
+            self.build()
+
+    def test_git_executable_mode_requires_owner_execute_not_other_execute_bits(self):
+        fixtures.write(self.os, "unmapped-owner-exec.txt", b"Git owner executable bit\n")
+        path = self.os / "unmapped-owner-exec.txt"
+        path.chmod(0o755)
+        fixtures.commit(self.os, "tracked executable source")
+        fixtures.git(self.os, "config", "core.filemode", "false")
+        path.chmod(0o655)
+        self.assertEqual(fixtures.git(self.os, "status", "--porcelain"), "")
+        with self.assertRaisesRegex(profile.ProfileError, "current source.*mode"):
+            self.build()
+
+    def test_unmapped_bytes_are_checked_despite_a_trusted_stale_index_stat(self):
+        path = self.os / "unmapped-stat.txt"
+        fixtures.write(self.os, "unmapped-stat.txt", b"old\n")
+        os.utime(path, (1700000000, 1700000000))
+        fixtures.commit(self.os, "old tracked stat")
+        fixtures.git(self.os, "config", "core.trustctime", "false")
+        path.write_bytes(b"new\n")
+        os.utime(path, (1700000000, 1700000000))
+        self.assertEqual(fixtures.git(self.os, "status", "--porcelain"), "")
+        with self.assertRaisesRegex(profile.ProfileError, "current source.*byte"):
+            self.build()
+
+    def test_current_symlink_is_bound_by_link_bytes_without_following_target(self):
+        os.symlink("/nonexistent/owned-source-proof-target", self.os / "unmapped-link")
+        fixtures.commit(self.os, "tracked link bytes only")
+        _, receipt = self.build()
+        proof = receipt["current_source_proof"]["os"]
+        self.assertEqual(proof["file_count"], len(fixtures.git(self.os, "ls-files").splitlines()))
+        self.assertEqual(proof["symlink_count"], 1)
+
+    def test_v4_explicitly_rejects_an_existing_unused_replacement_ref(self):
+        original = fixtures.git(self.hepta, "rev-parse", "HEAD")
+        unused = self.commit_object(self.hepta, [profile.HISTORY_OWNER], "unused replacement source")
+        fixtures.git(self.hepta, "update-ref", f"refs/replace/{unused}", original)
+        with self.assertRaisesRegex(profile.ProfileError, "replacement ref"):
+            self.build()
+
+    def test_same_tree_new_commit_after_last_snapshot_cannot_relabel_the_pin(self):
+        original = profile.Repository.snapshot_current_source
+        calls = [0]
+
+        def move_after_snapshot(repo):
+            result = original(repo)
+            if repo.name == "os":
+                calls[0] += 1
+                if calls[0] == 2:
+                    old = fixtures.git(self.os, "rev-parse", "HEAD")
+                    new = self.commit_object(self.os, [old], "same-tree HEAD moved after read")
+                    fixtures.git(self.os, "update-ref", "HEAD", new)
+            return result
+
+        with patch.object(profile.Repository, "snapshot_current_source", move_after_snapshot):
+            with self.assertRaisesRegex(profile.ProfileError, "HEAD mismatch"):
+                self.build()
+
+
+class Schema4TreeEntryStreamTests(unittest.TestCase):
+    def test_fragmented_binary_object_ids_keep_their_real_mode_edges(self):
+        modes = [(b"40000", "tree"), (b"100644", "blob"), (b"100755", "blob"),
+                 (b"120000", "blob"), (b"160000", "commit")]
+        # Raw SHA bytes contain NUL, newline and space. They are fixed-width
+        # binary IDs, never another filename/header delimiter.
+        raw_oid = bytes(range(20))
+        raw = b"".join(mode + b" name with space\n\0" + raw_oid for mode, _ in modes)
+        expected = [{"mode": mode.decode(), "expected_type": kind, "oid": raw_oid.hex()}
+                    for mode, kind in modes]
+        for width in (1, 2, 7, 20, 31, len(raw)):
+            with self.subTest(read_width=width):
+                parser = profile._TreeEntryStream()
+                for start in range(0, len(raw), width):
+                    parser.feed(raw[start:start + width])
+                self.assertEqual(parser.finish(), expected)
+
+    def test_malformed_modes_names_and_truncated_binary_ids_are_refused(self):
+        oid = bytes(range(20))
+        for raw in (b"100600 name\0" + oid, b"100644\0" + oid, b"100644 \0" + oid,
+                    b"40000 .\0" + oid, b"40000 ..\0" + oid, b"40000 a/b\0" + oid,
+                    b"100644 name", b"100644 name\0" + oid[:-1]):
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                parser = profile._TreeEntryStream()
+                parser.feed(raw)
+                parser.finish()
+
+    def test_incomplete_name_header_has_a_bounded_buffer(self):
+        parser = profile._TreeEntryStream()
+        with self.assertRaisesRegex(ValueError, "header budget"):
+            parser.feed(b"100644 " + b"x" * (parser.HEADER_LIMIT + 22))
 
 
 class Schema4PairTests(unittest.TestCase):

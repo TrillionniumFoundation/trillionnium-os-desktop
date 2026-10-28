@@ -4,13 +4,16 @@
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import subprocess
 import sys
+import tempfile
 
 HISTORY_OWNER = "995b6fb9ef73ada7c3348b01deb28940a2c4a2d1"
 OS_ROLES = {
@@ -668,10 +671,56 @@ def check_current_contract(manifest, mapping):
     return hepta["commit"]
 
 
+class _TreeEntryStream:
+    """Decode bounded tree headers; retain typed edges, never tree/blob bodies."""
+
+    HEADER_LIMIT = 1024 * 1024
+    MODES = {b"40000": "tree", b"100644": "blob", b"100755": "blob",
+             b"120000": "blob", b"160000": "commit"}
+
+    def __init__(self):
+        self.pending = bytearray()
+        self.edges = []
+
+    def feed(self, chunk):
+        self.pending.extend(chunk)
+        offset = 0
+        while True:
+            boundary = self.pending.find(b"\0", offset)
+            if boundary < 0:
+                break
+            if boundary - offset > self.HEADER_LIMIT:
+                raise ValueError("tree entry header budget exceeded")
+            if len(self.pending) < boundary + 21:
+                break  # The 20-byte raw object ID may cross a read boundary.
+            header = self.pending[offset:boundary]
+            mode, separator, name = header.partition(b" ")
+            expected = self.MODES.get(bytes(mode))
+            if not separator or expected is None or not name or name in (b".", b"..") or b"/" in name:
+                raise ValueError("invalid tree entry mode/name framing")
+            self.edges.append({"mode": mode.decode("ascii"), "expected_type": expected,
+                               "oid": bytes(self.pending[boundary + 1:boundary + 21]).hex()})
+            offset = boundary + 21
+        if offset:
+            del self.pending[:offset]
+        if len(self.pending) > self.HEADER_LIMIT + 21:
+            raise ValueError("tree entry header budget exceeded")
+
+    def finish(self):
+        if self.pending:
+            raise ValueError("truncated tree entry mode/name/object ID")
+        return self.edges
+
+
 class Repository:
-    def __init__(self, path, name):
+    def __init__(self, path, name, *, local_objects_only=False):
         self.path = Path(path).resolve()
         self.name = name
+        self.local_objects_only = local_objects_only
+        if local_objects_only:
+            version = re.match(rb"git version (\d+)\.(\d+)", self.git("--version"))
+            if not version or tuple(map(int, version.groups())) < (2, 43):
+                raise ProfileError("current local-only source proof requires Git 2.43 or newer")
         top = Path(self.git("rev-parse", "--show-toplevel").decode().strip()).resolve()
         if self.path != top:
             raise ProfileError(f"{name}: specify the repository root, not a subdirectory")
@@ -680,14 +729,23 @@ class Repository:
             grafts = self.path / grafts
         if grafts.exists() and grafts.stat().st_size:
             raise ProfileError(f"{name}: legacy Git grafts prevent original-history proof")
+        if local_objects_only:
+            # Explicit current-only policy; historical readers merely disable
+            # replacements and keep their original graft handling above.
+            if grafts.exists() or grafts.is_symlink():
+                raise ProfileError(f"{name}: current source proof rejects a graft file")
+            if self.git("for-each-ref", "refs/replace/"):
+                raise ProfileError(f"{name}: current source proof rejects replacement refs")
 
-    def run(self, *args):
+    def run(self, *args, input_bytes=None):
         env = dict(os.environ, GIT_NO_REPLACE_OBJECTS="1", GIT_TERMINAL_PROMPT="0",
                    GIT_OPTIONAL_LOCKS="0")
+        if self.local_objects_only:
+            env["GIT_NO_LAZY_FETCH"] = "1"
         try:
             return subprocess.run(
                 ["git", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false",
-                 "-C", str(self.path), *args], capture_output=True, env=env, check=False,
+                 "-C", str(self.path), *args], input=input_bytes, capture_output=True, env=env, check=False,
             )
         except OSError as exc:
             raise ProfileError(f"{self.name}: cannot run git: {exc}") from exc
@@ -741,9 +799,281 @@ class Repository:
         return {"commit": HISTORY_OWNER, "method": "git merge-base --is-ancestor",
                 "shallow_repository": self.git("rev-parse", "--is-shallow-repository").strip() == b"true"}
 
+    def _typed_batch(self, objects, types, *, missing_ok=False, commit_headers=False, tree_edges=False):
+        """Stream typed Git bodies and verify identities without retaining blobs."""
+        env = dict(os.environ, GIT_NO_REPLACE_OBJECTS="1", GIT_TERMINAL_PROMPT="0",
+                   GIT_OPTIONAL_LOCKS="0", GIT_NO_LAZY_FETCH="1")
+        command = ["git", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false",
+                   "-C", str(self.path), "cat-file", "--batch"]
+        records = {}
+        process = None
+        try:
+            with tempfile.TemporaryFile() as errors:
+                process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                           stderr=errors, env=env)
+                process.stdin.write("".join(oid + "\n" for oid in objects).encode())
+                process.stdin.close()
+                for oid in objects:
+                    line = process.stdout.readline(512)
+                    if not line.endswith(b"\n"):
+                        raise ValueError("invalid object batch framing " + oid)
+                    fields = line.split()
+                    if line == oid.encode() + b" missing\n" and missing_ok:
+                        records[oid] = None
+                        continue
+                    if (len(fields) != 3 or fields[0] != oid.encode()
+                            or fields[1] not in types or not fields[2].isdigit()):
+                        raise ValueError("missing or wrong type object " + oid)
+                    kind, size = fields[1], int(fields[2])
+                    if line != oid.encode() + b" " + kind + b" " + str(size).encode() + b"\n":
+                        raise ValueError("noncanonical object batch framing " + oid)
+                    value = hashlib.sha1(kind + b" " + str(size).encode() + b"\0")
+                    remaining, prefix, header = size, bytearray(), None
+                    tree = _TreeEntryStream() if tree_edges and kind == b"tree" else None
+                    while remaining:
+                        chunk = process.stdout.read(min(1024 * 1024, remaining))
+                        if not chunk:
+                            raise ValueError("truncated object " + oid)
+                        remaining -= len(chunk)
+                        value.update(chunk)
+                        if tree is not None:
+                            tree.feed(chunk)
+                        if commit_headers and header is None:
+                            prefix.extend(chunk)
+                            boundary = prefix.find(b"\n\n")
+                            if boundary >= 0:
+                                if boundary > 1024 * 1024:
+                                    raise ValueError("commit header budget exceeded " + oid)
+                                header = bytes(prefix[:boundary])
+                                prefix.clear()
+                            elif len(prefix) > 1024 * 1024:
+                                raise ValueError("commit header budget exceeded " + oid)
+                    if process.stdout.read(1) != b"\n":
+                        raise ValueError("invalid object body framing " + oid)
+                    if value.hexdigest() != oid:
+                        raise ValueError("object identity differs " + oid)
+                    if commit_headers and header is None:
+                        raise ValueError("commit header separator absent " + oid)
+                    records[oid] = header if commit_headers else {"type": kind.decode(), "bytes": size}
+                    if tree is not None:
+                        records[oid]["tree_edges"] = tree.finish()
+                if process.stdout.read(1):
+                    raise ValueError("unexpected object batch suffix")
+                if process.wait():
+                    raise ValueError("Git object batch failed")
+        except (OSError, ValueError) as exc:
+            raise ProfileError(f"{self.name}: verified object read failed: {exc}") from exc
+        finally:
+            if process is not None:
+                if process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        process.wait()
+                if process.stdout is not None:
+                    process.stdout.close()
+                if process.stdin is not None and not process.stdin.closed:
+                    process.stdin.close()
+        return records
+
+    def _commit_batch(self, commits):
+        raw = self._typed_batch(commits, {b"commit"}, missing_ok=True, commit_headers=True)
+        records = {}
+        for oid, header in raw.items():
+            if header is None:
+                records[oid] = None
+                continue
+            try:
+                # Git commit structure uses LF only. splitlines() would turn
+                # a bare CR inside a SHA-correct malformed body into fake edges.
+                lines = header.split(b"\n")
+                if not lines or not lines[0].startswith(b"tree "):
+                    raise ValueError("commit tree header absent")
+                tree = full_oid(lines[0][5:].decode("ascii"), "owner path tree")
+                parents, index = [], 1
+                # Git's real graph ends the parent block at the first other
+                # header. A late parent line must never invent a proof edge.
+                while index < len(lines) and lines[index].startswith(b"parent "):
+                    parents.append(full_oid(lines[index][7:].decode("ascii"), "owner path parent"))
+                    index += 1
+                if any(line.startswith((b"parent ", b"tree ")) for line in lines[index:]):
+                    raise ValueError("late parent or duplicate tree commit header")
+                records[oid] = {"tree": tree, "parents": parents}
+            except (ValueError, UnicodeError) as exc:
+                raise ProfileError(f"{self.name}: invalid owner path commit header {oid}: {exc}") from exc
+        return records
+
+    def _owner_path(self, head, owner):
+        pending, via, records = deque([head]), {head: None}, {}
+        limit = 16384
+        while pending and len(records) < limit:
+            batch = []
+            while pending and len(batch) < min(64, limit - len(records)):
+                batch.append(pending.popleft())
+            rows = self._commit_batch(batch)
+            records.update(rows)  # Missing side objects do not discard a valid owner in the same batch.
+            if owner in records and records[owner] is not None:
+                path = [owner]
+                while path[-1] != head:
+                    path.append(via[path[-1]])
+                edges, unselected = [], []
+                for parent, child in zip(path, path[1:]):
+                    parents = records[child]["parents"]
+                    chosen = parents.index(parent)
+                    edges.append({"child": child, "parent": parent, "parent_index": chosen})
+                    for index, other in enumerate(parents):
+                        if index == chosen:
+                            continue
+                        observed = ("not_read" if other not in records else
+                                    "missing" if records[other] is None else "available")
+                        unselected.append({"commit": child, "selected_parent": parent,
+                                           "parent": other, "parent_index": index,
+                                           "verification": "not_verified",
+                                           "local_object_observation": observed,
+                                           "tree_blob_history": "not_verified"})
+                return path, edges, unselected, records, limit
+            for oid, row in rows.items():
+                if row is None:
+                    continue
+                for parent in row["parents"]:
+                    if parent not in via:
+                        via[parent] = oid
+                        pending.append(parent)
+        reason = "search budget exhausted" if pending else "no fully verified ancestry chain"
+        raise ProfileError(f"{self.name}: original owner path is unproven: {reason}")
+
+    def prove_object_closure(self, owner=None):
+        """Verify one real owner path; other merge histories remain unverified."""
+        if not self.local_objects_only:
+            raise ProfileError("object closure requires local-only Git reads")
+        if self.git("rev-parse", "--is-shallow-repository").strip() != b"false":
+            raise ProfileError(f"{self.name}: current source proof requires a nonshallow repository")
+        head = self.git("rev-parse", "--verify", "HEAD^{commit}").decode().strip()
+        path, edges, unselected, records, limit = [], [], [], {}, None
+        trees = {self.git("rev-parse", "--verify", "HEAD^{tree}").decode().strip()}
+        if owner:
+            path, edges, unselected, records, limit = self._owner_path(head, owner)
+            trees.update(records[oid]["tree"] for oid in path)
+        # Do not search another path if the first deterministic selected chain
+        # has a missing tree/blob. Tree roots never walk unselected ancestry.
+        objects = self.run("rev-list", "--objects", "--no-object-names", "--missing=print", "--stdin",
+                           input_bytes="".join(tree + "\n" for tree in sorted(trees)).encode())
+        lines = objects.stdout.splitlines()
+        if objects.returncode or objects.stderr or not lines or any(line.startswith(b"?") for line in lines):
+            raise ProfileError(f"{self.name}: incomplete tree/blob closure; required Git objects are unavailable")
+        object_ids = sorted({full_oid(line.decode("ascii"), "tree/blob closure object") for line in lines})
+        expected, actual, gitlinks, tree_edges = {oid: "tree" for oid in trees}, {}, [], 0
+        for offset in range(0, len(object_ids), 64):
+            rows = self._typed_batch(object_ids[offset:offset + 64], {b"tree", b"blob"}, tree_edges=True)
+            for oid, row in rows.items():
+                actual[oid] = row["type"]
+                for index, edge in enumerate(row.get("tree_edges", [])):
+                    if edge["mode"] == "160000":
+                        # A submodule commit belongs to another object store.
+                        # Record the opaque edge, not a proof of its target.
+                        gitlinks.append({"tree": oid, "entry_index": index,
+                                         "commit": edge["oid"], "verification": "not_verified"})
+                        continue
+                    tree_edges += 1
+                    previous = expected.setdefault(edge["oid"], edge["expected_type"])
+                    if previous != edge["expected_type"]:
+                        raise ProfileError(f"{self.name}: conflicting tree entry object kinds")
+        if set(expected) != set(object_ids):
+            raise ProfileError(f"{self.name}: incomplete typed tree entry closure")
+        if any(actual[oid] != kind for oid, kind in expected.items()):
+            raise ProfileError(f"{self.name}: tree entry object kind mismatch")
+        return {"scope": "selected_owner_ancestry_path" if owner else "current_tree", "proof_version": 2,
+                "commit": head, "owner": owner, "path_commit_count": len(path),
+                "path_commits_owner_to_head": path, "path_edges": edges,
+                "path_edges_sha256": sha256(canonical(edges)),
+                "path_records_sha256": sha256(canonical({oid: records[oid] for oid in path})),
+                "unselected_merge_parents": unselected, "all_parent_graph_verified": False,
+                "owner_earlier_parents": records[owner]["parents"] if owner else [],
+                "owner_earlier_history": "not_verified", "search_header_count": len(records),
+                "unverified_search_missing_commits": sorted(oid for oid, row in records.items() if row is None),
+                "search_header_limit": limit, "tree_roots": len(trees),
+                "object_count": len(object_ids), "object_list_sha256": sha256(canonical(sorted(object_ids))),
+                "missing_objects": 0, "object_sha1_verified": True,
+                "tree_blob_entry_types_verified": True, "tree_blob_entry_count": tree_edges,
+                "gitlink_edge_count": len(gitlinks), "gitlink_edges_sha256": sha256(canonical(gitlinks)),
+                "gitlink_target_objects_verified": False, "gitlink_subrepository_history": "not_verified",
+                "shallow_repository": False, "lazy_fetch": "disabled", "replacement_refs": "rejected",
+                "whole_repository_history_complete": None, "earlier_history": "not_verified"}
+
+    def snapshot_current_source(self):
+        """Bind every current tree/index path to actual file modes and bytes."""
+        if not self.local_objects_only:
+            raise ProfileError("current source proof requires local-only Git reads")
+        head_entries, index_entries = {}, {}
+        try:
+            for row in filter(None, self.git("ls-tree", "-r", "-z", "--full-tree", "HEAD").split(b"\0")):
+                meta, raw_name = row.split(b"\t", 1)
+                mode, kind, oid = meta.decode().split()
+                if kind != "blob" or mode not in {"100644", "100755", "120000"}:
+                    raise ValueError("unsupported current source mode")
+                head_entries[os.fsdecode(raw_name)] = {"mode": mode, "git_blob": full_oid(oid, "current blob")}
+            for row in filter(None, self.git("ls-files", "-s", "-z").split(b"\0")):
+                meta, raw_name = row.split(b"\t", 1)
+                mode, oid, stage = meta.decode().split()
+                if stage != "0" or os.fsdecode(raw_name) in index_entries:
+                    raise ValueError("unmerged or duplicate current source index path")
+                index_entries[os.fsdecode(raw_name)] = {"mode": mode, "git_blob": oid}
+            flags = self.git("ls-files", "-v", "-z").split(b"\0")
+            if head_entries != index_entries or any(row[:1] != b"H" for row in flags if row):
+                raise ValueError("current source tree/index/flags differ")
+            files, checked_parents, symlinks = {}, {self.path}, 0
+            for name, entry in sorted(head_entries.items()):
+                relative = PurePosixPath(name)
+                if relative.is_absolute() or ".." in relative.parts or str(relative) != name:
+                    raise ValueError("invalid current source path")
+                parent = self.path
+                for part in relative.parts[:-1]:
+                    parent = parent / part
+                    if parent not in checked_parents:
+                        if not stat.S_ISDIR(parent.lstat().st_mode):
+                            raise ValueError("current source parent is not a real directory: " + name)
+                        checked_parents.add(parent)
+                location = self.path / name
+                info = location.lstat()
+                if entry["mode"] == "120000":
+                    if not stat.S_ISLNK(info.st_mode):
+                        raise ValueError("current source symlink mode mismatch: " + name)
+                    data = os.fsencode(os.readlink(location))
+                    size = len(data)
+                    blob = hashlib.sha1(f"blob {size}\0".encode() + data)
+                    content = hashlib.sha256(data)
+                    symlinks += 1
+                else:
+                    mode = "100755" if info.st_mode & stat.S_IXUSR else "100644"
+                    if not stat.S_ISREG(info.st_mode) or mode != entry["mode"]:
+                        raise ValueError("current source file mode mismatch: " + name)
+                    size = info.st_size
+                    blob, content, total = hashlib.sha1(f"blob {size}\0".encode()), hashlib.sha256(), 0
+                    with location.open("rb") as stream:
+                        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                            total += len(chunk)
+                            blob.update(chunk)
+                            content.update(chunk)
+                    if total != size:
+                        raise ValueError("current source bytes changed during read: " + name)
+                if blob.hexdigest() != entry["git_blob"]:
+                    raise ValueError("current source byte mismatch: " + name)
+                files[name] = dict(entry, bytes=size, sha256=content.hexdigest())
+            return {"file_count": len(files), "symlink_count": symlinks,
+                    "snapshot_sha256": sha256(canonical(files)), "index_flags": "H"}
+        except (OSError, ValueError, UnicodeError) as exc:
+            raise ProfileError(f"{self.name}: current source proof failed: {exc}") from exc
+
 
 def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tree, mapping):
     check_map(mapping)
+    if mapping["schema_version"] == 4:
+        # Keep V1-V3 readers and receipts unchanged. Current reads cannot fetch
+        # missing objects as a side effect of verifying a supposedly frozen pair.
+        os_repo = Repository(os_repo.path, os_repo.name, local_objects_only=True)
+        hepta_repo = Repository(hepta_repo.path, hepta_repo.name, local_objects_only=True)
     os_identity = os_repo.check(os_head, os_tree)
     hepta_identity = hepta_repo.check(hepta_head, hepta_tree)
     if mapping["schema_version"] == 4:
@@ -753,7 +1083,20 @@ def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tre
         stored_map = load_json_bytes(stored_bytes, "checked-in schema4 source map")
         if canonical(stored_map) != canonical(mapping):
             raise ProfileError("checked-in schema4 map differs from the reviewed map")
-    proof = hepta_repo.prove_history()
+    object_closure = None
+    current_sources = None
+    if mapping["schema_version"] == 4:
+        object_closure = {"os": os_repo.prove_object_closure(),
+                          "hepta": hepta_repo.prove_object_closure(HISTORY_OWNER)}
+        # A real verified parent path is the V4 ancestor proof. Git merge-base
+        # may inspect unrelated, unavailable history and is kept only by V1-3.
+        proof = {"commit": HISTORY_OWNER, "method": "verified_sha1_parent_path",
+                 "shallow_repository": False, "scope": "selected_owner_ancestry_path",
+                 "path_edges_sha256": object_closure["hepta"]["path_edges_sha256"]}
+        current_sources = {"os": os_repo.snapshot_current_source(),
+                           "hepta": hepta_repo.snapshot_current_source()}
+    else:
+        proof = hepta_repo.prove_history()
     sources = {}
     for name, repo in (("os", os_repo), ("hepta", hepta_repo)):
         sources[name] = []
@@ -771,6 +1114,12 @@ def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tre
     # Detect checkout changes during the preceding reads.
     os_repo.check(os_head, os_tree)
     hepta_repo.check(hepta_head, hepta_tree)
+    if current_sources is not None:
+        after = {"os": os_repo.snapshot_current_source(), "hepta": hepta_repo.snapshot_current_source()}
+        if after != current_sources:
+            raise ProfileError("current source byte/mode/index proof changed during verification")
+        os_repo.check(os_head, os_tree)
+        hepta_repo.check(hepta_head, hepta_tree)
     manifest = {
         "schema_version": mapping["schema_version"],
         "qualification": "source-only",
@@ -788,6 +1137,9 @@ def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tre
         "original_history_proof": proof, "production": PRODUCTION,
         "runtime_tests": "not_run_by_this_tool",
     }
+    if object_closure is not None:
+        receipt["git_object_closure"] = object_closure
+        receipt["current_source_proof"] = current_sources
     return manifest, receipt
 
 

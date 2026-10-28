@@ -284,6 +284,70 @@ its own identity. Ordinary kernel access remains query-only; this release switch
 adds no native durable control. Native authority and the seven real production
 assembly inputs remain unqualified and disabled.
 
+### Selected original-owner ancestry proof
+
+Current V4 creation and verification require Git 2.43 or newer and local-only
+object reads (`GIT_NO_LAZY_FETCH=1`); verification never repairs missing objects
+by fetching them. Both checkouts must report nonshallow. That flag is not proof
+that every historical object exists. V4 uses breadth-first search, in actual
+parent-header order with strict LF separators, to find one real chain from the pinned HEAD to exact owner
+`995b6fb9ef73ada7c3348b01deb28940a2c4a2d1`. Each searched commit is streamed and
+SHA-1 verified; only the continuous parent block after its tree is an edge.
+Missing candidate side commits may remain unknown; wrong types, bad hashes,
+framing errors and late parent/tree headers fail. An unavailable unique owner
+path fails. The search has a 16,384-header limit; exhausting it fails unproven,
+without declaring a partial chain successful. Commit headers over 1 MiB fail.
+
+A legitimate join may put the owner on its second parent and retain a different
+older mainline as its first parent. Requiring every path to pass through the
+owner would reject that real join. The earlier all-parent proposal, its passing
+tool tests and its real missing-side-history rejection remain historical
+evidence; they do not qualify this corrected scope. V4 no longer depends on
+`merge-base` reading unselected history. It explicitly rejects existing graft
+files and replacement refs, in addition to disabling replacements for reads;
+the extra existence policy is new to V4, not a historical-reader claim.
+
+After selecting the first chain, the verifier walks every chain tree/blob and
+the owner, plus the complete current OS tree. A zero Git exit with `?OID` or any
+stderr still fails: Git can report a wrong-kind object while returning zero.
+Every listed tree/blob is streamed, type/framing checked and Git SHA-1 rehashed.
+Tree bodies are decoded as mode/name-NUL/20-byte-ID entries across read boundaries;
+headers over 1 MiB, unknown modes and malformed names/IDs fail. Each root must be
+a tree. Every non-gitlink edge must name a listed object of its exact expected
+tree/blob kind; conflicting kinds or omitted children fail. The parser retains
+edge metadata, not full tree/blob bodies. Enumeration and a generic tree-or-blob
+type allowance alone are insufficient. A missing selected-chain tree/blob fails
+immediately without searching another path. Genuine local alternates are
+permitted. Current-source snapshots compare the whole HEAD tree
+and stage-zero index, all H flags, actual regular-file Git modes (owner execute
+bit) and bytes and raw
+symlink bodies before and after role/golden reads. Parent symlinks are not
+followed. The receipt binds the complete inventory digest, including unmapped
+files. Original roles, goldens and disabled-authority checks remain mandatory.
+
+The V4 receipt's `git_object_closure.hepta` uses `proof_version: 2` and
+`scope: selected_owner_ancestry_path`, with ordered owner-to-HEAD commits and
+actual child/parent/index edges. Every unselected merge parent OID is explicitly
+`not_verified`; its older trees/blobs and the owner's earlier history are
+unknown. `missing_objects: 0` covers only the selected closure. The receipt also
+records `all_parent_graph_verified: false`, current-source inventory evidence,
+`whole_repository_history_complete: null` and `earlier_history: not_verified`.
+Canonical `160000` gitlinks are opaque external commit edges; the tree/blob proof
+does not open their target object stores or require subrepository history.
+`gitlink_edge_count` and `gitlink_edges_sha256` bind their exact parent-tree,
+entry-index and target-ID metadata. `gitlink_target_objects_verified: false` and
+`gitlink_subrepository_history: not_verified` preserve that separate unknown.
+It does not claim all reachable repository history exists or a build/test ran.
+V1–V3 readers, manifests, receipt fields and historical shallow-history rules
+remain unchanged. Do not regenerate an old manifest to make a new gate pass.
+
+Missing required objects need genuine source data before qualification; the
+verifier does not fetch it or demand unselected side history. Never invent a
+parent, alter shallow/graft/replacement metadata, change the fixed owner, or
+reuse an old successful receipt. Owned temporary Git regressions distinguish
+real joins and unknown sides from missing selected commits/trees/blobs, malformed
+parent headers, corrupt historical bodies and hidden current-source drift.
+
 Run both interpreter modes for the complete tool suite:
 
 ```sh

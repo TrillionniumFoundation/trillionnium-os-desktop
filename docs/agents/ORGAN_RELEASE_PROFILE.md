@@ -62,8 +62,8 @@ keys, deploy a clock/frontier, authenticate an approval, or enable production.
 | OS identity | Caller supplies full lowercase 40-hex HEAD and tree; both exactly match the checkout |
 | Hepta identity | Builder receives full HEAD/tree explicitly; verifier uses that single manifest pin |
 | Clean checkouts | No tracked modifications or nonignored untracked files; no assume-unchanged or skip-worktree flags that can hide changes |
-| Original history | `995b6fb9ef73ada7c3348b01deb28940a2c4a2d1` exists as a commit and `git merge-base --is-ancestor` returns success against Hepta HEAD |
-| Shallow clone | Allowed only when that exact ancestry relation is actually provable; missing objects and cut/unknown ancestry fail |
+| Original history | Historical V1–3 require the original `git merge-base --is-ancestor` proof; V4 verifies a real SHA-1 parent chain from exact `995b6fb9ef73ada7c3348b01deb28940a2c4a2d1` to HEAD |
+| Shallow clone | Historical schemas 1–3 allow a provable exact ancestry relation; current V4 requires nonshallow plus the bounded object proof below |
 | Required sources | Every fixed role in the reviewed map has a tracked regular blob; record its Git blob, SHA256 and byte length |
 | Notes target golden | The OS and Hepta mapped files have exactly the same bytes, including whitespace; record SHA256 and byte length |
 | Notes bootstrap golden | The same exact-byte check, independently of the target golden |
@@ -74,6 +74,52 @@ The tool does not fetch history automatically. If the original history cannot be
 proved, obtain sufficient original repository history and repeat the check; do
 not substitute a new root commit, copy the owner source into a fresh repository,
 or use object existence as an ancestry proof.
+
+Current V4 uses Git 2.43+ with lazy fetching disabled. A deterministic BFS reads
+real commit bodies, rehashes their Git identities, uses LF-only separators and accepts only the tree's
+following continuous parent-header block. Late parent/tree lines, wrong object
+types, bad framing and bad hashes fail. It selects the first real owner-to-HEAD
+chain; missing candidate side commits may stay unknown. Failure to find that
+chain within 16,384 inspected objects fails unproven; headers over 1 MiB fail.
+The owner is verified, not replaced with a fabricated root. V4 explicitly
+rejects graft-file/replacement-ref existence; V1–3 retain their original rules.
+
+This corrects an unadopted all-parent proposal: a legitimate merge can join an
+older mainline to the exact owner as its second parent. HEAD is still a real
+owner descendant even when the other history is incomplete. The old proposal's
+source/tests/real rejection evidence remains preserved. V4 does not invoke the
+old `merge-base` method, whose unrelated-history reads can reject that join.
+
+All selected-chain trees, the owner tree and current OS tree are separate
+closure roots. `rev-list` must exit zero without missing markers or stderr;
+Git's zero exit can coexist with a wrong-kind object error. Every listed
+tree/blob is streamed, type/size/framing checked and Git SHA-1 rehashed. Streaming
+tree-entry parsing binds each root to tree type and each non-gitlink child to
+the exact mode-derived tree/blob type and the enumerated closure. Conflicting
+types, omitted children, malformed mode/name/NUL/20-byte-ID framing and entry
+headers over 1 MiB fail. Blob bodies are not retained. The first selected chain's
+missing tree/blob fails without alternative chain search. Local alternates may
+supply genuine objects. Complete current
+HEAD/index path sets, stage-zero entries, H flags, actual Git file modes (owner
+execute bit) and bytes
+and symlink link bodies are independently verified before and after reads;
+parent symlinks are never followed. `current_source_proof` binds inventory hashes.
+
+V4 `original_history_proof.method` is `verified_sha1_parent_path`.
+`git_object_closure.hepta` has `proof_version: 2`,
+`scope: selected_owner_ancestry_path`, ordered commits, exact parent indices and
+edge hashes. Unselected merge parent OIDs and earlier owner parents are listed
+as unverified history. `missing_objects: 0` is only this selected closure;
+`all_parent_graph_verified: false`, `whole_repository_history_complete: null`
+and `earlier_history: not_verified` prohibit a whole-repository claim.
+`tree_blob_entry_types_verified` covers these local tree/blob edges. Canonical
+160000 gitlinks remain external, unverified commit edges: the receipt records
+their count and canonical edge digest, `gitlink_target_objects_verified: false`
+and `gitlink_subrepository_history: not_verified`; it never requires all objects
+of a subrepository to call the selected local tree/blob closure complete.
+Historical readers and receipt shapes retain their original behavior. Source
+identity and object availability still do not establish successful compilation,
+runtime/GUI/native qualification or production authorization.
 
 The existing `UPSTREAM_CONTRACT.json`, `OBJECTIVE_UPSTREAM_CONTRACT.json`,
 `OBJECTIVE_HISTORY_CONTRACT.json` and `CPU_UPSTREAM_CONTRACT.json` remain intact.
@@ -219,11 +265,11 @@ mapping. The ordinary structural checks still reject unknown/omitted roles,
 invalid or duplicate paths and duplicate JSON keys first. `create_manifest`
 then verifies the tracked OS V4 map has those same reviewed contents. Records
 are read from regular committed blobs, with exact worktree bytes, clean status,
-full identities and the existing original-history-owner ancestry proof.
+full identities and the original-history-owner ancestry proof for their schema.
 Neither an operator-selected path/hash nor an ancestry waiver is introduced.
-A shallow checkout is usable only when the original existing ancestry proof
-actually succeeds; unknown ancestry is rejected even if its owner object was
-copied into the object store.
+V1–3 shallow checkouts are usable only when their original ancestry proof
+succeeds. V4 rejects shallow metadata and requires its actual parent chain and
+selected object closure. Owner object existence alone never proves ancestry.
 
 The map contains repository paths, not a manifest hash. The manifest retains
 `os_identity_binding: explicit_caller_head_and_tree_in_verification_receipt`;
