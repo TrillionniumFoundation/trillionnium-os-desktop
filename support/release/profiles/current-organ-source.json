@@ -57,7 +57,7 @@
   },
   "qualification": "source-only",
   "schema_version": 5,
-  "source_map_sha256": "16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71",
+  "source_map_sha256": "2a2e2b4534da42e82ba381ea4b07771f19da12c9e6f4cc415a121d00b977d5ea",
   "sources": {
     "hepta": [
       {
@@ -2331,6 +2331,34 @@
         "sha256": "4f8e654cb11646ee5a8b7ee66260aec28f5c01b06be45dc9531ccb2ea6df6764"
       },
       {
+        "bytes": 6485,
+        "git_blob": "76168f9506305d4a593abe144c107bb0c4f5d188",
+        "path": "support/kernel-safety/DATAGRAM_MEMORY.md",
+        "role": "kernel_datagram_memory_contract",
+        "sha256": "6aa3b2f15baee4642b08de887f4c9143f6b5e464966e4623584f838e6683826e"
+      },
+      {
+        "bytes": 1855,
+        "git_blob": "8463a6fd0b70295c0b40154695af31e97f4e4c3c",
+        "path": "tests/kernel/datagram-memory/README.md",
+        "role": "kernel_datagram_memory_development_manual",
+        "sha256": "aae8bee42223f9a245d1c29fd5903526b2ae6930d5ed175adc6abef2636d71ca"
+      },
+      {
+        "bytes": 12272,
+        "git_blob": "808c6dcc447ef0decdc97250062cd3a34bde78f5",
+        "path": "tests/kernel/datagram-memory/probe.c",
+        "role": "kernel_datagram_memory_probe",
+        "sha256": "34bf8a1357d32d0db65d58a541919728957fe9de490b77e49efcca5e48c646b1"
+      },
+      {
+        "bytes": 626,
+        "git_blob": "c4b5f5286ed611c8a73392dc471142086f3b455e",
+        "path": "tests/kernel/datagram-memory/run.py",
+        "role": "kernel_datagram_memory_runner",
+        "sha256": "01c6c94e146483fbbd5d4de4c0df1ebb4d526faedda7e171094e6f4c2ad4f49a"
+      },
+      {
         "bytes": 8349,
         "git_blob": "a87baeaa73c13c3b8b698bd59c31bbf5614f3f9d",
         "path": "kernel/asterinas/ostd/src/arch/x86/iommu/dma_remapping/domain.rs",
@@ -2555,11 +2583,11 @@
         "sha256": "db96ad9e390c1357b67e09cc288cf3767f93ec20b16ad3ea58694549644ef3da"
       },
       {
-        "bytes": 7737,
-        "git_blob": "616d3b83e795102faa6a3363093c4c978656dfb6",
+        "bytes": 7966,
+        "git_blob": "4d1ff216960eaafdb57d9e12af1fa23ce35ca06e",
         "path": "support/kernel-safety/IPC_BUFFER_MEMORY.md",
         "role": "kernel_ipc_memory_contract",
-        "sha256": "eb3467b56737f5c5603211a52371395d62d5fe17d45e543de25f8298825e1409"
+        "sha256": "e23301343fb3e1db39d70bd38333ec9a4c0e88251cd2c2c6ecde81a3e11c754a"
       },
       {
         "bytes": 16019,
@@ -2940,11 +2968,11 @@
         "sha256": "5bf81ac2e8b4cdd1f2026722390318445303858313cd023eb4082e836ec3265e"
       },
       {
-        "bytes": 12335,
-        "git_blob": "60097e3895bcbb43712952a8d44f8e811e675fb9",
+        "bytes": 12657,
+        "git_blob": "6460c2245c5c1f15dae31d461013f0be407d3844",
         "path": "support/kernel-safety/PAGE_MEMORY.md",
         "role": "kernel_page_memory_contract",
-        "sha256": "f31f1b577dd838b3c092753ee9a7d4dbf542dccd21be4044b397ae360ba7cdd5"
+        "sha256": "171e82ca85ea247e6aa40e18d4f46b4dbdcb7df0b5d79759d57369d903982855"
       },
       {
         "bytes": 33105,
@@ -3332,6 +3360,20 @@
         "sha256": "26816979563cf687526427ff5acd33cb430aba9460ac1653736815a681dbc852"
       },
       {
+        "bytes": 10537,
+        "git_blob": "2568e7a00095d7e3147718fccbf8840a1bbe62b0",
+        "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message.rs",
+        "role": "kernel_unix_datagram_message",
+        "sha256": "869de28623c4cbeec40f3605dc08266222e6c73a55456811f5d62d66abf15d1b"
+      },
+      {
+        "bytes": 9806,
+        "git_blob": "9f9b288ac55f49cfef84e3dececa02d17e0bbcde",
+        "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message/tests.rs",
+        "role": "kernel_unix_datagram_message_oracle",
+        "sha256": "a923e9c525aec6f9d6a8ae7bf356f8c6b021cb2e4517733cb8591e6b62fef255"
+      },
+      {
         "bytes": 2435,
         "git_blob": "efbdd899c58c7c19baa383a7a0b9d6bcce553019",
         "path": "kernel/asterinas/kernel/core/src/syscall/socketpair.rs",
@@ -3500,18 +3542,18 @@
         "sha256": "ff231366a21bbf7a71121996512c690bdca83d68102d62a807e50d5e33c8badc"
       },
       {
-        "bytes": 201056,
-        "git_blob": "1b8071ee5d99e7155dab957c87255d642a220e4c",
+        "bytes": 209698,
+        "git_blob": "ec9b254b67cb1034092f7444cf23cc6099caf4c1",
         "path": "docs/agents/MODULE_DOCUMENTATION_CURRENT.json",
         "role": "module_documentation_current_inventory",
-        "sha256": "d5ba0e68fe956d0d1ebfadc99728fa6c60f301bb8691cb25f309bf82c72769e6"
+        "sha256": "b0ca38fabc9d63b8aba9e73f6978924c63ac373ce2bdfce18ce7c1e120134740"
       },
       {
-        "bytes": 53653,
-        "git_blob": "4a78a040929dd231fd29fcaaff5050cf89d33148",
+        "bytes": 55294,
+        "git_blob": "4f138959a3984c8cea2ce97892ca610bcfd6d0a1",
         "path": "docs/agents/MODULE_DOCUMENTATION_CURRENT.md",
         "role": "module_documentation_current_technical_development",
-        "sha256": "d01a17f5c0f2ede4f745e3529bd015a06d04dcc3f310744126ec512c9f7b698a"
+        "sha256": "799d3107de5244dfd957db46850cb043787222613988313199c179429edb0a29"
       },
       {
         "bytes": 3024,
@@ -4186,11 +4228,11 @@
         "sha256": "0f96fcdfbf930345d681562520ce668a2a2f8f260f240a898d7960f728e4a0ec"
       },
       {
-        "bytes": 34958,
-        "git_blob": "28d7e5004cecac58ddfc7331c9eae054f92faf5f",
+        "bytes": 36488,
+        "git_blob": "ba19ef85a6a3eece0fb3d8b6a1128d5173432551",
         "path": "support/release/README.md",
         "role": "release_development_contract",
-        "sha256": "acebd2298cd1ed2fb5913ebbf2b98e57e7e8171428a5657db7c7d2d638065960"
+        "sha256": "79692fa895476e5b37bc1a4ba4212dbb3016630ae6f4e84d46ba52cae396eaff"
       },
       {
         "bytes": 17370,
@@ -4228,11 +4270,11 @@
         "sha256": "58fd38a351b54f9a46fb360fbd082369b8dbf1082aacdb8293f236e873613077"
       },
       {
-        "bytes": 32629,
-        "git_blob": "6e5e8bc50565bce215443054a3ffc4519c3bea56",
+        "bytes": 33792,
+        "git_blob": "5c1cb9ae91cb77d0d88e89c19fb80a42bc55cb7b",
         "path": "support/release/test_source_schema5.py",
         "role": "release_schema5_oracle",
-        "sha256": "0cf994acd8d9513bb7257b1274191abc987c8f1326c13b8bcfac58192292c179"
+        "sha256": "5b75a7a3f5c6c2da3b5c5eab299a947484a1f7f840b75cf86577f20117c4bc5e"
       },
       {
         "bytes": 12648,
@@ -4249,11 +4291,11 @@
         "sha256": "1cf6ecf0e6c3e715bef7f50f80cee25522c00dde1cab22ac52ed82bf1f1ae38d"
       },
       {
-        "bytes": 62368,
-        "git_blob": "7039451c6c6047c850a3734785902725b9de7501",
+        "bytes": 62935,
+        "git_blob": "5d99bfbc40f7acba3c5d686f7f0dc14f2ac7a061",
         "path": "support/release/organ_source_map_v5.json",
         "role": "release_source_map_v5",
-        "sha256": "16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71"
+        "sha256": "2a2e2b4534da42e82ba381ea4b07771f19da12c9e6f4cc415a121d00b977d5ea"
       },
       {
         "bytes": 26545,
@@ -4263,18 +4305,18 @@
         "sha256": "1aa62880ca02049ff3cee3c9a1d5bd1ca9aa114c5c4adace54dd17e71631ba07"
       },
       {
-        "bytes": 70461,
-        "git_blob": "6ab58affb898772b9cf518563acd1a2c9e2a5c0f",
+        "bytes": 70693,
+        "git_blob": "999d9ba5b1fa8784c8d28664658918db966387ac",
         "path": "support/release/organ_release_profile.py",
         "role": "release_source_profile_tool",
-        "sha256": "9857f34a1a6ade6ee6191b7ff585b9289339e905a15229958eb38a3ca72a719c"
+        "sha256": "05610da73cdc7b12157761ce767d23acd12c53f97f0f28a9ef0820b9ed600018"
       },
       {
-        "bytes": 32577,
-        "git_blob": "de5a8a5626b2b4811e41c1340655b742d21cfa81",
+        "bytes": 34107,
+        "git_blob": "bf66949c6be21d81dbb6673297da43d6397dee9c",
         "path": "docs/agents/ORGAN_RELEASE_PROFILE.md",
         "role": "release_technical_contract",
-        "sha256": "4840b408bb4fb15771c4d24a65f4ef8565b8a28b8b5b9b030c619a1d589b0f07"
+        "sha256": "6b861afdbbf1c40f6e6dea6614707dd6e1b01c5c3ea014ebbc0148cb75b4cba5"
       },
       {
         "bytes": 10860,
