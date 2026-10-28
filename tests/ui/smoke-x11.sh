@@ -76,14 +76,49 @@ done
 [[ -n "$initial" ]] || { echo 'Rust Session IPC not ready' >&2; exit 1; }
 instance="$(printf '%s' "$initial" | python3 -c 'import json,re,sys; d=json.load(sys.stdin); assert d["type"]=="snapshot" and not d["tasks"]; assert re.fullmatch("[0-9a-f]{32}",d["session_instance"]); print(d["session_instance"])')"
 "$bin_dir/trill-shell" >"$root/shell-before.log" 2>&1 & shell_pid=$!
+# Layout markers precede eframe's first paint and set_visible(true).
+# Mapping is part of the same original 150 x 0.1s readiness budget.
+readiness_deadline() {
+    python3 -c 'import time; print(time.monotonic() + 15.0)'
+}
+readiness_open() {
+    python3 -c 'import sys,time; sys.exit(0 if time.monotonic() < float(sys.argv[1]) else 1)' "$1"
+}
+owned_x11_window_mapped() {
+    python3 - "$1" "$2" "$3" <<'PYREADY'
+import re,subprocess,sys,time
+pid,klass,deadline=int(sys.argv[1]),sys.argv[2],float(sys.argv[3])
+def query(argv):
+    remaining=deadline-time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError('original readiness deadline elapsed')
+    return subprocess.check_output(argv,text=True,stderr=subprocess.DEVNULL,
+                                   timeout=min(0.5,remaining))
+try:
+    tree=query(['xwininfo','-root','-tree'])
+    ids=re.findall(r'^\s*(0x[0-9a-fA-F]+).*?\("'+re.escape(klass)+r'" "'+re.escape(klass)+r'"\)',tree,re.M)
+    for wid in ids:
+        prop=query(['xprop','-id',wid,'_NET_WM_PID'])
+        match=re.search(r'=\s*(\d+)\s*$',prop)
+        if match and int(match.group(1))==pid and 'Map State: IsViewable' in query(['xwininfo','-id',wid]):
+            print(f'A10 owned mapped readiness: class={klass} pid={pid} window={wid}')
+            raise SystemExit(0)
+except (OSError,subprocess.SubprocessError,TimeoutError):
+    pass
+raise SystemExit(1)
+PYREADY
+}
 wait_shell_layout() {
-    local output=$1
+    local output=$1 deadline
+    deadline="$(readiness_deadline)"
     for _ in {1..150}; do
-        if grep -Fxq 'TRILL_SHELL_FIRST_FRAME_V1' "$output"; then return 0; fi
+        readiness_open "$deadline" || break
+        if grep -Fxq 'TRILL_SHELL_FIRST_FRAME_V1' "$output" &&\
+           owned_x11_window_mapped "$shell_pid" trill-shell "$deadline"; then return 0; fi
         kill -0 "$shell_pid" 2>/dev/null || break
         sleep 0.1
     done
-    echo 'No actual Rust Shell first egui layout' >&2
+    echo 'No actual Rust Shell layout and owned mapped X11 window within readiness budget' >&2
     return 1
 }
 wait_shell_layout "$root/shell-before.log"
@@ -93,12 +128,15 @@ for app in notes calculator terminal; do
     task_ids+=("$id")
     app_pids+=("$pid")
     first=0
+    deadline="$(readiness_deadline)"
     for _ in {1..150}; do
+        readiness_open "$deadline" || break
         snap="$("$ctl" snapshot)"
         result="$(printf '%s' "$snap" | python3 -c 'import json,sys; d=json.load(sys.stdin);t=next(x for x in d["tasks"] if x["id"]==int(sys.argv[1]));print(t["state"],t["ui_first_frame_unix_ms"] or 0, t["pid"])' "$id")"
         read -r state frame observed_pid <<<"$result"
         [[ "$state" == failed ]] && break
-        if [[ "$state" == running && "$frame" != 0 && "$observed_pid" == "$pid" ]]; then first=1; break; fi
+        if [[ "$state" == running && "$frame" != 0 && "$observed_pid" == "$pid" ]] &&\
+           owned_x11_window_mapped "$pid" trill-app-window "$deadline"; then first=1; break; fi
         sleep 0.1
     done
     [[ "$first" == 1 ]] || { echo "No real $app native layout: $result" >&2; exit 1; }
