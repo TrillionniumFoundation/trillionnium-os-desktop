@@ -5,7 +5,10 @@ use core::{
     time::Duration,
 };
 
-use ostd::sync::WaitQueue;
+use ostd::{
+    mm::{USegment, io::util::HasVmReaderWriter},
+    sync::WaitQueue,
+};
 use spin::Once;
 
 use crate::{
@@ -38,7 +41,10 @@ struct Inner {
 }
 
 struct Message {
-    bytes: Vec<u8>,
+    // Actual physical pages retain the sender's original account through peek,
+    // receiver migration, descriptor inheritance and final queue destruction.
+    bytes: USegment,
+    len: usize,
     aux: AuxiliaryData,
     src: UnixSocketAddr,
 }
@@ -76,9 +82,25 @@ impl MessageQueue {
             );
         }
 
+        // Reserve the queue slot before taking auxiliary ownership or publishing
+        // a message. Heap metadata remains outside the physical page ledger, but
+        // an allocation failure must be an ordinary ENOMEM, not a kernel panic.
+        inner.messages.try_reserve(1).map_err(|_| {
+            Error::with_message(Errno::ENOMEM, "cannot reserve a datagram queue slot")
+        })?;
+
         let msg = {
-            let mut bytes = vec![0; len];
-            reader.read(&mut VmWriter::from(bytes.as_mut_slice()))?;
+            // Even an empty datagram has real retained backing. Otherwise an
+            // arbitrary number of empty messages could bypass the page ceiling.
+            // `len` was bounded above, so this page rounding cannot overflow.
+            let storage = len.max(1).div_ceil(PAGE_SIZE) * PAGE_SIZE;
+            let bytes = crate::fs::cgroupfs::alloc_ipc_segment(storage)?;
+            let mut destination = bytes.writer();
+            destination.limit(len);
+            let copied = reader.read(&mut destination)?;
+            if copied != len {
+                return_errno_with_message!(Errno::EFAULT, "incomplete datagram source");
+            }
 
             let mut aux = core::mem::take(aux_data);
             if self.is_pass_cred.load(Ordering::Relaxed)
@@ -89,10 +111,15 @@ impl MessageQueue {
 
             let src = source.queue.addr();
 
-            Message { bytes, aux, src }
+            Message {
+                bytes,
+                len,
+                aux,
+                src,
+            }
         };
 
-        inner.total_length += msg.bytes.len();
+        inner.total_length += msg.len;
         inner.messages.push_back(msg);
 
         self.pollee.notify(IoEvents::IN);
@@ -191,8 +218,12 @@ impl MessageReceiver {
             }
         };
 
-        let message_len = msg.bytes.len();
-        let len = writer.write(&mut VmReader::from(msg.bytes.as_slice()))?;
+        let message_len = msg.len;
+        // Never expose the uninitialized physical-page tail. A failed user copy
+        // leaves this complete datagram and its original charge in the queue.
+        let mut source = msg.bytes.reader();
+        source.limit(message_len);
+        let len = writer.write(&mut source)?;
 
         let is_pass_cred = self.queue.is_pass_cred.load(Ordering::Relaxed);
         let src = msg.src.clone();
@@ -200,7 +231,7 @@ impl MessageReceiver {
         let behavior = flags.receive_behavior();
         let ctrl_msgs = if behavior.will_consume_data() {
             let mut message = inner.messages.pop_front().unwrap();
-            inner.total_length -= message.bytes.len();
+            inner.total_length -= message.len;
 
             self.queue.pollee.invalidate();
             // A writer may still fail if the free space is not enough.
@@ -299,3 +330,6 @@ impl QueueTable {
 }
 
 pub(in crate::net) const UNIX_DATAGRAM_DEFAULT_BUF_SIZE: usize = 65536;
+
+#[cfg(ktest)]
+mod tests;

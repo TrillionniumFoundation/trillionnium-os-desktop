@@ -70,6 +70,10 @@ still have no inferred workload account. Filesystem metadata, DMA, shared kernel
 tables, delegated workers and global allocation/reclaim/OOM policy remain open.
 An outside recovery group's counter is not a physical or metadata reserve.
 
+[M6](DATAGRAM_MEMORY.md) separately changes actual Unix datagram payloads to
+fallible, charged physical segments. It awaits its own pinned-toolchain and
+ordinary guest qualification; no historical M5 result is relabelled as M6.
+
 The new fallible constructors make these covered failures ordinary syscall
 errors; they do not guarantee that every other allocation required by that
 syscall can survive global OOM. A complete controller must address all those

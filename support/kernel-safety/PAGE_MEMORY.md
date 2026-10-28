@@ -17,6 +17,12 @@ The new combined ceiling accounts these paths:
 | `kernel_stack` | New POSIX task kernel-stack physical frames | Creating process's cgroup captured once per stack; each frame retains its token through final reference release |
 | `ipc` | AF_UNIX stream/seqpacket connection rings and anonymous/named pipe rings | Creating process's cgroup captured per ring; each physical frame retains its original account through both endpoints and inherited/transferred references |
 
+The independent [M6 datagram successor](DATAGRAM_MEMORY.md) also connects actual
+AF_UNIX datagram payload frames to `ipc`, including a real page for empty
+messages. Its source and ordinary/native validation are separate from the
+historical M2–M5 evidence below; this checkout does not yet have a passing M6
+kernel run.
+
 `current` is the sum of these categories in the account and its descendants. This is physical allocation ownership, not the sum of mappings or a process's resident set. A VMO page first populated outside a constrained subtree does not become that subtree's charge when reused. Migration affects future allocations; existing pages retain their original accounts. A delegated worker charges its own process, not an implicit caller. Allocations with no current process remain excluded.
 
 The original account is embedded in `CachePageMeta`, private-frame metadata OSTD page-table-node metadata or task-stack-frame metadata and survives task exit, node deletion, truncate/eviction, mapping removal and asynchronous I/O references. No charge is refunded merely because a task exits or an unmap returns. This includes an inherited private mapping backed by a shared VMO: a child can first populate its backing page, and the parent can retain that physical page after the child exits. The guest probe prefaults the inherited stack from its observer before fork and tests newly allocated frame deltas separately from retained filesystem cache pages. TLB/RCU references can delay final release; CPUs must reach quiescent points. No wall-clock release bound is promised for a stalled CPU.
