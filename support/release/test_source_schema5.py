@@ -425,6 +425,7 @@ class Schema5WorkflowTests(unittest.TestCase):
         executable.write_text(
             f"#!{sys.executable}\nimport importlib.util, pathlib, sys\n"
             "assert sys.argv[1:4] == ['-I', '-B', 'support/release/check_organ_pair.py']\n"
+            "sys.dont_write_bytecode = True\n"
             "p = pathlib.Path(sys.argv[3]).resolve()\n"
             "spec = importlib.util.spec_from_file_location('_actual_refusal_cli', p)\n"
             "module = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\n"
