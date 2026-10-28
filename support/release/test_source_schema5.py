@@ -410,6 +410,55 @@ class Schema5WorkflowTests(unittest.TestCase):
         self.output = temporary / "organ-pair"
         return args[3:]
 
+    def test_actual_current_dispatch_retains_pre_host_manifest_refusal(self):
+        # A well-shaped but stale selected source must really reach manifest
+        # comparison, return1 and never dispatch a product child.
+        manifest = json.loads(self.manifest.read_text())
+        row = next(row for row in manifest["sources"]["os"]
+                   if row["role"] == "release_schema4_oracle")
+        row["sha256"] = "0" * 64
+        self.manifest.write_bytes(runner.profile.canonical(manifest))
+        pair_tests.fixtures.commit(self.os, "preserve a stale mandatory source record")
+        helpers = self.root / "refusal-helpers"
+        helpers.mkdir()
+        executable = helpers / "python3"
+        executable.write_text(
+            f"#!{sys.executable}\nimport importlib.util, pathlib, sys\n"
+            "assert sys.argv[1:4] == ['-I', '-B', 'support/release/check_organ_pair.py']\n"
+            "p = pathlib.Path(sys.argv[3]).resolve()\n"
+            "spec = importlib.util.spec_from_file_location('_actual_refusal_cli', p)\n"
+            "module = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\n"
+            f"module.profile.HISTORY_OWNER = {self.owner!r}\n"
+            "raise SystemExit(module.main(sys.argv[4:]))\n")
+        executable.chmod(0o755)
+        temporary = self.root / "refusal-runner-temp"
+        temporary.mkdir()
+        script = workflow_script(self.os / ".github/workflows/organ-current-pair.yml",
+                                 "Build and test the fixed V5 original source pair")
+        head = pair_tests.fixtures.git(self.os, "rev-parse", "HEAD")
+        env = dict(os.environ, PATH=str(helpers) + os.pathsep + os.environ.get("PATH", ""),
+                   GITHUB_WORKSPACE=str(self.root), DESKTOP_SHA=head, RUNNER_TEMP=str(temporary))
+        result = subprocess.run(["bash", "-c", script], cwd=self.os, env=env,
+                                capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        refusal = json.loads(result.stdout)
+        self.assertEqual(refusal["steps"], [])
+        self.assertFalse(refusal["passed"])
+        self.assertEqual(refusal["qualification"], "none")
+        self.assertIn("manifest mismatch", refusal["error"])
+        self.assertFalse((temporary / "organ-pair").exists())
+        diagnostics = temporary / "organ-pair-invocation"
+        self.assertTrue((diagnostics / "invocation-receipt.json").is_file(),
+                        "actual pre-host refusal must retain an invocation receipt")
+        self.assertEqual(json.loads((diagnostics / "stdout.log").read_text()), refusal)
+        self.assertEqual(json.loads((diagnostics / "invocation-receipt.json").read_text()),
+                         {"actual_exit": 1, "pair_receipt_present": False,
+                          "requested_os_head": head, "qualification": "not_inferred_from_invocation"})
+        workflow = (self.os / ".github/workflows/organ-current-pair.yml").read_text()
+        current = workflow.split("  original-host-pair:\n", 1)[1].split("\n  historical-v4-host-pair:", 1)[0]
+        self.assertIn("${{ runner.temp }}/organ-pair-invocation/", current)
+        self.assertIn("if-no-files-found: error", current)
+
     def test_actual_current_pin_reader_emits_only_the_verified_v5_pin(self):
         result, output = self.run_pin_reader()
         self.assertEqual(result.returncode, 0, result.stderr)

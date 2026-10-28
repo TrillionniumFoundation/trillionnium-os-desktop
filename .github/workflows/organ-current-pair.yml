@@ -96,12 +96,29 @@ jobs:
         working-directory: desktop
         run: |
           set -euo pipefail
+          diagnostics="$RUNNER_TEMP/organ-pair-invocation"
+          test ! -e "$diagnostics"
+          mkdir -m 700 "$diagnostics"
+          set +e
           python3 -I -B support/release/check_organ_pair.py \
             --os-repo "$PWD" --hepta-repo "$GITHUB_WORKSPACE/hepta" \
             --os-head "$DESKTOP_SHA" --os-tree "$(git rev-parse HEAD^{tree})" \
             --manifest support/release/profiles/current-organ-source.json \
             --required-schema 5 \
-            --output-dir "$RUNNER_TEMP/organ-pair" --execute-host
+            --output-dir "$RUNNER_TEMP/organ-pair" --execute-host \
+            > "$diagnostics/stdout.log" 2> "$diagnostics/stderr.log"
+          pair_status=$?
+          set -e
+          pair_receipt_present=false
+          if test -f "$RUNNER_TEMP/organ-pair/pair-receipt.json"; then
+            pair_receipt_present=true
+          fi
+          printf '{"actual_exit":%d,"pair_receipt_present":%s,"requested_os_head":"%s","qualification":"not_inferred_from_invocation"}\n' \
+            "$pair_status" "$pair_receipt_present" "$DESKTOP_SHA" \
+            > "$diagnostics/invocation-receipt.json"
+          cat "$diagnostics/stdout.log"
+          cat "$diagnostics/stderr.log" >&2
+          exit "$pair_status"
 
       - name: Retain exact V5 pair receipt and full host logs
         if: always()
@@ -112,6 +129,7 @@ jobs:
             ${{ runner.temp }}/organ-pair/pair-receipt.json
             ${{ runner.temp }}/organ-pair/source-manifest.json
             ${{ runner.temp }}/organ-pair/*.log
+            ${{ runner.temp }}/organ-pair-invocation/
           if-no-files-found: error
 
   historical-v4-host-pair:

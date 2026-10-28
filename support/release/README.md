@@ -531,3 +531,21 @@ was performed for this navigation update. Old full19/target3/native outcomes and
 the 8b825 Python QA keep their original source identities.
 
 See [current package manuals and source boundaries](../../docs/agents/MODULE_DOCUMENTATION_CURRENT.md).
+
+
+The current V5 CI caller retains a separate `organ-pair-invocation` directory
+with the exact command exit code and stdout/stderr even when source verification
+refuses the pair before creating its protocol output directory. That invocation
+receipt never infers host qualification; the original nonzero status still
+fails the build step. Uploading the refusal evidence does not turn refusal into
+a passing source or product check. Historical V4 dispatch remains unchanged.
+
+A change to a mapped QA source also changes the source-only contract. After the
+code commit, regenerate the fixed V5 manifest against the actual Desktop code
+head and the single pinned Hepta source, commit only the manifest, then verify
+from that final head/tree. The manifest has no own source role and binds Desktop
+identity through the explicit caller head/tree in the verification receipt;
+this is why the final verification must include the newly committed manifest.
+Keep all original maps, seven stages, eight products, 19 selected test owners,
+budgets and disabled production inputs. Earlier host results retain their
+original source tuple and do not qualify a successor by association.

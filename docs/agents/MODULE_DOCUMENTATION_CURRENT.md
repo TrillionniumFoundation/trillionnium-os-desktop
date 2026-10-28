@@ -557,3 +557,13 @@ UI lock 0c389b7c934d57458cafe44b52235c13ff2c823a9616a20f2352b1cd2cb9aaa8与Hepta
 当前profile仍绑定旧6487／7673，须随后为实际新Desktop HEAD与310c生成并验证source-only声明；本次未执行该步骤。
 8b825原normal／optimized各54／7／24仍仅属于其原source，不能改标为本文最终HEAD。旧七步01首步失败、
 cache44发布失败、旧19-owner三失败均保留。七项生产输入关闭，不启动Rust／host／GUI／native／生产authority。
+
+
+The post-5f current-pair CI refusal occurred before any host stage: the mapped
+schema4 QA fixture had changed while its source-only declaration still named the
+prior bytes. The CI successor retains exact invocation exit/stdout/stderr even
+on that refusal, and still returns the original failure. Its fixed manifest is
+regenerated after the code commit and verified from the final manifest commit.
+This source-only repair does not transfer earlier host, GUI, native or production
+qualification to the successor. The paired Hepta pin and disabled production
+inputs remain fixed; the current source receipt binds the final Desktop head.
