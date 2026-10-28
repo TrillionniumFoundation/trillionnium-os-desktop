@@ -5,7 +5,7 @@ separate kernel/host/GUI/native source identities, see the
 [2026-10-26 documentation supplement](../../docs/agents/MODULE_DOCUMENTATION_2026_10_26.md).
 It preserves the original receipts and remaining manual gaps; it does not update
 this checkout's release map or qualify a new source pair.
-The current V4 candidate selects eighteen owning packages; the earlier
+The current V5 candidate selects nineteen owning packages; the earlier
 thirteen-package supplement and its original receipts remain historical.
 
 This module binds one Desktop checkout to one complete original Hepta checkout,
@@ -36,7 +36,7 @@ python3 -I -B support/release/check_organ_pair.py \
   --os-repo "$PWD" --hepta-repo /absolute/path/to/hepta-private-ci \
   --os-head FULL_REVIEWED_DESKTOP_SHA --os-tree FULL_REVIEWED_DESKTOP_TREE \
   --manifest support/release/profiles/current-organ-source.json \
-  --required-schema 4 \
+  --required-schema 5 \
   --output-dir /absolute/path/to/new-pair-receipt
 ```
 
@@ -80,6 +80,38 @@ When the protocol or build inputs change, update the reviewed source map,
 generate and review a new manifest with the original source-profile tool,
 commit it, and verify again against the final Desktop identity. Keep historical
 profiles and receipts intact. See [the detailed source contract](../../docs/agents/ORGAN_RELEASE_PROFILE.md).
+
+## Fixed V5 current source profile
+
+The fixed [`organ_source_map_v5.json`](organ_source_map_v5.json) requires 396
+Desktop roles, 261 Hepta roles and the same five golden pairs. It preserves the
+reviewed 354/260 draft paths, adds each missing OOM/strict182 dependency once,
+the three V5 release inputs and the original Root failure-report owner. The
+canonical map seal and literal role sets reject optional roles, path aliases or
+operator-selected variants. V5 reuses the qualified typed owner-path and whole
+current-source verifier; its source proof does not qualify a new runtime pair.
+
+`check_current_contract_v5` checks the current declaration before emitting its
+one Hepta pin. All seven deployment inputs remain disabled. The seven-step host
+runner preserves V4's eighteen packages and adds `codex-rmcp-client`; commands,
+profiles, locked inputs, deadlines and zero retries remain defined in code.
+
+The two existing CI workflows select V5 automatically. `source-profile-host`
+keeps its stable check name as a summary and passes only when all six bounded
+oracle partitions succeed: legacy, typed V4 and V5, each normal and optimized.
+Each partition retains the original ten-minute limit; actual discovery must
+equal their disjoint union, with the original 54/62 case IDs preserved.
+
+V1–4 maps, manifests and explicit CLI verification remain available. The previous
+current V4 manifest is archived byte-for-byte as
+[`2026-10-27-organ-source-pre-v5-v4.json`](profiles/2026-10-27-organ-source-pre-v5-v4.json).
+Manual historical V4 jobs require a complete forty-hex `historical_os_ref` and
+check out that historical Desktop, then read its matching manifest and Hepta
+pin. A new checkout plus an old archive cannot qualify that historical pair.
+The unchanged eight `CurrentWorkflowTests` execute those retained V4 caller
+blocks; new `Schema5WorkflowTests` execute the current V5 pin reader, source
+guard and full dispatcher over owned fixtures. These are release-tool tests,
+not Rust package or production transactions.
 
 ## Expanded source profile
 

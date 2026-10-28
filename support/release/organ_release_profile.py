@@ -487,9 +487,164 @@ SOURCE_MAP_V4_SHA256 = '1cf6ecf0e6c3e715bef7f50f80cee25522c00dde1cab22ac52ed82bf
 
 
 
+# Schema5 is a distinct fixed 396/261 contract. V1-V4 stay unchanged.
+OS_ROLES_V5 = OS_ROLES_V4 | {
+    'module_documentation_current_inventory',
+    'module_documentation_current_technical_development',
+    'oom_oom_prerequisite_00_oom_adjustment_rs',
+    'oom_oom_prerequisite_01_tests_rs',
+    'oom_oom_prerequisite_02_mod_rs',
+    'oom_oom_prerequisite_04_mod_rs',
+    'oom_oom_prerequisite_07_exit_rs',
+    'oom_oom_prerequisite_08_execve_rs',
+    'oom_oom_prerequisite_12_credentials_rs',
+    'oom_oom_prerequisite_13_capabilities_rs',
+    'oom_oom_prerequisite_14_c_types_rs',
+    'oom_oom_prerequisite_15_user_rs',
+    'oom_oom_prerequisite_16_user_ns_rs',
+    'oom_oom_prerequisite_17_capability_rs',
+    'oom_oom_prerequisite_19_mod_rs',
+    'oom_oom_prerequisite_20_oom_score_adj_rs',
+    'oom_oom_prerequisite_21_mod_rs',
+    'oom_oom_prerequisite_22_mod_rs',
+    'oom_oom_prerequisite_23_file_rs',
+    'oom_oom_prerequisite_24_capget_rs',
+    'oom_oom_prerequisite_25_capset_rs',
+    'oom_oom_prerequisite_26_setresuid_rs',
+    'oom_oom_prerequisite_27_setresgid_rs',
+    'oom_oom_prerequisite_28_clone_rs',
+    'oom_oom_prerequisite_29_fork_rs',
+    'oom_oom_prerequisite_30_execve_rs',
+    'oom_oom_prerequisite_31_exit_rs',
+    'oom_oom_prerequisite_32_exit_group_rs',
+    'oom_oom_prerequisite_34_pwrite64_rs',
+    'oom_oom_prerequisite_35_pread64_rs',
+    'oom_oom_prerequisite_36_oom_adjustment_md',
+    'oom_oom_prerequisite_37_run_py',
+    'oom_oom_prerequisite_38_check_py',
+    'oom_oom_prerequisite_40_probe_c',
+    'oom_oom_prerequisite_41_run_py',
+    'oom_oom_prerequisite_42_test_run_py',
+    'oom_oom_prerequisite_43_readme_md',
+    'oom_oom_prerequisite_46_post1138_unix_signal_v2_source_json_gz',
+    'oom_oom_prerequisite_47_test_oom_source_profile_py',
+    'oom_oom_prerequisite_48_post1138_oom_adjustment_profile_md',
+    'oom_oom_profile_wrapper',
+    'release_previous_current_v4_archive',
+    'release_schema5_oracle',
+    'release_source_map_v5',
+    'unix_signal_contract_compat_file_and_directory_operations_README_md',
+    'unix_signal_contract_compat_file_and_directory_operations_fully_covered_scml',
+    'unix_signal_contract_compat_networking_and_sockets_README_md',
+    'unix_signal_contract_compat_networking_and_sockets_sendto_and_sendmsg_scml',
+    'unix_signal_contract_unix_signal',
+    'unix_signal_fixed_source_oracle',
+    'unix_signal_fixed_source_wrapper',
+    'unix_signal_oracle_unix_signal_README_md',
+    'unix_signal_oracle_unix_signal_probe_c',
+    'unix_signal_oracle_unix_signal_run_py',
+    'unix_signal_oracle_unix_signal_test_run_py',
+    'unix_signal_profile_technical_contract',
+    'unix_signal_retirement_source_archive',
+    'unix_signal_retirement_source_exporter',
+    'unix_signal_unix_signal_dependency_current_thread_cast',
+    'unix_signal_unix_signal_dependency_errno_conversion',
+    'unix_signal_unix_signal_dependency_filelike_downcast',
+    'unix_signal_unix_signal_dependency_send_flags',
+    'unix_signal_unix_signal_dependency_sendmsg_entry',
+    'unix_signal_unix_signal_dependency_sendto_entry',
+    'unix_signal_unix_signal_dependency_socket_filelike_write',
+    'unix_signal_unix_signal_dependency_unix_public_reexport',
+    'unix_signal_unix_signal_dependency_unix_stream_reexport',
+    'unix_signal_unix_signal_dependency_user_iovec',
+    'unix_signal_unix_signal_module_c_types',
+    'unix_signal_unix_signal_module_constants',
+    'unix_signal_unix_signal_module_poll',
+    'unix_signal_unix_signal_module_sig_action',
+    'unix_signal_unix_signal_module_sig_disposition',
+    'unix_signal_unix_signal_module_sig_mask',
+    'unix_signal_unix_signal_module_sig_num',
+    'unix_signal_unix_signal_module_sig_stack',
+    'unix_signal_unix_signal_module_signals_fault',
+    'unix_signal_unix_signal_module_signals_kernel',
+    'unix_signal_unix_signal_module_signals_mod',
+    'unix_signal_unix_signal_module_signals_raw',
+    'unix_signal_unix_signal_module_signals_seccomp',
+    'unix_signal_unix_signal_module_signals_user',
+    'unix_signal_unix_signal_sendmmsg_entry',
+    'unix_signal_unix_signal_writev_entry',
+}
+HEPTA_ROLES_V5 = HEPTA_ROLES_V4 | {
+    'authority_lease_concurrency_contract',
+    'authority_lease_entry_clock_oracles',
+    'authority_lease_owner',
+    'authority_lease_pair_boundary_owner',
+    'authority_lease_shared_fence_oracles',
+    'authority_lease_state_owner',
+    'mcp_c37_profile_regression_baseline',
+    'mcp_cli_protocol_runner',
+    'mcp_cli_protocol_runner_oracles',
+    'mcp_conformance_runbook',
+    'mcp_execution_identity_contract',
+    'mcp_oauth_reuse_negative',
+    'mcp_official_adapter',
+    'mcp_official_runner',
+    'mcp_official_runner_oracles',
+    'mcp_profile_development_contract',
+    'mcp_profile_execution_verifier',
+    'mcp_profile_reader',
+    'mcp_profile_reader_oracles',
+    'mcp_profile_regression_reviewer',
+    'mcp_profile_verifier_oracles',
+    'mcp_security_reference_patch',
+    'mcp_upstream_descriptor',
+    'mcp_upstream_package_lock',
+    'mcp_vendor_cli_entrypoint',
+    'mcp_vendor_development_contract',
+    'mcp_vendor_execution_descriptor',
+    'mcp_vendor_lock',
+    'mcp_vendor_manifest',
+    'mcp_vendor_source_verifier',
+    'mcp_vendor_verifier_oracles',
+    'rmcp_oauth_discovery_contract',
+    'rmcp_oauth_discovery_http_client',
+    'rmcp_oauth_http_challenge_adapter',
+    'rmcp_oauth_login_route',
+    'rmcp_oauth_registration_oracles',
+    'rmcp_oauth_registration_owner',
+    'root_failure_report',
+    'root_observation_isolation_oracles',
+    'root_observation_worker_owner',
+    'sdk_child_lifecycle_contract',
+    'sdk_ci_workflow',
+    'sdk_exec_oracles',
+    'sdk_exec_owner',
+    'sdk_fixture_home_setup',
+    'sdk_fixture_lifecycle_contract',
+    'sdk_fixture_lifecycle_oracles',
+    'sdk_mcp_conformance_oracles',
+    'sdk_owned_child_lifecycle_oracles',
+    'sdk_owned_home_owner',
+    'sdk_peer_context_config',
+    'sdk_peer_dependency_hook',
+    'sdk_root_git_attributes',
+    'sdk_typescript_manifest',
+    'sdk_workspace_lock',
+    'sdk_workspace_manifest',
+    'sdk_workspace_members',
+    'sqlite_startup_development_guide',
+    'sqlite_startup_oracles',
+    'sqlite_startup_runtime',
+}
+GOLDEN_ROLES_V5 = GOLDEN_ROLES_V4
+SOURCE_MAP_V5_SHA256 = '00d8060c5e56e0d4f268f37fdb4bea53246dac122836b88b79cd11bc6dd9bc9c'
+
+
 def roles_for_version(version):
-    if type(version) is not int or version not in (1, 2, 3, 4):
+    if type(version) is not int or version not in (1, 2, 3, 4, 5):
         raise ProfileError("unsupported source map schema_version")
+    if version == 5:
+        return OS_ROLES_V5, HEPTA_ROLES_V5, GOLDEN_ROLES_V5
     if version == 4:
         return OS_ROLES_V4, HEPTA_ROLES_V4, GOLDEN_ROLES_V4
     if version == 3:
@@ -502,7 +657,8 @@ def roles_for_version(version):
 def source_map_name(version):
     roles_for_version(version)
     return {1: "organ_source_map.json", 2: "organ_source_map_v2.json",
-            3: "organ_source_map_v3.json", 4: "organ_source_map_v4.json"}[version]
+            3: "organ_source_map_v3.json", 4: "organ_source_map_v4.json",
+            5: "organ_source_map_v5.json"}[version]
 
 PRODUCTION = {
     "activation": "disabled",
@@ -580,6 +736,8 @@ def check_map(mapping):
     for name, roles in (("os", os_roles), ("hepta", hepta_roles)):
         entries = sources[name]
         if not isinstance(entries, dict) or set(entries) != roles:
+            if mapping["schema_version"] == 5:
+                raise ProfileError(f"unsupported source map: schema5 requires exactly these {name} roles: {sorted(roles)}")
             raise ProfileError(f"source map requires exactly these {name} roles: {sorted(roles)}")
         for role, path in entries.items():
             source_path(path, f"{name}.{role}")
@@ -598,6 +756,9 @@ def check_map(mapping):
             raise ProfileError(f"{name} golden roles must name distinct files")
     if mapping["schema_version"] == 4 and sha256(canonical(mapping)) != SOURCE_MAP_V4_SHA256:
         raise ProfileError("schema4 source map differs from the code-owned literal path contract")
+
+    if mapping["schema_version"] == 5 and sha256(canonical(mapping)) != SOURCE_MAP_V5_SHA256:
+        raise ProfileError("schema5 source map differs from the code-owned literal path contract")
 
 
 def check_current_contract(manifest, mapping):
@@ -670,6 +831,76 @@ def check_current_contract(manifest, mapping):
         digest_and_size(row, role)
     return hepta["commit"]
 
+
+def check_current_contract_v5(manifest, mapping):
+    """Check the current V5 declaration before selecting its Hepta checkout.
+
+    This gate returns the declared pin, not a source qualification. Actual
+    repository bytes, clean identities and original ancestry still require
+    verify_manifest with both repositories.
+    """
+    check_map(mapping)
+    if mapping["schema_version"] != 5:
+        raise ProfileError("current contract requires the fixed schema5 map")
+    expected_keys = {"schema_version", "qualification", "os_identity_binding", "hepta",
+                     "original_history_owner", "source_map_sha256", "production", "sources", "goldens"}
+    if not isinstance(manifest, dict) or set(manifest) != expected_keys:
+        raise ProfileError("current contract requires the exact source-manifest fields")
+    if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 5:
+        raise ProfileError("current contract requires schema5; historical profiles need an explicit historical path")
+    if (manifest["qualification"] != "source-only"
+            or manifest["os_identity_binding"] != "explicit_caller_head_and_tree_in_verification_receipt"
+            or manifest["original_history_owner"] != HISTORY_OWNER
+            or manifest["source_map_sha256"] != SOURCE_MAP_V5_SHA256):
+        raise ProfileError("current contract identity, history owner or map seal differs")
+    if canonical(manifest["production"]) != canonical(PRODUCTION):
+        raise ProfileError("current contract must retain all seven disabled production inputs")
+    hepta = manifest["hepta"]
+    if not isinstance(hepta, dict) or set(hepta) != {"commit", "tree"}:
+        raise ProfileError("current contract requires one exact Hepta commit/tree")
+    for kind in ("commit", "tree"):
+        full_oid(hepta[kind], f"current Hepta {kind}")
+
+    def digest_and_size(row, label):
+        if not isinstance(row["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+            raise ProfileError(f"current contract has an invalid {label} SHA256")
+        if type(row["bytes"]) is not int or row["bytes"] < 0:
+            raise ProfileError(f"current contract has an invalid {label} size")
+
+    sources = manifest["sources"]
+    if not isinstance(sources, dict) or set(sources) != {"os", "hepta"}:
+        raise ProfileError("current contract requires both source role sets")
+    for side in ("os", "hepta"):
+        rows = sources[side]
+        if not isinstance(rows, list) or len(rows) != len(mapping["sources"][side]):
+            raise ProfileError(f"current contract has an incomplete {side} role set")
+        seen = set()
+        for row in rows:
+            if not isinstance(row, dict) or set(row) != {"role", "path", "git_blob", "sha256", "bytes"}:
+                raise ProfileError(f"current contract has invalid {side} source fields")
+            role = row["role"]
+            if not isinstance(role, str) or role in seen or role not in mapping["sources"][side]:
+                raise ProfileError(f"current contract has an unknown or duplicate {side} role")
+            seen.add(role)
+            if row["path"] != mapping["sources"][side][role]:
+                raise ProfileError(f"current contract changes the reviewed {side}.{role} path")
+            full_oid(row["git_blob"], f"current {side}.{role} blob")
+            digest_and_size(row, f"{side}.{role}")
+    rows = manifest["goldens"]
+    if not isinstance(rows, list) or len(rows) != len(mapping["goldens"]):
+        raise ProfileError("current contract requires all five golden pairs")
+    seen = set()
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != {"role", "os_path", "hepta_path", "sha256", "bytes"}:
+            raise ProfileError("current contract has invalid golden fields")
+        role = row["role"]
+        if not isinstance(role, str) or role in seen or role not in mapping["goldens"]:
+            raise ProfileError("current contract has an unknown or duplicate golden role")
+        seen.add(role)
+        if any(row[f"{side}_path"] != mapping["goldens"][role][side] for side in ("os", "hepta")):
+            raise ProfileError(f"current contract changes golden {role} paths")
+        digest_and_size(row, role)
+    return hepta["commit"]
 
 class _TreeEntryStream:
     """Decode bounded tree headers; retain typed edges, never tree/blob bodies."""
@@ -1069,23 +1300,23 @@ class Repository:
 
 def create_manifest(os_repo, hepta_repo, os_head, os_tree, hepta_head, hepta_tree, mapping):
     check_map(mapping)
-    if mapping["schema_version"] == 4:
+    if mapping["schema_version"] in (4, 5):
         # Keep V1-V3 readers and receipts unchanged. Current reads cannot fetch
         # missing objects as a side effect of verifying a supposedly frozen pair.
         os_repo = Repository(os_repo.path, os_repo.name, local_objects_only=True)
         hepta_repo = Repository(hepta_repo.path, hepta_repo.name, local_objects_only=True)
     os_identity = os_repo.check(os_head, os_tree)
     hepta_identity = hepta_repo.check(hepta_head, hepta_tree)
-    if mapping["schema_version"] == 4:
+    if mapping["schema_version"] in (4, 5):
         # The fixed map is itself a tracked OS source, not an operator-selected
         # replacement. It contains paths, never its own source/manifest hash.
-        stored_bytes, _ = os_repo.file("support/release/organ_source_map_v4.json")
-        stored_map = load_json_bytes(stored_bytes, "checked-in schema4 source map")
+        stored_bytes, _ = os_repo.file("support/release/" + source_map_name(mapping["schema_version"]))
+        stored_map = load_json_bytes(stored_bytes, f"checked-in schema{mapping['schema_version']} source map")
         if canonical(stored_map) != canonical(mapping):
-            raise ProfileError("checked-in schema4 map differs from the reviewed map")
+            raise ProfileError(f"checked-in schema{mapping['schema_version']} map differs from the reviewed map")
     object_closure = None
     current_sources = None
-    if mapping["schema_version"] == 4:
+    if mapping["schema_version"] in (4, 5):
         object_closure = {"os": os_repo.prove_object_closure(),
                           "hepta": hepta_repo.prove_object_closure(HISTORY_OWNER)}
         # A real verified parent path is the V4 ancestor proof. Git merge-base

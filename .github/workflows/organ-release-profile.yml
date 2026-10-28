@@ -15,6 +15,12 @@ on:
       - '.github/workflows/organ-current-pair.yml'
       - 'README.md'
   workflow_dispatch:
+    inputs:
+      historical_os_ref:
+        description: 'Optional historical V4 Desktop: explicit full 40-hex commit; blank selects current V5'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -23,6 +29,24 @@ permissions:
 # actual Hepta/OS release pair, run the original owner, or authorize effects.
 jobs:
   source-profile-host:
+    if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.historical_os_ref == '') }}
+    needs: [source-profile-oracle]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Require every complete source-tool partition to succeed
+        env:
+          ORACLE_RESULT: ${{ needs.source-profile-oracle.result }}
+        run: |
+          test "$ORACLE_RESULT" = success
+
+  source-profile-oracle:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.historical_os_ref == '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [legacy, typed-v4, v5]
+        mode: [normal, optimized]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
@@ -31,7 +55,138 @@ jobs:
     env:
       DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       GIT_TERMINAL_PROMPT: '0'
+      V5_TEST_LANE: ${{ matrix.lane }}
+      V5_TEST_MODE: ${{ matrix.mode }}
     steps:
+      - name: Check out the exact current V5 candidate without retained credentials
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2, already pinned in this repository
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Require inputs and validate the fixed V5 contract
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"
+          for path in README.md \
+            support/release/organ_release_profile.py \
+            support/release/organ_source_map.json \
+            support/release/organ_source_map_v2.json \
+            support/release/organ_source_map_v3.json \
+            support/release/organ_source_map_v4.json \
+            support/release/organ_source_map_v5.json \
+            support/release/test_source_schema5.py \
+            support/release/profiles/2026-10-27-organ-source-pre-v5-v4.json \
+            support/release/test_source_schema4.py \
+            support/release/profiles/current-organ-source.json \
+            support/release/profiles/2026-10-26-organ-source-1138-f397-v3.json \
+            support/release/test_organ_release_profile.py \
+            support/release/check_organ_pair.py \
+            support/release/test_check_organ_pair.py; do
+            test -f "$path"
+            test ! -L "$path"
+            git ls-files --error-unmatch -- "$path" > /dev/null
+          done
+          # Require a real project entry point; documentation does not change source pins.
+          test -f README.md && test ! -L README.md && test -s README.md
+          python3 -I -B - <<'PY'
+          from pathlib import Path
+          import runpy
+
+          source = Path("support/release")
+          api = runpy.run_path(str(source / "organ_release_profile.py"))
+          for version in (1, 2, 3, 4, 5):
+              mapping = api["load_json"](source / api["source_map_name"](version))
+              if type(mapping.get("schema_version")) is not int or mapping["schema_version"] != version:
+                  raise SystemExit("Map file does not declare its fixed schema")
+              api["check_map"](mapping)
+              print(f"Committed map schema {version} passed: "
+                    f"{len(mapping['sources']['os'])} OS roles, "
+                    f"{len(mapping['sources']['hepta'])} Hepta roles, "
+                    f"{len(mapping['goldens'])} golden pairs.")
+          api["check_current_contract_v5"](
+              api["load_json"](source / "profiles/current-organ-source.json"),
+              api["load_json"](source / "organ_source_map_v5.json"))
+          print("Committed current fixed schema5 contract passed.")
+          print("Map/declaration structure only; mapped repository bytes and real ancestry are not qualified here.")
+          PY
+
+      - name: Run the bounded exact V5 case partition without skipped tests
+        run: |
+          set -euo pipefail
+          python_flags=()
+          if [ "$V5_TEST_MODE" = optimized ]; then python_flags=(-O); fi
+          python3 "${python_flags[@]}" -I -B - <<'PY'
+          import hashlib, os, unittest
+
+          modules = {
+              'legacy': ('test_check_organ_pair.py', 'test_organ_release_profile.py'),
+              'typed-v4': ('test_source_schema4.py',),
+              'v5': ('test_source_schema5.py',),
+          }
+          def cases(suite):
+              for item in suite:
+                  if isinstance(item, unittest.TestSuite):
+                      yield from cases(item)
+                  else:
+                      yield item
+          loader = unittest.defaultTestLoader
+          all_ids = [case.id() for case in cases(loader.discover('support/release', pattern='test_*.py'))]
+          suites, ids = {}, {}
+          for lane, files in modules.items():
+              suites[lane] = unittest.TestSuite(loader.discover('support/release', pattern=name) for name in files)
+              ids[lane] = [case.id() for case in cases(suites[lane])]
+          union = [identity for lane in modules for identity in ids[lane]]
+          if len(all_ids) != len(set(all_ids)) or len(union) != len(set(union)) or sorted(union) != sorted(all_ids):
+              raise SystemExit('CI lanes must be an exact disjoint union of complete discovery')
+          preserved = {
+              'legacy': '20011921d9f6abdb12fe852abaa62c3cccd7ea03e7a906707b9b7fad3f417d38',
+              'typed-v4': '6b325a077a3c931687085d77c31d0aa0dca7becbec845c9ce76027d4819cdf18',
+          }
+          for lane, expected in preserved.items():
+              actual = hashlib.sha256(('\n'.join(sorted(ids[lane])) + '\n').encode()).hexdigest()
+              if actual != expected:
+                  raise SystemExit('Original qualified component case IDs changed: ' + lane)
+          selected = os.environ['V5_TEST_LANE']
+          if selected not in modules or not ids[selected]:
+              raise SystemExit('Unknown or empty code-owned CI partition')
+          count = len(ids[selected])
+          result = unittest.TextTestRunner(verbosity=2).run(suites[selected])
+          if not result.wasSuccessful() or result.testsRun != count or result.skipped:
+              raise SystemExit('Selected complete CI partition failed, omitted tests, or skipped')
+          print(f'{selected}: {result.testsRun} actual cases, exact disjoint union {len(all_ids)}, no skipped cases.')
+          PY
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"
+          {
+            printf '## Fixed V5 source-tool partition\n\n'
+            printf 'Candidate commit: `%s`\n\n' "$DESKTOP_SHA"
+            printf 'Partition: `%s`; mode: `%s`.\n\n' "$V5_TEST_LANE" "$V5_TEST_MODE"
+            printf 'Temporary-Git/child-fixture checks only; actual pair and production authority remain separate gates.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  historical-v4-source-profile:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.historical_os_ref != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    env:
+      DESKTOP_SHA: ${{ inputs.historical_os_ref }}
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - name: Validate explicit historical V4 source identity
+        run: |
+          python3 -I -B - <<'PY'
+          import os, re
+          if re.fullmatch(r"[0-9a-f]{40}", os.environ['DESKTOP_SHA']) is None:
+              raise SystemExit('Historical V4 requires an explicit full lowercase 40-hex OS commit')
+          PY
+
       - name: Check out the exact candidate without retained credentials
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2, already pinned in this repository
         with:

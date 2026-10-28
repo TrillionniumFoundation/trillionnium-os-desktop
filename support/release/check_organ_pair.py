@@ -22,15 +22,17 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_v
     """Commands are code-owned; a manifest cannot inject an executable or flags."""
     network = ["--offline"] if offline else []
     owning_packages = ["codex-hepta-agentd", "codex-hepta-memory", "codex-hepta-cognitive-store"]
-    if schema_version in (3, 4):
+    if schema_version in (3, 4, 5):
         owning_packages += ["codex-hepta-contracts", "codex-state",
                             "codex-hepta-agent-protocol", "codex-hepta-learning-ledger",
                             "codex-git-utils", "codex-hepta-memory-extension",
                             "codex-hepta-automation", "codex-hepta-fleet", "codex-hepta-supervisor",
                             "codex-arg0"]
-    if schema_version == 4:
+    if schema_version in (4, 5):
         owning_packages += ["codex-app-server-protocol", "codex-thread-store", "codex-core-plugins",
                             "codex-rollout", "codex-file-system"]
+    if schema_version == 5:
+        owning_packages.append("codex-rmcp-client")
     package_flags = [flag for package in owning_packages for flag in ("-p", package)]
     steps = [
         ("ui-build", os_root, "1.88.0",
@@ -50,7 +52,7 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_v
          ["just", "test", "--locked", *network, *package_flags,
           "--test-threads", "2", "--retries", "0", "--cargo-profile", hepta_profile]),
     ]
-    if schema_version in (3, 4):
+    if schema_version in (3, 4, 5):
         steps.insert(4, ("hepta-root-build", hepta_root, "1.95.0",
                          ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
                           "-p", "codex-hepta-agentd", "--bin", "hepta-authority-host",
@@ -117,7 +119,7 @@ def main(argv=None):
     parser.add_argument("--os-head", required=True)
     parser.add_argument("--os-tree", required=True)
     parser.add_argument("--manifest", required=True)
-    parser.add_argument("--required-schema", type=int, choices=(1, 2, 3, 4),
+    parser.add_argument("--required-schema", type=int, choices=(1, 2, 3, 4, 5),
                         help="require one schema for a current release; historical verification otherwise remains available")
     parser.add_argument("--output-dir", required=True)
     execution = parser.add_mutually_exclusive_group()

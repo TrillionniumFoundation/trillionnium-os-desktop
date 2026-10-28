@@ -236,6 +236,58 @@ history-owner override and always requires the original full commit above.
 These tests qualify the release-profile tool; they do not stand in for either
 project's source qualification or an original-owner end-to-end transaction.
 
+## Schema 5: fixed current composition
+
+V5 is a separate closed contract: 396 Desktop roles, 261 original Hepta roles
+and five unchanged golden pairs. Its code-owned literal role sets and canonical
+map seal bind `organ_source_map_v5.json`; a V4 map tagged five is unsupported.
+The 354/260 reviewed draft paths remain intact. The added paths cover the union
+of OOM's twenty changed owners and strict182 prerequisites absent from that
+draft, three V5 release inputs, and Hepta's Root failure-report owner. Each path
+has one role; missing, aliased or arbitrary role/path shapes cannot qualify.
+Purpose and source provenance accompany the source-admission review.
+
+V5 uses the same typed selected-owner-chain and whole-current-source proof
+described below for V4. The V1–4 map bytes, original receipt provenance, CLI
+routes and V4 eighteen-owner host dispatch remain fixed. The previous current
+V4 declaration is preserved as `2026-10-27-organ-source-pre-v5-v4.json`.
+`check_current_contract_v5` validates only a strict V5 declaration before its
+single Hepta pin is emitted; actual source bytes and ancestry still require
+both repositories and the external final OS HEAD/tree binding.
+
+The current pair workflow explicitly requires schema five. Its seven ordered
+steps retain the original build/test commands and append `codex-rmcp-client`
+to the eighteen V4 owning packages. All existing profiles, locked inputs,
+deadlines, two test threads and zero retries remain. A child failure stops the
+dependent lane and preserves `qualification: none`. A successful source-only
+receipt neither claims host execution nor supplies production authority.
+
+Both existing workflow files keep automatic current entry points. The stable
+`source-profile-host` job summarizes a new six-partition oracle and rejects any
+failed, cancelled or skipped dependency. Each partition has its existing
+ten-minute limit: complete legacy, typed V4 and V5 suites, normal and optimized.
+The actual discovered case IDs must be an exact disjoint union; original 54
+legacy and 62 V4 case-ID seals are checked. No retries or skips are allowed.
+The original eight `CurrentWorkflowTests` now execute uniquely preserved V4
+caller blocks. New V5 tests execute the actual current pin reader, source guard,
+complete bash dispatcher and disabled-production refusal. Neither fixture lane
+executes Cargo products or replaces actual final-pair qualification.
+
+Historical V4 workflow jobs run only on explicit manual dispatch with a full
+forty-character lowercase `historical_os_ref`. They check out that historical
+Desktop and consume its then-matching current manifest and Hepta pin. Blank
+dispatch selects current V5; there is no fallback from V5 to a historical map.
+Do not select an old archive inside a new checkout and present it as a historical
+qualification. Branch protection is not changed by this schema transition.
+
+The seven production inputs remain literal disabled values. Reference Model
+authority accepts `runtime.codex.turn_start`, an admitted Fleet peer and
+`codex-app-server:<positive u64>`; the reference Secrets authority fixes
+`secrets.read`. Those contracts cannot issue Notes/Device
+`runtime.agentd.production_operation` grants. Their configuration is not evidence
+that the original protected clock, frontier, keyring/revocation, recovered writer
+and current authorization cut form the required production chain.
+
 ## Schema 4: closed expanded source and owning-package contract
 
 The schema-4 current candidate has its own literal role sets and
