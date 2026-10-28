@@ -83,7 +83,7 @@ profiles and receipts intact. See [the detailed source contract](../../docs/agen
 
 ## Fixed V5 current source profile
 
-The fixed [`organ_source_map_v5.json`](organ_source_map_v5.json) requires 396
+The fixed [`organ_source_map_v5.json`](organ_source_map_v5.json) requires 402
 Desktop roles, 271 Hepta roles and the same five golden pairs. It preserves the
 reviewed 354/260 draft paths, adds each missing OOM/strict182 dependency once,
 the three V5 release inputs and the original Root failure-report owner, plus ten required CLI producer dependencies. The
@@ -549,3 +549,28 @@ this is why the final verification must include the newly committed manifest.
 Keep all original maps, seven stages, eight products, 19 selected test owners,
 budgets and disabled production inputs. Earlier host results retain their
 original source tuple and do not qualify a successor by association.
+
+## M6 delivery source contract
+
+The current fixed V5 requires 402 Desktop roles, 271 Hepta roles, five unchanged
+wire-golden pairs and nineteen unchanged owning packages. Six explicit roles
+bind the real Unix datagram message owner, its eight native tests, the original
+ordinary probe and runner, and the technical/development manuals. Existing IPC
+and page-memory contract roles bind their updated documentation. Required
+normal CLI production, all seven host commands and their budgets are unchanged.
+
+The prior 396-role V5 is retained by Git at Desktop
+`9088f2e5ef5666859ffe76ffb4db3c58e0733497` with its then-matching source tool,
+map and `profiles/current-organ-source.json` (relative to `support/release`).
+Use that exact historical checkout for its verification. Removing the six M6
+roles from the current map is an unsupported current shape. V1–V4 routes and
+all old refusal assertions remain unchanged.
+
+The original M6 commits are 5d82e62e2141a280931866251aa8a39a6e6d064e and
+8a1ea448fc58a47f9a36800a52bfc9c63ef7c763. The delivery integration preserves
+their production/native/probe inputs; their historical passing kernel and
+ordinary receipts remain tied to 8a1. Source-only QA and manifest generation do
+not transfer those results to a new head. The actual combined candidate must
+repeat the full unfiltered Core/OSTD and both ordinary SMP2/SMP4 seven-group
+profiles under their original budgets. Linux `memory.max`, production-authority
+assembly, real Agentd control and phone/GPU isolation remain separate work.

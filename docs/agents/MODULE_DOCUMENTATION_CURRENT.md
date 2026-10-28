@@ -17,7 +17,7 @@ Hepta代码基点仍是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`／tree `ff237
 新增README可能改变Cargo自动readme元数据，因此不声称新产品binary字节等价。
 
 **当前资格仍是源码与发布工具验证；最终版本组合、GUI、native持久链和生产授权尚需各自同源收据。**
-更正后的V5固定396 OS／271 Hepta角色、5对golden和19个Hepta owning packages。七项生产输入保持关闭。
+M6交付后继的V5固定402 OS／271 Hepta角色、5对golden和19个Hepta owning packages。七项生产输入保持关闭。
 原V1–4地图、显式历史验证、旧失败和原收据保留；新commit不自动继承组件运行资格。
 
 ## 文档与来源如何阅读
@@ -35,13 +35,13 @@ Hepta代码基点仍是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`／tree `ff237
 
 | 模块 | 技术契约与实际源码 | 开发／验证入口 | 当前缺口与不可外推项 |
 | --- | --- | --- | --- |
-| A00 集成／发布 | [发布合同](ORGAN_RELEASE_PROFILE.md)、[release开发](../../support/release/README.md)；固定V5 396／271 literal map | 新V5 caller／原V4历史caller，六互斥CI分区；source-only命令见release手册 | 396／271与19 owners仅固定装配。实际pair七步、GUI／native和七项生产输入仍分别验收。 |
+| A00 集成／发布 | [发布合同](ORGAN_RELEASE_PROFILE.md)、[release开发](../../support/release/README.md)；固定V5 402／271 literal map | 新V5 caller／原V4历史caller，六互斥CI分区；source-only命令见release手册 | 402／271与19 owners仅固定装配。实际pair七步、GUI／native和七项生产输入仍分别验收。 |
 | A01 上游／启动 | [构建手册](../../support/build/README.md)、[上游Book](../../kernel/asterinas/book/src/SUMMARY.md)；`kernel/asterinas/{kernel,ostd,osdk}` | [ktest手册](../../support/build/ktest/README.md)、`support/build/verify-source.py`、下方Core入口 | 新候选必须绑定自己的完整源码、OSDK、普通内核与各测试ELF。上游共享Book与源码注释不等于所有低层crate都有运行手册。 |
 | A02 HOS2 codec | [ABI包入口](../../libs/os-abi/README.md)、[Native ABI](../NATIVE_ABI.md)；`libs/os-abi` | `python3 -I -B tests/abi/run_acceptance.py`，协议样本与拒绝断言见该目录 | 五种wire格式不等于ordinary内核开放五类效果；当前普通控制路径仍按QueryAbi门禁。 |
 | A03 Control core | [API合同](../../libs/os-control/API_CONTRACT.md)；`libs/os-control`及真实后端接点 | [control验证手册](../../tests/control/VALIDATION.md)、[no_std验证](../../tests/control/backend_no_std/VALIDATION.md)，`bash tests/control/run-validation.sh` | host/Loom模型不能代替内核执行和原Hepta持久终态。`tests/control/loom`没有独立完整开发／技术手册。 |
 | A04 Linux／存储／Unix信号 | [Linux缺口](../../compat/linux/GAPS.md)、[STREAM SIGPIPE合同](../../support/kernel-safety/UNIX_SOCKET_SIGPIPE.md)、[SQLite重启](../../tests/workloads/linux/SQLITE_GUEST_RESTART.md)；Unix `stream/{connected,socket}.rs`、syscall `{pwritev,sendmmsg}.rs` | [42-case真实guest](../../tests/kernel/unix-signal/README.md)、[fixed132 profile](../../tests/kernel/network/POST1138_UNIX_SIGNAL_PROFILE.md)、[Linux workload](../../tests/workloads/linux/README.md)；下方Unix命令 | 只对类型确认的Unix STREAM走单次writev/send路径；后来iovec故障保留已复制前缀。SEQPACKET、TCP、UDP、vsock保留原路径，不能宣传其完整信号／向量语义。小Tokio workload仍用共享手册。 |
 | A05 进程／权限／映像 | [Process映像](../ASTERINAS_PROCESS_IMAGE_G1C.md)、[安全入口](../../support/kernel-safety/README.md)；`security/lsm/modules/capability.rs`、process、x86 VM retirement | [control探针](../../tests/kernel/control/README.md)、[safety探针](../../tests/kernel/safety/README.md)；`python3 -I -B tests/kernel/safety/run.py --help`后按手册选定真实probe | capability目标能力约束、namespace、exec与VM寿命按实际owner测试判定。已纳入六个原OOM floor／VM生命周期提交；[OOM合同](../../support/kernel-safety/OOM_ADJUSTMENT.md)和[真实guest手册](../../tests/kernel/oom-adjustment/README.md)给出开发入口。memory.max、OOM killer及MAC管理资格仍未建立。 |
-| A06 调度／资源 | [FAIR运行](../../support/kernel-safety/FAIR_RUNTIME.md)、[组实体](../../support/kernel-safety/FAIR_GROUP_ENTITIES.md)、[CPU bandwidth](../ASTERINAS_CPU_BANDWIDTH_N0.md)、[调度权限](../../support/kernel-safety/SCHEDULING_PERMISSIONS.md) | [forced affinity](../../tests/kernel/forced-affinity/README.md)、[FAIR](../../tests/kernel/fair-runtime/README.md)、[page](../../tests/kernel/page-memory/README.md)；以手册原145%／3% quota和SMP配置运行 | 已有root route、route pin、强制affinity handoff、初次CPU选择与CPUNODE修复。SMP max仍缺remote rendezvous；c235 guard仅独立分支，未纳入当前kernel。普通`cpu.weight`仍拒绝；冷代／活跃更新9516另支未纳入。`hepta.anon.*`不是完整`memory.max`；无假启用。 |
+| A06 调度／资源 | [FAIR运行](../../support/kernel-safety/FAIR_RUNTIME.md)、[组实体](../../support/kernel-safety/FAIR_GROUP_ENTITIES.md)、[CPU bandwidth](../ASTERINAS_CPU_BANDWIDTH_N0.md)、[调度权限](../../support/kernel-safety/SCHEDULING_PERMISSIONS.md) | [forced affinity](../../tests/kernel/forced-affinity/README.md)、[FAIR](../../tests/kernel/fair-runtime/README.md)、[page](../../tests/kernel/page-memory/README.md)、[M6数据报开发](../../tests/kernel/datagram-memory/README.md)；以手册原145%／3% quota和SMP配置运行 | M6真实数据报载荷使用原`alloc_ipc_segment`／USegment，sender及祖先记账，释放由真实frame寿命决定；[技术合同](../../support/kernel-safety/DATAGRAM_MEMORY.md)列出发布／故障／peek／迁移边界。已有root route、route pin、强制affinity handoff、初次CPU选择与CPUNODE修复。SMP max仍缺remote rendezvous；c235 guard仅独立分支，未纳入当前kernel。普通`cpu.weight`仍拒绝；冷代／活跃更新9516另支未纳入。`hepta.anon.*`不是完整`memory.max`；无假启用。 |
 | A07 Hepta原owner／装配 | [适配器合同](../../services/hepta-os/CONTRACT.md)、[RUN](../../services/hepta-os/RUN.md)；原Hepta19包与下表新专册 | `cargo +1.88.0 test --manifest-path services/hepta-os/Cargo.toml --features cpu-history --locked`；Hepta原19包Rust测试、SDK50、MCP验证见下方 | observer/history不签发授权、不拥有原writer。State启动、Root恢复、授权lease、OAuth与SDK各有独立owner；组件结果不自动成为本组合资格。 |
 | A08 Android／Binder | [Binder字节](../../support/android/BINDER_BYTES.md)、[线程D1](../../support/android/BINDER_THREADS.md)、[seccomp](../../support/android/SECCOMP.md)；内核Binder owner | [Binder probe手册](../../tests/kernel/binder/README.md)、[Android入口](../../support/android/README.md)，`python3 -I -B tests/kernel/binder/thread_run.py --help`后按原手册执行 | 有界实际线程同步IPC不等于自动线程池、nested/oneway、FD arrays、Android boot／CTS／SELinux／BSP完成。 |
 | A09 硬件／GPU／VMM | [硬件合同](../HARDWARE_AND_DRIVERS.md)、[DMA domains](../../support/kernel-safety/DMA_DOMAINS.md)、[VMM gates](../../support/vmm/GATES.md) | [硬件runbook](../../tests/hardware/RUN.md)、[lifecycle模型](../../support/vmm/device_lifecycle/README.md)，`cargo +1.88.0 test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked`只验证模型 | 共享IOMMU页表或枚举不证明设备间DMA隔离。现实现限Intel VT-d与root-bus/function-zero入口；AMD平台或同组多功能GPU不能据此证明设备间DMA隔离。模型、有限requester测试不证明GPU reset／真实手机支持；`kernel/asterinas/kernel/comps/README.md`仍仅标题。 |
@@ -567,3 +567,18 @@ regenerated after the code commit and verified from the final manifest commit.
 This source-only repair does not transfer earlier host, GUI, native or production
 qualification to the successor. The paired Hepta pin and disabled production
 inputs remain fixed; the current source receipt binds the final Desktop head.
+
+## M6实际数据报页：交付源码后继
+
+本后继仅从真实9088 CI fixture修复基线cherry-pick原5d82与8a1两个提交，
+没有合并实验分支的其他历史。`message.rs`、八个native测试、原C probe和薄runner
+保持8a1字节与mode；新的六个明确源码角色使当前OS角色为402，Hepta仍271、golden仍5对、owners仍19。
+原396-role V5工具／地图／manifest在9088 Git历史中保留；新工具拒绝缺少M6角色的旧shape。
+源码角色缺失、路径alias和提交删除真实输入均须拒绝，正常与优化的完整原source/schema/caller QA保持。
+
+冻结8a1已有Core428、OSTD238（235实测与原3个VMX soft skip），以及普通kernel的boot／QueryAbi和
+SMP2、SMP4各七组181条原始检查／67个ID／23次IPC归零观测的独立收据。
+这些是8a1历史资格；本次合成交付源码和Hepta310c partner必须绑定自己的最终tuple并重新执行相应产品／guest验证。
+原IPC、socket／descriptor和安全回归仍分别保留，不用M6七组替代。
+当前仍未完成`memory.max`、kernel heap／ancillary全记账、CPU f93整合、七项真实生产装配和真实手机／GPU资格。
+新增技术与开发记录在机器清单`m6_delivery_source_successor`中；旧8362／7673／310c来源字段保留历史身份，不重新命名。

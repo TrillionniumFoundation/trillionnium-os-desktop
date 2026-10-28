@@ -32,6 +32,14 @@ PACKAGES = ["codex-hepta-agentd", "codex-hepta-memory", "codex-hepta-cognitive-s
             "codex-rollout", "codex-file-system", "codex-rmcp-client"]
 STEPS = ["ui-build", "ui-tests", "adapter-tests", "hepta-build", "hepta-root-build",
          "hepta-recovery-build", "hepta-tests"]
+M6_OS_ROLES = {
+    'kernel_unix_datagram_message': 'kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message.rs',
+    'kernel_unix_datagram_message_oracle': 'kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message/tests.rs',
+    'kernel_datagram_memory_contract': 'support/kernel-safety/DATAGRAM_MEMORY.md',
+    'kernel_datagram_memory_probe': 'tests/kernel/datagram-memory/probe.c',
+    'kernel_datagram_memory_runner': 'tests/kernel/datagram-memory/run.py',
+    'kernel_datagram_memory_development_manual': 'tests/kernel/datagram-memory/README.md',
+}
 
 
 def workflow_script(workflow, step):
@@ -78,8 +86,9 @@ class Schema5DeclarationTests(unittest.TestCase):
 
     def test_exact_role_counts_paths_seal_and_five_goldens(self):
         profile.check_map(self.mapping)
-        self.assertEqual((len(self.mapping["sources"]["os"]), len(self.mapping["sources"]["hepta"])), (396, 271))
+        self.assertEqual((len(self.mapping["sources"]["os"]), len(self.mapping["sources"]["hepta"])), (402, 271))
         self.assertEqual(len(self.mapping["goldens"]), 5)
+        self.assertEqual({role: self.mapping["sources"]["os"][role] for role in M6_OS_ROLES}, M6_OS_ROLES)
         self.assertEqual(profile.sha256(profile.canonical(self.mapping)), profile.SOURCE_MAP_V5_SHA256)
         self.assertEqual(profile.source_map_name(5), "organ_source_map_v5.json")
         self.assertTrue(profile.OS_ROLES_V4 < profile.OS_ROLES_V5)
@@ -130,6 +139,14 @@ class Schema5DeclarationTests(unittest.TestCase):
         self.assertEqual(len(previous_v5["sources"]["hepta"]), 261)
         with self.assertRaisesRegex(profile.ProfileError, "unsupported source map"):
             profile.check_map(previous_v5)
+
+        # The frozen 9088 tool remains the owner of the prior 396-role V5.
+        previous_os_v5 = copy.deepcopy(self.mapping)
+        for role in M6_OS_ROLES:
+            previous_os_v5["sources"]["os"].pop(role)
+        self.assertEqual(len(previous_os_v5["sources"]["os"]), 396)
+        with self.assertRaisesRegex(profile.ProfileError, "unsupported source map"):
+            profile.check_map(previous_os_v5)
 
     def test_duplicate_json_keys_are_not_a_second_contract(self):
         raw = profile.canonical(self.mapping).decode().replace('"schema_version": 5', '"schema_version": 5, "schema_version": 5')
@@ -227,6 +244,7 @@ class Schema5SourceTests(unittest.TestCase):
                     ("hepta", "codex-rs/cli/Cargo.toml"),
                     ("hepta", "codex-rs/cli/src/main.rs"),
                     ("hepta", "codex-rs/rmcp-client/tests/streamable_http_test_support.rs")]
+        required += [("os", path) for path in M6_OS_ROLES.values()]
         for side, path in required:
             repo = getattr(self, side)
             original = (repo / path).read_bytes()

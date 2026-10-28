@@ -2,10 +2,24 @@
 
 The Organ resource-isolation audit found that Unix datagrams still used an
 infallible `vec![0; len]` outside the physical-page ledger. This successor changes
-the actual `MessageQueue::try_send`/`MessageReceiver::try_recv` path. It is source
-work awaiting pinned-toolchain compilation and ordinary guest validation; no
-new kernel execution is claimed here. The separate 6487/7673 host combination
-does not acquire this successor's changes or qualifications.
+the actual `MessageQueue::try_send`/`MessageReceiver::try_recv` path. The delivery
+candidate carries the two original M6 commits without changing their Rust or
+probe bytes. Its fixed source contract binds the production owner, eight native
+tests, ordinary C probe, runner and both manuals. The final combined candidate
+requires its own native and ordinary receipts before it is qualified.
+
+Frozen source `8a1ea448fc58a47f9a36800a52bfc9c63ef7c763` has separate retained
+results: Core 428 passed; OSTD 238 passed, including three original VMX soft
+skips (235 tests exercised); a fresh ordinary kernel built and passed boot plus
+QueryAbi; the original seven datagram groups passed separately at SMP2 and SMP4.
+Each SMP run recorded 181 successful case rows, 67 distinct case IDs, 23 physical
+IPC refund observations and the final 33 parent checks. Original 60-second compiler, 120-second boot, 45-second query, 120-second
+datagram-QEMU and 45-second probe budgets were retained.
+These historical outcomes remain bound to 8a1. They do not qualify this new
+Desktop/Hepta source tuple or enable its seven production-authority inputs.
+The retained ordinary completion digest is
+`ebc60f8ddb11b16e1a83e9a1f996b428caa248718ebd397bdf80755734d4afa0`;
+no uploaded artifact URL or new execution is asserted by this documentation.
 
 Each queued payload now owns a real `USegment` obtained from the existing
 `alloc_ipc_segment` allocator. `hepta.page.stat` classifies these frames as `ipc`.

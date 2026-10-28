@@ -354,10 +354,70 @@
       ]
     },
     {
-      "current_boundary": "已有root route、route pin、强制affinity handoff、初次CPU选择与CPUNODE修复。普通`cpu.weight`仍拒绝；冷代／活跃更新9516另支未纳入。`hepta.anon.*`不是完整`memory.max`；无假启用。 SMP max仍缺remote rendezvous；c235 guard仅独立分支，未纳入当前kernel，不能以单CPU或当前guard推断多CPU上限已经闭合。",
+      "current_boundary": "已有root route、route pin、强制affinity handoff、初次CPU选择与CPUNODE修复。普通`cpu.weight`仍拒绝；冷代／活跃更新9516另支未纳入。`hepta.anon.*`不是完整`memory.max`；无假启用。 SMP max仍缺remote rendezvous；c235 guard仅独立分支，未纳入当前kernel，不能以单CPU或当前guard推断多CPU上限已经闭合。 M6载荷接入现有IPC frame ledger；8a1已有独立native/普通SMP2/4历史资格，本交付新头仍需同源验证；不声称memory.max或全部heap计费。",
       "development_entry_description": "[forced affinity](../../tests/kernel/forced-affinity/README.md)、[FAIR](../../tests/kernel/fair-runtime/README.md)、[page](../../tests/kernel/page-memory/README.md)；以手册原145%／3% quota和SMP配置运行",
       "id": "A06",
       "independent_complete_manual_per_crate_claimed": false,
+      "m6_source_entries": [
+        {
+          "bytes": 10537,
+          "git_blob": "2568e7a00095d7e3147718fccbf8840a1bbe62b0",
+          "mode": "100644",
+          "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message.rs",
+          "sha256": "869de28623c4cbeec40f3605dc08266222e6c73a55456811f5d62d66abf15d1b"
+        },
+        {
+          "bytes": 9806,
+          "git_blob": "9f9b288ac55f49cfef84e3dececa02d17e0bbcde",
+          "mode": "100644",
+          "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message/tests.rs",
+          "sha256": "a923e9c525aec6f9d6a8ae7bf356f8c6b021cb2e4517733cb8591e6b62fef255"
+        },
+        {
+          "bytes": 12272,
+          "git_blob": "808c6dcc447ef0decdc97250062cd3a34bde78f5",
+          "mode": "100644",
+          "path": "tests/kernel/datagram-memory/probe.c",
+          "sha256": "34bf8a1357d32d0db65d58a541919728957fe9de490b77e49efcca5e48c646b1"
+        },
+        {
+          "bytes": 626,
+          "git_blob": "c4b5f5286ed611c8a73392dc471142086f3b455e",
+          "mode": "100644",
+          "path": "tests/kernel/datagram-memory/run.py",
+          "sha256": "01c6c94e146483fbbd5d4de4c0df1ebb4d526faedda7e171094e6f4c2ad4f49a"
+        }
+      ],
+      "m6_technical_and_development_documents": [
+        {
+          "bytes": 6485,
+          "git_blob": "76168f9506305d4a593abe144c107bb0c4f5d188",
+          "mode": "100644",
+          "path": "support/kernel-safety/DATAGRAM_MEMORY.md",
+          "sha256": "6aa3b2f15baee4642b08de887f4c9143f6b5e464966e4623584f838e6683826e"
+        },
+        {
+          "bytes": 1855,
+          "git_blob": "8463a6fd0b70295c0b40154695af31e97f4e4c3c",
+          "mode": "100644",
+          "path": "tests/kernel/datagram-memory/README.md",
+          "sha256": "aae8bee42223f9a245d1c29fd5903526b2ae6930d5ed175adc6abef2636d71ca"
+        },
+        {
+          "bytes": 7966,
+          "git_blob": "4d1ff216960eaafdb57d9e12af1fa23ce35ca06e",
+          "mode": "100644",
+          "path": "support/kernel-safety/IPC_BUFFER_MEMORY.md",
+          "sha256": "e23301343fb3e1db39d70bd38333ec9a4c0e88251cd2c2c6ecde81a3e11c754a"
+        },
+        {
+          "bytes": 12657,
+          "git_blob": "6460c2245c5c1f15dae31d461013f0be407d3844",
+          "mode": "100644",
+          "path": "support/kernel-safety/PAGE_MEMORY.md",
+          "sha256": "171e82ca85ea247e6aa40e18d4f46b4dbdcb7df0b5d79759d57369d903982855"
+        }
+      ],
       "name": "调度／资源",
       "source_entries": [
         {
@@ -667,6 +727,17 @@
     "retained_package": "libxkbcommon-dev",
     "source_profile_rebound": false,
     "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+  },
+  "ci_source_declaration_successor": {
+    "actual_original_failure": "mapped schema4 QA bytes changed; stale source-only manifest refused before host steps; original upload found no files",
+    "diagnostic_behavior": "separate invocation receipt/logs retain actual exit; no qualification inferred; original nonzero status preserved",
+    "final_desktop_head_tree": "external final source-only verification receipt; no document self-reference",
+    "hepta_pin_changed": false,
+    "host_GUI_native_or_production_qualification_transferred": false,
+    "original_job_id": 123044201615,
+    "predecessor_desktop_head": "5f617d4fe9f885ccbc1b7bfe4fe186fb61853dee",
+    "source_generation_order": "code commit -> fixed source-only manifest generation -> manifest-only commit -> final HEAD/tree verify",
+    "source_map_changed": false
   },
   "desktop_cargo_manifest_count": 127,
   "desktop_code": {
@@ -1428,7 +1499,45 @@
       }
     ],
     "hepta_count": 271,
-    "map_sha256": "16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71",
+    "m6_os_additions": [
+      {
+        "origin": "original5d82+8a1",
+        "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message.rs",
+        "purpose": "Bind actual M6 production/native/ordinary/development input, with existing publication and refusal semantics unchanged",
+        "role": "kernel_unix_datagram_message"
+      },
+      {
+        "origin": "original5d82+8a1",
+        "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message/tests.rs",
+        "purpose": "Bind actual M6 production/native/ordinary/development input, with existing publication and refusal semantics unchanged",
+        "role": "kernel_unix_datagram_message_oracle"
+      },
+      {
+        "origin": "original5d82+8a1",
+        "path": "support/kernel-safety/DATAGRAM_MEMORY.md",
+        "purpose": "Bind actual M6 production/native/ordinary/development input, with existing publication and refusal semantics unchanged",
+        "role": "kernel_datagram_memory_contract"
+      },
+      {
+        "origin": "original5d82+8a1",
+        "path": "tests/kernel/datagram-memory/probe.c",
+        "purpose": "Bind actual M6 production/native/ordinary/development input, with existing publication and refusal semantics unchanged",
+        "role": "kernel_datagram_memory_probe"
+      },
+      {
+        "origin": "original5d82+8a1",
+        "path": "tests/kernel/datagram-memory/run.py",
+        "purpose": "Bind actual M6 production/native/ordinary/development input, with existing publication and refusal semantics unchanged",
+        "role": "kernel_datagram_memory_runner"
+      },
+      {
+        "origin": "original5d82+8a1",
+        "path": "tests/kernel/datagram-memory/README.md",
+        "purpose": "Bind actual M6 production/native/ordinary/development input, with existing publication and refusal semantics unchanged",
+        "role": "kernel_datagram_memory_development_manual"
+      }
+    ],
+    "map_sha256": "2a2e2b4534da42e82ba381ea4b07771f19da12c9e6f4cc415a121d00b977d5ea",
     "native_qualification_document_already_mapped_as": "native_owner_contract",
     "original20_delta": [
       "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/oom_score_adj.rs",
@@ -1784,7 +1893,7 @@
         "role": "release_previous_current_v4_archive"
       }
     ],
-    "os_count": 396,
+    "os_count": 402,
     "schema": "organ.v5.role-purpose-provenance.v1",
     "strict182_roles": [
       {
@@ -2518,10 +2627,10 @@
     ]
   },
   "fixed_source_profile": {
-    "canonical_map_sha256": "16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71",
+    "canonical_map_sha256": "2a2e2b4534da42e82ba381ea4b07771f19da12c9e6f4cc415a121d00b977d5ea",
     "golden_pairs": 5,
     "hepta_roles": 271,
-    "os_roles": 396,
+    "os_roles": 402,
     "owning_packages": 19,
     "prior_v1_through_v4_routes_preserved": true,
     "production_activation": "disabled",
@@ -2534,7 +2643,7 @@
       "codex-cli"
     ],
     "schema_version": 5,
-    "status": "fixed396/271 unchanged; retained6487/7673 current declaration awaits new Desktop documentation successor plus310c source-only rebind"
+    "status": "M6 delivery402/271 source candidate; final source-only generation and same-source product/native qualification remain separate"
   },
   "hepta_code": {
     "head": "7673ea62fc019f97ad17d205ee1f81f96e0f47a0",
@@ -3984,6 +4093,98 @@
     "ui_lock_sha256": "0c389b7c934d57458cafe44b52235c13ff2c823a9616a20f2352b1cd2cb9aaa8",
     "unchanged_lock_does_not_qualify_new_source_or_binary": true
   },
+  "m6_delivery_source_successor": {
+    "Hepta_roles": 271,
+    "compiled_and_probe_source_entries": [
+      {
+        "bytes": 10537,
+        "git_blob": "2568e7a00095d7e3147718fccbf8840a1bbe62b0",
+        "mode": "100644",
+        "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message.rs",
+        "sha256": "869de28623c4cbeec40f3605dc08266222e6c73a55456811f5d62d66abf15d1b"
+      },
+      {
+        "bytes": 9806,
+        "git_blob": "9f9b288ac55f49cfef84e3dececa02d17e0bbcde",
+        "mode": "100644",
+        "path": "kernel/asterinas/kernel/core/src/net/socket/unix/datagram/message/tests.rs",
+        "sha256": "a923e9c525aec6f9d6a8ae7bf356f8c6b021cb2e4517733cb8591e6b62fef255"
+      },
+      {
+        "bytes": 12272,
+        "git_blob": "808c6dcc447ef0decdc97250062cd3a34bde78f5",
+        "mode": "100644",
+        "path": "tests/kernel/datagram-memory/probe.c",
+        "sha256": "34bf8a1357d32d0db65d58a541919728957fe9de490b77e49efcca5e48c646b1"
+      },
+      {
+        "bytes": 626,
+        "git_blob": "c4b5f5286ed611c8a73392dc471142086f3b455e",
+        "mode": "100644",
+        "path": "tests/kernel/datagram-memory/run.py",
+        "sha256": "01c6c94e146483fbbd5d4de4c0df1ebb4d526faedda7e171094e6f4c2ad4f49a"
+      }
+    ],
+    "current_combination_native_ordinary_host_qualification": false,
+    "historical_qualification_transferred": false,
+    "historical_receipts": {
+      "native03": "f8c4a982a82f32d8b349181e4ecb0bfacb0e1dc909abd9a64a79eb21fef40e28",
+      "ordinary": "ebc60f8ddb11b16e1a83e9a1f996b428caa248718ebd397bdf80755734d4afa0"
+    },
+    "integration_base": {
+      "HEAD": "9088f2e5ef5666859ffe76ffb4db3c58e0733497",
+      "fixture_normal25_optimized25_source_only_actual0": true,
+      "paths": 8088,
+      "tree": "bc1f34d130eb607b4a5c175a0797135a0d00248b"
+    },
+    "new_OS_roles": 402,
+    "old396_tool_manifest_map_historical_HEAD": "9088f2e5ef5666859ffe76ffb4db3c58e0733497",
+    "original_commits": [
+      "5d82e62e2141a280931866251aa8a39a6e6d064e",
+      "8a1ea448fc58a47f9a36800a52bfc9c63ef7c763"
+    ],
+    "owning_packages": 19,
+    "partner": {
+      "HEAD": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
+      "paths": 9222,
+      "tree": "6502ac49b5f3133bf2fc826ce3c07d90219a3a48"
+    },
+    "post_cherry_pick_code_HEAD": "1c747e24b3eca993f76985e44f3fb6160f73a687",
+    "production_inputs_enabled": 0,
+    "qualified_historical_source": "8a1ea448fc58a47f9a36800a52bfc9c63ef7c763",
+    "resource_boundary": "Actual Unix datagram physical payload pages only. memory.max, all heap/ancillary pages, CPU f93 integration, production7 and phone/GPU remain unqualified.",
+    "technical_and_development_documents": [
+      {
+        "bytes": 6485,
+        "git_blob": "76168f9506305d4a593abe144c107bb0c4f5d188",
+        "mode": "100644",
+        "path": "support/kernel-safety/DATAGRAM_MEMORY.md",
+        "sha256": "6aa3b2f15baee4642b08de887f4c9143f6b5e464966e4623584f838e6683826e"
+      },
+      {
+        "bytes": 1855,
+        "git_blob": "8463a6fd0b70295c0b40154695af31e97f4e4c3c",
+        "mode": "100644",
+        "path": "tests/kernel/datagram-memory/README.md",
+        "sha256": "aae8bee42223f9a245d1c29fd5903526b2ae6930d5ed175adc6abef2636d71ca"
+      },
+      {
+        "bytes": 7966,
+        "git_blob": "4d1ff216960eaafdb57d9e12af1fa23ce35ca06e",
+        "mode": "100644",
+        "path": "support/kernel-safety/IPC_BUFFER_MEMORY.md",
+        "sha256": "e23301343fb3e1db39d70bd38333ec9a4c0e88251cd2c2c6ecde81a3e11c754a"
+      },
+      {
+        "bytes": 12657,
+        "git_blob": "6460c2245c5c1f15dae31d461013f0be407d3844",
+        "mode": "100644",
+        "path": "support/kernel-safety/PAGE_MEMORY.md",
+        "sha256": "171e82ca85ea247e6aa40e18d4f46b4dbdcb7df0b5d79759d57369d903982855"
+      }
+    ],
+    "wire_goldens": 5
+  },
   "markdown_link_targets": [
     {
       "bytes": 15600,
@@ -4630,18 +4831,8 @@
     "documentation_successor_head_tree": "bound only by the external final source receipt; no self-referential document identity",
     "hepta_documentation_successor": "explicit reviewed310c HEAD/tree/9222; not a transfer of product/runtime qualification",
     "hepta_records": "existing 149 records retain exact7673 code-baseline bytes/modes; 8 new README records use exact310c documentation successor bytes/modes",
+    "m6_delivery_records": "New m6_delivery_source_successor records are actual integration bytes after two original M6 cherry-picks; historical desktop_code8362 and other retained records keep their original meaning. Documentation successor identity is external, never self-referential.",
     "records_within_documentation_delta_paths": "actual documentation-successor bytes and modes; new README/technical-document blobs are not asserted to exist in the baseline tree"
   },
-  "ui_member_count": 5,
-  "ci_source_declaration_successor": {
-    "actual_original_failure": "mapped schema4 QA bytes changed; stale source-only manifest refused before host steps; original upload found no files",
-    "diagnostic_behavior": "separate invocation receipt/logs retain actual exit; no qualification inferred; original nonzero status preserved",
-    "final_desktop_head_tree": "external final source-only verification receipt; no document self-reference",
-    "hepta_pin_changed": false,
-    "host_GUI_native_or_production_qualification_transferred": false,
-    "original_job_id": 123044201615,
-    "predecessor_desktop_head": "5f617d4fe9f885ccbc1b7bfe4fe186fb61853dee",
-    "source_generation_order": "code commit -> fixed source-only manifest generation -> manifest-only commit -> final HEAD/tree verify",
-    "source_map_changed": false
-  }
+  "ui_member_count": 5
 }

@@ -238,7 +238,7 @@ project's source qualification or an original-owner end-to-end transaction.
 
 ## Schema 5: fixed current composition
 
-V5 is a separate closed contract: 396 Desktop roles, 271 original Hepta roles
+V5 is a separate closed contract: 402 Desktop roles, 271 original Hepta roles
 and five unchanged golden pairs. Its code-owned literal role sets and canonical
 map seal bind `organ_source_map_v5.json`; a V4 map tagged five is unsupported.
 The 354/260 reviewed draft paths remain intact. The added paths cover the union
@@ -518,3 +518,28 @@ was performed for this navigation update. Old full19/target3/native outcomes and
 the 8b825 Python QA keep their original source identities.
 
 See [current package manuals and source boundaries](MODULE_DOCUMENTATION_CURRENT.md).
+
+## M6 delivery source contract
+
+The current fixed V5 requires 402 Desktop roles, 271 Hepta roles, five unchanged
+wire-golden pairs and nineteen unchanged owning packages. Six explicit roles
+bind the real Unix datagram message owner, its eight native tests, the original
+ordinary probe and runner, and the technical/development manuals. Existing IPC
+and page-memory contract roles bind their updated documentation. Required
+normal CLI production, all seven host commands and their budgets are unchanged.
+
+The prior 396-role V5 is retained by Git at Desktop
+`9088f2e5ef5666859ffe76ffb4db3c58e0733497` with its then-matching source tool,
+map and `profiles/current-organ-source.json` (relative to `support/release`).
+Use that exact historical checkout for its verification. Removing the six M6
+roles from the current map is an unsupported current shape. V1–V4 routes and
+all old refusal assertions remain unchanged.
+
+The original M6 commits are 5d82e62e2141a280931866251aa8a39a6e6d064e and
+8a1ea448fc58a47f9a36800a52bfc9c63ef7c763. The delivery integration preserves
+their production/native/probe inputs; their historical passing kernel and
+ordinary receipts remain tied to 8a1. Source-only QA and manifest generation do
+not transfer those results to a new head. The actual combined candidate must
+repeat the full unfiltered Core/OSTD and both ordinary SMP2/SMP4 seven-group
+profiles under their original budgets. Linux `memory.max`, production-authority
+assembly, real Agentd control and phone/GPU isolation remain separate work.

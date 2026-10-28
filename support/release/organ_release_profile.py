@@ -487,8 +487,14 @@ SOURCE_MAP_V4_SHA256 = '1cf6ecf0e6c3e715bef7f50f80cee25522c00dde1cab22ac52ed82bf
 
 
 
-# Schema5's undelivered current contract is fixed at 396/271. V1-V4 stay unchanged.
+# Schema5's M6 delivery contract is fixed at 402/271. V1-V4 stay unchanged.
 OS_ROLES_V5 = OS_ROLES_V4 | {
+    'kernel_unix_datagram_message',
+    'kernel_unix_datagram_message_oracle',
+    'kernel_datagram_memory_contract',
+    'kernel_datagram_memory_probe',
+    'kernel_datagram_memory_runner',
+    'kernel_datagram_memory_development_manual',
     'module_documentation_current_inventory',
     'module_documentation_current_technical_development',
     'oom_oom_prerequisite_00_oom_adjustment_rs',
@@ -647,7 +653,7 @@ HEPTA_ROLES_V5 = HEPTA_ROLES_V4 | {
     'sqlite_startup_runtime',
 }
 GOLDEN_ROLES_V5 = GOLDEN_ROLES_V4
-SOURCE_MAP_V5_SHA256 = '16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71'
+SOURCE_MAP_V5_SHA256 = '2a2e2b4534da42e82ba381ea4b07771f19da12c9e6f4cc415a121d00b977d5ea'
 
 
 def roles_for_version(version):
