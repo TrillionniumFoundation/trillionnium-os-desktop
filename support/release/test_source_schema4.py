@@ -237,10 +237,14 @@ class Schema4OwnerClosureTests(unittest.TestCase):
             self.assertGreater(proof["object_count"], 0)
 
     def test_unavailable_parent_before_exact_owner_does_not_expand_the_scope(self):
-        owner = self.commit_object(self.hepta, ["1" * 40], "exact owner with unavailable older parent")
+        older = self.commit_object(self.hepta, [], "owned older parent before exact owner")
+        owner = self.commit_object(self.hepta, [older], "exact owner with unavailable older parent")
         tip = self.commit_object(self.hepta, [owner], "descendant")
         self.use_head(self.hepta, tip)
         fixtures.git(self.hepta, "merge-base", "--is-ancestor", owner, "HEAD")
+        # Validate real ancestry before removing the owned pre-owner object:
+        # newer Git may inspect it even when the requested owner is present.
+        self.remove_object(self.hepta, older)
         self.assertEqual(fixtures.git(self.hepta, "rev-parse", "--is-shallow-repository"), "false")
         with patch.object(profile, "HISTORY_OWNER", owner):
             _, receipt = self.build()
