@@ -1,17 +1,17 @@
 # 当前 Desktop／Hepta 模块开发与技术导航
 
-本页绑定V5代码组合基点 `231a22c17192aa68a6488043696c2abda90039e8`（tree `bbbf08a8c220b2de555ac22973c496739324cb1c`，8088路径），
+本页绑定V5代码组合基点 `682d66ed563434064e9ce5e0afcd173a76091117`（tree `27abb11ac649efdb752022429f81bf3374462185`，8088路径），
 本次更新四个文档路径：`docs/agents/MODULE_DOCUMENTATION_CURRENT.md`、
 `docs/agents/MODULE_DOCUMENTATION_CURRENT.json`、`support/release/README.md`、`docs/agents/ORGAN_RELEASE_PROFILE.md`。
 [机器清单](MODULE_DOCUMENTATION_CURRENT.json)的 `desktop_code` 是写入文档前的代码基点；
-`documentation_delta_paths` 内的来源记录对应文档successor实际字节，新增README／技术文档blob不声称存在于231的tree。
+`documentation_delta_paths` 内的来源记录对应文档successor实际字节，新增README／技术文档blob不声称存在于682代码基点的tree。
 最终文档／manifest提交的HEAD/tree由外置source收据显式绑定，避免自引用；其他Desktop记录仍绑定该代码基点。
-Desktop从原Unix组合纳入六个原OOM提交，冻结基点27c5043d；再逐字采用4018的已验证门禁组件并新增固定V5。
+本代码基点从f4cd旧261-role快照补齐V5 CLI producer；后文b6a／231为保留的先前阶段。Desktop从原Unix组合纳入六个原OOM提交，冻结基点27c5043d；再逐字采用4018的已验证门禁组件并新增固定V5。
 231只修复新增测试辅助代码的工作流边界与无变化提交；b6a原失败及其已通过正常54／7收据保持原身份。
 Hepta目标是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`，tree `ff2372f10656d2e8f652b6ca1e6de03a075b9219`（9214路径）。
 
 **当前资格仍是源码与发布工具验证；最终版本组合、GUI、native持久链和生产授权尚需各自同源收据。**
-V5固定396 OS／261 Hepta角色、5对golden和19个Hepta owning packages。七项生产输入保持关闭。
+更正后的V5固定396 OS／271 Hepta角色、5对golden和19个Hepta owning packages。七项生产输入保持关闭。
 原V1–4地图、显式历史验证、旧失败和原收据保留；新commit不自动继承组件运行资格。
 
 ## 文档与来源如何阅读
@@ -29,7 +29,7 @@ V5固定396 OS／261 Hepta角色、5对golden和19个Hepta owning packages。七
 
 | 模块 | 技术契约与实际源码 | 开发／验证入口 | 当前缺口与不可外推项 |
 | --- | --- | --- | --- |
-| A00 集成／发布 | [发布合同](ORGAN_RELEASE_PROFILE.md)、[release开发](../../support/release/README.md)；固定V5 literal map | 新V5 caller／原V4历史caller，六互斥CI分区；source-only命令见release手册 | 396／261与19 owners仅固定装配。实际pair七步、GUI／native和七项生产输入仍分别验收。 |
+| A00 集成／发布 | [发布合同](ORGAN_RELEASE_PROFILE.md)、[release开发](../../support/release/README.md)；固定V5 396／271 literal map | 新V5 caller／原V4历史caller，六互斥CI分区；source-only命令见release手册 | 396／271与19 owners仅固定装配。实际pair七步、GUI／native和七项生产输入仍分别验收。 |
 | A01 上游／启动 | [构建手册](../../support/build/README.md)、[上游Book](../../kernel/asterinas/book/src/SUMMARY.md)；`kernel/asterinas/{kernel,ostd,osdk}` | [ktest手册](../../support/build/ktest/README.md)、`support/build/verify-source.py`、下方Core入口 | 新候选必须绑定自己的完整源码、OSDK、普通内核与各测试ELF。上游共享Book与源码注释不等于所有低层crate都有运行手册。 |
 | A02 HOS2 codec | [ABI包入口](../../libs/os-abi/README.md)、[Native ABI](../NATIVE_ABI.md)；`libs/os-abi` | `python3 -I -B tests/abi/run_acceptance.py`，协议样本与拒绝断言见该目录 | 五种wire格式不等于ordinary内核开放五类效果；当前普通控制路径仍按QueryAbi门禁。 |
 | A03 Control core | [API合同](../../libs/os-control/API_CONTRACT.md)；`libs/os-control`及真实后端接点 | [control验证手册](../../tests/control/VALIDATION.md)、[no_std验证](../../tests/control/backend_no_std/VALIDATION.md)，`bash tests/control/run-validation.sh` | host/Loom模型不能代替内核执行和原Hepta持久终态。`tests/control/loom`没有独立完整开发／技术手册。 |
@@ -432,11 +432,11 @@ typed文件操作、受控permission profile转换及有界walk接口。
 | 当前文档 | 逐入口、契约、源码mode/blob、差异和剩余缺口 | 只是文档与源码身份，未产生产品、授权或硬件资格。 |
 
 固定V5保留原draft354／260的全部路径，再对strict182缺失依赖与OOM20变更并集逐路径补39角色，
-追加V5地图／oracle／原V4 current archive三角色，得到396；Hepta增加Root failure report一角色，得到261。
+追加V5地图／oracle／原V4 current archive三角色，得到396；先前Hepta增加Root failure report一角色得到261；本轮再补10个CLI producer依赖，当前固定271。
 机器清单逐新增角色记录用途和strict182／delta来源，不接受任意可选shape。V4的18-owner dispatch保持原样，
 V5显式增加rmcp-client成为19。历史V4工作流必须手动给完整40位OS commit，并读取该历史checkout自己的匹配manifest／Hepta pin。
 
-## 当前发布工具增量验证
+## 旧261角色V5的发布工具增量验证
 
 | 模式 | 实际分组 | 原始源HEAD／tree | 实际用例 | 结果 |
 | --- | --- | --- | --- | --- |
@@ -463,3 +463,28 @@ subject必须是已admit的Fleet peer；参考Secrets authority只接受 `secret
 OOM原组件的Core420、OSTD235及3原VMX skip、普通产品、SMP1／2各12＋61和Unix原8项／64重复结果
 保留在05f自己的来源。新Desktop已纳入其源码，不把这些结果改成最终V5／Hepta组合资格。
 Hepta新增Root诊断只是保留首次失败原因的有界标签；旧native失败仍失败，不能以新源码追溯判定未知故障原因。
+
+
+## 当前CLI producer装配与源码门禁
+
+原Hepta7673完整19-owner实际3088项＝3085 PASS＋3项streamable_http_remote失败；原三项build通过。
+真实test support第338行用原cargo-bin resolver启动正常`codex exec-server`，但旧V5 stage4没有构建codex-cli/bin codex。
+新stage4在同一正常Cargo命令显式选择agentd＋codex-cli及对应两bin，保持七步、19测试owner、原profile／预算／零重试。
+CLI是集成必需的真实产品producer，不是替代fixture、不新增第20测试owner，也不修改Hepta源码。
+十个新增明确role覆盖CLI Cargo/build/main/lib/exec-server lifecycle、RMCP Cargo/原三项test/support和Cargo binary resolver Cargo/lib；
+因此Hepta固定role数由261变271，OS仍396、golden仍5对。具体开发命令与技术路径见release README的Required CLI producer节。
+
+旧source-only V5快照f4cd及其原261 map／60b7清单／原工具／收据保持原来源：必须用f4cd原工具按原pins验证。
+新current固定271不接受旧261降级，也不声称新工具兼容旧V5；V1–4原路线／argv／map字节不变。
+原3088三失败保持失败；单独构建CLI或独立三项转阳都不能替代最终完整七步／19-owner资格。
+
+| 当前模式 | 分组 | 实际源HEAD／tree | 实际项数 | 结果 |
+| --- | --- | --- | --- | --- |
+| normal | legacy | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 54 | exit 0，0skip／0retry，完整8088源前后相同 |
+| normal | historical-workflows | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 7 | exit 0，0skip／0retry，完整8088源前后相同 |
+| normal | v5 | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 24 | exit 0，0skip／0retry，完整8088源前后相同 |
+| optimized | legacy | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 54 | exit 0，0skip／0retry，完整8088源前后相同 |
+| optimized | historical-workflows | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 7 | exit 0，0skip／0retry，完整8088源前后相同 |
+| optimized | v5 | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 24 | exit 0，0skip／0retry，完整8088源前后相同 |
+
+这些是发布工具实际临时Git／有界child验证；原4018 typed组件与早期mixed QA保留原身份。当前文档不执行Rust／GUI／native，七项生产输入继续关闭。最终source-only清单和外置收据另绑文档successor实际HEAD/tree。

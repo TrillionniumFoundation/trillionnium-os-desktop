@@ -84,9 +84,9 @@ profiles and receipts intact. See [the detailed source contract](../../docs/agen
 ## Fixed V5 current source profile
 
 The fixed [`organ_source_map_v5.json`](organ_source_map_v5.json) requires 396
-Desktop roles, 261 Hepta roles and the same five golden pairs. It preserves the
+Desktop roles, 271 Hepta roles and the same five golden pairs. It preserves the
 reviewed 354/260 draft paths, adds each missing OOM/strict182 dependency once,
-the three V5 release inputs and the original Root failure-report owner. The
+the three V5 release inputs and the original Root failure-report owner, plus ten required CLI producer dependencies. The
 canonical map seal and literal role sets reject optional roles, path aliases or
 operator-selected variants. V5 reuses the qualified typed owner-path and whole
 current-source verifier; its source proof does not qualify a new runtime pair.
@@ -393,3 +393,51 @@ production tampering and unproved original ancestry. They also preserve exact
 legacy map/archive/dispatch contracts, verify the tracked V4 map itself, and
 reject source changes after host commands. The original seven production inputs
 remain unconfigured and effects remain disabled in every schema.
+
+
+## Required CLI producer for the corrected V5 candidate
+
+The undelivered V5 current contract now fixes 396 Desktop / 271 Hepta roles.
+Its ten new explicit Hepta roles bind the normal CLI manifest/build script,
+main/library/exec-server lifecycle sources, the RMCP package and original three
+remote integration tests/support, and the original Cargo binary resolver.
+The whole-current-source proof still binds all remaining transitive sources.
+
+`codex-rs/rmcp-client/tests/streamable_http_test_support.rs:338` starts the real
+`codex exec-server --listen ws://127.0.0.1:0` through the original
+`codex-utils-cargo-bin` resolver. `codex-rs/cli/Cargo.toml` declares package
+`codex-cli`, binary `codex`, normal `build.rs`, `src/main.rs` and `src/lib.rs`;
+`src/exec_server_telemetry.rs` owns the dispatched service lifecycle. These are
+unchanged original Hepta sources, not a replacement fixture executable.
+
+V5's required `hepta-build` step selects exactly this package/bin union:
+
+```sh
+cargo +1.95.0 build --manifest-path codex-rs/Cargo.toml \
+  -p codex-hepta-agentd --bin codex-hepta-agentd -p codex-cli --bin codex \
+  --profile dev-small --locked --offline
+```
+
+Run it in the exact original Hepta checkout with the same external target and
+profile as `just test`. The seven-step lane and nineteen test-owning packages
+remain unchanged; CLI is a required producer, not a twentieth test owner.
+Its failure stops Root/recovery builds and owning tests. Never inject an old
+executable, change a binary-resolution environment variable, filter the original
+remote tests, increase deadlines or turn retries on to qualify this dependency.
+
+The original 7673 nineteen-owner run retained 3,088 actual tests: 3,085 passed
+and three `streamable_http_remote` failures with the CLI producer absent.
+Its three binary builds passed. Those failed receipts stay failed. A separate
+later CLI build or three-case diagnostic cannot replace a complete successful
+seven-step final-pair receipt. This source-only update performs no Rust build,
+GUI transaction, native run or production activation.
+
+The frozen earlier source-only V5 snapshot is Desktop
+`f4cd75ea96ff452176758e9fb48d4842bf1be859` with Hepta
+`7673ea62fc019f97ad17d205ee1f81f96e0f47a0`, its original 396/261 map, exact tool
+and `60b7ecd2a57597ceb8825a616b7ee7f034a4ea3ec3acaa282e87547be5e9e244`
+manifest SHA256. Verify that historical snapshot using its f4cd tool and pins.
+The corrected current fixed 271-role tool refuses the old 261-role V5 shape;
+it does not claim latest-tool compatibility with that old V5 declaration.
+V1–4 maps, explicit routes and exact command lists remain unchanged. All seven
+production inputs remain disabled in both source-only snapshots.
