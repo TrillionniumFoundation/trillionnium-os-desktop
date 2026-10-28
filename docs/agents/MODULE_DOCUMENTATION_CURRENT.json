@@ -1,11 +1,11 @@
 {
   "a00_to_a10_navigation": [
     {
-      "current_boundary": "\u56fa\u5b9aV5\u66f4\u6b63\u4e3a396\uff0f271\uff0cstage4\u5fc5\u987b\u6b63\u5e38\u6784\u5efaagentd\uff0bcodex CLI\uff1b\u4e03\u6b65\uff0f19\u6d4b\u8bd5owner\u4e0d\u53d8\uff0c\u65e7f4cd 261\u53ea\u7528\u5176\u539f\u5de5\u5177\u9a8c\u8bc1\uff0c\u751f\u4ea7\u4ecd\u5173\u95ed\u3002 \u5f53\u524d8b825 CI\u4f9d\u8d56\uff0f\u6587\u6863successor\u4ecd\u5f85typed source\u91cd\u7ed1\u5b9a\u53ca\u539f\u4e03\u6b65\uff1b6487 attempt01\u9996\u6b65archive\u5931\u8d25\u3001cache44\u53d1\u5e03\u5931\u8d25\u5747\u4fdd\u7559\u3002",
-      "development_entry_description": "test_source_schema5.py\u6267\u884c\u5b9e\u9645\u5f53\u524dV5 caller\uff1b\u539fCurrentWorkflowTests\u4fdd\u7559\u5386\u53f2V4 caller\uff1b\u6e90\u7801\u3001\u4ea7\u54c1\u4e0e\u751f\u4ea7\u95e8\u7981\u5206\u522b\u9a8c\u6536\u3002",
+      "current_boundary": "固定V5更正为396／271，stage4必须正常构建agentd＋codex CLI；七步／19测试owner不变，旧f4cd 261只用其原工具验证，生产仍关闭。 当前8b825 CI依赖／文档successor仍待typed source重绑定及原七步；6487 attempt01首步archive失败、cache44发布失败均保留。",
+      "development_entry_description": "test_source_schema5.py执行实际当前V5 caller；原CurrentWorkflowTests保留历史V4 caller；源码、产品与生产门禁分别验收。",
       "id": "A00",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "\u96c6\u6210\uff0f\u53d1\u5e03",
+      "name": "集成／发布",
       "source_entries": [
         {
           "bytes": 70461,
@@ -61,11 +61,11 @@
       ]
     },
     {
-      "current_boundary": "\u65b0\u5019\u9009\u5fc5\u987b\u7ed1\u5b9a\u81ea\u5df1\u7684\u5b8c\u6574\u6e90\u7801\u3001OSDK\u3001\u666e\u901a\u5185\u6838\u4e0e\u5404\u6d4b\u8bd5ELF\u3002\u4e0a\u6e38\u5171\u4eabBook\u4e0e\u6e90\u7801\u6ce8\u91ca\u4e0d\u7b49\u4e8e\u6240\u6709\u4f4e\u5c42crate\u90fd\u6709\u8fd0\u884c\u624b\u518c\u3002",
-      "development_entry_description": "[ktest\u624b\u518c](../../support/build/ktest/README.md)\u3001`support/build/verify-source.py`\u3001\u4e0b\u65b9Core\u5165\u53e3",
+      "current_boundary": "新候选必须绑定自己的完整源码、OSDK、普通内核与各测试ELF。上游共享Book与源码注释不等于所有低层crate都有运行手册。",
+      "development_entry_description": "[ktest手册](../../support/build/ktest/README.md)、`support/build/verify-source.py`、下方Core入口",
       "id": "A01",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "\u4e0a\u6e38\uff0f\u542f\u52a8",
+      "name": "上游／启动",
       "source_entries": [
         {
           "bytes": 9986,
@@ -114,8 +114,8 @@
       ]
     },
     {
-      "current_boundary": "\u4e94\u79cdwire\u683c\u5f0f\u4e0d\u7b49\u4e8eordinary\u5185\u6838\u5f00\u653e\u4e94\u7c7b\u6548\u679c\uff1b\u5f53\u524d\u666e\u901a\u63a7\u5236\u8def\u5f84\u4ecd\u6309QueryAbi\u95e8\u7981\u3002",
-      "development_entry_description": "`python3 -I -B tests/abi/run_acceptance.py`\uff0c\u534f\u8bae\u6837\u672c\u4e0e\u62d2\u7edd\u65ad\u8a00\u89c1\u8be5\u76ee\u5f55",
+      "current_boundary": "五种wire格式不等于ordinary内核开放五类效果；当前普通控制路径仍按QueryAbi门禁。",
+      "development_entry_description": "`python3 -I -B tests/abi/run_acceptance.py`，协议样本与拒绝断言见该目录",
       "id": "A02",
       "independent_complete_manual_per_crate_claimed": false,
       "name": "HOS2 codec",
@@ -146,8 +146,8 @@
       ]
     },
     {
-      "current_boundary": "host/Loom\u6a21\u578b\u4e0d\u80fd\u4ee3\u66ff\u5185\u6838\u6267\u884c\u548c\u539fHepta\u6301\u4e45\u7ec8\u6001\u3002`tests/control/loom`\u6ca1\u6709\u72ec\u7acb\u5b8c\u6574\u5f00\u53d1\uff0f\u6280\u672f\u624b\u518c\u3002",
-      "development_entry_description": "[control\u9a8c\u8bc1\u624b\u518c](../../tests/control/VALIDATION.md)\u3001[no_std\u9a8c\u8bc1](../../tests/control/backend_no_std/VALIDATION.md)\uff0c`bash tests/control/run-validation.sh`",
+      "current_boundary": "host/Loom模型不能代替内核执行和原Hepta持久终态。`tests/control/loom`没有独立完整开发／技术手册。",
+      "development_entry_description": "[control验证手册](../../tests/control/VALIDATION.md)、[no_std验证](../../tests/control/backend_no_std/VALIDATION.md)，`bash tests/control/run-validation.sh`",
       "id": "A03",
       "independent_complete_manual_per_crate_claimed": false,
       "name": "Control core",
@@ -192,11 +192,11 @@
       ]
     },
     {
-      "current_boundary": "\u5f53\u524dOOM\u7ec4\u5408\u4f7f\u7528\u65b0\u7684strict182 profile\uff1b\u65e7fixed132\u4ecd\u53ea\u9a8c\u8bc1\u539fe7ed\u5386\u53f2\u5b57\u8282\u3002Unix STREAM\u8fb9\u754c\u672a\u6269\u5927\u5230TCP\uff0fUDP\uff0fVSOCK\u3002",
-      "development_entry_description": "[42-case\u771f\u5b9eguest](../../tests/kernel/unix-signal/README.md)\u3001[fixed132 profile](../../tests/kernel/network/POST1138_UNIX_SIGNAL_PROFILE.md)\u3001[Linux workload](../../tests/workloads/linux/README.md)\uff1b\u4e0b\u65b9Unix\u547d\u4ee4",
+      "current_boundary": "当前OOM组合使用新的strict182 profile；旧fixed132仍只验证原e7ed历史字节。Unix STREAM边界未扩大到TCP／UDP／VSOCK。",
+      "development_entry_description": "[42-case真实guest](../../tests/kernel/unix-signal/README.md)、[fixed132 profile](../../tests/kernel/network/POST1138_UNIX_SIGNAL_PROFILE.md)、[Linux workload](../../tests/workloads/linux/README.md)；下方Unix命令",
       "id": "A04",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "Linux\uff0f\u5b58\u50a8\uff0fUnix\u4fe1\u53f7",
+      "name": "Linux／存储／Unix信号",
       "source_entries": [
         {
           "bytes": 20426,
@@ -287,11 +287,11 @@
       ]
     },
     {
-      "current_boundary": "\u5df2\u7eb3\u5165OOM floor\u3001\u6bcf\u6b21\u5199\u5165\u771f\u5b9e\u521d\u59cbnamespace CAP_SYS_RESOURCE\u548cVM\u751f\u547d\u5468\u671f\u4e00\u81f4\u6027\uff1b\u4e0d\u5b9e\u73b0memory.max\u3001OOM killer\u6216\u6240\u6709clone/vfork\u7ec4\u5408\u3002MAC\u7ba1\u7406\u4e0enative\u5168\u94fe\u4ecd\u72ec\u7acb\u9a8c\u8bc1\u3002",
-      "development_entry_description": "[control\u63a2\u9488](../../tests/kernel/control/README.md)\u3001[safety\u63a2\u9488](../../tests/kernel/safety/README.md)\uff1b`python3 -I -B tests/kernel/safety/run.py --help`\u540e\u6309\u624b\u518c\u9009\u5b9a\u771f\u5b9eprobe",
+      "current_boundary": "已纳入OOM floor、每次写入真实初始namespace CAP_SYS_RESOURCE和VM生命周期一致性；不实现memory.max、OOM killer或所有clone/vfork组合。MAC管理与native全链仍独立验证。",
+      "development_entry_description": "[control探针](../../tests/kernel/control/README.md)、[safety探针](../../tests/kernel/safety/README.md)；`python3 -I -B tests/kernel/safety/run.py --help`后按手册选定真实probe",
       "id": "A05",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "\u8fdb\u7a0b\uff0f\u6743\u9650\uff0f\u6620\u50cf",
+      "name": "进程／权限／映像",
       "source_entries": [
         {
           "bytes": 3682,
@@ -354,11 +354,11 @@
       ]
     },
     {
-      "current_boundary": "\u5df2\u6709root route\u3001route pin\u3001\u5f3a\u5236affinity handoff\u3001\u521d\u6b21CPU\u9009\u62e9\u4e0eCPUNODE\u4fee\u590d\u3002\u666e\u901a`cpu.weight`\u4ecd\u62d2\u7edd\uff1b\u51b7\u4ee3\uff0f\u6d3b\u8dc3\u66f4\u65b09516\u53e6\u652f\u672a\u7eb3\u5165\u3002`hepta.anon.*`\u4e0d\u662f\u5b8c\u6574`memory.max`\uff1b\u65e0\u5047\u542f\u7528\u3002 SMP max\u4ecd\u7f3aremote rendezvous\uff1bc235 guard\u4ec5\u72ec\u7acb\u5206\u652f\uff0c\u672a\u7eb3\u5165\u5f53\u524dkernel\uff0c\u4e0d\u80fd\u4ee5\u5355CPU\u6216\u5f53\u524dguard\u63a8\u65ad\u591aCPU\u4e0a\u9650\u5df2\u7ecf\u95ed\u5408\u3002",
-      "development_entry_description": "[forced affinity](../../tests/kernel/forced-affinity/README.md)\u3001[FAIR](../../tests/kernel/fair-runtime/README.md)\u3001[page](../../tests/kernel/page-memory/README.md)\uff1b\u4ee5\u624b\u518c\u539f145%\uff0f3% quota\u548cSMP\u914d\u7f6e\u8fd0\u884c",
+      "current_boundary": "已有root route、route pin、强制affinity handoff、初次CPU选择与CPUNODE修复。普通`cpu.weight`仍拒绝；冷代／活跃更新9516另支未纳入。`hepta.anon.*`不是完整`memory.max`；无假启用。 SMP max仍缺remote rendezvous；c235 guard仅独立分支，未纳入当前kernel，不能以单CPU或当前guard推断多CPU上限已经闭合。",
+      "development_entry_description": "[forced affinity](../../tests/kernel/forced-affinity/README.md)、[FAIR](../../tests/kernel/fair-runtime/README.md)、[page](../../tests/kernel/page-memory/README.md)；以手册原145%／3% quota和SMP配置运行",
       "id": "A06",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "\u8c03\u5ea6\uff0f\u8d44\u6e90",
+      "name": "调度／资源",
       "source_entries": [
         {
           "bytes": 12768,
@@ -435,11 +435,11 @@
       ]
     },
     {
-      "current_boundary": "observer/history\u4e0d\u7b7e\u53d1\u6388\u6743\u3001\u4e0d\u62e5\u6709\u539fwriter\u3002State\u542f\u52a8\u3001Root\u6062\u590d\u3001\u6388\u6743lease\u3001OAuth\u4e0eSDK\u5404\u6709\u72ec\u7acbowner\uff1b\u7ec4\u4ef6\u7ed3\u679c\u4e0d\u81ea\u52a8\u6210\u4e3a\u672c\u7ec4\u5408\u8d44\u683c\u3002",
-      "development_entry_description": "`cargo +1.88.0 test --manifest-path services/hepta-os/Cargo.toml --features cpu-history --locked`\uff1bHepta\u539f19\u5305Rust\u6d4b\u8bd5\u3001SDK50\u3001MCP\u9a8c\u8bc1\u89c1\u4e0b\u65b9",
+      "current_boundary": "observer/history不签发授权、不拥有原writer。State启动、Root恢复、授权lease、OAuth与SDK各有独立owner；组件结果不自动成为本组合资格。",
+      "development_entry_description": "`cargo +1.88.0 test --manifest-path services/hepta-os/Cargo.toml --features cpu-history --locked`；Hepta原19包Rust测试、SDK50、MCP验证见下方",
       "id": "A07",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "Hepta\u539fowner\uff0f\u88c5\u914d",
+      "name": "Hepta原owner／装配",
       "source_entries": [
         {
           "bytes": 7547,
@@ -467,11 +467,11 @@
       ]
     },
     {
-      "current_boundary": "\u6709\u754c\u5b9e\u9645\u7ebf\u7a0b\u540c\u6b65IPC\u4e0d\u7b49\u4e8e\u81ea\u52a8\u7ebf\u7a0b\u6c60\u3001nested/oneway\u3001FD arrays\u3001Android boot\uff0fCTS\uff0fSELinux\uff0fBSP\u5b8c\u6210\u3002",
-      "development_entry_description": "[Binder probe\u624b\u518c](../../tests/kernel/binder/README.md)\u3001[Android\u5165\u53e3](../../support/android/README.md)\uff0c`python3 -I -B tests/kernel/binder/thread_run.py --help`\u540e\u6309\u539f\u624b\u518c\u6267\u884c",
+      "current_boundary": "有界实际线程同步IPC不等于自动线程池、nested/oneway、FD arrays、Android boot／CTS／SELinux／BSP完成。",
+      "development_entry_description": "[Binder probe手册](../../tests/kernel/binder/README.md)、[Android入口](../../support/android/README.md)，`python3 -I -B tests/kernel/binder/thread_run.py --help`后按原手册执行",
       "id": "A08",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "Android\uff0fBinder",
+      "name": "Android／Binder",
       "source_entries": [
         {
           "bytes": 65010,
@@ -520,11 +520,11 @@
       ]
     },
     {
-      "current_boundary": "\u73b0DMA domain\u5b9e\u73b0\u9650Intel VT-d\u548c\u65e2\u6709root-bus/function-zero\u5165\u53e3\uff1b\u5171\u4eab\u591a\u529f\u80fdIOMMU\u7ec4\u4e0eAMD\u5e73\u53f0\u4e0d\u80fd\u636e\u6b64\u83b7\u5f97\u7269\u7406GPU\uff0f\u8bbe\u5907\u95f4DMA\u9694\u79bb\u8d44\u683c\u3002\u5177\u4f53\u9650\u5236\u89c1DMA_DOMAINS.md\u3002",
-      "development_entry_description": "[\u786c\u4ef6runbook](../../tests/hardware/RUN.md)\u3001[lifecycle\u6a21\u578b](../../support/vmm/device_lifecycle/README.md)\uff0c`cargo +1.88.0 test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked`\u53ea\u9a8c\u8bc1\u6a21\u578b",
+      "current_boundary": "现DMA domain实现限Intel VT-d和既有root-bus/function-zero入口；共享多功能IOMMU组与AMD平台不能据此获得物理GPU／设备间DMA隔离资格。具体限制见DMA_DOMAINS.md。",
+      "development_entry_description": "[硬件runbook](../../tests/hardware/RUN.md)、[lifecycle模型](../../support/vmm/device_lifecycle/README.md)，`cargo +1.88.0 test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked`只验证模型",
       "id": "A09",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "\u786c\u4ef6\uff0fGPU\uff0fVMM",
+      "name": "硬件／GPU／VMM",
       "source_entries": [
         {
           "bytes": 68764,
@@ -573,11 +573,11 @@
       ]
     },
     {
-      "current_boundary": "500ms\u662f\u6574\u5e27\u603b\u671f\u9650\u3001\u81f3\u591a32\u8fde\u63a5\u4e14\u6bcftick\u6709\u754c\u63a8\u8fdb\u3002Notes\u6587\u672c\uff0frevision\uff0f\u7cbe\u786e\u56de\u6267\u5171\u540csync/rename/\u76ee\u5f55sync\uff1b\u56de\u6267ACK\u4e0d\u66ff\u4ee3\u6587\u6863\u6216Hepta\u6301\u4e45\u7ec8\u6001\u3002\u901a\u7528\u7b2c\u4e09\u65b9\u5e94\u7528\u3001\u6587\u4ef6\u9009\u62e9\u5668\uff0f\u8bbe\u5907\u63a7\u5236\u4ecd\u672a\u5b8c\u6210\u3002 8b825\u8865\u9f50\u4e24\u4e2aworkflow\u4e09\u5904XKB X11 apt\u4f9d\u8d56\u6e90\uff1b\u5b9e\u9645\u65b0host/GUI\u5c1a\u672a\u6267\u884c\u3002",
-      "development_entry_description": "[\u4e94\u5305\u5bfc\u822a](../../ui/README.md)\u3001[host runbook](../../support/ui/RUN.md)\uff1b\u4e0b\u65b9UI\uff0fGUI\u5165\u53e3",
+      "current_boundary": "500ms是整帧总期限、至多32连接且每tick有界推进。Notes文本／revision／精确回执共同sync/rename/目录sync；回执ACK不替代文档或Hepta持久终态。通用第三方应用、文件选择器／设备控制仍未完成。 8b825补齐两个workflow三处XKB X11 apt依赖源；实际新host/GUI尚未执行。",
+      "development_entry_description": "[五包导航](../../ui/README.md)、[host runbook](../../support/ui/RUN.md)；下方UI／GUI入口",
       "id": "A10",
       "independent_complete_manual_per_crate_claimed": false,
-      "name": "Session\uff0fNotes\uff0f\u684c\u9762\u4ea4\u4e92",
+      "name": "Session／Notes／桌面交互",
       "source_entries": [
         {
           "bytes": 7421,
@@ -668,17 +668,6 @@
     "source_profile_rebound": false,
     "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
   },
-  "ci_source_declaration_successor": {
-    "actual_original_failure": "mapped schema4 QA bytes changed; stale source-only manifest refused before host steps; original upload found no files",
-    "diagnostic_behavior": "separate invocation receipt/logs retain actual exit; no qualification inferred; original nonzero status preserved",
-    "final_desktop_head_tree": "external final source-only verification receipt; no document self-reference",
-    "hepta_pin_changed": false,
-    "host_GUI_native_or_production_qualification_transferred": false,
-    "original_job_id": 123044201615,
-    "predecessor_desktop_head": "5f617d4fe9f885ccbc1b7bfe4fe186fb61853dee",
-    "source_generation_order": "code commit -> fixed source-only manifest generation -> manifest-only commit -> final HEAD/tree verify",
-    "source_map_changed": false
-  },
   "desktop_cargo_manifest_count": 127,
   "desktop_code": {
     "head": "8362b0b9278b16e1ade2f28d36c99bc0829a164e",
@@ -690,7 +679,7 @@
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "codec\u6216golden\u6210\u529f\u4e0d\u5f00\u653e\u666e\u901a\u5185\u6838\u7684\u6548\u679c\u64cd\u4f5c\u3002",
+      "current_gap": "codec或golden成功不开放普通内核的效果操作。",
       "development_validation_command": "python3 -I -B tests/abi/run_acceptance.py",
       "existing_development_and_technical_documents": [
         {
@@ -716,7 +705,7 @@
         "sha256": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a"
       },
       "package": "hos2-os-abi",
-      "purpose": "HOS2\u4e94\u7c7bwire\u683c\u5f0f\u7684\u6709\u754ccodec\u4e0egolden\u62d2\u7edd\u68c0\u67e5\u3002",
+      "purpose": "HOS2五类wire格式的有界codec与golden拒绝检查。",
       "source_entries": [
         {
           "bytes": 47272,
@@ -726,12 +715,12 @@
           "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f"
         }
       ],
-      "technical_contract": "\u5b57\u8282\u957f\u5ea6\u3001\u7248\u672c\u3001\u4fdd\u7559\u5b57\u6bb5\u3001\u72b6\u6001\u548cpayload\u5fc5\u987b\u6309codec\u9a8c\u8bc1\uff1bRust\u5185\u5b58\u5e03\u5c40\u4e0d\u5145\u5f53wire\u3002"
+      "technical_contract": "字节长度、版本、保留字段、状态和payload必须按codec验证；Rust内存布局不充当wire。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "host\u4e0eportable-spin/Loom\u8bc1\u636e\u4e0d\u4ee3\u66ffIRQ\u3001\u771f\u5b9e\u5185\u6838owner\u4e0e\u8de8\u91cd\u542f\u7ec8\u6001\u3002",
+      "current_gap": "host与portable-spin/Loom证据不代替IRQ、真实内核owner与跨重启终态。",
       "development_validation_command": "bash tests/control/run-validation.sh",
       "existing_development_and_technical_documents": [
         {
@@ -757,7 +746,7 @@
         "sha256": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f"
       },
       "package": "os-control",
-      "purpose": "boot-local delivery D\u7684\u72b6\u6001\u673a\u548c\u539fowner/native adapter seam\u3002",
+      "purpose": "boot-local delivery D的状态机和原owner/native adapter seam。",
       "source_entries": [
         {
           "bytes": 113663,
@@ -767,12 +756,12 @@
           "sha256": "4f582ba781420a86cc6420e57b5ef19de24c480a22f7aceaea496918b5e963b8"
         }
       ],
-      "technical_contract": "reserve/execute/query/retire\u4fdd\u6301instance/target/ancestor/CAS\u7ed1\u5b9a\uff1bHistoryLost/NotSeen\u4e0d\u6388\u4e88\u91cd\u53d1\uff0c\u6301\u4e45K\u4ecd\u7531Hepta\u62e5\u6709\u3002"
+      "technical_contract": "reserve/execute/query/retire保持instance/target/ancestor/CAS绑定；HistoryLost/NotSeen不授予重发，持久K仍由Hepta拥有。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u9700\u540c\u6e90\u539fAgentd\u4ea7\u54c1\u4e0e\u771f\u5b9e\u6388\u6743\u88c5\u914d\u9a8c\u8bc1\uff1bfixture peer\u4e0d\u662f\u90e8\u7f72\u3002",
+      "current_gap": "需同源原Agentd产品与真实授权装配验证；fixture peer不是部署。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path services/hepta-os/Cargo.toml --features cpu-history --locked",
       "existing_development_and_technical_documents": [
         {
@@ -798,7 +787,7 @@
         "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b"
       },
       "package": "hepta-os-observer",
-      "purpose": "\u8bfb\u53d6\u539fHepta runtime/history\u5e76\u6620\u5c04\u7ed9Desktop\u7684observer\u9002\u914d\u5668\u3002",
+      "purpose": "读取原Hepta runtime/history并映射给Desktop的observer适配器。",
       "source_entries": [
         {
           "bytes": 7547,
@@ -829,12 +818,12 @@
           "sha256": "c65a9063b3f9ad85e9b8fb88c6b0729e076ff9dbd5502072f099c5519d7390e1"
         }
       ],
-      "technical_contract": "\u53ea\u8bfb\u89c2\u5bdf\u4e0d\u7b7e\u540d\u3001\u4e0d\u62e5\u6709writer\uff1b\u672c\u5730\u4f20\u8f93\u9519\u8bef/\u5386\u53f2\u672a\u77e5\u4e0d\u5f97\u5408\u6210\u6548\u679c\u6210\u529f\u6216\u65b0grant\u3002"
+      "technical_contract": "只读观察不签名、不拥有writer；本地传输错误/历史未知不得合成效果成功或新grant。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "shared\u8fb9\u754c\u6587\u6863\u5b58\u5728\uff1bhost\u6a21\u578b\u4e0d\u8bc1\u660e\u663e\u793a\u3001\u901a\u7528\u8bbe\u5907\u8f93\u5165\u6216\u6388\u6743\u3002",
+      "current_gap": "shared边界文档存在；host模型不证明显示、通用设备输入或授权。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path support/ui/Cargo.toml --locked",
       "existing_development_and_technical_documents": [
         {
@@ -860,7 +849,7 @@
         "sha256": "877f6c52c402d579a2b7fcb51de5562004c545b4fd67d69c68d50e9157a9c5cd"
       },
       "package": "trill-ui-boundary",
-      "purpose": "renderer\u4e0ehost\u4e4b\u95f4\u7684\u9ed8\u8ba4\u62d2\u7edd\u8fb9\u754c\u6a21\u578b\u3002",
+      "purpose": "renderer与host之间的默认拒绝边界模型。",
       "source_entries": [
         {
           "bytes": 52730,
@@ -870,12 +859,12 @@
           "sha256": "908be28ace59e107ffd0b05f499367cb523aa7ba166848f641072e14c5aaaf41"
         }
       ],
-      "technical_contract": "typed observation/offline draft\u4e0ecapability\u4fdd\u6301\u5206\u79bb\uff1b\u6548\u679c\u63d0\u4ea4\u9ed8\u8ba4\u62d2\u7edd\uff0c\u4e0d\u80fd\u628a\u72b6\u6001\u7f13\u5b58\u5f53\u539f\u6301\u4e45\u8d26\u672c\u3002"
+      "technical_contract": "typed observation/offline draft与capability保持分离；效果提交默认拒绝，不能把状态缓存当原持久账本。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u771f\u5b9eIOMMU requester\u3001GPU reset\u548c\u624b\u673aBSP\u4ecd\u9700\u7269\u7406\u8bbe\u5907\u9a8c\u6536\u3002",
+      "current_gap": "真实IOMMU requester、GPU reset和手机BSP仍需物理设备验收。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked",
       "existing_development_and_technical_documents": [
         {
@@ -894,7 +883,7 @@
         "sha256": "99b075644ae225612184b613f1231501593f3774f116196b5058d7b2a8f00fcb"
       },
       "package": "a09-device-lifecycle",
-      "purpose": "\u8bbe\u5907\u57df\u751f\u547d\u5468\u671f\u4e0e\u5f52\u5c5e\u8f6c\u6362\u6a21\u578b\u3002",
+      "purpose": "设备域生命周期与归属转换模型。",
       "source_entries": [
         {
           "bytes": 68764,
@@ -904,12 +893,12 @@
           "sha256": "e21bf93decb38a6a3cf9b0d773cded755d3ae583fe58d84e9dd7c165daa225a2"
         }
       ],
-      "technical_contract": "\u6309\u65e2\u6709lifecycle\u72b6\u6001/\u9519\u8bef\u8fb9\u754c\u5efa\u6a21\u8bf7\u6c42\u8005\u4e0e\u9000\u5f79\uff1b\u6a21\u578b\u6570\u636e\u4e0d\u7b49\u4e8e\u786c\u4ef6DMA\u9875\u8868\u5b9e\u9645\u9694\u79bb\u3002"
+      "technical_contract": "按既有lifecycle状态/错误边界建模请求者与退役；模型数据不等于硬件DMA页表实际隔离。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u4ec5\u7f16\u8bd1fixture\uff1b\u4e0eAsterinas\u5b9e\u9645\u9501\u7eaa\u5f8b\u5206\u5f00\u3002",
+      "current_gap": "仅编译fixture；与Asterinas实际锁纪律分开。",
       "development_validation_command": "cargo +1.88.0 build --locked --manifest-path tests/control/backend_no_std/Cargo.toml --target x86_64-unknown-none",
       "existing_development_and_technical_documents": [
         {
@@ -928,7 +917,7 @@
         "sha256": "d0c770067d2b74c52888ad0c4b095ab8dc9d91e89b1a6140b9123b1b27543b74"
       },
       "package": "os-control-backend-no-std",
-      "purpose": "\u5916\u90e8no_std\u540e\u7aef\u7f16\u8bd1fixture\uff0c\u9a8c\u8bc1\u516c\u5f00LockBackend/ControlMutex\u63a5\u5165\u3002",
+      "purpose": "外部no_std后端编译fixture，验证公开LockBackend/ControlMutex接入。",
       "source_entries": [
         {
           "bytes": 6360,
@@ -938,12 +927,12 @@
           "sha256": "31fd9445617e4c164a6ef79bbb1905da3a5d21cc58dc5f95daff378ac2be6682"
         }
       ],
-      "technical_contract": "guard\u4fdd\u6301!Send\uff0cowner/view/token\u4fdd\u6301Send+Sync\uff1b\u7c7b\u578b\u68c0\u67e5native seam\uff0c\u4e0d\u8fd0\u884c\u771f\u5b9eallocator/IRQ/scheduler\u3002"
+      "technical_contract": "guard保持!Send，owner/view/token保持Send+Sync；类型检查native seam，不运行真实allocator/IRQ/scheduler。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u53ea\u6709\u5171\u4eab\u9a8c\u8bc1\u624b\u518c\uff1bLoom\u72b6\u6001\u63a2\u7d22\u4e0d\u63d0\u4f9b\u771f\u5b9e\u5185\u6838SMP/IRQ\u6216\u6301\u4e45\u5316\u8bc1\u660e\u3002",
+      "current_gap": "只有共享验证手册；Loom状态探索不提供真实内核SMP/IRQ或持久化证明。",
       "development_validation_command": "python3 -I -B tests/control/loom/run-models.py /absolute/fresh-model-evidence --offline --variant all",
       "existing_development_and_technical_documents": [
         {
@@ -962,7 +951,7 @@
         "sha256": "4f94dacaee56584b645fcdf8f90d796daf5264362d50cc5571bd175669371a7d"
       },
       "package": "os-control-loom",
-      "purpose": "default/public backend\u4e24\u8def\u5e76\u53d1\u6a21\u578b\u3002",
+      "purpose": "default/public backend两路并发模型。",
       "source_entries": [
         {
           "bytes": 663,
@@ -972,12 +961,12 @@
           "sha256": "4f94dacaee56584b645fcdf8f90d796daf5264362d50cc5571bd175669371a7d"
         }
       ],
-      "technical_contract": "models\u4e0emodels_public\u5fc5\u987b\u6cbfrun-models\u811a\u672c\u4fdd\u7559\u751f\u4ea7\u6a21\u5757\u548cbackend\u66ff\u6362\u8fb9\u754c\uff0c\u4e0d\u80fd\u76f4\u63a5\u7f16\u8bd1\u6b8b\u7f3afixture\u58f0\u79f0\u6a21\u578b\u5df2\u8dd1\u3002"
+      "technical_contract": "models与models_public必须沿run-models脚本保留生产模块和backend替换边界，不能直接编译残缺fixture声称模型已跑。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u9700\u65b0\u6574\u7ec4host\u53ca\u9694\u79bbGUI\u5b9e\u6d4b\uff1b\u786c\u4ef6\u8f93\u5165\u548c\u7b2c\u4e09\u65b9\u5e94\u7528\u4ecd\u672a\u5b8c\u6210\u3002",
+      "current_gap": "需新整组host及隔离GUI实测；硬件输入和第三方应用仍未完成。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path tests/ui/Cargo.toml --locked",
       "existing_development_and_technical_documents": [
         {
@@ -1003,7 +992,7 @@
         "sha256": "f9924d58ec95c5c805ed26a12cb39c27839e4cb7d4e82c70ce375458976cfe3d"
       },
       "package": "trillionnium-ui-contracts",
-      "purpose": "UI\u5951\u7ea6\u4e0ehost\u8fb9\u754c\u56de\u5f52\u5305\u3002",
+      "purpose": "UI契约与host边界回归包。",
       "source_entries": [
         {
           "bytes": 9207,
@@ -1013,12 +1002,12 @@
           "sha256": "8575f0cf415a5a114e504d51ae20b8a2e76c0011cdbd42b2538bc11c30bc3328"
         }
       ],
-      "technical_contract": "\u6a21\u578b/\u5e8f\u5217\u5316\u7528\u4f8b\u4e0e\u771f\u5b9eSession\u3001GUI\u5448\u73b0\u3001CJK/IME\u8bc1\u636e\u5404\u81ea\u8bb0\u5f55\uff0c\u4e0d\u628a\u5e03\u5c40\u7b49\u540cpixels\u3002"
+      "technical_contract": "模型/序列化用例与真实Session、GUI呈现、CJK/IME证据各自记录，不把布局等同pixels。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u5171\u4eabworkload\u624b\u518c\uff1b\u6784\u5efa\u901a\u8fc7\u4e0d\u80fd\u66ff\u4ee3pathname AF_UNIX\u53caguest\u8fd0\u884c\u3002",
+      "current_gap": "共享workload手册；构建通过不能替代pathname AF_UNIX及guest运行。",
       "development_validation_command": "cargo +1.88.0 build --manifest-path tests/workloads/linux/rust/Cargo.toml --locked",
       "existing_development_and_technical_documents": [
         {
@@ -1044,7 +1033,7 @@
         "sha256": "347c799ed98a98ae188802bb46f0af2885f1a7eeb26eb48436b4f932b19b24ce"
       },
       "package": "a04-tokio-workload",
-      "purpose": "\u6709\u9501\u4f9d\u8d56\u7684Tokio Linux\u517c\u5bb9workload\u3002",
+      "purpose": "有锁依赖的Tokio Linux兼容workload。",
       "source_entries": [
         {
           "bytes": 2279,
@@ -1054,12 +1043,12 @@
           "sha256": "4e4faf6c7be21fcaaca3bbbfbcab9e6b51561cbb1524385d170e4e0e97b485bc"
         }
       ],
-      "technical_contract": "\u56fa\u5b9aTokio direct dependency\u4e0eruntime\u573a\u666f\uff1b\u6784\u5efa\u3001\u539f\u751fLinux reference\u548cguest syscall\u7ed3\u679c\u5206\u5f00\u3002"
+      "technical_contract": "固定Tokio direct dependency与runtime场景；构建、原生Linux reference和guest syscall结果分开。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "workspace\u6ca1\u6709\u5355\u72ecpackage\uff1b\u5b9e\u9645\u56fe\u5f62\u3001Notes\u6301\u4e45owner\u548c\u539f\u6388\u6743\u4ecd\u9700\u540e\u7eed\u95e8\u7981\u3002",
+      "current_gap": "workspace没有单独package；实际图形、Notes持久owner和原授权仍需后续门禁。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path ui/Cargo.toml --workspace --locked",
       "existing_development_and_technical_documents": [
         {
@@ -1085,7 +1074,7 @@
         "sha256": "e012325701464cb352e8bc5050012241a77e2f648d2303f68cc89632c76d0bf1"
       },
       "package": null,
-      "purpose": "\u4e94\u4e2aUI\u6210\u5458\u7684\u72ec\u7acbCargo workspace\u5165\u53e3\u3002",
+      "purpose": "五个UI成员的独立Cargo workspace入口。",
       "source_entries": [
         {
           "bytes": 529,
@@ -1095,12 +1084,12 @@
           "sha256": "e012325701464cb352e8bc5050012241a77e2f648d2303f68cc89632c76d0bf1"
         }
       ],
-      "technical_contract": "Cargo workspace\u53ea\u7ec4\u5408\u771f\u5b9ecore/broker/session/shell/app-window\uff0cbuild/test\u7684\u6e90\u7801tuple\u548c\u4ea7\u54c1hash\u5206\u522b\u4fdd\u7559\u3002"
+      "technical_contract": "Cargo workspace只组合真实core/broker/session/shell/app-window，build/test的源码tuple和产品hash分别保留。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "legacy\u65e0store\u63a2\u9488\u4ecd\u4ec5\u5185\u5b58\uff1b\u771f\u5b9eGUI crash/reopen\u4e0e\u6587\u6863\u9009\u62e9\u5668\u5c1a\u9700\u6574\u7ec4\u9a8c\u6536\u3002",
+      "current_gap": "legacy无store探针仍仅内存；真实GUI crash/reopen与文档选择器尚需整组验收。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-app-window --locked -j 2",
       "existing_development_and_technical_documents": [
         {
@@ -1133,7 +1122,7 @@
         "sha256": "ca5ebd25821aada5285b3b7c9e16279ebe858176f1b6949ff5ab3fd92677c6bc"
       },
       "package": "trill-app-window",
-      "purpose": "Notes\u3001Calculator\u4e0e\u56fa\u5b9aallowlist terminal\u7684GUI\u8fdb\u7a0b\u3002",
+      "purpose": "Notes、Calculator与固定allowlist terminal的GUI进程。",
       "source_entries": [
         {
           "bytes": 30138,
@@ -1143,12 +1132,12 @@
           "sha256": "54b503c9737c57fa9f245dc64a7c5385117e84971e04c87ead294117409799f4"
         }
       ],
-      "technical_contract": "Notes document/revision/receipt\u539f\u5b50\u6301\u4e45\u5316\uff1bprivate effect/recovery\u4ea4\u7ed9GUI\u7ebf\u7a0b\uff1b\u65b0incarnation\u53ef\u89c2\u5bdf\u65e7\u56de\u6267\u4f46\u4e0d\u80fd\u91cd\u653e\u65e7\u6548\u679c\u3002"
+      "technical_contract": "Notes document/revision/receipt原子持久化；private effect/recovery交给GUI线程；新incarnation可观察旧回执但不能重放旧效果。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u7b2c\u4e09\u65b9\u5e94\u7528/\u663e\u793a\u57df\u6388\u6743\u4e0e\u771f\u5b9e\u751f\u4ea7owner\u4ecd\u9700\u72ec\u7acb\u9a8c\u8bc1\u3002",
+      "current_gap": "第三方应用/显示域授权与真实生产owner仍需独立验证。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-ui-broker --locked -j 2",
       "existing_development_and_technical_documents": [
         {
@@ -1181,7 +1170,7 @@
         "sha256": "1cbf1142ae1ed8321ccf15b5c8ec5e4dda9dc8b1213e4abd266f6784daf85e2b"
       },
       "package": "trill-ui-broker",
-      "purpose": "renderer\u9ed8\u8ba4\u62d2\u7eddbroker\uff0c\u4ee5\u53ca\u72ec\u7acbprivate Notes/X11 destination\u3002",
+      "purpose": "renderer默认拒绝broker，以及独立private Notes/X11 destination。",
       "source_entries": [
         {
           "bytes": 47003,
@@ -1191,12 +1180,12 @@
           "sha256": "6724b639cc324e714d006bcc456ce7eb54cdc5626dfe83bbe02843c50cc6fae4"
         }
       ],
-      "technical_contract": "renderer\u4e0d\u6301\u6709\u6548\u679chandle\uff1bprivate exact-byte I/O\u548cXTEST/XGetImage\u56de\u6267\u4e0d\u66ff\u4ee3\u539fHepta\u6388\u6743\u3001journal\u6216\u5e94\u7528\u4e1a\u52a1\u7ec8\u6001\u3002"
+      "technical_contract": "renderer不持有效果handle；private exact-byte I/O和XTEST/XGetImage回执不替代原Hepta授权、journal或应用业务终态。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "protocol/\u6301\u4e45\u5316\u5355\u6d4b\u4e0d\u4ee3\u66ff\u771f\u5b9eSession/GUI\u548c\u539fHepta\u7ec8\u6001\u3002",
+      "current_gap": "protocol/持久化单测不代替真实Session/GUI和原Hepta终态。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-ui-core --locked -j 2",
       "existing_development_and_technical_documents": [
         {
@@ -1229,7 +1218,7 @@
         "sha256": "b078f381b0a92c1d19fc5e891638ef5b605ccf91e8ec609712da52479c44f530"
       },
       "package": "trill-ui-core",
-      "purpose": "Session/frame/task\u3001\u89c2\u5bdf\u3001\u4f1a\u8bdd\u8349\u7a3f\u3001Notes\u4e0edisplay\u7684\u5171\u4eabtyped\u534f\u8bae\u3002",
+      "purpose": "Session/frame/task、观察、会话草稿、Notes与display的共享typed协议。",
       "source_entries": [
         {
           "bytes": 25005,
@@ -1239,12 +1228,12 @@
           "sha256": "cd08fdd723cf4147e3e828475f6e702549dbbd8cef495ae22d818b74ec09b808"
         }
       ],
-      "technical_contract": "frame\u4e0etask\u6709\u754c\uff1bNotes exact bytes/revision/receipt\u548cbootstrap v1/v2\u4fdd\u6301\u8eab\u4efd\u7ed1\u5b9a\uff0cobjective draft\u4e0d\u81ea\u52a8\u6210\u4e3a\u7b7e\u540drequest\u3002"
+      "technical_contract": "frame与task有界；Notes exact bytes/revision/receipt和bootstrap v1/v2保持身份绑定，objective draft不自动成为签名request。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u540cUID\u4e0d\u662f\u4e92\u4e0d\u4fe1\u4efb\u5e94\u7528\u9694\u79bb\uff1bparsed command\u4ecd\u987b\u4fdd\u6301\u6709\u754c\uff0c\u65b0\u7ec4\u5408\u9700\u771f\u5b9e\u6162\u8fde\u63a5/child reaping\u56de\u5f52\u3002",
+      "current_gap": "同UID不是互不信任应用隔离；parsed command仍须保持有界，新组合需真实慢连接/child reaping回归。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-session --locked -j 2",
       "existing_development_and_technical_documents": [
         {
@@ -1277,7 +1266,7 @@
         "sha256": "1923570c681bfccfc4b4b33e59e73daf9ff5307e71dd8093cca19831423e8eb8"
       },
       "package": "trill-session",
-      "purpose": "\u5355\u4e00host\u8fdb\u7a0b\u72b6\u6001owner\u3001Launch/Cancel/reap\u4e0eprivate bootstrap\u3002",
+      "purpose": "单一host进程状态owner、Launch/Cancel/reap与private bootstrap。",
       "source_entries": [
         {
           "bytes": 64219,
@@ -1287,12 +1276,12 @@
           "sha256": "0b4a23334013053cd273a057487db150e5bdb57748d54fefa309e7109f255cb4"
         }
       ],
-      "technical_contract": "\u540ceffective UID\u5148\u9a8cpeer\uff1b\u6574\u5e27500ms\u4e0d\u968f\u5b57\u8282\u7eed\u671f\uff0c\u6700\u591a32\u8fde\u63a5\u3001\u6bcftick\u6709\u754c\u63a8\u8fdb\uff1bgeneration\u7ed1\u5b9achild incarnation\u3002"
+      "technical_contract": "同effective UID先验peer；整帧500ms不随字节续期，最多32连接、每tick有界推进；generation绑定child incarnation。"
     },
     {
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u5b9e\u9645pixels/IME/\u901a\u7528\u7b2c\u4e09\u65b9\u5e94\u7528\u548c\u8bbe\u5907\u63a7\u5236\u672a\u7531layout\u6216\u5355\u5305tests\u8bc1\u660e\u3002",
+      "current_gap": "实际pixels/IME/通用第三方应用和设备控制未由layout或单包tests证明。",
       "development_validation_command": "cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked -j 2",
       "existing_development_and_technical_documents": [
         {
@@ -1325,7 +1314,7 @@
         "sha256": "f7c04a77f20cc1088f78ec9c217ab0a6068efa7f9f0318ea1898ba9ee15e56ee"
       },
       "package": "trill-shell",
-      "purpose": "egui workspace\u3001local drafts\u3001tasks/context/console\u4e0e\u539fruntime\u89c2\u5bdf\u3002",
+      "purpose": "egui workspace、local drafts、tasks/context/console与原runtime观察。",
       "source_entries": [
         {
           "bytes": 107270,
@@ -1335,7 +1324,7 @@
           "sha256": "2abc719cb54c9cd6091a08fc7c33322bf60730666bf238b155aec2e15a912943"
         }
       ],
-      "technical_contract": "Session\u62e5\u6709process\uff0cShell\u53ea\u53d1\u6709\u754chost\u8bf7\u6c42\uff1bsigned-request\u9875\u4f20\u5df2\u6709envelope\uff0c\u666e\u901a\u542f\u52a8\u4e0d\u914d\u7f6eauthority\uff0cdraft\u4e0d\u81ea\u52a8\u63d0\u4ea4\u3002"
+      "technical_contract": "Session拥有process，Shell只发有界host请求；signed-request页传已有envelope，普通启动不配置authority，draft不自动提交。"
     }
   ],
   "desktop_owned_entry_count": 15,
@@ -2762,7 +2751,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u672c\u6e90\u7801\u7ec4\u5408\u6ca1\u6709\u5b8c\u6574host/native/\u751f\u4ea7\u9a8c\u6536\uff1b\u4e03\u9879\u539f\u4fe1\u4efb\u88c5\u914d\u672a\u9a8c\u8bc1\u3002Root\u7ec4\u4ef6\u901a\u8fc7\u4e0d\u80fd\u8f6c\u79fb\u4e3a\u8fd9\u4e2a\u6574\u7ec4\u901a\u8fc7\u3002\u65b0\u589e\u6709\u754cRoot\u62d2\u7edd\u8bca\u65ad\u4e0d\u6539\u53d8\u6388\u6743\uff0c\u4e0d\u5c06\u65e9\u671fnative\u5931\u8d25\u6539\u5224\u4e3a\u6210\u529f\u6216\u5df2\u77e5\u539f\u56e0\u3002",
+      "current_gap": "本源码组合没有完整host/native/生产验收；七项原信任装配未验证。Root组件通过不能转移为这个整组通过。新增有界Root拒绝诊断不改变授权，不将早期native失败改判为成功或已知原因。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-agentd --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 4929,
@@ -2772,7 +2761,7 @@
         "sha256": "45f5bf5181c2cdde329406d62ba7f28b0b36d0b6bdebee698d153a21624653c1"
       },
       "package": "codex-hepta-agentd",
-      "purpose": "\u6bcf\u4e2aworkspace\u7684\u539fAgentId\u8fdb\u7a0b\u5bbf\u4e3b\uff0c\u7ec4\u5408\u539fApp Server\u3001writer\u4e0e\u53d7\u4fdd\u62a4Root\u901a\u9053\u3002",
+      "purpose": "每个workspace的原AgentId进程宿主，组合原App Server、writer与受保护Root通道。",
       "source_entries": [
         {
           "bytes": 19753,
@@ -2817,7 +2806,7 @@
           "sha256": "56b851ce04c311bbbdba867086fb4b35dd01ac9b43b0adfe0ce23a29d52027c3"
         }
       ],
-      "technical_contract": "AgentdRootProductionInputs\u63a5\u6536\u65e2\u6709bootstrap\u4e0e\u4e94\u6761\u56fa\u5b9a\u901a\u9053\uff1bRoot\u89c2\u6d4b\u8fc7\u671f\u3001peer\u5bff\u547d\u6216proof\u4e0d\u5339\u914d\u4f1afence\u3002\u6301\u6709\u539fwriter\u5e76\u7b49\u5f85close\uff1b\u53d1\u9001\u540eUnknown\u6309\u539foperation\u8eab\u4efd\u6838\u5bf9\uff0c\u4e0d\u80fd\u91cd\u65b0\u6388\u6743\u91cd\u53d1\u3002"
+      "technical_contract": "AgentdRootProductionInputs接收既有bootstrap与五条固定通道；Root观测过期、peer寿命或proof不匹配会fence。持有原writer并等待close；发送后Unknown按原operation身份核对，不能重新授权重发。"
     },
     {
       "adjacent_documents": [
@@ -2860,7 +2849,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u72ec\u7acb\u90e8\u7f72\u7684\u53d7\u4fdd\u62a4Current\u3001\u6062\u590danchor\u548c\u539fpublisher fence\u4ecd\u9700\u5b9e\u9645\u88c5\u914d\uff1bSQLite\u6458\u8981\u4e0d\u80fd\u66ff\u4ee3\u5916\u90e8\u53d7\u4fe1cut\u3002",
+      "current_gap": "独立部署的受保护Current、恢复anchor和原publisher fence仍需实际装配；SQLite摘要不能替代外部受信cut。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-memory --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1399,
@@ -2870,7 +2859,7 @@
         "sha256": "5ec9e7bd2a5757cc6241351e65d93cb35812d960ba4516343b4cd66dbbeb016c"
       },
       "package": "codex-hepta-memory",
-      "purpose": "\u539fCognitiveStore\u7684\u6388\u6743\u5199\u5165\u3001\u53d7\u4fdd\u62a4checkpoint\u548c\u53ea\u8bfb\u5386\u53f2\u89c2\u5bdf\u63a5\u70b9\u3002",
+      "purpose": "原CognitiveStore的授权写入、受保护checkpoint和只读历史观察接点。",
       "source_entries": [
         {
           "bytes": 28161,
@@ -2901,7 +2890,7 @@
           "sha256": "8146e8b2b375a447682d55d74655e03c3a116ec6ba7809d1508a5f236ff455a6"
         }
       ],
-      "technical_contract": "ProtectedCognitiveCheckpoint\u7ed1\u5b9a\u539fowner\u4e0e\u72ec\u7acbCurrent cut\uff1bsole recovered store\u5148\u5b8c\u6210pool\u5173\u95ed\u518d\u7ed1\u5b9awriter/READONLY\u89c2\u5bdf\u6c60\u3002\u4e0d\u786e\u5b9apublication\u6216\u53d6\u6d88\u6c38\u4e45fence\u5f53\u524dgeneration\uff1blost acknowledgement\u4fdd\u6301Unknown\u3002"
+      "technical_contract": "ProtectedCognitiveCheckpoint绑定原owner与独立Current cut；sole recovered store先完成pool关闭再绑定writer/READONLY观察池。不确定publication或取消永久fence当前generation；lost acknowledgement保持Unknown。"
     },
     {
       "adjacent_documents": [
@@ -2916,7 +2905,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1b\u672c\u8282\u8865\u5f00\u53d1\u6280\u672f\u5165\u53e3\uff0c\u8de8\u91cd\u542f\u771f\u5b9e\u6388\u6743\u3001\u5916\u90e8cut\u4e0e\u4ea7\u54c1writer\u538b\u529b\u4ecd\u9700\u6574\u7ec4\u9a8c\u8bc1\u3002",
+      "current_gap": "310c已新增包内技术／开发README；本节补开发技术入口，跨重启真实授权、外部cut与产品writer压力仍需整组验证。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-cognitive-store --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 418,
@@ -2928,7 +2917,7 @@
       "package": "codex-hepta-cognitive-store",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "\u8ffd\u52a0\u5f0f\u8ba4\u77e5\u8d26\u672c\u3001\u4fee\u6b63\u4e0etombstone lineage\uff0c\u4ee5\u53ca\u53d7\u63a7durable SQLite\u5b58\u50a8\u3002",
+      "purpose": "追加式认知账本、修正与tombstone lineage，以及受控durable SQLite存储。",
       "source_entries": [
         {
           "bytes": 8101,
@@ -2959,7 +2948,7 @@
           "sha256": "d81100b467cb540f9b926933ccabec40e0c5ad32f4c64ec5e2ee2751fd547206"
         }
       ],
-      "technical_contract": "DurableCognitiveStore\u901a\u8fc7CognitiveAccess/CognitiveRecoveryRequirement\u533a\u5206\u8bbf\u95ee\u4e0e\u6062\u590d\uff1b\u5199\u5165\u8fd4\u56deCognitiveWriteReceipt\uff0c\u6062\u590d\u9519\u8bef\u7531CognitiveRecoveryError\u8868\u8fbe\u3002\u4e0d\u80fd\u628a\u5185\u5b58qualification ledger\u5f53\u6301\u4e45\u539fowner\u6216\u6548\u679c\u6267\u884c\u5668\u3002"
+      "technical_contract": "DurableCognitiveStore通过CognitiveAccess/CognitiveRecoveryRequirement区分访问与恢复；写入返回CognitiveWriteReceipt，恢复错误由CognitiveRecoveryError表达。不能把内存qualification ledger当持久原owner或效果执行器。"
     },
     {
       "adjacent_documents": [
@@ -3002,7 +2991,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u539fissuer keyring\u3001\u64a4\u9500head\u3001clock\u4e0efrontier\u9700\u8981\u5b9e\u90e8\u7f72\u8bc1\u660e\uff1b\u6d4b\u8bd5\u7b7e\u540dfixture\u4e0d\u63d0\u4f9b\u751f\u4ea7\u6388\u6743\u3002",
+      "current_gap": "原issuer keyring、撤销head、clock与frontier需要实部署证明；测试签名fixture不提供生产授权。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-contracts --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 885,
@@ -3012,7 +3001,7 @@
         "sha256": "30de79a09e006d88816bba2c9cb6f3fd6d8e9cae9a2351fa2475415e67a0c109"
       },
       "package": "codex-hepta-contracts",
-      "purpose": "\u539f\u8eab\u4efd\u3001FinalUse\u3001lease\u3001Root\u65f6\u949f/frontier\u4e0etyped\u6388\u6743\u7ebf\u534f\u8bae\u3002",
+      "purpose": "原身份、FinalUse、lease、Root时钟/frontier与typed授权线协议。",
       "source_entries": [
         {
           "bytes": 14945,
@@ -3050,7 +3039,7 @@
           "sha256": "cd0b581fc4b3421d2184b7f6d4999c1f6cfdf32c144a7358537f2c0b6ca12ead"
         }
       ],
-      "technical_contract": "FinalUse\u6821\u9a8c\u7ed1\u5b9asubject/destination/policy\u4e0e\u539fissuer\uff1blease\u5e76\u53d1\u53caprotected frontier\u53d7\u539f\u95e8\u7981\u7ea6\u675f\u3002HostAuthorityClock\u4e0eRootFinalUseFrontierClient\u662f\u53d7\u4fe1\u89c2\u5bdf\u63a5\u70b9\uff0cwire\u6216\u516c\u94a5\u7684\u5b58\u5728\u672c\u8eab\u4e0d\u6388\u4e88\u6267\u884c\u3002"
+      "technical_contract": "FinalUse校验绑定subject/destination/policy与原issuer；lease并发及protected frontier受原门禁约束。HostAuthorityClock与RootFinalUseFrontierClient是受信观察接点，wire或公钥的存在本身不授予执行。"
     },
     {
       "adjacent_documents": [
@@ -3065,7 +3054,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u4e94\u5e93\u542f\u52a8\u4fee\u6539\u5c1a\u672a\u8bc1\u660e\u89e3\u51b3\u5f53\u524d\u6574\u7ec4\u56db\u4e2atimeout\uff1b\u5fc5\u987b\u6309\u539f60s/180s\u9884\u7b97\u91cd\u65b0\u8dd1\u4ea7\u54c1\u7528\u4f8b\u3002",
+      "current_gap": "五库启动修改尚未证明解决当前整组四个timeout；必须按原60s/180s预算重新跑产品用例。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-state --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1002,
@@ -3075,7 +3064,7 @@
         "sha256": "2da10f840265545592862302111b14b4e6ae83d3e0ed567e8fb1a1c4ecd12b3d"
       },
       "package": "codex-state",
-      "purpose": "rollout\u5143\u6570\u636e\u3001projects/queue\u7b49\u539fSQLite\u72b6\u6001\u548c\u4e94\u5e93\u542f\u52a8/\u6062\u590d\u3002",
+      "purpose": "rollout元数据、projects/queue等原SQLite状态和五库启动/恢复。",
       "source_entries": [
         {
           "bytes": 5126,
@@ -3113,7 +3102,7 @@
           "sha256": "160d9a3e5bb6e77413de8aeada768a85d3471f5bfddc8e43d9ac71dd17e5cd6f"
         }
       ],
-      "technical_contract": "\u539fprimary\u521d\u59cb\u5316\u6210\u529f\u540e\u542f\u52a8\u5176\u4f59\u56db\u5e93\uff0cjoin\u5168\u90e8\u7ed3\u679c\u5e76\u7b49\u5f85\u5931\u8d25\u6e05\u7406\uff1bcommit hook\u63a5\u5165protected Dirty invalidation\uff0creplacement\u8fde\u63a5\u4e5f\u5b89\u88c5hook\u3002\u5931\u8d25\u8fd4\u56de\u539f\u9519\u8bef\uff0c\u4e0d\u5ba3\u79f0\u8de8\u5e93\u539f\u5b50rollback\u3002"
+      "technical_contract": "原primary初始化成功后启动其余四库，join全部结果并等待失败清理；commit hook接入protected Dirty invalidation，replacement连接也安装hook。失败返回原错误，不宣称跨库原子rollback。"
     },
     {
       "adjacent_documents": [
@@ -3128,7 +3117,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1btyped\u7f16\u7801\u4e0d\u8bc1\u660epeer\u8eab\u4efd\u3001\u771f\u5b9e\u6388\u6743\u6216\u6267\u884c\u6548\u679c\uff0c\u5fc5\u987b\u7531\u539f\u5bbf\u4e3b\u9274\u6743\u4e0e\u6301\u4e45\u7ec8\u6001\u9a8c\u8bc1\u3002",
+      "current_gap": "310c已新增包内技术／开发README；typed编码不证明peer身份、真实授权或执行效果，必须由原宿主鉴权与持久终态验证。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-agent-protocol --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 496,
@@ -3140,7 +3129,7 @@
       "package": "codex-hepta-agent-protocol",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "agentd\u4e0esupervisor\u5171\u4eab\u7684\u6709\u754c\u672c\u5730\u63a7\u5236\u8bf7\u6c42\u3001\u80fd\u529b\u534f\u5546\u548c\u5386\u53f2\u7ed3\u679c\u7c7b\u578b\u3002",
+      "purpose": "agentd与supervisor共享的有界本地控制请求、能力协商和历史结果类型。",
       "source_entries": [
         {
           "bytes": 46549,
@@ -3171,7 +3160,7 @@
           "sha256": "166b680eebf5ac99da848ad51aaa28cf0e1c703571a6dabab53669f974fdc7b5"
         }
       ],
-      "technical_contract": "AGENTD_CONTROL_SCHEMA_VERSION=2\uff0cMAX_CONTROL_FRAME_BYTES=65536\uff1b\u80fd\u529b\u534f\u5546\u4e0eObjectiveAdmissionUnknownReason\u4fdd\u7559\u62d2\u7edd/\u672a\u77e5\u3002HostTurnAuthorityBinding\u662ftransport witness\uff0c\u4e0d\u80fd\u4f5c\u4e3agrant\u6216\u9ed8\u8ba4\u542f\u7528runtime consumer\u3002"
+      "technical_contract": "AGENTD_CONTROL_SCHEMA_VERSION=2，MAX_CONTROL_FRAME_BYTES=65536；能力协商与ObjectiveAdmissionUnknownReason保留拒绝/未知。HostTurnAuthorityBinding是transport witness，不能作为grant或默认启用runtime consumer。"
     },
     {
       "adjacent_documents": [
@@ -3207,7 +3196,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u539f\u5bb9\u91cf\u538b\u529btimeout\u4ecd\u4fdd\u7559\uff1b\u9700\u8981\u65b0\u6574\u7ec4\u4e0b\u7684\u539f\u9884\u7b97\u548c\u6301\u4e45\u6062\u590d\u9a8c\u8bc1\uff0c\u4e0d\u80fd\u5220\u5bb9\u91cf\u7528\u4f8b\u6362\u901a\u8fc7\u3002",
+      "current_gap": "原容量压力timeout仍保留；需要新整组下的原预算和持久恢复验证，不能删容量用例换通过。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-learning-ledger --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 676,
@@ -3217,7 +3206,7 @@
         "sha256": "5cd9913ddcfc84c9b04e95c9a2e212d9f434b9a390e9695d48143496287e825c"
       },
       "package": "codex-hepta-learning-ledger",
-      "purpose": "\u8ffd\u52a0\u5f0f\u56e0\u679c\u5b66\u4e60\u4e8b\u5b9e\u3001\u72ec\u7acboutcome\u53ca\u64a4\u9500lineage\u3002",
+      "purpose": "追加式因果学习事实、独立outcome及撤销lineage。",
       "source_entries": [
         {
           "bytes": 7121,
@@ -3255,7 +3244,7 @@
           "sha256": "10df9dd1ed60904dd4a08d590836a16657046807b5195742ef42da89a6b3f11a"
         }
       ],
-      "technical_contract": "\u7eafcore\u6ca1\u6709\u73af\u5883I/O\u6216\u6267\u884c\u6743\uff1bopt-in durable adapter\u53ea\u7ecfhost\u6388\u6743\u6587\u4ef6\u53e5\u67c4\u8bb0\u5f55\u4e8b\u5b9e\uff0c\u9519\u8bef\u548c\u6062\u590d\u53d7\u539fjournal/lock\u534f\u8bae\u7ea6\u675f\u3002\u8bb0\u5f55\u4e0d\u6388\u4e88model/tool/network/selection/promotion/release\u6743\u3002"
+      "technical_contract": "纯core没有环境I/O或执行权；opt-in durable adapter只经host授权文件句柄记录事实，错误和恢复受原journal/lock协议约束。记录不授予model/tool/network/selection/promotion/release权。"
     },
     {
       "adjacent_documents": [
@@ -3270,7 +3259,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u5355\u5143Git fixture\u4e0e\u8de8repo\u771f\u5b9esource admission\u5206\u5f00\uff1b\u4e0d\u80fd\u5c06status\u5e72\u51c0\u5f53\u5168\u90e8\u5b9e\u9645\u5b57\u8282/\u6a21\u5f0f\u6216\u5386\u53f2\u5b8c\u6574\u3002",
+      "current_gap": "单元Git fixture与跨repo真实source admission分开；不能将status干净当全部实际字节/模式或历史完整。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-git-utils --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1051,
@@ -3280,7 +3269,7 @@
         "sha256": "1b812bba7cc7dfa5339ab3ddb5e499e35fcafe42a6489e1e7a43208b291a816d"
       },
       "package": "codex-git-utils",
-      "purpose": "\u5171\u4eabGit\u5b50\u8fdb\u7a0b\u3001status/diff\u3001patch\u4e0e\u53d7\u4fe1repo\u5904\u7406\u3002",
+      "purpose": "共享Git子进程、status/diff、patch与受信repo处理。",
       "source_entries": [
         {
           "bytes": 1683,
@@ -3318,7 +3307,7 @@
           "sha256": "8358361d24a2aea8dc73188ae1b8de3258f549c1f2db028e08b7f6f374c0ec99"
         }
       ],
-      "technical_contract": "GitToolingError\u4fdd\u7559\u547d\u4ee4\u5931\u8d25\uff1bSAFE_BARE_REPOSITORY_CONFIG\u9650\u5236\u9690\u5f0fbare repo\uff0cFsmonitorOverride\u7ba1\u7406\u5916\u90e8fsmonitor\u8fb9\u754c\u3002Git\u67e5\u8be2/patch\u63a5\u53e3\u4e0d\u63d0\u4f9bHepta\u539fowner\u5386\u53f2\u8bc1\u660e\u6216\u6388\u6743\u3002"
+      "technical_contract": "GitToolingError保留命令失败；SAFE_BARE_REPOSITORY_CONFIG限制隐式bare repo，FsmonitorOverride管理外部fsmonitor边界。Git查询/patch接口不提供Hepta原owner历史证明或授权。"
     },
     {
       "adjacent_documents": [
@@ -3333,7 +3322,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1b\u672c\u5730development lifecycle\u548cadvisory\u89c2\u6d4b\u4e0d\u7b49\u4e8e\u751f\u4ea7Root\u6062\u590d/\u8de8host\u63a7\u5236\u3002",
+      "current_gap": "310c已新增包内技术／开发README；本地development lifecycle和advisory观测不等于生产Root恢复/跨host控制。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-memory-extension --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1184,
@@ -3345,7 +3334,7 @@
       "package": "codex-hepta-memory-extension",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "\u628a\u539fmemory\u89c2\u5bdf/\u8ba4\u77e5\u63a5\u70b9\u63a5\u5230extension\uff0c\u4fdd\u7559\u672c\u5730\u5f00\u53d1owner\u4e0eshadow\u8fb9\u754c\u3002",
+      "purpose": "把原memory观察/认知接点接到extension，保留本地开发owner与shadow边界。",
       "source_entries": [
         {
           "bytes": 6340,
@@ -3383,7 +3372,7 @@
           "sha256": "b82e9b8ac19a6ebac0460475064684da34d6456be471a267c7d29108126b65eb"
         }
       ],
-      "technical_contract": "ShadowAdvisoryObservationInput\u7ecfobserve_shadow_advisory\u7b49typed\u63a5\u53e3\u6821\u9a8c\uff1bshadow\u5e38\u91cf\u660e\u786eexternal-effects/KG-write\u8fb9\u754c\u3002workspace/domain digest\u7528\u4e8e\u7ed1\u5b9a\uff0c\u4e0d\u80fd\u51ed\u6458\u8981\u521b\u5efa\u53d7\u4fe1writer\u6216\u751f\u4ea7grant\u3002"
+      "technical_contract": "ShadowAdvisoryObservationInput经observe_shadow_advisory等typed接口校验；shadow常量明确external-effects/KG-write边界。workspace/domain digest用于绑定，不能凭摘要创建受信writer或生产grant。"
     },
     {
       "adjacent_documents": [
@@ -3398,7 +3387,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1btimer\u89e6\u53d1\u4e0d\u7b49\u4e8e\u6548\u679c\u5b8c\u6210\uff0c\u539fretirement/recovery\u4e0eunknown provider-effect\u5fc5\u987b\u5728\u771f\u5b9eowner\u94fe\u9a8c\u6536\u3002",
+      "current_gap": "310c已新增包内技术／开发README；timer触发不等于效果完成，原retirement/recovery与unknown provider-effect必须在真实owner链验收。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-automation --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1324,
@@ -3410,7 +3399,7 @@
       "package": "codex-hepta-automation",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "\u6bcfAgent\u6301\u4e45automation queue\u3001timer materialization\u4e0eTaskFlow\u751f\u547d\u5468\u671f\u3002",
+      "purpose": "每Agent持久automation queue、timer materialization与TaskFlow生命周期。",
       "source_entries": [
         {
           "bytes": 6938,
@@ -3448,7 +3437,7 @@
           "sha256": "78e9e54bbf77b76fdbb72d6858e2e255acb636a8d277049da2cdd2c314e7739d"
         }
       ],
-      "technical_contract": "Core queue admission\u4e0eterminal execution\u5206\u79bb\uff1bAuthorizedEffectIntent\u7ed1\u5b9aoperation/subject/destination/policy\u4e0e\u4f9d\u8d56\u3002AuthorizedEffectOutcome/DriverError\u4fdd\u7559\u6548\u679c\u67e5\u8be2\u548c\u5931\u8d25\u8fb9\u754c\uff0c\u4e0b\u6e38\u6548\u679c\u4ecd\u9700\u539ffinal-use\u4e0eterminal observer\u3002"
+      "technical_contract": "Core queue admission与terminal execution分离；AuthorizedEffectIntent绑定operation/subject/destination/policy与依赖。AuthorizedEffectOutcome/DriverError保留效果查询和失败边界，下游效果仍需原final-use与terminal observer。"
     },
     {
       "adjacent_documents": [
@@ -3463,7 +3452,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1b\u4e94/\u516dAgent\u771f\u5b9e\u4ea7\u54c1\u751f\u547d\u5468\u671f\u8d85\u65f6\u672a\u5728\u65b0\u7ec4\u5408\u95ed\u5408\uff0c\u8ba1\u7b97\u6216registry\u5355\u6d4b\u4e0d\u80fd\u66ff\u4ee3\u3002",
+      "current_gap": "310c已新增包内技术／开发README；五/六Agent真实产品生命周期超时未在新组合闭合，计算或registry单测不能替代。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-fleet --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 631,
@@ -3475,7 +3464,7 @@
       "package": "codex-hepta-fleet",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "supervisor\u62e5\u6709\u7684\u72ec\u7acbAgent\u6ce8\u518c\u3001release\u3001allocation\u4e0e\u6301\u4e45control\u72b6\u6001\u3002",
+      "purpose": "supervisor拥有的独立Agent注册、release、allocation与持久control状态。",
       "source_entries": [
         {
           "bytes": 2594,
@@ -3513,7 +3502,7 @@
           "sha256": "26651b897fc385a96564bea6f20b22767e30e40d1eeb5166e1e217f1e36fc3bb"
         }
       ],
-      "technical_contract": "FleetRegistryError\u533a\u5206WorkspaceConflict\u3001StaleGeneration\u3001StaleReleaseGeneration\u3001ReleaseRevoked\u4e0eInvalidTransition\uff1bregistry\u4e0d\u6267\u884cturn\u3001\u4e0d\u8f6c\u53d1\u6d88\u606f\u3002allocation\u53ea\u8ba1\u7b97claim\uff0c\u4e0d\u80fd\u8bc1\u660e\u5185\u6838\u5df2\u5f3a\u5236CPU/\u5185\u5b58\u9650\u989d\u3002"
+      "technical_contract": "FleetRegistryError区分WorkspaceConflict、StaleGeneration、StaleReleaseGeneration、ReleaseRevoked与InvalidTransition；registry不执行turn、不转发消息。allocation只计算claim，不能证明内核已强制CPU/内存限额。"
     },
     {
       "adjacent_documents": [
@@ -3528,7 +3517,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "paired process\u548ccrash recovery\u987b\u4fdd\u7559\u539f\u4ea7\u54c1ELF\u3001watchdog\u4e0e\u5b9e\u9645\u7ec8\u6001\uff1b\u8fdb\u7a0b\u91cd\u542f\u6210\u529f\u4e0d\u7b49\u4e8e\u65e7effects\u53ef\u91cd\u53d1\u3002",
+      "current_gap": "paired process和crash recovery须保留原产品ELF、watchdog与实际终态；进程重启成功不等于旧effects可重发。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-supervisor --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 2710,
@@ -3538,7 +3527,7 @@
         "sha256": "d12a4fcdc5752242de0ee2c4d3b87b40f68184b8ff184400593f2c8377e9111e"
       },
       "package": "codex-hepta-supervisor",
-      "purpose": "\u539fAgent\u8fdb\u7a0b\u751f\u547d\u5468\u671f\u3001restart budget\u3001release handoff\u4e0e\u7b7e\u540dintent\u6062\u590d\u3002",
+      "purpose": "原Agent进程生命周期、restart budget、release handoff与签名intent恢复。",
       "source_entries": [
         {
           "bytes": 7671,
@@ -3583,7 +3572,7 @@
           "sha256": "5f68e4c1498149fe58f12ce19c7505557d1733f77a8b5f120ce603b58b8df452"
         }
       ],
-      "technical_contract": "SupervisordClient/daemon\u534f\u8bae\u7ba1\u7406\u8fdb\u7a0b\uff1brestart journal/budget\u4e0eresult fence\u72ec\u7acb\u4e8eturn\u6267\u884c\u3002ExternalSignerError\u4fdd\u7559\u539f\u5916\u7b7e\u540d\u5931\u8d25\uff0c\u79c1\u94a5\u8f93\u5165\u7ecf\u65e2\u6709FD/path seam\uff0c\u4e0d\u7531Desktop\u751f\u6210\u66ff\u4ee3issuer\u3002"
+      "technical_contract": "SupervisordClient/daemon协议管理进程；restart journal/budget与result fence独立于turn执行。ExternalSignerError保留原外签名失败，私钥输入经既有FD/path seam，不由Desktop生成替代issuer。"
     },
     {
       "adjacent_documents": [
@@ -3598,7 +3587,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1b\u5e73\u53f0helper/\u6743\u9650\u548c\u771f\u5b9eCLI\u6d88\u8d39\u4ecd\u9700\u65b0\u6e90build\u4e0eSDK\u9a8c\u8bc1\uff0c\u672c\u5305\u5355\u6d4b\u4e0d\u80fd\u4ee3\u66ff\u3002",
+      "current_gap": "310c已新增包内技术／开发README；平台helper/权限和真实CLI消费仍需新源build与SDK验证，本包单测不能代替。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-arg0 --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 857,
@@ -3610,7 +3599,7 @@
       "package": "codex-arg0",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "\u539fCLI/\u5bbf\u4e3b\u7684\u9690\u5f0fhelper\u5206\u6d3e\u4e0echild re-exec\u7a33\u5b9a\u8def\u5f84\u3002",
+      "purpose": "原CLI/宿主的隐式helper分派与child re-exec稳定路径。",
       "source_entries": [
         {
           "bytes": 26762,
@@ -3620,7 +3609,7 @@
           "sha256": "7fec93a108ceb11fd0fef17d34d4c3cf7e2c4ac6ea4d810ad0b878a76e448a75"
         }
       ],
-      "technical_contract": "Arg0DispatchPaths\u663e\u5f0f\u4fdd\u7559\u5f53\u524dCodex executable\u4e0ehelper\u8def\u5f84\uff1barg0_dispatch_or_else\u7ecf\u539fdispatch\u8fdb\u5165\u5bbf\u4e3b\u3002\u4e0d\u80fd\u4ee5test harness\u7684current_exe\u5192\u5145CLI\uff0c\u4e5f\u4e0d\u80fd\u66f4\u6362helper\u540e\u7ee7\u627f\u65e7ELF\u8d44\u683c\u3002"
+      "technical_contract": "Arg0DispatchPaths显式保留当前Codex executable与helper路径；arg0_dispatch_or_else经原dispatch进入宿主。不能以test harness的current_exe冒充CLI，也不能更换helper后继承旧ELF资格。"
     },
     {
       "adjacent_documents": [
@@ -3635,7 +3624,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u5b8c\u6574\u534f\u8bae\u517c\u5bb9\u4e0e\u771f\u5b9econsumer\u9700\u672c\u5305\u6d4b\u8bd5\u53ca\u6574\u7ec4/SDK\uff1bschema\u6d4b\u8bd5\u4e0d\u80fd\u66ff\u4ee3\u6548\u679c\u6216\u6301\u4e45\u6062\u590d\u3002",
+      "current_gap": "完整协议兼容与真实consumer需本包测试及整组/SDK；schema测试不能替代效果或持久恢复。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-app-server-protocol --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1658,
@@ -3645,7 +3634,7 @@
         "sha256": "addcb59f7f67216ac73eced24411a99d51ae7e03a916f33cbccaeaeaf39057bb"
       },
       "package": "codex-app-server-protocol",
-      "purpose": "\u539fApp Server RPC\u7c7b\u578b\u3001\u7ebf\u7a0bhistory\u6295\u5f71\u53caJSON/TS schema\u5bfc\u51fa\u3002",
+      "purpose": "原App Server RPC类型、线程history投影及JSON/TS schema导出。",
       "source_entries": [
         {
           "bytes": 2447,
@@ -3676,7 +3665,7 @@
           "sha256": "f3b449aac70fbb77158b74f09cf79924046b400c9d4299e909748b01a1e739bd"
         }
       ],
-      "technical_contract": "generate_json/generate_ts\u53caprecomputed exports\u4f7f\u7528\u65e2\u6709\u534f\u8bae\u7c7b\u578b\uff1bschema fixture\u548c\u751f\u6210\u8f93\u51fa\u5fc5\u987b\u7ed1\u5b9a\u540c\u6e90\u5e76\u4fdd\u7559\u5e8f\u5217\u5316\u62d2\u7edd\u6761\u4ef6\u3002\u534f\u8bae\u503c\u6216\u751f\u6210schema\u4e0d\u8bc1\u660e\u7f51\u7edcpeer/production authority\u3002"
+      "technical_contract": "generate_json/generate_ts及precomputed exports使用既有协议类型；schema fixture和生成输出必须绑定同源并保留序列化拒绝条件。协议值或生成schema不证明网络peer/production authority。"
     },
     {
       "adjacent_documents": [
@@ -3691,7 +3680,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "local/in-memory\u5b9e\u73b0\u8bed\u4e49\u4e0e\u5b9e\u9645\u65ad\u7535/\u8de8kernel\u4e0d\u53ef\u8fbe\u5386\u53f2\u5206\u5f00\uff1b\u672c\u7ec4\u5408\u6ca1\u6709\u5168\u94fe\u6062\u590d\u8d44\u683c\u3002",
+      "current_gap": "local/in-memory实现语义与实际断电/跨kernel不可达历史分开；本组合没有全链恢复资格。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-thread-store --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1308,
@@ -3701,7 +3690,7 @@
         "sha256": "f4e3449613ba53cf5828c3150d1f89f2f6f33a2ef057e6f327f6b1695b1f5c66"
       },
       "package": "codex-thread-store",
-      "purpose": "\u4ee5ThreadId\u4e3a\u6301\u4e45handle\u7684\u5b58\u50a8\u65e0\u5173thread/queue\u63a5\u53e3\u4e0elocal\u5b9e\u73b0\u3002",
+      "purpose": "以ThreadId为持久handle的存储无关thread/queue接口与local实现。",
       "source_entries": [
         {
           "bytes": 3970,
@@ -3739,7 +3728,7 @@
           "sha256": "ad568c9569b004b4abd4700346a1641f00148a6b425e608e83c866c43315fa17"
         }
       ],
-      "technical_contract": "ThreadStoreResult\u4f7f\u7528ThreadNotFound\u3001InvalidRequest\u3001Conflict\u3001Unsupported\u548cInternal\uff1bbackend\u89e3\u6790ThreadId\u5230rollout\u6216\u5176\u4ed6store\u3002Paginated\u6a21\u5f0f\u6309\u73b0\u6709Unsupported\u62d2\u7edd\uff0c\u4e0d\u53ef\u6084\u6084\u5f53\u5b8c\u6574history\u8fd4\u56de\u3002"
+      "technical_contract": "ThreadStoreResult使用ThreadNotFound、InvalidRequest、Conflict、Unsupported和Internal；backend解析ThreadId到rollout或其他store。Paginated模式按现有Unsupported拒绝，不可悄悄当完整history返回。"
     },
     {
       "adjacent_documents": [
@@ -3754,7 +3743,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1b\u9700\u9010provider/\u5e73\u53f0\u5ba1\u5b9e\u9645\u5b89\u88c5\u4e0e\u5931\u8d25\u6062\u590d\uff0c\u672c\u8282\u4e0d\u6388\u6743\u5b89\u88c5\u3001\u66f4\u65b0\u6216\u5916\u90e8\u6d88\u606f\u3002",
+      "current_gap": "310c已新增包内技术／开发README；需逐provider/平台审实际安装与失败恢复，本节不授权安装、更新或外部消息。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-core-plugins --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 2192,
@@ -3766,7 +3755,7 @@
       "package": "codex-core-plugins",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "\u63d2\u4ef6manifest\u3001marketplace\u3001\u5b89\u88c5\u72b6\u6001\u3001remote bundle\u4e0e\u5de5\u5177\u8def\u7531\u3002",
+      "purpose": "插件manifest、marketplace、安装状态、remote bundle与工具路由。",
       "source_entries": [
         {
           "bytes": 4143,
@@ -3811,7 +3800,7 @@
           "sha256": "8245d30690b3e9e6a8fc7e95d0a208107a7991027b6ad99ac410ae8f62681eaa"
         }
       ],
-      "technical_contract": "LoadedPlugin/PluginLoadOutcome\u6765\u81ea\u539fplugin\u5b9e\u73b0\uff1bloader/store\u548cGit policy\u5206\u522b\u7ea6\u675f\u6765\u6e90\u3001\u89e3\u6790\u4e0e\u5b89\u88c5\u72b6\u6001\u3002\u53ef\u53d1\u73b0/\u52a0\u8f7d\u63d2\u4ef6\u4e0d\u7b49\u4e8e\u7528\u6237\u6388\u6743\u5de5\u5177\u6548\u679c\uff0cremote bundle\u4e5f\u4e0d\u81ea\u52a8\u6210\u4e3a\u53d7\u4fe1Root\u3002"
+      "technical_contract": "LoadedPlugin/PluginLoadOutcome来自原plugin实现；loader/store和Git policy分别约束来源、解析与安装状态。可发现/加载插件不等于用户授权工具效果，remote bundle也不自动成为受信Root。"
     },
     {
       "adjacent_documents": [
@@ -3826,7 +3815,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u9700\u65b0\u6e90\u771f\u5b9e\u6587\u4ef6\u4e0e\u91cd\u542f\u9a8c\u8bc1\uff1bfixture\u540c\u6b65\u4fee\u6b63\u4e0d\u81ea\u52a8\u6210\u4e3a\u539f\u751f\u4ea7\u6587\u6863/Notes\u6301\u4e45\u5316\u8bc1\u660e\u3002",
+      "current_gap": "需新源真实文件与重启验证；fixture同步修正不自动成为原生产文档/Notes持久化证明。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-rollout --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1244,
@@ -3836,7 +3825,7 @@
         "sha256": "f01de658fcc48810495562069af132c828625bd8e6fa2b2c897c410c7b36b657"
       },
       "package": "codex-rollout",
-      "purpose": "\u539fsession\u6587\u4ef6\u7684rollout\u6301\u4e45\u8bb0\u5f55\u3001\u538b\u7f29\u3001\u53d1\u73b0\u4e0estate DB\u63a5\u70b9\u3002",
+      "purpose": "原session文件的rollout持久记录、压缩、发现与state DB接点。",
       "source_entries": [
         {
           "bytes": 5248,
@@ -3874,7 +3863,7 @@
           "sha256": "22bb1352fffb26b1ca2e2183a7521b7aa1bc458d4fa8054dfa94f385c91a6ad5"
         }
       ],
-      "technical_contract": "decode_rollout_line\u4fdd\u7559serde_json\u89e3\u6790\u9519\u8bef\uff1bRolloutLineReader/recorder\u4e0estate_db\u4fdd\u6301\u6587\u4ef6\u548c\u5143\u6570\u636e\u804c\u8d23\u3002TEST_FIXTURES\u8981\u6c42\u771f\u5b9efixture\u5bff\u547d\uff1bJSONL\u5b58\u5728\u4e0d\u8bc1\u660eprotected Current\u6216effect terminal\u3002"
+      "technical_contract": "decode_rollout_line保留serde_json解析错误；RolloutLineReader/recorder与state_db保持文件和元数据职责。TEST_FIXTURES要求真实fixture寿命；JSONL存在不证明protected Current或effect terminal。"
     },
     {
       "adjacent_documents": [
@@ -3891,7 +3880,7 @@
       "complete_independent_manual_per_crate_claimed": false,
       "consumer_test_owner": "codex-exec-server",
       "consumer_tests_executed_by_documentation_task": false,
-      "current_gap": "310c\u5df2\u65b0\u589e\u5305\u5185\u6280\u672f\uff0f\u5f00\u53d1README\uff1b\u8def\u5f84\u8bbf\u95ee\u3001\u8fdc\u7aef\u5b9e\u73b0/\u5e73\u53f0\u7b56\u7565\u4e0e\u771f\u5b9e\u8bbe\u5907\u9694\u79bb\u9700\u5404\u81ea\u9a8c\u8bc1\uff1b\u6587\u4ef6API\u4e0d\u80fd\u7b7e\u53d1Hepta\u6548\u679c\u6388\u6743\u3002 \u672c\u5305lib.test/doctest\u5747false\uff0c\u65e0\u72ec\u7acbtest target\uff1b\u5f00\u53d1\u547d\u4ee4\u4e0d\u7b49\u4e8epositive cases\uff0c\u9700\u53e6\u9a8c\u771f\u5b9eexec-server\u6d88\u8d39\u8005\u3002",
+      "current_gap": "310c已新增包内技术／开发README；路径访问、远端实现/平台策略与真实设备隔离需各自验证；文件API不能签发Hepta效果授权。 本包lib.test/doctest均false，无独立test target；开发命令不等于positive cases，需另验真实exec-server消费者。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-file-system --test-threads 2 --retries 0 --cargo-profile dev-small",
       "doctest_target_enabled": false,
       "library_test_target_enabled": false,
@@ -3905,7 +3894,7 @@
       "package": "codex-file-system",
       "package_manual_development_commands_executed": false,
       "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
-      "purpose": "typed\u6587\u4ef6\u64cd\u4f5c\u3001\u53d7\u63a7permission profile\u8f6c\u6362\u53ca\u6709\u754cwalk\u63a5\u53e3\u3002",
+      "purpose": "typed文件操作、受控permission profile转换及有界walk接口。",
       "source_entries": [
         {
           "bytes": 19953,
@@ -3922,7 +3911,7 @@
           "sha256": "5e24e7a4d593b47fafbada89a84fc7917c8e3b26a9acd30b93341b2e70a7ff19"
         }
       ],
-      "technical_contract": "ReadFileOptions/WriteFileOptions\u4e0eExecPermissionProfile\u4fdd\u7559typed\u53c2\u6570\u548cio::Error\uff1bwalk\u8bbeMAX_WALK_DEPTH=64\u3001directories=10000\u3001entries=50000\u3001response=4MiB\uff0cWalkError\u4e0e\u622a\u65ad\u7ed3\u679c\u5fc5\u987b\u663e\u5f0f\u5904\u7406\u3002"
+      "technical_contract": "ReadFileOptions/WriteFileOptions与ExecPermissionProfile保留typed参数和io::Error；walk设MAX_WALK_DEPTH=64、directories=10000、entries=50000、response=4MiB，WalkError与截断结果必须显式处理。"
     },
     {
       "adjacent_documents": [
@@ -3937,7 +3926,7 @@
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "\u8fd9\u662f\u65b0\u589e\u7b2c19\u5b9e\u9645owning\u5305\uff0c\u987b\u672c\u5305Rust tests\uff0b\u539fSDK50\u4e0e\u65b0CLI\u540c\u6e90\u8bc1\u660e\uff1b\u5df2\u77e5MCP profile\u5931\u8d25/skip\u4fdd\u7559\uff0c\u4e0d\u80fd\u79f0\u5168MCP\u901a\u8fc7\u3002\u539fremote\u4e09\u9879\u9700\u8981\u540ctarget/profile\u7684\u6b63\u5e38codex CLI producer\uff1b\u4e0d\u5f97\u7528\u6ce8\u5165\u65e7bin\u6216\u4ec5\u4e09\u9879\u8bca\u65ad\u66ff\u4ee3\u6700\u7ec8\u5b8c\u657419-owner\u3002",
+      "current_gap": "这是新增第19实际owning包，须本包Rust tests＋原SDK50与新CLI同源证明；已知MCP profile失败/skip保留，不能称全MCP通过。原remote三项需要同target/profile的正常codex CLI producer；不得用注入旧bin或仅三项诊断替代最终完整19-owner。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-rmcp-client --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 2978,
@@ -3947,7 +3936,7 @@
         "sha256": "19a52722001c012ee9911a46fc3bd5cb6f02a4dc955a1989b201f6490786c3ee"
       },
       "package": "codex-rmcp-client",
-      "purpose": "\u539fMCP transport\u3001\u8ba4\u8bc1\u72b6\u6001\u548cOAuth metadata discovery/\u767b\u5f55client\u3002",
+      "purpose": "原MCP transport、认证状态和OAuth metadata discovery/登录client。",
       "source_entries": [
         {
           "bytes": 2366,
@@ -3985,7 +3974,7 @@
           "sha256": "1e351256f5428012264c21e0bdd1f3d23c795a46b1a72d877e943ab576a2c910"
         }
       ],
-      "technical_contract": "discover_streamable_http_oauth\u4e0eOAuthDiscoveryTimeout\u4fdd\u7559metadata/issuer\u9a8c\u8bc1\uff1bfallback\u7528\u65e0token compatibility initialization\u5e76\u9650\u5236body\u81f31MiB\uff0c\u7ed3\u675f\u81ea\u5efasession\u540e\u518d\u8fdb\u5165\u539fPKCE/state/resource\u7ed1\u5b9a\u3002metadata\u5931\u8d25\u4e0d\u9759\u9ed8\u9009\u8d44\u6e90origin\u7684/register\u3002"
+      "technical_contract": "discover_streamable_http_oauth与OAuthDiscoveryTimeout保留metadata/issuer验证；fallback用无token compatibility initialization并限制body至1MiB，结束自建session后再进入原PKCE/state/resource绑定。metadata失败不静默选资源origin的/register。"
     }
   ],
   "historical_audit_overwritten": false,
@@ -4643,5 +4632,16 @@
     "hepta_records": "existing 149 records retain exact7673 code-baseline bytes/modes; 8 new README records use exact310c documentation successor bytes/modes",
     "records_within_documentation_delta_paths": "actual documentation-successor bytes and modes; new README/technical-document blobs are not asserted to exist in the baseline tree"
   },
-  "ui_member_count": 5
+  "ui_member_count": 5,
+  "ci_source_declaration_successor": {
+    "actual_original_failure": "mapped schema4 QA bytes changed; stale source-only manifest refused before host steps; original upload found no files",
+    "diagnostic_behavior": "separate invocation receipt/logs retain actual exit; no qualification inferred; original nonzero status preserved",
+    "final_desktop_head_tree": "external final source-only verification receipt; no document self-reference",
+    "hepta_pin_changed": false,
+    "host_GUI_native_or_production_qualification_transferred": false,
+    "original_job_id": 123044201615,
+    "predecessor_desktop_head": "5f617d4fe9f885ccbc1b7bfe4fe186fb61853dee",
+    "source_generation_order": "code commit -> fixed source-only manifest generation -> manifest-only commit -> final HEAD/tree verify",
+    "source_map_changed": false
+  }
 }
