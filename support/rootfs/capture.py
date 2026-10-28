@@ -148,9 +148,9 @@ def extract_verified_tar(archive_path, manifest_path, destination):
     expected = {}
     for entry in manifest["files"]:
         path = entry["path"]
-        if (not isinstance(path, str) or not path.startswith("/") or
+        if (not isinstance(path, str) or not path.startswith("/") or path.startswith("//") or
                 path == "/" or PurePosixPath(path).as_posix() != path or
-                ".." in PurePosixPath(path).parts or path in expected):
+                ".." in PurePosixPath(path).parts or path[1:] in expected):
             raise ValueError("invalid or duplicate pinned manifest path")
         expected[path[1:]] = entry
     required_dirs = set()

@@ -11,15 +11,44 @@ from pathlib import Path
 import sys
 
 
+def same_facts(expected, actual):
+    """JSON observations must retain types, including nested bool/int values."""
+    if type(expected) is not type(actual):
+        return False
+    if isinstance(expected, dict):
+        return (expected.keys() == actual.keys()
+                and all(same_facts(value, actual[key]) for key, value in expected.items()))
+    if isinstance(expected, list):
+        return (len(expected) == len(actual)
+                and all(same_facts(left, right) for left, right in zip(expected, actual)))
+    return expected == actual
+
+
+def has_binary_identity(artifact):
+    return (isinstance(artifact, dict) and isinstance(artifact.get('sha256'), str)
+            and bool(artifact['sha256']) and 'interpreter' in artifact
+            and (artifact['interpreter'] is None or isinstance(artifact['interpreter'], str)))
+
+
+def has_observation(case):
+    return type(case.get('exit_code')) is int and isinstance(case.get('facts'), dict)
+
+
 def compare(reference, candidate, *, proven_only=False):
     differences = []
     blocked = []
     matched = []
     refs = reference.get("binaries", {})
     cands = candidate.get("binaries", {})
+    if not refs:
+        blocked.append({'case': 'binaries', 'reason': 'missing Linux reference ELF inventory'})
+    if not any(case.get('status') == 'pass' for case in reference.get('cases', {}).values()):
+        blocked.append({'case': 'reference', 'reason': 'no passed Linux reference cases'})
     for name, artifact in refs.items():
         other = cands.get(name)
-        if not other:
+        if not has_binary_identity(artifact):
+            blocked.append({'case': name, 'reason': 'missing Linux reference ELF identity'})
+        elif not has_binary_identity(other):
             blocked.append({"case": name, "reason": "missing ELF in candidate report"})
         elif artifact.get("sha256") != other.get("sha256"):
             differences.append({"case": name, "reason": "ELF bytes changed; not a differential test",
@@ -32,14 +61,18 @@ def compare(reference, candidate, *, proven_only=False):
             if not proven_only:
                 blocked.append({"case": name, "reason": "Linux reference did not run/pass"})
             continue
-        if observed is None or observed.get("status") == "not_run":
+        if not has_observation(baseline):
+            blocked.append({'case': name, 'reason': 'Linux reference lacks recorded exit code or facts'})
+        elif observed is None or observed.get("status") == "not_run":
             blocked.append({"case": name, "reason": "candidate not run"})
         elif observed.get("status") != "pass":
             differences.append({"case": name, "reason": "candidate failed", "observed": observed})
+        elif not has_observation(observed):
+            differences.append({'case': name, 'reason': 'candidate lacks recorded exit code or facts'})
         elif baseline.get("exit_code") != observed.get("exit_code"):
             differences.append({"case": name, "reason": "exit code differs",
                                 "expected": baseline.get("exit_code"), "actual": observed.get("exit_code")})
-        elif baseline.get("facts") != observed.get("facts"):
+        elif not same_facts(baseline["facts"], observed["facts"]):
             differences.append({"case": name, "reason": "observable behavior differs",
                                 "expected": baseline.get("facts"), "actual": observed.get("facts")})
         else:

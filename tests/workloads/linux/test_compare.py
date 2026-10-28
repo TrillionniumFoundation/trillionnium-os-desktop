@@ -19,6 +19,78 @@ def fixture():
 
 
 class Differential(unittest.TestCase):
+    def test_empty_reference_cannot_match_even_in_proven_only_mode(self):
+        for proven_only in (False, True):
+            self.assertEqual(diff.compare({}, {}, proven_only=proven_only)['verdict'],
+                             'incomplete')
+
+    def test_no_passed_reference_cannot_report_partial_match(self):
+        report = {'cases': {'threads': {'status': 'not_run'}}}
+        self.assertEqual(diff.compare(report, report, proven_only=True)['verdict'],
+                         'incomplete')
+
+    def test_missing_or_empty_binary_inventory_cannot_match(self):
+        for side in ('reference', 'candidate', 'both'):
+            for missing in (False, True):
+                for proven_only in (False, True):
+                    with self.subTest(side=side, missing=missing, proven_only=proven_only):
+                        reference, candidate = fixture(), fixture()
+                        for report in (reference, candidate):
+                            del report['cases']['rust_tokio']
+                        selected = ([reference, candidate] if side == 'both' else
+                                    [reference] if side == 'reference' else [candidate])
+                        for report in selected:
+                            if missing:
+                                del report['binaries']
+                            else:
+                                report['binaries'] = {}
+                        self.assertEqual(diff.compare(reference, candidate,
+                                                      proven_only=proven_only)['verdict'],
+                                         'incomplete')
+
+    def test_pass_requires_recorded_exit_and_facts_on_both_sides(self):
+        for field in ('exit_code', 'facts'):
+            for side in ('reference', 'candidate', 'both'):
+                with self.subTest(field=field, side=side):
+                    reference, candidate = fixture(), fixture()
+                    if side in ('reference', 'both'):
+                        del reference['cases']['threads'][field]
+                    if side in ('candidate', 'both'):
+                        del candidate['cases']['threads'][field]
+                    self.assertNotIn(diff.compare(reference, candidate, proven_only=True)['verdict'],
+                                     ('match', 'partial_match'))
+
+    def test_facts_compare_json_types_recursively(self):
+        for original, changed in ((True, 1), (1, True), (1, 1.0),
+                                  ([{'ok': True}], [{'ok': 1}])):
+            with self.subTest(original=original, changed=changed):
+                reference, candidate = fixture(), fixture()
+                reference['cases']['threads']['facts'] = {'value': original}
+                candidate['cases']['threads']['facts'] = {'value': changed}
+                self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'],
+                                 'fail')
+
+    def test_boolean_exit_code_is_not_integer_exit_code(self):
+        reference, candidate = fixture(), fixture()
+        candidate['cases']['threads']['exit_code'] = False
+        self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'], 'fail')
+
+    def test_recorded_static_elf_and_nested_facts_still_match(self):
+        reference = fixture()
+        reference['binaries']['dynamic']['interpreter'] = None
+        reference['cases']['threads']['facts'] = {'nested': [False, 0, None, {'count': 4}]}
+        candidate = copy.deepcopy(reference)
+        self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'],
+                         'partial_match')
+
+    def test_binary_identity_fields_cannot_be_absent_on_both_sides(self):
+        for field in ('sha256', 'interpreter'):
+            with self.subTest(field=field):
+                report = fixture()
+                del report['binaries']['dynamic'][field]
+                self.assertNotIn(diff.compare(report, report, proven_only=True)['verdict'],
+                                 ('match', 'partial_match'))
+
     def test_missing_case_never_passes(self):
         ref = fixture()
         cand = copy.deepcopy(ref)

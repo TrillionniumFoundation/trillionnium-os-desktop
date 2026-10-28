@@ -1,6 +1,8 @@
 """A04 rootfs tar regression tests; host-only, never kernel qualification."""
 import importlib.util
 import json
+import subprocess
+import sys
 from pathlib import Path
 import tarfile
 import tempfile
@@ -72,6 +74,54 @@ class RootfsArchive(unittest.TestCase):
             manifest.write_text(json.dumps(obj))
             with self.assertRaisesRegex(ValueError, 'invalid'):
                 capture.verify(root, manifest)
+
+    def test_duplicate_manifest_rejected_before_extraction(self):
+        for conflicting in (False, True):
+            with self.subTest(conflicting=conflicting), tempfile.TemporaryDirectory() as td:
+                base = Path(td)
+                root, manifest = self.make_staged(base)
+                archive = base/'rootfs.tar'
+                capture.create_tar(root, archive)
+                obj = json.loads(manifest.read_text())
+                duplicate = dict(obj['files'][0])
+                if conflicting:
+                    duplicate['sha256'] = '0' * 64
+                obj['files'].insert(0, duplicate)
+                manifest.write_text(json.dumps(obj))
+                destination = base/'extracted'
+                with self.assertRaisesRegex(ValueError, 'duplicate'):
+                    capture.extract_verified_tar(archive, manifest, destination)
+                self.assertFalse(destination.exists())
+                # Reject ambiguous manifests before even opening the archive.
+                with self.assertRaisesRegex(ValueError, 'duplicate'):
+                    capture.extract_verified_tar(base/'absent.tar', manifest, destination)
+                self.assertFalse(destination.exists())
+
+    def test_double_slash_manifest_is_rejected_without_hanging(self):
+        for name in ('//etc/probe', '//'):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as td:
+                base = Path(td)
+                _, manifest = self.make_staged(base)
+                obj = json.loads(manifest.read_text())
+                obj['files'][0]['path'] = name
+                manifest.write_text(json.dumps(obj))
+                # Keep a regression to the old infinite parent walk bounded.
+                program = (
+                    'import runpy, sys\n'
+                    'capture = runpy.run_path(sys.argv[1])\n'
+                    'try:\n'
+                    '    capture["extract_verified_tar"](*sys.argv[2:])\n'
+                    'except ValueError as error:\n'
+                    '    if "invalid" not in str(error): raise\n'
+                    'else:\n'
+                    '    raise RuntimeError("ambiguous manifest accepted")\n'
+                )
+                result = subprocess.run(
+                    [sys.executable, '-B', '-c', program, str(ROOT/'support/rootfs/capture.py'),
+                     str(base/'absent.tar'), str(manifest), str(base/'extracted')],
+                    capture_output=True, text=True, timeout=5)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertFalse((base/'extracted').exists())
 
     def test_old_directory_as_file_is_reproducibly_broken(self):
         with tempfile.TemporaryDirectory() as td:
