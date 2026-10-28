@@ -488,3 +488,33 @@ checked the complete 8,088 actual source paths before and after and
 matched the prior original case identities. Completion SHA256:
 `76c46b6498a0a4de14a92f897c08a99b8ad17d70b0f024b8d3e62ccde6b2e33b`. These are release-tool temporary-Git / bounded-child
 fixtures, not a Rust/product or full 140-case-per-mode CI-union pass.
+
+
+## Eight package manuals on the Hepta documentation successor
+
+The current module navigation now links the eight new package READMEs on
+Hepta `310c3c86a59472665c2bb4cf4fb1d515def9dd37`, tree
+`6502ac49b5f3133bf2fc826ce3c07d90219a3a48` (9,222 tracked paths).
+Its code baseline remains `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`:
+all original 9,214 actual source bodies/modes/blobs are preserved, with eight
+new READMEs containing concrete technical and development sections. This is
+documentation source qualification only. Added READMEs may change Cargo's
+automatic readme/package metadata; no binary equivalence is asserted.
+
+The module inventory retains its original 336 source records and adds eight
+README records, each bound to its actual 310c blob/mode/SHA. Original code and
+new documentation provenance remain separate. The 131 local link/line-anchor
+and 27 historical case-identity checks are reference checks, not test execution.
+The unwired cognitive `production.rs` is documented as an uncompiled surface,
+not a proven defect. File-system has no library/doctest target on this baseline;
+its real executor consumer tests remain a separate unexecuted development lane.
+
+The fixed 396/271 role map, five goldens, nineteen test packages, required normal
+CLI producer and both lockfiles remain unchanged. The retained current profile
+still declares old 6487/7673. A later source-only generation/manifest-only commit
+and exact new-HEAD verification must bind this Desktop documentation successor
+with 310c. No source proof, host/GUI/native/product run or production activation
+was performed for this navigation update. Old full19/target3/native outcomes and
+the 8b825 Python QA keep their original source identities.
+
+See [current package manuals and source boundaries](MODULE_DOCUMENTATION_CURRENT.md).

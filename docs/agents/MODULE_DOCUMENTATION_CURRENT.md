@@ -1,17 +1,20 @@
 # 当前 Desktop／Hepta 模块开发与技术导航
 
-本页绑定XKB CI依赖修复后的V5代码基点 `8b825fb742b4722259a7fd7b962565adf21d2fff`（tree `a4df7550ee172cd91535ce980a299526fb67c09f`，8088路径）。
-本次更新五个文档路径：`docs/agents/MODULE_DOCUMENTATION_CURRENT.md`、
+本页以冻结Desktop `8362b0b9278b16e1ade2f28d36c99bc0829a164e`（tree `aebea8a91b13cd33eb7d0a25c48ee9499e993239`，8088路径）为文档更新前基点。
+本次更新四个文档路径：`docs/agents/MODULE_DOCUMENTATION_CURRENT.md`、
 `docs/agents/MODULE_DOCUMENTATION_CURRENT.json`、`support/release/README.md`、
-`docs/agents/ORGAN_RELEASE_PROFILE.md`、`support/ui/RUN.md`。
+`docs/agents/ORGAN_RELEASE_PROFILE.md`。
 [机器清单](MODULE_DOCUMENTATION_CURRENT.json)的 `desktop_code` 是写入文档前的代码基点；
 `documentation_delta_paths` 内的来源记录对应文档successor实际字节，不声称新文档blob存在于代码基点的tree。
-最终文档提交HEAD/tree由外置source收据绑定，避免自引用；其余Desktop记录绑定此8b825代码基点。
+最终文档提交HEAD/tree由外置source收据绑定，避免自引用；其余Desktop记录绑定此8362文档更新前基点；该基点已包含XKB CI修复。
 当前manifest仍保留6487组合声明，须在文档提交后另行完成新tuple的typed source重绑定；本文不称新组合已完成门禁。
 8b825相对冻结6487只在两个workflow的三个Linux apt列表追加XKB X11开发包；V5固定map、CLI producer和产品源码未改。
 从f4cd旧261-role快照补齐CLI producer的682代码和6487文档／manifest保留原来源；后文b6a／231、682实际QA也保留历史身份。
 Desktop从原Unix组合纳入六个原OOM提交，基点27c5043d，再逐字采用4018门禁组件并新增固定V5。
-Hepta目标是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`，tree `ff2372f10656d2e8f652b6ca1e6de03a075b9219`（9214路径）。
+Hepta代码基点仍是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`／tree `ff2372f10656d2e8f652b6ca1e6de03a075b9219`（9214路径）；
+八手册文档后继是 `310c3c86a59472665c2bb4cf4fb1d515def9dd37`／tree `6502ac49b5f3133bf2fc826ce3c07d90219a3a48`（9222路径）。
+原9214路径实际mode/body/blob不变，新增8个README；后续源码组合应绑定310c的实际完整源码。
+新增README可能改变Cargo自动readme元数据，因此不声称新产品binary字节等价。
 
 **当前资格仍是源码与发布工具验证；最终版本组合、GUI、native持久链和生产授权尚需各自同源收据。**
 更正后的V5固定396 OS／271 Hepta角色、5对golden和19个Hepta owning packages。七项生产输入保持关闭。
@@ -90,7 +93,7 @@ repeat `shutdown_race`、原38正向／7负向、SMP1/2/4、quota145%/3%、Binde
 
 ## 原Hepta19包：新增开发／技术入口
 
-Hepta路径相对其仓库根、固定7673目标。机器清单列出十九个实际Cargo package／manifest、邻接Markdown与共享技术入口。
+Hepta源码路径相对代码基点7673仓库根；新增八手册链接固定到310c文档后继。机器清单列出十九个实际Cargo package／manifest、邻接Markdown与共享技术入口。
 18原owner是agentd、memory、cognitive-store、contracts、state、agent-protocol、learning-ledger、git-utils、
 memory-extension、automation、fleet、supervisor、arg0、app-server-protocol、thread-store、core-plugins、rollout、file-system；
 新增第19包为`codex-rmcp-client`，不能用SDK测试替代其Rust owning tests。
@@ -105,14 +108,15 @@ memory-extension、automation、fleet、supervisor、arg0、app-server-protocol�
 | MCP profile／vendor | `scripts/mcp_conformance/{README.md,CONFORMANCE_PROFILES.md,EXECUTION_IDENTITY.md}`、`third_party/MCP_CONFORMANCE.md` | 274项原Python/vendor/profile检查及各真实conformance profile；原已知失败／跳过保持原来源，不称all-MCP green。 |
 
 cognitive-store、agent-protocol、memory-extension、automation、fleet、arg0、core-plugins、file-system这八包
-没有包内Markdown，仍需共享模块／源码入口与具体运维缺口说明；相邻Markdown存在也不能证明完整双手册。
+在7673基点缺包内README；310c已分别新增具体技术合同和开发／验证两部分，实际API／状态／资源错误边界与既有test IDs均给出。
+该补齐不代表127个manifest已完成独立完整双手册，也不转移旧host19、target3、native、SDK或产品资格。
 State现在有专册，旧13-owner审计将它列为仅共享／源码入口的结论不再适用于其原7786，当前7673继续保留专册。
 40模块指南曾作结构清点，未逐篇完成语义／API审查；本文不补写不存在的通过记录。
 
 ## 逐包开发与技术合同
 
 以下每包给出当前用途、真实源码、接口／状态／错误边界、开发验证命令和缺口。命令均未在本次文档任务执行。
-Desktop路径相对本仓库根；Hepta路径和命令相对固定7673的仓库根。Hepta命令沿原`just test`调度、
+Desktop路径相对本仓库根；Hepta代码契约基于7673，新增包内手册来自310c；命令在实际选定的Hepta仓库根运行。Hepta命令沿原`just test`调度、
 Rust1.95、dev-small、两线程、零重试和原case预算；离线依赖未具备时应停止并保留失败，不能静默改用其他源码或ELF。
 
 ### Desktop自有入口
@@ -274,12 +278,14 @@ egui workspace、local drafts、tasks/context/console与原runtime观察。
 
 #### codex-hepta-cognitive-store
 
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/hepta-cognitive-store/README.md)。
+
 追加式认知账本、修正与tombstone lineage，以及受控durable SQLite存储。
 
 - 源码：`codex-rs/hepta-cognitive-store/src/lib.rs`、`codex-rs/hepta-cognitive-store/src/durable.rs`、`codex-rs/hepta-cognitive-store/src/production.rs`、`codex-rs/hepta-cognitive-store/src/v2.rs`。
 - 技术合同：DurableCognitiveStore通过CognitiveAccess/CognitiveRecoveryRequirement区分访问与恢复；写入返回CognitiveWriteReceipt，恢复错误由CognitiveRecoveryError表达。不能把内存qualification ledger当持久原owner或效果执行器。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-cognitive-store --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；本节补开发技术入口，跨重启真实授权、外部cut与产品writer压力仍需整组验证。
+- 当前缺口：310c已新增包内技术／开发README；跨重启真实授权、外部cut与产品writer压力仍需整组验证。
 
 #### codex-hepta-contracts
 
@@ -301,12 +307,14 @@ rollout元数据、projects/queue等原SQLite状态和五库启动/恢复。
 
 #### codex-hepta-agent-protocol
 
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/hepta-agent-protocol/README.md)。
+
 agentd与supervisor共享的有界本地控制请求、能力协商和历史结果类型。
 
 - 源码：`codex-rs/hepta-agent-protocol/src/lib.rs`、`codex-rs/hepta-agent-protocol/src/capabilities.rs`、`codex-rs/hepta-agent-protocol/src/authbus.rs`、`codex-rs/hepta-agent-protocol/src/objective_history.rs`。
 - 技术合同：AGENTD_CONTROL_SCHEMA_VERSION=2，MAX_CONTROL_FRAME_BYTES=65536；能力协商与ObjectiveAdmissionUnknownReason保留拒绝/未知。HostTurnAuthorityBinding是transport witness，不能作为grant或默认启用runtime consumer。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-agent-protocol --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；typed编码不证明peer身份、真实授权或执行效果，必须由原宿主鉴权与持久终态验证。
+- 当前缺口：310c已新增包内技术／开发README；typed编码不证明peer身份、真实授权或执行效果，必须由原宿主鉴权与持久终态验证。
 
 #### codex-hepta-learning-ledger
 
@@ -328,30 +336,36 @@ agentd与supervisor共享的有界本地控制请求、能力协商和历史结�
 
 #### codex-hepta-memory-extension
 
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/ext/hepta-memory/README.md)。
+
 把原memory观察/认知接点接到extension，保留本地开发owner与shadow边界。
 
 - 源码：`codex-rs/ext/hepta-memory/src/lib.rs`、`codex-rs/ext/hepta-memory/src/extension.rs`、`codex-rs/ext/hepta-memory/src/advisory_observation.rs`、`codex-rs/ext/hepta-memory/src/local_lifecycle.rs`、`codex-rs/ext/hepta-memory/src/local_turn_writer.rs`。
 - 技术合同：ShadowAdvisoryObservationInput经observe_shadow_advisory等typed接口校验；shadow常量明确external-effects/KG-write边界。workspace/domain digest用于绑定，不能凭摘要创建受信writer或生产grant。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-memory-extension --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；本地development lifecycle和advisory观测不等于生产Root恢复/跨host控制。
+- 当前缺口：310c已新增包内技术／开发README；本地development lifecycle和advisory观测不等于生产Root恢复/跨host控制。
 
 #### codex-hepta-automation
+
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/hepta-automation/README.md)。
 
 每Agent持久automation queue、timer materialization与TaskFlow生命周期。
 
 - 源码：`codex-rs/hepta-automation/src/lib.rs`、`codex-rs/hepta-automation/src/authorized_effect.rs`、`codex-rs/hepta-automation/src/dispatch_recovery.rs`、`codex-rs/hepta-automation/src/taskflow.rs`、`codex-rs/hepta-automation/src/taskflow_execution_boundary.rs`。
 - 技术合同：Core queue admission与terminal execution分离；AuthorizedEffectIntent绑定operation/subject/destination/policy与依赖。AuthorizedEffectOutcome/DriverError保留效果查询和失败边界，下游效果仍需原final-use与terminal observer。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-automation --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；timer触发不等于效果完成，原retirement/recovery与unknown provider-effect必须在真实owner链验收。
+- 当前缺口：310c已新增包内技术／开发README；timer触发不等于效果完成，原retirement/recovery与unknown provider-effect必须在真实owner链验收。
 
 #### codex-hepta-fleet
+
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/hepta-fleet/README.md)。
 
 supervisor拥有的独立Agent注册、release、allocation与持久control状态。
 
 - 源码：`codex-rs/hepta-fleet/src/lib.rs`、`codex-rs/hepta-fleet/src/registry.rs`、`codex-rs/hepta-fleet/src/error.rs`、`codex-rs/hepta-fleet/src/allocation.rs`、`codex-rs/hepta-fleet/src/lease_ledger.rs`。
 - 技术合同：FleetRegistryError区分WorkspaceConflict、StaleGeneration、StaleReleaseGeneration、ReleaseRevoked与InvalidTransition；registry不执行turn、不转发消息。allocation只计算claim，不能证明内核已强制CPU/内存限额。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-fleet --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；五/六Agent真实产品生命周期超时未在新组合闭合，计算或registry单测不能替代。
+- 当前缺口：310c已新增包内技术／开发README；五/六Agent真实产品生命周期超时未在新组合闭合，计算或registry单测不能替代。
 
 #### codex-hepta-supervisor
 
@@ -364,12 +378,14 @@ supervisor拥有的独立Agent注册、release、allocation与持久control状�
 
 #### codex-arg0
 
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/arg0/README.md)。
+
 原CLI/宿主的隐式helper分派与child re-exec稳定路径。
 
 - 源码：`codex-rs/arg0/src/lib.rs`。
 - 技术合同：Arg0DispatchPaths显式保留当前Codex executable与helper路径；arg0_dispatch_or_else经原dispatch进入宿主。不能以test harness的current_exe冒充CLI，也不能更换helper后继承旧ELF资格。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-arg0 --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；平台helper/权限和真实CLI消费仍需新源build与SDK验证，本包单测不能代替。
+- 当前缺口：310c已新增包内技术／开发README；平台helper/权限和真实CLI消费仍需新源build与SDK验证，本包单测不能代替。
 
 #### codex-app-server-protocol
 
@@ -391,12 +407,14 @@ supervisor拥有的独立Agent注册、release、allocation与持久control状�
 
 #### codex-core-plugins
 
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/core-plugins/README.md)。
+
 插件manifest、marketplace、安装状态、remote bundle与工具路由。
 
 - 源码：`codex-rs/core-plugins/src/lib.rs`、`codex-rs/core-plugins/src/manifest.rs`、`codex-rs/core-plugins/src/loader.rs`、`codex-rs/core-plugins/src/manager.rs`、`codex-rs/core-plugins/src/store.rs`、`codex-rs/core-plugins/src/git_policy.rs`。
 - 技术合同：LoadedPlugin/PluginLoadOutcome来自原plugin实现；loader/store和Git policy分别约束来源、解析与安装状态。可发现/加载插件不等于用户授权工具效果，remote bundle也不自动成为受信Root。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-core-plugins --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；需逐provider/平台审实际安装与失败恢复，本节不授权安装、更新或外部消息。
+- 当前缺口：310c已新增包内技术／开发README；需逐provider/平台审实际安装与失败恢复，本节不授权安装、更新或外部消息。
 
 #### codex-rollout
 
@@ -409,12 +427,15 @@ supervisor拥有的独立Agent注册、release、allocation与持久control状�
 
 #### codex-file-system
 
+- 包内技术／开发手册：[README（310c）](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/310c3c86a59472665c2bb4cf4fb1d515def9dd37/codex-rs/file-system/README.md)。
+
 typed文件操作、受控permission profile转换及有界walk接口。
 
 - 源码：`codex-rs/file-system/src/lib.rs`、`codex-rs/file-system/src/find_up.rs`。
 - 技术合同：ReadFileOptions/WriteFileOptions与ExecPermissionProfile保留typed参数和io::Error；walk设MAX_WALK_DEPTH=64、directories=10000、entries=50000、response=4MiB，WalkError与截断结果必须显式处理。
 - 开发验证：`RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-file-system --test-threads 2 --retries 0 --cargo-profile dev-small`。
-- 当前缺口：无包内Markdown；路径访问、远端实现/平台策略与真实设备隔离需各自验证；文件API不能签发Hepta效果授权。
+- 测试目标：本包`lib.test=false`／`doctest=false`，上述package选择不代表执行了独立测试；真实有界读取／路径身份／walk消费者测试见310c手册的exec-server入口，本次均未运行。
+- 当前缺口：310c已新增包内技术／开发README；路径访问、远端实现/平台策略与真实设备隔离需各自验证；文件API不能签发Hepta效果授权。
 
 #### codex-rmcp-client
 
@@ -517,3 +538,22 @@ CLI是集成必需的真实产品producer，不是替代fixture、不新增第20
 不是全140项／mode的完整CI union，也不是文档successor的Rust／GUI／native／生产资格。
 新source-only typed清单和最终HEAD/tree收据由后续步骤绑定；完整七步、Notes真实授权／持久化／恢复及GUI／native仍分别验收。
 七项生产装配输入继续关闭，不引入新的生产authority。历史2026-10-26审计、旧README结果与失败均保留。
+
+
+## 八包手册后继的精确来源与资格
+
+机器清单保留原336条来源记录并仅追加8条README，实际344条；Hepta原149条代码／既有文档来源仍归7673，
+新增8条归310c。Desktop来源按8362基点及本次四文档successor区分，最终文档HEAD/tree由外置收据绑定。
+此前50链接只统计CURRENT.md；旧62是CURRENT49＋release README11＋ORGAN2，同旧范围现在至少63；
+原必要链接与模块文档均保留。八个新GitHub链接逐项对照本地310c的实际README和blob/SHA，不以网络打开作为验证。
+
+八手册的来源核验包括131个本地链接／行锚与27个既有case身份；它们是文档／引用检查，不是新编译或执行。
+cognitive的production.rs未进入当前模块树，本文仅标记未编译入口，不据此断言必然bug；Agentd实际用durable re-export。
+file-system的lib.test与doctest均false，没有独立测试目标；消费者测试在原exec-server，命令只是未执行的开发入口。
+
+固定source roles仍396／271、golden仍5对、owning packages仍19，正常codex CLI producer仍必需。
+UI lock 0c389b7c934d57458cafe44b52235c13ff2c823a9616a20f2352b1cd2cb9aaa8与Hepta lock
+4490e85d455d7ed84abc110aa1b98dc9ffa1c1ee091a7f5492cb3eb5026a5fcf均保持原字节。
+当前profile仍绑定旧6487／7673，须随后为实际新Desktop HEAD与310c生成并验证source-only声明；本次未执行该步骤。
+8b825原normal／optimized各54／7／24仍仅属于其原source，不能改标为本文最终HEAD。旧七步01首步失败、
+cache44发布失败、旧19-owner三失败均保留。七项生产输入关闭，不启动Rust／host／GUI／native／生产authority。

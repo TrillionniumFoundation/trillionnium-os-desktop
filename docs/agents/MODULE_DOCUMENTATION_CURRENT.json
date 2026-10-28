@@ -45,18 +45,18 @@
       ],
       "technical_and_development_documents": [
         {
-          "bytes": 31961,
-          "git_blob": "e42719c46211e52d63b7578abe7d5933aa347c5d",
+          "bytes": 33790,
+          "git_blob": "791ac657afe9b1c75a2f88bb812b3a59a1052b8a",
           "mode": "100644",
           "path": "support/release/README.md",
-          "sha256": "af823c2ac2c36975ef5a22ad4552f0466cb49d45ff83104631b9747afeacdd93"
+          "sha256": "cda2027f84e9a1c2bf638212f50b07a39101c83db2b138999e120eb59e83e6ed"
         },
         {
-          "bytes": 30766,
-          "git_blob": "195a4177033ee6457a758213936a354654e9260e",
+          "bytes": 32577,
+          "git_blob": "de5a8a5626b2b4811e41c1340655b742d21cfa81",
           "mode": "100644",
           "path": "docs/agents/ORGAN_RELEASE_PROFILE.md",
-          "sha256": "9ae0627bac3e48b465c88ba3b15a83d5f589395ca24995635752a31c96659803"
+          "sha256": "4840b408bb4fb15771c4d24a65f4ef8565b8a28b8b5b9b030c619a1d589b0f07"
         }
       ]
     },
@@ -670,10 +670,10 @@
   },
   "desktop_cargo_manifest_count": 127,
   "desktop_code": {
-    "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+    "head": "8362b0b9278b16e1ade2f28d36c99bc0829a164e",
     "identity_kind": "pre_documentation_code_baseline",
     "tracked_paths": 8088,
-    "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+    "tree": "aebea8a91b13cd33eb7d0a25c48ee9499e993239"
   },
   "desktop_owned_entries": [
     {
@@ -1336,8 +1336,7 @@
     "docs/agents/MODULE_DOCUMENTATION_CURRENT.md",
     "docs/agents/MODULE_DOCUMENTATION_CURRENT.json",
     "docs/agents/ORGAN_RELEASE_PROFILE.md",
-    "support/release/README.md",
-    "support/ui/RUN.md"
+    "support/release/README.md"
   ],
   "draft_map_historical": {
     "golden_pairs": 5,
@@ -2535,12 +2534,37 @@
       "codex-cli"
     ],
     "schema_version": 5,
-    "status": "fixed V5 unchanged; retained 6487 declaration requires later typed source rebind for XKB CI/doc successor"
+    "status": "fixed396/271 unchanged; retained6487/7673 current declaration awaits new Desktop documentation successor plus310c source-only rebind"
   },
   "hepta_code": {
     "head": "7673ea62fc019f97ad17d205ee1f81f96e0f47a0",
+    "identity_kind": "pre_documentation_code_baseline",
     "tracked_paths": 9214,
     "tree": "ff2372f10656d2e8f652b6ca1e6de03a075b9219"
+  },
+  "hepta_documentation_successor": {
+    "automatic_Cargo_readme_metadata_may_change": true,
+    "binary_byte_equivalence_claimed": false,
+    "code_baseline_head": "7673ea62fc019f97ad17d205ee1f81f96e0f47a0",
+    "code_baseline_paths": 9214,
+    "code_baseline_tree": "ff2372f10656d2e8f652b6ca1e6de03a075b9219",
+    "documentation_delta_paths": [
+      "codex-rs/hepta-cognitive-store/README.md",
+      "codex-rs/hepta-agent-protocol/README.md",
+      "codex-rs/ext/hepta-memory/README.md",
+      "codex-rs/hepta-automation/README.md",
+      "codex-rs/hepta-fleet/README.md",
+      "codex-rs/arg0/README.md",
+      "codex-rs/core-plugins/README.md",
+      "codex-rs/file-system/README.md"
+    ],
+    "head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
+    "new_runtime_qualification": false,
+    "old_9214_mode_body_blob_unchanged": true,
+    "qualification": "documentation source and references only",
+    "source_binding_sha256": "08e8b4b8ec49f14329d466b2098f1440a4ab17829552d5a82612b1452c4e3bd8",
+    "tracked_paths": 9222,
+    "tree": "6502ac49b5f3133bf2fc826ce3c07d90219a3a48"
   },
   "hepta_fixture_producers": [
     {
@@ -2624,6 +2648,18 @@
       ]
     }
   ],
+  "hepta_manual_reference_checks": {
+    "Rust_tests_executed": false,
+    "actual_total_source_rows": 344,
+    "cognitive_production_module_unwired_is_not_proven_bug": true,
+    "existing_source_rows_preserved": 336,
+    "file_system_doctest": false,
+    "file_system_lib_test": false,
+    "historical_case_identities": 27,
+    "local_links_and_line_anchors": 131,
+    "new_readme_source_rows": 8,
+    "source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37"
+  },
   "hepta_owners": [
     {
       "adjacent_documents": [
@@ -2857,11 +2893,19 @@
       "technical_contract": "ProtectedCognitiveCheckpoint绑定原owner与独立Current cut；sole recovered store先完成pool关闭再绑定writer/READONLY观察池。不确定publication或取消永久fence当前generation；lost acknowledgement保持Unknown。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 5298,
+          "git_blob": "e85432e57feb75331bf45bbb27d11362c1135de4",
+          "mode": "100644",
+          "path": "codex-rs/hepta-cognitive-store/README.md",
+          "sha256": "80e69bc46bfe09828118201e89b853390b9135d92185303e7a72fc81c66dffa4"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；本节补开发技术入口，跨重启真实授权、外部cut与产品writer压力仍需整组验证。",
+      "current_gap": "310c已新增包内技术／开发README；本节补开发技术入口，跨重启真实授权、外部cut与产品writer压力仍需整组验证。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-cognitive-store --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 418,
@@ -2871,6 +2915,8 @@
         "sha256": "ffb2f0dd544d9c91bb3414da88496abe139b149d81c38e622393dce10164033a"
       },
       "package": "codex-hepta-cognitive-store",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "追加式认知账本、修正与tombstone lineage，以及受控durable SQLite存储。",
       "source_entries": [
         {
@@ -3059,11 +3105,19 @@
       "technical_contract": "原primary初始化成功后启动其余四库，join全部结果并等待失败清理；commit hook接入protected Dirty invalidation，replacement连接也安装hook。失败返回原错误，不宣称跨库原子rollback。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 5613,
+          "git_blob": "5e69dc3ef305a3c809533ac23a9b1b87cc75d53f",
+          "mode": "100644",
+          "path": "codex-rs/hepta-agent-protocol/README.md",
+          "sha256": "b73e238db93d54b6f739b09a10719fbb379f9538952e21d558b8c2e334334a7d"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；typed编码不证明peer身份、真实授权或执行效果，必须由原宿主鉴权与持久终态验证。",
+      "current_gap": "310c已新增包内技术／开发README；typed编码不证明peer身份、真实授权或执行效果，必须由原宿主鉴权与持久终态验证。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-agent-protocol --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 496,
@@ -3073,6 +3127,8 @@
         "sha256": "145110b17fd655a247a6c6a309c8fc1d23c36703edfadf0928a069f120167461"
       },
       "package": "codex-hepta-agent-protocol",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "agentd与supervisor共享的有界本地控制请求、能力协商和历史结果类型。",
       "source_entries": [
         {
@@ -3254,11 +3310,19 @@
       "technical_contract": "GitToolingError保留命令失败；SAFE_BARE_REPOSITORY_CONFIG限制隐式bare repo，FsmonitorOverride管理外部fsmonitor边界。Git查询/patch接口不提供Hepta原owner历史证明或授权。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 5523,
+          "git_blob": "9e68a6e06e22ea81b73025412aba36f2ec3be5c3",
+          "mode": "100644",
+          "path": "codex-rs/ext/hepta-memory/README.md",
+          "sha256": "1521d16b451b6ea4ea698bbc4d7d9534e277adb4568a16c6183fff6ceb7f4a2e"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；本地development lifecycle和advisory观测不等于生产Root恢复/跨host控制。",
+      "current_gap": "310c已新增包内技术／开发README；本地development lifecycle和advisory观测不等于生产Root恢复/跨host控制。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-memory-extension --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1184,
@@ -3268,6 +3332,8 @@
         "sha256": "6b0cd713fab0d2038840dd6d18ad856bf59de3a34f936977e2fa1c2539da3f91"
       },
       "package": "codex-hepta-memory-extension",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "把原memory观察/认知接点接到extension，保留本地开发owner与shadow边界。",
       "source_entries": [
         {
@@ -3309,11 +3375,19 @@
       "technical_contract": "ShadowAdvisoryObservationInput经observe_shadow_advisory等typed接口校验；shadow常量明确external-effects/KG-write边界。workspace/domain digest用于绑定，不能凭摘要创建受信writer或生产grant。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 5954,
+          "git_blob": "d3b781cc0fd5ddb8ac495c3f6ee29c92db381247",
+          "mode": "100644",
+          "path": "codex-rs/hepta-automation/README.md",
+          "sha256": "fe83563997989a3353ab2046bd058475bc26ab50ca5873238f06b85ac4cf17e2"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；timer触发不等于效果完成，原retirement/recovery与unknown provider-effect必须在真实owner链验收。",
+      "current_gap": "310c已新增包内技术／开发README；timer触发不等于效果完成，原retirement/recovery与unknown provider-effect必须在真实owner链验收。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-automation --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 1324,
@@ -3323,6 +3397,8 @@
         "sha256": "e8e39e69d52921298a29ed75a12ae46790298fae8d031625c502258f0b12c78d"
       },
       "package": "codex-hepta-automation",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "每Agent持久automation queue、timer materialization与TaskFlow生命周期。",
       "source_entries": [
         {
@@ -3364,11 +3440,19 @@
       "technical_contract": "Core queue admission与terminal execution分离；AuthorizedEffectIntent绑定operation/subject/destination/policy与依赖。AuthorizedEffectOutcome/DriverError保留效果查询和失败边界，下游效果仍需原final-use与terminal observer。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 6433,
+          "git_blob": "8f4c01342323de30dc229ad53cdcd7a42f699c55",
+          "mode": "100644",
+          "path": "codex-rs/hepta-fleet/README.md",
+          "sha256": "f7381ee3b92ae25c898ef75c4169401d6954874a66ea819c5b10b1d3af282099"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；五/六Agent真实产品生命周期超时未在新组合闭合，计算或registry单测不能替代。",
+      "current_gap": "310c已新增包内技术／开发README；五/六Agent真实产品生命周期超时未在新组合闭合，计算或registry单测不能替代。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-hepta-fleet --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 631,
@@ -3378,6 +3462,8 @@
         "sha256": "c651dae8fede019ba6409f9e59815796444e4a9fb4a698aad40db94859dc3870"
       },
       "package": "codex-hepta-fleet",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "supervisor拥有的独立Agent注册、release、allocation与持久control状态。",
       "source_entries": [
         {
@@ -3489,11 +3575,19 @@
       "technical_contract": "SupervisordClient/daemon协议管理进程；restart journal/budget与result fence独立于turn执行。ExternalSignerError保留原外签名失败，私钥输入经既有FD/path seam，不由Desktop生成替代issuer。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 4069,
+          "git_blob": "39d01d808aca16b62053924874048e10bf479b4c",
+          "mode": "100644",
+          "path": "codex-rs/arg0/README.md",
+          "sha256": "43ac32016acec25087bd189df6966b5ba33dfbf497b19643bd3d79c1b6069e91"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；平台helper/权限和真实CLI消费仍需新源build与SDK验证，本包单测不能代替。",
+      "current_gap": "310c已新增包内技术／开发README；平台helper/权限和真实CLI消费仍需新源build与SDK验证，本包单测不能代替。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-arg0 --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 857,
@@ -3503,6 +3597,8 @@
         "sha256": "e4202ff52d3d76027ccf9e0bf34361fb34f52a368ea2b6633abb03bab6398f4a"
       },
       "package": "codex-arg0",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "原CLI/宿主的隐式helper分派与child re-exec稳定路径。",
       "source_entries": [
         {
@@ -3635,11 +3731,19 @@
       "technical_contract": "ThreadStoreResult使用ThreadNotFound、InvalidRequest、Conflict、Unsupported和Internal；backend解析ThreadId到rollout或其他store。Paginated模式按现有Unsupported拒绝，不可悄悄当完整history返回。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 5876,
+          "git_blob": "0cfc9829f2ee8f4f7de91cd6c884168d5682b4bd",
+          "mode": "100644",
+          "path": "codex-rs/core-plugins/README.md",
+          "sha256": "eaab067f5cd20a812a43d0f0da4e8394ae42ef867fe9862a72c2e949f24fa269"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；需逐provider/平台审实际安装与失败恢复，本节不授权安装、更新或外部消息。",
+      "current_gap": "310c已新增包内技术／开发README；需逐provider/平台审实际安装与失败恢复，本节不授权安装、更新或外部消息。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-core-plugins --test-threads 2 --retries 0 --cargo-profile dev-small",
       "manifest": {
         "bytes": 2192,
@@ -3649,6 +3753,8 @@
         "sha256": "d691c34a799cd2751e7b03a2eb9aef3c6f2abb085e8cd91ef5bb61e07146ca11"
       },
       "package": "codex-core-plugins",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "插件manifest、marketplace、安装状态、remote bundle与工具路由。",
       "source_entries": [
         {
@@ -3760,12 +3866,24 @@
       "technical_contract": "decode_rollout_line保留serde_json解析错误；RolloutLineReader/recorder与state_db保持文件和元数据职责。TEST_FIXTURES要求真实fixture寿命；JSONL存在不证明protected Current或effect terminal。"
     },
     {
-      "adjacent_documents": [],
+      "adjacent_documents": [
+        {
+          "bytes": 5067,
+          "git_blob": "2104cf5966844e80e4c6866c81b5b4d79d52315a",
+          "mode": "100644",
+          "path": "codex-rs/file-system/README.md",
+          "sha256": "d55f7e6a7b3872ce46992f61dfe1685d1c465dd192fb39d9339945a8afec3d62"
+        }
+      ],
       "command_cwd": "Hepta repository root",
       "command_executed": false,
       "complete_independent_manual_per_crate_claimed": false,
-      "current_gap": "无包内Markdown；路径访问、远端实现/平台策略与真实设备隔离需各自验证；文件API不能签发Hepta效果授权。",
+      "consumer_test_owner": "codex-exec-server",
+      "consumer_tests_executed_by_documentation_task": false,
+      "current_gap": "310c已新增包内技术／开发README；路径访问、远端实现/平台策略与真实设备隔离需各自验证；文件API不能签发Hepta效果授权。 本包lib.test/doctest均false，无独立test target；开发命令不等于positive cases，需另验真实exec-server消费者。",
       "development_validation_command": "RUSTUP_TOOLCHAIN=1.95.0 just test --locked --offline -p codex-file-system --test-threads 2 --retries 0 --cargo-profile dev-small",
+      "doctest_target_enabled": false,
+      "library_test_target_enabled": false,
       "manifest": {
         "bytes": 433,
         "git_blob": "382eacb43d3353b2046806f91ba0f976866c9282",
@@ -3774,6 +3892,8 @@
         "sha256": "158866b3e775b98e57d73003f46143c07fde852d70d8d2014aae41e5c94de8ab"
       },
       "package": "codex-file-system",
+      "package_manual_development_commands_executed": false,
+      "package_manual_documentation_source_head": "310c3c86a59472665c2bb4cf4fb1d515def9dd37",
       "purpose": "typed文件操作、受控permission profile转换及有界walk接口。",
       "source_entries": [
         {
@@ -3859,6 +3979,11 @@
   ],
   "historical_audit_overwritten": false,
   "inventory_method": "actual tracked regular blob, Git owner-execute mode, Git blob identity and SHA256; no dependency resolution",
+  "locked_dependency_graph_inputs": {
+    "hepta_lock_sha256": "4490e85d455d7ed84abc110aa1b98dc9ffa1c1ee091a7f5492cb3eb5026a5fcf",
+    "ui_lock_sha256": "0c389b7c934d57458cafe44b52235c13ff2c823a9616a20f2352b1cd2cb9aaa8",
+    "unchanged_lock_does_not_qualify_new_source_or_binary": true
+  },
   "markdown_link_targets": [
     {
       "bytes": 15600,
@@ -3868,18 +3993,18 @@
       "sha256": "ff231366a21bbf7a71121996512c690bdca83d68102d62a807e50d5e33c8badc"
     },
     {
-      "bytes": 31961,
-      "git_blob": "e42719c46211e52d63b7578abe7d5933aa347c5d",
+      "bytes": 33790,
+      "git_blob": "791ac657afe9b1c75a2f88bb812b3a59a1052b8a",
       "mode": "100644",
       "path": "support/release/README.md",
-      "sha256": "af823c2ac2c36975ef5a22ad4552f0466cb49d45ff83104631b9747afeacdd93"
+      "sha256": "cda2027f84e9a1c2bf638212f50b07a39101c83db2b138999e120eb59e83e6ed"
     },
     {
-      "bytes": 30766,
-      "git_blob": "195a4177033ee6457a758213936a354654e9260e",
+      "bytes": 32577,
+      "git_blob": "de5a8a5626b2b4811e41c1340655b742d21cfa81",
       "mode": "100644",
       "path": "docs/agents/ORGAN_RELEASE_PROFILE.md",
-      "sha256": "9ae0627bac3e48b465c88ba3b15a83d5f589395ca24995635752a31c96659803"
+      "sha256": "4840b408bb4fb15771c4d24a65f4ef8565b8a28b8b5b9b030c619a1d589b0f07"
     },
     {
       "bytes": 12601,
@@ -4438,6 +4563,12 @@
     "product_qualification": "none",
     "runtime_job": "1a181fda3e4-96a-3183"
   },
+  "retained_current_profile": {
+    "desktop_head": "6487830799a6417b554bf06bedfbab99498196c0",
+    "hepta_head": "7673ea62fc019f97ad17d205ee1f81f96e0f47a0",
+    "new_tuple_rebound": false,
+    "sha256": "6567c895713c193f468b15e6a34fe2f09f05c74001ed6bd3ac5b1f7b4aef1577"
+  },
   "retained_final_pair_attempt01": {
     "actual_stages_executed": 1,
     "audit_sha256": "1a4a2ed45adaa503727e43d7a274209d8376f29b22f9c0889375e0eece0f009e",
@@ -4466,7 +4597,7 @@
     "required_fixture_binary_absent": "codex"
   },
   "schema": "organ.current-module-development-technical-navigation.v1",
-  "scope": "source-only XKB CI/documentation successor; exact baseline module navigation; typed source rebind and final product pair qualification pending",
+  "scope": "current module source/documentation navigation; original7673 code plus310c eight-README successor; actual final SourceTuple pending",
   "source_assembly": {
     "gate_adoption_head": "8b8f4fae788ceb54960bd6306e56b01214be5a00",
     "oom_composition_head": "27c5043d6ac5f5fb34ab7026e7017d37ac36b3a8",
@@ -4497,7 +4628,8 @@
     "desktop_code": "pre-documentation code baseline; not the tree of the documentation successor",
     "desktop_records_outside_documentation_delta_paths": "actual bytes and modes in the desktop_code baseline",
     "documentation_successor_head_tree": "bound only by the external final source receipt; no self-referential document identity",
-    "hepta_records": "actual bytes and modes in the exact hepta_code head/tree",
+    "hepta_documentation_successor": "explicit reviewed310c HEAD/tree/9222; not a transfer of product/runtime qualification",
+    "hepta_records": "existing 149 records retain exact7673 code-baseline bytes/modes; 8 new README records use exact310c documentation successor bytes/modes",
     "records_within_documentation_delta_paths": "actual documentation-successor bytes and modes; new README/technical-document blobs are not asserted to exist in the baseline tree"
   },
   "ui_member_count": 5
