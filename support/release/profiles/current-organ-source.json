@@ -57,7 +57,7 @@
   },
   "qualification": "source-only",
   "schema_version": 5,
-  "source_map_sha256": "00d8060c5e56e0d4f268f37fdb4bea53246dac122836b88b79cd11bc6dd9bc9c",
+  "source_map_sha256": "16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71",
   "sources": {
     "hepta": [
       {
@@ -360,6 +360,55 @@
         "path": "MODULE.bazel.lock",
         "role": "bazel_dependency_lock",
         "sha256": "79a3dc97733fec25d006b7c39bc07df5ebbe457726083a3c3d6db8829607fe5f"
+      },
+      {
+        "bytes": 293,
+        "git_blob": "a56e5758306799cc5962eaf57e8ad3a26b73033f",
+        "path": "codex-rs/utils/cargo-bin/Cargo.toml",
+        "role": "cargo_binary_resolver_manifest",
+        "sha256": "eecb409357a98472df8a81d9fd1a25902b967433f4df3403cf213f07e68f8786"
+      },
+      {
+        "bytes": 7999,
+        "git_blob": "2cb25a6b17dd23e845768ad44a1f3ba22034e9dd",
+        "path": "codex-rs/utils/cargo-bin/src/lib.rs",
+        "role": "cargo_binary_resolver_owner",
+        "sha256": "54c4d9cdc972f7b6e2401178bd294c7329798acf01fd3226c9da5e575a907460"
+      },
+      {
+        "bytes": 933,
+        "git_blob": "49dafa1c915ba8d2876424f2293791943d5501ea",
+        "path": "codex-rs/cli/build.rs",
+        "role": "cli_fixture_producer_build_script",
+        "sha256": "7c99b6fb983d233f9d46a62b1f610628359f102964f5681b079a7488262f6a1c"
+      },
+      {
+        "bytes": 176978,
+        "git_blob": "1bd3eb0bfb183f6a436ba56220906f91b49f0679",
+        "path": "codex-rs/cli/src/main.rs",
+        "role": "cli_fixture_producer_entry",
+        "sha256": "097ca019533619d964fa67f018e0a140645779f17a0e9a17212ad5398636a513"
+      },
+      {
+        "bytes": 5673,
+        "git_blob": "5e0e76c5040ef3faba7ff2db80d52e2a646b87d1",
+        "path": "codex-rs/cli/src/exec_server_telemetry.rs",
+        "role": "cli_fixture_producer_exec_server_telemetry",
+        "sha256": "c32f3afb22a5f3160f85a5367ae00615538368b611de4478c0c5afcc5aef11c3"
+      },
+      {
+        "bytes": 6149,
+        "git_blob": "c008567b96a899a30baa2afc9a712e47dd477880",
+        "path": "codex-rs/cli/src/lib.rs",
+        "role": "cli_fixture_producer_library",
+        "sha256": "cf24032f801314033b2ff21e6c5a85ad8c2898012e9fba279f3a5c91439c1ab6"
+      },
+      {
+        "bytes": 4239,
+        "git_blob": "d2360ef42c5a8c8a9ffe3231f85220597847f0ab",
+        "path": "codex-rs/cli/Cargo.toml",
+        "role": "cli_fixture_producer_manifest",
+        "sha256": "967fd38c5e9fd05c50f19fbcbde5271e5a786f07436ab05310679fba736a947d"
       },
       {
         "bytes": 10052,
@@ -1130,6 +1179,27 @@
         "path": "codex-rs/rmcp-client/src/oauth_client_registration.rs",
         "role": "rmcp_oauth_registration_owner",
         "sha256": "dc4f1fddc8c4047ba8c00e212be1cf0925dd83a520c97409b9450c59f947629f"
+      },
+      {
+        "bytes": 2978,
+        "git_blob": "a24df4a4a2c094b2b7a8efc949553dd2e5ba1cd9",
+        "path": "codex-rs/rmcp-client/Cargo.toml",
+        "role": "rmcp_remote_fixture_manifest",
+        "sha256": "19a52722001c012ee9911a46fc3bd5cb6f02a4dc955a1989b201f6490786c3ee"
+      },
+      {
+        "bytes": 13474,
+        "git_blob": "43bd3141bf47697f0ddb85b22aa1ffdf82bbec82",
+        "path": "codex-rs/rmcp-client/tests/streamable_http_test_support.rs",
+        "role": "rmcp_remote_fixture_support",
+        "sha256": "c7cb6532d1fff792733dbce11f5aa1da09a5153f529adfacf32931d1c0953f1b"
+      },
+      {
+        "bytes": 5082,
+        "git_blob": "7df871976bc3ae13d99122a8cbb2128fd7244dae",
+        "path": "codex-rs/rmcp-client/tests/streamable_http_remote.rs",
+        "role": "rmcp_remote_integration_oracles",
+        "sha256": "3325410aa8954733633954aedf12c93d4bdc9b2fdbfcf7791ca5055b3c00d4f5"
       },
       {
         "bytes": 28706,
@@ -3430,18 +3500,18 @@
         "sha256": "ff231366a21bbf7a71121996512c690bdca83d68102d62a807e50d5e33c8badc"
       },
       {
-        "bytes": 179102,
-        "git_blob": "342023b2d04a6e8baa25905c4fa4124a2cff1a0e",
+        "bytes": 188615,
+        "git_blob": "5848ac58f40c3f45803c655db82b00303de4cca5",
         "path": "docs/agents/MODULE_DOCUMENTATION_CURRENT.json",
         "role": "module_documentation_current_inventory",
-        "sha256": "55f96b78cb629f3216bc0f68c68859f6508721140c0899e3fca1b798804213df"
+        "sha256": "f935853b887fad572a111c21891fd78260fd03c4cf0353a5c619f9797e37aa86"
       },
       {
-        "bytes": 43262,
-        "git_blob": "c3f7157be2a7f876194951f449bf6d0e5b6bdd0a",
+        "bytes": 46125,
+        "git_blob": "ad8f345f533edc59d9c4ace1d25641ab8fe8f329",
         "path": "docs/agents/MODULE_DOCUMENTATION_CURRENT.md",
         "role": "module_documentation_current_technical_development",
-        "sha256": "7501e3869ec279e56736fc8ac40090c6572e799a2aaebe95eb25834a2e56227e"
+        "sha256": "a7223e93176248302401a7c3a314224e857709175e870016476d02d81e8fdd7b"
       },
       {
         "bytes": 3024,
@@ -4116,11 +4186,11 @@
         "sha256": "44746546c49813c19c8e1721ea43351dc89b361987ab23d752cc3b317190320f"
       },
       {
-        "bytes": 25319,
-        "git_blob": "d9b219f8aaf8eca566407fc46c7f4e63554377d8",
+        "bytes": 28074,
+        "git_blob": "b7e96c0c442f3b540007c7072330f3fdde28c41b",
         "path": "support/release/README.md",
         "role": "release_development_contract",
-        "sha256": "4b4b2929527b08c6b99e6ebb2efc244cda9d306c58ad3d3b77e970806d0b8eaa"
+        "sha256": "aaa353290a86572cf44b7021fc2ed47488238741e45832da2234657acd485e70"
       },
       {
         "bytes": 17370,
@@ -4130,11 +4200,11 @@
         "sha256": "402af95f3e93253e9778e0b71c711fda8b215cbb174ea699074dbcabbe0934dc"
       },
       {
-        "bytes": 11030,
-        "git_blob": "7c7cefcc9aab0e9e94d9e7138c4aefec8c50f32a",
+        "bytes": 11336,
+        "git_blob": "050591b3464fcd7e6cf4fcdeefc6270c901ae9bc",
         "path": "support/release/check_organ_pair.py",
         "role": "release_pair_execution_tool",
-        "sha256": "4cb0cf0802510a602cc9cbc77b3b7bc48b4b9bde12978dfc98253691d8875be0"
+        "sha256": "8e529b63826f9367ec1c4c036a54b60e7046a9d43772a0d1e32b5be4b73dbde9"
       },
       {
         "bytes": 130693,
@@ -4158,11 +4228,11 @@
         "sha256": "dee92e90b700aec164308ab75aa813853138d59111f9b060eafc3642a64d2f98"
       },
       {
-        "bytes": 26453,
-        "git_blob": "ef1507f2c75230d9028e583535cfdd3c494df513",
+        "bytes": 29331,
+        "git_blob": "59dd37bf26efc543dbf797cf135f9cf925b75735",
         "path": "support/release/test_source_schema5.py",
         "role": "release_schema5_oracle",
-        "sha256": "345f690dd571f9f0ed3715d956a573a5a67a02fac6f46767c558ae093a3a2ec2"
+        "sha256": "ae36dec7a75f0f161379d8ff5b37a35c53486ea2e8fe5576e4b8b5f02da6cf59"
       },
       {
         "bytes": 12648,
@@ -4179,11 +4249,11 @@
         "sha256": "1cf6ecf0e6c3e715bef7f50f80cee25522c00dde1cab22ac52ed82bf1f1ae38d"
       },
       {
-        "bytes": 61584,
-        "git_blob": "58792b1eaae63b3834a131074eadbe103072b4cc",
+        "bytes": 62368,
+        "git_blob": "7039451c6c6047c850a3734785902725b9de7501",
         "path": "support/release/organ_source_map_v5.json",
         "role": "release_source_map_v5",
-        "sha256": "00d8060c5e56e0d4f268f37fdb4bea53246dac122836b88b79cd11bc6dd9bc9c"
+        "sha256": "16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71"
       },
       {
         "bytes": 26545,
@@ -4193,18 +4263,18 @@
         "sha256": "1aa62880ca02049ff3cee3c9a1d5bd1ca9aa114c5c4adace54dd17e71631ba07"
       },
       {
-        "bytes": 70066,
-        "git_blob": "31e40150a533d9da53ae9d8dc3212dfe80160408",
+        "bytes": 70461,
+        "git_blob": "6ab58affb898772b9cf518563acd1a2c9e2a5c0f",
         "path": "support/release/organ_release_profile.py",
         "role": "release_source_profile_tool",
-        "sha256": "a866ea335354eff177e9d44d7499dd3fceba58cccb0bb1819505cc814b1f6e1a"
+        "sha256": "9857f34a1a6ade6ee6191b7ff585b9289339e905a15229958eb38a3ca72a719c"
       },
       {
-        "bytes": 24133,
-        "git_blob": "42ca0a28a0cc07cae1b6d2ae3cd9cdcd6a1664be",
+        "bytes": 26879,
+        "git_blob": "fd8122ac148a98ecc7ff5c06018c91e9293b26f3",
         "path": "docs/agents/ORGAN_RELEASE_PROFILE.md",
         "role": "release_technical_contract",
-        "sha256": "9e9c0013eda4f87d9d639dde242346b3354b76d4651ac6372c5756d592ed4d88"
+        "sha256": "ac64da78fc11c2a6a4c2871e19bd55f6898a61799c4626a992f4105a219f5d1b"
       },
       {
         "bytes": 10860,
