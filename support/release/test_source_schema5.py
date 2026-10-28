@@ -34,6 +34,26 @@ STEPS = ["ui-build", "ui-tests", "adapter-tests", "hepta-build", "hepta-root-bui
          "hepta-recovery-build", "hepta-tests"]
 
 
+def workflow_script(workflow, step):
+    """Extract the actual literal run block without crossing a job boundary."""
+    text = workflow.read_text()
+    marker = "\n      - name: " + step + "\n"
+    if text.count(marker) != 1:
+        raise AssertionError("workflow step missing or repeated: " + step)
+    block = text.split(marker, 1)[1].split("\n      - ", 1)[0]
+    marker = "        run: |\n"
+    if marker not in block:
+        raise AssertionError("workflow step lacks the expected literal run block")
+    lines = []
+    for line in block.split(marker, 1)[1].splitlines():
+        if line.strip() and not line.startswith("          "):
+            break
+        lines.append(line[10:] if line.startswith("          ") else "")
+    if not any(line.strip() for line in lines):
+        raise AssertionError("workflow step has an empty run block")
+    return "\n".join(lines) + "\n"
+
+
 def install(case, fx, version=5):
     mapping = fx.profile.load_json(HERE / fx.profile.source_map_name(version))
     case.mapping = mapping
@@ -44,8 +64,12 @@ def install(case, fx, version=5):
         for side in ("os", "hepta"):
             fx.write(getattr(case, side), paths[side], (role + " exact golden\n").encode())
     fx.write(case.os, "support/release/" + fx.profile.source_map_name(version), fx.profile.canonical(mapping))
-    fx.commit(case.os, "review fixed schema source paths")
-    fx.commit(case.hepta, "review original-owner descendant source paths")
+    for repo, message in ((case.os, "review fixed schema source paths"),
+                          (case.hepta, "review original-owner descendant source paths")):
+        # A historical role set can be a byte-identical subset of the already
+        # installed V5 owners. Its existing clean commit is the real input.
+        if fx.git(repo, "status", "--porcelain"):
+            fx.commit(repo, message)
 
 
 class Schema5DeclarationTests(unittest.TestCase):
@@ -116,7 +140,7 @@ class Schema5DeclarationTests(unittest.TestCase):
         summary = text.split("  source-profile-host:\n", 1)[1].split("\n  source-profile-oracle:", 1)[0]
         self.assertIn("needs: [source-profile-oracle]", summary)
         self.assertIn("always()", summary)
-        script = v4_tests.workflow_run_block(workflow, "Require every complete source-tool partition to succeed")
+        script = workflow_script(workflow, "Require every complete source-tool partition to succeed")
         for status in ("success", "failure", "cancelled", "skipped", ""):
             result = subprocess.run(["bash", "-c", script], env=dict(os.environ, ORACLE_RESULT=status),
                                     capture_output=True, timeout=30)
@@ -133,7 +157,7 @@ class Schema5DeclarationTests(unittest.TestCase):
             self.assertIn("DESKTOP_SHA: ${{ inputs.historical_os_ref }}", historical)
             current = text.split("  " + current_job + ":\n", 1)[1].split("\n  " + historical_job + ":", 1)[0]
             self.assertIn("github.event_name != 'workflow_dispatch' || inputs.historical_os_ref == ''", current)
-            script = v4_tests.workflow_run_block(workflow, "Validate explicit historical V4 source identity")
+            script = workflow_script(workflow, "Validate explicit historical V4 source identity")
             for ref in ("", "main", "a" * 39, "A" * 40, "a" * 40):
                 result = subprocess.run(["bash", "-c", script], env=dict(os.environ, DESKTOP_SHA=ref),
                                         capture_output=True, timeout=30)
@@ -142,7 +166,7 @@ class Schema5DeclarationTests(unittest.TestCase):
 
     def test_actual_ci_discovery_is_the_exact_disjoint_union_with_original_case_ids(self):
         workflow = HERE.parents[1] / ".github/workflows/organ-release-profile.yml"
-        script = v4_tests.workflow_run_block(workflow, "Run the bounded exact V5 case partition without skipped tests")
+        script = workflow_script(workflow, "Run the bounded exact V5 case partition without skipped tests")
         start = 'python3 "${python_flags[@]}" -I -B - <<\'PY\'\n'
         self.assertEqual(script.count(start), 1)
         python = script.split(start, 1)[1].split("\nPY", 1)[0]
