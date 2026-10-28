@@ -93,9 +93,12 @@ static void positive(void) {
     check("page_tail_is_not_exposed",output[PAGE+17]==0xa7&&output[sizeof(output)-1]==0xa7);
     check("peek_retains_original_physical_charge",value(WORK,"hepta.page.stat","ipc")==2*PAGE);
     join(RECOVER);
+    check("receiver_migration_does_not_transfer_payload_owner",value(WORK,"hepta.page.stat","ipc")==2*PAGE&&value(ROOT,"hepta.page.stat","ipc")==2*PAGE&&value(RECOVER,"hepta.page.stat","ipc")==0);
+    count=recv(fds[1],output,sizeof(output),MSG_PEEK);
+    check("migrated_receiver_peek_keeps_original_owner_and_bytes",count==(ssize_t)(PAGE+17)&&!memcmp(input,output,PAGE+17)&&value(WORK,"hepta.page.stat","ipc")==2*PAGE&&value(RECOVER,"hepta.page.stat","ipc")==0);
     count=recv(fds[1],output,13,MSG_TRUNC);
     check("truncation_returns_original_packet_length",count==(ssize_t)(PAGE+17)&&!memcmp(input,output,13));
-    check("receiver_migration_does_not_transfer_payload_owner",await_ipc(WORK,0)==0&&value(RECOVER,"hepta.page.stat","ipc")==0);
+    check("migrated_receiver_consumption_refunds_original_owner",await_ipc(WORK,0)==0&&value(RECOVER,"hepta.page.stat","ipc")==0);
     close_pair(fds);
 }
 static void negative(int ancestor) {
