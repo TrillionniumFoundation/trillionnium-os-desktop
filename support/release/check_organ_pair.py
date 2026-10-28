@@ -33,6 +33,11 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_v
                             "codex-rollout", "codex-file-system"]
     if schema_version == 5:
         owning_packages.append("codex-rmcp-client")
+    hepta_build_targets = ["-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd"]
+    if schema_version == 5:
+        # The original RMCP remote tests execute the real `codex exec-server`.
+        # Cargo does not build this other package's binary as a test dependency.
+        hepta_build_targets += ["-p", "codex-cli", "--bin", "codex"]
     package_flags = [flag for package in owning_packages for flag in ("-p", package)]
     steps = [
         ("ui-build", os_root, "1.88.0",
@@ -46,7 +51,7 @@ def host_steps(os_root, hepta_root, offline, hepta_profile="dev-small", schema_v
           "--features", "cpu-history", "--locked", *network]),
         ("hepta-build", hepta_root, "1.95.0",
          ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
-          "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd",
+          *hepta_build_targets,
           "--profile", hepta_profile, "--locked", *network]),
         ("hepta-tests", hepta_root, "1.95.0",
          ["just", "test", "--locked", *network, *package_flags,

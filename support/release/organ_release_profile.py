@@ -487,7 +487,7 @@ SOURCE_MAP_V4_SHA256 = '1cf6ecf0e6c3e715bef7f50f80cee25522c00dde1cab22ac52ed82bf
 
 
 
-# Schema5 is a distinct fixed 396/261 contract. V1-V4 stay unchanged.
+# Schema5's undelivered current contract is fixed at 396/271. V1-V4 stay unchanged.
 OS_ROLES_V5 = OS_ROLES_V4 | {
     'module_documentation_current_inventory',
     'module_documentation_current_technical_development',
@@ -575,6 +575,16 @@ OS_ROLES_V5 = OS_ROLES_V4 | {
     'unix_signal_unix_signal_writev_entry',
 }
 HEPTA_ROLES_V5 = HEPTA_ROLES_V4 | {
+    'cli_fixture_producer_manifest',
+    'cli_fixture_producer_build_script',
+    'cli_fixture_producer_entry',
+    'cli_fixture_producer_library',
+    'cli_fixture_producer_exec_server_telemetry',
+    'rmcp_remote_fixture_manifest',
+    'rmcp_remote_integration_oracles',
+    'rmcp_remote_fixture_support',
+    'cargo_binary_resolver_manifest',
+    'cargo_binary_resolver_owner',
     'authority_lease_concurrency_contract',
     'authority_lease_entry_clock_oracles',
     'authority_lease_owner',
@@ -637,7 +647,7 @@ HEPTA_ROLES_V5 = HEPTA_ROLES_V4 | {
     'sqlite_startup_runtime',
 }
 GOLDEN_ROLES_V5 = GOLDEN_ROLES_V4
-SOURCE_MAP_V5_SHA256 = '00d8060c5e56e0d4f268f37fdb4bea53246dac122836b88b79cd11bc6dd9bc9c'
+SOURCE_MAP_V5_SHA256 = '16d996d55038c73df9a259f82e3a5d49ac4bf338f0fc67a61c74998f9774bc71'
 
 
 def roles_for_version(version):

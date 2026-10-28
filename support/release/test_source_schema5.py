@@ -78,7 +78,7 @@ class Schema5DeclarationTests(unittest.TestCase):
 
     def test_exact_role_counts_paths_seal_and_five_goldens(self):
         profile.check_map(self.mapping)
-        self.assertEqual((len(self.mapping["sources"]["os"]), len(self.mapping["sources"]["hepta"])), (396, 261))
+        self.assertEqual((len(self.mapping["sources"]["os"]), len(self.mapping["sources"]["hepta"])), (396, 271))
         self.assertEqual(len(self.mapping["goldens"]), 5)
         self.assertEqual(profile.sha256(profile.canonical(self.mapping)), profile.SOURCE_MAP_V5_SHA256)
         self.assertEqual(profile.source_map_name(5), "organ_source_map_v5.json")
@@ -118,6 +118,18 @@ class Schema5DeclarationTests(unittest.TestCase):
         edited["schema_version"] = 5
         with self.assertRaisesRegex(profile.ProfileError, "unsupported source map"):
             profile.check_map(edited)
+        # The frozen f4cd source-only V5 used its own exact 261-role tool.
+        # The corrected current map must not admit that incomplete producer set.
+        previous_v5 = copy.deepcopy(self.mapping)
+        for role in ("cli_fixture_producer_manifest", "cli_fixture_producer_build_script",
+                     "cli_fixture_producer_entry", "cli_fixture_producer_library",
+                     "cli_fixture_producer_exec_server_telemetry", "rmcp_remote_fixture_manifest",
+                     "rmcp_remote_integration_oracles", "rmcp_remote_fixture_support",
+                     "cargo_binary_resolver_manifest", "cargo_binary_resolver_owner"):
+            previous_v5["sources"]["hepta"].pop(role)
+        self.assertEqual(len(previous_v5["sources"]["hepta"]), 261)
+        with self.assertRaisesRegex(profile.ProfileError, "unsupported source map"):
+            profile.check_map(previous_v5)
 
     def test_duplicate_json_keys_are_not_a_second_contract(self):
         raw = profile.canonical(self.mapping).decode().replace('"schema_version": 5', '"schema_version": 5, "schema_version": 5')
@@ -133,6 +145,11 @@ class Schema5DeclarationTests(unittest.TestCase):
             self.assertEqual(actual, expected)
             self.assertEqual(len(actual), len(set(actual)))
             self.assertEqual(argv[-6:], ["--test-threads", "2", "--retries", "0", "--cargo-profile", "dev-small"])
+            build = ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
+                     "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd"]
+            if version == 5:
+                build += ["-p", "codex-cli", "--bin", "codex"]
+            self.assertEqual(steps[3][3], build + ["--profile", "dev-small", "--locked", "--offline"])
 
     def test_stable_source_summary_executes_fail_closed_for_every_matrix_result(self):
         workflow = HERE.parents[1] / ".github/workflows/organ-release-profile.yml"
@@ -206,7 +223,10 @@ class Schema5SourceTests(unittest.TestCase):
     def test_committed_oom_authorization_dependency_and_native_report_are_required(self):
         required = [("os", "kernel/asterinas/kernel/core/src/process/oom_adjustment.rs"),
                     ("os", "kernel/asterinas/kernel/core/src/process/namespace/user_ns.rs"),
-                    ("hepta", "codex-rs/hepta-agentd/src/root_failure_report.rs")]
+                    ("hepta", "codex-rs/hepta-agentd/src/root_failure_report.rs"),
+                    ("hepta", "codex-rs/cli/Cargo.toml"),
+                    ("hepta", "codex-rs/cli/src/main.rs"),
+                    ("hepta", "codex-rs/rmcp-client/tests/streamable_http_test_support.rs")]
         for side, path in required:
             repo = getattr(self, side)
             original = (repo / path).read_bytes()
@@ -273,6 +293,9 @@ class Schema5PairTests(unittest.TestCase):
         with patch.object(runner, "execute_step", side_effect=self.execute_fixture):
             self.assertEqual(self.run_pair("--required-schema", "5", "--execute-host", "--offline"), 0)
         self.assertEqual([row[0] for row in self.dispatched], STEPS)
+        self.assertEqual(self.dispatched[3][3], ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
+                         "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd", "-p", "codex-cli", "--bin", "codex",
+                         "--profile", "dev-small", "--locked", "--offline"])
         expected = ["just", "test", "--locked", "--offline"] + [flag for package in PACKAGES for flag in ("-p", package)]
         self.assertEqual(self.dispatched[-1][3], expected + ["--test-threads", "2", "--retries", "0", "--cargo-profile", "dev-small"])
         self.assertEqual(self.receipt()["qualification"], "host-build-tests")  # Owned child fixture only.
@@ -283,6 +306,18 @@ class Schema5PairTests(unittest.TestCase):
             self.assertEqual(self.run_pair("--required-schema", "5", "--execute-host"), 1)
         self.assertEqual(self.dispatched[-1][0], "hepta-recovery-build")
         self.assertNotIn("hepta-tests", [row[0] for row in self.dispatched])
+        self.assertEqual(self.receipt()["steps"][-1]["exit_code"], 13)
+        self.assertEqual(self.receipt()["qualification"], "none")
+        # A failed producer build is equally mandatory: never reach Root,
+        # recovery or owning tests with an absent original CLI executable.
+        self.fail_step = "hepta-build"
+        self.output = self.root / "failed-required-cli-producer"
+        self.dispatched = []
+        with patch.object(runner, "execute_step", side_effect=self.execute_fixture):
+            self.assertEqual(self.run_pair("--required-schema", "5", "--execute-host"), 1)
+        self.assertEqual(self.dispatched[-1][0], "hepta-build")
+        self.assertFalse({"hepta-root-build", "hepta-recovery-build", "hepta-tests"}
+                         & {row[0] for row in self.dispatched})
         self.assertEqual(self.receipt()["steps"][-1]["exit_code"], 13)
         self.assertEqual(self.receipt()["qualification"], "none")
 
@@ -432,6 +467,9 @@ class Schema5WorkflowTests(unittest.TestCase):
         self.assertEqual(receipt["source"]["schema_version"], 5)
         self.assertEqual(receipt["qualification"], "host-build-tests")  # Owned fixture children only.
         self.assertEqual([row[0] for row in self.dispatched], STEPS)
+        self.assertEqual(self.dispatched[3][3], ["cargo", "build", "--manifest-path", "codex-rs/Cargo.toml",
+                         "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd", "-p", "codex-cli", "--bin", "codex",
+                         "--profile", "dev-small", "--locked"])
         argv = self.dispatched[-1][3]
         self.assertEqual([argv[i + 1] for i, value in enumerate(argv) if value == "-p"], PACKAGES)
 
