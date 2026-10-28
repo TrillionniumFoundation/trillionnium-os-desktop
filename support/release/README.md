@@ -108,7 +108,7 @@ current V4 manifest is archived byte-for-byte as
 Manual historical V4 jobs require a complete forty-hex `historical_os_ref` and
 check out that historical Desktop, then read its matching manifest and Hepta
 pin. A new checkout plus an old archive cannot qualify that historical pair.
-The unchanged eight `CurrentWorkflowTests` execute those retained V4 caller
+The unchanged seven `CurrentWorkflowTests` execute those retained V4 caller
 blocks; new `Schema5WorkflowTests` execute the current V5 pin reader, source
 guard and full dispatcher over owned fixtures. These are release-tool tests,
 not Rust package or production transactions.
@@ -245,7 +245,7 @@ same-disk restart/history, GUI device effects and real deployment evidence must
 be recorded independently. A prior native failure and a successful compiler
 run cannot be relabelled as a passing original-owner guest.
 
-## Current schema 4 candidate
+## Historical schema 4 candidate
 
 Schema 4 uses the distinct code-owned
 [`organ_source_map_v4.json`](organ_source_map_v4.json). Its current contract
@@ -274,7 +274,7 @@ The map contains paths rather than source hashes, so binding the tool and map
 as source files creates no self-hash cycle. The external verification receipt
 continues to bind the caller's exact OS commit and tree.
 
-The current CI pin reader calls `check_current_contract` before selecting a
+The historical V4 CI pin reader calls `check_current_contract` before selecting a
 Hepta checkout. It requires the fixed V4 map, exact source/golden declarations,
 complete Hepta identities, the external OS caller binding and all seven disabled
 production inputs. Missing inputs, old/current schema confusion, duplicate JSON

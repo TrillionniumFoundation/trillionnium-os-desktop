@@ -268,7 +268,7 @@ failed, cancelled or skipped dependency. Each partition has its existing
 ten-minute limit: complete legacy, typed V4 and V5 suites, normal and optimized.
 The actual discovered case IDs must be an exact disjoint union; original 54
 legacy and 62 V4 case-ID seals are checked. No retries or skips are allowed.
-The original eight `CurrentWorkflowTests` now execute uniquely preserved V4
+The original seven `CurrentWorkflowTests` now execute uniquely preserved V4
 caller blocks. New V5 tests execute the actual current pin reader, source guard,
 complete bash dispatcher and disabled-production refusal. Neither fixture lane
 executes Cargo products or replaces actual final-pair qualification.
@@ -290,7 +290,7 @@ and current authorization cut form the required production chain.
 
 ## Schema 4: closed expanded source and owning-package contract
 
-The schema-4 current candidate has its own literal role sets and
+The historical schema-4 candidate has its own literal role sets and
 `support/release/organ_source_map_v4.json`. Its current 312 OS / 201 Hepta roles
 preserve all V3 paths and add the reviewed CPU/GDT/Unix owners, observation and
 checkpoint diagnostic paths, thread-store fixtures, compression and rollout
@@ -340,7 +340,7 @@ seven disabled production inputs. This is a structural preflight. Only
 identities and original ancestry. A declaration cannot choose commands, owning
 packages, hash exceptions or an OS identity embedded in its own manifest.
 
-The pair workflow then requires schema 4 and dispatches its code-owned V4 map.
+The historical V4 pair workflow requires schema 4 and dispatches its code-owned V4 map.
 The source-profile workflow still checks maps 1, 2 and 3, and additionally checks
 map 4 and the current contract. Both CI callers are mandatory source roles.
 Every mapped OS path can trigger the current pair job. Regression fixtures

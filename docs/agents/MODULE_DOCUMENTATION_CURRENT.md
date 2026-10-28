@@ -1,15 +1,18 @@
 # 当前 Desktop／Hepta 模块开发与技术导航
 
-本页绑定代码组合基点 `7840fc113d8c960b3092a8a11a04869c3dabacd3`（tree `b3e2bef5d4fdf6626e0edb40f8e08b1e9f0b42ec`），然后仅增加本页与配套
-[机器清单](MODULE_DOCUMENTATION_CURRENT.json)。最终文档提交的 HEAD/tree 由新发布收据显式绑定，
-不在文件中自引用。该组合从 Desktop `cec3a36fe867f90f74413a89c17805e71d73dfbb`
-保留全部 host、Session、Notes 和 release 进展，按原序纳入 e7ed 的七个 Unix 信号提交；
-Hepta 目标是 `7786116e1771de146008aacef5c44d47ad5c9c10`，tree
-`f48e750dd7258f2383e05cf2ff83aaf8a35b33f7`。
+本页绑定V5代码组合基点 `231a22c17192aa68a6488043696c2abda90039e8`（tree `bbbf08a8c220b2de555ac22973c496739324cb1c`，8088路径），
+本次更新四个文档路径：`docs/agents/MODULE_DOCUMENTATION_CURRENT.md`、
+`docs/agents/MODULE_DOCUMENTATION_CURRENT.json`、`support/release/README.md`、`docs/agents/ORGAN_RELEASE_PROFILE.md`。
+[机器清单](MODULE_DOCUMENTATION_CURRENT.json)的 `desktop_code` 是写入文档前的代码基点；
+`documentation_delta_paths` 内的来源记录对应文档successor实际字节，新增README／技术文档blob不声称存在于231的tree。
+最终文档／manifest提交的HEAD/tree由外置source收据显式绑定，避免自引用；其他Desktop记录仍绑定该代码基点。
+Desktop从原Unix组合纳入六个原OOM提交，冻结基点27c5043d；再逐字采用4018的已验证门禁组件并新增固定V5。
+231只修复新增测试辅助代码的工作流边界与无变化提交；b6a原失败及其已通过正常54／7收据保持原身份。
+Hepta目标是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`，tree `ff2372f10656d2e8f652b6ca1e6de03a075b9219`（9214路径）。
 
-**当前资格仅为源码组合，未编译、运行新测试／GUI／guest，也未形成正式可交付版本组合。**
-本阶段保留 cec3 的固定发布门禁、CI 和 97c current pin；354 OS／260 Hepta 映射仍是外置草案，
-不能用当前发布命令把7786目标说成已经通过。七项生产授权装配仍关闭，native、通用设备控制和手机资格仍未建立。
+**当前资格仍是源码与发布工具验证；最终版本组合、GUI、native持久链和生产授权尚需各自同源收据。**
+V5固定396 OS／261 Hepta角色、5对golden和19个Hepta owning packages。七项生产输入保持关闭。
+原V1–4地图、显式历史验证、旧失败和原收据保留；新commit不自动继承组件运行资格。
 
 ## 文档与来源如何阅读
 
@@ -20,22 +23,22 @@ Hepta 目标是 `7786116e1771de146008aacef5c44d47ad5c9c10`，tree
 
 每行的技术文档说明实际接口／状态／错误边界；开发入口说明代码与验证位置。源码、模型测试、
 真实Linux host、GUI、内核guest、原生Hepta持久owner、生产授权和真实硬件分别记录资格。
-本文出现的命令都是**待执行入口**，本次未执行。机器清单保存相应路径、Git mode/blob和SHA256。
+下文产品／GUI／guest命令是**待执行入口**，本次文档刷新未执行它们。发布工具的实际fixture结果单列于后文；机器清单保存相应路径、Git mode/blob和SHA256。
 
 ## A00–A10 当前入口与边界
 
 | 模块 | 技术契约与实际源码 | 开发／验证入口 | 当前缺口与不可外推项 |
 | --- | --- | --- | --- |
-| A00 集成／发布 | [release README](../../support/release/README.md)、[发布技术合同](ORGAN_RELEASE_PROFILE.md)；`support/release/{organ_release_profile.py,check_organ_pair.py}` | `support/release/test_source_schema4.py`、`test_check_organ_pair.py`；下方release命令 | 已安装门禁仍是cec3的312／201和97c pin。新354／260、19 owners须独立审查并封印后才能生成新current manifest；不能跳过source admission。 |
+| A00 集成／发布 | [发布合同](ORGAN_RELEASE_PROFILE.md)、[release开发](../../support/release/README.md)；固定V5 literal map | 新V5 caller／原V4历史caller，六互斥CI分区；source-only命令见release手册 | 396／261与19 owners仅固定装配。实际pair七步、GUI／native和七项生产输入仍分别验收。 |
 | A01 上游／启动 | [构建手册](../../support/build/README.md)、[上游Book](../../kernel/asterinas/book/src/SUMMARY.md)；`kernel/asterinas/{kernel,ostd,osdk}` | [ktest手册](../../support/build/ktest/README.md)、`support/build/verify-source.py`、下方Core入口 | 新候选必须绑定自己的完整源码、OSDK、普通内核与各测试ELF。上游共享Book与源码注释不等于所有低层crate都有运行手册。 |
 | A02 HOS2 codec | [ABI包入口](../../libs/os-abi/README.md)、[Native ABI](../NATIVE_ABI.md)；`libs/os-abi` | `python3 -I -B tests/abi/run_acceptance.py`，协议样本与拒绝断言见该目录 | 五种wire格式不等于ordinary内核开放五类效果；当前普通控制路径仍按QueryAbi门禁。 |
 | A03 Control core | [API合同](../../libs/os-control/API_CONTRACT.md)；`libs/os-control`及真实后端接点 | [control验证手册](../../tests/control/VALIDATION.md)、[no_std验证](../../tests/control/backend_no_std/VALIDATION.md)，`bash tests/control/run-validation.sh` | host/Loom模型不能代替内核执行和原Hepta持久终态。`tests/control/loom`没有独立完整开发／技术手册。 |
 | A04 Linux／存储／Unix信号 | [Linux缺口](../../compat/linux/GAPS.md)、[STREAM SIGPIPE合同](../../support/kernel-safety/UNIX_SOCKET_SIGPIPE.md)、[SQLite重启](../../tests/workloads/linux/SQLITE_GUEST_RESTART.md)；Unix `stream/{connected,socket}.rs`、syscall `{pwritev,sendmmsg}.rs` | [42-case真实guest](../../tests/kernel/unix-signal/README.md)、[fixed132 profile](../../tests/kernel/network/POST1138_UNIX_SIGNAL_PROFILE.md)、[Linux workload](../../tests/workloads/linux/README.md)；下方Unix命令 | 只对类型确认的Unix STREAM走单次writev/send路径；后来iovec故障保留已复制前缀。SEQPACKET、TCP、UDP、vsock保留原路径，不能宣传其完整信号／向量语义。小Tokio workload仍用共享手册。 |
-| A05 进程／权限／映像 | [Process映像](../ASTERINAS_PROCESS_IMAGE_G1C.md)、[安全入口](../../support/kernel-safety/README.md)；`security/lsm/modules/capability.rs`、process、x86 VM retirement | [control探针](../../tests/kernel/control/README.md)、[safety探针](../../tests/kernel/safety/README.md)；`python3 -I -B tests/kernel/safety/run.py --help`后按手册选定真实probe | capability目标能力约束、namespace、exec与VM寿命按实际owner测试判定。独立OOM-floor cd40和MAC管理路径未纳入此组合。 |
-| A06 调度／资源 | [FAIR运行](../../support/kernel-safety/FAIR_RUNTIME.md)、[组实体](../../support/kernel-safety/FAIR_GROUP_ENTITIES.md)、[CPU bandwidth](../ASTERINAS_CPU_BANDWIDTH_N0.md)、[调度权限](../../support/kernel-safety/SCHEDULING_PERMISSIONS.md) | [forced affinity](../../tests/kernel/forced-affinity/README.md)、[FAIR](../../tests/kernel/fair-runtime/README.md)、[page](../../tests/kernel/page-memory/README.md)；以手册原145%／3% quota和SMP配置运行 | 已有root route、route pin、强制affinity handoff、初次CPU选择与CPUNODE修复。普通`cpu.weight`仍拒绝；冷代／活跃更新9516另支未纳入。`hepta.anon.*`不是完整`memory.max`；无假启用。 |
+| A05 进程／权限／映像 | [Process映像](../ASTERINAS_PROCESS_IMAGE_G1C.md)、[安全入口](../../support/kernel-safety/README.md)；`security/lsm/modules/capability.rs`、process、x86 VM retirement | [control探针](../../tests/kernel/control/README.md)、[safety探针](../../tests/kernel/safety/README.md)；`python3 -I -B tests/kernel/safety/run.py --help`后按手册选定真实probe | capability目标能力约束、namespace、exec与VM寿命按实际owner测试判定。已纳入六个原OOM floor／VM生命周期提交；[OOM合同](../../support/kernel-safety/OOM_ADJUSTMENT.md)和[真实guest手册](../../tests/kernel/oom-adjustment/README.md)给出开发入口。memory.max、OOM killer及MAC管理资格仍未建立。 |
+| A06 调度／资源 | [FAIR运行](../../support/kernel-safety/FAIR_RUNTIME.md)、[组实体](../../support/kernel-safety/FAIR_GROUP_ENTITIES.md)、[CPU bandwidth](../ASTERINAS_CPU_BANDWIDTH_N0.md)、[调度权限](../../support/kernel-safety/SCHEDULING_PERMISSIONS.md) | [forced affinity](../../tests/kernel/forced-affinity/README.md)、[FAIR](../../tests/kernel/fair-runtime/README.md)、[page](../../tests/kernel/page-memory/README.md)；以手册原145%／3% quota和SMP配置运行 | 已有root route、route pin、强制affinity handoff、初次CPU选择与CPUNODE修复。SMP max仍缺remote rendezvous；c235 guard仅独立分支，未纳入当前kernel。普通`cpu.weight`仍拒绝；冷代／活跃更新9516另支未纳入。`hepta.anon.*`不是完整`memory.max`；无假启用。 |
 | A07 Hepta原owner／装配 | [适配器合同](../../services/hepta-os/CONTRACT.md)、[RUN](../../services/hepta-os/RUN.md)；原Hepta19包与下表新专册 | `cargo +1.88.0 test --manifest-path services/hepta-os/Cargo.toml --features cpu-history --locked`；Hepta原19包Rust测试、SDK50、MCP验证见下方 | observer/history不签发授权、不拥有原writer。State启动、Root恢复、授权lease、OAuth与SDK各有独立owner；组件结果不自动成为本组合资格。 |
 | A08 Android／Binder | [Binder字节](../../support/android/BINDER_BYTES.md)、[线程D1](../../support/android/BINDER_THREADS.md)、[seccomp](../../support/android/SECCOMP.md)；内核Binder owner | [Binder probe手册](../../tests/kernel/binder/README.md)、[Android入口](../../support/android/README.md)，`python3 -I -B tests/kernel/binder/thread_run.py --help`后按原手册执行 | 有界实际线程同步IPC不等于自动线程池、nested/oneway、FD arrays、Android boot／CTS／SELinux／BSP完成。 |
-| A09 硬件／GPU／VMM | [硬件合同](../HARDWARE_AND_DRIVERS.md)、[DMA domains](../../support/kernel-safety/DMA_DOMAINS.md)、[VMM gates](../../support/vmm/GATES.md) | [硬件runbook](../../tests/hardware/RUN.md)、[lifecycle模型](../../support/vmm/device_lifecycle/README.md)，`cargo +1.88.0 test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked`只验证模型 | 共享IOMMU页表或枚举不证明设备间DMA隔离。模型、有限requester测试不证明GPU reset／真实手机支持；`kernel/asterinas/kernel/comps/README.md`仍仅标题。 |
+| A09 硬件／GPU／VMM | [硬件合同](../HARDWARE_AND_DRIVERS.md)、[DMA domains](../../support/kernel-safety/DMA_DOMAINS.md)、[VMM gates](../../support/vmm/GATES.md) | [硬件runbook](../../tests/hardware/RUN.md)、[lifecycle模型](../../support/vmm/device_lifecycle/README.md)，`cargo +1.88.0 test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked`只验证模型 | 共享IOMMU页表或枚举不证明设备间DMA隔离。现实现限Intel VT-d与root-bus/function-zero入口；AMD平台或同组多功能GPU不能据此证明设备间DMA隔离。模型、有限requester测试不证明GPU reset／真实手机支持；`kernel/asterinas/kernel/comps/README.md`仍仅标题。 |
 | A10 Session／Notes／桌面交互 | [整帧期限](../../support/ui/SESSION_IPC.md)、[真实文档持久化](../../support/ui/NOTES_PERSISTENCE.md)、[X11合同](../../support/ui/DESKTOP_X11.md)；`ui/{session,core,app-window,broker,shell}` | [五包导航](../../ui/README.md)、[host runbook](../../support/ui/RUN.md)；下方UI／GUI入口 | 500ms是整帧总期限、至多32连接且每tick有界推进。Notes文本／revision／精确回执共同sync/rename/目录sync；回执ACK不替代文档或Hepta持久终态。通用第三方应用、文件选择器／设备控制仍未完成。 |
 
 `--help`仅给出probe的实际CLI，不能当运行验收；具体参数、隔离fixture、fresh输出目录和原预算以链接手册为准。
@@ -54,11 +57,11 @@ python3 -I -B -m unittest discover -s support/release -p 'test_*.py'
 python3 -I -B -O -m unittest discover -s support/release -p 'test_*.py'
 ```
 
-最后两项目前只验证已安装的cec3 gate；不证明外置354／260 draft已经被采用或新pair已通过。
+最后两项是发布工具的完整CI union；本地本轮只执行旧54、原7 Workflow与全部新V5的必要增量，两模式实际结果见下表。4018其余typed组件证据保持原来源；不能把它改名为新全套或产品通过。
 Hepta complete owning测试须在其仓库根使用原`just test`调度，固定两线程、零重试、原case预算；
 18原包全部保留，再增加实际OAuth包`codex-rmcp-client`。包清单见机器清单的`hepta_owners`，不预填测试总数。
 七步为UI build／UI tests／adapter tests／agentd build／authority-host build／supervisor-recovery build／19-owner tests。
-原七个pair产品分别保留hash；SDK需要的新CLI另以新源构建，不能将85f CLI改名为7786。
+原七个pair产品分别保留hash；SDK需要的新CLI另以新源构建，不能将旧85f或7786 CLI改名为7673。
 
 准备自己OSDK和普通内核后，Core与Unix验证入口为：
 
@@ -68,15 +71,15 @@ python3 -I -B -m unittest discover -s tests/kernel/network -p 'test_*.py'
 python3 -I -B -O -m unittest discover -s tests/kernel/network -p 'test_*.py'
 python3 -I -B -m unittest discover -s tests/kernel/unix-signal -p 'test_*.py'
 python3 -I -B -O -m unittest discover -s tests/kernel/unix-signal -p 'test_*.py'
-python3 -I -B tests/kernel/network/run_unix_stream_signal_guest.py \
+python3 -I -B tests/kernel/network/run_unix_stream_oom_guest.py \
   --expected-source-head FULL_HEAD --expected-source-tree FULL_TREE \
   --target-dir /absolute/owned-kernel-target --output /absolute/fresh-unix-evidence \
-  --source-profile post-1138-unix-signal-v2 --variant positive --selection all
+  --source-profile post-1138-oom-adjustment-v2 --variant positive --selection all
 ```
 
 不得用占位HEAD/tree运行。参数须来自当前真实clean源，Unix guest还须绑定独立验证的同一普通产品ELF。
 repeat `shutdown_race`、原38正向／7负向、SMP1/2/4、quota145%/3%、Binder／clock／handoff等原检查保持其预算和断言。
-本次源码组装已逐mode/blob保留fixed132；之后若改其中任一路径，应另审新strict profile，不能重写旧绿。
+本次源码组装已逐mode/blob保留fixed132；当前OOM增量已有独立strict182 `post-1138-oom-adjustment-v2`；旧fixed132仍绑定原e7ed历史字节，不能用于当前ELF，详见[新profile合同](../../tests/kernel/network/POST1138_OOM_ADJUSTMENT_PROFILE.md)。
 
 三项owned GUI必须在新host成功后依原runbook运行：Notes实际授权fixture往返、crash/reopen与X11。
 原issuer/current-cut fixture属于测试授权；真实生产签发、受保护时钟／frontier、公钥／撤销、恢复writer和Current
@@ -84,7 +87,7 @@ repeat `shutdown_race`、原38正向／7负向、SMP1/2/4、quota145%/3%、Binde
 
 ## 原Hepta19包：新增开发／技术入口
 
-Hepta路径相对其仓库根、固定7786目标。机器清单列出十九个实际Cargo package／manifest、邻接Markdown与共享技术入口。
+Hepta路径相对其仓库根、固定7673目标。机器清单列出十九个实际Cargo package／manifest、邻接Markdown与共享技术入口。
 18原owner是agentd、memory、cognitive-store、contracts、state、agent-protocol、learning-ledger、git-utils、
 memory-extension、automation、fleet、supervisor、arg0、app-server-protocol、thread-store、core-plugins、rollout、file-system；
 新增第19包为`codex-rmcp-client`，不能用SDK测试替代其Rust owning tests。
@@ -100,13 +103,13 @@ memory-extension、automation、fleet、supervisor、arg0、app-server-protocol�
 
 cognitive-store、agent-protocol、memory-extension、automation、fleet、arg0、core-plugins、file-system这八包
 没有包内Markdown，仍需共享模块／源码入口与具体运维缺口说明；相邻Markdown存在也不能证明完整双手册。
-State现在有专册，旧13-owner审计将它列为仅共享／源码入口的结论不再适用于7786。
+State现在有专册，旧13-owner审计将它列为仅共享／源码入口的结论不再适用于其原7786，当前7673继续保留专册。
 40模块指南曾作结构清点，未逐篇完成语义／API审查；本文不补写不存在的通过记录。
 
 ## 逐包开发与技术合同
 
 以下每包给出当前用途、真实源码、接口／状态／错误边界、开发验证命令和缺口。命令均未在本次文档任务执行。
-Desktop路径相对本仓库根；Hepta路径和命令相对固定7786的仓库根。Hepta命令沿原`just test`调度、
+Desktop路径相对本仓库根；Hepta路径和命令相对固定7673的仓库根。Hepta命令沿原`just test`调度、
 Rust1.95、dev-small、两线程、零重试和原case预算；离线依赖未具备时应停止并保留失败，不能静默改用其他源码或ELF。
 
 ### Desktop自有入口
@@ -425,10 +428,38 @@ typed文件操作、受控permission profile转换及有界walk接口。
 | --- | --- | --- |
 | e7ed内核 | 38正向／7原负向；Core410／410，OSTD235实际通过＋3原soft skips；42-case Unix guest在1／2CPU下通过；源8069前后一致 | 本组合源码纳入了其内核增量，但新整个HEAD／工具路径／ELF仍需新绑定；不是新host或native通过。 |
 | cec3／97c host | 原2821＝2817PASS／4TIMEOUT，55旧skip；三60s生命周期＋一180s ledger超时；七产品已构建 | 原失败保留，未重试／放宽预算／判flake；不能说新组合已解决或可交付。 |
-| Hepta7786目标 | State＋Root＋SDK原提交来源与全源码组合已核对 | 尚无这个tuple的Rust／SDK／GUI／native完整运行，旧9fb／1068组件结果不自动转移。 |
+| Hepta7673目标 | State＋Root＋SDK原提交来源与全源码组合已核对 | 最终新tuple资格尚未完成；原组件、早期检查与保留native失败不能自动转移为整组通过。 |
 | 当前文档 | 逐入口、契约、源码mode/blob、差异和剩余缺口 | 只是文档与源码身份，未产生产品、授权或硬件资格。 |
 
-新映射的具体来源是旧312角色保留＋fixed132中35个原未覆盖路径＋5个wrapper／oracle／archive／exporter／说明路径＝352，
-再加本页与机器清单两角色＝354。Hepta为原201＋State3＋Root8＋SDK/MCP48＝260，golden仍5对。
-owner-path工具仍在独立准备，不在这个计数中、不引用为合格。正式gate、CI、current pin和source manifest须在独立审查后采用，
-不能只凭更改数字开放功能。
+固定V5保留原draft354／260的全部路径，再对strict182缺失依赖与OOM20变更并集逐路径补39角色，
+追加V5地图／oracle／原V4 current archive三角色，得到396；Hepta增加Root failure report一角色，得到261。
+机器清单逐新增角色记录用途和strict182／delta来源，不接受任意可选shape。V4的18-owner dispatch保持原样，
+V5显式增加rmcp-client成为19。历史V4工作流必须手动给完整40位OS commit，并读取该历史checkout自己的匹配manifest／Hepta pin。
+
+## 当前发布工具增量验证
+
+| 模式 | 实际分组 | 原始源HEAD／tree | 实际用例 | 结果 |
+| --- | --- | --- | --- | --- |
+| normal | legacy | `b6a989148ce68560bb642c009d2c760eacbe6345`／`3f50bc18963340ce11faa74c60334932df11acec` | 54 | exit 0，0skip／0retry，原始完整8088源前后相同 |
+| normal | historical-workflows | `b6a989148ce68560bb642c009d2c760eacbe6345`／`3f50bc18963340ce11faa74c60334932df11acec` | 7 | exit 0，0skip／0retry，原始完整8088源前后相同 |
+| normal | v5 | `231a22c17192aa68a6488043696c2abda90039e8`／`bbbf08a8c220b2de555ac22973c496739324cb1c` | 24 | exit 0，0skip／0retry，原始完整8088源前后相同 |
+| optimized | legacy | `231a22c17192aa68a6488043696c2abda90039e8`／`bbbf08a8c220b2de555ac22973c496739324cb1c` | 54 | exit 0，0skip／0retry，原始完整8088源前后相同 |
+| optimized | historical-workflows | `231a22c17192aa68a6488043696c2abda90039e8`／`bbbf08a8c220b2de555ac22973c496739324cb1c` | 7 | exit 0，0skip／0retry，原始完整8088源前后相同 |
+| optimized | v5 | `231a22c17192aa68a6488043696c2abda90039e8`／`bbbf08a8c220b2de555ac22973c496739324cb1c` | 24 | exit 0，0skip／0retry，原始完整8088源前后相同 |
+
+这只验证发布工具及其真实临时Git／有界子进程fixture。新完整CI仍为原116加所有V5的互斥union；
+旧七项CurrentWorkflowTests执行的是保留历史V4块，新Schema5WorkflowTests实际执行当前V5读取／调度／生产拒绝。
+正常54／7来自b6a，正常新24与优化54／7／24来自231；不合成六阶段同源231。原b6a新24中1FAIL／1ERROR保留，优化当时未执行。
+原4018两模式各116通过的组件收据不重命名，typed核心与三个旧test源逐字保留。最终source-only manifest及pair收据另绑最终HEAD/tree。
+
+## 真实授权协议缺口
+
+现有参考Model authority只接受 `runtime.codex.turn_start`，destination必须是 `codex-app-server:<positive u64>`，
+subject必须是已admit的Fleet peer；参考Secrets authority只接受 `secrets.read`。这两者不能充当Notes／Device
+`runtime.agentd.production_operation`签发服务。参考源码也没有证明部署的精确commit。
+因此签发provider、protected clock、durable frontier、trusted keyring、revocation head、recovered writer和current-cut
+仍是七项未闭合输入。源码／fixture成功不开放生产，未知效果不自动重发；本文不复制敏感配置路径。
+
+OOM原组件的Core420、OSTD235及3原VMX skip、普通产品、SMP1／2各12＋61和Unix原8项／64重复结果
+保留在05f自己的来源。新Desktop已纳入其源码，不把这些结果改成最终V5／Hepta组合资格。
+Hepta新增Root诊断只是保留首次失败原因的有界标签；旧native失败仍失败，不能以新源码追溯判定未知故障原因。
