@@ -1,13 +1,16 @@
 # 当前 Desktop／Hepta 模块开发与技术导航
 
-本页绑定V5代码组合基点 `682d66ed563434064e9ce5e0afcd173a76091117`（tree `27abb11ac649efdb752022429f81bf3374462185`，8088路径），
-本次更新四个文档路径：`docs/agents/MODULE_DOCUMENTATION_CURRENT.md`、
-`docs/agents/MODULE_DOCUMENTATION_CURRENT.json`、`support/release/README.md`、`docs/agents/ORGAN_RELEASE_PROFILE.md`。
+本页绑定XKB CI依赖修复后的V5代码基点 `8b825fb742b4722259a7fd7b962565adf21d2fff`（tree `a4df7550ee172cd91535ce980a299526fb67c09f`，8088路径）。
+本次更新五个文档路径：`docs/agents/MODULE_DOCUMENTATION_CURRENT.md`、
+`docs/agents/MODULE_DOCUMENTATION_CURRENT.json`、`support/release/README.md`、
+`docs/agents/ORGAN_RELEASE_PROFILE.md`、`support/ui/RUN.md`。
 [机器清单](MODULE_DOCUMENTATION_CURRENT.json)的 `desktop_code` 是写入文档前的代码基点；
-`documentation_delta_paths` 内的来源记录对应文档successor实际字节，新增README／技术文档blob不声称存在于682代码基点的tree。
-最终文档／manifest提交的HEAD/tree由外置source收据显式绑定，避免自引用；其他Desktop记录仍绑定该代码基点。
-本代码基点从f4cd旧261-role快照补齐V5 CLI producer；后文b6a／231为保留的先前阶段。Desktop从原Unix组合纳入六个原OOM提交，冻结基点27c5043d；再逐字采用4018的已验证门禁组件并新增固定V5。
-231只修复新增测试辅助代码的工作流边界与无变化提交；b6a原失败及其已通过正常54／7收据保持原身份。
+`documentation_delta_paths` 内的来源记录对应文档successor实际字节，不声称新文档blob存在于代码基点的tree。
+最终文档提交HEAD/tree由外置source收据绑定，避免自引用；其余Desktop记录绑定此8b825代码基点。
+当前manifest仍保留6487组合声明，须在文档提交后另行完成新tuple的typed source重绑定；本文不称新组合已完成门禁。
+8b825相对冻结6487只在两个workflow的三个Linux apt列表追加XKB X11开发包；V5固定map、CLI producer和产品源码未改。
+从f4cd旧261-role快照补齐CLI producer的682代码和6487文档／manifest保留原来源；后文b6a／231、682实际QA也保留历史身份。
+Desktop从原Unix组合纳入六个原OOM提交，基点27c5043d，再逐字采用4018门禁组件并新增固定V5。
 Hepta目标是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`，tree `ff2372f10656d2e8f652b6ca1e6de03a075b9219`（9214路径）。
 
 **当前资格仍是源码与发布工具验证；最终版本组合、GUI、native持久链和生产授权尚需各自同源收据。**
@@ -39,7 +42,7 @@ Hepta目标是 `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`，tree `ff2372f10656d2
 | A07 Hepta原owner／装配 | [适配器合同](../../services/hepta-os/CONTRACT.md)、[RUN](../../services/hepta-os/RUN.md)；原Hepta19包与下表新专册 | `cargo +1.88.0 test --manifest-path services/hepta-os/Cargo.toml --features cpu-history --locked`；Hepta原19包Rust测试、SDK50、MCP验证见下方 | observer/history不签发授权、不拥有原writer。State启动、Root恢复、授权lease、OAuth与SDK各有独立owner；组件结果不自动成为本组合资格。 |
 | A08 Android／Binder | [Binder字节](../../support/android/BINDER_BYTES.md)、[线程D1](../../support/android/BINDER_THREADS.md)、[seccomp](../../support/android/SECCOMP.md)；内核Binder owner | [Binder probe手册](../../tests/kernel/binder/README.md)、[Android入口](../../support/android/README.md)，`python3 -I -B tests/kernel/binder/thread_run.py --help`后按原手册执行 | 有界实际线程同步IPC不等于自动线程池、nested/oneway、FD arrays、Android boot／CTS／SELinux／BSP完成。 |
 | A09 硬件／GPU／VMM | [硬件合同](../HARDWARE_AND_DRIVERS.md)、[DMA domains](../../support/kernel-safety/DMA_DOMAINS.md)、[VMM gates](../../support/vmm/GATES.md) | [硬件runbook](../../tests/hardware/RUN.md)、[lifecycle模型](../../support/vmm/device_lifecycle/README.md)，`cargo +1.88.0 test --manifest-path support/vmm/device_lifecycle/Cargo.toml --locked`只验证模型 | 共享IOMMU页表或枚举不证明设备间DMA隔离。现实现限Intel VT-d与root-bus/function-zero入口；AMD平台或同组多功能GPU不能据此证明设备间DMA隔离。模型、有限requester测试不证明GPU reset／真实手机支持；`kernel/asterinas/kernel/comps/README.md`仍仅标题。 |
-| A10 Session／Notes／桌面交互 | [整帧期限](../../support/ui/SESSION_IPC.md)、[真实文档持久化](../../support/ui/NOTES_PERSISTENCE.md)、[X11合同](../../support/ui/DESKTOP_X11.md)；`ui/{session,core,app-window,broker,shell}` | [五包导航](../../ui/README.md)、[host runbook](../../support/ui/RUN.md)；下方UI／GUI入口 | 500ms是整帧总期限、至多32连接且每tick有界推进。Notes文本／revision／精确回执共同sync/rename/目录sync；回执ACK不替代文档或Hepta持久终态。通用第三方应用、文件选择器／设备控制仍未完成。 |
+| A10 Session／Notes／桌面交互 | [整帧期限](../../support/ui/SESSION_IPC.md)、[真实文档持久化](../../support/ui/NOTES_PERSISTENCE.md)、[X11合同](../../support/ui/DESKTOP_X11.md)；`ui/{session,core,app-window,broker,shell}` | [五包导航](../../ui/README.md)、[host runbook](../../support/ui/RUN.md)；下方UI／GUI入口 | 500ms是整帧总期限、至多32连接且每tick有界推进。Notes文本／revision／精确回执共同sync/rename/目录sync；回执ACK不替代文档或Hepta持久终态。8b825已补CI的XKB X11安装源，尚未新运行；通用第三方应用、文件选择器／设备控制仍未完成。 |
 
 `--help`仅给出probe的实际CLI，不能当运行验收；具体参数、隔离fixture、fresh输出目录和原预算以链接手册为准。
 Desktop清点仍是127份manifest、15个自有入口和5个UI成员，三输入manifest逐mode/blob相同；这不是依赖解析或完整手册审查。
@@ -60,8 +63,8 @@ python3 -I -B -O -m unittest discover -s support/release -p 'test_*.py'
 最后两项是发布工具的完整CI union；本地本轮只执行旧54、原7 Workflow与全部新V5的必要增量，两模式实际结果见下表。4018其余typed组件证据保持原来源；不能把它改名为新全套或产品通过。
 Hepta complete owning测试须在其仓库根使用原`just test`调度，固定两线程、零重试、原case预算；
 18原包全部保留，再增加实际OAuth包`codex-rmcp-client`。包清单见机器清单的`hepta_owners`，不预填测试总数。
-七步为UI build／UI tests／adapter tests／agentd build／authority-host build／supervisor-recovery build／19-owner tests。
-原七个pair产品分别保留hash；SDK需要的新CLI另以新源构建，不能将旧85f或7786 CLI改名为7673。
+七步为UI build／UI tests／adapter tests／agentd＋正常CLI build／authority-host build／supervisor-recovery build／19-owner tests。
+旧pair产品分别保留原hash；新stage4必须构建同源正常CLI，SDK也须绑定该新产品，不能将旧85f或7786 CLI改名为7673。
 
 准备自己OSDK和普通内核后，Core与Unix验证入口为：
 
@@ -478,7 +481,7 @@ CLI是集成必需的真实产品producer，不是替代fixture、不新增第20
 新current固定271不接受旧261降级，也不声称新工具兼容旧V5；V1–4原路线／argv／map字节不变。
 原3088三失败保持失败；单独构建CLI或独立三项转阳都不能替代最终完整七步／19-owner资格。
 
-| 当前模式 | 分组 | 实际源HEAD／tree | 实际项数 | 结果 |
+| 原682模式 | 分组 | 实际源HEAD／tree | 实际项数 | 结果 |
 | --- | --- | --- | --- | --- |
 | normal | legacy | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 54 | exit 0，0skip／0retry，完整8088源前后相同 |
 | normal | historical-workflows | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 7 | exit 0，0skip／0retry，完整8088源前后相同 |
@@ -488,3 +491,29 @@ CLI是集成必需的真实产品producer，不是替代fixture、不新增第20
 | optimized | v5 | `682d66ed563434064e9ce5e0afcd173a76091117`／`27abb11ac649efdb752022429f81bf3374462185` | 24 | exit 0，0skip／0retry，完整8088源前后相同 |
 
 这些是发布工具实际临时Git／有界child验证；原4018 typed组件与早期mixed QA保留原身份。当前文档不执行Rust／GUI／native，七项生产输入继续关闭。最终source-only清单和外置收据另绑文档successor实际HEAD/tree。
+
+
+## 当前XKB CI依赖修复、环境失败与源码边界
+
+8b825在`a10-host.yml`的一处和`organ-current-pair.yml`的V5／历史V4两处apt列表
+加入`libxkbcommon-x11-dev`，保留`libxkbcommon-dev`；[RUN](../../support/ui/RUN.md)同步X11 counterpart和Ubuntu包名。
+这是两个workflow／三个安装列表的源码修复，尚未安装依赖或重新运行CI。固定396／271角色、5对golden、19 owners和stage4正常CLI producer均未改。
+
+冻结6487／7673的原七步attempt01真实停在首步UI build：Rust1.88的原locked／offline命令因缺
+`ab_glyph 0.2.32` archive而Cargo exit101，wrapper exit1。阶段2–7未执行，新测试0项、保留产品0个，SDK／GUI／native未启动，完整源码前后相同。
+独立审计SHA256：`1a4a2ed45adaa503727e43d7a274209d8376f29b22f9c0889375e0eece0f009e`。
+
+独立cache repair attempt01也真实exit1：报告已完成43次archive发布，第44项`icu_properties_data 2.3.0`
+下载保留后，向已消失的默认Cargo cache目录发布时FileNotFoundError。目录消失原因未知，保留字节的checksum不证明发布或离线解析通过。
+其独立binding SHA256：`b2f23e8f3533d95f41115ce303c4f585b2d76a035ea2600a10ab310cff46d78c`。
+两次失败保持原身份，不能改写成新组合七步通过。后续private cache须先按原flags实际解析UI含dev图、Hepta正常producer图和exact19 owner图；本文不预填其结果。
+
+| 8b825实际模式 | legacy原案例 | 历史Workflow原案例 | V5原案例 | 边界 |
+| --- | --- | --- | --- | --- |
+| normal | 54，exit0 | 7，exit0 | 24，exit0 | 每lane600s／0skip／0retry，完整8088源前后相同 |
+| optimized | 54，exit0 | 7，exit0 | 24，exit0 | 每lane600s／0skip／0retry，原case IDs严格相同 |
+
+本轮Python completion SHA256：`76c46b6498a0a4de14a92f897c08a99b8ad17d70b0f024b8d3e62ccde6b2e33b`。这是原发布工具的临时Git／有界child实际验证，
+不是全140项／mode的完整CI union，也不是文档successor的Rust／GUI／native／生产资格。
+新source-only typed清单和最终HEAD/tree收据由后续步骤绑定；完整七步、Notes真实授权／持久化／恢复及GUI／native仍分别验收。
+七项生产装配输入继续关闭，不引入新的生产authority。历史2026-10-26审计、旧README结果与失败均保留。

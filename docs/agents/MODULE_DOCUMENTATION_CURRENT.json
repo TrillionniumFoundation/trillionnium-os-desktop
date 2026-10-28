@@ -1,7 +1,7 @@
 {
   "a00_to_a10_navigation": [
     {
-      "current_boundary": "固定V5更正为396／271，stage4必须正常构建agentd＋codex CLI；七步／19测试owner不变，旧f4cd 261只用其原工具验证，生产仍关闭。",
+      "current_boundary": "固定V5更正为396／271，stage4必须正常构建agentd＋codex CLI；七步／19测试owner不变，旧f4cd 261只用其原工具验证，生产仍关闭。 当前8b825 CI依赖／文档successor仍待typed source重绑定及原七步；6487 attempt01首步archive失败、cache44发布失败均保留。",
       "development_entry_description": "test_source_schema5.py执行实际当前V5 caller；原CurrentWorkflowTests保留历史V4 caller；源码、产品与生产门禁分别验收。",
       "id": "A00",
       "independent_complete_manual_per_crate_claimed": false,
@@ -45,18 +45,18 @@
       ],
       "technical_and_development_documents": [
         {
-          "bytes": 28074,
-          "git_blob": "b7e96c0c442f3b540007c7072330f3fdde28c41b",
+          "bytes": 31961,
+          "git_blob": "e42719c46211e52d63b7578abe7d5933aa347c5d",
           "mode": "100644",
           "path": "support/release/README.md",
-          "sha256": "aaa353290a86572cf44b7021fc2ed47488238741e45832da2234657acd485e70"
+          "sha256": "af823c2ac2c36975ef5a22ad4552f0466cb49d45ff83104631b9747afeacdd93"
         },
         {
-          "bytes": 26879,
-          "git_blob": "fd8122ac148a98ecc7ff5c06018c91e9293b26f3",
+          "bytes": 30766,
+          "git_blob": "195a4177033ee6457a758213936a354654e9260e",
           "mode": "100644",
           "path": "docs/agents/ORGAN_RELEASE_PROFILE.md",
-          "sha256": "ac64da78fc11c2a6a4c2871e19bd55f6898a61799c4626a992f4105a219f5d1b"
+          "sha256": "9ae0627bac3e48b465c88ba3b15a83d5f589395ca24995635752a31c96659803"
         }
       ]
     },
@@ -573,7 +573,7 @@
       ]
     },
     {
-      "current_boundary": "500ms是整帧总期限、至多32连接且每tick有界推进。Notes文本／revision／精确回执共同sync/rename/目录sync；回执ACK不替代文档或Hepta持久终态。通用第三方应用、文件选择器／设备控制仍未完成。",
+      "current_boundary": "500ms是整帧总期限、至多32连接且每tick有界推进。Notes文本／revision／精确回执共同sync/rename/目录sync；回执ACK不替代文档或Hepta持久终态。通用第三方应用、文件选择器／设备控制仍未完成。 8b825补齐两个workflow三处XKB X11 apt依赖源；实际新host/GUI尚未执行。",
       "development_entry_description": "[五包导航](../../ui/README.md)、[host runbook](../../support/ui/RUN.md)；下方UI／GUI入口",
       "id": "A10",
       "independent_complete_manual_per_crate_claimed": false,
@@ -631,22 +631,49 @@
           "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ]
     }
   ],
   "all_127_manifest_independent_manuals_complete": false,
+  "ci_dependency_successor": {
+    "added_package": "libxkbcommon-x11-dev",
+    "apt_list_additions": 3,
+    "changed_workflows": 2,
+    "current_manifest_sha256": "6567c895713c193f468b15e6a34fe2f09f05c74001ed6bd3ac5b1f7b4aef1577",
+    "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+    "kind": "CI-only package installation source change",
+    "locations": [
+      {
+        "job": "native-rust-and-wayland",
+        "path": ".github/workflows/a10-host.yml"
+      },
+      {
+        "job": "original-host-pair",
+        "path": ".github/workflows/organ-current-pair.yml"
+      },
+      {
+        "job": "historical-v4-host-pair",
+        "path": ".github/workflows/organ-current-pair.yml"
+      }
+    ],
+    "package_installation_ci_Rust_product_GUI_native_executed": false,
+    "parent": "6487830799a6417b554bf06bedfbab99498196c0",
+    "retained_package": "libxkbcommon-dev",
+    "source_profile_rebound": false,
+    "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+  },
   "desktop_cargo_manifest_count": 127,
   "desktop_code": {
-    "head": "682d66ed563434064e9ce5e0afcd173a76091117",
+    "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
     "identity_kind": "pre_documentation_code_baseline",
     "tracked_paths": 8088,
-    "tree": "27abb11ac649efdb752022429f81bf3374462185"
+    "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
   },
   "desktop_owned_entries": [
     {
@@ -950,11 +977,11 @@
           "sha256": "e33f5b878bf3140eb16f83112f7a3e768836f411adf37d2b7940d1e0dcd29654"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ],
       "manifest": {
@@ -1032,11 +1059,11 @@
           "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ],
       "manifest": {
@@ -1080,11 +1107,11 @@
           "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ],
       "manifest": {
@@ -1128,11 +1155,11 @@
           "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ],
       "manifest": {
@@ -1176,11 +1203,11 @@
           "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ],
       "manifest": {
@@ -1224,11 +1251,11 @@
           "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ],
       "manifest": {
@@ -1272,11 +1299,11 @@
           "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
         },
         {
-          "bytes": 17839,
-          "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+          "bytes": 17977,
+          "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
           "mode": "100644",
           "path": "support/ui/RUN.md",
-          "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+          "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
         }
       ],
       "manifest": {
@@ -1306,10 +1333,11 @@
     "docs/agents/MODULE_DOCUMENTATION_CURRENT.md"
   ],
   "documentation_delta_paths": [
-    "docs/agents/MODULE_DOCUMENTATION_CURRENT.json",
     "docs/agents/MODULE_DOCUMENTATION_CURRENT.md",
+    "docs/agents/MODULE_DOCUMENTATION_CURRENT.json",
     "docs/agents/ORGAN_RELEASE_PROFILE.md",
-    "support/release/README.md"
+    "support/release/README.md",
+    "support/ui/RUN.md"
   ],
   "draft_map_historical": {
     "golden_pairs": 5,
@@ -2507,7 +2535,7 @@
       "codex-cli"
     ],
     "schema_version": 5,
-    "status": "corrected undelivered fixed V5; current declaration and final source receipt bind the documentation successor separately"
+    "status": "fixed V5 unchanged; retained 6487 declaration requires later typed source rebind for XKB CI/doc successor"
   },
   "hepta_code": {
     "head": "7673ea62fc019f97ad17d205ee1f81f96e0f47a0",
@@ -3840,18 +3868,18 @@
       "sha256": "ff231366a21bbf7a71121996512c690bdca83d68102d62a807e50d5e33c8badc"
     },
     {
-      "bytes": 28074,
-      "git_blob": "b7e96c0c442f3b540007c7072330f3fdde28c41b",
+      "bytes": 31961,
+      "git_blob": "e42719c46211e52d63b7578abe7d5933aa347c5d",
       "mode": "100644",
       "path": "support/release/README.md",
-      "sha256": "aaa353290a86572cf44b7021fc2ed47488238741e45832da2234657acd485e70"
+      "sha256": "af823c2ac2c36975ef5a22ad4552f0466cb49d45ff83104631b9747afeacdd93"
     },
     {
-      "bytes": 26879,
-      "git_blob": "fd8122ac148a98ecc7ff5c06018c91e9293b26f3",
+      "bytes": 30766,
+      "git_blob": "195a4177033ee6457a758213936a354654e9260e",
       "mode": "100644",
       "path": "docs/agents/ORGAN_RELEASE_PROFILE.md",
-      "sha256": "ac64da78fc11c2a6a4c2871e19bd55f6898a61799c4626a992f4105a219f5d1b"
+      "sha256": "9ae0627bac3e48b465c88ba3b15a83d5f589395ca24995635752a31c96659803"
     },
     {
       "bytes": 12601,
@@ -4141,11 +4169,11 @@
       "sha256": "9a9cb50659842c3f88afbce21ae5baa07afd74eb9bbd2c66ec543ad22a2ef65f"
     },
     {
-      "bytes": 17839,
-      "git_blob": "3ec9e4798c0ccf95081d54aecf5648fcd0ee0acd",
+      "bytes": 17977,
+      "git_blob": "c9e4837e2399d2519425bd14573e249ec1448a11",
       "mode": "100644",
       "path": "support/ui/RUN.md",
-      "sha256": "96731e4c491f10ea8b60781d9b26022b837ad5f7b991bcd6e73a49971abfb04d"
+      "sha256": "827bf3cc61d19fe5fdac2e3b790bceff54a84de4b4413dba5bb1aa603755c35b"
     },
     {
       "bytes": 5517,
@@ -4249,22 +4277,7 @@
     "os_head": "f4cd75ea96ff452176758e9fb48d4842bf1be859",
     "verification_tool": "matching frozen f4cd tool and original 396/261 map/pins"
   },
-  "product_build_suite_runtime_gui_guest_executed_by_documentation_refresh": false,
-  "production_authority": {
-    "activation": "disabled",
-    "original_seven_inputs_verified": false,
-    "protocol_contract_comparison": {
-      "compatible_issuer_established": false,
-      "model_reference_destination": "codex-app-server:<positive u64>",
-      "model_reference_operation": "runtime.codex.turn_start",
-      "model_reference_subject": "admitted Fleet peer",
-      "reference_deployment_exact_commit_established": false,
-      "required_notes_device_operation": "runtime.agentd.production_operation",
-      "secrets_reference_operation": "secrets.read"
-    },
-    "substitute_issuer_created": false
-  },
-  "release_tool_incremental_qa": {
+  "previous_v5_cli_producer_release_tool_qa": {
     "actual_stages": [
       {
         "exit_code": 0,
@@ -4329,6 +4342,119 @@
     "source_tree": "27abb11ac649efdb752022429f81bf3374462185",
     "v5_full_current_ci_union_executed_locally": false
   },
+  "product_build_suite_runtime_gui_guest_executed_by_documentation_refresh": false,
+  "production_authority": {
+    "activation": "disabled",
+    "original_seven_inputs_verified": false,
+    "protocol_contract_comparison": {
+      "compatible_issuer_established": false,
+      "model_reference_destination": "codex-app-server:<positive u64>",
+      "model_reference_operation": "runtime.codex.turn_start",
+      "model_reference_subject": "admitted Fleet peer",
+      "reference_deployment_exact_commit_established": false,
+      "required_notes_device_operation": "runtime.agentd.production_operation",
+      "secrets_reference_operation": "secrets.read"
+    },
+    "substitute_issuer_created": false
+  },
+  "release_tool_incremental_qa": {
+    "actual_stages": [
+      {
+        "exit_code": 0,
+        "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+        "lane": "legacy",
+        "log_sha256": "23db7435f00187368196aabaecc0fb3b9ca981f51f15c5a6ecd4cd2023c6a5e4",
+        "mode": "normal",
+        "tests_run": 54,
+        "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+      },
+      {
+        "exit_code": 0,
+        "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+        "lane": "historical-workflows",
+        "log_sha256": "ed490e254fbaee6077f8b00df375ee24ae063c9f677a31e3a775c74427a0f3e6",
+        "mode": "normal",
+        "tests_run": 7,
+        "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+      },
+      {
+        "exit_code": 0,
+        "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+        "lane": "v5",
+        "log_sha256": "850ea90751046ba374ca6a2a418815a8c22dcafa56fc3ff8c477a80e91775bfe",
+        "mode": "normal",
+        "tests_run": 24,
+        "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+      },
+      {
+        "exit_code": 0,
+        "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+        "lane": "legacy",
+        "log_sha256": "027ac760c69dc59d5b99bd52bd624c9646f1dc77e97a0764a057f68b43ea7ede",
+        "mode": "optimized",
+        "tests_run": 54,
+        "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+      },
+      {
+        "exit_code": 0,
+        "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+        "lane": "historical-workflows",
+        "log_sha256": "adf4b3219688f0afeec4baa8a0e2624123209663cfaed4a7efb85cae835f00eb",
+        "mode": "optimized",
+        "tests_run": 7,
+        "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+      },
+      {
+        "exit_code": 0,
+        "head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+        "lane": "v5",
+        "log_sha256": "a48bd8a1afe73848d333e3ce683a7b174722f0a3394992d41ee53a0b7ae81010",
+        "mode": "optimized",
+        "tests_run": 24,
+        "tree": "a4df7550ee172cd91535ce980a299526fb67c09f"
+      }
+    ],
+    "completion_sha256": "76c46b6498a0a4de14a92f897c08a99b8ad17d70b0f024b8d3e62ccde6b2e33b",
+    "documentation_successor_runtime_qualified": false,
+    "original_case_id_sets_preserved": true,
+    "per_lane_timeout_seconds": 600,
+    "qualification": "temporary-git-release-tool-only",
+    "retries": 0,
+    "source_head": "8b825fb742b4722259a7fd7b962565adf21d2fff",
+    "source_tree": "a4df7550ee172cd91535ce980a299526fb67c09f",
+    "v5_full_current_ci_union_executed_locally": false
+  },
+  "retained_cache_repair_attempt01": {
+    "audit_sha256": "b2f23e8f3533d95f41115ce303c4f585b2d76a035ea2600a10ab310cff46d78c",
+    "cache_removal_cause": "unknown",
+    "completed_published_steps_reported": 43,
+    "exit_code": 1,
+    "failed_package": "icu_properties_data",
+    "failed_step": 44,
+    "failed_version": "2.3.0",
+    "failure": "default Cargo cache directory absent at publication",
+    "final_offline_resolution_exit0": false,
+    "payload_retained_but_unpublished": true,
+    "product_qualification": "none",
+    "runtime_job": "1a181fda3e4-96a-3183"
+  },
+  "retained_final_pair_attempt01": {
+    "actual_stages_executed": 1,
+    "audit_sha256": "1a4a2ed45adaa503727e43d7a274209d8376f29b22f9c0889375e0eece0f009e",
+    "cargo_exit": 101,
+    "desktop_head": "6487830799a6417b554bf06bedfbab99498196c0",
+    "hepta_head": "7673ea62fc019f97ad17d205ee1f81f96e0f47a0",
+    "new_tests": 0,
+    "package": "ab_glyph",
+    "product_qualification": "none",
+    "public_failure": "OfflineRegistryArchiveUnavailable",
+    "retained_products": 0,
+    "source_changed": false,
+    "stage1": "ui-build",
+    "stages2_through7": "not_executed",
+    "version": "0.2.32",
+    "wrapper_exit": 1
+  },
   "retained_hepta_7673_full19_failure": {
     "actual_tests": 3088,
     "failed": 3,
@@ -4340,7 +4466,7 @@
     "required_fixture_binary_absent": "codex"
   },
   "schema": "organ.current-module-development-technical-navigation.v1",
-  "scope": "source-only V5 composition; exact code/module navigation; separate final pair qualification required",
+  "scope": "source-only XKB CI/documentation successor; exact baseline module navigation; typed source rebind and final product pair qualification pending",
   "source_assembly": {
     "gate_adoption_head": "8b8f4fae788ceb54960bd6306e56b01214be5a00",
     "oom_composition_head": "27c5043d6ac5f5fb34ab7026e7017d37ac36b3a8",
@@ -4363,7 +4489,9 @@
     ],
     "prior_component_results_transferred": false,
     "qualified_gate_component": "40180d588070f8bdf0649e7d90916e4c880285e5",
-    "source_only": true
+    "source_only": true,
+    "unchanged_frozen_final_desktop": "6487830799a6417b554bf06bedfbab99498196c0",
+    "xkb_ci_only_successor": "8b825fb742b4722259a7fd7b962565adf21d2fff"
   },
   "source_record_binding": {
     "desktop_code": "pre-documentation code baseline; not the tree of the documentation successor",

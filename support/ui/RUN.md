@@ -15,7 +15,9 @@ The repository's `nightly-2026-07-21` toolchain is an additional development
 environment; a pass there does not establish the 1.88.0 host gate. Required
 host dependencies include network/cached crates,
 Linux Wayland (or X11), OpenGL/Mesa including llvmpipe for software rendering,
-libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
+libxkbcommon and its X11 counterpart (Ubuntu packages `libxkbcommon-dev`
+and `libxkbcommon-x11-dev`, including the X11 runtime and unversioned
+soname), a system Chinese font, and a Chinese IME such as Fcitx5.
 The crates' `rust-version = "1.83"` metadata is not a demonstrated minimum
 for every transitive dependency in the current lockfile.
 

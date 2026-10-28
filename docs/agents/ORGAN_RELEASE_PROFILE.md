@@ -428,3 +428,63 @@ The corrected current fixed 271-role tool refuses the old 261-role V5 shape;
 it does not claim latest-tool compatibility with that old V5 declaration.
 V1–4 maps, explicit routes and exact command lists remain unchanged. All seven
 production inputs remain disabled in both source-only snapshots.
+
+
+## XKB CI dependency successor and retained environment failures
+
+The new CI-only code baseline is Desktop
+`8b825fb742b4722259a7fd7b962565adf21d2fff`, tree
+`a4df7550ee172cd91535ce980a299526fb67c09f` (8,088 tracked paths),
+with Hepta `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`, tree
+`ff2372f10656d2e8f652b6ca1e6de03a075b9219` (9,214 paths).
+Relative to frozen Desktop `6487830799a6417b554bf06bedfbab99498196c0`,
+the code delta is only `libxkbcommon-x11-dev` in three Linux apt lists:
+one in `.github/workflows/a10-host.yml` and two in
+`.github/workflows/organ-current-pair.yml` (current V5 and historical V4).
+All three retain `libxkbcommon-dev`. The X11 package supplies the runtime
+and unversioned soname needed by the existing original X11 smoke. This source
+change has not installed a package or run CI, Rust, a product, GUI or native guest.
+The host dependency contract is in `support/ui/RUN.md`.
+
+The fixed V5 map remains 396 Desktop / 271 Hepta roles, five golden pairs and
+nineteen owning packages. Stage 4 still builds normal `codex-cli` / `codex`
+alongside `codex-hepta-agentd`; CLI remains a required producer. All original
+commands, test cases, budgets and zero-retry rules remain unchanged. All seven
+production inputs remain disabled. The current manifest retained from frozen
+6487 is not a source qualification for this changed tuple: the typed source
+manifest and external whole-source receipt must be rebound after documentation
+is committed. `MODULE_DOCUMENTATION_CURRENT.json` uses the code-baseline /
+documentation-successor convention; the final documentation HEAD/tree is bound
+externally, without a self-referential pin. Historical snapshots and results
+remain attached to their original sources.
+
+The actual original seven-step attempt 01 on frozen 6487 / 7673 failed at
+stage 1, `cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+--offline`, under Rust 1.88.0: Cargo exited 101 because the offline archive
+`ab_glyph 0.2.32` was unavailable. The wrapper exited 1; stages 2 through 7,
+new test cases, retained products, SDK, GUI and native guests did not execute.
+The actual sources before and after were unchanged. The independent failure
+audit is `work/goal-logs/release/final-v5-7673-seven-step-host-01/independent-terminal-audit.json`,
+SHA256 `1a4a2ed45adaa503727e43d7a274209d8376f29b22f9c0889375e0eece0f009e`.
+
+The separate cache repair attempt 01 also exited 1. It reported 43 completed
+archive publication steps; step 44 downloaded and retained
+`icu_properties_data 2.3.0` but failed to publish it because the default Cargo
+cache directory was absent. The disappearance's cause is unknown. The retained
+payload's checksum does not prove that publication or final offline resolution
+succeeded. Its independent failure binding is
+`work/goal-logs/release/ui-locked-cache-repair-01/independent-review-01/independent-failed-repair-binding.json`,
+SHA256 `b2f23e8f3533d95f41115ce303c4f585b2d76a035ea2600a10ab310cff46d78c`.
+Neither attempt qualifies a new product pair. A separate private cache must
+first resolve the Linux UI tree including development dependencies, the normal
+Hepta producer graph and exact nineteen-owner graph with the original flags;
+no success for that preparation is claimed here. The original complete seven
+steps and separate GUI/native gates still require their own exact-source runs.
+
+The unchanged original Python tool cases passed on the 8b825 code baseline:
+normal 54 / 7 / 24 and optimized 54 / 7 / 24, each with the original
+600-second lane budget, zero skips and zero retries. Every lane
+checked the complete 8,088 actual source paths before and after and
+matched the prior original case identities. Completion SHA256:
+`76c46b6498a0a4de14a92f897c08a99b8ad17d70b0f024b8d3e62ccde6b2e33b`. These are release-tool temporary-Git / bounded-child
+fixtures, not a Rust/product or full 140-case-per-mode CI-union pass.
