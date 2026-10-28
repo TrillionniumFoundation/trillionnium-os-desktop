@@ -1,0 +1,93 @@
+...........FFFFFFFF...
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='reference', missing=False, proven_only=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'match' != 'incomplete'
+- match
++ incomplete
+
+
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='reference', missing=False, proven_only=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'partial_match' != 'incomplete'
+- partial_match
++ incomplete
+
+
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='reference', missing=True, proven_only=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'match' != 'incomplete'
+- match
++ incomplete
+
+
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='reference', missing=True, proven_only=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'partial_match' != 'incomplete'
+- partial_match
++ incomplete
+
+
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='both', missing=False, proven_only=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'match' != 'incomplete'
+- match
++ incomplete
+
+
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='both', missing=False, proven_only=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'partial_match' != 'incomplete'
+- partial_match
++ incomplete
+
+
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='both', missing=True, proven_only=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'match' != 'incomplete'
+- match
++ incomplete
+
+
+======================================================================
+FAIL: test_missing_or_empty_binary_inventory_cannot_match (__main__.Differential.test_missing_or_empty_binary_inventory_cannot_match) (side='both', missing=True, proven_only=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 47, in test_missing_or_empty_binary_inventory_cannot_match
+    self.assertEqual(diff.compare(reference, candidate,
+AssertionError: 'partial_match' != 'incomplete'
+- partial_match
++ incomplete
+
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.002s
+
+FAILED (failures=8)

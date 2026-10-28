@@ -1,0 +1,28 @@
+test_duplicate_manifest_rejected_before_extraction (test_rootfs_tar.RootfsArchive.test_duplicate_manifest_rejected_before_extraction) ... 
+  test_duplicate_manifest_rejected_before_extraction (test_rootfs_tar.RootfsArchive.test_duplicate_manifest_rejected_before_extraction) (conflicting=False) ... FAIL
+  test_duplicate_manifest_rejected_before_extraction (test_rootfs_tar.RootfsArchive.test_duplicate_manifest_rejected_before_extraction) (conflicting=True) ... FAIL
+test_duplicate_or_unsafe_manifest_rejected (test_rootfs_tar.RootfsArchive.test_duplicate_or_unsafe_manifest_rejected) ... ok
+test_old_directory_as_file_is_reproducibly_broken (test_rootfs_tar.RootfsArchive.test_old_directory_as_file_is_reproducibly_broken) ... ok
+test_real_directory_type_and_roundtrip_extract (test_rootfs_tar.RootfsArchive.test_real_directory_type_and_roundtrip_extract) ... ok
+test_symlink_escape_is_rejected (test_rootfs_tar.RootfsArchive.test_symlink_escape_is_rejected) ... ok
+
+======================================================================
+FAIL: test_duplicate_manifest_rejected_before_extraction (test_rootfs_tar.RootfsArchive.test_duplicate_manifest_rejected_before_extraction) (conflicting=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_rootfs_tar.py", line 92, in test_duplicate_manifest_rejected_before_extraction
+    self.assertFalse(destination.exists())
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_duplicate_manifest_rejected_before_extraction (test_rootfs_tar.RootfsArchive.test_duplicate_manifest_rejected_before_extraction) (conflicting=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_rootfs_tar.py", line 92, in test_duplicate_manifest_rejected_before_extraction
+    self.assertFalse(destination.exists())
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.017s
+
+FAILED (failures=2)

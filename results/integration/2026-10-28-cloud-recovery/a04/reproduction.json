@@ -1,0 +1,48 @@
+{
+  "scope": "synthetic host-only; no ELF or kernel executed",
+  "empty_reports": {
+    "schema": 1,
+    "verdict": "match",
+    "matched": [],
+    "matched_count": 0,
+    "differences": [],
+    "blocked": [],
+    "reference_case_count": 0,
+    "candidate_case_count": 0,
+    "kernel_boot_verified": false,
+    "guest_compatibility_passed": false
+  },
+  "missing_facts_and_exit": {
+    "schema": 1,
+    "verdict": "match",
+    "matched": [
+      "threads"
+    ],
+    "matched_count": 1,
+    "differences": [],
+    "blocked": [],
+    "reference_case_count": 1,
+    "candidate_case_count": 1,
+    "kernel_boot_verified": false,
+    "guest_compatibility_passed": false
+  },
+  "wrong_fact_types": {
+    "schema": 1,
+    "verdict": "match",
+    "matched": [
+      "threads"
+    ],
+    "matched_count": 1,
+    "differences": [],
+    "blocked": [],
+    "reference_case_count": 1,
+    "candidate_case_count": 1,
+    "kernel_boot_verified": false,
+    "guest_compatibility_passed": false
+  },
+  "duplicate_manifest": {
+    "error": "invalid or duplicate rootfs manifest path",
+    "destination_created_before_rejection": true,
+    "payload_written_before_rejection": true
+  }
+}

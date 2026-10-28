@@ -1,0 +1,38 @@
+{
+  "source": "745c0731aed270ee394145c6767371a6af47f49f",
+  "scope": "Linux host Python tests; no guest/product qualification",
+  "tests": [
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "tests/workloads/linux/test_rootfs_tar.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "tests/workloads/linux/test_compare.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "tests/workloads/linux/test_trace_summary.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "tests/workloads/linux/test_full_ubuntu_profile.py"
+      ],
+      "exit_code": 1
+    }
+  ]
+}

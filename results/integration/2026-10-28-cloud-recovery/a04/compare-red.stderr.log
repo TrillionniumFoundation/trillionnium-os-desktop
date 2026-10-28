@@ -1,0 +1,114 @@
+.FFFF.FFFF.....FFF
+======================================================================
+FAIL: test_binary_identity_fields_cannot_be_absent_on_both_sides (__main__.Differential.test_binary_identity_fields_cannot_be_absent_on_both_sides) (field='sha256')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 64, in test_binary_identity_fields_cannot_be_absent_on_both_sides
+    self.assertNotIn(diff.compare(report, report, proven_only=True)['verdict'],
+AssertionError: 'partial_match' unexpectedly found in ('match', 'partial_match')
+
+======================================================================
+FAIL: test_binary_identity_fields_cannot_be_absent_on_both_sides (__main__.Differential.test_binary_identity_fields_cannot_be_absent_on_both_sides) (field='interpreter')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 64, in test_binary_identity_fields_cannot_be_absent_on_both_sides
+    self.assertNotIn(diff.compare(report, report, proven_only=True)['verdict'],
+AssertionError: 'partial_match' unexpectedly found in ('match', 'partial_match')
+
+======================================================================
+FAIL: test_boolean_exit_code_is_not_integer_exit_code (__main__.Differential.test_boolean_exit_code_is_not_integer_exit_code)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 57, in test_boolean_exit_code_is_not_integer_exit_code
+    self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'], 'fail')
+AssertionError: 'partial_match' != 'fail'
+- partial_match
++ fail
+
+
+======================================================================
+FAIL: test_empty_reference_cannot_match_even_in_proven_only_mode (__main__.Differential.test_empty_reference_cannot_match_even_in_proven_only_mode)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 24, in test_empty_reference_cannot_match_even_in_proven_only_mode
+    self.assertEqual(diff.compare({}, {}, proven_only=proven_only)['verdict'],
+AssertionError: 'match' != 'incomplete'
+- match
++ incomplete
+
+
+======================================================================
+FAIL: test_facts_compare_json_types_recursively (__main__.Differential.test_facts_compare_json_types_recursively) (original=True, changed=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 51, in test_facts_compare_json_types_recursively
+    self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'],
+AssertionError: 'partial_match' != 'fail'
+- partial_match
++ fail
+
+
+======================================================================
+FAIL: test_facts_compare_json_types_recursively (__main__.Differential.test_facts_compare_json_types_recursively) (original=1, changed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 51, in test_facts_compare_json_types_recursively
+    self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'],
+AssertionError: 'partial_match' != 'fail'
+- partial_match
++ fail
+
+
+======================================================================
+FAIL: test_facts_compare_json_types_recursively (__main__.Differential.test_facts_compare_json_types_recursively) (original=1, changed=1.0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 51, in test_facts_compare_json_types_recursively
+    self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'],
+AssertionError: 'partial_match' != 'fail'
+- partial_match
++ fail
+
+
+======================================================================
+FAIL: test_facts_compare_json_types_recursively (__main__.Differential.test_facts_compare_json_types_recursively) (original=[{'ok': True}], changed=[{'ok': 1}])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 51, in test_facts_compare_json_types_recursively
+    self.assertEqual(diff.compare(reference, candidate, proven_only=True)['verdict'],
+AssertionError: 'partial_match' != 'fail'
+- partial_match
++ fail
+
+
+======================================================================
+FAIL: test_no_passed_reference_cannot_report_partial_match (__main__.Differential.test_no_passed_reference_cannot_report_partial_match)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 29, in test_no_passed_reference_cannot_report_partial_match
+    self.assertEqual(diff.compare(report, report, proven_only=True)['verdict'],
+AssertionError: 'partial_match' != 'incomplete'
+- partial_match
++ incomplete
+
+
+======================================================================
+FAIL: test_pass_requires_recorded_exit_and_facts_on_both_sides (__main__.Differential.test_pass_requires_recorded_exit_and_facts_on_both_sides) (field='exit_code', side='both')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 41, in test_pass_requires_recorded_exit_and_facts_on_both_sides
+    self.assertNotIn(diff.compare(reference, candidate, proven_only=True)['verdict'],
+AssertionError: 'partial_match' unexpectedly found in ('match', 'partial_match')
+
+======================================================================
+FAIL: test_pass_requires_recorded_exit_and_facts_on_both_sides (__main__.Differential.test_pass_requires_recorded_exit_and_facts_on_both_sides) (field='facts', side='both')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/desktop-current-audit/tests/workloads/linux/test_compare.py", line 41, in test_pass_requires_recorded_exit_and_facts_on_both_sides
+    self.assertNotIn(diff.compare(reference, candidate, proven_only=True)['verdict'],
+AssertionError: 'partial_match' unexpectedly found in ('match', 'partial_match')
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.004s
+
+FAILED (failures=11)
