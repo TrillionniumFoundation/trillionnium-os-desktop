@@ -660,3 +660,16 @@ no prefix-based exclusion can hide a missing or unexpected test. Each original
 lane keeps its 600-second budget, zero skips and zero retries. Passing these
 Python fixtures qualifies the release tool source only. The eight real ELF
 identities must still come from the next complete real host execution.
+
+## G1-d serial collection development
+
+The common G1-d boot uses `loglevel=warn` to keep per-syscall INFO traces from
+exhausting the unchanged 8 MiB raw serial bound. The kernel INFO logger, C probes,
+120-second maximum, all three guest profiles and original negative oracles remain
+unchanged. Required kernel G1-d markers use unfiltered console output; guest
+markers also remain available. Raw evidence is never filtered to pass the gate.
+Run the complete `test_g1d_guest.py` discovery suite normally and with `-O`; its
+24 original cases include six workload-negative runner/oracle cases. Those host
+fixtures do not establish a real guest pass. A new source tuple must repeat the
+full real G1-d workflow, including the root mutation. The 86080 release-tool
+322-case evidence retains its original source identity.
