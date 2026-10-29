@@ -142,13 +142,41 @@ jobs:
           union = [identity for lane in modules for identity in ids[lane]]
           if len(all_ids) != len(set(all_ids)) or len(union) != len(set(union)) or sorted(union) != sorted(all_ids):
               raise SystemExit('CI lanes must be an exact disjoint union of complete discovery')
-          preserved = {
-              'legacy': '20011921d9f6abdb12fe852abaa62c3cccd7ea03e7a906707b9b7fad3f417d38',
-              'typed-v4': '6b325a077a3c931687085d77c31d0aa0dca7becbec845c9ce76027d4819cdf18',
+          # Exact new reporter identities supplement the unchanged original
+          # 54-case legacy oracle; unknown additions cannot hide behind a prefix.
+          reporter_ids = {
+              'test_check_organ_pair.HostProductReceiptTests.test_v5_build_only_keeps_four_original_producers_and_eight_products',
+              'test_check_organ_pair.HostProductReceiptTests.test_v5_success_records_schema2_and_all_actual_fixture_products',
+              'test_check_organ_pair.HostProductReceiptTests.test_v5_successful_commands_without_real_outputs_cannot_qualify',
+              'test_check_organ_pair.HostProductReporterTests.test_dev_profile_uses_the_current_hepta_debug_directory',
+              'test_check_organ_pair.HostProductReporterTests.test_each_original_product_is_required',
+              'test_check_organ_pair.HostProductReporterTests.test_exact_eight_real_file_hashes_paths_profiles_and_modes',
+              'test_check_organ_pair.HostProductReporterTests.test_fifo_is_refused_without_waiting_for_a_writer',
+              'test_check_organ_pair.HostProductReporterTests.test_final_original_step_budget_is_enforced',
+              'test_check_organ_pair.HostProductReporterTests.test_in_place_byte_change_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_leaf_mode_or_link_count_change_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_leaf_symlink_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_non_executable_elf_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_move_during_final_hash_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_receipt_writes_do_not_create_a_false_failure',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_replacement_with_same_bytes_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_symlink_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_real_growth_or_truncation_during_read_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_regular_executable_non_elf_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_same_bytes_replacement_with_a_new_inode_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_stable_cargo_style_hardlinks_are_allowed_and_recorded',
           }
-          for lane, expected in preserved.items():
-              actual = hashlib.sha256(('\n'.join(sorted(ids[lane])) + '\n').encode()).hexdigest()
-              if actual != expected:
+          if len(reporter_ids) != 20 or not reporter_ids <= set(ids['legacy']):
+              raise SystemExit('Missing or aliased new reporter case identity')
+          preserved = {
+              'legacy': (54, '20011921d9f6abdb12fe852abaa62c3cccd7ea03e7a906707b9b7fad3f417d38'),
+              'typed-v4': (62, '6b325a077a3c931687085d77c31d0aa0dca7becbec845c9ce76027d4819cdf18'),
+          }
+          for lane, (original_count, expected) in preserved.items():
+              original_ids = [identity for identity in ids[lane]
+                              if lane != 'legacy' or identity not in reporter_ids]
+              actual = hashlib.sha256(('\n'.join(sorted(original_ids)) + '\n').encode()).hexdigest()
+              if len(original_ids) != original_count or actual != expected:
                   raise SystemExit('Original qualified component case IDs changed: ' + lane)
           selected = os.environ['V5_TEST_LANE']
           if selected not in modules or not ids[selected]:

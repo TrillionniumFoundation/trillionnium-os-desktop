@@ -574,3 +574,89 @@ not transfer those results to a new head. The actual combined candidate must
 repeat the full unfiltered Core/OSTD and both ordinary SMP2/SMP4 seven-group
 profiles under their original budgets. Linux `memory.max`, production-authority
 assembly, real Agentd control and phone/GPU isolation remain separate work.
+
+## V5 host ELF identity: technical contract
+
+The host receipt is version 2 only when this runner actually selects a V5
+`--execute-host` or `--build-host` lane. Source-only receipts and historical
+V1–V4 host receipts retain version 1. The source manifest remains fixed V5:
+402 Desktop roles, 271 Hepta roles, five wire-golden pairs and nineteen owners.
+No historical receipt is rewritten, and its successful commands do not acquire
+product hashes retroactively. A new real CI run is required for this contract.
+
+After the original seven successful host stages (or four build-only producers),
+the runner opens exactly these eight products from the actual `CARGO_TARGET_DIR`
+used by their commands. Desktop uses `debug`; Hepta `dev-small` uses `dev-small`,
+and Hepta `dev` uses `debug`:
+
+| Product | Target side | Original producer | Toolchain |
+| --- | --- | --- | --- |
+| `trill-ctl` | Desktop | `ui-build` | 1.88.0 |
+| `trill-session` | Desktop | `ui-build` | 1.88.0 |
+| `trill-shell` | Desktop | `ui-build` | 1.88.0 |
+| `trill-app-window` | Desktop | `ui-build` | 1.88.0 |
+| `codex-hepta-agentd` | Hepta | `hepta-build` | 1.95.0 |
+| `codex` | Hepta | `hepta-build` | 1.95.0 |
+| `hepta-authority-host` | Hepta | `hepta-root-build` | 1.95.0 |
+| `hepta-supervisor-intent-recovery` | Hepta | `hepta-recovery-build` | 1.95.0 |
+
+Successful version-2 receipts add `host_products`, an ordered list with each
+product's name, producer stage, side, Cargo profile, toolchain, absolute target
+directory, profile directory, absolute path, complete SHA256, byte count,
+permission mode, ELF magic, and observed device/inode/uid/gid/mtime/ctime/link
+count. `host_products_verified_after_source_recheck: true` means the retained
+descriptors and current paths matched after the original source/lock recheck.
+Any missing, non-ELF, non-owner-executable or changed product refuses host
+qualification, even when all command exits were zero. A refusal has
+`passed: false` and `qualification: none`; it cannot substitute old product
+hashes or infer success from an earlier receipt.
+
+The Linux observer walks every absolute parent through retained nofollow
+directory descriptors, rejects symlinks and non-regular leaves, hashes all
+observed bytes plus EOF and checks ELF magic. Leaf device, inode, mode, owner,
+size, mtime, ctime and link count must remain equal before/after both full reads.
+The final source recheck runs between those reads. Fresh nofollow path walks
+before and after the final read must match the retained parent device/inode/mode
+and leaf identity. Parent mtime/ctime are deliberately excluded because writing
+this invocation's receipt/logs can change them. Cargo's stable hardlinked
+outputs are accepted and their link counts recorded; link-count changes refuse.
+
+This is an observation of the actual selected build outputs, including when an
+explicit external Cargo cache is used. It is not isolation against a malicious
+same-UID process, binary reproducibility, a trusted publisher signature, native
+Windows or kernel qualification, production authorization, or a Notes runtime
+claim. No fallback chooses an ELF from another target or an old receipt.
+
+The seven original commands, package selection, toolchains and timeouts are
+unchanged. ELF reads and the final source check consume the remaining budget of
+the last executed original stage; no new time allowance or retry is added.
+Reads stop at the sampled size plus EOF and check the deadline between reads;
+this does not promise cancellation of a synchronous kernel read that blocks.
+
+## V5 host ELF identity: development and verification
+
+`host_product_specs` owns the eight paths; manifest content cannot add an
+executable, select a different product, or replace the command list. Changes to
+this observer, its tests, this manual and the already-mapped workflow require a
+new strictly generated current V5 manifest, followed by verification at the final
+clean Desktop head/tree against the one pinned Hepta head/tree. Fixed source-map
+roles, old manifests, golden bytes and their historical owners remain intact.
+
+Reporter tests use real copies of the local Python ELF in owned temporary
+directories. They exercise the same descriptor/stat/hash path as production,
+including stable Cargo-style hardlinks and real file truncation, growth,
+symlinks, FIFOs, leaf replacement and parent movement during hashing. Copies
+are only reporter fixtures, never evidence that eight Rust products were built.
+V5 pair fixture tests still execute bounded real child commands, then create
+these owned reporter fixtures; the production runner has no fixture override.
+The unchanged original test functions and assertions continue to run.
+
+The workflow retains the exact original 54 legacy case IDs and SHA256
+`20011921d9f6abdb12fe852abaa62c3cccd7ea03e7a906707b9b7fad3f417d38`,
+then requires all twenty explicitly enumerated new reporter cases. The original
+62-case V4 identity hash is also unchanged. All 74 legacy, 62 V4 and 25 V5 cases
+form an exact disjoint 161-case discovery union per normal/optimized mode;
+no prefix-based exclusion can hide a missing or unexpected test. Each original
+lane keeps its 600-second budget, zero skips and zero retries. Passing these
+Python fixtures qualifies the release tool source only. The eight real ELF
+identities must still come from the next complete real host execution.
