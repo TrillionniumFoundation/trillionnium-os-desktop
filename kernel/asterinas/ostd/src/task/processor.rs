@@ -8,6 +8,7 @@ use crate::{
     arch::task::{context_switch, first_context_switch},
     cpu_local_cell,
     irq::DisabledLocalIrqGuard,
+    mm::vm_space::RetiredVmSpace,
 };
 
 cpu_local_cell! {
@@ -33,20 +34,10 @@ pub(super) fn current_task() -> Option<NonNull<Task>> {
 ///
 /// # Panics
 ///
-/// This function will panic if called while holding preemption locks or with
-/// local IRQ disabled.
+/// The caller must prepare the reschedule in sleepable context before making
+/// its decision, then retain this IRQ guard from that decision through here.
 #[track_caller]
-pub(super) fn switch_to_task(next_task: Arc<Task>) {
-    super::atomic_mode::might_sleep();
-
-    // SAFETY: RCU read-side critical sections disables preemption. By the time
-    // we reach this point, we have already checked that preemption is enabled.
-    unsafe {
-        crate::sync::finish_grace_period();
-    }
-
-    let irq_guard = crate::irq::disable_local();
-
+pub(super) fn switch_to_task(next_task: Arc<Task>, irq_guard: DisabledLocalIrqGuard) {
     before_switching_to(&next_task, &irq_guard);
 
     // `before_switching_to` guarantees that from now on, and while the next task is running on the
@@ -127,6 +118,10 @@ pub(super) unsafe fn after_switching_to() {
         // it to NULL after the read.
         let prev_task = unsafe { Arc::from_raw(prev) };
 
+        // The context is fully saved but cannot yet be acquired elsewhere.
+        // Settle its original execution owner before releasing that exclusion.
+        super::scheduler::finish_switch(&prev_task);
+
         // Allows it to be switched on a CPU again, if anyone wants to.
         prev_task.switched_to_cpu.store(false, Ordering::Release);
 
@@ -135,15 +130,32 @@ pub(super) unsafe fn after_switching_to() {
         None
     };
 
-    if let Some(handler) = POST_SCHEDULE_HANDLER.get() {
-        handler();
+    // This local belongs to the new task's stack, not a CPU-local pending slot.
+    // Nested scheduling after IRQ restoration cannot overwrite its ownership.
+    let retired_vm_space = POST_SCHEDULE_HANDLER.get().and_then(|handler| handler());
+
+    if let Some(previous) = prev.as_ref() {
+        super::scheduler::complete_switch(previous);
     }
 
-    // See `switch_to_task`, where we forgot an IRQ guard.
-    crate::arch::irq::enable_local();
+    release_previous_resources(prev, retired_vm_space);
 
-    // It was forgotten using `Arc::into_raw` at `switch_to_task`.
-    // We drop it after enabling the IRQ in case dropping user-provided
-    // resources would violate the atomic mode.
-    drop(prev);
+    // A quota tail or completed wake can request preemption. Consume it only
+    // after IRQ restoration and safe destruction of the previous reference.
+    super::scheduler::might_preempt();
 }
+
+fn release_previous_resources(
+    previous: Option<Arc<Task>>,
+    retired_vm_space: Option<RetiredVmSpace>,
+) {
+    // See `switch_to_task`, where we forgot an IRQ guard. Both destructors may
+    // release user-provided resources, so neither may run before this cut.
+    crate::arch::irq::enable_local();
+    drop(previous);
+    drop(retired_vm_space);
+}
+
+#[cfg(all(ktest, target_arch = "x86_64"))]
+#[path = "processor_retirement_tests.rs"]
+mod retirement_tests;

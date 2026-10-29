@@ -134,10 +134,10 @@ fn unexpected_ack_descriptor_is_rejected_and_closed() {
     let (stray, mut stray_peer) = UnixStream::pair().unwrap();
     let fixture = std::thread::spawn(move || {
         let (offer, _received) = receive_offer(&parent);
-        send_descriptor(
+        send_descriptors(
             &parent,
             &ack(&offer, NotesBootstrapStatus::Attached),
-            stray.as_raw_fd(),
+            &[stray.as_raw_fd()],
             Instant::now() + DEADLINE,
         )
         .unwrap();
@@ -203,4 +203,105 @@ fn wrong_socket_type_and_noninitial_target_fail_before_offer() {
         .is_err());
     parent.set_nonblocking(true).unwrap();
     assert!(parent.recv(&mut [0; 1]).is_err());
+}
+
+#[test]
+fn v2_bootstrap_transfers_stream_then_datagram_and_checks_ack_version() {
+    let (session, parent) = UnixDatagram::pair().unwrap();
+    let (effect, _effect_peer) = UnixStream::pair().unwrap();
+    let (recovery, _recovery_peer) = UnixDatagram::pair().unwrap();
+    let fixture = std::thread::spawn(move || {
+        let golden: serde_json::Value =
+            serde_json::from_str(include_str!("../../../tests/ui/notes-bootstrap-v2.json"))
+                .unwrap();
+        parent
+            .set_read_timeout(Some(Duration::from_secs(3)))
+            .unwrap();
+        let mut raw = [0u8; NOTES_BOOTSTRAP_MAX_BYTES + 1];
+        let mut control = [0usize; 8];
+        let mut iov = libc::iovec {
+            iov_base: raw.as_mut_ptr().cast(),
+            iov_len: raw.len(),
+        };
+        let mut message: libc::msghdr = unsafe { mem::zeroed() };
+        message.msg_iov = &mut iov;
+        message.msg_iovlen = 1;
+        message.msg_control = control.as_mut_ptr().cast();
+        message.msg_controllen = mem::size_of_val(&control);
+        let count =
+            unsafe { libc::recvmsg(parent.as_raw_fd(), &mut message, libc::MSG_CMSG_CLOEXEC) };
+        assert!(count > 0);
+        assert_eq!(message.msg_flags & (libc::MSG_TRUNC | libc::MSG_CTRUNC), 0);
+        assert_eq!(
+            &raw[..count as usize],
+            golden["offer_utf8"].as_str().unwrap().as_bytes()
+        );
+        let offer = NotesBootstrapOffer::parse_exact(&raw[..count as usize]).unwrap();
+        assert_eq!(offer.schema_version, 2);
+        let (effect, recovery) = unsafe {
+            let header = libc::CMSG_FIRSTHDR(&message);
+            assert!(!header.is_null());
+            assert_eq!((*header).cmsg_level, libc::SOL_SOCKET);
+            assert_eq!((*header).cmsg_type, libc::SCM_RIGHTS);
+            assert_eq!(golden["descriptor_transfer"], "SCM_RIGHTS");
+            assert_eq!(golden["offer_descriptor_count"], 2);
+            assert_eq!(
+                (*header).cmsg_len,
+                libc::CMSG_LEN((2 * mem::size_of::<RawFd>()) as libc::c_uint) as usize
+            );
+            (
+                OwnedFd::from_raw_fd(libc::CMSG_DATA(header).cast::<RawFd>().read_unaligned()),
+                OwnedFd::from_raw_fd(
+                    libc::CMSG_DATA(header)
+                        .cast::<RawFd>()
+                        .add(1)
+                        .read_unaligned(),
+                ),
+            )
+        };
+        require_socket_type(effect.as_raw_fd(), libc::SOCK_STREAM).unwrap();
+        require_socket_type(recovery.as_raw_fd(), libc::SOCK_DGRAM).unwrap();
+        require_socket_type(parent.as_raw_fd(), libc::SOCK_DGRAM).unwrap();
+        assert_eq!(golden["bootstrap_socket_type"], "SOCK_DGRAM");
+        for (index, (fd, role, kind)) in [
+            (effect.as_raw_fd(), "effect", "SOCK_STREAM"),
+            (recovery.as_raw_fd(), "recovery", "SOCK_DGRAM"),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            assert_eq!(golden["descriptor_roles"][index], role);
+            assert_eq!(golden["descriptor_socket_types"][index], kind);
+            assert_ne!(
+                unsafe { libc::fcntl(fd, libc::F_GETFD) } & libc::FD_CLOEXEC,
+                0
+            );
+        }
+        let response = NotesBootstrapAck {
+            schema_version: 2,
+            action: NotesBootstrapAckAction::NotesTargetRegistration,
+            target: offer.target,
+            destination_id: offer.destination_id,
+            status: NotesBootstrapStatus::Attached,
+        };
+        let raw = serde_json::to_vec(&response).unwrap();
+        assert_eq!(
+            raw,
+            golden["attached_ack_utf8"].as_str().unwrap().as_bytes()
+        );
+        assert_eq!(golden["ack_descriptor_count"], 0);
+        parent.send(&raw).unwrap();
+    });
+    NotesBootstrap::from_private_channel(session)
+        .unwrap()
+        .enable_recovery()
+        .offer_with_recovery(target(), effect, recovery)
+        .unwrap();
+    fixture.join().unwrap();
+    let offer = NotesBootstrapOffer::with_recovery(target()).unwrap();
+    let old = NotesBootstrapAck::parse_exact(&ack(&offer, NotesBootstrapStatus::Attached)).unwrap();
+    assert!(
+        !old.matches(&offer),
+        "legacy ACK cannot confirm recovery attachment"
+    );
 }

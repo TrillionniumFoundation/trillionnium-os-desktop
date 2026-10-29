@@ -12,7 +12,10 @@ use super::{
 };
 use crate::{
     fs::{cgroupfs::CgroupMembership, pseudofs::SockFs},
-    prelude::*, sched::Nice, thread::AsThread, time::clocks, util::random,
+    prelude::*,
+    thread::AsThread,
+    time::clocks,
+    util::random,
     vm::vmar::VmarHandle,
 };
 
@@ -28,6 +31,10 @@ pub(crate) fn new_unstarted_process() -> (Arc<Process>, Arc<Task>) {
 pub(crate) fn initialize_heap_for_fork(process: &Process, heap_base: Vaddr) {
     let locked_vmar = process.lock_vmar();
     let vmar = locked_vmar.unwrap();
+    initialize_vmar_heap_for_fork(vmar, heap_base);
+}
+
+pub(crate) fn initialize_vmar_heap_for_fork(vmar: &crate::vm::vmar::Vmar, heap_base: Vaddr) {
     vmar.process_vm()
         .map_and_init_heap(vmar, 0, heap_base)
         .unwrap();
@@ -40,14 +47,27 @@ pub(crate) fn new_unstarted_process_with_threads(count: usize) -> (Arc<Process>,
     clocks::init_for_ktest();
     random::init();
 
-    let pid = allocate_posix_tid();
     let vmar = VmarHandle::new(ProcessVm::new(SockFs::new_path()));
+    new_unstarted_process_with_vmar_and_threads(vmar, count)
+}
+
+pub(crate) fn new_unstarted_process_in_vmar(vmar: VmarHandle) -> (Arc<Process>, Arc<Task>) {
+    clocks::init_for_ktest();
+    random::init();
+    let (process, mut tasks) = new_unstarted_process_with_vmar_and_threads(vmar, 1);
+    (process, tasks.pop().unwrap())
+}
+
+fn new_unstarted_process_with_vmar_and_threads(
+    vmar: VmarHandle,
+    count: usize,
+) -> (Arc<Process>, Vec<Arc<Task>>) {
+    let pid = allocate_posix_tid();
     let process = Process::new(
         pid,
         vmar.clone_arc(),
         new_resource_limits_for_init(),
-        Nice::default(),
-        0,
+        super::oom_adjustment::OomInit::Initial(0),
         Arc::new(Mutex::new(SigDispositions::default())),
         UserNamespace::get_init_singleton().clone(),
     );
@@ -66,7 +86,8 @@ pub(crate) fn new_unstarted_process_with_threads(count: usize) -> (Arc<Process>,
             vmar.clone_handle(),
         )
         .process(Arc::downgrade(&process))
-        .build();
+        .build()
+        .unwrap();
         process.tasks().lock().insert(task.clone()).unwrap();
         tasks.push(task);
     }

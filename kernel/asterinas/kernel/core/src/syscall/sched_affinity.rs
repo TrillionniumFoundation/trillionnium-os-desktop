@@ -9,7 +9,12 @@ use ostd::{
 };
 
 use super::SyscallReturn;
-use crate::{prelude::*, process::pid_table, thread::Tid};
+use crate::{
+    prelude::*,
+    process::{credentials::capabilities::CapSet, pid_table, posix_thread::AsPosixThread},
+    security::lsm::hooks as lsm_hooks,
+    thread::Tid,
+};
 
 pub(super) fn sys_sched_getaffinity(
     tid: Tid,
@@ -30,10 +35,6 @@ pub(super) fn sys_sched_getaffinity(
     Ok(SyscallReturn::Return(bytes_written as isize))
 }
 
-// TODO: The manual page of `sched_setaffinity` says that if the thread is not
-// running on the CPU specified in the affinity mask, it would be migrated to
-// one of the CPUs specified in the mask. We currently do not support this
-// feature as the scheduler is not ready for migration yet.
 pub(super) fn sys_sched_setaffinity(
     tid: Tid,
     cpuset_size: usize,
@@ -42,19 +43,31 @@ pub(super) fn sys_sched_setaffinity(
 ) -> Result<SyscallReturn> {
     let user_cpu_set = read_cpu_set_from(ctx.user_space(), cpuset_size, cpu_set_ptr)?;
 
-    match tid {
-        0 => ctx
-            .thread
-            .atomic_cpu_affinity()
-            .store(&user_cpu_set, Ordering::Relaxed),
-        _ => match pid_table::pid_table_mut().get_thread(tid) {
-            Some(thread) => {
-                thread
-                    .atomic_cpu_affinity()
-                    .store(&user_cpu_set, Ordering::Relaxed);
-            }
-            None => return_errno_with_message!(Errno::ESRCH, "the target thread does not exist"),
-        },
+    if tid == 0 {
+        crate::sched::set_thread_affinity(ctx.thread, &user_cpu_set)?;
+    } else {
+        // Release the PID table before checking the target's namespace. A
+        // denied request must not publish a mask or enter the scheduler.
+        let thread = pid_table::pid_table_mut()
+            .get_thread(tid)
+            .ok_or(Error::with_message(
+                Errno::ESRCH,
+                "the target thread does not exist",
+            ))?;
+        let target = thread.as_posix_thread().ok_or(Errno::EPERM)?;
+        let target_process = target.weak_process().upgrade().ok_or(Errno::ESRCH)?;
+        let target_cred = target.credentials();
+        let caller_euid = ctx.posix_thread.credentials().euid();
+        if caller_euid != target_cred.ruid() && caller_euid != target_cred.euid() {
+            lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+                target_process.user_ns().lock().as_ref(),
+                ctx.posix_thread,
+                CapSet::SYS_NICE,
+            ))?;
+        }
+        let result = crate::sched::set_thread_affinity(&thread, &user_cpu_set);
+        drop(target_process);
+        result?;
     }
 
     Ok(SyscallReturn::Return(0))

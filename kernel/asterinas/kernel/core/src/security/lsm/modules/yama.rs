@@ -25,7 +25,7 @@ pub(crate) struct YamaLsm;
 
 impl LsmAlienAccessHook for YamaLsm {
     fn on_alien_access(&self, context: &AlienAccessContext) -> Result<()> {
-        if context.mode().kind() != AlienAccessKind::Attach {
+        if context.mode().kind() == AlienAccessKind::Read {
             return Ok(());
         }
 
@@ -42,7 +42,8 @@ impl LsmAlienAccessHook for YamaLsm {
         let is_denied = match get_scope() {
             YamaScope::Disabled => false,
             YamaScope::Relational => {
-                !accessor_has_cap_sys_ptrace
+                context.mode().kind() != AlienAccessKind::Traceme
+                    && !accessor_has_cap_sys_ptrace
                     && !is_ancestor_of(
                         context.accessor().weak_process(),
                         context.target().process(),

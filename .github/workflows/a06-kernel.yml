@@ -20,6 +20,11 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "tests/kernel/safety/**"
+      - "tests/kernel/network/**"
+      - "tests/kernel/vdso-cpu/**"
+      - "tests/kernel/unix-signal/**"
+      - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -42,6 +47,11 @@ on:
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
+      - "tests/kernel/safety/**"
+      - "tests/kernel/network/**"
+      - "tests/kernel/vdso-cpu/**"
+      - "tests/kernel/unix-signal/**"
+      - "support/kernel-safety/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
       - "tests/integration/hepta/run_original_agentd.py"
@@ -190,7 +200,7 @@ jobs:
         run: |
           set -euo pipefail
           for control in clocksource-drop-fraction vdso-drop-fraction vdso-skip-fault-mode \
-              handoff-drop-tail handoff-eligibility-first dequeue-drop-owner; do
+              handoff-drop-tail-runtime-v2 handoff-eligibility-first-runtime-v2 dequeue-drop-owner-switch-v2; do
             # The first mutation rebuilt the original shared OSDK target.
             # Every later control verifies the saved green ELF against the
             # original successful QEMU record before changing any source.
@@ -330,6 +340,74 @@ jobs:
             --expected-source-tree "$(git rev-parse HEAD^{tree})" \
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
+
+      - name: Verify Unix stream SIGPIPE and per-call suppression on one and two CPUs
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-unix-signal-checks"
+          mkdir -p "$checks"
+          python3 -I -B -m unittest discover -s tests/kernel/unix-signal -p 'test_*.py' \
+            > "$checks/normal.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/kernel/unix-signal -p 'test_*.py' \
+            > "$checks/optimized.log" 2>&1
+          failed=0
+          for cpus in 1 2; do
+            if python3 -I -B tests/kernel/unix-signal/run.py \
+              --smp "$cpus" --cc gcc-13 --qemu qemu-system-x86_64 --timeout 120 \
+              --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+              --output "${RUNNER_TEMP}/a06-unix-signal-smp${cpus}"; then
+              :
+            else
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0
+
+      - name: Verify pinned libc and vDSO CPU identity on one, two and four CPUs
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          for cpus in 1 2 4; do
+            if python3 -I -B tests/kernel/vdso-cpu/run.py \
+                --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+                --cc /usr/bin/gcc-13 --qemu /usr/bin/qemu-system-x86_64 \
+                --smp "$cpus" --timeout 120 \
+                --output "${RUNNER_TEMP}/a06-vdso-cpu-smp${cpus}"; then
+              :
+            else
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0
+
+      - name: Verify scoped kernel safety on the same ordinary ELF with 2 and 4 CPUs
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-safety-runner-checks"
+          mkdir "$checks"
+          python3 -I -B tests/kernel/safety/test_runner.py > "$checks/tests.log" 2>&1
+          python3 -I -B -O tests/kernel/safety/test_runner.py > "$checks/tests-optimized.log" 2>&1
+          /usr/bin/gcc-13 --version > "$checks/compiler-version.txt"
+          /usr/bin/qemu-system-x86_64 --version > "$checks/qemu-version.txt"
+          # Reuse the preceding clean-head ordinary product and verified boot
+          # inputs. This step performs no kernel build and grants no HOS2 rights.
+          # Both guests run even if one rejects; all raw failures are uploaded.
+          failed=0
+          for cpus in 2 4; do
+            if python3 -I -B tests/kernel/safety/run.py \
+                --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+                --cc /usr/bin/gcc-13 --qemu /usr/bin/qemu-system-x86_64 \
+                --smp "$cpus" --timeout 180 \
+                --output "${RUNNER_TEMP}/a06-kernel-safety-smp${cpus}"; then
+              :
+            else
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0
 
       - name: Verify SQLite WAL after abrupt guest restart and reject an omitted COMMIT
         shell: bash
@@ -582,6 +660,12 @@ jobs:
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
+            ${{ runner.temp }}/a06-vdso-cpu-smp*
+            ${{ runner.temp }}/a06-unix-signal-checks
+            ${{ runner.temp }}/a06-unix-signal-smp*
+            ${{ runner.temp }}/a06-safety-runner-checks
+            ${{ runner.temp }}/a06-kernel-safety-smp2
+            ${{ runner.temp }}/a06-kernel-safety-smp4
             ${{ runner.temp }}/a04-sqlite-restart
             ${{ runner.temp }}/a06-owner-negative
             ${{ runner.temp }}/a06-clock-handoff-negative

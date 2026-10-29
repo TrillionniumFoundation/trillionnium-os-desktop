@@ -17,7 +17,6 @@ use crate::{
         rlimit::{ResourceLimits, new_resource_limits_for_init},
         signal::sig_disposition::SigDispositions,
     },
-    sched::Nice,
     thread::{AsThread, Tid},
     vm::vmar::{Vmar, VmarHandle},
 };
@@ -196,7 +195,7 @@ fn create_init_process(
     let fs = ThreadFsInfo::new(path_resolver);
 
     let (init_proc, vmar) =
-        allocate_initial_process(&executable_path, new_resource_limits_for_init());
+        allocate_initial_process(&executable_path, new_resource_limits_for_init())?;
     let pid = init_proc.pid();
 
     let loaded_vmar = vmar.clone_arc();
@@ -216,11 +215,10 @@ fn create_init_process(
 fn allocate_initial_process(
     executable_path: &Path,
     resource_limits: ResourceLimits,
-) -> (Arc<Process>, VmarHandle) {
+) -> Result<(Arc<Process>, VmarHandle)> {
     let pid = allocate_posix_tid();
-    let vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
-    let nice = Nice::default();
-    let oom_score_adj = 0;
+    let vmar = VmarHandle::try_new(ProcessVm::new(executable_path.clone()))?;
+    let oom_score_adj = crate::process::oom_adjustment::OomInit::Initial(0);
     let sig_dispositions = Arc::new(Mutex::new(SigDispositions::default()));
     let user_ns = UserNamespace::get_init_singleton().clone();
 
@@ -228,13 +226,12 @@ fn allocate_initial_process(
         pid,
         vmar.clone_arc(),
         resource_limits,
-        nice,
         oom_score_adj,
         sig_dispositions,
         user_ns,
     );
 
-    (init_proc, vmar)
+    Ok((init_proc, vmar))
 }
 
 fn set_bootstrap_session_and_group(process: &Arc<Process>) {
@@ -319,7 +316,7 @@ fn create_init_task(
             .process(Arc::downgrade(process))
             .fs(Arc::new(fs));
     Ok(LoadedInitialTask {
-        task: thread_builder.build(),
+        task: thread_builder.build()?,
         #[cfg(feature = "g1c-trusted-observe")]
         image,
         #[cfg(feature = "g1c-trusted-observe")]

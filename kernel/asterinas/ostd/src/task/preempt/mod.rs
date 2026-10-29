@@ -23,6 +23,19 @@ pub use self::guard::{DisabledPreemptGuard, disable_preempt};
 pub fn halt_cpu() {
     crate::task::atomic_mode::might_sleep();
 
+    // An idle CPU may never switch tasks, but it must still report quiescent
+    // states so deferred frame destruction and other RCU callbacks progress.
+    // `might_sleep` permits bootstrap callers in atomic mode. Check the raw
+    // state too, so that exemption can never publish a false quiescent state.
+    if cpu_local::get_guard_count() == 0 && crate::arch::irq::is_local_enabled() {
+        // SAFETY: RCU read-side critical sections disable preemption. The raw
+        // checks above ensure none can be live here, including in bootstrap.
+        // Report before disabling IRQs or entering the halt state.
+        unsafe {
+            crate::sync::finish_grace_period();
+        }
+    }
+
     let irq_guard = crate::irq::disable_local();
 
     if cpu_local::need_preempt() {

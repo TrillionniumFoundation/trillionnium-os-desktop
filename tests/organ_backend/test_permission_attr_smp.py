@@ -187,7 +187,7 @@ workspace = true
             manifest = source / name
             manifest.parent.mkdir(parents=True)
             (root / 'support').mkdir()
-            (root / 'README.md').write_bytes(b'')
+            (root / 'README.md').write_bytes(b'# Source verifier test project\n')
             (root / 'support/upstream-lock.json').write_bytes(
                 (ROOT / 'support/upstream-lock.json').read_bytes())
 

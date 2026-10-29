@@ -1,0 +1,217 @@
+name: Current Desktop and original Hepta host pair
+
+on:
+  pull_request:
+    paths:
+      - 'ui/**'
+      - 'services/hepta-os/**'
+      - 'support/**'
+      - 'tests/**'
+      - 'kernel/**'
+      - 'libs/**'
+      - 'docs/**'
+      - 'results/goal-progress/**'
+      - '.github/workflows/**'
+      - 'README.md'
+  push:
+    branches: [main]
+    paths:
+      - 'ui/**'
+      - 'services/hepta-os/**'
+      - 'support/**'
+      - 'tests/**'
+      - 'kernel/**'
+      - 'libs/**'
+      - 'docs/**'
+      - 'results/goal-progress/**'
+      - '.github/workflows/**'
+      - 'README.md'
+  workflow_dispatch:
+    inputs:
+      historical_os_ref:
+        description: 'Optional historical V4 Desktop: explicit full 40-hex commit; blank selects current V5'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  original-host-pair:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.historical_os_ref == '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      CARGO_BUILD_JOBS: '1'
+      CARGO_INCREMENTAL: '0'
+      RUSTUP_TOOLCHAIN: '1.95.0'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          path: desktop
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Read the fixed V5 Hepta pin
+        id: pin
+        working-directory: desktop
+        run: |
+          python3 -I -B - <<'PY'
+          import os, runpy
+          from pathlib import Path
+          source = Path('support/release')
+          api = runpy.run_path(str(source / 'organ_release_profile.py'))
+          mapping = api['load_json'](source / 'organ_source_map_v5.json')
+          manifest = api['load_json'](source / 'profiles/current-organ-source.json')
+          pin = api['check_current_contract_v5'](manifest, mapping)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'hepta_sha={pin}\n')
+          PY
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: TrillionniumFoundation/hepta-private-ci
+          ref: ${{ steps.pin.outputs.hepta_sha }}
+          path: hepta
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Provision current V5 host compilers and Linux dependencies
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.88.0 --profile minimal --component rustfmt --component clippy
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            pkg-config libssl-dev libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libgl1-mesa-dev libegl1-mesa-dev libx11-dev libxi-dev \
+            libxrandr-dev libxcursor-dev libxinerama-dev
+          cargo install --locked just --version 1.51.0
+          cargo install --locked cargo-nextest --version 0.9.137
+
+      - name: Build and test the fixed V5 original source pair
+        working-directory: desktop
+        run: |
+          set -euo pipefail
+          diagnostics="$RUNNER_TEMP/organ-pair-invocation"
+          test ! -e "$diagnostics"
+          mkdir -m 700 "$diagnostics"
+          set +e
+          python3 -I -B support/release/check_organ_pair.py \
+            --os-repo "$PWD" --hepta-repo "$GITHUB_WORKSPACE/hepta" \
+            --os-head "$DESKTOP_SHA" --os-tree "$(git rev-parse HEAD^{tree})" \
+            --manifest support/release/profiles/current-organ-source.json \
+            --required-schema 5 \
+            --output-dir "$RUNNER_TEMP/organ-pair" --execute-host \
+            > "$diagnostics/stdout.log" 2> "$diagnostics/stderr.log"
+          pair_status=$?
+          set -e
+          pair_receipt_present=false
+          if test -f "$RUNNER_TEMP/organ-pair/pair-receipt.json"; then
+            pair_receipt_present=true
+          fi
+          printf '{"actual_exit":%d,"pair_receipt_present":%s,"requested_os_head":"%s","qualification":"not_inferred_from_invocation"}\n' \
+            "$pair_status" "$pair_receipt_present" "$DESKTOP_SHA" \
+            > "$diagnostics/invocation-receipt.json"
+          cat "$diagnostics/stdout.log"
+          cat "$diagnostics/stderr.log" >&2
+          exit "$pair_status"
+
+      - name: Retain exact V5 pair receipt and full host logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-organ-host-pair-${{ env.DESKTOP_SHA }}
+          path: |
+            ${{ runner.temp }}/organ-pair/pair-receipt.json
+            ${{ runner.temp }}/organ-pair/source-manifest.json
+            ${{ runner.temp }}/organ-pair/*.log
+            ${{ runner.temp }}/organ-pair-invocation/
+          if-no-files-found: error
+
+  historical-v4-host-pair:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.historical_os_ref != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      DESKTOP_SHA: ${{ inputs.historical_os_ref }}
+      CARGO_BUILD_JOBS: '1'
+      CARGO_INCREMENTAL: '0'
+      RUSTUP_TOOLCHAIN: '1.95.0'
+    steps:
+      - name: Validate explicit historical V4 source identity
+        run: |
+          python3 -I -B - <<'PY'
+          import os, re
+          if re.fullmatch(r"[0-9a-f]{40}", os.environ['DESKTOP_SHA']) is None:
+              raise SystemExit('Historical V4 requires an explicit full lowercase 40-hex OS commit')
+          PY
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          path: desktop
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Read the single reviewed Hepta pin
+        id: pin
+        working-directory: desktop
+        run: |
+          python3 -I -B - <<'PY'
+          import os, runpy
+          from pathlib import Path
+          source = Path('support/release')
+          api = runpy.run_path(str(source / 'organ_release_profile.py'))
+          mapping = api['load_json'](source / 'organ_source_map_v4.json')
+          manifest = api['load_json'](source / 'profiles/current-organ-source.json')
+          pin = api['check_current_contract'](manifest, mapping)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'hepta_sha={pin}\n')
+          PY
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: TrillionniumFoundation/hepta-private-ci
+          ref: ${{ steps.pin.outputs.hepta_sha }}
+          path: hepta
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Provision the pinned host compilers and Linux build dependencies
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.88.0 --profile minimal --component rustfmt --component clippy
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            pkg-config libssl-dev libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libgl1-mesa-dev libegl1-mesa-dev libx11-dev libxi-dev \
+            libxrandr-dev libxcursor-dev libxinerama-dev
+          cargo install --locked just --version 1.51.0
+          cargo install --locked cargo-nextest --version 0.9.137
+
+      - name: Build and test the complete original source pair
+        working-directory: desktop
+        run: |
+          set -euo pipefail
+          python3 -I -B support/release/check_organ_pair.py \
+            --os-repo "$PWD" --hepta-repo "$GITHUB_WORKSPACE/hepta" \
+            --os-head "$DESKTOP_SHA" --os-tree "$(git rev-parse HEAD^{tree})" \
+            --manifest support/release/profiles/current-organ-source.json \
+            --required-schema 4 \
+            --output-dir "$RUNNER_TEMP/organ-pair" --execute-host
+
+      - name: Retain exact-pair receipt and full host logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-v4-organ-host-pair-${{ env.DESKTOP_SHA }}
+          path: |
+            ${{ runner.temp }}/organ-pair/pair-receipt.json
+            ${{ runner.temp }}/organ-pair/source-manifest.json
+            ${{ runner.temp }}/organ-pair/*.log
+          if-no-files-found: error

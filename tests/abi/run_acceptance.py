@@ -352,9 +352,11 @@ def execute(args: argparse.Namespace, report: dict[str, Any], output: Path) -> N
     hashes = {name: digest(data) for name, data in before.items()}
     report.update(repo_root=str(repo), input_sha256=hashes,
                   fixture_sha256={name: value for name, value in hashes.items() if name.startswith("tests/golden/")},
-                  original_inputs_unchanged=False, readme_bytes=len(before["README.md"]))
-    if before["README.md"]:
-        raise ValueError("root README.md must be zero bytes")
+                  original_inputs_unchanged=False, readme_bytes=len(before["README.md"]),
+                  readme_policy="nonempty-captured-source",
+                  readme_nonempty=bool(before["README.md"].strip()))
+    if not report["readme_nonempty"]:
+        raise ValueError("root README.md must contain project documentation")
     snapshot = output / "snapshot"
     snapshot_inputs(before, snapshot)
     report["snapshot_root"] = str(snapshot)
@@ -500,7 +502,9 @@ def main(argv: list[str] | None = None) -> int:
     report["not_executed"] = [name for name in CHECK_NAMES if name not in observed]
     report["success"] = (not report["errors"] and not report["not_executed"]
                          and report.get("original_inputs_unchanged") is True
-                         and report.get("readme_bytes") == 0
+                         and report.get("readme_policy") == "nonempty-captured-source"
+                         and report.get("readme_nonempty") is True
+                         and report.get("readme_bytes", 0) > 0
                          and len(report["checks"]) == len(CHECK_NAMES)
                          and all(check["passed"] for check in report["checks"]))
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")

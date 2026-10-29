@@ -24,9 +24,11 @@ use crate::fs::cgroupfs::{
     systree_node::CgroupSysNode,
 };
 
+pub(super) mod anon;
 pub(super) mod cpu;
 mod cpuset;
 mod memory;
+pub(super) mod page_memory;
 mod pids;
 
 /// A trait to abstract all individual cgroup sub-controllers.
@@ -229,6 +231,10 @@ pub(crate) struct Controller {
     /// Updates to this set are serialized by `CgroupMembership::write_lock()`.
     active_set: AtomicSubCtrlSet,
 
+    /// Independent of replaceable Linux sub-controller incarnations.
+    anon: Arc<anon::AnonBudget>,
+    page_memory: Arc<page_memory::PageMemoryBudget>,
+
     cpuset: Rcu<Arc<SubController<CpuSetController>>>,
     cpu: Rcu<Arc<SubController<CpuController>>>,
     memory: Rcu<Arc<SubController<MemoryController>>>,
@@ -245,6 +251,10 @@ impl Controller {
 
         Self {
             active_set: AtomicSubCtrlSet::new(SubCtrlSet::empty()),
+            anon: anon::AnonBudget::new(parent_controller.map(|parent| parent.anon.clone())),
+            page_memory: page_memory::PageMemoryBudget::new(
+                parent_controller.map(|parent| parent.page_memory.clone()),
+            ),
             cpuset: Rcu::new(cpuset_controller),
             cpu: Rcu::new(cpu_controller),
             memory: Rcu::new(memory_controller),
@@ -253,6 +263,8 @@ impl Controller {
     }
 
     pub(super) fn init_attr_set(builder: &mut SysAttrSetBuilder, is_root: bool) {
+        anon::AnonBudget::init_attr_set(builder);
+        page_memory::PageMemoryBudget::init_attr_set(builder);
         CpuSetController::init_attr_set(builder, is_root);
         CpuController::init_attr_set(builder, is_root);
         MemoryController::init_attr_set(builder, is_root);
@@ -292,6 +304,12 @@ impl Controller {
         offset: usize,
         writer: &mut VmWriter,
     ) -> Result<usize> {
+        if name.starts_with("hepta.anon.") {
+            return self.anon.read_attr_at(name, offset, writer);
+        }
+        if name.starts_with("hepta.page.") {
+            return self.page_memory.read_attr_at(name, offset, writer);
+        }
         let Some((subsys, _)) = name.split_once('.') else {
             return Err(Error::NotFound);
         };
@@ -306,6 +324,12 @@ impl Controller {
     }
 
     pub(super) fn write_attr(&self, name: &str, reader: &mut VmReader) -> Result<usize> {
+        if name.starts_with("hepta.anon.") {
+            return self.anon.write_attr(name, reader);
+        }
+        if name.starts_with("hepta.page.") {
+            return self.page_memory.write_attr(name, reader);
+        }
         let Some((subsys, _)) = name.split_once('.') else {
             return Err(Error::NotFound);
         };
@@ -340,6 +364,10 @@ impl Controller {
             return Err(Error::NotFound);
         }
 
+        if ctrl_type == SubCtrlType::Cpu {
+            Self::ensure_cpu_routes_unpinned(current_node)?;
+        }
+
         active_set.add_type(ctrl_type);
         self.active_set.store(active_set, Ordering::Relaxed);
         self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
@@ -372,15 +400,72 @@ impl Controller {
             {
                 return Err(Error::InvalidOperation);
             }
-            if ctrl_type == SubCtrlType::Cpu && cgroup_child.controller().has_trusted_cpu_management() {
+            if ctrl_type == SubCtrlType::Cpu
+                && cgroup_child.controller().has_trusted_cpu_management()
+            {
                 return Err(Error::PermissionDenied);
             }
+        }
+
+        if ctrl_type == SubCtrlType::Cpu {
+            Self::ensure_cpu_routes_unpinned(current_node)?;
         }
 
         active_set.remove_type(ctrl_type);
         self.active_set.store(active_set, Ordering::Relaxed);
         self.update_sub_controllers_for_descents(ctrl_type, current_node, cgroup_membership);
 
+        Ok(())
+    }
+
+    /// Check the whole affected subtree before changing active_set or closing
+    /// any incarnation. A route captured under membership's read side pins
+    /// every current raw ancestor, including inactive levels. Thus each direct
+    /// child's zero count implies no pinned route anywhere below that child.
+    /// Exited tasks' retained old-owner chains are never admitted as routes.
+    fn ensure_cpu_routes_unpinned(current_node: &dyn CgroupSysNode) -> Result<()> {
+        let mut pinned = false;
+        current_node.visit_children_with(0, &mut |child| {
+            let child = child.as_any().downcast_ref::<CgroupNode>().unwrap();
+            if child
+                .controller()
+                .cpu
+                .read()
+                .get()
+                .inner
+                .as_ref()
+                .unwrap()
+                .has_scheduling_routes()
+            {
+                pinned = true;
+                None
+            } else {
+                Some(())
+            }
+        });
+        if pinned {
+            Err(Error::ResourceUnavailable)
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Refuse a CPU route change before any part of a mixed subtree-control
+    /// request is applied. The caller holds the membership writer throughout
+    /// this preflight and the existing activation/deactivation loops.
+    pub(super) fn preflight_cpu_routes(
+        &self,
+        activate: &SubCtrlSet,
+        deactivate: &SubCtrlSet,
+        current_node: &dyn CgroupSysNode,
+        _membership: &CgroupMembership,
+    ) -> Result<()> {
+        let active = self.active_set().contains_type(SubCtrlType::Cpu);
+        if (activate.contains_type(SubCtrlType::Cpu) && !active)
+            || (deactivate.contains_type(SubCtrlType::Cpu) && active)
+        {
+            Self::ensure_cpu_routes_unpinned(current_node)?;
+        }
         Ok(())
     }
 

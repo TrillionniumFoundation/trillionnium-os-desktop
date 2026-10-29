@@ -5,10 +5,13 @@ use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::os::unix::net::UnixListener;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 use trill_ui_core::hepta::HeptaConnectionState;
-use trill_ui_core::{request_at, unix_ms, Request, Response};
+use trill_ui_core::{request_at, Request, Response};
+
+static NEXT_RUNTIME: AtomicUsize = AtomicUsize::new(1);
 
 struct Harness {
     child: Child,
@@ -25,11 +28,11 @@ impl Drop for Harness {
 
 fn runtime_dir(label: &str) -> PathBuf {
     let path = std::env::temp_dir().join(format!(
-        "trill-hepta-{label}-{}-{}",
+        "tho-{:x}-{:x}",
         std::process::id(),
-        unix_ms()
+        NEXT_RUNTIME.fetch_add(1, Ordering::Relaxed)
     ));
-    fs::create_dir(&path).unwrap();
+    fs::create_dir(&path).unwrap_or_else(|error| panic!("create {label} runtime: {error}"));
     fs::set_permissions(&path, Permissions::from_mode(0o700)).unwrap();
     path
 }
@@ -45,7 +48,7 @@ fn session_command(runtime: &PathBuf) -> Command {
         .env_remove("TRILL_HEPTA_RUN_ID")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null());
+        .stderr(Stdio::inherit());
     command
 }
 

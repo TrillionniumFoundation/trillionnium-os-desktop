@@ -40,7 +40,7 @@ jobs:
           test -z "$checkout_status"
           test -f README.md
           test ! -L README.md
-          test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
 
       - name: Require all 11 host control regressions with no skips
         run: |
@@ -81,7 +81,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
           test -f README.md
           test ! -L README.md
-          test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
           git diff --exit-code
           checkout_status=$(git status --porcelain=v1 --untracked-files=all)
           test -z "$checkout_status"

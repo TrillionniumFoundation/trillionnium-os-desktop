@@ -24,18 +24,14 @@ impl Drop for Harness {
 
 #[test]
 fn private_socket_survives_client_disconnect_and_reports_owned_task() {
-    let dir = std::env::temp_dir().join(format!(
-        "trill-ipc-test-{}-{}",
-        std::process::id(),
-        unix_ms()
-    ));
+    let dir = std::env::temp_dir().join(format!("tipc-{:x}-{:x}", std::process::id(), unix_ms()));
     fs::create_dir(&dir).expect("create runtime directory");
     fs::set_permissions(&dir, Permissions::from_mode(0o700)).unwrap();
     let child = Command::new(env!("CARGO_BIN_EXE_trill-session"))
         .env("XDG_RUNTIME_DIR", &dir)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(Stdio::inherit())
         .spawn()
         .expect("start session service");
     let mut harness = Harness {

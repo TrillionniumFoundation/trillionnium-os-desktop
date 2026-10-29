@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use core::{
-    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, Ordering},
+    sync::atomic::{AtomicBool, AtomicU32, Ordering},
     time::Duration,
 };
 
@@ -9,6 +9,7 @@ use ostd::timer::Jiffies;
 
 use self::{image::ProcessImageState, timer_manager::PosixTimerManager};
 use super::{
+    oom_adjustment::{OomInit, OomScoreAdj},
     pid_table::{self, PidTable},
     posix_thread::{AsPosixThread, FIRST_POSIX_TID},
     process_vm::ProcessVmarGuard,
@@ -30,25 +31,24 @@ use crate::{
         signal::{Pollee, sig_queues::SigQueues},
         status::StopWaitStatus,
     },
-    sched::{AtomicNice, Nice},
     thread::{AsThread, Thread},
     time::clocks::ProfClock,
     vm::vmar::Vmar,
 };
 
-mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 mod control_lock;
+mod image;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use control_lock::KernelControlBackend;
-#[cfg(feature = "g1d-trusted-control")]
-mod trusted_control;
 mod init_proc;
 mod job_control;
 mod process_group;
 mod session;
 mod terminal;
 mod timer_manager;
+#[cfg(feature = "g1d-trusted-control")]
+mod trusted_control;
 
 use atomic_integer_wrapper::define_atomic_version_of_integer_like_type;
 pub(crate) use image::ProcessImageKey;
@@ -103,6 +103,10 @@ pub struct Process {
     // Mutable Part
     /// The threads
     tasks: Mutex<TaskSet>,
+    /// Serializes filter publication, clone inheritance and exec credential
+    /// preparation. Order: seccomp_update -> tasks -> per-thread policy.
+    /// Exec releases this before waiting for its killed siblings.
+    seccomp_update: Mutex<()>,
     /// Process status
     status: ProcessStatus,
     /// Parent process
@@ -119,13 +123,9 @@ pub struct Process {
     ///
     /// If this field is `None`, the process is bound to the root cgroup.
     cgroup: RcuOption<Arc<CgroupNode>>,
-    /// Scheduling priority nice value
-    /// According to POSIX.1, the nice value is a per-process attribute,
-    /// the threads in a process should share a nice value.
-    nice: AtomicNice,
     /// The adjustment value of the out-of-memory (OOM) killer score.
     // FIXME: Support OOM killer.
-    oom_score_adj: AtomicI16,
+    oom_score_adj: OomScoreAdj,
 
     // Child reaper attribute
     /// Whether the process is a child subreaper.
@@ -243,11 +243,11 @@ impl Process {
         vmar: Arc<Vmar>,
 
         resource_limits: ResourceLimits,
-        nice: Nice,
-        oom_score_adj: i16,
+        oom_score_adj: OomInit<'_>,
         sig_dispositions: Arc<Mutex<SigDispositions>>,
         user_ns: Arc<UserNamespace>,
     ) -> Arc<Self> {
+        let oom_score_adj = OomScoreAdj::new(pid, &vmar, oom_score_adj);
         Arc::new_cyclic(|process_ref: &Weak<Process>| {
             // SIGCHID does not interrupt pauser. Child process will
             // resume paused parent when doing exit.
@@ -262,6 +262,7 @@ impl Process {
                 children_wait_queue,
                 pidfile_pollee: Pollee::new(),
                 tasks: Mutex::new(TaskSet::new()),
+                seccomp_update: Mutex::new(()),
                 status: ProcessStatus::default(),
                 parent: ParentProcess::new(Weak::new()),
                 children: Mutex::new(Some(BTreeMap::new())),
@@ -269,8 +270,7 @@ impl Process {
                 reaped_children_stats: Mutex::new(ReapedChildrenStats::default()),
                 resource_limits,
                 cgroup: RcuOption::new(None),
-                nice: AtomicNice::new(nice),
-                oom_score_adj: AtomicI16::new(oom_score_adj),
+                oom_score_adj,
                 is_child_subreaper: AtomicBool::new(false),
                 has_child_subreaper: AtomicBool::new(false),
                 sig_dispositions: Mutex::new(sig_dispositions),
@@ -329,19 +329,19 @@ impl Process {
         &self.tasks
     }
 
-    pub(crate) fn resource_limits(&self) -> &ResourceLimits {
-        &self.resource_limits
+    pub(crate) fn seccomp_update(&self) -> &Mutex<()> {
+        &self.seccomp_update
     }
 
-    pub(crate) fn nice(&self) -> &AtomicNice {
-        &self.nice
+    pub(crate) fn resource_limits(&self) -> &ResourceLimits {
+        &self.resource_limits
     }
 
     pub(crate) fn main_thread(&self) -> Arc<Thread> {
         self.tasks.lock().main().as_thread().unwrap().clone()
     }
 
-    pub(crate) fn oom_score_adj(&self) -> &AtomicI16 {
+    pub(crate) fn oom_score_adj(&self) -> &OomScoreAdj {
         &self.oom_score_adj
     }
 
@@ -639,7 +639,7 @@ impl Process {
     // ************** Virtual Memory *************
 
     pub(crate) fn lock_vmar(&self) -> ProcessVmarGuard<'_> {
-        ProcessVmarGuard::new(self.vmar.lock())
+        ProcessVmarGuard::new(self, self.vmar.lock())
     }
 
     // ****************** Signal ******************
@@ -712,6 +712,13 @@ impl Process {
     pub(crate) fn stop(&self, sig_num: SigNum) {
         if self.status.stop_status().stop(sig_num) {
             self.wake_up_parent();
+
+            // Signal enqueue precedes this state transition. A sibling may
+            // already have consumed the pending signal, so wake interruptible
+            // waiters again after publishing the process-wide stop condition.
+            for task in self.tasks.lock().as_slice() {
+                task.as_posix_thread().unwrap().wake_signalled_waker();
+            }
         }
     }
 

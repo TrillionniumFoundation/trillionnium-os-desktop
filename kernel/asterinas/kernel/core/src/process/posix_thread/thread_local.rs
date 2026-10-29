@@ -14,7 +14,7 @@ use crate::{
     prelude::*,
     process::{
         NsProxy, UserNamespace,
-        signal::{SigStack, sig_mask::SigMask},
+        signal::{SigStack, sig_mask::SigMask, signals::seccomp::SeccompSignal},
     },
     vm::vmar::VmarHandle,
 };
@@ -52,6 +52,8 @@ pub(crate) struct ThreadLocal {
     /// Original syscall-return register value captured
     /// at the most recent kernel entry, or `None` for non-syscall entries.
     orig_syscall_ret: Cell<Option<usize>>,
+    /// Only the current syscall entry can publish this synchronous fault.
+    seccomp_trap: Cell<Option<SeccompSignal>>,
 
     // Namespaces.
     user_ns: RefCell<Arc<UserNamespace>>,
@@ -82,6 +84,7 @@ impl ThreadLocal {
             sig_stack: RefCell::new(SigStack::default()),
             sig_mask_saved: Cell::new(None),
             orig_syscall_ret: Cell::new(None),
+            seccomp_trap: Cell::new(None),
             user_ns: RefCell::new(user_ns),
             ns_proxy: RefCell::new(Some(ns_proxy)),
         }
@@ -186,6 +189,10 @@ impl ThreadLocal {
     /// for the most recent kernel entry.
     pub(crate) fn set_orig_syscall_ret(&self, value: Option<usize>) {
         self.orig_syscall_ret.set(value);
+    }
+
+    pub(crate) fn seccomp_trap(&self) -> &Cell<Option<SeccompSignal>> {
+        &self.seccomp_trap
     }
 
     pub(crate) fn borrow_user_ns(&self) -> Ref<'_, Arc<UserNamespace>> {

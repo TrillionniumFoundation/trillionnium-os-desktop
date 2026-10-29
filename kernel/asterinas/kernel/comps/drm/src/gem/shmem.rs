@@ -31,7 +31,7 @@ impl MappedObject for DrmGemShmemMappedObject {
             return_errno_with_message!(Errno::EFAULT, "the GEM page offset is out of bounds");
         };
 
-        handle.map_frame(offset, page.clone());
+        handle.map_frame(offset, page.clone())?;
         Ok(())
     }
 }

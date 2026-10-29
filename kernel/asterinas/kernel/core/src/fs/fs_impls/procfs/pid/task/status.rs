@@ -54,6 +54,7 @@ use crate::{
 /// - CapEff: Effective capabilities.
 /// - CapBnd: Bounding set.
 /// - CapAmb: Ambient capabilities.
+/// - NoNewPrivs: Whether gaining privileges through exec is prohibited.
 /// - Seccomp: Seccomp mode.
 /// - Cpus_allowed: CPUs allowed for this process.
 /// - Cpus_allowed_list: List of CPUs allowed for this process.
@@ -154,6 +155,12 @@ impl ProcFileOps for StatusFileOps {
                 .unwrap_or(0)
         )?;
 
+        write!(printer, "Groups:\t")?;
+        for gid in credentials.groups().iter() {
+            write!(printer, "{} ", u32::from(*gid))?;
+        }
+        writeln!(printer)?;
+
         if let Some(vmar_ref) = process.lock_vmar().as_ref() {
             let vsize = vmar_ref.get_mappings_total_size();
             let anon = vmar_ref.get_rss_counter(RssType::Anon) * (PAGE_SIZE / 1024);
@@ -196,6 +203,12 @@ impl ProcFileOps for StatusFileOps {
             printer,
             "CapAmb:\t{:016x}",
             credentials.ambient_capset().bits()
+        )?;
+
+        writeln!(
+            printer,
+            "NoNewPrivs:\t{}",
+            u8::from(credentials.no_new_privs())
         )?;
 
         Ok(printer.bytes_written())

@@ -5,6 +5,7 @@ use core::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
+use ostd::mm::io::util::HasVmReaderWriter;
 use spin::Once;
 
 use crate::{
@@ -20,7 +21,9 @@ use crate::{
     process::signal::Pollee,
     util::{
         MultiRead, MultiWrite,
-        ring_buffer::{ProducerU8Ext, RbConsumer, RbProducer, RingBuffer, RingBufferU8Ext},
+        ring_buffer::{
+            ProducerU8Ext, RbConsumer, RbProducer, RingBuffer, RingBufferU8Ext, new_ipc_ring_buffer,
+        },
     },
 };
 
@@ -32,6 +35,13 @@ pub(super) struct Connected {
 }
 
 impl Connected {
+    pub(super) fn prepare_buffers() -> Result<[RingBuffer<u8>; 2]> {
+        Ok([
+            new_ipc_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE)?,
+            new_ipc_ring_buffer(UNIX_STREAM_DEFAULT_BUF_SIZE)?,
+        ])
+    }
+
     pub(super) fn new_pair(
         addr: Option<UnixSocketAddrBound>,
         peer_addr: Option<UnixSocketAddrBound>,
@@ -39,9 +49,11 @@ impl Connected {
         peer_state: EndpointState,
         cred: SocketCred,
         peer_cred: SocketCred,
+        buffers: [RingBuffer<u8>; 2],
     ) -> (Connected, Connected) {
-        let (this_writer, peer_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
-        let (peer_writer, this_reader) = RingBuffer::new(UNIX_STREAM_DEFAULT_BUF_SIZE).split();
+        let [this_buffer, peer_buffer] = buffers;
+        let (this_writer, peer_reader) = this_buffer.split();
+        let (peer_writer, this_reader) = peer_buffer.split();
 
         let this_inner = Inner {
             addr: Once::new(),
@@ -320,7 +332,7 @@ impl Connected {
             let mut writer = this_end.writer.lock();
             let write_len = self
                 .inner
-                .write_with(move || writer.write_fallible(reader))?;
+                .write_with(move || write_stream_payload(&mut writer, reader))?;
             self.inner.notify_write();
             return Ok(write_len);
         }
@@ -339,7 +351,11 @@ impl Connected {
                 if is_seqpacket && writer.free_len() < reader.sum_lens() {
                     return Ok(0);
                 }
-                writer.write_fallible(reader)
+                if is_seqpacket {
+                    writer.write_fallible(reader)
+                } else {
+                    write_stream_payload(&mut writer, reader)
+                }
             });
             (write_start, write_res)
         } else {
@@ -451,6 +467,150 @@ struct RangedAuxiliaryData {
     data: AuxiliaryData,
     start: Wrapping<usize>, // inclusive
     end: Wrapping<usize>,   // exclusive
+}
+
+// Unlike packets, a byte stream publishes a real copied prefix on a later
+// user-memory fault. Keep the transaction local to Unix STREAM sends.
+fn write_stream_payload(writer: &mut RbProducer<u8>, reader: &mut dyn MultiRead) -> Result<usize> {
+    let available = writer.free_len();
+    let start = writer.tail().0 & (writer.capacity() - 1);
+    let first = available.min(writer.capacity() - start);
+    let mut copied_total = 0;
+
+    for (offset, length) in [(start, first), (0, available - first)] {
+        if length == 0 {
+            continue;
+        }
+        let mut destination = writer.segment().writer();
+        destination.skip(offset).limit(length);
+        match reader.read(&mut destination) {
+            Ok(copied) => {
+                copied_total += copied;
+                if copied < length {
+                    break;
+                }
+            }
+            Err((error, copied)) => {
+                copied_total += copied;
+                if copied_total == 0 {
+                    return Err(error.into());
+                }
+                break;
+            }
+        }
+    }
+
+    writer.commit_write(copied_total);
+    Ok(copied_total)
+}
+
+#[cfg(ktest)]
+mod stream_copy_tests {
+    use ostd::{mm::Infallible, prelude::ktest};
+
+    use super::*;
+
+    struct FaultAfterPrefix {
+        prefix: &'static [u8],
+        copied: usize,
+    }
+
+    impl ReadCString for FaultAfterPrefix {
+        fn read_cstring_until_nul(&mut self, _max_len: usize) -> Result<Option<CString>> {
+            unreachable!("binary stream copy must not read a C string")
+        }
+
+        fn read_cstring_until_end(&mut self, _max_len: usize) -> Result<(CString, usize)> {
+            unreachable!("binary stream copy must not read a C string")
+        }
+    }
+
+    impl MultiRead for FaultAfterPrefix {
+        fn read(
+            &mut self,
+            writer: &mut VmWriter<'_, Infallible>,
+        ) -> Result<usize, (ostd::Error, usize)> {
+            let space = writer.avail();
+            let count = (self.prefix.len() - self.copied).min(space);
+            let mut valid =
+                VmReader::from(&self.prefix[self.copied..self.copied + count]).to_fallible();
+            assert_eq!(valid.read_fallible(writer).unwrap(), count);
+            self.copied += count;
+            if count < space {
+                Err((ostd::Error::PageFault, count))
+            } else {
+                Ok(count)
+            }
+        }
+
+        fn sum_lens(&self) -> usize {
+            self.prefix.len() - self.copied + 1
+        }
+
+        fn skip_some(&mut self, _nbytes: usize) {
+            unreachable!("producer copy must not skip source bytes")
+        }
+    }
+
+    #[ktest]
+    fn stream_copy_fault_publishes_the_actual_linear_prefix() {
+        let (mut producer, mut consumer) = RingBuffer::<u8>::new(8).split();
+        let mut source = FaultAfterPrefix {
+            prefix: b"abc",
+            copied: 0,
+        };
+        assert_eq!(write_stream_payload(&mut producer, &mut source).unwrap(), 3);
+        assert_eq!(producer.len(), 3);
+        let mut received = [0u8; 3];
+        consumer.pop_slice(&mut received).unwrap();
+        assert_eq!(&received, b"abc");
+        assert!(consumer.is_empty());
+    }
+
+    #[ktest]
+    fn stream_copy_fault_in_a_wrapped_second_segment_keeps_prior_progress() {
+        for prefix in [b"abcd".as_slice(), b"abcdef".as_slice()] {
+            let (mut producer, mut consumer) = RingBuffer::<u8>::new(8).split();
+            producer.push_slice(&[0u8; 4]).unwrap();
+            consumer.pop_slice(&mut [0u8; 4]).unwrap();
+            let mut source = FaultAfterPrefix { prefix, copied: 0 };
+            assert_eq!(
+                write_stream_payload(&mut producer, &mut source).unwrap(),
+                prefix.len()
+            );
+            assert_eq!(producer.len(), prefix.len());
+            let mut received = [0u8; 6];
+            consumer.pop_slice(&mut received[..prefix.len()]).unwrap();
+            assert_eq!(&received[..prefix.len()], prefix);
+            assert!(consumer.is_empty());
+        }
+    }
+
+    #[ktest]
+    fn zero_copy_fault_and_packet_copy_publish_no_prefix() {
+        let (mut producer, consumer) = RingBuffer::<u8>::new(8).split();
+        let mut empty = FaultAfterPrefix {
+            prefix: b"",
+            copied: 0,
+        };
+        assert_eq!(
+            write_stream_payload(&mut producer, &mut empty)
+                .unwrap_err()
+                .error(),
+            Errno::EFAULT
+        );
+        assert!(consumer.is_empty());
+
+        let mut packet = FaultAfterPrefix {
+            prefix: b"abc",
+            copied: 0,
+        };
+        assert_eq!(
+            producer.write_fallible(&mut packet).unwrap_err().error(),
+            Errno::EFAULT
+        );
+        assert!(consumer.is_empty());
+    }
 }
 
 pub(in crate::net) const UNIX_STREAM_DEFAULT_BUF_SIZE: usize = 65536;

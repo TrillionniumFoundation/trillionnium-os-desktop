@@ -4,6 +4,7 @@ mod hepta_panel;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
 mod local_drafts;
+mod objective_panel;
 
 use conversation::{DraftBook, HostObservation, WorkspaceTab};
 use eframe::egui::{self, Color32, RichText};
@@ -23,6 +24,7 @@ use trill_ui_core::{
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Page {
     Conversation,
+    Objectives,
     Hepta,
     Tasks,
     Apps,
@@ -35,6 +37,7 @@ impl Page {
     fn name(self) -> &'static str {
         match self {
             Self::Conversation => "Workspace / Chat",
+            Self::Objectives => "Signed requests",
             Self::Hepta => "Hepta / Runtime",
             Self::Tasks => "Tasks",
             Self::Apps => "Applications",
@@ -49,6 +52,7 @@ impl Page {
 struct StartupOptions {
     page: Page,
     hepta_layout_probe: bool,
+    objective_layout_probe: bool,
 }
 
 fn parse_startup_options(
@@ -57,6 +61,7 @@ fn parse_startup_options(
     let mut options = StartupOptions {
         page: Page::Conversation,
         hepta_layout_probe: false,
+        objective_layout_probe: false,
     };
     let mut page_selected = false;
     let mut args = args.into_iter();
@@ -65,6 +70,7 @@ fn parse_startup_options(
             "--page" if !page_selected => {
                 options.page = match args.next().as_deref() {
                     Some("conversation") => Page::Conversation,
+                    Some("objectives") => Page::Objectives,
                     Some("hepta") => Page::Hepta,
                     Some("tasks") => Page::Tasks,
                     Some("apps") => Page::Apps,
@@ -78,11 +84,17 @@ fn parse_startup_options(
             "--hepta-layout-probe" if !options.hepta_layout_probe => {
                 options.hepta_layout_probe = true;
             }
+            "--objective-layout-probe" if !options.objective_layout_probe => {
+                options.objective_layout_probe = true
+            }
             _ => return Err("unknown or duplicate Shell option"),
         }
     }
     if options.hepta_layout_probe && options.page != Page::Hepta {
         return Err("--hepta-layout-probe requires --page hepta");
+    }
+    if options.objective_layout_probe && options.page != Page::Objectives {
+        return Err("--objective-layout-probe requires --page objectives");
     }
     Ok(options)
 }
@@ -220,6 +232,8 @@ fn observed_host_line(task: &TaskRecord) -> String {
 }
 
 struct Desktop {
+    objectives: objective_panel::ObjectivePanel,
+    objective_layout_probe: bool,
     page: Page,
     workspace: Workspace,
     drafts: DraftBook,
@@ -264,6 +278,8 @@ impl Desktop {
             page => page,
         };
         Self {
+            objectives: objective_panel::ObjectivePanel::default(),
+            objective_layout_probe: options.objective_layout_probe,
             page,
             workspace: Workspace::Personal,
             drafts,
@@ -358,6 +374,7 @@ impl Desktop {
                         .is_some_and(|id| id != &session_instance)
                     {
                         self.tasks.clear();
+                        self.objectives = objective_panel::ObjectivePanel::default();
                         self.selected = None;
                         self.notice("Host session restarted: previous child history cannot be reattached or trusted.");
                     }
@@ -401,6 +418,34 @@ impl Desktop {
                         }
                     }
                     self.tasks = tasks;
+                }
+                Ok(Response::Objectives {
+                    configured,
+                    owner_agent_id,
+                    owner_spawn_generation,
+                    entries,
+                    session_instance,
+                }) => {
+                    if self.connected
+                        && self.session_instance.as_deref() == Some(session_instance.as_str())
+                    {
+                        self.objectives.list(
+                            configured,
+                            owner_agent_id,
+                            owner_spawn_generation,
+                            entries,
+                        );
+                    }
+                }
+                Ok(Response::ObjectiveDetail {
+                    detail,
+                    session_instance,
+                }) => {
+                    if self.connected
+                        && self.session_instance.as_deref() == Some(session_instance.as_str())
+                    {
+                        self.objectives.detail(*detail);
+                    }
                 }
                 Ok(Response::Task {
                     task,
@@ -716,7 +761,7 @@ impl Desktop {
         ui.label(host_fonts::status_label(ctx));
         ui.small("Set TRILL_UI_CJK_FONT to an absolute host font path; font coverage does not verify an input method.");
         hepta_panel::status(ui, &self.hepta);
-        ui.label("Hepta objective submission: unavailable; local drafts only");
+        ui.label("Drafts stay local. Separately supplied signed requests are available on the Signed requests page.");
         ui.label("Native HOS2 resource revision: unavailable");
         ui.label("Compositor: external Wayland/X11 host, not bundled");
         ui.separator();
@@ -745,7 +790,7 @@ impl Desktop {
             ui.small(&self.session_error);
         }
         hepta_panel::status(ui, &self.hepta);
-        ui.small("Objective submission: unavailable");
+        ui.small("Signed requests: separate original-owner admission page; local drafts are not submitted");
         ui.label("HOS2: NOT OBSERVED");
         ui.separator();
         ui.label(RichText::new("Host resource sample").strong());
@@ -964,7 +1009,12 @@ impl eframe::App for Desktop {
                     }
                 }
                 ui.separator();
-                for page in [Page::Conversation, Page::Apps, Page::Settings] {
+                for page in [
+                    Page::Conversation,
+                    Page::Objectives,
+                    Page::Apps,
+                    Page::Settings,
+                ] {
                     if ui
                         .selectable_label(self.page == page, page.name())
                         .clicked()
@@ -984,6 +1034,16 @@ impl eframe::App for Desktop {
         }
         egui::CentralPanel::default().show(ctx, |ui| match self.page {
             Page::Conversation => self.conversation(ui),
+            Page::Objectives => {
+                if let Some(request) = self.objectives.render(
+                    ui,
+                    self.connected,
+                    self.session_instance.as_deref(),
+                    self.objective_layout_probe,
+                ) {
+                    self.submit(request);
+                }
+            }
             Page::Hepta => hepta_panel::runtime(ui, &self.hepta),
             Page::Tasks => self.task_list(ui),
             Page::Apps => self.apps(ui),
@@ -1032,7 +1092,7 @@ fn main() -> eframe::Result {
         Ok(options) => options,
         Err(message) => {
             eprintln!("trill-shell: {message}");
-            eprintln!("Usage: trill-shell [--page conversation|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe]");
+            eprintln!("Usage: trill-shell [--page conversation|objectives|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe] [--objective-layout-probe]");
             std::process::exit(2);
         }
     };
@@ -1110,6 +1170,8 @@ mod observation_freshness_tests {
         let (polls, _incoming_polls) = mpsc::sync_channel(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
         let desktop = Desktop {
+            objectives: objective_panel::ObjectivePanel::default(),
+            objective_layout_probe: false,
             page: Page::Hepta,
             workspace: Workspace::Personal,
             drafts: DraftBook::default(),
@@ -1849,6 +1911,10 @@ mod bridge_tests {
                 Request::Snapshot => "snapshot",
                 Request::Launch { .. } => "launch",
                 Request::Cancel { .. } => "cancel",
+                Request::ObjectiveList { .. }
+                | Request::ObjectiveInspect { .. }
+                | Request::ObjectiveSubmit { .. }
+                | Request::ObjectiveQuery { .. } => "objective",
             };
             observed_in_worker.lock().unwrap().push(label.to_owned());
             if label == "snapshot" && first_poll.swap(false, Ordering::SeqCst) {

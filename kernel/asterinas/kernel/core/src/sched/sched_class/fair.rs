@@ -16,13 +16,16 @@ use ostd::{
 };
 
 use super::{
-    CurrentRuntime, SchedAttr, SchedClassRq,
+    CurrentRuntime, SchedAttr,
     time::{base_slice_clocks, min_period_clocks},
 };
 use crate::{
     sched::nice::{Nice, NiceValue},
     thread::AsThread,
 };
+
+pub(super) mod group;
+pub(super) use group::{RemovedFair, Selection as FairSelection};
 
 const WEIGHT_0: u64 = 1024;
 
@@ -90,7 +93,7 @@ pub(crate) const fn nice_to_weight(nice: Nice) -> u64 {
 ///     time_slice = period * weight / total_weight
 ///
 /// where `total_weight` is the sum of all weights in the run queue including
-/// the current thread and [`period`](FairClassRq::period) is calculated
+/// the current thread and the per-node scheduling period is calculated
 /// regarding the number of running threads.
 ///
 /// When a thread meets the condition below, it will be preempted to the
@@ -177,11 +180,55 @@ impl FairAttr {
     }
 }
 
+/// The original class/weight and high-water mark of one running interval.
+///
+/// This cursor is separate from the class time slice: the dispatcher still
+/// executes on behalf of a waiting/exiting task until another task takes over.
+/// Policy changes become effective for accounting at the next checkpoint;
+/// they never reprice execution that has already occurred.
+pub(super) struct FairRuntime {
+    accounted_through: u64,
+    weight: Option<u64>,
+}
+
+impl FairRuntime {
+    pub(super) fn new_at(task: &Task, now: u64) -> Self {
+        let attr = task.as_thread().unwrap().sched_attr();
+        Self {
+            accounted_through: now,
+            weight: Self::weight(attr),
+        }
+    }
+
+    pub(super) fn settle(&mut self, task: &Task, now: u64) -> Option<u64> {
+        let attr = task.as_thread().unwrap().sched_attr();
+        let delta = now.saturating_sub(self.accounted_through);
+        self.accounted_through = self.accounted_through.max(now);
+        if let Some(weight) = self.weight {
+            attr.fair.update_vruntime(delta, weight);
+        }
+        let charged = self.weight.map(|_| delta);
+        self.weight = Self::weight(attr);
+        charged
+    }
+
+    fn weight(attr: &SchedAttr) -> Option<u64> {
+        // Read the complete policy under its existing lock. Separate atomic
+        // kind and pending-weight reads could straddle a policy update.
+        match attr.policy() {
+            super::SchedPolicy::Fair(nice) => Some(nice_to_weight(nice)),
+            _ => None,
+        }
+    }
+}
+
 /// The wrapper for threads in the FAIR run queue.
 ///
 /// This structure is used to provide the capability for keying in the
 /// run queue implemented by `BTreeSet` in the `FairClassRq`.
-struct FairQueueItem(Arc<Task>, u64);
+// Cache the exact weight debited to this queue. A pending nice update may be
+// consumed elsewhere before an arbitrary control-path removal or rollback.
+struct FairQueueItem(Arc<Task>, u64, u64);
 
 impl core::fmt::Debug for FairQueueItem {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -225,122 +272,127 @@ impl Ord for FairQueueItem {
 pub(super) struct FairClassRq {
     #[expect(unused)]
     cpu: CpuId,
-    /// The ready-to-run threads.
-    entities: BinaryHeap<Reverse<FairQueueItem>>,
-    /// The minimum of vruntime in the run queue. Serves as the initial
-    /// value of newly-enqueued threads.
-    min_vruntime: u64,
-    total_weight: u64,
+    pub(super) groups: group::GroupTree,
+}
+
+pub(super) struct FairCapacityNeed {
+    pub(super) required: usize,
+    pub(super) capacity: usize,
+}
+
+pub(super) struct PreparedFairCapacity {
+    storage: Option<alloc::vec::Vec<Reverse<FairQueueItem>>>,
+}
+
+impl FairCapacityNeed {
+    pub(super) fn allocate(self) -> ostd::Result<PreparedFairCapacity> {
+        ostd::task::atomic_mode::might_sleep();
+        let storage = if self.required > self.capacity {
+            let mut slots = alloc::vec::Vec::new();
+            slots
+                .try_reserve_exact(self.required)
+                .map_err(|_| ostd::Error::NoMemory)?;
+            Some(slots)
+        } else {
+            None
+        };
+        Ok(PreparedFairCapacity { storage })
+    }
 }
 
 impl FairClassRq {
+    pub(super) fn take_task(&mut self, task: &Arc<Task>) -> ostd::Result<Option<RemovedFair>> {
+        self.groups.take_root_task(task)
+    }
+
+    pub(super) fn restore_task(&mut self, token: RemovedFair) {
+        self.groups.restore_root_task(token);
+    }
+    pub(super) fn commit_removed(&mut self, token: &mut RemovedFair) {
+        self.groups.commit_root_removal(token);
+    }
+    pub(super) fn debt(&self, task: &Task) -> ostd::Result<u64> {
+        self.groups.root_debt(task)
+    }
+    pub(super) fn rebase_debt(&self, task: &Task, debt: u64) -> ostd::Result<()> {
+        self.groups.rebase_root_debt(task, debt)
+    }
+    pub(super) fn root_migration_supported(&self) -> bool {
+        self.groups.root_migration_supported()
+    }
+
+    pub(super) fn capacity_need(&self) -> ostd::Result<FairCapacityNeed> {
+        self.groups.root_capacity_need()
+    }
+
+    pub(super) fn can_install_capacity(&self, prepared: &PreparedFairCapacity) -> bool {
+        self.groups.can_install_root_capacity(prepared)
+    }
+
+    pub(super) fn install_and_reserve(&mut self, prepared: &mut PreparedFairCapacity) {
+        self.groups.install_and_reserve_root(prepared);
+    }
+
+    pub(super) fn release_reservation(&mut self) {
+        self.groups.release_root_reservation();
+    }
     pub(crate) fn new(cpu: CpuId) -> Self {
         Self {
             cpu,
-            entities: BinaryHeap::new(),
-            min_vruntime: 0,
-            total_weight: 0,
+            groups: group::GroupTree::root(),
         }
     }
 
-    /// The scheduling period is calculated as the maximum of the following two values:
-    ///
-    /// 1. The minimum period value, defined by [`min_period_clocks`].
-    /// 2. `period = min_granularity * n` where
-    ///    `min_granularity = log2(1 + num_cpus) * base_slice_clocks`, and `n` is the number of
-    ///    runnable threads (including the current running thread).
-    ///
-    /// The formula is chosen by 3 principles:
-    ///
-    /// 1. The scheduling period should reflect the running threads and CPUs;
-    /// 2. The scheduling period should not be too low to limit the overhead of context switching;
-    /// 3. The scheduling period should not be too high to ensure the scheduling latency
-    ///    & responsiveness.
-    fn period(&self) -> u64 {
-        let base_slice_clks = base_slice_clocks();
-        let min_period_clks = min_period_clocks();
-
-        // `+ 1` means including the current running thread.
-        let period_single_cpu =
-            (base_slice_clks * (self.entities.len() + 1) as u64).max(min_period_clks);
-        period_single_cpu * u64::from((1 + num_cpus()).ilog2())
+    pub(super) fn enqueue(&mut self, task: Arc<Task>, flags: Option<EnqueueFlags>) {
+        self.try_enqueue(task, flags)
+            .unwrap_or_else(|_| panic!("runnable task lacks prepared group admission"));
     }
 
-    /// The virtual time slice for each thread in the run queue, measured in vruntime clocks.
-    fn vtime_slice(&self) -> u64 {
-        self.period() / (self.entities.len() + 1) as u64
+    pub(super) fn try_enqueue(
+        &mut self,
+        task: Arc<Task>,
+        flags: Option<EnqueueFlags>,
+    ) -> core::result::Result<(), Arc<Task>> {
+        self.groups.enqueue(task, flags)
     }
 
-    /// The time slice for each thread in the run queue, measured in sched clocks.
-    fn time_slice(&self, cur_weight: u64) -> u64 {
-        self.period() * cur_weight / (self.total_weight + cur_weight)
+    pub(super) fn len(&self) -> usize {
+        self.groups.len()
     }
-}
-
-impl SchedClassRq for FairClassRq {
-    fn enqueue(&mut self, entity: Arc<Task>, flags: Option<EnqueueFlags>) {
-        let fair_attr = &entity.as_thread().unwrap().sched_attr().fair;
-        let vruntime = match flags {
-            Some(EnqueueFlags::Spawn) => self.min_vruntime + self.vtime_slice(),
-            _ => self.min_vruntime,
-        };
-        let (_old_weight, weight) = fair_attr.fetch_weight();
-
-        let vruntime = fair_attr
-            .vruntime
-            .fetch_max(vruntime, Ordering::Relaxed)
-            .max(vruntime);
-
-        self.total_weight += weight;
-        self.entities.push(Reverse(FairQueueItem(entity, vruntime)));
+    pub(super) fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
-    fn len(&self) -> usize {
-        self.entities.len()
+    pub(super) fn select_next(&mut self) -> Option<(Arc<Task>, FairSelection)> {
+        self.groups.select()
     }
 
-    fn is_empty(&self) -> bool {
-        self.entities.is_empty()
+    pub(super) fn cancel(&mut self, selected: FairSelection) {
+        self.groups.cancel(selected);
+    }
+    pub(super) fn commit(&mut self, selected: FairSelection) {
+        self.groups.commit(selected);
+    }
+    pub(super) fn finish_current(&mut self) {
+        self.groups.finish_current();
+    }
+    pub(super) fn attach_current(&mut self, task: &Arc<Task>) {
+        self.groups.attach_current(task);
+    }
+    pub(super) fn charge_current(&mut self, task: &Task, delta: u64) {
+        self.groups.charge(task, delta);
     }
 
-    fn pick_next(&mut self) -> Option<Arc<Task>> {
-        let Reverse(FairQueueItem(entity, _)) = self.entities.pop()?;
-
-        let sched_attr = entity.as_thread().unwrap().sched_attr();
-        let (old_weight, _weight) = sched_attr.fair.fetch_weight();
-        // Equals to:
-        //
-        // self.total_weight = self.total_weight + weight - old_weight;
-        // self.total_weight -= weight;
-        self.total_weight -= old_weight;
-
-        Some(entity)
-    }
-
-    fn update_current(
+    pub(super) fn update_current(
         &mut self,
         rt: &CurrentRuntime,
         attr: &SchedAttr,
         flags: UpdateFlags,
     ) -> bool {
-        match flags {
-            UpdateFlags::Tick | UpdateFlags::Yield | UpdateFlags::Wait => {
-                let (_old_weight, weight) = attr.fair.fetch_weight();
-                let vruntime = attr.fair.update_vruntime(rt.delta, weight);
-                let leftmost = self.entities.peek();
-                self.min_vruntime = match leftmost {
-                    Some(Reverse(leftmost)) => vruntime.min(leftmost.key()),
-                    None => vruntime,
-                };
-                if leftmost.is_none() {
-                    return false;
-                }
-
-                matches!(flags, UpdateFlags::Wait)
-                    || rt.period_delta > self.time_slice(weight)
-                    || vruntime > self.min_vruntime + self.vtime_slice()
-            }
-            UpdateFlags::Exit => !self.is_empty(),
-        }
+        self.groups.should_preempt(rt, attr, flags)
     }
 }
+
+#[cfg(ktest)]
+#[path = "fair_interval_tests.rs"]
+mod tests;

@@ -19,6 +19,7 @@ use core::{
 };
 
 use kernel_stack::KernelStack;
+pub use kernel_stack::{PreparedTaskStack, StackCharger, StackPageCharge, StackReservation};
 use processor::current_task;
 use spin::Once;
 use utils::ForceSync;
@@ -30,20 +31,24 @@ pub use self::{
 use crate::{
     arch::task::TaskContext,
     irq::{DisabledLocalIrqGuard, InterruptLevel},
+    mm::vm_space::RetiredVmSpace,
     prelude::*,
 };
 
 static PRE_SCHEDULE_HANDLER: Once<fn(&DisabledLocalIrqGuard)> = Once::new();
 
-static POST_SCHEDULE_HANDLER: Once<fn()> = Once::new();
+static POST_SCHEDULE_HANDLER: Once<fn() -> Option<RetiredVmSpace>> = Once::new();
 
 /// Injects a handler to be executed before scheduling.
 pub fn inject_pre_schedule_handler(handler: fn(&DisabledLocalIrqGuard)) {
     PRE_SCHEDULE_HANDLER.call_once(|| handler);
 }
 
-/// Injects a handler to be executed after scheduling.
-pub fn inject_post_schedule_handler(handler: fn()) {
+/// Injects a handler executed after scheduling with IRQs disabled.
+///
+/// Its returned VM-space retirement is owned by the new task until IRQs are
+/// restored; arbitrary frame metadata destructors must not run in the handler.
+pub fn inject_post_schedule_handler(handler: fn() -> Option<RetiredVmSpace>) {
     POST_SCHEDULE_HANDLER.call_once(|| handler);
 }
 
@@ -175,6 +180,17 @@ impl TaskOptions {
 
     /// Builds a new task without running it immediately.
     pub fn build(self) -> Result<Task> {
+        let stack = KernelStack::new_with_guard_page(None)?;
+        Ok(self.build_inner(stack))
+    }
+
+    /// Builds a task from a stack whose fallible allocation already completed.
+    /// The stack remains owned by the task until its actual last reference.
+    pub fn build_with_stack(self, stack: PreparedTaskStack) -> Task {
+        self.build_inner(stack.0)
+    }
+
+    fn build_inner(self, kstack: KernelStack) -> Task {
         // All tasks will enter this function. It is meant to execute the `task_fn` in `Task`.
         //
         // We provide an assembly wrapper for this function as the end of call stack so we
@@ -210,8 +226,6 @@ impl TaskOptions {
             scheduler::exit_current();
         }
 
-        let kstack = KernelStack::new_with_guard_page()?;
-
         let mut ctx = TaskContext::new();
         ctx.set_instruction_pointer(
             crate::arch::task::kernel_task_entry_wrapper as *const () as usize,
@@ -239,7 +253,7 @@ impl TaskOptions {
             },
         };
 
-        Ok(new_task)
+        new_task
     }
 
     /// Builds a new task and runs it immediately.

@@ -15,7 +15,7 @@ pub(crate) mod signals;
 
 use align_ext::AlignExt;
 use c_types::{siginfo_t, ucontext_t};
-use constants::SIGSEGV;
+use constants::{SIGSEGV, SIGSYS};
 use ostd::{
     arch::cpu::context::{FpuContext, UserContext},
     mm::VmIo,
@@ -181,7 +181,7 @@ pub(crate) fn handle_pending_signal(user_ctx: &mut UserContext, ctx: &Context) {
                 do_exit_group(TermStatus::Killed(SIGSEGV), ctx, user_ctx);
             }
         }
-        SigAction::Dfl if ctx.process.is_init_process() => {
+        SigAction::Dfl if ctx.process.is_init_process() && !signal.is_forced() => {
             // From Linux man pages "kill(2)":
             // "The only signals that can be sent to process ID 1, the init process, are those for
             // which init has explicitly installed signal handlers."
@@ -237,9 +237,24 @@ fn dequeue_pending_signal(ctx: &Context) -> Option<(DequeuedSignal, SigAction)> 
     let posix_thread = ctx.posix_thread;
 
     let sig_dispositions = ctx.process.sig_dispositions().lock();
-    let sig_dispositions = sig_dispositions.lock();
+    let mut sig_dispositions = sig_dispositions.lock();
 
     let sig_mask = posix_thread.sig_mask();
+    // Deliver the syscall trap after the ptrace syscall-exit stop, before
+    // returning to userspace. Ordinary pending SIGSYS cannot replace its
+    // trusted metadata. SIGKILL retains priority over the synchronous fault.
+    if !ctx.has_pending_sigkill()
+        && let Some(signal) = ctx.thread_local.seccomp_trap().take()
+    {
+        if sig_mask.contains(SIGSYS) || sig_dispositions.get(SIGSYS).will_ignore(SIGSYS) {
+            sig_dispositions.set_default(SIGSYS);
+            ctx.set_sig_mask(sig_mask - SIGSYS);
+        }
+        return Some((
+            DequeuedSignal::FromThread(Box::new(signal)),
+            sig_dispositions.get(SIGSYS),
+        ));
+    }
     let (signal, sig_num, sig_action) = loop {
         let signal = ctx.dequeue_signal(&sig_mask)?;
         let sig_num = signal.num();

@@ -14,7 +14,7 @@ use x86_64::{
     registers::segmentation::{CS, Segment},
     structures::{
         DescriptorTablePointer,
-        gdt::{Descriptor, SegmentSelector},
+        gdt::{Descriptor, DescriptorFlags, SegmentSelector},
         tss::TaskStateSegment,
     },
 };
@@ -42,7 +42,14 @@ use crate::{
 /// accidentally load a wrong GDT and TSS that actually belongs to another CPU.
 pub(super) unsafe fn init_on_cpu() {
     // No races because the caller guarantees that no preemption can occur.
-    let gdt = GDT.get_on_cpu(CpuId::current_racy());
+    let cpu = CpuId::current_racy();
+    let gdt = GDT.get_on_cpu(cpu);
+
+    // CPU-local storage and CURRENT_CPU are initialized on both BSP and APs
+    // before trap initialization. Install this CPU's ABI observation before
+    // loading its GDT, while user execution and preemption are still absent.
+    gdt.cpunode
+        .store(cpunode_descriptor(cpu.into()), Ordering::Relaxed);
 
     let tss_ptr = UnsafeCell::raw_get(LOCAL_TSS.as_ptr());
 
@@ -126,6 +133,8 @@ struct Gdt {
     // Mutable part: They are initialized at runtime; the LTR instruction will set the BUSY bit.
     tss0: AtomicU64,
     tss1: AtomicU64,
+    _cpunode_reserved: [u64; 6],
+    cpunode: AtomicU64,
 }
 
 cpu_local! {
@@ -139,6 +148,8 @@ cpu_local! {
         ucode64: UCODE64,
         tss0: AtomicU64::new(0), // To be set in `init_on_cpu`.
         tss1: AtomicU64::new(0), // To be set in `init_on_cpu`.
+        _cpunode_reserved: [0; 6],
+        cpunode: AtomicU64::new(0), // To be set in `init_on_cpu`.
     };
 }
 
@@ -164,6 +175,24 @@ pub(in crate::arch) const KCODE32: u64 = 0x00CF_9B00_0000_FFFF;
 // the descriptor caches; the SYSRET instruction does not ensure this correspondence."
 const UCODE64: u64 = 0x00AF_FB00_0000_FFFF;
 const UDATA: u64 = 0x00CF_F300_0000_FFFF;
+
+/// Encodes Linux's read-only CPUNODE observation descriptor, with NUMA node 0.
+///
+/// Linux v6.2.10 `setup_getcpu` uses type 5 (read-only, expand down, accessed),
+/// DPL 3, S/P/D set and a byte-granular limit holding `(node << 12) | cpu`.
+/// The existing kernel `sys_getcpu` also reports node 0; this does not add NUMA.
+/// https://github.com/gregkh/linux/blob/v6.2.10/arch/x86/kernel/cpu/common.c#L2134
+fn cpunode_descriptor(cpu: u32) -> u64 {
+    const CPU_MASK: u32 = 0xfff;
+    assert!(cpu <= CPU_MASK, "CPU ID exceeds Linux vDSO CPUNODE field");
+    let flags = DescriptorFlags::ACCESSED
+        | DescriptorFlags::CONFORMING
+        | DescriptorFlags::USER_SEGMENT
+        | DescriptorFlags::DPL_RING_3
+        | DescriptorFlags::PRESENT
+        | DescriptorFlags::DEFAULT_SIZE;
+    flags.bits() | u64::from(cpu)
+}
 
 // ========== Selectors ==========
 
@@ -193,5 +222,17 @@ const_assert!(
 const_assert!(SYSCALL_SEL.0 & OFFSET_MASK == offset_of!(Gdt, kcode64) as u16);
 const_assert!(SYSCALL_SEL.0 & OFFSET_MASK == (offset_of!(Gdt, kdata) - size_of::<u64>()) as u16);
 
+// Linux's unchanged vDSO uses LSL on slot 15, independently of the existing
+// code/data/TSS selectors. Slots 9..14 remain null; no TLS selector is moved.
+// https://github.com/gregkh/linux/blob/v6.2.10/arch/x86/include/asm/segment.h#L196
+const CPUNODE_SEL: SegmentSelector = SegmentSelector::new(15, PrivilegeLevel::Ring3);
+const_assert!(CPUNODE_SEL.0 == 0x7b);
+const_assert!(CPUNODE_SEL.0 & OFFSET_MASK == offset_of!(Gdt, cpunode) as u16);
+const_assert!(size_of::<Gdt>() == 16 * size_of::<u64>());
+
 // Masking out the lower 3 bits of a selector yields the offset to the GDT entry from the GDT base.
 const OFFSET_MASK: u16 = !7;
+
+#[cfg(ktest)]
+#[path = "gdt_tests.rs"]
+mod tests;

@@ -36,21 +36,31 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
           mkdir -p "$RUNNER_TEMP/a08"
           python3 support/android/verify_source_integrity.py \
             --out "$RUNNER_TEMP/a08/source-integrity.json"
-      - name: Install actual Java and JNI host build tools
+      - name: Verify runner Java 17 and JNI host build tools
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            build-essential openjdk-17-jdk-headless
-          test -x /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
-          test -f /usr/lib/jvm/java-17-openjdk-amd64/include/jni.h
-          printf '%s\n' /usr/lib/jvm/java-17-openjdk-amd64/bin >> "$GITHUB_PATH"
-          printf 'JAVA_HOME=%s\n' /usr/lib/jvm/java-17-openjdk-amd64 >> "$GITHUB_ENV"
+          jdk_home="${JAVA_HOME_17_X64:?The runner must provide its Java 17 toolchain}"
+          test -x "$jdk_home/bin/java"
+          test -x "$jdk_home/bin/javac"
+          test -f "$jdk_home/include/jni.h"
+          test -f "$jdk_home/include/linux/jni_md.h"
+          test -f "$jdk_home/lib/server/libjvm.so"
+          javac_version="$("$jdk_home/bin/javac" -version 2>&1)"
+          [[ "$javac_version" == 'javac 17.'* ]]
+          java_properties="$(LC_ALL=C "$jdk_home/bin/java" -XshowSettings:properties -version 2>&1)"
+          [[ "$java_properties" =~ java\.specification\.version[[:space:]]*=[[:space:]]*17($|[[:space:]]) ]]
+          for tool in cc c++ make ar; do
+            command -v "$tool"
+          done
+          printf '%s\n' "$javac_version"
+          "$jdk_home/bin/java" -version
+          printf '%s\n' "$jdk_home/bin" >> "$GITHUB_PATH"
+          printf 'JAVA_HOME=%s\n' "$jdk_home" >> "$GITHUB_ENV"
       - name: Run complete host gate and optimized regression
         shell: bash
         run: |

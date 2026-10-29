@@ -51,7 +51,7 @@ impl TrustedControlSlots {
         managers: [Arc<NativeCpuManager>; 2],
         keys: [ProcessImageKey; 2],
     ) -> Result<[Arc<Self>; 2]> {
-        let boot = BootId::new(hepta_boot_id());
+        let boot = BootId::new(hepta_boot_id()?);
         let manager_space = CapSpaceId::new(hepta_image_space_id(keys[0]));
         let recovery_space = CapSpaceId::new(hepta_image_space_id(keys[1]));
         let owner = OwnerId::new(recovery_space.bytes());

@@ -1,5 +1,13 @@
 # Host Session → Hepta read-only observer
 
+This document preserves the read-only observer slice and its historical A07/A10
+qualification below. Current builds additionally offer the explicitly configured
+[Signed requests inbox](OBJECTIVE_INBOX.md), using a separate worker and original
+ObjectiveStart/ObjectiveAdmission clients. Statements below about an absent UI
+submission command describe the earlier observer slice, not the current inbox.
+Conversation drafts and the runtime observer remain read-only with respect to
+objective admission.
+
 This slice connects the Rust host Session to the existing Hepta Agentd v2
 control endpoint. The native Shell renders the resulting typed metadata.
 Conversation remains a local draft, with no Shell submission command. The

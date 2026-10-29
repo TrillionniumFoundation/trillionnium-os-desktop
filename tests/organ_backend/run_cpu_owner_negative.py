@@ -42,6 +42,35 @@ HANDOFF_NAMES = (
     'waiting_dequeue_retains_its_owner_through_selection_retries',
     'exiting_dequeue_retains_its_owner_through_selection_retries',
 )
+FAIR_PREFIX = 'aster_core::sched::sched_class::fair::tests::'
+GROUP_PREFIX = 'aster_core::fs::fs_impls::cgroupfs::controller::cpu::group_entity_regressions::'
+GROUP_CUT_FAILURE = GROUP_PREFIX + 'prepared_group_selection_cancels_after_shared_quota_cut_without_charging_candidate'
+
+# These complete v2 sets include the unchanged FAIR/group/switch assertions
+# affected by the same production mutation. All must pass in the full green
+# suite, then precisely this set must fail; extra failures remain a refusal.
+RUNTIME_TAIL_FAILURES = {HANDOFF_PREFIX + name for name in HANDOFF_NAMES} | {
+    FAIR_PREFIX + name for name in (
+        'fair_direct_handoff_charges_the_outgoing_tail_once',
+        'fair_tick_and_yield_do_not_recharge_a_handoff_prefix',
+        'fair_waiting_owner_retains_its_tail_through_empty_selection_retries',
+        'fair_exiting_owner_retains_its_tail_through_empty_selection_retries',
+        'fair_root_class_entry_from_an_actual_rt_segment_keeps_the_old_prefix_out',
+    )
+} | {GROUP_CUT_FAILURE}
+RUNTIME_ELIGIBILITY_FAILURES = {HANDOFF_PREFIX + HANDOFF_NAMES[1], GROUP_CUT_FAILURE}
+SWITCH_OWNER_FAILURES = {HANDOFF_PREFIX + name for name in HANDOFF_NAMES[2:]} | {
+    FAIR_PREFIX + name for name in (
+        'fair_waiting_owner_retains_its_tail_through_empty_selection_retries',
+        'fair_exiting_owner_retains_its_tail_through_empty_selection_retries',
+    )
+} | {
+    HANDOFF_PREFIX + name for name in (
+        'completed_wait_merges_late_wakes_into_one_detached_token',
+        'waiting_retry_can_restore_the_same_task_without_a_switch_callback',
+        'completed_exit_never_becomes_runnable_after_a_late_wake',
+    )
+}
 
 # The caller can select only reviewed production mutations, never arbitrary
 # source, expected failures, count reductions or test filters. Each mutation
@@ -75,6 +104,21 @@ CONTROLS = {
         'cpu_handoff_eligibility_first_negative.patch',
         '8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c',
         SCHED_PATH, {HANDOFF_PREFIX + HANDOFF_NAMES[1]}, 201),
+    # Runtime/physical-switch counterparts retain the historical controls above.
+    # Only fixed, reviewed mutations are selectable; the original full gate and
+    # exact negative failure oracle below are shared without alteration.
+    'handoff-drop-tail-runtime-v2': (
+        'cpu_runtime_handoff_drop_tail_negative.patch',
+        '9f5bc059e5709ce82d1798856683c54e530346aaf17ff5da279c77cd46509d00',
+        SCHED_PATH, RUNTIME_TAIL_FAILURES, 396),
+    'handoff-eligibility-first-runtime-v2': (
+        'cpu_runtime_handoff_eligibility_first_negative.patch',
+        '2d88254668e077f34087ab6df7f15aee142912ad42ecaf660f7a7a48cbe24b17',
+        SCHED_PATH, RUNTIME_ELIGIBILITY_FAILURES, 396),
+    'dequeue-drop-owner-switch-v2': (
+        'cpu_switch_dequeue_drop_owner_negative.patch',
+        '50e3a5a8cbf86c9c955f7bd63ece479896612d9447375cc253e4596971f3982f',
+        SCHED_PATH, SWITCH_OWNER_FAILURES, 396),
     'dequeue-drop-owner': (
         'cpu_dequeue_drop_owner_negative.patch',
         'b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd',

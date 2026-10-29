@@ -1,6 +1,18 @@
 # First Linux Notes destination
 
-This slice provides real, bounded Linux socketpair I/O to the existing native
+**Current implementation update (2026-10-25):** Session-launched Notes now has
+an atomic persistent document store and an explicit v2 bootstrap with separate
+recovery. See [NOTES_PERSISTENCE.md](NOTES_PERSISTENCE.md) for the current
+storage, identity, retirement and acceptance contract. The v1 composition
+description and historical evidence below describe the original memory-only
+slice. Current Session launches use `DurableNotes`: Applied follows atomic
+persistence of the document, revision and exact application receipt. Bootstrap
+v2 supplies separate effect and recovery channels. The original-owner
+integration has passed with a test issuer and actual Session/App, including
+lost-reply reconciliation and app SIGKILL/reopen. Its receipt still sets
+`production_authority: false`; no production authority is configured.
+
+The legacy v1 slice provides real, bounded Linux socketpair I/O to the existing native
 Rust Notes application. Its operation is **replace the in-memory text of one
 identified Notes document, subject to a revision comparison**. The document is
 not saved to a user file. This is a small destination adapter, not a compositor,
@@ -16,6 +28,10 @@ production host to supply its own recovered writer, FinalUse authority and
 grant provider; normal Session launch performs no registration.
 
 ## Implementation and ownership
+
+This table records the original v1 modules. The current durable store,
+two-channel bootstrap and recovery fixtures are described in
+[NOTES_PERSISTENCE.md](NOTES_PERSISTENCE.md).
 
 | Path | Responsibility |
 | --- | --- |
@@ -70,7 +86,7 @@ the original owner through explicit composition. A publicly reachable UDS with
 only a UID check would not provide Final-use authority. The default remains
 deny until the original owner attaches and authorizes a particular operation.
 
-## Controlled inherited bootstrap
+## Legacy v1 controlled inherited bootstrap
 
 The original production host creates `UnixDatagram::pair()`, keeps one end and
 passes the other as stdin when starting `trill-session --notes-bootstrap-stdin`.
@@ -206,10 +222,11 @@ Read-only requests contain `schema_version: 1`, `action: "observe"`, `target`,
 retained matching applied receipt. A missing receipt is unknown, even if current
 text matches. Exact replay of the retained operation and payload returns the
 same receipt without repeating the mutation. A conflicting payload for that
-retained operation is refused. This volatile last-mutation cache is not durable
-history and cannot make older unknown operations retryable.
+retained operation is refused. In the legacy memory-only profile, this volatile
+last-mutation cache is not durable history and cannot make older unknown
+operations retryable.
 
-## Failure and observation semantics
+## Legacy v1 failure and observation semantics
 
 One private channel is serialized. Concurrent callers fail before writing,
 instead of entering an unbounded queue. A total two-second deadline bounds
@@ -225,8 +242,11 @@ independently recovered target evidence if available later.
 
 The app has a bounded one-slot GUI handoff. Expired handoffs are discarded
 before document mutation. The GUI thread serializes external and local edits.
-An applied reply means its in-memory document changed; the original production
-owner still owns durable outcome publication.
+In this legacy profile, an applied reply means its in-memory document changed;
+the original production owner still owns durable outcome publication. Current
+`DurableNotes` persists the document and exact receipt before Applied, and v2
+provides independent reconciliation and digest-bound retirement. Application
+persistence still does not publish the Hepta owner's durable terminal outcome.
 
 After constructing a changed widget layout, the app writes
 `TRILL_NOTES_LAYOUT_V1:{revision}:{text_sha256}` to owned stdout. This is an
@@ -273,10 +293,23 @@ Final-use, production-owner, compositor-pixel and Asterinas verification false.
 It is a destination test without a fabricated grant, signer or ledger.
 
 Test commands and code presence do not assert passes. Record actual tested
-commit, environment, commands and results. Remaining acceptance includes
-production-configured bootstrap and real-authority dispatch through the original owner, durable
-history/restart/failure reconciliation, and separately scoped visual/device
-tests.
+commit, environment, commands and results. The original v1 checkpoint left
+durable application history and restart reconciliation unimplemented. Current
+durable application and original-owner test-issuer qualifications cover those
+paths; local receipts are `work/implementation-logs/hepta-real-notes.json` and
+`work/implementation-logs/hepta-real-notes-crash.json`. The latter kills the
+actual App and cleanly closes/reopens the original writer; a separate source
+test covers writer-process SIGKILL. These are distinct fault cases.
+
+Production-configured bootstrap and real-authority dispatch, visual/device
+qualification and final source-pair acceptance remain separate gates. A later
+local Weston rerun timed out after initial readback while awaiting the first
+effect reply. Diagnostics recovered the Applied receipt and identified a stale
+stdin alias hiding effect-worker exit; that shutdown defect is now fixed.
+Final binaries passed the complete recovery lane on an independent SSD.
+Earlier failures and differing filesystem latency remain documented in
+[NOTES_PERSISTENCE.md](NOTES_PERSISTENCE.md), without claiming deadlines can
+bound every storage device's commit latency.
 
 The [2026-10-21 Linux destination evidence](../../tests/ui/evidence/2026-10-21-notes-target/README.md)
 records a Rust 1.95.0 workspace run (172 passed, two opt-in host-font tests

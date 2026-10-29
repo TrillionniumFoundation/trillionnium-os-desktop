@@ -164,5 +164,36 @@ class OriginalGreenElfContract(unittest.TestCase):
                 NEGATIVE.checked_green_kernel(record, retained)
 
 
+class RuntimeMutationRecipeContract(unittest.TestCase):
+    def test_all_three_recipes_apply_to_the_current_runtime_and_only_the_declared_path(self):
+        # A production refactor must update its explicitly named mutation before
+        # the expensive green/negative guest sequence. This applies no patch and
+        # makes no claim that an applicable mutation is behaviorally detected.
+        controls = (
+            "handoff-drop-tail-runtime-v2",
+            "handoff-eligibility-first-runtime-v2",
+            "dequeue-drop-owner-switch-v2",
+        )
+        for control in controls:
+            name, expected_sha, declared, _, minimum = NEGATIVE.CONTROLS[control]
+            patch = NEGATIVE.ROOT / "tests/organ_backend" / name
+            with self.subTest(control=control):
+                self.assertTrue(patch.is_file())
+                self.assertFalse(patch.is_symlink())
+                self.assertEqual(NEGATIVE.sha(patch.read_bytes()), expected_sha)
+                self.assertGreaterEqual(minimum, 396)
+                checked = subprocess.run(
+                    ["git", "apply", "--check", str(patch)], cwd=NEGATIVE.ROOT,
+                    capture_output=True,
+                )
+                self.assertEqual(checked.returncode, 0, checked.stderr.decode())
+                stats = subprocess.check_output(
+                    ["git", "apply", "--numstat", str(patch)], cwd=NEGATIVE.ROOT,
+                    text=True,
+                ).splitlines()
+                self.assertEqual(len(stats), 1)
+                self.assertEqual(stats[0].split("\t")[-1], declared)
+
+
 if __name__ == '__main__':
     unittest.main()

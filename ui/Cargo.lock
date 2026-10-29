@@ -2473,6 +2473,7 @@ version = "0.1.0"
 dependencies = [
  "ab_glyph",
  "eframe",
+ "libc",
  "serde_json",
  "trill-ui-core",
 ]
@@ -2483,6 +2484,7 @@ version = "0.1.0"
 dependencies = [
  "hepta-os-observer",
  "libc",
+ "serde",
  "serde_json",
  "trill-ui-broker",
  "trill-ui-core",
@@ -2503,15 +2505,18 @@ dependencies = [
 name = "trill-ui-broker"
 version = "0.1.0"
 dependencies = [
+ "libc",
  "serde",
  "serde_json",
  "trill-ui-core",
+ "x11rb",
 ]
 
 [[package]]
 name = "trill-ui-core"
 version = "0.1.0"
 dependencies = [
+ "libc",
  "serde",
  "serde_json",
  "sha2",

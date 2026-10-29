@@ -10,6 +10,7 @@ use xarray::XArray;
 
 use super::{Vmo, VmoFlags, WritableMappingStatus};
 use crate::{
+    fs::cgroupfs::{PageKind, charge_current_pages},
     prelude::*,
     vm::{
         page_cache::{CachePage, CachePageMeta, PageCacheBackend},
@@ -110,7 +111,12 @@ fn alloc_vmo(
     backend: Option<Weak<dyn PageCacheBackend>>,
 ) -> Result<Vmo> {
     let size = size.align_up(PAGE_SIZE);
-    let pages = committed_pages_if_continuous(flags, size)?;
+    let kind = if backend.is_some() {
+        PageKind::FileCache
+    } else {
+        PageKind::AnonymousVmo
+    };
+    let pages = committed_pages_if_continuous(flags, size, kind)?;
     let writable_mapping_status = WritableMappingStatus::default();
     let rmap = Rmap::new();
     Ok(Vmo {
@@ -123,12 +129,19 @@ fn alloc_vmo(
     })
 }
 
-fn committed_pages_if_continuous(flags: VmoFlags, size: usize) -> Result<XArray<CachePage>> {
+fn committed_pages_if_continuous(
+    flags: VmoFlags,
+    size: usize,
+    kind: PageKind,
+) -> Result<XArray<CachePage>> {
     if flags.contains(VmoFlags::CONTIGUOUS) {
         // if the vmo is continuous, we need to allocate frames for the vmo
         let frames_num = size / PAGE_SIZE;
+        let mut reservation = charge_current_pages(kind, size)?;
         let segment: Segment<CachePageMeta> = FrameAllocOptions::new()
-            .alloc_segment_with(frames_num, |_| CachePageMeta::default())?;
+            .alloc_segment_with(frames_num, |_| {
+                CachePageMeta::new_uninit(reservation.split_page())
+            })?;
         let committed_pages = XArray::new();
         let mut locked_pages = committed_pages.lock();
         let mut cursor = locked_pages.cursor_mut(0);

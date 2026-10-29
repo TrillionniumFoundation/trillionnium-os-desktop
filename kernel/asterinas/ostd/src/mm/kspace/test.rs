@@ -116,3 +116,18 @@ fn manual_paddr_to_vaddr() {
 
     assert_eq!(va, LINEAR_MAPPING_BASE_VADDR + pa);
 }
+
+#[ktest]
+fn kvirt_area_virtual_admission_returns_no_memory() {
+    let frame = FrameAllocOptions::default().alloc_frame().unwrap();
+    let held = frame.clone();
+    let result = KVirtArea::try_map_frames(
+        VMALLOC_VADDR_RANGE.len() + PAGE_SIZE,
+        0,
+        core::iter::once(frame),
+        default_prop(),
+    );
+    assert!(matches!(result, Err(crate::Error::NoMemory)));
+    // The unconsumed iterator released its actual frame reference on failure.
+    assert_eq!(held.reference_count(), 1);
+}

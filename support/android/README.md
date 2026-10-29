@@ -1,6 +1,36 @@
 # A08 build and APK evidence
 
-This is support/android/README.md. The repository ROOT README.md stays 0 bytes.
+This is the Android compatibility development entry point. See the repository
+root README for the current Desktop/Hepta product status.
+
+## Current kernel work — 2026-10-26
+
+The first native x86-64 seccomp stage now has real install and syscall-dispatch
+paths, immutable inherited filters, strict mode and ALLOW/ERRNO/TRAP/KILL actions.
+Its implementation, limitations and ordinary-kernel reproduction commands are
+documented in [SECCOMP.md](SECCOMP.md). Its initial recorded native core suite passed
+304 tests, followed by 305 tests with thread-group synchronization. The actual
+ordinary four-CPU guest passed filtering, SIGSYS handler/return, TSYNC and
+setuid-exec race checks. These
+runtime receipts remain separate from the source scan.
+
+The separate [bounded Binder transport](BINDER_BYTES.md) now provides
+real cross-process request/reply mappings, object handles and strong/weak
+reference ownership, actual open-file transfer with descriptor rollback,
+and bounded death subscriptions with clear acknowledgements. Its guest
+runbook is [tests/kernel/binder/README.md](../../tests/kernel/binder/README.md).
+The [D1 actual-thread stage](BINDER_THREADS.md) permits eight real manual
+participants per original Process/image/open, sharing sixteen events and sixteen
+buffers. Returns remain owned by their actual calling/receiving thread. Unique
+death cookies and the retained EFAULT single preparation slot remain bounded
+limitations. Automatic thread pools, nested/oneway transactions and FD arrays remain open.
+Individual source-bound component suites do not establish Android compatibility.
+
+These stages do not implement Android SELinux policy. They do not qualify
+Android boot, APKs, phone hardware or CTS.
+The source auditor continues to inspect immutable commits, so an uncommitted
+seccomp implementation is deliberately absent from its selected-commit scan.
+The checkpoints below remain historical evidence of the earlier source state.
 
 ## Current checkpoint — 2026-10-17 commit-bound source audit
 

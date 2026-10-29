@@ -2,8 +2,13 @@
 //!
 //! These types do not authenticate Hepta, issue a grant, or own operation
 //! history. The original production writer must authorize the exact payload
-//! before its target writes it. An application receipt means its in-memory
-//! document changed; it is neither a durable owner receipt nor pixel evidence.
+//! before its target writes it. A `NotesDocument` receipt records an in-memory
+//! change; the Linux `persistence::DurableNotes` product path publishes Applied
+//! only after the document and exact receipt are durably committed together.
+//! Neither receipt is a durable Hepta owner receipt or pixel evidence.
+
+#[cfg(target_os = "linux")]
+pub mod persistence;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -182,6 +187,7 @@ pub enum NotesNotAppliedReason {
     RevisionExhausted,
     TargetMismatch,
     UiDeadlineElapsed,
+    ReceiptPending,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

@@ -50,10 +50,10 @@ pub(super) fn spawn(
     // Exactly one bounded read of the input. No role loads from a later inode
     // snapshot, and the compiled manifest is not replaced for negative boots.
     let snapshot = executable.snapshot_trusted_initial()?;
-    let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+    let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init())?;
     let workload = allocate_initial_process(&executable_path,
-        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES));
-    let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES))?;
+    let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init())?;
     let keys = [manager.0.hepta_capspace_session()?, workload.0.hepta_capspace_session()?,
         recovery.0.hepta_capspace_session()?];
     let pids = [manager.0.pid(), workload.0.pid(), recovery.0.pid()];
@@ -62,7 +62,7 @@ pub(super) fn spawn(
     let workload_console = Arc::new(Mutex::new(None::<[Arc<dyn FileLike>; 3]>));
     let mut prepared = Vec::with_capacity(3);
     for (index, allocation) in [manager, workload, recovery].into_iter().enumerate() {
-        let page = boot_page(index as u64 + 1, pids, spaces);
+        let page = boot_page(index as u64 + 1, pids, spaces)?;
         let startup: Box<dyn FnOnce(&Context<'_>) + Send> = if index == 0 {
             let pending_children = pending_children.clone();
             let workload_console = workload_console.clone();
@@ -145,7 +145,7 @@ fn workload_credentials() -> Result<Credentials> {
     // This private value is never attached to a task until every restriction
     // is applied. No user instruction or startup hook can run with root IDs.
     let credentials = Credentials::new_root();
-    credentials.groups_mut().clear();
+    credentials.set_groups(Arc::new(BTreeSet::new()));
     credentials.drop_bounding_capability(CapSet::all())?;
     credentials.set_securebits(SecureBits::NOROOT | SecureBits::NOROOT_LOCKED
         | SecureBits::NO_CAP_AMBIENT_RAISE | SecureBits::NO_CAP_AMBIENT_RAISE_LOCKED)?;
@@ -186,14 +186,14 @@ fn prepare_role(
     let task = PosixThreadBuilder::new(
         process.pid(), derive_thread_name(abs_path), Box::new(user_ctx), credentials, vmar,
     ).process(Arc::downgrade(&process)).fs(Arc::new(fs))
-        .before_initial_user_run(startup).build();
+        .before_initial_user_run(startup).build()?;
     process.tasks().lock().insert(task.clone()).unwrap();
     let prepared = PreparedInitialProcess::new(process, loaded_vmar, task)?;
     Ok((prepared, image, info.entry_point))
 }
 
 fn boot_page(role: u64, pids: [crate::process::Pid; 3], spaces: [[u8; 16]; 2])
-    -> Box<[u8; PAGE_SIZE]>
+    -> Result<Box<[u8; PAGE_SIZE]>>
 {
     let mut page = Box::new([0u8; PAGE_SIZE]);
     page[..8].copy_from_slice(b"HOS2BOOT");
@@ -206,7 +206,7 @@ fn boot_page(role: u64, pids: [crate::process::Pid; 3], spaces: [[u8; 16]; 2])
     for (index, word) in words.into_iter().enumerate() {
         page[8 + index * 8..16 + index * 8].copy_from_slice(&word.to_le_bytes());
     }
-    page[96..112].copy_from_slice(&hepta_boot_id());
+    page[96..112].copy_from_slice(&hepta_boot_id()?);
     page[112..128].copy_from_slice(&spaces[0]);
     page[128..144].copy_from_slice(&spaces[1]);
     let tail = [u64::from(pids[0]), u64::from(pids[1]), u64::from(pids[2]),
@@ -214,5 +214,5 @@ fn boot_page(role: u64, pids: [crate::process::Pid; 3], spaces: [[u8; 16]; 2])
     for (index, word) in tail.into_iter().enumerate() {
         page[144 + index * 8..152 + index * 8].copy_from_slice(&word.to_le_bytes());
     }
-    page
+    Ok(page)
 }

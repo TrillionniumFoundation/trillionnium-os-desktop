@@ -9,7 +9,11 @@ macro_rules! __log_prefix {
     };
 }
 
+mod cache;
 mod dma_remapping;
+pub use dma_remapping::domain::{
+    DeviceDmaBuffer, DeviceDmaDomain, DmaDomainError, DmaRequester, RevokedDmaBuffer,
+};
 mod fault;
 mod interrupt_remapping;
 mod invalidate;
@@ -27,6 +31,8 @@ use crate::{io::IoMemAllocatorBuilder, mm::page_table::PageTableError};
 pub(crate) enum IommuError {
     /// No IOMMU is available.
     NoIommu,
+    /// The requested device address has no mapping.
+    NotMapped,
     /// Error encountered during modification of the page table.
     #[expect(dead_code)]
     ModificationError(PageTableError),

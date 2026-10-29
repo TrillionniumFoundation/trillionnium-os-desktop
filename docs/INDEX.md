@@ -1,10 +1,22 @@
 # 开发与技术文档入口
 
+## 2026-10-26 固定来源补充
+
+[当前模块文档补充审计](agents/MODULE_DOCUMENTATION_2026_10_26.md)核对 A00–A10、
+自有／上游派生 Cargo 入口、P2/P3、Binder D1、Session／Notes 和原 Root／13 owning packages。
+它区分 `d3ae4b9a` 内核接收、`85425721`／`fef6a641` host／隔离 GUI 与未通过的原生运行。
+[机器摘要](agents/MODULE_DOCUMENTATION_2026_10_26.json)和
+[UI workspace 导航](../ui/README.md)提供实际路径；下方旧数字和旧审计仍保留其历史时点。
+
+## 当前实施入口：2026-10-25
+
+当前工作继续 Asterinas 派生内核，收敛 Desktop／原 Hepta 的同一可构建版本组合，修复权限与 Session 可用性，并实现 Notes 文档持久化和原 owner 恢复。见[集成实施与验收边界](agents/ORGAN_CONVERGENCE.md)、[源码组合开发和技术契约](../support/release/README.md)与[根项目入口](../README.md)。当前结果须由最终 source-pair 收据和实际测试日志确认；下面的旧版结果保留各自历史时点。
+
 ## 2026-10-22 项目入口与支持边界
 
 本仓库以 Asterinas 派生 Rust 内核、HOS2 控制接口、Hepta 原用户态 owner 和 Rust 桌面构成 organ 开发主线。当前可复核范围包括固定 x86_64/QEMU 内核实验、Linux host 上的 Rust UI/Notes 目的端，以及各自固定来源的兼容/持久性测试。完整生产 G2、Asterinas 上的 Hepta/桌面、GPU/VMM 与手机仍有明确缺口；以 [A–G 当前状态和固定证据](STATUS.md) 为准。
 
-**根 README 保持 0 字节。** 这是 [source gate](../support/build/verify-source.py) 的当前约束，本页承担项目阅读入口。`docs/agents` 的分工提示不能代替下面实际模块手册，历史测试数字也不代表当前整合 tree 已通过。
+原版曾要求根 README 为 0 字节；2026-10-25 起现行门禁改为普通非空项目入口，源码 pin 校验继续独立执行。`docs/agents` 的分工提示不能代替下面实际模块手册，历史测试数字也不代表当前整合 tree 已通过。
 
 ### 从这里开始
 

@@ -17,6 +17,7 @@ const DEADLINE: Duration = Duration::from_secs(2);
 
 pub struct NotesBootstrap {
     channel: UnixDatagram,
+    recovery: bool,
 }
 
 impl NotesBootstrap {
@@ -36,7 +37,18 @@ impl NotesBootstrap {
             ));
         }
         channel.set_nonblocking(false)?;
-        Ok(Self { channel })
+        Ok(Self {
+            channel,
+            recovery: false,
+        })
+    }
+
+    pub fn enable_recovery(mut self) -> Self {
+        self.recovery = true;
+        self
+    }
+    pub fn wants_recovery(&self) -> bool {
+        self.recovery
     }
 
     /// Consume this one-shot bootstrap and the fresh endpoint. On success the
@@ -44,15 +56,48 @@ impl NotesBootstrap {
     /// all duplicate endpoint references; a lost attachment ACK is not proof
     /// that the parent never attached or that any concurrent effect rolled back.
     pub fn offer(self, identity: NotesTargetIdentity, endpoint: UnixStream) -> io::Result<()> {
-        let outcome = self.offer_inner(identity, &endpoint);
+        let outcome = self.offer_inner(identity, &endpoint, None);
         if outcome.is_err() {
             let _ = endpoint.shutdown(Shutdown::Both);
         }
         outcome
     }
 
-    fn offer_inner(&self, identity: NotesTargetIdentity, endpoint: &UnixStream) -> io::Result<()> {
-        let offer = NotesBootstrapOffer::new(identity).map_err(invalid)?;
+    pub fn offer_with_recovery(
+        self,
+        identity: NotesTargetIdentity,
+        endpoint: UnixStream,
+        recovery: UnixDatagram,
+    ) -> io::Result<()> {
+        let outcome = self.offer_inner(identity, &endpoint, Some(&recovery));
+        if outcome.is_err() {
+            let _ = endpoint.shutdown(Shutdown::Both);
+            let _ = recovery.shutdown(Shutdown::Both);
+        }
+        outcome
+    }
+
+    fn offer_inner(
+        &self,
+        identity: NotesTargetIdentity,
+        endpoint: &UnixStream,
+        recovery: Option<&UnixDatagram>,
+    ) -> io::Result<()> {
+        if self.recovery != recovery.is_some() {
+            return Err(invalid("Notes bootstrap recovery profile mismatch"));
+        }
+        let offer = if self.recovery {
+            NotesBootstrapOffer::with_recovery(identity)
+        } else {
+            NotesBootstrapOffer::new(identity)
+        }
+        .map_err(invalid)?;
+        if let Some(recovery) = recovery {
+            require_socket_type(recovery.as_raw_fd(), libc::SOCK_DGRAM)?;
+            if !recovery.local_addr()?.is_unnamed() || !recovery.peer_addr()?.is_unnamed() {
+                return Err(invalid("Notes recovery endpoint is not a private pair"));
+            }
+        }
         require_socket_type(endpoint.as_raw_fd(), libc::SOCK_STREAM)?;
         if !endpoint.local_addr()?.is_unnamed() || !endpoint.peer_addr()?.is_unnamed() {
             return Err(invalid("Notes effect endpoint is not a private pair"));
@@ -62,7 +107,11 @@ impl NotesBootstrap {
             return Err(invalid("Notes bootstrap offer bound"));
         }
         let deadline = Instant::now() + DEADLINE;
-        send_descriptor(&self.channel, &raw, endpoint.as_raw_fd(), deadline)?;
+        let mut descriptors = vec![endpoint.as_raw_fd()];
+        if let Some(recovery) = recovery {
+            descriptors.push(recovery.as_raw_fd());
+        }
+        send_descriptors(&self.channel, &raw, &descriptors, deadline)?;
         let raw = receive_ack(&self.channel, deadline)?;
         let ack = NotesBootstrapAck::parse_exact(&raw).map_err(invalid)?;
         if !ack.matches(&offer) {
@@ -89,7 +138,7 @@ fn remaining(deadline: Instant) -> io::Result<Duration> {
         .ok_or_else(|| io::Error::new(io::ErrorKind::TimedOut, "Notes bootstrap total deadline"))
 }
 
-fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> {
+pub(super) fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> {
     for (name, expected) in [
         (libc::SO_DOMAIN, libc::AF_UNIX),
         (libc::SO_TYPE, expected_type),
@@ -116,15 +165,15 @@ fn require_socket_type(fd: RawFd, expected_type: libc::c_int) -> io::Result<()> 
     Ok(())
 }
 
-fn send_descriptor(
+pub(super) fn send_descriptors(
     channel: &UnixDatagram,
     raw: &[u8],
-    fd: RawFd,
+    fds: &[RawFd],
     deadline: Instant,
 ) -> io::Result<()> {
     // usize storage is aligned for Linux cmsghdr, including 32-bit targets.
     let mut control = [0usize; 8];
-    let space = unsafe { libc::CMSG_SPACE(mem::size_of::<RawFd>() as libc::c_uint) } as usize;
+    let space = unsafe { libc::CMSG_SPACE(mem::size_of_val(fds) as libc::c_uint) } as usize;
     if space > mem::size_of_val(&control) {
         return Err(invalid("Notes bootstrap ancillary capacity"));
     }
@@ -145,8 +194,13 @@ fn send_descriptor(
             let header = libc::CMSG_FIRSTHDR(&message);
             (*header).cmsg_level = libc::SOL_SOCKET;
             (*header).cmsg_type = libc::SCM_RIGHTS;
-            (*header).cmsg_len = libc::CMSG_LEN(mem::size_of::<RawFd>() as libc::c_uint) as usize;
-            libc::CMSG_DATA(header).cast::<RawFd>().write_unaligned(fd);
+            (*header).cmsg_len = libc::CMSG_LEN(mem::size_of_val(fds) as libc::c_uint) as usize;
+            for (index, fd) in fds.iter().enumerate() {
+                libc::CMSG_DATA(header)
+                    .cast::<RawFd>()
+                    .add(index)
+                    .write_unaligned(*fd);
+            }
             libc::sendmsg(channel.as_raw_fd(), &message, libc::MSG_NOSIGNAL)
         };
         if count == raw.len() as isize {
@@ -163,7 +217,7 @@ fn send_descriptor(
     }
 }
 
-fn receive_ack(channel: &UnixDatagram, deadline: Instant) -> io::Result<Vec<u8>> {
+pub(super) fn receive_ack(channel: &UnixDatagram, deadline: Instant) -> io::Result<Vec<u8>> {
     loop {
         channel.set_read_timeout(Some(remaining(deadline)?))?;
         let mut bytes = [0u8; NOTES_BOOTSTRAP_MAX_BYTES + 1];

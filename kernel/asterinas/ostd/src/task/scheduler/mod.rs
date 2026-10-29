@@ -67,6 +67,8 @@
 
 mod fifo_scheduler;
 pub mod info;
+#[cfg(ktest)]
+mod switch_tests;
 
 use spin::Once;
 
@@ -156,6 +158,41 @@ pub trait Scheduler<T = Task>: Sync + Send {
 
     /// Gets a mutable access to the local runqueue of the current CPU.
     fn mut_local_rq_with(&self, f: &mut dyn FnMut(&mut dyn LocalRunQueue<T>));
+
+    /// Closes the outgoing execution segment after its context was saved.
+    ///
+    /// Called on the incoming stack with IRQs disabled and no runqueue lock.
+    /// OSTD still owns a strong reference and has NOT released the outgoing
+    /// context for another CPU. The implementation must not block or allocate.
+    /// Returning true requests a local preemption point after switch cleanup;
+    /// the physical switch has already occurred and cannot be cancelled here.
+    fn finish_switch(&self, _previous: &Arc<T>) -> bool {
+        false
+    }
+
+    /// Transfers a previously reserved outgoing task after context release.
+    ///
+    /// OSTD has stored `switched_to_cpu = false` with Release ordering and
+    /// still holds the previous strong reference. IRQs remain disabled. A
+    /// scheduler requiring exclusive ownership must keep the task out of all
+    /// selectable queues until this call; the flag alone does not guarantee
+    /// that another CPU has not already acquired a prematurely published task.
+    /// Return a CPU that should be notified, after all runqueue locks are gone.
+    fn complete_switch(&self, _previous: &Arc<T>) -> Option<CpuId> {
+        None
+    }
+}
+
+pub(super) fn finish_switch(previous: &Arc<Task>) {
+    if scheduler_singleton().finish_switch(previous) {
+        cpu_local::set_need_preempt();
+    }
+}
+
+pub(super) fn complete_switch(previous: &Arc<Task>) {
+    if let Some(cpu) = scheduler_singleton().complete_switch(previous) {
+        set_need_preempt(cpu);
+    }
 }
 
 /// A per-CPU, local runqueue.
@@ -568,11 +605,17 @@ fn reschedule<F>(mut f: F)
 where
     F: FnMut(&mut dyn LocalRunQueue) -> ReschedAction,
 {
+    prepare_reschedule();
+
     // Even if the decision below is `DoNothing`, we should clear this flag. Meanwhile, to avoid
     // race conditions, we should do this before making the decision.
     cpu_local::clear_need_preempt();
 
-    let next_task = loop {
+    loop {
+        // No IRQ or preemption may interleave another scheduling decision
+        // after this one has changed the runqueue's logical current task.
+        // Only this guard (not a runqueue lock) crosses the switch boundary.
+        let irq_guard = crate::irq::disable_local();
         let mut action = ReschedAction::DoNothing;
         scheduler_singleton().mut_local_rq_with(&mut |rq| {
             action = f(rq);
@@ -586,18 +629,32 @@ where
                 continue;
             }
             ReschedAction::SwitchTo(next_task) => {
-                break next_task;
+                // OSTD still enforces exclusive access to the next context,
+                // even if an injected scheduler publishes it prematurely.
+                processor::switch_to_task(next_task, irq_guard);
+                return;
             }
         };
-    };
+    }
+}
 
-    // `switch_to_task` will spin if it finds that the next task is still running on some CPU core,
-    // which guarantees soundness regardless of the scheduler implementation.
-    //
-    // FIXME: The scheduler decision and context switching are not atomic, which can lead to some
-    // strange behavior even if the scheduler is implemented correctly. See "Problem 2" at
-    // <https://github.com/asterinas/asterinas/issues/1633> for details.
-    processor::switch_to_task(next_task);
+fn can_report_quiescent() -> bool {
+    cpu_local::get_guard_count() == 0 && crate::arch::irq::is_local_enabled()
+}
+
+fn prepare_reschedule() {
+    super::atomic_mode::might_sleep();
+    // Rcu::read disables preemption; read_with borrows an atomic-mode guard.
+    // The raw checks also cover bootstrap's might_sleep exemption, so a live
+    // reader can never be reported quiescent. Run arbitrary RCU destructors
+    // before the FIRST scheduling closure, with IRQs enabled and no rq lock.
+    // They may recursively reschedule against the still-intact current task.
+    // Never repeat them after a Wait/Exit closure has dequeued that task.
+    if can_report_quiescent() {
+        // SAFETY: Both raw atomic-mode checks passed above; no read-side
+        // critical section can be active on this CPU at this point.
+        unsafe { crate::sync::finish_grace_period() };
+    }
 }
 
 /// Possible actions of a rescheduling.

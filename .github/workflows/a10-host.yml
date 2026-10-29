@@ -38,7 +38,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Verify A00 bootstrap versus A10 source diff and empty README
+      - name: Verify A00 bootstrap versus A10 source diff and project README
         id: scope
         shell: bash
         env:
@@ -47,7 +47,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
           if [[ -f ui/Cargo.toml ]]; then
             echo 'has_ui=true' >> "$GITHUB_OUTPUT"
             echo 'A10 Rust source exists; host build and Wayland tests are required.'
@@ -97,10 +97,11 @@ jobs:
           rustup default 1.88.0
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            pkg-config libwayland-dev libxkbcommon-dev \
+            pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
             libgl1-mesa-dev libegl1-mesa-dev \
             libx11-dev libxi-dev libxrandr-dev libxcursor-dev libxinerama-dev \
-            weston wayland-utils libgbm-dev libgl1-mesa-dri
+            weston wayland-utils libgbm-dev libgl1-mesa-dri \
+            xvfb x11-utils xdotool python3-pil
       - name: Record real host versions, not the pinned Asterinas kernel toolchain
         run: |
           set -euo pipefail
@@ -108,7 +109,7 @@ jobs:
           cargo -Vv
           weston --version
           cat /etc/os-release
-          test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
       - name: Compile and test Rust binaries and validate rustfmt
         run: |
           set -euo pipefail
@@ -120,6 +121,23 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a10"
           export A10_HEADLESS_LOG_DIR="$RUNNER_TEMP/a10/wayland"
           bash tests/ui/headless-weston.sh 2>&1 | tee "$RUNNER_TEMP/a10/headless.log"
+      - name: Verify real Notes persistence and recovery with the built UI binaries
+        run: |
+          set -euo pipefail
+          # Reuse the host build and installed Weston dependencies. The probe
+          # owns its compositor and app processes; this is the application and
+          # transport lane, not a substitute Hepta production writer.
+          ui_binaries="${CARGO_TARGET_DIR:-$PWD/ui/target}/debug"
+          python3 -B tests/ui/test-notes-persistence-ipc.py \
+            "$ui_binaries" "$RUNNER_TEMP/a10/notes-persistence" \
+            2>&1 | tee "$RUNNER_TEMP/a10/notes-persistence.log"
+      - name: Verify private authenticated X11 input and capture against real applications
+        run: |
+          set -euo pipefail
+          ui_binaries="${CARGO_TARGET_DIR:-$PWD/ui/target}/debug"
+          python3 -B tests/ui/test-desktop-x11-ipc.py \
+            "$ui_binaries/trill-session" "$RUNNER_TEMP/a10/desktop-x11" \
+            2>&1 | tee "$RUNNER_TEMP/a10/desktop-x11.log"
       - name: Enforce Rust 1.88 UI workspace and all-target Clippy warnings
         run: |
           set -euo pipefail

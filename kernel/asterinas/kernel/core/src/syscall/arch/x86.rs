@@ -126,6 +126,7 @@ use super::{
     sched_setparam::sys_sched_setparam,
     sched_setscheduler::sys_sched_setscheduler,
     sched_yield::sys_sched_yield,
+    seccomp::sys_seccomp,
     select::sys_select,
     semctl::sys_semctl,
     semget::sys_semget,
@@ -321,6 +322,7 @@ impl_syscall_nums_and_dispatch_fn! {
     SYS_SCHED_GET_PRIORITY_MIN = 147 => sys_sched_get_priority_min(args[..1]);
     SYS_PIVOT_ROOT = 155       => sys_pivot_root(args[..2]);
     SYS_PRCTL = 157            => sys_prctl(args[..5]);
+    SYS_SECCOMP = 317          => sys_seccomp(args[..3]);
     SYS_ARCH_PRCTL = 158       => sys_arch_prctl(args[..2]);
     SYS_SETRLIMIT = 160        => sys_setrlimit(args[..2]);
     SYS_CHROOT = 161           => sys_chroot(args[..1]);

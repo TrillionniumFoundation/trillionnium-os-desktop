@@ -267,3 +267,116 @@ fn waiting_dequeue_retains_its_owner_through_selection_retries() {
 fn exiting_dequeue_retains_its_owner_through_selection_retries() {
     exercise_dequeue("g1b-handoff-exit", UpdateFlags::Exit);
 }
+
+#[ktest]
+fn completed_switch_keeps_the_original_owner_through_the_physical_tail() {
+    let fixture = Fixture::new("w3a-physical-tail");
+    let mut rq = fixture.runqueue(fixture.start);
+    rq.enqueue(fixture.tasks[1].clone());
+    let next = rq
+        .pick_switch(&[fixture.start + 11, fixture.start + 29])
+        .unwrap();
+    assert!(Arc::ptr_eq(&next, &fixture.tasks[1]));
+    assert_eq!(rq.queued_count(), 0);
+    assert!(rq.pick(&[fixture.start + 37]).is_none());
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 37);
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 0);
+    assert!(!rq.finish_switch(&fixture.tasks[0], fixture.start + 47));
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 47);
+    assert_eq!(rq.cfs_runtime(), Some((fixture.start + 47, 0, 0)));
+    assert_eq!(rq.queued_count(), 0);
+    assert!(
+        rq.complete_switch(&fixture.tasks[0], fixture.start + 53)
+            .is_none()
+    );
+    assert_eq!(rq.queued_count(), 1);
+    rq.update(UpdateFlags::Tick, fixture.start + 61);
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 47);
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 14);
+    assert_eq!(budget(&owner(fixture.parent.controller())).used_ns, 61);
+}
+
+#[ktest]
+fn completed_wait_merges_late_wakes_into_one_detached_token() {
+    let fixture = Fixture::new("w3a-late-wake");
+    let mut rq = fixture.runqueue(fixture.start);
+    rq.update(UpdateFlags::Wait, fixture.start + 11);
+    rq.dequeue(fixture.start + 19).unwrap();
+    rq.enqueue(fixture.tasks[1].clone());
+    rq.pick_switch(&[fixture.start + 23, fixture.start + 29])
+        .unwrap();
+    assert!(rq.wake_outgoing(&fixture.tasks[0]));
+    assert_eq!(rq.queued_count(), 0);
+    rq.finish_switch(&fixture.tasks[0], fixture.start + 41);
+    assert!(rq.wake_outgoing(&fixture.tasks[0]));
+    let token = rq
+        .complete_switch(&fixture.tasks[0], fixture.start + 47)
+        .unwrap();
+    assert!(Arc::ptr_eq(&token, &fixture.tasks[0]));
+    assert_eq!(rq.queued_count(), 0);
+    assert!(
+        rq.complete_switch(&fixture.tasks[0], fixture.start + 53)
+            .is_none()
+    );
+    assert!(!rq.wake_outgoing(&fixture.tasks[0]));
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 41);
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 6);
+}
+
+#[ktest]
+fn waiting_retry_can_restore_the_same_task_without_a_switch_callback() {
+    let fixture = Fixture::new("w3a-wait-restore");
+    let mut rq = fixture.runqueue(fixture.start);
+    rq.update(UpdateFlags::Wait, fixture.start + 11);
+    rq.dequeue(fixture.start + 19).unwrap();
+    assert!(rq.pick(&[fixture.start + 23]).is_none());
+    assert!(rq.wake_outgoing(&fixture.tasks[0]));
+    let restored = rq.pick(&[fixture.start + 29]).unwrap();
+    assert!(Arc::ptr_eq(&restored, &fixture.tasks[0]));
+    assert_eq!(rq.queued_count(), 0);
+    rq.update(UpdateFlags::Tick, fixture.start + 41);
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 41);
+    assert_eq!(budget(&owner(fixture.parent.controller())).used_ns, 41);
+}
+
+#[ktest]
+fn completed_exit_never_becomes_runnable_after_a_late_wake() {
+    let fixture = Fixture::new("w3a-exit-wake");
+    let mut rq = fixture.runqueue(fixture.start);
+    rq.update(UpdateFlags::Exit, fixture.start + 11);
+    rq.dequeue(fixture.start + 19).unwrap();
+    assert!(rq.wake_outgoing(&fixture.tasks[0]));
+    assert!(rq.pick(&[fixture.start + 23]).is_none());
+    rq.enqueue(fixture.tasks[1].clone());
+    rq.pick_switch(&[fixture.start + 29, fixture.start + 31])
+        .unwrap();
+    assert!(rq.wake_outgoing(&fixture.tasks[0]));
+    rq.finish_switch(&fixture.tasks[0], fixture.start + 41);
+    assert!(
+        rq.complete_switch(&fixture.tasks[0], fixture.start + 47)
+            .is_none()
+    );
+    assert_eq!(rq.queued_count(), 0);
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 41);
+}
+
+#[ktest]
+fn physical_tail_exhaustion_requests_preemption_after_committing_incoming() {
+    let fixture = Fixture::new("w3a-tail-quota");
+    let parent = owner(fixture.parent.controller());
+    reset(&parent, fixture.start, 1);
+    let mut rq = fixture.runqueue(fixture.start);
+    rq.enqueue(fixture.tasks[1].clone());
+    rq.pick_switch(&[fixture.start + 11, fixture.start + 29])
+        .unwrap();
+    assert!(rq.finish_switch(&fixture.tasks[0], fixture.start + 1001));
+    assert_eq!(rq.cfs_runtime(), Some((fixture.start + 1001, 0, 0)));
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 1001);
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 0);
+    assert!(
+        rq.complete_switch(&fixture.tasks[0], fixture.start + 1003)
+            .is_none()
+    );
+    assert!(rq.is_throttled(&fixture.tasks[0]));
+    assert_eq!(budget(&parent).used_ns, 1003);
+}

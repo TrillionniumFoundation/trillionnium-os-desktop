@@ -68,6 +68,9 @@ pub(crate) struct Cursor<'rcu, C: PageTableConfig> {
     ///
     /// From `level` to `guard_level`, the nodes are held in `path`.
     guard_level: PagingLevel,
+    /// Highest mapping level permitted by the requested range/minimum level,
+    /// independent of an absent subtree making the actual lock broader.
+    map_level: PagingLevel,
     /// The virtual address that the cursor currently points to.
     va: Vaddr,
     /// The virtual address range that is locked.
@@ -152,7 +155,14 @@ impl<'rcu, C: PageTableConfig> Cursor<'rcu, C> {
                 PteStateRef::Mapped(item) => Some(item),
             };
 
-            return Ok((self.cur_va_range(), item));
+            let mut range = self.cur_va_range();
+            if item.is_none() {
+                // An absent ancestor may cover more than the claimed range.
+                // Querying a hole must not expose addresses outside its barrier.
+                range.start = range.start.max(self.barrier_va.start);
+                range.end = range.end.min(self.barrier_va.end);
+            }
+            return Ok((range, item));
         }
     }
 
@@ -427,11 +437,22 @@ impl<'rcu, C: PageTableConfig> CursorMut<'rcu, C> {
     ///  - the range being mapped does not affect kernel's memory safety;
     ///  - the physical address to be mapped is valid and safe to use.
     pub(crate) unsafe fn map(&mut self, item: C::Item) {
+        // SAFETY: The caller upholds the same mapping requirements.
+        unsafe { self.try_map(item) }.expect("Failed to allocate page-table nodes");
+    }
+
+    /// Fallible map: a reservation/allocation failure leaves the item unmapped
+    /// and drops its owned reference. Already constructed empty nodes remain
+    /// correctly charged until their actual last-reference destruction.
+    ///
+    /// # Safety
+    /// The same address/memory-ownership requirements as `map` apply.
+    pub(crate) unsafe fn try_map(&mut self, item: C::Item) -> Result<(), PageTableError> {
         assert!(self.0.va < self.0.barrier_va.end);
 
         let (_, level, _) = C::item_raw_info(&item);
         assert!(
-            level <= C::HIGHEST_TRANSLATION_LEVEL && level <= self.0.guard_level,
+            level <= C::HIGHEST_TRANSLATION_LEVEL && level <= self.0.map_level,
             "cursor level not suitable for mapping"
         );
         let size = page_size::<C>(level);
@@ -445,6 +466,27 @@ impl<'rcu, C: PageTableConfig> CursorMut<'rcu, C> {
             "cursor virtual address out-of-bound for mapping"
         );
 
+        self.try_descend_to(level)?;
+
+        if !matches!(self.0.cur_entry().to_ref(), PteStateRef::Absent) {
+            panic!("mapping over an already mapped page");
+        }
+
+        let _ = self.replace_cur_entry(PteState::Mapped(RcuDrop::new(item)));
+
+        self.0.move_forward();
+        Ok(())
+    }
+
+    /// Allocates the path to a base-page entry without changing any mapping.
+    /// Already allocated nodes are retained on failure. Keeping this cursor
+    /// alive prevents another cursor from removing the prepared path.
+    pub(crate) fn try_prepare_base_page(&mut self) -> Result<(), PageTableError> {
+        assert!(self.0.va < self.0.barrier_va.end);
+        self.try_descend_to(1)
+    }
+
+    fn try_descend_to(&mut self, level: PagingLevel) -> Result<(), PageTableError> {
         let rcu_guard = self.0.rcu_guard;
 
         // Adjust ourselves to the level of the item.
@@ -462,7 +504,7 @@ impl<'rcu, C: PageTableConfig> CursorMut<'rcu, C> {
                     self.0.push_level(pt_guard);
                 }
                 PteStateRef::Absent => {
-                    let child_guard = cur_entry.alloc_if_none(rcu_guard).unwrap();
+                    let child_guard = cur_entry.alloc_if_none(rcu_guard)?.unwrap();
                     self.0.push_level(child_guard);
                 }
                 PteStateRef::Mapped(_) => {
@@ -472,13 +514,7 @@ impl<'rcu, C: PageTableConfig> CursorMut<'rcu, C> {
             }
         }
 
-        if !matches!(self.0.cur_entry().to_ref(), PteStateRef::Absent) {
-            panic!("mapping over an already mapped page");
-        }
-
-        let _ = self.replace_cur_entry(PteState::Mapped(RcuDrop::new(item)));
-
-        self.0.move_forward();
+        Ok(())
     }
 
     /// Finds and removes the first page table fragment in the following range.

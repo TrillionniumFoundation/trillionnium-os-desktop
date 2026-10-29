@@ -2,13 +2,13 @@
 
 use ostd::{
     cpu::CpuSet,
-    task::{Task, TaskOptions},
+    task::{PreparedTaskStack, StackCharger, Task, TaskOptions},
 };
 
 use super::{AsThread, Thread, oops};
 use crate::{
     prelude::*,
-    sched::{Nice, SchedPolicy},
+    sched::{Nice, SchedAttr, SchedPolicy},
     vm::vmar::Vmar,
 };
 
@@ -96,7 +96,18 @@ impl ThreadOptions {
 
 impl ThreadOptions {
     /// Builds a new kernel thread without running it immediately.
-    pub(crate) fn build(mut self) -> Arc<Task> {
+    pub(crate) fn build(self) -> Arc<Task> {
+        self.build_using(|options| options.build().unwrap())
+    }
+
+    /// Reserves and maps a charged stack before task publication. Failure
+    /// drops the unstarted closure and returns its owned reservations.
+    pub(crate) fn try_build(self, charger: StackCharger) -> Result<Arc<Task>> {
+        let stack = PreparedTaskStack::try_new(charger)?;
+        Ok(self.build_using(|options| options.build_with_stack(stack)))
+    }
+
+    fn build_using(mut self, build_task: impl FnOnce(TaskOptions) -> Task) -> Arc<Task> {
         let task_fn = self.func.take().unwrap();
         let thread_fn = move || {
             let _ = oops::catch_panics_as_oops(task_fn);
@@ -113,11 +124,11 @@ impl ThreadOptions {
                     weak_task.clone(),
                     kernel_thread,
                     cpu_affinity,
-                    sched_policy,
+                    SchedAttr::new(sched_policy),
                 ))
             };
 
-            TaskOptions::new(thread_fn).data(thread).build().unwrap()
+            build_task(TaskOptions::new(thread_fn).data(thread))
         })
     }
 

@@ -76,7 +76,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
           for path in services/hepta-os/Cargo.toml services/hepta-os/Cargo.lock \
             services/hepta-os/UPSTREAM_CONTRACT.json \
             tests/integration/hepta/run_original_agentd.py \

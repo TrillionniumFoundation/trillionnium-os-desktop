@@ -1,0 +1,36 @@
+# trill-session
+
+Explicit `--desktop-bootstrap-stdin` startup can attach one trusted inherited
+X11 connection and hand private input/observation descriptors to the original
+Hepta host. Public IPC remains Snapshot/Launch/Cancel. See the
+[Desktop X11 contract](../../support/ui/DESKTOP_X11.md).
+
+Linux host process owner for the Shell and application windows. `src/main.rs`
+owns task generations, launch/cancel/reap and private Notes startup;
+`src/ipc.rs` serves bounded nonblocking public requests. `src/hepta.rs` observes
+the configured original runtime. `src/notes_bootstrap.rs` transfers private
+destination descriptors to an explicitly configured trusted parent.
+
+The `trill-ctl` binary is a client of the same public host protocol. Public
+Snapshot/Launch/Cancel has no Notes edit, arbitrary command, descriptor export
+or authority-minting request. Same-UID transport checks are not Final-use grants.
+
+From the repository root:
+
+```sh
+cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-session --locked -j 2
+```
+
+Executable IPC fixtures keep their private runtime names short under the
+configured `TMPDIR`, leaving room for the real Unix socket pathname. They retain
+mode 0700 and surface Session startup errors. A long build-temporary directory
+must not make a fixture exit before its observation or reconnect check runs.
+
+Development and technical contracts: [Session IPC and lifecycle](../../support/ui/SESSION_IPC.md),
+[Notes persistence and recovery](../../support/ui/NOTES_PERSISTENCE.md),
+[runtime observer](../../support/ui/HEPTA_OBSERVER.md),
+[host build and acceptance](../../support/ui/RUN.md).
+
+The explicit [signed-request inbox](../../support/ui/OBJECTIVE_INBOX.md) uses the
+original Hepta Objective admission/history boundary. Normal startup remains
+unconfigured; local drafts never become signed or submitted requests.

@@ -38,7 +38,7 @@ class A06FinalAccountingSource(unittest.TestCase):
         self.assertIn("guard.get().is_some() || !process.status().is_zombie()", body)
         scheduler = SCHED_RS.read_text()
         self.assertIn("bandwidth_owner: Option<CpuChargeOwner>", scheduler)
-        start = scheduler.index("fn settle_bandwidth(&mut self, task: &Task,")
+        start = scheduler.index("fn settle_runtime(&mut self, task: &Task,")
         end = scheduler.index("fn with_bandwidth_settled", start)
         settlement = scheduler[start:end]
         self.assertIn(
@@ -46,6 +46,7 @@ class A06FinalAccountingSource(unittest.TestCase):
             settlement,
         )
         self.assertIn("let Some(owner) = &self.bandwidth_owner", settlement)
+        self.assertIn("self.fair.settle(task, now.cycles)", settlement)
         self.assertLess(
             settlement.index("owner.charge(from, until)"),
             settlement.index("self.bandwidth_owner = CpuChargeOwner::for_task(task)"),

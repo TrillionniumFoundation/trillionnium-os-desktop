@@ -9,10 +9,13 @@ use spin::Once;
 
 use super::registry::char::{MajorIdOwner, acquire_major};
 
-mod hwrng;
+mod binder;
+pub(crate) use binder::thread_exited as binder_thread_exited;
 mod hepta_control;
+mod hwrng;
+pub(crate) use hepta_control::boot_id as hepta_boot_id;
 #[cfg(feature = "g1d-trusted-control")]
-pub(crate) use hepta_control::{boot_id as hepta_boot_id, image_space_id as hepta_image_space_id};
+pub(crate) use hepta_control::image_space_id as hepta_image_space_id;
 #[cfg(all(target_arch = "x86_64", feature = "cvm_guest"))]
 pub(crate) mod tdxguest;
 
@@ -21,6 +24,7 @@ static MISC_MAJOR: Once<MajorIdOwner> = Once::new();
 pub(super) fn init_in_first_kthread() {
     MISC_MAJOR.call_once(|| acquire_major(MajorId::new(10)).unwrap());
 
+    binder::init_in_first_kthread();
     hwrng::init_in_first_kthread();
     hepta_control::init_in_first_kthread();
 

@@ -1,9 +1,11 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
 pub mod conversation;
+pub mod desktop;
 pub mod hepta;
 pub mod notes;
 pub mod notes_bootstrap;
+pub mod objective;
 pub mod observation;
 
 use serde::{Deserialize, Serialize};
@@ -269,6 +271,21 @@ pub struct HostResources {
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Request {
     Snapshot,
+    ObjectiveList {
+        expected_instance: String,
+    },
+    ObjectiveInspect {
+        id: String,
+        expected_instance: String,
+    },
+    ObjectiveSubmit {
+        id: String,
+        expected_instance: String,
+    },
+    ObjectiveQuery {
+        id: String,
+        expected_instance: String,
+    },
     Launch {
         workspace: Workspace,
         app: AppKind,
@@ -283,6 +300,17 @@ pub enum Request {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Response {
+    Objectives {
+        configured: bool,
+        owner_agent_id: Option<String>,
+        owner_spawn_generation: Option<u64>,
+        entries: Vec<objective::ObjectiveSummary>,
+        session_instance: String,
+    },
+    ObjectiveDetail {
+        detail: Box<objective::ObjectiveDetail>,
+        session_instance: String,
+    },
     Snapshot {
         tasks: Vec<TaskRecord>,
         resources: HostResources,
@@ -352,6 +380,10 @@ pub fn parse_host_request(frame: &[u8]) -> io::Result<Request> {
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     let allowed: &[&str] = match fields.get("type").and_then(serde_json::Value::as_str) {
         Some("snapshot") => &["type"],
+        Some("objective_list") => &["type", "expected_instance"],
+        Some("objective_inspect" | "objective_submit" | "objective_query") => {
+            &["type", "id", "expected_instance"]
+        }
         Some("launch") => &["type", "workspace", "app", "expected_instance"],
         Some("cancel") => &["type", "id", "expected_instance"],
         _ => {
@@ -448,6 +480,29 @@ pub fn request_at(socket: &Path, req: &Request) -> io::Result<Response> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn objective_requests_only_select_preconfigured_ids() {
+        for kind in ["objective_inspect", "objective_submit", "objective_query"] {
+            let raw = serde_json::json!({"type":kind,"id":"known","expected_instance":"i"});
+            assert!(parse_host_request(&serde_json::to_vec(&raw).unwrap()).is_ok());
+            for extra in [
+                "envelope",
+                "signature",
+                "socket_path",
+                "source_envelope_json",
+                "command",
+            ] {
+                let mut changed = raw.clone();
+                changed[extra] = "untrusted".into();
+                assert!(parse_host_request(&serde_json::to_vec(&changed).unwrap()).is_err());
+            }
+        }
+        assert!(parse_host_request(
+            br#"{"type":"objective_submit","id":"a","id":"b","expected_instance":"i"}"#
+        )
+        .is_err());
+    }
 
     #[test]
     fn older_session_snapshot_cannot_claim_a_hepta_connection() {

@@ -1,8 +1,13 @@
 //! Independent host-only process launcher/lifecycle owner.
 //! It is not a Wayland compositor and it grants no kernel permissions.
+#[cfg(target_os = "linux")]
+mod desktop_bootstrap;
 mod hepta;
+mod ipc;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
+mod objective;
+mod objective_store;
 
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
@@ -11,8 +16,8 @@ use std::os::fd::AsRawFd;
 #[cfg(target_os = "linux")]
 use std::os::fd::OwnedFd;
 use std::os::unix::fs::{DirBuilderExt, FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt};
-use std::os::unix::net::{UnixListener, UnixStream};
-use std::os::unix::process::ExitStatusExt;
+use std::os::unix::net::{UnixDatagram, UnixListener, UnixStream};
+use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
@@ -27,7 +32,7 @@ use trill_ui_core::notes::{
     NotesChannelObservation, NotesDestinationObservation, NotesTargetIdentity,
 };
 use trill_ui_core::{
-    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
+    parse_host_request, socket_path, unix_ms, write_frame, AppKind, HostResources,
     HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
     Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
 };
@@ -127,6 +132,7 @@ impl DisplayTracker {
 }
 
 struct Session {
+    objective: objective::ObjectiveMonitor,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
@@ -140,6 +146,8 @@ struct Session {
     // Standalone Session installs no Hepta authority or production owner.
     #[cfg(target_os = "linux")]
     notes_targets: BTreeMap<u64, NotesTarget>,
+    notes_recovery: BTreeMap<u64, UnixDatagram>,
+    initial_document: Option<(PathBuf, bool)>,
     first_frame_tx: Sender<u64>,
     first_frame_rx: Receiver<u64>,
 }
@@ -154,6 +162,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            objective: objective::ObjectiveMonitor::default(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
@@ -165,6 +174,8 @@ impl Session {
             children: BTreeMap::new(),
             #[cfg(target_os = "linux")]
             notes_targets: BTreeMap::new(),
+            notes_recovery: BTreeMap::new(),
+            initial_document: None,
             first_frame_tx,
             first_frame_rx,
         })
@@ -172,6 +183,10 @@ impl Session {
 
     fn child_command(&self, id: u64, workspace: Workspace, app: AppKind) -> Command {
         let mut command = Command::new(&self.app_binary);
+        command
+            .env_remove("TRILL_NOTES_STORE_DIR")
+            .env_remove("TRILL_NOTES_STORE_MODE")
+            .env_remove("TRILL_NOTES_RECOVERY_FD");
         #[cfg(test)]
         if let Some(socket) = &self.cancellation_fixture_socket {
             // Re-exec an already-built test child. This selection does not
@@ -222,7 +237,17 @@ impl Session {
             .remove(&1)
             .ok_or_else(|| io::Error::other("initial Notes endpoint missing"))
             .and_then(NotesTarget::into_initial_endpoint);
-        let attached = endpoint.and_then(|(identity, stream)| bootstrap.offer(identity, stream));
+        let attached = endpoint.and_then(|(identity, stream)| {
+            if bootstrap.wants_recovery() {
+                let recovery = self
+                    .notes_recovery
+                    .remove(&1)
+                    .ok_or_else(|| io::Error::other("Notes recovery endpoint missing"))?;
+                bootstrap.offer_with_recovery(identity, stream, recovery)
+            } else {
+                bootstrap.offer(identity, stream)
+            }
+        });
         if let Err(error) = attached {
             // This closes only the Session-owned initial child. An attachment
             // timeout cannot prove the parent's grant/effect never occurred.
@@ -256,11 +281,16 @@ impl Session {
         }
         self.children.remove(&1);
         self.notes_targets.remove(&1);
+        self.notes_recovery.remove(&1);
         Ok(())
     }
 
     #[cfg(target_os = "linux")]
-    fn prepare_notes_target(&self, id: u64, command: &mut Command) -> io::Result<NotesTarget> {
+    fn prepare_notes_target(
+        &self,
+        id: u64,
+        command: &mut Command,
+    ) -> io::Result<(NotesTarget, UnixDatagram)> {
         let mut random = [0u8; 16];
         File::open("/dev/urandom")?.read_exact(&mut random)?;
         let incarnation: String = random.iter().map(|byte| format!("{byte:02x}")).collect();
@@ -277,7 +307,36 @@ impl Session {
             .arg("--notes-incarnation")
             .arg(&identity.incarnation)
             .stdin(Stdio::from(OwnedFd::from(child)));
-        Ok(target)
+        let (recovery, child_recovery) = UnixDatagram::pair()?;
+        let (store_path, reopen) = if id == 1 {
+            match &self.initial_document {
+                Some(value) => value.clone(),
+                None => (default_notes_path(&identity)?, false),
+            }
+        } else {
+            (default_notes_path(&identity)?, false)
+        };
+        command
+            .env("TRILL_NOTES_STORE_DIR", store_path)
+            .env(
+                "TRILL_NOTES_STORE_MODE",
+                if reopen { "reopen" } else { "create" },
+            )
+            .env(
+                "TRILL_NOTES_RECOVERY_FD",
+                child_recovery.as_raw_fd().to_string(),
+            );
+        // The captured owned descriptor remains live across fork. Only this
+        // private child endpoint loses CLOEXEC; no renderer supplies a raw fd.
+        unsafe {
+            command.pre_exec(move || {
+                if libc::fcntl(child_recovery.as_raw_fd(), libc::F_SETFD, 0) < 0 {
+                    return Err(io::Error::last_os_error());
+                }
+                Ok(())
+            });
+        }
+        Ok((target, recovery))
     }
 
     /// Only completed/failed/confirmed-cancelled records can be pruned.
@@ -363,13 +422,14 @@ impl Session {
         match spawn {
             Ok(mut child) => {
                 #[cfg(target_os = "linux")]
-                if let Some(target) = notes_target {
+                if let Some((target, recovery)) = notes_target {
                     task.notes_destination = Some(NotesDestinationObservation {
                         incarnation: target.identity().incarnation.clone(),
                         channel: NotesChannelObservation::PrivateChannelPrepared,
                         original_owner_registered: false,
                     });
                     self.notes_targets.insert(id, target);
+                    self.notes_recovery.insert(id, recovery);
                 }
                 if let Some(stdout) = child.stdout.take() {
                     observe_first_frame(id, stdout, self.first_frame_tx.clone());
@@ -431,6 +491,7 @@ impl Session {
             #[cfg(target_os = "linux")]
             {
                 self.notes_targets.remove(&id);
+                self.notes_recovery.remove(&id);
                 if let Some(notes) = self
                     .tasks
                     .get_mut(&id)
@@ -486,6 +547,39 @@ impl Session {
     fn handle(&mut self, request: Request) -> Response {
         self.refresh();
         match request {
+            Request::ObjectiveList { expected_instance } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.list(&self.instance)
+            }
+            Request::ObjectiveInspect {
+                id,
+                expected_instance,
+            } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.inspect(&id, &self.instance)
+            }
+            Request::ObjectiveSubmit {
+                id,
+                expected_instance,
+            } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.enqueue(id, true, &self.instance)
+            }
+            Request::ObjectiveQuery {
+                id,
+                expected_instance,
+            } => {
+                if expected_instance != self.instance {
+                    return self.objective_generation_error();
+                }
+                self.objective.enqueue(id, false, &self.instance)
+            }
             Request::Snapshot => {
                 let observation = self.display.observe(probe_host_wayland());
                 Response::Snapshot {
@@ -523,6 +617,12 @@ impl Session {
                     self.cancel(id)
                 }
             }
+        }
+    }
+    fn objective_generation_error(&self) -> Response {
+        Response::Error {
+            message: "Stale Session; no Objective command queued".into(),
+            session_instance: self.instance.clone(),
         }
     }
 }
@@ -668,45 +768,7 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
     }
 }
 
-fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result<()> {
-    require_same_uid_peer(&stream)?;
-    // Invalid/malformed peers must not prevent reaping independent apps.
-    // A valid Request::Snapshot/Cancel already refreshes in handle(), but
-    // rejected frames never reach handle(). Refresh before parsing every peer.
-    session.refresh();
-    // This is a local single-owner session loop, so an idle same-UID peer
-    // must not block task reaping and every other GUI client for two seconds.
-    // A legitimate request is <=64 KiB and written as one bounded frame.
-    stream.set_read_timeout(Some(std::time::Duration::from_millis(500)))?;
-    stream.set_write_timeout(Some(std::time::Duration::from_millis(500)))?;
-    let response = match read_frame(&mut stream) {
-        Ok(frame) => match parse_host_request(&frame) {
-            Ok(command) => session.handle(command),
-            Err(error) => Response::Error {
-                message: format!("Invalid IPC request: {error}"),
-                session_instance: session.instance.clone(),
-            },
-        },
-        Err(error) => Response::Error {
-            message: format!("Invalid IPC frame: {error}"),
-            session_instance: session.instance.clone(),
-        },
-    };
-    // Never emit a partial/truncated JSON frame or silently lose lifecycle
-    // provenance if a future TaskRecord field makes a snapshot too large.
-    match write_frame(&mut stream, &response) {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == io::ErrorKind::InvalidData => write_frame(
-            &mut stream,
-            &Response::Error {
-                message: "Session snapshot is too large; no task state is being asserted".into(),
-                session_instance: session.instance.clone(),
-            },
-        ),
-        Err(error) => Err(error),
-    }
-}
-
+#[cfg(test)]
 fn notes_bootstrap_requested(
     args: impl IntoIterator<Item = std::ffi::OsString>,
 ) -> io::Result<bool> {
@@ -721,21 +783,121 @@ fn notes_bootstrap_requested(
     }
 }
 
-fn main() -> io::Result<()> {
-    let requested = notes_bootstrap_requested(std::env::args_os().skip(1))?;
-    #[cfg(target_os = "linux")]
-    let notes_bootstrap = if requested {
-        Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?)
-    } else {
-        None
+fn default_notes_path(identity: &NotesTargetIdentity) -> io::Result<PathBuf> {
+    let state = match std::env::var_os("XDG_STATE_HOME") {
+        Some(path) => PathBuf::from(path),
+        None => PathBuf::from(
+            std::env::var_os("HOME")
+                .ok_or_else(|| io::Error::other("Notes requires XDG_STATE_HOME or HOME"))?,
+        )
+        .join(".local/state"),
     };
-    #[cfg(not(target_os = "linux"))]
-    if requested {
-        return Err(io::Error::new(
-            io::ErrorKind::Unsupported,
-            "Notes bootstrap requires Linux",
+    if !state.is_absolute() {
+        return Err(io::Error::other("Notes state directory must be absolute"));
+    }
+    Ok(state.join("trillionnium-ui/notes").join(format!(
+        "{}-{}-{}",
+        identity.session_instance, identity.task_id, identity.incarnation
+    )))
+}
+
+struct Startup {
+    bootstrap: Option<u16>,
+    document: Option<(PathBuf, bool)>,
+    desktop: desktop_bootstrap::DesktopStartup,
+    objective_config_fd: Option<i32>,
+}
+fn startup(args: impl IntoIterator<Item = std::ffi::OsString>) -> io::Result<Startup> {
+    let mut args = args.into_iter();
+    let mut result = Startup {
+        bootstrap: None,
+        document: None,
+        desktop: desktop_bootstrap::DesktopStartup::default(),
+        objective_config_fd: None,
+    };
+    while let Some(flag) = args.next() {
+        match flag.to_str() {
+            Some("--objective-config-fd") if result.objective_config_fd.is_none() => {
+                result.objective_config_fd = Some(startup_number(args.next())?)
+            }
+            Some("--desktop-bootstrap-stdin") if !result.desktop.enabled => {
+                result.desktop.enabled = true
+            }
+            Some("--desktop-x11-fd") if result.desktop.x11_fd.is_none() => {
+                result.desktop.x11_fd = Some(startup_number(args.next())?)
+            }
+            Some("--desktop-x11-cookie-fd") if result.desktop.cookie_fd.is_none() => {
+                result.desktop.cookie_fd = Some(startup_number(args.next())?)
+            }
+            Some("--desktop-x11-server-pid") if result.desktop.server_pid.is_none() => {
+                result.desktop.server_pid = Some(startup_number(args.next())?)
+            }
+            Some("--desktop-window") if result.desktop.window.is_none() => {
+                result.desktop.window = Some(startup_number(args.next())?)
+            }
+            Some("--notes-bootstrap-stdin") if result.bootstrap.is_none() => {
+                result.bootstrap = Some(1)
+            }
+            Some("--notes-bootstrap-v2-stdin") if result.bootstrap.is_none() => {
+                result.bootstrap = Some(2)
+            }
+            Some("--notes-document" | "--notes-new-document") if result.document.is_none() => {
+                let path = PathBuf::from(
+                    args.next()
+                        .ok_or_else(|| io::Error::other("Notes document path missing"))?,
+                );
+                if !path.is_absolute() {
+                    return Err(io::Error::other("Notes document path must be absolute"));
+                }
+                result.document = Some((path, flag == "--notes-document"));
+            }
+            _ => {
+                return Err(io::Error::other(
+                    "invalid or duplicate Session startup argument",
+                ))
+            }
+        }
+    }
+    if result.document.is_some() && result.bootstrap != Some(2) {
+        return Err(io::Error::other(
+            "explicit Notes document requires private v2 startup",
         ));
     }
+    result.desktop.validate()?;
+    if result.objective_config_fd.is_some_and(|fd| {
+        fd < 3 || Some(fd) == result.desktop.x11_fd || Some(fd) == result.desktop.cookie_fd
+    }) {
+        return Err(io::Error::other("invalid/aliased Objective config fd"));
+    }
+    if result.desktop.enabled && result.bootstrap.is_some() {
+        return Err(io::Error::other(
+            "only one trusted bootstrap profile per Session",
+        ));
+    }
+    Ok(result)
+}
+
+fn startup_number<T: std::str::FromStr>(value: Option<std::ffi::OsString>) -> io::Result<T> {
+    value
+        .and_then(|v| v.into_string().ok())
+        .and_then(|v| v.parse().ok())
+        .ok_or_else(|| io::Error::other("invalid or missing startup number"))
+}
+
+fn main() -> io::Result<()> {
+    let startup = startup(std::env::args_os().skip(1))?;
+    #[cfg(target_os = "linux")]
+    let notes_bootstrap = match startup.bootstrap {
+        Some(version) => {
+            let bootstrap = notes_bootstrap::NotesBootstrap::from_inherited_stdin()?;
+            Some(if version == 2 {
+                bootstrap.enable_recovery()
+            } else {
+                bootstrap
+            })
+        }
+        None => None,
+    };
     let socket = socket_path()?;
     private_socket_dir(&socket)?;
     // Never inspect/delete a stale Unix socket until the exclusive lock is
@@ -770,31 +932,31 @@ fn main() -> io::Result<()> {
     );
     let mut session = Session::new(app_binary)?;
     session.hepta = hepta::HeptaMonitor::from_env();
+    if let Some(fd) = startup.objective_config_fd {
+        session.objective = objective::ObjectiveMonitor::from_inherited_fd(fd)?;
+    }
+    session.initial_document = startup.document;
     #[cfg(target_os = "linux")]
     if let Some(bootstrap) = notes_bootstrap {
         session.start_bootstrapped_notes(bootstrap)?;
     }
-    // Reap children even while the shell/client is stopped. Blocking
-    // incoming() would accumulate zombies until the GUI reconnects.
+    let _desktop_service = if startup.desktop.enabled {
+        Some(desktop_bootstrap::start(
+            startup.desktop,
+            &session.instance,
+        )?)
+    } else {
+        None
+    };
     listener.set_nonblocking(true)?;
+    let mut server = ipc::Server::default();
     loop {
-        match listener.accept() {
-            Ok((stream, _addr)) => {
-                stream.set_nonblocking(false)?;
-                if let Err(e) = serve_connection(stream, &mut session) {
-                    eprintln!("session request error: {e}");
-                }
-            }
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                session.refresh();
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
-            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
-            Err(e) => {
-                eprintln!("session accept error: {e}");
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
+        if let Err(error) = server.tick(&listener, &mut session) {
+            eprintln!("session accept error: {error}");
         }
+        // Every live connection gets one bounded nonblocking turn. Child
+        // lifecycle observation never waits for a client to finish its frame.
+        std::thread::sleep(std::time::Duration::from_millis(10));
     }
 }
 
@@ -805,6 +967,69 @@ mod tests {
     use std::{thread, time::Duration};
     #[cfg(target_os = "linux")]
     use trill_ui_core::host_peer::{self, linux_socket_peer_credentials, validate_same_uid};
+
+    #[test]
+    fn objective_inbox_requires_current_session_and_explicit_configuration() {
+        let mut session = Session::new(PathBuf::from("/unstarted/app")).unwrap();
+        assert!(matches!(
+            session.handle(Request::ObjectiveList {
+                expected_instance: "old".into()
+            }),
+            Response::Error { .. }
+        ));
+        assert!(
+            matches!(session.handle(Request::ObjectiveList{expected_instance:session.instance.clone()}),Response::Objectives{configured:false,entries,..}if entries.is_empty())
+        );
+        assert!(matches!(
+            session.handle(Request::ObjectiveSubmit {
+                id: "unknown".into(),
+                expected_instance: session.instance.clone()
+            }),
+            Response::Error { .. }
+        ));
+        assert!(session.children.is_empty());
+    }
+
+    #[test]
+    fn desktop_is_complete_trusted_startup_only_and_never_public_ipc() {
+        let parse = |args: &[&str]| startup(args.iter().map(std::ffi::OsString::from));
+        let valid = [
+            "--desktop-bootstrap-stdin",
+            "--desktop-x11-fd",
+            "3",
+            "--desktop-x11-server-pid",
+            "100",
+            "--desktop-window",
+            "42",
+        ];
+        assert!(parse(&valid).unwrap().desktop.enabled);
+        for args in [
+            vec!["--desktop-bootstrap-stdin"],
+            vec!["--desktop-x11-fd", "3"],
+            valid
+                .into_iter()
+                .chain(["--notes-bootstrap-v2-stdin"])
+                .collect(),
+            valid
+                .into_iter()
+                .chain(["--desktop-x11-cookie-fd", "3"])
+                .collect(),
+            valid
+                .into_iter()
+                .chain(["--desktop-window", "42"])
+                .collect(),
+        ] {
+            assert!(parse(&args).is_err(), "{args:?}");
+        }
+        for raw in [
+            br#"{"type":"desktop_bootstrap","fd":3}"#.as_slice(),
+            br#"{"type":"input","events":[]}"#.as_slice(),
+            br#"{"type":"capture"}"#.as_slice(),
+            br#"{"type":"submit_objective","draft":"text"}"#.as_slice(),
+        ] {
+            assert!(parse_host_request(raw).is_err());
+        }
+    }
 
     #[test]
     fn notes_bootstrap_is_explicit_startup_and_never_a_public_request() {
@@ -1124,7 +1349,7 @@ mod tests {
         for _ in 0..100 {
             let (mut sender, receiver) = UnixStream::pair().unwrap();
             sender.write_all(b"not-a-json-request\n").unwrap();
-            serve_connection(receiver, &mut session).unwrap();
+            ipc::serve_one(receiver, &mut session).unwrap();
             if session.tasks[&task.id].state == TaskState::Completed {
                 settled = true;
                 break;

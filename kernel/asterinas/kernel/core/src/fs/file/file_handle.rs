@@ -355,6 +355,19 @@ pub enum MappableObject<'a> {
 
 /// A trait that describes memory mapping behavior for special files (in `mmap`).
 pub trait Mappable {
+    /// Whether this device implements private mappings explicitly.
+    /// Most devices only support shared mappings. A private receive area can
+    /// opt in when its mapped object excludes inheritance and remapping.
+    fn supports_private_mapping(&self) -> bool {
+        false
+    }
+
+    /// Restricts this mapping to read-only, non-executable access for its
+    /// entire lifetime, including subsequent mprotect calls.
+    fn read_only_mapping(&self) -> bool {
+        false
+    }
+
     /// Fills the memory region to map with `handle`.
     ///
     /// `offset` specifies the file offset, which must be page-aligned.
@@ -367,6 +380,20 @@ pub trait Mappable {
 
 /// A trait that describes memory mapping behavior for special files (after `mmap`).
 pub trait MappedObject: Send + Sync + Debug {
+    /// Whether fork may inherit this device mapping.
+    fn inherit_on_fork(&self) -> bool {
+        true
+    }
+
+    /// Whether userspace can move or resize this mapping with mremap.
+    fn can_remap(&self) -> bool {
+        true
+    }
+
+    /// Called before any part of this mapping is unmapped, including exec.
+    /// VMAR is locked; implementations must not acquire a VMAR or copy userspace.
+    fn on_unmap(&self) {}
+
     /// Duplicates the memory mapping at the specific offset.
     ///
     /// `offset` specifies the memory address offset within the mapping, which must be smaller than

@@ -68,9 +68,13 @@ pub(crate) fn do_execve(
     let executable_path = executable.path().clone();
     let program_to_load =
         ProgramToLoad::from_executable(executable, &path_resolver, argv, envp, stack_limit_bytes)?;
+    // TSYNC can propagate no_new_privs. Do not prepare an elevated exec from
+    // a stale flag and publish it after a successful synchronization.
+    let seccomp_update = ctx.process.seccomp_update().lock();
     let exec_cred = prepare_exec_cred(program_to_load.elf_path(), ctx)?;
 
-    let new_vmar = VmarHandle::new(ProcessVm::new(executable_path.clone()));
+    let new_vmar = VmarHandle::try_new(ProcessVm::new(executable_path.clone()))?;
+    *new_vmar.process_vm().dumpable().lock() = exec_cred.allows_dumpability();
     let elf_load_info = program_to_load.load_to_vmar(&new_vmar, &path_resolver)?;
 
     // Ensure no other thread is concurrently performing exit_group or execve.
@@ -91,6 +95,10 @@ pub(crate) fn do_execve(
     // Terminate all other threads
     sigkill_other_threads(ctx.task, &task_set);
     drop(task_set);
+    // A sibling might already be waiting to install a filter. It must be able
+    // to return and process SIGKILL before exec waits for the group to drain.
+    // Publication refuses the now-visible in_execve state.
+    drop(seccomp_update);
     #[cfg(feature = "g1d-trusted-control")]
     ctx.process.revoke_closing_hepta_control();
 
@@ -242,7 +250,9 @@ fn do_execve_no_return(
     // This prevents race conditions when checking access permissions while opening
     // `/proc/[pid]/mem` or `/proc/[pid]/maps`.
     let (vmar_guard, old_vmar) = activate_vmar(ctx, new_vmar);
-    apply_exec_cred(process, &ctx.credentials_mut(), exec_cred)?;
+    ctx.with_credentials_mut_in(&vmar_guard, |credentials| {
+        apply_exec_cred(process, credentials, exec_cred)
+    })?;
     drop(vmar_guard);
     drop(old_vmar);
 

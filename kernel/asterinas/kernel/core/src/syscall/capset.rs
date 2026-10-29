@@ -52,33 +52,36 @@ pub(super) fn sys_capset(
     let effective_capset = CapSet::from_lo_hi(caps_lo.effective, caps_hi.effective);
     let inheritable_capset = CapSet::from_lo_hi(caps_lo.inheritable, caps_hi.inheritable);
 
-    let credentials = ctx.credentials_mut();
+    ctx.with_credentials_mut(|credentials| {
+        if !credentials.permitted_capset().contains(permitted_capset) {
+            return_errno_with_message!(
+                Errno::EPERM,
+                "adding permitted capabilities is not allowed"
+            );
+        }
+        if !permitted_capset.contains(effective_capset) {
+            return_errno_with_message!(Errno::EPERM, "effective capabilities are not permitted");
+        }
+        if !(credentials.inheritable_capset() | credentials.permitted_capset())
+            .contains(inheritable_capset)
+        {
+            let current_user_ns = ctx.thread_local.borrow_user_ns();
+            lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+                current_user_ns.as_ref(),
+                ctx.posix_thread,
+                CapSet::SETPCAP,
+            ))?;
+        }
+        if !(credentials.inheritable_capset() | credentials.bounding_capset())
+            .contains(inheritable_capset)
+        {
+            return_errno_with_message!(Errno::EPERM, "inheritable capabilities are not bounding");
+        }
 
-    if !credentials.permitted_capset().contains(permitted_capset) {
-        return_errno_with_message!(Errno::EPERM, "adding permitted capabilities is not allowed");
-    }
-    if !permitted_capset.contains(effective_capset) {
-        return_errno_with_message!(Errno::EPERM, "effective capabilities are not permitted");
-    }
-    if !(credentials.inheritable_capset() | credentials.permitted_capset())
-        .contains(inheritable_capset)
-    {
-        let current_user_ns = ctx.thread_local.borrow_user_ns();
-        lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
-            current_user_ns.as_ref(),
-            ctx.posix_thread,
-            CapSet::SETPCAP,
-        ))?;
-    }
-    if !(credentials.inheritable_capset() | credentials.bounding_capset())
-        .contains(inheritable_capset)
-    {
-        return_errno_with_message!(Errno::EPERM, "inheritable capabilities are not bounding");
-    }
+        credentials.set_permitted_capset(permitted_capset);
+        credentials.set_effective_capset(effective_capset);
+        credentials.set_inheritable_capset(inheritable_capset);
 
-    credentials.set_permitted_capset(permitted_capset);
-    credentials.set_effective_capset(effective_capset);
-    credentials.set_inheritable_capset(inheritable_capset);
-
-    Ok(SyscallReturn::Return(0))
+        Ok(SyscallReturn::Return(0))
+    })
 }

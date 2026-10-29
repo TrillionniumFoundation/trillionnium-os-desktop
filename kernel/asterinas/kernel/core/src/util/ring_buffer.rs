@@ -11,6 +11,14 @@ pub(crate) use ring_buffer::{Consumer, Producer, RbConsumer, RbProducer, RingBuf
 use super::{MultiRead, MultiWrite};
 use crate::prelude::*;
 
+/// Creates an IPC ring whose actual backing frames retain the creating
+/// process's memory account until their final reference is released.
+pub(crate) fn new_ipc_ring_buffer(capacity: usize) -> Result<RingBuffer<u8>> {
+    let bytes = RingBuffer::<u8>::storage_bytes(capacity)?;
+    let segment = crate::fs::cgroupfs::alloc_ipc_segment(bytes)?;
+    Ok(RingBuffer::from_segment(capacity, segment)?)
+}
+
 /// Extension methods for writing bytes to a [`Producer<u8, _>`].
 pub(crate) trait ProducerU8Ext {
     /// Writes data from `reader` to the ring buffer.

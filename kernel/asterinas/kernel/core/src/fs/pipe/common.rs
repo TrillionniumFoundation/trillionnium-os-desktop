@@ -26,7 +26,7 @@ use crate::{
     },
     util::{
         ioctl::RawIoctl,
-        ring_buffer::{ConsumerU8Ext, ProducerU8Ext, RbConsumer, RbProducer, RingBuffer},
+        ring_buffer::{ConsumerU8Ext, ProducerU8Ext, RbConsumer, RbProducer, new_ipc_ring_buffer},
     },
 };
 
@@ -226,7 +226,7 @@ impl Pipe {
         check_status_flags(status_flags)?;
 
         let mut pipe = self.pipe.lock();
-        let pipe_obj = pipe.get_or_create_pipe_obj();
+        let pipe_obj = pipe.get_or_create_pipe_obj()?;
 
         let handle = match access_mode {
             AccessMode::O_RDONLY => {
@@ -324,14 +324,14 @@ struct PipeObj {
 }
 
 impl PipeObj {
-    fn new() -> Arc<Self> {
-        let (reader, writer) = new_pair();
-        Arc::new(Self {
+    fn new() -> Result<Arc<Self>> {
+        let (reader, writer) = new_pair()?;
+        Ok(Arc::new(Self {
             reader,
             writer,
             num_reader: AtomicUsize::new(0),
             num_writer: AtomicUsize::new(0),
-        })
+        }))
     }
 }
 
@@ -346,15 +346,15 @@ struct PipeInner {
 }
 
 impl PipeInner {
-    fn get_or_create_pipe_obj(&mut self) -> Arc<PipeObj> {
+    fn get_or_create_pipe_obj(&mut self) -> Result<Arc<PipeObj>> {
         if let Some(pipe_obj) = self.pipe_obj.upgrade() {
-            return pipe_obj;
+            return Ok(pipe_obj);
         }
 
-        let pipe_obj = PipeObj::new();
+        let pipe_obj = PipeObj::new()?;
         self.pipe_obj = Arc::downgrade(&pipe_obj);
 
-        pipe_obj
+        Ok(pipe_obj)
     }
 }
 
@@ -376,19 +376,19 @@ const PIPE_BUF: usize = 4096;
 #[cfg(ktest)]
 const PIPE_BUF: usize = 2;
 
-fn new_pair() -> (PipeReader, PipeWriter) {
+fn new_pair() -> Result<(PipeReader, PipeWriter)> {
     new_pair_with_capacity(DEFAULT_PIPE_BUF_SIZE)
 }
 
-fn new_pair_with_capacity(capacity: usize) -> (PipeReader, PipeWriter) {
-    let (producer, consumer) = RingBuffer::new(capacity).split();
+fn new_pair_with_capacity(capacity: usize) -> Result<(PipeReader, PipeWriter)> {
+    let (producer, consumer) = new_ipc_ring_buffer(capacity)?.split();
     let (producer_state, consumer_state) =
         Endpoint::new_pair(EndpointState::default(), EndpointState::default());
 
-    (
+    Ok((
         PipeReader::new(consumer, consumer_state),
         PipeWriter::new(producer, producer_state),
-    )
+    ))
 }
 
 struct PipeReader {

@@ -13,7 +13,14 @@ mod dir_entry;
 
 use self::dir_entry::{DOT_BYTE, DOT_DOT_BYTE, DirBlockView, DirEntryFileType, DirEntryHeader};
 use super::{super::Ext2, FileFlags, FilePerm, Inode, InodeInner, MAX_LINK_COUNT};
-use crate::fs::ext2::{prelude::*, utils};
+use crate::{
+    fs::{
+        ext2::{prelude::*, utils},
+        file::InodeMode,
+        utils::InodeCreation,
+    },
+    process::Gid,
+};
 
 /// Information about a candidate directory entry slot.
 #[derive(Clone, Copy, Debug)]
@@ -137,6 +144,7 @@ impl Inode {
         // an inode allocation if the directory cannot accept a new entry.
         // The VFS dentry layer has already validated that `name` is absent.
         let fs = self.fs()?;
+        let creation = InodeCreation::current(type_, InodeMode::from_bits_truncate(perm.bits()));
         let mut parent_inner = self.inner.write();
         let slot = match parent_inner.find_dir_slot(name.len())? {
             Some(slot) => slot,
@@ -149,7 +157,15 @@ impl Inode {
         // concurrent `create` / `lookup_via_fs` on this directory.
         // So the concurrent `lookup_via_fs` won't create a new `Arc<Inode>`
         // from Inode desc and then insert it into inode cache.
-        let child = fs.create_inode(self.ino, type_, perm)?;
+        let (mode, uid, gid) =
+            creation.under_parent(parent_inner.mode(), Gid::new(parent_inner.gid()));
+        let child = fs.create_inode(
+            self.ino,
+            type_,
+            FilePerm::from_bits_truncate(mode.bits()),
+            uid,
+            gid,
+        )?;
         let child_ino = child.ino();
         let result = init_child_fn(&fs, &child)
             .and_then(|_| parent_inner.add_entry(&slot, name, child_ino, dir_entry_file_type));

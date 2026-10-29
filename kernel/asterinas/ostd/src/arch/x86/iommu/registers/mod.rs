@@ -8,7 +8,10 @@ mod extended_cap;
 mod invalidation;
 mod status;
 
-use core::ptr::NonNull;
+use core::{
+    ptr::NonNull,
+    sync::atomic::{Ordering, fence},
+};
 
 use bit_field::BitField;
 pub(super) use capability::{Capability, CapabilitySagaw};
@@ -33,14 +36,14 @@ use crate::{
             fault,
             invalidate::{
                 QUEUE,
-                descriptor::{InterruptEntryCache, InvalidationWait},
+                descriptor::{ContextCache, InterruptEntryCache, InvalidationWait, Iotlb},
             },
         },
         kernel::acpi::dmar::{Dmar, Remapping},
     },
     debug,
-    io::IoMemAllocatorBuilder,
-    mm::{PAGE_SIZE, paddr_to_vaddr},
+    io::{IoMem, IoMemAllocatorBuilder, Sensitive},
+    mm::{CachePolicy, PAGE_SIZE},
     sync::{LocalIrqDisabled, SpinLock},
 };
 
@@ -52,7 +55,6 @@ pub(super) struct IommuVersion {
 
 impl IommuVersion {
     /// Major version number
-    #[expect(dead_code)]
     pub(super) fn major(&self) -> u8 {
         self.major
     }
@@ -68,6 +70,7 @@ impl IommuVersion {
 #[derive(Debug)]
 pub(super) struct IommuRegisters {
     version: VolatileRef<'static, u32, ReadOnly>,
+    isolated_requesters: u32,
     capability: VolatileRef<'static, u64, ReadOnly>,
     extended_capability: VolatileRef<'static, u64, ReadOnly>,
     global_command: VolatileRef<'static, u32, WriteOnly>,
@@ -81,8 +84,23 @@ pub(super) struct IommuRegisters {
 }
 
 impl IommuRegisters {
+    pub(super) fn isolated_domain_limit(&self, device: u8) -> Option<usize> {
+        let flags = self.read_extended_capability().flags();
+        let capability = self.read_capability();
+        if device >= 32
+            || self.isolated_requesters & (1 << device) == 0
+            || !flags.contains(ExtendedCapabilityFlags::SC | ExtendedCapabilityFlags::QI)
+            || !self
+                .read_global_status()
+                .contains(GlobalStatus::TES | GlobalStatus::QIES)
+            || !(self.read_version().major() >= 2 || capability.supports_dma_draining())
+        {
+            return None;
+        }
+        capability.domain_id_limit()
+    }
+
     /// Reads the version of IOMMU
-    #[expect(dead_code)]
     pub(super) fn read_version(&self) -> IommuVersion {
         let version = self.version.as_ptr().read();
         IommuVersion {
@@ -227,6 +245,34 @@ impl IommuRegisters {
         self.invalidate.completion_status.as_mut_ptr().write(1);
     }
 
+    /// Completes context/IOTLB invalidation and requests DMA read/write draining.
+    /// Caller must retain removed table fragments and mapped buffers until return.
+    /// Devices using ATS require additional device-TLB invalidation and are excluded.
+    pub(super) fn invalidate_dma_cache(&mut self) {
+        // Publish ordinary page-table and queue stores before the MMIO doorbell.
+        fence(Ordering::SeqCst);
+        if !self.read_global_status().contains(GlobalStatus::QIES) {
+            self.global_invalidation();
+            return;
+        }
+        let mut queue = QUEUE.get().unwrap().lock();
+        queue.append_descriptor(ContextCache::global().0);
+        queue.append_descriptor(Iotlb::global_with_drain().0);
+        queue.append_descriptor(InvalidationWait::with_interrupt_flag().0);
+        fence(Ordering::SeqCst);
+        self.invalidate
+            .queue_tail
+            .as_mut_ptr()
+            .write((queue.tail() << 4) as u64);
+        // Fail closed: no formerly mapped frame can be released before completion.
+        // A stuck device currently stalls this CPU; this is not a recovery bound.
+        while self.invalidate.completion_status.as_ptr().read() & 1 == 0 {
+            core::hint::spin_loop();
+        }
+        self.invalidate.completion_status.as_mut_ptr().write(1);
+        fence(Ordering::SeqCst);
+    }
+
     fn global_invalidation(&mut self) {
         // Set ICC(63) to 1 to requests invalidation and CIRG(62:61) to 01 to indicate global invalidation request.
         self.context_command
@@ -243,7 +289,15 @@ impl IommuRegisters {
         self.invalidate
             .iotlb_invalidate
             .as_mut_ptr()
-            .write(0x9000_0000_0000_0000);
+            .write(0x9003_0000_0000_0000);
+        while self.invalidate.iotlb_invalidate.as_ptr().read() & (1 << 63) != 0 {
+            core::hint::spin_loop();
+        }
+        // A rejected hardware invalidation must never authorize frame reuse.
+        while self.invalidate.iotlb_invalidate.as_ptr().read() & (3 << 57) == 0 {
+            core::hint::spin_loop();
+        }
+        fence(Ordering::SeqCst);
     }
 
     /// Writes value to the global command register. This function will not wait until the command
@@ -267,6 +321,26 @@ impl IommuRegisters {
         let dmar = Dmar::new()?;
         debug!("DMAR: {:#x?}", dmar);
 
+        // The first isolation profile accepts one unit only. Firmware
+        // reservations, aliases and additional remapping structures need a separate
+        // ownership/ACS review before they can qualify a device domain.
+        let mut drhd_count = 0;
+        let mut isolated_topology = true;
+        let mut isolated_requesters = 0;
+        for entry in dmar.remapping_iter() {
+            match entry {
+                Remapping::Drhd(drhd) => {
+                    drhd_count += 1;
+                    isolated_requesters = drhd.root_function_zero_coverage();
+                }
+                _ => isolated_topology = false,
+            }
+        }
+        isolated_topology &= drhd_count == 1;
+        if !isolated_topology {
+            isolated_requesters = 0;
+        }
+
         let base_address = dmar
             .remapping_iter()
             // TODO: Add support for multiple DMA remapping hardware unit definitions (DRHDs). Note
@@ -286,19 +360,29 @@ impl IommuRegisters {
         assert_ne!(base_address, 0, "IOMMU address should not be zero");
         debug!("base address: {:#x?}", base_address);
 
-        io_mem_builder.remove(base_address as usize..(base_address as usize + PAGE_SIZE));
-        let base = NonNull::new(paddr_to_vaddr(base_address as usize) as *mut u8).unwrap();
+        // MMIO may be above the physical-RAM direct map (e.g. 0xfed90000 in
+        // a 512 MiB QEMU guest). Own an uncached virtual mapping permanently,
+        // including if initialization panics after publishing fault registers.
+        let mapping = IOMMU_MMIO.call_once(|| {
+            io_mem_builder.reserve(
+                base_address as usize..base_address as usize + PAGE_SIZE,
+                CachePolicy::Uncacheable,
+            )
+        });
+        let base = NonNull::new(mapping.mapped_base() as *mut u8).unwrap();
 
         // SAFETY:
         // - We trust the ACPI tables (as well as the DRHD in them), from which the base address is
         //   obtained, so it is a valid IOMMU base address.
-        // - `io_mem_builder.remove()` guarantees that we have exclusive ownership of all the IOMMU
-        //   registers.
+        // - The reservation exclusively owns the register aperture and the
+        //   static IOMMU_MMIO keeps its virtual mapping alive forever. Variable
+        //   register offsets are checked against this aperture before use.
         let iommu_regs = unsafe {
             fault::init(base);
 
             Self {
                 version: VolatileRef::new_read_only(base.cast::<u32>()),
+                isolated_requesters,
                 capability: VolatileRef::new_read_only(base.add(0x08).cast::<u64>()),
                 extended_capability: VolatileRef::new_read_only(base.add(0x10).cast::<u64>()),
                 global_command: VolatileRef::new_restricted(
@@ -327,6 +411,7 @@ impl IommuRegisters {
 }
 
 pub(super) static IOMMU_REGS: Once<SpinLock<IommuRegisters, LocalIrqDisabled>> = Once::new();
+static IOMMU_MMIO: Once<IoMem<Sensitive>> = Once::new();
 
 pub(super) fn init(io_mem_builder: &IoMemAllocatorBuilder) -> Result<(), IommuError> {
     let iommu_regs = IommuRegisters::new(io_mem_builder).ok_or(IommuError::NoIommu)?;

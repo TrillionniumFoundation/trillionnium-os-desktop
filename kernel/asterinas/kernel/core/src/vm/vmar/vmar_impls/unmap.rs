@@ -17,6 +17,7 @@ impl Vmar {
     pub(super) fn clear(&self) {
         let mut inner = self.inner.write();
         for vm_mapping in inner.vm_mappings.iter() {
+            vm_mapping.notify_unmap();
             if let Some(mut rmap) = vm_mapping.lock_rmap() {
                 rmap.remove(self.weak_self.clone(), vm_mapping.map_to_addr());
             }

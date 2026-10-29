@@ -24,6 +24,14 @@ pub(super) fn sys_prctl(
     debug!("prctl_cmd = {:x?}", prctl_cmd);
 
     match prctl_cmd {
+        PrctlCmd::PR_SET_SECCOMP(mode, address) => {
+            super::seccomp::install(mode, address, ctx)?;
+        }
+        PrctlCmd::PR_GET_SECCOMP => {
+            return Ok(SyscallReturn::Return(
+                ctx.posix_thread.seccomp().lock().mode() as _,
+            ));
+        }
         PrctlCmd::PR_SET_PDEATHSIG(signum) => {
             ctx.process.set_parent_death_signal(signum);
         }
@@ -35,14 +43,16 @@ pub(super) fn sys_prctl(
             ctx.user_space().write_val(write_to_addr, &write_val)?;
         }
         PrctlCmd::PR_GET_DUMPABLE => {
-            // TODO: When coredump is supported, return the actual value.
-            return Ok(SyscallReturn::Return(Dumpable::Disable as _));
+            let vmar = ctx.process.lock_vmar();
+            let dumpable = *vmar.unwrap().process_vm().dumpable().lock();
+            return Ok(SyscallReturn::Return(dumpable as _));
         }
         PrctlCmd::PR_SET_DUMPABLE(dumpable) => {
             if dumpable != Dumpable::Disable && dumpable != Dumpable::User {
                 return_errno_with_message!(Errno::EINVAL, "invalid dumpable attribute");
             }
-            // TODO: Implement coredump.
+            let vmar = ctx.process.lock_vmar();
+            *vmar.unwrap().process_vm().dumpable().lock() = dumpable == Dumpable::User;
         }
         PrctlCmd::PR_GET_KEEPCAPS => {
             let keep_cap = {
@@ -59,8 +69,9 @@ pub(super) fn sys_prctl(
             if keep_cap > 1 {
                 return_errno_with_message!(Errno::EINVAL, "invalid keep-capabilities flag");
             }
-            let credentials = ctx.credentials_mut();
-            credentials.set_keep_capabilities(keep_cap != 0)?;
+            ctx.with_credentials_mut(|credentials| {
+                credentials.set_keep_capabilities(keep_cap != 0)
+            })?;
         }
         PrctlCmd::PR_SET_NAME(read_addr) => {
             let user_space = ctx.user_space();
@@ -79,8 +90,9 @@ pub(super) fn sys_prctl(
             return Ok(SyscallReturn::Return(is_in_bounding_set as _));
         }
         PrctlCmd::PR_CAPBSET_DROP(capability) => {
-            let credentials = ctx.credentials_mut();
-            credentials.drop_bounding_capability(capability)?;
+            ctx.with_credentials_mut(|credentials| {
+                credentials.drop_bounding_capability(capability)
+            })?;
         }
         PrctlCmd::PR_GET_SECUREBITS => {
             let credentials = ctx.posix_thread.credentials();
@@ -88,8 +100,7 @@ pub(super) fn sys_prctl(
             return Ok(SyscallReturn::Return(securebits.bits() as _));
         }
         PrctlCmd::PR_SET_SECUREBITS(securebits) => {
-            let credentials = ctx.credentials_mut();
-            credentials.set_securebits(securebits)?;
+            ctx.with_credentials_mut(|credentials| credentials.set_securebits(securebits))?;
         }
         PrctlCmd::PR_SET_TIMERSLACK(slack_ns) => {
             // Negative values are invalid.
@@ -121,8 +132,7 @@ pub(super) fn sys_prctl(
                 .write_val(write_addr, &(process.is_child_subreaper() as u32))?;
         }
         PrctlCmd::PR_SET_NO_NEW_PRIVS => {
-            let credentials = ctx.credentials_mut();
-            credentials.set_no_new_privs();
+            ctx.with_credentials_mut(|credentials| credentials.set_no_new_privs());
         }
         PrctlCmd::PR_GET_NO_NEW_PRIVS => {
             let credentials = ctx.posix_thread.credentials();
@@ -135,16 +145,17 @@ pub(super) fn sys_prctl(
                 return Ok(SyscallReturn::Return(if is_set { 1 } else { 0 }));
             }
             CapAmbientCmd::Raise(capability) => {
-                let credentials = ctx.credentials_mut();
-                credentials.raise_ambient_capability(capability)?;
+                ctx.with_credentials_mut(|credentials| {
+                    credentials.raise_ambient_capability(capability)
+                })?;
             }
             CapAmbientCmd::Lower(capability) => {
-                let credentials = ctx.credentials_mut();
-                credentials.lower_ambient_capability(capability);
+                ctx.with_credentials_mut(|credentials| {
+                    credentials.lower_ambient_capability(capability)
+                });
             }
             CapAmbientCmd::ClearAll => {
-                let credentials = ctx.credentials_mut();
-                credentials.clear_ambient_capset();
+                ctx.with_credentials_mut(|credentials| credentials.clear_ambient_capset());
             }
         },
     }
@@ -160,6 +171,8 @@ const PR_GET_KEEPCAPS: i32 = 7;
 const PR_SET_KEEPCAPS: i32 = 8;
 const PR_SET_NAME: i32 = 15;
 const PR_GET_NAME: i32 = 16;
+const PR_GET_SECCOMP: i32 = 21;
+const PR_SET_SECCOMP: i32 = 22;
 const PR_CAPBSET_READ: i32 = 23;
 const PR_CAPBSET_DROP: i32 = 24;
 const PR_GET_SECUREBITS: i32 = 27;
@@ -175,6 +188,8 @@ const PR_CAP_AMBIENT: i32 = 47;
 #[expect(non_camel_case_types)]
 #[derive(Clone, Copy, Debug)]
 enum PrctlCmd {
+    PR_SET_SECCOMP(u32, Vaddr),
+    PR_GET_SECCOMP,
     PR_SET_PDEATHSIG(SigNum),
     PR_GET_PDEATHSIG(Vaddr),
     PR_GET_DUMPABLE,
@@ -215,6 +230,18 @@ enum CapAmbientCmd {
 impl PrctlCmd {
     fn from_args(option: i32, arg2: u64, arg3: u64, arg4: u64, arg5: u64) -> Result<PrctlCmd> {
         match option {
+            PR_SET_SECCOMP => {
+                if arg4 != 0 || arg5 != 0 || arg2 > u32::MAX as u64 {
+                    return_errno_with_message!(Errno::EINVAL, "invalid seccomp prctl arguments");
+                }
+                Ok(PrctlCmd::PR_SET_SECCOMP(arg2 as u32, arg3 as Vaddr))
+            }
+            PR_GET_SECCOMP => {
+                if arg2 != 0 || arg3 != 0 || arg4 != 0 || arg5 != 0 {
+                    return_errno_with_message!(Errno::EINVAL, "unused seccomp prctl arguments");
+                }
+                Ok(PrctlCmd::PR_GET_SECCOMP)
+            }
             PR_SET_PDEATHSIG => {
                 let signum = SigNum::try_from(arg2 as u8)?;
                 Ok(PrctlCmd::PR_SET_PDEATHSIG(signum))

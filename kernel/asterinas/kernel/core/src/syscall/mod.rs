@@ -140,10 +140,12 @@ mod sched_get_priority_min;
 mod sched_getattr;
 mod sched_getparam;
 mod sched_getscheduler;
+mod sched_permissions;
 mod sched_setattr;
 mod sched_setparam;
 mod sched_setscheduler;
 mod sched_yield;
+mod seccomp;
 mod select;
 mod semctl;
 mod semget;
@@ -383,6 +385,14 @@ impl SyscallArgument {
 
 pub(crate) fn handle_syscall(ctx: &Context, user_ctx: &mut UserContext) {
     let syscall_frame = SyscallArgument::new_from_context(user_ctx);
+    if !seccomp::check_entry(
+        syscall_frame.syscall_number,
+        syscall_frame.args,
+        ctx,
+        user_ctx,
+    ) {
+        return;
+    }
     let syscall_return = arch::syscall_dispatch(
         syscall_frame.syscall_number,
         syscall_frame.args,

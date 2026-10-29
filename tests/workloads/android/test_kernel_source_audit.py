@@ -78,7 +78,15 @@ class KernelSourceAuditTests(unittest.TestCase):
             ).strip()
             self.assertEqual(report["project_commit"], commit)
             self.assertEqual(report["project_tree"], tree)
-            self.assertEqual(report["blocking_requirements"], ["binder", "seccomp", "mac"])
+            # Binder and seccomp candidates can advance independently of MAC.
+            # A source match must never become transaction or runtime proof.
+            self.assertEqual("binder" in report["blocking_requirements"],
+                             not bool(report["source_scan"]["binder_matches"]))
+            self.assertFalse(report["checks"]["binder"]["transactions_verified"])
+            self.assertIn("mac", report["blocking_requirements"])
+            self.assertEqual("seccomp" in report["blocking_requirements"],
+                             not bool(report["source_scan"]["seccomp_matches"]))
+            self.assertFalse(report["checks"]["seccomp"]["negative_filter_test_passed"])
             self.assertFalse(report["runtime_android_verified"])
             self.assertFalse(report["booted_android_on_asterinas"])
             self.assertEqual(report["kernel_upstream_lock"]["status"], "matched")

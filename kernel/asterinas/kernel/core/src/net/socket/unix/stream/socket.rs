@@ -33,7 +33,12 @@ use crate::{
     prelude::*,
     process::{
         Gid,
-        signal::{PollHandle, Pollable, Pollee},
+        posix_thread::AsPosixThread,
+        signal::{
+            PollHandle, Pollable, Pollee,
+            constants::SIGPIPE,
+            signals::user::{UserSignal, UserSignalKind},
+        },
     },
     util::{MultiRead, MultiWrite, ioctl::RawIoctl, net::SockType},
 };
@@ -186,11 +191,15 @@ impl UnixStreamSocket {
         })
     }
 
-    pub(crate) fn new_pair(is_nonblocking: bool, socket_type: SockType) -> (Arc<Self>, Arc<Self>) {
+    pub(crate) fn new_pair(
+        is_nonblocking: bool,
+        socket_type: SockType,
+    ) -> Result<(Arc<Self>, Arc<Self>)> {
         debug_assert!(
             socket_type == SockType::SOCK_STREAM || socket_type == SockType::SOCK_SEQPACKET
         );
 
+        let buffers = Connected::prepare_buffers()?;
         let cred = SocketCred::<ReadDupOp>::new_current();
 
         let (conn_a, conn_b) = Connected::new_pair(
@@ -200,11 +209,12 @@ impl UnixStreamSocket {
             EndpointState::default(),
             cred.dup().restrict(),
             cred.restrict(),
+            buffers,
         );
-        (
+        Ok((
             Self::new_connected(conn_a, OptionSet::new(), is_nonblocking, socket_type),
             Self::new_connected(conn_b, OptionSet::new(), is_nonblocking, socket_type),
-        )
+        ))
     }
 
     pub(super) fn new_connected(
@@ -300,8 +310,58 @@ impl UnixStreamSocket {
         }
     }
 
+    /// Returns whether this concrete Unix socket is a byte stream.
+    pub(crate) fn is_byte_stream(&self) -> bool {
+        self.socket_type == SockType::SOCK_STREAM
+    }
+
     fn is_seqpacket(&self) -> bool {
         self.socket_type == SockType::SOCK_SEQPACKET
+    }
+}
+
+// This is intentionally local to Unix STREAM sends, not a blanket socket
+// error rule. Kernel callers may have no current Thread or no PosixThread.
+fn maybe_queue_unix_stream_sigpipe(result: &Result<usize>, flags: SendFlags) {
+    if flags.contains(SendFlags::MSG_NOSIGNAL)
+        || !result
+            .as_ref()
+            .is_err_and(|error| error.error() == Errno::EPIPE)
+    {
+        return;
+    }
+    let Some(thread) = crate::thread::Thread::current() else {
+        return;
+    };
+    let Some(posix_thread) = thread.as_posix_thread() else {
+        return;
+    };
+    posix_thread.enqueue_signal(Box::new(UserSignal::new(
+        SIGPIPE,
+        UserSignalKind::Kill,
+        posix_thread.process().pid(),
+        posix_thread.credentials().ruid(),
+    )));
+}
+
+#[cfg(ktest)]
+mod signal_tests {
+    use ostd::prelude::*;
+
+    use super::*;
+
+    #[ktest]
+    fn kernel_only_unix_send_has_no_posix_signal_target() {
+        let current = crate::thread::Thread::current();
+        assert!(
+            current
+                .as_ref()
+                .and_then(|thread| thread.as_posix_thread())
+                .is_none()
+        );
+        let result = Err(Error::new(Errno::EPIPE));
+        maybe_queue_unix_stream_sigpipe(&result, SendFlags::empty());
+        maybe_queue_unix_stream_sigpipe(&result, SendFlags::MSG_NOSIGNAL);
     }
 }
 
@@ -505,9 +565,11 @@ impl Socket for UnixStreamSocket {
         message_header: MessageHeader,
         flags: SendFlags,
     ) -> Result<usize> {
-        // TODO: Deal with flags
-        if !flags.is_all_supported() {
-            warn!("unsupported flags: {:?}", flags);
+        // MSG_NOSIGNAL is a per-call request; preserve diagnostics for every
+        // other flag that this socket implementation does not support.
+        let unsupported_flags = flags - SendFlags::MSG_NOSIGNAL;
+        if !unsupported_flags.is_all_supported() {
+            warn!("unsupported flags: {:?}", unsupported_flags);
         }
 
         let MessageHeader {
@@ -532,9 +594,15 @@ impl Socket for UnixStreamSocket {
         }
         let mut auxiliary_data = AuxiliaryData::from_control(control_messages)?;
 
-        self.block_on(IoEvents::OUT, self.timeouts.send_timeout(), || {
+        let result = self.block_on(IoEvents::OUT, self.timeouts.send_timeout(), || {
             self.try_send(reader, &mut auxiliary_data, flags)
-        })
+        });
+        // A terminal EPIPE means that this send made no progress. Do not send
+        // signals from retry paths or extend STREAM semantics to SEQPACKET.
+        if !self.is_seqpacket() {
+            maybe_queue_unix_stream_sigpipe(&result, flags);
+        }
+        result
     }
 
     fn recvmsg(

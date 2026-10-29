@@ -39,7 +39,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test -f README.md && test ! -s README.md
+          test -f README.md && test ! -L README.md && test -s README.md
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -116,6 +116,7 @@ jobs:
             --rustup "$(command -v rustup)" \
             --output-dir "$ACCEPTANCE_DIR"
           python3 - "$ACCEPTANCE_DIR/report.json" <<'PY'
+          import hashlib
           import json
           import sys
           from pathlib import Path
@@ -133,7 +134,10 @@ jobs:
               or report.get('success') is not True
               or report.get('not_executed')
               or report.get('original_inputs_unchanged') is not True
-              or report.get('readme_bytes') != 0
+              or report.get('readme_policy') != 'nonempty-captured-source'
+              or report.get('readme_nonempty') is not True
+              or report.get('readme_bytes', 0) <= 0
+              or report.get('input_sha256', {}).get('README.md') != hashlib.sha256(Path('README.md').read_bytes()).hexdigest()
               or set(seen) != required
               or len(seen) != len(required)
               or not all(step.get('passed') is True for step in checks)):

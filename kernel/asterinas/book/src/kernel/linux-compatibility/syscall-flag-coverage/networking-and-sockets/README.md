@@ -85,9 +85,20 @@ Unsupported flags:
 * `MSG_EOR`
 * `MSG_MORE`
 * `MSG_CONFIRM`
-* `MSG_NOSIGNAL`
 * `MSG_OOB`
 * `MSG_FASTOPEN`
+
+Partially-supported flags:
+* `MSG_NOSIGNAL` is implemented for `AF_UNIX` stream and sequenced-packet sockets.
+  A Unix stream send that fails with `EPIPE` before making progress
+  queues `SIGPIPE` to the calling thread unless this flag is present.
+  The flag preserves the `EPIPE` return and changes only this send operation.
+  Sequenced-packet sends preserve Linux's behavior without the stream `SIGPIPE` rule.
+  TCP and vsock signal delivery remain incomplete.
+
+The SCML rules above remain conservative for all socket families:
+SCML cannot infer a connected descriptor's domain and type from `sockfd` alone.
+They do not declare global `MSG_NOSIGNAL` coverage for every protocol.
 
 For more information,
 see [the man page](https://man7.org/linux/man-pages/man2/sendto.2.html).

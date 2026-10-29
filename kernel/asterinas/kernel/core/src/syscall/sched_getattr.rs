@@ -4,12 +4,13 @@ use ostd::{const_assert, mm::VmIo};
 
 use super::{
     SyscallReturn,
-    sched_get_priority_max::{rt_to_static, sched_priority_range, static_to_rt},
+    sched_get_priority_max::{sched_priority_range, static_to_rt},
 };
 use crate::{
     prelude::*,
-    process::pid_table,
-    sched::{LinuxSchedPolicy, Nice, RealTimePolicy, SchedAttr, SchedPolicy},
+    process::{credentials::capabilities::CapSet, pid_table, posix_thread::AsPosixThread},
+    sched::{LinuxSchedPolicy, Nice, RealTimePolicy, SchedAttr, SchedPolicy, UserSchedSnapshot},
+    security::lsm::hooks as lsm_hooks,
     thread::Tid,
     util::CopyCompat,
 };
@@ -48,44 +49,21 @@ const SCHED_ATTR_SIZE_VER1: u32 = 56;
 
 const_assert!(size_of::<LinuxSchedAttr>() == SCHED_ATTR_SIZE_VER1 as usize);
 
-impl TryFrom<SchedPolicy> for LinuxSchedAttr {
+impl TryFrom<UserSchedSnapshot> for LinuxSchedAttr {
     type Error = Error;
 
-    fn try_from(value: SchedPolicy) -> Result<Self> {
-        Ok(match value {
-            SchedPolicy::Stop => LinuxSchedAttr {
-                sched_policy: LinuxSchedPolicy::Fifo as u32,
-                sched_priority: 99, // Linux uses 99 as the default priority for STOP tasks.
-                ..Default::default()
-            },
-
-            SchedPolicy::RealTime { rt_prio, rt_policy } => LinuxSchedAttr {
-                sched_policy: match rt_policy {
-                    RealTimePolicy::Fifo => LinuxSchedPolicy::Fifo,
-                    RealTimePolicy::RoundRobin { .. } => LinuxSchedPolicy::RoundRobin,
-                } as u32,
-                sched_priority: rt_to_static(rt_prio),
-                ..Default::default()
-            },
-
-            // The SCHED_IDLE policy is mapped to the highest nice value of
-            // `SchedPolicy::Fair` instead of `SchedPolicy::Idle`. Tasks of the
-            // latter policy are invisible to the user API.
-            SchedPolicy::Fair(Nice::MAX) => LinuxSchedAttr {
-                sched_policy: LinuxSchedPolicy::Idle as u32,
-                ..Default::default()
-            },
-
-            SchedPolicy::Fair(nice) => LinuxSchedAttr {
-                sched_policy: LinuxSchedPolicy::Normal as u32,
-                sched_nice: nice.value().get().into(),
-                ..Default::default()
-            },
-
-            SchedPolicy::Idle => return_errno_with_message!(
+    fn try_from(snapshot: UserSchedSnapshot) -> Result<Self> {
+        if matches!(snapshot.policy(), SchedPolicy::Idle) {
+            return_errno_with_message!(
                 Errno::EACCES,
                 "scheduling attributes for idle tasks are not accessible"
-            ),
+            );
+        }
+        Ok(Self {
+            sched_policy: snapshot.linux_policy() as u32,
+            sched_nice: snapshot.nice().value().get().into(),
+            sched_priority: snapshot.static_priority(),
+            ..Default::default()
         })
     }
 }
@@ -164,7 +142,16 @@ pub(super) fn read_linux_sched_attr_from_user(
     // If `attr.size` is modified concurrently, we should use the original size.
     attr.size = user_size;
 
-    // TODO: Check whether `sched_flags` is valid.
+    const KNOWN_FLAGS: u64 = 0x7f;
+    if attr.sched_flags & !KNOWN_FLAGS != 0 {
+        return_errno_with_message!(Errno::EINVAL, "unknown scheduling attribute flags");
+    }
+    if attr.sched_flags != 0 {
+        return_errno_with_message!(
+            Errno::EOPNOTSUPP,
+            "scheduling attribute flags are not implemented"
+        );
+    }
 
     Ok(attr)
 }
@@ -213,6 +200,48 @@ pub(super) fn access_sched_attr_with<T>(
     f(thread.sched_attr())
 }
 
+/// Authorize target ownership before any scheduling-policy mutation.
+/// Read-only scheduling getters deliberately retain their separate helper.
+pub(super) fn update_sched_attr_with<T>(
+    tid: Tid,
+    ctx: &Context,
+    f: impl FnOnce(&mut crate::sched::SchedAdministration<'_>, &crate::process::Process) -> Result<T>,
+) -> Result<T> {
+    if tid.cast_signed() < 0 {
+        return_errno_with_message!(Errno::EINVAL, "all negative TIDs are not valid");
+    }
+    if tid == 0 {
+        // The running context already retains its own Process and Thread.
+        let mut admin = ctx.thread.sched_attr().administer();
+        return f(&mut admin, &ctx.process);
+    }
+    let thread = {
+        let table = pid_table::pid_table_mut();
+        table.get_thread(tid).ok_or(Error::with_message(
+            Errno::ESRCH,
+            "the target thread does not exist",
+        ))?
+    };
+    let target = thread.as_posix_thread().ok_or(Errno::EPERM)?;
+    let target_process = target.weak_process().upgrade().ok_or(Errno::ESRCH)?;
+    let target_cred = target.credentials();
+    let caller_euid = ctx.posix_thread.credentials().euid();
+    if caller_euid != target_cred.ruid() && caller_euid != target_cred.euid() {
+        lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
+            target_process.user_ns().lock().as_ref(),
+            ctx.posix_thread,
+            CapSet::SYS_NICE,
+        ))?;
+    }
+    drop(target_cred);
+    let mut admin = thread.sched_attr().administer();
+    let result = f(&mut admin, &target_process);
+    drop(admin);
+    // Preserve the actual target Process until the authorized mutation ends.
+    drop(target_process);
+    result
+}
+
 pub(super) fn sys_sched_getattr(
     tid: Tid,
     addr: Vaddr,
@@ -228,10 +257,8 @@ pub(super) fn sys_sched_getattr(
         return_errno_with_message!(Errno::EINVAL, "invalid flags");
     }
 
-    let policy = access_sched_attr_with(tid, ctx, |attr| Ok(attr.policy()))?;
-    let attr: LinuxSchedAttr = policy
-        .try_into()
-        .expect("all user-visible scheduling attributes should be valid");
+    let snapshot = access_sched_attr_with(tid, ctx, |attr| Ok(attr.user_snapshot()))?;
+    let attr: LinuxSchedAttr = snapshot.try_into()?;
     write_linux_sched_attr_to_user(attr, addr, user_size, ctx)?;
 
     Ok(SyscallReturn::Return(0))

@@ -31,8 +31,7 @@ use crate::{
             },
             path::{Dentry, is_dot, is_dot_or_dotdot, is_dotdot},
             permission_attrs::{
-                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy,
-                PermissionModePolicy,
+                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy, PermissionModePolicy,
             },
             registry::{FsCreationCtx, FsProperties, FsType},
             xattr::{XattrName, XattrNamespace, XattrSetFlags},
@@ -91,11 +90,7 @@ impl RamFs {
             sb,
             root: Arc::new_cyclic(|weak_root| RamInode {
                 inner: Inner::new_dir(weak_root.clone(), weak_root.clone()),
-                metadata: SpinLock::new(InodeMeta::new_dir(
-                    mkmod!(a+rx, u+w),
-                    root_uid,
-                    root_gid,
-                )),
+                metadata: SpinLock::new(InodeMeta::new_dir(mkmod!(a+rx, u+w), root_uid, root_gid)),
                 ino: ROOT_INO,
                 typ: InodeType::Dir,
                 dir_revalidation_policy: revalidation_policy,
@@ -950,13 +945,17 @@ impl RamInode {
             return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
         }
 
+        let creation = utils::InodeCreation::current(type_, mode);
         let self_dir = self.inner.as_direntry().unwrap().upread();
         if self_dir.contains_entry(name) {
             return_errno_with_message!(Errno::EEXIST, "entry exists");
         }
 
         let fs = self.fs.upgrade().unwrap();
-        let (uid, gid) = utils::current_fs_ids();
+        let (mode, uid, gid) = {
+            let parent = self.metadata.lock();
+            creation.under_parent(parent.mode, parent.gid)
+        };
         let new_inode = match type_ {
             InodeType::File => RamInode::new_file(&fs, mode, uid, gid, to_be_revalidated),
             InodeType::Socket => RamInode::new_socket(&fs, mode, uid, gid, to_be_revalidated),
@@ -1002,12 +1001,21 @@ impl RamInode {
             return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
         }
 
+        let inode_type = match type_ {
+            MknodType::NamedPipe => InodeType::NamedPipe,
+            MknodType::CharDevice(_) => InodeType::CharDevice,
+            MknodType::BlockDevice(_) => InodeType::BlockDevice,
+        };
+        let creation = utils::InodeCreation::current(inode_type, mode);
         let self_dir = self.inner.as_direntry().unwrap().upread();
         if self_dir.contains_entry(name) {
             return_errno_with_message!(Errno::EEXIST, "entry exists");
         }
 
-        let (uid, gid) = utils::current_fs_ids();
+        let (mode, uid, gid) = {
+            let parent = self.metadata.lock();
+            creation.under_parent(parent.mode, parent.gid)
+        };
         let new_inode = match type_ {
             MknodType::CharDevice(dev_id) | MknodType::BlockDevice(dev_id) => {
                 let dev_type = type_.device_type().unwrap();
@@ -1302,7 +1310,11 @@ impl Inode for RamInode {
         }
 
         let fs = self.fs.upgrade().unwrap();
-        let (uid, gid) = utils::current_fs_ids();
+        let creation = utils::InodeCreation::current(InodeType::File, mode);
+        let (mode, uid, gid) = {
+            let parent = self.metadata.lock();
+            creation.under_parent(parent.mode, parent.gid)
+        };
         Ok(RamInode::new_tmpfile(
             &fs,
             mode,

@@ -5,7 +5,7 @@ use ostd::{
     irq::DisabledLocalIrqGuard,
     mm::VmIo,
     sync::Waiter,
-    task::{Task, TaskOptions},
+    task::{PreparedTaskStack, Task, TaskOptions},
     user::{ReturnReason, UserContextApi, UserMode, UserModeHooks},
 };
 
@@ -28,6 +28,7 @@ pub(crate) fn create_new_user_task(
     user_ctx: Box<UserContext>,
     thread_ref: Arc<Thread>,
     thread_local: ThreadLocal,
+    stack: PreparedTaskStack,
     #[cfg(feature = "g1d-trusted-control")]
     initial_user_startup: Option<Box<dyn FnOnce(&Context<'_>) + Send>>,
 ) -> Task {
@@ -138,8 +139,7 @@ pub(crate) fn create_new_user_task(
     })
     .data(thread_ref)
     .local_data(thread_local)
-    .build()
-    .expect("spawn task failed")
+    .build_with_stack(stack)
 }
 
 impl UserModeHooks for Context<'_> {

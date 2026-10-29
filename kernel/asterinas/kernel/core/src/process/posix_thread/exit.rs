@@ -110,6 +110,7 @@ fn exit_internal(
         }
         is_last_thread
     };
+    crate::device::misc::binder_thread_exited(current_thread);
     #[cfg(feature = "g1d-trusted-control")]
     posix_process.revoke_closing_hepta_control();
 

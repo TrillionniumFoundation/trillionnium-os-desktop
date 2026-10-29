@@ -53,6 +53,16 @@ impl Capability {
         self.0 & ND_MASK
     }
 
+    pub(super) fn domain_id_limit(&self) -> Option<usize> {
+        let encoded = self.domain_support_number();
+        (encoded <= 6).then(|| 1usize << (4 + 2 * encoded))
+    }
+
+    pub(super) fn supports_dma_draining(&self) -> bool {
+        self.flags()
+            .contains(CapabilityFlags::DRD | CapabilityFlags::DWD)
+    }
+
     /// Supported Adjusted Guest Address Widths.
     pub(in crate::arch::iommu) const fn supported_adjusted_guest_address_widths(
         &self,

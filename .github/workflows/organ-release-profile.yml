@@ -3,18 +3,24 @@ name: Organ release profile source checks
 on:
   pull_request:
     paths:
-      - 'support/release/organ_release_profile.py'
-      - 'support/release/organ_source_map.json'
-      - 'support/release/test_organ_release_profile.py'
+      - 'support/release/**'
       - '.github/workflows/organ-release-profile.yml'
+      - '.github/workflows/organ-current-pair.yml'
+      - 'README.md'
   push:
     branches: [main]
     paths:
-      - 'support/release/organ_release_profile.py'
-      - 'support/release/organ_source_map.json'
-      - 'support/release/test_organ_release_profile.py'
+      - 'support/release/**'
       - '.github/workflows/organ-release-profile.yml'
+      - '.github/workflows/organ-current-pair.yml'
+      - 'README.md'
   workflow_dispatch:
+    inputs:
+      historical_os_ref:
+        description: 'Optional historical V4 Desktop: explicit full 40-hex commit; blank selects current V5'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -23,6 +29,24 @@ permissions:
 # actual Hepta/OS release pair, run the original owner, or authorize effects.
 jobs:
   source-profile-host:
+    if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.historical_os_ref == '') }}
+    needs: [source-profile-oracle]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Require every complete source-tool partition to succeed
+        env:
+          ORACLE_RESULT: ${{ needs.source-profile-oracle.result }}
+        run: |
+          test "$ORACLE_RESULT" = success
+
+  source-profile-oracle:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.historical_os_ref == '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [legacy, typed-v4, v5]
+        mode: [normal, optimized]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
@@ -31,7 +55,166 @@ jobs:
     env:
       DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       GIT_TERMINAL_PROMPT: '0'
+      V5_TEST_LANE: ${{ matrix.lane }}
+      V5_TEST_MODE: ${{ matrix.mode }}
     steps:
+      - name: Check out the exact current V5 candidate without retained credentials
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2, already pinned in this repository
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Require inputs and validate the fixed V5 contract
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"
+          for path in README.md \
+            support/release/organ_release_profile.py \
+            support/release/organ_source_map.json \
+            support/release/organ_source_map_v2.json \
+            support/release/organ_source_map_v3.json \
+            support/release/organ_source_map_v4.json \
+            support/release/organ_source_map_v5.json \
+            support/release/test_source_schema5.py \
+            support/release/profiles/2026-10-27-organ-source-pre-v5-v4.json \
+            support/release/test_source_schema4.py \
+            support/release/profiles/current-organ-source.json \
+            support/release/profiles/2026-10-26-organ-source-1138-f397-v3.json \
+            support/release/test_organ_release_profile.py \
+            support/release/check_organ_pair.py \
+            support/release/test_check_organ_pair.py; do
+            test -f "$path"
+            test ! -L "$path"
+            git ls-files --error-unmatch -- "$path" > /dev/null
+          done
+          # Require a real project entry point; documentation does not change source pins.
+          test -f README.md && test ! -L README.md && test -s README.md
+          python3 -I -B - <<'PY'
+          from pathlib import Path
+          import runpy
+
+          source = Path("support/release")
+          api = runpy.run_path(str(source / "organ_release_profile.py"))
+          for version in (1, 2, 3, 4, 5):
+              mapping = api["load_json"](source / api["source_map_name"](version))
+              if type(mapping.get("schema_version")) is not int or mapping["schema_version"] != version:
+                  raise SystemExit("Map file does not declare its fixed schema")
+              api["check_map"](mapping)
+              print(f"Committed map schema {version} passed: "
+                    f"{len(mapping['sources']['os'])} OS roles, "
+                    f"{len(mapping['sources']['hepta'])} Hepta roles, "
+                    f"{len(mapping['goldens'])} golden pairs.")
+          api["check_current_contract_v5"](
+              api["load_json"](source / "profiles/current-organ-source.json"),
+              api["load_json"](source / "organ_source_map_v5.json"))
+          print("Committed current fixed schema5 contract passed.")
+          print("Map/declaration structure only; mapped repository bytes and real ancestry are not qualified here.")
+          PY
+
+      - name: Run the bounded exact V5 case partition without skipped tests
+        run: |
+          set -euo pipefail
+          python_flags=()
+          if [ "$V5_TEST_MODE" = optimized ]; then python_flags=(-O); fi
+          python3 "${python_flags[@]}" -I -B - <<'PY'
+          import hashlib, os, unittest
+
+          modules = {
+              'legacy': ('test_check_organ_pair.py', 'test_organ_release_profile.py'),
+              'typed-v4': ('test_source_schema4.py',),
+              'v5': ('test_source_schema5.py',),
+          }
+          def cases(suite):
+              for item in suite:
+                  if isinstance(item, unittest.TestSuite):
+                      yield from cases(item)
+                  else:
+                      yield item
+          loader = unittest.defaultTestLoader
+          all_ids = [case.id() for case in cases(loader.discover('support/release', pattern='test_*.py'))]
+          suites, ids = {}, {}
+          for lane, files in modules.items():
+              suites[lane] = unittest.TestSuite(loader.discover('support/release', pattern=name) for name in files)
+              ids[lane] = [case.id() for case in cases(suites[lane])]
+          union = [identity for lane in modules for identity in ids[lane]]
+          if len(all_ids) != len(set(all_ids)) or len(union) != len(set(union)) or sorted(union) != sorted(all_ids):
+              raise SystemExit('CI lanes must be an exact disjoint union of complete discovery')
+          # Exact new reporter identities supplement the unchanged original
+          # 54-case legacy oracle; unknown additions cannot hide behind a prefix.
+          reporter_ids = {
+              'test_check_organ_pair.HostProductReceiptTests.test_v5_build_only_keeps_four_original_producers_and_eight_products',
+              'test_check_organ_pair.HostProductReceiptTests.test_v5_success_records_schema2_and_all_actual_fixture_products',
+              'test_check_organ_pair.HostProductReceiptTests.test_v5_successful_commands_without_real_outputs_cannot_qualify',
+              'test_check_organ_pair.HostProductReporterTests.test_dev_profile_uses_the_current_hepta_debug_directory',
+              'test_check_organ_pair.HostProductReporterTests.test_each_original_product_is_required',
+              'test_check_organ_pair.HostProductReporterTests.test_exact_eight_real_file_hashes_paths_profiles_and_modes',
+              'test_check_organ_pair.HostProductReporterTests.test_fifo_is_refused_without_waiting_for_a_writer',
+              'test_check_organ_pair.HostProductReporterTests.test_final_original_step_budget_is_enforced',
+              'test_check_organ_pair.HostProductReporterTests.test_in_place_byte_change_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_leaf_mode_or_link_count_change_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_leaf_symlink_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_non_executable_elf_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_move_during_final_hash_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_receipt_writes_do_not_create_a_false_failure',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_replacement_with_same_bytes_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_parent_symlink_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_real_growth_or_truncation_during_read_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_regular_executable_non_elf_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_same_bytes_replacement_with_a_new_inode_is_refused',
+              'test_check_organ_pair.HostProductReporterTests.test_stable_cargo_style_hardlinks_are_allowed_and_recorded',
+          }
+          if len(reporter_ids) != 20 or not reporter_ids <= set(ids['legacy']):
+              raise SystemExit('Missing or aliased new reporter case identity')
+          preserved = {
+              'legacy': (54, '20011921d9f6abdb12fe852abaa62c3cccd7ea03e7a906707b9b7fad3f417d38'),
+              'typed-v4': (62, '6b325a077a3c931687085d77c31d0aa0dca7becbec845c9ce76027d4819cdf18'),
+          }
+          for lane, (original_count, expected) in preserved.items():
+              original_ids = [identity for identity in ids[lane]
+                              if lane != 'legacy' or identity not in reporter_ids]
+              actual = hashlib.sha256(('\n'.join(sorted(original_ids)) + '\n').encode()).hexdigest()
+              if len(original_ids) != original_count or actual != expected:
+                  raise SystemExit('Original qualified component case IDs changed: ' + lane)
+          selected = os.environ['V5_TEST_LANE']
+          if selected not in modules or not ids[selected]:
+              raise SystemExit('Unknown or empty code-owned CI partition')
+          count = len(ids[selected])
+          result = unittest.TextTestRunner(verbosity=2).run(suites[selected])
+          if not result.wasSuccessful() or result.testsRun != count or result.skipped:
+              raise SystemExit('Selected complete CI partition failed, omitted tests, or skipped')
+          print(f'{selected}: {result.testsRun} actual cases, exact disjoint union {len(all_ids)}, no skipped cases.')
+          PY
+          checkout_status=$(git status --porcelain=v1 --untracked-files=all)
+          test -z "$checkout_status"
+          {
+            printf '## Fixed V5 source-tool partition\n\n'
+            printf 'Candidate commit: `%s`\n\n' "$DESKTOP_SHA"
+            printf 'Partition: `%s`; mode: `%s`.\n\n' "$V5_TEST_LANE" "$V5_TEST_MODE"
+            printf 'Temporary-Git/child-fixture checks only; actual pair and production authority remain separate gates.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  historical-v4-source-profile:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.historical_os_ref != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    env:
+      DESKTOP_SHA: ${{ inputs.historical_os_ref }}
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - name: Validate explicit historical V4 source identity
+        run: |
+          python3 -I -B - <<'PY'
+          import os, re
+          if re.fullmatch(r"[0-9a-f]{40}", os.environ['DESKTOP_SHA']) is None:
+              raise SystemExit('Historical V4 requires an explicit full lowercase 40-hex OS commit')
+          PY
+
       - name: Check out the exact candidate without retained credentials
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2, already pinned in this repository
         with:
@@ -48,26 +231,41 @@ jobs:
           for path in README.md \
             support/release/organ_release_profile.py \
             support/release/organ_source_map.json \
-            support/release/test_organ_release_profile.py; do
+            support/release/organ_source_map_v2.json \
+            support/release/organ_source_map_v3.json \
+            support/release/organ_source_map_v4.json \
+            support/release/test_source_schema4.py \
+            support/release/profiles/current-organ-source.json \
+            support/release/profiles/2026-10-26-organ-source-1138-f397-v3.json \
+            support/release/test_organ_release_profile.py \
+            support/release/check_organ_pair.py \
+            support/release/test_check_organ_pair.py; do
             test -f "$path"
             test ! -L "$path"
             git ls-files --error-unmatch -- "$path" > /dev/null
           done
-          # Preserve support/build/verify-source.py's root README contract.
-          test ! -s README.md
+          # Require a real project entry point; documentation does not change source pins.
+          test -f README.md && test ! -L README.md && test -s README.md
           python3 -I -B - <<'PY'
           from pathlib import Path
           import runpy
 
           source = Path("support/release")
           api = runpy.run_path(str(source / "organ_release_profile.py"))
-          mapping = api["load_json"](source / "organ_source_map.json")
-          api["check_map"](mapping)
-          print("Committed map schema passed: "
-                f"{len(mapping['sources']['os'])} OS roles, "
-                f"{len(mapping['sources']['hepta'])} Hepta roles, "
-                f"{len(mapping['goldens'])} golden pairs.")
-          print("Map structure only; mapped repository bytes and real ancestry are not qualified here.")
+          for version in (1, 2, 3, 4):
+              mapping = api["load_json"](source / api["source_map_name"](version))
+              if type(mapping.get("schema_version")) is not int or mapping["schema_version"] != version:
+                  raise SystemExit("Map file does not declare its fixed schema")
+              api["check_map"](mapping)
+              print(f"Committed map schema {version} passed: "
+                    f"{len(mapping['sources']['os'])} OS roles, "
+                    f"{len(mapping['sources']['hepta'])} Hepta roles, "
+                    f"{len(mapping['goldens'])} golden pairs.")
+          api["check_current_contract"](
+              api["load_json"](source / "profiles/current-organ-source.json"),
+              api["load_json"](source / "organ_source_map_v4.json"))
+          print("Committed current schema4 contract passed.")
+          print("Map/declaration structure only; mapped repository bytes and real ancestry are not qualified here.")
           PY
 
       - name: Run the real temporary-Git regression suite without skipped tests
@@ -78,14 +276,10 @@ jobs:
           from pathlib import Path
           import unittest
 
-          path = Path("support/release/test_organ_release_profile.py")
-          spec = importlib.util.spec_from_file_location("release_profile_tests", path)
-          module = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(module)
-          suite = unittest.defaultTestLoader.loadTestsFromModule(module)
+          suite = unittest.defaultTestLoader.discover("support/release", pattern="test_*.py")
           count = suite.countTestCases()
-          if count < 19:
-              raise SystemExit(f"Expected at least 19 release-profile regression tests; found {count}")
+          if count < 80:
+              raise SystemExit(f"Expected at least 80 source/pair-runner regression tests; found {count}")
           result = unittest.TextTestRunner(verbosity=2).run(suite)
           if not result.wasSuccessful() or result.testsRun != count or result.skipped:
               raise SystemExit("Release-profile suite failed, did not run completely, or skipped tests")

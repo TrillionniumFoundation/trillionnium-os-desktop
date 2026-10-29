@@ -368,7 +368,10 @@ pub fn status(ui: &mut egui::Ui, projection: &HeptaProjection) {
     } else {
         super::warning()
     };
-    ui.colored_label(color, format!("Hepta: {}", projection.connection.label()));
+    ui.colored_label(
+        color,
+        format!("Hepta runtime observer: {}", projection.connection.label()),
+    );
     if let Some(code) = &projection.error_code {
         ui.small(format!("Observation diagnostic: {code}"));
     }
@@ -380,7 +383,7 @@ pub fn runtime(ui: &mut egui::Ui, projection: &HeptaProjection) {
     ui.label("Read-only runtime observations from the independent host Session.");
     ui.colored_label(
         super::warning(),
-        "Objective submission unavailable · 认证目标适配器未装配；草稿未提交",
+        "Read-only runtime view · 已签请求请见 Signed requests；草稿仍未提交",
     );
     ui.small("Readiness and advertised capabilities do not grant permissions or confirm an AI task result.");
     ui.separator();

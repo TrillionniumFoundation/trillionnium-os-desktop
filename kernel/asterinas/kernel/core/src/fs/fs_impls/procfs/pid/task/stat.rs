@@ -2,7 +2,7 @@
 
 #![short_vis_path::add(pid)]
 
-use core::{sync::atomic::Ordering, time::Duration};
+use core::time::Duration;
 
 use aster_util::printer::VmPrinter;
 use ostd::timer::TIMER_FREQ;
@@ -17,10 +17,10 @@ use crate::{
     prelude::*,
     process::{
         Process, ResourceType,
-        posix_thread::{AsPosixThread, SleepingState},
+        posix_thread::{AsPosixThread, SleepingState, alien_access::AlienAccessMode},
         signal::{HandlePendingSignal, sig_action::SigAction, sig_mask::SigMask},
     },
-    sched::{LinuxSchedPolicy, RealTimePriority, SchedPolicy},
+    sched::{SchedPolicy, UserSchedSnapshot},
     thread::Thread,
     time::NSEC_PER_SEC,
     vm::vmar::RssType,
@@ -196,8 +196,11 @@ impl ProcFileOps for StatFileOps {
             )
         };
 
-        let (priority, rt_priority, policy) = sched_values(&thread);
-        let nice = process.nice().load(Ordering::Relaxed).value().get();
+        // All earlier temporary locks are released; no TaskSet/VMAR guard is
+        // held across this short canonical reader snapshot.
+        let sched = thread.sched_attr().user_snapshot();
+        let (priority, rt_priority, policy) = sched_values(sched);
+        let nice = sched.nice().value().get();
         let num_threads = process.tasks().lock().as_slice().len();
         let itrealvalue =
             duration_to_jiffies(process.timer_manager().alarm_timer().lock().remain());
@@ -216,35 +219,64 @@ impl ProcFileOps for StatFileOps {
             arg_end,
             env_start,
             env_end,
-        ) = if let Some(vmar_ref) = process.lock_vmar().as_ref() {
-            let vsize = vmar_ref.get_mappings_total_size();
-            let anon = vmar_ref.get_rss_counter(RssType::Anon);
-            let file = vmar_ref.get_rss_counter(RssType::File);
-            let rss = anon + file;
-            let process_vm = vmar_ref.process_vm();
-            let code_range = process_vm.code_range();
-            let data_range = process_vm.data_range();
-            let init_stack = process_vm.init_stack();
-            let argv_range = init_stack.argv_range();
-            let envp_range = init_stack.envp_range();
-            let start_brk = process_vm.heap().lock().heap_low();
-
-            (
-                vsize,
-                rss,
-                code_range.start,
-                code_range.end,
-                init_stack.user_stack_top(),
-                data_range.start,
-                data_range.end,
-                start_brk,
-                argv_range.start,
-                argv_range.end,
-                envp_range.start,
-                envp_range.end,
-            )
-        } else {
-            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+            exit_code,
+        ) = {
+            let vmar_guard = process.lock_vmar();
+            let current = current_thread!();
+            let access = current.as_posix_thread().and_then(|accessor| {
+                posix_thread
+                    .check_alien_access_from(
+                        accessor,
+                        AlienAccessMode::READ_WITH_FS_CREDS,
+                        &vmar_guard,
+                    )
+                    .ok()
+            });
+            let permitted = access.is_some();
+            let exit_code = if permitted {
+                match self.mode {
+                    StatMode::Process => process.status().exit_code(),
+                    StatMode::Thread => posix_thread.exit_code(),
+                }
+            } else {
+                0
+            };
+            if let Some(vmar_ref) = vmar_guard.as_ref() {
+                let vsize = vmar_ref.get_mappings_total_size();
+                let rss = vmar_ref.get_rss_counter(RssType::Anon)
+                    + vmar_ref.get_rss_counter(RssType::File);
+                if permitted {
+                    let process_vm = vmar_ref.process_vm();
+                    let code = process_vm.code_range();
+                    let data = process_vm.data_range();
+                    let stack = process_vm.init_stack();
+                    let argv = stack.argv_range();
+                    let envp = stack.envp_range();
+                    let brk = process_vm.heap().lock().heap_low();
+                    (
+                        vsize,
+                        rss,
+                        code.start,
+                        code.end,
+                        stack.user_stack_top(),
+                        data.start,
+                        data.end,
+                        brk,
+                        argv.start,
+                        argv.end,
+                        envp.start,
+                        envp.end,
+                        exit_code,
+                    )
+                } else {
+                    // Linux proc/array.c: denied start/end_code are 1 for a live
+                    // image; the other protected addresses are zero. Public
+                    // PID/starttime/size/RSS fields remain available.
+                    (vsize, rss, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, exit_code)
+                }
+            } else {
+                (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, exit_code)
+            }
         };
 
         let rsslim = process
@@ -279,11 +311,6 @@ impl ProcFileOps for StatFileOps {
         let delayacct_blkio_ticks = 0;
         let guest_time = 0;
         let cguest_time = 0;
-
-        let exit_code = match self.mode {
-            StatMode::Process => process.status().exit_code(),
-            StatMode::Thread => posix_thread.exit_code(),
-        };
 
         let mut printer = VmPrinter::new_skip(writer, offset);
         writeln!(
@@ -358,33 +385,13 @@ fn duration_to_jiffies(duration: Duration) -> u64 {
 }
 
 /// Returns the `priority`, `rt_priority`, and `policy` values for `/proc/<pid>/stat`.
-fn sched_values(thread: &Thread) -> (i32, u8, i32) {
-    const MAX_RT_PRIORITY: u8 = RealTimePriority::MAX.get();
-    const RT_PRIORITY_LIMIT: u8 = MAX_RT_PRIORITY + 1;
-    const NICE_TO_PRIORITY_OFFSET: i32 = 20;
-
-    let policy = thread.sched_attr().policy();
-
-    let (priority, rt_priority) = match policy {
-        SchedPolicy::Stop => (-i32::from(MAX_RT_PRIORITY) - 1, MAX_RT_PRIORITY),
-        SchedPolicy::RealTime { rt_prio, .. } => {
-            // `SchedPolicy` stores real-time priorities in the scheduler's
-            // internal order, where smaller values have higher priority.
-            // This is the reverse of Linux's user-visible RT priority
-            // used by `/proc/<pid>/stat`.
-            // For example, an internal RT priority of 1 is reported as 99.
-            // FIXME: Use the same conversion helper (i.e., `rt_to_static`)
-            // as the `sched*` syscalls once it is available outside the
-            // `syscall` module.
-            let rt_priority = RT_PRIORITY_LIMIT - rt_prio.get();
-            (-i32::from(rt_priority) - 1, rt_priority)
-        }
-        SchedPolicy::Fair(nice) => (NICE_TO_PRIORITY_OFFSET + nice.value().get() as i32, 0),
-        SchedPolicy::Idle => (NICE_TO_PRIORITY_OFFSET, 0),
+fn sched_values(snapshot: UserSchedSnapshot) -> (i32, u8, i32) {
+    let rt_priority = snapshot.static_priority() as u8;
+    let priority = match snapshot.policy() {
+        SchedPolicy::Stop | SchedPolicy::RealTime { .. } => -i32::from(rt_priority) - 1,
+        _ => 20 + i32::from(snapshot.nice().value().get()),
     };
-    let linux_policy = LinuxSchedPolicy::from(policy);
-
-    (priority, rt_priority, linux_policy as i32)
+    (priority, rt_priority, snapshot.linux_policy() as i32)
 }
 
 /// Returns the ignored and caught standard-signal masks for `/proc/<pid>/stat`.

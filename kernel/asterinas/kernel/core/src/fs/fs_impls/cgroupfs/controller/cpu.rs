@@ -2,17 +2,17 @@
 
 mod max_config;
 mod native;
-
-#[cfg(feature = "g1c-trusted-observe")]
-pub(crate) use native::{CpuUsageError, NativeCpuObserver};
-#[cfg(feature = "g1d-trusted-control")]
-pub(crate) use native::NativeCpuManager;
+mod scheduling_route;
 
 use alloc::sync::Arc;
-use core::sync::atomic::{AtomicU32, Ordering};
+use core::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
 
 use aster_systree::{Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysPerms, SysStr};
 use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
+#[cfg(feature = "g1d-trusted-control")]
+pub(crate) use native::NativeCpuManager;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use native::{CpuUsageError, NativeCpuObserver};
 use os_control::CPU_PERIOD_NS;
 use ostd::{
     cpu::CpuId,
@@ -20,8 +20,8 @@ use ostd::{
     sync::{LocalIrqDisabled, SpinLock},
     task::{Task, atomic_mode::AsAtomicModeGuard},
     timer::Jiffies,
-    warn,
 };
+pub(crate) use scheduling_route::CpuSchedulingRoute;
 
 use self::native::CpuBandwidthState;
 use crate::{
@@ -44,6 +44,9 @@ pub(crate) struct CpuController {
     stats: CpuStats,
     /// Optional CPU resource control attributes exposed only when `+cpu` is active.
     control: Option<CpuControl>,
+    /// Original raw route references, including inactive CPU levels. These
+    /// preserve topology independently of bandwidth/final-charge ownership.
+    scheduling_routes: AtomicUsize,
 }
 
 /// CPU usage accounting that survives CPU controller toggles.
@@ -339,7 +342,12 @@ impl CpuController {
         Self {
             stats: CpuStats::new(),
             control: is_active.then(CpuControl::new),
+            scheduling_routes: AtomicUsize::new(0),
         }
+    }
+
+    pub(super) fn has_scheduling_routes(&self) -> bool {
+        self.scheduling_routes.load(Ordering::Acquire) != 0
     }
 
     /// Initializes CPU usage statistics from the previous sub-controller.
@@ -498,35 +506,11 @@ impl super::SubControl for CpuController {
     fn write_attr(&self, name: &str, reader: &mut VmReader) -> Result<usize> {
         match name {
             "cpu.weight" => {
-                let control = self.control()?;
-
-                // The cgroup v2 CPU weight is a scheduling weight in the range 1..=10000.
-                //
-                // Reference: <https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files>
-                const MIN_WEIGHT: u32 = 1;
-                const MAX_WEIGHT: u32 = 10_000;
-
-                let (content, len) = reader
-                    .read_cstring_until_end(MAX_ATTR_SIZE)
-                    .map_err(|_| Error::PageFault)?;
-                let weight = content
-                    .to_str()
-                    .map_err(|_| Error::InvalidOperation)?
-                    .trim()
-                    .parse::<u32>()
-                    .map_err(|_| Error::InvalidOperation)?;
-                if !(MIN_WEIGHT..=MAX_WEIGHT).contains(&weight) {
-                    return Err(Error::InvalidOperation);
-                }
-
-                // TODO: Enforce cgroup CPU weight for scheduling and remove this warning.
-                warn!(
-                    "`cpu.weight` is accepted but not enforced yet; weight = {}",
-                    weight
-                );
-                control.weight.store(weight, Ordering::Relaxed);
-
-                Ok(len)
+                // Prepared internal entities do not admit live memberships or
+                // SMP migration yet. Returning success would still advertise an
+                // unenforced user policy. Keep the default read value and reject
+                // writes until that full route consumes the configured weight.
+                Err(Error::InvalidOperation)
             }
             "cpu.max" => {
                 let control = self.control()?;
@@ -676,6 +660,61 @@ pub(crate) struct CpuChargeOwner {
     cgroup: Option<Arc<CgroupNode>>,
 }
 
+/// Read-only scheduling identity of an original CPU-controller incarnation.
+///
+/// This is not a membership binding, management capability, budget or node
+/// lifecycle lease. Prepared scheduler entities retain it without consulting a
+/// node's replaceable RCU slot again. Live routing still needs its own admitted
+/// membership-generation and completed-switch protocol.
+#[derive(Clone)]
+pub(crate) struct CpuSchedulingGroup {
+    cpu: Arc<super::SubController<CpuController>>,
+}
+
+impl core::fmt::Debug for CpuSchedulingGroup {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("CpuSchedulingGroup")
+    }
+}
+
+impl CpuSchedulingGroup {
+    pub(crate) fn for_task(task: &Task) -> Option<Self> {
+        let owner = CpuChargeOwner::for_task(task)?;
+        Self::active(owner.cpu.clone())
+    }
+
+    fn active(mut cpu: Arc<super::SubController<CpuController>>) -> Option<Self> {
+        loop {
+            if cpu.inner.as_ref()?.control.is_some() {
+                return Some(Self { cpu });
+            }
+            cpu = cpu.parent.clone()?;
+        }
+    }
+
+    pub(crate) fn parent(&self) -> Option<Self> {
+        Self::active(self.cpu.parent.clone()?)
+    }
+
+    pub(crate) fn same_incarnation(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.cpu, &other.cpu)
+    }
+
+    pub(crate) fn weight(&self) -> u64 {
+        u64::from(
+            self.cpu
+                .inner
+                .as_ref()
+                .unwrap()
+                .control
+                .as_ref()
+                .unwrap()
+                .weight
+                .load(Ordering::Relaxed),
+        )
+    }
+}
+
 impl CpuChargeOwner {
     /// Captures the live binding for the next segment, without allocation.
     pub(crate) fn for_task(task: &Task) -> Option<Self> {
@@ -799,6 +838,9 @@ mod owner_retention_regressions;
 
 #[cfg(ktest)]
 mod scheduler_handoff_regressions;
+
+#[cfg(ktest)]
+mod group_entity_regressions;
 
 #[cfg(ktest)]
 mod quota_debt_regressions {

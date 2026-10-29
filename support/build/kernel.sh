@@ -24,11 +24,13 @@ else
 fi
 run_dir=$(cd "$run_dir" && pwd)
 trusted_profile=
-case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}:${HEPTA_G1D_TRUSTED_CONTROL:-0}" in
-    0:0) ;;
-    1:0) trusted_profile=g1c-trusted-observe ;;
-    0:1) trusted_profile=g1d-trusted-control ;;
-    *) echo "trusted profile flags must be 0 or 1; select at most one G1-c/G1-d profile" >&2; exit 2 ;;
+profile_memory=512M
+case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}:${HEPTA_G1D_TRUSTED_CONTROL:-0}:${HEPTA_G2_NATIVE_AGENTD:-0}" in
+    0:0:0) ;;
+    1:0:0) trusted_profile=g1c-trusted-observe ;;
+    0:1:0) trusted_profile=g1d-trusted-control ;;
+    0:0:1) trusted_profile=g2-native-agentd; profile_memory=3072M ;;
+    *) echo "trusted profile flags must be 0 or 1; select at most one build profile" >&2; exit 2 ;;
 esac
 if [[ -n "$trusted_profile" ]]; then
     if [[ "$target" != kernel ]]; then
@@ -99,12 +101,14 @@ if [[ "$target" == run_kernel ]]; then rm -f "$kernel_dir/kernel/qemu.log"; fi
 command=(make -C "$kernel_dir" -f Makefile -f "$build_dir/minimal.mk" "$target"
     "CARGO_OSDK=${CARGO_HOME:-$HOME/.cargo}/bin/cargo-osdk"
     "A01_INITRAMFS=$run_dir/initramfs.cpio.gz"
-    "A01_QEMU_WRAPPER=$build_dir/record-qemu.py" TARGET_ARCH=x86_64 SMP="$A01_SMP" MEM=512M
+    "A01_QEMU_WRAPPER=$build_dir/record-qemu.py" TARGET_ARCH=x86_64 SMP="$A01_SMP" "MEM=$profile_memory"
     ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none)
 if [[ ${HEPTA_G1C_TRUSTED_OBSERVE:-0} == 1 ]]; then
     command+=(HEPTA_G1C_TRUSTED_OBSERVE=1 FEATURES=g1c-trusted-observe)
 elif [[ ${HEPTA_G1D_TRUSTED_CONTROL:-0} == 1 ]]; then
     command+=(HEPTA_G1D_TRUSTED_CONTROL=1 FEATURES=g1d-trusted-control)
+elif [[ ${HEPTA_G2_NATIVE_AGENTD:-0} == 1 ]]; then
+    command+=(HEPTA_G2_NATIVE_AGENTD=1 FEATURES=g2-native-agentd)
 fi
 printf '%q ' "${command[@]}" > "$run_dir/command.sh"
 printf '\n' >> "$run_dir/command.sh"

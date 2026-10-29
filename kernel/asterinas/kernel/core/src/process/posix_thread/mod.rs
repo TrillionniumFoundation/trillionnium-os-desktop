@@ -16,13 +16,17 @@ use super::{
 };
 use crate::{
     events::IoEvents,
-    fs::{file::file_table::FileTable, thread_info::ThreadFsInfo},
-    fs::cgroupfs::{CgroupNode, CpuChargeOwner},
+    fs::{
+        cgroupfs::{CgroupNode, CpuChargeOwner},
+        file::file_table::FileTable,
+        thread_info::ThreadFsInfo,
+    },
     prelude::*,
     process::{
         ExitCode, Pid,
         namespace::nsproxy::NsProxy,
         posix_thread::ptrace::TraceeStatus,
+        process_vm::ProcessVmarGuard,
         signal::{PauseReason, PollHandle, sig_mask::SigMask},
     },
     thread::{Thread, Tid},
@@ -32,15 +36,18 @@ use crate::{
 pub(crate) mod alien_access;
 mod builder;
 mod cpu_sync;
+mod credentials_edit;
 mod exit;
 pub(crate) mod futex;
 mod personality;
 mod posix_thread_ext;
 pub(crate) mod ptrace;
 mod robust_list;
+pub(crate) mod seccomp;
 mod thread_local;
 
 pub(crate) use builder::PosixThreadBuilder;
+use credentials_edit::CredentialsEdit;
 pub(super) use exit::sigkill_other_threads;
 pub(crate) use exit::{do_exit, do_exit_group};
 pub(crate) use personality::Personality;
@@ -72,6 +79,10 @@ pub struct PosixThread {
 
     /// Process credentials. At the kernel level, credentials are a per-thread attribute.
     credentials: Credentials,
+
+    /// Thread-local policy snapshots are immutable and inherited by clone.
+    /// TSYNC publishes under the process update lock and original TaskSet.
+    seccomp: Mutex<seccomp::Policy>,
 
     /// The file system information of the thread.
     fs: RwMutex<Arc<ThreadFsInfo>>,
@@ -122,6 +133,10 @@ pub struct PosixThread {
 }
 
 impl PosixThread {
+    pub(crate) fn seccomp(&self) -> &Mutex<seccomp::Policy> {
+        &self.seccomp
+    }
+
     pub(crate) fn process(&self) -> Arc<Process> {
         self.process.upgrade().unwrap()
     }
@@ -223,6 +238,17 @@ impl PosixThread {
         let mut signalled_waker = self.signalled_waker.lock();
         assert!(signalled_waker.is_none());
         *signalled_waker = Some((waker, reason));
+    }
+
+    /// Changes the reason of the current thread's registered signal wait.
+    ///
+    /// The waiter and its event registrations remain live. Only the thread
+    /// owning the wait may call this, and it must restore the previous reason
+    /// before continuing the original wait.
+    pub(crate) fn replace_pause_reason(&self, reason: PauseReason) -> PauseReason {
+        let mut signalled_waker = self.signalled_waker.lock();
+        let (_, current_reason) = signalled_waker.as_mut().unwrap();
+        core::mem::replace(current_reason, reason)
     }
 
     /// Clears the signalled waker of this thread.
@@ -429,8 +455,17 @@ pub(crate) trait ContextPthreadAdminApi {
     /// It should not be called more than once per system call.
     fn save_and_set_sig_mask(&self, sig_mask: SigMask);
 
-    /// Gets the read-write credentials of the current thread.
-    fn credentials_mut(&self) -> Credentials<ReadWriteOp>;
+    /// Edits current credentials under the shared memory-image security lock.
+    /// User copies must finish before entering the closure. No writable credential
+    /// capability or borrowed credential guard may escape it.
+    fn with_credentials_mut<R>(&self, edit: impl FnOnce(&Credentials<ReadWriteOp>) -> R) -> R;
+
+    /// As above, using the VMAR guard already held during exec publication.
+    fn with_credentials_mut_in<R>(
+        &self,
+        vmar: &ProcessVmarGuard<'_>,
+        edit: impl FnOnce(&Credentials<ReadWriteOp>) -> R,
+    ) -> R;
 }
 
 impl ContextPthreadAdminApi for Context<'_> {
@@ -453,8 +488,21 @@ impl ContextPthreadAdminApi for Context<'_> {
         self.set_sig_mask(sig_mask);
     }
 
-    fn credentials_mut(&self) -> Credentials<ReadWriteOp> {
-        self.posix_thread.credentials.dup().restrict()
+    fn with_credentials_mut<R>(&self, edit: impl FnOnce(&Credentials<ReadWriteOp>) -> R) -> R {
+        let vmar = self.process.lock_vmar();
+        self.with_credentials_mut_in(&vmar, edit)
+    }
+
+    fn with_credentials_mut_in<R>(
+        &self,
+        vmar: &ProcessVmarGuard<'_>,
+        edit: impl FnOnce(&Credentials<ReadWriteOp>) -> R,
+    ) -> R {
+        debug_assert!(vmar.belongs_to(&self.process));
+        let credentials = self.posix_thread.credentials.dup().restrict();
+        let dumpable = vmar.unwrap().process_vm().dumpable().lock();
+        let transaction = CredentialsEdit::new(&credentials, dumpable);
+        edit(&transaction)
     }
 }
 

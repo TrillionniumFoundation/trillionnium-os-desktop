@@ -11,7 +11,7 @@ use ostd::{
     arch::read_tsc as sched_clock,
     cpu::{CpuId, CpuSet, PinCurrentCpu, all_cpus},
     irq::disable_local,
-    sync::{LocalIrqDisabled, SpinLock},
+    sync::{LocalIrqDisabled, Mutex, SpinLock},
     task::{
         AtomicCpuId, Task,
         scheduler::{
@@ -32,25 +32,55 @@ use crate::{
     thread::{AsThread, Thread},
 };
 
+mod administration;
+mod affinity;
+mod capacity;
 mod clock;
 mod policy;
+mod request;
 mod time;
+mod transfer;
 
 mod fair;
 mod idle;
 mod real_time;
 mod stop;
+#[cfg(ktest)]
+mod switch_tests;
 
+pub(crate) use self::{
+    administration::{SchedAdministration, UserSchedSnapshot},
+    affinity::set_thread_affinity,
+    policy::{LinuxSchedPolicy, SchedPolicy},
+    real_time::{RealTimePolicy, RealTimePriority},
+};
 use self::{
     clock::CpuClockSample,
     policy::{SchedPolicyKind, SchedPolicyState},
 };
-pub(crate) use self::{
-    policy::{LinuxSchedPolicy, SchedPolicy},
-    real_time::{RealTimePolicy, RealTimePriority},
-};
 
 type SchedEntity = (Arc<Task>, Arc<Thread>);
+
+struct SelectedEntity {
+    entity: SchedEntity,
+    fair: Option<fair::FairSelection>,
+}
+
+enum CompletedSwitch {
+    None,
+    Publish(SchedEntity, Option<u64>),
+    Dormant(
+        Arc<Task>,
+        Arc<request::AffinityRequest<'static>>,
+        request::Outcome,
+    ),
+}
+
+impl SelectedEntity {
+    fn other(entity: SchedEntity) -> Self {
+        Self { entity, fair: None }
+    }
+}
 
 static CLASS_SCHEDULER: Once<&'static ClassScheduler> = Once::new();
 
@@ -87,11 +117,8 @@ pub(crate) fn with_current_cpu_bandwidth_settled<R>(apply: impl FnOnce(Option<u6
     };
     let mut rq = scheduler.rqs[irq_guard.current_cpu().as_usize()].lock();
     let now = CpuClockSample::read();
-    if let Some(((task, _), rt)) = rq.bandwidth_segment_mut() {
-        rt.with_bandwidth_settled(task, now, apply)
-    } else {
-        apply(now.boottime_ns)
-    }
+    rq.settle_runtime(now);
+    apply(now.boottime_ns)
 }
 
 /// Publishes a CPU owner binding between two local bandwidth checkpoints.
@@ -115,12 +142,12 @@ pub(crate) fn with_current_cpu_bandwidth_owner_update<R>(publish: impl FnOnce() 
     let rq = &scheduler.rqs[irq_guard.current_cpu().as_usize()];
     {
         let mut rq = rq.lock();
-        rq.settle_bandwidth(CpuClockSample::read());
+        rq.settle_runtime(CpuClockSample::read());
     }
     let result = publish();
     {
         let mut rq = rq.lock();
-        rq.settle_bandwidth(CpuClockSample::read());
+        rq.settle_runtime(CpuClockSample::read());
     }
     result
 }
@@ -136,23 +163,51 @@ pub(crate) struct ClassScheduler {
     /// the runqueues may be accessed in both the task and interrupt context (L1 and L2).
     rqs: Box<[SpinLock<PerCpuClassRqSet, LocalIrqDisabled>]>,
     last_chosen_cpu: AtomicCpuId,
+    #[cfg(ktest)]
+    round_robin_selections: core::sync::atomic::AtomicUsize,
 }
 
 /// Represents the run queue for each CPU core. It stores a list of run queues for
 /// scheduling classes in its corresponding CPU core. The current task of this CPU
 /// core is also stored in this structure.
 struct PerCpuClassRqSet {
+    cpu: CpuId,
     stop: stop::StopClassRq,
     real_time: real_time::RealTimeClassRq,
     fair: fair::FairClassRq,
     idle: idle::IdleClassRq,
     // Runqueue-local parked tasks; no userspace syscall is required to refill.
     throttled: Vec<Arc<Task>>,
+    throttled_reserved: usize,
     current: Option<(SchedEntity, CurrentRuntime)>,
     // dequeue_current() changes runnable state before OSTD selects the next
     // task. Move (not copy) the same accounting segment here until handoff,
     // including selection retries. It holds no additional budget or usage.
-    dequeued: Option<(SchedEntity, CurrentRuntime)>,
+    dequeued: Option<SwitchedOut>,
+    dequeue_exiting: bool,
+    // OSTD has selected current but is still physically executing previous.
+    // Neither previous nor a late wake may be published to any queue yet.
+    switching: Option<PendingSwitch>,
+}
+
+#[derive(Clone, Copy)]
+enum OutgoingState {
+    Runnable,
+    Waiting { woken: bool },
+    Exiting,
+}
+
+struct SwitchedOut {
+    entity: SchedEntity,
+    runtime: CurrentRuntime,
+    state: OutgoingState,
+}
+
+struct PendingSwitch {
+    previous: SwitchedOut,
+    fair: Option<fair::FairSelection>,
+    finished: bool,
+    fair_debt: Option<u64>,
 }
 
 /// Stores the runtime information of the current task.
@@ -166,6 +221,8 @@ struct CurrentRuntime {
     start: u64,
     delta: u64,
     period_delta: u64,
+    // Independent of the class slice: also retains Wait/Exit handoff tails.
+    fair: fair::FairRuntime,
     // This cursor partitions debits to the original cgroup bandwidth owner.
     // It stores no quota or usage. Configuration must not advance `start`,
     // which is still needed for the next CFS/RT runtime update.
@@ -181,6 +238,7 @@ impl CurrentRuntime {
             start: now.cycles,
             delta: 0,
             period_delta: 0,
+            fair: fair::FairRuntime::new_at(task, now.cycles),
             bandwidth_accounted_through_ns: now.boottime_ns,
             bandwidth_owner: CpuChargeOwner::for_task(task),
         }
@@ -195,7 +253,8 @@ impl CurrentRuntime {
         self.period_delta = self.period_delta.saturating_add(self.delta);
     }
 
-    fn settle_bandwidth(&mut self, task: &Task, now: CpuClockSample) {
+    fn settle_runtime(&mut self, task: &Task, now: CpuClockSample) -> Option<u64> {
+        let fair_delta = self.fair.settle(task, now.cycles);
         match (self.bandwidth_accounted_through_ns, now.boottime_ns) {
             (Some(from), Some(until)) if until >= from => {
                 if until > from
@@ -220,15 +279,17 @@ impl CurrentRuntime {
         if !task.as_thread().is_some_and(|thread| thread.is_exited()) {
             self.bandwidth_owner = CpuChargeOwner::for_task(task);
         }
+        fair_delta
     }
 
+    #[cfg(ktest)]
     fn with_bandwidth_settled<R>(
         &mut self,
         task: &Task,
         now: CpuClockSample,
         apply: impl FnOnce(Option<u64>) -> R,
     ) -> R {
-        self.settle_bandwidth(task, now);
+        let _ = self.settle_runtime(task, now);
         apply(now.boottime_ns)
     }
 }
@@ -257,8 +318,9 @@ impl CpuRuntimeFixture {
 
     pub(crate) fn update(&mut self, now: u64) -> (u64, u64) {
         self.runtime.update_at(now);
-        self.runtime
-            .settle_bandwidth(&self.task, CpuClockSample::fixture(now));
+        let _ = self
+            .runtime
+            .settle_runtime(&self.task, CpuClockSample::fixture(now));
         (self.runtime.delta, self.runtime.period_delta)
     }
 
@@ -272,7 +334,7 @@ impl CpuRuntimeFixture {
     pub(crate) fn update_sample(&mut self, sample: aster_time::ClockSourceSample) -> (u64, u64) {
         let sample = CpuClockSample::from_sample(sample);
         self.runtime.update_at(sample.cycles);
-        self.runtime.settle_bandwidth(&self.task, sample);
+        let _ = self.runtime.settle_runtime(&self.task, sample);
         (self.runtime.delta, self.runtime.period_delta)
     }
 
@@ -288,11 +350,13 @@ impl CpuRuntimeFixture {
     /// Runs the production runtime's two checkpoints around a real owner
     /// publication. No fixture is inserted into the FIFO ktest scheduler.
     pub(crate) fn publish<R>(&mut self, before: u64, after: u64, publish: impl FnOnce() -> R) -> R {
-        self.runtime
-            .settle_bandwidth(&self.task, CpuClockSample::fixture(before));
+        let _ = self
+            .runtime
+            .settle_runtime(&self.task, CpuClockSample::fixture(before));
         let result = publish();
-        self.runtime
-            .settle_bandwidth(&self.task, CpuClockSample::fixture(after));
+        let _ = self
+            .runtime
+            .settle_runtime(&self.task, CpuClockSample::fixture(after));
         result
     }
 }
@@ -306,12 +370,53 @@ pub(crate) struct CpuRunQueueFixture {
 #[cfg(ktest)]
 impl CpuRunQueueFixture {
     pub(crate) fn new(task: Arc<Task>, now: u64) -> Self {
-        let irq_guard = disable_local();
-        let mut rq = PerCpuClassRqSet::new(irq_guard.current_cpu());
+        let cpu = disable_local().current_cpu();
+        let mut rq = PerCpuClassRqSet::new(cpu);
+        let _irq_guard = disable_local();
         let thread = task.as_thread().unwrap().clone();
         let runtime = CurrentRuntime::new_at(&task, CpuClockSample::fixture(now));
+        if thread.sched_attr().policy_kind() == SchedPolicyKind::Fair {
+            rq.fair.attach_current(&task);
+        }
         rq.current = Some(((task, thread), runtime));
         Self { rq }
+    }
+
+    /// An immutable, fully prepared internal topology; not a live membership
+    /// admission interface. Preparation and all capacity growth precede IRQ
+    /// disabling and use the same production queues/selection transactions.
+    pub(crate) fn with_groups(
+        task: Arc<Task>,
+        now: u64,
+        groups: &[(crate::fs::cgroupfs::CpuSchedulingGroup, usize)],
+        bindings: &[(Arc<Task>, usize)],
+    ) -> ostd::Result<Self> {
+        let prepared = fair::group::GroupTree::prepare(groups, bindings)?;
+        let mut fixture = Self::new(task.clone(), now);
+        fixture
+            .rq
+            .throttled
+            .try_reserve_exact(bindings.len())
+            .map_err(|_| ostd::Error::NoMemory)?;
+        fixture.rq.fair.groups = prepared;
+        fixture.rq.fair.attach_current(&task);
+        Ok(fixture)
+    }
+
+    pub(crate) fn try_group_enqueue(
+        &mut self,
+        task: Arc<Task>,
+    ) -> core::result::Result<(), Arc<Task>> {
+        let _irq_guard = disable_local();
+        self.rq.fair.try_enqueue(task, Some(EnqueueFlags::Spawn))
+    }
+
+    pub(crate) fn group_state(&self, id: usize) -> (u64, usize, bool) {
+        self.rq.fair.groups.state(id)
+    }
+
+    pub(crate) fn group_capacities(&self) -> alloc::vec::Vec<(usize, usize)> {
+        self.rq.fair.groups.capacities()
     }
 
     pub(crate) fn enqueue(&mut self, task: Arc<Task>) {
@@ -334,6 +439,55 @@ impl CpuRunQueueFixture {
         next
     }
 
+    /// Controlled physical-boundary simulation on the production transaction.
+    /// Does not run a fixture Task in OSTD or establish a hardware switch.
+    pub(crate) fn pick_switch(&mut self, samples: &[u64]) -> Option<Arc<Task>> {
+        let _irq_guard = disable_local();
+        let physical = self
+            .rq
+            .current
+            .as_ref()
+            .map(|(entity, _)| entity.0.clone())
+            .or_else(|| self.rq.dequeued.as_ref().map(|old| old.entity.0.clone()))?;
+        let mut samples = samples.iter();
+        let result = self
+            .rq
+            .try_pick_next_at(
+                || CpuClockSample::fixture(*samples.next().expect("unexpected clock read")),
+                Some(&physical),
+            )
+            .cloned();
+        assert!(samples.next().is_none(), "unused clock sample");
+        result
+    }
+
+    pub(crate) fn finish_switch(&mut self, previous: &Arc<Task>, now: u64) -> bool {
+        let _irq_guard = disable_local();
+        self.rq
+            .finish_switch_at(previous, CpuClockSample::fixture(now))
+    }
+
+    pub(crate) fn complete_switch(&mut self, previous: &Arc<Task>, now: u64) -> Option<Arc<Task>> {
+        let _irq_guard = disable_local();
+        match self
+            .rq
+            .complete_switch_at(previous, CpuClockSample::fixture(now))
+        {
+            CompletedSwitch::Publish(entity, _) => Some(entity.0),
+            CompletedSwitch::None => None,
+            CompletedSwitch::Dormant(_, _, _) => panic!("fixture has no live affinity authority"),
+        }
+    }
+
+    pub(crate) fn wake_outgoing(&mut self, task: &Arc<Task>) -> bool {
+        let _irq_guard = disable_local();
+        self.rq.latch_outgoing_wake(task)
+    }
+
+    pub(crate) fn queued_count(&self) -> u32 {
+        self.rq.load_stats().queue_len
+    }
+
     pub(crate) fn update(&mut self, flags: UpdateFlags, now: u64) -> bool {
         let _irq_guard = disable_local();
         self.rq
@@ -350,7 +504,12 @@ impl CpuRunQueueFixture {
     }
 
     pub(crate) fn cfs_runtime(&self) -> Option<(u64, u64, u64)> {
-        let (_, rt) = self.rq.current.as_ref().or(self.rq.dequeued.as_ref())?;
+        let rt = self
+            .rq
+            .current
+            .as_ref()
+            .map(|(_, rt)| rt)
+            .or_else(|| self.rq.dequeued.as_ref().map(|previous| &previous.runtime))?;
         Some((rt.start, rt.delta, rt.period_delta))
     }
 
@@ -393,6 +552,9 @@ trait SchedClassRq: Send + fmt::Debug {
 /// scheduling class.
 #[derive(Debug)]
 pub(crate) struct SchedAttr {
+    administration: Mutex<administration::AdministrationState>,
+    // Both IRQ/tick and sleepable controller paths consult this slot.
+    affinity_request: SpinLock<Option<Arc<request::AffinityRequest<'static>>>, LocalIrqDisabled>,
     policy: SchedPolicyState,
     last_cpu: AtomicCpuId,
     real_time: real_time::RealTimeAttr,
@@ -403,6 +565,8 @@ impl SchedAttr {
     /// Constructs a new `SchedAttr` with the given scheduling policy.
     pub(crate) fn new(policy: SchedPolicy) -> Self {
         Self {
+            administration: Mutex::new(administration::AdministrationState::new(policy)),
+            affinity_request: SpinLock::new(None),
             policy: SchedPolicyState::new(policy),
             last_cpu: AtomicCpuId::default(),
             real_time: {
@@ -432,7 +596,7 @@ impl SchedAttr {
     ///
     /// Specifically for real-time policies, if the new policy doesn't
     /// specify a base slice factor for RR, the old one will be kept.
-    pub(crate) fn set_policy(&self, policy: SchedPolicy) {
+    fn apply_policy(&self, policy: SchedPolicy) {
         self.policy.set(policy, |policy| match policy {
             SchedPolicy::RealTime { rt_prio, rt_policy } => {
                 self.real_time.update(rt_prio.get(), rt_policy);
@@ -442,7 +606,8 @@ impl SchedAttr {
         });
     }
 
-    pub(crate) fn update_policy<T>(&self, f: impl FnOnce(&mut SchedPolicy) -> T) -> T {
+    #[cfg(ktest)]
+    fn apply_policy_update<T>(&self, f: impl FnOnce(&mut SchedPolicy) -> T) -> T {
         self.policy.update(|policy| {
             let ret = f(policy);
             match *policy {
@@ -454,6 +619,12 @@ impl SchedAttr {
             }
             ret
         })
+    }
+
+    // Controlled queue fixtures construct non-live policies without sleeping.
+    #[cfg(ktest)]
+    pub(crate) fn set_policy(&self, policy: SchedPolicy) {
+        self.apply_policy(policy);
     }
 
     pub(crate) fn last_cpu(&self) -> Option<CpuId> {
@@ -468,37 +639,64 @@ impl SchedAttr {
 impl Scheduler for ClassScheduler {
     fn enqueue(&self, task: Arc<Task>, flags: EnqueueFlags) -> Option<CpuId> {
         let thread = task.as_thread()?.clone();
-
-        let (still_in_rq, cpu) = {
-            let selected_cpu_id = self.select_cpu(&thread, flags);
-
-            if let Err(task_cpu_id) = task.cpu().set_if_is_none(selected_cpu_id) {
-                debug_assert!(flags != EnqueueFlags::Spawn);
-                (true, task_cpu_id)
-            } else {
-                (false, selected_cpu_id)
+        loop {
+            let selected = self.select_cpu(&thread, flags);
+            let cpu = match task.cpu().set_if_is_none(selected) {
+                Ok(()) => {
+                    let initial_cpu = (flags == EnqueueFlags::Spawn
+                        && thread.sched_attr().last_cpu().is_none())
+                    .then_some(selected);
+                    return self.publish_detached(
+                        (task, thread),
+                        Some(flags),
+                        None,
+                        None,
+                        initial_cpu,
+                    );
+                }
+                Err(owner) => owner,
+            };
+            let mut rq = self.rqs[cpu.as_usize()].lock();
+            // Completion may have published sleep or moved a woken waiter
+            // while we waited. Never claim None back onto this stale CPU.
+            if task.cpu().get() != Some(cpu) {
+                continue;
             }
-        };
-
-        let mut rq = self.rqs[cpu.as_usize()].lock();
-
-        // Note: call set_if_is_none again to prevent a race condition.
-        if still_in_rq && task.cpu().set_if_is_none(cpu).is_err() {
+            if flags == EnqueueFlags::Wake && rq.latch_outgoing_wake(&task) {
+                // A merged wake is not permission to preempt the reserved
+                // incoming task (which may be higher-priority RT). Retry
+                // consumes its latch naturally; completed publication makes
+                // the actual destination priority decision after release.
+                return None;
+            }
+            // The owning queue/current/transit token already holds this task.
             return None;
         }
+    }
 
-        // Preempt if the new task has a higher priority.
-        let should_preempt = rq
-            .current
-            .as_ref()
-            .is_none_or(|((_, rq_current_thread), _)| {
-                thread.sched_attr().policy() < rq_current_thread.sched_attr().policy()
-            });
+    fn finish_switch(&self, previous: &Arc<Task>) -> bool {
+        let guard = disable_local();
+        self.rqs[guard.current_cpu().as_usize()]
+            .lock()
+            .finish_switch_at(previous, CpuClockSample::read())
+    }
 
-        thread.sched_attr().set_last_cpu(cpu);
-        rq.enqueue_entity((task, thread), Some(flags));
-
-        should_preempt.then_some(cpu)
+    fn complete_switch(&self, previous: &Arc<Task>) -> Option<CpuId> {
+        let guard = disable_local();
+        let action = {
+            let mut rq = self.rqs[guard.current_cpu().as_usize()].lock();
+            rq.complete_switch_at(previous, CpuClockSample::read())
+        };
+        match action {
+            CompletedSwitch::None => None,
+            CompletedSwitch::Publish(entity, debt) => {
+                self.publish_detached(entity, Some(EnqueueFlags::Wake), debt, None, None)
+            }
+            CompletedSwitch::Dormant(task, request, outcome) => {
+                affinity::finish_unclaimed(&task, &request, outcome);
+                None
+            }
+        }
     }
 
     fn mut_local_rq_with(&self, f: &mut dyn FnMut(&mut dyn LocalRunQueue)) {
@@ -519,15 +717,20 @@ impl ClassScheduler {
         ClassScheduler {
             rqs: all_cpus().map(class_rq).collect(),
             last_chosen_cpu: AtomicCpuId::default(),
+            #[cfg(ktest)]
+            round_robin_selections: core::sync::atomic::AtomicUsize::new(0),
         }
     }
 
     // TODO: Implement a better algorithm and replace the current naive implementation.
     fn select_cpu(&self, thread: &Thread, flags: EnqueueFlags) -> CpuId {
-        if let Some(last_cpu) = thread.sched_attr().last_cpu() {
+        let affinity = thread.atomic_cpu_affinity().load(Ordering::Relaxed);
+        if let Some(last_cpu) = thread.sched_attr().last_cpu()
+            && affinity.contains(last_cpu)
+        {
             return last_cpu;
         }
-        debug_assert!(flags == EnqueueFlags::Spawn);
+        let _ = flags;
 
         let guard = disable_local();
 
@@ -545,7 +748,6 @@ impl ClassScheduler {
             }
         };
 
-        let affinity = thread.atomic_cpu_affinity().load(Ordering::Relaxed);
         match self.last_chosen_cpu.get() {
             Some(cpu) => {
                 // Perform a round-robin selection starting after the last chosen CPU.
@@ -557,6 +759,8 @@ impl ClassScheduler {
             None => affinity.iter().for_each(test_candidate),
         }
 
+        #[cfg(ktest)]
+        self.round_robin_selections.fetch_add(1, Ordering::Relaxed);
         self.last_chosen_cpu.set_anyway(selected);
         selected
     }
@@ -578,25 +782,132 @@ impl ClassScheduler {
 impl PerCpuClassRqSet {
     fn new(cpu: CpuId) -> Self {
         Self {
+            cpu,
             stop: stop::StopClassRq::new(),
             real_time: real_time::RealTimeClassRq::new(cpu),
             fair: fair::FairClassRq::new(cpu),
             idle: idle::IdleClassRq::new(),
             throttled: Vec::new(),
+            throttled_reserved: 0,
             current: None,
             dequeued: None,
+            dequeue_exiting: false,
+            switching: None,
         }
     }
 
-    fn bandwidth_segment_mut(&mut self) -> Option<&mut (SchedEntity, CurrentRuntime)> {
-        debug_assert!(self.current.is_none() || self.dequeued.is_none());
-        self.current.as_mut().or(self.dequeued.as_mut())
+    fn should_preempt_for(&self, thread: &Thread) -> bool {
+        self.current.as_ref().is_none_or(|((_, current), _)| {
+            thread.sched_attr().policy() < current.sched_attr().policy()
+        })
     }
 
-    fn settle_bandwidth(&mut self, now: CpuClockSample) {
-        if let Some(((task, _), rt)) = self.bandwidth_segment_mut() {
-            rt.settle_bandwidth(task, now);
+    fn latch_outgoing_wake(&mut self, task: &Arc<Task>) -> bool {
+        let previous = self
+            .switching
+            .as_mut()
+            .map(|pending| &mut pending.previous)
+            .or(self.dequeued.as_mut());
+        let Some(previous) = previous.filter(|old| Arc::ptr_eq(&old.entity.0, task)) else {
+            return false;
+        };
+        if let OutgoingState::Waiting { woken } = &mut previous.state {
+            *woken = true;
         }
+        // Exiting never becomes runnable; Runnable already owns its wake.
+        true
+    }
+
+    fn settle_runtime(&mut self, now: CpuClockSample) {
+        let executing = if let Some(pending) = self.switching.as_mut().filter(|p| !p.finished) {
+            Some((&pending.previous.entity.0, &mut pending.previous.runtime))
+        } else if let Some(((task, _), rt)) = self.current.as_mut() {
+            Some((&*task, rt))
+        } else {
+            self.dequeued
+                .as_mut()
+                .map(|old| (&old.entity.0, &mut old.runtime))
+        };
+        if let Some((task, rt)) = executing
+            && let Some(delta) = rt.settle_runtime(task, now)
+        {
+            self.fair.charge_current(task, delta);
+        }
+    }
+
+    fn finish_switch_at(&mut self, previous: &Arc<Task>, now: CpuClockSample) -> bool {
+        let Some(pending) = self.switching.as_ref() else {
+            // Bootstrap / a scheduler without a class-accounted outgoing task.
+            return false;
+        };
+        assert!(!pending.finished);
+        assert!(Arc::ptr_eq(&pending.previous.entity.0, previous));
+        self.settle_runtime(now);
+        let fair_debt = self.fair.debt(previous).ok();
+        let pending = self.switching.as_mut().unwrap();
+        pending.fair_debt = fair_debt;
+        if let Some(selection) = pending.fair.take() {
+            self.fair.commit(selection);
+        } else {
+            self.fair.finish_current();
+        }
+        let (incoming, runtime) = self.current.as_mut().unwrap();
+        *runtime = CurrentRuntime::new_at(&incoming.0, now);
+        pending.finished = true;
+        // This is a physical completion checkpoint, not a cancellable
+        // admission. A shared-owner tail may exhaust quota after selection.
+        // Request another decision only after OSTD's switch cleanup is safe.
+        !task_cpu_eligible(&incoming.0, now.boottime_ns)
+            || affinity::needs_migration(&incoming.0, self.cpu)
+    }
+
+    fn complete_switch_at(&mut self, previous: &Arc<Task>, now: CpuClockSample) -> CompletedSwitch {
+        let Some(pending) = self.switching.take() else {
+            return CompletedSwitch::None;
+        };
+        assert!(pending.finished);
+        assert!(Arc::ptr_eq(&pending.previous.entity.0, previous));
+        self.settle_runtime(now);
+        let request = affinity::active_request(previous);
+        match pending.previous.state {
+            OutgoingState::Runnable if request.is_none() => {
+                if task_cpu_eligible(previous, now.boottime_ns) {
+                    self.enqueue_entity(pending.previous.entity, None);
+                } else {
+                    self.park_throttled(pending.previous.entity.0);
+                }
+                CompletedSwitch::None
+            }
+            OutgoingState::Runnable | OutgoingState::Waiting { woken: true } => {
+                CompletedSwitch::Publish(pending.previous.entity, pending.fair_debt)
+            }
+            OutgoingState::Waiting { woken: false } | OutgoingState::Exiting => {
+                previous.cpu().set_to_none();
+                if let Some(request) = request {
+                    let outcome = if matches!(pending.previous.state, OutgoingState::Exiting) {
+                        Err(crate::prelude::Errno::ESRCH)
+                    } else {
+                        Ok(())
+                    };
+                    CompletedSwitch::Dormant(previous.clone(), request, outcome)
+                } else {
+                    CompletedSwitch::None
+                }
+            }
+        }
+    }
+
+    fn park_throttled(&mut self, task: Arc<Task>) {
+        let required = self
+            .throttled
+            .len()
+            .checked_add(self.throttled_reserved)
+            .and_then(|count| count.checked_add(1))
+            .expect("throttled capacity overflow");
+        if required > self.throttled.capacity() {
+            self.throttled.reserve(required - self.throttled.len());
+        }
+        self.throttled.push(task);
     }
 
     fn replenish_throttled(&mut self, now: CpuClockSample) {
@@ -619,30 +930,39 @@ impl PerCpuClassRqSet {
         }
     }
 
-    fn pick_next_entity(&mut self, now: CpuClockSample) -> Option<SchedEntity> {
+    fn pick_next_entity(&mut self, now: CpuClockSample) -> Option<SelectedEntity> {
         self.replenish_throttled(now);
         if let Some(task) = self.stop.pick_next() {
-            return task.as_thread().cloned().map(|thread| (task, thread));
+            return task
+                .as_thread()
+                .cloned()
+                .map(|thread| SelectedEntity::other((task, thread)));
         }
         for _ in 0..self.real_time.len() {
             let task = self.real_time.pick_next().unwrap();
             if task_cpu_eligible(&task, now.boottime_ns) {
                 let thread = task.as_thread().unwrap().clone();
-                return Some((task, thread));
+                return Some(SelectedEntity::other((task, thread)));
             }
-            self.throttled.push(task);
+            self.park_throttled(task);
         }
         for _ in 0..self.fair.len() {
-            let task = self.fair.pick_next().unwrap();
+            let (task, selection) = self.fair.select_next().unwrap();
             if task_cpu_eligible(&task, now.boottime_ns) {
                 let thread = task.as_thread().unwrap().clone();
-                return Some((task, thread));
+                return Some(SelectedEntity {
+                    entity: (task, thread),
+                    fair: Some(selection),
+                });
             }
-            self.throttled.push(task);
+            self.fair.cancel(selection);
+            self.park_throttled(task);
         }
-        self.idle
-            .pick_next()
-            .and_then(|task| task.as_thread().cloned().map(|thread| (task, thread)))
+        self.idle.pick_next().and_then(|task| {
+            task.as_thread()
+                .cloned()
+                .map(|thread| SelectedEntity::other((task, thread)))
+        })
     }
 
     fn enqueue_entity(&mut self, (task, thread): SchedEntity, flags: Option<EnqueueFlags>) {
@@ -667,7 +987,16 @@ impl PerCpuClassRqSet {
 
     fn try_pick_next_with_clock(
         &mut self,
+        read_clock: impl FnMut() -> CpuClockSample,
+    ) -> Option<&Arc<Task>> {
+        let physical = Task::current();
+        self.try_pick_next_at(read_clock, physical.as_ref().map(|task| task.as_ref()))
+    }
+
+    fn try_pick_next_at(
+        &mut self,
         mut read_clock: impl FnMut() -> CpuClockSample,
+        physical: Option<&Task>,
     ) -> Option<&Arc<Task>> {
         // OSTD's might_preempt() can call try_pick_next() directly after a
         // runnable task is enqueued, without a preceding update_current().
@@ -676,34 +1005,82 @@ impl PerCpuClassRqSet {
         // state. Charge before pick_next_entity() checks another task's
         // eligibility and potentially advances a shared cgroup ancestor.
         let mut now = read_clock();
+        if self.switching.is_some() {
+            self.settle_runtime(now);
+            return None;
+        }
         if let Some((_, rt)) = &mut self.current {
             rt.update_at(now.cycles);
         }
-        self.settle_bandwidth(now);
-        while let Some(next) = self.pick_next_entity(now) {
+        self.settle_runtime(now);
+        if self
+            .dequeued
+            .as_ref()
+            .is_some_and(|old| matches!(old.state, OutgoingState::Waiting { woken: true }))
+        {
+            // A wake during a no-next Retry must restore the same task: OSTD
+            // returns via its ptr_eq DoNothing path, with no physical switch.
+            let old = self.dequeued.take().unwrap();
+            self.current = Some((old.entity, old.runtime));
+            return self.current.as_ref().map(|((task, _), _)| task);
+        }
+        while let Some(mut next) = self.pick_next_entity(now) {
             let cut = read_clock();
             // The dispatcher still has this original running owner. Close
             // its tail at exactly the next segment's start before dropping
             // the runtime or advancing any shared ancestor to this time.
-            self.settle_bandwidth(cut);
+            self.settle_runtime(cut);
             // Selection can straddle a window or spend the remaining quota.
             // The candidate must still be eligible after that actual debit.
-            if !task_cpu_eligible(&next.0, cut.boottime_ns) {
-                self.throttled.push(next.0);
+            if !task_cpu_eligible(&next.entity.0, cut.boottime_ns) {
+                if let Some(selection) = next.fair.take() {
+                    self.fair.cancel(selection);
+                }
+                self.park_throttled(next.entity.0);
                 now = cut;
                 continue;
             }
-            // We guarantee that a task can appear at once in a `PerCpuClassRqSet`. So, the `next` cannot be the same
-            // as the current task here.
-            let runtime = CurrentRuntime::new_at(&next.0, cut);
-            // The old segment, including any dequeue-to-selection retries,
-            // was settled through `cut`; the installed runtime starts there.
-            self.dequeued = None;
-            if let Some((old, _)) = self.current.replace((next, runtime)) {
-                if task_cpu_eligible(&old.0, cut.boottime_ns) {
-                    self.enqueue_entity(old, None);
+            let previous = self
+                .current
+                .take()
+                .map(|(entity, runtime)| SwitchedOut {
+                    entity,
+                    runtime,
+                    state: OutgoingState::Runnable,
+                })
+                .or_else(|| self.dequeued.take());
+            let physical_previous = previous.as_ref().is_some_and(|old| {
+                physical.is_some_and(|physical| core::ptr::eq(physical, old.entity.0.as_ref()))
+            });
+            let runtime = CurrentRuntime::new_at(&next.entity.0, cut);
+            self.current = Some((next.entity, runtime));
+            if physical_previous {
+                // Keep the FAIR selection pending and previous out of every
+                // selectable queue until OSTD has really saved its context.
+                self.switching = Some(PendingSwitch {
+                    previous: previous.unwrap(),
+                    fair: next.fair.take(),
+                    finished: false,
+                    fair_debt: None,
+                });
+            } else {
+                // Bootstrap has no class-accounted outgoing task. Standalone
+                // queue fixtures likewise do not run their tasks in OSTD.
+                if let Some(selection) = next.fair.take() {
+                    self.fair.commit(selection);
                 } else {
-                    self.throttled.push(old.0);
+                    self.fair.finish_current();
+                }
+                if let Some(old) = previous {
+                    if matches!(old.state, OutgoingState::Runnable) {
+                        if task_cpu_eligible(&old.entity.0, cut.boottime_ns) {
+                            self.enqueue_entity(old.entity, None);
+                        } else {
+                            self.park_throttled(old.entity.0);
+                        }
+                    } else {
+                        old.entity.0.cpu().set_to_none();
+                    }
                 }
             }
             return self.current.as_ref().map(|((task, _), _)| task);
@@ -712,6 +1089,15 @@ impl PerCpuClassRqSet {
     }
 
     fn update_current_at(&mut self, flags: UpdateFlags, now: CpuClockSample) -> bool {
+        if let Some(pending) = self.switching.as_mut().filter(|p| !p.finished) {
+            pending.previous.runtime.update_at(now.cycles);
+            self.settle_runtime(now);
+            return false;
+        }
+        if matches!(flags, UpdateFlags::Wait | UpdateFlags::Exit) {
+            self.dequeue_exiting = flags == UpdateFlags::Exit;
+        }
+
         // Settle the running task FIRST. Replenishment invokes
         // task_cpu_eligible() and can advance the same cgroup or a common
         // ancestor's quota window before the retained owner sees a tick that
@@ -721,7 +1107,7 @@ impl PerCpuClassRqSet {
         if let Some((_, rt)) = &mut self.current {
             rt.update_at(now.cycles);
         }
-        self.settle_bandwidth(now);
+        self.settle_runtime(now);
         let mut quota_exhausted = false;
         let (should_preempt, mut lookahead) = if let Some(((task, cur), rt)) = &mut self.current {
             quota_exhausted = !task_cpu_eligible(task, now.boottime_ns);
@@ -747,7 +1133,10 @@ impl PerCpuClassRqSet {
             lookahead = 4;
         }
 
-        quota_exhausted
+        self.current
+            .as_ref()
+            .is_some_and(|(entity, _)| affinity::needs_migration(&entity.0, self.cpu))
+            || quota_exhausted
             || should_preempt
             || (lookahead >= 1 && !self.stop.is_empty())
             || (lookahead >= 2 && !self.real_time.is_empty())
@@ -756,12 +1145,20 @@ impl PerCpuClassRqSet {
     }
 
     fn dequeue_current_at(&mut self, now: CpuClockSample) -> Option<Arc<Task>> {
-        self.settle_bandwidth(now);
+        self.settle_runtime(now);
         let current = self.current.take()?;
         debug_assert!(self.dequeued.is_none());
-        current.0.0.schedule_info().cpu.set_to_none();
+        assert!(self.switching.is_none());
         let task = current.0.0.clone();
-        self.dequeued = Some(current);
+        self.dequeued = Some(SwitchedOut {
+            entity: current.0,
+            runtime: current.1,
+            state: if self.dequeue_exiting {
+                OutgoingState::Exiting
+            } else {
+                OutgoingState::Waiting { woken: false }
+            },
+        });
         Some(task)
     }
 }

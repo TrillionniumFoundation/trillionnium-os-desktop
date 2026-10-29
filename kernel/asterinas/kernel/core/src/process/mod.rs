@@ -6,6 +6,7 @@ mod execve;
 mod exit;
 mod kill;
 mod namespace;
+mod oom_adjustment;
 mod pid_file;
 pub(crate) mod pid_table;
 pub mod posix_thread;
@@ -34,10 +35,11 @@ pub(crate) use namespace::{
     nsproxy::{ContextSetNsAdminApi, NsProxy, NsProxyBuilder, check_unsupported_ns_flags},
     unshare::ContextUnshareAdminApi,
 };
+pub(crate) use oom_adjustment::OomScoreAdj;
 pub(crate) use pid_file::PidFile;
-pub use process::Process;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use process::KernelControlBackend;
+pub use process::Process;
 pub(crate) use process::{
     ExitCode, INIT_PROCESS_PID, JobControl, Pgid, Pid, ProcessGroup, ProcessImageKey,
     ReapedChildrenStats, Session, Sid, Terminal, broadcast_signal_async, enqueue_signal_async,

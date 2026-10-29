@@ -3,6 +3,7 @@
 pub(crate) mod fault;
 pub(crate) mod kernel;
 pub(crate) mod raw;
+pub(crate) mod seccomp;
 pub(crate) mod user;
 
 use core::{any::Any, fmt::Debug};
@@ -14,4 +15,10 @@ pub(crate) trait Signal: Send + Sync + Debug + Any {
     fn num(&self) -> SigNum;
     /// Returns the siginfo_t that gives more details about a signal.
     fn to_info(&self) -> siginfo_t;
+
+    /// Forced synchronous faults also apply the default action to init.
+    /// User-supplied siginfo bytes cannot opt into this behavior.
+    fn is_forced(&self) -> bool {
+        false
+    }
 }

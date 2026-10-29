@@ -25,8 +25,9 @@ pub(super) fn sys_sendmmsg(
         sockfd, mmsghdrs_addr, count, flags
     );
 
-    if !flags.is_empty() {
-        warn!("sendmmsg flags {:?} are not supported", flags);
+    let unsupported_flags = flags - SendFlags::MSG_NOSIGNAL;
+    if !unsupported_flags.is_empty() {
+        warn!("sendmmsg flags {:?} are not supported", unsupported_flags);
     }
 
     let file = {

@@ -12,7 +12,7 @@ use ostd::{
 };
 use spin::Once;
 
-use super::{PosixThread, ThreadLocal};
+use super::{PosixThread, ThreadLocal, seccomp};
 use crate::{
     fs::{file::file_table::FileTable, thread_info::ThreadFsInfo},
     prelude::*,
@@ -21,7 +21,7 @@ use crate::{
         posix_thread::{ThreadName, thread_local::SuppUserContext},
         signal::{sig_mask::AtomicSigMask, sig_queues::SigQueues},
     },
-    sched::{Nice, SchedPolicy},
+    sched::{SchedAttr, SchedPolicy, UserSchedSnapshot},
     thread::{Thread, Tid, task},
     time::{TimerManager, clocks::ProfClock},
     vm::vmar::VmarHandle,
@@ -44,11 +44,12 @@ pub(crate) struct PosixThreadBuilder {
     fs: Option<Arc<ThreadFsInfo>>,
     sig_mask: AtomicSigMask,
     sig_queues: SigQueues,
-    sched_policy: SchedPolicy,
+    user_sched_snapshot: Option<UserSchedSnapshot>,
     supp_user_context: SuppUserContext,
     user_ns: Option<Arc<UserNamespace>>,
     ns_proxy: Option<Arc<NsProxy>>,
     default_timer_slack_ns: u64,
+    seccomp: seccomp::Policy,
     #[cfg(feature = "g1d-trusted-control")]
     initial_user_startup: Option<Box<dyn FnOnce(&Context<'_>) + Send>>,
 }
@@ -74,14 +75,20 @@ impl PosixThreadBuilder {
             fs: None,
             sig_mask: AtomicSigMask::new_empty(),
             sig_queues: SigQueues::new(),
-            sched_policy: SchedPolicy::Fair(Nice::default()),
+            user_sched_snapshot: None,
             supp_user_context: SuppUserContext::new(),
             user_ns: None,
             ns_proxy: None,
             default_timer_slack_ns: 50_000, // 50 usec default slack
+            seccomp: seccomp::Policy::default(),
             #[cfg(feature = "g1d-trusted-control")]
             initial_user_startup: None,
         }
+    }
+
+    pub(crate) fn user_sched_snapshot(mut self, snapshot: UserSchedSnapshot) -> Self {
+        self.user_sched_snapshot = Some(snapshot);
+        self
     }
 
     pub(crate) fn process(mut self, process: Weak<Process>) -> Self {
@@ -164,7 +171,17 @@ impl PosixThreadBuilder {
         self
     }
 
-    pub(crate) fn build(self) -> Arc<Task> {
+    pub(crate) fn seccomp(mut self, policy: seccomp::Policy) -> Self {
+        self.seccomp = policy;
+        self
+    }
+
+    pub(crate) fn build(self) -> Result<Arc<Task>> {
+        // Finish budget, physical-frame and kernel-mapping admission before
+        // entering the infallible cyclic task/thread ownership construction.
+        let stack = ostd::task::PreparedTaskStack::try_new(
+            crate::fs::cgroupfs::charge_current_kernel_stack,
+        )?;
         let Self {
             tid,
             user_ctx,
@@ -178,11 +195,12 @@ impl PosixThreadBuilder {
             fs,
             sig_mask,
             sig_queues,
-            sched_policy,
+            user_sched_snapshot,
             supp_user_context,
             user_ns,
             ns_proxy,
             default_timer_slack_ns,
+            seccomp,
             #[cfg(feature = "g1d-trusted-control")]
             initial_user_startup,
         } = self;
@@ -196,7 +214,11 @@ impl PosixThreadBuilder {
         let fs = fs
             .unwrap_or_else(|| Arc::new(ThreadFsInfo::new(ns_proxy.mnt_ns().new_path_resolver())));
 
-        Arc::new_cyclic(|weak_task| {
+        let sched_attr = match user_sched_snapshot {
+            Some(snapshot) => SchedAttr::from_user_snapshot(snapshot),
+            None => SchedAttr::new(SchedPolicy::default()),
+        };
+        Ok(Arc::new_cyclic(|weak_task| {
             let posix_thread = {
                 let prof_clock = ProfClock::new();
                 let virtual_timer_manager = TimerManager::new(prof_clock.user_clock().clone());
@@ -210,6 +232,7 @@ impl PosixThreadBuilder {
                     tid: AtomicU32::new(tid),
                     name: Mutex::new(thread_name),
                     credentials,
+                    seccomp: Mutex::new(seccomp),
                     fs: RwMutex::new(fs.clone()),
                     file_table: Mutex::new(Some(file_table.clone_ro())),
                     sig_mask,
@@ -234,7 +257,7 @@ impl PosixThreadBuilder {
                 weak_task.clone(),
                 posix_thread,
                 cpu_affinity,
-                sched_policy,
+                sched_attr,
             ));
 
             let thread_local = ThreadLocal::new(
@@ -252,9 +275,10 @@ impl PosixThreadBuilder {
                 user_ctx,
                 thread,
                 thread_local,
+                stack,
                 #[cfg(feature = "g1d-trusted-control")]
                 initial_user_startup,
             )
-        })
+        }))
     }
 }

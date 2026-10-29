@@ -62,8 +62,8 @@ keys, deploy a clock/frontier, authenticate an approval, or enable production.
 | OS identity | Caller supplies full lowercase 40-hex HEAD and tree; both exactly match the checkout |
 | Hepta identity | Builder receives full HEAD/tree explicitly; verifier uses that single manifest pin |
 | Clean checkouts | No tracked modifications or nonignored untracked files; no assume-unchanged or skip-worktree flags that can hide changes |
-| Original history | `995b6fb9ef73ada7c3348b01deb28940a2c4a2d1` exists as a commit and `git merge-base --is-ancestor` returns success against Hepta HEAD |
-| Shallow clone | Allowed only when that exact ancestry relation is actually provable; missing objects and cut/unknown ancestry fail |
+| Original history | Historical V1–3 require the original `git merge-base --is-ancestor` proof; V4 verifies a real SHA-1 parent chain from exact `995b6fb9ef73ada7c3348b01deb28940a2c4a2d1` to HEAD |
+| Shallow clone | Historical schemas 1–3 allow a provable exact ancestry relation; current V4 requires nonshallow plus the bounded object proof below |
 | Required sources | Every fixed role in the reviewed map has a tracked regular blob; record its Git blob, SHA256 and byte length |
 | Notes target golden | The OS and Hepta mapped files have exactly the same bytes, including whitespace; record SHA256 and byte length |
 | Notes bootstrap golden | The same exact-byte check, independently of the target golden |
@@ -74,6 +74,52 @@ The tool does not fetch history automatically. If the original history cannot be
 proved, obtain sufficient original repository history and repeat the check; do
 not substitute a new root commit, copy the owner source into a fresh repository,
 or use object existence as an ancestry proof.
+
+Current V4 uses Git 2.43+ with lazy fetching disabled. A deterministic BFS reads
+real commit bodies, rehashes their Git identities, uses LF-only separators and accepts only the tree's
+following continuous parent-header block. Late parent/tree lines, wrong object
+types, bad framing and bad hashes fail. It selects the first real owner-to-HEAD
+chain; missing candidate side commits may stay unknown. Failure to find that
+chain within 16,384 inspected objects fails unproven; headers over 1 MiB fail.
+The owner is verified, not replaced with a fabricated root. V4 explicitly
+rejects graft-file/replacement-ref existence; V1–3 retain their original rules.
+
+This corrects an unadopted all-parent proposal: a legitimate merge can join an
+older mainline to the exact owner as its second parent. HEAD is still a real
+owner descendant even when the other history is incomplete. The old proposal's
+source/tests/real rejection evidence remains preserved. V4 does not invoke the
+old `merge-base` method, whose unrelated-history reads can reject that join.
+
+All selected-chain trees, the owner tree and current OS tree are separate
+closure roots. `rev-list` must exit zero without missing markers or stderr;
+Git's zero exit can coexist with a wrong-kind object error. Every listed
+tree/blob is streamed, type/size/framing checked and Git SHA-1 rehashed. Streaming
+tree-entry parsing binds each root to tree type and each non-gitlink child to
+the exact mode-derived tree/blob type and the enumerated closure. Conflicting
+types, omitted children, malformed mode/name/NUL/20-byte-ID framing and entry
+headers over 1 MiB fail. Blob bodies are not retained. The first selected chain's
+missing tree/blob fails without alternative chain search. Local alternates may
+supply genuine objects. Complete current
+HEAD/index path sets, stage-zero entries, H flags, actual Git file modes (owner
+execute bit) and bytes
+and symlink link bodies are independently verified before and after reads;
+parent symlinks are never followed. `current_source_proof` binds inventory hashes.
+
+V4 `original_history_proof.method` is `verified_sha1_parent_path`.
+`git_object_closure.hepta` has `proof_version: 2`,
+`scope: selected_owner_ancestry_path`, ordered commits, exact parent indices and
+edge hashes. Unselected merge parent OIDs and earlier owner parents are listed
+as unverified history. `missing_objects: 0` is only this selected closure;
+`all_parent_graph_verified: false`, `whole_repository_history_complete: null`
+and `earlier_history: not_verified` prohibit a whole-repository claim.
+`tree_blob_entry_types_verified` covers these local tree/blob edges. Canonical
+160000 gitlinks remain external, unverified commit edges: the receipt records
+their count and canonical edge digest, `gitlink_target_objects_verified: false`
+and `gitlink_subrepository_history: not_verified`; it never requires all objects
+of a subrepository to call the selected local tree/blob closure complete.
+Historical readers and receipt shapes retain their original behavior. Source
+identity and object availability still do not establish successful compilation,
+runtime/GUI/native qualification or production authorization.
 
 The existing `UPSTREAM_CONTRACT.json`, `OBJECTIVE_UPSTREAM_CONTRACT.json`,
 `OBJECTIVE_HISTORY_CONTRACT.json` and `CPU_UPSTREAM_CONTRACT.json` remain intact.
@@ -189,3 +235,311 @@ module to construct controllable Git histories. The production CLI has no
 history-owner override and always requires the original full commit above.
 These tests qualify the release-profile tool; they do not stand in for either
 project's source qualification or an original-owner end-to-end transaction.
+
+## Schema 5: fixed current composition
+
+V5 is a separate closed contract: 402 Desktop roles, 271 original Hepta roles
+and five unchanged golden pairs. Its code-owned literal role sets and canonical
+map seal bind `organ_source_map_v5.json`; a V4 map tagged five is unsupported.
+The 354/260 reviewed draft paths remain intact. The added paths cover the union
+of OOM's twenty changed owners and strict182 prerequisites absent from that
+draft, three V5 release inputs, and Hepta's Root failure-report owner, plus ten CLI producer dependencies. Each path
+has one role; missing, aliased or arbitrary role/path shapes cannot qualify.
+Purpose and source provenance accompany the source-admission review.
+
+V5 uses the same typed selected-owner-chain and whole-current-source proof
+described below for V4. The V1–4 map bytes, original receipt provenance, CLI
+routes and V4 eighteen-owner host dispatch remain fixed. The previous current
+V4 declaration is preserved as `2026-10-27-organ-source-pre-v5-v4.json`.
+`check_current_contract_v5` validates only a strict V5 declaration before its
+single Hepta pin is emitted; actual source bytes and ancestry still require
+both repositories and the external final OS HEAD/tree binding.
+
+The current pair workflow explicitly requires schema five. Its seven ordered
+steps retain the original build/test commands and append `codex-rmcp-client`
+to the eighteen V4 owning packages. All existing profiles, locked inputs,
+deadlines, two test threads and zero retries remain. A child failure stops the
+dependent lane and preserves `qualification: none`. A successful source-only
+receipt neither claims host execution nor supplies production authority.
+
+Both existing workflow files keep automatic current entry points. The stable
+`source-profile-host` job summarizes a new six-partition oracle and rejects any
+failed, cancelled or skipped dependency. Each partition has its existing
+ten-minute limit: complete legacy, typed V4 and V5 suites, normal and optimized.
+The actual discovered case IDs must be an exact disjoint union; original 54
+legacy and 62 V4 case-ID seals are checked. No retries or skips are allowed.
+The original seven `CurrentWorkflowTests` now execute uniquely preserved V4
+caller blocks. New V5 tests execute the actual current pin reader, source guard,
+complete bash dispatcher and disabled-production refusal. Neither fixture lane
+executes Cargo products or replaces actual final-pair qualification.
+
+Historical V4 workflow jobs run only on explicit manual dispatch with a full
+forty-character lowercase `historical_os_ref`. They check out that historical
+Desktop and consume its then-matching current manifest and Hepta pin. Blank
+dispatch selects current V5; there is no fallback from V5 to a historical map.
+Do not select an old archive inside a new checkout and present it as a historical
+qualification. Branch protection is not changed by this schema transition.
+
+The seven production inputs remain literal disabled values. Reference Model
+authority accepts `runtime.codex.turn_start`, an admitted Fleet peer and
+`codex-app-server:<positive u64>`; the reference Secrets authority fixes
+`secrets.read`. Those contracts cannot issue Notes/Device
+`runtime.agentd.production_operation` grants. Their configuration is not evidence
+that the original protected clock, frontier, keyring/revocation, recovered writer
+and current authorization cut form the required production chain.
+
+## Schema 4: closed expanded source and owning-package contract
+
+The historical schema-4 candidate has its own literal role sets and
+`support/release/organ_source_map_v4.json`. Its current 312 OS / 201 Hepta roles
+preserve all V3 paths and add the reviewed CPU/GDT/Unix owners, observation and
+checkpoint diagnostic paths, thread-store fixtures, compression and rollout
+components, and release tool/map/oracle/document ownership. It is a source
+contract with an explicit current-only CI entry point. A source manifest still
+records `source-only`; separate real receipts establish each runtime lane.
+The nine-role retirement extension names the finalized page-table activation,
+managed-root retirement, real charged-root oracle, technical contract, new Unix
+profile/oracle/contract and CAB84 archive/exporter. Other changed task/thread and
+marker files reuse their existing roles. The original 300/201 tool receipts stay
+frozen under their own source identities. This source extension does not claim
+a completed retirement or native matrix. Future OAuth additions wait for actual
+finalized files; the checker never tolerates a missing file to reserve a future
+role.
+
+The final three OS roles bind `organ-current-pair.yml`,
+`organ-release-profile.yml` and the exact previous current V3 manifest archived
+as `2026-10-26-organ-source-1138-f397-v3.json`. The archive preserves SHA256
+`805fdc48788d467d3eef27f4f573ee441d3250258e019f3e67a2c60336e77e3f`;
+none of the older archives is overwritten or used as a new runtime receipt.
+
+A code-owned canonical-map SHA fixes the whole V4 role-to-path and golden
+mapping. The ordinary structural checks still reject unknown/omitted roles,
+invalid or duplicate paths and duplicate JSON keys first. `create_manifest`
+then verifies the tracked OS V4 map has those same reviewed contents. Records
+are read from regular committed blobs, with exact worktree bytes, clean status,
+full identities and the original-history-owner ancestry proof for their schema.
+Neither an operator-selected path/hash nor an ancestry waiver is introduced.
+V1–3 shallow checkouts are usable only when their original ancestry proof
+succeeds. V4 rejects shallow metadata and requires its actual parent chain and
+selected object closure. Owner object existence alone never proves ancestry.
+
+The map contains repository paths, not a manifest hash. The manifest retains
+`os_identity_binding: explicit_caller_head_and_tree_in_verification_receipt`;
+committing a manifest changes the OS identity subsequently bound by the external
+receipt without making the manifest contain its own hash. This also permits the
+release checker, fixed V4 map and regressions to be explicit mandatory OS source
+roles. Creation writes new outputs outside both source repositories and never
+updates the current pin automatically.
+
+`check_current_contract` validates the current V4 declaration before CI emits a
+Hepta pin. It checks exact manifest fields, strict integer schema, complete
+commit/tree identities, the original history-owner declaration, fixed canonical
+map seal, exact role/path and golden sets, source digest/size shapes and the
+seven disabled production inputs. This is a structural preflight. Only
+`verify_manifest` with both repositories proves actual bytes, clean caller
+identities and original ancestry. A declaration cannot choose commands, owning
+packages, hash exceptions or an OS identity embedded in its own manifest.
+
+The historical V4 pair workflow requires schema 4 and dispatches its code-owned V4 map.
+The source-profile workflow still checks maps 1, 2 and 3, and additionally checks
+map 4 and the current contract. Both CI callers are mandatory source roles.
+Every mapped OS path can trigger the current pair job. Regression fixtures
+execute the actual CI Python blocks and bash command expansion over real
+temporary Git DAGs; bounded child programs exercise the real source verifier
+and host dispatcher without pretending to execute Rust packages in tool tests.
+
+The switch uses two commits: freeze all code/map/docs and the old-current
+archive, generate/review a candidate outside both repositories, then commit only
+the current manifest. The external verification receipt must be recreated for
+that final OS commit. The self-binding field above remains unchanged and the
+manifest never carries its own OS head/tree. Final tool/host/GUI qualification
+must refer to that exact final caller identity.
+
+V4's code-owned host test list is exactly the original thirteen V3 packages plus
+five directly tested owners: `codex-app-server-protocol`, `codex-thread-store`,
+`codex-core-plugins`, `codex-rollout`, and `codex-file-system`. The original three
+Hepta binary builds, profile/toolchain/lock rules and post-command source
+recheck remain. Node/SDK provenance and native/device/authority receipts are
+separate qualifications. No additional future OAuth owning package is inferred.
+
+The earlier ac96 Desktop / 97c Hepta pair actually passed seven host steps,
+2,821 Hepta cases with 55 skips, and three isolated GUI cases with 352 unselected
+cases. Those original receipts remain immutable; a newer pin requires fresh
+bindings. The GUI used an explicit qualification issuer and owned display and
+temporary storage. Its lost-reply and SIGKILL recovery observations do not
+qualify physical power loss, the native durable authority chain or production
+deployment inputs. The ordinary kernel surface remains query-only and all
+seven real production inputs remain disabled. The independently qualified b446
+kernel component is referenced under its actual source identity.
+
+V1, V2 and V3 remain separate historical contracts, including their maps,
+23/20/4, 41/43/5 and 274/146/5 source/golden counts respectively, their exact host
+command lists, and all archived manifest bytes. V4 keeps the same five goldens,
+nineteen automation migration roles and seven disabled production inputs.
+Historical artifacts continue to identify their own source/tool version; a new
+schema or source head cannot turn them into receipts for a later composition.
+Once a V4 release contract is frozen, later role/path expansions require a new
+reviewed schema rather than loosening that published acceptance set.
+
+
+## Required CLI producer for the corrected V5 candidate
+
+The undelivered V5 current contract now fixes 396 Desktop / 271 Hepta roles.
+Its ten new explicit Hepta roles bind the normal CLI manifest/build script,
+main/library/exec-server lifecycle sources, the RMCP package and original three
+remote integration tests/support, and the original Cargo binary resolver.
+The whole-current-source proof still binds all remaining transitive sources.
+
+`codex-rs/rmcp-client/tests/streamable_http_test_support.rs:338` starts the real
+`codex exec-server --listen ws://127.0.0.1:0` through the original
+`codex-utils-cargo-bin` resolver. `codex-rs/cli/Cargo.toml` declares package
+`codex-cli`, binary `codex`, normal `build.rs`, `src/main.rs` and `src/lib.rs`;
+`src/exec_server_telemetry.rs` owns the dispatched service lifecycle. These are
+unchanged original Hepta sources, not a replacement fixture executable.
+
+V5's required `hepta-build` step selects exactly this package/bin union:
+
+```sh
+cargo +1.95.0 build --manifest-path codex-rs/Cargo.toml \
+  -p codex-hepta-agentd --bin codex-hepta-agentd -p codex-cli --bin codex \
+  --profile dev-small --locked --offline
+```
+
+Run it in the exact original Hepta checkout with the same external target and
+profile as `just test`. The seven-step lane and nineteen test-owning packages
+remain unchanged; CLI is a required producer, not a twentieth test owner.
+Its failure stops Root/recovery builds and owning tests. Never inject an old
+executable, change a binary-resolution environment variable, filter the original
+remote tests, increase deadlines or turn retries on to qualify this dependency.
+
+The original 7673 nineteen-owner run retained 3,088 actual tests: 3,085 passed
+and three `streamable_http_remote` failures with the CLI producer absent.
+Its three binary builds passed. Those failed receipts stay failed. A separate
+later CLI build or three-case diagnostic cannot replace a complete successful
+seven-step final-pair receipt. This source-only update performs no Rust build,
+GUI transaction, native run or production activation.
+
+The frozen earlier source-only V5 snapshot is Desktop
+`f4cd75ea96ff452176758e9fb48d4842bf1be859` with Hepta
+`7673ea62fc019f97ad17d205ee1f81f96e0f47a0`, its original 396/261 map, exact tool
+and `60b7ecd2a57597ceb8825a616b7ee7f034a4ea3ec3acaa282e87547be5e9e244`
+manifest SHA256. Verify that historical snapshot using its f4cd tool and pins.
+The corrected current fixed 271-role tool refuses the old 261-role V5 shape;
+it does not claim latest-tool compatibility with that old V5 declaration.
+V1–4 maps, explicit routes and exact command lists remain unchanged. All seven
+production inputs remain disabled in both source-only snapshots.
+
+
+## XKB CI dependency successor and retained environment failures
+
+The new CI-only code baseline is Desktop
+`8b825fb742b4722259a7fd7b962565adf21d2fff`, tree
+`a4df7550ee172cd91535ce980a299526fb67c09f` (8,088 tracked paths),
+with Hepta `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`, tree
+`ff2372f10656d2e8f652b6ca1e6de03a075b9219` (9,214 paths).
+Relative to frozen Desktop `6487830799a6417b554bf06bedfbab99498196c0`,
+the code delta is only `libxkbcommon-x11-dev` in three Linux apt lists:
+one in `.github/workflows/a10-host.yml` and two in
+`.github/workflows/organ-current-pair.yml` (current V5 and historical V4).
+All three retain `libxkbcommon-dev`. The X11 package supplies the runtime
+and unversioned soname needed by the existing original X11 smoke. This source
+change has not installed a package or run CI, Rust, a product, GUI or native guest.
+The host dependency contract is in `support/ui/RUN.md`.
+
+The fixed V5 map remains 396 Desktop / 271 Hepta roles, five golden pairs and
+nineteen owning packages. Stage 4 still builds normal `codex-cli` / `codex`
+alongside `codex-hepta-agentd`; CLI remains a required producer. All original
+commands, test cases, budgets and zero-retry rules remain unchanged. All seven
+production inputs remain disabled. The current manifest retained from frozen
+6487 is not a source qualification for this changed tuple: the typed source
+manifest and external whole-source receipt must be rebound after documentation
+is committed. `MODULE_DOCUMENTATION_CURRENT.json` uses the code-baseline /
+documentation-successor convention; the final documentation HEAD/tree is bound
+externally, without a self-referential pin. Historical snapshots and results
+remain attached to their original sources.
+
+The actual original seven-step attempt 01 on frozen 6487 / 7673 failed at
+stage 1, `cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+--offline`, under Rust 1.88.0: Cargo exited 101 because the offline archive
+`ab_glyph 0.2.32` was unavailable. The wrapper exited 1; stages 2 through 7,
+new test cases, retained products, SDK, GUI and native guests did not execute.
+The actual sources before and after were unchanged. The independent failure
+audit is `work/goal-logs/release/final-v5-7673-seven-step-host-01/independent-terminal-audit.json`,
+SHA256 `1a4a2ed45adaa503727e43d7a274209d8376f29b22f9c0889375e0eece0f009e`.
+
+The separate cache repair attempt 01 also exited 1. It reported 43 completed
+archive publication steps; step 44 downloaded and retained
+`icu_properties_data 2.3.0` but failed to publish it because the default Cargo
+cache directory was absent. The disappearance's cause is unknown. The retained
+payload's checksum does not prove that publication or final offline resolution
+succeeded. Its independent failure binding is
+`work/goal-logs/release/ui-locked-cache-repair-01/independent-review-01/independent-failed-repair-binding.json`,
+SHA256 `b2f23e8f3533d95f41115ce303c4f585b2d76a035ea2600a10ab310cff46d78c`.
+Neither attempt qualifies a new product pair. A separate private cache must
+first resolve the Linux UI tree including development dependencies, the normal
+Hepta producer graph and exact nineteen-owner graph with the original flags;
+no success for that preparation is claimed here. The original complete seven
+steps and separate GUI/native gates still require their own exact-source runs.
+
+The unchanged original Python tool cases passed on the 8b825 code baseline:
+normal 54 / 7 / 24 and optimized 54 / 7 / 24, each with the original
+600-second lane budget, zero skips and zero retries. Every lane
+checked the complete 8,088 actual source paths before and after and
+matched the prior original case identities. Completion SHA256:
+`76c46b6498a0a4de14a92f897c08a99b8ad17d70b0f024b8d3e62ccde6b2e33b`. These are release-tool temporary-Git / bounded-child
+fixtures, not a Rust/product or full 140-case-per-mode CI-union pass.
+
+
+## Eight package manuals on the Hepta documentation successor
+
+The current module navigation now links the eight new package READMEs on
+Hepta `310c3c86a59472665c2bb4cf4fb1d515def9dd37`, tree
+`6502ac49b5f3133bf2fc826ce3c07d90219a3a48` (9,222 tracked paths).
+Its code baseline remains `7673ea62fc019f97ad17d205ee1f81f96e0f47a0`:
+all original 9,214 actual source bodies/modes/blobs are preserved, with eight
+new READMEs containing concrete technical and development sections. This is
+documentation source qualification only. Added READMEs may change Cargo's
+automatic readme/package metadata; no binary equivalence is asserted.
+
+The module inventory retains its original 336 source records and adds eight
+README records, each bound to its actual 310c blob/mode/SHA. Original code and
+new documentation provenance remain separate. The 131 local link/line-anchor
+and 27 historical case-identity checks are reference checks, not test execution.
+The unwired cognitive `production.rs` is documented as an uncompiled surface,
+not a proven defect. File-system has no library/doctest target on this baseline;
+its real executor consumer tests remain a separate unexecuted development lane.
+
+The fixed 396/271 role map, five goldens, nineteen test packages, required normal
+CLI producer and both lockfiles remain unchanged. The retained current profile
+still declares old 6487/7673. A later source-only generation/manifest-only commit
+and exact new-HEAD verification must bind this Desktop documentation successor
+with 310c. No source proof, host/GUI/native/product run or production activation
+was performed for this navigation update. Old full19/target3/native outcomes and
+the 8b825 Python QA keep their original source identities.
+
+See [current package manuals and source boundaries](MODULE_DOCUMENTATION_CURRENT.md).
+
+## M6 delivery source contract
+
+The current fixed V5 requires 402 Desktop roles, 271 Hepta roles, five unchanged
+wire-golden pairs and nineteen unchanged owning packages. Six explicit roles
+bind the real Unix datagram message owner, its eight native tests, the original
+ordinary probe and runner, and the technical/development manuals. Existing IPC
+and page-memory contract roles bind their updated documentation. Required
+normal CLI production, all seven host commands and their budgets are unchanged.
+
+The prior 396-role V5 is retained by Git at Desktop
+`9088f2e5ef5666859ffe76ffb4db3c58e0733497` with its then-matching source tool,
+map and `profiles/current-organ-source.json` (relative to `support/release`).
+Use that exact historical checkout for its verification. Removing the six M6
+roles from the current map is an unsupported current shape. V1–V4 routes and
+all old refusal assertions remain unchanged.
+
+The original M6 commits are 5d82e62e2141a280931866251aa8a39a6e6d064e and
+8a1ea448fc58a47f9a36800a52bfc9c63ef7c763. The delivery integration preserves
+their production/native/probe inputs; their historical passing kernel and
+ordinary receipts remain tied to 8a1. Source-only QA and manifest generation do
+not transfer those results to a new head. The actual combined candidate must
+repeat the full unfiltered Core/OSTD and both ordinary SMP2/SMP4 seven-group
+profiles under their original budgets. Linux `memory.max`, production-authority
+assembly, real Agentd control and phone/GPU isolation remain separate work.

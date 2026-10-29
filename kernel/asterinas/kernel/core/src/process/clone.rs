@@ -31,7 +31,7 @@ use crate::{
         posix_thread::{PosixThread, ThreadLocal, allocate_posix_tid},
         stats::PROCESS_CREATION_COUNTER,
     },
-    sched::Nice,
+    sched::UserSchedSnapshot,
     thread::{AsThread, Tid},
     vm::vmar::{Vmar, VmarHandle},
 };
@@ -185,7 +185,10 @@ impl CloneArgs {
             && !clone_flags.contains(CloneFlags::CLONE_THREAD)
             && ctx.user_space().vmar().has_sealed_initial_image()
         {
-            return_errno_with_message!(Errno::EPERM, "trusted initial image cannot share its VMAR with another Process")
+            return_errno_with_message!(
+                Errno::EPERM,
+                "trusted initial image cannot share its VMAR with another Process"
+            )
         }
 
         // This checks the arguments for all clone-related system calls.
@@ -303,9 +306,12 @@ pub(crate) fn clone_child(
     clone_args: CloneArgs,
 ) -> Result<Tid> {
     clone_args.check(ctx)?;
+    // Capture before membership, TaskSet, PID-table and TSYNC locks. Only this
+    // copyable scheduling cut is inherited, never live queues or CPU debt.
+    let sched_snapshot = ctx.thread.sched_attr().user_snapshot();
 
     if clone_args.flags.contains(CloneFlags::CLONE_THREAD) {
-        let child_task = clone_child_task(ctx, parent_context, clone_args)?;
+        let child_task = clone_child_task(ctx, parent_context, clone_args, sched_snapshot)?;
         let child_thread = child_task.as_thread().unwrap();
         child_thread.run();
 
@@ -333,7 +339,7 @@ pub(crate) fn clone_child(
             None
         };
 
-        let child_process = clone_child_process(ctx, parent_context, clone_args)?;
+        let child_process = clone_child_process(ctx, parent_context, clone_args, sched_snapshot)?;
 
         // Use the same cgroup snapshot that was charged above to avoid
         // a mismatch if the parent migrates concurrently.
@@ -375,6 +381,7 @@ fn clone_child_task(
     ctx: &Context,
     parent_context: &UserContext,
     clone_args: CloneArgs,
+    sched_snapshot: UserSchedSnapshot,
 ) -> Result<Arc<Task>> {
     let clone_flags = clone_args.flags;
 
@@ -460,6 +467,9 @@ fn clone_child_task(
 
     let child_tid = allocate_posix_tid();
     let child_task = {
+        // Keep the policy and no_new_privs snapshot through insertion below.
+        // A successful TSYNC cannot miss a newly published sibling.
+        let _seccomp_update = process.seccomp_update().lock();
         let credentials = {
             let credentials = ctx.posix_thread.credentials();
             Credentials::new_from(&credentials)
@@ -472,6 +482,7 @@ fn clone_child_task(
             credentials,
             child_vmar,
         )
+        .user_sched_snapshot(sched_snapshot)
         .process(posix_thread.weak_process().clone())
         .sig_mask(sig_mask)
         .file_table(child_file_table)
@@ -480,6 +491,7 @@ fn clone_child_task(
         .user_ns(child_user_ns)
         .ns_proxy(child_ns_proxy)
         .default_timer_slack_ns(default_timer_slack_ns);
+        thread_builder = thread_builder.seccomp(posix_thread.seccomp().lock().clone());
         #[cfg(target_arch = "x86_64")]
         {
             thread_builder = thread_builder.fs_base(child_fs_base).gs_base(child_gs_base);
@@ -490,22 +502,24 @@ fn clone_child_task(
         thread_builder = clone_child_cleartid(thread_builder, clone_args.child_tid, clone_flags);
         thread_builder = clone_child_settid(thread_builder, clone_args.child_tid, clone_flags);
 
-        thread_builder.build()
+        let child_task = thread_builder.build()?;
+        process
+            .tasks()
+            .lock()
+            .insert(child_task.clone())
+            .map_err(|_| {
+                Error::with_message(
+                    Errno::EINTR,
+                    "the process has exited or has already executed a new program",
+                )
+            })?;
+        child_task
     };
 
-    process
-        .tasks()
-        .lock()
-        .insert(child_task.clone())
-        .map_err(|_| {
-            Error::with_message(
-                Errno::EINTR,
-                "the process has exited or has already executed a new program",
-            )
-        })?;
-
+    // Commit only after the task has joined the process under the TSYNC guard.
+    // Failed stack admission drops the reservation and refunds the PID.
     // Consume the whole option before moving the cgroup borrowed by its guard.
-    pids_charge.map_or((), |charge| charge.apply());
+    let () = pids_charge.map_or((), |charge| charge.apply());
     child_task
         .as_posix_thread()
         .unwrap()
@@ -521,6 +535,7 @@ fn clone_child_process(
     ctx: &Context,
     parent_context: &UserContext,
     clone_args: CloneArgs,
+    sched_snapshot: UserSchedSnapshot,
 ) -> Result<Arc<Process>> {
     let Context {
         process,
@@ -532,7 +547,7 @@ fn clone_child_process(
     let clone_flags = clone_args.flags;
 
     // Clone the virtual memory space
-    let child_vmar = clone_vmar(thread_local.vmar().borrow().as_ref().unwrap(), clone_flags);
+    let child_vmar = clone_vmar(thread_local.vmar().borrow().as_ref().unwrap(), clone_flags)?;
 
     // Clone the user context
     #[cfg_attr(target_arch = "x86_64", expect(unused_mut))]
@@ -588,15 +603,17 @@ fn clone_child_process(
     // Inherit the parent's resource limits
     let child_resource_limits = process.resource_limits().clone();
 
-    // Inherit the parent's nice value
-    let child_nice = process.nice().load(Ordering::Relaxed);
-
-    // Inherit the parent's OOM score adjustment
-    let child_oom_score_adj = process.oom_score_adj().load(Ordering::Relaxed);
+    let child_oom_score_adj = super::oom_adjustment::OomInit::Fork {
+        parent: process,
+        flags: clone_flags,
+    };
 
     let child_tid = allocate_posix_tid();
 
     let child = {
+        // A fork receives one coherent policy/credential cut. Its private
+        // process is not a later TSYNC target of the parent group.
+        let _seccomp_update = process.seccomp_update().lock();
         let child_vmar_arc = child_vmar.clone_arc();
 
         let mut child_thread_builder = {
@@ -615,6 +632,7 @@ fn clone_child_process(
                 credentials,
                 child_vmar,
             )
+            .user_sched_snapshot(sched_snapshot)
             .sig_mask(child_sig_mask)
             .file_table(child_file_table)
             .fs(child_fs)
@@ -622,6 +640,7 @@ fn clone_child_process(
             .user_ns(child_user_ns.clone())
             .ns_proxy(child_ns_proxy)
             .default_timer_slack_ns(default_timer_slack_ns)
+            .seccomp(posix_thread.seccomp().lock().clone())
         };
         #[cfg(target_arch = "x86_64")]
         {
@@ -641,12 +660,11 @@ fn clone_child_process(
             child_tid,
             child_vmar_arc,
             child_resource_limits,
-            child_nice,
             child_oom_score_adj,
             child_sig_dispositions,
             child_user_ns,
             child_thread_builder,
-        )
+        )?
     };
 
     clone_pidfd(ctx, &child, clone_flags, clone_args.pidfd)?;
@@ -698,11 +716,11 @@ fn clone_parent_settid(
     Ok(())
 }
 
-fn clone_vmar(parent_vmar: &VmarHandle, clone_flags: CloneFlags) -> VmarHandle {
+fn clone_vmar(parent_vmar: &VmarHandle, clone_flags: CloneFlags) -> Result<VmarHandle> {
     // If CLONE_VM is set, the child and parent share the same VMAR.
     // Otherwise, the child has a copy of the parent's VMAR.
     if clone_flags.contains(CloneFlags::CLONE_VM) {
-        parent_vmar.clone_handle()
+        Ok(parent_vmar.clone_handle())
     } else {
         Vmar::fork_from(parent_vmar)
     }
@@ -845,26 +863,26 @@ fn create_child_process(
     pid: Pid,
     vmar: Arc<Vmar>,
     resource_limits: ResourceLimits,
-    nice: Nice,
-    oom_score_adj: i16,
+    oom_score_adj: super::oom_adjustment::OomInit<'_>,
     sig_dispositions: Arc<Mutex<SigDispositions>>,
     user_ns: Arc<UserNamespace>,
     thread_builder: PosixThreadBuilder,
-) -> Arc<Process> {
+) -> Result<Arc<Process>> {
     let child_proc = Process::new(
         pid,
         vmar,
         resource_limits,
-        nice,
         oom_score_adj,
         sig_dispositions,
         user_ns,
     );
 
-    let child_task = thread_builder.process(Arc::downgrade(&child_proc)).build();
+    let child_task = thread_builder
+        .process(Arc::downgrade(&child_proc))
+        .build()?;
     child_proc.tasks().lock().insert(child_task).unwrap();
 
-    child_proc
+    Ok(child_proc)
 }
 
 pub(in crate::process) fn set_parent_and_group(

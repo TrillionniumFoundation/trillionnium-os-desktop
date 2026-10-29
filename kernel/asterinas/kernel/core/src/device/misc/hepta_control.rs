@@ -48,12 +48,13 @@ const MAX_RESPONSE_BYTES: usize = wire::HEADER_LEN + 48;
 static MAJOR: Once<char::MajorIdOwner> = Once::new();
 static BOOT_ID: Once<[u8; 16]> = Once::new();
 
-fn nonzero_random_id() -> [u8; 16] {
+fn new_boot_id() -> [u8; 16] {
     let mut id = [0u8; 16];
     random::getrandom(&mut id);
-    // Even if an early emulator RNG were to return zeroes, never produce an
-    // invalid HOS2 identity. No identity here is an authorization token.
-    id[0] |= 1;
+    // The same UUID bytes are exported through HOS2 and procfs. They identify
+    // an incarnation, not authority. Export refuses timestamp-only entropy.
+    id[6] = (id[6] & 0x0f) | 0x40;
+    id[8] = (id[8] & 0x3f) | 0x80;
     id
 }
 
@@ -66,8 +67,14 @@ fn process_session_id(process: &Process) -> Result<([u8; 16], ProcessImageKey)> 
     Ok((image_space_id(key), key))
 }
 
-pub(crate) fn boot_id() -> [u8; 16] {
-    *BOOT_ID.get().unwrap()
+pub(crate) fn boot_id() -> Result<[u8; 16]> {
+    if !random::is_securely_seeded() {
+        return_errno_with_message!(
+            Errno::EOPNOTSUPP,
+            "protected boot identity needs fresh entropy"
+        );
+    }
+    Ok(*BOOT_ID.get().unwrap())
 }
 
 pub(crate) fn image_space_id(key: ProcessImageKey) -> [u8; 16] {
@@ -98,6 +105,7 @@ impl Device for HeptaControlDevice {
     }
 
     fn open(&self) -> Result<Box<dyn PerOpenFileOps>> {
+        boot_id()?;
         let process = Process::current().ok_or_else(|| {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
         })?;
@@ -218,14 +226,17 @@ impl PerOpenFileOps for HeptaControlFile {
             RequestPayload::QueryAbi => {
                 #[cfg(feature = "g1d-trusted-control")]
                 let (supported_ops, max_response_payload) = (
-                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16())
+                    (1u64 << Opcode::QueryAbi.as_u16())
+                        | (1u64 << Opcode::ReadUsage.as_u16())
                         | (1u64 << Opcode::InstallBudget.as_u16())
                         | (1u64 << Opcode::QueryDelivery.as_u16())
-                        | (1u64 << Opcode::RetireThrough.as_u16()), 64,
+                        | (1u64 << Opcode::RetireThrough.as_u16()),
+                    64,
                 );
                 #[cfg(all(feature = "g1c-trusted-observe", not(feature = "g1d-trusted-control")))]
                 let (supported_ops, max_response_payload) = (
-                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()), 64,
+                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()),
+                    64,
                 );
                 #[cfg(not(feature = "g1c-trusted-observe"))]
                 let (supported_ops, max_response_payload) = (1u64 << Opcode::QueryAbi.as_u16(), 48);
@@ -233,14 +244,18 @@ impl PerOpenFileOps for HeptaControlFile {
                 let max_request_payload = 40;
                 #[cfg(not(feature = "g1d-trusted-control"))]
                 let max_request_payload = 0;
-                (Status::Ok, 0, ResponsePayload::QueryAbi(QueryAbiResponse {
-                    space_id: self.space_id,
-                    page_size: u32::try_from(PAGE_SIZE).unwrap(),
-                    max_request_payload,
-                    max_response_payload,
-                    supported_ops,
-                    features: 0,
-                }))
+                (
+                    Status::Ok,
+                    0,
+                    ResponsePayload::QueryAbi(QueryAbiResponse {
+                        space_id: self.space_id,
+                        page_size: u32::try_from(PAGE_SIZE).unwrap(),
+                        max_request_payload,
+                        max_response_payload,
+                        supported_ops,
+                        features: 0,
+                    }),
+                )
             }
             #[cfg(feature = "g1c-trusted-observe")]
             RequestPayload::ReadUsage => {
@@ -254,27 +269,33 @@ impl PerOpenFileOps for HeptaControlFile {
                     Err(status) => (status, 0, ResponsePayload::Empty),
                 };
                 #[cfg(not(feature = "g1d-trusted-control"))]
-                let result =
-                match process.read_hepta_initial_usage(
-                    self.image_key, request.target_slot, request.target_generation,
+                let result = match process.read_hepta_initial_usage(
+                    self.image_key,
+                    request.target_slot,
+                    request.target_generation,
                 ) {
-                    Ok(usage) => (Status::Ok, usage.revision, ResponsePayload::ReadUsage(wire::ReadUsageResponse {
-                        sample_boottime_ns: usage.sample_boottime_ns,
-                        cumulative_cpu_ns: usage.cumulative_cpu_ns,
-                        window_start_ns: usage.window_start_ns,
-                        window_consumed_ns: usage.window_consumed_ns,
-                        active_cap_ns: usage.active_cap_ns,
-                        active_period_ns: usage.active_period_ns,
-                        event_sequence: usage.event_sequence,
-                        dropped_events: usage.dropped_events,
-                    })),
+                    Ok(usage) => (
+                        Status::Ok,
+                        usage.revision,
+                        ResponsePayload::ReadUsage(wire::ReadUsageResponse {
+                            sample_boottime_ns: usage.sample_boottime_ns,
+                            cumulative_cpu_ns: usage.cumulative_cpu_ns,
+                            window_start_ns: usage.window_start_ns,
+                            window_consumed_ns: usage.window_consumed_ns,
+                            active_cap_ns: usage.active_cap_ns,
+                            active_period_ns: usage.active_period_ns,
+                            event_sequence: usage.event_sequence,
+                            dropped_events: usage.dropped_events,
+                        }),
+                    ),
                     Err(status) => (status, 0, ResponsePayload::Empty),
                 };
                 result
             }
             #[cfg(feature = "g1d-trusted-control")]
-            RequestPayload::InstallBudget(_) | RequestPayload::QueryDelivery(_)
-                | RequestPayload::RetireThrough(_) => {
+            RequestPayload::InstallBudget(_)
+            | RequestPayload::QueryDelivery(_)
+            | RequestPayload::RetireThrough(_) => {
                 self.check_session()?;
                 let process = self.process.upgrade().ok_or_else(|| {
                     Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
@@ -286,14 +307,15 @@ impl PerOpenFileOps for HeptaControlFile {
             }
             #[cfg(not(feature = "g1d-trusted-control"))]
             _ => return_errno_with_message!(
-                Errno::EOPNOTSUPP, "recognized HOS2 resource operation not implemented"
+                Errno::EOPNOTSUPP,
+                "recognized HOS2 resource operation not implemented"
             ),
         };
         let response = Response {
             opcode: request.opcode,
             status,
             request_id: request.request_id,
-            boot_id: boot_id(),
+            boot_id: boot_id()?,
             revision,
             payload,
         };
@@ -306,7 +328,7 @@ impl PerOpenFileOps for HeptaControlFile {
 }
 
 pub(super) fn init_in_first_kthread() {
-    BOOT_ID.call_once(nonzero_random_id);
+    BOOT_ID.call_once(new_boot_id);
     let major = MAJOR.call_once(|| char::allocate_major().unwrap()).get();
     char::register(Arc::new(HeptaControlDevice {
         id: DeviceId::new(major, MinorId::new(0)),
