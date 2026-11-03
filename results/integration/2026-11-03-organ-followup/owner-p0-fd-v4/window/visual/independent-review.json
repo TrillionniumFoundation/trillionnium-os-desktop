@@ -1,0 +1,67 @@
+{
+  "schema": "trill.audit.independent-window-visual-review.v1",
+  "reviewed_at_utc": "2026-11-03T20:21:00.287578+00:00",
+  "desktop_commit": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+  "hepta_commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "original_ibus_receipt_sha256": "031445d5b0528c5c7d4bfff1adf63ddcd785066176587572cf7f55e51b7077f2",
+  "images": [
+    {
+      "file": "ime-preedit-window.png",
+      "bytes": 74497,
+      "sha256": "14f8b395e698971ac48b4e0b89f807058ce5279048a75b86001d94e9bc70481b",
+      "width": 1280,
+      "height": 800,
+      "root_viewed_original": true
+    },
+    {
+      "file": "ime-preedit-display.png",
+      "bytes": 87934,
+      "sha256": "329afd0a44236fc9206fa49ceaf770af1544f494a8a72eba8848a1ed7b9ef05f",
+      "width": 1440,
+      "height": 1000,
+      "root_viewed_original": true
+    },
+    {
+      "file": "ime-committed-window.png",
+      "bytes": 73500,
+      "sha256": "881436d8fc6511c96daf8dfa7e3860b32ca2beecac8127f40fdef4a96e359e19",
+      "width": 1280,
+      "height": 800,
+      "root_viewed_original": true
+    },
+    {
+      "file": "ime-final-window.png",
+      "bytes": 73383,
+      "sha256": "4c5038218f19539885609b87f1d1d4a4bc84131b3d619135984f01de57c61008",
+      "width": 1280,
+      "height": 800,
+      "root_viewed_original": true
+    },
+    {
+      "file": "ime-final-display.png",
+      "bytes": 83738,
+      "sha256": "7e40cf3c74021129b46603193ef3ad2273a3b73d46249243dd03ab397a772d87",
+      "width": 1440,
+      "height": 1000,
+      "root_viewed_original": true
+    }
+  ],
+  "all_five_original_receipt_hashes_and_png_dimensions_match": true,
+  "original_two_window_archive_and_members_match": true,
+  "ai_review_sha256": "5a0d0e6d463f7149bcec2365ca5f1a13a6642b41dc086645b70238891b805cd6",
+  "independent_observations": [
+    "Underlined 你好 appears in preedit while the title remains New conversation.",
+    "Complete private-display capture shows ni hao and highlighted candidate 你好 at the location obscured in the window-only capture; it supports capture occlusion, not a broken panel.",
+    "Committed and final captures show 你好 in heading, selected row and composer.",
+    "Final display owned focus probe matches the exact fd capture.py position/size/color and ibus_client.py capture-before-close ordering.",
+    "Host-session/send/Notes-readback unavailable labels remain visible; no authenticated effect is inferred."
+  ],
+  "source_checked": [
+    "tests/ui/native-makepad/capture.py at fd8d56c",
+    "tests/ui/native-makepad/ibus_client.py at fd8d56c"
+  ],
+  "human_visual_qualification_added": false,
+  "original_qualification_receipts_modified": false,
+  "physical_or_wayland_or_orca_qualification_added": false,
+  "new_runtime_executed": false
+}

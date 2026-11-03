@@ -98,6 +98,13 @@ Agentd/Notes effects. The raw UI build receipt's prior `window_qualified: false`
 continues to describe its build stage; the later window execution has its own
 receipt. The failed Root builder also retains its unchanged false fields.
 
+All five original IBus screenshots now have [separate AI visual observations](owner-p0-fd-v4/window/visual/README.md)
+and independent original-receipt SHA/dimension checks. The complete display
+resolves the window-only black region as an overlapping visible candidate panel;
+its `ni hao` and highlighted `你好` are legible. The original human/physical/Wayland/
+Orca and authenticated-Send flags remain false. These are the same execution's
+original images, not a new runtime test or an installed-product result.
+
 ## Open product work
 
 Linux Notes still needs installed original Root submission, the original writer

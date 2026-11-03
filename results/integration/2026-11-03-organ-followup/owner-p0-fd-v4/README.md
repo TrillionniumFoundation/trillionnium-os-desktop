@@ -62,6 +62,23 @@ original Agentd and authenticated Send as unqualified. This private X11/IBus
 result is not an installed Root/Notes effect or a phone/Calculator window result.
 No original human-visual flag was promoted by the receipt review.
 
+### Original screenshots and separate AI observations
+
+All five original IBus PNGs are now retained in [the visual evidence](window/visual/README.md),
+with the original receipt hashes, version-bound transfer metadata and two
+independent AI image inspections. The complete private-display preedit capture
+shows the white IBus panel, `ni hao` and highlighted candidate `你好`. Its position
+coincides with the black region in the window-only capture; this supports an
+overlapping-popup capture limitation rather than a candidate-rendering failure.
+The committed and final captures show `你好` in the heading, selected room and
+composer. The final display's separate focus probe matches the exact fd test
+source and is not an unexplained product window.
+
+These frame-specific observations are distinct from human visual acceptance,
+physical input, other display sizes/scales and authenticated Notes effects.
+The original false qualification flags and the initial incomplete two-window
+observation are preserved beside the complete five-image review.
+
 ## Separate Root dev-small refusal
 
 The original Root builder used the same fd/a39 sources, default features,

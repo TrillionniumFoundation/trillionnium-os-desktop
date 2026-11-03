@@ -1,0 +1,81 @@
+{
+  "schema": "trill.audit.window-ai-visual-review.v1",
+  "review_kind": "AI static image observation, not human acceptance",
+  "reviewed_at_utc": "2026-11-03T20:03:47.009062+00:00",
+  "input_archive": {
+    "remote_path": "/data/trill-organ-owner-20261103/window-fd-v4-original-images.tar.gz",
+    "remote_version": "2067:31634992:137366:1793734974190275518:1793734974190275518",
+    "bytes": 137366,
+    "sha256": "db372e70e0c246797a1b8eac150aac0220792bc061af4a2995f92cb13ba72feb",
+    "all_chunks_same_version": true,
+    "complete_sha256_verified": true
+  },
+  "inputs": [
+    {
+      "name": "ime-preedit-window.png",
+      "path": "/workspace/scratch/92e2482fa623/owner-evidence/window-fd-v4-visual-review/ime-preedit-window.png",
+      "bytes": 74497,
+      "sha256": "14f8b395e698971ac48b4e0b89f807058ce5279048a75b86001d94e9bc70481b",
+      "dimensions": [
+        1280,
+        800
+      ]
+    },
+    {
+      "name": "ime-final-window.png",
+      "path": "/workspace/scratch/92e2482fa623/owner-evidence/window-fd-v4-visual-review/ime-final-window.png",
+      "bytes": 73383,
+      "sha256": "4c5038218f19539885609b87f1d1d4a4bc84131b3d619135984f01de57c61008",
+      "dimensions": [
+        1280,
+        800
+      ]
+    }
+  ],
+  "inspection": {
+    "tool": "view_image",
+    "detail": "original",
+    "both_images_actually_viewed": true,
+    "images_modified": false,
+    "new_runtime_execution": false
+  },
+  "observations": [
+    {
+      "image": "ime-preedit-window.png",
+      "observation": "The composer visibly contains the two Chinese characters 你好 with an underline. The main heading and selected sidebar item still read New conversation. The glyphs are legible at the captured 1280 by 800 resolution.",
+      "scope": "Visible static text and decoration only; event chronology remains in the original qualifier receipt."
+    },
+    {
+      "image": "ime-preedit-window.png",
+      "observation": "A solid black rectangular area covers the lower composer and extends to the bottom of the capture, approximately x=373..700 and y=733..799. Text or candidates in that area cannot be assessed.",
+      "scope": "Observed occlusion, cause unproven. Candidate content, candidate position and complete preedit visual correctness are not qualified."
+    },
+    {
+      "image": "ime-final-window.png",
+      "observation": "The main heading, selected sidebar title and preview, and composer visibly read 你好. A caret is visible at the end of the composer text. The black lower-area occlusion is absent.",
+      "scope": "Local visible draft state; this is not a sent message or an application effect receipt."
+    },
+    {
+      "image": "both",
+      "observation": "The sidebar, heading, Chat/Console tabs, Notes status, three Chinese Notes controls and composer occupy distinct regions without apparent overlap in the final capture. Chinese status/control text is legible.",
+      "scope": "Only this captured size and state were inspected; no responsive layout, focus order or full font coverage claim."
+    },
+    {
+      "image": "both",
+      "observation": "The interface explicitly says it is waiting for the current host session, sending is unavailable and Notes readback is unavailable; the final composer hint says Local draft · chat owner unavailable.",
+      "scope": "Consistent with window/draft qualification only. No original Agentd/model/Notes or Calculator effect closure is represented by these pictures."
+    }
+  ],
+  "unresolved_visual_items": [
+    "Preedit lower-area black occlusion; source and candidate popup content/position are unverified.",
+    "The small monochrome pictogram in older sidebar fixture rows does not establish full emoji/ZWJ/font rendering coverage."
+  ],
+  "qualification_flags_preserved": {
+    "human_visual": false,
+    "physical_hardware": false,
+    "orca": false
+  },
+  "original_qualification_receipts_modified": false,
+  "overall_visual_pass_claimed": false,
+  "provenance_scope": "Archive and member hashes were supplied by the parent and independently verified through version-bound reads. Source/run provenance remains in the separate original qualifier receipts."
+}

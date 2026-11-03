@@ -63,3 +63,13 @@ GPU/VMM/Android product/首台实机可行性与M0并行；完整设备实现不
 内存核算需要覆盖内核中嵌入的 ELF、长期快照、四份 LOAD、逐段写入/读回临时缓冲、实际栈、initramfs/cache、页表与内核分配、SQLite/线程/堆，以及重启时旧实例与新实例的短暂重叠。固定 512 MiB guest 的实际低水位和恢复期间峰值必须单独记录；静态映像算式不替代运行时测量。
 
 继续沿同一进程/VMO/资源域做进程树计账和准入，并明确控制面、恢复者及其 I/O 所需的保留资源。已有用户页限制、64 页 allocator 保留和独立 watchdog 证据分别保留其范围，不能合并为全内核物理资源保证。job-control stop 与可信用户主动暂停也分别处理；在可信暂停入口完成前，不把前者的保持测试扩写成后者已合格。
+
+## D13：跨应用准入以原持久 sender/writer 为准
+
+当前 v1 双应用候选继续要求同一原 turn 最多一个受控效果。Notes 与 Calculator 共用原 sender 对该 turn 的持久准入约束，沿原 writer/outbox 保存操作、独立回读和终态；目标、工具名或 callback ID 的不同不产生额外执行机会。未来若支持一个 turn 内的多步骤，需要在原 owner 内定义步骤顺序和持久恢复合同，另行版本化与验收。
+
+这个选择来自原 `a39` 的具体接口语义。[Core 动态工具入口](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/core/src/tools/handlers/dynamic.rs)先登记 pending response，再发送 ItemStarted。[Session 事件路径](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/core/src/session/mod.rs)先尝试追加 rollout，但该普通追加函数只记录错误和失败代际，仍可能继续投递事件；它与要求 append/flush 成功的 strict 路径有不同语义。[ThreadItemsList](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/app-server/src/request_processors/thread_items_legacy.rs)在 legacy 分支还会合并活动 turn 状态。因此，原连接上的 callback 和列表回读可以核对来源与当时的顺序，但不能单独证明列表已经持久化或具有完整的持久顺序。
+
+候选在选择本轮首个效果前查询原 sender 已保留的同 turn 请求；当前 callback 和原人类输入的来源核验仍有自己的只读前置步骤。通过这些核验并发现已有请求后，后续 callback 就按原操作只读核对；另一个 App 或另一个 call 的请求必须明确返回未执行。返回内容保留首个原 tool、destination、target、operation 和 receipt 的身份，UI 不把其他 App 的既有成功显示成本次执行成功。缺失列表、未知结果、断连或重启都不能清除这个持久约束，也不能据模型输出推定外部效果失败后再执行。
+
+原 AuthBus/queue 的人类输入持久证明、Core callback 身份与原 writer 的外部效果终态各有范围。该候选不承诺“最早持久化的 Core 工具项必定先执行”；最终被原 sender 接受的请求以其持久事实为准。实现必须在真实 SQLite sender/writer 上验证两应用顺序反转、并发竞争、丢回复及重开后的只读核对，并单独完成真实授权与两应用窗口验收。这里记录合同和依据，不给尚未运行的联合候选授予通过资格。

@@ -32,6 +32,10 @@
 
 同一 `fd/a39` 的原 Root `dev-small` 两段编译及两项 strip 已完成，但 341,288,592-byte Agentd 被原 128 MiB 单文件门槛拒绝。[原构建失败](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/root/build-receipt.json)及 runner `blocked` 均保留；包、后续 host 全测试和最终安装未完成。原有 `product-linux` 优化配置的独立构建须按自己的结果验收，不能沿用进程 exit 0 或窗口成功替代。
 
+同一次窗口执行的[五张原始 IBus 截图](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/window/visual/README.md)已逐图核对原收据 SHA/尺寸并完成独立 AI 视觉观察。全显示截图可见 `ni hao`、高亮候选“你好”，提交后标题、选中会话与输入框保留“你好”；窗口单独截图的黑区对应外部候选框覆盖区域。原人类视觉、物理输入、Wayland、Orca 和授权发送资格不变。这些是原执行的图像观察，不是新增生产效果测试。
+
+后继双应用接入沿 [D13](DECISIONS.md) 使用同一原 sender/writer 对原 turn 的持久约束；Core callback 与活动列表各有来源核验范围，不作为完整持久历史证明。候选代码、SQLite 夹具与最终联合产品分别验收。
+
 [原 G2 owner 镜像与资源审查](../results/g2-original-owner-size-20261103/README.md)绑定 Desktop `4dcd02d8058005b92b75b4e997ec4de08833e01d` / 原 Hepta `a39`：原 release 构建和 strip 完成，ELF 为 20,138,584 bytes，页对齐 LOAD 合计 20,168,704 bytes；原 8 MiB / 16 MiB 门禁仍然拒绝。独立版本的原 owner 实验 profile 和全局恢复资源分别按 [D11/D12](DECISIONS.md) 实现与验收，不能把普通 guest 生命周期、静态算式或放大预算记成 G2 CPU 持久闭环。
 
 ### 当前交付范围与下一条实际验收
