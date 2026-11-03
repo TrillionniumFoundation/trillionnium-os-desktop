@@ -45,3 +45,21 @@ GPU/VMM/Android product/首台实机可行性与M0并行；完整设备实现不
 ## D10：显式HOS2恢复协议
 
 新有序写ID和恢复操作不重新解释HOS1。结果窗口以连续退役前沿防重放，DeliveryView独立于管理句柄；只有已持久确认的终局可退役。启动授权在最终exec后可信激活；旧效果不明与新授权目标收敛分别记录。
+
+## D11：原 owner 的映像预算单独版本化
+
+2026-11-03 的原 Hepta owner 保持原 Cargo release profile、默认 features 和锁文件，实际编译和原版 strip 均已完成。其 ELF 为 20,138,584 bytes，页对齐 LOAD 合计 20,168,704 bytes；旧实验 profile 的 8 MiB 文件 / 16 MiB LOAD 上限仍然拒绝该产物。[后续证据](../results/integration/2026-11-03-organ-followup/README.md) 分开记录原失败和已修复的打包问题。这是原用户态产物与早期实验映像预算不匹配，不构成重建 Rust kernel 的理由。
+
+继续完整 Asterinas 派生主线。下一候选为原 owner 建立独立版本的实验映像 profile，绑定实际 ELF 摘要、文件长度、LOAD 总量和最大段页范围。保留旧 G1-c、G1-d 与 G2 profile 的原始限制、输入检查和失败记录；新候选不能使用旧 profile 名称宣布通过。普通 exec 的通用装载路径也不因此改变。
+
+新 profile 继续复用[原可信映像装载器](../kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs)的一次性不可变快照、完整字节匹配、独立 RAM VMO、映像读回和封印，不增加用户态自行选择的尺寸或权限。原 writer/outbox、授权核验和持久终态语义保持原 owner 所有。依赖与单态化优化可以另行测量；不能删除这些原闭环代码或改变 panic 语义来冒充同一产物满足旧预算。
+
+这里记录实现方向，不声明新 profile 已编译、已在 guest 执行或取得生产资格。后续每个结果必须携带确切源码、profile、产物与内存范围。
+
+## D12：镜像准入与恢复资源保证分别验收
+
+当前[四角色启动事务](../kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs)共享一次原映像快照，但 root、manager、workload、recovery 分别建立私有 LOAD 映射。workload 已显式附加 UserMemoryAccount；其余三个角色及其后继路径尚未具备等价的完整总内存准入保证。映像通过尺寸检查不能推导四角色运行时资源均已隔离。
+
+内存核算需要覆盖内核中嵌入的 ELF、长期快照、四份 LOAD、逐段写入/读回临时缓冲、实际栈、initramfs/cache、页表与内核分配、SQLite/线程/堆，以及重启时旧实例与新实例的短暂重叠。固定 512 MiB guest 的实际低水位和恢复期间峰值必须单独记录；静态映像算式不替代运行时测量。
+
+继续沿同一进程/VMO/资源域做进程树计账和准入，并明确控制面、恢复者及其 I/O 所需的保留资源。已有用户页限制、64 页 allocator 保留和独立 watchdog 证据分别保留其范围，不能合并为全内核物理资源保证。job-control stop 与可信用户主动暂停也分别处理；在可信暂停入口完成前，不把前者的保持测试扩写成后者已合格。
