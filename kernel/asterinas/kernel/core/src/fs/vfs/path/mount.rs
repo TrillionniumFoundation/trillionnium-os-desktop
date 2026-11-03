@@ -709,6 +709,22 @@ impl Mount {
         ctx: &Context,
         _topology: &mut MountTopology,
     ) -> Result<()> {
+        // Dynamic read-only transitions require a writer/mapping lifetime protocol,
+        // including aliases, in-flight metadata changes and dirty-page writeback.
+        // A flag flip cannot revoke an existing writable shared mapping (or its
+        // MAY_WRITE permission). Fail before any filesystem callback or flag update
+        // instead of reporting a protection boundary that has not been established.
+        // MountTopology serializes this check with every other remount.
+        let changes_mount_readonly = (self.flags() ^ mount_flags).contains(PerMountFlags::RDONLY);
+        let changes_fs_readonly =
+            fs_flags.is_some_and(|flags| (self.fs.flags() ^ flags).contains(FsFlags::RDONLY));
+        if changes_mount_readonly || changes_fs_readonly {
+            return_errno_with_message!(
+                Errno::EOPNOTSUPP,
+                "changing read-only state on a live mount is unsupported"
+            );
+        }
+
         if let Some(flags) = fs_flags {
             self.fs.set_fs_flags(flags, data, ctx)?;
         }

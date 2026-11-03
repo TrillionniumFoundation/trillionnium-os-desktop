@@ -47,13 +47,14 @@ impl ProcFileOpsByHandle for MapsFileOps {
         // taking the VMAR identity snapshot to prevent race conditions.
         let vmar_guard = process.lock_vmar();
 
-        process
-            .main_thread()
+        let target_thread = self.0.thread().ok_or_else(|| Error::new(Errno::ESRCH))?;
+        let _access = target_thread
             .as_posix_thread()
             .unwrap()
             .check_alien_access_from(
                 current_thread!().as_posix_thread().unwrap(),
                 AlienAccessMode::READ_WITH_FS_CREDS,
+                &vmar_guard,
             )
             .map_err(|_| Error::with_message(Errno::EACCES, "alien access is denied"))?;
 

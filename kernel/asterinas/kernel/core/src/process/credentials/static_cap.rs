@@ -2,7 +2,6 @@
 
 use aster_rights::{Dup, Read, TRights, Write};
 use aster_rights_proc::require;
-use ostd::sync::{PreemptDisabled, RwLockReadGuard, RwLockWriteGuard};
 
 use super::{
     Credentials, ExecCred, FileCapabilities, Gid, SecureBits, Uid, capabilities::CapSet,
@@ -214,7 +213,7 @@ impl<R: TRights> Credentials<R> {
     ///
     /// This method requires the `Read` right.
     #[require(R > Read)]
-    pub(crate) fn groups(&self) -> RwLockReadGuard<'_, BTreeSet<Gid>, PreemptDisabled> {
+    pub(crate) fn groups(&self) -> Arc<BTreeSet<Gid>> {
         self.0.groups()
     }
 
@@ -226,12 +225,12 @@ impl<R: TRights> Credentials<R> {
         self.fsgid() == gid || self.groups().contains(&gid)
     }
 
-    /// Acquires the write lock of supplementary group IDs.
+    /// Replaces the original immutable supplementary-group owner.
     ///
-    /// This method requires the `Write` right.
+    /// The caller prepares this owner before live credential publication.
     #[require(R > Write)]
-    pub(crate) fn groups_mut(&self) -> RwLockWriteGuard<'_, BTreeSet<Gid>, PreemptDisabled> {
-        self.0.groups_mut()
+    pub(crate) fn set_groups(&self, groups: Arc<BTreeSet<Gid>>) {
+        self.0.set_groups(groups);
     }
 
     // *********** Linux Capabilities methods **********

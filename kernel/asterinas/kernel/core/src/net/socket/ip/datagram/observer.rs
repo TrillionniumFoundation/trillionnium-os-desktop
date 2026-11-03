@@ -24,6 +24,10 @@ impl SocketEventObserver for DatagramObserver {
             io_events |= IoEvents::OUT;
         }
 
+        if events.contains(SocketEvents::ERROR) {
+            io_events |= IoEvents::ERR;
+        }
+
         self.0.notify(io_events);
     }
 }

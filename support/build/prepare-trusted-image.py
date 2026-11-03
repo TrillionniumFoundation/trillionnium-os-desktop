@@ -20,7 +20,7 @@ def main():
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--profile", choices=("g1c-trusted-observe", "g1d-trusted-control"),
+    parser.add_argument("--profile", choices=("g1c-trusted-observe", "g1d-trusted-control", "g2-trusted-daemon"),
                         default="g1c-trusted-observe")
     args = parser.parse_args()
     source = args.input.resolve(strict=True)
@@ -52,7 +52,7 @@ def main():
         "period_ns": 100_000_000,
         "lease_ns": 300_000_000_000,
     }
-    if args.profile == "g1d-trusted-control":
+    if args.profile in ("g1d-trusted-control", "g2-trusted-daemon"):
         manifest.update({
             "schema": "hepta-g1d-trusted-initial-v1",
             "supported_ops": 62,
@@ -65,6 +65,20 @@ def main():
         # Role-specific slots are defined by the sealed v2 bootstrap page.
         del manifest["slot"]
         del manifest["generation"]
+    if args.profile == "g2-trusted-daemon":
+        manifest.update({
+            "schema": "hepta-g2-trusted-initial-v1",
+            "bootstrap_version": 3,
+            "bootstrap_bytes": 200,
+            "roles": ["root", "manager", "workload", "recovery"],
+            "root_role": 4,
+            "root_pid_offset": 192,
+            "workload_uid": 60002,
+            "workload_gid": 60002,
+            "manager_history_ack": True,
+            "original_writer_durability_verified": False,
+            "g2_complete": False,
+        })
     with args.manifest.open("x") as stream:
         stream.write(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
 

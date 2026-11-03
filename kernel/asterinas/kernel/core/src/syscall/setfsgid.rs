@@ -15,12 +15,11 @@ pub(super) fn sys_setfsgid(gid: i32, ctx: &Context) -> Result<SyscallReturn> {
 
     debug!("fsgid = {:?}", fsgid);
 
-    let old_fsgid = {
-        let credentials = ctx.credentials_mut();
+    let old_fsgid = ctx.with_credentials_mut(|credentials| {
         credentials
             .set_fsgid(fsgid)
             .unwrap_or_else(|old_fsgid| old_fsgid)
-    };
+    });
 
     Ok(SyscallReturn::Return(
         <Gid as Into<u32>>::into(old_fsgid) as _

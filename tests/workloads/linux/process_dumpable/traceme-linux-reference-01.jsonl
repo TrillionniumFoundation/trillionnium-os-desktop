@@ -1,0 +1,15 @@
+{"suite":"dumpable-traceme-v1","observer_uid":60001,"observer_gid":60001,"cap_eff":0,"cap_prm":0,"nnp":1,"own_child_only":true}
+{"stage":0,"traceme_rc":0,"traceme_errno":0,"set_rc":0,"dumpable":0,"expected":0,"owned_child_stopped":true}
+{"case":"exact_owned_child_stage_and_stop","passed":true}
+{"stage":0,"operation":"peek_public_sentinel_only","rc":-1,"errno":5,"denied_expected":true,"passed":true}
+{"stage":0,"operation":"continue_owned_child","rc":0,"errno":0,"passed":true}
+{"stage":1,"traceme_rc":0,"traceme_errno":0,"set_rc":0,"dumpable":1,"expected":1,"owned_child_stopped":true}
+{"case":"exact_owned_child_stage_and_stop","passed":true}
+{"stage":1,"operation":"peek_public_sentinel_only","rc":5999153441947340112,"errno":0,"denied_expected":false,"passed":true}
+{"stage":1,"operation":"continue_owned_child","rc":0,"errno":0,"passed":true}
+{"stage":2,"traceme_rc":0,"traceme_errno":0,"set_rc":0,"dumpable":0,"expected":0,"owned_child_stopped":true}
+{"case":"exact_owned_child_stage_and_stop","passed":true}
+{"stage":2,"operation":"peek_public_sentinel_only","rc":-1,"errno":5,"denied_expected":true,"passed":true}
+{"stage":2,"operation":"continue_owned_child","rc":0,"errno":0,"passed":true}
+{"case":"owned_child_reaped","passed":true}
+{"summary":true,"violations":0,"all_children_reaped":true,"production_isolation_qualified":false}

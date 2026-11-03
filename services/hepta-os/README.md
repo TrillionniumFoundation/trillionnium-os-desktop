@@ -62,6 +62,15 @@ hold capabilities. A future organ can consume a bounded owner-produced snapshot;
 an effect must still follow the original authority/operations owners and the
 separate restricted OS adapter.
 
+The separate [Android device adapter](../../support/android/DEVICE_ORGAN.md)
+implements pinned Digitalis/Droidloom host reads and a non-authorizing semantic
+intent format. It is not enabled by this observer or the Session. Its CLI has no
+effect command, and its intents still require the original effect owner and a
+receiver that enforces the exact window and snapshot binding. This host I/O must
+remain outside `TrustedReadOnlyOrganV1`; a future compiled organ may consume only
+the bounded, owner-produced observation projection. Android kernel compatibility
+and production device effects remain independently unqualified.
+
 The host configuration must identify the expected Agent UUID, spawn generation,
 and OS UID from a separately trusted supervisor record. Reusing values returned
 by an arbitrary socket to configure that same socket would defeat identity
@@ -98,7 +107,8 @@ blocked job until the OS returns it.
 
 Read [RUN.md](RUN.md) for reproducible commands, [CONTRACT.md](CONTRACT.md) for
 wire and projection rules, and [UPSTREAM_CONTRACT.json](UPSTREAM_CONTRACT.json)
-for the reviewed source hashes. Root `README.md` remains intentionally empty.
+for the reviewed source hashes. The [project README](../../README.md) provides the
+current cross-module navigation.
 The optional feature's complete wire, typed outcomes and remaining owner
 integration requirements are in [OBJECTIVE_TRANSPORT.md](OBJECTIVE_TRANSPORT.md).
 The separately pinned history feature has its own complete development and
@@ -108,3 +118,9 @@ The independent, default-off CPU history adapter is documented in
 requirements and unresolved outcomes. It provides no device startup or discovery,
 effect, retry, new K/D allocation, acknowledgement or retirement. It has no CLI or
 UI entry, and the ordinary Session does not enable it.
+
+The independent [original CognitiveStore compatibility lane](../../tests/workloads/hepta_cognitive_store/README.md)
+links the unchanged owner API for real WAL, SIGKILL/reopen and concurrent CAS
+checks. Host and ordinary Asterinas guest results are recorded separately. It
+cannot qualify production writer-lock or authenticated recovery without the
+actual external provider/host authority and current witness.

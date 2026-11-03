@@ -1,0 +1,65 @@
+diff --git a/tests/ui/test-notes-bootstrap-ipc.py b/tests/ui/test-notes-bootstrap-ipc.py
+--- a/tests/ui/test-notes-bootstrap-ipc.py
++++ b/tests/ui/test-notes-bootstrap-ipc.py
+@@ -200,8 +200,23 @@
+                 require(time.monotonic() < deadline, "initial Notes layout timed out")
+                 time.sleep(0.05)
+ 
+-            # Query the actual application through the received descriptor.
+-            # This has no mutation text and creates no operation or grant.
++            # The actual recovery receiver must reject even a fully shaped
++            # mutation. This hostile transport fixture has no original grant;
++            # it must not reach the document mutation method on this lane.
++            forbidden = {"schema_version": 1, "action": "replace_note", "target": offer["target"],
++                         "destination_id": offer["destination_id"],
++                         "operation_id": "qualification-recovery-must-not-edit",
++                         "expected_revision": 0, "text": "recovery lane must reject this fixture"}
++            recovery.send(encode(forbidden))
++            try:
++                recovery.recv(2049)
++            except socket.timeout:
++                pass
++            else:
++                raise RuntimeError("recovery receiver accepted or acknowledged replace_note")
++
++            # Query the actual application through the separate descriptor.
++            # Revision zero proves the hostile request did not mutate it.
+             query = {"schema_version": 1, "action": "observe", "target": offer["target"],
+                      "operation_id": "qualification-bootstrap-read-only", "payload_sha256": "0" * 64}
+             raw = encode(query)
+@@ -234,6 +249,7 @@
+     print(json.dumps({"profile": "isolated_session_bootstrap_transport_fixture", "private_fd_roundtrip": True, "bootstrap_schema_version": 2, "ordered_private_endpoints": ["effect_stream", "recovery_datagram"],
+                       "parent_rejection_blocks_startup_and_reaps_child": True, "initial_task_id": 1,
+                       "public_launch_does_not_export": True, "actual_app_read_only_query": True,
++                      "recovery_lane_rejects_replace": True,
+                       "document_revision": 0, "hepta_production_owner_run": False,
+                       "final_use_authority_run": False, "asterinas_run": False}, sort_keys=True))
+ 
+diff --git a/ui/broker/examples/notes_host_probe.rs b/ui/broker/examples/notes_host_probe.rs
+--- a/ui/broker/examples/notes_host_probe.rs
++++ b/ui/broker/examples/notes_host_probe.rs
+@@ -43,6 +43,9 @@
+     trill_ui_core::notes_private_unix::send_channels(
+         &bootstrap, &serde_json::to_vec(&identity)?, &app_channel, &recovery_app, Duration::from_secs(1),
+     )?;
++    drop(app_channel);
++    drop(recovery_app);
++    drop(bootstrap);
+     let target = NotesTarget::from_private_channels(owner, recovery, identity.clone())?;
+     struct OwnedChild(Child);
+     impl Drop for OwnedChild {
+diff --git a/support/ui/NOTES_ORGAN.md b/support/ui/NOTES_ORGAN.md
+--- a/support/ui/NOTES_ORGAN.md
++++ b/support/ui/NOTES_ORGAN.md
+@@ -234,8 +234,9 @@
+ incarnation, operation id and original raw payload SHA-256. Stale datagrams
+ are discarded within a total deadline; no effect is replayed.
+ 
+-The app has a bounded two-slot GUI handoff, one possible request per lane. Expired handoffs are discarded
+-before document mutation. The GUI thread serializes external and local edits.
++The app has a bounded two-slot GUI handoff shared by both lanes. Expired
++handoffs are discarded before document mutation; a timed-out recovery request
++cannot create an unbounded queue. The GUI thread serializes external and local edits.
+ An applied reply means its in-memory document changed; the original production
+ owner still owns durable outcome publication.
+ 

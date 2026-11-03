@@ -30,7 +30,10 @@ use super::{
 use crate::{
     prelude::*,
     process::{INIT_STACK_SIZE, Process, ProcessVm, ResourceType},
-    vm::page_cache::Vmo,
+    vm::{
+        page_cache::Vmo,
+        user_memory::{UserMemoryAccount, UserMemoryOwner},
+    },
 };
 
 /// The upper bound for allocations under the `MAP_32BIT` mmap flag.
@@ -50,6 +53,8 @@ pub(crate) struct Vmar {
     rss_counters: [PerCpuCounter; NUM_RSS_COUNTERS],
     /// The process VM
     process_vm: ProcessVm,
+    /// Stable allocation binding; fork gets a new binding with the same family budget.
+    user_memory_owner: UserMemoryOwner,
     /// The number of handles that this `Vmar` has (see [`super::VmarHandle`])
     num_handles: AtomicUsize,
     /// Weak self reference
@@ -60,7 +65,9 @@ impl Vmar {
     /// Creates a new VMAR.
     ///
     /// This method should only be invoked by [`super::VmarHandle`].
-    pub(super) fn new(process_vm: ProcessVm) -> Arc<Self> {
+    pub(super) fn new(process_vm: ProcessVm, user_memory_owner: UserMemoryOwner) -> Arc<Self> {
+        let user_memory_owner =
+            Some(user_memory_owner.unwrap_or_else(|| UserMemoryAccount::new(usize::MAX)));
         let inner = VmarInner::new();
         let vm_space = VmSpace::new();
         let rss_counters = array::from_fn(|_| PerCpuCounter::new());
@@ -69,9 +76,14 @@ impl Vmar {
             vm_space: Arc::new(vm_space),
             rss_counters,
             process_vm,
+            user_memory_owner,
             num_handles: AtomicUsize::new(1),
             weak_self: weak_self.clone(),
         })
+    }
+
+    pub(crate) fn user_memory_owner(&self) -> &UserMemoryOwner {
+        &self.user_memory_owner
     }
 
     /// Returns the current RSS count for the given RSS type.

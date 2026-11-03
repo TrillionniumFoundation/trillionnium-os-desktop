@@ -33,8 +33,8 @@ pub(super) fn sys_setgroups(
         new_groups.insert(gid);
     }
 
-    let credentials = ctx.credentials_mut();
-    *credentials.groups_mut() = new_groups;
+    let new_groups = Arc::try_new(new_groups).map_err(|_| Error::new(Errno::ENOMEM))?;
+    ctx.with_credentials_mut(|credentials| credentials.set_groups(new_groups));
 
     Ok(SyscallReturn::Return(0))
 }

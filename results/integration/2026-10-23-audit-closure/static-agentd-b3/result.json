@@ -1,0 +1,174 @@
+{
+  "schema": "hepta.original-agentd-static-release-feasibility.v1",
+  "started_at_utc": "2026-10-23T12:49:36.271862+00:00",
+  "source": {
+    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+  },
+  "built": true,
+  "executed_binary": false,
+  "native_grant_verified": false,
+  "g2_completed": false,
+  "f1_completed": false,
+  "production_authority": false,
+  "manifest_limits_changed": false,
+  "features_disabled": false,
+  "profile_overridden": false,
+  "ordinary_runtime_receipt_replaced": false,
+  "command": [
+    "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--release",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "-p",
+    "codex-hepta-agentd",
+    "--bin",
+    "codex-hepta-agentd",
+    "-j4"
+  ],
+  "cwd": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/codex-rs",
+  "environment": {
+    "PATH": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "HOME": "/home/qian-qi",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "CARGO_HOME": "/home/qian-qi/.cargo",
+    "RUSTC": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "CARGO_TARGET_DIR": "/data/hepta-static-release-b3-target.0f4j8g5g",
+    "TMPDIR": "/data/hepta-static-release-b3-tmp.ab0163dl",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C target-feature=+crt-static -C relocation-model=static -C link-arg=-no-pie",
+    "OPENSSL_STATIC": "1"
+  },
+  "target_directory": "/data/hepta-static-release-b3-target.0f4j8g5g",
+  "temporary_directory": "/data/hepta-static-release-b3-tmp.ab0163dl",
+  "build_deadline_seconds": 7200,
+  "deadline_scope": "Independent static release feasibility only; original preparation 3600s and runtime deadlines unchanged",
+  "original_default_features": [
+    "production-cognitive-write"
+  ],
+  "release_profile": {
+    "lto": "thin",
+    "debug": "line-tables-only",
+    "split-debuginfo": "off",
+    "strip": false,
+    "codegen-units": 4
+  },
+  "tools": {
+    "cargo": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "bytes": 42185192,
+      "sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66",
+      "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)"
+    },
+    "rustc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "bytes": 644784,
+      "sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6",
+      "version": "rustc 1.95.0 (59807616e 2026-04-14)"
+    },
+    "cc": {
+      "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "bytes": 1023032,
+      "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "version": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+    },
+    "ld": {
+      "path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+      "bytes": 1359128,
+      "sha256": "e9ceb054c12207970f2726dfc07e9a66b411602748628baf27399f02a9bbb31b",
+      "version": "GNU ld (GNU Binutils for Ubuntu) 2.42"
+    },
+    "ar": {
+      "path": "/usr/bin/x86_64-linux-gnu-ar",
+      "bytes": 55792,
+      "sha256": "6452af2eea333b8c65e1adb92964fc8f97863ab003fa13f9d12bff5345cd7dbe",
+      "version": "GNU ar (GNU Binutils for Ubuntu) 2.42"
+    },
+    "pkg-config": {
+      "path": "/usr/bin/pkgconf",
+      "bytes": 45168,
+      "sha256": "7e8152db1b0c7e49d47b4b82a70dc9997b557951c5d4d938b0e7f208ce9eb10b",
+      "version": "1.8.1"
+    }
+  },
+  "initial_static_archives": [
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libc.a",
+      "bytes": 6136944,
+      "sha256": "a40c7eae7581f977b65eddb81cbc799213a695749e039d966db55bdee4ac9621"
+    },
+    {
+      "path": "/usr/lib/gcc/x86_64-linux-gnu/13/libstdc++.a",
+      "bytes": 6583910,
+      "sha256": "1f5a271fb1917b827ddcc3f65be5bf9bb4ab86be8de6acb6566aa638e92f602c"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libcap.a",
+      "bytes": 56650,
+      "sha256": "0e635425dd8186c44ccd5bb4363d5bf37d66595f4caa40046bd602c2981eff5b"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libssl.a",
+      "bytes": 1241282,
+      "sha256": "8c64c9a98224daf8b5f0b58285adb8276e8037bdc5daa198b8e015fb54db6c40"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypto.a",
+      "bytes": 10023278,
+      "sha256": "9dffa9e77b1cb29b890e473cf9ee379818cb57a576c7ef476356cd4d5a433bcd"
+    }
+  ],
+  "source_before": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/source-before.json",
+    "bytes": 2546025,
+    "sha256": "8571c21db806bcc10e2e1bed40a83a0be03d9951a6f4b441ef61c968776b5c1c"
+  },
+  "dependency_tree": {
+    "command": [
+      "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "tree",
+      "--locked",
+      "--offline",
+      "--target",
+      "x86_64-unknown-linux-gnu",
+      "-p",
+      "codex-hepta-agentd",
+      "--edges",
+      "normal,build",
+      "--prefix",
+      "depth",
+      "--format",
+      "{p} {f}"
+    ],
+    "returncode": 0,
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/dependency-tree.txt",
+    "bytes": 339867,
+    "sha256": "5006ae19bd53e650d214b14cd7cb2c93603164318294da473b03ff4294528075"
+  },
+  "v8_linked_in_original_agentd_graph": false,
+  "build_started_at_utc": "2026-10-23T12:49:40.267313+00:00",
+  "build_finished_at_utc": "2026-10-23T13:28:02.648767+00:00",
+  "build_command_succeeded": true,
+  "unstripped_binary": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/codex-hepta-agentd.unstripped",
+    "bytes": 1062042728,
+    "sha256": "017452e9cba95c1b0b378b67ab0e5e37dc0018aa82edbaeaf5a4c75d7adc17ad"
+  },
+  "source_after": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/source-after.json",
+    "bytes": 2546025,
+    "sha256": "8571c21db806bcc10e2e1bed40a83a0be03d9951a6f4b441ef61c968776b5c1c"
+  },
+  "source_inputs_unchanged": true,
+  "build.log": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/build.log",
+    "bytes": 62870,
+    "sha256": "b5f744291c5ae41436adc00c5986f00759b1ed67d02b3a33f19fa34c95cd0683"
+  },
+  "finished_at_utc": "2026-10-23T13:28:10.557020+00:00"
+}

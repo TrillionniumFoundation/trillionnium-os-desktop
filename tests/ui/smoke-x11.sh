@@ -31,6 +31,13 @@ cleanup() {
     if [[ "$status" -ne 0 ]]; then
         echo "A10 X11 smoke FAILED (Linux-host only)" >&2
         for f in "$root"/*.log; do if [[ -f "$f" ]]; then tail -n 35 "$f" >&2; fi; done
+        if [[ "${A10_X11_EVIDENCE_DIR:-}" = /* ]]; then
+            mkdir -p -- "$A10_X11_EVIDENCE_DIR"
+            for f in window-tree.txt window-report.txt session.log shell-before.log shell-after.log xvfb.log; do
+                if [[ -f "$root/$f" ]]; then cp -- "$root/$f" "$A10_X11_EVIDENCE_DIR/"; fi
+            done
+            printf '%s\n' "$status" > "$A10_X11_EVIDENCE_DIR/failed-exit-code.txt"
+        fi
     fi
     rm -rf -- "$root"
     exit "$status"
@@ -104,21 +111,47 @@ for app in notes calculator terminal; do
     [[ "$first" == 1 ]] || { echo "No real $app native layout: $result" >&2; exit 1; }
 done
 assert_mapped_windows() {
-    xwininfo -display "$DISPLAY" -root -tree >"$root/window-tree.txt"
-    python3 - "$root/window-tree.txt" <<'PYMAP'
-import re,subprocess,sys
-s=open(sys.argv[1]).read()
-ids=[]
-for klass,required in (("trill-shell",1),("trill-app-window",3)):
-    matches=re.findall(r'^\s*(0x[0-9a-fA-F]+).*?\("'+klass+r'" "'+klass+r'"\)',s,re.M)
-    assert len(matches)==required, (klass,len(matches),s)
-    ids.extend(matches)
-assert len(set(ids))==4,ids
-for wid in ids:
-    report=subprocess.check_output(["xwininfo","-id",wid],text=True)
-    assert "Map State: IsViewable" in report, (wid,report)
-    props=subprocess.check_output(["xprop","-id",wid,"WM_CLASS"],text=True)
-    assert 'trill-' in props,(wid,props)
+    python3 - "$root/window-tree.txt" "$root/window-report.txt" <<'PYMAP'
+from pathlib import Path
+import re,subprocess,sys,time
+# An egui layout can precede X11 MapNotify. Observe the actual server state
+# under a separate bounded presentation deadline; layout markers never pass it.
+deadline=time.monotonic()+15
+def query(*command):
+    left=deadline-time.monotonic()
+    if left<=0:
+        raise TimeoutError("X11 presentation deadline elapsed")
+    return subprocess.check_output(command,text=True,timeout=min(2,left))
+last="No X11 server observation"
+while time.monotonic()<deadline:
+    reports=[]
+    try:
+        s=query("xwininfo","-root","-tree")
+        Path(sys.argv[1]).write_text(s)
+        ids=[]
+        for klass,required in (("trill-shell",1),("trill-app-window",3)):
+            matches=re.findall(r'^\s*(0x[0-9a-fA-F]+).*?\("'+klass+r'" "'+klass+r'"\)',s,re.M)
+            if len(matches)!=required:
+                raise ValueError((klass,len(matches),s))
+            ids.extend(matches)
+        if len(set(ids))!=4:
+            raise ValueError(("nonunique windows",ids))
+        for wid in ids:
+            report=query("xwininfo","-id",wid)
+            props=query("xprop","-id",wid,"WM_CLASS")
+            reports.append(report+props)
+            if "Map State: IsViewable" not in report or 'trill-' not in props:
+                raise ValueError((wid,report,props))
+        if time.monotonic()>=deadline:
+            raise TimeoutError("X11 observation completed after deadline")
+        Path(sys.argv[2]).write_text("\n".join(reports))
+        break
+    except (OSError,ValueError,TimeoutError,subprocess.SubprocessError) as error:
+        last=str(error)
+        Path(sys.argv[2]).write_text("\n".join(reports)+"\n"+last+"\n")
+        time.sleep(min(.05,max(0,deadline-time.monotonic())))
+else:
+    raise RuntimeError("Four real mapped X11 windows not observed: "+last)
 print("A10 mapped X11 windows verified: 1 Rust Shell + 3 independently spawned Rust apps")
 PYMAP
 }
@@ -157,6 +190,10 @@ print("A10 X11 framebuffer pixels VERIFIED:",im.size,"colors",">1000000" if colo
 PYPIX
 else
     echo 'A10 X11 framebuffer pixels NOT VERIFIED: scrot/Pillow not installed'
+    if [[ "${A10_REQUIRE_X11_PIXELS:-0}" = 1 ]]; then
+        echo 'This qualification requires an actual framebuffer capture.' >&2
+        exit 2
+    fi
 fi
 for id in "${task_ids[@]}"; do "$ctl" cancel "$id" "$instance" >/dev/null; done
 for _ in {1..100}; do

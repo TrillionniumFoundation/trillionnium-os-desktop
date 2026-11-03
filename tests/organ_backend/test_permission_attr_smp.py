@@ -33,8 +33,8 @@ source_spec.loader.exec_module(source_verifier)
 
 def fixture_serial(control=None):
     failed = checker.FAILURES[control]
-    lines = [checker.BOOTSTRAP, '[ktest runner] running 277 tests in 1 crates',
-             'running 277 tests in crate "aster-core"', '']
+    lines = [checker.BOOTSTRAP, '[ktest runner] running 380 tests in 1 crates',
+             'running 380 tests in crate "aster-core"', '']
     for case, name in checker.TESTS.items():
         busy = "false" if case in failed else "true"
         fields = f"case={case} cpu_a=0 cpu_b=1 entered=1 lock_busy={busy} a_rc=0 b_rc=0"
@@ -50,7 +50,7 @@ def fixture_serial(control=None):
         lines.extend([f"test {name} ...", "PERMISSION_SMP_OBSERVATION " + fields,
                       " FAILED" if case in failed else " ok"])
     status = "FAILED" if failed else "ok"
-    lines.extend(['', f'test result: {status}. {3 - len(failed)} passed; {len(failed)} failed; 274 filtered out.'])
+    lines.extend(['', f'test result: {status}. {3 - len(failed)} passed; {len(failed)} failed; 377 filtered out.'])
     if not failed:
         lines.extend(['', '[ktest runner] All crates tested.'])
     return ('\n'.join(lines) + '\n').encode()
@@ -109,13 +109,14 @@ class SerialOracle(unittest.TestCase):
             'missing_case': good.replace(b'case=owner_alias', b'case=missing'),
             'missing_test': good.replace(checker.TESTS['owner_alias'].encode(), b'aster_core::other'),
             'duplicate_test': good.replace(checker.TESTS['memfd_seal'].encode(), checker.TESTS['owner_alias'].encode()),
-            'reduced_compiled_suite': good.replace(b'277 tests', b'276 tests').replace(b'274 filtered', b'273 filtered'),
-            'filtered_required_test': good.replace(b'3 passed', b'2 passed').replace(b'274 filtered', b'275 filtered'),
+            'reduced_compiled_suite': good.replace(b'380 tests', b'379 tests').replace(b'377 filtered', b'376 filtered'),
+            'historical_compiled_suite': good.replace(b'380 tests', b'277 tests').replace(b'377 filtered', b'274 filtered'),
+            'filtered_required_test': good.replace(b'3 passed', b'2 passed').replace(b'377 filtered', b'378 filtered'),
             'soft_skip': good.replace(b'case=owner_alias', b'[skipped: SMP unavailable] case=owner_alias'),
             'missing_terminal': good.replace(b' ok\n', b'\n', 1),
             'duplicate_terminal': good.replace(b' ok\n', b' ok\n ok\n', 1),
             'missing_completion': good.replace(b'[ktest runner] All crates tested.', b''),
-            'duplicate_runner': good + b'[ktest runner] running 277 tests in 1 crates\n',
+            'duplicate_runner': good + b'[ktest runner] running 380 tests in 1 crates\n',
             'fatal_panic': good + b'An uncaught panic occurred:\n',
             'observed_outside_test': good + b'PERMISSION_SMP_OBSERVATION case=owner_alias\n',
             'duplicate_field': good.replace(b'cpu_a=0', b'cpu_a=0 cpu_a=0'),
@@ -258,6 +259,38 @@ class GuestOracle(unittest.TestCase):
     def test_parser_fixture_round_trip(self):
         self.assertEqual(checker.check_guest(self.guest)['passed'], 3)
 
+    def test_symlinked_osdk_request_requires_exact_canonical_invocation_and_artifacts(self):
+        alias = self.guest.parent / 'osdk-target-link'
+        alias.symlink_to(self.guest.parent, target_is_directory=True)
+        initrd = self.guest.parent / 'initrd'
+        initrd.write_bytes(b'Parser initrd fixture only, never executable')
+        for with_initrd in (False, True):
+            with self.subTest(with_initrd=with_initrd):
+                record = copy.deepcopy(self.record)
+                record['requested_osdk_args'][1] = str(alias / self.kernel.name)
+                options = ('-kernel', '-initrd') if with_initrd else ('-kernel',)
+                if with_initrd:
+                    record['requested_osdk_args'][2:2] = ['-initrd', str(alias / initrd.name)]
+                    record['argv'][3:3] = ['-initrd', str(initrd)]
+                    record['artifacts']['-initrd'] = {
+                        'path': str(initrd), 'size': initrd.stat().st_size,
+                        'sha256': checker.sha(initrd.read_bytes()),
+                    }
+                self.save(record)
+                self.assertEqual(checker.check_guest(self.guest)['passed'], 3)
+                for option in options:
+                    original = record['requested_osdk_args'][record['requested_osdk_args'].index(option) + 1]
+                    changed = copy.deepcopy(record)
+                    changed['argv'][changed['argv'].index(option) + 1] = original
+                    self.save(changed)
+                    with self.assertRaisesRegex(ValueError, 'actual QEMU arguments differ'):
+                        checker.check_guest(self.guest)
+                    changed = copy.deepcopy(record)
+                    changed['artifacts'][option]['path'] = original
+                    self.save(changed)
+                    with self.assertRaisesRegex(ValueError, 'recorded kernel input path differs'):
+                        checker.check_guest(self.guest)
+
     def test_profile_exit_and_command_tampering(self):
         variants = []
         for key, value in [('raw_exit_code', 0), ('timed_out', True), ('ktest_profile', 'default'), ('crate', 'ostd')]:
@@ -316,10 +349,11 @@ class ProfileAndFullDenominator(unittest.TestCase):
 
     def test_full_core_retains_all_parent_denominators_and_required_names(self):
         required = sorted(full_checker.REQUIRED_CORE_TESTS)
-        self.assertEqual(len(required), 36)
+        self.assertEqual(len(required), 138)
         with tempfile.TemporaryDirectory(prefix='permission-full-count-parser-') as directory:
             guest = Path(directory)
-            for count, omit_required in ((274, False), (273, False), (274, True),
+            for count, omit_required in ((377, False), (376, False), (377, True),
+                                         (375, False), (274, False), (273, False), (274, True),
                                          (269, False), (268, False), (269, True),
                                          (266, False), (265, False), (266, True),
                                          (264, False), (265, True), (263, False), (263, True),
@@ -340,8 +374,8 @@ class ProfileAndFullDenominator(unittest.TestCase):
                     'crate': 'aster-core', 'raw_exit_code': 33, 'timed_out': False,
                     'serial_sha256': checker.sha(raw)}))
                 with self.subTest(count=count, omit_required=omit_required):
-                    if count == 274 and not omit_required:
-                        self.assertEqual(full_checker.check_guest(guest, 'aster-core')['passed'], 274)
+                    if count == 377 and not omit_required:
+                        self.assertEqual(full_checker.check_guest(guest, 'aster-core')['passed'], 377)
                     else:
                         with self.assertRaises(ValueError):
                             full_checker.check_guest(guest, 'aster-core')

@@ -1,0 +1,709 @@
+{
+  "schema": "trillionnium.ordinary-pt-physical-nomemory-qualified.v1",
+  "source_head": "180d6dea2da8472faef5876a21f5054197bccd7a",
+  "source_tree": "aae21dee05f6a0db69272d5f0ff4678fdccae9bd",
+  "source_unchanged": true,
+  "evidence_root": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01",
+  "elapsed_seconds": 627.577,
+  "full_suites": [
+    {
+      "crate": "ostd",
+      "declared": 230,
+      "passed": 230,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 8,
+      "kernel_sha256": "a6ec6a7803283ab0df14d087c35da374eb45d623286f9f4c3b1b649f53990c6d",
+      "serial_sha256": "4955fbe91c1d6b94aa14960be9b26210c786a0b913314849c589098d091409b4"
+    },
+    {
+      "crate": "osdk-frame-allocator",
+      "declared": 20,
+      "passed": 20,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "30af368efe3e6372f505349efe26e9dbf88a52145322502355401ee87666dfa9",
+      "serial_sha256": "c17c02345858d756afbda7c95d64d6d8e134545e975b978a72ce5e287318e2e2"
+    },
+    {
+      "crate": "aster-core",
+      "declared": 360,
+      "passed": 360,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 121,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "3df7651b33d989e01648e0ffc21b71bcd3113cba680125d970e88bc3af526427",
+      "serial_sha256": "d28029b8f4f0f221047a29fd592b2d3899301a34e85481fe057dd2debcd7f37c"
+    },
+    {
+      "crate": "aster-mlsdisk",
+      "declared": 15,
+      "passed": 15,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "78259662fa6a7a3a787ebcf2295c24a7268c102131b1e67dac7bec480a8768d5",
+      "serial_sha256": "dff69b36c8b2c81a91d8846e04f6fa35b28bc6dd80ca7540d2f1b931af191904"
+    }
+  ],
+  "ordinary": {
+    "passed": true,
+    "source_head": "180d6dea2da8472faef5876a21f5054197bccd7a",
+    "source_tree": "aae21dee05f6a0db69272d5f0ff4678fdccae9bd",
+    "kernel_elf_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "marker_counts": {
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_EXEC_EFAULT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_ENOENT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "HEPTA_THREAD_SESSION_SHARED": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "qemu_exit": 33,
+    "source_inputs_unchanged": true,
+    "source_file_count": 9590
+  },
+  "sgid30": {
+    "passed": true,
+    "cases": [
+      {
+        "fs": "ramfs",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      }
+    ],
+    "timed_out": false,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "396abd5506de19a410c2391333d1413370f14c59c0e92a9c083a0eb3d5f87f36",
+    "probe_source_sha256": "00d2eb17d2fe3ab32454a3f446b099b227b33e4df9733e86e9be6490576ae7dd",
+    "raw_qemu_exit": 33
+  },
+  "ownership12": {
+    "passed": true,
+    "cases": [
+      "notes_stream",
+      "notes_seqpacket",
+      "listener_pending_stream",
+      "listener_pending_seqpacket",
+      "datagram_future_connect",
+      "self_stream",
+      "self_seqpacket",
+      "self_datagram",
+      "seqpacket_empty_slots",
+      "concurrent_cross_edges",
+      "ancillary_multisegment_253",
+      "ancillary_rejected_inputs_publish_nothing"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "7f357e210c27cd2f35b50a022ee05763b7e396d883bcaea1d9985e372799409f",
+    "probe_source_sha256": "62672e40c7c5c7f83f594ec734aed6e0cb4029d73b55742a9b67c85006115e21",
+    "raw_qemu_exit": 33
+  },
+  "proc-privileges12": {
+    "passed": true,
+    "cases": [
+      [
+        "initial_nnp_agrees",
+        "1"
+      ],
+      [
+        "per_thread_nnp",
+        "1"
+      ],
+      [
+        "main_thread_nnp_unchanged",
+        "1"
+      ],
+      [
+        "child_sets_and_cannot_clear_nnp",
+        "1"
+      ],
+      [
+        "parent_attests_child_nnp",
+        "1"
+      ],
+      [
+        "four_child_uids",
+        "1"
+      ],
+      [
+        "four_child_gids",
+        "1"
+      ],
+      [
+        "child_groups_empty",
+        "1"
+      ],
+      [
+        "five_child_capsets_zero",
+        "1"
+      ],
+      [
+        "parent_uid_unchanged",
+        "1"
+      ],
+      [
+        "parent_nnp_unchanged",
+        "1"
+      ],
+      [
+        "exec_preserves_identity",
+        "1"
+      ]
+    ],
+    "timed_out": false,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "923063b008790be29b0a266bbbd8f274583effbec02c4feb513baa1652ccf8fd",
+    "probe_source_sha256": "7e711cefe6cc212beb2b0590dd54507b8b954ce75bb38a6c9a2bf98b133b2236",
+    "raw_qemu_exit": 33
+  },
+  "memfd4": {
+    "passed": true,
+    "cases": [
+      "detached_metadata",
+      "readonly_four_seals",
+      "duplicate_lifetime",
+      "sealed_mutations_rejected"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "b9e744717cb0ebe69c44bf61350d844aad50c4221d0724e627705dbc32f3c873",
+    "probe_source_sha256": "8a69021270396bf2af25abcd616f4a3c047b6d85ffda99e242ab705c17adfd0e",
+    "raw_qemu_exit": 33
+  },
+  "signal22": {
+    "passed": true,
+    "cases": [
+      "fault_siginfo",
+      "unmapped_fault_siginfo",
+      "kill_reap",
+      "tgkill_reap",
+      "group_kill_reap",
+      "pidfd_dynamic_reap",
+      "original_permissions",
+      "dynamic_realtime_fifo",
+      "dynamic_signalfd",
+      "ptrace_fault_owner",
+      "rt_queue_argument_contract",
+      "rt_queue_payload_and_zero",
+      "rt_queue_actual_credentials",
+      "rt_queue_nonleader_shared_pending",
+      "signal_argument_bounds",
+      "signal_target_before_range",
+      "signal_group_range",
+      "pidfd_flags_fd_copy_order",
+      "pidfd_reaped_owner_order",
+      "signal_actual_credentials",
+      "signal_valid_delivery",
+      "kill_nonleader_shared_pending"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "e8e2b6954a37fb236c63622b7d8f80379d9db8a1af1fcc61f4b6bdf9682f930b",
+    "probe_source_sha256": "06a315db61cb2286ef4f392e7af62c33513ae69e3b15e908b7ec36be6c8d8f84",
+    "raw_qemu_exit": 33
+  },
+  "lifecycle": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "lifecycle",
+      "observations": 164,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 2.250379121978767,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "ba31e84d60fa54f6e3d991606bbe2ed31325cacf0f28aec3e72e53738d886332",
+    "probe_source_sha256": {
+      "lifecycle/lifecycle_credentials.c": "03cfd9e53bdc9592688add6141bd4a6dbedde2168580b2d064b95171e0064878",
+      "lifecycle/lifecycle_local.c": "eaf52ad3ef6909098fe5ba02e8975952e2b69fe5e98e92622bd0a5ad309b6e72",
+      "lifecycle/lifecycle_main.c": "4c8703ec0ba60faede5640f693cfde3e0074df3ab683606dd485710785006b77",
+      "lifecycle/lifecycle_paths.c": "327c30b558ab1c76072c085ea09ce8bd840de66da2f4b91eb69f0187875fc8d7",
+      "lifecycle/lifecycle_probe.h": "2b8450a58bc91eabc099a6c77afe9e40038116db799689603f61c520830e3fe5"
+    },
+    "serial_sha256": "e5cbf22ba63797cd730b6d5df8f1c795dcd5ed53073da64d26e6935331255cd1"
+  },
+  "stat": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "stat",
+      "observations": 54,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 1.827922492986545,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "cf9671f039504ac57d86a1bd9625fb7a35a6d56b421730b1020df4a8fa1b0a31",
+    "probe_source_sha256": {
+      "stat/stat_probe.c": "88e0568833bc7835d9435b29165ab9fcc42611fcf8bb718acc07852dd3045022"
+    },
+    "serial_sha256": "66dba9c3dee5cbd8b44ef53ca6d95af1eb45974508f342cfd23764e36829763c"
+  },
+  "traceme": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "traceme",
+      "observations": 15,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 1.88980881893076,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "ec9a468802f382032f61e0e94405a5da74229e750eab14739207f64299df1771",
+    "probe_source_sha256": {
+      "traceme/traceme_probe.c": "7d596bf5fbc157ec05daee28f1dcc3f872cfe42019b35c370904b58debfe075a"
+    },
+    "serial_sha256": "4eb582622fa6cb8a9ddf32ba23aceb84eb23a0ad72edc5b1ba9bb274604026ac"
+  },
+  "retained_receipts": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/pipeline.json",
+      "sha256": "f799b030a1696157230174ac1a7b99b491b755f0457c6ef210f40ac1d1598dd4"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/full/outer-result.json",
+      "sha256": "c2a21381541d5a07679b0410a211fb25901e62e5b50a73a099bf2a023bd72d22"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/full/osdk-retention.json",
+      "sha256": "6bc736eeeb4aab2a71b314e038037e6a704441edbd7ca6bdd6b3917ffbbb57fd"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/full/retention.json",
+      "sha256": "5c7a0d5eaf2a9bb7f1d095edecd0d421a7a7afb245d594fc27b7fe5c2e262ca4"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/full/source-before.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/full/source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/ordinary/result.json",
+      "sha256": "834ab25e7e71f19ac27a5ae974a84d4a49535d50d556f8a4828700282989d15f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/sgid30/result.json",
+      "sha256": "77223ee1683fcb7f33c9faa793c57a78b93802e2e78e6a8a3a1a7f0410777b8a"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/sgid30/serial.log",
+      "sha256": "09c460b4f2f1bf41bb2f11c19d958572f68f6a1c02995225785931ebb0117da7"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/ownership12/result.json",
+      "sha256": "ba7005845e407d0d3686df055d042c68485e5c57133e39f7bfcb0b266ed0b3bd"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/ownership12/serial.log",
+      "sha256": "3b1e5004999c2ef4bc9b3575fb94a9282017fc83189cba4775b1f21b09bb75c0"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/proc-privileges12/result.json",
+      "sha256": "20af7a9462667e825b05e96aca0365c7660895607b3fcda668280bb7bc5f5c8c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/proc-privileges12/serial.log",
+      "sha256": "908cb6cf00a34e97de360a94a8aaa5dcbd297e76fd49eb156287a0d1ad3388b3"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/memfd4/result.json",
+      "sha256": "30b26ffee5a006da41f948503541f9a2b1a2ac34c63bf0914b85f03962239496"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/memfd4/serial.log",
+      "sha256": "164d363e58f50835d9f18a6c122211fe5c0526908c8c30bade3fe338ec0ab317"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/signal22/result.json",
+      "sha256": "3dc79c2145112645c24dff7c1a2062abbedf430640ce507c038c0904c594481b"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/signal22/serial.log",
+      "sha256": "1d97a2778ea518f0d5f059e11f4f97a9c28c01928bb80b1c790950866ec78b0a"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/lifecycle/result.json",
+      "sha256": "0e2401492be271d400da757baaa8ce8a30a475f02e8df198cf161879a4d1f448"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/lifecycle/serial.log",
+      "sha256": "e5cbf22ba63797cd730b6d5df8f1c795dcd5ed53073da64d26e6935331255cd1"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/stat/result.json",
+      "sha256": "5e6a45c2f1389ed323cc65340a684bb71325436af883efee1d1553e06d0a71e8"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/stat/serial.log",
+      "sha256": "66dba9c3dee5cbd8b44ef53ca6d95af1eb45974508f342cfd23764e36829763c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/traceme/result.json",
+      "sha256": "cca6fdda0c771d942f9d12635fb47466fa1b8718e7fd561d1e2ae65d433cfc7f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/traceme/serial.log",
+      "sha256": "4eb582622fa6cb8a9ddf32ba23aceb84eb23a0ad72edc5b1ba9bb274604026ac"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/ownership12-source-bound.json",
+      "sha256": "ffc539319d27c8e8f91291977849cda11a5efe01c7663f3dcee40f17df31c4ab"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/ownership12-source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/memfd4-source-bound.json",
+      "sha256": "30fa30f5b24cb13531864b770dd0df2a86dd2f42216cf63038d1d132e28d0c8d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/memfd4-source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/signal22-source-bound.json",
+      "sha256": "e1b7b581fded785d9dba0540decca37f21371fd421dd2bc044baced550d74fd9"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/signal22-source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/lifecycle-source-bound.json",
+      "sha256": "ac1392095e47a6b19b8bdd9c76e8fa59a0d5123708479f925a5c36e1577176c6"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/lifecycle-source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/stat-source-bound.json",
+      "sha256": "87d2f915686d98d472c10751428faf194dc08ba2bd6014c0eee5c68a11b56928"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/stat-source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/traceme-source-bound.json",
+      "sha256": "6b7635b950ff67246f696467e22c696150c97bb8d6b49c6e22797c2ce40328bc"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/traceme-source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/dac6/result.json",
+      "sha256": "197d62d4011179bbf2a929abc41a6297a33f6d6330418557aea9be7c4d8f7542"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/dac6/serial.log",
+      "sha256": "e7dd0986b9b73ee1449151fd39d10634c58557097826fab1cfc656d052703c75"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/dac6-source-bound.json",
+      "sha256": "76aa51c60aeb990a7f23ae706985bc3a6b2d117bb3dbd1b17b4f7af9c6f5b00e"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-native-180d-01/dac6-source-after.json",
+      "sha256": "e3ea1fd39736eba938327ed7b52ddddb342b18370779a643d8ce3baa2cf22b85"
+    }
+  ],
+  "dac6": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "cases": [
+        "SUPPLEMENTARY_DAC_CHECK name=supplementary_file_read actual=1 expected=1 errno=0",
+        "SUPPLEMENTARY_DAC_CHECK name=supplementary_directory_search actual=1 expected=1 errno=0",
+        "SUPPLEMENTARY_DAC_CHECK name=member_write_refused actual=1 expected=1 errno=13",
+        "SUPPLEMENTARY_DAC_CHECK name=nonmember_file_refused actual=0 expected=0 errno=13",
+        "SUPPLEMENTARY_DAC_CHECK name=nonmember_directory_refused actual=0 expected=0 errno=13",
+        "SUPPLEMENTARY_DAC_CHECK name=nonmember_write_refused actual=1 expected=1 errno=13"
+      ],
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_qualification": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 0.7686317750485614,
+    "kernel_sha256": "dd14a6400b3149caaf4b19317394ce1ebf66feeb39029b1650bfba21006a17d7",
+    "probe_sha256": "cc6a20ff3b8bbba32304f77fe83d5397774ce844fb92ca8133f12feb8b433315",
+    "probe_source_sha256": "f1ccea228576a64b99c77290b43f204a783f0f77d2eddab2241aaead5748c11b",
+    "serial_sha256": "e7dd0986b9b73ee1449151fd39d10634c58557097826fab1cfc656d052703c75",
+    "linux_audit_receipt_sha256": "a645d0b644ffc6db7f2662c89c9f4b8c9b13b54898b449d9de16fcbca84a83b5"
+  },
+  "original_reference_and_negative": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/result.json",
+      "sha256": "a645d0b644ffc6db7f2662c89c9f4b8c9b13b54898b449d9de16fcbca84a83b5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/linux-reference.log",
+      "sha256": "dafad8f5779ef3b051f902f859d144cfca803e07d422b25d38c29c29b32b42c7"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/native-baseline.log",
+      "sha256": "c68e9b326958885c966b219844c63efbefc10f9f4c911cbb556822635b762d44"
+    }
+  ],
+  "host_checks": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-host-full-03.log",
+      "sha256": "230c31664b33a066f503416ec4dbb11f389cf0b17c85a99c58578985c2689829"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-source-gate-01.json",
+      "sha256": "088a67167b2a9f2e2d1c949db872f86525f9b3f5e3cda60d62e0a12599a1c1a5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-clippy-01.log",
+      "sha256": "63e17ec7023ec910e04640bf4ecf6fe8a5e70f1df6dbe4cd636b3b98c5c147f4"
+    }
+  ],
+  "retained_host_inventory_failures": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-host-full-01.log",
+      "sha256": "91aaafea6fac7290559614cd5085c5d93d0921ac590d90c146aecc155dc5505e"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/ordinary-pt-host-full-02.log",
+      "sha256": "fa23f24446153c2253786c1bf12accf3afd87eee0a961c20930d5e46047c9845"
+    }
+  ],
+  "profile": {
+    "memory_mib": 512,
+    "vcpus": 1,
+    "core_acceleration": "tcg",
+    "dac_acceleration": "kvm",
+    "ktest_guest_deadline_seconds": 300,
+    "probe_guest_deadline_seconds": 120,
+    "filtered_suite": false
+  },
+  "production_authority": false,
+  "global_recovery_guarantee": false,
+  "all_kernel_memory_accounted": false,
+  "full_linux_permission_parity": false,
+  "physical_pt_nomemory": {
+    "ordinary_4k_available_windows": [
+      0,
+      1,
+      2
+    ],
+    "unpublished_nodes_refunded": [
+      0,
+      1,
+      2
+    ],
+    "held_frames": 125186,
+    "no_quota_or_injection": true,
+    "original_vmar_fault": true,
+    "original_mapping_rss_family_ancestor_unchanged": true,
+    "recovery_after_pressure_release": true,
+    "final_reference_refund": true,
+    "heap_bookkeeping_allocated_before_pressure": true,
+    "physical_free_bytes_zero_claimed": false,
+    "serial_sha256": "d28029b8f4f0f221047a29fd592b2d3899301a34e85481fe057dd2debcd7f37c"
+  },
+  "scope": "One original Vmar read-fault regression on a precommitted VMO at a different x86 root slot. Real ordinary 4KiB allocator failure at 0/1/2 available-frame cuts, private PT rollback, existing mapping/RSS/family/ancestor preservation and final owner refund. No production path changed, no implicit reserve, injected failure, SMP or whole-kernel heap/recovery qualification."
+}

@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "source_sha256": {
+    "lifecycle_probe.h": "66ab916aba4cfd98f3feb379ac2cf831094eb16e68a8fd2c90a863a901ffe367",
+    "lifecycle_main.c": "ecac4cb6c039dbaeeeffdbd40c056d26972f1b3443138afab850ffef80c6d1df",
+    "lifecycle_local.c": "3e06711db18917784e339564841b6b897b3ea8d3048f7cdecf6889a37a923d3b",
+    "lifecycle_credentials.c": "126c2e88a3cf82af65fe69f71060c4754155a0647614a32223cff4bbe007c373",
+    "lifecycle_paths.c": "327c30b558ab1c76072c085ea09ce8bd840de66da2f4b91eb69f0187875fc8d7",
+    "lifecycle-probe": "4a85b5976003234b4602c34897f4a0b0b11735b445060db7e1243f955c5ec916"
+  },
+  "compile_command": [
+    "gcc",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "-fno-pie",
+    "-no-pie",
+    "-pthread",
+    "lifecycle_main.c",
+    "lifecycle_local.c",
+    "lifecycle_credentials.c",
+    "lifecycle_paths.c",
+    "-o",
+    "lifecycle-probe"
+  ],
+  "compile_exit": 0,
+  "command": [
+    "sudo",
+    "-n",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-probe"
+  ],
+  "timeout_seconds": 100,
+  "kernel": "7.0.0-38-generic",
+  "root_fixture_only": true,
+  "cross_child_observer_uid": 60001,
+  "cross_child_observer_permitted_effective_capabilities": 0,
+  "nnp": true,
+  "no_global_configuration_changes": true,
+  "status": "complete",
+  "exit": 42,
+  "seconds": 0.03305666905362159,
+  "inputs_unchanged": true,
+  "raw_sha256": "f0eac3d3a75d8b167be6d47d75ea4c1b316ef064b0bdc8cb5a08e92b5ef0c197",
+  "failed_observations": [
+    {
+      "case": "effective_uid_change_clears",
+      "actual": 2,
+      "expected": 0,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "filesystem_uid_change_clears",
+      "actual": 2,
+      "expected": 0,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "effective_gid_change_clears",
+      "actual": 2,
+      "expected": 0,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    },
+    {
+      "case": "filesystem_gid_change_clears",
+      "actual": 2,
+      "expected": 0,
+      "passed": false
+    },
+    {
+      "case": "credential_fixture_reaped",
+      "actual": 0,
+      "expected": 1,
+      "passed": false
+    }
+  ],
+  "summaries": [
+    {
+      "summary": true,
+      "failed_fixtures": 4,
+      "all_children_reaped": true,
+      "production_isolation_qualified": false
+    }
+  ],
+  "observations": 155
+}

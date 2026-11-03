@@ -1,0 +1,107 @@
+{
+  "actual_adapter_device_qualification": "PENDING_ORIGINAL_RUNTIME_READ_ONLY_RUN",
+  "actual_device_mutation_attempts": 0,
+  "actual_device_ui_observation": false,
+  "desktop_base": "1f4a252c22adf3bc4e1de1ce655e42387070f503",
+  "device_qualification_argv": [
+    "python3",
+    "support/android/device_organ.py",
+    "--droidloomctl-sha256",
+    "aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376",
+    "qualify"
+  ],
+  "effect_dispatch": "NOT_CONFIGURED",
+  "hepta_interface_base_is_main": false,
+  "hepta_interface_review_base": "6d6097da843f5831dfaf9cee3530da512d072a15",
+  "local_tests": {
+    "normal": {
+      "failed": 0,
+      "passed": 19,
+      "seconds": 2.042
+    },
+    "old_cleanup_reproduced_descendant_leak": true,
+    "optimized": {
+      "failed": 0,
+      "passed": 19,
+      "seconds": 2.04
+    }
+  },
+  "patch": {
+    "bytes": 66534,
+    "path": "/workspace/scratch/fee940b0852b/android-organ-integration/android-device-organ-v1.patch",
+    "sha256": "1c6a6007a58e046040379e73b8af68ac2b7c347587545163038f451574ae1c85"
+  },
+  "production_authority": false,
+  "remaining_root_checks": [
+    "git apply --check on full worktree",
+    "full source integrity guard",
+    "source-bound readonly qualify on pocket4",
+    "actual source commit/tree and output receipt"
+  ],
+  "schema_version": 1,
+  "source": [
+    {
+      "base_git_blob": null,
+      "bytes": 2838,
+      "path": "compat/android/device-organ-contract-v1.json",
+      "sha256": "73f0f84da8e8a2cf5be349561256bafc1742e9d70aabfc19fb1f8dc156a97afd"
+    },
+    {
+      "base_git_blob": "c414eb58d5feccac83c6837ae95a0e86b04d4396",
+      "bytes": 10868,
+      "path": "services/hepta-os/README.md",
+      "sha256": "ba0558119aa5ffe3fdf97fdcf69c8988025be6cb662b614152315ba8d5b400ab"
+    },
+    {
+      "base_git_blob": "c154c2854b1d01e7038b7aecf157a0a5e4702d00",
+      "bytes": 37317,
+      "path": "support/android/README.md",
+      "sha256": "610009ae0a939e9abc902042931956db7433dda81a966684d35a5155eabb17b9"
+    },
+    {
+      "base_git_blob": null,
+      "bytes": 12107,
+      "path": "support/android/DEVICE_ORGAN.md",
+      "sha256": "a63c26c5bc230627b5f4016ef6e2578d34be5b73ec922228b5194c082de6040e"
+    },
+    {
+      "base_git_blob": null,
+      "bytes": 19675,
+      "path": "support/android/device_organ.py",
+      "sha256": "71a240653bfe62d76c5bfa33c294c5cc064547ff1a80a8d55a4ba2a4c2ef4c65"
+    },
+    {
+      "base_git_blob": null,
+      "bytes": 7605,
+      "path": "support/android/device_organ_transport.py",
+      "sha256": "bb6059cbc1478e883df9db1a72bea378a3ccb9f82b3d8784ccbe2e9e727ccec5"
+    },
+    {
+      "base_git_blob": "89cccec5db26eed05700a83fac88c2f485e1a336",
+      "bytes": 7745,
+      "path": "support/android/verify_source_integrity.py",
+      "sha256": "230db5385354c9b4ca7151a136215cdeee2b42092fb6a980465b8f88302d468f"
+    },
+    {
+      "base_git_blob": null,
+      "bytes": 17663,
+      "path": "tests/workloads/android/test_device_organ.py",
+      "sha256": "6e18ef8e997c1f162d80ae25dafc54a8fea37490f777e4d3f1a2e3f7bf01cd63"
+    }
+  ],
+  "task": "Android readonly device adapter source handoff",
+  "test_logs": [
+    {
+      "path": "/workspace/scratch/fee940b0852b/android-organ-integration/android-device-organ-normal.log",
+      "sha256": "cd79b24bb77dc118a12e502d435e6fc1c9efdfef33c61528e730930ab065cf0f"
+    },
+    {
+      "path": "/workspace/scratch/fee940b0852b/android-organ-integration/android-device-organ-optimized.log",
+      "sha256": "044348f5407cda5ff4c1079ebe1fb060096602725c2ef93113fe695e56bd49d9"
+    },
+    {
+      "path": "/workspace/scratch/fee940b0852b/android-organ-integration/android-device-organ-old-cleanup-negative.log",
+      "sha256": "0d338da775245edb80f220b694497dda35a8a177a354282057815c3c779520bb"
+    }
+  ]
+}

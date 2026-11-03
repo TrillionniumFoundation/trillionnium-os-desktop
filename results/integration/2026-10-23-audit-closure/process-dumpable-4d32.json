@@ -1,0 +1,705 @@
+{
+  "schema": "trillionnium.process-dumpability-qualified.v1",
+  "source_head": "4d32d94f0a3647155245d0a1b1dbe0d3caec8e7f",
+  "source_tree": "dfeff07356b3255ad91722a4fd2bf91ad720abca",
+  "source_unchanged": true,
+  "evidence_root": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01",
+  "elapsed_seconds": 577.893,
+  "full_suites": [
+    {
+      "crate": "ostd",
+      "declared": 230,
+      "passed": 230,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 8,
+      "kernel_sha256": "63b6342cf305f0c19ae0a773f06d5829cde384ca519987602cbc1beaf984209d",
+      "serial_sha256": "52c8b6f2086cc5ef9dde599e532d1a547c4a5e8b0dd6071e5948ce4d619e0f85"
+    },
+    {
+      "crate": "osdk-frame-allocator",
+      "declared": 20,
+      "passed": 20,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "9e92292bca03a58259c5324e1f31a295a4fe7e8bc1e7e91ec30ac6cf1a2a507a",
+      "serial_sha256": "3bb41e24b6240a1daf9f9c4626106d9cc2db1acb80ff276084e53a246f62525f"
+    },
+    {
+      "crate": "aster-core",
+      "declared": 359,
+      "passed": 359,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 120,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "81dd8c9a4122a0ad024e2bd55cf4e84e70f69f2e1269b3f42c6aaf2d3c0e5d0b",
+      "serial_sha256": "d971f1d5aba1519bbd2eca1251eaf558204fe7b9f6ced530b53630ed48b08e13"
+    },
+    {
+      "crate": "aster-mlsdisk",
+      "declared": 15,
+      "passed": 15,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "51c698451bf931823ecd8d67e7f1ee3a08093217dd42d8a27b46b13b49153edb",
+      "serial_sha256": "3f77487da599e0987c7cc1f663e5951c8c45253eb4c413f6e31fd578bcbc0cf4"
+    }
+  ],
+  "ordinary": {
+    "passed": true,
+    "source_head": "4d32d94f0a3647155245d0a1b1dbe0d3caec8e7f",
+    "source_tree": "dfeff07356b3255ad91722a4fd2bf91ad720abca",
+    "kernel_elf_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "marker_counts": {
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_EXEC_EFAULT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_ENOENT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "HEPTA_THREAD_SESSION_SHARED": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "qemu_exit": 33,
+    "source_inputs_unchanged": true,
+    "source_file_count": 9579
+  },
+  "sgid30": {
+    "passed": true,
+    "cases": [
+      {
+        "fs": "ramfs",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      }
+    ],
+    "timed_out": false,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "396abd5506de19a410c2391333d1413370f14c59c0e92a9c083a0eb3d5f87f36",
+    "probe_source_sha256": "00d2eb17d2fe3ab32454a3f446b099b227b33e4df9733e86e9be6490576ae7dd",
+    "raw_qemu_exit": 33
+  },
+  "ownership12": {
+    "passed": true,
+    "cases": [
+      "notes_stream",
+      "notes_seqpacket",
+      "listener_pending_stream",
+      "listener_pending_seqpacket",
+      "datagram_future_connect",
+      "self_stream",
+      "self_seqpacket",
+      "self_datagram",
+      "seqpacket_empty_slots",
+      "concurrent_cross_edges",
+      "ancillary_multisegment_253",
+      "ancillary_rejected_inputs_publish_nothing"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "7f357e210c27cd2f35b50a022ee05763b7e396d883bcaea1d9985e372799409f",
+    "probe_source_sha256": "62672e40c7c5c7f83f594ec734aed6e0cb4029d73b55742a9b67c85006115e21",
+    "raw_qemu_exit": 33
+  },
+  "proc-privileges12": {
+    "passed": true,
+    "cases": [
+      [
+        "initial_nnp_agrees",
+        "1"
+      ],
+      [
+        "per_thread_nnp",
+        "1"
+      ],
+      [
+        "main_thread_nnp_unchanged",
+        "1"
+      ],
+      [
+        "child_sets_and_cannot_clear_nnp",
+        "1"
+      ],
+      [
+        "parent_attests_child_nnp",
+        "1"
+      ],
+      [
+        "four_child_uids",
+        "1"
+      ],
+      [
+        "four_child_gids",
+        "1"
+      ],
+      [
+        "child_groups_empty",
+        "1"
+      ],
+      [
+        "five_child_capsets_zero",
+        "1"
+      ],
+      [
+        "parent_uid_unchanged",
+        "1"
+      ],
+      [
+        "parent_nnp_unchanged",
+        "1"
+      ],
+      [
+        "exec_preserves_identity",
+        "1"
+      ]
+    ],
+    "timed_out": false,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "923063b008790be29b0a266bbbd8f274583effbec02c4feb513baa1652ccf8fd",
+    "probe_source_sha256": "7e711cefe6cc212beb2b0590dd54507b8b954ce75bb38a6c9a2bf98b133b2236",
+    "raw_qemu_exit": 33
+  },
+  "memfd4": {
+    "passed": true,
+    "cases": [
+      "detached_metadata",
+      "readonly_four_seals",
+      "duplicate_lifetime",
+      "sealed_mutations_rejected"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "b9e744717cb0ebe69c44bf61350d844aad50c4221d0724e627705dbc32f3c873",
+    "probe_source_sha256": "8a69021270396bf2af25abcd616f4a3c047b6d85ffda99e242ab705c17adfd0e",
+    "raw_qemu_exit": 33
+  },
+  "signal22": {
+    "passed": true,
+    "cases": [
+      "fault_siginfo",
+      "unmapped_fault_siginfo",
+      "kill_reap",
+      "tgkill_reap",
+      "group_kill_reap",
+      "pidfd_dynamic_reap",
+      "original_permissions",
+      "dynamic_realtime_fifo",
+      "dynamic_signalfd",
+      "ptrace_fault_owner",
+      "rt_queue_argument_contract",
+      "rt_queue_payload_and_zero",
+      "rt_queue_actual_credentials",
+      "rt_queue_nonleader_shared_pending",
+      "signal_argument_bounds",
+      "signal_target_before_range",
+      "signal_group_range",
+      "pidfd_flags_fd_copy_order",
+      "pidfd_reaped_owner_order",
+      "signal_actual_credentials",
+      "signal_valid_delivery",
+      "kill_nonleader_shared_pending"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "e8e2b6954a37fb236c63622b7d8f80379d9db8a1af1fcc61f4b6bdf9682f930b",
+    "probe_source_sha256": "06a315db61cb2286ef4f392e7af62c33513ae69e3b15e908b7ec36be6c8d8f84",
+    "raw_qemu_exit": 33
+  },
+  "lifecycle": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "lifecycle",
+      "observations": 164,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 3.6785102960420772,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "ba31e84d60fa54f6e3d991606bbe2ed31325cacf0f28aec3e72e53738d886332",
+    "probe_source_sha256": {
+      "lifecycle/lifecycle_credentials.c": "03cfd9e53bdc9592688add6141bd4a6dbedde2168580b2d064b95171e0064878",
+      "lifecycle/lifecycle_local.c": "eaf52ad3ef6909098fe5ba02e8975952e2b69fe5e98e92622bd0a5ad309b6e72",
+      "lifecycle/lifecycle_main.c": "4c8703ec0ba60faede5640f693cfde3e0074df3ab683606dd485710785006b77",
+      "lifecycle/lifecycle_paths.c": "327c30b558ab1c76072c085ea09ce8bd840de66da2f4b91eb69f0187875fc8d7",
+      "lifecycle/lifecycle_probe.h": "2b8450a58bc91eabc099a6c77afe9e40038116db799689603f61c520830e3fe5"
+    },
+    "serial_sha256": "9a5dc688f53dba0d859ee7de48f2137f8e2332093aa2f4a7a3b9e0439d993c4b"
+  },
+  "stat": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "stat",
+      "observations": 54,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 3.680145479971543,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "cf9671f039504ac57d86a1bd9625fb7a35a6d56b421730b1020df4a8fa1b0a31",
+    "probe_source_sha256": {
+      "stat/stat_probe.c": "88e0568833bc7835d9435b29165ab9fcc42611fcf8bb718acc07852dd3045022"
+    },
+    "serial_sha256": "d82288e4a7319d647f115cfbae8cd8dceb5deaab1509b9fa4a6faa8b18bcf6ae"
+  },
+  "traceme": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "traceme",
+      "observations": 15,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 2.1654433748917654,
+    "kernel_sha256": "5fb407db3cf5fdb89d5e65fc6391f105d9407a02baebbbd9e6d965f3187430cc",
+    "probe_sha256": "ec9a468802f382032f61e0e94405a5da74229e750eab14739207f64299df1771",
+    "probe_source_sha256": {
+      "traceme/traceme_probe.c": "7d596bf5fbc157ec05daee28f1dcc3f872cfe42019b35c370904b58debfe075a"
+    },
+    "serial_sha256": "5bef8ce42ececa2a1a5503c21f8d43e4d023ac899a496f3faa2badabc600eeae"
+  },
+  "retained_receipts": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/pipeline.json",
+      "sha256": "399fac69c8ca88076b3e95e9681b2d568fdd15406db4c8b1a908a7decb442710"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/full/outer-result.json",
+      "sha256": "a0e99cd4f84b8ec3a8a9f422e8cfc3bd4af0f38fa36ba6f37d268f47ddc5c171"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/full/osdk-retention.json",
+      "sha256": "28964de96fd91ad9fe879ae85891c6475588e521db48c3ff43933d828da1122c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/full/retention.json",
+      "sha256": "fbfbc3980624775317d105f32836e1e1ec3a2af4b665d9797dd38e71ce819f56"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/full/source-before.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/full/source-after.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ordinary/result.json",
+      "sha256": "ed850d02d0dca240e1982eecbf1e27bcec7cd254088fd5fa939acc941c3056c6"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/sgid30/result.json",
+      "sha256": "96ce8e72988170aeb424cb042998c199fc1ee31f23c0e8f0128ac175ef7ddf13"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/sgid30/serial.log",
+      "sha256": "4e8450e5008e284ceafecfd8bb0d2828e57ff715cd352bb14bed62c68615193b"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ownership12/result.json",
+      "sha256": "0bb2b3d640ff0deb43358b6f43b1a0e8f28a30fc8f0bcdef6a99cfa10c0d6f49"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ownership12/serial.log",
+      "sha256": "149d5069fe3acdfd26a8b3daa435d0e5db3329523923ef55898bdfa677188c10"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/proc-privileges12/result.json",
+      "sha256": "53a16dd411f3a35d454759b8993ef36330e897053b365b39feb2972e8c9adab5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/proc-privileges12/serial.log",
+      "sha256": "15b214a2d3a2fafc0bdd3bba245c29971c16ef5967cd2d67e755c90bbf425acf"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/memfd4/result.json",
+      "sha256": "59e8fb345619c384739e83c87418e54b6eeaf73dad375eb07347baa6e9c54112"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/memfd4/serial.log",
+      "sha256": "0e626fffb4f88ff2f32e3240fb4a1c3bb03346231f5bd876c5be6602f1c5f831"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/signal22/result.json",
+      "sha256": "b08b4f48669ed7f86a3c8efe9091228f65d70a5888728f38ca775846923ae91d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/signal22/serial.log",
+      "sha256": "ba5102a612e6454920ee8c5aaab2ebe45ac99e14157f46d9d69eea6e79a69262"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/lifecycle/result.json",
+      "sha256": "8e555472111d9174ef56320ff9028d85ad46e5fb77747f7880e898ac663ec6ee"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/lifecycle/serial.log",
+      "sha256": "9a5dc688f53dba0d859ee7de48f2137f8e2332093aa2f4a7a3b9e0439d993c4b"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/stat/result.json",
+      "sha256": "a0999fee9305b8512ead816fc1498981528c25131e563867fed7ceb7a283f758"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/stat/serial.log",
+      "sha256": "d82288e4a7319d647f115cfbae8cd8dceb5deaab1509b9fa4a6faa8b18bcf6ae"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/traceme/result.json",
+      "sha256": "f6ee142bd08584761abe0976f5c4c59f60f5205f6322a858cb16289b45e541de"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/traceme/serial.log",
+      "sha256": "5bef8ce42ececa2a1a5503c21f8d43e4d023ac899a496f3faa2badabc600eeae"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ownership12-source-bound.json",
+      "sha256": "556cd7141b0264051837887a5b6894158e39d5d8f011714d2a112d3c61e68761"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/ownership12-source-after.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/memfd4-source-bound.json",
+      "sha256": "ba64c10a4c18d5ad07a39e112058f7fcd3811d955b8b5cd7824776060765fe39"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/memfd4-source-after.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/signal22-source-bound.json",
+      "sha256": "10f453b857886557cfed92d7bae7085a3c616a55535e9a00f7c523c36b257cf9"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/signal22-source-after.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/lifecycle-source-bound.json",
+      "sha256": "0cdcffdab780286a3f639103fc4678902ee622ad7f268011321aea4daba2b493"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/lifecycle-source-after.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/stat-source-bound.json",
+      "sha256": "2d8ae996e422be34edafb5fd0b9aba819c53fb2c5ee115ba90fbf0b216a02340"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/stat-source-after.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/traceme-source-bound.json",
+      "sha256": "1999d123afa78be52eb888eab7ab971f61059325db0a35bcc4041219fa493f62"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-native-4d32-01/traceme-source-after.json",
+      "sha256": "af5b4a328f8a078aaf897c8c9037532229bc18cc8dba4501b5336ef8f5f7856c"
+    }
+  ],
+  "reference_and_negative_manifests": [
+    {
+      "path": "/data/asterinas-dumpable-audit-01.yswd2fi4/publishable-artifacts.json",
+      "sha256": "47d6a6daf9ba93289b1459dbbb6bb6166bf8ba3443791c48e3d9dcf774af82ad"
+    },
+    {
+      "path": "/data/asterinas-dumpable-audit-01.yswd2fi4/audit-summary.json",
+      "sha256": "75f262bd9ee15cc4f41e6c5d1107f60a0ada28cbde6b5430dfff8c1001d7394e"
+    },
+    {
+      "path": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-publishable-artifacts-01.json",
+      "sha256": "a73e327abedcfe1eb7ae33de0132d22c6df71f6b0ee48e261e1bef928bd0e85a"
+    },
+    {
+      "path": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-audit-summary-01.json",
+      "sha256": "f9df3984838bf81569564044b947c0e076c83cf2d2fcd100cb6b438e955d2f44"
+    },
+    {
+      "path": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-publishable-artifacts-01.json",
+      "sha256": "e7d63d5d1df5b10f9e94c60dfefaa274a0399afb1b6512bbc42c03da5ecf68a1"
+    },
+    {
+      "path": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-audit-summary-01.json",
+      "sha256": "0ad14b922c8e582471d423a3dc03e72d87336161f35891596dac5517699ae3ac"
+    }
+  ],
+  "original_negative_findings": [
+    {
+      "name": "original_dumpable_sensitive_access",
+      "source": "6c26",
+      "scope": "actual maps/mem/pidfd_getfd reads after SET0; GET/SET stub and additional proc paths",
+      "evidence": "/data/asterinas-dumpable-audit-01.yswd2fi4/native-6c26-negative-01/result.json"
+    },
+    {
+      "name": "lifecycle",
+      "source": "6c26",
+      "failed_fixtures": 10,
+      "failed_observations": 43,
+      "evidence": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-v2-6c26-negative-01/result.json"
+    },
+    {
+      "name": "stat",
+      "source": "0252",
+      "observations": 54,
+      "failed_observations": 21,
+      "evidence": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-native-stat-0252-negative-01/result.json"
+    },
+    {
+      "name": "traceme",
+      "source": "0252",
+      "timed_out": true,
+      "guest_deadline_seconds": 120,
+      "peek_bypass_dynamically_demonstrated": false,
+      "scope": "cap0 TRACEME parent/Yama mutex deadlock prevented reaching PEEK or reap",
+      "evidence": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-native-0252-negative-01/result.json"
+    }
+  ],
+  "host_checks": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-host-full-02.log",
+      "sha256": "b6aba79906132803614eb9f5f7fb5d833e7e6621809187f9c7f37c803b2c039c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-source-gate-02.json",
+      "sha256": "088a67167b2a9f2e2d1c949db872f86525f9b3f5e3cda60d62e0a12599a1c1a5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-clippy-05.log",
+      "sha256": "7a5e854449bf7f9f18e8846476f1f653764275ac4346054cc6e7c47971a4def7"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-checker-01.log",
+      "sha256": "d76f3bf9b6f91d9431ce3c6d969024f9c532aad0234e9652ddf5f61da1d7617f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-traceme-checker-01.log",
+      "sha256": "85d93df01bb35a265343c3dbdb34bf90a2df35d87d3589ec287c19fa35b2031c"
+    }
+  ],
+  "retained_intermediate_host_failures": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-host-full-01.log",
+      "sha256": "d996527fdf7b2676ea3b6f2fd7e9dbb848dbb7353ff0a3cf50da21f2f86b50d3",
+      "reason": "15 required fixture errors before sparse tracked evidence was materialized; original 84 rerun unchanged"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-clippy-02.log",
+      "sha256": "15d0427a12e86ac22edb9fea2a6f2892fde37bb41cfe426597e95d169183c3ea",
+      "reason": "missing Process reference borrow; corrected before qualification"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/process-dumpable-clippy-04.log",
+      "sha256": "2cacddd23f8414d279f330511bae31d703986dafa12d0728696680d33f99c25c",
+      "reason": "missing current Thread Arc reference borrow; corrected before qualification"
+    }
+  ],
+  "profile": {
+    "memory_mib": 512,
+    "vcpus": 1,
+    "acceleration": "tcg",
+    "ktest_guest_deadline_seconds": 300,
+    "probe_guest_deadline_seconds": 120,
+    "filtered_suite": false
+  },
+  "production_authority": false,
+  "global_recovery_guarantee": false,
+  "all_kernel_memory_accounted": false,
+  "full_linux_process_isolation": false,
+  "ptrace_attach_implemented": false,
+  "user_namespaces_implemented": false,
+  "scope": "Shared original ProcessVm dumpability, credential reset and capture mutex, original proc/pidfd gates and old-image handles, sensitive stat masking, legitimate self-FD inspection, and consenting cap0 TRACEME stop/peek/continue/reap. Fixed suid reset policy 0; no coredump writer, full commoncap parity, namespace support or general security qualification."
+}

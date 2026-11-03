@@ -24,11 +24,12 @@ else
 fi
 run_dir=$(cd "$run_dir" && pwd)
 trusted_profile=
-case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}:${HEPTA_G1D_TRUSTED_CONTROL:-0}" in
-    0:0) ;;
-    1:0) trusted_profile=g1c-trusted-observe ;;
-    0:1) trusted_profile=g1d-trusted-control ;;
-    *) echo "trusted profile flags must be 0 or 1; select at most one G1-c/G1-d profile" >&2; exit 2 ;;
+case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}:${HEPTA_G1D_TRUSTED_CONTROL:-0}:${HEPTA_G2_TRUSTED_DAEMON:-0}" in
+    0:0:0) ;;
+    1:0:0) trusted_profile=g1c-trusted-observe ;;
+    0:1:0) trusted_profile=g1d-trusted-control ;;
+    0:0:1) trusted_profile=g2-trusted-daemon ;;
+    *) echo "trusted profile flags must be 0 or 1; select at most one G1-c/G1-d/G2 profile" >&2; exit 2 ;;
 esac
 if [[ -n "$trusted_profile" ]]; then
     if [[ "$target" != kernel ]]; then
@@ -105,6 +106,8 @@ if [[ ${HEPTA_G1C_TRUSTED_OBSERVE:-0} == 1 ]]; then
     command+=(HEPTA_G1C_TRUSTED_OBSERVE=1 FEATURES=g1c-trusted-observe)
 elif [[ ${HEPTA_G1D_TRUSTED_CONTROL:-0} == 1 ]]; then
     command+=(HEPTA_G1D_TRUSTED_CONTROL=1 FEATURES=g1d-trusted-control)
+elif [[ ${HEPTA_G2_TRUSTED_DAEMON:-0} == 1 ]]; then
+    command+=(HEPTA_G2_TRUSTED_DAEMON=1 FEATURES=g2-trusted-daemon)
 fi
 printf '%q ' "${command[@]}" > "$run_dir/command.sh"
 printf '\n' >> "$run_dir/command.sh"

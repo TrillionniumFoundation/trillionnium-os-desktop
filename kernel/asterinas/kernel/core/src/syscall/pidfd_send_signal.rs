@@ -6,15 +6,19 @@ use crate::{
     fs::file::file_table::{RawFileDesc, get_file_fast},
     prelude::*,
     process::{
-        Pgid, Pid, PidFile, kill, kill_group,
+        Pgid, Pid, PidFile, Process, kill_group_with, kill_owned_with,
         posix_thread::AsPosixThread,
         signal::{
             c_types::siginfo_t,
             constants::SI_TKILL,
             sig_num::SigNum,
-            signals::{Signal, raw::RawSignal, user::UserSignal},
+            signals::{
+                OwnedSignal, Signal,
+                raw::RawSignal,
+                user::{UserSignal, UserSignalKind},
+            },
         },
-        tgkill,
+        tgkill_owned_with,
     },
     syscall::SyscallReturn,
     thread::Tid,
@@ -22,81 +26,59 @@ use crate::{
 
 pub(super) fn sys_pidfd_send_signal(
     pidfd: RawFileDesc,
-    sig_num: u64,
+    sig_num: i32,
     info_ptr: Vaddr,
     flags: u32,
     ctx: &Context,
 ) -> Result<SyscallReturn> {
     let flags = PidfdSendSignalFlags::try_from(flags)?;
-    let sig_num = if sig_num == 0 {
-        None
-    } else {
-        Some(SigNum::try_from(sig_num as u8)?)
-    };
-    debug!(
-        "pidfd={}, info_ptr={:#x}, flags={:?}",
-        pidfd, info_ptr, flags
-    );
-
+    // Resolve the fd and hold its original Process identity before user-memory
+    // access. A reaped target stays absent; its numeric PID is never authority.
     let target = get_target_from_pidfd(pidfd, flags, ctx)?;
-
-    let signal = if let Some(sig_num) = sig_num {
-        let siginfo = read_siginfo_from_user(info_ptr, sig_num, ctx)?;
-
-        // Only check `si_code` permissions when the user explicitly provided a siginfo.
-        // When `info_ptr` is `NULL`, the kernel generates the siginfo, so no restriction applies.
-        if info_ptr != 0 {
-            let is_self = match &target {
-                SignalTarget::Thread { tid, tgid: _ } => *tid == ctx.posix_thread.tid(),
-                SignalTarget::Process { pid } => *pid == ctx.posix_thread.tid(),
-                SignalTarget::ProcessGroup { pgid: _ } => false,
-            };
-
-            if !is_self && (siginfo.si_code >= 0 || siginfo.si_code == SI_TKILL) {
-                return_errno_with_message!(
-                    Errno::EPERM,
-                    "signals with custom code can only be sent to the current thread/process"
-                );
-            }
+    let raw_info = if info_ptr != 0 {
+        let info = ctx.user_space().read_val::<siginfo_t>(info_ptr)?;
+        if info.si_signo != sig_num {
+            return_errno!(Errno::EINVAL);
         }
-
-        Some(RawSignal::new(siginfo))
+        let is_self = match &target {
+            SignalTarget::Thread { tid, .. } => *tid == ctx.posix_thread.tid(),
+            SignalTarget::Process { process } => process.pid() == ctx.posix_thread.tid(),
+            SignalTarget::ProcessGroup { .. } | SignalTarget::Exited => false,
+        };
+        if !is_self && (info.si_code >= 0 || info.si_code == SI_TKILL) {
+            return_errno!(Errno::EPERM);
+        }
+        Some(info)
     } else {
         None
     };
-
+    // Linux copies and checks supplied siginfo even for signal zero, then
+    // resolves the live target before checking the full signed signal number.
+    let sender_pid = ctx.process.pid();
+    let sender_uid = ctx.posix_thread.credentials().ruid();
+    let prepare = || {
+        if sig_num == 0 {
+            return Ok(None);
+        }
+        let num = SigNum::try_from(sig_num)?;
+        let info = raw_info.unwrap_or_else(|| {
+            UserSignal::new(num, UserSignalKind::Kill, sender_pid, sender_uid).to_info()
+        });
+        Ok(Some(OwnedSignal::new(RawSignal::new(info))))
+    };
     match target {
-        SignalTarget::Thread { tid, tgid } => {
-            let signal = signal.map(|s| Box::new(s) as Box<dyn Signal>);
-            tgkill(tid, Some(tgid), signal, ctx)?;
+        SignalTarget::Thread { tid, tgid, process } => {
+            tgkill_owned_with(tid, Some(tgid), Some(&process), prepare, ctx)?;
         }
-        SignalTarget::Process { pid } => {
-            let signal = signal.map(|s| Box::new(s) as Box<dyn Signal>);
-            kill(pid, signal, ctx)?;
+        SignalTarget::Process { process } => {
+            kill_owned_with(process.pid(), Some(&process), prepare, ctx)?;
         }
-        SignalTarget::ProcessGroup { pgid } => {
-            kill_group(pgid, signal, ctx)?;
+        SignalTarget::ProcessGroup { pgid, process } => {
+            kill_group_with(pgid, Some(&process), prepare, ctx)?;
         }
+        SignalTarget::Exited => return_errno!(Errno::ESRCH),
     }
-
     Ok(SyscallReturn::Return(0))
-}
-
-fn read_siginfo_from_user(info_ptr: Vaddr, sig_num: SigNum, ctx: &Context) -> Result<siginfo_t> {
-    if info_ptr != 0 {
-        let si = ctx.user_space().read_val::<siginfo_t>(info_ptr)?;
-        if si.si_signo != sig_num.as_u8() as i32 {
-            return_errno_with_message!(
-                Errno::EINVAL,
-                "`siginfo.si_signo` does not match the specified signal number"
-            );
-        }
-        Ok(si)
-    } else {
-        // If `info_ptr` is NULL, the kernel constructs a default `siginfo_t` structure
-        // whose fields match the values that are implicitly supplied when a signal is sent using the kill(2).
-        Ok(UserSignal::new_kill(sig_num, ctx).to_info())
-    }
 }
 
 fn get_target_from_pidfd(
@@ -105,27 +87,36 @@ fn get_target_from_pidfd(
     ctx: &Context,
 ) -> Result<SignalTarget> {
     // Helper closures to create signal targets.
-    let thread_target = |tid: Tid, tgid: Pid| SignalTarget::Thread { tid, tgid };
-    let process_target = |pid: Pid| SignalTarget::Process { pid };
-    let group_target = |pgid: Pgid| SignalTarget::ProcessGroup { pgid };
+    let thread_target = |tid: Tid, process: Arc<Process>| SignalTarget::Thread {
+        tid,
+        tgid: process.pid(),
+        process,
+    };
+    let process_target = |process: Arc<Process>| SignalTarget::Process { process };
+    let group_target =
+        |pgid: Pgid, process: Arc<Process>| SignalTarget::ProcessGroup { pgid, process };
 
     let target = match pidfd {
         PIDFD_SELF_THREAD => match flags {
             PidfdSendSignalFlags::Default | PidfdSendSignalFlags::Thread => {
-                thread_target(ctx.posix_thread.tid(), ctx.process.pid())
+                thread_target(ctx.posix_thread.tid(), ctx.process.clone())
             }
-            PidfdSendSignalFlags::ThreadGroup => process_target(ctx.process.pid()),
-            PidfdSendSignalFlags::ProcessGroup => group_target(ctx.posix_thread.tid()),
+            PidfdSendSignalFlags::ThreadGroup => process_target(ctx.process.clone()),
+            PidfdSendSignalFlags::ProcessGroup => {
+                group_target(ctx.posix_thread.tid(), ctx.process.clone())
+            }
         },
         PIDFD_SELF_THREAD_GROUP => match flags {
             PidfdSendSignalFlags::Default | PidfdSendSignalFlags::ThreadGroup => {
-                process_target(ctx.process.pid())
+                process_target(ctx.process.clone())
             }
             PidfdSendSignalFlags::Thread => thread_target(
                 ctx.process.main_thread().as_posix_thread().unwrap().tid(),
-                ctx.process.pid(),
+                ctx.process.clone(),
             ),
-            PidfdSendSignalFlags::ProcessGroup => group_target(ctx.process.pid()),
+            PidfdSendSignalFlags::ProcessGroup => {
+                group_target(ctx.process.pid(), ctx.process.clone())
+            }
         },
         _ => {
             let mut file_table = ctx.thread_local.borrow_file_table_mut();
@@ -138,25 +129,25 @@ fn get_target_from_pidfd(
             };
 
             let Some(process) = pid_file.process_opt() else {
-                return_errno_with_message!(Errno::ESRCH, "the target process has been reaped");
+                return Ok(SignalTarget::Exited);
             };
 
             match flags {
                 PidfdSendSignalFlags::Default => {
                     // FIXME: On Linux, a pidfd can refer to either a process or a thread.
                     // We currently only support pidfds that refer to processes.
-                    process_target(process.pid())
+                    process_target(process)
                 }
                 PidfdSendSignalFlags::Thread => {
                     // FIXME: On Linux, the signal can be sent to any thread.
                     // We currently only support the main thread.
                     thread_target(
                         process.main_thread().as_posix_thread().unwrap().tid(),
-                        process.pid(),
+                        process,
                     )
                 }
-                PidfdSendSignalFlags::ThreadGroup => process_target(process.pid()),
-                PidfdSendSignalFlags::ProcessGroup => group_target(process.pid()),
+                PidfdSendSignalFlags::ThreadGroup => process_target(process),
+                PidfdSendSignalFlags::ProcessGroup => group_target(process.pid(), process),
             }
         }
     };
@@ -165,9 +156,19 @@ fn get_target_from_pidfd(
 }
 
 enum SignalTarget {
-    Thread { tid: Tid, tgid: Pid },
-    Process { pid: Pid },
-    ProcessGroup { pgid: Pgid },
+    Thread {
+        tid: Tid,
+        tgid: Pid,
+        process: Arc<Process>,
+    },
+    Process {
+        process: Arc<Process>,
+    },
+    ProcessGroup {
+        pgid: Pgid,
+        process: Arc<Process>,
+    },
+    Exited,
 }
 
 // Reference: <https://elixir.bootlin.com/linux/v6.18/source/include/uapi/linux/pidfd.h#L19>.

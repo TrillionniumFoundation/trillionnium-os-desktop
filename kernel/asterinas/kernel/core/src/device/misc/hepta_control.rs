@@ -30,12 +30,15 @@ use crate::{
         Process, ProcessImageKey,
         signal::{PollHandle, Pollable},
     },
-    util::{ioctl::RawIoctl, random},
+    util::{boot_identity, ioctl::RawIoctl},
 };
 
 // _IOWR('H', 2, sizeof(Transport32)).  This number is test-only until A00
 // assigns a public ioctl. It does not silently reuse the old HOS1 command.
 const EXPERIMENTAL_HOS2_IOCTL: u32 = 0xC020_4802;
+// A private frozen-Root lifecycle endpoint; never a public HOS2 opcode.
+#[cfg(feature = "g2-trusted-daemon")]
+const EXPERIMENTAL_NATIVE_LAUNCH_IOCTL: u32 = 0xC080_4803;
 // Fixed experimental HOS2 operations have at most 40 input payload bytes.
 // Accept a bounded snapshot for known but disabled opcodes, so that
 // unsupported operations produce EOPNOTSUPP rather than an invented ENOTTY.
@@ -46,16 +49,6 @@ const MAX_RESPONSE_BYTES: usize = wire::HEADER_LEN + 64;
 const MAX_RESPONSE_BYTES: usize = wire::HEADER_LEN + 48;
 
 static MAJOR: Once<char::MajorIdOwner> = Once::new();
-static BOOT_ID: Once<[u8; 16]> = Once::new();
-
-fn nonzero_random_id() -> [u8; 16] {
-    let mut id = [0u8; 16];
-    random::getrandom(&mut id);
-    // Even if an early emulator RNG were to return zeroes, never produce an
-    // invalid HOS2 identity. No identity here is an authorization token.
-    id[0] |= 1;
-    id
-}
 
 // CapSpace wire identities MUST NEVER alias after PID reuse or execve.
 // Assign a checked boot-local full u64 nonce on the authoritative Process
@@ -67,12 +60,12 @@ fn process_session_id(process: &Process) -> Result<([u8; 16], ProcessImageKey)> 
 }
 
 pub(crate) fn boot_id() -> [u8; 16] {
-    *BOOT_ID.get().unwrap()
+    boot_identity::boot_id()
 }
 
 pub(crate) fn image_space_id(key: ProcessImageKey) -> [u8; 16] {
     let mut id = [0u8; 16];
-    id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
+    id[..8].copy_from_slice(&boot_id()[..8]);
     id[8..].copy_from_slice(&key.nonce().to_le_bytes());
     id
 }
@@ -170,6 +163,21 @@ impl PerOpenFileOps for HeptaControlFile {
     }
 
     fn ioctl(&self, _path: &Path, raw_ioctl: RawIoctl) -> Result<i32> {
+        #[cfg(feature = "g2-trusted-daemon")]
+        if raw_ioctl.cmd() == EXPERIMENTAL_NATIVE_LAUNCH_IOCTL {
+            self.check_session()?;
+            let mut input = [0u8; 128];
+            current_userspace!().read_bytes(raw_ioctl.arg(), &mut input)?;
+            let process = self
+                .process
+                .upgrade()
+                .ok_or_else(|| Error::new(Errno::ESTALE))?;
+            let output = process.dispatch_hepta_launcher(self.image_key, &input)?;
+            // Publication can precede an EFAULT here. The same expected
+            // generation replays its saved receipt without another child.
+            current_userspace!().write_bytes(raw_ioctl.arg(), &output)?;
+            return Ok(0);
+        }
         if raw_ioctl.cmd() != EXPERIMENTAL_HOS2_IOCTL {
             return_errno_with_message!(Errno::ENOTTY, "not a recognized HOS2 ioctl")
         }
@@ -218,14 +226,17 @@ impl PerOpenFileOps for HeptaControlFile {
             RequestPayload::QueryAbi => {
                 #[cfg(feature = "g1d-trusted-control")]
                 let (supported_ops, max_response_payload) = (
-                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16())
+                    (1u64 << Opcode::QueryAbi.as_u16())
+                        | (1u64 << Opcode::ReadUsage.as_u16())
                         | (1u64 << Opcode::InstallBudget.as_u16())
                         | (1u64 << Opcode::QueryDelivery.as_u16())
-                        | (1u64 << Opcode::RetireThrough.as_u16()), 64,
+                        | (1u64 << Opcode::RetireThrough.as_u16()),
+                    64,
                 );
                 #[cfg(all(feature = "g1c-trusted-observe", not(feature = "g1d-trusted-control")))]
                 let (supported_ops, max_response_payload) = (
-                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()), 64,
+                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()),
+                    64,
                 );
                 #[cfg(not(feature = "g1c-trusted-observe"))]
                 let (supported_ops, max_response_payload) = (1u64 << Opcode::QueryAbi.as_u16(), 48);
@@ -233,14 +244,18 @@ impl PerOpenFileOps for HeptaControlFile {
                 let max_request_payload = 40;
                 #[cfg(not(feature = "g1d-trusted-control"))]
                 let max_request_payload = 0;
-                (Status::Ok, 0, ResponsePayload::QueryAbi(QueryAbiResponse {
-                    space_id: self.space_id,
-                    page_size: u32::try_from(PAGE_SIZE).unwrap(),
-                    max_request_payload,
-                    max_response_payload,
-                    supported_ops,
-                    features: 0,
-                }))
+                (
+                    Status::Ok,
+                    0,
+                    ResponsePayload::QueryAbi(QueryAbiResponse {
+                        space_id: self.space_id,
+                        page_size: u32::try_from(PAGE_SIZE).unwrap(),
+                        max_request_payload,
+                        max_response_payload,
+                        supported_ops,
+                        features: 0,
+                    }),
+                )
             }
             #[cfg(feature = "g1c-trusted-observe")]
             RequestPayload::ReadUsage => {
@@ -254,27 +269,33 @@ impl PerOpenFileOps for HeptaControlFile {
                     Err(status) => (status, 0, ResponsePayload::Empty),
                 };
                 #[cfg(not(feature = "g1d-trusted-control"))]
-                let result =
-                match process.read_hepta_initial_usage(
-                    self.image_key, request.target_slot, request.target_generation,
+                let result = match process.read_hepta_initial_usage(
+                    self.image_key,
+                    request.target_slot,
+                    request.target_generation,
                 ) {
-                    Ok(usage) => (Status::Ok, usage.revision, ResponsePayload::ReadUsage(wire::ReadUsageResponse {
-                        sample_boottime_ns: usage.sample_boottime_ns,
-                        cumulative_cpu_ns: usage.cumulative_cpu_ns,
-                        window_start_ns: usage.window_start_ns,
-                        window_consumed_ns: usage.window_consumed_ns,
-                        active_cap_ns: usage.active_cap_ns,
-                        active_period_ns: usage.active_period_ns,
-                        event_sequence: usage.event_sequence,
-                        dropped_events: usage.dropped_events,
-                    })),
+                    Ok(usage) => (
+                        Status::Ok,
+                        usage.revision,
+                        ResponsePayload::ReadUsage(wire::ReadUsageResponse {
+                            sample_boottime_ns: usage.sample_boottime_ns,
+                            cumulative_cpu_ns: usage.cumulative_cpu_ns,
+                            window_start_ns: usage.window_start_ns,
+                            window_consumed_ns: usage.window_consumed_ns,
+                            active_cap_ns: usage.active_cap_ns,
+                            active_period_ns: usage.active_period_ns,
+                            event_sequence: usage.event_sequence,
+                            dropped_events: usage.dropped_events,
+                        }),
+                    ),
                     Err(status) => (status, 0, ResponsePayload::Empty),
                 };
                 result
             }
             #[cfg(feature = "g1d-trusted-control")]
-            RequestPayload::InstallBudget(_) | RequestPayload::QueryDelivery(_)
-                | RequestPayload::RetireThrough(_) => {
+            RequestPayload::InstallBudget(_)
+            | RequestPayload::QueryDelivery(_)
+            | RequestPayload::RetireThrough(_) => {
                 self.check_session()?;
                 let process = self.process.upgrade().ok_or_else(|| {
                     Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
@@ -286,7 +307,8 @@ impl PerOpenFileOps for HeptaControlFile {
             }
             #[cfg(not(feature = "g1d-trusted-control"))]
             _ => return_errno_with_message!(
-                Errno::EOPNOTSUPP, "recognized HOS2 resource operation not implemented"
+                Errno::EOPNOTSUPP,
+                "recognized HOS2 resource operation not implemented"
             ),
         };
         let response = Response {
@@ -306,7 +328,7 @@ impl PerOpenFileOps for HeptaControlFile {
 }
 
 pub(super) fn init_in_first_kthread() {
-    BOOT_ID.call_once(nonzero_random_id);
+    let _ = boot_id();
     let major = MAJOR.call_once(|| char::allocate_major().unwrap()).get();
     char::register(Arc::new(HeptaControlDevice {
         id: DeviceId::new(major, MinorId::new(0)),

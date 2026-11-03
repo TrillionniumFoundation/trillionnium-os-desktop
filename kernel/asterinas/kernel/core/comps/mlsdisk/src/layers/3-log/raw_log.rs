@@ -115,7 +115,10 @@ pub(super) struct RawLogStore<D> {
 impl<D: BlockSet> RawLogStore<D> {
     /// Creates a new store of raw logs,
     /// given a chunk allocator and an untrusted disk.
-    pub(super) fn new(disk: D, tx_provider: Arc<TxProvider>, chunk_alloc: ChunkAlloc) -> Arc<Self> {
+    pub(super) fn new(disk: D, tx_provider: Arc<TxProvider>, chunk_alloc: ChunkAlloc) -> Arc<Self>
+    where
+        D: 'static,
+    {
         Self::from_parts(RawLogStoreState::new(), disk, chunk_alloc, tx_provider)
     }
 
@@ -125,7 +128,10 @@ impl<D: BlockSet> RawLogStore<D> {
         disk: D,
         chunk_alloc: ChunkAlloc,
         tx_provider: Arc<TxProvider>,
-    ) -> Arc<Self> {
+    ) -> Arc<Self>
+    where
+        D: 'static,
+    {
         let new_self = {
             // Prepare lazy deletes first from persistent state
             let lazy_deletes = {
@@ -152,9 +158,13 @@ impl<D: BlockSet> RawLogStore<D> {
 
         // Commit handler
         new_self.tx_provider.register_commit_handler({
-            let state = new_self.state.clone();
-            let chunk_alloc = new_self.chunk_alloc.clone();
+            let owner = new_self.weak_self.clone();
             move |current: CurrentTx<'_>| {
+                // The current transaction borrows this store (or an open RawLog
+                // that owns it). Do not make the provider own its owner back.
+                let owner = owner.upgrade().expect("active raw-log transaction owner");
+                let state = &owner.state;
+                let chunk_alloc = &owner.chunk_alloc;
                 current.data_with(|edit: &RawLogStoreEdit| {
                     if edit.edit_table.is_empty() {
                         return;
@@ -163,7 +173,7 @@ impl<D: BlockSet> RawLogStore<D> {
                     let mut state = state.lock();
                     state.apply(edit);
 
-                    Self::add_lazy_deletes_for_created_logs(&mut state, edit, &chunk_alloc);
+                    Self::add_lazy_deletes_for_created_logs(&mut state, edit, chunk_alloc);
                 });
                 let mut state = state.lock();
                 Self::do_lazy_deletion(&mut state, &current);

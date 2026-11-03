@@ -1,0 +1,30 @@
+
+Elf file type is EXEC (Executable file)
+Entry point 0x401bd0
+There are 10 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  LOAD           0x000000 0x0000000000400000 0x0000000000400000 0x0004f8 0x0004f8 R   0x1000
+  LOAD           0x001000 0x0000000000401000 0x0000000000401000 0x07f26d 0x07f26d R E 0x1000
+  LOAD           0x081000 0x0000000000481000 0x0000000000481000 0x025e7a 0x025e7a R   0x1000
+  LOAD           0x0a6f10 0x00000000004a7f10 0x00000000004a7f10 0x005bb0 0x00bad8 RW  0x1000
+  NOTE           0x000270 0x0000000000400270 0x0000000000400270 0x000030 0x000030 R   0x8
+  NOTE           0x0002a0 0x00000000004002a0 0x00000000004002a0 0x000044 0x000044 R   0x4
+  TLS            0x0a6f10 0x00000000004a7f10 0x00000000004a7f10 0x000018 0x000058 R   0x8
+  GNU_PROPERTY   0x000270 0x0000000000400270 0x0000000000400270 0x000030 0x000030 R   0x8
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10
+  GNU_RELRO      0x0a6f10 0x00000000004a7f10 0x00000000004a7f10 0x0040f0 0x0040f0 R   0x1
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     .note.gnu.property .note.gnu.build-id .note.ABI-tag .rela.plt 
+   01     .init .plt .text .fini 
+   02     .rodata .stapsdt.base rodata.cst32 .eh_frame .gcc_except_table 
+   03     .tdata .init_array .fini_array .data.rel.ro .got .got.plt .data .bss 
+   04     .note.gnu.property 
+   05     .note.gnu.build-id .note.ABI-tag 
+   06     .tdata .tbss 
+   07     .note.gnu.property 
+   08     
+   09     .tdata .init_array .fini_array .data.rel.ro .got 

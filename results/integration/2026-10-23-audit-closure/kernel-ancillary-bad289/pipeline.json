@@ -1,0 +1,102 @@
+{
+  "schema": "trillionnium.native-kernel-integration.v1",
+  "source_head": "bad289e73b7890735580a4b09d8c1466a257c7f2",
+  "source_tree": "19efa0d8089d153c2560faa4c2d3a5c82a871042",
+  "commands": [
+    {
+      "stage": "original-four-suites",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-original-full-ipc.py",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-fallible",
+        "--head",
+        "bad289e73b7890735580a4b09d8c1466a257c7f2",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/full"
+      ],
+      "outer_deadline_seconds": 15000,
+      "exit_code": 0
+    },
+    {
+      "stage": "original-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "bad289e73b7890735580a4b09d8c1466a257c7f2",
+        "--expected-source-tree",
+        "19efa0d8089d153c2560faa4c2d3a5c82a871042",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-joint-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ordinary"
+      ],
+      "outer_deadline_seconds": 7200,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-sgid30",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-native-sgid-probe.py",
+        "--ordinary",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ordinary",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-fallible",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/sgid30"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-ownership12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-unix-ancillary-probe-bad289.py"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-proc-privileges12",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_proc_process_privileges.py",
+        "--kernel",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ordinary/product-kernel.elf",
+        "--ordinary-receipt",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/ordinary/result.json",
+        "--expected-receipt-sha256",
+        "1f25c494d60b0f4a5bdba6eb38fc523159636d6bff5a5988bdb27a0651938c4c",
+        "--initramfs",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-fallible/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/unix-ancillary-native-bad289-01/proc-privileges12"
+      ],
+      "outer_deadline_seconds": 300,
+      "exit_code": 0
+    }
+  ],
+  "passed": true,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "elapsed_seconds": 712.051,
+  "source_checkout_clean": true
+}

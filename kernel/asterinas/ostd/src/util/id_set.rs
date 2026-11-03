@@ -357,6 +357,20 @@ type AtomicInnerPart = AtomicU64;
 const_assert!(size_of::<AtomicInnerPart>() == size_of::<InnerPart>());
 
 impl<I: Id> AtomicIdSet<I> {
+    /// Creates an empty set, returning an error if heap storage is unavailable.
+    /// Small sets use the same inline storage as [`IdSet::new_empty`].
+    pub(crate) fn try_new_empty() -> crate::Result<Self> {
+        let num_parts = parts_for_ids::<I>();
+        let mut bits = SmallVec::new();
+        bits.try_reserve(num_parts)
+            .map_err(|_| crate::Error::NoMemory)?;
+        bits.resize_with(num_parts, || AtomicU64::new(0));
+        Ok(Self {
+            bits,
+            phantom: PhantomData,
+        })
+    }
+
     /// Creates a new `AtomicIdSet` from an `IdSet`.
     pub fn new(value: IdSet<I>) -> Self {
         let bits = value.bits.into_iter().map(AtomicU64::new).collect();

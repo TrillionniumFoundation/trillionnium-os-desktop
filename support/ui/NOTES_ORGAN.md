@@ -1,15 +1,23 @@
 # First Linux Notes destination
 
 This slice provides real, bounded Linux socketpair I/O to the existing native
-Rust Notes application. Its operation is **replace the in-memory text of one
-identified Notes document, subject to a revision comparison**. The document is
-not saved to a user file. This is a small destination adapter, not a compositor,
+Rust Notes application. Its operation is **replace the text of one identified
+Notes document, subject to a revision comparison**. The explicitly configured
+durable mode synchronizes application data before replying; without
+`TRILL_NOTES_STATE_DIR`, the existing temporary mode remains. The
+[durability and process-recovery manual](NOTES_DURABILITY.md) specifies storage,
+crash handling, helper startup and the actual companion probe. This is a small destination adapter, not a compositor,
 global keyboard controller, mobile device port, or an Asterinas desktop.
+
+The [single model contract](NOTES_MODEL.md) defines independent wire, checkpoint,
+bootstrap and startup versions and the identity-preserving legacy-read rule.
 
 The standalone Session keeps each new destination private and reports
 `original_owner_registered: false`. Public Snapshot / Launch / Cancel IPC has
 no Notes edit or handle-export command. Shell displays the target incarnation
-and channel observation; it cannot submit an effect.
+and channel observation. Its explicit Notes controls can submit a bounded
+Objective to the independently configured original host; Shell receives no
+private effect handle and cannot directly dispatch the mutation.
 An explicit trusted-parent startup mode can hand off the initial Notes
 endpoint through a private inherited descriptor. This requires the original
 production host to supply its own recovered writer, FinalUse authority and
@@ -19,18 +27,26 @@ grant provider; normal Session launch performs no registration.
 
 | Path | Responsibility |
 | --- | --- |
-| `ui/core/src/notes.rs` | Bounded wire types, exact-byte hashes, document revision comparison, one retained app receipt |
+| `ui/core/src/notes.rs` | Bounded wire types, exact-byte hashes, document revision comparison, one pending receipt retained until exact durable-owner ACK |
+| `ui/core/src/notes_recovery.rs` | Strict exact receipt retirement request and idempotent response |
+| `ui/core/src/notes_private_unix.rs` | Ordered effect-stream/recovery-datagram descriptor handoff and descriptor validation |
 | `ui/broker/src/notes.rs` | Private Linux destination handle, synchronous exact-byte I/O, conservative unknown outcomes |
-| `ui/app-window/src/notes_organ.rs` | Inherited stdin receiver, bounded handoff to the egui thread |
-| `ui/app-window/src/main.rs` | Notes update, user-edit revision changes, layout-only witness |
+| `ui/app-window/src/notes_organ.rs` | Inherited stdin receiver, bounded worker handoff and presentation projection |
+| `ui/app-window/src/notes_worker.rs` | Serialize local revision-CAS edits, effects, receipt retirement and optional durable storage off Draw |
+| `ui/core/src/notes_store.rs` | Durable document/receipt store and exclusive incarnation ownership |
+| `ui/app-window/src/main.rs` | Notes presentation, user-edit requests and layout-only witness |
 | `ui/session/src/main.rs` | Existing child-process owner creates and retains private handles |
 | `ui/core/src/notes_bootstrap.rs` | Strict one-time descriptor handoff request and acknowledgement schema |
 | `ui/session/src/notes_bootstrap.rs` | Linux inherited datagram sender, SCM_RIGHTS and bounded acknowledgement |
-| `ui/shell/src/main.rs` | Read-only destination observation |
+| `ui/shell/src/main.rs` | Bounded Session worker handoff and source-owned observation projection; no private effect handle |
+| `ui/shell/src/objective_panel.rs` | Shared Notes Write/Refresh/Cancel actions, original intent navigation, freshness and passive status recovery |
+| `ui/shell/src/native_makepad.rs` | Original Makepad Notes port and current-room/editor fences, forwarding to the same shared actions |
+| `ui/shell/src/objective_notes_tests.rs`, `native_notes_tests.rs` | Shared recovery/readback regressions and original native callback fences |
 | `ui/broker/tests/notes_target.rs` | Real socketpair tests against an explicit application-model fixture |
 | `ui/broker/examples/notes_host_probe.rs` | Isolated real-window target probe, separate from a production-owner run |
 | `tests/ui/notes-target-v1.json` | Cross-language request, response, payload hash, scope hash and predecessor hash |
-| `tests/ui/notes-bootstrap-v1.json` | Exact bootstrap offer and attached/rejected ACK fixtures shared with the owner |
+| `tests/ui/notes-bootstrap-v2.json` | Exact bootstrap offer and attached/rejected ACK fixtures shared with the owner |
+| `tests/ui/notes-recovery-v1.json` | Exact observation, durable receipt ACK and idempotent retirement fixtures shared with the owner |
 | `tests/ui/test-notes-bootstrap-ipc.py` | Actual Session/App descriptor handoff with a transport-only parent fixture and read-only query |
 
 The original default-deny broker is reused from PR #210 head
@@ -39,6 +55,48 @@ generation checks and denied effect capabilities remain the same. The private
 destination module does not give those sessions an effect capability. No new
 authority, signer, operation allocator, durable effect ledger or model callback
 is introduced in UI code.
+
+## Shared Rust UI and original Notes owner
+
+The egui and original Makepad controls borrow the same retained conversation
+draft and `ObjectivePanel`. Write sends literal text through the bounded
+Session Objective bridge to the fixed trusted original host. The original
+Agentd compiler, durable writer and FinalUse dispatcher then own any operation
+and private destination entry. The renderer supplies no issuer, signer, effect
+ledger or replacement operation history. The exact paired original source and
+native `NativeNotesView` / three callback API are specified by
+[DEPENDENCIES.md](DEPENDENCIES.md) and its canonical source contract.
+
+Write preserves text and quoted references. It refuses quoted context rather
+than silently dropping it, enforces the 4096-byte Notes bound and checks editor
+composition, fresh current-Session readiness, complete retained-ID traversal,
+absence of host issues and absence of unfinished original requests. A fresh
+document snapshot with `receipt_pending` also requires reconciliation before
+another intent can be created. Makepad additionally checks current room and
+source epoch, an open window and the visible Conversations page; both the
+original renderer and Desktop callback fence actions, and Desktop rechecks
+readiness when handling them.
+
+Refresh sends only original availability/status queries. Cancel requests
+cancellation once for the current original intent; an unknown cancel is
+observed under that identity, never repeated automatically. Rejected queueing
+is visible and does not create an accepted local intent. Neither action clears
+the draft. Passive status rotation fairly revisits all retained unresolved IDs,
+interleaving the current request and separate availability reads within the
+128-ID navigation bound. It advances only after the bounded read queue accepts
+a query, retains its selection on a full queue and never consumes action
+capacity, submits an effect or generates another ID.
+
+The current-document readback is a separate projection containing target
+identity, its own observation time, revision, short text digest and pending
+receipt status. It does not import document text into the composer. Its own
+source and transport freshness must hold before it is shown as current; a run
+marked Succeeded is not an exact saved-operation receipt. Terminal publication
+and retirement still require the original writer's exact evidence below.
+Session migration preserves original intent/run history for passive recovery
+but clears the prior document snapshot. A recent old target cannot inherit the
+new Session's provenance from its timestamp. Missing or stale readback remains
+unavailable until the original source observes it again.
 
 ## Required original-owner composition
 
@@ -49,7 +107,7 @@ and maintains its own operation history and generation fences. The private
 target handle is a host composition input, never a renderer-deserialized value.
 
 ```rust,ignore
-NotesTarget::from_private_channel(stream, target_identity)?;
+NotesTarget::from_private_channels(effect_stream, recovery_datagram, target_identity)?;
 target.enter_exact(original_payload_bytes, &NotesDispatchBinding {
     operation_id,
     destination_id,
@@ -82,13 +140,15 @@ attachment does not issue or consume a grant.
 Before serving any public IPC request, that explicit Session mode launches one
 Build Notes child with task id 1 and a fresh Session/child incarnation. It
 consumes its never-contacted `NotesTarget` and sends a **single atomic datagram**
-with exactly one `SCM_RIGHTS` descriptor. The descriptor is the original private
-Notes effect `UnixStream`; the ordinary effect framing remains unchanged.
+with exactly two ordered `SCM_RIGHTS` descriptors: the private Notes effect
+`UnixStream`, then its separate recovery `UnixDatagram`. Bootstrap version 2
+rejects version 1 and wrong descriptor counts or types; it never falls back to
+observing on an ambiguous effect stream. The ordinary effect framing remains unchanged.
 Bootstrap JSON is at most 1024 bytes, without a length prefix:
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "action": "offer_notes_target",
   "target": {
     "session_instance": "11111111111111111111111111111111",
@@ -185,7 +245,7 @@ trill.notes.predecessor.v1\0{session_instance}\0{task_id}\0{incarnation}\0{expec
 
 `NotesTargetIdentity::predecessor_sha256` supplies this derivation. The original
 production adapter compares it with the durable semantic expectation. The app
-compares the same identity and revision on the GUI thread when applying. Local
+compares the same identity and revision on the application worker when applying. Local
 edits increment that same revision, preventing a request with an old expectation
 from silently overwriting an intervening user edit.
 
@@ -206,8 +266,12 @@ Read-only requests contain `schema_version: 1`, `action: "observe"`, `target`,
 retained matching applied receipt. A missing receipt is unknown, even if current
 text matches. Exact replay of the retained operation and payload returns the
 same receipt without repeating the mutation. A conflicting payload for that
-retained operation is refused. This volatile last-mutation cache is not durable
-history and cannot make older unknown operations retryable.
+retained operation is refused. If another operation targets the current revision
+while this receipt remains pending, it receives `not_applied: receipt_pending`;
+the existing receipt is never overwritten to make room. Local edits retain the
+pending receipt. The durable mode stores it with the document and last retirement
+identity; temporary mode retains it in memory. Neither supplies a second Hepta
+history or makes an unknown operation retryable.
 
 ## Failure and observation semantics
 
@@ -219,14 +283,51 @@ write zero destination bytes.
 After bytes may have been sent, transport loss, timeout or an unrelated reply
 is `Indeterminate`. Transport/framing/correlation failure poisons and shuts
 down the channel, preventing silent replay. A lost ack can follow a real
-mutation. Timeout and cancellation do not roll it back. A poisoned channel's
-observer is unavailable; the original owner must retain unknown and seek
-independently recovered target evidence if available later.
+mutation. Timeout and cancellation do not roll it back. The separate recovery datagram remains available if the same application is
+still alive. It accepts `observe` and `acknowledge_terminal` only. The UI
+receiver rejects `replace_note` on this lane; rejection is enforced before
+calling the document mutation method. Every query/reply matches the exact
+incarnation, operation id and original raw payload SHA-256. Stale datagrams
+are discarded within a total deadline; no effect is replayed.
 
-The app has a bounded one-slot GUI handoff. Expired handoffs are discarded
-before document mutation. The GUI thread serializes external and local edits.
-An applied reply means its in-memory document changed; the original production
-owner still owns durable outcome publication.
+The app has a bounded four-slot application-worker handoff shared by both lanes
+and local edits. Expired
+handoffs are discarded before document mutation; a timed-out recovery request
+cannot create an unbounded queue. The worker serializes external and local edits.
+In durable mode it synchronizes the changed state before an applied reply;
+storage failure freezes further writes with an unknown result. The original
+production owner still owns durable outcome publication.
+
+
+### Durable original-owner receipt retirement
+
+The application retains one pending applied receipt. Only the original writer
+may acknowledge it after appending its complete terminal evidence to the existing
+`cognitive_local_events` chain. Normal dispatch, inherited dispatch settlement
+and recovered observation all use the same typed Notes evidence. A failed SQLite
+commit leaves the operation indeterminate and emits no retirement ACK.
+
+The writer rebuilds a private, non-serializable `NotesRetirementPermit` from its
+verified immutable operation/outbox binding and committed event. It checks the
+original live verifier after its SQLite awaits, then sends a metadata-only
+`acknowledge_terminal` datagram containing `schema_version: 1`, the exact target,
+operation id, original `payload_sha256`, and `receipt_sha256` of the full persisted
+application response. No new signer, operation ledger or writer is introduced.
+
+A matching ACK clears the pending receipt and returns `released`. The app retains
+one last retirement identity so a lost ACK can return `already_released` on an
+exact repeat. Wrong target, operation, payload or receipt hash cannot release
+capacity. A late ACK for the prior receipt cannot erase the next pending receipt.
+The source remains committed even if retirement fails; its reconciliation pass
+retries the latest exact retirement for that incarnation without dispatching text.
+
+The live channel covers a retained application and an original writer reopened
+against its authenticated source store. After the old application is reaped,
+the explicit [durable recovery helper](NOTES_DURABILITY.md#recovery-process-contract)
+can observe and retire the exact old stored receipt through a new private pair.
+It does not reconstruct an effect descriptor or make a new incarnation answer
+the old operation. Temporary-mode receipts cannot survive application exit.
+Production authority and the seven original trust inputs remain external requirements.
 
 After constructing a changed widget layout, the app writes
 `TRILL_NOTES_LAYOUT_V1:{revision}:{text_sha256}` to owned stdout. This is an
@@ -244,7 +345,20 @@ cargo test --manifest-path ui/Cargo.toml -p trill-session -p trill-app-window --
 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
 cargo build --manifest-path ui/Cargo.toml -p trill-ui-broker --example notes_host_probe --locked
 python3 tests/ui/test-strict-request-ipc.py /absolute/path/to/built/binaries
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked objective_panel
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked coalesced_poll_does_not_fill_action_queue_or_freeze_gui
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked --features hepta-native-makepad native_makepad::notes_tests
+cargo +1.96.0 clippy --manifest-path ui/Cargo.toml -p trill-shell --all-targets --locked --features hepta-native-makepad -- -D warnings
+cargo +1.96.0 build --manifest-path ui/Cargo.toml -p trill-shell --locked --features hepta-native-makepad
 ```
+
+The shared controls tests cover same-ID recovery, full-queue fairness, host
+issues, pending receipts, readback freshness and Session snapshot invalidation.
+The native tests exercise the original port's source/editor fences and the
+same bridge without clearing the draft. The actual receiver/helper process
+crash tests, input/save-close cases and original-owner acceptance are mapped in
+[NOTES_DURABILITY.md](NOTES_DURABILITY.md). Test presence is not a final
+source-paired pass; record the selected source, environment and results.
 
 The socketpair tests explicitly use an application-model fixture; they do not
 claim a GUI or production-owner run. The Session test sends forged Notes effect
@@ -274,9 +388,10 @@ It is a destination test without a fabricated grant, signer or ledger.
 
 Test commands and code presence do not assert passes. Record actual tested
 commit, environment, commands and results. Remaining acceptance includes
-production-configured bootstrap and real-authority dispatch through the original owner, durable
-history/restart/failure reconciliation, and separately scoped visual/device
-tests.
+production-configured bootstrap and real-authority dispatch through the original owner,
+whole-process endpoint recovery (not supplied by this two-lane protocol), and
+separately scoped visual/device tests. Current patch test results must be recorded
+separately from the historical runs below.
 
 The [2026-10-21 Linux destination evidence](../../tests/ui/evidence/2026-10-21-notes-target/README.md)
 records a Rust 1.95.0 workspace run (172 passed, two opt-in host-font tests

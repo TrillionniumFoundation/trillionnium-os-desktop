@@ -28,8 +28,9 @@ pub(crate) fn create_new_user_task(
     user_ctx: Box<UserContext>,
     thread_ref: Arc<Thread>,
     thread_local: ThreadLocal,
-    #[cfg(feature = "g1d-trusted-control")]
-    initial_user_startup: Option<Box<dyn FnOnce(&Context<'_>) + Send>>,
+    #[cfg(feature = "g1d-trusted-control")] initial_user_startup: Option<
+        Box<dyn FnOnce(&Context<'_>) + Send>,
+    >,
 ) -> Task {
     let user_task_entry = move |user_ctx: UserContext| {
         let current_task = Task::current().unwrap();
@@ -143,6 +144,10 @@ pub(crate) fn create_new_user_task(
 }
 
 impl UserModeHooks for Context<'_> {
+    fn has_fatal_kernel_event(&self, _guard: &DisabledLocalIrqGuard) -> bool {
+        self.has_fatal_sigkill()
+    }
+
     fn has_kernel_event(&self) -> bool {
         self.has_pending()
     }

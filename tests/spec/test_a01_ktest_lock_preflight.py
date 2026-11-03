@@ -18,11 +18,11 @@ spec.loader.exec_module(prepare)
 
 
 class ColdRunnerPreflightTests(unittest.TestCase):
-    def exercise_current_prefetch(self, *, mutate_fetch=False):
+    def exercise_current_prefetch(self, *, mutate_fetch=False, crate="ostd"):
         """Run real preparation/audits; substitute only Cargo execution."""
         upstream = ROOT.parents[2] / "kernel/asterinas"
         seed = prepare.original_seed(upstream)
-        bootstrap = (ROOT / "locks/ostd.Cargo.lock").read_bytes()
+        bootstrap = (ROOT / f"locks/{crate}.Cargo.lock").read_bytes()
         working_before = (upstream / "Cargo.lock").read_bytes()
         calls = []
 
@@ -49,7 +49,7 @@ class ColdRunnerPreflightTests(unittest.TestCase):
             return subprocess.CompletedProcess(command, 0, json.dumps(metadata), "")
 
         with tempfile.TemporaryDirectory(prefix="a01-prefetch-output-") as output:
-            argv = ["prepare-locks.py", "--upstream", str(upstream), "--crate", "ostd",
+            argv = ["prepare-locks.py", "--upstream", str(upstream), "--crate", crate,
                     "--output-dir", output]
             with patch.object(sys, "argv", argv), \
                     patch.object(prepare, "checked_cargo", side_effect=cargo), \
@@ -61,11 +61,11 @@ class ColdRunnerPreflightTests(unittest.TestCase):
                 else:
                     prepare.main()
                     self.assertEqual(len(calls), 3)
-                    self.assertEqual((Path(output) / "ostd.Cargo.lock").read_bytes(), bootstrap)
-                    report = json.loads((Path(output) / "ostd.json").read_text())
+                    self.assertEqual((Path(output) / f"{crate}.Cargo.lock").read_bytes(), bootstrap)
+                    report = json.loads((Path(output) / f"{crate}.json").read_text())
                     self.assertEqual(report["seed_sha256"], prepare.SEED_SHA256)
                     self.assertEqual(report["seed_package_count"], 234)
-                    self.assertEqual(report["package_count"], 97)
+                    self.assertEqual(report["package_count"], 88 if crate == "osdk-frame-allocator" else 97)
                     self.assertEqual(report["external_drift"], [])
         self.assertEqual((upstream / "Cargo.lock").read_bytes(), working_before)
 
@@ -74,6 +74,32 @@ class ColdRunnerPreflightTests(unittest.TestCase):
 
     def test_prefetch_lock_mutation_stops_before_metadata(self):
         self.exercise_current_prefetch(mutate_fetch=True)
+
+    def test_allocator_prefetch_keeps_the_original_seed_and_distinct_test_base(self):
+        self.exercise_current_prefetch(crate="osdk-frame-allocator")
+
+    def test_allocator_prefetch_lock_mutation_stops_before_metadata(self):
+        self.exercise_current_prefetch(crate="osdk-frame-allocator", mutate_fetch=True)
+
+    def test_allocator_cannot_substitute_ostd_lock_or_add_an_external_package(self):
+        upstream = ROOT.parents[2] / "kernel/asterinas"
+        seed_set = {prepare.package_key(p) for p in
+                    prepare.tomllib.loads(prepare.original_seed(upstream).decode())["package"]}
+        allocator = prepare.tomllib.loads((ROOT / "locks/osdk-frame-allocator.Cargo.lock").read_text())["package"]
+        ostd = prepare.tomllib.loads((ROOT / "locks/ostd.Cargo.lock").read_text())["package"]
+        for packages in (ostd, allocator + [{"name": "external", "version": "1.0.0", "source": "registry:other"}]):
+            with self.subTest(packages=packages[-1]["name"]):
+                with self.assertRaisesRegex(SystemExit, "dependency drift"):
+                    prepare.audit_packages(packages, seed_set, "osdk-frame-allocator")
+
+    def test_allocator_manifest_matches_original_osdk_dependency_replacement(self):
+        upstream = ROOT.parents[2] / "kernel/asterinas"
+        manifest = prepare.tomllib.loads(prepare.generated_manifest(upstream, "osdk-frame-allocator"))
+        self.assertEqual(manifest["package"]["name"], "osdk-frame-allocator-osdk-bin")
+        self.assertEqual(manifest["dependencies"]["osdk-frame-allocator"],
+                         {"path": str(upstream / "osdk/deps/frame-allocator")})
+        self.assertEqual(manifest["features"], {"physical-reserve": ["osdk-frame-allocator/physical-reserve"]})
+        self.assertNotIn("default", manifest["features"])
 
     def test_offline_error_retains_underlying_cargo_diagnostic(self):
         argv = ["cargo", "+nightly-2026-07-21", "metadata", "--offline"]

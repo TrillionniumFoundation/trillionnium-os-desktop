@@ -1,0 +1,553 @@
+{
+  "schema": "a04.linux-full-contract.v1",
+  "profile": "linux-ubuntu24.04-x86_64-20261019",
+  "architecture": "x86_64",
+  "distribution": {
+    "id": "ubuntu",
+    "version_id": "24.04"
+  },
+  "python": "/usr/bin/python3.12",
+  "case_count": 32,
+  "case_timeout_seconds": 45,
+  "legacy_catalog_sha256": "64b268956848d4fd97c6ace51343d607f20495d7bd317491a5bf7ead5e672db0",
+  "scope": {
+    "full_32_workload_profile": true,
+    "pinned_debian13_qualification": false,
+    "original_hepta_w1_qualification": false,
+    "storage_power_loss_qualification": false
+  },
+  "cases": [
+    {
+      "id": "dynamic.async_fd",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "async_fd",
+        "/tmp/a04/dynamic.async_fd"
+      ],
+      "expected_facts": {
+        "empty_eventfd_errno": 11,
+        "epoll_edge": true,
+        "eventfd": true,
+        "ok": true,
+        "timerfd": true
+      }
+    },
+    {
+      "id": "dynamic.cloexec",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "cloexec",
+        "/tmp/a04/dynamic.cloexec"
+      ],
+      "expected_facts": {
+        "cloexec_closed_on_exec": true,
+        "ok": true,
+        "plain_fd_inherited": true,
+        "wait_reaped": true
+      }
+    },
+    {
+      "id": "dynamic.errno",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "errno",
+        "/tmp/a04/dynamic.errno"
+      ],
+      "expected_facts": {
+        "EBADF": 9,
+        "EEXIST": 17,
+        "ENOENT": 2,
+        "ok": true
+      }
+    },
+    {
+      "id": "dynamic.fd_limit",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "fd_limit",
+        "/tmp/a04/dynamic.fd_limit"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "emfile_errno": 24,
+        "ok": true,
+        "parent_rlimit_unchanged": true
+      }
+    },
+    {
+      "id": "dynamic.file_lock",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "file_lock",
+        "/tmp/a04/dynamic.file_lock"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "fcntl_contention": "EACCES_or_EAGAIN",
+        "flock_contention": "EWOULDBLOCK",
+        "ok": true,
+        "post_release_acquire": true
+      }
+    },
+    {
+      "id": "dynamic.ipc_epoll",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "ipc_epoll",
+        "/tmp/a04/dynamic.ipc_epoll"
+      ],
+      "expected_facts": {
+        "af_unix": "socketpair",
+        "close_errno": 9,
+        "epoll": "readable",
+        "half_close_eof": true,
+        "ok": true,
+        "payload": "ping"
+      }
+    },
+    {
+      "id": "dynamic.mmap_cow",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "mmap_cow",
+        "/tmp/a04/dynamic.mmap_cow"
+      ],
+      "expected_facts": {
+        "mapping_released": true,
+        "ok": true,
+        "private_cow": true,
+        "shared_msync": true
+      }
+    },
+    {
+      "id": "dynamic.process",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "process",
+        "/tmp/a04/dynamic.process"
+      ],
+      "expected_facts": {
+        "exit_codes": [
+          17,
+          23
+        ],
+        "fork_exec_wait": true,
+        "ok": true,
+        "restarts": 2,
+        "signal_delivered": true
+      }
+    },
+    {
+      "id": "dynamic.robust_owner_death",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "robust_owner_death",
+        "/tmp/a04/dynamic.robust_owner_death"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "mutex_reused": true,
+        "ok": true,
+        "recovered_with_consistent": true,
+        "robust_futex_owner_death": true
+      }
+    },
+    {
+      "id": "dynamic.scm_rights",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "scm_rights",
+        "/tmp/a04/dynamic.scm_rights"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "ok": true,
+        "recv_cloexec": true,
+        "scm_rights": true,
+        "shared_offset": true
+      }
+    },
+    {
+      "id": "dynamic.smoke",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "smoke",
+        "/tmp/a04/dynamic.smoke"
+      ],
+      "expected_facts": {
+        "auxv_page_power_of_two": true,
+        "file_data": "AYNC",
+        "msync": true,
+        "ok": true,
+        "rename_unlink": true
+      }
+    },
+    {
+      "id": "dynamic.threads_futex",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "threads_futex",
+        "/tmp/a04/dynamic.threads_futex"
+      ],
+      "expected_facts": {
+        "futex_mismatch_errno": 11,
+        "ok": true,
+        "threads_created": 4,
+        "threads_joined": 4
+      }
+    },
+    {
+      "id": "dynamic.uds_peercred",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_dynamic",
+        "uds_peercred",
+        "/tmp/a04/dynamic.uds_peercred"
+      ],
+      "expected_facts": {
+        "accept4_cloexec": true,
+        "child_reaped": true,
+        "ok": true,
+        "so_peercred": true,
+        "socket_unlinked": true,
+        "unix_pathname": true
+      }
+    },
+    {
+      "id": "nss_tls",
+      "class": "python",
+      "argv": [
+        "/usr/bin/python3.12",
+        "-I",
+        "-B",
+        "-S",
+        "/usr/local/lib/a04/full_python_case.py",
+        "nss_tls",
+        "/tmp/a04/nss_tls"
+      ],
+      "expected_facts": {
+        "loopback_tls_verified": true,
+        "nss_localhost": true,
+        "ok": true,
+        "system_ca_bundle_present": true
+      }
+    },
+    {
+      "id": "rust_tokio",
+      "class": "rust",
+      "argv": [
+        "/usr/local/bin/a04/a04-tokio-workload",
+        "/tmp/a04/rust_tokio"
+      ],
+      "expected_facts": {
+        "ok": true,
+        "std_threads": 4,
+        "counter": 4000,
+        "tokio_tasks": 16,
+        "unix_socket": true,
+        "async_fs": true
+      }
+    },
+    {
+      "id": "sqlite_dynamic.sqlite_wal_elf",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/sqlite_dynamic",
+        "/tmp/a04/sqlite_dynamic.sqlite_wal_elf"
+      ],
+      "expected_facts": {
+        "checkpoint_busy": 0,
+        "committed_visible": true,
+        "concurrent_commits": 40,
+        "crash_exit_code": 37,
+        "integrity_check": "ok",
+        "journal_mode": "wal",
+        "ok": true,
+        "rows_after_reopen": 41,
+        "uncommitted_visible": false
+      }
+    },
+    {
+      "id": "sqlite_static.sqlite_wal_elf",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/sqlite_static",
+        "/tmp/a04/sqlite_static.sqlite_wal_elf"
+      ],
+      "expected_facts": {
+        "checkpoint_busy": 0,
+        "committed_visible": true,
+        "concurrent_commits": 40,
+        "crash_exit_code": 37,
+        "integrity_check": "ok",
+        "journal_mode": "wal",
+        "ok": true,
+        "rows_after_reopen": 41,
+        "uncommitted_visible": false
+      }
+    },
+    {
+      "id": "sqlite_wal",
+      "class": "python",
+      "argv": [
+        "/usr/bin/python3.12",
+        "-I",
+        "-B",
+        "-S",
+        "/usr/local/lib/a04/full_python_case.py",
+        "sqlite_wal",
+        "/tmp/a04/sqlite_wal"
+      ],
+      "expected_facts": {
+        "checkpoint_busy": 0,
+        "committed_visible": true,
+        "concurrent_commits": 40,
+        "crash_exit_code": 37,
+        "integrity_check": "ok",
+        "journal_mode": "wal",
+        "ok": true,
+        "rows_after_reopen": 41,
+        "uncommitted_visible": false
+      }
+    },
+    {
+      "id": "static.async_fd",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "async_fd",
+        "/tmp/a04/static.async_fd"
+      ],
+      "expected_facts": {
+        "empty_eventfd_errno": 11,
+        "epoll_edge": true,
+        "eventfd": true,
+        "ok": true,
+        "timerfd": true
+      }
+    },
+    {
+      "id": "static.cloexec",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "cloexec",
+        "/tmp/a04/static.cloexec"
+      ],
+      "expected_facts": {
+        "cloexec_closed_on_exec": true,
+        "ok": true,
+        "plain_fd_inherited": true,
+        "wait_reaped": true
+      }
+    },
+    {
+      "id": "static.errno",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "errno",
+        "/tmp/a04/static.errno"
+      ],
+      "expected_facts": {
+        "EBADF": 9,
+        "EEXIST": 17,
+        "ENOENT": 2,
+        "ok": true
+      }
+    },
+    {
+      "id": "static.fd_limit",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "fd_limit",
+        "/tmp/a04/static.fd_limit"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "emfile_errno": 24,
+        "ok": true,
+        "parent_rlimit_unchanged": true
+      }
+    },
+    {
+      "id": "static.file_lock",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "file_lock",
+        "/tmp/a04/static.file_lock"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "fcntl_contention": "EACCES_or_EAGAIN",
+        "flock_contention": "EWOULDBLOCK",
+        "ok": true,
+        "post_release_acquire": true
+      }
+    },
+    {
+      "id": "static.ipc_epoll",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "ipc_epoll",
+        "/tmp/a04/static.ipc_epoll"
+      ],
+      "expected_facts": {
+        "af_unix": "socketpair",
+        "close_errno": 9,
+        "epoll": "readable",
+        "half_close_eof": true,
+        "ok": true,
+        "payload": "ping"
+      }
+    },
+    {
+      "id": "static.mmap_cow",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "mmap_cow",
+        "/tmp/a04/static.mmap_cow"
+      ],
+      "expected_facts": {
+        "mapping_released": true,
+        "ok": true,
+        "private_cow": true,
+        "shared_msync": true
+      }
+    },
+    {
+      "id": "static.process",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "process",
+        "/tmp/a04/static.process"
+      ],
+      "expected_facts": {
+        "exit_codes": [
+          17,
+          23
+        ],
+        "fork_exec_wait": true,
+        "ok": true,
+        "restarts": 2,
+        "signal_delivered": true
+      }
+    },
+    {
+      "id": "static.robust_owner_death",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "robust_owner_death",
+        "/tmp/a04/static.robust_owner_death"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "mutex_reused": true,
+        "ok": true,
+        "recovered_with_consistent": true,
+        "robust_futex_owner_death": true
+      }
+    },
+    {
+      "id": "static.scm_rights",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "scm_rights",
+        "/tmp/a04/static.scm_rights"
+      ],
+      "expected_facts": {
+        "child_reaped": true,
+        "ok": true,
+        "recv_cloexec": true,
+        "scm_rights": true,
+        "shared_offset": true
+      }
+    },
+    {
+      "id": "static.smoke",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "smoke",
+        "/tmp/a04/static.smoke"
+      ],
+      "expected_facts": {
+        "auxv_page_power_of_two": true,
+        "file_data": "AYNC",
+        "msync": true,
+        "ok": true,
+        "rename_unlink": true
+      }
+    },
+    {
+      "id": "static.threads_futex",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "threads_futex",
+        "/tmp/a04/static.threads_futex"
+      ],
+      "expected_facts": {
+        "futex_mismatch_errno": 11,
+        "ok": true,
+        "threads_created": 4,
+        "threads_joined": 4
+      }
+    },
+    {
+      "id": "static.uds_peercred",
+      "class": "elf",
+      "argv": [
+        "/usr/local/bin/a04/probe_static",
+        "uds_peercred",
+        "/tmp/a04/static.uds_peercred"
+      ],
+      "expected_facts": {
+        "accept4_cloexec": true,
+        "child_reaped": true,
+        "ok": true,
+        "so_peercred": true,
+        "socket_unlinked": true,
+        "unix_pathname": true
+      }
+    },
+    {
+      "id": "uds_path",
+      "class": "python",
+      "argv": [
+        "/usr/bin/python3.12",
+        "-I",
+        "-B",
+        "-S",
+        "/usr/local/lib/a04/full_python_case.py",
+        "uds_path",
+        "/tmp/a04/uds_path"
+      ],
+      "expected_facts": {
+        "epoll_accept": true,
+        "named_af_unix": true,
+        "ok": true,
+        "socket_path_released": true
+      }
+    }
+  ]
+}

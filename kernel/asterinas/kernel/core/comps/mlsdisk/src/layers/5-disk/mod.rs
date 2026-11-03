@@ -17,7 +17,7 @@
 //! ```
 //! let nblocks = 1024;
 //! let mem_disk = MemDisk::create(nblocks)?;
-//! let root_key = Key::random();
+//! let root_key = Key::random()?;
 //! let mlsdisk = MlsDisk::create(mem_disk.clone(), root_key)?;
 //!
 //! let num_rw = 128;

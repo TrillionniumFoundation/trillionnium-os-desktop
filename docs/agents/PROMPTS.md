@@ -1,6 +1,6 @@
 # 独立可复制的 Agent Prompts
 
-下列每个文件已经包含公共约束、自己的所有权、依赖、交付与验收。只需给对应 Agent 发送它自己的文件全文，不需要额外拼接通用提示词。先阅读 [并行计划](PLAN.md)。根 README.md 保持 0 字节。
+下列每个文件已经包含公共约束、自己的所有权、依赖、交付与验收。只需给对应 Agent 发送它自己的文件全文，不需要额外拼接通用提示词。先阅读 [并行计划](PLAN.md)。根 README.md 提供项目导航并保持普通文件；开工状态以 [当前能力表](../CURRENT_CAPABILITIES.md) 的来源与资格边界为准。
 
 - [A00 — 总集成与接口协调](prompts/A00-integration.md)（全程）
 - [A01 — Asterinas 内核源码与启动](prompts/A01-asterinas-boot.md)（第一批立即）

@@ -6,16 +6,18 @@ use aster_bigtcp::socket::ReceiveBehavior;
 use aster_rights::ReadOp;
 use ostd::task::Task;
 
-use super::{CUserCred, UnixStreamSocket, cred::SocketCred};
+use super::{
+    CUserCred, UnixDatagramSocket, UnixStreamSocket,
+    cred::SocketCred,
+    ownership::{Lease, Node},
+};
 use crate::{
     fs::file::{
         FileLike,
         file_table::{FdFlags, FileTable, get_file_fast},
     },
-    net::socket::util::{CControlHeader, ControlMessage, RecvFlags},
+    net::socket::util::{CControlHeader, ControlMessage, RecvFlags, reserve_control_items},
     prelude::*,
-    process::{UserNamespace, credentials::capabilities::CapSet, posix_thread::AsPosixThread},
-    security::lsm::hooks as lsm_hooks,
     util::net::CSocketOptionLevel,
 };
 
@@ -29,6 +31,14 @@ enum Message {
 }
 
 impl UnixControlMessage {
+    #[cfg(ktest)]
+    pub(super) fn from_files_for_test(files: Vec<Arc<dyn FileLike>>) -> Self {
+        Self(Message::Files(FileMessage {
+            files,
+            ownership: None,
+        }))
+    }
+
     pub(crate) fn read_from(
         header: &CControlHeader,
         reader: &mut VmReader,
@@ -72,6 +82,8 @@ impl UnixControlMessage {
 
 struct FileMessage {
     files: Vec<Arc<dyn FileLike>>,
+    // Real files drop first; this lease contains identities only.
+    ownership: Option<Lease>,
 }
 
 impl Debug for FileMessage {
@@ -104,7 +116,8 @@ impl FileMessage {
         // exceeds the RLIMIT_NOFILE resource limit and the caller does not have the
         // CAP_SYS_RESOURCE capability."
 
-        let mut files = Vec::with_capacity(nfiles);
+        let mut files = Vec::new();
+        reserve_control_items(&mut files, nfiles)?;
 
         let current = Task::current().unwrap();
         let mut file_table = current.as_thread_local().unwrap().borrow_file_table_mut();
@@ -114,7 +127,10 @@ impl FileMessage {
             files.push(file);
         }
 
-        Ok(FileMessage { files })
+        Ok(FileMessage {
+            files,
+            ownership: None,
+        })
     }
 
     fn write_to(
@@ -241,6 +257,7 @@ enum CControlType {
 pub(super) struct AuxiliaryData {
     files: Vec<Arc<dyn FileLike>>,
     cred: Option<SocketCred>,
+    ownership: Option<Lease>,
 }
 
 impl AuxiliaryData {
@@ -256,6 +273,7 @@ impl AuxiliaryData {
             match unix_ctrl_msg.0 {
                 Message::Files(FileMessage {
                     files: mut msg_files,
+                    ownership: prior_ownership,
                 }) => {
                     if msg_files.len() > MAX_NR_FILES - files.len() {
                         return_errno_with_message!(
@@ -263,7 +281,11 @@ impl AuxiliaryData {
                             "the SCM_RIGHTS message is too large"
                         );
                     }
+                    reserve_control_items(&mut files, msg_files.len())?;
                     files.append(&mut msg_files);
+                    // These are now caller-rooted, unpublished outgoing files.
+                    // The destination queue admits its own edge before publication.
+                    drop(prior_ownership);
                 }
                 Message::Cred(CredMessage { cred: msg_cred }) => {
                     let cur_cred = SocketCred::<ReadOp>::new_current();
@@ -279,25 +301,36 @@ impl AuxiliaryData {
             }
         }
 
-        // FIXME: Sending UNIX sockets over UNIX sockets can easily lead to circular references and
-        // memory leaks. Linux uses a complex garbage collection algorithm to address these issues.
-        // See also <https://elixir.bootlin.com/linux/v6.15/source/net/unix/garbage.c#L592>.
-        if files
-            .iter()
-            .any(|file| (&**file as &dyn Any).is::<UnixStreamSocket>())
-        {
-            warn!("UNIX sockets in SCM_RIGHTS messages can leak kernel resource");
+        Ok(Self {
+            files,
+            cred,
+            ownership: None,
+        })
+    }
 
-            let current = current_thread!();
-            let posix_thread = current.as_posix_thread().unwrap();
-            lsm_hooks::on_capable(lsm_hooks::CapableContext::new(
-                UserNamespace::get_init_singleton().as_ref(),
-                posix_thread,
-                CapSet::SYS_ADMIN,
-            ))?;
+    /// Prepare the destination's persistent edges without consuming caller data.
+    pub(super) fn prepare_ownership(&self, source: &Node) -> Result<Option<Lease>> {
+        let mut targets = Vec::new();
+        targets
+            .try_reserve_exact(self.files.len())
+            .map_err(|_| Error::new(Errno::ENOMEM))?;
+        for file in &self.files {
+            let file = &**file as &dyn Any;
+            if let Some(socket) = file.downcast_ref::<UnixStreamSocket>() {
+                targets.push(socket.ownership_node().clone());
+            } else if let Some(socket) = file.downcast_ref::<UnixDatagramSocket>() {
+                targets.push(socket.ownership_node().clone());
+            }
         }
+        if targets.is_empty() {
+            Ok(None)
+        } else {
+            Lease::new(source, targets).map(Some)
+        }
+    }
 
-        Ok(Self { files, cred })
+    pub(super) fn publish_ownership(&mut self, ownership: Option<Lease>) {
+        self.ownership = ownership;
     }
 
     /// Fills the current credentials if there are no credentials.
@@ -315,7 +348,11 @@ impl AuxiliaryData {
     ) -> Vec<ControlMessage> {
         let mut ctrl_msgs = Vec::new();
 
-        let Self { files, cred } = self;
+        let Self {
+            files,
+            cred,
+            ownership,
+        } = self;
 
         if is_pass_cred {
             let unix_ctrl_msg = UnixControlMessage(Message::Cred(CredMessage {
@@ -332,7 +369,12 @@ impl AuxiliaryData {
                 ReceiveBehavior::Recv => mem::take(files),
                 ReceiveBehavior::Peek => files.clone(),
             };
-            let unix_ctrl_msg = UnixControlMessage(Message::Files(FileMessage { files }));
+            let ownership = match behavior {
+                ReceiveBehavior::Recv => ownership.take(),
+                ReceiveBehavior::Peek => ownership.clone(),
+            };
+            let unix_ctrl_msg =
+                UnixControlMessage(Message::Files(FileMessage { files, ownership }));
             ctrl_msgs.push(ControlMessage::Unix(unix_ctrl_msg));
         }
 
@@ -363,3 +405,6 @@ impl AuxiliaryData {
         true
     }
 }
+
+#[cfg(ktest)]
+mod ownership_tests;

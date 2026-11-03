@@ -1,0 +1,20 @@
+[
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/data/trillionnium-closure-20261024/os-native-process-successor/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0",
+      "--features=g2-trusted-daemon"
+    ],
+    "cwd": "/data/trillionnium-closure-20261024/os-native-process-successor/kernel/asterinas/kernel/core",
+    "lock_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+  }
+]

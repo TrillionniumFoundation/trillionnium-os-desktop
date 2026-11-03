@@ -12,13 +12,14 @@ use inherit_methods_macro::inherit_methods;
 use super::Common;
 use crate::{
     fs::{
-        file::{InodeMode, InodeType, StatusFlags},
+        file::{InodeMode, InodeType, Permission, StatusFlags},
         procfs::{BLOCK_SIZE, ProcFs},
         utils::DirentVisitor,
         vfs::{
             file_system::{FileSystem, SuperBlock},
             inode::{
                 Extension, FileOps, Inode, Metadata, MknodType, RenameMode, RevalidationPolicy,
+                check_inode_permission,
             },
             path::{Dentry, is_dot, is_dotdot},
             permission_attrs::PermissionAttrRequest,
@@ -190,6 +191,16 @@ impl<D: ProcDirOps + 'static> Inode for ProcDir<D> {
         Ok(self.common.metadata_with_owner(owner_thread))
     }
 
+    fn check_permission(&self, perm: Permission) -> Result<()> {
+        check_inode_permission(self, perm).or_else(|error| {
+            if error.error() == Errno::EACCES && self.inner.allow_self_fd_access() {
+                Ok(())
+            } else {
+                Err(error)
+            }
+        })
+    }
+
     fn resize(&self, _self_dentry: &Dentry, _new_size: usize) -> Result<()> {
         Err(Error::new(Errno::EISDIR))
     }
@@ -271,6 +282,12 @@ impl<D: ProcDirOps + 'static> Inode for ProcDir<D> {
 }
 
 pub(in procfs) trait ProcDirOps: Sync + Send + Sized {
+    /// Linux permits a thread group to access its own fd/fdinfo directories
+    /// even when nondumpability assigns their dynamic owner to root.
+    fn allow_self_fd_access(&self) -> bool {
+        false
+    }
+
     /// Returns the thread whose credentials own this procfs inode.
     fn owner_thread(&self) -> Option<Arc<Thread>> {
         None

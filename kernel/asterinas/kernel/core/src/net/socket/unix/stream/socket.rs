@@ -4,7 +4,7 @@ use aster_rights::ReadDupOp;
 use takeable::Takeable;
 
 use super::{
-    connected::Connected,
+    connected::{Buffers, Connected},
     init::Init,
     listener::{Backlog, Listener, get_backlog},
 };
@@ -21,7 +21,9 @@ use crate::{
             Error as SocketError, PeerCred, PeerGroups, SocketOption, macros::sock_option_mut,
         },
         private::SocketPrivate,
-        unix::{CUserCred, UnixSocketAddr, cred::SocketCred, ctrl_msg::AuxiliaryData},
+        unix::{
+            CUserCred, UnixSocketAddr, cred::SocketCred, ctrl_msg::AuxiliaryData, ownership::Node,
+        },
         util::{
             ControlMessage, MessageHeader, RecvFlags, RecvOutput, SendFlags, SockShutdownCmd,
             SocketAddr,
@@ -47,6 +49,7 @@ pub(crate) struct UnixStreamSocket {
     socket_type: SockType,
     pollee: Pollee,
     common: FileCommon,
+    ownership: Node,
 }
 
 enum State {
@@ -56,7 +59,7 @@ enum State {
 }
 
 impl State {
-    pub(self) fn check_io_events(&self) -> IoEvents {
+    pub(self) fn check_io_events(&self, is_seqpacket: bool) -> IoEvents {
         let mut events = IoEvents::empty();
 
         let is_read_shutdown = self.is_read_shutdown();
@@ -83,7 +86,7 @@ impl State {
         events |= match self {
             State::Init(init) => init.check_io_events(),
             State::Listen(listener) => listener.check_io_events(),
-            State::Connected(connected) => connected.check_io_events(),
+            State::Connected(connected) => connected.check_io_events(is_seqpacket),
         };
 
         events
@@ -167,7 +170,7 @@ impl OptionSet {
 }
 
 impl UnixStreamSocket {
-    pub(crate) fn new(is_nonblocking: bool, socket_type: SockType) -> Arc<Self> {
+    pub(crate) fn new(is_nonblocking: bool, socket_type: SockType) -> Result<Arc<Self>> {
         debug_assert!(
             socket_type == SockType::SOCK_STREAM || socket_type == SockType::SOCK_SEQPACKET
         );
@@ -175,25 +178,33 @@ impl UnixStreamSocket {
         Self::new_init(Init::new(), is_nonblocking, socket_type)
     }
 
-    fn new_init(init: Init, is_nonblocking: bool, socket_type: SockType) -> Arc<Self> {
-        Arc::new(Self {
+    fn new_init(init: Init, is_nonblocking: bool, socket_type: SockType) -> Result<Arc<Self>> {
+        let ownership = Node::new()?;
+        Ok(Arc::new(Self {
             state: RwMutex::new(Takeable::new(State::Init(init))),
             options: RwLock::new(OptionSet::new()),
             timeouts: SocketTimeouts::new(),
             socket_type,
             pollee: Pollee::new(),
             common: new_socket_common(is_nonblocking),
-        })
+            ownership,
+        }))
     }
 
-    pub(crate) fn new_pair(is_nonblocking: bool, socket_type: SockType) -> (Arc<Self>, Arc<Self>) {
+    pub(crate) fn new_pair(
+        is_nonblocking: bool,
+        socket_type: SockType,
+    ) -> Result<(Arc<Self>, Arc<Self>)> {
         debug_assert!(
             socket_type == SockType::SOCK_STREAM || socket_type == SockType::SOCK_SEQPACKET
         );
 
+        let owner = crate::vm::user_memory::current_owner();
+        let buffers = Buffers::new(&owner)?;
         let cred = SocketCred::<ReadDupOp>::new_current();
 
         let (conn_a, conn_b) = Connected::new_pair(
+            buffers,
             None,
             None,
             EndpointState::default(),
@@ -201,17 +212,60 @@ impl UnixStreamSocket {
             cred.dup().restrict(),
             cred.restrict(),
         );
+        Ok((
+            Self::new_connected(conn_a, OptionSet::new(), is_nonblocking, socket_type)?,
+            Self::new_connected(conn_b, OptionSet::new(), is_nonblocking, socket_type)?,
+        ))
+    }
+
+    #[cfg(ktest)]
+    pub(in crate::net::socket::unix) fn pair_for_ownership_test(
+        socket_type: SockType,
+    ) -> (Arc<Self>, Arc<Self>) {
+        use crate::process::posix_thread::AsPosixThread;
+        let (process, task) = crate::process::test_util::new_unstarted_process();
+        let cred = || SocketCred::from_posix_thread_for_test(task.as_posix_thread().unwrap());
+        let buffers = Buffers::new(&None).unwrap();
+        let (left, right) = Connected::new_pair(
+            buffers,
+            None,
+            None,
+            EndpointState::default(),
+            EndpointState::default(),
+            cred(),
+            cred(),
+        );
+        drop((task, process));
         (
-            Self::new_connected(conn_a, OptionSet::new(), is_nonblocking, socket_type),
-            Self::new_connected(conn_b, OptionSet::new(), is_nonblocking, socket_type),
+            Self::new_connected(left, OptionSet::new(), true, socket_type).unwrap(),
+            Self::new_connected(right, OptionSet::new(), true, socket_type).unwrap(),
         )
     }
 
     pub(super) fn new_connected(
+        mut connected: Connected,
+        options: OptionSet,
+        is_nonblocking: bool,
+        socket_type: SockType,
+    ) -> Result<Arc<Self>> {
+        let ownership = Node::new()?;
+        let edge = connected.prepare_owner(&ownership)?;
+        connected.publish_owner(edge);
+        Ok(Self::new_connected_owned(
+            connected,
+            options,
+            is_nonblocking,
+            socket_type,
+            ownership,
+        ))
+    }
+
+    pub(super) fn new_connected_owned(
         connected: Connected,
         options: OptionSet,
         is_nonblocking: bool,
         socket_type: SockType,
+        ownership: Node,
     ) -> Arc<Self> {
         let cloned_pollee = connected.cloned_pollee();
         Arc::new(Self {
@@ -221,7 +275,12 @@ impl UnixStreamSocket {
             socket_type,
             pollee: cloned_pollee,
             common: new_socket_common(is_nonblocking),
+            ownership,
         })
+    }
+
+    pub(in crate::net::socket::unix) fn ownership_node(&self) -> &Node {
+        &self.ownership
     }
 
     fn try_send(
@@ -282,6 +341,7 @@ impl UnixStreamSocket {
                 self.pollee.clone(),
                 &self.options.read(),
                 self.is_seqpacket(),
+                &self.ownership,
             ) {
                 Ok(connected) => connected,
                 Err((err, init)) => return (State::Init(init), Err(err)),
@@ -311,8 +371,9 @@ pub(super) const SHUT_WRITE_EVENTS: IoEvents = IoEvents::OUT.union(IoEvents::HUP
 
 impl Pollable for UnixStreamSocket {
     fn poll(&self, mask: IoEvents, poller: Option<&mut PollHandle>) -> IoEvents {
-        self.pollee
-            .poll_with(mask, poller, || self.state.read().check_io_events())
+        self.pollee.poll_with(mask, poller, || {
+            self.state.read().check_io_events(self.is_seqpacket())
+        })
     }
 }
 
@@ -397,7 +458,12 @@ impl Socket for UnixStreamSocket {
                 }
             };
 
-            let listener = match init.listen(backlog, self.pollee.clone(), self.is_seqpacket()) {
+            let listener = match init.listen(
+                backlog,
+                self.pollee.clone(),
+                self.is_seqpacket(),
+                &self.ownership,
+            ) {
                 Ok(listener) => listener,
                 Err((err, init)) => {
                     return (State::Init(init), Err(err));
@@ -506,7 +572,7 @@ impl Socket for UnixStreamSocket {
         flags: SendFlags,
     ) -> Result<usize> {
         // TODO: Deal with flags
-        if !flags.is_all_supported() {
+        if !(flags - SendFlags::MSG_DONTWAIT).is_all_supported() {
             warn!("unsupported flags: {:?}", flags);
         }
 
@@ -532,9 +598,13 @@ impl Socket for UnixStreamSocket {
         }
         let mut auxiliary_data = AuxiliaryData::from_control(control_messages)?;
 
-        self.block_on(IoEvents::OUT, self.timeouts.send_timeout(), || {
+        if flags.contains(SendFlags::MSG_DONTWAIT) {
             self.try_send(reader, &mut auxiliary_data, flags)
-        })
+        } else {
+            self.block_on(IoEvents::OUT, self.timeouts.send_timeout(), || {
+                self.try_send(reader, &mut auxiliary_data, flags)
+            })
+        }
     }
 
     fn recvmsg(
@@ -616,5 +686,30 @@ impl SetSocketLevelOption for (&State, &SocketTimeouts) {
 
     fn socket_timeouts(&self) -> Option<&SocketTimeouts> {
         Some(self.1)
+    }
+}
+
+#[cfg(ktest)]
+mod memory_tests {
+    use ostd::prelude::*;
+
+    use super::*;
+    use crate::vm::user_memory::{UserMemoryAccount, test_with_current_owner};
+
+    #[ktest]
+    fn unix_socketpair_denial_preserves_current_family_without_endpoints() {
+        for pages in [0, 31] {
+            let account = UserMemoryAccount::new(pages);
+            let observed = account.clone();
+            test_with_current_owner(Some(account.clone()), move || {
+                for kind in [SockType::SOCK_STREAM, SockType::SOCK_SEQPACKET] {
+                    let error = UnixStreamSocket::new_pair(true, kind).err().unwrap();
+                    assert!(error.is_user_frame_limit());
+                    assert_eq!(error.error(), Errno::ENOMEM);
+                    assert_eq!(observed.current_pages(), 0);
+                }
+            });
+            assert_eq!(account.current_pages(), 0);
+        }
     }
 }

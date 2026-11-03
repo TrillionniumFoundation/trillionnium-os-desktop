@@ -1,0 +1,244 @@
+{
+  "schema": "hepta.original-device-entry-static-elf-shape.v1",
+  "source": {
+    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+  },
+  "build_receipt": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/g2-native-device-feasibility-04/result.json",
+    "bytes": 3203,
+    "sha256": "2cb804eaf5916d3295c6a8e7d0d605fbf41a2741b78b408fa876a4dcbede61c2"
+  },
+  "measurement_functions": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/inspect-static-agentd-b3.py",
+    "bytes": 5645,
+    "sha256": "2dd309b9c59659629679ac394729b4b004a84ac511e5436117e00d48053cdf79"
+  },
+  "original_release_packaging": {
+    "command": [
+      "/bin/bash",
+      "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/.github/scripts/archive-release-symbols-and-strip-binaries.sh",
+      "--target",
+      "x86_64-unknown-linux-gnu",
+      "--artifact-name",
+      "hepta-device-entry-b3-feasibility-04",
+      "--release-dir",
+      "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/g2-native-device-feasibility-04/packaged",
+      "--archive-dir",
+      "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/g2-native-device-feasibility-04/symbols-dist",
+      "--binaries",
+      "hepta-native-device-entry"
+    ],
+    "environment": {
+      "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "RUNNER_TEMP": "/data/hepta-native-device-tmp.lp94_57d"
+    },
+    "script": {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/hepta-native-source/.github/scripts/archive-release-symbols-and-strip-binaries.sh",
+      "bytes": 2976,
+      "sha256": "f287c1e7cf3d6119e3914138367bb37427f048a5074d5ff38e37963db5d7ea7b"
+    },
+    "returncode": 0,
+    "log": {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/g2-native-device-feasibility-04/original-release-packaging.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "objcopy": {
+      "path": "/usr/bin/x86_64-linux-gnu-objcopy",
+      "bytes": 166536,
+      "sha256": "9276e918e3c26d3aa7ef9dd2232cd8ac692f03d3c1f270bfa5144a2b5492b713"
+    },
+    "strip": {
+      "path": "/usr/bin/x86_64-linux-gnu-strip",
+      "bytes": 166568,
+      "sha256": "0d980587ada7ab12193f39271f060d5663aa2f289b0e80d2a0274ce7306e4e42"
+    }
+  },
+  "unstripped": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/g2-native-device-feasibility-04/hepta-native-device-entry.unstripped",
+    "bytes": 36507936,
+    "sha256": "6b6a6a37c7f5f3548b60b20a68249f012c78fba3acdc64bda956da73801bd97f",
+    "elf_type": 2,
+    "elf_type_name": "ET_EXEC",
+    "machine": 62,
+    "entry": 4341312,
+    "program_headers": 10,
+    "pt_interp": [],
+    "dt_needed_count": 0,
+    "dynamic_entries": [],
+    "gnu_stack": [
+      {
+        "flags": 6,
+        "memory_bytes": 0
+      }
+    ],
+    "loads": [
+      {
+        "flags": 4,
+        "offset": 0,
+        "virtual_address": 2097152,
+        "file_bytes": 2240024,
+        "memory_bytes": 2240024,
+        "alignment": 4096,
+        "page_start": 2097152,
+        "page_end": 4337664,
+        "page_bytes": 2240512
+      },
+      {
+        "flags": 5,
+        "offset": 2240064,
+        "virtual_address": 4341312,
+        "file_bytes": 4951696,
+        "memory_bytes": 4951696,
+        "alignment": 4096,
+        "page_start": 4337664,
+        "page_end": 9293824,
+        "page_bytes": 4956160
+      },
+      {
+        "flags": 6,
+        "offset": 7191760,
+        "virtual_address": 9297104,
+        "file_bytes": 24680,
+        "memory_bytes": 25392,
+        "alignment": 4096,
+        "page_start": 9293824,
+        "page_end": 9322496,
+        "page_bytes": 28672
+      },
+      {
+        "flags": 6,
+        "offset": 7216448,
+        "virtual_address": 9325888,
+        "file_bytes": 33792,
+        "memory_bytes": 57640,
+        "alignment": 4096,
+        "page_start": 9322496,
+        "page_end": 9383936,
+        "page_bytes": 61440
+      }
+    ],
+    "page_aligned_load_bytes": 7286784,
+    "writable_page_aligned_load_bytes": 90112,
+    "load_pages": 1779,
+    "writable_load_pages": 22,
+    "static_et_exec_no_interp_or_needed": true,
+    "bounds": {
+      "file_8mib": false,
+      "mapped_16mib": true,
+      "eager_load_bytes_within_64mib_user_frames_necessary_only": true,
+      "load_bytes_within_256mib_as_necessary_only": true,
+      "writable_load_bytes_within_64mib_data_necessary_only": true
+    },
+    "original_host_structural_check": {
+      "source": {
+        "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/desktop-native-source/tests/kernel/control/run_g1c_guest.py",
+        "bytes": 25177,
+        "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1"
+      },
+      "accepted": false,
+      "refusal": "static initial ELF size out of bounds",
+      "not_kernel_runtime_admission": true
+    }
+  },
+  "packaged": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/g2-native-device-feasibility-04/packaged/hepta-native-device-entry",
+    "bytes": 7258880,
+    "sha256": "eb148b64bb948b15c8f16ef8d45288b1611074b66d1f61792ed0369b86eb3140",
+    "elf_type": 2,
+    "elf_type_name": "ET_EXEC",
+    "machine": 62,
+    "entry": 4341312,
+    "program_headers": 10,
+    "pt_interp": [],
+    "dt_needed_count": 0,
+    "dynamic_entries": [],
+    "gnu_stack": [
+      {
+        "flags": 6,
+        "memory_bytes": 0
+      }
+    ],
+    "loads": [
+      {
+        "flags": 4,
+        "offset": 0,
+        "virtual_address": 2097152,
+        "file_bytes": 2240024,
+        "memory_bytes": 2240024,
+        "alignment": 4096,
+        "page_start": 2097152,
+        "page_end": 4337664,
+        "page_bytes": 2240512
+      },
+      {
+        "flags": 5,
+        "offset": 2240064,
+        "virtual_address": 4341312,
+        "file_bytes": 4951696,
+        "memory_bytes": 4951696,
+        "alignment": 4096,
+        "page_start": 4337664,
+        "page_end": 9293824,
+        "page_bytes": 4956160
+      },
+      {
+        "flags": 6,
+        "offset": 7191760,
+        "virtual_address": 9297104,
+        "file_bytes": 24680,
+        "memory_bytes": 25392,
+        "alignment": 4096,
+        "page_start": 9293824,
+        "page_end": 9322496,
+        "page_bytes": 28672
+      },
+      {
+        "flags": 6,
+        "offset": 7216448,
+        "virtual_address": 9325888,
+        "file_bytes": 33792,
+        "memory_bytes": 57640,
+        "alignment": 4096,
+        "page_start": 9322496,
+        "page_end": 9383936,
+        "page_bytes": 61440
+      }
+    ],
+    "page_aligned_load_bytes": 7286784,
+    "writable_page_aligned_load_bytes": 90112,
+    "load_pages": 1779,
+    "writable_load_pages": 22,
+    "static_et_exec_no_interp_or_needed": true,
+    "bounds": {
+      "file_8mib": true,
+      "mapped_16mib": true,
+      "eager_load_bytes_within_64mib_user_frames_necessary_only": true,
+      "load_bytes_within_256mib_as_necessary_only": true,
+      "writable_load_bytes_within_64mib_data_necessary_only": true
+    },
+    "original_host_structural_check": {
+      "source": {
+        "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/desktop-native-source/tests/kernel/control/run_g1c_guest.py",
+        "bytes": 25177,
+        "sha256": "57f2309fa206c0d4849352349f131143718c4d77ddbce7730256b0b6ff7145c1"
+      },
+      "accepted": true,
+      "refusal": null,
+      "not_kernel_runtime_admission": true
+    }
+  },
+  "original_agentd_device_owner_linked": true,
+  "original_agentd_daemon": false,
+  "binary_executed": false,
+  "kernel_built_or_booted": false,
+  "native_role_admission_verified": false,
+  "production_authority": false,
+  "g2_completed": false,
+  "limits_changed": false,
+  "qualification_scope": "Build and actual original release packaging only. The host structural gate does not establish kernel role admission, a durable writer, a management effect or a daemon.",
+  "finished_at_utc": "2026-10-23T15:28:25.796570+00:00"
+}

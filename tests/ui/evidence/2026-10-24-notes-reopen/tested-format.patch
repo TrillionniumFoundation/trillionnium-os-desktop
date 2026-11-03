@@ -1,0 +1,714 @@
+diff --git a/ui/app-window/src/main.rs b/ui/app-window/src/main.rs
+index edcca0f3..1c1ae4cf 100644
+--- a/ui/app-window/src/main.rs
++++ b/ui/app-window/src/main.rs
+@@ -160,7 +160,9 @@ impl ClientWindow {
+         if !self.notes_browser {
+             return;
+         }
+-        let Some(organ) = &mut self.notes_organ else { return; };
++        let Some(organ) = &mut self.notes_organ else {
++            return;
++        };
+         let mut open = true;
+         let mut selected = None;
+         egui::Window::new("打开已保存笔记")
+@@ -172,9 +174,9 @@ impl ClientWindow {
+                 if !organ.can_restore_saved() {
+                     ui.label("当前窗口已编辑或暂不可用。请在桌面新建笔记窗口后打开副本。");
+                 }
+-                if self.activation.activated(&ui.add_enabled(
+-                    !organ.saved_list_pending(), egui::Button::new("刷新列表"),
+-                )) {
++                if self.activation.activated(
++                    &ui.add_enabled(!organ.saved_list_pending(), egui::Button::new("刷新列表")),
++                ) {
+                     organ.refresh_saved_documents();
+                 }
+                 if organ.saved_list_pending() {
+@@ -185,7 +187,10 @@ impl ClientWindow {
+                 }
+                 let listing = organ.saved_documents();
+                 if listing.unavailable > 0 {
+-                    ui.small(format!("{} 份笔记正在使用或无法读取；关闭旧窗口后可刷新。", listing.unavailable));
++                    ui.small(format!(
++                        "{} 份笔记正在使用或无法读取；关闭旧窗口后可刷新。",
++                        listing.unavailable
++                    ));
+                 }
+                 if listing.truncated {
+                     ui.small("列表达到上限；较早的笔记可能未列出。");
+@@ -193,24 +198,31 @@ impl ClientWindow {
+                 if listing.documents.is_empty() && !organ.saved_list_pending() {
+                     ui.label("暂无可打开的已保存笔记。");
+                 }
+-                egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
+-                    for document in &listing.documents {
+-                        ui.push_id(document.target.destination_id(), |ui| {
+-                            ui.horizontal(|ui| {
+-                                if self.activation.activated(&ui.add_enabled(
+-                                    organ.can_restore_saved(), egui::Button::new("打开副本"),
+-                                )) {
+-                                    selected = Some(document.clone());
+-                                }
+-                                ui.vertical(|ui| {
+-                                    ui.label(if document.preview.is_empty() { "空白笔记" } else { &document.preview });
+-                                    ui.small(saved_notes_age(document.saved_unix_ms));
++                egui::ScrollArea::vertical()
++                    .max_height(320.0)
++                    .show(ui, |ui| {
++                        for document in &listing.documents {
++                            ui.push_id(document.target.destination_id(), |ui| {
++                                ui.horizontal(|ui| {
++                                    if self.activation.activated(&ui.add_enabled(
++                                        organ.can_restore_saved(),
++                                        egui::Button::new("打开副本"),
++                                    )) {
++                                        selected = Some(document.clone());
++                                    }
++                                    ui.vertical(|ui| {
++                                        ui.label(if document.preview.is_empty() {
++                                            "空白笔记"
++                                        } else {
++                                            &document.preview
++                                        });
++                                        ui.small(saved_notes_age(document.saved_unix_ms));
++                                    });
+                                 });
+                             });
+-                        });
+-                        ui.separator();
+-                    }
+-                });
++                            ui.separator();
++                        }
++                    });
+             });
+         if let Some(document) = selected {
+             if organ.restore_saved_document(document) {
+diff --git a/ui/app-window/src/notes_organ.rs b/ui/app-window/src/notes_organ.rs
+index eb0d55ae..750570e3 100644
+--- a/ui/app-window/src/notes_organ.rs
++++ b/ui/app-window/src/notes_organ.rs
+@@ -106,7 +106,9 @@ impl NotesAppChannel {
+             self.version = value.version;
+             self.revision = value.revision;
+             self.frozen = value.storage_failed;
+-            if let Some((_, result)) = value.saved_documents.as_ref()
++            if let Some((_, result)) = value
++                .saved_documents
++                .as_ref()
+                 .filter(|(id, _)| self.pending_list == Some(*id))
+             {
+                 self.pending_list = None;
+@@ -118,7 +120,9 @@ impl NotesAppChannel {
+                     Err(_) => self.list_error = Some("无法读取已保存笔记；原文件保持不变。"),
+                 }
+             }
+-            let restored = value.restore_result.as_ref()
++            let restored = value
++                .restore_result
++                .as_ref()
+                 .filter(|(id, _)| self.pending_restore == Some(*id))
+                 .map(|(_, result)| result.is_ok());
+             if restored.is_some() {
+@@ -129,7 +133,9 @@ impl NotesAppChannel {
+                 self.deferred_edit = None;
+             } else if let Some(accepted) = restored {
+                 self.text = value.text;
+-                self.notice = if accepted { None } else {
++                self.notice = if accepted {
++                    None
++                } else {
+                     Some("未恢复：文档已变化、仍在使用或无法读取。请刷新后选择，或新建笔记。")
+                 };
+             } else if let Some((_, accepted, revision)) = value
+@@ -165,7 +171,8 @@ impl NotesAppChannel {
+     }
+ 
+     pub fn local_edit(&mut self, text: String) -> bool {
+-        if self.frozen || self.pending_restore.is_some()
++        if self.frozen
++            || self.pending_restore.is_some()
+             || text.len() > trill_ui_core::notes::MAX_NOTES_TEXT_BYTES
+         {
+             return false;
+@@ -186,8 +193,12 @@ impl NotesAppChannel {
+     }
+ 
+     pub fn can_restore_saved(&self) -> bool {
+-        self.worker.durable && !self.frozen && self.revision == 0 && self.text.is_empty()
+-            && self.pending_edit.is_none() && self.deferred_edit.is_none()
++        self.worker.durable
++            && !self.frozen
++            && self.revision == 0
++            && self.text.is_empty()
++            && self.pending_edit.is_none()
++            && self.deferred_edit.is_none()
+             && self.pending_restore.is_none()
+     }
+ 
+@@ -207,8 +218,14 @@ impl NotesAppChannel {
+         if !self.worker.durable || self.pending_list.is_some() {
+             return;
+         }
+-        let Some(id) = self.next_request_id() else { return; };
+-        match self.worker.sender.try_send(worker::Command::ListSaved { id }) {
++        let Some(id) = self.next_request_id() else {
++            return;
++        };
++        match self
++            .worker
++            .sender
++            .try_send(worker::Command::ListSaved { id })
++        {
+             Ok(()) => {
+                 self.pending_list = Some(id);
+                 self.list_error = None;
+@@ -221,9 +238,13 @@ impl NotesAppChannel {
+         if !self.can_restore_saved() {
+             return false;
+         }
+-        let Some(id) = self.next_request_id() else { return false; };
++        let Some(id) = self.next_request_id() else {
++            return false;
++        };
+         match self.worker.sender.try_send(worker::Command::RestoreSaved {
+-            id, revision: self.revision, source,
++            id,
++            revision: self.revision,
++            source,
+         }) {
+             Ok(()) => {
+                 self.pending_restore = Some(id);
+diff --git a/ui/app-window/src/notes_worker.rs b/ui/app-window/src/notes_worker.rs
+index ace9de3e..ef390740 100644
+--- a/ui/app-window/src/notes_worker.rs
++++ b/ui/app-window/src/notes_worker.rs
+@@ -17,7 +17,9 @@ pub(super) enum Command {
+         revision: u64,
+         text: String,
+     },
+-    ListSaved { id: u64 },
++    ListSaved {
++        id: u64,
++    },
+     RestoreSaved {
+         id: u64,
+         revision: u64,
+@@ -141,14 +143,21 @@ fn run(
+                 None
+             }
+             Command::ListSaved { id } => {
+-                let result = root.as_ref()
++                let result = root
++                    .as_ref()
+                     .ok_or_else(|| "Temporary Notes have no saved document directory".to_owned())
+-                    .and_then(|root| NotesStore::saved_documents(root, document.target())
+-                        .map_err(|error| error.to_string()));
++                    .and_then(|root| {
++                        NotesStore::saved_documents(root, document.target())
++                            .map_err(|error| error.to_string())
++                    });
+                 projection.saved_documents = Some((id, result));
+                 None
+             }
+-            Command::RestoreSaved { id, revision, source } => {
++            Command::RestoreSaved {
++                id,
++                revision,
++                source,
++            } => {
+                 let result = match (&mut document, root.as_ref()) {
+                     (Document::Durable(store), Some(root)) => store
+                         .restore_saved_text(root, &source, revision)
+diff --git a/ui/app-window/src/notes_worker_tests.rs b/ui/app-window/src/notes_worker_tests.rs
+index 4efed3ca..5b4e46e0 100644
+--- a/ui/app-window/src/notes_worker_tests.rs
++++ b/ui/app-window/src/notes_worker_tests.rs
+@@ -1,8 +1,8 @@
+ use super::*;
+-use std::time::Duration;
+ use std::fs;
+ use std::io::Read;
+ use std::os::unix::fs::PermissionsExt;
++use std::time::Duration;
+ use trill_ui_core::notes::*;
+ 
+ fn identity() -> NotesTargetIdentity {
+@@ -81,26 +81,51 @@ struct SavedDocumentFixture(PathBuf);
+ impl SavedDocumentFixture {
+     fn new() -> Self {
+         let mut random = [0_u8; 16];
+-        fs::File::open("/dev/urandom").unwrap().read_exact(&mut random).unwrap();
+-        let suffix = random.iter().map(|byte| format!("{byte:02x}")).collect::<String>();
++        fs::File::open("/dev/urandom")
++            .unwrap()
++            .read_exact(&mut random)
++            .unwrap();
++        let suffix = random
++            .iter()
++            .map(|byte| format!("{byte:02x}"))
++            .collect::<String>();
+         let root = std::env::temp_dir().join(format!("trill-notes-worker-restore-{suffix}"));
+         fs::create_dir(&root).unwrap();
+         fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+-        let mut saved = NotesStore::create(&root, NotesTargetIdentity {
+-            session_instance: "4".repeat(32), task_id: 2, incarnation: "5".repeat(32),
+-        }).unwrap();
++        let mut saved = NotesStore::create(
++            &root,
++            NotesTargetIdentity {
++                session_instance: "4".repeat(32),
++                task_id: 2,
++                incarnation: "5".repeat(32),
++            },
++        )
++        .unwrap();
+         saved.local_edit("previous user document".into()).unwrap();
+         Self(root)
+     }
+ 
+-    fn worker(&self) -> (mpsc::SyncSender<Command>, Arc<Mutex<Projection>>, std::thread::JoinHandle<()>) {
++    fn worker(
++        &self,
++    ) -> (
++        mpsc::SyncSender<Command>,
++        Arc<Mutex<Projection>>,
++        std::thread::JoinHandle<()>,
++    ) {
+         let document = NotesStore::create(&self.0, identity()).unwrap();
+         let root = self.0.clone();
+         let (sender, receiver) = mpsc::sync_channel(4);
+         let output = Arc::new(Mutex::new(Projection::default()));
+         let projection = output.clone();
+-        let thread = std::thread::spawn(move || run(Document::Durable(document), Some(root),
+-            receiver, projection, egui::Context::default()));
++        let thread = std::thread::spawn(move || {
++            run(
++                Document::Durable(document),
++                Some(root),
++                receiver,
++                projection,
++                egui::Context::default(),
++            )
++        });
+         (sender, output, thread)
+     }
+ }
+@@ -111,7 +136,10 @@ impl Drop for SavedDocumentFixture {
+     }
+ }
+ 
+-fn selected_document(sender: &mpsc::SyncSender<Command>, output: &Arc<Mutex<Projection>>) -> SavedNotesDocument {
++fn selected_document(
++    sender: &mpsc::SyncSender<Command>,
++    output: &Arc<Mutex<Projection>>,
++) -> SavedNotesDocument {
+     sender.send(Command::ListSaved { id: 17 }).unwrap();
+     observe(sender); // A later serialized command is the bounded completion barrier.
+     let snapshot = output.lock().unwrap();
+@@ -127,15 +155,32 @@ fn saved_document_is_restored_on_the_worker_as_a_new_local_revision() {
+     let fixture = SavedDocumentFixture::new();
+     let (sender, output, handle) = fixture.worker();
+     let selected = selected_document(&sender, &output);
+-    sender.send(Command::RestoreSaved { id: 18, revision: 0, source: selected }).unwrap();
++    sender
++        .send(Command::RestoreSaved {
++            id: 18,
++            revision: 0,
++            source: selected,
++        })
++        .unwrap();
+     let state = observe(&sender);
+     assert_eq!(state["revision"], 1);
+     assert_eq!(state["text_sha256"], sha256_hex(b"previous user document"));
+     assert_eq!(state["receipt_pending"], false);
+     assert_eq!(output.lock().unwrap().restore_result, Some((18, Ok(()))));
+-    let result = exchange(&sender, mutation(), false, Instant::now() + Duration::from_secs(2)).unwrap();
+-    assert!(matches!(NotesResponse::parse_exact(&result).unwrap().result,
+-        NotesResult::NotApplied { reason: NotesNotAppliedReason::RevisionConflict, .. }));
++    let result = exchange(
++        &sender,
++        mutation(),
++        false,
++        Instant::now() + Duration::from_secs(2),
++    )
++    .unwrap();
++    assert!(matches!(
++        NotesResponse::parse_exact(&result).unwrap().result,
++        NotesResult::NotApplied {
++            reason: NotesNotAppliedReason::RevisionConflict,
++            ..
++        }
++    ));
+     drop(sender);
+     handle.join().unwrap();
+     let persisted = NotesStore::recover(&fixture.0, &identity()).unwrap();
+@@ -148,14 +193,36 @@ fn external_effect_between_picker_and_restore_wins_without_being_overwritten() {
+     let fixture = SavedDocumentFixture::new();
+     let (sender, output, handle) = fixture.worker();
+     let selected = selected_document(&sender, &output);
+-    let raw = exchange(&sender, mutation(), false, Instant::now() + Duration::from_secs(2)).unwrap();
+-    assert!(matches!(NotesResponse::parse_exact(&raw).unwrap().result, NotesResult::Applied { .. }));
+-    sender.send(Command::RestoreSaved { id: 18, revision: 0, source: selected }).unwrap();
++    let raw = exchange(
++        &sender,
++        mutation(),
++        false,
++        Instant::now() + Duration::from_secs(2),
++    )
++    .unwrap();
++    assert!(matches!(
++        NotesResponse::parse_exact(&raw).unwrap().result,
++        NotesResult::Applied { .. }
++    ));
++    sender
++        .send(Command::RestoreSaved {
++            id: 18,
++            revision: 0,
++            source: selected,
++        })
++        .unwrap();
+     let state = observe(&sender);
+     assert_eq!(state["text_sha256"], sha256_hex(b"original effect"));
+     assert_eq!(state["revision"], 1);
+     assert_eq!(state["receipt_pending"], true);
+-    assert!(output.lock().unwrap().restore_result.as_ref().unwrap().1.is_err());
++    assert!(output
++        .lock()
++        .unwrap()
++        .restore_result
++        .as_ref()
++        .unwrap()
++        .1
++        .is_err());
+     drop(sender);
+     handle.join().unwrap();
+ }
+diff --git a/ui/core/src/notes_store.rs b/ui/core/src/notes_store.rs
+index 016d941c..6b9f7d1c 100644
+--- a/ui/core/src/notes_store.rs
++++ b/ui/core/src/notes_store.rs
+@@ -135,13 +135,23 @@ impl NotesStore {
+             }
+             let result = Self::recover(root, &target).and_then(|store| {
+                 let file = open_file(&store.directory, "document.json", libc::O_RDONLY)?;
+-                let saved = file.metadata()?.modified()?.duration_since(UNIX_EPOCH)
++                let saved = file
++                    .metadata()?
++                    .modified()?
++                    .duration_since(UNIX_EPOCH)
+                     .map_err(io::Error::other)?;
+                 Ok(SavedNotesDocument {
+                     target,
+                     revision: store.revision(),
+                     text_sha256: sha256_hex(store.text().as_bytes()),
+-                    preview: store.text().lines().next().unwrap_or("").chars().take(80).collect(),
++                    preview: store
++                        .text()
++                        .lines()
++                        .next()
++                        .unwrap_or("")
++                        .chars()
++                        .take(80)
++                        .collect(),
+                     saved_unix_ms: u64::try_from(saved.as_millis()).unwrap_or(u64::MAX),
+                 })
+             });
+@@ -153,8 +163,11 @@ impl NotesStore {
+             }
+         }
+         listing.documents.sort_by(|left, right| {
+-            right.saved_unix_ms.cmp(&left.saved_unix_ms)
+-                .then_with(|| left.target.destination_id().cmp(&right.target.destination_id()))
++            right.saved_unix_ms.cmp(&left.saved_unix_ms).then_with(|| {
++                left.target
++                    .destination_id()
++                    .cmp(&right.target.destination_id())
++            })
+         });
+         if listing.documents.len() > MAX_SAVED_NOTES {
+             listing.documents.truncate(MAX_SAVED_NOTES);
+@@ -175,22 +188,30 @@ impl NotesStore {
+         expected_revision: u64,
+     ) -> io::Result<()> {
+         self.require_application()?;
+-        if expected_revision != 0 || self.document.revision() != expected_revision
+-            || !self.document.text().is_empty() || &source.target == self.document.target()
++        if expected_revision != 0
++            || self.document.revision() != expected_revision
++            || !self.document.text().is_empty()
++            || &source.target == self.document.target()
+         {
+-            return Err(io::Error::new(io::ErrorKind::InvalidInput,
+-                "Saved Notes can only be opened in a new, unedited incarnation"));
++            return Err(io::Error::new(
++                io::ErrorKind::InvalidInput,
++                "Saved Notes can only be opened in a new, unedited incarnation",
++            ));
+         }
+         let previous = Self::recover(root, &source.target)?;
+         if previous.revision() != source.revision
+             || sha256_hex(previous.text().as_bytes()) != source.text_sha256
+         {
+-            return Err(io::Error::new(io::ErrorKind::InvalidData,
+-                "Saved Notes changed after selection; refresh the document list"));
++            return Err(io::Error::new(
++                io::ErrorKind::InvalidData,
++                "Saved Notes changed after selection; refresh the document list",
++            ));
+         }
+         // Start from a fresh model instead of cloning the old checkpoint.
+-        let mut next = NotesDocument::new(self.document.target().clone()).map_err(protocol_error)?;
+-        next.local_edit(previous.text().to_owned()).map_err(protocol_error)?;
++        let mut next =
++            NotesDocument::new(self.document.target().clone()).map_err(protocol_error)?;
++        next.local_edit(previous.text().to_owned())
++            .map_err(protocol_error)?;
+         self.commit(next)
+     }
+ 
+@@ -346,8 +367,13 @@ fn identity_from_directory(name: &std::ffi::OsStr) -> Option<NotesTargetIdentity
+         task_id: parts.next()?.parse().ok()?,
+         incarnation: parts.next()?.to_owned(),
+     };
+-    if parts.next().is_some() || target.validate().is_err()
+-        || name != format!("{}-{}-{}", target.session_instance, target.task_id, target.incarnation)
++    if parts.next().is_some()
++        || target.validate().is_err()
++        || name
++            != format!(
++                "{}-{}-{}",
++                target.session_instance, target.task_id, target.incarnation
++            )
+     {
+         return None;
+     }
+diff --git a/ui/core/tests/notes_store.rs b/ui/core/tests/notes_store.rs
+index a55cf78f..3d16e629 100644
+--- a/ui/core/tests/notes_store.rs
++++ b/ui/core/tests/notes_store.rs
+@@ -87,7 +87,8 @@ fn read_state(store: &mut NotesStore, identity: &NotesTargetIdentity) -> serde_j
+     let raw = serde_json::to_vec(&serde_json::json!({
+         "schema_version": 1, "action": "read_document_state", "target": identity,
+         "request_id": "e".repeat(32),
+-    })).unwrap();
++    }))
++    .unwrap();
+     serde_json::from_slice(&store.recovery_exact(&raw).unwrap()).unwrap()
+ }
+ 
+@@ -96,7 +97,9 @@ fn saved_text_opens_under_new_identity_without_receipts_or_old_effect_capability
+     let root = Directory::new();
+     let mut original = NotesStore::create(&root.0, target()).unwrap();
+     let original_receipt = original.apply_exact(&request()).unwrap();
+-    original.local_edit("用户继续编辑的笔记\n第二行".into()).unwrap();
++    original
++        .local_edit("用户继续编辑的笔记\n第二行".into())
++        .unwrap();
+     drop(original);
+     let old_path = document_directory(&root).join("document.json");
+     let old_bytes = fs::read(&old_path).unwrap();
+@@ -111,18 +114,32 @@ fn saved_text_opens_under_new_identity_without_receipts_or_old_effect_capability
+     assert_eq!(reopened.text(), "用户继续编辑的笔记\n第二行");
+     assert_eq!(reopened.revision(), 1);
+     let state = read_state(&mut reopened, &reopened_target());
+-    assert_eq!(state["target"], serde_json::to_value(reopened_target()).unwrap());
++    assert_eq!(
++        state["target"],
++        serde_json::to_value(reopened_target()).unwrap()
++    );
+     assert_eq!(state["receipt_pending"], false);
+-    assert!(matches!(reopened.apply_exact(&request()).unwrap().result,
+-        NotesResult::NotApplied { reason: NotesNotAppliedReason::TargetMismatch, .. }));
++    assert!(matches!(
++        reopened.apply_exact(&request()).unwrap().result,
++        NotesResult::NotApplied {
++            reason: NotesNotAppliedReason::TargetMismatch,
++            ..
++        }
++    ));
+     assert!(reopened.recovery_exact(&query()).is_err());
+     assert_eq!(fs::read(&old_path).unwrap(), old_bytes);
+     drop(reopened);
+     let mut saved_copy = NotesStore::recover(&root.0, &reopened_target()).unwrap();
+     assert_eq!(saved_copy.text(), "用户继续编辑的笔记\n第二行");
+-    assert_eq!(read_state(&mut saved_copy, &reopened_target())["receipt_pending"], false);
++    assert_eq!(
++        read_state(&mut saved_copy, &reopened_target())["receipt_pending"],
++        false
++    );
+     let mut original_recovery = NotesStore::recover(&root.0, &target()).unwrap();
+-    assert_eq!(NotesResponse::parse_exact(&original_recovery.recovery_exact(&query()).unwrap()).unwrap(), original_receipt);
++    assert_eq!(
++        NotesResponse::parse_exact(&original_recovery.recovery_exact(&query()).unwrap()).unwrap(),
++        original_receipt
++    );
+ }
+ 
+ #[test]
+@@ -132,17 +149,24 @@ fn changed_source_and_intervening_current_edits_are_not_overwritten() {
+     original.local_edit("first saved text".into()).unwrap();
+     drop(original);
+     let mut reopened = NotesStore::create(&root.0, reopened_target()).unwrap();
+-    let selected = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
++    let selected = NotesStore::saved_documents(&root.0, &reopened_target())
++        .unwrap()
++        .documents
++        .remove(0);
+     // A valid but newer source snapshot replaces the one displayed by the picker.
+     let path = document_directory(&root).join("document.json");
+-    let mut newer = NotesDocument::restore_checkpoint(&fs::read(&path).unwrap(), &target()).unwrap();
++    let mut newer =
++        NotesDocument::restore_checkpoint(&fs::read(&path).unwrap(), &target()).unwrap();
+     newer.local_edit("changed after selection".into()).unwrap();
+     fs::write(&path, newer.checkpoint().unwrap()).unwrap();
+     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
+     assert_eq!(reopened.text(), "");
+     assert_eq!(reopened.revision(), 0);
+     assert!(!reopened.is_frozen());
+-    let refreshed = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
++    let refreshed = NotesStore::saved_documents(&root.0, &reopened_target())
++        .unwrap()
++        .documents
++        .remove(0);
+     reopened.local_edit("keep my new edits".into()).unwrap();
+     assert!(reopened.restore_saved_text(&root.0, &refreshed, 0).is_err());
+     assert!(reopened.restore_saved_text(&root.0, &refreshed, 1).is_err());
+@@ -157,7 +181,10 @@ fn saved_picker_and_restore_refuse_locked_or_symlinked_sources() {
+     original.local_edit("private saved text".into()).unwrap();
+     drop(original);
+     let mut reopened = NotesStore::create(&root.0, reopened_target()).unwrap();
+-    let selected = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
++    let selected = NotesStore::saved_documents(&root.0, &reopened_target())
++        .unwrap()
++        .documents
++        .remove(0);
+     let original_owner = NotesStore::recover(&root.0, &target()).unwrap();
+     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
+     let busy = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap();
+@@ -170,7 +197,10 @@ fn saved_picker_and_restore_refuse_locked_or_symlinked_sources() {
+     let before = fs::read(&outside).unwrap();
+     symlink(&outside, &path).unwrap();
+     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
+-    assert!(NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.is_empty());
++    assert!(NotesStore::saved_documents(&root.0, &reopened_target())
++        .unwrap()
++        .documents
++        .is_empty());
+     assert_eq!(fs::read(&outside).unwrap(), before);
+     assert_eq!(reopened.revision(), 0);
+     assert!(!reopened.is_frozen());
+@@ -185,8 +215,14 @@ fn failed_restore_write_freezes_only_the_new_incarnation_and_retains_original()
+     let old_path = document_directory(&root).join("document.json");
+     let old_bytes = fs::read(&old_path).unwrap();
+     let mut reopened = NotesStore::create(&root.0, reopened_target()).unwrap();
+-    let selected = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap().documents.remove(0);
+-    let next = root.0.join(format!("{}-2-{}", "c".repeat(32), "d".repeat(32))).join("next.json");
++    let selected = NotesStore::saved_documents(&root.0, &reopened_target())
++        .unwrap()
++        .documents
++        .remove(0);
++    let next = root
++        .0
++        .join(format!("{}-2-{}", "c".repeat(32), "d".repeat(32)))
++        .join("next.json");
+     symlink(&old_path, next).unwrap();
+     assert!(reopened.restore_saved_text(&root.0, &selected, 0).is_err());
+     assert!(reopened.is_frozen());
+@@ -196,7 +232,10 @@ fn failed_restore_write_freezes_only_the_new_incarnation_and_retains_original()
+     let mut recovered = NotesStore::recover(&root.0, &reopened_target()).unwrap();
+     assert_eq!(recovered.text(), "");
+     assert_eq!(recovered.revision(), 0);
+-    assert_eq!(read_state(&mut recovered, &reopened_target())["receipt_pending"], false);
++    assert_eq!(
++        read_state(&mut recovered, &reopened_target())["receipt_pending"],
++        false
++    );
+ }
+ 
+ #[test]
+@@ -204,16 +243,22 @@ fn saved_picker_is_bounded_and_keeps_utf8_previews_intact() {
+     let root = Directory::new();
+     for index in 1..=MAX_SAVED_NOTES + 1 {
+         let identity = NotesTargetIdentity {
+-            session_instance: "a".repeat(32), task_id: index as u64,
++            session_instance: "a".repeat(32),
++            task_id: index as u64,
+             incarnation: format!("{index:032x}"),
+         };
+         let mut original = NotesStore::create(&root.0, identity).unwrap();
+-        original.local_edit(format!("{} {index}", "中".repeat(100))).unwrap();
++        original
++            .local_edit(format!("{} {index}", "中".repeat(100)))
++            .unwrap();
+     }
+     let listing = NotesStore::saved_documents(&root.0, &reopened_target()).unwrap();
+     assert!(listing.truncated);
+     assert_eq!(listing.documents.len(), MAX_SAVED_NOTES);
+-    assert!(listing.documents.iter().all(|entry| entry.preview == "中".repeat(80)));
++    assert!(listing
++        .documents
++        .iter()
++        .all(|entry| entry.preview == "中".repeat(80)));
+     assert_eq!(listing.unavailable, 0);
+ }
+ 
+@@ -226,8 +271,11 @@ fn restored_copy_survives_process_death_while_original_receipt_remains_recoverab
+     let mut child = Command::new(std::env::current_exe().unwrap())
+         .args(["--exact", "restore_then_wait_fixture", "--nocapture"])
+         .env("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT", &root.0)
+-        .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped())
+-        .spawn().unwrap();
++        .stdin(Stdio::piped())
++        .stdout(Stdio::piped())
++        .stderr(Stdio::piped())
++        .spawn()
++        .unwrap();
+     let output = child.stdout.take().unwrap();
+     let (send, receive) = mpsc::channel();
+     let reader = std::thread::spawn(move || {
+@@ -242,23 +290,37 @@ fn restored_copy_survives_process_death_while_original_receipt_remains_recoverab
+     let _ = child.kill();
+     let status = child.wait().unwrap();
+     reader.join().unwrap();
+-    assert!(committed.is_ok(), "restoring child did not persist within the deadline");
++    assert!(
++        committed.is_ok(),
++        "restoring child did not persist within the deadline"
++    );
+     assert!(!status.success());
+     let mut restored = NotesStore::recover(&root.0, &reopened_target()).unwrap();
+     assert_eq!(restored.text(), "重启后仍可核对的原始效果");
+     assert_eq!(restored.revision(), 1);
+-    assert_eq!(read_state(&mut restored, &reopened_target())["receipt_pending"], false);
++    assert_eq!(
++        read_state(&mut restored, &reopened_target())["receipt_pending"],
++        false
++    );
+     assert!(restored.apply_exact(&request()).is_err());
+     let mut original = NotesStore::recover(&root.0, &target()).unwrap();
+-    assert_eq!(NotesResponse::parse_exact(&original.recovery_exact(&query()).unwrap()).unwrap(), receipt);
++    assert_eq!(
++        NotesResponse::parse_exact(&original.recovery_exact(&query()).unwrap()).unwrap(),
++        receipt
++    );
+ }
+ 
+ #[test]
+ fn restore_then_wait_fixture() {
+-    let Some(root) = std::env::var_os("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT") else { return; };
++    let Some(root) = std::env::var_os("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT") else {
++        return;
++    };
+     let root = PathBuf::from(root);
+     let mut copy = NotesStore::create(&root, reopened_target()).unwrap();
+-    let selected = NotesStore::saved_documents(&root, &reopened_target()).unwrap().documents.remove(0);
++    let selected = NotesStore::saved_documents(&root, &reopened_target())
++        .unwrap()
++        .documents
++        .remove(0);
+     copy.restore_saved_text(&root, &selected, 0).unwrap();
+     println!("NOTES_RESTORED_BEFORE_EXIT");
+     std::io::stdout().flush().unwrap();

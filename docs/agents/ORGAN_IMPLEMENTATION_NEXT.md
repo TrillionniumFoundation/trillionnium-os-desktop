@@ -1,5 +1,7 @@
 # A–G 后续实施顺序：从已验收组合继续
 
+本页保留2026-10-22组合的实施顺序与当时缺口；后续候选已实现的用户数据页限制、timer watchdog、Notes恢复及原store场景见 [当前能力表](../CURRENT_CAPABILITIES.md)。这些实现各自的运行资格仍独立记录。
+
 更新于 2026-10-22。此页承接 [当前状态](../STATUS.md) 和
 [实际组合证据](../../results/integration/2026-10-22-organ-qualified/README.md)，
 不重复定义 HOS2，也不把文档、源码清单或 test issuer 当成生产资格。

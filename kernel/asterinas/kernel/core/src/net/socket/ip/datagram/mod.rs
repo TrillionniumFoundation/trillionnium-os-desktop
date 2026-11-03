@@ -83,10 +83,10 @@ impl DatagramSocket {
             .inner
             .read()
             .try_recv(writer, flags)
-            .map(|(output, remote_endpoint)| (output, remote_endpoint.into()))?;
+            .map(|(output, remote_endpoint)| (output, remote_endpoint.into()));
         self.pollee.invalidate();
 
-        Ok(result)
+        result
     }
 
     fn try_send(
@@ -95,7 +95,7 @@ impl DatagramSocket {
         remote: Option<&IpEndpoint>,
         flags: SendFlags,
     ) -> Result<usize> {
-        let (sent_bytes, iface_to_poll) = select_remote_and_bind(
+        let result = select_remote_and_bind(
             &self.inner,
             remote,
             || {
@@ -114,9 +114,10 @@ impl DatagramSocket {
                 let iface_to_poll = bound_datagram.iface().clone();
                 Ok((sent_bytes, iface_to_poll))
             },
-        )?;
+        );
 
         self.pollee.invalidate();
+        let (sent_bytes, iface_to_poll) = result?;
         iface_to_poll.poll();
 
         Ok(sent_bytes)
@@ -251,8 +252,12 @@ impl Socket for DatagramSocket {
     fn get_option(&self, option: &mut dyn SocketOption) -> Result<()> {
         sock_option_mut!(match option {
             socket_errors @ SocketError => {
-                // TODO: Support socket errors for UDP sockets
-                socket_errors.set(None);
+                let error = match &*self.inner.read() {
+                    Inner::Unbound(_) => None,
+                    Inner::Bound(bound) => bound.take_error(),
+                };
+                self.pollee.invalidate();
+                socket_errors.set(error);
                 return Ok(());
             }
             _ => (),

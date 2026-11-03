@@ -1,0 +1,84 @@
+{
+  "mode": "leaf",
+  "quota_us": 10000,
+  "period_us": 100000,
+  "duration_seconds": 5,
+  "max_cpu_percent": 12.0,
+  "candidate_sha256": "c90cb30bd5e6d081193ea26d71bbaf585719dc9eefa9eab081a2ba06b1056965",
+  "initramfs_sha256": "a9c9b04743db17f885a5d57d9f1cfa9149948bafbb2edf35ae9ac3bc8e59824e",
+  "source_pin": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "host_cgroup_modified": false,
+  "guest_only": true,
+  "smp_qualified": false,
+  "configured_vcpus": 2,
+  "parallel_pthreads": 2,
+  "hepta_hos2_qualified": false,
+  "runs": [
+    {
+      "index": 1,
+      "qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "cpu_percent": 10.285,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 5021541119,
+          "cpu_ns": 9745000000,
+          "iterations": 0
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 5133933662,
+          "cpu_ns": 528000000,
+          "iterations": 0
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "cpu_percent": 10.025,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 5023955307,
+          "cpu_ns": 9759000000,
+          "iterations": 0
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 5156858573,
+          "cpu_ns": 517000000,
+          "iterations": 0
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "cpu_percent": 10.327,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 5023511493,
+          "cpu_ns": 9791000000,
+          "iterations": 0
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 5141762158,
+          "cpu_ns": 531000000,
+          "iterations": 0
+        }
+      ]
+    }
+  ]
+}

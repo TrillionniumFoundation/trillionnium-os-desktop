@@ -1,0 +1,54 @@
+{
+  "source_head": "16661308ee95547e7a479ec88954b12dbd9d4eca",
+  "source_tree": "d0b7b7ec4b479b971ba48c3ee0ce47ec81b3a1d0",
+  "source_base": "1f4a252c22adf3bc4e1de1ce655e42387070f503",
+  "scope": "host regressions and full Android source-integrity guard; actual adapter device run pending",
+  "steps": [
+    {
+      "name": "source-integrity",
+      "argv": [
+        "python3",
+        "-I",
+        "support/android/verify_source_integrity.py",
+        "--out",
+        "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/android-device-source-gates-20261023-v1/source-integrity.json"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.26523900032043457
+    },
+    {
+      "name": "device-host-regressions",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/android",
+        "-p",
+        "test_device_organ.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 3.926162004470825
+    },
+    {
+      "name": "source-integrity-regressions",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/android",
+        "-p",
+        "test_source_integrity.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 3.6250600814819336
+    }
+  ]
+}

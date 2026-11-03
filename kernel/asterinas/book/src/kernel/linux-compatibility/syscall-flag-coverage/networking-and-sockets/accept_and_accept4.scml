@@ -1,3 +1,4 @@
+// AF_UNIX ownership graph exhaustion returns ENOBUFS without consuming the pending connection.
 struct sockaddr = {
     sa_family = AF_INET | AF_UNIX | AF_VSOCK,
     ..

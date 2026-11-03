@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "original_sha256": "1e4ced2871836a18177f166de7394b7f32d8de98af6fd6f1b4206ef28b2f85dd",
+  "candidate_sha256": "68390137800fdfc080bfe358b00eaeab4bf85ab9692933e43eee182adf23e59a",
+  "case_count": 52,
+  "exact_stdout_bytes_equal": false,
+  "exact_case_values": 51,
+  "allowed_observer_exponent_changes": [
+    {
+      "case": "response/resources/f32-7f7fffff",
+      "path": "resources.load_average_1m",
+      "original": "3.4028235e38",
+      "candidate": "3.4028235e+38"
+    }
+  ],
+  "scope": "Bounded observer/IPC corpus; not all JSON inputs, signatures or renderer qualification."
+}

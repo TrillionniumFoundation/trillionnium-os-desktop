@@ -1,0 +1,69 @@
+{
+  "source_head": "39c1eaf89a211b91e5e687ceaf86fd033567e536",
+  "source_tree": "41afddf4360f18ad50d62f9647de6f2e4f602a0e",
+  "passed": true,
+  "native_entry_executed": false,
+  "production_ready": false,
+  "steps": [
+    {
+      "label": "osdk-build",
+      "argv": [
+        "/data/trillionnium-closure-20261024/kernel-cargo-home/bin/cargo",
+        "+nightly-2026-07-21",
+        "install",
+        "--offline",
+        "--locked",
+        "--force",
+        "cargo-osdk",
+        "--path",
+        "/data/trillionnium-closure-20261024/os-native-process-successor/kernel/asterinas/osdk",
+        "--target-dir",
+        "/data/trillionnium-closure-20261024/kernel-osdk-target"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-process-successor",
+      "exit_code": 0,
+      "elapsed_seconds": 59.37901246303227
+    },
+    {
+      "label": "g2-initial-root",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-process-successor/support/build/ktest/run.py",
+        "--g2-initial-root",
+        "--crate",
+        "aster-core",
+        "--trusted-initial-sha256",
+        "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+        "--skip-osdk-install",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-process-successor/g2-initial-root"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-process-successor",
+      "exit_code": 0,
+      "elapsed_seconds": 246.91897451598197
+    },
+    {
+      "label": "aster-core",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-process-successor/support/build/ktest/run.py",
+        "--skip-osdk-install",
+        "--crate",
+        "aster-core",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-process-successor/full-aster-core"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-process-successor",
+      "exit_code": 0,
+      "elapsed_seconds": 145.21309149905574
+    }
+  ],
+  "osdk_sha256": "017fa8958ef2d4850ad99ff4a2f507331ff49a2de212fa5f769feebc3816c0f7",
+  "osdk_source_root": "/data/trillionnium-closure-20261024/os-native-process-successor/kernel/asterinas/osdk",
+  "source_inputs_unchanged": true,
+  "elapsed_seconds": 455.03968952200375
+}

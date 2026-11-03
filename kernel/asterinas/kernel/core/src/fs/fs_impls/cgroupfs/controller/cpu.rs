@@ -3,16 +3,14 @@
 mod max_config;
 mod native;
 
-#[cfg(feature = "g1c-trusted-observe")]
-pub(crate) use native::{CpuUsageError, NativeCpuObserver};
-#[cfg(feature = "g1d-trusted-control")]
-pub(crate) use native::NativeCpuManager;
-
 use alloc::sync::Arc;
-use core::sync::atomic::{AtomicU32, Ordering};
 
 use aster_systree::{Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysPerms, SysStr};
 use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
+#[cfg(feature = "g1d-trusted-control")]
+pub(crate) use native::NativeCpuManager;
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use native::{CpuUsageError, NativeCpuObserver};
 use os_control::CPU_PERIOD_NS;
 use ostd::{
     cpu::CpuId,
@@ -20,7 +18,6 @@ use ostd::{
     sync::{LocalIrqDisabled, SpinLock},
     task::{Task, atomic_mode::AsAtomicModeGuard},
     timer::Jiffies,
-    warn,
 };
 
 use self::native::CpuBandwidthState;
@@ -29,7 +26,7 @@ use crate::{
         CgroupMembership, CgroupNode,
         systree_node::{CgroupSysNode, CgroupSystem},
     },
-    process::{Process, posix_thread::AsPosixThread},
+    process::{Process, posix_thread::AsPosixThread, signal::HandlePendingSignal},
     thread::AsThread,
     util::ReadCString,
 };
@@ -60,8 +57,6 @@ struct CpuStats {
 
 /// CPU resource controls that are reset whenever `+cpu` is re-enabled.
 struct CpuControl {
-    /// A value stores the configured relative CPU share for scheduler integration.
-    weight: AtomicU32,
     /// The sole bandwidth accounting state and its configuration revision.
     max: SpinLock<CpuBandwidthState, LocalIrqDisabled>,
 }
@@ -344,9 +339,8 @@ impl CpuController {
 
     /// Initializes CPU usage statistics from the previous sub-controller.
     ///
-    /// Toggling `+cpu` must reset some controller attributes such as `cpu.weight`
-    /// and `cpu.max`, but `cpu.stat` remains visible and continues to report the
-    /// accumulated CPU usage.
+    /// Toggling `+cpu` must reset `cpu.max`, but `cpu.stat` remains visible and
+    /// continues to report the accumulated CPU usage.
     pub(super) fn init_stats(&mut self, previous: &Self) {
         // No one cares which CPU the count is on. Therefore, choose the BSP for simplicity.
         self.stats.user.add_on_cpu(
@@ -414,6 +408,9 @@ impl CpuController {
             writeln!(printer, "burst_usec 0")?;
         }
 
+        #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+        self.read_watchdog_stat(printer)?;
+
         Ok(printer.bytes_written())
     }
 
@@ -428,16 +425,13 @@ impl CpuController {
 
 impl CpuControl {
     fn new() -> Self {
-        // The default CPU weight is 100 and the default CPU bandwidth limit is
-        // unlimited quota with a 100ms period.
+        // The default CPU bandwidth limit is unlimited quota with a 100ms period.
         //
         // Reference: <https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files>
-        const DEFAULT_WEIGHT: u32 = 100;
         const DEFAULT_QUOTA_USEC: u64 = u64::MAX;
         const DEFAULT_PERIOD_USEC: u64 = 100_000;
 
         Self {
-            weight: AtomicU32::new(DEFAULT_WEIGHT),
             max: SpinLock::new(CpuBandwidthState::new(CpuMax {
                 quota_usec: DEFAULT_QUOTA_USEC,
                 quota_sub_usec_ns: 0,
@@ -478,8 +472,10 @@ impl super::SubControl for CpuController {
         match name {
             "cpu.stat" => return self.read_cpu_stat(&mut printer),
             "cpu.weight" => {
-                let weight = self.control()?.weight.load(Ordering::Relaxed);
-                writeln!(printer, "{}", weight)?;
+                self.control()?;
+                // Group-weight scheduling is not implemented. Expose only the
+                // neutral default; a successful write must not invent policy.
+                writeln!(printer, "100")?;
             }
             "cpu.max" => {
                 let max = self.control()?.max.lock().max;
@@ -498,7 +494,7 @@ impl super::SubControl for CpuController {
     fn write_attr(&self, name: &str, reader: &mut VmReader) -> Result<usize> {
         match name {
             "cpu.weight" => {
-                let control = self.control()?;
+                self.control()?;
 
                 // The cgroup v2 CPU weight is a scheduling weight in the range 1..=10000.
                 //
@@ -506,7 +502,7 @@ impl super::SubControl for CpuController {
                 const MIN_WEIGHT: u32 = 1;
                 const MAX_WEIGHT: u32 = 10_000;
 
-                let (content, len) = reader
+                let (content, _) = reader
                     .read_cstring_until_end(MAX_ATTR_SIZE)
                     .map_err(|_| Error::PageFault)?;
                 let weight = content
@@ -519,14 +515,10 @@ impl super::SubControl for CpuController {
                     return Err(Error::InvalidOperation);
                 }
 
-                // TODO: Enforce cgroup CPU weight for scheduling and remove this warning.
-                warn!(
-                    "`cpu.weight` is accepted but not enforced yet; weight = {}",
-                    weight
-                );
-                control.weight.store(weight, Ordering::Relaxed);
-
-                Ok(len)
+                // Keep invalid-input errors distinct, but never acknowledge a
+                // policy the scheduler does not implement, even for weight 100.
+                // There is no shadow configuration to read back as if applied.
+                Err(Error::OperationNotSupported)
             }
             "cpu.max" => {
                 let control = self.control()?;
@@ -649,7 +641,7 @@ pub(crate) fn task_cpu_eligible(task: &Task, now: Option<u64>) -> bool {
         return task.as_thread().is_some_and(|thread| thread.is_exited());
     };
     let guard = process.cgroup();
-    if let Some(group) = guard.get() {
+    let available = if let Some(group) = guard.get() {
         group
             .controller()
             .cpu
@@ -661,7 +653,14 @@ pub(crate) fn task_cpu_eligible(task: &Task, now: Option<u64>) -> bool {
             .cpu
             .read_with(&guard)
             .bandwidth_available_hierarchy(now)
-    }
+    };
+    // Only the original signal owner's irreversible SIGKILL receipt admits
+    // fatal kernel cleanup when bandwidth is unavailable. No quota, revision,
+    // consumed runtime or debt is changed here. The normal running-segment
+    // accounting still charges every cleanup interval to its retained owner.
+    // UserMode's IRQ-disabled pre-entry check observes the same receipt and
+    // returns KernelEvent before executing another user instruction.
+    available || thread.has_fatal_sigkill()
 }
 
 /// A running segment's reference to the original CPU accounting owner.

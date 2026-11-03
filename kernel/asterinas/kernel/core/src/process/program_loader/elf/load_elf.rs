@@ -13,7 +13,7 @@ use super::{
 };
 use crate::{
     fs::{
-        file::FileLike,
+        file::{FileLike, Permission},
         vfs::path::{FsPath, PathResolver},
     },
     prelude::*,
@@ -61,6 +61,14 @@ pub(crate) fn load_elf_to_vmar(
     envp: Vec<CString>,
 ) -> Result<ElfLoadInfo> {
     let ldso = lookup_and_parse_ldso(&elf_headers, &elf_file, path_resolver)?;
+    if ldso.as_ref().is_some_and(|(file, _)| {
+        file.path()
+            .inode()
+            .check_permission(Permission::MAY_READ)
+            .is_err()
+    }) {
+        *vmar.process_vm().dumpable().lock() = false;
+    }
 
     #[cfg_attr(target_arch = "loongarch64", expect(unused_mut))]
     let (elf_mapped_info, entry_point, mut aux_vec) =

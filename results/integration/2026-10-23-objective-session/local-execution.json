@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "baseline": {
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "commit": "39c1d84ebf854958f5829c0118b0c8b92a6b4926",
+    "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c"
+  },
+  "scope": "Local actual source policy tests plus attempted original locked package gates; not original-owner durability, authentication, GUI, or end-to-end qualification.",
+  "toolchain": "Rust 1.95.0 local; CI remains pinned separately to Rust 1.88.0",
+  "source_sha256_before": {
+    ".github/workflows/a10-host.yml": "c889ab2213b8f54a990e6519b1998e449956c3c24b619b4b33779116a3abd5aa",
+    "services/hepta-os/src/objective/mod.rs": "780bf65a931f5d941fd66cbb17481ba590982fe26201c0350139bd183753a15c",
+    "services/hepta-os/src/objective/history.rs": "0f1279c96b655e27cdd436317e165b44d8c6a48d0e84747dc1434856b061e4c6",
+    "services/hepta-os/tests/objective_transport.rs": "414a56f653e2f7a5e23c4aef2ff453853a3a94e70af745798a5d0fff90db0aa1",
+    "ui/session/Cargo.toml": "9d942964592b71926631741682cbc655a13b595c5f7582634c68165d57d34053",
+    "ui/session/src/lib.rs": "25533034da91abebda08aec4697b52b378b5f3f73f32c60629f410623e569895",
+    "ui/session/src/objective_pending.rs": "7e82f132900f0eeea075f5e151aaa3d3f67a5da8bb2f629704adb515c91606a3",
+    "ui/session/src/objective_submission.rs": "0901b133884acc2e6f7ae2b670c6c4fe85015e67dd249cab2755c206e9f4f8df",
+    "ui/session/tests/objective_submission.rs": "8b6f545494ea92db71f81187fdc1414daf946d50abc44bcf99e7401d357b946f",
+    "ui/session/OBJECTIVE_SUBMISSION.md": "84ce12a3da8826d9585e076235459f30ed56f3034e8e1973d3e841cc42684e70",
+    "ui/Cargo.lock": "b3fed596e3f954b2776ee30ed54bfa03bef8d3103b68299a6c65e0e7198843c0",
+    "services/hepta-os/Cargo.lock": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175"
+  },
+  "source_sha256_after": {
+    ".github/workflows/a10-host.yml": "c889ab2213b8f54a990e6519b1998e449956c3c24b619b4b33779116a3abd5aa",
+    "services/hepta-os/src/objective/mod.rs": "780bf65a931f5d941fd66cbb17481ba590982fe26201c0350139bd183753a15c",
+    "services/hepta-os/src/objective/history.rs": "0f1279c96b655e27cdd436317e165b44d8c6a48d0e84747dc1434856b061e4c6",
+    "services/hepta-os/tests/objective_transport.rs": "414a56f653e2f7a5e23c4aef2ff453853a3a94e70af745798a5d0fff90db0aa1",
+    "ui/session/Cargo.toml": "9d942964592b71926631741682cbc655a13b595c5f7582634c68165d57d34053",
+    "ui/session/src/lib.rs": "25533034da91abebda08aec4697b52b378b5f3f73f32c60629f410623e569895",
+    "ui/session/src/objective_pending.rs": "7e82f132900f0eeea075f5e151aaa3d3f67a5da8bb2f629704adb515c91606a3",
+    "ui/session/src/objective_submission.rs": "0901b133884acc2e6f7ae2b670c6c4fe85015e67dd249cab2755c206e9f4f8df",
+    "ui/session/tests/objective_submission.rs": "8b6f545494ea92db71f81187fdc1414daf946d50abc44bcf99e7401d357b946f",
+    "ui/session/OBJECTIVE_SUBMISSION.md": "84ce12a3da8826d9585e076235459f30ed56f3034e8e1973d3e841cc42684e70",
+    "ui/Cargo.lock": "b3fed596e3f954b2776ee30ed54bfa03bef8d3103b68299a6c65e0e7198843c0",
+    "services/hepta-os/Cargo.lock": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175"
+  },
+  "all_measured_bytes_unchanged": true,
+  "lockfiles_unchanged_against_baseline": {
+    "ui/Cargo.lock": true,
+    "services/hepta-os/Cargo.lock": true
+  },
+  "executions": [
+    {
+      "name": "rustc_version",
+      "argv": [
+        "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-Vv"
+      ],
+      "cwd": "/workspace/scratch/3d6a75235bcb/work/objective-session",
+      "started_at": "2026-10-23T06:10:37.080763+00:00",
+      "elapsed_seconds": 0.013417,
+      "exit_code": 0,
+      "stdout_and_stderr": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n"
+    },
+    {
+      "name": "rustfmt_exact_changed_sources",
+      "argv": [
+        "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+        "--edition",
+        "2021",
+        "--check",
+        "services/hepta-os/src/objective/mod.rs",
+        "services/hepta-os/src/objective/history.rs",
+        "services/hepta-os/tests/objective_transport.rs",
+        "ui/session/src/lib.rs",
+        "ui/session/src/objective_pending.rs",
+        "ui/session/src/objective_submission.rs",
+        "ui/session/tests/objective_submission.rs"
+      ],
+      "cwd": "/workspace/scratch/3d6a75235bcb/work/objective-session",
+      "started_at": "2026-10-23T06:10:37.094273+00:00",
+      "elapsed_seconds": 0.061084,
+      "exit_code": 0,
+      "stdout_and_stderr": ""
+    },
+    {
+      "name": "compile_actual_linear_policy",
+      "argv": [
+        "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition",
+        "2021",
+        "-D",
+        "warnings",
+        "--test",
+        "ui/session/src/objective_pending.rs",
+        "-o",
+        "/workspace/scratch/3d6a75235bcb/work/objective-session/validation/objective-pending-tests"
+      ],
+      "cwd": "/workspace/scratch/3d6a75235bcb/work/objective-session",
+      "started_at": "2026-10-23T06:10:37.155468+00:00",
+      "elapsed_seconds": 0.176359,
+      "exit_code": 0,
+      "stdout_and_stderr": ""
+    },
+    {
+      "name": "execute_actual_linear_policy",
+      "argv": [
+        "/workspace/scratch/3d6a75235bcb/work/objective-session/validation/objective-pending-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/3d6a75235bcb/work/objective-session",
+      "started_at": "2026-10-23T06:10:37.331856+00:00",
+      "elapsed_seconds": 0.002603,
+      "exit_code": 0,
+      "stdout_and_stderr": "\nrunning 8 tests\ntest tests::an_original_attempt_is_retained_only_after_owner_acknowledgement ... ok\ntest tests::failed_receipt_handoff_keeps_unknown_and_cannot_trigger_another_send ... ok\ntest tests::local_cancellation_consumes_only_a_never_started_send ... ok\ntest tests::original_owner_retention_precedes_any_send_permission ... ok\ntest tests::recovered_pending_intent_has_no_submission_or_local_cancel_capability ... ok\ntest tests::refused_retention_drops_prepared_input_without_exposing_a_sender ... ok\ntest tests::starting_or_losing_a_result_never_rearms_the_transport ... ok\ntest tests::unwinding_after_start_preserves_the_unknown_fence ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+    },
+    {
+      "name": "original_ui_locked_feature_gate",
+      "argv": [
+        "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-session",
+        "--all-targets",
+        "--features",
+        "objective-submission",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/workspace/scratch/3d6a75235bcb/work/objective-session",
+      "started_at": "2026-10-23T06:10:37.334525+00:00",
+      "elapsed_seconds": 0.03578,
+      "exit_code": 101,
+      "stdout_and_stderr": "error: no matching package named `eframe` found\nlocation searched: crates.io index\nrequired by package `trill-shell v0.1.0 (/workspace/scratch/3d6a75235bcb/work/objective-session/ui/shell)`\nAs a reminder, you're using offline mode (--offline) which can sometimes cause surprising resolution failures, if this error is too confusing you may wish to retry without `--offline`.\n"
+    },
+    {
+      "name": "original_transport_locked_identity_regression_gate",
+      "argv": [
+        "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--features",
+        "objective-transport",
+        "--locked",
+        "--offline",
+        "--test",
+        "objective_transport",
+        "pre_send_identity_performs_no_io_and_matches_the_original_attempt"
+      ],
+      "cwd": "/workspace/scratch/3d6a75235bcb/work/objective-session",
+      "started_at": "2026-10-23T06:10:37.370373+00:00",
+      "elapsed_seconds": 0.039145,
+      "exit_code": 101,
+      "stdout_and_stderr": "error: failed to download `bytes v1.12.1`\n\nCaused by:\n  attempting to make an HTTP request, but --offline was specified\n"
+    }
+  ]
+}

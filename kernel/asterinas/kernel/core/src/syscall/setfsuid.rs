@@ -15,12 +15,11 @@ pub(super) fn sys_setfsuid(uid: i32, ctx: &Context) -> Result<SyscallReturn> {
 
     debug!("fsuid = {:?}", fsuid);
 
-    let old_fsuid = {
-        let credentials = ctx.credentials_mut();
+    let old_fsuid = ctx.with_credentials_mut(|credentials| {
         credentials
             .set_fsuid(fsuid)
             .unwrap_or_else(|old_fsuid| old_fsuid)
-    };
+    });
 
     Ok(SyscallReturn::Return(
         <Uid as Into<u32>>::into(old_fsuid) as _

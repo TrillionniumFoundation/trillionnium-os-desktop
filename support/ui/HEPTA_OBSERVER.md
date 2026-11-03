@@ -111,9 +111,9 @@ Use the fixed host CI toolchain and the lockfile (see `RUN.md` for the
 separate repository nightly development toolchain):
 
 ```sh
-cargo +1.88.0 build --manifest-path ui/Cargo.toml --workspace --bins --locked
-cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-ui-core -p trill-session --locked
-cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked
+cargo +1.96.0 build --manifest-path ui/Cargo.toml --workspace --bins --locked
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-ui-core -p trill-session --locked
+cargo +1.96.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked
 ```
 
 The runtime remains the existing Linux host prototype. Follow `RUN.md` for

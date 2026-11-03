@@ -40,6 +40,7 @@ use super::{
 use crate::{
     mm::{
         PageProperty, Vaddr,
+        frame::PhysicalReserve,
         page_table::{PageTableNode, is_valid_range},
     },
     sync::RcuDrop,
@@ -108,6 +109,24 @@ impl<'rcu, C: PageTableConfig> Cursor<'rcu, C> {
         va: &Range<Vaddr>,
         min_level: PagingLevel,
     ) -> Result<Self, PageTableError> {
+        Self::new_impl(pt, guard, va, min_level, true)
+    }
+
+    pub(super) fn new_no_prealloc(
+        pt: &'rcu PageTable<C>,
+        guard: &'rcu dyn InAtomicMode,
+        va: &Range<Vaddr>,
+    ) -> Result<Self, PageTableError> {
+        Self::new_impl(pt, guard, va, 1, false)
+    }
+
+    fn new_impl(
+        pt: &'rcu PageTable<C>,
+        guard: &'rcu dyn InAtomicMode,
+        va: &Range<Vaddr>,
+        min_level: PagingLevel,
+        allocate_missing: bool,
+    ) -> Result<Self, PageTableError> {
         assert!((1..=C::NR_LEVELS).contains(&min_level));
 
         if !is_valid_range::<C>(va) {
@@ -120,7 +139,13 @@ impl<'rcu, C: PageTableConfig> Cursor<'rcu, C> {
 
         const { assert!(C::NR_LEVELS as usize <= MAX_NR_LEVELS) };
 
-        Ok(locking::lock_range(pt, guard, va, min_level))
+        Ok(locking::lock_range(
+            pt,
+            guard,
+            va,
+            min_level,
+            allocate_missing,
+        ))
     }
 
     /// Gets the current virtual address.
@@ -377,6 +402,14 @@ impl<'rcu, C: PageTableConfig> CursorMut<'rcu, C> {
         Cursor::new(pt, guard, va, min_level).map(|inner| Self(inner))
     }
 
+    pub(super) fn new_no_prealloc(
+        pt: &'rcu PageTable<C>,
+        guard: &'rcu dyn InAtomicMode,
+        va: &Range<Vaddr>,
+    ) -> Result<Self, PageTableError> {
+        Cursor::new_no_prealloc(pt, guard, va).map(Self)
+    }
+
     /// Moves the cursor forward to the next mapped virtual address.
     ///
     /// This is the same as [`Cursor::find_next`].
@@ -427,24 +460,7 @@ impl<'rcu, C: PageTableConfig> CursorMut<'rcu, C> {
     ///  - the range being mapped does not affect kernel's memory safety;
     ///  - the physical address to be mapped is valid and safe to use.
     pub(crate) unsafe fn map(&mut self, item: C::Item) {
-        assert!(self.0.va < self.0.barrier_va.end);
-
-        let (_, level, _) = C::item_raw_info(&item);
-        assert!(
-            level <= C::HIGHEST_TRANSLATION_LEVEL && level <= self.0.guard_level,
-            "cursor level not suitable for mapping"
-        );
-        let size = page_size::<C>(level);
-        assert_eq!(
-            self.0.va % size,
-            0,
-            "cursor virtual address not aligned for mapping"
-        );
-        assert!(
-            size <= self.0.barrier_va.end - self.0.va,
-            "cursor virtual address out-of-bound for mapping"
-        );
-
+        let level = self.check_map(&item);
         let rcu_guard = self.0.rcu_guard;
 
         // Adjust ourselves to the level of the item.
@@ -479,6 +495,118 @@ impl<'rcu, C: PageTableConfig> CursorMut<'rcu, C> {
         let _ = self.replace_cur_entry(PteState::Mapped(RcuDrop::new(item)));
 
         self.0.move_forward();
+    }
+
+    /// Maps using only explicitly authorized reserve pages for missing nodes.
+    ///
+    /// All missing nodes on this path are acquired before publishing any of
+    /// them. On allocation failure the mapping, cursor address and PTEs remain
+    /// unchanged, unpublished nodes are refunded, and the input item returns
+    /// to the caller. No token is attached to a published node or shared tree.
+    /// Existing mappings are rejected; this method never splits a huge page.
+    ///
+    /// # Safety
+    ///
+    /// The caller must meet the same mapping safety requirements as [`Self::map`].
+    ///
+    /// # Panics
+    ///
+    /// The same address, alignment, level and conflicting-mapping restrictions
+    /// as [`Self::map`] apply.
+    pub(crate) unsafe fn try_map_from(
+        &mut self,
+        reserve: &PhysicalReserve,
+        item: C::Item,
+    ) -> Result<(), (crate::Error, C::Item)> {
+        // SAFETY: The caller upholds the mapping contract.
+        unsafe { self.try_map_with(item, |level| PageTableNode::try_alloc_from(reserve, level)) }
+    }
+
+    /// Maps with fallible ordinary allocation, without reserve authority.
+    /// Failure preserves the mapping and returns its unpublished input.
+    ///
+    /// # Safety
+    /// The caller must meet the mapping requirements of [`Self::map`].
+    pub(crate) unsafe fn try_map(&mut self, item: C::Item) -> Result<(), (crate::Error, C::Item)> {
+        // SAFETY: The caller upholds the mapping contract.
+        unsafe { self.try_map_with(item, PageTableNode::try_alloc) }
+    }
+
+    /// # Safety
+    /// The caller must meet the mapping requirements of [`Self::map`].
+    unsafe fn try_map_with(
+        &mut self,
+        item: C::Item,
+        mut alloc_node: impl FnMut(PagingLevel) -> crate::Result<PageTableNode<C>>,
+    ) -> Result<(), (crate::Error, C::Item)> {
+        let level = self.check_map(&item);
+        let rcu_guard = self.0.rcu_guard;
+        while self.0.level < level {
+            self.0.pop_level();
+        }
+
+        while self.0.level > level {
+            match self.0.cur_entry().to_ref() {
+                PteStateRef::PageTable(pt) => {
+                    // SAFETY: The original cursor lock protocol has locked
+                    // this node, and its previous guard was forgotten.
+                    let guard = unsafe { pt.make_guard_unchecked(rcu_guard) };
+                    self.0.push_level(guard);
+                }
+                PteStateRef::Absent => break,
+                PteStateRef::Mapped(_) => panic!("mapping over an already mapped page"),
+            }
+        }
+
+        // These private, empty frames are not visible to page walkers. Drop
+        // returns them immediately to their original allocator partition on
+        // error. The array is bounded by the original page table depth, with
+        // no heap allocation and no partial PTE publication to roll back.
+        let mut pending: [Option<PageTableNode<C>>; MAX_NR_LEVELS] = core::array::from_fn(|_| None);
+        for child_level in (level..self.0.level).rev() {
+            let child = match alloc_node(child_level) {
+                Ok(child) => child,
+                Err(error) => return Err((error, item)),
+            };
+            pending[child_level as usize - 1] = Some(child);
+        }
+
+        while self.0.level > level {
+            let child = pending[self.0.level as usize - 2].take().unwrap();
+            let guard = self
+                .0
+                .cur_entry()
+                .install_if_none(rcu_guard, child)
+                .expect("the locked mapping path must remain absent");
+            self.0.push_level(guard);
+        }
+
+        // SAFETY: The caller upholds the mapping contract. The entire path
+        // now exists, so the original map operation performs no allocation.
+        unsafe { self.map(item) };
+        Ok(())
+    }
+
+    fn check_map(&self, item: &C::Item) -> PagingLevel {
+        assert!(self.0.va < self.0.barrier_va.end);
+
+        let (_, level, _) = C::item_raw_info(item);
+        assert!(
+            level <= C::HIGHEST_TRANSLATION_LEVEL && level <= self.0.guard_level,
+            "cursor level not suitable for mapping"
+        );
+        let size = page_size::<C>(level);
+        assert_eq!(
+            self.0.va % size,
+            0,
+            "cursor virtual address not aligned for mapping"
+        );
+        assert!(
+            size <= self.0.barrier_va.end - self.0.va,
+            "cursor virtual address out-of-bound for mapping"
+        );
+
+        level
     }
 
     /// Finds and removes the first page table fragment in the following range.

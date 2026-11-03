@@ -1,5 +1,9 @@
 # A09 GPU/NPU hardware decision — 2026-10-16
 
+The separate [X230 native desktop target](X230_NATIVE_DESKTOP.md) records the
+2026-11-03 physical inventory and the missing AHCI/Ethernet drivers for the P2
+desktop path. It does not qualify this document's GPU passthrough path.
+
 ## 2026-10-21 implementation update: actual hosts observed
 
 The [current read-only inventory](../../tests/hardware/evidence/2026-10-21-development-host-inventory.json)

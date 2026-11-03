@@ -4,7 +4,7 @@
 
 ## 1. 默认路线已经收敛
 
-选择完整 Asterinas v0.19.0 内核派生，而非只取 OSTD 后重建所有上层。源码 commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`，上游工具链 `nightly-2026-07-21`，首期 target `x86_64-unknown-none`。固定输入见 [upstream-lock.json](../support/upstream-lock.json)。源码通过 [A01 PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5) 导入 main；随后 A05 只读 QueryAbi 和 A06 cgroup CPU 配额已集成，并有同一源码树的[真实 QEMU 收据](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json)。这分别证明派生内核启动、只读 ioctl 和已测配额场景。后续 [A05 组合收据](../results/kernel/control/a05-main-combined-acceptance-20261017.json) 对应已合入的 Process / exec_epoch / nonce 只读身份隔离；可信启动后的能力授予、四项其余 HOS2 操作、G1/G2 与裸机资格仍未完成。
+选择完整 Asterinas v0.19.0 内核派生，而非只取 OSTD 后重建所有上层。源码 commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b`，tree `96605cf64aeae2d34f29b97e85eff9315fe10a8e`，上游工具链 `nightly-2026-07-21`，首期 target `x86_64-unknown-none`。固定输入见 [upstream-lock.json](../support/upstream-lock.json)。源码通过 [A01 PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5) 导入 main；随后 A05 只读 QueryAbi 和 A06 cgroup CPU 配额已集成，并有同一源码树的[真实 QEMU 收据](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json)。这分别证明派生内核启动、只读 ioctl 和已测配额场景。后续 [A05 组合收据](../results/kernel/control/a05-main-combined-acceptance-20261017.json) 对应已合入的 Process / exec_epoch / nonce 只读身份隔离；这些早期收据仅覆盖当时的只读身份路径。当前 ordinary 构建仍只开放 QueryAbi；显式 G1-c profile 已接 ReadUsage，显式 G1-d profile 已接固定三角色的五项 HOS2 操作，详见第8节及各自固定执行收据。一般动态 runtime 的最终 exec 授权、原 Hepta 持久 G2 和裸机资格仍未完成。
 
 第一实现以最小可审阅差异扩展上游进程、文件对象与调度器；不新增平行 Task/VFS/权限数据库。只在具体接口冲突与最小复现证明全内核派生成本不合适时重新评估 OSTD-only，不并行维持两套产品。
 

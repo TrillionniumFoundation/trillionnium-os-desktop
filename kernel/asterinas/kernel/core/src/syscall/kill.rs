@@ -4,39 +4,45 @@ use super::SyscallReturn;
 use crate::{
     prelude::*,
     process::{
-        ProcessFilter, kill, kill_all, kill_group,
+        ProcessFilter, kill_all_with, kill_group_with, kill_owned_with,
         signal::{
             sig_num::SigNum,
-            signals::{Signal, user::UserSignal},
+            signals::{
+                OwnedSignal,
+                user::{UserSignal, UserSignalKind},
+            },
         },
     },
 };
 
-pub(super) fn sys_kill(process_filter: u64, sig_num: u64, ctx: &Context) -> Result<SyscallReturn> {
-    let process_filter = ProcessFilter::from_id(process_filter as _)?;
-    let sig_num = if sig_num == 0 {
-        None
-    } else {
-        Some(SigNum::try_from(sig_num as u8)?)
+pub(super) fn sys_kill(process_filter: i32, sig_num: i32, ctx: &Context) -> Result<SyscallReturn> {
+    let filter = ProcessFilter::from_id(process_filter)?;
+    // Linux validates the full int signal after locating a target. Preparing
+    // inside the original helper keeps invalid sends side-effect free.
+    // Capture payload fields before the group helper takes membership locks.
+    // Actual permission checks still read credentials through the original path.
+    let sender_pid = ctx.process.pid();
+    let sender_uid = ctx.posix_thread.credentials().ruid();
+    let prepare = || {
+        let signum = if sig_num == 0 {
+            None
+        } else {
+            Some(SigNum::try_from(sig_num)?)
+        };
+        Ok(signum.map(|num| {
+            OwnedSignal::new(UserSignal::new(
+                num,
+                UserSignalKind::Kill,
+                sender_pid,
+                sender_uid,
+            ))
+        }))
     };
-    debug!(
-        "process_filter = {:?}, sig_num = {:?}",
-        process_filter, sig_num
-    );
-    do_sys_kill(process_filter, sig_num, ctx)?;
-    Ok(SyscallReturn::Return(0))
-}
-
-fn do_sys_kill(filter: ProcessFilter, sig_num: Option<SigNum>, ctx: &Context) -> Result<()> {
-    let signal = sig_num.map(|sig_num| UserSignal::new_kill(sig_num, ctx));
-
     match filter {
-        ProcessFilter::Any => kill_all(signal, ctx)?,
-        ProcessFilter::WithPid(pid) => {
-            kill(pid, signal.map(|s| Box::new(s) as Box<dyn Signal>), ctx)?
-        }
-        ProcessFilter::WithPgid(pgid) => kill_group(pgid, signal, ctx)?,
+        ProcessFilter::Any => kill_all_with(prepare, ctx)?,
+        ProcessFilter::WithPid(pid) => kill_owned_with(pid, None, prepare, ctx)?,
+        ProcessFilter::WithPgid(pgid) => kill_group_with(pgid, None, prepare, ctx)?,
         ProcessFilter::WithPidfd(_) => unreachable!(),
     }
-    Ok(())
+    Ok(SyscallReturn::Return(0))
 }

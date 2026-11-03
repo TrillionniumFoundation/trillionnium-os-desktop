@@ -13,6 +13,7 @@ use crate::{
     prelude::*,
     vm::{
         page_cache::{CachePage, CachePageMeta, PageCacheBackend},
+        user_memory::{UserMemoryOwner, UserMemoryReservation, current_owner},
         vmar::Rmap,
     },
 };
@@ -44,6 +45,7 @@ pub(crate) struct VmoOptions {
     size: usize,
     flags: VmoFlags,
     backend: Option<Weak<dyn PageCacheBackend>>,
+    memory_owner: UserMemoryOwner,
 }
 
 impl VmoOptions {
@@ -60,6 +62,7 @@ impl VmoOptions {
             size,
             flags: VmoFlags::empty(),
             backend: None,
+            memory_owner: None,
         }
     }
 
@@ -83,6 +86,13 @@ impl VmoOptions {
         self
     }
 
+    /// Fixes the owner for a stopped initial image loaded by a kernel task.
+    /// Ordinary file VMOs leave this unset and charge each page's initiator.
+    pub(crate) fn memory_owner(mut self, owner: UserMemoryOwner) -> Self {
+        self.memory_owner = owner;
+        self
+    }
+
     /// Sets the backend for the VMO.
     fn backend(mut self, backend: Weak<dyn PageCacheBackend>) -> Self {
         self.backend = Some(backend);
@@ -97,9 +107,10 @@ impl VmoOptions {
             size,
             flags,
             backend,
+            memory_owner,
             ..
         } = self;
-        let vmo = alloc_vmo(size, flags, backend)?;
+        let vmo = alloc_vmo(size, flags, backend, memory_owner)?;
         Ok(Arc::new(vmo))
     }
 }
@@ -108,12 +119,19 @@ fn alloc_vmo(
     size: usize,
     flags: VmoFlags,
     backend: Option<Weak<dyn PageCacheBackend>>,
+    memory_owner: UserMemoryOwner,
 ) -> Result<Vmo> {
-    let size = size.align_up(PAGE_SIZE);
-    let pages = committed_pages_if_continuous(flags, size)?;
+    let size = size
+        .checked_add(PAGE_SIZE - 1)
+        .filter(|size| *size <= isize::MAX as usize)
+        .ok_or_else(|| Error::new(Errno::ENOMEM))?
+        .align_down(PAGE_SIZE);
+    let owner = memory_owner.clone().or_else(current_owner);
+    let pages = committed_pages_if_continuous(flags, size, &owner)?;
     let writable_mapping_status = WritableMappingStatus::default();
     let rmap = Rmap::new();
     Ok(Vmo {
+        memory_owner,
         backend,
         flags,
         pages,
@@ -123,12 +141,21 @@ fn alloc_vmo(
     })
 }
 
-fn committed_pages_if_continuous(flags: VmoFlags, size: usize) -> Result<XArray<CachePage>> {
+fn committed_pages_if_continuous(
+    flags: VmoFlags,
+    size: usize,
+    owner: &UserMemoryOwner,
+) -> Result<XArray<CachePage>> {
     if flags.contains(VmoFlags::CONTIGUOUS) {
         // if the vmo is continuous, we need to allocate frames for the vmo
         let frames_num = size / PAGE_SIZE;
+        // Admit the entire physical segment before allocation. If the
+        // allocator fails, the untouched reservation refunds every page.
+        let mut reservation = UserMemoryReservation::new(owner, frames_num)?;
         let segment: Segment<CachePageMeta> = FrameAllocOptions::new()
-            .alloc_segment_with(frames_num, |_| CachePageMeta::default())?;
+            .alloc_segment_with(frames_num, |_| {
+                CachePageMeta::with_charge(reservation.take_page())
+            })?;
         let committed_pages = XArray::new();
         let mut locked_pages = committed_pages.lock();
         let mut cursor = locked_pages.cursor_mut(0);
@@ -149,6 +176,51 @@ mod test {
     use ostd::{mm::VmIo, prelude::*};
 
     use super::*;
+
+    #[ktest]
+    fn contiguous_limit_is_admitted_before_any_page() {
+        let account = crate::vm::user_memory::UserMemoryAccount::new(2);
+        let error = VmoOptions::new(3 * PAGE_SIZE)
+            .flags(VmoFlags::CONTIGUOUS)
+            .memory_owner(Some(account.clone()))
+            .alloc()
+            .err()
+            .unwrap();
+        assert!(error.is_user_frame_limit());
+        assert_eq!(account.current_pages(), 0);
+        let vmo = VmoOptions::new(2 * PAGE_SIZE)
+            .flags(VmoFlags::CONTIGUOUS)
+            .memory_owner(Some(account.clone()))
+            .alloc()
+            .unwrap();
+        assert_eq!(account.current_pages(), 2);
+        assert_eq!(vmo.size(), 2 * PAGE_SIZE);
+    }
+
+    #[ktest]
+    fn shared_vmo_aliases_keep_one_physical_charge() {
+        use crate::vm::{page_cache::VmoMapMode, user_memory::UserMemoryAccount};
+        let account = UserMemoryAccount::new(2);
+        let vmo = VmoOptions::new(3 * PAGE_SIZE)
+            .memory_owner(Some(account.clone()))
+            .alloc()
+            .unwrap();
+        let (first, _) = vmo.try_commit_page(0, VmoMapMode::Private).unwrap();
+        let (alias, _) = vmo.try_commit_page(0, VmoMapMode::Private).unwrap();
+        assert_eq!(account.current_pages(), 1);
+        drop(first);
+        drop(alias);
+        assert_eq!(account.current_pages(), 1); // The VMO still owns the page.
+        let (second, _) = vmo.try_commit_page(PAGE_SIZE, VmoMapMode::Private).unwrap();
+        assert_eq!(account.current_pages(), 2);
+        let error = vmo
+            .try_commit_page(2 * PAGE_SIZE, VmoMapMode::Private)
+            .err()
+            .unwrap();
+        assert!(error.pending_index().err().unwrap().is_user_frame_limit());
+        assert_eq!(account.current_pages(), 2);
+        drop(second);
+    }
 
     #[ktest]
     fn alloc_vmo() {

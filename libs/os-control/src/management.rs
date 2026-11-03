@@ -157,6 +157,30 @@ impl ManagementGrantState {
         })
     }
 
+    /// Whether a saved snapshot came from this exact state allocation.
+    ///
+    /// This remains true after revocation and proves identity only, never
+    /// current rights or lease validity. Existing owners use it to fence
+    /// delayed lifecycle and timer work before touching a replacement state.
+    /// Equal public configuration in a new state cannot satisfy this check.
+    pub fn owns_snapshot(&self, snapshot: &ManagementGrantSnapshot) -> bool {
+        Arc::ptr_eq(&snapshot.origin, &self.origin)
+    }
+
+    /// Revoke only the original delegation selected by a retained snapshot.
+    /// The resource owner must hold its original mutation lock. An old image
+    /// cannot revoke a replacement that happens to occupy the same array slot.
+    /// Repeating closure of this same instance retains the first receipt.
+    pub fn revoke_for_snapshot(
+        &mut self,
+        snapshot: &ManagementGrantSnapshot,
+    ) -> Result<ManagementRevokeReceipt, ManagementError> {
+        if !self.owns_snapshot(snapshot) {
+            return Err(ManagementError::SnapshotMismatch);
+        }
+        Ok(self.revoke())
+    }
+
     /// Check the saved delegation inside the original owner's mutation lock.
     /// The owner supplies real BOOTTIME, prevents clock rollback and settles
     /// actual runtime. This pure value does not create another clock domain.

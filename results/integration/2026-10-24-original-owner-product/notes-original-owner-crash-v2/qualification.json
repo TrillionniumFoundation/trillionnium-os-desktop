@@ -1,0 +1,90 @@
+{
+  "actual_app_sigkill_and_original_session_reap": true,
+  "app_sha256": "fa701f706481f87118c7dacc93b6ea23fd88b8b44bcbdf11b2d68d526bf23aa0",
+  "application_receipt_utf8": "{\"schema_version\":1,\"target\":{\"session_instance\":\"452dc90b142537b1e9d0ae0cedea1dd2\",\"task_id\":1,\"incarnation\":\"0a58f05759e54d08d3a16139ec912864\"},\"operation_id\":\"notes-real-crash-original-owner\",\"payload_sha256\":\"5c10df5b9c7b1284b276187f26098b30da2c9c892f4bda2946f7dc2b1d140afa\",\"result\":{\"status\":\"applied\",\"previous_revision\":0,\"revision\":1,\"text_sha256\":\"3e568011d43a6cd2d47aa4daaffae46231244020303c4d096d2b8063c2dd0743\"}}",
+  "current_first_frame_unix_ms": 1792813456275,
+  "current_target": {
+    "incarnation": "3b9d3ed7e0240ca4d910aac2333de0b1",
+    "session_instance": "d9b20a410ec68c900d01e6932b218c08",
+    "task_id": 1
+  },
+  "durable_retirement_reply_lost": true,
+  "effect_dispatches": 1,
+  "effect_reply_lost": true,
+  "fresh_incarnation_unchanged": true,
+  "helper_starts": 2,
+  "issuer_requests": 1,
+  "native_kernel_qualified": false,
+  "old_dispatcher_registered": false,
+  "old_first_frame_unix_ms": 1792813454963,
+  "old_target": {
+    "incarnation": "0a58f05759e54d08d3a16139ec912864",
+    "session_instance": "452dc90b142537b1e9d0ae0cedea1dd2",
+    "task_id": 1
+  },
+  "operation_id": "notes-real-crash-original-owner",
+  "original_application_receipt": {
+    "operation_id": "notes-real-crash-original-owner",
+    "payload_sha256": "5c10df5b9c7b1284b276187f26098b30da2c9c892f4bda2946f7dc2b1d140afa",
+    "result": {
+      "previous_revision": 0,
+      "revision": 1,
+      "status": "applied",
+      "text_sha256": "3e568011d43a6cd2d47aa4daaffae46231244020303c4d096d2b8063c2dd0743"
+    },
+    "schema_version": 1,
+    "target": {
+      "incarnation": "0a58f05759e54d08d3a16139ec912864",
+      "session_instance": "452dc90b142537b1e9d0ae0cedea1dd2",
+      "task_id": 1
+    }
+  },
+  "original_source_after_recovery": "committed",
+  "original_source_before_recovery": "indeterminate",
+  "original_writer_closed_and_exact_cut_reopened": true,
+  "pixels_qualified": false,
+  "power_loss_qualified": false,
+  "production_authority": false,
+  "profile": "test-authority-original-sqlite-owner-real-notes-crash",
+  "recovery_helper_sha256": "ee15aec6baa331bd6cfe1bbe72b2ec752920df7cfe165ecf386cbb79f7bc3b16",
+  "retirement_responses": [
+    {
+      "operation_id": "notes-real-crash-original-owner",
+      "payload_sha256": "5c10df5b9c7b1284b276187f26098b30da2c9c892f4bda2946f7dc2b1d140afa",
+      "receipt_sha256": "b9e9cdfe517a3bac2355e8be0aa336c8e8235eddde964d0ab29016d587184d90",
+      "schema_version": 1,
+      "status": "released",
+      "target": {
+        "incarnation": "0a58f05759e54d08d3a16139ec912864",
+        "session_instance": "452dc90b142537b1e9d0ae0cedea1dd2",
+        "task_id": 1
+      }
+    },
+    {
+      "operation_id": "notes-real-crash-original-owner",
+      "payload_sha256": "5c10df5b9c7b1284b276187f26098b30da2c9c892f4bda2946f7dc2b1d140afa",
+      "receipt_sha256": "b9e9cdfe517a3bac2355e8be0aa336c8e8235eddde964d0ab29016d587184d90",
+      "schema_version": 1,
+      "status": "already_released",
+      "target": {
+        "incarnation": "0a58f05759e54d08d3a16139ec912864",
+        "session_instance": "452dc90b142537b1e9d0ae0cedea1dd2",
+        "task_id": 1
+      }
+    }
+  ],
+  "schema_version": 1,
+  "session_sha256": "5f5765f3be78d2dd165959f2c6dd2beff1f4b5e7e3445e3e71c2fa6301dda2e0",
+  "source_cut_after_recovery": {
+    "owner_agent_id": "00000000-0000-4000-8000-00000000c061",
+    "profile": "hepta:cognitive:exact-current-cut:v1",
+    "schema_digest": "55a697816bedf97c5fa3ef36a4d9d39d98f6f572d825a38541afe62e19203773",
+    "state_digest": "cacf0e67bddc69f128a9f75400318ad42f5a17d54d9831a9dbfa92409262e0cf"
+  },
+  "source_cut_before_owner_reopen": {
+    "owner_agent_id": "00000000-0000-4000-8000-00000000c061",
+    "profile": "hepta:cognitive:exact-current-cut:v1",
+    "schema_digest": "55a697816bedf97c5fa3ef36a4d9d39d98f6f572d825a38541afe62e19203773",
+    "state_digest": "e805e4a7dbd0828f91dc9272662e693c6fe964be4e7243670786890aeaec1e06"
+  }
+}

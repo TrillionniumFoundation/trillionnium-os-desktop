@@ -1,0 +1,53 @@
+{
+  "schema": "trillionnium.native-kernel-integration.v1",
+  "source_head": "15ec98c23edb6ebb1682c959324efb05a201cb9f",
+  "source_tree": "3d241d864465b46cb94138d5c2f8b8978dfe2a92",
+  "commands": [
+    {
+      "stage": "original-four-suites",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-original-full-ipc.py",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/inode-sgid-semantics",
+        "--head",
+        "15ec98c23edb6ebb1682c959324efb05a201cb9f",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/inode-sgid-native-15ec-02/full"
+      ],
+      "outer_deadline_seconds": 15000,
+      "exit_code": 0
+    },
+    {
+      "stage": "original-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "15ec98c23edb6ebb1682c959324efb05a201cb9f",
+        "--expected-source-tree",
+        "3d241d864465b46cb94138d5c2f8b8978dfe2a92",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/inode-sgid-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/inode-sgid-native-15ec-02/ordinary"
+      ],
+      "outer_deadline_seconds": 7200,
+      "exit_code": 0
+    }
+  ],
+  "passed": true,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "elapsed_seconds": 519.473,
+  "source_checkout_clean": true
+}

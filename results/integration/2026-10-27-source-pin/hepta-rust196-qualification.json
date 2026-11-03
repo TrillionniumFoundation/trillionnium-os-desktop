@@ -1,0 +1,268 @@
+{
+  "workflow_head": "c9d75a2f3424236e2eb7597ac54def96da05c45b",
+  "source_sha": "4223fc77944e9beb5651df063158b22ae1a4f701",
+  "source_tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef",
+  "job_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/40480248962/job/122108458755",
+  "stats": [
+    "2026-10-27T09:22:47.6148054Z   1.96.0-x86_64-unknown-linux-gnu updated - rustc 1.96.0 (ac68faa20 2026-05-25) (from rustc 1.96.0 (ac68faa20 2026-05-25))",
+    "2026-10-27T09:22:47.6544109Z   1.96.0-x86_64-unknown-linux-gnu unchanged - rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "2026-10-27T09:22:47.8546418Z rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "2026-10-27T09:23:09.4766458Z rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "2026-10-27T09:23:09.4857237Z cargo 1.96.0 (30a34c682 2026-05-25)",
+    "2026-10-27T09:23:36.0061576Z      Summary [   0.034s] 4 tests run: 4 passed, 0 skipped",
+    "2026-10-27T09:32:47.1485617Z      Summary [  36.249s] 24 tests run: 24 passed (1 slow), 511 skipped",
+    "2026-10-27T09:35:07.7577547Z      Summary [   7.079s] 3 tests run: 3 passed, 1 skipped",
+    "2026-10-27T09:35:11.0154308Z      Summary [   1.826s] 1 test run: 1 passed, 534 skipped"
+  ],
+  "records": [
+    {
+      "command": [
+        "just",
+        "fmt",
+        "--base",
+        "de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c"
+      ],
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 0,
+      "failed": 0,
+      "before": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "after": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "elapsed_seconds": 0.6059672140000032,
+      "log_bytes": 0
+    },
+    {
+      "command": [
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-hepta-fleet",
+        "--test",
+        "spawn_lifecycle",
+        "--retries",
+        "0"
+      ],
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0,
+      "before": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "after": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "elapsed_seconds": 25.66893768700001,
+      "log_bytes": 8139
+    },
+    {
+      "command": [
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-hepta-agentd",
+        "--lib",
+        "--retries",
+        "0",
+        "-E",
+        "test(cpu_policy) or test(actual_reconciler_asks_original_issuer_for_same_k_d_and_does_not_resend_unknown)"
+      ],
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 24,
+      "failed": 0,
+      "before": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "after": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "elapsed_seconds": 551.0727803069999,
+      "log_bytes": 101596
+    },
+    {
+      "command": [
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-hepta-memory",
+        "--test",
+        "root_install_reentry",
+        "--run-ignored",
+        "only",
+        "--test-threads",
+        "1",
+        "--retries",
+        "0",
+        "-E",
+        "test(=killed_installer_reopens_exact_inode_and_pointer_without_republication) or test(=a_different_valid_independent_image_cannot_replace_an_unreleased_installation) or test(=ambiguous_partial_and_aliased_installations_are_preserved_and_refused)"
+      ],
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0,
+      "before": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "after": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "elapsed_seconds": 140.54099235299998,
+      "log_bytes": 20824
+    },
+    {
+      "command": [
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-hepta-agentd",
+        "--lib",
+        "--run-ignored",
+        "only",
+        "--test-threads",
+        "1",
+        "--retries",
+        "0",
+        "-E",
+        "test(interrupted_install_resumes_same_original_current_cas_without_republication)"
+      ],
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "before": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "after": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "elapsed_seconds": 3.1865219820000448,
+      "log_bytes": 24418
+    },
+    {
+      "command": [
+        "just",
+        "fix",
+        "-p",
+        "codex-hepta-fleet",
+        "-p",
+        "codex-hepta-memory",
+        "-p",
+        "codex-hepta-agentd",
+        "--locked"
+      ],
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 0,
+      "failed": 0,
+      "before": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "after": {
+        "commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+        "dirty": false,
+        "parents": [
+          "adb76d1181602284daca7df7ae9754a70fe43036"
+        ],
+        "tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef"
+      },
+      "elapsed_seconds": 256.24345405500003,
+      "log_bytes": 95125
+    }
+  ],
+  "log_lines": 7391,
+  "artifacts": [
+    {
+      "id": 12723467353,
+      "name": "hepta-frozen-4223fc-lifecycle-policy-40480248962-1",
+      "size_in_bytes": 54002,
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/artifacts/12723467353",
+      "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/artifacts/12723467353/zip",
+      "expired": false,
+      "created_at": "2026-10-27T09:39:28Z",
+      "expires_at": "2026-11-10T09:39:27Z",
+      "updated_at": "2026-10-27T09:39:28Z",
+      "digest": "sha256:6ba7a28ac6d3c9a8f1db47bf3f491b6ef306ed7f7942c93e3d2eb8d62a18cec0",
+      "workflow_run": {
+        "id": 40480248962,
+        "repository_id": 1320694176,
+        "head_repository_id": 1320694176,
+        "head_branch": "codex/audit-lifecycle-policy-qualification-20261027",
+        "head_sha": "c9d75a2f3424236e2eb7597ac54def96da05c45b"
+      }
+    }
+  ],
+  "observed_completed_utc": "2026-10-27 09:42:32 UTC",
+  "result": "success",
+  "scope": "Original repository Linux component fixtures on a hosted runner; full Agentd compilation plus selected tests and original owning-package just fix. Not native-device, production Root deployment, complete repository test, or universal -D warnings qualification.",
+  "selected_test_counts": {
+    "fleet": 4,
+    "cpu_policy_and_same_k_d_reconciler": 24,
+    "memory_root": 3,
+    "current_cas_root": 1,
+    "total": 32
+  }
+}

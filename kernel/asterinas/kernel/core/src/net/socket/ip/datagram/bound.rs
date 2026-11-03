@@ -35,6 +35,15 @@ impl BoundDatagram {
     pub(super) fn bound_port(&self) -> &BoundUdpPort {
         self.bound_socket.bound_port()
     }
+
+    pub(super) fn take_error(&self) -> Option<Error> {
+        self.bound_socket.take_connection_refused().then(|| {
+            Error::with_message(
+                Errno::ECONNREFUSED,
+                "the destination UDP port is unreachable",
+            )
+        })
+    }
 }
 
 impl datagram_common::Bound for BoundDatagram {
@@ -49,6 +58,7 @@ impl datagram_common::Bound for BoundDatagram {
     }
 
     fn set_remote_endpoint(&mut self, endpoint: &Self::Endpoint) {
+        self.bound_socket.set_error_peer(*endpoint);
         self.remote_endpoint = Some(*endpoint)
     }
 
@@ -57,6 +67,10 @@ impl datagram_common::Bound for BoundDatagram {
         writer: &mut dyn MultiWrite,
         flags: RecvFlags,
     ) -> Result<(RecvOutput, Self::Endpoint)> {
+        if let Some(error) = self.take_error() {
+            return Err(error);
+        }
+
         let result = self
             .bound_socket
             .recv(flags.receive_behavior(), |packet, udp_metadata| {
@@ -89,6 +103,10 @@ impl datagram_common::Bound for BoundDatagram {
         remote: &Self::Endpoint,
         _flags: SendFlags,
     ) -> Result<usize> {
+        if let Some(error) = self.take_error() {
+            return Err(error);
+        }
+
         let result = self
             .bound_socket
             .send(reader.sum_lens(), *remote, |socket_buffer| {
@@ -117,7 +135,7 @@ impl datagram_common::Bound for BoundDatagram {
     }
 
     fn check_io_events(&self) -> IoEvents {
-        self.bound_socket.raw_with(|socket| {
+        let mut events = self.bound_socket.raw_with(|socket| {
             let mut events = IoEvents::empty();
 
             if socket.can_recv() {
@@ -129,6 +147,12 @@ impl datagram_common::Bound for BoundDatagram {
             }
 
             events
-        })
+        });
+
+        if self.bound_socket.has_connection_refused() {
+            events |= IoEvents::ERR;
+        }
+
+        events
     }
 }

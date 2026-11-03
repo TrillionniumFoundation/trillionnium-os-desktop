@@ -1,0 +1,392 @@
+{
+  "source_head": "4aabde6accaa37a09020d852bfcc8559faea4ab6",
+  "ordinary_receipt_sha256": "4347649a8ed4a61ef2104fbd3fd3c76d6e29176803ad1de683e95279b55517dd",
+  "kernel_sha256": "751ccb357f05d2607119a344aaf191c115ae8b02916181d7b22595b1a8a8734c",
+  "source_sha256": "8f4c62d19374bfe14e691258aef8a823418cfa3594db6d7bd90bc6568ece03cc",
+  "probe_sha256": "f553af5eae130444728fde4c6375151786142ee622d5e627875b625924106006",
+  "elf_shape": {
+    "entry": 4201088,
+    "bytes": 804992,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4726784,
+        "file_end": 531949,
+        "entry_inside": true
+      },
+      {
+        "start": 4726784,
+        "end": 4886528,
+        "file_end": 689590,
+        "entry_inside": false
+      },
+      {
+        "start": 4886528,
+        "end": 4939776,
+        "file_end": 715456,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "f553af5eae130444728fde4c6375151786142ee622d5e627875b625924106006"
+  },
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/commoncap-native-4aab-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-lifetime-audit-01/native-4aab-baseline-01/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-lifetime-audit-01/native-4aab-baseline-01/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "timeout_seconds": 120,
+  "production_qualified": false,
+  "raw_qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 61.38854390301276,
+  "serial_sha256": "040a02fcf6e01f806ea898e9740c1c73426a571c920f48d40fde10503c9c5042",
+  "observations": [
+    {
+      "suite": "socket-credential-lifetime-v1",
+      "maximum_live_children": 1,
+      "production_qualified": false
+    },
+    {
+      "transport": "stream",
+      "case": "actual_rights_handoff_cloexec",
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "stage": "initial",
+      "uid": 60001,
+      "euid": 60001,
+      "suid": 60002,
+      "gid": 60001,
+      "egid": 60001,
+      "sgid": 60002,
+      "permitted": 0,
+      "effective": 0,
+      "nnp": 1,
+      "error": 0
+    },
+    {
+      "transport": "stream",
+      "case": "actual_sender_identity_caps0_nnp1",
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "peer_stage": "created",
+      "rc": 0,
+      "errno": 0,
+      "pid_matches": true,
+      "uid": 60001,
+      "gid": 60001,
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "stage": "changed",
+      "uid": 60002,
+      "euid": 60002,
+      "suid": 60001,
+      "gid": 60002,
+      "egid": 60002,
+      "sgid": 60001,
+      "permitted": 0,
+      "effective": 0,
+      "nnp": 1,
+      "error": 0
+    },
+    {
+      "transport": "stream",
+      "case": "actual_sender_identity_caps0_nnp1",
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "peer_stage": "after_identity_change",
+      "rc": 0,
+      "errno": 0,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "stream",
+      "message_stage": "queued_peek",
+      "rc": 1,
+      "errno": 0,
+      "byte": 65,
+      "credential_count": 1,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "stream",
+      "message_stage": "queued_consume",
+      "rc": 1,
+      "errno": 0,
+      "byte": 65,
+      "credential_count": 1,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "stream",
+      "stage": "exec",
+      "uid": 60002,
+      "euid": 60002,
+      "suid": 60002,
+      "gid": 60002,
+      "egid": 60002,
+      "sgid": 60002,
+      "permitted": 0,
+      "effective": 0,
+      "nnp": 1,
+      "error": 0
+    },
+    {
+      "transport": "stream",
+      "case": "actual_sender_identity_caps0_nnp1",
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "peer_stage": "after_exec",
+      "rc": 0,
+      "errno": 0,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "stream",
+      "message_stage": "new_after_exec",
+      "rc": 1,
+      "errno": 0,
+      "byte": 66,
+      "credential_count": 1,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "forged_root_rc": -1,
+      "root_errno": 1,
+      "forged_parent_rc": -1,
+      "parent_errno": 1
+    },
+    {
+      "transport": "stream",
+      "case": "root_and_other_pid_credentials_rejected",
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "case": "rejected_credentials_publish_no_payload",
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "case": "owned_child_reaped",
+      "passed": true
+    },
+    {
+      "transport": "stream",
+      "peer_stage": "after_sender_exit",
+      "rc": 0,
+      "errno": 0,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "datagram",
+      "case": "actual_rights_handoff_cloexec",
+      "passed": true
+    },
+    {
+      "transport": "datagram",
+      "stage": "initial",
+      "uid": 60001,
+      "euid": 60001,
+      "suid": 60002,
+      "gid": 60001,
+      "egid": 60001,
+      "sgid": 60002,
+      "permitted": 0,
+      "effective": 0,
+      "nnp": 1,
+      "error": 0
+    },
+    {
+      "transport": "datagram",
+      "case": "actual_sender_identity_caps0_nnp1",
+      "passed": true
+    },
+    {
+      "transport": "datagram",
+      "peer_stage": "created",
+      "rc": 0,
+      "errno": 0,
+      "pid_matches": true,
+      "uid": 60001,
+      "gid": 60001,
+      "passed": true
+    },
+    {
+      "transport": "datagram",
+      "stage": "changed",
+      "uid": 60002,
+      "euid": 60002,
+      "suid": 60001,
+      "gid": 60002,
+      "egid": 60002,
+      "sgid": 60001,
+      "permitted": 0,
+      "effective": 0,
+      "nnp": 1,
+      "error": 0
+    },
+    {
+      "transport": "datagram",
+      "case": "actual_sender_identity_caps0_nnp1",
+      "passed": true
+    },
+    {
+      "transport": "datagram",
+      "peer_stage": "after_identity_change",
+      "rc": 0,
+      "errno": 0,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "datagram",
+      "message_stage": "queued_peek",
+      "rc": 1,
+      "errno": 0,
+      "byte": 65,
+      "credential_count": 1,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "datagram",
+      "message_stage": "queued_consume",
+      "rc": 1,
+      "errno": 0,
+      "byte": 65,
+      "credential_count": 1,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "datagram",
+      "stage": "exec",
+      "uid": 60002,
+      "euid": 60002,
+      "suid": 60002,
+      "gid": 60002,
+      "egid": 60002,
+      "sgid": 60002,
+      "permitted": 0,
+      "effective": 0,
+      "nnp": 1,
+      "error": 0
+    },
+    {
+      "transport": "datagram",
+      "case": "actual_sender_identity_caps0_nnp1",
+      "passed": true
+    },
+    {
+      "transport": "datagram",
+      "peer_stage": "after_exec",
+      "rc": 0,
+      "errno": 0,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": false
+    },
+    {
+      "transport": "datagram",
+      "message_stage": "new_after_exec",
+      "rc": 1,
+      "errno": 0,
+      "byte": 66,
+      "credential_count": 1,
+      "pid_matches": true,
+      "uid": 60002,
+      "gid": 60002,
+      "passed": true
+    },
+    {
+      "transport": "datagram",
+      "forged_root_rc": -1,
+      "root_errno": 1,
+      "forged_parent_rc": -1,
+      "parent_errno": 1
+    },
+    {
+      "transport": "datagram",
+      "case": "root_and_other_pid_credentials_rejected",
+      "passed": true
+    }
+  ],
+  "probe_exits": [
+    "142"
+  ],
+  "boot_markers": 1,
+  "initramfs_sha256": "206cdbcf762ddcd56353e67a2d5911f110a27dd5f8a6e2d544ca2fcfead16f36",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+}

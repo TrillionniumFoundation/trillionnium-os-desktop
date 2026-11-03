@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[2]
 PROCESS = ROOT / "kernel/asterinas/kernel/core/src/process/process/mod.rs"
 IMAGE = PROCESS.with_name("image.rs")
 DEVICE = ROOT / "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs"
+BOOT_IDENTITY = ROOT / "kernel/asterinas/kernel/core/src/util/boot_identity.rs"
+PROC_RANDOM = ROOT / "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/sys/kernel/random.rs"
 GUEST = ROOT / "tests/kernel/control/queryabi_guest.c"
 
 
@@ -56,7 +58,12 @@ class CapSpaceIdentityContract(unittest.TestCase):
         self.assertIn("let key = process.hepta_capspace_session()?", value)
         self.assertIn("Ok((image_space_id(key), key))", value)
         identity = source.split("fn image_space_id(key: ProcessImageKey)", 1)[1].split("\n}", 1)[0]
-        self.assertIn("id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8])", identity)
+        self.assertIn("id[..8].copy_from_slice(&boot_id()[..8])", identity)
+        boot_helper = source.split("fn boot_id()", 1)[1].split("\n}", 1)[0]
+        self.assertIn("boot_identity::boot_id()", boot_helper)
+        self.assertNotIn("static BOOT_ID", source)
+        self.assertIn("static BOOT_ID: Once<[u8; 16]>", BOOT_IDENTITY.read_text())
+        self.assertIn("boot_identity::boot_id()", PROC_RANDOM.read_text())
         self.assertIn("id[8..].copy_from_slice(&key.nonce().to_le_bytes())", identity)
         for method in (value, identity):
             self.assertNotIn("start_time()", method)

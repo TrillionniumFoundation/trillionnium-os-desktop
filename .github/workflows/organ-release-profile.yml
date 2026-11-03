@@ -53,8 +53,7 @@ jobs:
             test ! -L "$path"
             git ls-files --error-unmatch -- "$path" > /dev/null
           done
-          # Preserve support/build/verify-source.py's root README contract.
-          test ! -s README.md
+          # Project documentation may contain navigation; keep regular tracked inputs.
           python3 -I -B - <<'PY'
           from pathlib import Path
           import runpy

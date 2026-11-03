@@ -43,8 +43,9 @@ kernel lock backend。`spin 0.9.9` 已在原始锁中，未新增外部版本或
 已经消费的运行量或债务；原算法按实际经过的窗口结算仍然成立。无效文本、用户读取错误、
 revision 耗尽和关闭状态均在预算修改前返回。所有用户读取、解析及格式化输出仍在预算锁外。
 
-这里的 revision **只覆盖 `cpu.max` 带宽配置**。`cpu.weight` 仍保留原来“写入但未强制执行”
-的 warning/AtomicU32 路径，不属于本次 metadata revision。以后权重若影响这个受控资源，
+这里的 revision **只覆盖 `cpu.max` 带宽配置**。原 G1-a 基线中 `cpu.weight` 的 warning/AtomicU32
+路径只存值，没有强制执行。当前[明确不支持的写合同](agents/CPU_WEIGHT_UNSUPPORTED.md)已删除该影子值：
+合法写返回 `EOPNOTSUPP`，读保持 `100`；尚未实现 group-weight 调度。以后权重若影响这个受控资源，
 必须一并设计授权和共享 revision，不能沿用当前范围宣称已经覆盖。
 
 ## 3. 内部输入、返回与关闭

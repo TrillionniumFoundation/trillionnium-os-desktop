@@ -1,0 +1,88 @@
+{
+  "schema": "trill.notes.app-only-readback.handoff.v1",
+  "desktop": {
+    "head": "a3e7f0ecaf53e350f402d08f5eeb570c73e3908a",
+    "tree": "c1f0a40f4e6a6de8b538a12139e581ec7f517c1e",
+    "clean": true,
+    "base": "9f66005ea8e2867f42fcbe88f98f34021acc15c6",
+    "branch": "ci/notes-app-only-readback-20261027",
+    "commits": [
+      "90dea3bbcfdb9400355c6c0730a2f6630fa4c4ca",
+      "96b2b789882254a77e47f22871a59c7e503a1ee8",
+      "ccec033a7306005894c2252e4503c7f95872e925",
+      "97d467aecb00dc2e38bd9707dfe62ceb4aba50a3",
+      "ce611c134ca67e5783530f17e4a02548e4618469",
+      "a3e7f0ecaf53e350f402d08f5eeb570c73e3908a"
+    ]
+  },
+  "hepta_new_api": false,
+  "cargo_or_dependency_change": false,
+  "runtime_checks": {
+    "source": "ce611c134ca67e5783530f17e4a02548e4618469",
+    "following_commit": "a3e7f0ecaf53e350f402d08f5eeb570c73e3908a adds documentation/catalogue only",
+    "component_passed": 6,
+    "component_ignored_owned_child_fixture": 1,
+    "ordinary_session_passed": 52,
+    "ordinary_session_skipped": 0,
+    "all_session_target_typecheck": true,
+    "strict_clippy_all_targets_Dwarnings": true,
+    "retry": 0,
+    "threads": 1
+  },
+  "docs": {
+    "source": "a3e7f0ecaf53e350f402d08f5eeb570c73e3908a",
+    "documents": 82,
+    "local_links": 853,
+    "input_digest_sha256": "a3f790259ee329d0ad8fc7bca712f4d3a8d50342a5225543e2ddc72b4a4d4124",
+    "passed": true
+  },
+  "source_closure": {
+    "new_files": [
+      "ui/session/src/notes_readback.rs",
+      "ui/session/src/notes_readback_tests.rs",
+      "ui/app-window/tests/notes_app_readback.rs",
+      "ui/session/NOTES_READBACK.md"
+    ],
+    "changed_callers": [
+      "ui/session/src/main.rs",
+      "services/hepta-session-host/src/product_root/session.rs"
+    ],
+    "privileged_grant_calls_added": false,
+    "bootstrapped_effect_or_rights_changes": false,
+    "public_session_requests_added": false,
+    "final_Git_pair_source_and_lock_regeneration": "required at next integration; not applied to existing frozen P0 source"
+  },
+  "scope_limits": [
+    "Actual source helper and controlled owned-child/storage fixtures, not an installed Root/human/model run",
+    "The App remains exited; continuation is read/terminal-ack only and creates no editable replacement or effect channel",
+    "Original Agentd and Root remain necessary; Session/owner retirement uses separate existing recovery",
+    "Root product binary new metadata input is source-reviewed; this standalone UI harness does not compile the full Root CLI",
+    "Product App-only original-thread recovery acceptance remains required"
+  ],
+  "receipts": [
+    {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/notes-app-only-readback-component/result.json",
+      "sha256": "e19f0e9ea978deac0b8b7d16a4882c27bba49e7b7723fd108a35a9672988430d"
+    },
+    {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/notes-app-only-readback-after-type-fix/result.json",
+      "sha256": "a7d600ac3568bd95c571a9946c42ceec9b1fea019ac1947f7266b0c17c47489d"
+    },
+    {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/notes-app-only-readback-sealed-image/result.json",
+      "sha256": "b55268b4ac9742a8a7890c995b11783e2a775883cd0798a13ba7f8585ed940ca"
+    },
+    {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/notes-app-only-readback-normal-exit/result.json",
+      "sha256": "13521d95c7f6d42bef275d4a8b77feb4f5c812021cbd231eb4493366cd232d39"
+    },
+    {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/notes-app-only-session-composition/result.json",
+      "sha256": "9b6180468009ea422d3d587fbd216b456245697aa2fda165c9b9aa003e470acf"
+    },
+    {
+      "path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/notes-app-only-session-clippy/result.json",
+      "sha256": "ebe51423a20d1e623c8408ad2ce5ef10b281ba0a2eca3bed9b6a8d39e6c10544"
+    }
+  ]
+}

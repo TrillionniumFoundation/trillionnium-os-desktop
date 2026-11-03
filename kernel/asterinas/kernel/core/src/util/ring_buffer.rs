@@ -5,11 +5,30 @@ use core::{
     ops::{Deref, Range},
 };
 
-use ostd::mm::io::util::HasVmReaderWriter;
+use ostd::mm::{AnyUFrameMeta, io::util::HasVmReaderWriter};
 pub(crate) use ring_buffer::{Consumer, Producer, RbConsumer, RbProducer, RingBuffer};
 
 use super::{MultiRead, MultiWrite};
-use crate::prelude::*;
+use crate::{
+    prelude::*,
+    vm::user_memory::{self, UserMemoryOwner, UserPageMeta},
+};
+
+/// IPC buffers retain their initiator's original per-frame charge.
+pub(crate) type UserRingBuffer = RingBuffer<u8, UserPageMeta>;
+pub(crate) type UserRbProducer = RbProducer<u8, UserPageMeta>;
+pub(crate) type UserRbConsumer = RbConsumer<u8, UserPageMeta>;
+
+pub(crate) fn new_user_ring_buffer(
+    capacity: usize,
+    owner: &UserMemoryOwner,
+) -> Result<UserRingBuffer> {
+    if !capacity.is_power_of_two() {
+        return Err(Error::new(Errno::EINVAL));
+    }
+    let segment = user_memory::alloc_user_segment(owner, capacity.div_ceil(PAGE_SIZE))?;
+    Ok(RingBuffer::from_segment(capacity, segment)?)
+}
 
 /// Extension methods for writing bytes to a [`Producer<u8, _>`].
 pub(crate) trait ProducerU8Ext {
@@ -28,7 +47,9 @@ pub(crate) trait ProducerU8Ext {
     ) -> Result<usize>;
 }
 
-impl<R: Deref<Target = RingBuffer<u8>>> ProducerU8Ext for Producer<u8, R> {
+impl<R: Deref<Target = RingBuffer<u8, M>>, M: AnyUFrameMeta + ?Sized> ProducerU8Ext
+    for Producer<u8, R, M>
+{
     fn write_fallible(&mut self, reader: &mut dyn MultiRead) -> Result<usize> {
         self.write_fallible_with_max_len(reader, usize::MAX)
     }
@@ -79,7 +100,7 @@ pub(crate) trait RingBufferU8Ext {
     ) -> Result<usize>;
 }
 
-impl RingBufferU8Ext for RingBuffer<u8> {
+impl<M: AnyUFrameMeta + ?Sized> RingBufferU8Ext for RingBuffer<u8, M> {
     fn pick_fallible(
         &self,
         range: Range<Wrapping<usize>>,
@@ -126,7 +147,9 @@ pub(crate) trait ConsumerU8Ext {
     ) -> Result<usize>;
 }
 
-impl<R: Deref<Target = RingBuffer<u8>>> ConsumerU8Ext for Consumer<u8, R> {
+impl<R: Deref<Target = RingBuffer<u8, M>>, M: AnyUFrameMeta + ?Sized> ConsumerU8Ext
+    for Consumer<u8, R, M>
+{
     fn read_fallible(&mut self, writer: &mut dyn MultiWrite) -> Result<usize> {
         self.read_fallible_with_max_len(writer, usize::MAX)
     }
@@ -225,5 +248,81 @@ mod test {
 
     fn writer_from(buf: &mut [u8]) -> VmWriter<'_> {
         VmWriter::from(buf).to_fallible()
+    }
+
+    #[ktest]
+    fn ipc_buffer_charges_original_pages_until_last_segment_alias() {
+        use crate::vm::user_memory::UserMemoryAccount;
+        let account = UserMemoryAccount::new(16);
+        let owner = Some(account.clone());
+        let buffer = new_user_ring_buffer(65536, &owner).unwrap();
+        assert_eq!(account.current_pages(), 16);
+        let last_page = buffer.segment().slice(&(15 * PAGE_SIZE..16 * PAGE_SIZE));
+        let (mut producer, mut consumer) = buffer.split();
+        let bytes = [7u8; 37];
+        assert_eq!(
+            producer
+                .write_fallible(&mut VmReader::from(&bytes[..]).to_fallible())
+                .unwrap(),
+            bytes.len()
+        );
+        let mut read = [0u8; 37];
+        assert_eq!(
+            consumer
+                .read_fallible(&mut VmWriter::from(&mut read[..]).to_fallible())
+                .unwrap(),
+            bytes.len()
+        );
+        assert_eq!(read, bytes);
+        assert_eq!(account.current_pages(), 16);
+        assert!(
+            new_user_ring_buffer(1, &owner)
+                .err()
+                .unwrap()
+                .is_user_frame_limit()
+        );
+        drop(producer);
+        assert_eq!(account.current_pages(), 16);
+        drop(consumer);
+        assert_eq!(account.current_pages(), 1);
+        drop(last_page);
+        assert_eq!(account.current_pages(), 0);
+        drop(new_user_ring_buffer(65536, &owner).unwrap());
+        assert_eq!(account.current_pages(), 0);
+        // Ordinary/unowned paths remain uncharged; they cannot change this owner.
+        drop(RingBuffer::<u8>::new(65536));
+        drop(new_user_ring_buffer(65536, &None).unwrap());
+        assert_eq!(account.current_pages(), 0);
+    }
+
+    #[ktest]
+    fn ipc_buffer_rejected_layout_and_allocator_failure_refund_owner() {
+        use crate::vm::user_memory::{UserMemoryAccount, alloc_user_segment};
+        let account = UserMemoryAccount::new(1);
+        let owner = Some(account.clone());
+        for capacity in [0, 3, 2 * PAGE_SIZE] {
+            let segment = alloc_user_segment(&owner, 1).unwrap();
+            assert_eq!(account.current_pages(), 1);
+            assert!(RingBuffer::<u8, _>::from_segment(capacity, segment).is_err());
+            assert_eq!(account.current_pages(), 0);
+        }
+        assert!(new_user_ring_buffer(3, &owner).is_err());
+        assert!(alloc_user_segment(&owner, 0).is_err());
+        assert_eq!(account.current_pages(), 0);
+
+        // A valid 16-TiB layout exceeds the original allocator's maximum
+        // order (8 TiB), independently of available RAM. This reaches the
+        // actual physical-allocation error after admission; no frame is
+        // fabricated and no global exhaustion/fault flag is installed.
+        let pages = 1usize << 32;
+        let large = UserMemoryAccount::new(pages);
+        let error = new_user_ring_buffer(pages * PAGE_SIZE, &Some(large.clone()))
+            .err()
+            .unwrap();
+        assert_eq!(error.error(), Errno::ENOMEM);
+        assert!(!error.is_user_frame_limit());
+        assert_eq!(large.current_pages(), 0);
+        drop(new_user_ring_buffer(PAGE_SIZE, &Some(large.clone())).unwrap());
+        assert_eq!(large.current_pages(), 0);
     }
 }

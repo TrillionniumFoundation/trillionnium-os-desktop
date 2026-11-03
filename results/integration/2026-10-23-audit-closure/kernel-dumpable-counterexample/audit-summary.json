@@ -1,0 +1,137 @@
+{
+  "schema": "asterinas.dumpable-isolation-controlled-audit.v1",
+  "audit_root": "/data/asterinas-dumpable-audit-01.yswd2fi4",
+  "audited_source": "d4f0a759f4629266cc490df6a1d786671ce7479d",
+  "prebuilt_source": "6c26e3aeefde05c120944e278299b4925612f3c8",
+  "relevant_source_bytes_equal": true,
+  "compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+    "version": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+  },
+  "linux_reference": {
+    "passed": true,
+    "uid": 1000,
+    "cap_eff": 0,
+    "cap_prm": 0,
+    "nnp": 1,
+    "stages": [
+      "SET0",
+      "SET1",
+      "SET0-again",
+      "ordinary-exec resets to1"
+    ],
+    "all_8_apis_denied_for_each_dump0": true,
+    "all_8_apis_success_for_each_dump1": true,
+    "single_child_reaped": true,
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/linux-reference-01.json",
+    "log": "/data/asterinas-dumpable-audit-01.yswd2fi4/linux-reference-01.jsonl"
+  },
+  "native_negative": {
+    "confirmed": true,
+    "uid": 60001,
+    "cap_eff": 0,
+    "cap_prm": 0,
+    "nnp": 1,
+    "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+    "raw_qemu_exit": 33,
+    "probe_exit": 42,
+    "seconds": 0.9683207749621943,
+    "single_child_reaped": true,
+    "non_dumpable_actual_success": [
+      "maps read public metadata",
+      "mem read 4-byte public sentinel",
+      "environ read one byte of controlled environment",
+      "auxv read one byte",
+      "readlink known /dev/null child descriptor",
+      "pidfd_getfd duplicate own-child /dev/null"
+    ],
+    "get_dumpable_ignored_set1_and_exec": true,
+    "not_established": [
+      "PTRACE_ATTACH unsupported EIO; no ptrace bypass claimed",
+      "process_vm_readv ENOSYS; no syscall implementation or bypass claimed",
+      "No unrelated process, injection or process-memory write",
+      "No same-thread/reused-FD/thread/privileged-exec/credential-race runtime qualification",
+      "No G1/G2 trusted image/control-grant bypass claimed"
+    ],
+    "receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/native-6c26-negative-01/result.json",
+    "serial": "/data/asterinas-dumpable-audit-01.yswd2fi4/native-6c26-negative-01/serial.log"
+  },
+  "findings": [
+    {
+      "priority": "P1",
+      "issue": "PR_SET_DUMPABLE silently accepts but retains no security state; GET hardcoded zero. Ordinary same-UID own child remains readable and its FD duplicable after successful SET0.",
+      "locations": [
+        "syscall/prctl.rs:37",
+        "process/posix_thread/alien_access.rs:15",
+        "security/lsm/modules/capability.rs:50"
+      ]
+    },
+    {
+      "priority": "P1",
+      "issue": "Proc auxv/environ/fd readlink have no alien access gate; proc template always assigns target effective owner regardless of dumpability. A common AlienAccess fix alone does not close all confirmed paths.",
+      "locations": [
+        "fs/fs_impls/procfs/pid/task/auxv.rs:32",
+        "fs/fs_impls/procfs/pid/task/environ.rs:32",
+        "fs/fs_impls/procfs/pid/task/fd.rs:237",
+        "fs/fs_impls/procfs/template/mod.rs:56"
+      ]
+    },
+    {
+      "priority": "separate source-only scope",
+      "issue": "Capability LSM returns immediately on matching IDs, omitting Linux commoncap caller-effective/permitted versus target-permitted superset check. Not runtime tested here."
+    }
+  ],
+  "minimal_fix_direction": [
+    "Model dumpability as memory-image state (ProcessVm/Vmar), share with CLONE_VM/threads, inherit on fork, initialize ordinary successful exec to USER. Core-dump generation itself is not required for access isolation.",
+    "PR_GET returns retained state; PR_SET accepts only0/1 and changes real state. Failed exec and failed/no-op/query credential calls must preserve the appropriate old state.",
+    "Ordinary cross-process access must read credentials then dumpability coherently and require USER unless target-user-namespace CAP_SYS_PTRACE permits it, followed by all existing LSM/Yama/trusted-image guards. Same-thread-group introspection remains separately permitted.",
+    "Credential effective/fs UID/GID changes and relevant capability gains must reset dumpability before publishing changed credentials; inspect Linux commit_creds ordering and exec credential/VMAR activation. Existing credential atomics are relaxed and are not an established publication interlock.",
+    "Do not recursively acquire process.lock_vmar in check_alien_access: current maps/mem callers already hold it. Use an explicit locked snapshot/helper or a rigorously ordered credential/image guard; define lock ordering for new pidfd checks and avoid holding VMAR through waits for target ptrace stops.",
+    "Add original READ_FSCREDS access to auxv/environ/fd paths and Linux-compatible dynamic proc owner behavior. For auxv/environ use per-open VM image snapshot like existing maps/mem and Linux proc_mem_open, so already-open descriptors cannot follow a privileged new image. This latter lifecycle risk is source-only here.",
+    "Do not blindly apply the new ordinary attach dumpability gate to PTRACE_TRACEME: this kernel routes only voluntary TRACEME through do_ptrace_attach, while PTRACE_ATTACH is unimplemented. Linux has a distinct voluntary tracing hook.",
+    "Retain limits/namespace/user identity and existing G1 image guards. Test different-UID/capability exceptions, shared-VM/fork and failed/successful privilege exec in subsequent isolated phases; do not claim all same-UID interactions isolated."
+  ],
+  "official_references": [
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v7.0/kernel/ptrace.c",
+      "file": "/data/asterinas-dumpable-audit-01.yswd2fi4/linux-v7.0-kernel-ptrace.c",
+      "sha256": "413b33102ea1218add2c772ac8406168dc1c55a865882bb4230b2d8e64305211"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v7.0/kernel/sys.c",
+      "file": "/data/asterinas-dumpable-audit-01.yswd2fi4/linux-v7.0-kernel-sys.c",
+      "sha256": "418d0bd8929cb41497a73a23e6700412224b062ec6904145c0628d5225abcd5e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v7.0/kernel/cred.c",
+      "file": "/data/asterinas-dumpable-audit-01.yswd2fi4/linux-v7.0-kernel-cred.c",
+      "sha256": "ba146445e2bd14e1058c05680a2f428461d2e176fae0914e4e7ce784fabf1558"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v7.0/fs/exec.c",
+      "file": "/data/asterinas-dumpable-audit-01.yswd2fi4/linux-v7.0-fs-exec.c",
+      "sha256": "af1d3a7298fae9c0b52b8e7017f2aa88958ad3787294bf1f1a816a3ee7a95a64"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v7.0/security/commoncap.c",
+      "file": "/data/asterinas-dumpable-audit-01.yswd2fi4/linux-v7.0-security-commoncap.c",
+      "sha256": "93ed1f5a01c0439e8552bdd70429ce074a40240d9b9696bfb9bbc698760de810"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v7.0/fs/proc/base.c",
+      "sha256": "d0132fbbd6e949bf4eed76e990871d7a0dc82274aaa81f44a27da84b05f17ee8"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/PR_SET_DUMPABLE.2const.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/ptrace.2.html"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man2/pidfd_getfd.2.html"
+    }
+  ],
+  "production_isolation_qualified": false,
+  "kernel_patch_owner": "asterinas_route; no kernel edit or SDK make in this audit"
+}

@@ -1,0 +1,40 @@
+{
+  "argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=10s",
+    "600s",
+    "/usr/bin/nice",
+    "-n",
+    "10",
+    "make",
+    "-C",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-f1-udp-error-closure-20261023/kernel/asterinas",
+    "-f",
+    "Makefile",
+    "-f",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-f1-udp-error-closure-20261023/support/build/minimal.mk",
+    "install_osdk",
+    "CARGO_OSDK=/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/cargo-kernel-e/bin/cargo-osdk"
+  ],
+  "cwd": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-f1-udp-error-closure-20261023",
+  "environment": {
+    "RUSTUP_HOME": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/rustup-kernel",
+    "CARGO_HOME": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/cargo-kernel-e",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_BUILD_JOBS": "3",
+    "VDSO_LIBRARY_DIR": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os/support/build/out/linux-vdso",
+    "OSDK_LOCAL_DEV": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "CARGO_TARGET_DIR": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/target-f1-local-udp-20261023-v1",
+    "A01_RUN_DIR": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-product-v1",
+    "HEPTA_G1C_TRUSTED_OBSERVE": "0",
+    "HEPTA_G1D_TRUSTED_CONTROL": "0"
+  },
+  "source": {
+    "head": "c8f0c88ecb640117686ff05f850a73e60688eac7",
+    "tree": "641c6627ba9aaf79ca3506154831a6c51abe521f",
+    "status": ""
+  },
+  "started_ns": 1792733404391407796
+}

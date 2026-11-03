@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: MPL-2.0
 
-use alloc::{boxed::Box, sync::Arc, vec::Vec};
+use alloc::{boxed::Box, sync::Arc};
 
-use aster_core::{fs::file::MappedObject, prelude::*, vm::vmar::MapHandle};
-use ostd::mm::{FrameAllocOptions, PAGE_SIZE, UFrame, VmIo};
+use aster_core::{
+    fs::file::MappedObject,
+    prelude::*,
+    vm::{user_memory::allocate_user_frames, vmar::MapHandle},
+};
+use ostd::mm::{PAGE_SIZE, UFrame, VmIo};
 
 use crate::gem::object::{DrmGemObject, DrmGemObjectBackend};
 
@@ -51,11 +55,7 @@ impl DrmGemShmemBackend {
     /// Creates a shmem-backed GEM object with a page-aligned size.
     pub fn new_object(size: usize) -> Result<Arc<DrmGemObject>> {
         let page_count = size / PAGE_SIZE;
-        let mut pages = Vec::<UFrame>::with_capacity(page_count);
-
-        for _ in 0..page_count {
-            pages.push(FrameAllocOptions::new().alloc_frame()?.into());
-        }
+        let pages = allocate_user_frames(page_count)?;
         let backend = Arc::new(Self {
             pages: pages.into(),
         });

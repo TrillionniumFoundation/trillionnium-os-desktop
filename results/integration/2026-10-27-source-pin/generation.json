@@ -1,0 +1,447 @@
+{
+  "schema": "trill.original-cargo-six-lock-generation.v1",
+  "pid": 1615304,
+  "hepta_commit": "4223fc77944e9beb5651df063158b22ae1a4f701",
+  "hepta_tree": "7c19c9903d4e82baf3a61111214ff3fe46605cef",
+  "desktop_base": "d343c35da641f86a3fa0ff6c4293d4948bbe0b2e",
+  "started_utc": "2026-10-27T09:18:43Z",
+  "commands": [
+    {
+      "name": "snapshot-registry",
+      "argv": [
+        "cp",
+        "-a",
+        "--reflink=auto",
+        "/home/qian-qi/.cargo/registry",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/cargo-home/registry"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/snapshot-registry.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/snapshot-registry.stderr",
+      "returncode": 0,
+      "seconds": 177.546,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "snapshot-git-db",
+      "argv": [
+        "cp",
+        "-a",
+        "--reflink=auto",
+        "/home/qian-qi/.cargo/git/db",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/cargo-home/git/db"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/snapshot-git-db.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/snapshot-git-db.stderr",
+      "returncode": 0,
+      "seconds": 2.02,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compiler",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/compiler.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/compiler.stderr",
+      "returncode": 0,
+      "seconds": 0.017,
+      "stdout_sha256": "f64c55ed9f210d80a9b248206104a47175faf5ec94a093e4ad132549209089fc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "cargo-version",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/cargo-version.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/cargo-version.stderr",
+      "returncode": 0,
+      "seconds": 0.009,
+      "stdout_sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lock-0",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "update",
+        "--workspace",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/ui/Cargo.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-0.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-0.stderr",
+      "returncode": 0,
+      "seconds": 51.71,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4faadb4a17b8aa3c611cbee2f50d28e52278f79a71dc4b7c20f6379d445068c9"
+    },
+    {
+      "name": "lock-1",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "update",
+        "--workspace",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/services/hepta-session-host/Cargo.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-1.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-1.stderr",
+      "returncode": 0,
+      "seconds": 13.652,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "580395bccfd4408f8d9bb29fed0ce21ef2c865303658842c5ac43133b20655fa"
+    },
+    {
+      "name": "lock-2",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "update",
+        "--workspace",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/services/hepta-os/Cargo.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-2.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-2.stderr",
+      "returncode": 0,
+      "seconds": 0.165,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4d1a311f872095c34d49aa4c16f7ed7b654d8f74eff7e171f4a87cc990d4ea42"
+    },
+    {
+      "name": "lock-3",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "update",
+        "--workspace",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/support/ui/Cargo.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-3.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-3.stderr",
+      "returncode": 0,
+      "seconds": 0.065,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3319e07fc045c9575cf91141a6a20b5322654dfc5cbde0bf55d461d04b33db86"
+    },
+    {
+      "name": "lock-4",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "update",
+        "--workspace",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/tests/ui/Cargo.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-4.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-4.stderr",
+      "returncode": 0,
+      "seconds": 0.065,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3319e07fc045c9575cf91141a6a20b5322654dfc5cbde0bf55d461d04b33db86"
+    },
+    {
+      "name": "metadata-0",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/ui/Cargo.toml",
+        "--format-version",
+        "1",
+        "--features",
+        "trill-shell/hepta-native-preedit-sdk"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-0.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-0.stderr",
+      "returncode": 0,
+      "seconds": 1.97,
+      "stdout_sha256": "d458b3d2293b01166a22e02dc6e9cb7a2b3d110a079fcb338a84c40b7a0499a1",
+      "stderr_sha256": "b43c6bc10b2dc0b85942dffb17b55b9d3ce02d008c719d9ca9152386995132d1"
+    },
+    {
+      "name": "metadata-1",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/services/hepta-session-host/Cargo.toml",
+        "--format-version",
+        "1",
+        "--features",
+        "product-root"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-1.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-1.stderr",
+      "returncode": 0,
+      "seconds": 1.419,
+      "stdout_sha256": "11155201ffdb7eadf49f9ba765112d4aed039c60ed9eed3c345d1efb1ee8b8fa",
+      "stderr_sha256": "7d02befe0e7c57be026410f8d06c73617dde66d8199d61f6de4973981a9db98d"
+    },
+    {
+      "name": "metadata-2",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/services/hepta-os/Cargo.toml",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-2.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-2.stderr",
+      "returncode": 0,
+      "seconds": 0.115,
+      "stdout_sha256": "1dc44f9b9cbed7c1d00300bbbef3b12047f0391f14722e02a4ac3ab8d15acfd0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "metadata-3",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/support/ui/Cargo.toml",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-3.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-3.stderr",
+      "returncode": 0,
+      "seconds": 0.065,
+      "stdout_sha256": "4575412d0ec39556fafdfb1c9f1b5aa6f820c668f14d0435e83ae56535efd315",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "metadata-4",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/tests/ui/Cargo.toml",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-4.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-4.stderr",
+      "returncode": 0,
+      "seconds": 0.065,
+      "stdout_sha256": "3e24170ba52b030993d52b67e6d7a5f86175d99315c08e0c2c7204e962602b3c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "prepare-sdk",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-hepta-4223-20261027/apps/hepta-control-ui/test/prepare-native-clipboard-sdk.py",
+        "--profile",
+        "preedit-callbacks",
+        "--upstream-repo",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/cargo-home/git/checkouts/makepad-69d78fae78fc8901/337566c",
+        "--destination",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-sdk",
+        "--metadata",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-0.stdout",
+        "--cargo-config-output",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/preedit-overrides.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepare-sdk.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepare-sdk.stderr",
+      "returncode": 0,
+      "seconds": 3.726,
+      "stdout_sha256": "ceaded5abec9bf13aae4bea4cf05a3680a5813616831efe23dbf6135a75494df",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "prepared-desktop-worktree",
+      "argv": [
+        "git",
+        "-C",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+        "worktree",
+        "add",
+        "--detach",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-desktop",
+        "d343c35da641f86a3fa0ff6c4293d4948bbe0b2e"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-desktop-worktree.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-desktop-worktree.stderr",
+      "returncode": 0,
+      "seconds": 1.87,
+      "stdout_sha256": "fe4ae2a05c790b969091610addda4346b899b698cefc94ff973ae80f27dd4b79",
+      "stderr_sha256": "1f6d1adae1eec53c19f6c188aac52ddae39b2c713402e4d0e9d27e2cfcba1caf"
+    },
+    {
+      "name": "lock-prepared",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--config",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/preedit-overrides.toml",
+        "update",
+        "--workspace",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-desktop/ui/Cargo.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-desktop",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-prepared.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/lock-prepared.stderr",
+      "returncode": 0,
+      "seconds": 2.774,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6243eab100fe7a390c910516a1eb4f6171730e773df7201dc6e1b0ee4624c9b4"
+    },
+    {
+      "name": "metadata-prepared",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--config",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/preedit-overrides.toml",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-desktop/ui/Cargo.toml",
+        "--format-version",
+        "1",
+        "--features",
+        "trill-shell/hepta-native-preedit-sdk"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-desktop",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-prepared.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-prepared.stderr",
+      "returncode": 0,
+      "seconds": 1.72,
+      "stdout_sha256": "6eda95d14c5514b274df6db5b41a22502bea1b2822e4300b3be0c099e3134be2",
+      "stderr_sha256": "9fc2c688097b6b5743dd4d1c24cd86603193daa0a80bc65de27633b41f854ff6"
+    },
+    {
+      "name": "verify-sdk",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-hepta-4223-20261027/apps/hepta-control-ui/test/verify-native-clipboard-sdk.py",
+        "--profile",
+        "preedit-callbacks",
+        "--prepared-source",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-sdk",
+        "--original-metadata",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-0.stdout",
+        "--candidate-metadata",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-prepared.stdout",
+        "--cargo-config",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/preedit-overrides.toml"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/verify-sdk.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/verify-sdk.stderr",
+      "returncode": 0,
+      "seconds": 0.968,
+      "stdout_sha256": "b37b270bd674fefb0efb66d1b9a576f8f45c0f366691e42be790488e01829cb1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "verify-six-roots",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027/support/ui/verify_product_dependencies.py",
+        "--hepta-root",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-hepta-4223-20261027"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/verify-six-roots.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/verify-six-roots.stderr",
+      "returncode": 0,
+      "seconds": 1.62,
+      "stdout_sha256": "0ad1a9e645b245e44f3135fd8f9768db5f17d475f276b73296737e3cfc2191d6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "git",
+        "-C",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-desktop-20261027",
+      "stdout": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/diff-check.stdout",
+      "stderr": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/diff-check.stderr",
+      "returncode": 0,
+      "seconds": 0.366,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "status": "passed",
+  "compiled": false,
+  "product_qualified": false,
+  "locks_before": {
+    "ui/Cargo.lock": "f8f018a5c34c2d534266b922e2c61987a99d200a80fc9fab02c73f0d4c759763",
+    "services/hepta-session-host/Cargo.lock": "e87cc881adcecd6c1ebb23844e2d550644ffaaa8b62121c733a428a4b800168f",
+    "services/hepta-os/Cargo.lock": "cf09ebb1625ef65ee7722d1ed09f00f874a4390f619b7fbfde0588f61c52a302",
+    "support/ui/Cargo.lock": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614",
+    "tests/ui/Cargo.lock": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940",
+    "support/ui/preedit-sdk/Cargo.lock": "62862c503fb89233ec30c9979647dc50c7a345a464d9f31e46150b085c4318be"
+  },
+  "locks_after": {
+    "ui/Cargo.lock": "4d2414a59955791b2b1b003b1ab5b70ee84418dbe1d125233f7e7859682fcd6e",
+    "services/hepta-session-host/Cargo.lock": "d7963dfdc9b0a240c057f07c980d24b6035ac0a723b0995c8b521fe41e949c8b",
+    "services/hepta-os/Cargo.lock": "cf09ebb1625ef65ee7722d1ed09f00f874a4390f619b7fbfde0588f61c52a302",
+    "support/ui/Cargo.lock": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614",
+    "tests/ui/Cargo.lock": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940",
+    "support/ui/preedit-sdk/Cargo.lock": "cb50faecb5e543c84bfd77ade691b74b2ef120f3da01e24fd77709fa53097150"
+  },
+  "source_hashes": {
+    "ui/Cargo.toml": "c2966304858f4d39c0c5619c4252f070fd5c62f04752a263fa4a0cf8e7465ede",
+    "ui/core/Cargo.toml": "ad3afd79856b4018176b3c5f3deafd93444cc34791923b7eef670836993cd776",
+    "services/hepta-session-host/Cargo.toml": "f2bdc715cd3c22d938d442d61a39b6e515b26fc7ca80dd289fce781c2c5ad7f5",
+    "support/ui/HEPTA_SHARED_PRESENTER.json": "97fa52997c71f1dcc26e96d3f0e22134673471638689c67c0b48c1102cfc1057",
+    "support/ui/linux-preedit-profile.json": "4cf127a7de3d571610f5c3e507bdf515b32df6d3a4ae4fc4b699a6e476cdd844"
+  },
+  "prepared_sdk_tree": "6b422b3120f5f9b5c7ada579b55f647d51bd7fcf",
+  "sdk_inputs": {
+    "root": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/prepared-sdk",
+    "cargo_config": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/preedit-overrides.toml",
+    "original_metadata": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-0.stdout",
+    "candidate_metadata": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development-logs/audit-source-pin-4223-20261027/metadata-prepared.stdout",
+    "helper_repo": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/audit-pin-hepta-4223-20261027"
+  },
+  "finished_utc": "2026-10-27T09:23:06Z"
+}

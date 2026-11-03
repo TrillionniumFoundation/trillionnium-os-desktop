@@ -1,0 +1,72 @@
+{
+  "schema": "trill.component-qualification.v1",
+  "archive": {
+    "file": "raw-evidence.tar.gz",
+    "bytes": 76652,
+    "sha256": "fdd23e46dbebee5cd32a600922804d1f418762cc8f1b835b99e948d736bc7c79",
+    "members": 24
+  },
+  "sources": {
+    "v8": {
+      "commit": "e3734b061c3ddca8d92ca6fe557ea753e220dc0e",
+      "tree": "c1cef80e818937d037891f6eaa873432bbdcbbc1",
+      "physical_head": "6305d52b86f54f3197d4fb904c20dbd449a76aa7",
+      "published_commit": "f2f116463ab07fc599da83ff14bec7b7ca00bced"
+    },
+    "v9": {
+      "commit": "a81c39b9a0e705b3345c22e540d6f494031fc3d0",
+      "tree": "53f3d002f8f8341cb4785c8f7d29daa6df9fec16",
+      "physical_head": "6305d52b86f54f3197d4fb904c20dbd449a76aa7",
+      "published_commit": "c51f93bd1e6011c12e1bbb3e2624c4589cfe2891"
+    },
+    "publication_note": "Published commits preserve the exact full tested trees; local snapshot commits identify the executed source reconstruction."
+  },
+  "v8": {
+    "exit_code": 1,
+    "agentd_lib": {
+      "passed": 342,
+      "skipped": 32
+    },
+    "authbus_text_product": {
+      "passed": 3,
+      "failed": 2,
+      "reason": "Original Legacy thread/items/list returned not-supported"
+    },
+    "native_ui": "compile failed: original AccessKit consumer getter was private",
+    "accesskit_tests": "did not execute: standalone workspace lacked nextest local profile",
+    "scoped_just_fix": "passed",
+    "bazel_lock_update": "passed; lock unchanged"
+  },
+  "v9": {
+    "exit_code": 1,
+    "agentd_lib": {
+      "passed": 349,
+      "skipped": 34
+    },
+    "authbus_text_product": {
+      "passed": 6,
+      "skipped": 0
+    },
+    "thread_items_list_tests": "compile failed: test assert_eq import ambiguity",
+    "native_ui": {
+      "compiled": true,
+      "passed": 41,
+      "failed": 1,
+      "reason": "resource-loader fixture omitted original Cx OS-clock initialization"
+    },
+    "accesskit_tests": {
+      "passed": 53,
+      "skipped": 0
+    },
+    "accesskit_unix_check": "passed",
+    "scoped_just_fix": "failed while compiling app-server test assertions"
+  },
+  "qualification": {
+    "production_authority": false,
+    "installed_product": false,
+    "native_window": false,
+    "android_deployment": false,
+    "asterinas_g2": false
+  },
+  "notes": "These are complete completed stage records. Later source fixes do not rewrite their original failed outcomes."
+}

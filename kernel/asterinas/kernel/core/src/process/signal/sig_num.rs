@@ -23,6 +23,15 @@ impl TryFrom<u8> for SigNum {
     }
 }
 
+impl TryFrom<i32> for SigNum {
+    type Error = Error;
+
+    fn try_from(sig_num: i32) -> Result<Self> {
+        let byte = u8::try_from(sig_num).map_err(|_| Error::new(Errno::EINVAL))?;
+        Self::try_from(byte)
+    }
+}
+
 impl SigNum {
     /// Caller must ensure the sig_num is valid. Otherwise, use try_from will check sig_num and does not panic.
     pub(crate) const fn from_u8(sig_num: u8) -> Self {

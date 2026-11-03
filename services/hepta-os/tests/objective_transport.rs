@@ -269,6 +269,23 @@ fn expect_input_error(raw: String, expected: EnvelopeError) {
 }
 
 #[test]
+fn pre_send_identity_performs_no_io_and_matches_the_original_attempt() {
+    let raw = original_fixture();
+    let mut socket = SocketFixture::new();
+    let transport = socket.transport();
+    let objective = ProvidedObjective::parse_json(raw.clone()).unwrap();
+    let preview = transport.submission_identity(&objective);
+    assert_eq!(&preview.objective, objective.identity());
+    socket.assert_no_connections();
+    let (done, server) = socket.serve(&raw, Behavior::Reply(response_frame(response(admitted()))));
+    let attempt = transport.submit_once(objective);
+    assert_eq!(attempt.identity(), &preview);
+    assert_retained(&attempt, &raw);
+    done.send(()).unwrap();
+    assert_eq!(server.join().unwrap(), request_frame(&raw));
+}
+
+#[test]
 fn real_socket_transmits_exact_raw_envelope_once_and_keeps_original_identity() {
     let raw = original_fixture().replace("\"body\":{", "\"body\": {  ");
     let input = ProvidedObjective::parse_json(raw.clone()).unwrap();

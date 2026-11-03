@@ -1,0 +1,33 @@
+{
+  "schema": "a10-real-linux-x11-mapped-windows-v1",
+  "source": "actual executable ELF under isolated Xvfb; no Wayland or kernel grant",
+  "elf_sha256": {
+    "trill-session": "ea1b5571c660e2dcca6ce1eb127ab4ff1a16979cf4311ec45e21f74d48938aa4",
+    "trill-shell": "6ebb1990ef45935511a8d15f9c0adc2fd3731d21e26d82463a4b349b10c0af46",
+    "trill-app-window": "f8d46354b27c554982e334778c59e92c73c906bf227fa7acc2930503d6a55278",
+    "trill-ctl": "52183d30d7f4ce996dd47f34f0578d6f971d1423d586d98277693f34dfda36b1"
+  },
+  "mapped_x11_window_classes": {
+    "trill-shell": 1,
+    "trill-app-window": 3
+  },
+  "mapped_x11_state": "IsViewable",
+  "shell_first_egui_layout_before_and_after_restart": true,
+  "same_independent_session_and_three_client_pids_across_shell_restart": true,
+  "all_three_clients_cancelled_by_observed_reap": true,
+  "virtual_framebuffer": {
+    "status": "verified_nonblank_xvfb",
+    "width": 1280,
+    "height": 800,
+    "unique_colors": 1986,
+    "sha256": "e7596aa55325be9db7d78da794e54c6854170271a34a34176c4d559baa91bc58"
+  },
+  "not_attested": [
+    "Wayland presentation",
+    "real CJK candidate window",
+    "per-trust-domain Xwayland isolation",
+    "physical GPU reset",
+    "A05/A07 authority",
+    "Asterinas graphical boot"
+  ]
+}

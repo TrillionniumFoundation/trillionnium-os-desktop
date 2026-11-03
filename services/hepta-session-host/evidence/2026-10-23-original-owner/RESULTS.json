@@ -1,0 +1,179 @@
+{
+  "actual_commands": {
+    "baseline": [
+      "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "--manifest-path",
+      "/workspace/scratch/3d6a75235bcb/work/owner-adapter/desktop/services/hepta-session-host/Cargo.toml",
+      "--locked",
+      "--all-targets",
+      "--profile",
+      "dev-small",
+      "--jobs",
+      "1",
+      "--",
+      "--test-threads=1"
+    ],
+    "clippy": [
+      "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "clippy",
+      "--manifest-path",
+      "/workspace/scratch/3d6a75235bcb/work/owner-adapter/desktop/services/hepta-session-host/Cargo.toml",
+      "--locked",
+      "--all-targets",
+      "--profile",
+      "dev-small",
+      "--jobs",
+      "1",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "format": [
+      "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "fmt",
+      "--manifest-path",
+      "/workspace/scratch/3d6a75235bcb/work/owner-adapter/desktop/services/hepta-session-host/Cargo.toml",
+      "--package",
+      "hepta-session-host",
+      "--",
+      "--check"
+    ],
+    "negative_recovery": [
+      "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "--manifest-path",
+      "/workspace/scratch/3d6a75235bcb/work/owner-adapter/desktop/services/hepta-session-host/Cargo.toml",
+      "--locked",
+      "--all-targets",
+      "--profile",
+      "dev-small",
+      "--jobs",
+      "1",
+      "recovered_",
+      "--",
+      "--test-threads=1",
+      "--nocapture"
+    ],
+    "restored_final_source": [
+      "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "--manifest-path",
+      "/workspace/scratch/3d6a75235bcb/work/owner-adapter/desktop/services/hepta-session-host/Cargo.toml",
+      "--locked",
+      "--all-targets",
+      "--profile",
+      "dev-small",
+      "--jobs",
+      "1",
+      "--",
+      "--test-threads=1"
+    ]
+  },
+  "actual_gates": {
+    "clippy": {
+      "exit": 0,
+      "receipt": "validation/git-host-clippy-02.json",
+      "warnings_denied": true
+    },
+    "final_source_baseline": {
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "passed": 14,
+      "receipt": "validation/git-host-original-owner-02.json"
+    },
+    "format": {
+      "exit": 0,
+      "receipt": "validation/git-host-format-02.json"
+    },
+    "git_provenance": {
+      "after_passed": true,
+      "before_passed": true,
+      "canonical_complete_manifest_sha256": "421cfee887d987c303f086db1184f257a9af19a1711cc4444278f44b591988c3",
+      "full_baseline_sha256": "41e316129c402db8a171e0aa1c3ba74026dc5575f0cc5b990ff0f20fbb79c998",
+      "tracked_files": 9145,
+      "tree_objects": 1239
+    },
+    "negative_recovery": {
+      "cargo_exit": 101,
+      "expected_assertion_failures": 3,
+      "filtered": 11,
+      "ignored": 0,
+      "passed": 0,
+      "receipt": "validation/git-host-ack-red-green-01-red-recovery.json",
+      "scope": "First REFUSE iteration; all failures at original_owner.rs:208, not compilation failure"
+    },
+    "restored_final_source": {
+      "cargo_exit": 0,
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "passed": 14,
+      "receipt": "validation/git-host-ack-red-green-01-green.json",
+      "scope": "Complete real original-owner + UDS test suite, including REFUSE and HOLD loops"
+    }
+  },
+  "cache_transition": "Only task-owned reproducible target/toolchain removed after their identities and all source/receipts were retained; original Git checkout and registry kept.",
+  "cargo_graph": {
+    "host_lock_sha256": "4526bdd7356d4682ee0320372ade378d243ea1aa0d8b5155f174d1e22daa2d19",
+    "kind": "new standalone host Git dependency graph",
+    "original_git_packages": 30,
+    "package_count": 628,
+    "selected_versions": {
+      "libc": [
+        "0.2.190"
+      ],
+      "serde": [
+        "1.0.229"
+      ],
+      "serde_json": [
+        "1.0.151"
+      ],
+      "tokio": [
+        "1.52.3"
+      ]
+    },
+    "uses_original_hepta_workspace_lock": false
+  },
+  "desktop_source_commit": "bf0a0a0a582d7c93c191488e762c12bd6d75561a",
+  "desktop_source_tree": "ad26a0b6396a02ad5b5ff47e3f9fa7ed47da1c61",
+  "distinct_qualification": {
+    "agentd_factory_notes_issuer_bridge": "Not qualified by the host or memory gate; owning Agentd execution remains separate",
+    "host_14": "New host graph with final original Git packages and test-only trust/checkpoint inputs",
+    "host_process_crash_or_power_loss_qualified": false,
+    "native_device": false,
+    "original_memory_322": "Separate original-workspace execution evidence; not counted as host tests here",
+    "production_checkpoint": false,
+    "production_signed_objective_issuer": false,
+    "shell_send_enabled": false
+  },
+  "final_binary": {
+    "bytes": 33224616,
+    "git_blob": "17acd223bcfb8790a103441ad8c492b1428d2722",
+    "mode": "100755",
+    "path": "/dev/shm/organ-3d6a75235bcb-hepta3398/target/dev-small/deps/original_owner-8f8f86ab51e442bb",
+    "permissions": "0o755",
+    "sha256": "09ef4d9b56f11995ce7b6f923c2003bc1f4e8609c44dc95e6365f290dc740f3d"
+  },
+  "format_version": 1,
+  "hepta_source_commit": "db91f9ec316ba1472e7adf97f8415949de012469",
+  "hepta_source_tree": "81c03af04be56659d3eb4da71bf61aeac34c949f",
+  "historical_records_preserved": [
+    "offline local path metadata exit 101",
+    "online local path metadata exit 0",
+    "initial Git tests 14 passed",
+    "initial Clippy exit 101",
+    "exact cleanup preimages and patches"
+  ],
+  "negative_binary": {
+    "bytes": 33218248,
+    "git_blob": "2a2464f29d4df4579760d20f320d6d2d648e058d",
+    "mode": "100755",
+    "path": "/dev/shm/organ-3d6a75235bcb-hepta3398/target/dev-small/deps/original_owner-8f8f86ab51e442bb",
+    "permissions": "0o755",
+    "sha256": "51e98c3b11da8bc7169e17f33da267828ea1d252ec874ef5b53d7388b16d321d"
+  },
+  "process_observation_scope": "The controller observed its owned groups and exact final source on this real run; polling is not an atomic process-isolation or product-sandbox guarantee.",
+  "source_restore_and_final_local_equality": true
+}

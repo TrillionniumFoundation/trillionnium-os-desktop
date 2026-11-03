@@ -65,6 +65,15 @@ impl InodeHandle {
         status_flags: StatusFlags,
     ) -> Result<Self> {
         let inode = path.inode();
+        // Read-only mounts restrict stored file data, not I/O to device nodes or FIFOs.
+        // Keep this check in the common constructor so creation and internal open paths
+        // cannot bypass it by skipping the inode access-mode check.
+        if !status_flags.contains(StatusFlags::O_PATH)
+            && access_mode.is_writable()
+            && inode.type_().is_regular_file()
+        {
+            path.check_mount_writable()?;
+        }
         let open_file = if status_flags.contains(StatusFlags::O_PATH) {
             // The file is opened with `O_PATH`. We follow Linux to report `O_RDONLY` here (e.g.,
             // in `/proc/[pid]/fdinfo/[n]`).
@@ -304,6 +313,9 @@ impl FileLike for InodeHandle {
         if self.status_flags().contains(StatusFlags::O_PATH) || !self.access_mode().is_writable() {
             return_errno_with_message!(Errno::EBADF, "the file is not opened writable");
         }
+        if self.path().type_().is_regular_file() {
+            self.path().check_mount_writable()?;
+        }
         if reader.remain() > 0 {
             clear_file_priv(self.path().dentry())?;
         }
@@ -345,6 +357,9 @@ impl FileLike for InodeHandle {
         let file_ops = self.file_ops_for_positional_io()?;
         if self.status_flags().contains(StatusFlags::O_PATH) || !self.access_mode().is_writable() {
             return_errno_with_message!(Errno::EBADF, "the file is not opened writable");
+        }
+        if self.path().type_().is_regular_file() {
+            self.path().check_mount_writable()?;
         }
         if reader.remain() > 0 {
             clear_file_priv(self.path().dentry())?;
@@ -487,6 +502,7 @@ impl FileLike for InodeHandle {
             );
         }
 
+        self.path().check_mount_writable()?;
         clear_file_priv(dentry)?;
         inode.fallocate(mode, offset, len)
     }

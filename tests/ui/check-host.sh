@@ -4,8 +4,9 @@
 set -euo pipefail
 # Many validation probes use Python assert: -O must never disable blockers.
 export PYTHONOPTIMIZE=0
+export PYTHONDONTWRITEBYTECODE=1
 cd "$(dirname "$0")/../.."
-test "$(wc -c < README.md)" -eq 0
+test -f README.md && test ! -L README.md
 
 # Even when compilation fails before fmt, preserve the exact-source
 # formatter diagnosis and review patch on a GitHub-hosted runner.
@@ -44,6 +45,9 @@ capture_fmt_on_exit() {
             if [[ "$status" -eq 0 ]]; then status=1; fi
         fi
     fi
+    if [[ "$status" -eq 0 ]]; then
+        printf 'A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).\n'
+    fi
     exit "$status"
 }
 trap capture_fmt_on_exit EXIT
@@ -67,6 +71,8 @@ bash tests/ui/test-zombie-liveness.sh
 # This real Linux ELF fixture verifies the artifact packager's fail-closed
 # behavior independently of Rust compilation. It does not count as GUI smoke.
 bash tests/ui/test-package-host-binaries.sh
+python3 -m unittest discover -s support/ui/product -p 'test_*.py'
+python3 -O -m unittest discover -s support/ui/product -p 'test_*.py'
 # Fetch every package recorded in the lockfile, including target-specific
 # entries that are not compiled by the Linux host build. The CI lock gate
 # intentionally runs `cargo metadata --offline` after the real tests; without
@@ -151,5 +157,3 @@ if [[ -n "${RUNNER_TEMP:-}" ]]; then
     bash tests/ui/replay-packaged-host.sh         "$RUNNER_TEMP/a10/a10-linux-host-binaries.tar.gz" "$(git rev-parse HEAD)"
 fi
 # The EXIT hook still preserves a formatter patch on any earlier failure.
-
-printf 'A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).\n'

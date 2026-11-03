@@ -1,0 +1,47 @@
+{
+  "toolchain": "nightly-2026-07-21",
+  "rustc": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+  "cargo": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+  "git_head": "39c1eaf89a211b91e5e687ceaf86fd033567e536",
+  "git_status": "",
+  "build_inputs_sha256": {
+    "kernel/asterinas/osdk/src/commands/build/mod.rs": "fe21586c32416e1ab0f06e0d01830f38adfdf37fc24a1e80d11478e54c3a44c8",
+    "support/build/ktest/README.md": "63f93405c98f13f77e9161a472c57e0c6b2d1fa72e40eb18c8bf192c39b6afd1",
+    "support/build/ktest/check-g2.py": "33a621e24bc0e4d0c2dfae1fb5e3e9ea7600e1aa68ccc9f8309e12186e2f4b16",
+    "support/build/ktest/check-permission-smp.py": "f1a6f4f019af0d6adcb0d9004931efe797dd1febaf626bf6590f78068efc042a",
+    "support/build/ktest/check.py": "936134f04ab4845db5305baa8e25a11a0e7686631561c6a26fcaa780da443937",
+    "support/build/ktest/locks/aster-core.Cargo.lock": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+    "support/build/ktest/locks/aster-core.json": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c",
+    "support/build/ktest/locks/aster-mlsdisk.Cargo.lock": "280e2eb2e2e8854551f1888db0326ef3e693dbc2b86d6fa6cda77fe8daadab14",
+    "support/build/ktest/locks/aster-mlsdisk.json": "5f837f207e91c86f3ffb5784ed82bdf688d7b900685e92434279de5d9c06335d",
+    "support/build/ktest/locks/osdk-frame-allocator.Cargo.lock": "56657523f3894b02c3d0ba8e37ed230f637f4db3a36487341a727d5250367d45",
+    "support/build/ktest/locks/osdk-frame-allocator.json": "e4181f1fc366107348536b98b890c2ce5dd71cfff255d43424b27f60597ec2e0",
+    "support/build/ktest/locks/ostd.Cargo.lock": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+    "support/build/ktest/locks/ostd.json": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833",
+    "support/build/ktest/prepare-locks.py": "7aabdd20efc9af8ee2d1e3554ea1bd7ff7ce2d272c62b24036a8148d2dae3059",
+    "support/build/ktest/record-qemu.py": "315e283a55d6f8bb23ddbde01e12239c3f9699fd53fb3c48935b13a426fe9853",
+    "support/build/ktest/run.py": "e5aaa49fa9eec2ce16c7c56272cceb6b9a96af3b1b274d17b8b7ed7aa2178b11",
+    "support/build/ktest/test_check_g2.py": "80077dfd577f3bd011c7228edd079720e538af12c611faf495d236dfdeb11530",
+    "support/build/ktest/test_cpu_owner_gate.py": "d6e6a213bfecf0314a870b70ba1404b03709eeaaad3f93ca0f44195dafc04b85",
+    "support/build/verify-source.py": "b2316499ac611b0df145e1aece38559582c3e8bead5882b09d7fbed98d56d97d"
+  },
+  "osdk_sha256": "017fa8958ef2d4850ad99ff4a2f507331ff49a2de212fa5f769feebc3816c0f7",
+  "vdso_sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3",
+  "cargo_build_jobs": "2",
+  "test_name": null,
+  "ktest_profile": "default",
+  "vcpus": 1,
+  "features": [
+    "g2-trusted-daemon"
+  ],
+  "osdk_install_skipped": true,
+  "g2_initial_root": true,
+  "ktest_trusted_initial": {
+    "source_path": "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/probe.elf",
+    "path": "/data/trillionnium-closure-20261024/native-evidence/kernel-process-successor/g2-initial-root/ktest-trusted-initial.elf",
+    "sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+    "bytes": 799744,
+    "compilation_input_only": true,
+    "native_entry_execution_claimed": false
+  }
+}

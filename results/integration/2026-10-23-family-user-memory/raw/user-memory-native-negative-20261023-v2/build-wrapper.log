@@ -1,0 +1,1193 @@
+initramfs: 1107990 bytes, sha256=86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3
+make: 进入目录“/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas”
+/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/support/build/minimal.mk:5: 警告：覆盖关于目标“initramfs”的配方
+Makefile:323: 警告：忽略关于目标“initramfs”的旧配方
+/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/support/build/minimal.mk:10: 警告：覆盖关于目标“/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/cargo-kernel-e/bin/cargo-osdk”的配方
+Makefile:298: 警告：忽略关于目标“/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/cargo-kernel-e/bin/cargo-osdk”的旧配方
+/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/support/build/minimal.mk:13: 警告：覆盖关于目标“install_osdk”的配方
+Makefile:291: 警告：忽略关于目标“install_osdk”的旧配方
+/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/support/build/minimal.mk:35: 警告：覆盖关于目标“kernel”的配方
+Makefile:338: 警告：忽略关于目标“kernel”的旧配方
+cd kernel && cargo osdk build --release --boot-method=vmm-direct --grub-boot-protocol=multiboot --initramfs="/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/user-memory-native-negative-20261023-v2/kernel-build/initramfs.cpio.gz" --kcmd-args="loglevel=info" --kcmd-args="earlycon" --kcmd-args="console=ttyS0" --qemu-exe="/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/support/build/record-qemu.py" --features=g1d-trusted-control
+   Compiling compiler_builtins v0.1.160 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/rustup-kernel/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/compiler-builtins/compiler-builtins)
+   Compiling core v0.0.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/rustup-kernel/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core)
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.46
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.54
+   Compiling syn v2.0.118
+   Compiling zerocopy-derive v0.8.54
+   Compiling libc v0.2.186
+   Compiling autocfg v1.5.1
+   Compiling getrandom v0.3.4
+   Compiling cfg-if v1.0.4
+   Compiling ident_case v1.0.1
+   Compiling fnv v1.0.7
+   Compiling thiserror v2.0.18
+   Compiling radium v0.7.0
+   Compiling const_fn v0.4.12
+   Compiling rustversion v1.0.23
+   Compiling strsim v0.10.0
+   Compiling darling_core v0.13.4
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_core v0.9.5
+   Compiling thiserror-impl v2.0.18
+   Compiling ptr_meta_derive v0.3.1
+   Compiling rand_chacha v0.9.0
+   Compiling darling_macro v0.13.4
+   Compiling num-traits v0.2.19
+   Compiling int-to-c-enum-derive v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/int-to-c-enum/derive)
+   Compiling x86 v0.52.0
+   Compiling darling v0.13.4
+   Compiling rand v0.9.5
+   Compiling ostd-pod-macros v0.4.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/ostd-pod/macros)
+   Compiling padding-struct v0.2.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/padding-struct)
+   Compiling serde_core v1.0.228
+   Compiling ostd-macros v0.19.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/ostd-macros)
+   Compiling inherit-methods-macro v0.1.0 (https://github.com/asterinas/inherit-methods-macro?rev=98f7e3e#98f7e3eb)
+   Compiling serde v1.0.228
+   Compiling either v1.16.0
+   Compiling itertools v0.10.5
+   Compiling hashbrown v0.17.1
+   Compiling equivalent v1.0.2
+   Compiling indexmap v2.14.0
+   Compiling toml_datetime v0.6.11
+   Compiling serde_spanned v0.6.9
+   Compiling winnow v0.5.40
+   Compiling json v0.12.4
+   Compiling toml_edit v0.19.15
+   Compiling alloc v0.0.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/rustup-kernel/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc)
+   Compiling toml v0.7.8
+   Compiling typeflags v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/typeflags)
+   Compiling aster-rights-proc v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/aster-rights-proc)
+   Compiling component-macro v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/comp-sys/component-macro)
+   Compiling memoffset v0.9.1
+   Compiling paste v1.0.15
+   Compiling heapless v0.8.0
+   Compiling bitflags v2.13.0
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling bitflags v1.3.2
+   Compiling log v0.4.33
+   Compiling spin v0.9.9
+   Compiling uguid v2.2.1
+   Compiling bit_field v0.10.3
+   Compiling tap v1.0.1
+   Compiling wyz v0.5.1
+   Compiling lazy_static v1.5.0
+   Compiling raw-cpuid v10.7.0
+   Compiling volatile v0.4.6
+   Compiling funty v2.0.0
+   Compiling ptr_meta v0.3.1
+   Compiling multiboot2-common v0.3.0
+   Compiling bitvec v1.1.1
+   Compiling x86_64 v0.15.5
+   Compiling iced-x86 v1.21.0
+   Compiling uefi-raw v0.14.0
+   Compiling uefi-raw v0.12.0
+   Compiling gimli v0.34.0
+   Compiling smallvec v1.15.2
+   Compiling int-to-c-enum v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/int-to-c-enum)
+warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: `int-to-c-enum` (lib) generated 1 warning
+   Compiling tdx-guest v0.5.0
+   Compiling multiboot2 v0.24.1
+   Compiling id-alloc v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/id-alloc)
+warning: `id-alloc` (lib) generated 1 warning (1 duplicate)
+   Compiling ostd-pod v0.4.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/ostd-pod)
+warning: `ostd-pod` (lib) generated 1 warning (1 duplicate)
+   Compiling unwinding v0.2.10
+   Compiling acpi v5.2.0
+   Compiling align_ext v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/align_ext)
+warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+   Compiling gimli v0.28.1
+   Compiling linux-boot-params v0.19.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/linux-bzimage/boot-params)
+   Compiling volatile v0.6.1
+warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+   Compiling ostd-test v0.19.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd/libs/ostd-test)
+   Compiling inventory v0.3.24
+   Compiling component v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/comp-sys/component)
+warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+   Compiling typeflags-util v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/typeflags-util)
+warning: `typeflags-util` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-rights v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/aster-rights)
+warning: `aster-rights` (lib) generated 1 warning (1 duplicate)
+   Compiling intrusive-collections v0.9.7
+warning: `component` (lib) generated 1 warning (1 duplicate)
+   Compiling byteorder v1.5.0
+   Compiling hash32 v0.3.1
+   Compiling stable_deref_trait v1.2.1
+   Compiling smoltcp v0.11.0 (https://github.com/asterinas/smoltcp?tag=r_2026-08-11_1b7629c#56ab8379)
+   Compiling ostd v0.19.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/ostd)
+   Compiling managed v0.8.0
+   Compiling ext-trait-proc_macros v1.0.1
+   Compiling macro_rules_attribute-proc_macro v0.1.3
+   Compiling version_check v0.9.5
+   Compiling macro_rules_attribute v0.1.3
+   Compiling ahash v0.8.12
+   Compiling ext-trait v1.0.1
+   Compiling io-util v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/io-util)
+warning: `io-util` (lib) generated 1 warning (1 duplicate)
+   Compiling jhash v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/jhash)
+warning: `jhash` (lib) generated 1 warning (1 duplicate)
+   Compiling takeable v0.2.2
+   Compiling allocator-api2 v0.2.21
+   Compiling nougat-proc_macros v0.2.4
+   Compiling owo-colors v4.3.0
+   Compiling nougat v0.2.4
+   Compiling extension-traits v1.0.1
+   Compiling osdk-heap-allocator v0.19.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/osdk/deps/heap-allocator)
+warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-util v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/aster-util)
+   Compiling aster-console v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/console)
+warning: `aster-util` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-softirq v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/softirq)
+warning: `aster-console` (lib) generated 1 warning (1 duplicate)
+   Compiling device-id v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/device-id)
+warning: `device-id` (lib) generated 1 warning (1 duplicate)
+   Compiling dma-pool v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/dma-pool)
+warning: `aster-softirq` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-bigtcp v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/aster-bigtcp)
+warning: `dma-pool` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-block v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/block)
+warning: `aster-block` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-pci v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/pci)
+warning: `ostd` (lib) generated 1 warning (1 duplicate)
+   Compiling never-say-never v6.6.666
+   Compiling once_cell v1.21.4
+   Compiling konst_macro_rules v0.2.19
+warning: `aster-bigtcp` (lib) generated 1 warning (1 duplicate)
+   Compiling polonius-the-crab v0.2.1
+   Compiling foldhash v0.2.0
+   Compiling lending-iterator-proc_macros v0.1.7
+   Compiling unicode-xid v0.2.6
+warning: `aster-pci` (lib) generated 1 warning (1 duplicate)
+   Compiling const_format_proc_macros v0.2.34
+   Compiling lending-iterator v0.1.7
+   Compiling hashbrown v0.16.1
+   Compiling konst v0.2.20
+   Compiling aster-network v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/network)
+   Compiling aster-systree v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/systree)
+warning: `aster-network` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-input v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/input)
+   Compiling aster-fuse v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/aster-fuse)
+warning: `aster-input` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-cmdline v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/cmdline)
+warning: `aster-systree` (lib) generated 1 warning (1 duplicate)
+warning: `aster-cmdline` (lib) generated 1 warning (1 duplicate)
+   Compiling zero v0.1.3
+   Compiling time-core v0.1.9
+   Compiling adler2 v2.0.1
+   Compiling powerfmt v0.2.0
+   Compiling font8x8 v0.2.7
+warning: `aster-fuse` (lib) generated 1 warning (1 duplicate)
+   Compiling deranged v0.5.8
+   Compiling num-conv v0.2.2
+   Compiling short-vis-path v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/short-vis-path)
+   Compiling aster-framebuffer v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/framebuffer)
+   Compiling aster-virtio v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/virtio)
+warning: `aster-framebuffer` (lib) generated 1 warning (1 duplicate)
+   Compiling miniz_oxide v0.8.9
+   Compiling time v0.3.53
+   Compiling aster-logger v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/logger)
+warning: `aster-logger` (lib) generated 1 warning (1 duplicate)
+   Compiling xmas-elf v0.10.0
+   Compiling hashbrown v0.14.5
+   Compiling aster-device v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/device)
+   Compiling lru v0.16.4
+   Compiling const_format v0.2.36
+   Compiling cpio-decoder v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/cpio-decoder)
+warning: `cpio-decoder` (lib) generated 1 warning (1 duplicate)
+warning: `aster-device` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-nvme v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/nvme)
+   Compiling aster-time v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/comps/time)
+warning: `aster-time` (lib) generated 1 warning (1 duplicate)
+   Compiling osdk-frame-allocator v0.19.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/osdk/deps/frame-allocator)
+warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling ring-buffer v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/ring-buffer)
+warning: `aster-nvme` (lib) generated 1 warning (1 duplicate)
+   Compiling xarray v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/xarray)
+warning: `ring-buffer` (lib) generated 1 warning (1 duplicate)
+   Compiling os-control v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/libs/os-control)
+warning: `xarray` (lib) generated 1 warning (1 duplicate)
+   Compiling logo-ascii-art v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/logo-ascii-art)
+warning: `logo-ascii-art` (lib) generated 1 warning (1 duplicate)
+   Compiling keyable-arc v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/keyable-arc)
+warning: `keyable-arc` (lib) generated 1 warning (1 duplicate)
+   Compiling sparse-id-alloc v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/sparse-id-alloc)
+warning: `aster-virtio` (lib) generated 1 warning (1 duplicate)
+   Compiling getset v0.1.7
+warning: `sparse-id-alloc` (lib) generated 1 warning (1 duplicate)
+   Compiling atomic-integer-wrapper v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/libs/atomic-integer-wrapper)
+   Compiling aster-uart v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/comps/uart)
+   Compiling aster-core v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core)
+warning: `aster-uart` (lib) generated 1 warning (1 duplicate)
+warning: `os-control` (lib) generated 1 warning (1 duplicate)
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:316:26
+    |
+316 |             .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: requested on the command line with `-W unused-qualifications`
+help: remove the unnecessary path segments
+    |
+316 -             .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+316 +             .map_err(|_| Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+    |
+
+warning: the item `Mutex` is imported redundantly
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/trusted_control.rs:17:5
+   |
+17 | use ostd::sync::Mutex;
+   |     ^^^^^^^^^^^^^^^^^
+...
+24 |     prelude::*,
+   |     ---------- the item `Mutex` is already imported here
+   |
+   = note: requested on the command line with `-W redundant-imports`
+
+warning: unused import: `process::KernelControlBackend`
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/mod.rs:40:16
+   |
+40 | pub(crate) use process::KernelControlBackend;
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of deprecated method `core::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/image.rs:112:34
+    |
+112 |                 match next_nonce.fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |                                  ^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+    |
+112 -                 match next_nonce.fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+112 +                 match next_nonce.try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |
+
+warning: use of deprecated method `core::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/vm/user_memory.rs:52:14
+   |
+52 |             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+   |              ^^^^^^^^^^^^
+   |
+help: replace the use of the deprecated method
+   |
+52 -             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+52 +             .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+   |
+
+warning: function `required_response_frame_len` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:141:14
+    |
+141 | pub const fn required_response_frame_len(opcode: Opcode, status: Status) -> usize {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: associated items `new`, `encode`, `decode_response_snapshot_for`, and `ensure_response_capacity` are never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:155:18
+    |
+154 | impl Transport {
+    | -------------- associated items in this implementation
+155 |     pub const fn new(
+    |                  ^^^
+...
+188 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |            ^^^^^^
+...
+263 |     pub fn decode_response_snapshot_for(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+286 |     pub fn ensure_response_capacity(&self, opcode: Opcode, _status: Status) -> Result<(), Error> {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_request` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:513:8
+    |
+513 | pub fn parse_request(bytes: &[u8]) -> Result<Request, Error> {
+    |        ^^^^^^^^^^^^^
+
+warning: function `encode_request` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:517:8
+    |
+517 | pub fn encode_request(request: &Request, out: &mut [u8]) -> Result<usize, Error> {
+    |        ^^^^^^^^^^^^^^
+
+warning: function `decode_response` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:544:8
+    |
+544 | pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `declared_response_len` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:636:8
+    |
+636 | pub fn declared_response_len(bytes: &[u8]) -> Result<usize, Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_response_prefix` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:657:8
+    |
+657 | pub fn decode_response_prefix(bytes: &[u8]) -> Result<(Response, usize), Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_response_prefix_for` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:664:8
+    |
+664 | pub fn decode_response_prefix_for(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_response_for` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:674:8
+    |
+674 | pub fn decode_response_for(bytes: &[u8], request: &Request) -> Result<Response, Error> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_response` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:681:8
+    |
+681 | pub fn parse_response(bytes: &[u8]) -> Result<Response, Error> {
+    |        ^^^^^^^^^^^^^^
+
+warning: associated items `decode` and `encode` are never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:726:12
+    |
+725 | impl Request {
+    | ------------ associated items in this implementation
+726 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |            ^^^^^^
+...
+729 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |            ^^^^^^
+
+warning: associated items `decode`, `encode`, `matches_request`, and `validate_for` are never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:735:12
+    |
+734 | impl Response {
+    | ------------- associated items in this implementation
+735 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |            ^^^^^^
+...
+738 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |            ^^^^^^
+...
+743 |     pub fn matches_request(&self, request: &Request) -> bool {
+    |            ^^^^^^^^^^^^^^^
+...
+748 |     pub fn validate_for(&self, request: &Request) -> Result<(), Error> {
+    |            ^^^^^^^^^^^^
+
+warning: function `install_budget_request_id` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:843:8
+    |
+843 | pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `install_budget_sequence` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:853:8
+    |
+853 | pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_request` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:873:4
+    |
+873 | fn validate_request(request: &Request) -> Result<(), Error> {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: function `request_payload_len` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:918:4
+    |
+918 | fn request_payload_len(payload: &RequestPayload) -> usize {
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: function `encode_request_payload` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:926:4
+    |
+926 | fn encode_request_payload(payload: &RequestPayload, out: &mut [u8]) {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_read_usage_response` is never used
+    --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1035:4
+     |
+1035 | fn parse_read_usage_response(p: &[u8]) -> Result<ReadUsageResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_install_response` is never used
+    --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1070:4
+     |
+1070 | fn parse_install_response(p: &[u8]) -> Result<InstallBudgetResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_query_delivery_response` is never used
+    --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1081:4
+     |
+1081 | fn parse_query_delivery_response(p: &[u8]) -> Result<QueryDeliveryResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_retire_response` is never used
+    --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1156:4
+     |
+1156 | fn parse_retire_response(p: &[u8]) -> Result<RetireThroughResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `read_native_cpu_usage_for_owner` and `read_native_cpu_usage_for_owner_during` are never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:203:8
+    |
+184 | impl Controller {
+    | --------------- methods in this implementation
+...
+203 |     fn read_native_cpu_usage_for_owner(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+210 |     fn read_native_cpu_usage_for_owner_during(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `read_usage_during` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:359:19
+    |
+289 | impl NativeCpuObserver {
+    | ---------------------- method in this implementation
+...
+359 |     pub(crate) fn read_usage_during(
+    |                   ^^^^^^^^^^^^^^^^^
+
+warning: function `check_initial_observe_lease` is never used
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/image.rs:24:4
+   |
+24 | fn check_initial_observe_lease(issued_ns: u64, expires_ns: u64, sample_ns: u64)
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `observer`, `issued_ns`, and `expires_ns` are never read
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/image.rs:41:5
+   |
+40 | struct InitialObserveGrant {
+   |        ------------------- fields in this struct
+41 |     observer: Arc<NativeCpuObserver>,
+   |     ^^^^^^^^
+42 |     issued_ns: u64,
+   |     ^^^^^^^^^
+43 |     expires_ns: u64,
+   |     ^^^^^^^^^^
+
+warning: methods `activate_initial_observer` and `initial_observer` are never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/image.rs:214:19
+    |
+ 92 | impl ProcessImageState {
+    | ---------------------- methods in this implementation
+...
+214 |     pub(super) fn activate_initial_observer(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+232 |     fn initial_observer(&self, key: ProcessImageKey, slot: u64, generation: u64)
+    |        ^^^^^^^^^^^^^^^^
+
+warning: method `read_hepta_initial_usage` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/image.rs:291:19
+    |
+273 | impl Process {
+    | ------------ method in this implementation
+...
+291 |     pub(crate) fn read_hepta_initial_usage(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `activate_observation` and `resume` are never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/init_proc.rs:66:8
+    |
+ 51 | impl PreparedInitialProcess {
+    | --------------------------- methods in this implementation
+...
+ 66 |     fn activate_observation(&self, loaded: LoadedInitialImage, entry: Vaddr) -> Result<()> {
+    |        ^^^^^^^^^^^^^^^^^^^^
+...
+100 |     fn resume(mut self) -> Result<Arc<Process>> {
+    |        ^^^^^^
+
+warning: function `create_init_process` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/init_proc.rs:190:4
+    |
+190 | fn create_init_process(
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LoadedInitialTask` is never constructed
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/init_proc.rs:265:8
+    |
+265 | struct LoadedInitialTask {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: function `create_init_task` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process/init_proc.rs:273:4
+    |
+273 | fn create_init_task(
+    |    ^^^^^^^^^^^^^^^^
+
+warning: method `unwrap` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/process_vm/mod.rs:232:19
+    |
+217 | impl<'a> ProcessVmarGuard<'a> {
+    | ----------------------------- method in this implementation
+...
+232 |     pub(crate) fn unwrap(&self) -> &Vmar {
+    |                   ^^^^^^
+
+warning: method `load_trusted_initial` is never used
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/program_loader/mod.rs:46:31
+   |
+35 | impl UndetectedExecutable {
+   | ------------------------- method in this implementation
+...
+46 |     pub(in crate::process) fn load_trusted_initial(
+   |                               ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `load_trusted_initial` is never used
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs:53:27
+   |
+53 | pub(in crate::process) fn load_trusted_initial(
+   |                           ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `boot_page_bytes` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs:256:4
+    |
+256 | fn boot_page_bytes() -> Box<[u8; PAGE_SIZE]> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: method `commit_on` is never used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/vm/page_cache/vmo/mod.rs:298:19
+    |
+293 | impl Vmo {
+    | -------- method in this implementation
+...
+298 |     pub(crate) fn commit_on(&self, page_idx: usize, map_mode: VmoMapMode) -> Result<()> {
+    |                   ^^^^^^^^^
+
+warning: associated function `new` is never used
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/vm/vmar/handle.rs:34:19
+   |
+32 | impl VmarHandle {
+   | --------------- associated function in this implementation
+33 |     /// Creates a new handle that points to a new VMAR.
+34 |     pub(crate) fn new(process_vm: ProcessVm) -> Self {
+   |                   ^^^
+
+warning: unreachable `pub` item
+ --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:8:1
+  |
+8 | pub const HOS2_MAGIC: [u8; 4] = *b"HOS2";
+  | ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | |
+  | help: consider restricting its visibility: `pub(crate)`
+  |
+  = help: or consider exporting it for use by other crates
+  = note: requested on the command line with `-W unreachable-pub`
+
+warning: unreachable `pub` item
+ --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:9:1
+  |
+9 | pub const HOSR_MAGIC: [u8; 4] = *b"HOSR";
+  | ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | |
+  | help: consider restricting its visibility: `pub(crate)`
+  |
+  = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:10:1
+   |
+10 | pub const HOS2_MAJOR: u16 = 2;
+   | ---^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:11:1
+   |
+11 | pub const HOS2_MINOR: u16 = 0;
+   | ---^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:12:1
+   |
+12 | pub const HEADER_LEN: usize = 64;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:13:1
+   |
+13 | pub const TRANSPORT_LEN: usize = 32;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:14:1
+   |
+14 | pub const MAX_PAYLOAD: usize = 65_536;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:15:1
+   |
+15 | pub const MAX_FRAME: usize = HEADER_LEN + MAX_PAYLOAD;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:16:1
+   |
+16 | pub const CPU_PERIOD_NS: u64 = 100_000_000;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:24:1
+   |
+24 | pub enum Error {
+   | ---^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:50:1
+   |
+50 | pub enum Opcode {
+   | ---^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:59:5
+   |
+59 |     pub const fn as_u16(self) -> u16 {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:63:5
+   |
+63 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:77:1
+   |
+77 | pub enum Status {
+   | ---^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:93:5
+   |
+93 |     pub const fn as_u16(self) -> u16 {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:97:5
+   |
+97 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:117:1
+    |
+117 | pub const fn response_payload_len(opcode: Opcode) -> usize {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:131:1
+    |
+131 | pub const fn response_frame_len(opcode: Opcode, status: Status) -> usize {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:141:1
+    |
+141 | pub const fn required_response_frame_len(opcode: Opcode, status: Status) -> usize {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:146:1
+    |
+146 | pub struct Transport {
+    | ---^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:155:5
+    |
+155 |       pub const fn new(
+    |       ^--
+    |       |
+    |  _____help: consider restricting its visibility: `pub(crate)`
+    | |
+156 | |         request_addr: u64,
+157 | |         response_addr: u64,
+158 | |         request_bytes: u32,
+159 | |         response_capacity: u32,
+160 | |     ) -> Self {
+    | |_____________^
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:170:5
+    |
+170 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:188:5
+    |
+188 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:205:5
+    |
+205 |     pub fn validate(&self) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:240:5
+    |
+240 |     pub fn decode_request_snapshot(&self, snapshot: &[u8]) -> Result<Request, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:263:5
+    |
+263 |       pub fn decode_response_snapshot_for(
+    |       ^--
+    |       |
+    |  _____help: consider restricting its visibility: `pub(crate)`
+    | |
+264 | |         &self,
+265 | |         snapshot: &[u8],
+266 | |         request: &Request,
+267 | |     ) -> Result<(Response, usize), Error> {
+    | |_________________________________________^
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:286:5
+    |
+286 |     pub fn ensure_response_capacity(&self, opcode: Opcode, _status: Status) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:291:5
+    |
+291 |     pub fn ensure_success_response_capacity(&self, opcode: Opcode) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:317:1
+    |
+317 | pub struct InstallBudgetRequest {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:325:1
+    |
+325 | pub struct DeliveryRequest {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:332:1
+    |
+332 | pub enum RequestPayload {
+    | ---^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:341:1
+    |
+341 | pub struct Request {
+    | ---^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:350:1
+    |
+350 | pub struct QueryAbiResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:360:1
+    |
+360 | pub struct ReadUsageResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:372:1
+    |
+372 | pub struct InstallBudgetResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:380:1
+    |
+380 | pub enum DeliveryState {
+    | ---^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:389:5
+    |
+389 |     pub const fn as_u16(self) -> u16 {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:392:5
+    |
+392 |     pub const fn from_u16(v: u16) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:405:1
+    |
+405 | pub struct QueryDeliveryResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:417:1
+    |
+417 | pub struct RetireThroughResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:423:1
+    |
+423 | pub enum ResponsePayload {
+    | ---^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:434:1
+    |
+434 | pub struct Response {
+    | ---^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:443:1
+    |
+443 | pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:513:1
+    |
+513 | pub fn parse_request(bytes: &[u8]) -> Result<Request, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:517:1
+    |
+517 | pub fn encode_request(request: &Request, out: &mut [u8]) -> Result<usize, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:544:1
+    |
+544 | pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:636:1
+    |
+636 | pub fn declared_response_len(bytes: &[u8]) -> Result<usize, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:657:1
+    |
+657 | pub fn decode_response_prefix(bytes: &[u8]) -> Result<(Response, usize), Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:664:1
+    |
+664 |   pub fn decode_response_prefix_for(
+    |   ^--
+    |   |
+    |  _help: consider restricting its visibility: `pub(crate)`
+    | |
+665 | |     bytes: &[u8],
+666 | |     request: &Request,
+667 | | ) -> Result<(Response, usize), Error> {
+    | |_____________________________________^
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:674:1
+    |
+674 | pub fn decode_response_for(bytes: &[u8], request: &Request) -> Result<Response, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:681:1
+    |
+681 | pub fn parse_response(bytes: &[u8]) -> Result<Response, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:685:1
+    |
+685 | pub fn encode_response(response: &Response, out: &mut [u8]) -> Result<usize, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:726:5
+    |
+726 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:729:5
+    |
+729 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:735:5
+    |
+735 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:738:5
+    |
+738 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:743:5
+    |
+743 |     pub fn matches_request(&self, request: &Request) -> bool {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:748:5
+    |
+748 |     pub fn validate_for(&self, request: &Request) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:843:1
+    |
+843 | pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:853:1
+    |
+853 | pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unused return value of `Option::<T>::map_or` that must be used
+   --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/process/clone.rs:508:5
+    |
+508 |     pids_charge.map_or((), |charge| charge.apply());
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: if you don't need the returned value, use `if let` instead
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+508 |     let _ = pids_charge.map_or((), |charge| charge.apply());
+    |     +++++++
+
+warning: this lint expectation is unfulfilled
+  --> /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/core/src/device/registry/char.rs:92:10
+   |
+92 | #[expect(dead_code)]
+   |          ^^^^^^^^^
+   |
+   = note: `#[warn(unfulfilled_lint_expectations)]` on by default
+
+   Compiling aster-drm v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/comps/drm)
+   Compiling aster-i8042 v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/comps/i8042)
+warning: `aster-i8042` (lib) generated 1 warning (1 duplicate)
+warning: `aster-drm` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-simpledrm v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel/comps/simpledrm)
+warning: `aster-simpledrm` (lib) generated 1 warning (1 duplicate)
+   Compiling asterinas v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas/kernel)
+warning: `asterinas` (lib) generated 1 warning (1 duplicate)
+warning: `aster-core` (lib) generated 105 warnings (1 duplicate) (run `cargo fix --lib -p aster-core` to apply 64 suggestions)
+   Compiling asterinas-osdk-bin v0.1.0 (/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/target-user-memory-negative-20261023-v2/osdk/asterinas-run-base)
+warning: `asterinas-osdk-bin` (bin "asterinas-osdk-bin") generated 1 warning (1 duplicate)
+    Finished `release` profile [optimized] target(s) in 2m 24s
+make: 离开目录“/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-user-memory-negative-20261023/kernel/asterinas”
+evidence: /home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/user-memory-native-negative-20261023-v2/kernel-build

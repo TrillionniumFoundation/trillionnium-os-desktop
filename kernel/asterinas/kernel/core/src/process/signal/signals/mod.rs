@@ -2,6 +2,8 @@
 
 pub(crate) mod fault;
 pub(crate) mod kernel;
+mod owned;
+pub(crate) use owned::OwnedSignal;
 pub(crate) mod raw;
 pub(crate) mod user;
 

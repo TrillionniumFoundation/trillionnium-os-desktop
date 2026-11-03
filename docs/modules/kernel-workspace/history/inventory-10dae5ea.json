@@ -1,0 +1,1592 @@
+{
+  "schema_version": 1,
+  "source_commit": "10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd",
+  "scope": "exact 57 explicit members of kernel/asterinas/Cargo.toml; excludes nested independent workspaces and evidence/results",
+  "workspace_manifest": "kernel/asterinas/Cargo.toml",
+  "workspace_manifest_sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+  "summary": {
+    "members": 57,
+    "with_same_directory_markdown": 11,
+    "without_same_directory_markdown": 46,
+    "handbook_entries": 57
+  },
+  "source_hash_method": "SHA256 of sorted source-files lines: repository-relative path + NUL + SHA256(file bytes), joined by LF with terminal LF. Only tracked src/**/*.rs in each crate; root/manifest hashes separate. Static declarations are regex observations, not expanded tests or execution counts.",
+  "crates": [
+    {
+      "package": "osdk-frame-allocator",
+      "member": "osdk/deps/frame-allocator",
+      "manifest": "kernel/asterinas/osdk/deps/frame-allocator/Cargo.toml",
+      "manifest_sha256": "761cb2b0c5496316979fa08bbde2d0d152b0a31739f262234b59381b22dcb6a8",
+      "entry": "kernel/asterinas/osdk/deps/frame-allocator/src/lib.rs",
+      "entry_sha256": "4ec1a0830f336b1aa8c76173c8e0f8907018c4ffe51c5ec751f2e31124e894cd",
+      "directory_markdown": [
+        "kernel/asterinas/osdk/deps/frame-allocator/README.md"
+      ],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {
+        "physical-reserve": []
+      },
+      "direct_dependencies": [
+        "ostd",
+        "paste"
+      ],
+      "handbook": "ostd-and-tooling.md#osdk-frame-allocator",
+      "source_file_count": 10,
+      "source_files_sha256": "216bdd668e77ea396dbc6d94b26a73f88e34fa3f01d847faf1e98be60d2c7c37",
+      "static_test_declarations": {
+        "ktest": 20
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "osdk-heap-allocator",
+      "member": "osdk/deps/heap-allocator",
+      "manifest": "kernel/asterinas/osdk/deps/heap-allocator/Cargo.toml",
+      "manifest_sha256": "50ff2790cff95e93b91d9ac61e91e89d7d8236a073dd34afd234da0b3d6a8c68",
+      "entry": "kernel/asterinas/osdk/deps/heap-allocator/src/lib.rs",
+      "entry_sha256": "29f6ba3cb3d516d20882a88c43ec8b0d6f31471be525291c1b168e2d6998e4d8",
+      "directory_markdown": [
+        "kernel/asterinas/osdk/deps/heap-allocator/README.md"
+      ],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "log",
+        "ostd"
+      ],
+      "handbook": "ostd-and-tooling.md#osdk-heap-allocator",
+      "source_file_count": 6,
+      "source_files_sha256": "6d1131f03fe10ce3cad658b3ff58e7a9f80f10db8f574be39e97c53c49edaed9",
+      "static_test_declarations": {
+        "ktest": 2
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "osdk-test-kernel",
+      "member": "osdk/deps/test-kernel",
+      "manifest": "kernel/asterinas/osdk/deps/test-kernel/Cargo.toml",
+      "manifest_sha256": "56dbb8ccb936f9ef2c1d0223e5848a32348aaaf294c23a5cedd4aa02df39ba91",
+      "entry": "kernel/asterinas/osdk/deps/test-kernel/src/lib.rs",
+      "entry_sha256": "eaf618c55d117c92fc757bc9299e3e33c1105fd0fdc092c426f4c84ff14b22aa",
+      "directory_markdown": [
+        "kernel/asterinas/osdk/deps/test-kernel/README.md"
+      ],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {
+        "external-entry": []
+      },
+      "direct_dependencies": [
+        "ostd",
+        "owo-colors"
+      ],
+      "handbook": "ostd-and-tooling.md#osdk-test-kernel",
+      "source_file_count": 3,
+      "source_files_sha256": "87f04cbdd97c00e5d11004968231424efab3d0e737fcf87c4e77d5cdcd35efff",
+      "static_test_declarations": {
+        "ktest": 8
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "ostd",
+      "member": "ostd",
+      "manifest": "kernel/asterinas/ostd/Cargo.toml",
+      "manifest_sha256": "1416286b44ff96f2ce0047d505ff33161c847b8aa5bf53261329c9ca36e99055",
+      "entry": "kernel/asterinas/ostd/src/lib.rs",
+      "entry_sha256": "57e394a1bcc9810075f2cf5873b0eaf87e4c00340a3d96719b0d9f6934e647a1",
+      "directory_markdown": [
+        "kernel/asterinas/ostd/README.md"
+      ],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {
+        "default": [
+          "cvm_guest"
+        ],
+        "cvm_guest": [
+          "dep:tdx-guest"
+        ],
+        "coverage": [
+          "minicov"
+        ],
+        "pvh_boot": [],
+        "riscv_sv39_mode": []
+      },
+      "direct_dependencies": [
+        "align_ext",
+        "bitflags",
+        "bitvec",
+        "gimli",
+        "id-alloc",
+        "inherit-methods-macro",
+        "log",
+        "minicov",
+        "num-traits",
+        "ostd-macros",
+        "ostd-pod",
+        "ostd-test",
+        "smallvec",
+        "spin",
+        "zerocopy"
+      ],
+      "handbook": "ostd-and-tooling.md#ostd",
+      "source_file_count": 268,
+      "source_files_sha256": "f7746406f77e2e6a54c44e73995e806acddea94f58a7d3ae252d5b0967160bff",
+      "static_test_declarations": {
+        "ktest": 235
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "align_ext",
+      "member": "ostd/libs/align_ext",
+      "manifest": "kernel/asterinas/ostd/libs/align_ext/Cargo.toml",
+      "manifest_sha256": "81995198ea3d43a78f5eef905df107284c60535921a8b07459159b419b3205e9",
+      "entry": "kernel/asterinas/ostd/libs/align_ext/src/lib.rs",
+      "entry_sha256": "961fcb4bde867f1a9cb026a16af5e835b45e199c684df4bcad921876ba1bc9cd",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "ostd-and-tooling.md#align_ext",
+      "source_file_count": 1,
+      "source_files_sha256": "e6dd53edfdc8d60c5ef63522807fa8f566f4abc482e065dbf320a62c91fbe8de",
+      "static_test_declarations": {
+        "test": 2
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "id-alloc",
+      "member": "ostd/libs/id-alloc",
+      "manifest": "kernel/asterinas/ostd/libs/id-alloc/Cargo.toml",
+      "manifest_sha256": "651ad8155a71f31161de0fb2aa3c43e380dcfde21e8acb3fa2c09e1073c6bdd8",
+      "entry": "kernel/asterinas/ostd/libs/id-alloc/src/lib.rs",
+      "entry_sha256": "16eb86a5d3fcaf545035c040120db5f277a9d16a1fc0b50540ff3540c6f1e7fc",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "bitvec"
+      ],
+      "handbook": "ostd-and-tooling.md#id-alloc",
+      "source_file_count": 1,
+      "source_files_sha256": "d40cb6d546a7ebb12eb61622c0ecd5e67567ecdf2e6d9fd2772c682a4ce32966",
+      "static_test_declarations": {
+        "test": 1
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "int-to-c-enum",
+      "member": "ostd/libs/int-to-c-enum",
+      "manifest": "kernel/asterinas/ostd/libs/int-to-c-enum/Cargo.toml",
+      "manifest_sha256": "279ee5b1971fb5e7147b139f146d65a72ead0d39bbae4c8b10966a18526aef24",
+      "entry": "kernel/asterinas/ostd/libs/int-to-c-enum/src/lib.rs",
+      "entry_sha256": "caa8a11621a62d22f3afc567388cf95e841b65019e9a684baef15e294d3f8a7d",
+      "directory_markdown": [
+        "kernel/asterinas/ostd/libs/int-to-c-enum/README.md"
+      ],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {
+        "default": [
+          "derive"
+        ],
+        "derive": [
+          "int-to-c-enum-derive"
+        ]
+      },
+      "direct_dependencies": [
+        "int-to-c-enum-derive"
+      ],
+      "handbook": "ostd-and-tooling.md#int-to-c-enum",
+      "source_file_count": 1,
+      "source_files_sha256": "c7fd85679cb596bdcc988a52af69195f62acd574c46d05e99f97e97d806428be",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "int-to-c-enum-derive",
+      "member": "ostd/libs/int-to-c-enum/derive",
+      "manifest": "kernel/asterinas/ostd/libs/int-to-c-enum/derive/Cargo.toml",
+      "manifest_sha256": "279b48ee79ca564d5d92e81b9c98a86a3e8f627a60b2a16a47d7b260a9f1ec2b",
+      "entry": "kernel/asterinas/ostd/libs/int-to-c-enum/derive/src/lib.rs",
+      "entry_sha256": "11ec28e00cd6ded71ac9e6d76a4420b639dbb8563d9ac81811316ea0cee8d4d4",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "proc-macro2",
+        "quote",
+        "syn"
+      ],
+      "handbook": "ostd-and-tooling.md#int-to-c-enum-derive",
+      "source_file_count": 1,
+      "source_files_sha256": "890cc7d52a195ad2f7e8d5a7f8bb76379ab8f654aaebb730d036c44e94e73c79",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "linux-boot-params",
+      "member": "ostd/libs/linux-bzimage/boot-params",
+      "manifest": "kernel/asterinas/ostd/libs/linux-bzimage/boot-params/Cargo.toml",
+      "manifest_sha256": "62c5787829507014953fbb5b22ad3d4fc8d7010db2278bde52df6ec35b8740b5",
+      "entry": "kernel/asterinas/ostd/libs/linux-bzimage/boot-params/src/lib.rs",
+      "entry_sha256": "10f923cc4b68b800a13d446ec70477ff2782b36b29f1f4eb506e9bcebc9d32db",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "ostd-and-tooling.md#linux-boot-params",
+      "source_file_count": 1,
+      "source_files_sha256": "82792be76d5553ddfdf21dead907cb67118a755d58e5ff5176f71265d59a2b62",
+      "static_test_declarations": {
+        "test": 4
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "linux-bzimage-builder",
+      "member": "ostd/libs/linux-bzimage/builder",
+      "manifest": "kernel/asterinas/ostd/libs/linux-bzimage/builder/Cargo.toml",
+      "manifest_sha256": "637ed0d86d1d98556b7320d5bb8bbc8c502b10b03606b191884db49c3c8906fb",
+      "entry": "kernel/asterinas/ostd/libs/linux-bzimage/builder/src/lib.rs",
+      "entry_sha256": "ef05b8d5a2bb9c849f813c7cd85d071b162c24438d225c6cf0111adcab954fff",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "align_ext",
+        "bitflags",
+        "crc32fast",
+        "miniz_oxide",
+        "ostd-pod",
+        "serde",
+        "xmas-elf",
+        "zerocopy"
+      ],
+      "handbook": "ostd-and-tooling.md#linux-bzimage-builder",
+      "source_file_count": 4,
+      "source_files_sha256": "d9428888d8cce36044607d446a18a95f60c16bc87987d1210aa3f96589a6a978",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "linux-bzimage-setup",
+      "member": "ostd/libs/linux-bzimage/setup",
+      "manifest": "kernel/asterinas/ostd/libs/linux-bzimage/setup/Cargo.toml",
+      "manifest_sha256": "a50976b2d205cfb5f1be71c3666232a443184336ec3fcc344cca934af6ba7c1c",
+      "entry": "kernel/asterinas/ostd/libs/linux-bzimage/setup/src/main.rs",
+      "entry_sha256": "977a99e8ded31513fd8d3ba55ba76912d472257efce384e989b1ec321589b956",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {
+        "default": [
+          "cvm_guest"
+        ],
+        "debug_print": [],
+        "cvm_guest": [
+          "dep:tdx-guest"
+        ]
+      },
+      "direct_dependencies": [
+        "linux-boot-params",
+        "log",
+        "miniz_oxide",
+        "uart_16550",
+        "xmas-elf"
+      ],
+      "handbook": "ostd-and-tooling.md#linux-bzimage-setup",
+      "source_file_count": 13,
+      "source_files_sha256": "23952dc29e9a67db33f3caadb4753bd1d506bf4fc5e9a30ffcb528e5f1ce5929",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "ostd-macros",
+      "member": "ostd/libs/ostd-macros",
+      "manifest": "kernel/asterinas/ostd/libs/ostd-macros/Cargo.toml",
+      "manifest_sha256": "ae3392d1a34cbb228d4ce748bac1be041e44c3d9e21dac90dbf047cbed542b86",
+      "entry": "kernel/asterinas/ostd/libs/ostd-macros/src/lib.rs",
+      "entry_sha256": "0959f378ac9d828ac806dd00b6a15e3d61f233d8643e02af7cdfde59ed4e7986",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "proc-macro2",
+        "quote",
+        "rand",
+        "syn"
+      ],
+      "handbook": "ostd-and-tooling.md#ostd-macros",
+      "source_file_count": 1,
+      "source_files_sha256": "400a466da51e3c03bf5680e0a3fffbff8c1c64a64dfd6f43b5adcba038748501",
+      "static_test_declarations": {
+        "ktest": 3
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "ostd-pod",
+      "member": "ostd/libs/ostd-pod",
+      "manifest": "kernel/asterinas/ostd/libs/ostd-pod/Cargo.toml",
+      "manifest_sha256": "1485257e37449f62b88bfbd361b2a61a3be4d5b7753919ae166877ced1b93ccb",
+      "entry": "kernel/asterinas/ostd/libs/ostd-pod/src/lib.rs",
+      "entry_sha256": "55c9c8cff15f66ed464535c80dd78f0a02ccaacf08405ed593f0656b7b080c6b",
+      "directory_markdown": [
+        "kernel/asterinas/ostd/libs/ostd-pod/README.md"
+      ],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {
+        "default": [
+          "macros"
+        ],
+        "macros": [
+          "ostd-pod-macros",
+          "padding-struct"
+        ]
+      },
+      "direct_dependencies": [
+        "ostd-pod-macros",
+        "padding-struct",
+        "zerocopy"
+      ],
+      "handbook": "ostd-and-tooling.md#ostd-pod",
+      "source_file_count": 2,
+      "source_files_sha256": "7a55f9333731266f2ac28d586d7f777a0f6b4aa68394ca370acd2819993a3f2e",
+      "static_test_declarations": {
+        "test": 13
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "ostd-pod-macros",
+      "member": "ostd/libs/ostd-pod/macros",
+      "manifest": "kernel/asterinas/ostd/libs/ostd-pod/macros/Cargo.toml",
+      "manifest_sha256": "54e4c9e79a6797caf4d3d7945180648db9bd5c9805f2601d357d4e1bd30104c3",
+      "entry": "kernel/asterinas/ostd/libs/ostd-pod/macros/src/lib.rs",
+      "entry_sha256": "95c105b14f120ac761bf03e6fab6f1965a8e6b1ceb365dfb953b6d076fa530ad",
+      "directory_markdown": [
+        "kernel/asterinas/ostd/libs/ostd-pod/macros/README.md"
+      ],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "proc-macro2",
+        "quote",
+        "syn"
+      ],
+      "handbook": "ostd-and-tooling.md#ostd-pod-macros",
+      "source_file_count": 3,
+      "source_files_sha256": "ec05e5fd29abb71a4ca8dcc81b82e409adc1e4a8b8fea50df4508dd2fa127d6b",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "ostd-test",
+      "member": "ostd/libs/ostd-test",
+      "manifest": "kernel/asterinas/ostd/libs/ostd-test/Cargo.toml",
+      "manifest_sha256": "0381667acc80a5cd0358854f07d3667ca9fd365e335065fb4e948c9d4bad3f43",
+      "entry": "kernel/asterinas/ostd/libs/ostd-test/src/lib.rs",
+      "entry_sha256": "f991c0829fe3302f01c75e37af0b5697d8c67bfc3982ff384e318f6f5b9c32cb",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "ostd-and-tooling.md#ostd-test",
+      "source_file_count": 1,
+      "source_files_sha256": "ab28f27b6696ad0084d9c12b3d2b9d981ae3a2883d998513447e2fb83ff09941",
+      "static_test_declarations": {
+        "ktest": 5
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "padding-struct",
+      "member": "ostd/libs/padding-struct",
+      "manifest": "kernel/asterinas/ostd/libs/padding-struct/Cargo.toml",
+      "manifest_sha256": "90ae1d06c9d28279817ac41ef12093be233728cf19e579e5964e96b86fdde58f",
+      "entry": "kernel/asterinas/ostd/libs/padding-struct/src/lib.rs",
+      "entry_sha256": "a81a3b2fe22fc65f17a2b1d7230889cb340fcf372d518059e0765de0c0f788f8",
+      "directory_markdown": [
+        "kernel/asterinas/ostd/libs/padding-struct/README.md"
+      ],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "proc-macro2",
+        "quote",
+        "syn"
+      ],
+      "handbook": "ostd-and-tooling.md#padding-struct",
+      "source_file_count": 1,
+      "source_files_sha256": "f213da43a61c0b88d0ecf25e765c948780701cea8af02f0685e9878246f19a5e",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "asterinas",
+      "member": "kernel",
+      "manifest": "kernel/asterinas/kernel/Cargo.toml",
+      "manifest_sha256": "793fbe82cd8cabd2d6047d5f5b4220ee16788aa46a51931f4f89a2752991ebe3",
+      "entry": "kernel/asterinas/kernel/src/lib.rs",
+      "entry_sha256": "22b8e67184762d1b3c7e66a33f54974d314430c0cba287bcd65a0c93bb898567",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {
+        "default": [
+          "cvm_guest"
+        ],
+        "coverage": [
+          "aster-core/coverage"
+        ],
+        "cvm_guest": [
+          "aster-core/cvm_guest"
+        ],
+        "pvh_boot": [
+          "aster-core/pvh_boot"
+        ],
+        "riscv_sv39_mode": [
+          "aster-core/riscv_sv39_mode"
+        ],
+        "g1c-trusted-observe": [
+          "aster-core/g1c-trusted-observe"
+        ],
+        "g1d-trusted-control": [
+          "aster-core/g1d-trusted-control"
+        ]
+      },
+      "direct_dependencies": [
+        "aster-core",
+        "ostd",
+        "aster-drm",
+        "aster-simpledrm",
+        "aster-uart"
+      ],
+      "handbook": "kernel-components.md#asterinas",
+      "source_file_count": 1,
+      "source_files_sha256": "656a028ffa00275f3f7ff03a9e0a5a6f92a785b31694cf0292f079f41225570d",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-drm",
+      "member": "kernel/comps/drm",
+      "manifest": "kernel/asterinas/kernel/comps/drm/Cargo.toml",
+      "manifest_sha256": "a3bc60bec4797f7160efd7af5284a7cfa494a79211130daeea61416455b30479",
+      "entry": "kernel/asterinas/kernel/comps/drm/src/lib.rs",
+      "entry_sha256": "51ba463cb5355af58c5d92a989d12565ca7d343fe71def39bb4bafbeacffc771",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-core",
+        "aster-util",
+        "atomic-integer-wrapper",
+        "bitvec",
+        "bitflags",
+        "device-id",
+        "hashbrown",
+        "int-to-c-enum",
+        "ostd",
+        "ostd-pod",
+        "sparse-id-alloc",
+        "spin",
+        "zerocopy"
+      ],
+      "handbook": "kernel-components.md#aster-drm",
+      "source_file_count": 27,
+      "source_files_sha256": "550615b5fb921da260a950f791024e89b716d00fe58e7ab5b738133b3b99eb9f",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-i8042",
+      "member": "kernel/comps/i8042",
+      "manifest": "kernel/asterinas/kernel/comps/i8042/Cargo.toml",
+      "manifest_sha256": "59f76aefd6209f36b0788d73d8494b8fd00c733c46dbef0be3607a0af4a5e19f",
+      "entry": "kernel/asterinas/kernel/comps/i8042/src/lib.rs",
+      "entry_sha256": "6e6c8b37bfe58dbe2c689ce96893d2f6f8489875b2a0b9a9ca865df247d8285a",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "kernel-components.md#aster-i8042",
+      "source_file_count": 5,
+      "source_files_sha256": "133c4413ba883af99354f0b697aeb4f24498c04632b5086a64829ab0738b7600",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-simpledrm",
+      "member": "kernel/comps/simpledrm",
+      "manifest": "kernel/asterinas/kernel/comps/simpledrm/Cargo.toml",
+      "manifest_sha256": "fe0912a5d24f113943fa3716d4988b13a00adc35716934faa3ff2ebced74842f",
+      "entry": "kernel/asterinas/kernel/comps/simpledrm/src/lib.rs",
+      "entry_sha256": "8e261072db02559fd87fdbd7bf408c54a7c8042950d8c53d962509c802b26122",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-core",
+        "aster-drm",
+        "aster-framebuffer",
+        "component",
+        "ostd"
+      ],
+      "handbook": "kernel-components.md#aster-simpledrm",
+      "source_file_count": 1,
+      "source_files_sha256": "09bebdc92ad899d1c32f6f35c32d4ff201e8e2b2ac74b57ebd1632d6a7934039",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-uart",
+      "member": "kernel/comps/uart",
+      "manifest": "kernel/asterinas/kernel/comps/uart/Cargo.toml",
+      "manifest_sha256": "370aa88dc632e2ab8312571c2fa91537934d802778d7fbdaae0db633a038bba4",
+      "entry": "kernel/asterinas/kernel/comps/uart/src/lib.rs",
+      "entry_sha256": "5b2f51128eea9db8155e90a939e12ae1d0bd89c85380531e34a4c243df2878b2",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-console",
+        "component",
+        "inherit-methods-macro",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-uart",
+      "source_file_count": 8,
+      "source_files_sha256": "774af747af15b3c5cbbb0e0114ef46f9528e74277cb25f3b5efb131c94c6ce3f",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-core",
+      "member": "kernel/core",
+      "manifest": "kernel/asterinas/kernel/core/Cargo.toml",
+      "manifest_sha256": "618cf96993869809d29e8370fbe86db9a711b463cad847e84bd3ea9899fa5289",
+      "entry": "kernel/asterinas/kernel/core/src/lib.rs",
+      "entry_sha256": "00aa62db00f37d4eeb7e70492d67d37a538b0a6106e27932d1d17549fccea437",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {
+        "permission-attr-smp-ktest": [],
+        "default": [
+          "cvm_guest"
+        ],
+        "coverage": [
+          "ostd/coverage"
+        ],
+        "cvm_guest": [
+          "dep:tdx-guest",
+          "ostd/cvm_guest",
+          "aster-virtio/cvm_guest"
+        ],
+        "pvh_boot": [
+          "ostd/pvh_boot"
+        ],
+        "riscv_sv39_mode": [
+          "ostd/riscv_sv39_mode"
+        ],
+        "g1c-trusted-observe": [],
+        "g1d-trusted-control": [
+          "g1c-trusted-observe",
+          "osdk-frame-allocator/physical-reserve"
+        ]
+      },
+      "direct_dependencies": [
+        "align_ext",
+        "aster-bigtcp",
+        "aster-block",
+        "aster-cmdline",
+        "aster-console",
+        "aster-device",
+        "aster-framebuffer",
+        "aster-fuse",
+        "aster-input",
+        "aster-logger",
+        "aster-network",
+        "aster-nvme",
+        "aster-rights",
+        "aster-rights-proc",
+        "aster-softirq",
+        "aster-systree",
+        "aster-time",
+        "aster-util",
+        "aster-virtio",
+        "atomic-integer-wrapper",
+        "bitflags",
+        "bitvec",
+        "component",
+        "const_format",
+        "cpio-decoder",
+        "device-id",
+        "getset",
+        "hashbrown",
+        "id-alloc",
+        "inherit-methods-macro",
+        "inventory",
+        "intrusive-collections",
+        "int-to-c-enum",
+        "io-util",
+        "jhash",
+        "keyable-arc",
+        "lending-iterator",
+        "logo-ascii-art",
+        "lru",
+        "miniz_oxide",
+        "os-control",
+        "osdk-frame-allocator",
+        "osdk-heap-allocator",
+        "ostd",
+        "ostd-pod",
+        "paste",
+        "rand",
+        "ring-buffer",
+        "short-vis-path",
+        "smallvec",
+        "sparse-id-alloc",
+        "spin",
+        "takeable",
+        "time",
+        "typeflags-util",
+        "typeflags",
+        "xarray",
+        "xmas-elf",
+        "zerocopy"
+      ],
+      "handbook": "kernel-components.md#aster-core",
+      "source_file_count": 790,
+      "source_files_sha256": "df0c8fec030042c2ea7c93d736e45368350cce57dd973c334299615e5824096e",
+      "static_test_declarations": {
+        "ktest": 291
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-block",
+      "member": "kernel/core/comps/block",
+      "manifest": "kernel/asterinas/kernel/core/comps/block/Cargo.toml",
+      "manifest_sha256": "54a7285dfc1d868f1f2925763e96636d78c465ef7b855ef6cc007813c9f828e8",
+      "entry": "kernel/asterinas/kernel/core/comps/block/src/lib.rs",
+      "entry_sha256": "0fc2fa8f18b573ecfaa14ab3110944ca8304dc6675282e0549af0a6625f5d41c",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "align_ext",
+        "aster-util",
+        "dma-pool",
+        "component",
+        "device-id",
+        "id-alloc",
+        "int-to-c-enum",
+        "io-util",
+        "ostd",
+        "ostd-pod",
+        "spin",
+        "zerocopy"
+      ],
+      "handbook": "kernel-components.md#aster-block",
+      "source_file_count": 8,
+      "source_files_sha256": "e04c63149f4cda18891bf9468b28b8bb0451d70c34f0cff28afc9014f05af19d",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-cmdline",
+      "member": "kernel/core/comps/cmdline",
+      "manifest": "kernel/asterinas/kernel/core/comps/cmdline/Cargo.toml",
+      "manifest_sha256": "4efce6e8cdc5972b53a5aeeecae60e59c30372663f3c0525e3b4a19f4e4e4019",
+      "entry": "kernel/asterinas/kernel/core/comps/cmdline/src/lib.rs",
+      "entry_sha256": "2a4eeb88761846dfbecbc12873cda2266f68af293741a4f9808fdb78d99ed08a",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "component",
+        "inventory",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-cmdline",
+      "source_file_count": 6,
+      "source_files_sha256": "55b073d4da8aae203b46ac8c919aa8c546c7af945c536e2f77c5e3518469d220",
+      "static_test_declarations": {
+        "ktest": 26
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-console",
+      "member": "kernel/core/comps/console",
+      "manifest": "kernel/asterinas/kernel/core/comps/console/Cargo.toml",
+      "manifest_sha256": "455d88958402268f051d0135ddd6e1fdbfb67c0862f8cee14cf5c5b2782dab65",
+      "entry": "kernel/asterinas/kernel/core/comps/console/src/lib.rs",
+      "entry_sha256": "9f0c53fc8b4a91d458e4c1cc33c8ddfc247fea702a29241160fbd563d0d8d3f6",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "component",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-console",
+      "source_file_count": 1,
+      "source_files_sha256": "41732d0b307dcbbfe707100a73d090b0270d1436f677f4d734643f917ab34e78",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-device",
+      "member": "kernel/core/comps/device",
+      "manifest": "kernel/asterinas/kernel/core/comps/device/Cargo.toml",
+      "manifest_sha256": "e5fe11b5acc6aed35369a5b6e7c70ae559ea8c21bbbd6e96d1a78dd96bd3a7cf",
+      "entry": "kernel/asterinas/kernel/core/comps/device/src/lib.rs",
+      "entry_sha256": "d38761c3b3fb960df6c5bb1c425122bbeca9369eaa759b1a9babf30fef7fa858",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-systree",
+        "aster-util",
+        "component",
+        "device-id",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-device",
+      "source_file_count": 26,
+      "source_files_sha256": "7a6f620b02774387fbe462a9a659b47673c1cf27f999b3ea24f20c1b05ff87f6",
+      "static_test_declarations": {
+        "ktest": 17
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-framebuffer",
+      "member": "kernel/core/comps/framebuffer",
+      "manifest": "kernel/asterinas/kernel/core/comps/framebuffer/Cargo.toml",
+      "manifest_sha256": "ed2e9873ded0bb62a88f76692b6b0d1d592d80e1f2789f245679dbd996b88beb",
+      "entry": "kernel/asterinas/kernel/core/comps/framebuffer/src/lib.rs",
+      "entry_sha256": "9e15d90001162b19dcaa998af2b6bc6d79b974a4ec59ca27b80c5dc27ef6189f",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "align_ext",
+        "bitflags",
+        "component",
+        "font8x8",
+        "int-to-c-enum",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-framebuffer",
+      "source_file_count": 7,
+      "source_files_sha256": "2e5893007ad3c942525d00363da1f9d56425f00d436912ad628b6bce6471df5c",
+      "static_test_declarations": {
+        "ktest": 3
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-input",
+      "member": "kernel/core/comps/input",
+      "manifest": "kernel/asterinas/kernel/core/comps/input/Cargo.toml",
+      "manifest_sha256": "bc511ee20030a626f817be32ffc9e5367bc4837b177aa9ba7a5947d1d628fdfb",
+      "entry": "kernel/asterinas/kernel/core/comps/input/src/lib.rs",
+      "entry_sha256": "6929491a38076c416d32eaf1cdcd5e98ec8fb2d831dba9fbfcf1f0e052d1474e",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "component",
+        "bitflags",
+        "bitvec",
+        "ostd",
+        "ostd-pod",
+        "spin",
+        "zerocopy"
+      ],
+      "handbook": "kernel-components.md#aster-input",
+      "source_file_count": 5,
+      "source_files_sha256": "c6362de762b8d2a665cdae50b4ea4e3e9e09be92299795c25998bd9fd007e944",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-logger",
+      "member": "kernel/core/comps/logger",
+      "manifest": "kernel/asterinas/kernel/core/comps/logger/Cargo.toml",
+      "manifest_sha256": "0be205db5b547e2050750d2c50d74c6b4fdc07cac1aec3d8d942e625730df59e",
+      "entry": "kernel/asterinas/kernel/core/comps/logger/src/lib.rs",
+      "entry_sha256": "38e15b4f53bd0079133d91b912e9c7f8a0398b2816b5860e0cf1f76744898155",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {
+        "default": [
+          "log_color"
+        ],
+        "log_color": [
+          "dep:owo-colors"
+        ]
+      },
+      "direct_dependencies": [
+        "aster-console",
+        "component",
+        "ostd",
+        "owo-colors"
+      ],
+      "handbook": "kernel-components.md#aster-logger",
+      "source_file_count": 3,
+      "source_files_sha256": "2ac5cccf9d8b5219524c39fe547abc6c5320e88e6a47349685ce27044283943a",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-mlsdisk",
+      "member": "kernel/core/comps/mlsdisk",
+      "manifest": "kernel/asterinas/kernel/core/comps/mlsdisk/Cargo.toml",
+      "manifest_sha256": "74e34cbb293fac7ef80d913440da54a72c645ab83c4773e1187981a657cee76e",
+      "entry": "kernel/asterinas/kernel/core/comps/mlsdisk/src/lib.rs",
+      "entry_sha256": "e1817ebf4a272dcbd9944823f2e7b7d20053db6a9e2f04a165e00fd96d017b6a",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aes-gcm",
+        "aster-block",
+        "bittle",
+        "component",
+        "ctr",
+        "device-id",
+        "hashbrown",
+        "inherit-methods-macro",
+        "lending-iterator",
+        "lru",
+        "ostd",
+        "ostd-pod",
+        "postcard",
+        "serde",
+        "zerocopy"
+      ],
+      "handbook": "kernel-components.md#aster-mlsdisk",
+      "source_file_count": 39,
+      "source_files_sha256": "be969bf6ef8113098980011ceeaf97b41f48f213af8045fd9aec173a4f374fa5",
+      "static_test_declarations": {
+        "ktest": 1,
+        "test": 34
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-network",
+      "member": "kernel/core/comps/network",
+      "manifest": "kernel/asterinas/kernel/core/comps/network/Cargo.toml",
+      "manifest_sha256": "3533556b83132c1fd6559d6b9cc4bb3cac9f150c854e9e4738d6a823c4826c44",
+      "entry": "kernel/asterinas/kernel/core/comps/network/src/lib.rs",
+      "entry_sha256": "f9775689134ea5dbc792a101747e15a90e5a78c2b38fe7e42700d282a5815c1b",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-bigtcp",
+        "aster-softirq",
+        "component",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-network",
+      "source_file_count": 1,
+      "source_files_sha256": "461b2f407dd56d88858164a64783063e117e6f6e0eaa111314790e3b555375e4",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-nvme",
+      "member": "kernel/core/comps/nvme",
+      "manifest": "kernel/asterinas/kernel/core/comps/nvme/Cargo.toml",
+      "manifest_sha256": "fdf0ff4e6d7f060cdc93d15a1a493d4181dc9bc43aaedfb2787469e13404d0a9",
+      "entry": "kernel/asterinas/kernel/core/comps/nvme/src/lib.rs",
+      "entry_sha256": "5f3d59da65b03053bca4df52b88da960512bbf4372725012d474976719b22a0b",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-block",
+        "aster-pci",
+        "aster-util",
+        "component",
+        "device-id",
+        "io-util",
+        "ostd",
+        "ostd-pod",
+        "spin",
+        "zerocopy"
+      ],
+      "handbook": "kernel-components.md#aster-nvme",
+      "source_file_count": 15,
+      "source_files_sha256": "4eed768fa896d7f3f86a4c1085da8fa150aedce590951eac794521ea3e512e3d",
+      "static_test_declarations": {
+        "ktest": 7
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-pci",
+      "member": "kernel/core/comps/pci",
+      "manifest": "kernel/asterinas/kernel/core/comps/pci/Cargo.toml",
+      "manifest_sha256": "2b3dbca799e8b3799f9233761d4108e2bc4e456137e9ef02564436112607aa81",
+      "entry": "kernel/asterinas/kernel/core/comps/pci/src/lib.rs",
+      "entry_sha256": "1855dad058dd80aa393672101d9bb5fdba73fafb9d7d4e3a327ab8ff2564c4d6",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "align_ext",
+        "bitflags",
+        "component",
+        "int-to-c-enum",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-pci",
+      "source_file_count": 12,
+      "source_files_sha256": "3558799979fe2ef0cf2e575ee413467555187ede1bf2c2a11cded8a7c52080cf",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-softirq",
+      "member": "kernel/core/comps/softirq",
+      "manifest": "kernel/asterinas/kernel/core/comps/softirq/Cargo.toml",
+      "manifest_sha256": "e5a1da35ddbe8cde708679065fcbcca65d59191a9f889ce423cf8e62be755240",
+      "entry": "kernel/asterinas/kernel/core/comps/softirq/src/lib.rs",
+      "entry_sha256": "aa25fc8ddf96a774aecb07cc72e097156c9755f8f46bf07906ab55b90a6f1438",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-util",
+        "component",
+        "intrusive-collections",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-softirq",
+      "source_file_count": 5,
+      "source_files_sha256": "57c570f67b700c072e4f0f052b3fe423b233b37b3978a2dc25572c9ed79c2398",
+      "static_test_declarations": {
+        "ktest": 5,
+        "test": 1
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-systree",
+      "member": "kernel/core/comps/systree",
+      "manifest": "kernel/asterinas/kernel/core/comps/systree/Cargo.toml",
+      "manifest_sha256": "dabf99c5fef23da71779e1f4d445405163f907f1e0281e4579d3e7a254ef70f9",
+      "entry": "kernel/asterinas/kernel/core/comps/systree/src/lib.rs",
+      "entry_sha256": "08300d4568d5180bc7309d490e5ae0023a39f803c7f342e4c8e91fb4938fdb0e",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-util",
+        "bitflags",
+        "component",
+        "id-alloc",
+        "inherit-methods-macro",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-systree",
+      "source_file_count": 6,
+      "source_files_sha256": "8fa9445f3b7588f92b1548d89a0929f46c4f127b0e59e660e38523da02bdf029",
+      "static_test_declarations": {
+        "ktest": 16
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-time",
+      "member": "kernel/core/comps/time",
+      "manifest": "kernel/asterinas/kernel/core/comps/time/Cargo.toml",
+      "manifest_sha256": "0009062f62462fa135e294dd29b0c3013ca77de3d6133aaf385d35c6b5135802",
+      "entry": "kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+      "entry_sha256": "637eb2ef32c33cf387cb583fd79a319f6fe89c68682652d2b7fb1bca3175d1e1",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-util",
+        "bitflags",
+        "component",
+        "ostd",
+        "spin"
+      ],
+      "handbook": "kernel-components.md#aster-time",
+      "source_file_count": 8,
+      "source_files_sha256": "12981977dc0534a6cc0f2c91d668a838a55f98e91884f2111665e6a39bb86b62",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-virtio",
+      "member": "kernel/core/comps/virtio",
+      "manifest": "kernel/asterinas/kernel/core/comps/virtio/Cargo.toml",
+      "manifest_sha256": "8f973eba5be9f0d59a76981ed90fcca18bd6658179eea9920ef7d427cb2d562d",
+      "entry": "kernel/asterinas/kernel/core/comps/virtio/src/lib.rs",
+      "entry_sha256": "28e4cefbf7f8bc19f7e1d150f596b7b20a0bdbb2ff989c11c0c76b37798efaeb",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {
+        "all": [
+          "cvm_guest"
+        ],
+        "cvm_guest": [
+          "dep:tdx-guest",
+          "ostd/cvm_guest"
+        ]
+      },
+      "direct_dependencies": [
+        "aster-bigtcp",
+        "aster-block",
+        "aster-console",
+        "aster-fuse",
+        "aster-input",
+        "aster-network",
+        "aster-pci",
+        "aster-rights",
+        "aster-softirq",
+        "aster-util",
+        "bitflags",
+        "component",
+        "device-id",
+        "dma-pool",
+        "id-alloc",
+        "int-to-c-enum",
+        "io-util",
+        "ostd",
+        "ostd-pod",
+        "short-vis-path",
+        "smallvec",
+        "spin",
+        "typeflags-util",
+        "zerocopy"
+      ],
+      "handbook": "kernel-components.md#aster-virtio",
+      "source_file_count": 55,
+      "source_files_sha256": "e63d5a35b9878574352868d162d80d07219c9d1aa032ee6d9d9e57d094df1d2d",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-bigtcp",
+      "member": "kernel/libs/aster-bigtcp",
+      "manifest": "kernel/asterinas/kernel/libs/aster-bigtcp/Cargo.toml",
+      "manifest_sha256": "49cf3f03650e213b38437e69cbfc0cc095ba05b24c63a7151a8bc918745818a1",
+      "entry": "kernel/asterinas/kernel/libs/aster-bigtcp/src/lib.rs",
+      "entry_sha256": "31880d33e44b56f20285c6245a9d29f20f1f37ae9fd9114658fde93de6628c06",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-softirq",
+        "aster-util",
+        "bitflags",
+        "dma-pool",
+        "int-to-c-enum",
+        "jhash",
+        "ostd",
+        "ostd-pod",
+        "smoltcp",
+        "spin",
+        "takeable",
+        "zerocopy"
+      ],
+      "handbook": "kernel-libraries.md#aster-bigtcp",
+      "source_file_count": 40,
+      "source_files_sha256": "30d9e930737443e6a11a9e9d3e8a76c7e8a094997a6cc1676cba72a346196e5b",
+      "static_test_declarations": {
+        "ktest": 7
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-fuse",
+      "member": "kernel/libs/aster-fuse",
+      "manifest": "kernel/asterinas/kernel/libs/aster-fuse/Cargo.toml",
+      "manifest_sha256": "9d409bf2bce9c76008eaf0d40d68dd62d186361df91dfcc4a519dbdbdf3d19dc",
+      "entry": "kernel/asterinas/kernel/libs/aster-fuse/src/lib.rs",
+      "entry_sha256": "cd463f39c1a2acbed5e9db6d6eb89740f6f2fc7c5f34db52ca1283948db0ace4",
+      "directory_markdown": [
+        "kernel/asterinas/kernel/libs/aster-fuse/README.md"
+      ],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "bitflags",
+        "int-to-c-enum",
+        "ostd",
+        "ostd-pod",
+        "zerocopy"
+      ],
+      "handbook": "kernel-libraries.md#aster-fuse",
+      "source_file_count": 32,
+      "source_files_sha256": "d0890482bf06c126f8daa0a2eb84f5cea5e784638a267fde13aadc144e122ac0",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-rights",
+      "member": "kernel/libs/aster-rights",
+      "manifest": "kernel/asterinas/kernel/libs/aster-rights/Cargo.toml",
+      "manifest_sha256": "928cf3951fa21141024ca38b07e5441a808c3c291101ad2f96d512f535913982",
+      "entry": "kernel/asterinas/kernel/libs/aster-rights/src/lib.rs",
+      "entry_sha256": "439a9b1769e433a163a6b4032a3013cb8e0fea7a507f026c29f696c57b4d5059",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "bitflags",
+        "typeflags",
+        "typeflags-util"
+      ],
+      "handbook": "kernel-libraries.md#aster-rights",
+      "source_file_count": 1,
+      "source_files_sha256": "bcbdff7b058911fc34fdf8026699acba5db776871194a720a522e70fbc57818b",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-rights-proc",
+      "member": "kernel/libs/aster-rights-proc",
+      "manifest": "kernel/asterinas/kernel/libs/aster-rights-proc/Cargo.toml",
+      "manifest_sha256": "418ce335ea99821aba4cae384a952c170146ca58c871a88b95a5746196454a94",
+      "entry": "kernel/asterinas/kernel/libs/aster-rights-proc/src/lib.rs",
+      "entry_sha256": "431f94bb262d592308459d281d3b0fcbfb6091fab896112a84f9bec54be6769a",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "proc-macro2",
+        "quote",
+        "syn"
+      ],
+      "handbook": "kernel-libraries.md#aster-rights-proc",
+      "source_file_count": 3,
+      "source_files_sha256": "72ce3a02a61c517d37574b65ab9a981912a1ac5a2482694a50a1a5e48bd6d53c",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "aster-util",
+      "member": "kernel/libs/aster-util",
+      "manifest": "kernel/asterinas/kernel/libs/aster-util/Cargo.toml",
+      "manifest_sha256": "17bef4043fa45d5a6bc3d658dca6e3b36c7c9189b89dd5b09dbb24c58abd6deb",
+      "entry": "kernel/asterinas/kernel/libs/aster-util/src/lib.rs",
+      "entry_sha256": "40f40e100653744b09e3e015b0cfa042345598f1e7dd685d57c768dcabf66432",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-rights",
+        "aster-rights-proc",
+        "bitvec",
+        "inherit-methods-macro",
+        "osdk-heap-allocator",
+        "ostd",
+        "ostd-pod",
+        "typeflags-util",
+        "zerocopy"
+      ],
+      "handbook": "kernel-libraries.md#aster-util",
+      "source_file_count": 11,
+      "source_files_sha256": "2444162183506bd003415b37574633ee904537bcbc84b13479bf2179174c4f35",
+      "static_test_declarations": {
+        "ktest": 11
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "atomic-integer-wrapper",
+      "member": "kernel/libs/atomic-integer-wrapper",
+      "manifest": "kernel/asterinas/kernel/libs/atomic-integer-wrapper/Cargo.toml",
+      "manifest_sha256": "a419518ff8d992039dcc44a4a7d2c6676e6342bd74c5f14e88c65546841a405c",
+      "entry": "kernel/asterinas/kernel/libs/atomic-integer-wrapper/src/lib.rs",
+      "entry_sha256": "fec44fdf414e445409aa202c5a007143bb885fa3c76022110a793288823a2456",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "proc-macro2",
+        "quote",
+        "syn"
+      ],
+      "handbook": "kernel-libraries.md#atomic-integer-wrapper",
+      "source_file_count": 1,
+      "source_files_sha256": "6ae72f3d9a861c2e5aa156687421613446173c9bc76cd52da0f20b403aaf520f",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "cpio-decoder",
+      "member": "kernel/libs/cpio-decoder",
+      "manifest": "kernel/asterinas/kernel/libs/cpio-decoder/Cargo.toml",
+      "manifest_sha256": "fcc846f4367a4ae91ef7682058bbec925687d2d784f67fd536ad8e502b9ec67f",
+      "entry": "kernel/asterinas/kernel/libs/cpio-decoder/src/lib.rs",
+      "entry_sha256": "42ef36f9baeba2e06877fb4b96104b0059ae62990cc407915dd6737c0b250192",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "int-to-c-enum",
+        "lending-iterator"
+      ],
+      "handbook": "kernel-libraries.md#cpio-decoder",
+      "source_file_count": 3,
+      "source_files_sha256": "dcc74c87e4021223b8220e1b84dff0e56901c439fd7c11682f04d89e78fd9bda",
+      "static_test_declarations": {
+        "test": 5
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "device-id",
+      "member": "kernel/libs/device-id",
+      "manifest": "kernel/asterinas/kernel/libs/device-id/Cargo.toml",
+      "manifest_sha256": "09d008d0e9abd4518df96289bdfc21a1c637946fd5b53b455a87e46a0768879e",
+      "entry": "kernel/asterinas/kernel/libs/device-id/src/lib.rs",
+      "entry_sha256": "2ef590e906bab24e39e32817b0b7330dfcf05097e82116e6bd74483e3c5c9a30",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-util",
+        "spin"
+      ],
+      "handbook": "kernel-libraries.md#device-id",
+      "source_file_count": 1,
+      "source_files_sha256": "abc1f13f3324b2bba24a2ed6cf2978ca878d85c6c4546ec8d515966f789cfda8",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "dma-pool",
+      "member": "kernel/libs/dma-pool",
+      "manifest": "kernel/asterinas/kernel/libs/dma-pool/Cargo.toml",
+      "manifest_sha256": "8d28a920dce043571a9336cf019812ecf4a253656dfd176a0ab838dfb949de26",
+      "entry": "kernel/asterinas/kernel/libs/dma-pool/src/lib.rs",
+      "entry_sha256": "536cf985809162388a50d3e22dbd2d2c208fb3cc2ebc01cd1ad089a44d4cf509",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "aster-softirq",
+        "aster-util",
+        "bitvec",
+        "ostd"
+      ],
+      "handbook": "kernel-libraries.md#dma-pool",
+      "source_file_count": 3,
+      "source_files_sha256": "f4e56a71cb1a92097bb169a69ea7ac9cb60227468c6d088fcbbb0abf9c86434e",
+      "static_test_declarations": {
+        "ktest": 8
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "fdt-util",
+      "member": "kernel/libs/fdt-util",
+      "manifest": "kernel/asterinas/kernel/libs/fdt-util/Cargo.toml",
+      "manifest_sha256": "360285fb0360ac03ad26a6acdbf4230f88b944548cfd00037ce0f427b2ec6be4",
+      "entry": "kernel/asterinas/kernel/libs/fdt-util/src/lib.rs",
+      "entry_sha256": "522160ce56b59b0bcac0f9394cc6e14e055afa37ac689c28a828726eef3d4faa",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "kernel-libraries.md#fdt-util",
+      "source_file_count": 3,
+      "source_files_sha256": "2f6041bb2520256636397843aa30b9a2604d738dd17868890e4d0271cd12bcda",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "io-util",
+      "member": "kernel/libs/io-util",
+      "manifest": "kernel/asterinas/kernel/libs/io-util/Cargo.toml",
+      "manifest_sha256": "6bd0df98e47ad086991703dba73ac44b42e28d22dc9622ee0e492d1338e4a891",
+      "entry": "kernel/asterinas/kernel/libs/io-util/src/lib.rs",
+      "entry_sha256": "2ef0c0b0b4182baa3d1bd56d3d4c615af9e630f916c0cb870a2502175a06adfe",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "smallvec"
+      ],
+      "handbook": "kernel-libraries.md#io-util",
+      "source_file_count": 2,
+      "source_files_sha256": "112b270319451a4bc96e1c0252d361dec50daab30fd29d1387e6f459297486b6",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "jhash",
+      "member": "kernel/libs/jhash",
+      "manifest": "kernel/asterinas/kernel/libs/jhash/Cargo.toml",
+      "manifest_sha256": "86da7efad20ea584909156a4a2e033ade34fddb522c1b26d965e624ccc691e23",
+      "entry": "kernel/asterinas/kernel/libs/jhash/src/lib.rs",
+      "entry_sha256": "9c5704e04bfff2ba9915b4a46be3dbc1b38105161316d1c20a21585fd524f1b0",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "kernel-libraries.md#jhash",
+      "source_file_count": 1,
+      "source_files_sha256": "e1cfdb2afa59a3e6b4ef3d362f3a9cd2b5776da19c9e7548ae6d19970c39a638",
+      "static_test_declarations": {
+        "test": 5
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "keyable-arc",
+      "member": "kernel/libs/keyable-arc",
+      "manifest": "kernel/asterinas/kernel/libs/keyable-arc/Cargo.toml",
+      "manifest_sha256": "909a8aed522a77e6932474ca82b0488ac13e9499e153a4a400d7f3d0e66ea8e4",
+      "entry": "kernel/asterinas/kernel/libs/keyable-arc/src/lib.rs",
+      "entry_sha256": "6bd6582337bfdcf914f5ec2e83d7b6affc5deb2c7b9646a161122d1b6b4f9296",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "kernel-libraries.md#keyable-arc",
+      "source_file_count": 1,
+      "source_files_sha256": "048849b5fe9a00618cd3cb27833119944ffe15005b78c746aee2213b149bef5b",
+      "static_test_declarations": {
+        "test": 4
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "logo-ascii-art",
+      "member": "kernel/libs/logo-ascii-art",
+      "manifest": "kernel/asterinas/kernel/libs/logo-ascii-art/Cargo.toml",
+      "manifest_sha256": "8461fe008cc1f45546ca76020859496b71f5e4259f4e250907a5361632723f6c",
+      "entry": "kernel/asterinas/kernel/libs/logo-ascii-art/src/lib.rs",
+      "entry_sha256": "61c3adaa7130921881b16280927fd818698576405c1b9aa9d3202b90a5680c2b",
+      "directory_markdown": [
+        "kernel/asterinas/kernel/libs/logo-ascii-art/README.md"
+      ],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {
+        "default": [],
+        "color": [
+          "owo-colors"
+        ]
+      },
+      "direct_dependencies": [
+        "owo-colors"
+      ],
+      "handbook": "kernel-libraries.md#logo-ascii-art",
+      "source_file_count": 2,
+      "source_files_sha256": "714ef683139cac346fa3cc415c808e8e8032928a968efe64fc52d4bcb41091d0",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "ring-buffer",
+      "member": "kernel/libs/ring-buffer",
+      "manifest": "kernel/asterinas/kernel/libs/ring-buffer/Cargo.toml",
+      "manifest_sha256": "2de67922368827fff2cc1465627d538e9fbc9ec88279d7a0c3454b44ae01b320",
+      "entry": "kernel/asterinas/kernel/libs/ring-buffer/src/lib.rs",
+      "entry_sha256": "ebd4531d579581db03eac06df3f770e2d9b5ea332a9b8410610dc6dafef84820",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "inherit-methods-macro",
+        "ostd",
+        "ostd-pod"
+      ],
+      "handbook": "kernel-libraries.md#ring-buffer",
+      "source_file_count": 2,
+      "source_files_sha256": "48d2e82387646e208bb3514e0c48d1ba61839730b84b9fbe17ab02f4908ab3d0",
+      "static_test_declarations": {
+        "ktest": 3
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "sparse-id-alloc",
+      "member": "kernel/libs/sparse-id-alloc",
+      "manifest": "kernel/asterinas/kernel/libs/sparse-id-alloc/Cargo.toml",
+      "manifest_sha256": "84018899d9181926e31f1e55aa60bfe578c98cd9cdc0e48fe72c4c3b579b5319",
+      "entry": "kernel/asterinas/kernel/libs/sparse-id-alloc/src/lib.rs",
+      "entry_sha256": "967a8a16bc0e94bacb6e633baad9f719f51afbff9500947bc52d158b1d0fb130",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "kernel-libraries.md#sparse-id-alloc",
+      "source_file_count": 1,
+      "source_files_sha256": "f039d30c96672256fb82ed29e7a82823ea04468b451fee9510b2e7895b6ba320",
+      "static_test_declarations": {
+        "test": 7
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "short-vis-path",
+      "member": "kernel/libs/short-vis-path",
+      "manifest": "kernel/asterinas/kernel/libs/short-vis-path/Cargo.toml",
+      "manifest_sha256": "89d545b1d2f72e23322019809a7ac0a53dedaf3de1323ce81de85e4d2dd3ea5a",
+      "entry": "kernel/asterinas/kernel/libs/short-vis-path/src/lib.rs",
+      "entry_sha256": "7d2a6301ddc82f17c264728972d9ac0bd0dc5155cb7233ab1ab6bc9733fa6a9d",
+      "directory_markdown": [
+        "kernel/asterinas/kernel/libs/short-vis-path/README.md"
+      ],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "syn",
+        "quote",
+        "proc-macro2"
+      ],
+      "handbook": "kernel-libraries.md#short-vis-path",
+      "source_file_count": 3,
+      "source_files_sha256": "ba3cbd7ae40722c997eabe4e0a1c5eee2efad03509ce597d31050d478b6d6c32",
+      "static_test_declarations": {
+        "test": 5
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "typeflags",
+      "member": "kernel/libs/typeflags",
+      "manifest": "kernel/asterinas/kernel/libs/typeflags/Cargo.toml",
+      "manifest_sha256": "98a4d5465f77dd5095e5cf3f31c11ce4faeab0aa518eebd5e7146baec61cb83c",
+      "entry": "kernel/asterinas/kernel/libs/typeflags/src/lib.rs",
+      "entry_sha256": "0cfd8c519bf638706fd3da741b9f2e16a11e547195b2d7662a9942c8ca71b003",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": true,
+      "features": {},
+      "direct_dependencies": [
+        "itertools",
+        "proc-macro2",
+        "quote",
+        "syn"
+      ],
+      "handbook": "kernel-libraries.md#typeflags",
+      "source_file_count": 4,
+      "source_files_sha256": "4b810cfd0293c7ba566a3b7399bf33385b7860927eff803450dda690ec07954b",
+      "static_test_declarations": {},
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "typeflags-util",
+      "member": "kernel/libs/typeflags-util",
+      "manifest": "kernel/asterinas/kernel/libs/typeflags-util/Cargo.toml",
+      "manifest_sha256": "6dffc5a4ff27f6c377e64fdf6e9f63f36864dc6d68f1f46d7440394bc7d2a65a",
+      "entry": "kernel/asterinas/kernel/libs/typeflags-util/src/lib.rs",
+      "entry_sha256": "d987a1462c37c80243bba833d7f9a95ab001280ad92f0ce5c58986e2468ca0f8",
+      "directory_markdown": [],
+      "default_member": false,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [],
+      "handbook": "kernel-libraries.md#typeflags-util",
+      "source_file_count": 7,
+      "source_files_sha256": "490df05b5d6c0a45cbff49be8acdf57e5fffb3218322544d71b216989bd7a824",
+      "static_test_declarations": {
+        "test": 3
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    },
+    {
+      "package": "xarray",
+      "member": "kernel/libs/xarray",
+      "manifest": "kernel/asterinas/kernel/libs/xarray/Cargo.toml",
+      "manifest_sha256": "5c820dc4880c1d0e89bf727ea1e32d8fd86171a6c4cc4144645bf633fb25cbf4",
+      "entry": "kernel/asterinas/kernel/libs/xarray/src/lib.rs",
+      "entry_sha256": "c5fadaaed8655e28a2af3d582d52b5dfe9e976ce246e4f65dcc5c3168102043c",
+      "directory_markdown": [],
+      "default_member": true,
+      "proc_macro": false,
+      "features": {},
+      "direct_dependencies": [
+        "ostd"
+      ],
+      "handbook": "kernel-libraries.md#xarray",
+      "source_file_count": 7,
+      "source_files_sha256": "5266d0f7ba2956507b37d69b469cc81dfe69965189085e6680a91b99b632c02b",
+      "static_test_declarations": {
+        "ktest": 20
+      },
+      "validation_status": "not_executed_by_this_documentation_change"
+    }
+  ]
+}

@@ -30,7 +30,7 @@ use crate::{
             HandlePendingSignal, PollHandle, Pollable, Poller,
             constants::{SIGKILL, SIGSTOP},
             sig_mask::{AtomicSigMask, SigMask},
-            signals::Signal,
+            signals::OwnedSignal,
         },
     },
 };
@@ -305,7 +305,7 @@ trait ToSignalfdSiginfo {
     fn to_signalfd_siginfo(&self) -> SignalfdSiginfo;
 }
 
-impl ToSignalfdSiginfo for Box<dyn Signal> {
+impl ToSignalfdSiginfo for OwnedSignal {
     fn to_signalfd_siginfo(&self) -> SignalfdSiginfo {
         let siginfo = self.to_info();
         SignalfdSiginfo {

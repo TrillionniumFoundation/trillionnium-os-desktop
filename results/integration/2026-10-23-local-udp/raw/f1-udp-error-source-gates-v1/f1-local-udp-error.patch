@@ -1,0 +1,473 @@
+diff --git a/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs b/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs
+index 39d16d900a9700013105b646551155887c789e36..6ab07106013eb139176685d5880bdae9ea8c444e 100644
+--- a/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs
++++ b/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/bound.rs
+@@ -35,6 +35,12 @@
+     pub(super) fn bound_port(&self) -> &BoundUdpPort {
+         self.bound_socket.bound_port()
+     }
++
++    pub(super) fn take_error(&self) -> Option<Error> {
++        self.bound_socket.take_connection_refused().then(|| {
++            Error::with_message(Errno::ECONNREFUSED, "the destination UDP port is unreachable")
++        })
++    }
+ }
+ 
+ impl datagram_common::Bound for BoundDatagram {
+@@ -49,6 +55,7 @@
+     }
+ 
+     fn set_remote_endpoint(&mut self, endpoint: &Self::Endpoint) {
++        self.bound_socket.set_error_peer(*endpoint);
+         self.remote_endpoint = Some(*endpoint)
+     }
+ 
+@@ -57,6 +64,10 @@
+         writer: &mut dyn MultiWrite,
+         flags: RecvFlags,
+     ) -> Result<(RecvOutput, Self::Endpoint)> {
++        if let Some(error) = self.take_error() {
++            return Err(error);
++        }
++
+         let result = self
+             .bound_socket
+             .recv(flags.receive_behavior(), |packet, udp_metadata| {
+@@ -89,6 +100,10 @@
+         remote: &Self::Endpoint,
+         _flags: SendFlags,
+     ) -> Result<usize> {
++        if let Some(error) = self.take_error() {
++            return Err(error);
++        }
++
+         let result = self
+             .bound_socket
+             .send(reader.sum_lens(), *remote, |socket_buffer| {
+@@ -117,7 +132,7 @@
+     }
+ 
+     fn check_io_events(&self) -> IoEvents {
+-        self.bound_socket.raw_with(|socket| {
++        let mut events = self.bound_socket.raw_with(|socket| {
+             let mut events = IoEvents::empty();
+ 
+             if socket.can_recv() {
+@@ -129,6 +144,12 @@
+             }
+ 
+             events
+-        })
++        });
++
++        if self.bound_socket.has_connection_refused() {
++            events |= IoEvents::ERR;
++        }
++
++        events
+     }
+ }
+diff --git a/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs b/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs
+index ca1651687fdd5a6d1ebeed9e74a790b8f7c11388..7c1ef2d0b609baa1fc0c658f476feed8fd520b30 100644
+--- a/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs
++++ b/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/mod.rs
+@@ -83,10 +83,10 @@
+             .inner
+             .read()
+             .try_recv(writer, flags)
+-            .map(|(output, remote_endpoint)| (output, remote_endpoint.into()))?;
++            .map(|(output, remote_endpoint)| (output, remote_endpoint.into()));
+         self.pollee.invalidate();
+ 
+-        Ok(result)
++        result
+     }
+ 
+     fn try_send(
+@@ -95,7 +95,7 @@
+         remote: Option<&IpEndpoint>,
+         flags: SendFlags,
+     ) -> Result<usize> {
+-        let (sent_bytes, iface_to_poll) = select_remote_and_bind(
++        let result = select_remote_and_bind(
+             &self.inner,
+             remote,
+             || {
+@@ -114,9 +114,10 @@
+                 let iface_to_poll = bound_datagram.iface().clone();
+                 Ok((sent_bytes, iface_to_poll))
+             },
+-        )?;
++        );
+ 
+         self.pollee.invalidate();
++        let (sent_bytes, iface_to_poll) = result?;
+         iface_to_poll.poll();
+ 
+         Ok(sent_bytes)
+@@ -251,8 +252,12 @@
+     fn get_option(&self, option: &mut dyn SocketOption) -> Result<()> {
+         sock_option_mut!(match option {
+             socket_errors @ SocketError => {
+-                // TODO: Support socket errors for UDP sockets
+-                socket_errors.set(None);
++                let error = match &*self.inner.read() {
++                    Inner::Unbound(_) => None,
++                    Inner::Bound(bound) => bound.take_error(),
++                };
++                self.pollee.invalidate();
++                socket_errors.set(error);
+                 return Ok(());
+             }
+             _ => (),
+diff --git a/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs b/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs
+index d16e77cf57dec33d3cd8f58951b32cd2722ffdd8..64f8328abc603d1b8d1a57714a764fde3bdc2b5e 100644
+--- a/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs
++++ b/kernel/asterinas/kernel/core/src/net/socket/ip/datagram/observer.rs
+@@ -24,6 +24,10 @@
+             io_events |= IoEvents::OUT;
+         }
+ 
++        if events.contains(SocketEvents::ERROR) {
++            io_events |= IoEvents::ERR;
++        }
++
+         self.0.notify(io_events);
+     }
+ }
+diff --git a/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs b/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs
+index 95e0aac2ca29842771595711b92f757a92bf865a..163b6c5ad29d12bcbaf609160fb5daa68ed5eaf0 100644
+--- a/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs
++++ b/kernel/asterinas/kernel/libs/aster-bigtcp/src/iface/poll.rs
+@@ -6,7 +6,7 @@
+ use smoltcp::{
+     storage::SliceLike,
+     wire::{
+-        IPV4_HEADER_LEN, IPV4_MIN_MTU, Icmpv4DstUnreachable, IpAddress, IpProtocol, IpRepr,
++        IPV4_HEADER_LEN, IPV4_MIN_MTU, Icmpv4DstUnreachable, IpAddress, IpEndpoint, IpProtocol, IpRepr,
+         Ipv4Address, Ipv4Repr, TcpControl, TcpRepr, UDP_HEADER_LEN, UdpRepr,
+     },
+ };
+@@ -577,6 +577,7 @@
+             did_something = true;
+ 
+             let mut deferred = None;
++            let mut unreachable = None;
+ 
+             let (cx, pending) = self.iface.inner_mut();
+             socket.dispatch(cx, |cx, ip_repr, udp_repr, udp_payload| {
+@@ -592,9 +593,11 @@
+                 }
+ 
+                 if !socket.can_process(udp_repr.dst_port) {
+-                    // TODO: Generate the ICMP message here once we're able to handle incoming ICMP
+-                    // messages.
+-                    let _ = this.process_udp(ip_repr, udp_repr, PacketSlice::from(udp_payload));
++                    let processed =
++                        this.process_udp(ip_repr, udp_repr, PacketSlice::from(udp_payload));
++                    if !processed && this.iface.context().is_unicast(ip_repr.dst_addr()) {
++                        unreachable = Some(IpEndpoint::new(ip_repr.dst_addr(), udp_repr.dst_port));
++                    }
+                     return;
+                 }
+ 
+@@ -604,8 +607,18 @@
+             });
+ 
+             if let Some((ip_repr, udp_repr, payload)) = deferred {
+-                let _ =
++                let processed =
+                     self.process_udp(&ip_repr, &udp_repr, PacketSlice::from(payload.as_slice()));
++                if !processed && self.iface.context().is_unicast(ip_repr.dst_addr()) {
++                    unreachable = Some(IpEndpoint::new(ip_repr.dst_addr(), udp_repr.dst_port));
++                }
++            }
++
++            if let Some(destination) = unreachable {
++                // Local delivery needs no ICMP packet or socket lookup to identify the sender.
++                // Notify after dispatch has released its raw socket lock. Remote ICMP errors
++                // remain unsupported.
++                socket.on_port_unreachable(destination);
+             }
+ 
+             if tx_packet.is_some() {
+diff --git a/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs b/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs
+index cccbf4c74b99a41aef1f405f1c19f24ef7f28107..b32e1de07fa2c6c575290bb21643b55d78bd2bad 100644
+--- a/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs
++++ b/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/bound/udp.rs
+@@ -8,7 +8,7 @@
+ use smoltcp::{
+     iface::Context,
+     socket::udp::UdpMetadata,
+-    wire::{IpRepr, UdpRepr},
++    wire::{IpEndpoint, IpRepr, UdpRepr},
+ };
+ 
+ use super::{
+@@ -28,6 +28,13 @@
+ pub struct UdpSocketInner {
+     socket: SpinLock<Box<RawUdpSocket>, BottomHalfDisabled>,
+     need_dispatch: AtomicBool,
++    errors: SpinLock<UdpErrorState, BottomHalfDisabled>,
++}
++
++#[derive(Default)]
++struct UdpErrorState {
++    peer: Option<IpEndpoint>,
++    connection_refused: bool,
+ }
+ 
+ impl<E: Ext> Inner<E> for UdpSocketInner {
+@@ -45,6 +52,22 @@
+ pub(crate) type UdpSocketBg<E> = SocketBg<UdpSocketInner, E>;
+ 
+ impl<E: Ext> UdpSocketBg<E> {
++    /// Reports that a locally dispatched datagram had no receiver.
++    ///
++    /// Without an extended error queue, retain port-unreachable errors only for
++    /// the connected peer. The caller must have released the raw socket lock.
++    pub(crate) fn on_port_unreachable(&self, destination: IpEndpoint) {
++        {
++            let mut errors = self.inner.errors.lock();
++            if errors.peer != Some(destination) {
++                return;
++            }
++            errors.connection_refused = true;
++        }
++
++        self.notify_events(SocketEvents::ERROR);
++    }
++
+     /// Tries to process an incoming packet and returns whether the packet is processed.
+     pub(crate) fn process(
+         &self,
+@@ -143,6 +166,7 @@
+         let inner = UdpSocketInner {
+             socket: SpinLock::new(socket),
+             need_dispatch: AtomicBool::new(false),
++            errors: SpinLock::new(UdpErrorState::default()),
+         };
+ 
+         let socket = Self::new(bound, inner);
+@@ -153,6 +177,23 @@
+             .register_udp_socket(socket.inner().clone());
+ 
+         Ok(socket)
++    }
++
++    /// Sets the peer whose port-unreachable errors should be retained.
++    ///
++    /// Changing the peer does not consume an already pending error.
++    pub fn set_error_peer(&self, endpoint: IpEndpoint) {
++        self.0.inner.errors.lock().peer = Some(endpoint);
++    }
++
++    /// Returns whether a port-unreachable error is pending.
++    pub fn has_connection_refused(&self) -> bool {
++        self.0.inner.errors.lock().connection_refused
++    }
++
++    /// Takes a pending port-unreachable error, if any.
++    pub fn take_connection_refused(&self) -> bool {
++        core::mem::take(&mut self.0.inner.errors.lock().connection_refused)
+     }
+ 
+     /// Sends some data.
+diff --git a/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs b/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs
+index c51514c29b7364699e788e4993ccaec18964e1f7..65131393a9257b8587eeb0caa2d33a945613f208 100644
+--- a/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs
++++ b/kernel/asterinas/kernel/libs/aster-bigtcp/src/socket/event.rs
+@@ -19,5 +19,7 @@
+         const CLOSED_RECV = 4;
+         /// Sending data isn't possible anymore.
+         const CLOSED_SEND = 8;
++        /// An asynchronous socket error is pending.
++        const ERROR = 16;
+     }
+ }
+diff --git a/kernel/asterinas/test/initramfs/src/regression/network/udp_local_error.c b/kernel/asterinas/test/initramfs/src/regression/network/udp_local_error.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..39b047ced519f98e191cb0587477975db3ba187a
+--- /dev/null
++++ b/kernel/asterinas/test/initramfs/src/regression/network/udp_local_error.c
+@@ -0,0 +1,179 @@
++// SPDX-License-Identifier: MPL-2.0
++
++#define _GNU_SOURCE
++#include <arpa/inet.h>
++#include <poll.h>
++#include <signal.h>
++#include <sys/socket.h>
++#include <unistd.h>
++
++#include "../common/test.h"
++
++/* Regression for the native F1 DNS worker shutdown failure: a local closed
++ * UDP port must wake a connected socket with POLLERR and ECONNREFUSED. */
++
++static int bind_loopback(struct sockaddr_in *address)
++{
++	int fd = CHECK(socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0));
++	*address = (struct sockaddr_in){
++		.sin_family = AF_INET,
++		.sin_addr.s_addr = htonl(INADDR_LOOPBACK),
++	};
++	socklen_t length = sizeof(*address);
++
++	CHECK(bind(fd, (struct sockaddr *)address, sizeof(*address)));
++	CHECK_WITH(getsockname(fd, (struct sockaddr *)address, &length),
++		   _ret == 0 && length == sizeof(*address) && address->sin_port);
++	return fd;
++}
++
++static int closed_port_sender(struct sockaddr_in *destination, int connected)
++{
++	struct sockaddr_in local;
++	int reservation = bind_loopback(destination);
++	/* Bind the sender before releasing the destination so an ephemeral port
++	 * allocator cannot reuse the destination and turn this into self-send. */
++	int sender = bind_loopback(&local);
++	CHECK_WITH(local.sin_port, _ret != destination->sin_port);
++	CHECK(close(reservation));
++	if (connected)
++		CHECK(connect(sender, (struct sockaddr *)destination,
++			      sizeof(*destination)));
++	return sender;
++}
++
++FN_SETUP(deadline)
++{
++	alarm(5);
++}
++END_SETUP()
++
++FN_TEST(connected_error_is_read_once_and_delivery_recovers)
++{
++	struct sockaddr_in destination;
++	int sender = closed_port_sender(&destination, 1);
++	struct pollfd wait = { .fd = sender, .events = POLLIN };
++	int error = -1;
++	socklen_t length = sizeof(error);
++	char byte = 0;
++
++	TEST_RES(send(sender, "u", 1, 0), _ret == 1);
++	TEST_RES(poll(&wait, 1, 500), _ret == 1 && wait.revents == POLLERR);
++	TEST_RES(getsockopt(sender, SOL_SOCKET, SO_ERROR, &error, &length),
++		 _ret == 0 && length == sizeof(error) && error == ECONNREFUSED);
++	TEST_RES(getsockopt(sender, SOL_SOCKET, SO_ERROR, &error, &length),
++		 _ret == 0 && error == 0);
++	TEST_RES(poll(&wait, 1, 0), _ret == 0 && wait.revents == 0);
++	TEST_ERRNO(recv(sender, &byte, 1, 0), EAGAIN);
++
++	int receiver = CHECK(socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0));
++	CHECK(bind(receiver, (struct sockaddr *)&destination, sizeof(destination)));
++	TEST_RES(send(sender, "r", 1, 0), _ret == 1);
++	wait.fd = receiver;
++	TEST_RES(poll(&wait, 1, 500), _ret == 1 && wait.revents == POLLIN);
++	TEST_RES(recv(receiver, &byte, 1, 0), _ret == 1 && byte == 'r');
++	TEST_SUCC(close(receiver));
++	TEST_SUCC(close(sender));
++}
++END_TEST()
++
++FN_TEST(receive_consumes_error)
++{
++	struct sockaddr_in destination;
++	int sender = closed_port_sender(&destination, 1);
++	struct pollfd wait = { .fd = sender, .events = POLLIN };
++	int error = -1;
++	socklen_t length = sizeof(error);
++	char byte = 0;
++
++	TEST_RES(send(sender, "u", 1, 0), _ret == 1);
++	TEST_RES(poll(&wait, 1, 500), _ret == 1 && wait.revents == POLLERR);
++	TEST_ERRNO(recv(sender, &byte, 1, 0), ECONNREFUSED);
++	TEST_RES(poll(&wait, 1, 0), _ret == 0 && wait.revents == 0);
++	TEST_RES(getsockopt(sender, SOL_SOCKET, SO_ERROR, &error, &length),
++		 _ret == 0 && error == 0);
++	TEST_ERRNO(recv(sender, &byte, 1, 0), EAGAIN);
++	TEST_SUCC(close(sender));
++}
++END_TEST()
++
++FN_TEST(send_consumes_error)
++{
++	struct sockaddr_in destination;
++	int sender = closed_port_sender(&destination, 1);
++	struct pollfd wait = { .fd = sender, .events = POLLIN };
++	int error = -1;
++	socklen_t length = sizeof(error);
++
++	TEST_RES(send(sender, "u", 1, 0), _ret == 1);
++	TEST_RES(poll(&wait, 1, 500), _ret == 1 && wait.revents == POLLERR);
++	TEST_ERRNO(send(sender, "v", 1, 0), ECONNREFUSED);
++	TEST_RES(poll(&wait, 1, 0), _ret == 0 && wait.revents == 0);
++	TEST_RES(getsockopt(sender, SOL_SOCKET, SO_ERROR, &error, &length),
++		 _ret == 0 && error == 0);
++	TEST_RES(send(sender, "w", 1, 0), _ret == 1);
++	TEST_RES(poll(&wait, 1, 500), _ret == 1 && wait.revents == POLLERR);
++	TEST_SUCC(close(sender));
++}
++END_TEST()
++
++FN_TEST(unconnected_socket_ignores_port_unreachable_without_recverr)
++{
++	struct sockaddr_in destination;
++	int sender = closed_port_sender(&destination, 0);
++	struct pollfd wait = { .fd = sender, .events = POLLIN };
++	int error = -1;
++	socklen_t length = sizeof(error);
++
++	TEST_RES(sendto(sender, "u", 1, 0, (struct sockaddr *)&destination,
++			sizeof(destination)), _ret == 1);
++	TEST_RES(poll(&wait, 1, 20), _ret == 0 && wait.revents == 0);
++	TEST_RES(getsockopt(sender, SOL_SOCKET, SO_ERROR, &error, &length),
++		 _ret == 0 && error == 0);
++	TEST_SUCC(close(sender));
++}
++END_TEST()
++
++FN_TEST(connected_socket_ignores_errors_for_another_destination)
++{
++	struct sockaddr_in peer, other;
++	int receiver = bind_loopback(&peer);
++	int sender = closed_port_sender(&other, 0);
++	struct pollfd wait = { .fd = sender, .events = POLLIN };
++	int error = -1;
++	socklen_t length = sizeof(error);
++	char byte = 0;
++
++	CHECK(connect(sender, (struct sockaddr *)&peer, sizeof(peer)));
++	TEST_RES(sendto(sender, "u", 1, 0, (struct sockaddr *)&other,
++			sizeof(other)), _ret == 1);
++	TEST_RES(poll(&wait, 1, 20), _ret == 0 && wait.revents == 0);
++	TEST_RES(getsockopt(sender, SOL_SOCKET, SO_ERROR, &error, &length),
++		 _ret == 0 && error == 0);
++	TEST_RES(send(sender, "p", 1, 0), _ret == 1);
++	wait.fd = receiver;
++	TEST_RES(poll(&wait, 1, 500), _ret == 1 && wait.revents == POLLIN);
++	TEST_RES(recv(receiver, &byte, 1, 0), _ret == 1 && byte == 'p');
++	TEST_SUCC(close(receiver));
++	TEST_SUCC(close(sender));
++}
++END_TEST()
++
++FN_TEST(self_delivery_has_no_error)
++{
++	struct sockaddr_in local;
++	int fd = bind_loopback(&local);
++	struct pollfd wait = { .fd = fd, .events = POLLIN };
++	int error = -1;
++	socklen_t length = sizeof(error);
++	char byte = 0;
++
++	CHECK(connect(fd, (struct sockaddr *)&local, sizeof(local)));
++	TEST_RES(send(fd, "s", 1, 0), _ret == 1);
++	TEST_RES(poll(&wait, 1, 500), _ret == 1 && wait.revents == POLLIN);
++	TEST_RES(getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &length),
++		 _ret == 0 && error == 0);
++	TEST_RES(recv(fd, &byte, 1, 0), _ret == 1 && byte == 's');
++	TEST_SUCC(close(fd));
++}
++END_TEST()

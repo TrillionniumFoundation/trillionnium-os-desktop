@@ -54,6 +54,12 @@ impl Inode {
         if let Some(gid) = update.gid {
             inner.set_gid(gid.into());
         }
+        if let Some(atime) = update.atime {
+            inner.set_atime(atime);
+        }
+        if let Some(mtime) = update.mtime {
+            inner.set_mtime(mtime);
+        }
         if let Some(ctime) = update.ctime(PermissionCtimePolicy::OnAttributeChange) {
             inner.set_ctime(ctime);
         }

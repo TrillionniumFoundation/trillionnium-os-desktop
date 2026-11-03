@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/data/trillionnium-desktop-product-20261024-effects/source/tests/ui/test-notes-crash-recovery.py", line 121, in check
+    receipt, receipt_raw = exchange(channel, query)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/trillionnium-desktop-product-20261024-effects/source/tests/ui/test-notes-crash-recovery.py", line 57, in exchange
+    raw = channel.recv(2049)
+          ^^^^^^^^^^^^^^^^^^
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/data/trillionnium-desktop-product-20261024-effects/source/tests/ui/test-notes-crash-recovery.py", line 171, in <module>
+    check(sys.argv[1])
+  File "/data/trillionnium-desktop-product-20261024-effects/source/tests/ui/test-notes-crash-recovery.py", line 125, in check
+    raise RuntimeError(f"recovery helper exited {proc.returncode}: {diagnostic}") from error
+RuntimeError: recovery helper exited 1: trill-notes-recovery: open saved incarnation: Resource temporarily unavailable (os error 11)
+

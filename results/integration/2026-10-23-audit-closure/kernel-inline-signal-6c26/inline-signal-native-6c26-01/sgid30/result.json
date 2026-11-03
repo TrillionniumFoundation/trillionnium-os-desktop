@@ -1,0 +1,235 @@
+{
+  "schema": "trillionnium.native-sgid-qualification.v1",
+  "source_head": "6c26e3aeefde05c120944e278299b4925612f3c8",
+  "source_tree": "6c84a0663441dcbf9629fc2da8f857265baa5fe1",
+  "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+  "ordinary_receipt_sha256": "dddd4cb58a7d64517d4f95c3b119812ea88b5f73d95345b9fce6e2d7db23b93f",
+  "probe_sha256": "396abd5506de19a410c2391333d1413370f14c59c0e92a9c083a0eb3d5f87f36",
+  "probe_source_sha256": "00d2eb17d2fe3ab32454a3f446b099b227b33e4df9733e86e9be6490576ae7dd",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "injected_initramfs_sha256": "2c652eb6657aa52218ca0000625377eb218613f2e94abc792bfbc68dc57be3e7",
+  "format_argv": [
+    "/usr/sbin/mkfs.ext2",
+    "-F",
+    "-q",
+    "-b",
+    "4096",
+    "-I",
+    "256",
+    "-O",
+    "none,filetype",
+    "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/sgid30/sgid.ext2"
+  ],
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/sgid30/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/sgid30/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-drive",
+    "file=/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/sgid30/sgid.ext2,format=raw,id=sgid,if=none",
+    "-device",
+    "virtio-blk-pci,bus=pcie.0,addr=0x7,drive=sgid,disable-legacy=on,disable-modern=off",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "guest_deadline_seconds": 120,
+  "passed": true,
+  "status": "complete",
+  "production_authority": false,
+  "g2_complete": false,
+  "raw_qemu_exit": 33,
+  "timed_out": false,
+  "cases": [
+    {
+      "fs": "ramfs",
+      "name": "file_owner_group_mode",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "directory_group_and_setgid",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "nested_file_group",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "fifo_group",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "symlink_group",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "capable_root_retains_requested_setgid",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "stream_socket_group",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "datagram_socket_group",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "nonmember_exec_setgid_cleared",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "nonmember_nonexec_setgid_retained",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "nonmember_directory_still_inherits",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "supplementary_member_retains_setgid",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "dedicated_group_stream_dac",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "dedicated_group_datagram_dac",
+      "passed": true
+    },
+    {
+      "fs": "ramfs",
+      "name": "non_setgid_parent_uses_caller_group",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "file_owner_group_mode",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "directory_group_and_setgid",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "nested_file_group",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "fifo_group",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "symlink_group",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "capable_root_retains_requested_setgid",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "stream_socket_group",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "datagram_socket_group",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "nonmember_exec_setgid_cleared",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "nonmember_nonexec_setgid_retained",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "nonmember_directory_still_inherits",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "supplementary_member_retains_setgid",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "dedicated_group_stream_dac",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "dedicated_group_datagram_dac",
+      "passed": true
+    },
+    {
+      "fs": "ext2",
+      "name": "non_setgid_parent_uses_caller_group",
+      "passed": true
+    }
+  ],
+  "summaries": [
+    {
+      "fs": "ramfs",
+      "cases": 15,
+      "failures": 0
+    },
+    {
+      "fs": "ext2",
+      "cases": 15,
+      "failures": 0
+    }
+  ],
+  "serial_sha256": "26d9b2258f49c0f777ef29464e9281ea35cbcff95fcfd037b70cf5815cb717fc",
+  "elapsed_seconds": 3.285
+}

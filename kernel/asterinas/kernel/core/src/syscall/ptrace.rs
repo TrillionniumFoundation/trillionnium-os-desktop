@@ -10,10 +10,13 @@ use crate::{
     process::{
         posix_thread::{
             AsPosixThread,
-            alien_access::AlienAccessMode,
             ptrace::{PtraceContRequest, PtraceOptions},
         },
-        signal::{constants::SIGKILL, sig_num::SigNum, signals::user::UserSignal},
+        signal::{
+            constants::SIGKILL,
+            sig_num::SigNum,
+            signals::{OwnedSignal, user::UserSignal},
+        },
     },
     thread::{Thread, Tid},
 };
@@ -35,9 +38,12 @@ pub(super) fn sys_ptrace(
     match request {
         PtraceRequest::PTRACE_TRACEME => {
             let current_thread = current_thread!();
-            let parent_guard = ctx.process.parent().lock();
-            let parent_main_thread = parent_guard.process().upgrade().unwrap().main_thread();
-
+            let parent_main_thread = {
+                let parent_guard = ctx.process.parent().lock();
+                parent_guard.process().upgrade().unwrap().main_thread()
+            };
+            // Yama's original ancestry walk takes this same parent mutex. Keep
+            // the actual parent thread alive, but release the guard before LSM.
             do_ptrace_attach(&parent_main_thread, current_thread)?;
         }
         PtraceRequest::PTRACE_PEEKTEXT | PtraceRequest::PTRACE_PEEKDATA => {
@@ -80,7 +86,7 @@ pub(super) fn sys_ptrace(
             let tracee = ctx.posix_thread.get_tracee(tid)?;
             let tracee = tracee.as_posix_thread().unwrap();
 
-            tracee.enqueue_signal(Box::new(UserSignal::new_kill(SIGKILL, ctx)));
+            tracee.enqueue_owned_signal(OwnedSignal::new(UserSignal::new_kill(SIGKILL, ctx)));
         }
         #[cfg(target_arch = "x86_64")]
         PtraceRequest::PTRACE_SINGLESTEP => {
@@ -161,8 +167,6 @@ fn do_ptrace_attach(tracer_thread: &Arc<Thread>, tracee_thread: Arc<Thread>) -> 
             "tracer and tracee must be in different processes"
         );
     }
-
-    tracee.check_alien_access_from(tracer, AlienAccessMode::ATTACH_WITH_REAL_CREDS)?;
 
     tracer.attach_to(tracer_thread, tracee_thread)
 }

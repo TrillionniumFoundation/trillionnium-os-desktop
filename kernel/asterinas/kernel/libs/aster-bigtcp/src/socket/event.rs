@@ -19,5 +19,7 @@ bitflags::bitflags! {
         const CLOSED_RECV = 4;
         /// Sending data isn't possible anymore.
         const CLOSED_SEND = 8;
+        /// An asynchronous socket error is pending.
+        const ERROR = 16;
     }
 }

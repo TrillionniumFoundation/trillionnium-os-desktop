@@ -145,6 +145,7 @@ pub(crate) enum ShebangScriptPath {
 pub(super) struct ProgramToLoad {
     elf_file: Arc<dyn FileLike>,
     elf_headers: ElfHeaders,
+    dumpable: bool,
     argv: Vec<CString>,
     envp: Vec<CString>,
 }
@@ -166,7 +167,13 @@ impl ProgramToLoad {
         // should fail. We follow the same limit as Linux.
         let mut recursive_limit = 5;
 
+        let mut dumpable = true;
         let (elf_file, elf_headers) = loop {
+            dumpable &= executable
+                .path()
+                .inode()
+                .check_permission(Permission::MAY_READ)
+                .is_ok();
             let (mut new_argv, current_script_path) = match executable.detect_format()? {
                 DetectedExecutable::Elf { file, headers } => break (file, headers),
                 DetectedExecutable::Script {
@@ -223,6 +230,7 @@ impl ProgramToLoad {
         Ok(Self {
             elf_file,
             elf_headers,
+            dumpable,
             argv,
             envp,
         })
@@ -241,6 +249,9 @@ impl ProgramToLoad {
         vmar: &Vmar,
         path_resolver: &PathResolver,
     ) -> Result<ElfLoadInfo> {
+        if !self.dumpable {
+            *vmar.process_vm().dumpable().lock() = false;
+        }
         load_elf_to_vmar(
             vmar,
             self.elf_file,

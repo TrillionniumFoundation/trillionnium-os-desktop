@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "guests": [
+    {
+      "crate": "ostd",
+      "declared": 229,
+      "passed": 229,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "exercised_passed_lower_bound": 226,
+      "observed_test_starts": 229,
+      "required_permission_tests": [],
+      "required_core_tests": [],
+      "required_allocator_tests": [],
+      "allocator_exhaustion": null,
+      "required_mlsdisk_tests": [],
+      "mlsdisk_media_durability_qualified": null,
+      "required_ostd_tests": [
+        "ostd::mm::frame::allocator::allocation_claim_rejects_busy_page_without_refunding_its_owner",
+        "ostd::user::fatal_pre_entry_returns_kernel_event_before_unmapped_user_code",
+        "ostd::mm::vm_space::recovery_tests::recovery_root_uses_explicit_reserve_and_closed_root_fails",
+        "ostd::mm::vm_space::recovery_tests::recovery_mapping_failure_at_each_missing_level_preserves_input_and_tree",
+        "ostd::mm::vm_space::recovery_tests::recovery_mapping_uses_only_selected_token_and_refunds_last_vm_owner",
+        "ostd::mm::vm_space::recovery_tests::recovery_mapping_does_not_authorize_ordinary_or_closed_growth",
+        "ostd::mm::vm_space::recovery_tests::recovery_mapping_rejects_conflict_without_replacing_original_frame"
+      ],
+      "raw_qemu_exit": 33,
+      "guest": "guest-001"
+    }
+  ]
+}

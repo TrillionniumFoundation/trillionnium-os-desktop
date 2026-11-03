@@ -141,8 +141,15 @@ jobs:
           python3 -I support/build/ktest/prepare-locks.py --output-dir "$prepared"
           cmp "$prepared/ostd.Cargo.lock" support/build/ktest/locks/ostd.Cargo.lock
           cmp "$prepared/aster-core.Cargo.lock" support/build/ktest/locks/aster-core.Cargo.lock
+          python3 -I support/build/ktest/prepare-locks.py --crate aster-block --output-dir "$prepared"
+          cmp "$prepared/aster-block.Cargo.lock" support/build/ktest/locks/aster-block.Cargo.lock
 
-      - name: Run complete OSTD and aster-core kernel tests in real QEMU
+      - name: Verify complete kernel-report host regressions
+        run: |
+          python3 -I -B -m unittest discover -s support/build/ktest -p 'test_report.py' -v
+          python3 -I -B -O -m unittest discover -s support/build/ktest -p 'test_report.py' -v
+
+      - name: Run all required kernel crates in real QEMU
         id: ktest
         shell: bash
         env:
@@ -152,24 +159,17 @@ jobs:
           out="${RUNNER_TEMP}/a06-ktest"
           mkdir -p "${RUNNER_TEMP}"
           python3 -I support/build/ktest/run.py --output "$out"
-          test -f "$out/result.json"
-          python3 - "$out/result.json" <<'PY'
-          import json
-          import sys
-          report = json.load(open(sys.argv[1]))
-          if report.get("passed") is not True:
-              raise SystemExit("A06 ktest report is not passed")
-          crates = report.get("crates")
-          if not isinstance(crates, list) or len(crates) != 2:
-              raise SystemExit("A06 ktest report does not contain both required crates")
-          seen = set()
-          for item in crates:
-              if item.get("passed") is not True or not item.get("guests"):
-                  raise SystemExit(f"A06 ktest crate is incomplete: {item!r}")
-              seen.update(guest.get("crate") for guest in item["guests"])
-          if seen != {"ostd", "aster-core"}:
-              raise SystemExit(f"A06 ktest guest crate set is incomplete: {seen!r}")
-          PY
+          python3 -I -B support/build/ktest/check-report.py "$out"
+
+      - name: Run the complete partition parser suite in a separate real guest
+        shell: bash
+        env:
+          A01_KTEST_TIMEOUT: "300"
+        run: |
+          set -euo pipefail
+          python3 -I -B -m unittest discover -s support/build/ktest -p 'test_partition_gate.py' -v
+          python3 -I -B support/build/ktest/run.py --crate aster-block --skip-osdk-install \
+            --output "${RUNNER_TEMP}/a06-partition-ktest"
 
       - name: Prove the CPU owner regression fails under the frozen old behavior
         shell: bash
@@ -330,6 +330,33 @@ jobs:
             --expected-source-tree "$(git rev-parse HEAD^{tree})" \
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
+
+      - name: Verify all 43 local UDP checks on Linux and the same ordinary product
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-udp-checks"
+          mkdir "$checks"
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_udp_local_error_guest.py' -v \
+            > "$checks/runner-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_udp_local_error_guest.py' -v \
+            > "$checks/runner-tests-optimized.log" 2>&1
+          python3 -I -B tests/workloads/linux/run_udp_local_error_guest.py reference \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --cc /usr/bin/gcc-13 --output "${RUNNER_TEMP}/a06-udp-linux"
+          # The reference freezes this digest before Linux execution. The guest
+          # reads the retained ELF and original execution record; it never rebuilds.
+          read -r probe_sha probe_name < "${RUNNER_TEMP}/a06-udp-linux/probe.sha256"
+          test "$probe_name" = probe.elf
+          [[ "$probe_sha" =~ ^[0-9a-f]{64}$ ]]
+          python3 -I -B tests/workloads/linux/run_udp_local_error_guest.py guest \
+            --linux-reference "${RUNNER_TEMP}/a06-udp-linux" --expected-probe-sha256 "$probe_sha" \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --output "${RUNNER_TEMP}/a06-udp-guest"
 
       - name: Verify SQLite WAL after abrupt guest restart and reject an omitted COMMIT
         shell: bash
@@ -580,9 +607,13 @@ jobs:
             ${{ runner.temp }}/a06-boot-params
             ${{ runner.temp }}/a06-exfat-kernel-support
             ${{ runner.temp }}/a06-ktest
+            ${{ runner.temp }}/a06-partition-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a04-sqlite-restart
+            ${{ runner.temp }}/a06-udp-checks
+            ${{ runner.temp }}/a06-udp-linux
+            ${{ runner.temp }}/a06-udp-guest
             ${{ runner.temp }}/a06-owner-negative
             ${{ runner.temp }}/a06-clock-handoff-negative
             ${{ runner.temp }}/a06-permission-smp

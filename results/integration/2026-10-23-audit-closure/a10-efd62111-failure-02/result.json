@@ -1,0 +1,39 @@
+{
+  "schema": "a10.original-workflow-local.v1",
+  "source_head": "efd621116762bc6eb6fe38b13a97aba5d2e76fe9",
+  "source_tree": "44d808cae47c544ab03e6b5d4d07840b7db42cf1",
+  "temp_directory": "/data/a10t._pkxyvyw",
+  "umask": "0077",
+  "target_cache_reused": true,
+  "cold_build_claimed": false,
+  "earlier_failure_retained": "ui-efd62111-01: two real SUN_LEN fixture failures",
+  "workflow_sha256": "775fdd3a4217f97d880e6df9051a07ee2603d64ea5ebff6046ddae7eaea2d45f",
+  "workflow_run_bodies_modified": false,
+  "original_job_minutes": 45,
+  "rust_toolchain": "1.88.0",
+  "x11_pixels_required": true,
+  "passed": false,
+  "started_at_utc": "2026-10-23T16:03:59.791032+00:00",
+  "steps": [
+    {
+      "name": "Compile and test Rust binaries and validate rustfmt",
+      "original_run": "set -euo pipefail\nmkdir -p \"$RUNNER_TEMP/a10\"\nbash tests/ui/check-host.sh 2>&1 | tee \"$RUNNER_TEMP/a10/host-check.log\"\n",
+      "index": 0,
+      "exit_code": 1
+    },
+    {
+      "name": "Enforce committed UI dependency lock after attempting real tests",
+      "original_run": "set -euo pipefail\nif [[ ! -s ui/Cargo.lock ]] || ! git ls-files --error-unmatch ui/Cargo.lock >/dev/null 2>&1; then\n  echo 'A10 Cargo.lock is absent/untracked: host success is not reproducible.' >&2\n  exit 1\nfi\ngit diff --exit-code HEAD -- ui/Cargo.lock\nsha256sum ui/Cargo.lock\ncargo metadata --manifest-path ui/Cargo.toml --locked --offline --format-version 1 >/dev/null\n",
+      "index": 10,
+      "exit_code": 0
+    }
+  ],
+  "g2_qualified": false,
+  "production_authority": false,
+  "source_hash_scope": "UI, hepta-os, support/ui, tests/ui, os-abi and A10 workflow; complete Git HEAD/tree and clean status also checked, not an all-repository blob scan.",
+  "stage": "Enforce committed UI dependency lock after attempting real tests",
+  "tested_source_bytes_unchanged": true,
+  "git_source_unchanged": true,
+  "finished_at_utc": "2026-10-23T16:06:11.898978+00:00",
+  "elapsed_seconds": 132.108
+}

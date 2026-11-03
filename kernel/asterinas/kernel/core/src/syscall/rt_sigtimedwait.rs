@@ -14,7 +14,7 @@ use crate::{
         HandlePendingSignal,
         constants::{SIGKILL, SIGSTOP},
         sig_mask::SigMask,
-        signals::Signal,
+        signals::OwnedSignal,
         with_sigmask_changed,
     },
     time::{timespec_t, wait::ManagedTimeout},
@@ -111,7 +111,7 @@ fn dequeue_signal_with_checking_ignore(
     ctx: &Context,
     mask: SigMask,
     block_list: SigMask,
-) -> Option<Box<dyn Signal>> {
+) -> Option<OwnedSignal> {
     let sig_dispositions = ctx.process.sig_dispositions().lock();
     let sig_disposition = sig_dispositions.lock();
     while let Some(dequeued) = ctx.posix_thread.dequeue_signal(&mask) {

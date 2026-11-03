@@ -1,0 +1,132 @@
+{
+  "schema": "hepta.f1-local-udp-kernel.v1",
+  "diagnostic_only": true,
+  "original_agentd_lifecycle_qualified": false,
+  "original_deadlines_unchanged": true,
+  "previous_agentd_build_exit_receipt_recovered": false,
+  "started_ns": 1792733685980088004,
+  "source_patch_sha256_before_pinned_rustfmt": "ec6348c6c9428e899b670d293ae65783264cf9fcc024dbd81a15c2f321e01150",
+  "ordinary_source_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+  "kernel_build": {
+    "base_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+    "source_patch_sha256": "ec6348c6c9428e899b670d293ae65783264cf9fcc024dbd81a15c2f321e01150",
+    "source_head": "c8f0c88ecb640117686ff05f850a73e60688eac7",
+    "source_tree": "641c6627ba9aaf79ca3506154831a6c51abe521f",
+    "source_clean_before_after": true,
+    "build_returncode": 0,
+    "build_timed_out": false,
+    "kernel_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-product-build-v1/product-kernel.elf",
+    "kernel_sha256": "6d7b67c7046a54c7dda7a9595794159235f3b4dad45dd2c4892a7868432a1524",
+    "actual_build_result_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-product-build-v1/actual-build-result.json",
+    "actual_build_result_sha256": "ff71924316549e99f0358c321f4fa70ca17d82a08b8f462ecac33c5bcf35bcba",
+    "ordinary_boot_passed": true,
+    "ordinary_boot_receipt_sha256": "ecd90a0a1c7a3aef94a067df6f606ca1c751d158fb644c61827d30006ffa91ba",
+    "no_ktest": true,
+    "production_ready": false
+  },
+  "kernel_build_receipt_sha256": "26c38bd6eee5762e37b56cd6532a23a103723afb652dd2da4623ce464bbf494b",
+  "actual_kernel_build_result_sha256": "ff71924316549e99f0358c321f4fa70ca17d82a08b8f462ecac33c5bcf35bcba",
+  "fixed_kernel_sha256": "6d7b67c7046a54c7dda7a9595794159235f3b4dad45dd2c4892a7868432a1524",
+  "original_guest_receipt_sha256": "aa0b26b42e8d7bf4f59b13ae29b8f2312fc0325ea3921d6a400e3b0e93f0a368",
+  "original_guest_invocation_sha256": "4d0649bceec6d3f3ca674551b9cd37e071cced5e43d1f970d6080aa1a6a80b35",
+  "unchanged_input_pins": {
+    "payload.raw": "f125011a069ddab81030bd31129883d1fd97a44f2a874d7e8d96e9d1ca6003af",
+    "f1-guest-probe": "2052c5d30ac4a6fbbf056a6e6e844d0a733c06a50e43c69b3b98156bfdfbd673",
+    "kernel.elf": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d",
+    "bios.bin": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+  },
+  "original_agentd_helper": {
+    "agentd": {
+      "bytes": 266160864,
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/frozen/diagnostic-agentd-static-stripped.elf",
+      "sha256": "fcef743f93a126364a9dbc0ee1c18ca6c0542f9ea4cb674c7d95ef870b66e84f"
+    },
+    "bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "diagnostic_input_manifest": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/frozen/diagnostic-input-manifest.json",
+      "sha256": "14da218f3d6b4dd91181ff1c6463c28a02b1cd201976b782fcb805107b86c9e7"
+    },
+    "helper": {
+      "bytes": 834330984,
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-native-inputs-v5/native_lifecycle",
+      "sha256": "92aaeeb437b4c497a047cfc248951df402fcf9ac80a17885a75c9b69b8483ac6"
+    },
+    "helper_source": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-native-inputs-v5/native_lifecycle.rs",
+      "sha256": "d02d459d691403f3f1f178373414ef258c317495054cacbdb0653adef701364d"
+    },
+    "kernel": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/unix-stream-native-v5/positive/product-kernel.elf",
+      "sha256": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d"
+    },
+    "original_initramfs": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-native-next/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    }
+  },
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-lifecycle-v1/kernel.elf",
+    "-initrd",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-lifecycle-v1/initramfs.cpio.gz",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/guest/bios.bin",
+    "-m",
+    "4096M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-drive",
+    "if=none,format=raw,id=f1payload,readonly=on,file=/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/guest/payload.raw",
+    "-device",
+    "virtio-blk-pci,bus=pcie.0,addr=0x7,drive=f1payload,disable-legacy=on,disable-modern=off",
+    "-drive",
+    "if=none,format=raw,id=f1data,file=/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-lifecycle-v1/data.raw",
+    "-device",
+    "virtio-blk-pci,bus=pcie.0,addr=0x8,drive=f1data,disable-legacy=on,disable-modern=off"
+  ],
+  "nonce": "7080327d244bfa98175238f4262c796191258edb3681a68667ebee7361918072",
+  "child_argv": [
+    "/payload/bin/native_lifecycle",
+    "/payload/bin/codex-hepta-agentd",
+    "/data/f1"
+  ],
+  "child_environment": {
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/bin:/usr/bin"
+  },
+  "append": "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+  "initramfs_sha256": "a6880693a46e6384c062ecd07dc67c1d88f2ea49de08c25fc57e26d48a9f2904",
+  "data_before_sha256": "f443b93067e2866f27d659bcb37cf17151aaeb03522f51b6eeda7dbd76794f1d",
+  "timeout_seconds": 600,
+  "serial_limit_bytes": 134217728,
+  "observer_unchanged": true,
+  "kernel_stop_tracing": false,
+  "guest_resolver_configuration_unchanged": true
+}

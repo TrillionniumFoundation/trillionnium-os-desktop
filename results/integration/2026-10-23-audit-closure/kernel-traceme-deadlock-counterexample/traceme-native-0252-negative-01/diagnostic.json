@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "scope": "controlled only-one-owned-child; public read-only sentinel; no injection",
+  "raw_receipt": "/data/asterinas-dumpable-audit-01.yswd2fi4/traceme-native-0252-negative-01/result.json",
+  "raw_receipt_sha256": "d37782688a55c046fc88adb0ef62e3862d12c1463afaa10954d04d031f7cbf78",
+  "original_timeout_seconds": 120,
+  "raw_qemu_exit": null,
+  "timed_out": true,
+  "probe_parent_alarm_seconds": 25,
+  "guest_parent_sigalrm_observed": true,
+  "all_children_reaped_proven": false,
+  "expected_peek_gap_reproduced": false,
+  "source_lock_cycle": "sys_ptrace PTRACE_TRACEME keeps target ctx.process.parent mutex -> do_ptrace_attach -> target.check_alien_access_from ATTACH_REAL -> Yama default Relational1 with cap0 -> is_ancestor_of(targetProcess) locks same target.parent mutex",
+  "source_blobs_02521c15": {
+    "kernel/asterinas/kernel/core/src/syscall/ptrace.rs": "a160afd96db344e84fda0f4fcbd0d308d60237e0705923d82297265568fa1474",
+    "kernel/asterinas/kernel/core/src/security/lsm/modules/yama.rs": "e91c5cc30beee27716860643ecab9564b38a72748e879541437bde8ed6b4cc4e",
+    "kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs": "63f96ae41029402ac0c394d58a25fa049cd3875a0c18ded4cb25606764f7f877"
+  },
+  "standard_root_tests_gap": "CAP_SYS_PTRACE short-circuits Yama ancestry traversal, so existing Root ptrace tests cannot detect this nonprivileged lock reentry",
+  "runtime_limit": "Only permission header reached. Pre-existing TRACEME establish deadlock prevents observing subsequent PEEK semantics; no claim that non-dumpable read was actually reproduced on old guest. Disposable VM timed out, owned QEMU subprocess reaped by subprocess.run.",
+  "production_isolation_qualified": false
+}

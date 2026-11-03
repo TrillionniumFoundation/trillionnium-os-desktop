@@ -6,7 +6,8 @@ use crate::prelude::Result;
 
 /// Random initialization for Key, Iv and Mac.
 pub trait RandomInit: Default {
-    fn random() -> Self;
+    /// Returns an error if the entropy source cannot fill the entire value.
+    fn random() -> Result<Self>;
 }
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm.
@@ -85,5 +86,8 @@ pub trait Rng {
     fn new(seed: &[u8]) -> Self;
 
     /// Fill `dest` with random bytes.
+    ///
+    /// On failure, `dest` may be partially filled and must not be used as
+    /// randomness. A successful fill never substitutes a deterministic value.
     fn fill_bytes(&self, dest: &mut [u8]) -> Result<()>;
 }

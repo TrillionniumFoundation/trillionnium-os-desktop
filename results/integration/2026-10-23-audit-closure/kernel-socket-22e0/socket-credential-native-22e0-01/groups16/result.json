@@ -1,0 +1,91 @@
+{
+  "passed": true,
+  "oracle": {
+    "passed": true,
+    "observations": 16,
+    "all_children_reaped": true,
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "production_qualification": false
+  },
+  "qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 2.125991620006971,
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-native-22e0-01/groups16/kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-native-22e0-01/groups16/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/socket-credential-native-22e0-01/groups16/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "elf_shape": {
+    "entry": 4200608,
+    "bytes": 809424,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4730880,
+        "file_end": 535021,
+        "entry_inside": true
+      },
+      {
+        "start": 4730880,
+        "end": 4890624,
+        "file_end": 694646,
+        "entry_inside": false
+      },
+      {
+        "start": 4890624,
+        "end": 4943872,
+        "file_end": 719552,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "43b4c9db03face8531beac7937ab76d41aab79724c8febb30b40fff160d588af"
+  },
+  "kernel_sha256": "a3fb67d9ea48f981d8b26d10d0d9d9bd2e4d20e7a978e48abb1dda7d1d251baa",
+  "probe_sha256": "43b4c9db03face8531beac7937ab76d41aab79724c8febb30b40fff160d588af",
+  "probe_source_sha256": "635982988820af406bcd2afd9593eb3debaeeae94fa30a30b3338ea2d973e3eb",
+  "linux_audit_receipt_sha256": "0aaa72c34598dd553c038389067669e0c78712355efa6413729f84ebab8e8bd3",
+  "runner_source_sha256": "1ea6f90a0b73daae218da8a94048fe2fdce0606d9cd9f1b48500bffbbaa92c27",
+  "checker_source_sha256": "999d498621003aa495c97f9bfe96be5262a89f657ca82668baafb2bd5e278d29",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "initramfs_sha256": "706d496b97ee290bb605cf5f6c5e4bf1561845eff85c09f832d48b314a3bf537",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "serial_sha256": "b65363d2a78b0878ed952f13eb7e8d3d3ac8981fdabef4e145602edadbddbe36",
+  "production_qualification": false
+}

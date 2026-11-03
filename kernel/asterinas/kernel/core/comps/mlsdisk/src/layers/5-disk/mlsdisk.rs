@@ -33,7 +33,7 @@ use crate::{
             SyncIdStore, TxEventListener, TxEventListenerFactory, TxLsmTree, TxType,
         },
     },
-    os::{Aead, AeadIv as Iv, AeadKey as Key, AeadMac as Mac, RwLock},
+    os::{Aead, AeadIv as Iv, AeadKey as Key, AeadMac as Mac, RwMutex},
     prelude::*,
     tx::CurrentTx,
 };
@@ -67,7 +67,7 @@ struct DiskInner<D: BlockSet> {
     /// Whether `MlsDisk` is dropped.
     is_dropped: AtomicBool,
     /// Scope lock for control write and sync operation.
-    write_sync_region: RwLock<()>,
+    write_sync_region: RwMutex<()>,
 }
 
 impl<D: BlockSet + 'static> aster_block::BlockDevice for MlsDisk<D> {
@@ -202,8 +202,7 @@ impl<D: BlockSet + 'static> MlsDisk<D> {
     /// Sync all cached data in the device to the storage medium for durability.
     pub fn sync(&self) -> Result<()> {
         let _wguard = self.inner.write_sync_region.write();
-        // TODO: Error handling the sync operation
-        self.inner.sync().unwrap();
+        self.inner.sync()?;
 
         debug!("Sync completed. {self:?}");
         Ok(())
@@ -256,7 +255,7 @@ impl<D: BlockSet + 'static> MlsDisk<D> {
                 data_buf: DataBuf::new(DATA_BUF_CAP),
                 root_key,
                 is_dropped: AtomicBool::new(false),
-                write_sync_region: RwLock::new(()),
+                write_sync_region: RwMutex::new(()),
             }),
         };
 
@@ -308,7 +307,7 @@ impl<D: BlockSet + 'static> MlsDisk<D> {
                 data_buf: DataBuf::new(DATA_BUF_CAP),
                 root_key,
                 is_dropped: AtomicBool::new(false),
-                write_sync_region: RwLock::new(()),
+                write_sync_region: RwMutex::new(()),
             }),
         };
 
@@ -513,6 +512,13 @@ impl<D: BlockSet + 'static> DiskInner<D> {
             return Ok(records);
         }
 
+        // Obtain every key before reserving physical block slots. An entropy
+        // failure must leave the allocation table and buffered data unchanged.
+        let keys = (0..num_write)
+            .map(|_| Key::random())
+            .collect::<Result<Vec<_>>>()?;
+        let mut cipher_buf = Buf::alloc(num_write)?;
+
         // Allocate slots for data blocks
         let hbas = self
             .block_validity_table
@@ -521,13 +527,12 @@ impl<D: BlockSet + 'static> DiskInner<D> {
         let hba_batches = hbas.chunk_by(|hba1, hba2| hba2 - hba1 == 1);
 
         // Perform encryption and batch disk write
-        let mut cipher_buf = Buf::alloc(num_write)?;
         let mut cipher_slice = cipher_buf.as_mut_slice();
         let mut nth = 0;
         for hba_batch in hba_batches {
             for (i, &hba) in hba_batch.iter().enumerate() {
                 let (lba, data_block) = &data_blocks[nth];
-                let key = Key::random();
+                let key = keys[nth];
                 let mac = Aead::new().encrypt(
                     data_block.as_slice(),
                     &key,
@@ -750,7 +755,7 @@ impl<D: BlockSet + 'static> TxEventListener<RecordKey, RecordValue> for TxLsmTre
     fn on_tx_begin(&self, tx: &mut CurrentTx<'_>) -> Result<()> {
         match self.tx_type {
             TxType::Compaction { .. } | TxType::Migration => {
-                tx.context(|| self.block_alloc.prepare_diff_log().unwrap())
+                tx.context(|| self.block_alloc.prepare_diff_log())?
             }
         }
         Ok(())
@@ -759,7 +764,7 @@ impl<D: BlockSet + 'static> TxEventListener<RecordKey, RecordValue> for TxLsmTre
     fn on_tx_precommit(&self, tx: &mut CurrentTx<'_>) -> Result<()> {
         match self.tx_type {
             TxType::Compaction { .. } | TxType::Migration => {
-                tx.context(|| self.block_alloc.update_diff_log().unwrap())
+                tx.context(|| self.block_alloc.update_diff_log())?
             }
         }
         Ok(())
@@ -841,7 +846,7 @@ mod tests {
     fn mlsdisk_fns() -> Result<()> {
         let nblocks = 64 * 1024;
         let mem_disk = MemDisk::create(nblocks)?;
-        let root_key = Key::random();
+        let root_key = Key::random().unwrap();
         // Create a new `MlsDisk` then do some writes
         let mlsdisk = MlsDisk::create(mem_disk.clone(), root_key, None)?;
         let num_rw = 1024;

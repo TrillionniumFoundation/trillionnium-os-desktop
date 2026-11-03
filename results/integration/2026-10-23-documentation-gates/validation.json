@@ -1,0 +1,78 @@
+{
+  "recorded_at_utc": "2026-10-23T05:27:08.417395+00:00",
+  "base_commit": "f7cc5e727f74adcb3e6f55572476682e72d9982f",
+  "scope": "Root README contract migration, module documentation links and existing A02 snapshot/error-path regressions; no native or full workspace execution",
+  "red": {
+    "implementation": "old A02 acceptance runner",
+    "test": "new nonempty README regression",
+    "exit_code": 1,
+    "failure_count": 1,
+    "log": "readme-red.log"
+  },
+  "green": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "test_acceptance_runner.AcceptanceRunnerTests.test_missing_tool_writes_failure_report_with_unchanged_source",
+        "test_acceptance_runner.AcceptanceRunnerTests.test_snapshot_refuses_symlink_escape_and_does_not_follow_it",
+        "test_acceptance_runner.AcceptanceRunnerTests.test_toolchain_pin_is_required_even_with_an_explicit_override",
+        "-v"
+      ],
+      "cwd": "tests/abi",
+      "exit_code": 0,
+      "passed": 3,
+      "log": "readme-green.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-O",
+        "-m",
+        "unittest",
+        "test_acceptance_runner.AcceptanceRunnerTests.test_missing_tool_writes_failure_report_with_unchanged_source",
+        "test_acceptance_runner.AcceptanceRunnerTests.test_snapshot_refuses_symlink_escape_and_does_not_follow_it",
+        "test_acceptance_runner.AcceptanceRunnerTests.test_toolchain_pin_is_required_even_with_an_explicit_override",
+        "-v"
+      ],
+      "cwd": "tests/abi",
+      "exit_code": 0,
+      "passed": 3,
+      "log": "readme-green-optimized.log"
+    }
+  ],
+  "workflow_yaml_parsed": 9,
+  "shell_syntax": "passed",
+  "file_controls": {
+    "nonempty_regular": "accepted",
+    "missing": "rejected",
+    "symlink": "rejected"
+  },
+  "module_doc_links": "resolved against exact main tree plus overlay",
+  "initial_invocation": "First test invocation from repository root failed at module import; corrected tests/abi working directory was used for all executed regression results.",
+  "remote_full_gates": "pending",
+  "sha256": {
+    ".github/workflows/a01-boot-evidence.yml": "a4be11b18f40f6036cc19a56adc4e2e976fc9b40fa7b86cbac9e778deb3d826f",
+    ".github/workflows/a02-pinned-host-acceptance.yml": "27c6f6be6abf81c7e7ed0952ed66efcde39b4b234f8e3b97fc2fd8c88e1da450",
+    ".github/workflows/a03-native-models.yml": "be0e1b788e7c13e22cd19e9cc12cc08050549e473684c589fca2580940a7d8b4",
+    ".github/workflows/a08-host.yml": "aed84fbf4e31757f5851b16f459ad37b627a49b7e581815d7eaafbf51bc109cc",
+    ".github/workflows/a10-host.yml": "e16e5095f15c0816d9b237e60d48a4e590caddec0d58154c47f8284620945c71",
+    ".github/workflows/hepta-agentd-abi-host.yml": "d17183d68229532c2acf4f4c2eccf21a2045c7b401e2ec45623728e6e346c729",
+    ".github/workflows/hepta-objective-history.yml": "6000c049097c95e79a14f0a33c7f061dd777340fb31bb7feac5612f4d742ab9a",
+    ".github/workflows/hepta-original-agentd.yml": "9aa9ce3a5f263bd45674fdf993ea82745212c60eeb82a48638ec0210161b17eb",
+    ".github/workflows/organ-release-profile.yml": "ee085c844b37b092f920dcdef6eb0cc2a29ad752b86edbf870b4504e244bdb69",
+    "tests/ui/check-host.sh": "50b6b0ada21ecc8ac638d98ab1c9bfe4e378e9d04a1c4edf189506f944e7d66d",
+    "tests/abi/run_acceptance.py": "4961783f43375fe0dc9f1baea0f4b8bbb9e9e0b38913517cd36c860adc4d592a",
+    "tests/abi/test_acceptance_runner.py": "ba4ec981d4284ba21decbf7abe408244d50aadedcb7fe22836820ab97a2b3bb9",
+    "ui/README.md": "e7ba4091b180676b46c9bcb1d832a47623362dee873c3c23fa8de5d964527467",
+    "docs/ARCHITECTURE.md": "36612a37c4b9e568b94f22acc623625daead12f9a4612cbac1a7b300905c6a95",
+    "libs/os-abi/README.md": "7752dd666f4b422368485da6f7813d49e7aa2b53441b6f96cdcbfd99c1800559",
+    "ui/app-window/README.md": "24659c6da87e3cf27079099843c009959566453c68ad2acb81373dc8b00fce81",
+    "ui/broker/README.md": "7b08eb6d0b631097ad5c5a608af00fdca03c162428d191f10e427a4e9c2278c7",
+    "ui/shell/README.md": "a6f170a8bc5523969b37f40d05d90d9edf3a2d5b04eebf367614a4c3d2e8b38f",
+    "ui/session/README.md": "8ebaf18f8613748bfbb5b014f432cf491006590f414659c9a9a61f7481c60252",
+    "ui/core/README.md": "47f651de98c40118007df636278a14d17e1a29fe02b5909ef2c3fd8f18964839",
+    "docs/INDEX.md": "cadb8098b916521b1e7fe1862b0d3f1133e77a9e103962f46fcbfab012cb1b54"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "boot_passed": true,
+  "built": true,
+  "command": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/tests/kernel/control/run_queryabi_candidate_guest.py",
+    "--expected-source-head",
+    "0187bd578f6786c40c812c13976e4889a1aba835",
+    "--expected-source-tree",
+    "335007e4f94114c6a26506d9448faf0d43c4245c",
+    "--timeout",
+    "120",
+    "--output",
+    "/data/asterinas-audit-build.8tdrjboi/native-ipc-0187-pipeline-01/kernel/product-qualification",
+    "--target-dir",
+    "/data/asterinas-audit-build.8tdrjboi/full32-0187-01/ordinary-target"
+  ],
+  "environment_keys": [
+    "A01_QEMU_TIMEOUT",
+    "A01_SMP",
+    "CARGO_BUILD_JOBS",
+    "CARGO_HOME",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "RUSTUP_HOME",
+    "VDSO_LIBRARY_DIR"
+  ],
+  "executed": true,
+  "finished_at_utc": "2026-10-23T16:08:25.247704+00:00",
+  "kernel_receipt_sha256": "ee2e89f501802c46bf07a94725b543ca0040d8ed52d4016d83eef6a0acf923b6",
+  "kernel_sha256": "16d59287f0d228e0032520a36f876aecfeda9190d215eec61bce68bb03988c52",
+  "osdk_command": [
+    "/home/qian-qi/.cargo/bin/cargo",
+    "+nightly-2026-07-21",
+    "install",
+    "--locked",
+    "--force",
+    "cargo-osdk",
+    "--path",
+    "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/kernel/asterinas/osdk"
+  ],
+  "osdk_frozen": {
+    "command": [
+      "/home/qian-qi/.cargo/bin/cargo",
+      "+nightly-2026-07-21",
+      "install",
+      "--locked",
+      "--force",
+      "cargo-osdk",
+      "--path",
+      "/data/asterinas-audit-build.8tdrjboi/ipc-frame-account/kernel/asterinas/osdk"
+    ],
+    "freeze_receipt": {
+      "bytes": 895,
+      "path": "osdk-freeze.json",
+      "sha256": "79b04e24899037abe79f977cffc5aa4d4b796d24f3bf9d5d618f22eb1c2936f3"
+    },
+    "local_development_source": true,
+    "path": "/home/qian-qi/.cargo/bin/cargo-osdk",
+    "retained_binary": {
+      "bytes": 8499104,
+      "path": "source-built-cargo-osdk",
+      "sha256": "fbb3896ef2ac23675e0c29531fd02d5e0cdd76ba0db143f586c18a1f4e3ea63b"
+    },
+    "retained_build_log": {
+      "bytes": 4384,
+      "path": "osdk-build.log",
+      "sha256": "1f759ee6bbca8ac8bdbbe4e44e7f3b8ca303e1dfec4f4f55488991ba48f7c33e"
+    },
+    "sha256": "fbb3896ef2ac23675e0c29531fd02d5e0cdd76ba0db143f586c18a1f4e3ea63b",
+    "source": {
+      "head": "0187bd578f6786c40c812c13976e4889a1aba835",
+      "tree": "335007e4f94114c6a26506d9448faf0d43c4245c"
+    }
+  },
+  "output_created": true,
+  "schema": "hepta.native-original-kernel-build-result.v1",
+  "sources": {
+    "desktop": {
+      "head": "0187bd578f6786c40c812c13976e4889a1aba835",
+      "tree": "335007e4f94114c6a26506d9448faf0d43c4245c"
+    },
+    "hepta": {
+      "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+      "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+    }
+  },
+  "started_at_utc": "2026-10-23T16:04:51.237935+00:00"
+}

@@ -2,6 +2,8 @@
 
 pub(crate) mod c_types;
 pub(crate) mod constants;
+#[cfg(ktest)]
+mod owned_tests;
 mod pause;
 mod pending;
 mod poll;
@@ -48,6 +50,17 @@ pub(crate) trait SignalContext {
 
 /// Handles a pending signal for the current process.
 pub(crate) fn handle_pending_signal(user_ctx: &mut UserContext, ctx: &Context) {
+    debug_assert!(
+        ctx.process.is_init_process() || !ctx.has_pending_sigkill() || ctx.has_fatal_sigkill()
+    );
+    // The scheduler may admit this task solely to finish uncatchable fatal
+    // cleanup, even with zero CPU bandwidth. The original queue receipt is
+    // irreversible, including after another thread consumes the queued signal.
+    // Never construct a user handler or return to user code on this path.
+    if ctx.has_fatal_sigkill() {
+        do_exit_group(TermStatus::Killed(SIGKILL), ctx, user_ctx);
+        return;
+    }
     // FIXME: This function may handle or suppress only one signal per trap, delaying
     // other pending unmasked signals until the next trap. Consider a looped scan.
     //
@@ -270,8 +283,8 @@ fn dequeue_pending_signal(ctx: &Context) -> Option<(DequeuedSignal, SigAction)> 
 /// This is intentionally consistent with Linux's behaviors.
 fn requeue_signal(ctx: &Context, signal: DequeuedSignal) {
     match signal {
-        DequeuedSignal::FromProcess(signal) => ctx.process.enqueue_signal(signal),
-        DequeuedSignal::FromThread(signal) => ctx.posix_thread.enqueue_signal(signal),
+        DequeuedSignal::FromProcess(signal) => ctx.process.enqueue_owned_signal(signal),
+        DequeuedSignal::FromThread(signal) => ctx.posix_thread.enqueue_owned_signal(signal),
     }
 }
 

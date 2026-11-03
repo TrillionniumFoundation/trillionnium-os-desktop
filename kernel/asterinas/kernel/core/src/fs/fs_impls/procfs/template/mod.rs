@@ -13,7 +13,7 @@ pub(super) use self::{
 };
 use crate::{
     fs::{
-        file::InodeMode,
+        file::{InodeMode, InodeType, mkmod},
         vfs::{
             file_system::FileSystem,
             inode::{Extension, Metadata},
@@ -58,15 +58,32 @@ impl Common {
             return *self.metadata.read();
         };
 
-        let credentials = owner_thread.as_posix_thread().unwrap().credentials();
+        let target = owner_thread.as_posix_thread().unwrap();
+        let Some(process) = target.weak_process().upgrade() else {
+            return *self.metadata.read();
+        };
+        let vmar = process.lock_vmar();
+        let dumpable = vmar
+            .as_ref()
+            .map(|vmar| vmar.process_vm().dumpable().lock());
+        let credentials = target.credentials();
         let mut metadata = self.metadata.write();
         // Cache the dynamic owner into the metadata so that if the thread
         // later exits, subsequent calls fall back to the last known owner
         // instead of the root user. This is a best-effort attempt to align
         // with Linux behavior. See:
         // <https://github.com/asterinas/asterinas/pull/3164#discussion_r3212307770>.
-        metadata.uid = credentials.euid();
-        metadata.gid = credentials.egid();
+        // Linux preserves task ownership for the public 0555 task directories.
+        // Other per-task entries are root-owned while their image is not dumpable.
+        let public_dir = metadata.type_ == InodeType::Dir && metadata.mode == mkmod!(a+rx);
+        if public_dir || dumpable.as_ref().is_some_and(|dumpable| **dumpable) {
+            metadata.uid = credentials.euid();
+            metadata.gid = credentials.egid();
+        } else {
+            // User namespaces are not implemented; the original namespace has root 0.
+            metadata.uid = Uid::new_root();
+            metadata.gid = Gid::new_root();
+        }
         *metadata
     }
 

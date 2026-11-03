@@ -1,0 +1,145 @@
+{
+  "source_head": "556615fc9368c35539fbd1829f386ab55996dd47",
+  "source_tree": "97ba9c49ed6c613e7255d3b7d6bc8a7e1f230a1b",
+  "passed": true,
+  "production_ready": false,
+  "steps": [
+    {
+      "label": "osdk-build",
+      "argv": [
+        "/data/trillionnium-closure-20261024/kernel-cargo-home/bin/cargo",
+        "+nightly-2026-07-21",
+        "install",
+        "--offline",
+        "--locked",
+        "--force",
+        "cargo-osdk",
+        "--path",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/osdk",
+        "--target-dir",
+        "/data/trillionnium-closure-20261024/kernel-osdk-target"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 0,
+      "elapsed_seconds": 21.788752555963583
+    },
+    {
+      "label": "aster-core",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/support/build/ktest/run.py",
+        "--skip-osdk-install",
+        "--crate",
+        "aster-core",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/full-aster-core"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 0,
+      "elapsed_seconds": 228.47579301299993
+    },
+    {
+      "label": "osdk-frame-allocator",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/support/build/ktest/run.py",
+        "--skip-osdk-install",
+        "--crate",
+        "osdk-frame-allocator",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/full-osdk-frame-allocator"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 0,
+      "elapsed_seconds": 33.792431356036104
+    },
+    {
+      "label": "aster-mlsdisk",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/support/build/ktest/run.py",
+        "--skip-osdk-install",
+        "--crate",
+        "aster-mlsdisk",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/full-aster-mlsdisk"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 0,
+      "elapsed_seconds": 38.80616131692659
+    },
+    {
+      "label": "ostd",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/support/build/ktest/run.py",
+        "--skip-osdk-install",
+        "--crate",
+        "ostd",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/full-ostd"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 0,
+      "elapsed_seconds": 14.918511820025742
+    },
+    {
+      "label": "ordinary",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "556615fc9368c35539fbd1829f386ab55996dd47",
+        "--expected-source-tree",
+        "97ba9c49ed6c613e7255d3b7d6bc8a7e1f230a1b",
+        "--target-dir",
+        "/data/trillionnium-closure-20261024/ordinary-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/ordinary"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 0,
+      "elapsed_seconds": 215.7979307830101
+    },
+    {
+      "label": "unix-dontwait",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/tests/workloads/linux/unix_dontwait/run_guest.py",
+        "--kernel",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/ordinary/product-kernel.elf",
+        "--initramfs",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/ordinary/product-boot/initramfs.cpio.gz",
+        "--probe",
+        "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/probe.elf",
+        "--reference",
+        "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/result.json",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/unix-dontwait"
+      ],
+      "cwd": "/data/trillionnium-closure-20261024/os-native-556615fc",
+      "exit_code": 0,
+      "elapsed_seconds": 5.124381574918516
+    }
+  ],
+  "osdk_sha256": "8a598c65774f6d6f51c992cdab27ec3b5b445f9917533e095f5ef9cf5641d815",
+  "osdk_source_root": "/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/osdk",
+  "source_inputs_unchanged": true,
+  "elapsed_seconds": 561.651229834999
+}

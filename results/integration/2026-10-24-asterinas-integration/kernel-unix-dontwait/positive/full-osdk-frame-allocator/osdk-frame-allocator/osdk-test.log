@@ -1,0 +1,130 @@
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.54
+   Compiling darling_core v0.13.4
+   Compiling ostd-pod v0.4.0 (/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/ostd/libs/ostd-pod)
+warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: `ostd-pod` (lib) generated 1 warning
+warning: `int-to-c-enum` (lib) generated 1 warning (1 duplicate)
+warning: `id-alloc` (lib) generated 1 warning (1 duplicate)
+warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+   Compiling darling_macro v0.13.4
+   Compiling darling v0.13.4
+   Compiling inherit-methods-macro v0.1.0 (https://github.com/asterinas/inherit-methods-macro?rev=98f7e3e#98f7e3eb)
+   Compiling ostd v0.19.0 (/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/ostd)
+   Compiling osdk-frame-allocator v0.19.0 (/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/osdk/deps/frame-allocator)
+warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling osdk-heap-allocator v0.19.0 (/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/osdk/deps/heap-allocator)
+warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling osdk-test-kernel v0.19.0 (/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/osdk/deps/test-kernel)
+warning: `osdk-test-kernel` (lib) generated 1 warning (1 duplicate)
+warning: `ostd` (lib) generated 1 warning (1 duplicate)
+   Compiling osdk-frame-allocator-osdk-bin v0.19.0 (/data/trillionnium-closure-20261024/os-native-556615fc/kernel/asterinas/target/osdk/osdk-frame-allocator-test-base)
+warning: `osdk-frame-allocator-osdk-bin` (bin "osdk-frame-allocator-osdk-bin") generated 1 warning (1 duplicate)
+    Finished `release` profile [optimized] target(s) in 31.90s
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+Booting from ROM..DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 0, apic_id: 0, flags: 1 }
+INFO: Initializing frame metadata for physical memory 0..20000000
+INFO: Adding free frames to the allocator: 0..8000
+INFO: Adding free frames to the allocator: 9000..9f000
+INFO: Adding free frames to the allocator: 100000..8000000
+INFO: Adding free frames to the allocator: 89d6000..1ffe0000
+INFO: Initializing the kernel page table
+INFO: Creating new I/O memory allocator builder, ranges: [
+    0x20000000..0x100000000,
+    0x100000000..0x10000000000000,
+]
+INFO: xAPIC found!
+DEBUG: Try to reserve security-sensitive MMIO range: 0xfee00000..0xfee01000 with cache policy: Uncacheable
+INFO: irq: Initializing PIC as disabled
+DEBUG: Try to reserve security-sensitive MMIO range: 0xfec00000..0xfec01000 with cache policy: Uncacheable
+INFO: irq: IOAPIC found at 0xfec00000, ID 0, version 32, interrupt base 0, interrupt count 23
+INFO: irq: IOAPIC override: ISA interrupt 0 for GSI 2
+INFO: irq: IOAPIC override: ISA interrupt 5 for GSI 5
+INFO: irq: IOAPIC override: ISA interrupt 9 for GSI 9
+INFO: irq: IOAPIC override: ISA interrupt 10 for GSI 10
+INFO: irq: IOAPIC override: ISA interrupt 11 for GSI 11
+INFO: xAPIC ID: 0, Version: 14, Max LVT: 5
+INFO: TSC frequency: 2384044440 Hz
+INFO: timer: Enable APIC periodic mode
+INFO: timer: APIC timer: first 0xa37, current 0x17cdff, init 0x3cd6
+WARN: IOMMU initialization error: NoIommu
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x20,
+    end: 0x21,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa1,
+    end: 0xa2,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x21,
+    end: 0x22,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa0,
+    end: 0xa1,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x40,
+    end: 0x41,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x41,
+    end: 0x42,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x42,
+    end: 0x43,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x43,
+    end: 0x44,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x3f8,
+    end: 0x400,
+}
+INFO: acpi: Collected information AcpiInfo { century_register: Some(50), boot_flags: Some(IaPcBootArchFlags(2)), reset_port_and_val: Some((3321, 15)), pci_ecam_region: Some(PciEcamRegion { base_address: 2952790016, bus_start: 0, bus_end: 255 }) }
+INFO: QEMU hypervisor detected, assuming that the isa-debug-exit device exists
+DEBUG: Try to acquire PIO range: 0xf4..0xf8
+
+[ktest runner] running 260 tests in 4 crates
+
+running 20 tests in crate "osdk-frame-allocator"
+
+test osdk_frame_allocator::chunk::test::free_chunk_ops ... [32mok[39m
+test osdk_frame_allocator::chunk::test::max_order_from_works ... [32mok[39m
+test osdk_frame_allocator::chunk::test::split_to_order_works ... [32mok[39m
+test osdk_frame_allocator::chunk::test::lesser_order_of_works ... [32mok[39m
+test osdk_frame_allocator::chunk::test::split_to_chunks_works ... [32mok[39m
+test osdk_frame_allocator::chunk::test::greater_order_of_works ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_admission_and_stale_authority ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_concurrent_holders_close_and_final_refund ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_concurrent_creation_publishes_only_one_extent ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_survives_actual_ordinary_allocator_exhaustion_n0 ...PHYSICAL_RESERVE_EXHAUSTION ordinary_frames=127093 reserve_start=0x10380000 reserve_pages=64 ordinary_denied=true reserved_succeeded=true returned_to_original_owner=true global_recovery_guarantee=false
+ [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_metadata_callback_cannot_claim_then_drop_raw_frame ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_refunds_original_owner_after_aliases_and_repurpose ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_fragmentation_alignment_and_failed_allocation_refund ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_raw_subranges_and_typed_frames_share_original_refund ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_metadata_construction_unwind_refunds_prefix_and_raw_tail ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_metadata_callback_cannot_retain_current_or_future_raw_frames ... [32mok[39m
+test osdk_frame_allocator::reserve::tests::reserve_metadata_unwind_preserves_published_prefix_alias_until_final_drop ... [32mok[39m
+test osdk_frame_allocator::set::test::buddy_set_insert_alloc ... [32mok[39m
+test osdk_frame_allocator::smp_counter::test::per_cpu_counter ... [32mok[39m
+test osdk_frame_allocator::test::frame_allocator_alloc_layout_match ... [32mok[39m
+
+test result: [32mok[39m. 20 passed; 0 failed; 0 filtered out.
+
+[ktest runner] skipping crate "osdk-heap-allocator".
+
+[ktest runner] skipping crate "osdk-test-kernel".
+
+[ktest runner] skipping crate "ostd".
+
+[ktest runner] All crates tested.

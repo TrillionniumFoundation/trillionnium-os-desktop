@@ -1,0 +1,35 @@
+Command: python3 -I -B -m unittest discover -s support/ui/product -p test_desktop.py -k test_pack_regular_file_modes_do_not_depend_on_umask -v
+Exit code: 1
+test_pack_regular_file_modes_do_not_depend_on_umask (test_desktop.ProductTests.test_pack_regular_file_modes_do_not_depend_on_umask) ... 
+  test_pack_regular_file_modes_do_not_depend_on_umask (test_desktop.ProductTests.test_pack_regular_file_modes_do_not_depend_on_umask) (umask='0000') ... FAIL
+  test_pack_regular_file_modes_do_not_depend_on_umask (test_desktop.ProductTests.test_pack_regular_file_modes_do_not_depend_on_umask) (umask='0002') ... FAIL
+  test_pack_regular_file_modes_do_not_depend_on_umask (test_desktop.ProductTests.test_pack_regular_file_modes_do_not_depend_on_umask) (umask='0077') ... FAIL
+
+======================================================================
+FAIL: test_pack_regular_file_modes_do_not_depend_on_umask (test_desktop.ProductTests.test_pack_regular_file_modes_do_not_depend_on_umask) (umask='0000')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/de7f08b1eea2/desktop-package-fix/support/ui/product/test_desktop.py", line 98, in test_pack_regular_file_modes_do_not_depend_on_umask
+    self.assertEqual(archive.getmember("trillionnium-desktop/manifest.json").mode, 0o644)
+AssertionError: 438 != 420
+
+======================================================================
+FAIL: test_pack_regular_file_modes_do_not_depend_on_umask (test_desktop.ProductTests.test_pack_regular_file_modes_do_not_depend_on_umask) (umask='0002')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/de7f08b1eea2/desktop-package-fix/support/ui/product/test_desktop.py", line 98, in test_pack_regular_file_modes_do_not_depend_on_umask
+    self.assertEqual(archive.getmember("trillionnium-desktop/manifest.json").mode, 0o644)
+AssertionError: 436 != 420
+
+======================================================================
+FAIL: test_pack_regular_file_modes_do_not_depend_on_umask (test_desktop.ProductTests.test_pack_regular_file_modes_do_not_depend_on_umask) (umask='0077')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/de7f08b1eea2/desktop-package-fix/support/ui/product/test_desktop.py", line 98, in test_pack_regular_file_modes_do_not_depend_on_umask
+    self.assertEqual(archive.getmember("trillionnium-desktop/manifest.json").mode, 0o644)
+AssertionError: 384 != 420
+
+----------------------------------------------------------------------
+Ran 1 test in 0.272s
+
+FAILED (failures=3)

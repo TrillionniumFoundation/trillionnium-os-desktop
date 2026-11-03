@@ -127,7 +127,20 @@ impl<'a, 'rcu, C: PageTableConfig> Entry<'a, 'rcu, C> {
         }
 
         let level = self.node.level();
-        let new_page = RcuDrop::new(PageTableNode::<C>::alloc(level - 1));
+        self.install_if_none(guard, PageTableNode::<C>::alloc(level - 1))
+    }
+
+    /// Publishes an already allocated child through the original PTE owner.
+    pub(in crate::mm::page_table) fn install_if_none(
+        &mut self,
+        guard: &'rcu dyn InAtomicMode,
+        new_page: PageTableNode<C>,
+    ) -> Option<PageTableGuard<'rcu, C>> {
+        if !matches!(self.to_ref(), PteStateRef::Absent) || self.node.level() == 1 {
+            return None;
+        }
+        assert_eq!(new_page.level(), self.node.level() - 1);
+        let new_page = RcuDrop::new(new_page);
 
         let paddr = new_page.paddr();
         // SAFETY: The page table won't be dropped before the RCU grace period

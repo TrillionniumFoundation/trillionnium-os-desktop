@@ -856,6 +856,15 @@ hardware quiescence. `ResourceDomain::revoke()` retains its distinct host-model
 whole-domain semantics. Reason-dependent recovery policy, timers and actual
 process-exit handling remain the real owner's responsibilities.
 
+`owns_snapshot()` compares only that private state-instance identity. It remains
+true after revocation, so original owners can reject stale lifecycle/timer work
+without treating a revoked delegation as live. It does not check the lease or
+authorize an effect. `revoke_for_snapshot()` closes only the selected original
+instance and returns the same first receipt on repeated closure; a replacement
+with identical public configuration returns `SnapshotMismatch` unchanged.
+Both lifecycle selection and mutation still occur under the resource owner's
+original mutation lock. Ordinary effects continue to use the full `check()`.
+
 State instances mint private Arc identity tags; Snapshot is Clone but not Copy.
 Tag equality plus complete terms prevents a new state with identical public
 configuration from accepting an old snapshot, even after the original state

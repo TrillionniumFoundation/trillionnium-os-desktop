@@ -21,7 +21,7 @@ use aes_gcm::{
 };
 use ctr::cipher::{NewCipher, StreamCipher};
 pub(crate) use hashbrown::{HashMap, HashSet};
-pub(crate) use ostd::sync::{Mutex, MutexGuard, RwLock, SpinLock};
+pub(crate) use ostd::sync::{Mutex, MutexGuard, RwLock, RwMutex, RwMutexReadGuard, SpinLock};
 use ostd::{
     arch::read_random,
     sync::{self, PreemptDisabled, WaitQueue},
@@ -35,8 +35,6 @@ use crate::{
     prelude::Result,
 };
 
-pub(crate) type RwLockReadGuard<'a, T> = sync::RwLockReadGuard<'a, T, PreemptDisabled>;
-pub(crate) type RwLockWriteGuard<'a, T> = sync::RwLockWriteGuard<'a, T, PreemptDisabled>;
 pub(crate) type SpinLockGuard<'a, T> = sync::SpinLockGuard<'a, T, PreemptDisabled>;
 pub(crate) type Tid = u32;
 
@@ -242,12 +240,150 @@ impl crate::util::Rng for Rng {
     }
 
     fn fill_bytes(&self, dest: &mut [u8]) -> Result<()> {
-        let (chunks, remain) = dest.as_chunks_mut::<8>();
-        chunks.iter_mut().for_each(|chunk| {
-            chunk.copy_from_slice(read_random().unwrap_or(0u64).as_bytes());
-        });
-        remain.copy_from_slice(&read_random().unwrap_or(0u64).as_bytes()[..remain.len()]);
-        Ok(())
+        fill_random_bytes(dest, entropy_word)
+    }
+}
+
+fn fill_random_bytes(dest: &mut [u8], mut word: impl FnMut() -> Option<u64>) -> Result<()> {
+    for chunk in dest.chunks_mut(size_of::<u64>()) {
+        let random = word()
+            .ok_or_else(|| Error::with_msg(Errno::OsSpecUnknown, "entropy source unavailable"))?;
+        chunk.copy_from_slice(&random.as_bytes()[..chunk.len()]);
+    }
+    Ok(())
+}
+
+fn entropy_word() -> Option<u64> {
+    #[cfg(ktest)]
+    if entropy_test::should_fail() {
+        return None;
+    }
+    read_random()
+}
+
+/// Deterministic entropy cuts for the current original Task only. This entire
+/// module is absent from ordinary builds; it cannot supply replacement entropy.
+#[cfg(ktest)]
+pub(crate) mod entropy_test {
+    use ostd::{irq::InterruptLevel, prelude::ktest};
+
+    use super::*;
+
+    static CUT: SpinLock<Option<(Arc<Task>, usize)>> = SpinLock::new(None);
+
+    pub(crate) struct EntropyCut {
+        owner: Arc<Task>,
+    }
+
+    impl !Send for EntropyCut {}
+    impl !Sync for EntropyCut {}
+
+    impl EntropyCut {
+        pub(crate) fn after(successful_words: usize) -> Self {
+            assert!(InterruptLevel::current().is_task_context());
+            let owner = Task::current().unwrap().cloned();
+            let mut cut = CUT.lock();
+            assert!(cut.is_none());
+            *cut = Some((owner.clone(), successful_words));
+            Self { owner }
+        }
+    }
+
+    impl Drop for EntropyCut {
+        fn drop(&mut self) {
+            let mut cut = CUT.lock();
+            assert!(Arc::ptr_eq(&cut.as_ref().unwrap().0, &self.owner));
+            *cut = None;
+        }
+    }
+
+    pub(super) fn should_fail() -> bool {
+        // IRQs must not acquire a test lock interrupted on the same CPU, nor
+        // consume the interrupted Task's injection budget.
+        if !InterruptLevel::current().is_task_context() {
+            return false;
+        }
+        let Some(current) = Task::current() else {
+            return false;
+        };
+        let mut cut = CUT.lock();
+        let Some((owner, remaining)) = cut.as_mut() else {
+            return false;
+        };
+        if !core::ptr::eq(current.as_ref(), owner.as_ref()) {
+            return false;
+        }
+        if *remaining == 0 {
+            true
+        } else {
+            *remaining -= 1;
+            false
+        }
+    }
+
+    #[ktest]
+    fn entropy_fill_reports_partial_failure_and_exact_word_count() {
+        for len in [0, 1, 8, 9, 16, 17] {
+            let mut calls = 0;
+            let mut bytes = alloc::vec![0xa5; len];
+            fill_random_bytes(&mut bytes, || {
+                calls += 1;
+                Some(0)
+            })
+            .unwrap();
+            assert_eq!(calls, len.div_ceil(8));
+            assert!(bytes.iter().all(|byte| *byte == 0));
+        }
+        let mut bytes = [0xa5; 9];
+        let mut calls = 0;
+        assert_eq!(
+            fill_random_bytes(&mut bytes, || {
+                calls += 1;
+                if calls == 1 {
+                    Some(0x1122_3344_5566_7788)
+                } else {
+                    None
+                }
+            })
+            .unwrap_err()
+            .errno(),
+            Errno::OsSpecUnknown
+        );
+        assert_eq!(calls, 2);
+        assert_eq!(&bytes[..8], &0x1122_3344_5566_7788_u64.to_ne_bytes());
+        assert_eq!(bytes[8], 0xa5);
+        let mut bytes = [0xa5; 8];
+        assert_eq!(
+            fill_random_bytes(&mut bytes, || None).unwrap_err().errno(),
+            Errno::OsSpecUnknown
+        );
+        assert_eq!(bytes, [0xa5; 8]);
+    }
+
+    #[ktest]
+    fn entropy_cut_is_task_scoped_and_restored_on_drop() {
+        use crate::util::RandomInit;
+
+        for successful_words in [0, 1] {
+            let cut = EntropyCut::after(successful_words);
+            assert_eq!(AeadKey::random().unwrap_err().errno(), Errno::OsSpecUnknown);
+            assert_eq!(AeadIv::random().unwrap_err().errno(), Errno::OsSpecUnknown);
+            assert_eq!(AeadMac::random().unwrap_err().errno(), Errno::OsSpecUnknown);
+            assert_eq!(
+                SkcipherKey::random().unwrap_err().errno(),
+                Errno::OsSpecUnknown
+            );
+            assert_eq!(
+                SkcipherIv::random().unwrap_err().errno(),
+                Errno::OsSpecUnknown
+            );
+            // The other original Task gets real hardware entropy while this
+            // Task remains denied. The guard holds no lock while joining it.
+            spawn(AeadKey::random).join().unwrap().unwrap();
+            assert_eq!(AeadKey::random().unwrap_err().errno(), Errno::OsSpecUnknown);
+            drop(cut);
+            AeadKey::random().unwrap();
+        }
     }
 }
 
@@ -273,13 +409,13 @@ macro_rules! new_byte_array_type {
         }
 
         impl crate::util::RandomInit for $name {
-            fn random() -> Self {
+            fn random() -> Result<Self> {
                 use crate::util::Rng;
 
                 let mut result = Self::default();
                 let rng = self::Rng::new(&[]);
-                rng.fill_bytes(&mut result).unwrap_or_default();
-                result
+                rng.fill_bytes(&mut result)?;
+                Ok(result)
             }
         }
     };

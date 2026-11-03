@@ -1,0 +1,91 @@
+{
+  "schema": "hepta.root-bootstrap-memfd-qualification.v1",
+  "source_sha256": "90d875ec01c8aadc1ec36ca947b5d5e212edac1bc31f2c81ff886196d2c0caf4",
+  "binary_sha256": "6edfd15e3510450ec35431fe1ccb2a031f4e4e2dc2527f0ee32089ae5bdf8108",
+  "shape": {
+    "entry": 4201984,
+    "bytes": 718864,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4722688,
+        "file_end": 527469,
+        "entry_inside": true
+      },
+      {
+        "start": 4722688,
+        "end": 4882432,
+        "file_end": 684342,
+        "entry_inside": false
+      },
+      {
+        "start": 4882432,
+        "end": 4935680,
+        "file_end": 711360,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "6edfd15e3510450ec35431fe1ccb2a031f4e4e2dc2527f0ee32089ae5bdf8108"
+  },
+  "linux_command": [
+    "sudo",
+    "-n",
+    "/data/hepta-root-memfd-bootstrap-probe-bin-01/root-bootstrap-memfd-probe",
+    "--controlled-linux"
+  ],
+  "linux_reference_passed": true,
+  "kernel_source": "6c26e3aeefde05c120944e278299b4925612f3c8",
+  "kernel_sha256": "ac7e7c04a85f9471f7c53a5ca520fad1aadaef2d36f2bb03b72e9b5ac828cde9",
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/inline-signal-native-6c26-01/ordinary/product-kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/root-bootstrap-memfd-6c26-positive-01/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/root-bootstrap-memfd-6c26-positive-01/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "guest_deadline_seconds": 120,
+  "native_qualification_passed": true,
+  "linux_reference_receipt": "/data/asterinas-audit-build.8tdrjboi/root-bootstrap-memfd-d5a21-baseline-01/result.json",
+  "production_authority": false,
+  "status": "complete",
+  "raw_qemu_exit": 33,
+  "timed_out": false,
+  "native_probe_exit": 0,
+  "seconds": 0.818,
+  "linux_log_sha256": "6d88e4297ad90deb3ab950ed2090b774aed7528b3696016dd0a711311eb433cb",
+  "serial_sha256": "f25d012dd20cc1a2b7c3b01db062c79a61b46ae5af7958e01e2f5048192b24d4"
+}

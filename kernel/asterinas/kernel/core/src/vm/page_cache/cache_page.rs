@@ -13,7 +13,10 @@ use ostd::{
     sync::WaitQueue,
 };
 
-use crate::prelude::*;
+use crate::{
+    prelude::*,
+    vm::user_memory::{UserMemoryOwner, UserMemoryReservation, UserPageCharge},
+};
 
 /// The state of a page in the page cache.
 #[repr(u8)]
@@ -88,6 +91,7 @@ pub(crate) struct CachePageMeta {
     /// cleared without the page lock only from the BIO completion callback after
     /// the VMO writeback path has handed off the writeback state.
     is_writing_back: AtomicBool,
+    _charge: Option<UserPageCharge>,
     // TODO: Add a reverse mapping from the page to VMO for eviction.
 }
 
@@ -97,6 +101,16 @@ impl Default for CachePageMeta {
             state: AtomicPageState::new(PageState::Uninit),
             lock: AtomicBool::new(false),
             is_writing_back: AtomicBool::new(false),
+            _charge: None,
+        }
+    }
+}
+
+impl CachePageMeta {
+    pub(crate) fn with_charge(charge: Option<UserPageCharge>) -> Self {
+        Self {
+            _charge: charge,
+            ..Default::default()
         }
     }
 }
@@ -152,8 +166,9 @@ pub(crate) trait CachePageExt: Sized {
     }
 
     /// Allocates a new cache page which content and state are uninitialized.
-    fn alloc_uninit() -> Result<CachePage> {
-        let meta = CachePageMeta::default();
+    fn alloc_uninit(owner: &UserMemoryOwner) -> Result<CachePage> {
+        let mut reservation = UserMemoryReservation::new(owner, 1)?;
+        let meta = CachePageMeta::with_charge(reservation.take_page());
         let page = FrameAllocOptions::new()
             .zeroed(false)
             .alloc_frame_with(meta)?;
@@ -161,10 +176,11 @@ pub(crate) trait CachePageExt: Sized {
     }
 
     /// Allocates a new zeroed cache page with the up-to-date state.
-    fn alloc_zero() -> Result<CachePage> {
+    fn alloc_zero(owner: &UserMemoryOwner) -> Result<CachePage> {
+        let mut reservation = UserMemoryReservation::new(owner, 1)?;
         let meta = CachePageMeta {
             state: AtomicPageState::new(PageState::UpToDate),
-            ..Default::default()
+            ..CachePageMeta::with_charge(reservation.take_page())
         };
         let page = FrameAllocOptions::new()
             .zeroed(true)

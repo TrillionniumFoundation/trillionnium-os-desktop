@@ -1,0 +1,74 @@
+{
+  "source_head": "74ffd05d82fed16d0603ab252ca612fc56ebbfcc",
+  "source_tree": "d78e5cbada1fdcbc0673f8e1ecbfd84083d52d36",
+  "passed": true,
+  "product_passed": false,
+  "expected_old_blocking": true,
+  "commands": [
+    {
+      "label": "osdk-build",
+      "argv": [
+        "/data/trillionnium-closure-20261024/negative-cargo-home/bin/cargo",
+        "+nightly-2026-07-21",
+        "install",
+        "--offline",
+        "--locked",
+        "--force",
+        "cargo-osdk",
+        "--path",
+        "/data/trillionnium-closure-20261024/os-negative-74ffd05d/kernel/asterinas/osdk",
+        "--target-dir",
+        "/data/trillionnium-closure-20261024/kernel-osdk-target"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 128.58425585797522
+    },
+    {
+      "label": "ordinary",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-negative-74ffd05d/tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "74ffd05d82fed16d0603ab252ca612fc56ebbfcc",
+        "--expected-source-tree",
+        "d78e5cbada1fdcbc0673f8e1ecbfd84083d52d36",
+        "--target-dir",
+        "/data/trillionnium-closure-20261024/ordinary-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-74ffd05d-negative/ordinary"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 193.70783579605632
+    },
+    {
+      "label": "negative-unix-dontwait",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/data/trillionnium-closure-20261024/os-native-556615fc/tests/workloads/linux/unix_dontwait/run_guest.py",
+        "--kernel",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-74ffd05d-negative/ordinary/product-kernel.elf",
+        "--initramfs",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-74ffd05d-negative/ordinary/product-boot/initramfs.cpio.gz",
+        "--probe",
+        "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/probe.elf",
+        "--reference",
+        "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/result.json",
+        "--expect-old-blocking",
+        "--output",
+        "/data/trillionnium-closure-20261024/native-evidence/kernel-74ffd05d-negative/unix-dontwait"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.251928529003635
+    }
+  ],
+  "osdk_sha256": "b5c52eea0b4f311142912f67f4b758fadbe69b641ccd6dd8f0e98ce491481775",
+  "counterexample_accepted": true
+}

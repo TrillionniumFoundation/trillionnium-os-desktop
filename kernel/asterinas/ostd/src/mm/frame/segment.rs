@@ -125,8 +125,7 @@ impl<M: AnyFrameMeta> Segment<M> {
         };
         for paddr in paddr_iter {
             let frame = Frame::<M>::from_unused(paddr, metadata_fn(paddr))?;
-            let _ = ManuallyDrop::new(frame);
-            segment.range.end = paddr + PAGE_SIZE;
+            segment.append(frame);
         }
         Ok(segment)
     }
@@ -180,6 +179,13 @@ impl<M: AnyFrameMeta + ?Sized> Split for Segment<M> {
 }
 
 impl<M: AnyFrameMeta + ?Sized> Segment<M> {
+    /// Transfers the next contiguous frame owner into this segment.
+    pub(super) fn append(&mut self, frame: Frame<M>) {
+        assert_eq!(frame.paddr(), self.range.end);
+        let _ = ManuallyDrop::new(frame);
+        self.range.end += PAGE_SIZE;
+    }
+
     /// Gets an extra handle to the frames in the byte offset range.
     ///
     /// The sliced byte offset range in indexed by the offset from the start of

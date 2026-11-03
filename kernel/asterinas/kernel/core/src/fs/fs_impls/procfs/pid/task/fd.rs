@@ -19,7 +19,7 @@ use crate::{
         vfs::inode::{Inode, RevalidationPolicy, SymbolicLink},
     },
     prelude::*,
-    process::posix_thread::AsPosixThread,
+    process::posix_thread::{AsPosixThread, alien_access::AlienAccessMode},
     thread::Thread,
 };
 
@@ -44,6 +44,20 @@ impl<T: FdOps> FdDirOps<T> {
 }
 
 impl<T: FdOps> ProcDirOps for FdDirOps<T> {
+    fn allow_self_fd_access(&self) -> bool {
+        let Some(thread) = self.dir.thread() else {
+            return false;
+        };
+        let current = current_thread!();
+        let Some(caller) = current.as_posix_thread() else {
+            return false;
+        };
+        Weak::ptr_eq(
+            caller.weak_process(),
+            thread.as_posix_thread().unwrap().weak_process(),
+        )
+    }
+
     fn owner_thread(&self) -> Option<Arc<Thread>> {
         self.dir.thread()
     }
@@ -239,6 +253,18 @@ impl ProcSymOps for FileSymOps {
             return_errno_with_message!(Errno::ESRCH, "the thread does not exist");
         };
         let posix_thread = thread.as_posix_thread().unwrap();
+        let process = posix_thread
+            .weak_process()
+            .upgrade()
+            .ok_or_else(|| Error::new(Errno::ESRCH))?;
+        let vmar = process.lock_vmar();
+        let _access = posix_thread
+            .check_alien_access_from(
+                current_thread!().as_posix_thread().unwrap(),
+                AlienAccessMode::READ_WITH_FS_CREDS,
+                &vmar,
+            )
+            .map_err(|_| Error::new(Errno::EACCES))?;
 
         let file_table = posix_thread.file_table().lock();
         let Some(file_table) = file_table.as_ref() else {

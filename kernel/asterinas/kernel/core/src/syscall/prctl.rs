@@ -35,14 +35,16 @@ pub(super) fn sys_prctl(
             ctx.user_space().write_val(write_to_addr, &write_val)?;
         }
         PrctlCmd::PR_GET_DUMPABLE => {
-            // TODO: When coredump is supported, return the actual value.
-            return Ok(SyscallReturn::Return(Dumpable::Disable as _));
+            let vmar = ctx.process.lock_vmar();
+            let dumpable = *vmar.unwrap().process_vm().dumpable().lock();
+            return Ok(SyscallReturn::Return(dumpable as _));
         }
         PrctlCmd::PR_SET_DUMPABLE(dumpable) => {
             if dumpable != Dumpable::Disable && dumpable != Dumpable::User {
                 return_errno_with_message!(Errno::EINVAL, "invalid dumpable attribute");
             }
-            // TODO: Implement coredump.
+            let vmar = ctx.process.lock_vmar();
+            *vmar.unwrap().process_vm().dumpable().lock() = dumpable == Dumpable::User;
         }
         PrctlCmd::PR_GET_KEEPCAPS => {
             let keep_cap = {
@@ -59,8 +61,9 @@ pub(super) fn sys_prctl(
             if keep_cap > 1 {
                 return_errno_with_message!(Errno::EINVAL, "invalid keep-capabilities flag");
             }
-            let credentials = ctx.credentials_mut();
-            credentials.set_keep_capabilities(keep_cap != 0)?;
+            ctx.with_credentials_mut(|credentials| {
+                credentials.set_keep_capabilities(keep_cap != 0)
+            })?;
         }
         PrctlCmd::PR_SET_NAME(read_addr) => {
             let user_space = ctx.user_space();
@@ -79,8 +82,9 @@ pub(super) fn sys_prctl(
             return Ok(SyscallReturn::Return(is_in_bounding_set as _));
         }
         PrctlCmd::PR_CAPBSET_DROP(capability) => {
-            let credentials = ctx.credentials_mut();
-            credentials.drop_bounding_capability(capability)?;
+            ctx.with_credentials_mut(|credentials| {
+                credentials.drop_bounding_capability(capability)
+            })?;
         }
         PrctlCmd::PR_GET_SECUREBITS => {
             let credentials = ctx.posix_thread.credentials();
@@ -88,8 +92,7 @@ pub(super) fn sys_prctl(
             return Ok(SyscallReturn::Return(securebits.bits() as _));
         }
         PrctlCmd::PR_SET_SECUREBITS(securebits) => {
-            let credentials = ctx.credentials_mut();
-            credentials.set_securebits(securebits)?;
+            ctx.with_credentials_mut(|credentials| credentials.set_securebits(securebits))?;
         }
         PrctlCmd::PR_SET_TIMERSLACK(slack_ns) => {
             // Negative values are invalid.
@@ -121,8 +124,7 @@ pub(super) fn sys_prctl(
                 .write_val(write_addr, &(process.is_child_subreaper() as u32))?;
         }
         PrctlCmd::PR_SET_NO_NEW_PRIVS => {
-            let credentials = ctx.credentials_mut();
-            credentials.set_no_new_privs();
+            ctx.with_credentials_mut(|credentials| credentials.set_no_new_privs());
         }
         PrctlCmd::PR_GET_NO_NEW_PRIVS => {
             let credentials = ctx.posix_thread.credentials();
@@ -135,16 +137,17 @@ pub(super) fn sys_prctl(
                 return Ok(SyscallReturn::Return(if is_set { 1 } else { 0 }));
             }
             CapAmbientCmd::Raise(capability) => {
-                let credentials = ctx.credentials_mut();
-                credentials.raise_ambient_capability(capability)?;
+                ctx.with_credentials_mut(|credentials| {
+                    credentials.raise_ambient_capability(capability)
+                })?;
             }
             CapAmbientCmd::Lower(capability) => {
-                let credentials = ctx.credentials_mut();
-                credentials.lower_ambient_capability(capability);
+                ctx.with_credentials_mut(|credentials| {
+                    credentials.lower_ambient_capability(capability)
+                });
             }
             CapAmbientCmd::ClearAll => {
-                let credentials = ctx.credentials_mut();
-                credentials.clear_ambient_capset();
+                ctx.with_credentials_mut(|credentials| credentials.clear_ambient_capset());
             }
         },
     }

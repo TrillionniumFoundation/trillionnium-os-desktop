@@ -1,0 +1,95 @@
+{
+  "schema": "trillionnium.native-kernel-integration.v1",
+  "source_head": "293b3431e22ecc1793a59f6108600278964f3aa7",
+  "source_tree": "e4f85047c992dce3239f9fc889176b8bc9990b50",
+  "commands": [
+    {
+      "stage": "original-four-suites",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/run-original-full-ipc.py",
+        "--source",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b",
+        "--head",
+        "293b3431e22ecc1793a59f6108600278964f3aa7",
+        "--out",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/full"
+      ],
+      "outer_deadline_seconds": 15000,
+      "exit_code": 0
+    },
+    {
+      "stage": "original-ordinary",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "--expected-source-head",
+        "293b3431e22ecc1793a59f6108600278964f3aa7",
+        "--expected-source-tree",
+        "e4f85047c992dce3239f9fc889176b8bc9990b50",
+        "--target-dir",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-target",
+        "--cc",
+        "/usr/bin/gcc-13",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/ordinary"
+      ],
+      "outer_deadline_seconds": 7200,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-boot-id",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_proc_boot_identity.py",
+        "--kernel",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/ordinary/product-kernel.elf",
+        "--ordinary-receipt",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/ordinary/result.json",
+        "--expected-receipt-sha256",
+        "a8b5c3388afbc98466da8c50bd7e9bf871d23cda77696ccf7a15a6a0335d4567",
+        "--initramfs",
+        "support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/boot-id"
+      ],
+      "outer_deadline_seconds": 400,
+      "exit_code": 0
+    },
+    {
+      "stage": "native-process-privileges",
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/kernel/control/run_proc_process_privileges.py",
+        "--kernel",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/ordinary/product-kernel.elf",
+        "--ordinary-receipt",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/ordinary/result.json",
+        "--expected-receipt-sha256",
+        "a8b5c3388afbc98466da8c50bd7e9bf871d23cda77696ccf7a15a6a0335d4567",
+        "--initramfs",
+        "support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/data/asterinas-audit-build.8tdrjboi/kernel-integration-293b-01/process-privileges"
+      ],
+      "outer_deadline_seconds": 250,
+      "exit_code": 0
+    }
+  ],
+  "passed": true,
+  "complete": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "elapsed_seconds": 674.427,
+  "source_checkout_clean": true
+}

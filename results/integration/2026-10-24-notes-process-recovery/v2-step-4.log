@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/data/trillionnium-desktop-product-20261024-effects/source/tests/ui/test-notes-crash-recovery.py", line 165, in <module>
+    check(sys.argv[1])
+  File "/data/trillionnium-desktop-product-20261024-effects/source/tests/ui/test-notes-crash-recovery.py", line 120, in check
+    receipt, receipt_raw = exchange(channel, query)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/trillionnium-desktop-product-20261024-effects/source/tests/ui/test-notes-crash-recovery.py", line 57, in exchange
+    raw = channel.recv(2049)
+          ^^^^^^^^^^^^^^^^^^
+TimeoutError: timed out

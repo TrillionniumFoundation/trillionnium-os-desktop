@@ -1,0 +1,77 @@
+[
+  {
+    "name": "hepta-fmt",
+    "argv": [
+      "just",
+      "fmt"
+    ],
+    "status": "passed",
+    "started_unix": 1792728121.1327617,
+    "returncode": 0,
+    "elapsed_seconds": 0.9155189990997314
+  },
+  {
+    "name": "ui-fmt",
+    "argv": [
+      "cargo",
+      "fmt",
+      "--all"
+    ],
+    "status": "passed",
+    "started_unix": 1792728122.048882,
+    "returncode": 0,
+    "elapsed_seconds": 0.5505461692810059
+  },
+  {
+    "name": "agentd-notes",
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "just",
+      "test",
+      "--locked",
+      "-p",
+      "codex-hepta-agentd",
+      "notes_"
+    ],
+    "status": "passed",
+    "started_unix": 1792728122.6000483,
+    "returncode": 0,
+    "elapsed_seconds": 64.94441056251526
+  },
+  {
+    "name": "memory-hos2",
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "just",
+      "test",
+      "--locked",
+      "-p",
+      "codex-hepta-memory",
+      "hos2_"
+    ],
+    "status": "passed",
+    "started_unix": 1792728187.5452633,
+    "returncode": 0,
+    "elapsed_seconds": 37.44273781776428
+  },
+  {
+    "name": "actual-gui",
+    "argv": [
+      "python3",
+      "-B",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/run-notes-recovery-20261023-v2.py",
+      "--toolchain",
+      "1.95.0",
+      "--output",
+      "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/notes-recovery-gui-20261023-v1"
+    ],
+    "status": "passed",
+    "started_unix": 1792728224.9886823,
+    "returncode": 0,
+    "elapsed_seconds": 87.08019876480103
+  }
+]

@@ -1,0 +1,94 @@
+{
+  "schema": "trill.component-qualification.v1",
+  "archive": {
+    "file": "raw-evidence.tar.gz",
+    "bytes": 171197,
+    "sha256": "819dfae3f32aa74c95ce707e1f1a7a9e1b10647fea4d5f4c95ec5908095be258",
+    "members": 19
+  },
+  "sources": {
+    "v10": {
+      "starting_commit": "451dfa06c855407de7f1b98dd0e085c2bc6cc28f",
+      "resulting_commit": "84eaeaafd7553a431d76b531567399289facab8b",
+      "resulting_tree": "fb1c8246a52a540f097728f14b37614bf6337e5a"
+    },
+    "v11": {
+      "resulting_commit": "07ca53484cc99dc42d463f76254c03cb0d31f6d5",
+      "resulting_tree": "59b0cf45f618b3aea29dfef8bfc546daf3c53465"
+    },
+    "published_final": {
+      "commit": "52456c309f64ee80e7e377f774445c5dfe0523c9",
+      "tree": "9d0949a72d064cc2222859780c6ccd9a22c8e575",
+      "delta_after_v11": "Three provenance metadata files only; no Rust source changed."
+    }
+  },
+  "v10": {
+    "job_id": "1a16c6389e8-1b6abb-44a5",
+    "exit_code": 1,
+    "just_fmt": "passed",
+    "app_server_client": {
+      "passed": 29,
+      "skipped": 0,
+      "slow": 1
+    },
+    "agentd_lib": {
+      "passed": 349,
+      "skipped": 34
+    },
+    "authbus_text_product": {
+      "passed": 8,
+      "skipped": 0
+    },
+    "thread_items_list_tests": {
+      "passed": 3,
+      "unselected": 1015
+    },
+    "app_server_protocol": {
+      "passed": 305,
+      "failed": 1,
+      "skipped": 1,
+      "failure": "stable_precomputed_exports_match_schema_fixtures"
+    },
+    "default_original_native_ui": {
+      "passed": 43,
+      "failed": 0,
+      "ignored": 0
+    },
+    "accesskit": {
+      "passed": 54,
+      "skipped": 0
+    },
+    "scoped_just_fix": "passed",
+    "bazel_lock_update": "passed; lock unchanged"
+  },
+  "v11": {
+    "job_id": "1a16c71e3af-1b6abb-4513",
+    "exit_code": 0,
+    "stable_schema_generator": {
+      "command": "just write-app-server-schema",
+      "passed": 1,
+      "filtered_out": 306
+    },
+    "app_server_protocol_lib": {
+      "passed": 306,
+      "skipped": 1
+    },
+    "changed_file": "codex-rs/app-server-protocol/schema/precomputed/app-server-exports-stable.json.zst",
+    "changed_git_blob": "2b3cdbaa01b2feda2301dc0d2dda29dc4477ee6b"
+  },
+  "qualification": {
+    "full_codex_workspace": false,
+    "production_authority": false,
+    "installed_product": false,
+    "release_binaries": false,
+    "native_window": false,
+    "candidate_sdk_clipboard": false,
+    "android_deployment": false,
+    "asterinas_g2": false
+  },
+  "notes": [
+    "Completed component stages only. V10 failed and remains recorded as failed; V11 resolves the stale stable-schema artifact with the original generator.",
+    "V11 runner step stdout source_tree echoed its initial tree; v11-results.before_tree/after_tree and the exported stable blob identify the generated source actually tested.",
+    "Passing counts do not establish production authority, GUI/clipboard behavior, complete workspace coverage, or physical device qualification."
+  ]
+}

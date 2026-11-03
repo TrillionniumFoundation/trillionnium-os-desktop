@@ -118,9 +118,9 @@ passive DBus trace is not a complete winit IME event trace.
 For a complete input qualification, verify preedit/candidate
 placement, candidate commit, cancellation, focus changes across Shell and
 Notes, editing after commit, and keyboard shortcuts. Preserve actual host
-events and screenshots separately from synthetic egui tests. Existing
-pointer-only process actions and the rule that candidate Enter must never
-launch or terminate a process remain in force.
+events and screenshots separately from synthetic egui tests. The shared input policy allows deliberate pointer, keyboard and semantic
+accessibility actions. Candidate Enter must never launch or terminate a
+process; commit/cancel frames and held confirmation keys remain fenced.
 
 Software capture does not establish physical monitor presentation, a GPU
 driver path, target Rust-kernel graphics, Android/mobile input, the original

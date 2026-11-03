@@ -1,0 +1,1119 @@
+{
+  "actual_native_hepta_owner_verified": false,
+  "after_effect_crash_verified": false,
+  "archive_mode": "retained execution record revalidation; no test or build executed by this script",
+  "created_at_utc": "2026-10-24T03:43:15.570003+00:00",
+  "cross_boot_unknown_preservation_verified": false,
+  "g2_complete": false,
+  "g2_process_suite": {
+    "exercised": 368,
+    "record": "run/g2-initial-root/result.json",
+    "reported_passed": 368,
+    "required_core_tests": 126,
+    "retained_boot_artifacts": [
+      {
+        "bytes": 11211968,
+        "flag": "-kernel",
+        "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/guests/guest-001/qemu.json",
+        "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/guest-001-kernel-aster-core-osdk-bin.elf",
+        "sha256": "c4ca1dc2648b2c87eb3586778e6d0337a75861afef9f3d9bfb472640d487d977",
+        "source": "/data/trillionnium-closure-20261024/os-native-g2-initial/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf"
+      },
+      {
+        "bytes": 262144,
+        "flag": "-bios",
+        "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/guests/guest-001/qemu.json",
+        "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/guest-001-bios-bios-256k.bin",
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "source": "/usr/share/seabios/bios-256k.bin"
+      }
+    ],
+    "serial_sha256": "9db2f72a1de09e9bb422367542f8dc2151f55f898d23c399c45daff012e34b7e",
+    "soft_skipped": 0
+  },
+  "g2_required_process_tests": [
+    "aster_core::process::process::image::tests::frozen_root_requires_its_prepared_image_and_has_no_control_slot",
+    "aster_core::process::process::image::tests::frozen_root_exec_fences_old_image_without_reactivating_the_role",
+    "aster_core::process::process::image::tests::cancelled_frozen_root_does_not_leave_live_process_protection"
+  ],
+  "grant_renewal_verified": false,
+  "initial_elf": {
+    "bytes": 799744,
+    "compilation_input_only": true,
+    "native_entry_execution_claimed": false,
+    "sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec"
+  },
+  "kernel_built_during_publication": false,
+  "later_371_or_824_inventory_qualified_by_this_run": false,
+  "later_cpu_continuity_tests_qualified_by_this_run": false,
+  "linux_reference_reused_from_previous_execution": true,
+  "mutable_cargo_target_read": false,
+  "native_durable_cpu_g2_qualified": false,
+  "native_hepta_f1_qualified": false,
+  "ordinary_exact_markers": 18,
+  "ordinary_kernel_sha256": "0c8a69433af78103b37c9e92916871f0e4cc1ba5f2f5b3e44f2bb397d7c3c499",
+  "ordinary_suites": {
+    "aster-core": {
+      "exercised": 365,
+      "record": "run/full-aster-core/result.json",
+      "reported_passed": 365,
+      "required_core_tests": 126,
+      "retained_boot_artifacts": [
+        {
+          "bytes": 11286176,
+          "flag": "-kernel",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/guest-001-kernel-aster-core-osdk-bin.elf",
+          "sha256": "789dc9ea695786efed0c4dcc9df0d6023e12cf2098a44f165759d0d0d5d827ac",
+          "source": "/data/trillionnium-closure-20261024/os-native-g2-initial/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf"
+        },
+        {
+          "bytes": 262144,
+          "flag": "-bios",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/guest-001-bios-bios-256k.bin",
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "source": "/usr/share/seabios/bios-256k.bin"
+        }
+      ],
+      "serial_sha256": "746b8bdb757bf50a3f4938d4d5ff2eb4914dfb5fdc3ae48f14001ecc2dc2f568",
+      "soft_skipped": 0
+    },
+    "aster-mlsdisk": {
+      "exercised": 15,
+      "record": "run/full-aster-mlsdisk/result.json",
+      "reported_passed": 15,
+      "required_core_tests": null,
+      "retained_boot_artifacts": [
+        {
+          "bytes": 3398000,
+          "flag": "-kernel",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/guest-001-kernel-aster-mlsdisk-osdk-bin.elf",
+          "sha256": "b24460e6c02e7fefc5246f596118c6602801327dfc8687344d50debd96e8ad5d",
+          "source": "/data/trillionnium-closure-20261024/os-native-g2-initial/kernel/asterinas/target/osdk/aster-mlsdisk/aster-mlsdisk-osdk-bin.elf"
+        },
+        {
+          "bytes": 262144,
+          "flag": "-bios",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/guest-001-bios-bios-256k.bin",
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "source": "/usr/share/seabios/bios-256k.bin"
+        }
+      ],
+      "serial_sha256": "a57838cc32f4d62f2e44f65e06199f4d09ccdbe7dfa3c24614cbefb557a7b887",
+      "soft_skipped": 0
+    },
+    "osdk-frame-allocator": {
+      "exercised": 20,
+      "record": "run/full-osdk-frame-allocator/result.json",
+      "reported_passed": 20,
+      "required_core_tests": null,
+      "retained_boot_artifacts": [
+        {
+          "bytes": 2188008,
+          "flag": "-kernel",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/guest-001-kernel-osdk-frame-allocator-osdk-bin.elf",
+          "sha256": "6f18cab3ea619884458fd10f6ef9dcf24911f2ff89ff9ccca1e01ddc026cf698",
+          "source": "/data/trillionnium-closure-20261024/os-native-g2-initial/kernel/asterinas/target/osdk/osdk-frame-allocator/osdk-frame-allocator-osdk-bin.elf"
+        },
+        {
+          "bytes": 262144,
+          "flag": "-bios",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/guest-001-bios-bios-256k.bin",
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "source": "/usr/share/seabios/bios-256k.bin"
+        }
+      ],
+      "serial_sha256": "660efbff43d8308b30270b148322bdb08a1969c6f2d270e8dcd4cb37bf56ad25",
+      "soft_skipped": 0
+    },
+    "ostd": {
+      "exercised": 227,
+      "record": "run/full-ostd/result.json",
+      "reported_passed": 230,
+      "required_core_tests": null,
+      "retained_boot_artifacts": [
+        {
+          "bytes": 2187960,
+          "flag": "-kernel",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/guest-001-kernel-ostd-osdk-bin.elf",
+          "sha256": "32200d094e06cbdbafe15bd4e858116c785787dd9174d4c9c0dfafa7a8608eba",
+          "source": "/data/trillionnium-closure-20261024/os-native-g2-initial/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf"
+        },
+        {
+          "bytes": 262144,
+          "flag": "-bios",
+          "record": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/guests/guest-001/qemu.json",
+          "retained": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/guest-001-bios-bios-256k.bin",
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "source": "/usr/share/seabios/bios-256k.bin"
+        }
+      ],
+      "serial_sha256": "66a2cde47a9f955758dbd74f2dd78ea6f9e926f2ced8d5d82b9b64b27ea52c95",
+      "soft_skipped": 3
+    }
+  },
+  "original_elapsed_seconds": 794.6321963469964,
+  "original_pipeline_sha256": "cacf0b777416a3526b1b7fa772128c457a8a9a70d27906d47263ae0038786bd2",
+  "osdk_sha256_at_build": "bf126ac74a5710d29140b6d858b38f0045fe86d5ef5498fe4ace8959cad80981",
+  "osdk_source_root": "/data/trillionnium-closure-20261024/os-native-g2-initial/kernel/asterinas/osdk",
+  "power_loss_verified": false,
+  "production_ready": false,
+  "publication_harness_head_before": "8c81e088a70c19820949784f44cb58daf87742d2",
+  "publication_script_sha256": "e10984ec899f57a268f45fd0c54c1bba559cf6aa0a6b9fb21166f79fd918f2e4",
+  "records": [
+    {
+      "bytes": 126,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/aster-core.log.gz",
+      "published_bytes": 123,
+      "published_sha256": "2df84ba75e40beae845a0663dc16cda99fa28df5c060985ca3c540b121e27765",
+      "sha256": "01c09bd0796afc96773531624457e243360058351ac349c7abfcc84dff47a997",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/aster-core.log"
+    },
+    {
+      "bytes": 129,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/aster-mlsdisk.log.gz",
+      "published_bytes": 125,
+      "published_sha256": "27a2b396eabe2d35d4c6c96c062d1a3c0c9cafceb4ccf89bda007f2f8e3764b4",
+      "sha256": "58fe0187a72febdd81e3ddb1e7d3c0d5a4d34d2965cf7a3fef8e521d584d1e26",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/aster-mlsdisk.log"
+    },
+    {
+      "bytes": 1021,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/artifact-retention.json",
+      "published_bytes": 1021,
+      "published_sha256": "d1c353eba6691995aa3f8443bd49b6cf886e218fbbc1ae151f6a24ef763b4725",
+      "sha256": "d1c353eba6691995aa3f8443bd49b6cf886e218fbbc1ae151f6a24ef763b4725",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/artifact-retention.json"
+    },
+    {
+      "bytes": 41127,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/aster-core/generated.Cargo.lock",
+      "published_bytes": 41127,
+      "published_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/generated.Cargo.lock"
+    },
+    {
+      "bytes": 4852,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/aster-core/guests/guest-001/qemu.json",
+      "published_bytes": 4852,
+      "published_sha256": "a01adbef5673135ec1c506501e7a19a9217cec0922c1485b76885c535a3def22",
+      "sha256": "a01adbef5673135ec1c506501e7a19a9217cec0922c1485b76885c535a3def22",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/guests/guest-001/qemu.json"
+    },
+    {
+      "bytes": 48745,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-aster-core/aster-core/guests/guest-001/serial.log.gz",
+      "published_bytes": 8543,
+      "published_sha256": "ae2666b4d28b44541dd0ca06d76fa9f24b132933a51270a25fbbeab35802ca74",
+      "sha256": "746b8bdb757bf50a3f4938d4d5ff2eb4914dfb5fdc3ae48f14001ecc2dc2f568",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/guests/guest-001/serial.log"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/aster-core/osdk-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/osdk-exit-code.txt"
+    },
+    {
+      "bytes": 95616,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-aster-core/aster-core/osdk-test.log.gz",
+      "published_bytes": 13937,
+      "published_sha256": "12bff99d8d32a74ed8d58fe6d4607888dd24bc6b00007f65072cd589b6bb9a41",
+      "sha256": "36aedfec668dbb6bd94409b947b4dfafbb118a951ae69bf037300e706991b6ee",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/osdk-test.log"
+    },
+    {
+      "bytes": 18167,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/aster-core/result.json",
+      "published_bytes": 18167,
+      "published_sha256": "8f9eaf2011cfa574c18e5da98cdb22eee25a04aa97aee08b10b9c1bf0f668edf",
+      "sha256": "8f9eaf2011cfa574c18e5da98cdb22eee25a04aa97aee08b10b9c1bf0f668edf",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/aster-core/result.json"
+    },
+    {
+      "bytes": 596,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/commands.json",
+      "published_bytes": 596,
+      "published_sha256": "fb38a8ccd6a43316e093b16cbf1a423bc116003ce10b087de0e9e81ad4da9567",
+      "sha256": "fb38a8ccd6a43316e093b16cbf1a423bc116003ce10b087de0e9e81ad4da9567",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/commands.json"
+    },
+    {
+      "bytes": 3205,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/environment.json",
+      "published_bytes": 3205,
+      "published_sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/environment.json"
+    },
+    {
+      "bytes": 18839,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/result.json",
+      "published_bytes": 18839,
+      "published_sha256": "f1ecce38f78284e22a836305ff900d87394ee2760182d5ca05ad6c0817c94782",
+      "sha256": "f1ecce38f78284e22a836305ff900d87394ee2760182d5ca05ad6c0817c94782",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/result.json"
+    },
+    {
+      "bytes": 3460,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-core/source-inputs.json",
+      "published_bytes": 3460,
+      "published_sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/source-inputs.json"
+    },
+    {
+      "bytes": 1047,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/artifact-retention.json",
+      "published_bytes": 1047,
+      "published_sha256": "f14105d0c560f2509235e48e01f98cc5b83ceff2084b7b8623bdff8a5a12f334",
+      "sha256": "f14105d0c560f2509235e48e01f98cc5b83ceff2084b7b8623bdff8a5a12f334",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/artifact-retention.json"
+    },
+    {
+      "bytes": 33957,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/aster-mlsdisk/generated.Cargo.lock",
+      "published_bytes": 33957,
+      "published_sha256": "280e2eb2e2e8854551f1888db0326ef3e693dbc2b86d6fa6cda77fe8daadab14",
+      "sha256": "280e2eb2e2e8854551f1888db0326ef3e693dbc2b86d6fa6cda77fe8daadab14",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/generated.Cargo.lock"
+    },
+    {
+      "bytes": 4891,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/aster-mlsdisk/guests/guest-001/qemu.json",
+      "published_bytes": 4891,
+      "published_sha256": "0ce53a39d1d2dc7b1c69d2d8acf7c4d8efb8daf7b95c7df5b0bd39e7d20da925",
+      "sha256": "0ce53a39d1d2dc7b1c69d2d8acf7c4d8efb8daf7b95c7df5b0bd39e7d20da925",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/guests/guest-001/qemu.json"
+    },
+    {
+      "bytes": 22712,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-aster-mlsdisk/aster-mlsdisk/guests/guest-001/serial.log.gz",
+      "published_bytes": 3669,
+      "published_sha256": "539ab5aa867973ef539e622cdf5606680f6aced1e26f0f33a875a427be4d70ff",
+      "sha256": "a57838cc32f4d62f2e44f65e06199f4d09ccdbe7dfa3c24614cbefb557a7b887",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/guests/guest-001/serial.log"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/aster-mlsdisk/osdk-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/osdk-exit-code.txt"
+    },
+    {
+      "bytes": 25280,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-aster-mlsdisk/aster-mlsdisk/osdk-test.log.gz",
+      "published_bytes": 4328,
+      "published_sha256": "6d8ec5bc2913b0f1db12b4fdb6b6bf8ed545819f237cc52a26a0932c5b3a7479",
+      "sha256": "febe70b8f300f87c91ddebf13ab4a56b33965e892922d1b072baf292c979d1d4",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/osdk-test.log"
+    },
+    {
+      "bytes": 1891,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/aster-mlsdisk/result.json",
+      "published_bytes": 1891,
+      "published_sha256": "b2e08b67e11fdf1ab7e72e90b42358d21eb26ce0994eb31cbdd8d609e723e2b3",
+      "sha256": "b2e08b67e11fdf1ab7e72e90b42358d21eb26ce0994eb31cbdd8d609e723e2b3",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/aster-mlsdisk/result.json"
+    },
+    {
+      "bytes": 610,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/commands.json",
+      "published_bytes": 610,
+      "published_sha256": "4e008e310dbdcd71cfcd7ec5f7f520d19791ddcaccbcb795d8f497a02e56e065",
+      "sha256": "4e008e310dbdcd71cfcd7ec5f7f520d19791ddcaccbcb795d8f497a02e56e065",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/commands.json"
+    },
+    {
+      "bytes": 3205,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/environment.json",
+      "published_bytes": 3205,
+      "published_sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/environment.json"
+    },
+    {
+      "bytes": 2095,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/result.json",
+      "published_bytes": 2095,
+      "published_sha256": "4e6838f407ef9aa570f1e1acf96eeb235018eba75da468636a20ce8ff229172b",
+      "sha256": "4e6838f407ef9aa570f1e1acf96eeb235018eba75da468636a20ce8ff229172b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/result.json"
+    },
+    {
+      "bytes": 3460,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-aster-mlsdisk/source-inputs.json",
+      "published_bytes": 3460,
+      "published_sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/source-inputs.json"
+    },
+    {
+      "bytes": 1110,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/artifact-retention.json",
+      "published_bytes": 1110,
+      "published_sha256": "4d9ef926ac9990483bf4a59883d241723fdfcfa6de432099e4b56904d5a5c6e2",
+      "sha256": "4d9ef926ac9990483bf4a59883d241723fdfcfa6de432099e4b56904d5a5c6e2",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/artifact-retention.json"
+    },
+    {
+      "bytes": 610,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/commands.json",
+      "published_bytes": 610,
+      "published_sha256": "8251061238bb8453daa12cbea79e5dd0f938ec1154ccc00af658f3982a100daf",
+      "sha256": "8251061238bb8453daa12cbea79e5dd0f938ec1154ccc00af658f3982a100daf",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/commands.json"
+    },
+    {
+      "bytes": 3205,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/environment.json",
+      "published_bytes": 3205,
+      "published_sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/environment.json"
+    },
+    {
+      "bytes": 18209,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/osdk-frame-allocator/generated.Cargo.lock",
+      "published_bytes": 18209,
+      "published_sha256": "56657523f3894b02c3d0ba8e37ed230f637f4db3a36487341a727d5250367d45",
+      "sha256": "56657523f3894b02c3d0ba8e37ed230f637f4db3a36487341a727d5250367d45",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/generated.Cargo.lock"
+    },
+    {
+      "bytes": 4982,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/osdk-frame-allocator/guests/guest-001/qemu.json",
+      "published_bytes": 4982,
+      "published_sha256": "6a4f0fbfae3f62d95293a5a1b3be438777f74db5e2379154c7296ee915300aec",
+      "sha256": "6a4f0fbfae3f62d95293a5a1b3be438777f74db5e2379154c7296ee915300aec",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/guests/guest-001/qemu.json"
+    },
+    {
+      "bytes": 5417,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-osdk-frame-allocator/osdk-frame-allocator/guests/guest-001/serial.log.gz",
+      "published_bytes": 1666,
+      "published_sha256": "d47fd3939a1345c5ec73352dafa9fec40c5bd0f219037a823aceb0451752a850",
+      "sha256": "660efbff43d8308b30270b148322bdb08a1969c6f2d270e8dcd4cb37bf56ad25",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/guests/guest-001/serial.log"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/osdk-frame-allocator/osdk-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/osdk-exit-code.txt"
+    },
+    {
+      "bytes": 7474,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-osdk-frame-allocator/osdk-frame-allocator/osdk-test.log.gz",
+      "published_bytes": 2169,
+      "published_sha256": "318a8eb7f296dd76118c1396942f3e28159e71ac12db8749186efcb469e9fad9",
+      "sha256": "af47a2a730d07f9697cfeb83c980ab85ce98eb2ea3d6406afb65fa94c54d35c3",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/osdk-test.log"
+    },
+    {
+      "bytes": 2689,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/osdk-frame-allocator/result.json",
+      "published_bytes": 2689,
+      "published_sha256": "38936ff3505978192d120945d9139f15cc6ccef2115d9cee126a72fe3107e84b",
+      "sha256": "38936ff3505978192d120945d9139f15cc6ccef2115d9cee126a72fe3107e84b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/osdk-frame-allocator/result.json"
+    },
+    {
+      "bytes": 2945,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/result.json",
+      "published_bytes": 2945,
+      "published_sha256": "ff8c1e89688a42fa3fd57314e443513bf37e44104f08981953b532b72ca79cb4",
+      "sha256": "ff8c1e89688a42fa3fd57314e443513bf37e44104f08981953b532b72ca79cb4",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/result.json"
+    },
+    {
+      "bytes": 3460,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-osdk-frame-allocator/source-inputs.json",
+      "published_bytes": 3460,
+      "published_sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/source-inputs.json"
+    },
+    {
+      "bytes": 966,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/artifact-retention.json",
+      "published_bytes": 966,
+      "published_sha256": "0734f812c252b498d6cb0448441bdba929c95b46329ab61858b729c02f869056",
+      "sha256": "0734f812c252b498d6cb0448441bdba929c95b46329ab61858b729c02f869056",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/artifact-retention.json"
+    },
+    {
+      "bytes": 589,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/commands.json",
+      "published_bytes": 589,
+      "published_sha256": "4029c7933aee8a19d015a966a897808ee6f0f55a74576b3ef708d6445f44a2e6",
+      "sha256": "4029c7933aee8a19d015a966a897808ee6f0f55a74576b3ef708d6445f44a2e6",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/commands.json"
+    },
+    {
+      "bytes": 3205,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/environment.json",
+      "published_bytes": 3205,
+      "published_sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "sha256": "a711293f6ceda40a3dd993ee710158c16b085f9ba0085890bf1d205aea9f491b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/environment.json"
+    },
+    {
+      "bytes": 20185,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/ostd/generated.Cargo.lock",
+      "published_bytes": 20185,
+      "published_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/generated.Cargo.lock"
+    },
+    {
+      "bytes": 4774,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/ostd/guests/guest-001/qemu.json",
+      "published_bytes": 4774,
+      "published_sha256": "c551fdce42b590af94b1cd92c3b80ededb4c6dd6e2e0fdd9ef3d3efaa082920b",
+      "sha256": "c551fdce42b590af94b1cd92c3b80ededb4c6dd6e2e0fdd9ef3d3efaa082920b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/guests/guest-001/qemu.json"
+    },
+    {
+      "bytes": 24091,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-ostd/ostd/guests/guest-001/serial.log.gz",
+      "published_bytes": 3970,
+      "published_sha256": "053972326fc89cfcff9c465f59d697cfa140c85315738f7d3ba451c846652fa9",
+      "sha256": "66a2cde47a9f955758dbd74f2dd78ea6f9e926f2ced8d5d82b9b64b27ea52c95",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/guests/guest-001/serial.log"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/ostd/osdk-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/osdk-exit-code.txt"
+    },
+    {
+      "bytes": 25161,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/full-ostd/ostd/osdk-test.log.gz",
+      "published_bytes": 4311,
+      "published_sha256": "9002bc71a0c940a715e80edfb411cd3e8284fe5334741374919641e0d9ad7262",
+      "sha256": "530daa7f45115501697c99e2149cb6185136bfe4db7b6abd28d667d794075e85",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/osdk-test.log"
+    },
+    {
+      "bytes": 1596,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/ostd/result.json",
+      "published_bytes": 1596,
+      "published_sha256": "e378cdd29c1d8f0457bd0220b8edf43aaa7309184bdd216cc4ef3bc8f76e4182",
+      "sha256": "e378cdd29c1d8f0457bd0220b8edf43aaa7309184bdd216cc4ef3bc8f76e4182",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/ostd/result.json"
+    },
+    {
+      "bytes": 1788,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/result.json",
+      "published_bytes": 1788,
+      "published_sha256": "20d4ec80ca1c5e0ea3f8b6604d2cbb0fcf2bb981545b3121fd500508d872303b",
+      "sha256": "20d4ec80ca1c5e0ea3f8b6604d2cbb0fcf2bb981545b3121fd500508d872303b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/result.json"
+    },
+    {
+      "bytes": 3460,
+      "encoding": "unchanged original bytes",
+      "published": "run/full-ostd/source-inputs.json",
+      "published_bytes": 3460,
+      "published_sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/source-inputs.json"
+    },
+    {
+      "bytes": 1021,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/artifact-retention.json",
+      "published_bytes": 1021,
+      "published_sha256": "10b85a6fecd472246a6f7a497808a66f966a720765680c9f1f210a994819d1b6",
+      "sha256": "10b85a6fecd472246a6f7a497808a66f966a720765680c9f1f210a994819d1b6",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/artifact-retention.json"
+    },
+    {
+      "bytes": 41127,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/aster-core/generated.Cargo.lock",
+      "published_bytes": 41127,
+      "published_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/generated.Cargo.lock"
+    },
+    {
+      "bytes": 4853,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/aster-core/guests/guest-001/qemu.json",
+      "published_bytes": 4853,
+      "published_sha256": "50d2befd5b1a11b9c14a33e5e04e91ee3232f0b759ea3569df936f13fffa8972",
+      "sha256": "50d2befd5b1a11b9c14a33e5e04e91ee3232f0b759ea3569df936f13fffa8972",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/guests/guest-001/qemu.json"
+    },
+    {
+      "bytes": 49135,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/g2-initial-root/aster-core/guests/guest-001/serial.log.gz",
+      "published_bytes": 8618,
+      "published_sha256": "5bff3ad92b679bb8e921e7771002c466175976016301b7e76b5b7417f256cb1d",
+      "sha256": "9db2f72a1de09e9bb422367542f8dc2151f55f898d23c399c45daff012e34b7e",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/guests/guest-001/serial.log"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/aster-core/osdk-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/osdk-exit-code.txt"
+    },
+    {
+      "bytes": 106308,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/g2-initial-root/aster-core/osdk-test.log.gz",
+      "published_bytes": 15590,
+      "published_sha256": "fa19ec95081a75c2e0051cebb3eeb27a7c65ec3f22e530a4cf256faf6a91ccd3",
+      "sha256": "2f0df57bb5266e46d03658843a1cbf09a255264d5280ab211513310f950f8752",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/osdk-test.log"
+    },
+    {
+      "bytes": 19571,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/aster-core/result.json",
+      "published_bytes": 19571,
+      "published_sha256": "4136a37eaf1d2e6a0a83570ce83e3c79f5b582c39916d9f863bd342b24cad962",
+      "sha256": "4136a37eaf1d2e6a0a83570ce83e3c79f5b582c39916d9f863bd342b24cad962",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/aster-core/result.json"
+    },
+    {
+      "bytes": 634,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/commands.json",
+      "published_bytes": 634,
+      "published_sha256": "3bc482bc360edd04cd66dd14a3c04e0d254fd9ee9515e945bf0fece04039e6fb",
+      "sha256": "3bc482bc360edd04cd66dd14a3c04e0d254fd9ee9515e945bf0fece04039e6fb",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/commands.json"
+    },
+    {
+      "bytes": 3646,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/environment.json",
+      "published_bytes": 3646,
+      "published_sha256": "386f864999ee41a7201846a9ca62fecc5e2cb22d264a18c8a43657f1bd404d2a",
+      "sha256": "386f864999ee41a7201846a9ca62fecc5e2cb22d264a18c8a43657f1bd404d2a",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/environment.json"
+    },
+    {
+      "bytes": 20351,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/result.json",
+      "published_bytes": 20351,
+      "published_sha256": "11e49a1d566dd712049fa5551c5c3de55521c4df484559502803659c18622626",
+      "sha256": "11e49a1d566dd712049fa5551c5c3de55521c4df484559502803659c18622626",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/result.json"
+    },
+    {
+      "bytes": 3460,
+      "encoding": "unchanged original bytes",
+      "published": "run/g2-initial-root/source-inputs.json",
+      "published_bytes": 3460,
+      "published_sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/source-inputs.json"
+    },
+    {
+      "bytes": 126,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/g2-initial-root.log.gz",
+      "published_bytes": 120,
+      "published_sha256": "d4376b45afbafa17aebb5cd4f0f7d5708596f9e7eeeabf16a15e7b1f381a1452",
+      "sha256": "0e1c9ea438a862e646962e4f0422a7b4cf8c5c8b68b622cf22b058805d6e556d",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root.log"
+    },
+    {
+      "bytes": 0,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/compile.log.gz",
+      "published_bytes": 20,
+      "published_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/compile.log"
+    },
+    {
+      "bytes": 597,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/product-boot/command.sh",
+      "published_bytes": 597,
+      "published_sha256": "f9a4ab3484aab9af4a27dfd8f85fb47386edcc2b118fea8e01a7628816c2cee2",
+      "sha256": "f9a4ab3484aab9af4a27dfd8f85fb47386edcc2b118fea8e01a7628816c2cee2",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/command.sh"
+    },
+    {
+      "bytes": 2774,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/product-boot/environment.log.gz",
+      "published_bytes": 1576,
+      "published_sha256": "f6da0ced0af218414de67f03d6c647989df1ebba645f0343c8657656c7a9d369",
+      "sha256": "a39d9769a32e3ebf3c5756c661ea1551f7f696a02c316bb93690d8d3fdf9ed39",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/environment.log"
+    },
+    {
+      "bytes": 7121,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/product-boot/initramfs-manifest.json",
+      "published_bytes": 7121,
+      "published_sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d",
+      "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/initramfs-manifest.json"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/product-boot/log-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/log-exit-code.txt"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/product-boot/make-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/make-exit-code.txt"
+    },
+    {
+      "bytes": 3104,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/product-boot/qemu.json",
+      "published_bytes": 3104,
+      "published_sha256": "248d1bfdad63afd3c265f02f8a9e96891bbad0afadd674e47a8ab337ac7ffd19",
+      "sha256": "248d1bfdad63afd3c265f02f8a9e96891bbad0afadd674e47a8ab337ac7ffd19",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/qemu.json"
+    },
+    {
+      "bytes": 2,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/product-boot/run-exit-code.txt",
+      "published_bytes": 2,
+      "published_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/run-exit-code.txt"
+    },
+    {
+      "bytes": 129256,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/product-boot/run_kernel.log.gz",
+      "published_bytes": 13633,
+      "published_sha256": "24b784f50b0d64cdbb7788b688bab25993676bcbb2adbe7fb94ba4864a4e5274",
+      "sha256": "7d1008feea0050229e406dd8cda3b82b83277107a947c0d155928f173f46376b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/run_kernel.log"
+    },
+    {
+      "bytes": 72332,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/product-boot/serial.log.gz",
+      "published_bytes": 6474,
+      "published_sha256": "bd3a309acb9481fafca284cc41b19c06d947a201d9bcb98bfe81dd4e5fa241d6",
+      "sha256": "44548333c39f31a678955ce6e0729cbd3993d1124436b17c11aa58dd9a7857ef",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/serial.log"
+    },
+    {
+      "bytes": 3460,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/product-boot/source-inputs.json",
+      "published_bytes": 3460,
+      "published_sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "sha256": "d9988ddfd5f2716af6b5242c92ccf6f281cbaffaec439a9a99ca57374e211524",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/source-inputs.json"
+    },
+    {
+      "bytes": 129540,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/product-wrapper.log.gz",
+      "published_bytes": 13808,
+      "published_sha256": "51bbfef81139b63e57e6179970257c0af533b42a6cbcf2fbf6876010fecde236",
+      "sha256": "9f153392b8447b96312d84e7c9101173a842ab449a1d932653631fefe9aed018",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-wrapper.log"
+    },
+    {
+      "bytes": 3701,
+      "encoding": "unchanged original bytes",
+      "published": "run/ordinary/result.json",
+      "published_bytes": 3701,
+      "published_sha256": "5762e71dbceb68fcd5872a678ae96a2b67390bf964e334414aa6c4624562fd1d",
+      "sha256": "5762e71dbceb68fcd5872a678ae96a2b67390bf964e334414aa6c4624562fd1d",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/result.json"
+    },
+    {
+      "bytes": 85976,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/serial.log.gz",
+      "published_bytes": 7438,
+      "published_sha256": "cedcba8ab408042640d1e4f9a664a362e650375ef88d52af3b8aad0d5ea5b533",
+      "sha256": "7a87a964b340d11e89dc3de36cfa8c6d5e1b80d225be2989ec788e136acfac1e",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/serial.log"
+    },
+    {
+      "bytes": 3119891,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/source-after-boot.json.gz",
+      "published_bytes": 731030,
+      "published_sha256": "f65e853f927e7a1911692d1e078981c7116da9f76ede220f08bb443f612d15f6",
+      "sha256": "3112b66cd75db423b7bd791814d2d87900dfb8375f093e4fa0cd012c79fae351",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/source-after-boot.json"
+    },
+    {
+      "bytes": 3119891,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/source-after-guest.json.gz",
+      "published_bytes": 731030,
+      "published_sha256": "f65e853f927e7a1911692d1e078981c7116da9f76ede220f08bb443f612d15f6",
+      "sha256": "3112b66cd75db423b7bd791814d2d87900dfb8375f093e4fa0cd012c79fae351",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/source-after-guest.json"
+    },
+    {
+      "bytes": 3119891,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary/source-before.json.gz",
+      "published_bytes": 731030,
+      "published_sha256": "f65e853f927e7a1911692d1e078981c7116da9f76ede220f08bb443f612d15f6",
+      "sha256": "3112b66cd75db423b7bd791814d2d87900dfb8375f093e4fa0cd012c79fae351",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/source-before.json"
+    },
+    {
+      "bytes": 130,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ordinary.log.gz",
+      "published_bytes": 127,
+      "published_sha256": "b3f97dc8a4f2805b57481daaaf98775052cc554de776107d2470b00ea23e64d7",
+      "sha256": "a09b785b2c95ec033ce0b9a4811d145401371ffb3e7ff18951f17343fedc6823",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary.log"
+    },
+    {
+      "bytes": 4248,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/osdk-build.log.gz",
+      "published_bytes": 1260,
+      "published_sha256": "325a44a2e61382af0f2a57ae1951be130eb64a139b1723dc6b46ce1a2c1fd3a0",
+      "sha256": "614acf6b126de01bb2d4efefbeeea9de85fe29f78245abd64725dbf719795c97",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/osdk-build.log"
+    },
+    {
+      "bytes": 136,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/osdk-frame-allocator.log.gz",
+      "published_bytes": 129,
+      "published_sha256": "2e3787e766dd77dc9671e9739025e7742e4f7726c939529c76c2223b86775a0c",
+      "sha256": "7d69575273c99c434aeee218abc520f48e564f861acbb7485f2455937a680ce6",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/osdk-frame-allocator.log"
+    },
+    {
+      "bytes": 120,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/ostd.log.gz",
+      "published_bytes": 120,
+      "published_sha256": "d63777d931e3bf08ba9837ddbdf767a41e92061bee37642e1e7222c132b1c6e4",
+      "sha256": "309e149a8d10e054a7974a42d446f00936c9755e0fcd93cb0f1bdbe3067182a6",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ostd.log"
+    },
+    {
+      "bytes": 5710,
+      "encoding": "unchanged original bytes",
+      "published": "run/pipeline.json",
+      "published_bytes": 5710,
+      "published_sha256": "cacf0b777416a3526b1b7fa772128c457a8a9a70d27906d47263ae0038786bd2",
+      "sha256": "cacf0b777416a3526b1b7fa772128c457a8a9a70d27906d47263ae0038786bd2",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/pipeline.json"
+    },
+    {
+      "bytes": 3119891,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/source-after.json.gz",
+      "published_bytes": 726216,
+      "published_sha256": "36f84b7bcf7ad647b4962e4ed125a3552d8d625c45e5f2d5cdbce767a31e08aa",
+      "sha256": "8ca7b2ebbedcc7e9507bbabbfe45c9bd4628def15f4b0a4450c58c42591be14b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/source-after.json"
+    },
+    {
+      "bytes": 3119891,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/source-before.json.gz",
+      "published_bytes": 726216,
+      "published_sha256": "36f84b7bcf7ad647b4962e4ed125a3552d8d625c45e5f2d5cdbce767a31e08aa",
+      "sha256": "8ca7b2ebbedcc7e9507bbabbfe45c9bd4628def15f4b0a4450c58c42591be14b",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/source-before.json"
+    },
+    {
+      "bytes": 4091,
+      "encoding": "unchanged original bytes",
+      "published": "run/unix-dontwait/result.json",
+      "published_bytes": 4091,
+      "published_sha256": "f96f46368e99ac5aa2720c1c5a22ca5078ae3d97dcf2d6ea62ca8b16073aa4c2",
+      "sha256": "f96f46368e99ac5aa2720c1c5a22ca5078ae3d97dcf2d6ea62ca8b16073aa4c2",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/unix-dontwait/result.json"
+    },
+    {
+      "bytes": 37007,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/unix-dontwait/serial.log.gz",
+      "published_bytes": 2957,
+      "published_sha256": "8f8021553d42c3cb24ecd06a4b8cef469ef5a806289481abd50c59a6b68b18d0",
+      "sha256": "081e35d6eacb8f29fb4b94dfa5cd350b868d0d87c96474aae5eabd9c0d57a911",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/unix-dontwait/serial.log"
+    },
+    {
+      "bytes": 127,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "run/unix-dontwait.log.gz",
+      "published_bytes": 130,
+      "published_sha256": "f39ad663025926bede7b7901823fd9ff9abf6453c575197763b98e54070c1f62",
+      "sha256": "44ad87affbaf7115db588ebf460dbdcd5da80aa8797b6141aa920e52fb9d18d1",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/unix-dontwait.log"
+    },
+    {
+      "bytes": 0,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "linux-reference/compile.log.gz",
+      "published_bytes": 20,
+      "published_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/compile.log"
+    },
+    {
+      "bytes": 1325,
+      "encoding": "unchanged original bytes",
+      "published": "linux-reference/result.json",
+      "published_bytes": 1325,
+      "published_sha256": "d6a33ecc17a63238105db6b2945acab110ce29a856d9c8a58cf0a3d340a063e6",
+      "sha256": "d6a33ecc17a63238105db6b2945acab110ce29a856d9c8a58cf0a3d340a063e6",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/result.json"
+    },
+    {
+      "bytes": 0,
+      "encoding": "gzip; decompressed bytes equal original, including CRLF",
+      "published": "linux-reference/stderr.log.gz",
+      "published_bytes": 20,
+      "published_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/stderr.log"
+    },
+    {
+      "bytes": 4366,
+      "encoding": "unchanged original bytes",
+      "published": "linux-reference/stdout.jsonl",
+      "published_bytes": 4366,
+      "published_sha256": "2126c12618b5a9af8d6437f5edac5d777be181b67068f72628fc491181303d01",
+      "sha256": "2126c12618b5a9af8d6437f5edac5d777be181b67068f72628fc491181303d01",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/stdout.jsonl"
+    }
+  ],
+  "repeated_recovery_verified": false,
+  "retained_artifacts": [
+    {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/guest-001-bios-bios-256k.bin",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 11286176,
+      "sha256": "789dc9ea695786efed0c4dcc9df0d6023e12cf2098a44f165759d0d0d5d827ac",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-core/guest-001-kernel-aster-core-osdk-bin.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/guest-001-bios-bios-256k.bin",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 3398000,
+      "sha256": "b24460e6c02e7fefc5246f596118c6602801327dfc8687344d50debd96e8ad5d",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-aster-mlsdisk/guest-001-kernel-aster-mlsdisk-osdk-bin.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/guest-001-bios-bios-256k.bin",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 2188008,
+      "sha256": "6f18cab3ea619884458fd10f6ef9dcf24911f2ff89ff9ccca1e01ddc026cf698",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-osdk-frame-allocator/guest-001-kernel-osdk-frame-allocator-osdk-bin.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/guest-001-bios-bios-256k.bin",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 2187960,
+      "sha256": "32200d094e06cbdbafe15bd4e858116c785787dd9174d4c9c0dfafa7a8608eba",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/full-ostd/guest-001-kernel-ostd-osdk-bin.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/guest-001-bios-bios-256k.bin",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 11211968,
+      "sha256": "c4ca1dc2648b2c87eb3586778e6d0337a75861afef9f3d9bfb472640d487d977",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/guest-001-kernel-aster-core-osdk-bin.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 799744,
+      "sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/g2-initial-root/ktest-trusted-initial.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/bios.bin",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 936888,
+      "sha256": "ae14a11eb3e2d6053e2a5a17cad5c2f9a461dad583aa6368749614c7119abe55",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/hos2-queryabi",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 1511925,
+      "sha256": "22848eec8c01664f683a71e88dae9dfdc93172c34948d57126ef89e54eda5033",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/initramfs.cpio.gz",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-boot/initramfs.cpio.gz",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 8609920,
+      "sha256": "0c8a69433af78103b37c9e92916871f0e4cc1ba5f2f5b3e44f2bb397d7c3c499",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/ordinary/product-kernel.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 8508728,
+      "sha256": "bf126ac74a5710d29140b6d858b38f0045fe86d5ef5498fe4ace8959cad80981",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/source-built-cargo-osdk",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/unix-dontwait/bios.bin",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 1453433,
+      "sha256": "da4ba76061db645530ad9ad124f6d59496a85b5479873a53554a0bf9ef2d1f83",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/unix-dontwait/initramfs.cpio.gz",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 8609920,
+      "sha256": "0c8a69433af78103b37c9e92916871f0e4cc1ba5f2f5b3e44f2bb397d7c3c499",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/unix-dontwait/kernel.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 799744,
+      "sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/kernel-g2-initial/unix-dontwait/probe.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    },
+    {
+      "bytes": 799744,
+      "sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+      "source": "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/probe.elf",
+      "storage": "actual retained original artifact; SHA256/size only, no binary copied into Git"
+    }
+  ],
+  "same_linux_probe_sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+  "schema": "trillionnium.asterinas.g2-initial-process-archive.v1",
+  "scope": "retained actual G2 initial Process ktests plus the original ordinary four-suite/QueryAbi/socket execution",
+  "smp_or_physical_media_qualified": false,
+  "socket_actual_positive_checks": 33,
+  "source": {
+    "head": "0f6300e4fbec189dd1f4121299ed15782e4721ee",
+    "tree": "46d4d62c5698d96f9dae0b17c1b343d76ce89d73"
+  },
+  "source_inputs_unchanged": true,
+  "tests_reexecuted": false,
+  "unbounded_persistent_cpu_verified": false
+}

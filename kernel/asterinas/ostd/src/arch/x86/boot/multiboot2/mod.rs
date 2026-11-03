@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
-use core::arch::global_asm;
+use core::{arch::global_asm, num::NonZeroUsize};
 
-use multiboot2::{BootInformation, BootInformationHeader, MemoryAreaType};
+use multiboot2::{BootInformation, BootInformationHeader, FramebufferType, MemoryAreaType};
 
 use super::ToEarlyBootInfo;
 use crate::{
@@ -100,6 +100,11 @@ impl ToEarlyBootInfo for BootInformation<'_> {
 
     fn framebuffer_arg(&self) -> Option<BootloaderFramebufferArg> {
         let fb_tag = self.framebuffer_tag()?.ok()?;
+        // EGA text cells are not packed pixels. In particular, their RAM
+        // address must not be passed to the framebuffer MMIO allocator.
+        if matches!(fb_tag.buffer_type().ok()?, FramebufferType::Text) {
+            return None;
+        }
 
         Some(BootloaderFramebufferArg {
             address: fb_tag.address() as usize,
@@ -121,10 +126,27 @@ impl ToEarlyBootInfo for BootInformation<'_> {
         let memory_regions_tag = self
             .memory_map_tag()
             .expect("No memory regions are found in the Multiboot2 header!");
+        // Like Multiboot1/PVH, GRUB's Multiboot2 map can describe the ACPI
+        // tables at the RAM tail as Reserved. Include the region containing
+        // the actual supplied RSDT/XSDT in the permanent direct mapping before
+        // ACPI discovery; otherwise the first table read can page fault.
+        // EFI without supplied ACPI information must not scan legacy BIOS.
+        let acpi_root_table_address = match self.acpi_arg() {
+            BootloaderAcpiArg::Rsdt(address) | BootloaderAcpiArg::Xsdt(address) => {
+                NonZeroUsize::new(address)
+            }
+            BootloaderAcpiArg::ScanBios => super::find_acpi_root_table_address(),
+            BootloaderAcpiArg::NotProvided | BootloaderAcpiArg::Rsdp(_) => None,
+        };
         for region in memory_regions_tag.memory_areas() {
             let start = region.start_address();
             let end = region.end_address();
-            let area_typ: MemoryRegionType = MemoryAreaType::from(region.typ()).into();
+            let area_typ = super::effective_region_type(
+                MemoryAreaType::from(region.typ()).into(),
+                start.try_into().unwrap(),
+                (end - start).try_into().unwrap(),
+                acpi_root_table_address,
+            );
             regions
                 .push(MemoryRegion::new(
                     start.try_into().unwrap(),
@@ -148,6 +170,10 @@ impl ToEarlyBootInfo for BootInformation<'_> {
         super::finish_memory_regions(regions, framebuffer_arg, initramfs, kernel_cmdline)
     }
 }
+
+#[cfg(ktest)]
+#[path = "acpi_region_tests.rs"]
+mod tests;
 
 /// The entry point of the Rust code portion of Asterinas (with multiboot2 parameters).
 ///

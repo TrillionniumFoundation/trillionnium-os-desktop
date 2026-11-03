@@ -5,7 +5,7 @@ use core::ops::Range;
 
 use super::{AsKV, RangeQueryCtx, RecordKey, RecordValue, SyncId, tx_lsm_tree::OnDropRecodeFn};
 use crate::{
-    os::{BTreeMap, Condvar, CvarMutex, Mutex, RwLock, RwLockReadGuard},
+    os::{BTreeMap, Condvar, CvarMutex, Mutex, RwMutex, RwMutexReadGuard},
     prelude::*,
 };
 
@@ -13,7 +13,7 @@ use crate::{
 /// in a `TxLsmTree`.
 pub(super) struct MemTableManager<K: RecordKey<K>, V> {
     mutable: Mutex<MemTable<K, V>>,
-    immutable: RwLock<MemTable<K, V>>, // Read-only most of the time
+    immutable: RwMutex<MemTable<K, V>>, // Read-only most of the time
     cvar: Condvar,
     is_full: CvarMutex<bool>,
 }
@@ -55,7 +55,7 @@ impl<K: RecordKey<K>, V: RecordValue> MemTableManager<K, V> {
             sync_id,
             on_drop_record_in_memtable.clone(),
         ));
-        let immutable = RwLock::new(MemTable::new(capacity, sync_id, on_drop_record_in_memtable));
+        let immutable = RwMutex::new(MemTable::new(capacity, sync_id, on_drop_record_in_memtable));
 
         Self {
             mutable,
@@ -136,7 +136,7 @@ impl<K: RecordKey<K>, V: RecordValue> MemTableManager<K, V> {
     }
 
     /// Gets the immutable `MemTable` instance (read-only).
-    pub(super) fn immutable_memtable(&self) -> RwLockReadGuard<'_, MemTable<K, V>> {
+    pub(super) fn immutable_memtable(&self) -> RwMutexReadGuard<'_, MemTable<K, V>> {
         self.immutable.read()
     }
 }

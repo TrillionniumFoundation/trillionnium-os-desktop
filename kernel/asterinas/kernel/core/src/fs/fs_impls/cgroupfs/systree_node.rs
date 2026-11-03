@@ -71,6 +71,7 @@ use crate::{
     },
     prelude::*,
     process::{Pid, Process, pid_table},
+    vm::user_memory::hierarchy::{MAX_MEMORY_DEPTH, MemoryDomain},
 };
 
 /// A type that provides synchronized access to cgroup membership and sub-controller state.
@@ -270,6 +271,13 @@ impl CgroupMembership {
     }
 
     fn add_process_to_node(&self, process: &Arc<Process>, new_cgroup: &CgroupNode) -> Result<()> {
+        // Membership excludes Process lease creation and other moves. Validate
+        // before publishing either membership or the allocation binding.
+        let memory_owner = process.user_memory_owner().as_ref().unwrap();
+        let domain = new_cgroup.controller.memory_domain();
+        if !memory_owner.can_move_to(domain, self) {
+            return Err(Error::ResourceUnavailable);
+        }
         // According to "no internal processes" rule of cgroupv2, if a non-root
         // cgroup node has activated some sub-controls, it cannot bind any process.
         //
@@ -287,6 +295,9 @@ impl CgroupMembership {
                 }
 
                 current_processes.insert(process.pid(), Arc::downgrade(process));
+                // The node is live and all fallible checks/map allocations are
+                // complete. This is the new-allocation linearization point.
+                memory_owner.move_to(domain.clone(), self);
                 let cgroup = new_cgroup.fields.weak_self().upgrade().unwrap();
                 // The process map/node lock and its allocation are complete
                 // before IRQs are disabled. Only the nonblocking RCU publish
@@ -339,7 +350,7 @@ impl CgroupMembership {
         old_cgroup.controller.uncharge_pids(task_count);
     }
 
-    fn try_move_process_to_root(&mut self, process: &Process) -> Result<()> {
+    pub(super) fn try_move_process_to_root(&mut self, process: &Process) -> Result<()> {
         if process
             .cgroup()
             .get()
@@ -347,6 +358,12 @@ impl CgroupMembership {
         {
             return Err(Error::PermissionDenied);
         }
+        let root = MemoryDomain::root();
+        let owner = process.user_memory_owner().as_ref().unwrap();
+        if !owner.can_move_to(&root, self) {
+            return Err(Error::ResourceUnavailable);
+        }
+        owner.move_to(root, self);
         self.move_process_to_root(process);
         Ok(())
     }
@@ -671,6 +688,7 @@ impl CgroupNode {
         // All process, lease and child checks precede irreversible management
         // closure. The original bandwidth counters remain available for reads.
         self.controller.close_cpu_incarnation(membership);
+        self.controller.memory_domain().close();
         *inner = None;
 
         Ok(())
@@ -923,6 +941,9 @@ inherit_sys_branch_node!(CgroupNode, fields, {
         // state. Take a read lock to prevent any state changes.
         let _cgroup_read_guard = CgroupMembership::read_lock();
         self.with_inner(|_| {
+            if self.depth >= MAX_MEMORY_DEPTH {
+                return Err(Error::InvalidOperation);
+            }
             let new_child =
                 CgroupNode::new(name.to_string().into(), self.depth + 1, &self.controller);
             self.add_child(new_child.clone())?;

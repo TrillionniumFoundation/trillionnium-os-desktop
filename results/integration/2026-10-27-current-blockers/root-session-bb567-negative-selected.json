@@ -1,0 +1,83 @@
+{
+  "schema": "trill.selected-root-session-custody-negative-evidence.v1",
+  "source_head": "bb5677f664a94d9f42ca4c216e774911f4fd5f32",
+  "source_tree": "abcbff8239d3796ffb81692a05c639491112a1d7",
+  "source_inputs_unchanged": true,
+  "commands": [
+    {
+      "command": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "check",
+        "-p",
+        "codex-hepta-agentd",
+        "--lib",
+        "--bins",
+        "--tests",
+        "--profile",
+        "dev-small",
+        "--jobs",
+        "1",
+        "--locked",
+        "--offline"
+      ],
+      "elapsed_seconds": 26.928,
+      "exit_code": 0,
+      "label": "typecheck"
+    },
+    {
+      "command": [
+        "just",
+        "test",
+        "-p",
+        "codex-hepta-agentd",
+        "--lib",
+        "-E",
+        "test(escaped_original_root_session_and_live_verifier_retain_same_registered_file)",
+        "--locked",
+        "--offline",
+        "--cargo-profile",
+        "dev-small",
+        "--test-threads",
+        "1",
+        "--retries",
+        "0",
+        "--no-tests",
+        "fail",
+        "--success-output",
+        "immediate"
+      ],
+      "elapsed_seconds": 86.213,
+      "exit_code": 100,
+      "label": "negative"
+    }
+  ],
+  "exit_code": 100,
+  "actual_test_elf": {
+    "archived_path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/asterinas/root-session-custody-bb567-negative-1/original-agentd-libtest.elf",
+    "bytes": 142297128,
+    "path": "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/targets/p1-live-root-admin-20261026/dev-small/deps/codex_hepta_agentd-b714f5b7519f2779",
+    "sha256": "581cd17640442736ef0214ab5cf2defd1622cb73f56c7a97e262487dc69e6db3"
+  },
+  "old_actual_countercase_failed": true,
+  "product_qualification": false,
+  "root_or_model_started": false,
+  "stage": "complete",
+  "started_utc": "2026-10-27T03:38:09.992813+00:00",
+  "finished_utc": "2026-10-27T03:40:05.489397+00:00",
+  "removed_overrides": [
+    "DBUS_SESSION_BUS_ADDRESS",
+    "DISPLAY",
+    "WAYLAND_DISPLAY"
+  ],
+  "original_receipt_sha256": "d5d958fa71c62cac68f7da93ac2edda35bb8ec8d2e73fe9c864e84597bd0901c",
+  "projection_note": "Selected original source/build/actual-exit facts; ambient environment deliberately omitted. Original private receipt and ELF remain in local evidence archive.",
+  "observed_counterexample": {
+    "original_root_clock_live": true,
+    "original_root_verifier_live": true,
+    "replacement_loaded": true,
+    "replacement_lock_held": true,
+    "owner_lock_reacquired": true,
+    "effects": 0,
+    "conclusion": "Two live owner states coexist at the same original file. This case establishes no duplicate database effect."
+  }
+}

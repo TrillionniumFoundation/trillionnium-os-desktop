@@ -87,6 +87,8 @@ pub enum Error {
     NotFound,
     /// Invalid operation occurred
     InvalidOperation,
+    /// The requested operation has no implementation
+    OperationNotSupported,
     /// The name is empty, `.` or `..`, or contains `/` or `NUL`.
     InvalidName,
     /// Resource is unavailable
@@ -112,6 +114,7 @@ impl core::fmt::Display for Error {
         match self {
             Error::NotFound => write!(f, "attempted to access a non-existent systree item"),
             Error::InvalidOperation => write!(f, "invalid operation occurred"),
+            Error::OperationNotSupported => write!(f, "operation is not supported"),
             Error::InvalidName => write!(f, "invalid name"),
             Error::ResourceUnavailable => write!(f, "resource is unavailable"),
             Error::AttributeError => write!(f, "attribute error"),

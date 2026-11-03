@@ -1,0 +1,81 @@
+{
+  "kind": "a08_physical_android_original_dex",
+  "status": "application_smoke_passed",
+  "android_application_smoke_qualified": true,
+  "cleanup": "removed_verified_new_install",
+  "native_asterinas_qualified": false,
+  "production_owner_qualified": false,
+  "mobile_organ_qualified": false,
+  "runner_sha256": "3a1e88cdb7f10084901d714301c28606fa439e9b3774a756670f6b542dd7c8dd",
+  "source": {
+    "commit": "f89023aca3076c4244243963794722d26aa5a0e8",
+    "files": {
+      "Android.bp": "a73e870e6b8d5a6e532ce5a21d74bf63075bc65ea00cda444e27bc38b5071598",
+      "app/build.gradle": "468ca01621daefe6bc4e2f72409a45ecb8141018c4c1028069b4b7be996230c8",
+      "app/src/main/AndroidManifest.xml": "9eb4cf2a7ce1272e170e871b341bfae84db37c1d9d60060f8cb515e20251f2ea",
+      "app/src/main/java/org/trillionnium/a08smoke/MainActivity.java": "e740b1117d8f726eb959903c005c3ed66fce18650108b1d23b04e88c7f5889bf",
+      "app/src/main/res/values/ids.xml": "aa74a6bd4b92488b088d7d8c27bed4634624d2dc294396bd745399957a8e4f5d",
+      "build.gradle": "8ebf0602839be8fd4c06f07a93e45da6b4a04444fa1b38df8b9def9c1b5c8032",
+      "settings.gradle": "273c9a9f640027487c45d41267fe65e442744e580904ba061282a0a2a47b0142"
+    },
+    "inventory_sha256": "94d550360d7b36fe69b054472d46f8e8f01b50b0618ba8f335b25e7ef34fa5da",
+    "tree": "6738e80d971669df06c2cab5c4fbead4d9ff0ca7"
+  },
+  "apk_sha256": "ad24afbc9179cc513948edcb3ebeedeae3b49fba28f9063362644c2c087df7df",
+  "certificate_sha256": "e35f78f206632d349d38384aaae0f6a198343614e80e8d15d6976b640dc68b02",
+  "build_manifest_sha256": "9bdcf72819a12cf67997418469d1174c5907f4a06b36d29f120557fc374d995e",
+  "device": {
+    "model": "XT2551-3",
+    "android": "17",
+    "api": "37",
+    "abi": "arm64-v8a",
+    "kernel": "Linux localhost 6.6.82-android15-8-g6562abcdbcbf-ab13743845-4k #1 SMP PREEMPT Mon Jul  7 16:20:17 UTC 2025 aarch64 Toybox",
+    "selinux": "Enforcing"
+  },
+  "steps": [
+    {
+      "observed_utc": "2026-10-23T13:02:06.797248+00:00",
+      "step": "new_install"
+    },
+    {
+      "observed_utc": "2026-10-23T13:02:13.460203+00:00",
+      "pid": "19739",
+      "saved_value": "EMPTY",
+      "step": "launch_and_fresh_saved_value"
+    },
+    {
+      "observed_utc": "2026-10-23T13:02:34.811568+00:00",
+      "saved_value": "A08Persist42",
+      "step": "original_shared_preferences_commit"
+    },
+    {
+      "observed_utc": "2026-10-23T13:02:35.057111+00:00",
+      "step": "process_absent_after_force_stop"
+    },
+    {
+      "observed_utc": "2026-10-23T13:02:42.068812+00:00",
+      "pid": "20544",
+      "saved_value": "A08Persist42",
+      "step": "launch_and_fresh_saved_value"
+    },
+    {
+      "observed_utc": "2026-10-23T13:02:43.143402+00:00",
+      "step": "new_test_package_removed"
+    }
+  ],
+  "original_result_sha256": "35bca5a0bffcf4e422b0fb28b519f40e8f9a402b5355f9ae02c22aac7d56ec8c",
+  "published_copy_is_privacy_reduced_derivative": true,
+  "raw_device_receipts": "retained locally; not published (device identifiers and broad system dumps)",
+  "normal_system_unlock_authorized": true,
+  "credentials_or_lock_settings_modified": false,
+  "host_tests": {
+    "regular": 196,
+    "optimized": 196
+  },
+  "earlier_failures": [
+    "01 locked before install",
+    "02 actual Android17 window focus subsection omitted focus",
+    "03/04 old application content occluded by system/action bars"
+  ],
+  "visual_diagnostic_06": "Original gate also observed pass with read-only explicit-display PNG captures; diagnostic_only, not separate qualification"
+}

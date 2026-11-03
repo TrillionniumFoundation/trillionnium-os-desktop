@@ -1,0 +1,116 @@
+{
+  "schema": "trillionnium.supplementary-dac-controlled-audit.v1",
+  "source_sha256": "f1ccea228576a64b99c77290b43f204a783f0f77d2eddab2241aaead5748c11b",
+  "expected_native_defect_observed": true,
+  "production_qualification": false,
+  "status": "complete",
+  "commands": [
+    {
+      "stage": "compile",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-gcc-13",
+        "-static",
+        "-O2",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/supplementary_dac_probe.c",
+        "-o",
+        "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/supplementary-dac-probe"
+      ],
+      "exit_code": 0,
+      "seconds": 0.265
+    },
+    {
+      "stage": "linux-reference",
+      "argv": [
+        "sudo",
+        "-n",
+        "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/supplementary-dac-probe"
+      ],
+      "exit_code": 0,
+      "seconds": 0.161
+    },
+    {
+      "stage": "native-baseline",
+      "argv": [
+        "/usr/bin/qemu-system-x86_64",
+        "-kernel",
+        "/data/asterinas-audit-build.8tdrjboi/signal-bounds-native-0252-01/ordinary/product-kernel.elf",
+        "-initrd",
+        "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/initramfs.cpio.gz",
+        "-bios",
+        "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/bios.bin",
+        "-append",
+        "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+        "-machine",
+        "q35",
+        "-accel",
+        "kvm",
+        "-cpu",
+        "host",
+        "-m",
+        "512M",
+        "-smp",
+        "1",
+        "-nodefaults",
+        "-no-user-config",
+        "-no-reboot",
+        "-nographic",
+        "-display",
+        "none",
+        "-monitor",
+        "none",
+        "-serial",
+        "stdio",
+        "-nic",
+        "none",
+        "-device",
+        "isa-debug-exit,iobase=0xf4,iosize=0x04"
+      ],
+      "exit_code": 33,
+      "seconds": 0.816
+    }
+  ],
+  "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+  "binary_sha256": "cc6a20ff3b8bbba32304f77fe83d5397774ce844fb92ca8133f12feb8b433315",
+  "elf_shape": {
+    "entry": 4201856,
+    "bytes": 804872,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4726784,
+        "file_end": 529517,
+        "entry_inside": true
+      },
+      {
+        "start": 4726784,
+        "end": 4886528,
+        "file_end": 688630,
+        "entry_inside": false
+      },
+      {
+        "start": 4886528,
+        "end": 4939776,
+        "file_end": 715456,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "cc6a20ff3b8bbba32304f77fe83d5397774ce844fb92ca8133f12feb8b433315"
+  },
+  "linux_reference_passed": true,
+  "kernel_source": "02521c15edbd8b2308248f28fcecf285b863a4c6",
+  "kernel_sha256": "202baef98b167989a85744f30290da3a85b9ce49d8e1e71c5acae662ed511014",
+  "original_build_receipt": "/data/asterinas-audit-build.8tdrjboi/signal-bounds-native-0252-01/ordinary/result.json",
+  "native_probe_exit": 42,
+  "linux_log_sha256": "dafad8f5779ef3b051f902f859d144cfca803e07d422b25d38c29c29b32b42c7",
+  "native_log_sha256": "c68e9b326958885c966b219844c63efbefc10f9f4c911cbb556822635b762d44"
+}

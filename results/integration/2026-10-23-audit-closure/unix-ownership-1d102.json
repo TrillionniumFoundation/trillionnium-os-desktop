@@ -1,0 +1,184 @@
+{
+  "schema": "trillionnium.unix-ownership-qualified-source.v1",
+  "source_head": "1d10230e1d00a9a8cea982d24320099f19cac71a",
+  "source_tree": "09255d5b6a90aea30779739e4e1151c81769277c",
+  "source_unchanged": true,
+  "evidence_root": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01",
+  "full_suites": [
+    {
+      "crate": "ostd",
+      "declared": 229,
+      "passed": 229,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "kernel_sha256": "f05c944575d53f8cadfa3b26e7993ebb9ee63207c6d695ed280b35a9e302c446",
+      "serial_sha256": "e9c5ed31c95d90a40710c88f49da36133400ba3ca643e8e64d1e3fab42298fcf"
+    },
+    {
+      "crate": "osdk-frame-allocator",
+      "declared": 20,
+      "passed": 20,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "kernel_sha256": "a72e0dcdb47d6302aa4a0cecf0457cd1f6bb5438f4770f0731a3f00fcd69b815",
+      "serial_sha256": "20c7d2fc84a8c503ca752bc4237e2a15e6fb88d4df4bddb71a2ddbf06462d3b4"
+    },
+    {
+      "crate": "aster-core",
+      "declared": 341,
+      "passed": 341,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 102,
+      "kernel_sha256": "6fbdac6d151bffad227d2c825518c70fbf5b024dd992be521878e5d0a4a7c498",
+      "serial_sha256": "32c8cd682742c759d90c442d9da2700459190b5f12e158e78acf8ce5d6436025"
+    },
+    {
+      "crate": "aster-mlsdisk",
+      "declared": 15,
+      "passed": 15,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "kernel_sha256": "e88a134f4ee0c7f9b1d309cd1713c6bcd1e6364e88e2f1a66cf9dc9b0c090c42",
+      "serial_sha256": "f6a84e7cebd11b7640ac090c6fb98373a94bf172749123c64ea1c656e7c52ce4"
+    }
+  ],
+  "ordinary": {
+    "passed": true,
+    "kernel_sha256": "cb98d774a1d56fb9a2e4bb0598857224528b29e1286778d30031d1bd2f767299",
+    "required_query_abi_and_boot_markers": 18
+  },
+  "same_ordinary_kernel_sgid": {
+    "passed": true,
+    "cases": 30,
+    "raw_qemu_exit": 33,
+    "elapsed_seconds": 2.177
+  },
+  "same_ordinary_kernel_unix_ownership": {
+    "passed": true,
+    "cases": [
+      "notes_stream",
+      "notes_seqpacket",
+      "listener_pending_stream",
+      "listener_pending_seqpacket",
+      "datagram_future_connect",
+      "self_stream",
+      "self_seqpacket",
+      "self_datagram",
+      "seqpacket_empty_slots",
+      "concurrent_cross_edges"
+    ],
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 1.8576303920708597,
+    "probe_source_sha256": "4201a4b980d40c0b970d56927cb8b71d8479cc6784ebec3b7fed291a020ee4eb",
+    "probe_sha256": "de40cebdc71351cc5d11a6d17cdb9dd9c65d6570dc4636433cab79febc0e70da"
+  },
+  "profile": {
+    "memory_mib": 512,
+    "vcpus": 1,
+    "acceleration": "tcg",
+    "ktest_guest_deadline_seconds": 300,
+    "ownership_guest_deadline_seconds": 120,
+    "filtered_suite": false
+  },
+  "retained_receipts": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/pipeline.json",
+      "sha256": "2779e2899f19bba40f939d18f199da07f08f5331009c62c6addb2a57b2f10e14"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/full/outer-result.json",
+      "sha256": "a68cf5e952c4b235639f04fc766aca4675572d65406a6a11d643cd88e7e95043"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/full/osdk-retention.json",
+      "sha256": "96e5b0f7163702bb19fab163060c0db2fb85ea0129c4c73314077536f07e6a3c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/full/retention.json",
+      "sha256": "e967f836386beeefacb47b8a3c56dd2c937c2777dbcd43d425ff73e325f599ef"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/full/source-before.json",
+      "sha256": "9dffa26ed38868e60c9ff8afd1f61912f3373e98a7fb5ff3349c71197f6f2a9d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/full/source-after.json",
+      "sha256": "9dffa26ed38868e60c9ff8afd1f61912f3373e98a7fb5ff3349c71197f6f2a9d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/ordinary/result.json",
+      "sha256": "4fa0633225a6a1d5a40dcd4cfc3e2f54f54f50e6b9affaf53519b633c2cd824f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/sgid30/result.json",
+      "sha256": "65938e3dda08150ea16a9d68a8ac96bc5c2f81e38172ab4fcb64b65c220d6f8d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/sgid30/serial.log",
+      "sha256": "7c761e5c39a22c5a1c3c9ddc129c6261b6c61bc2f5412afd430794d6f344ee8f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/ownership10-source-bound.json",
+      "sha256": "9f446d3477a94dfcac669999ed2ba558ce761da8d8becd91ba064dbbe03d5ba0"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/ownership10-source-after.json",
+      "sha256": "9dffa26ed38868e60c9ff8afd1f61912f3373e98a7fb5ff3349c71197f6f2a9d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/ownership10/result.json",
+      "sha256": "da140df76c42408feaa3d565b33bc5284bbd438de0b169672855c5d4f335f692"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-sgid-native-1d-01/ownership10/serial.log",
+      "sha256": "e6b4e5f6ffc27d8e9cc9b6d9daa581d81d73d4a24e316cb7c7ea2337f18f043b"
+    }
+  ],
+  "production_authority": false,
+  "global_recovery_guarantee": false,
+  "linux_inflight_gc_compatible": false,
+  "all_kernel_memory_accounted": false,
+  "followup_documentation_validation": {
+    "all_scml_files": 75,
+    "original_sctrace_exit": 0,
+    "locked_tool_dependencies_unchanged": true,
+    "original_build_input_gate_files": 118,
+    "original_build_input_gate_passed": true,
+    "native_qualification_implied": false,
+    "logs": [
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-book-scml.log",
+        "sha256": "9fa67c13a3bc73d31002d59ed870b1040e1275b33bdf44ab40e1b0210019e2df"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-book-scml-02.log",
+        "sha256": "0cbedf0b1d7d6377510bdf06947fd48b56b887e2a361c7e10784fb7d466c68ad"
+      },
+      {
+        "path": "/data/asterinas-audit-build.8tdrjboi/unix-ownership-book-source-gate.json",
+        "sha256": "088a67167b2a9f2e2d1c949db872f86525f9b3f5e3cda60d62e0a12599a1c1a5"
+      }
+    ]
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "binary": {
+    "bytes": 31108672,
+    "path": "hepta-original-cognitive-store-probe",
+    "sha256": "246dbd2a690453ad0e700d3fced91ae426a3ab96823f64528ba86e28414f7a05"
+  },
+  "built": true,
+  "commands": [
+    [
+      "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "metadata",
+      "--offline",
+      "--format-version",
+      "1"
+    ],
+    [
+      "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "metadata",
+      "--locked",
+      "--offline",
+      "--format-version",
+      "1"
+    ],
+    [
+      "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "--profile",
+      "dev-small"
+    ],
+    [
+      "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "--profile",
+      "dev-small",
+      "--",
+      "-D",
+      "warnings"
+    ]
+  ],
+  "fixture_patch_omission": {
+    "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+    "package": "tungstenite",
+    "reason": "Cargo 1.95 does not canonicalize unused patches across origins",
+    "retained_origin": "crates-io",
+    "target": {
+      "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+      "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+    }
+  },
+  "fixture_source_sha256": "da045dbef1cd37246a31917d779b4ee35c3b1c60e45bf8060e179d7aa24fe7ea",
+  "lock_validation": {
+    "omitted_patch": {
+      "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+      "package": "tungstenite",
+      "reason": "Cargo 1.95 does not canonicalize unused patches across origins",
+      "retained_origin": "crates-io",
+      "target": {
+        "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+        "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+      }
+    },
+    "shared_package_identities_checked": 704
+  },
+  "original_cargo_lock_sha256": "19257679aaaede9979123e8e6ce41cd453e9ac585ca53bd4e6078108cfdc4f79",
+  "output_created": true,
+  "preflight_passed": true,
+  "resolved_cargo_lock_sha256": "87885a7b2aaca89164345667dc4487082920f4b43f3cbe6e0d181ec68f82fd10",
+  "runtime_executed": false,
+  "schema": "hepta.original-cognitive-store-build.v1",
+  "source": {
+    "files": [
+      {
+        "git_blob": "f3d25a13d2680f9f618dd0de701ad41f7c7bb3f8",
+        "path": "codex-rs/Cargo.lock",
+        "sha256": "19257679aaaede9979123e8e6ce41cd453e9ac585ca53bd4e6078108cfdc4f79"
+      },
+      {
+        "git_blob": "50a4e1128a9e2609a2908b8143cd0ff8b89e51a1",
+        "path": "codex-rs/Cargo.toml",
+        "sha256": "5398ee7e3ad7cd597eca9907cd1c23ae31d337766279fb4198411a78ca274ad7"
+      },
+      {
+        "git_blob": "6ba04f39f78e7d6295c9922d279e37e0492180f2",
+        "path": "codex-rs/hepta-memory/Cargo.toml",
+        "sha256": "5ec9e7bd2a5757cc6241351e65d93cb35812d960ba4516343b4cd66dbbeb016c"
+      },
+      {
+        "git_blob": "0e92e867745eca2315d08b34b5ff319e19c76d93",
+        "path": "codex-rs/hepta-memory/src/cognitive_intelligence_writer.rs",
+        "sha256": "c47d1b595acc0ea10f10b1a2166a328af1e1a90578076891ab4e3863fdb2b6ad"
+      },
+      {
+        "git_blob": "14702d68d7f9e5c25ac76d2605bdb958cecc0803",
+        "path": "codex-rs/hepta-memory/src/cognitive_kg_store.rs",
+        "sha256": "33c265a3b6f1be073f7a5a4df5b47e0e4f62c3dae9c9d39d1414dfe0d13d26d7"
+      },
+      {
+        "git_blob": "3232f892002d51b80a2dd18b080129bc68ad7e0d",
+        "path": "codex-rs/hepta-memory/src/cognitive_memory_store.rs",
+        "sha256": "044655a505465211c9ecad9cb0231a061097b0126523396583d98eee86a7b99d"
+      },
+      {
+        "git_blob": "38f87484a8e07da934ceb429ff73f9104d9241a0",
+        "path": "codex-rs/hepta-memory/src/cognitive_model.rs",
+        "sha256": "d1f920c54c515d8537325da447c309596ed9e58355654e18ce462e0957a99114"
+      },
+      {
+        "git_blob": "379f4681be1e65ada2ef2a3f42daaa4ad84e2fe0",
+        "path": "codex-rs/hepta-memory/src/cognitive_store.rs",
+        "sha256": "447594a6ee8a46a9cdc682dd48425fc42ab3cfc1532d1f5b6ed53019f05497fc"
+      },
+      {
+        "git_blob": "cc229f6d570975e5190bf294d365ab540ec49773",
+        "path": "codex-rs/hepta-memory/src/cognitive_store_recovery.rs",
+        "sha256": "8f7b5b0b4e83df1a4e7336832e594919bd005a8c4e85d38ff0b0a013c39efa82"
+      },
+      {
+        "git_blob": "9b0e30030df87549b2837733bfebf0403c238eca",
+        "path": "codex-rs/hepta-memory/src/production_writer.rs",
+        "sha256": "fb0bcfa6f1cb6d84ae5dcb91903faa859ebca6b2de71ddb822140acbf819cac6"
+      },
+      {
+        "git_blob": "30d3a88e199578ace3e2fb0387e86d0c467e3806",
+        "path": "codex-rs/hepta-paths/src/fleet.rs",
+        "sha256": "b2e9e821ec1bfc76a959b1fbd2cc971b7c45c47539eb2db80b6a1b86f731b9b1"
+      },
+      {
+        "git_blob": "910c65114ec128a8317ee8257428451f3cd28230",
+        "path": "codex-rs/rust-toolchain.toml",
+        "sha256": "570656042681cfd8795403a455baf9a33035331a07db0645e866bbcea89a3d64"
+      },
+      {
+        "git_blob": "10b3f4534e426645f12e3737c0056a0dde5e85ea",
+        "path": "codex-rs/state/src/runtime.rs",
+        "sha256": "a66df99290fd941f33789cd33c15e6ba1e95405a4afda38e649b9ca8c3032881"
+      },
+      {
+        "git_blob": "c687edbf6bad547ab342fb7269f3b4b1e8f51773",
+        "path": "codex-rs/state/src/sqlite.rs",
+        "sha256": "2de55524f4ac31174770d961883921183a17de8a6199b1105bf145026b4136c0"
+      }
+    ],
+    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+    "scope": "Unchanged original CognitiveStore legacy SQLite/WAL API; no production lease, writer lock, or authenticated recovery qualification.",
+    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+  },
+  "source_clean": true,
+  "toolchains": {
+    "cargo": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66",
+      "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)"
+    },
+    "rustc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6",
+      "version": "rustc 1.95.0 (59807616e 2026-04-14)"
+    }
+  }
+}

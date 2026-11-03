@@ -8,6 +8,7 @@ use crate::{
         vfs::inode::{Inode, SymbolicLink},
     },
     prelude::*,
+    process::posix_thread::{AsPosixThread, alien_access::AlienAccessMode},
     thread::Thread,
 };
 
@@ -34,6 +35,16 @@ impl ProcSymOps for ExeSymOps {
         };
 
         let vmar_guard = process.lock_vmar();
+        let thread = self.0.thread().ok_or_else(|| Error::new(Errno::ESRCH))?;
+        let _access = thread
+            .as_posix_thread()
+            .unwrap()
+            .check_alien_access_from(
+                current_thread!().as_posix_thread().unwrap(),
+                AlienAccessMode::READ_WITH_FS_CREDS,
+                &vmar_guard,
+            )
+            .map_err(|_| Error::new(Errno::EACCES))?;
         let Some(vmar) = vmar_guard.as_ref() else {
             return_errno_with_message!(Errno::ENOENT, "the process has exited");
         };

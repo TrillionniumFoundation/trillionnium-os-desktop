@@ -1,0 +1,63 @@
+[
+  {
+    "kind": "readonly",
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/data/asterinas-audit-build.8tdrjboi/reserve-integration-01/tests/workloads/linux/readonly/run_guest.py",
+      "--kernel",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/product-kernel.elf",
+      "--initramfs",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/original-initramfs.cpio.gz",
+      "--output",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/readonly"
+    ]
+  },
+  {
+    "kind": "remount",
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/data/asterinas-audit-build.8tdrjboi/reserve-integration-01/tests/workloads/linux/remount/run_guest.py",
+      "--kernel",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/product-kernel.elf",
+      "--initramfs",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/original-initramfs.cpio.gz",
+      "--output",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/remount"
+    ]
+  },
+  {
+    "kind": "utimens",
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/data/asterinas-audit-build.8tdrjboi/reserve-integration-01/tests/workloads/linux/utimens/run_guest.py",
+      "--kernel",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/product-kernel.elf",
+      "--initramfs",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/original-initramfs.cpio.gz",
+      "--output",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/utimens"
+    ]
+  },
+  {
+    "kind": "retained-map",
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/data/asterinas-audit-build.8tdrjboi/reserve-integration-01/tests/workloads/linux/readonly/run_guest.py",
+      "--kernel",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/product-kernel.elf",
+      "--initramfs",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/original-initramfs.cpio.gz",
+      "--output",
+      "/data/asterinas-audit-build.8tdrjboi/readonly-10dae-01/retained-map",
+      "--retained-map-reproducer"
+    ]
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "scope": "Deliberate pre-fix regression: owner-start port and test added, transport still lacks the required owner gate",
+  "argv": [
+    "/dev/shm/organ-3d6a75235bcb-objective-tests/rustup-home/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "--manifest-path",
+    "ui/Cargo.toml",
+    "-p",
+    "trill-session",
+    "--features",
+    "objective-submission",
+    "--locked",
+    "--offline",
+    "--test",
+    "objective_submission",
+    "original_owner_start_refusal_consumes_permission_without_connecting",
+    "--",
+    "--exact"
+  ],
+  "started_at": "2026-10-23T06:43:37.196235+00:00",
+  "exit_code": 101,
+  "stdout_and_stderr": "   Compiling trill-session v0.1.0 (/workspace/scratch/3d6a75235bcb/work/objective-session/ui/session)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.79s\n     Running tests/objective_submission.rs (/dev/shm/organ-3d6a75235bcb-objective-tests/target/debug/deps/objective_submission-8da3b0b48e8545ff)\n\nrunning 1 test\ntest original_owner_start_refusal_consumes_permission_without_connecting ... FAILED\n\nfailures:\n\n---- original_owner_start_refusal_consumes_permission_without_connecting stdout ----\n\nthread 'original_owner_start_refusal_consumes_permission_without_connecting' panicked at session/tests/objective_submission.rs:114:9:\nowner start must precede transport\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    original_owner_start_refusal_consumes_permission_without_connecting\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 5.00s\n\nerror: test failed, to rerun pass `-p trill-session --test objective_submission`\n",
+  "source_sha256": {
+    "ui/session/src/objective_submission.rs": "9ca006b3ddb2535d5a4b9d71251acea3403bd73d7185b8502794b4d942a9a810",
+    "ui/session/tests/objective_submission.rs": "e48ce7fce8c66d23439c79e6f46764c88b2150510496220bd5deba904800cf10"
+  }
+}

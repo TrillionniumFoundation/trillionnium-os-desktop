@@ -505,3 +505,9 @@ level-triggered readiness to clear after disarm, read and rearm, followed by a
 real new expiration. The full upstream timerfd regression and its original
 test entry point are retained. Host C/Python results alone do not establish an
 Asterinas guest result; acceptance still needs the exact-source A06 guest run.
+
+## Local UDP error regression
+
+[UDP_LOCAL_ERROR.md](UDP_LOCAL_ERROR.md) describes the six-case, 43-check
+Linux/native comparison in A06, its ordinary-kernel admission, and retained
+raw evidence. The guest executes the exact static ELF already verified on Linux.

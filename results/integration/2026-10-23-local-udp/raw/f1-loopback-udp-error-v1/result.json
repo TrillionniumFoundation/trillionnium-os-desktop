@@ -1,0 +1,106 @@
+{
+  "schema": "hepta.f1-loopback-udp-error.v1",
+  "diagnostic_only": true,
+  "original_agentd_lifecycle_qualified": false,
+  "source_sha256": "44383c2fe907f1e0439c46820520960bac38fe466534fff05fd83ac6191194b5",
+  "executable_sha256": "83b6161f6f0d3646a3bfd848490c344e98415d5030358d18abc03b93dd2e95ae",
+  "elf": {
+    "type": 2,
+    "machine": 62,
+    "interpreter": null,
+    "needed": [],
+    "load_segments": [
+      {
+        "offset": 0,
+        "virtual_address": 4194304,
+        "file_bytes": 1272,
+        "memory_bytes": 1272,
+        "flags": 4,
+        "alignment": 4096
+      },
+      {
+        "offset": 4096,
+        "virtual_address": 4198400,
+        "file_bytes": 516973,
+        "memory_bytes": 516973,
+        "flags": 5,
+        "alignment": 4096
+      },
+      {
+        "offset": 524288,
+        "virtual_address": 4718592,
+        "file_bytes": 154594,
+        "memory_bytes": 154594,
+        "flags": 4,
+        "alignment": 4096
+      },
+      {
+        "offset": 679760,
+        "virtual_address": 4878160,
+        "file_bytes": 23408,
+        "memory_bytes": 45816,
+        "flags": 6,
+        "alignment": 4096
+      }
+    ],
+    "load_memory_bytes": 718655
+  },
+  "kernel_sha256": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d",
+  "kernel_source_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+  "initramfs_sha256": "066a1fc07a2089dea61e4ad31fd98c325c54b3d67931fe106190e5d6590208f1",
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/guest/kernel.elf",
+    "-initrd",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-loopback-udp-error-v1/initramfs.cpio.gz",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/guest/bios.bin",
+    "-m",
+    "4096M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "timeout_seconds": 180,
+  "nonce": "427dcdf3f3b779f83ed2105ac92b4c70551fc8433cb9a16c694b3d8e543b1bc3",
+  "executed": true,
+  "qemu_started_at_utc": "2026-10-23T05:06:03.831311+00:00",
+  "qemu_exit": 33,
+  "timed_out": false,
+  "serial_excessive": false,
+  "observation": {
+    "complete": true,
+    "passed": false,
+    "failures": 1,
+    "rows": [
+      "HEPTA_UDP_ERROR case=loopback-positive passed=true setup=1 setup_errno=0 send_rc=1 send_errno=0 poll_rc=1 poll_errno=0 revents=1 recv_rc=1 recv_errno=0",
+      "HEPTA_UDP_ERROR case=connected-closed-port passed=false setup=1 setup_errno=0 send_rc=1 send_errno=0 poll_rc=0 poll_errno=0 revents=0 getsockopt_rc=0 getsockopt_errno=0 so_error=0 destination_port=32770 sender_port=32771"
+    ]
+  },
+  "diagnostic_capture_succeeded": true,
+  "native_abi_passed": false,
+  "host_passed": true,
+  "serial_sha256": "954928e2f057e73cff3a232614f844cdd57f481a37f59c8d4bb75fda10d2418a"
+}

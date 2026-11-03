@@ -1,0 +1,69 @@
+{
+  "candidate_source_sha256": {
+    "tests/workloads/hepta_agentd_abi/cpio_codec.py": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+    "tests/workloads/hepta_agentd_abi/run_agentd_abi.py": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c",
+    "tests/workloads/hepta_agentd_runtime/agentd_runtime_probe.c": "8ed829ba92b35ca38c18fbc280c69f2afb6052b27db939f10e65d1a7b663ecb3",
+    "tests/workloads/hepta_agentd_runtime/source-review.json": "f003f818bf496d052d4005cf6be84200ca567eb3ff8242b9a99552293c9e8bf3"
+  },
+  "crash_durability_verified": false,
+  "error": "ValueError: runtime nonce, child exit, or launcher exit mismatch",
+  "evidence_directory_created": true,
+  "executed": true,
+  "execution_attempted": true,
+  "f1_completed": false,
+  "f_completed": false,
+  "finished_at_utc": "2026-10-23T12:18:36.329154+00:00",
+  "g2_completed": false,
+  "hardware_verified": false,
+  "initramfs_sha256": "5e85f006613a27e8643d1da1bbd9efddbe2d1a55315661594df302d125f2eb3b",
+  "input_manifest_sha256": "eca815584741ff9cad789cf7c45e7f62b793ba2259fa3b1dd2c425ec97b1b1ad",
+  "input_source_attestation": "caller-retained build receipts; fixed reviewed source identities checked; not remote attestation",
+  "inputs_unchanged": true,
+  "kernel_sha256": "8bee0769b1cbf5217b396294ccbcfdc31bb7ba90b52be53bba03364b7fe0e186",
+  "launcher_sha256": "1dd035e5f9ba06fa9c8a57b063016d5f5933c1c67022e941ec6cf46452f38ac8",
+  "nonce": "7cb7178b849c2a0ff122e5f10dc005f9956b4e42ee139921a4979ca6aa570395",
+  "original_owner_runtime_lifecycle_verified": false,
+  "passed": false,
+  "payload_sha256": "06307d5aa4e837de52aa3d807bed88205b7b61f9333c917838c9b6c106df2ae4",
+  "production": false,
+  "qemu_exit": 33,
+  "qemu_started_at_utc": "2026-10-23T12:16:28.504480+00:00",
+  "runner_sha256": "12bbfd94fee5f0e57750d9e2305d4a9e2666e07ee25e549f4dfa98868f78bf81",
+  "schema": "hepta.native-original-runtime-result.v1",
+  "scope": "unchanged original registry/supervisor -> Agentd runtime -> original read-only lifecycle fixture",
+  "serial_excessive": false,
+  "serial_sha256": "2dae66d2d2a6db6b381509c5153fca70e012d2f5b7ba9afc5dcef3c7b79e5b63",
+  "sources": {
+    "desktop": {
+      "head": "7d8906ef9fbb5f3af4e6bb0843b79ac666394833",
+      "tree": "ca4b875cdb553291a99f4a550eb0b2bd6649de8c"
+    },
+    "hepta": {
+      "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+      "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+    }
+  },
+  "started_at_utc": "2026-10-23T12:16:10.773526+00:00",
+  "state_after_sha256": "22b69583488fb639488022a5099675d43864dbe48a1656df1d2b3cb051621ebb",
+  "state_before_sha256": "e39e89244a161801e920c93ef0e19bde7c948258e4341cd0bbe307a9dc29bfa9",
+  "state_bytes": 268435456,
+  "timed_out": false,
+  "tool_identities": {
+    "cc": {
+      "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+    },
+    "mkfs": {
+      "path": "/usr/sbin/mke2fs",
+      "sha256": "07cd24ce58a410cc9cee93c55ae5ac95986df016c5907dc7a49b55389bd41ed2"
+    },
+    "qemu": {
+      "path": "/usr/bin/qemu-system-x86_64",
+      "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    },
+    "readelf": {
+      "path": "/usr/bin/x86_64-linux-gnu-readelf",
+      "sha256": "64c58e15274bbbb5153f31078e455e9e77ee5f51489e709bba5bb788ce9df2b0"
+    }
+  }
+}

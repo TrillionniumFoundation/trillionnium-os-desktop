@@ -1,0 +1,95 @@
+{
+  "schema": "hepta.static-authority-host-reference.v1",
+  "source_head": "df9014eea890f556d318095847f5814f20836cb7",
+  "source_tree": "84b14346e018395fc5f804cfc1c9e9487c6ec1d1",
+  "products": {
+    "hepta-authority-host": {
+      "entry": 4506112,
+      "bytes": 8010136,
+      "loads": [
+        {
+          "start": 2097152,
+          "end": 4505600,
+          "file_end": 2404852,
+          "entry_inside": false
+        },
+        {
+          "start": 4505600,
+          "end": 10043392,
+          "file_end": 7941984,
+          "entry_inside": true
+        },
+        {
+          "start": 10043392,
+          "end": 10076160,
+          "file_end": 7967112,
+          "entry_inside": false
+        },
+        {
+          "start": 10076160,
+          "end": 10137600,
+          "file_end": 8000960,
+          "entry_inside": false
+        }
+      ],
+      "sha256": "335a6f4404fb77236456fd0da6c694236bbbd0ff59e7cc6ab344884d2a28dfbf"
+    },
+    "authority_host_peer_qualification": {
+      "entry": 4436352,
+      "bytes": 7651880,
+      "loads": [
+        {
+          "start": 2097152,
+          "end": 4435968,
+          "file_end": 2335100,
+          "entry_inside": false
+        },
+        {
+          "start": 4435968,
+          "end": 9687040,
+          "file_end": 7584624,
+          "entry_inside": true
+        },
+        {
+          "start": 9687040,
+          "end": 9715712,
+          "file_end": 7609440,
+          "entry_inside": false
+        },
+        {
+          "start": 9715712,
+          "end": 9777152,
+          "file_end": 7643232,
+          "entry_inside": false
+        }
+      ],
+      "sha256": "4932b309144d7da370a2844b721dec98cf4ab700b6bffcbeb86149893b80cf5e"
+    }
+  },
+  "passed": true,
+  "production_authority": false,
+  "g2_complete": false,
+  "native_execution": false,
+  "shape_original_checker": "original unmodified run_g1c_guest.inspect_probe_elf; file8MiB, mapped16MiB, original LOAD permissions/alignment",
+  "launcher_sha256": "189d9b1a392a211cf680121a1ed3c8db6792a54dcd1677541e5d9987597498b2",
+  "launcher_source_sha256": "d71fd40b88045856d9d1cbfdb545f0428005136cc66b94b34164bdb6cc0a6167",
+  "root_public_binary_copy": {
+    "path": "/data/hepta-static-authority-reference-bin-01",
+    "uid": 0,
+    "mode": "0o755"
+  },
+  "command": [
+    "sudo",
+    "-n",
+    "/data/hepta-static-authority-reference-bin-01/native-authority-qualification-launcher-02",
+    "/var/lib/hepta-authority-os3-20261023/native-static-reference-01",
+    "/var/lib/hepta-authority-os3-20261023",
+    "/data/hepta-authority-private-os3-20261023",
+    "/data/hepta-static-authority-reference-bin-01/hepta-authority-host",
+    "/data/hepta-static-authority-reference-bin-01/authority_host_peer_qualification",
+    "[32,96,178,154,198,240,29,51,69,182,248,171,97,220,71,223,108,175,124,161,109,74,199,245,86,152,143,56,214,104,146,103]"
+  ],
+  "exit_code": 0,
+  "seconds": 7.436,
+  "log_sha256": "5330e5468b55845bfe624c085ee5960f394fed649fca34f25235e0e82d09876d"
+}

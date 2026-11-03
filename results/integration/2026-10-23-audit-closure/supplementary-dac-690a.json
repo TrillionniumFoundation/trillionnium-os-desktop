@@ -1,0 +1,682 @@
+{
+  "schema": "trillionnium.supplementary-group-dac-qualified.v1",
+  "source_head": "690a7bb36a8bc355cbc0d99f72c34feda1fb06b2",
+  "source_tree": "6dde432c2f0367c9d366866bbf637d92a50a4372",
+  "source_unchanged": true,
+  "evidence_root": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01",
+  "elapsed_seconds": 594.206,
+  "full_suites": [
+    {
+      "crate": "ostd",
+      "declared": 230,
+      "passed": 230,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 8,
+      "kernel_sha256": "0b10e490ccab690b0dd659aab73d1686d2044c6ff707bb20021e9a802d36e531",
+      "serial_sha256": "7d1d2c892a77e58b757b83f267bf4a8cc145f9ebb892b856efa95f32eeb88f07"
+    },
+    {
+      "crate": "osdk-frame-allocator",
+      "declared": 20,
+      "passed": 20,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "da6b90d7677996e3b391a7a86bb35daa89be72aca711a2236f37a3043c11b46c",
+      "serial_sha256": "b943166e7381f3c84074b75b0d066b6115d47b297a7f3b2f9904a6c436b7501c"
+    },
+    {
+      "crate": "aster-core",
+      "declared": 359,
+      "passed": 359,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 120,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "9ccf64adc7132493c90ed9f51620cd4ebb05930bf6f9e27d927c26123fe06198",
+      "serial_sha256": "d971f1d5aba1519bbd2eca1251eaf558204fe7b9f6ced530b53630ed48b08e13"
+    },
+    {
+      "crate": "aster-mlsdisk",
+      "declared": 15,
+      "passed": 15,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "raw_qemu_exit": 33,
+      "required_core_tests": 0,
+      "required_ostd_tests": 0,
+      "kernel_sha256": "31abcc98a5c7fa8c12885d88e969e0e52374ef254ee34215c2a13974544bc1c9",
+      "serial_sha256": "bc5551bf8aa4759ad81e5e376653f0c45241ff39591dd122e799d8a2067db997"
+    }
+  ],
+  "ordinary": {
+    "passed": true,
+    "source_head": "690a7bb36a8bc355cbc0d99f72c34feda1fb06b2",
+    "source_tree": "6dde432c2f0367c9d366866bbf637d92a50a4372",
+    "kernel_elf_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "marker_counts": {
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_EXEC_EFAULT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_ENOENT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "HEPTA_THREAD_SESSION_SHARED": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "qemu_exit": 33,
+    "source_inputs_unchanged": true,
+    "source_file_count": 9589
+  },
+  "sgid30": {
+    "passed": true,
+    "cases": [
+      {
+        "fs": "ramfs",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ramfs",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "file_owner_group_mode",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "directory_group_and_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nested_file_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "fifo_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "symlink_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "capable_root_retains_requested_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "stream_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "datagram_socket_group",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_exec_setgid_cleared",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_nonexec_setgid_retained",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "nonmember_directory_still_inherits",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "supplementary_member_retains_setgid",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_stream_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "dedicated_group_datagram_dac",
+        "passed": true
+      },
+      {
+        "fs": "ext2",
+        "name": "non_setgid_parent_uses_caller_group",
+        "passed": true
+      }
+    ],
+    "timed_out": false,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "396abd5506de19a410c2391333d1413370f14c59c0e92a9c083a0eb3d5f87f36",
+    "probe_source_sha256": "00d2eb17d2fe3ab32454a3f446b099b227b33e4df9733e86e9be6490576ae7dd",
+    "raw_qemu_exit": 33
+  },
+  "ownership12": {
+    "passed": true,
+    "cases": [
+      "notes_stream",
+      "notes_seqpacket",
+      "listener_pending_stream",
+      "listener_pending_seqpacket",
+      "datagram_future_connect",
+      "self_stream",
+      "self_seqpacket",
+      "self_datagram",
+      "seqpacket_empty_slots",
+      "concurrent_cross_edges",
+      "ancillary_multisegment_253",
+      "ancillary_rejected_inputs_publish_nothing"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "7f357e210c27cd2f35b50a022ee05763b7e396d883bcaea1d9985e372799409f",
+    "probe_source_sha256": "62672e40c7c5c7f83f594ec734aed6e0cb4029d73b55742a9b67c85006115e21",
+    "raw_qemu_exit": 33
+  },
+  "proc-privileges12": {
+    "passed": true,
+    "cases": [
+      [
+        "initial_nnp_agrees",
+        "1"
+      ],
+      [
+        "per_thread_nnp",
+        "1"
+      ],
+      [
+        "main_thread_nnp_unchanged",
+        "1"
+      ],
+      [
+        "child_sets_and_cannot_clear_nnp",
+        "1"
+      ],
+      [
+        "parent_attests_child_nnp",
+        "1"
+      ],
+      [
+        "four_child_uids",
+        "1"
+      ],
+      [
+        "four_child_gids",
+        "1"
+      ],
+      [
+        "child_groups_empty",
+        "1"
+      ],
+      [
+        "five_child_capsets_zero",
+        "1"
+      ],
+      [
+        "parent_uid_unchanged",
+        "1"
+      ],
+      [
+        "parent_nnp_unchanged",
+        "1"
+      ],
+      [
+        "exec_preserves_identity",
+        "1"
+      ]
+    ],
+    "timed_out": false,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "923063b008790be29b0a266bbbd8f274583effbec02c4feb513baa1652ccf8fd",
+    "probe_source_sha256": "7e711cefe6cc212beb2b0590dd54507b8b954ce75bb38a6c9a2bf98b133b2236",
+    "raw_qemu_exit": 33
+  },
+  "memfd4": {
+    "passed": true,
+    "cases": [
+      "detached_metadata",
+      "readonly_four_seals",
+      "duplicate_lifetime",
+      "sealed_mutations_rejected"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "b9e744717cb0ebe69c44bf61350d844aad50c4221d0724e627705dbc32f3c873",
+    "probe_source_sha256": "8a69021270396bf2af25abcd616f4a3c047b6d85ffda99e242ab705c17adfd0e",
+    "raw_qemu_exit": 33
+  },
+  "signal22": {
+    "passed": true,
+    "cases": [
+      "fault_siginfo",
+      "unmapped_fault_siginfo",
+      "kill_reap",
+      "tgkill_reap",
+      "group_kill_reap",
+      "pidfd_dynamic_reap",
+      "original_permissions",
+      "dynamic_realtime_fifo",
+      "dynamic_signalfd",
+      "ptrace_fault_owner",
+      "rt_queue_argument_contract",
+      "rt_queue_payload_and_zero",
+      "rt_queue_actual_credentials",
+      "rt_queue_nonleader_shared_pending",
+      "signal_argument_bounds",
+      "signal_target_before_range",
+      "signal_group_range",
+      "pidfd_flags_fd_copy_order",
+      "pidfd_reaped_owner_order",
+      "signal_actual_credentials",
+      "signal_valid_delivery",
+      "kill_nonleader_shared_pending"
+    ],
+    "timed_out": false,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "e8e2b6954a37fb236c63622b7d8f80379d9db8a1af1fcc61f4b6bdf9682f930b",
+    "probe_source_sha256": "06a315db61cb2286ef4f392e7af62c33513ae69e3b15e908b7ec36be6c8d8f84",
+    "raw_qemu_exit": 33
+  },
+  "lifecycle": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "lifecycle",
+      "observations": 164,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 2.365488199982792,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "ba31e84d60fa54f6e3d991606bbe2ed31325cacf0f28aec3e72e53738d886332",
+    "probe_source_sha256": {
+      "lifecycle/lifecycle_credentials.c": "03cfd9e53bdc9592688add6141bd4a6dbedde2168580b2d064b95171e0064878",
+      "lifecycle/lifecycle_local.c": "eaf52ad3ef6909098fe5ba02e8975952e2b69fe5e98e92622bd0a5ad309b6e72",
+      "lifecycle/lifecycle_main.c": "4c8703ec0ba60faede5640f693cfde3e0074df3ab683606dd485710785006b77",
+      "lifecycle/lifecycle_paths.c": "327c30b558ab1c76072c085ea09ce8bd840de66da2f4b91eb69f0187875fc8d7",
+      "lifecycle/lifecycle_probe.h": "2b8450a58bc91eabc099a6c77afe9e40038116db799689603f61c520830e3fe5"
+    },
+    "serial_sha256": "3496e5e872d22c614cfffa6093bdc9add278e4cf47d6a0babac3a33ebb4f7d42"
+  },
+  "stat": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "stat",
+      "observations": 54,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 1.845955015043728,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "cf9671f039504ac57d86a1bd9625fb7a35a6d56b421730b1020df4a8fa1b0a31",
+    "probe_source_sha256": {
+      "stat/stat_probe.c": "88e0568833bc7835d9435b29165ab9fcc42611fcf8bb718acc07852dd3045022"
+    },
+    "serial_sha256": "ca6ae0866939433f8063f1f416558744a3d54be39c6219659e748645b20bd59e"
+  },
+  "traceme": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "suite": "traceme",
+      "observations": 15,
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_isolation_qualified": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 1.9263151559280232,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "ec9a468802f382032f61e0e94405a5da74229e750eab14739207f64299df1771",
+    "probe_source_sha256": {
+      "traceme/traceme_probe.c": "7d596bf5fbc157ec05daee28f1dcc3f872cfe42019b35c370904b58debfe075a"
+    },
+    "serial_sha256": "14c576c6cb38183ab6518126c788b2bcbfdae4b520738d81efee5096d12b35b3"
+  },
+  "retained_receipts": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/pipeline.json",
+      "sha256": "bbb2e668feecb02e280b70a7d57b08f17cbd1603a981dca9bbc59e137b20f440"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/full/outer-result.json",
+      "sha256": "bb975949c92b30054244dfaef16ffd926ad5f2635436b1caab6db6c04a1e85f9"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/full/osdk-retention.json",
+      "sha256": "fbf07a15911620052c047b690b29a08a83dd9422d86e52b08249b96ffb839abc"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/full/retention.json",
+      "sha256": "80de59de86843b48f1971fdfe101ecda4e278f1274309baba21f95fc0dfe0369"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/full/source-before.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/full/source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/ordinary/result.json",
+      "sha256": "d7ffde171ee9412042007b6b01b859236eb50e96f6cfc27921ead27a5d957e2c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/sgid30/result.json",
+      "sha256": "86bb8101cc5a17b061112e109b8682b551301d94d14d608fec86e2150fb5691f"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/sgid30/serial.log",
+      "sha256": "bdac1581734ed4a8bcf4e26d26d7c7c4ae4041b032ccb6efbbc50ceaadd2c438"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/ownership12/result.json",
+      "sha256": "7bc76b8c110a586069ca48898fec3f51a70f9d1ca38d860c82f91a88fd240096"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/ownership12/serial.log",
+      "sha256": "81fd161bfddd22a5fce4ab4369fc35268cc58ca3f68d99b77b985944c4402915"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/proc-privileges12/result.json",
+      "sha256": "1da70c2d5bd7a99c86da9533a13bc093f11cae8d1506b492c655096906cdfc7c"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/proc-privileges12/serial.log",
+      "sha256": "27d205ac70c5579b3b909103303dadad981e680ee4b22e5e405288ea098a505e"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/memfd4/result.json",
+      "sha256": "ec6b38d1f4b747f90ef42b1170b0950819f2d7070b0100b25e8f9421e909aecd"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/memfd4/serial.log",
+      "sha256": "f4cd8d6c4835a470443ee5a2de47e9573c9071ae13e6cee7fc0540c2274268e0"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/signal22/result.json",
+      "sha256": "da202a53dbecf8704580177572bf15c07e11dc0f7d7c472862c74236ed12c0ad"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/signal22/serial.log",
+      "sha256": "fa26dbf5f55108e5df7fcf93017d63823c09ef4f6ade7d8a46aea7ebb3f8a624"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/lifecycle/result.json",
+      "sha256": "4bef118413230abf1c5e437e56cc83f791d2de615b23be821697d84b3cfc7791"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/lifecycle/serial.log",
+      "sha256": "3496e5e872d22c614cfffa6093bdc9add278e4cf47d6a0babac3a33ebb4f7d42"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/stat/result.json",
+      "sha256": "564eca28d08267eaa5dd63c29fee9a9c42ef7508a89a81a9d010ef4f577738a5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/stat/serial.log",
+      "sha256": "ca6ae0866939433f8063f1f416558744a3d54be39c6219659e748645b20bd59e"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/traceme/result.json",
+      "sha256": "3896a9f65367c3c5f3852c8d8a04777dc6ad8d7827553d04e16f8451393c6865"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/traceme/serial.log",
+      "sha256": "14c576c6cb38183ab6518126c788b2bcbfdae4b520738d81efee5096d12b35b3"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/ownership12-source-bound.json",
+      "sha256": "bf2867ff0107595b645bad1f8841c3dc3d903e14861b72321afb7af462ad8176"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/ownership12-source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/memfd4-source-bound.json",
+      "sha256": "e1211b60085c91583007e93ae6c13f8396115513998aa9d44a9cd93ec8e03cac"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/memfd4-source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/signal22-source-bound.json",
+      "sha256": "62f80b0027481bebdab6c2d568770f57203a9c927771a359c356c0e89ab1d2c9"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/signal22-source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/lifecycle-source-bound.json",
+      "sha256": "a57f3b9547854025f625fdb2826120e2fabfa2432a1f571f43ff075731eb9438"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/lifecycle-source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/stat-source-bound.json",
+      "sha256": "873771cf8fa29aab28ce069026fe6425b144be59036079ef9617801f69dbbf8e"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/stat-source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/traceme-source-bound.json",
+      "sha256": "a76ba2135a0653d2e8eacc1ae622d23daa961c93081ec2aa8a7e8626aeda6a19"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/traceme-source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/dac6/result.json",
+      "sha256": "73df826a030997a7cf1755ba1621b78980b3a698d44e1505cb84b34aa5b42b9b"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/dac6/serial.log",
+      "sha256": "db0e616c47de66083d2d955c52aad78fa419d51bd702689b1f3d61f6fb7c28b4"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/dac6-source-bound.json",
+      "sha256": "eebc5689925ad48404b37ba48999d85f13ecc4764dc24a1d3493f5727ab4d49b"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-native-690a-01/dac6-source-after.json",
+      "sha256": "18b67c5e2dc311770c5d1a4e90416bc90cd6dc39290b94fb63478ac2cdd8857d"
+    }
+  ],
+  "dac6": {
+    "passed": true,
+    "oracle": {
+      "passed": true,
+      "cases": [
+        "SUPPLEMENTARY_DAC_CHECK name=supplementary_file_read actual=1 expected=1 errno=0",
+        "SUPPLEMENTARY_DAC_CHECK name=supplementary_directory_search actual=1 expected=1 errno=0",
+        "SUPPLEMENTARY_DAC_CHECK name=member_write_refused actual=1 expected=1 errno=13",
+        "SUPPLEMENTARY_DAC_CHECK name=nonmember_file_refused actual=0 expected=0 errno=13",
+        "SUPPLEMENTARY_DAC_CHECK name=nonmember_directory_refused actual=0 expected=0 errno=13",
+        "SUPPLEMENTARY_DAC_CHECK name=nonmember_write_refused actual=1 expected=1 errno=13"
+      ],
+      "all_children_reaped": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "production_qualification": false
+    },
+    "qemu_exit": 33,
+    "timed_out": false,
+    "elapsed_seconds": 0.7681873140390962,
+    "kernel_sha256": "117c9ba776fbc7fcad8d254c45879cb039d96d52d789e2663b272f7b25eedd46",
+    "probe_sha256": "cc6a20ff3b8bbba32304f77fe83d5397774ce844fb92ca8133f12feb8b433315",
+    "probe_source_sha256": "f1ccea228576a64b99c77290b43f204a783f0f77d2eddab2241aaead5748c11b",
+    "serial_sha256": "db0e616c47de66083d2d955c52aad78fa419d51bd702689b1f3d61f6fb7c28b4",
+    "linux_audit_receipt_sha256": "a645d0b644ffc6db7f2662c89c9f4b8c9b13b54898b449d9de16fcbca84a83b5"
+  },
+  "original_reference_and_negative": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/result.json",
+      "sha256": "a645d0b644ffc6db7f2662c89c9f4b8c9b13b54898b449d9de16fcbca84a83b5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/linux-reference.log",
+      "sha256": "dafad8f5779ef3b051f902f859d144cfca803e07d422b25d38c29c29b32b42c7"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-audit-01/native-baseline.log",
+      "sha256": "c68e9b326958885c966b219844c63efbefc10f9f4c911cbb556822635b762d44"
+    }
+  ],
+  "host_checks": [
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-host-full-01.log",
+      "sha256": "487016175223538f938a1191f9d2efef6a7de87fd5a00190f5cf05742f18625e"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-source-gate-01.json",
+      "sha256": "088a67167b2a9f2e2d1c949db872f86525f9b3f5e3cda60d62e0a12599a1c1a5"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-clippy-01.log",
+      "sha256": "8b9f5c4a9de585e9b862cd3998e2282028ab2a67e774ff5edfe64027a5634d30"
+    },
+    {
+      "path": "/data/asterinas-audit-build.8tdrjboi/supplementary-dac-checker-01.log",
+      "sha256": "6f49039b1056da95e6b553e3e41e8db1aa4c64c993c2d57b682c2ca6061db352"
+    }
+  ],
+  "profile": {
+    "memory_mib": 512,
+    "vcpus": 1,
+    "core_acceleration": "tcg",
+    "dac_acceleration": "kvm",
+    "ktest_guest_deadline_seconds": 300,
+    "probe_guest_deadline_seconds": 120,
+    "filtered_suite": false
+  },
+  "production_authority": false,
+  "global_recovery_guarantee": false,
+  "all_kernel_memory_accounted": false,
+  "full_linux_permission_parity": false,
+  "scope": "Original inode DAC group branch recognizes the original supplementary-group set. Owner precedence, masks, other-bit denial and capability rules are unchanged. Six original controlled cases pass with the exact Linux-referenced binary, both children reaped; original 0252 two erroneous denials remain separate."
+}

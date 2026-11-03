@@ -1,0 +1,347 @@
+{
+  "schema": "hepta.f1-local-udp-kernel.v1",
+  "diagnostic_only": true,
+  "original_agentd_lifecycle_qualified": false,
+  "original_deadlines_unchanged": true,
+  "previous_agentd_build_exit_receipt_recovered": false,
+  "started_ns": 1792733685980088004,
+  "source_patch_sha256_before_pinned_rustfmt": "ec6348c6c9428e899b670d293ae65783264cf9fcc024dbd81a15c2f321e01150",
+  "ordinary_source_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+  "kernel_build": {
+    "base_head": "b824d80d44456c131a6cb9d4fcc84be95c6af273",
+    "source_patch_sha256": "ec6348c6c9428e899b670d293ae65783264cf9fcc024dbd81a15c2f321e01150",
+    "source_head": "c8f0c88ecb640117686ff05f850a73e60688eac7",
+    "source_tree": "641c6627ba9aaf79ca3506154831a6c51abe521f",
+    "source_clean_before_after": true,
+    "build_returncode": 0,
+    "build_timed_out": false,
+    "kernel_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-product-build-v1/product-kernel.elf",
+    "kernel_sha256": "6d7b67c7046a54c7dda7a9595794159235f3b4dad45dd2c4892a7868432a1524",
+    "actual_build_result_path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-product-build-v1/actual-build-result.json",
+    "actual_build_result_sha256": "ff71924316549e99f0358c321f4fa70ca17d82a08b8f462ecac33c5bcf35bcba",
+    "ordinary_boot_passed": true,
+    "ordinary_boot_receipt_sha256": "ecd90a0a1c7a3aef94a067df6f606ca1c751d158fb644c61827d30006ffa91ba",
+    "no_ktest": true,
+    "production_ready": false
+  },
+  "kernel_build_receipt_sha256": "26c38bd6eee5762e37b56cd6532a23a103723afb652dd2da4623ce464bbf494b",
+  "actual_kernel_build_result_sha256": "ff71924316549e99f0358c321f4fa70ca17d82a08b8f462ecac33c5bcf35bcba",
+  "fixed_kernel_sha256": "6d7b67c7046a54c7dda7a9595794159235f3b4dad45dd2c4892a7868432a1524",
+  "original_guest_receipt_sha256": "aa0b26b42e8d7bf4f59b13ae29b8f2312fc0325ea3921d6a400e3b0e93f0a368",
+  "original_guest_invocation_sha256": "4d0649bceec6d3f3ca674551b9cd37e071cced5e43d1f970d6080aa1a6a80b35",
+  "unchanged_input_pins": {
+    "payload.raw": "f125011a069ddab81030bd31129883d1fd97a44f2a874d7e8d96e9d1ca6003af",
+    "f1-guest-probe": "2052c5d30ac4a6fbbf056a6e6e844d0a733c06a50e43c69b3b98156bfdfbd673",
+    "kernel.elf": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d",
+    "bios.bin": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+  },
+  "original_agentd_helper": {
+    "agentd": {
+      "bytes": 266160864,
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/frozen/diagnostic-agentd-static-stripped.elf",
+      "sha256": "fcef743f93a126364a9dbc0ee1c18ca6c0542f9ea4cb674c7d95ef870b66e84f"
+    },
+    "bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "diagnostic_input_manifest": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/frozen/diagnostic-input-manifest.json",
+      "sha256": "14da218f3d6b4dd91181ff1c6463c28a02b1cd201976b782fcb805107b86c9e7"
+    },
+    "helper": {
+      "bytes": 834330984,
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-native-inputs-v5/native_lifecycle",
+      "sha256": "92aaeeb437b4c497a047cfc248951df402fcf9ac80a17885a75c9b69b8483ac6"
+    },
+    "helper_source": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-native-inputs-v5/native_lifecycle.rs",
+      "sha256": "d02d459d691403f3f1f178373414ef258c317495054cacbdb0653adef701364d"
+    },
+    "kernel": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/unix-stream-native-v5/positive/product-kernel.elf",
+      "sha256": "956438a6f2cad39a2d73093004909e34cf66e9b7d4bdccda67287cf62bb2d14d"
+    },
+    "original_initramfs": {
+      "path": "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/os-native-next/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    }
+  },
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-lifecycle-v1/kernel.elf",
+    "-initrd",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-lifecycle-v1/initramfs.cpio.gz",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/guest/bios.bin",
+    "-m",
+    "4096M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-drive",
+    "if=none,format=raw,id=f1payload,readonly=on,file=/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-closure-stop-diagnostic-20261023-v1/guest/payload.raw",
+    "-device",
+    "virtio-blk-pci,bus=pcie.0,addr=0x7,drive=f1payload,disable-legacy=on,disable-modern=off",
+    "-drive",
+    "if=none,format=raw,id=f1data,file=/home/qian-qi/work/trillionnium-os-20261021-b2da20752f15/f1-local-udp-lifecycle-v1/data.raw",
+    "-device",
+    "virtio-blk-pci,bus=pcie.0,addr=0x8,drive=f1data,disable-legacy=on,disable-modern=off"
+  ],
+  "nonce": "7080327d244bfa98175238f4262c796191258edb3681a68667ebee7361918072",
+  "child_argv": [
+    "/payload/bin/native_lifecycle",
+    "/payload/bin/codex-hepta-agentd",
+    "/data/f1"
+  ],
+  "child_environment": {
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/bin:/usr/bin"
+  },
+  "append": "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+  "initramfs_sha256": "a6880693a46e6384c062ecd07dc67c1d88f2ea49de08c25fc57e26d48a9f2904",
+  "data_before_sha256": "f443b93067e2866f27d659bcb37cf17151aaeb03522f51b6eeda7dbd76794f1d",
+  "timeout_seconds": 600,
+  "serial_limit_bytes": 134217728,
+  "observer_unchanged": true,
+  "kernel_stop_tracing": false,
+  "guest_resolver_configuration_unchanged": true,
+  "executed": true,
+  "qemu_started_at_utc": "2026-10-23T05:34:45.987132+00:00",
+  "finished_ns": 1792733728475572520,
+  "qemu_exit": 33,
+  "timed_out": false,
+  "serial_excessive": false,
+  "serial_bytes": 92761,
+  "serial_sha256": "bb81065c5a09dc7153dfe7eab4496c0224644be5d8c2089a261ba49801e08374",
+  "data_after_sha256": "1d892667a435498d6d7ce8bf0cbc076ba5246848f4024bbfbc853bc22f06d3d5",
+  "observed": {
+    "errors": [],
+    "stream_observation": {
+      "STDOUT": {
+        "chunks": 30,
+        "decoded_bytes": 7490,
+        "complete": true
+      },
+      "STDERR": {
+        "chunks": 0,
+        "decoded_bytes": 0,
+        "complete": true
+      },
+      "RESULT_FILE": {
+        "chunks": 18,
+        "decoded_bytes": 4502,
+        "complete": true
+      }
+    },
+    "child_termination": [
+      "HEPTA_F1_CHILD nonce=7080327d244bfa98175238f4262c796191258edb3681a68667ebee7361918072 kind=exit code=0"
+    ],
+    "stage_names": [
+      "registered",
+      "spawned",
+      "first_ready",
+      "original_store_witness",
+      "first_stopped",
+      "stopped_state_recovered",
+      "spawned",
+      "second_ready_witness_recovered",
+      "final_stopped"
+    ],
+    "helper_result": {
+      "agent_id": "019153a4-3088-7e03-a56a-9b1964f75dd3",
+      "agentd_program": "/payload/bin/codex-hepta-agentd",
+      "automation_runs": 0,
+      "final_stop": {
+        "draining_generation": 7,
+        "events": [
+          {
+            "generation": 7,
+            "kind": "lifecycle",
+            "lifecycle": "draining"
+          },
+          {
+            "generation": 7,
+            "kind": "drain_requested"
+          },
+          {
+            "generation": 7,
+            "kind": "stop_requested"
+          },
+          {
+            "generation": 8,
+            "kind": "lifecycle",
+            "lifecycle": "stopped"
+          },
+          {
+            "code": 0,
+            "generation": 8,
+            "kind": "exited",
+            "success": true
+          }
+        ],
+        "owner_drain": {
+          "agent_id": "019153a4-3088-7e03-a56a-9b1964f75dd3",
+          "current_generation": 7,
+          "payload": {
+            "admission_closed": true,
+            "drained": true,
+            "fenced": false,
+            "lifecycle": "draining",
+            "running_turns": 0,
+            "type": "drain"
+          },
+          "request_id": 1,
+          "schema_version": 2,
+          "spawn_generation": 5
+        },
+        "spawn_generation": 5,
+        "stopped_generation": 8,
+        "writer_lock_released": true
+      },
+      "final_stopped_generation": 8,
+      "first_health": {
+        "fenced": false,
+        "home_root": "/data/f1/fleet/agents/019153a4-3088-7e03-a56a-9b1964f75dd3/home",
+        "lifecycle": "running",
+        "process_id": 28,
+        "promotion_ready": true,
+        "ready": true,
+        "run_root": "/data/f1/fleet/agents/019153a4-3088-7e03-a56a-9b1964f75dd3/run",
+        "workspace": "/data/f1/workspace"
+      },
+      "first_spawn_generation": 1,
+      "first_stop": {
+        "draining_generation": 3,
+        "events": [
+          {
+            "generation": 3,
+            "kind": "lifecycle",
+            "lifecycle": "draining"
+          },
+          {
+            "generation": 3,
+            "kind": "drain_requested"
+          },
+          {
+            "generation": 3,
+            "kind": "stop_requested"
+          },
+          {
+            "generation": 4,
+            "kind": "lifecycle",
+            "lifecycle": "stopped"
+          },
+          {
+            "code": 0,
+            "generation": 4,
+            "kind": "exited",
+            "success": true
+          }
+        ],
+        "owner_drain": {
+          "agent_id": "019153a4-3088-7e03-a56a-9b1964f75dd3",
+          "current_generation": 3,
+          "payload": {
+            "admission_closed": true,
+            "drained": true,
+            "fenced": false,
+            "lifecycle": "draining",
+            "running_turns": 0,
+            "type": "drain"
+          },
+          "request_id": 1,
+          "schema_version": 2,
+          "spawn_generation": 1
+        },
+        "spawn_generation": 1,
+        "stopped_generation": 4,
+        "writer_lock_released": true
+      },
+      "first_stopped_generation": 4,
+      "fixture_root": "/data/f1",
+      "hos2_control_qualified": false,
+      "model_turns_requested": 0,
+      "original_persisted_task": {
+        "created_at_ms": 1792733712231,
+        "next_occurrence": 1,
+        "next_run_at_ms": null,
+        "owner_agent_id": "019153a4-3088-7e03-a56a-9b1964f75dd3",
+        "prompt": "F1 persistent store witness; disabled and never dispatched",
+        "schedule": {
+          "kind": "once"
+        },
+        "state": "disabled",
+        "task_id": "01a16741-8f6a-7049-b43b-9b74b49255c1",
+        "thread_id": "019153a4-3088-7e03-a56a-9b1964f75ddd",
+        "updated_at_ms": 1792733712408
+      },
+      "power_loss_recovery_qualified": false,
+      "production_authority_configured": false,
+      "schema_version": 1,
+      "scope": "original-registry-supervisor-agentd-store-lifecycle",
+      "second_health": {
+        "fenced": false,
+        "home_root": "/data/f1/fleet/agents/019153a4-3088-7e03-a56a-9b1964f75dd3/home",
+        "lifecycle": "running",
+        "process_id": 77,
+        "promotion_ready": true,
+        "ready": true,
+        "run_root": "/data/f1/fleet/agents/019153a4-3088-7e03-a56a-9b1964f75dd3/run",
+        "workspace": "/data/f1/workspace"
+      },
+      "second_spawn_generation": 5,
+      "status": "passed",
+      "stores": {
+        "automation": {
+          "automation_runs": 0,
+          "journal_mode": "wal",
+          "migrations": 19,
+          "owner_agent_id": "019153a4-3088-7e03-a56a-9b1964f75dd3",
+          "path": "/data/f1/fleet/agents/019153a4-3088-7e03-a56a-9b1964f75dd3/automation/automation_1.sqlite3",
+          "quick_check": [
+            "ok"
+          ],
+          "schema_version": 19
+        },
+        "cognitive": {
+          "automation_runs": null,
+          "journal_mode": "wal",
+          "migrations": 16,
+          "owner_agent_id": "019153a4-3088-7e03-a56a-9b1964f75dd3",
+          "path": "/data/f1/fleet/agents/019153a4-3088-7e03-a56a-9b1964f75dd3/cognitive/cognitive_1.sqlite3",
+          "quick_check": [
+            "ok"
+          ],
+          "schema_version": 1
+        }
+      }
+    }
+  },
+  "inputs_unchanged": true,
+  "diagnostic_capture_succeeded": true,
+  "diagnostic_lifecycle_passed": true
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "trillionnium.root-authority-abi-linux.v1",
+  "passed": true,
+  "source_sha256": "cdaa1ddc6a20d157b524926d645212f642d306c4dc577ee58b866e8708ff8025",
+  "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+  "compiler_command": [
+    "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "-O2",
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "/data/trillionnium-closure-20261024/os-integration/tests/workloads/linux/root_authority_abi/probe.c",
+    "-o",
+    "/data/trillionnium-closure-20261024/native-evidence/root-authority-abi/linux/probe.elf"
+  ],
+  "host_kernel": "7.0.0-38-generic",
+  "runtime_scope": "linux_reference",
+  "native_guest_qualified": false,
+  "original_writer_executed": false,
+  "g2_complete": false,
+  "compile_exit": 0,
+  "binary_sha256": "7ec2d717e604882e9454eadd55f03ada4fb2da8b0e52edd0230951825d2131fc",
+  "exit_code": 0,
+  "timed_out": false,
+  "oracle": {
+    "passed": true,
+    "checks": 27,
+    "errors": [],
+    "runtime_scope": "linux_reference",
+    "original_writer_executed": false,
+    "persistent_cpu_qualified": false,
+    "recovery_qualified": false,
+    "g2_complete": false
+  },
+  "stdout_sha256": "9889ccf7afc5b720b8ee235036587947d05648f08e220ac47b87e96b981a6e92",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "checker_sha256": "6aace1a5a9c277477f47de7ae22a6d4d1e4416fbcf0bb0f8ca66cc121dc6cdb2",
+  "source_unchanged": true,
+  "elapsed_seconds": 0.48529910191427916
+}

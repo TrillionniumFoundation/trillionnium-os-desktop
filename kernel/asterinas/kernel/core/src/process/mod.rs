@@ -18,6 +18,8 @@ pub(crate) mod rlimit;
 pub mod signal;
 mod stats;
 mod status;
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+pub(crate) use status::ProcessStatusObserver;
 pub(crate) mod sync;
 pub(crate) mod task_set;
 mod term_status;
@@ -28,16 +30,19 @@ mod wait;
 pub(crate) use clone::{CloneArgs, CloneFlags, clone_child};
 pub(crate) use credentials::{Credentials, Gid, Uid};
 pub(crate) use execve::do_execve;
-pub(crate) use kill::{kill, kill_all, kill_group, tgkill};
+pub(crate) use kill::{
+    kill, kill_all, kill_all_with, kill_group, kill_group_with, kill_owned, kill_owned_with,
+    kill_process_via_thread, tgkill, tgkill_owned, tgkill_owned_with,
+};
 pub use namespace::user_ns::UserNamespace;
 pub(crate) use namespace::{
     nsproxy::{ContextSetNsAdminApi, NsProxy, NsProxyBuilder, check_unsupported_ns_flags},
     unshare::ContextUnshareAdminApi,
 };
 pub(crate) use pid_file::PidFile;
-pub use process::Process;
 #[cfg(any(ktest, feature = "g1d-trusted-control"))]
 pub(crate) use process::KernelControlBackend;
+pub use process::Process;
 pub(crate) use process::{
     ExitCode, INIT_PROCESS_PID, JobControl, Pgid, Pid, ProcessGroup, ProcessImageKey,
     ReapedChildrenStats, Session, Sid, Terminal, broadcast_signal_async, enqueue_signal_async,

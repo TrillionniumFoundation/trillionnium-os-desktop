@@ -1,0 +1,60 @@
+{
+  "schema_version": 2,
+  "source_dir": "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-v2",
+  "input_sha256": {
+    "lifecycle_probe.h": "2b8450a58bc91eabc099a6c77afe9e40038116db799689603f61c520830e3fe5",
+    "lifecycle_main.c": "4c8703ec0ba60faede5640f693cfde3e0074df3ab683606dd485710785006b77",
+    "lifecycle_local.c": "eaf52ad3ef6909098fe5ba02e8975952e2b69fe5e98e92622bd0a5ad309b6e72",
+    "lifecycle_credentials.c": "03cfd9e53bdc9592688add6141bd4a6dbedde2168580b2d064b95171e0064878",
+    "lifecycle_paths.c": "327c30b558ab1c76072c085ea09ce8bd840de66da2f4b91eb69f0187875fc8d7",
+    "lifecycle-probe": "0abe42254db858d63feebf2656e00ae178caf3bab1b2ad8ef95ae1e380f6f285"
+  },
+  "compile_command": [
+    "gcc",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "-fno-pie",
+    "-no-pie",
+    "-pthread",
+    "lifecycle_main.c",
+    "lifecycle_local.c",
+    "lifecycle_credentials.c",
+    "lifecycle_paths.c",
+    "-o",
+    "lifecycle-probe"
+  ],
+  "compile_exit": 0,
+  "command": [
+    "sudo",
+    "-n",
+    "/data/asterinas-dumpable-audit-01.yswd2fi4/lifecycle-v2/lifecycle-probe",
+    "--reset-policy",
+    "2"
+  ],
+  "timeout_seconds": 100,
+  "kernel": "7.0.0-38-generic",
+  "reset_policy": 2,
+  "root_fixture_only": true,
+  "cross_child_observer_uid": 60001,
+  "cross_child_observer_permitted_effective_capabilities": 0,
+  "nnp": true,
+  "no_global_configuration_changes": true,
+  "status": "complete",
+  "exit": 0,
+  "seconds": 0.16584932699333876,
+  "inputs_unchanged": true,
+  "raw_sha256": "97336884b2b24b8f591c4150b5c3275d4d7ada4601ffcf82b1e7b751ab065108",
+  "failed_observations": [],
+  "summaries": [
+    {
+      "summary": true,
+      "failed_fixtures": 0,
+      "all_children_reaped": true,
+      "production_isolation_qualified": false
+    }
+  ],
+  "observations": 165
+}

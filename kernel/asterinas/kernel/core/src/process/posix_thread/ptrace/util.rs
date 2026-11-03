@@ -240,3 +240,51 @@ pub(super) fn syscall_stop_siginfo(options: &PtraceOptions, ctx: &Context) -> si
     siginfo.set_pid_uid_by(ctx);
     siginfo
 }
+
+#[cfg(ktest)]
+mod inline_owner_tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::process::signal::{
+        constants::{SIGSEGV, SIGUSR1},
+        sig_mask::SigMask,
+        sig_queues::SigQueues,
+        signals::{OwnedSignal, fault::FaultSignal, kernel::KernelSignal},
+    };
+
+    #[ktest]
+    fn ptrace_stop_requeue_keeps_inline_owner_and_dynamic_injection_origin() {
+        let queue = SigQueues::new();
+        queue.enqueue_owned(OwnedSignal::new(FaultSignal::new(SIGSEGV, 2, Some(0x1234))));
+        let original = DequeuedSignal::FromProcess(queue.dequeue(&SigMask::from(0)).unwrap());
+        let mut delivery = StopDeliverySignal::default();
+        delivery.stop(original, PtraceWaitStatus::from_signal(SIGSEGV));
+        assert!(delivery.wait(WaitOptions::WNOWAIT).is_some());
+        assert_eq!(delivery.get().unwrap().to_info().si_addr(), 0x1234);
+        let Some(DequeuedSignal::FromProcess(owner)) = delivery.clear() else {
+            panic!("ptrace changed the original process queue origin");
+        };
+        assert!(owner.is_inline());
+        queue.enqueue_owned(owner);
+        let owner = queue.dequeue(&SigMask::from(0)).unwrap();
+        assert!(owner.is_inline());
+        assert_eq!(owner.to_info().si_addr(), 0x1234);
+        delivery.stop(
+            DequeuedSignal::FromThread(owner),
+            PtraceWaitStatus::from_signal(SIGSEGV),
+        );
+        assert!(delivery.wait(WaitOptions::empty()).is_some());
+        assert!(delivery.wait(WaitOptions::empty()).is_none());
+        delivery.inject(Box::new(KernelSignal::new(SIGUSR1)));
+        let Some(DequeuedSignal::FromThread(owner)) = delivery.clear() else {
+            panic!("ptrace injection changed the original thread queue origin");
+        };
+        assert!(!owner.is_inline()); // The original dynamic injection stays dynamic.
+        assert_eq!(owner.num(), SIGUSR1);
+        assert!(delivery.get().is_none());
+        queue.enqueue_owned(owner);
+        assert_eq!(queue.dequeue(&SigMask::from(0)).unwrap().num(), SIGUSR1);
+        assert!(queue.is_empty());
+    }
+}

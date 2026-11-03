@@ -1,0 +1,696 @@
+{
+  "kernel_sha256": "572d7fde0032a55fe4a36d25d3e23f72a86d2b7bbdaed1ae39ac730adace341a",
+  "kernel_input": "/data/asterinas-audit-build.8tdrjboi/native-ordinary-960-01/product-kernel.elf",
+  "probe_source_sha256": "54275c197b6c09d71ea4d362e77bef3c9818464f7dca23eba8e888e5f15e3b37",
+  "runner_source_sha256": "3d32f50ca234c301c4fb56b70993d4f5c7fd9ba27fe38383130d0a5d2ffd666b",
+  "probe_sha256": "f9ea1e4f9ad817ad75fc453a1de4f7b6008b3bbabc515b20e0f13da8cb0c618d",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "initramfs_sha256": "93a7cc9517f622b64c4eb52da0f9da7656a9dadf767eb00329f6b37bbda3494f",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "disk_before_sha256": "f87650d385bd252e024541b0ed2000f3bfe8a192a20e81b62f521c14c0106318",
+  "disk_after_sha256": "638e9df29f62df537aa728d751a50c058b667ad4f4d8202b2ac75d29c29b3025",
+  "compile_argv": [
+    "cc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "/data/asterinas-audit-build.8tdrjboi/desktop/tests/workloads/linux/utimens/utimens_probe.c",
+    "-o",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/utimens/probe.elf"
+  ],
+  "format_argv": [
+    "mkfs.ext2",
+    "-F",
+    "-q",
+    "-b",
+    "4096",
+    "-I",
+    "256",
+    "-O",
+    "none,filetype",
+    "-d",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/utimens/seed-dir",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/utimens/disk.raw"
+  ],
+  "qemu_argv": [
+    "qemu-system-x86_64",
+    "-kernel",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/utimens/kernel.elf",
+    "-initrd",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/utimens/initramfs.cpio.gz",
+    "-bios",
+    "/data/asterinas-audit-build.8tdrjboi/readonly-960/utimens/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-drive",
+    "if=none,format=raw,id=readonly,cache=writeback,file=/data/asterinas-audit-build.8tdrjboi/readonly-960/utimens/disk.raw",
+    "-device",
+    "virtio-blk-pci,bus=pcie.0,addr=0x7,drive=readonly,disable-legacy=on,disable-modern=off"
+  ],
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 3.118321290006861,
+  "guest_complete": true,
+  "passed": true,
+  "disk_unchanged": false,
+  "expected_failure": false,
+  "cases": [
+    {
+      "name": "tmpfs_owner_explicit_mode_zero",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_owner_now_mode_zero",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_now_no_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_both_now_no_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_both_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_explicit_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_now_omit_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_omit_now_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_both_omit_no_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_explicit_no_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_primary_group_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_supplementary_group_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_group_precedes_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_other_class_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_retained_wronly_not_authority",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_retained_rdwr_not_owner",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_owner_readonly_fd",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_readonly_fd_write_dac",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_fowner_explicit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_fowner_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_dac_override_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_dac_override_not_explicit",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_root_without_caps_now",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_root_without_caps_explicit",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_fsuid_owner_explicit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_owner_now_omit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_owner_explicit_omit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_utime_explicit_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_utime_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_utimes_explicit_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_utimes_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_futimesat_explicit_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_futimesat_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_opath_empty_owner",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_opath_futimens_rejected",
+      "passed": true,
+      "actual": -1,
+      "errno": 9,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_symlink_owner",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "tmpfs_symlink_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_owner_explicit_mode_zero",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_owner_now_mode_zero",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_now_no_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_both_now_no_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_both_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_explicit_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_now_omit_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_omit_now_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_both_omit_no_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_explicit_no_write",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_primary_group_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_supplementary_group_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_group_precedes_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_other_class_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_retained_wronly_not_authority",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_retained_rdwr_not_owner",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_owner_readonly_fd",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_readonly_fd_write_dac",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_fowner_explicit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_fowner_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_dac_override_now",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_dac_override_not_explicit",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_root_without_caps_now",
+      "passed": true,
+      "actual": -1,
+      "errno": 13,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_root_without_caps_explicit",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_fsuid_owner_explicit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_owner_now_omit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_owner_explicit_omit",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_utime_explicit_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_utime_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_utimes_explicit_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_utimes_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_futimesat_explicit_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_futimesat_now_write",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_opath_empty_owner",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_opath_futimens_rejected",
+      "passed": true,
+      "actual": -1,
+      "errno": 9,
+      "unchanged": true,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_symlink_owner",
+      "passed": true,
+      "actual": 0,
+      "errno": 0,
+      "unchanged": false,
+      "omit_preserved": true
+    },
+    {
+      "name": "ext2_symlink_other",
+      "passed": true,
+      "actual": -1,
+      "errno": 1,
+      "unchanged": true,
+      "omit_preserved": true
+    }
+  ],
+  "scope": "tmpfs/ext2 utimens owner, group, capability, descriptor and omitted-time semantics"
+}

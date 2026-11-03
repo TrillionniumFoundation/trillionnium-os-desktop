@@ -110,7 +110,7 @@ where
             let chain_set = disk.subset(snapshots.nblocks() * 2..disk.nblocks())?;
             let block_ring = BlockRing::new(chain_set);
             block_ring.set_cursor(0);
-            CryptoChain::new(block_ring)
+            CryptoChain::new(block_ring)?
         };
 
         // Persist the MAC of latest snapshot to `CryptoChain`.
@@ -213,65 +213,61 @@ where
     }
 
     /// Commit the current edit group.
-    pub(crate) fn commit(&mut self) {
+    pub(crate) fn commit(&mut self) -> Result<()> {
         let Some(edit_group) = self.curr_edit_group.take() else {
-            return;
+            return Ok(());
         };
         if edit_group.is_empty() {
-            return;
+            return Ok(());
         }
 
         let record = Record::Edit(edit_group);
-        self.write(&record);
+        // Do not publish this edit group when flushing older buffered records
+        // fails (including failure to obtain a fresh encryption IV).
+        self.write(&record)?;
         let edit_group = match record {
             Record::Edit(edit_group) => edit_group,
             _ => unreachable!(),
         };
         edit_group.apply_to(&mut self.state);
         self.compaction_policy.on_commit_edits(&edit_group);
+        Ok(())
     }
 
-    fn write(&mut self, record: &Record<E, S>) {
+    fn write(&mut self, record: &Record<E, S>) -> Result<()> {
         // XXX: the serialized record should be less than write_buf.
         let is_first_try_success = self.write_buf.write(record).is_ok();
         if is_first_try_success {
-            return;
+            return Ok(());
         }
 
         // TODO: sync disk first to ensure data are persisted before
         // journal records.
 
-        self.append_write_buf_to_journal();
-
-        let is_second_try_success = self.write_buf.write(record).is_ok();
-        if !is_second_try_success {
-            panic!("the write buffer must have enough free space");
-        }
+        self.append_write_buf_to_journal()?;
+        self.write_buf.write(record)
     }
 
-    fn append_write_buf_to_journal(&mut self) {
+    fn append_write_buf_to_journal(&mut self) -> Result<()> {
         let write_data = self.write_buf.as_slice();
         if write_data.is_empty() {
-            return;
+            return Ok(());
         }
 
-        self.journal_chain
-            .append(write_data)
-            // TODO: how to handle I/O error in journaling?
-            .expect("we cannot handle I/O error in journaling gracefully");
+        self.journal_chain.append(write_data)?;
         self.compaction_policy.on_append_journal(1);
         self.write_buf.clear();
 
         if self.compaction_policy.should_compact() {
-            // TODO: how to handle a compaction failure?
-            let compacted_blocks = self.compact().expect("journal chain compaction failed");
+            let compacted_blocks = self.compact()?;
             self.compaction_policy.done_compact(compacted_blocks);
         }
+        Ok(())
     }
 
     /// Ensure that all committed edits are persisted to disk.
     pub(crate) fn flush(&mut self) -> Result<()> {
-        self.append_write_buf_to_journal();
+        self.append_write_buf_to_journal()?;
         self.journal_chain.flush()
     }
 
@@ -895,7 +891,7 @@ mod tests {
         offset += ser.len();
 
         // Add `Record::Version` to buffer.
-        let mac = Mac::random();
+        let mac = Mac::random().unwrap();
         let version = Record::<XEdit, XState>::Version(mac);
         let ser = postcard::to_slice(&version, &mut buf[offset..]).unwrap();
         println!("serialize edit_group len: {} data: {:?}", ser.len(), ser);
@@ -924,7 +920,10 @@ mod tests {
         assert_eq!(write_buf.cursor, 0);
         assert_eq!(write_buf.capacity, BLOCK_SIZE);
         let mut version = 0;
-        while write_buf.write(&Record::Version(Mac::random())).is_ok() {
+        while write_buf
+            .write(&Record::Version(Mac::random().unwrap()))
+            .is_ok()
+        {
             version += 1;
             let mut group = EditGroup::new();
             for x in 0..version {
@@ -982,7 +981,7 @@ mod tests {
                     let edit = XEdit { x };
                     journal.add(edit);
                 }
-                journal.commit();
+                journal.commit().unwrap();
                 println!("state: {}", journal.state().sum);
             }
         };
@@ -1053,7 +1052,7 @@ mod tests {
                     let edit = XEdit { x };
                     journal.add(edit);
                 }
-                journal.commit();
+                journal.commit().unwrap();
                 println!("state: {}", journal.state().sum);
             }
         };

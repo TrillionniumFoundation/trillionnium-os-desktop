@@ -118,6 +118,16 @@ pub enum ReturnReason {
 
 /// Hooks that will be called during [`UserMode::execute`].
 pub trait UserModeHooks {
+    /// Checks for a fatal event immediately before each entry into user space.
+    ///
+    /// A true result returns [`ReturnReason::KernelEvent`] without executing
+    /// user instructions. This also applies when a task resumes after being
+    /// preempted at the entry boundary. Local IRQs are disabled; implementations
+    /// must use nonblocking observations and must not sleep or allocate.
+    fn has_fatal_kernel_event(&self, _guard: &DisabledLocalIrqGuard) -> bool {
+        false
+    }
+
     /// Checks whether a kernel event is pending.
     ///
     /// This method will be called after user space is interrupted
@@ -138,3 +148,38 @@ pub trait UserModeHooks {
 pub struct DummyUserHooks;
 
 impl UserModeHooks for DummyUserHooks {}
+
+#[cfg(ktest)]
+#[crate::prelude::ktest]
+fn fatal_pre_entry_returns_kernel_event_before_unmapped_user_code() {
+    use core::cell::Cell;
+
+    struct FatalHook(Cell<usize>);
+    impl UserModeHooks for FatalHook {
+        fn has_fatal_kernel_event(&self, _guard: &DisabledLocalIrqGuard) -> bool {
+            assert!(!crate::arch::irq::is_local_enabled());
+            self.0.set(self.0.get() + 1);
+            true
+        }
+
+        fn pre_user_run(&self, _guard: &DisabledLocalIrqGuard) {
+            panic!("fatal entry must not prepare or execute user code");
+        }
+    }
+
+    let mut user = UserMode::new(UserContext::default());
+    user.context_mut().set_instruction_pointer(0);
+    user.context_mut().set_stack_pointer(0);
+    let hook = FatalHook(Cell::new(0));
+    for _ in 0..2 {
+        assert_eq!(user.execute(&hook), ReturnReason::KernelEvent);
+        assert_eq!(user.context().instruction_pointer(), 0);
+        assert_eq!(user.context().stack_pointer(), 0);
+        assert!(crate::arch::irq::is_local_enabled());
+    }
+    assert_eq!(hook.0.get(), 2);
+    // Negative control through the same real architecture entry: without a
+    // fatal receipt the unmapped instruction faults, rather than masquerading
+    // as a successful pre-entry cancellation.
+    assert_eq!(user.execute(&DummyUserHooks), ReturnReason::UserException);
+}

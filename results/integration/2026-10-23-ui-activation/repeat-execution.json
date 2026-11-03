@@ -1,0 +1,65 @@
+{
+  "source": "TrillionniumFoundation/trillionnium-os-desktop",
+  "base_head": "a2630082e89de1ad1c8c9c3bf715b3981643b85b",
+  "scope": "dependency-free activation policy only; no GUI/IME/device qualification",
+  "before_sha256": "a692c7681113dba29ef3882ae11eca4bcf2f16c696497dd1ec14149de815165a",
+  "after_sha256": "1159a2a3978fc38a847c7b50b8746c0661dad45a922d5a558d34f19dd91092d4",
+  "steps": [
+    {
+      "argv": [
+        "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+        "--edition",
+        "2021",
+        "--check",
+        "/workspace/scratch/3d6a75235bcb/work/desktop-ui/ui/activation_policy.rs"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "argv": [
+        "/tmp/hepta-native-rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "-Dwarnings",
+        "--test",
+        "/workspace/scratch/3d6a75235bcb/work/desktop-ui/ui/activation_policy.rs",
+        "-o",
+        "/workspace/scratch/3d6a75235bcb/work/desktop-ui/validation/repeat-repro/activation-policy-tests-after"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/3d6a75235bcb/work/desktop-ui/validation/repeat-repro/activation-policy-tests-after"
+      ],
+      "exit_code": 0,
+      "output": "\nrunning 13 tests\ntest tests::active_composition_blocks_every_effect_source ... ok\ntest tests::deliberate_enter_and_space_activate_without_a_pointer ... ok\ntest tests::commit_then_trailing_confirmation_is_blocked_until_release ... ok\ntest tests::empty_preedit_and_disabled_cannot_drop_the_confirmation_fence ... ok\ntest tests::explicit_navigation_recovers_when_backend_swallows_key_release ... ok\ntest tests::explicit_pointer_and_accessibility_actions_work_after_commit_frame ... ok\ntest tests::focus_loss_cancels_preedit_but_keeps_delayed_key_fenced ... ok\ntest tests::held_key_without_backend_repeat_flag_is_blocked_until_release ... ok\ntest tests::navigation_during_composition_does_not_bypass_the_fence ... ok\ntest tests::one_release_does_not_unfence_another_held_confirmation_key ... ok\ntest tests::press_then_release_does_not_unblock_the_same_candidate_frame ... ok\ntest tests::repeated_or_modified_keypresses_do_not_repeat_effects ... ok\ntest tests::same_frame_commit_and_key_are_blocked_in_either_order ... ok\n\ntest result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+    },
+    {
+      "argv": [
+        "/workspace/scratch/3d6a75235bcb/work/desktop-ui/validation/repeat-repro/regression-before",
+        "--exact",
+        "repeated_unmarked_keydown_does_not_repeat_an_effect"
+      ],
+      "exit_code": 101,
+      "output": "\nrunning 1 test\ntest repeated_unmarked_keydown_does_not_repeat_an_effect ... FAILED\n\nfailures:\n\n---- repeated_unmarked_keydown_does_not_repeat_an_effect stdout ----\n\nthread 'repeated_unmarked_keydown_does_not_repeat_an_effect' (42) panicked at validation/repeat-repro/regression.rs:11:9:\nassertion failed: !policy.begin_frame(true, [press]).allows(ActivationSource::Keyboard)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    repeated_unmarked_keydown_does_not_repeat_an_effect\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s\n\n"
+    },
+    {
+      "argv": [
+        "/workspace/scratch/3d6a75235bcb/work/desktop-ui/validation/repeat-repro/regression-after",
+        "--exact",
+        "repeated_unmarked_keydown_does_not_repeat_an_effect"
+      ],
+      "exit_code": 0,
+      "output": "\nrunning 1 test\ntest repeated_unmarked_keydown_does_not_repeat_an_effect ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s\n\n"
+    }
+  ],
+  "base_git_blob_verified": "908fdd59ba1fca8435e801fe4f5487d7aabbf875",
+  "patch_dry_run": {
+    "exit_code": 0,
+    "output": "checking file ui/activation_policy.rs\n"
+  },
+  "regression_before_binary_sha256": "e0f4bb2c4ae250af40e4e79980bc13c714b0e83110adea2ae8540e1ec1b6061f",
+  "regression_after_binary_sha256": "bff4804f32929312fd8891a557690e8edd6236093f7798610e6564f94320c833"
+}

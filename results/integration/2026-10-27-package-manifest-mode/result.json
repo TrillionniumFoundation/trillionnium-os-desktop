@@ -1,0 +1,39 @@
+{
+  "scope": "original Desktop pack/archive regression; no installation or runtime effect",
+  "baseline_desktop": "94234e6a63858dcf7312025f6e20c85e00cc07f6",
+  "baseline_hepta": "de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c",
+  "baseline_result": "failed: Archive special object/mode/file bound refused",
+  "observed_member": {
+    "path": "trillionnium-desktop/manifest.json",
+    "mode": "0600",
+    "bytes": 13599,
+    "type": "regular"
+  },
+  "archive_compressed_bytes": 86457324,
+  "archive_members": 86,
+  "archive_regular_bytes": 156113894,
+  "source_fix": "manifest is explicitly chmod 0644 before original verify and tar.add",
+  "before_fix": {
+    "umask_0000": "FAIL: manifest 0666",
+    "umask_0002": "FAIL: manifest 0664",
+    "umask_0077": "FAIL: manifest 0600"
+  },
+  "after_fix": {
+    "original_test_desktop_passed": 46,
+    "failed": 0,
+    "python": "3.12.14"
+  },
+  "limits_changed": false,
+  "original_remote_artifact_modified": false,
+  "product_qualified": false,
+  "logs": {
+    "before-fix.log": {
+      "bytes": 2708,
+      "sha256": "9c1117b439c211263887dc73b4aac0484aa94dd5b40a65fe58565231f564d3e8"
+    },
+    "after-fix.log": {
+      "bytes": 7072,
+      "sha256": "e4f2f4285a4d70d33954599b7e5759c2daf0215c81278a7d0a856d27c46ee8e6"
+    }
+  }
+}

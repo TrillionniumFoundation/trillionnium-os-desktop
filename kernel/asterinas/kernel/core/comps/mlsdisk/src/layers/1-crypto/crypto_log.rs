@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use super::{Iv, Key, Mac};
 use crate::{
     layers::bio::{BlockLog, Buf, BufMut, BufRef},
-    os::{Aead, HashMap, Mutex, RwLock},
+    os::{Aead, HashMap, Mutex, RwMutex},
     prelude::*,
 };
 
@@ -79,7 +79,7 @@ use crate::{
 ///    And after such `CryptoLog`s are done writing, they will be read once and
 ///    then discarded.
 pub(crate) struct CryptoLog<L> {
-    mht: RwLock<Mht<L>>,
+    mht: RwMutex<Mht<L>>,
 }
 
 type Lbid = BlockId; // Logical block position, in terms of user
@@ -211,7 +211,7 @@ impl<L: BlockLog> CryptoLog<L> {
     /// until the first flush, which triggers writing the root MHT node.
     pub(crate) fn new(block_log: L, root_key: Key, node_cache: Arc<dyn NodeCache>) -> Self {
         Self {
-            mht: RwLock::new(Mht::new(block_log, root_key, node_cache)),
+            mht: RwMutex::new(Mht::new(block_log, root_key, node_cache)),
         }
     }
 
@@ -226,7 +226,7 @@ impl<L: BlockLog> CryptoLog<L> {
         node_cache: Arc<dyn NodeCache>,
     ) -> Result<Self> {
         Ok(Self {
-            mht: RwLock::new(Mht::open(block_log, root_key, root_meta, node_cache)?),
+            mht: RwMutex::new(Mht::open(block_log, root_key, root_meta, node_cache)?),
         })
     }
 
@@ -478,7 +478,7 @@ impl<L: BlockLog> MhtStorage<L> {
         node: &Arc<MhtNode>,
     ) -> Result<RootMhtMeta> {
         let mut crypt_buf = self.crypt_buf.lock();
-        let iv = Iv::random();
+        let iv = Iv::random()?;
         let mac = Aead::new().encrypt(
             node.as_bytes(),
             root_key,
@@ -500,16 +500,20 @@ impl<L: BlockLog> MhtStorage<L> {
         for (i, node) in nodes.iter().enumerate() {
             let plain = node.as_bytes();
             let cipher = &mut cipher_buf.as_mut_slice()[i * BLOCK_SIZE..(i + 1) * BLOCK_SIZE];
-            let key = Key::random();
+            let key = Key::random()?;
             let mac = Aead::new().encrypt(plain, &key, &Iv::new_zeroed(), &[], cipher)?;
 
             let pos = start_pos + i;
             node_entries.push(MhtNodeEntry { pos, key, mac });
-            self.node_cache.put(pos, node.clone());
         }
 
         let append_pos = self.block_log.append(cipher_buf.as_ref())?;
         debug_assert_eq!(start_pos, append_pos);
+        // Publishing cache entries before all keys and the append succeed can
+        // expose nodes for an append aborted by an entropy or I/O error.
+        for (index, node) in nodes.iter().enumerate() {
+            self.node_cache.put(start_pos + index, node.clone());
+        }
         Ok(node_entries)
     }
 
@@ -524,7 +528,7 @@ impl<L: BlockLog> MhtStorage<L> {
         let start_pos = self.block_log.nblocks() as BlockId;
         for (i, node) in nodes.iter().enumerate() {
             let cipher = &mut cipher_buf.as_mut_slice()[i * BLOCK_SIZE..(i + 1) * BLOCK_SIZE];
-            let key = Key::random();
+            let key = Key::random()?;
             let mac = Aead::new().encrypt(&node.0, &key, &Iv::new_zeroed(), &[], cipher)?;
 
             let pos = start_pos + i;
@@ -1121,7 +1125,7 @@ mod tests {
 
     fn create_crypto_log() -> Result<CryptoLog<MemLog>> {
         let mem_log = MemLog::create(64 * 1024)?;
-        let key = Key::random();
+        let key = Key::random().unwrap();
         let cache = Arc::new(NoCache {});
         Ok(CryptoLog::new(mem_log, key, cache))
     }

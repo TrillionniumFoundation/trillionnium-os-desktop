@@ -1,0 +1,19 @@
+[
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/data/trillionnium-closure-20261024/os-native-owner-continuity/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0"
+    ],
+    "cwd": "/data/trillionnium-closure-20261024/os-native-owner-continuity/kernel/asterinas/osdk/deps/frame-allocator",
+    "lock_sha256": "56657523f3894b02c3d0ba8e37ed230f637f4db3a36487341a727d5250367d45"
+  }
+]

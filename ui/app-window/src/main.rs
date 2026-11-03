@@ -1,17 +1,23 @@
 //! One independent client window per app process. No embedded webview or Node.
+#[path = "../../activation.rs"]
+mod activation;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
+mod notes_input;
 mod notes_organ;
 use eframe::egui::{self, RichText};
 use std::io::Write;
 use trill_ui_core::{AppKind, Workspace};
 
 struct ClientWindow {
+    activation: activation::ActivationGuard,
     kind: AppKind,
     workspace: Workspace,
     task_id: u64,
     notes: String,
+    notes_input: notes_input::NotesInput,
     notes_organ: Option<notes_organ::NotesAppChannel>,
+    notes_browser: bool,
     left: String,
     right: String,
     result: String,
@@ -24,10 +30,33 @@ struct ClientWindow {
 }
 
 impl eframe::App for ClientWindow {
+    fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) {
+        if self.notes_organ.is_some() {
+            self.notes_input.raw_input_hook(ctx, raw);
+        }
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self
+            .notes_organ
+            .as_ref()
+            .is_some_and(|organ| organ.close_if_session_ended(ctx))
+        {
+            // Original Session ended: do not run input/edit/close-cancel paths.
+            return;
+        }
+        self.notes_input.begin_activation(ctx, &mut self.activation);
+        self.terminal_preedit_active = self.activation.composing();
         let mut notes_updated = false;
         if let Some(organ) = &mut self.notes_organ {
-            if organ.poll() {
+            let preserve = self
+                .notes_input
+                .begin(ctx, &mut self.notes, organ.revision());
+            let updated = organ.poll();
+            if let Some((from, to)) = organ.accepted_local_revision() {
+                self.notes_input.accept_local_revision(from, to);
+            }
+            if !preserve && (updated || self.notes_input.cancelled()) {
                 self.notes = organ.text().to_owned();
                 notes_updated = true;
             }
@@ -40,49 +69,84 @@ impl eframe::App for ClientWindow {
             ui.separator();
             match self.kind {
                 AppKind::Notes => {
-                    ui.label("Notes / 笔记 · try composing Chinese with your host IME");
-                    let editor = ui.add(
+                    let label = ui.horizontal(|ui| {
+                        let label = ui.label("Notes / 笔记 · try composing Chinese with your host IME");
+                        if let Some(organ) = &mut self.notes_organ {
+                            if organ.has_document_storage()
+                                && self.activation.activated(&ui.button("打开已保存笔记"))
+                            {
+                                self.notes_browser = true;
+                                organ.refresh_saved_documents();
+                            }
+                        }
+                        label
+                    }).inner;
+                    if let Some(organ) = &self.notes_organ {
+                        self.notes_input.prepare_editor(ctx, &self.notes, organ.revision());
+                    }
+                    let editor = ui.add_enabled(
+                        !self.notes_organ.as_ref().is_some_and(|organ| organ.restore_pending()),
                         egui::TextEdit::multiline(&mut self.notes)
-                            .id(egui::Id::new("notes-editor"))
+                            .id(egui::Id::new(notes_input::EDITOR_ID))
                             .desired_rows(17)
                             .desired_width(f32::INFINITY)
                             .hint_text("中文输入、候选词、焦点测试……"),
-                    );
+                    ).labelled_by(label.id);
                     if let Some(organ) = &mut self.notes_organ {
-                        if editor.changed() && !organ.local_edit(self.notes.clone()) {
-                            self.notes = organ.text().to_owned();
+                        if let Some((revision, text)) = self.notes_input.finish(ctx, &mut self.notes, editor.changed(), editor.lost_focus()) {
+                            if !organ.local_edit_at(revision, text) {
+                                self.notes = organ.text().to_owned();
+                            }
                         }
+                        if self.notes_input.cancelled() { self.notes = organ.text().to_owned(); }
+                        if organ.has_conflict() {
+                            ui.horizontal(|ui| {
+                                let ready = !self.notes_input.composing();
+                                if self.activation.activated(&ui.add_enabled(ready, egui::Button::new("确认保留我的编辑"))) {
+                                    organ.keep_local_after_conflict();
+                                }
+                                if self.activation.activated(&ui.add_enabled(ready, egui::Button::new("放弃未保存编辑，加载已保存内容"))) {
+                                    organ.discard_local_after_conflict();
+                                    self.notes = organ.text().to_owned();
+                                }
+                            });
+                        }
+                        if self.notes_input.composing() { ui.small("输入法组词中；确认后的文字才会保存。"); }
+                        if let Some(notice) = self.notes_input.notice() { ui.small(notice); }
                         ui.small(format!("Document revision: {} · private Notes destination", organ.revision()));
                         ui.small("External edits require the original Hepta owner. This document is limited to 4096 UTF-8 bytes.");
+                        ui.small(organ.storage_status());
                     }
                     ui.small(if editor.has_focus() {
                         "Keyboard focus: NOTES editor (IME target)"
                     } else {
                         "Keyboard focus: inactive; click Notes editor to compose"
                     });
-                    ui.small("Local unsaved memory only. Closing this app discards notes.");
+                    if self.notes_organ.is_none() {
+                        ui.small("Local unsaved memory only. Closing this app discards notes.");
+                    }
                 }
                 AppKind::Calculator => {
                     ui.horizontal(|ui| {
-                        ui.label("A");
-                        ui.text_edit_singleline(&mut self.left);
-                        ui.label("B");
-                        ui.text_edit_singleline(&mut self.right);
+                        let a = ui.label("A");
+                        ui.text_edit_singleline(&mut self.left).labelled_by(a.id);
+                        let b = ui.label("B");
+                        ui.text_edit_singleline(&mut self.right).labelled_by(b.id);
                     });
                     ui.horizontal(|ui| {
                         for (label, op) in [("+", '+'), ("−", '-'), ("×", '*'), ("÷", '/')] {
-                            if ui.button(label).clicked() {
+                            if self.activation.activated(&ui.button(label)) {
                                 self.calculate(op);
                             }
                         }
                     });
                     ui.label(RichText::new(&self.result).size(20.0));
                     ui.separator();
-                    ui.label("Keyboard and IME focus probe / 输入法焦点");
+                    let label = ui.label("Keyboard and IME focus probe / 输入法焦点");
                     let ime_probe = ui.add(
                         egui::TextEdit::singleline(&mut self.focused_input)
                             .id(egui::Id::new("calculator-ime-focus")),
-                    );
+                    ).labelled_by(label.id);
                     ui.small(if ime_probe.has_focus() {
                         "Keyboard focus: calculator IME probe"
                     } else {
@@ -93,6 +157,42 @@ impl eframe::App for ClientWindow {
                 AppKind::Terminal => self.restricted_terminal(ui, ctx),
             }
         });
+        self.show_saved_notes(ctx);
+        if let Some(organ) = &mut self.notes_organ {
+            if organ.close_requested() {
+                egui::Window::new("关闭笔记")
+                    .collapsible(false)
+                    .resizable(false)
+                    .show(ctx, |ui| {
+                        match organ.close_state() {
+                            notes_organ::NotesCloseState::Saving => {
+                                ui.label("正在保存最后的编辑，保存完成后将关闭窗口。");
+                                if self.activation.activated(&ui.button("停止等待并关闭")) {
+                                    organ.discard_and_close();
+                                }
+                                ui.small("停止等待时，最后的修改可能尚未保存。");
+                            }
+                            notes_organ::NotesCloseState::Unsaved => {
+                                ui.label("当前编辑尚未确认保存。继续编辑可保留窗口中的内容。");
+                                if self
+                                    .activation
+                                    .activated(&ui.button("关闭并舍弃未保存编辑"))
+                                {
+                                    organ.discard_and_close();
+                                }
+                            }
+                            notes_organ::NotesCloseState::Ready => {}
+                        }
+                        if self.activation.activated(&ui.button("继续编辑")) {
+                            organ.keep_open();
+                        }
+                    });
+            }
+            // This follows TextEdit so a final edit and close in one frame
+            // cannot bypass the worker's durable-save acknowledgement.
+            organ.input_queue_changed(self.notes_input.queued_input());
+            organ.handle_close(ctx);
+        }
         // Signal only AFTER the first UI layout has completed successfully,
         // not on process spawn or before building the widget tree.
         // This still does not attest that a compositor presented the frame.
@@ -134,6 +234,82 @@ fn command_is_safe_for_log(command: &str) -> bool {
 impl ClientWindow {
     const MAX_TERMINAL_LINES: usize = 256;
 
+    fn show_saved_notes(&mut self, ctx: &egui::Context) {
+        if !self.notes_browser {
+            return;
+        }
+        let Some(organ) = &mut self.notes_organ else {
+            return;
+        };
+        let mut open = true;
+        let mut selected = None;
+        egui::Window::new("打开已保存笔记")
+            .id(egui::Id::new("notes-saved-documents"))
+            .open(&mut open)
+            .default_width(540.0)
+            .show(ctx, |ui| {
+                ui.label("选择之前保存的笔记，在当前空白窗口打开副本。原笔记保持不变。");
+                if !organ.can_restore_saved() {
+                    ui.label("当前窗口已编辑或暂不可用。请在桌面新建笔记窗口后打开副本。");
+                }
+                if self.activation.activated(
+                    &ui.add_enabled(!organ.saved_list_pending(), egui::Button::new("刷新列表")),
+                ) {
+                    organ.refresh_saved_documents();
+                }
+                if organ.saved_list_pending() {
+                    ui.label("正在读取已保存笔记……");
+                }
+                if let Some(message) = organ.saved_list_error() {
+                    ui.colored_label(egui::Color32::YELLOW, message);
+                }
+                let listing = organ.saved_documents();
+                if listing.unavailable > 0 {
+                    ui.small(format!(
+                        "{} 份笔记正在使用或无法读取；关闭旧窗口后可刷新。",
+                        listing.unavailable
+                    ));
+                }
+                if listing.truncated {
+                    ui.small("列表达到上限；较早的笔记可能未列出。");
+                }
+                if listing.documents.is_empty() && !organ.saved_list_pending() {
+                    ui.label("暂无可打开的已保存笔记。");
+                }
+                egui::ScrollArea::vertical()
+                    .max_height(320.0)
+                    .show(ui, |ui| {
+                        for document in &listing.documents {
+                            ui.push_id(document.target.destination_id(), |ui| {
+                                ui.horizontal(|ui| {
+                                    if self.activation.activated(&ui.add_enabled(
+                                        organ.can_restore_saved(),
+                                        egui::Button::new("打开副本"),
+                                    )) {
+                                        selected = Some(document.clone());
+                                    }
+                                    ui.vertical(|ui| {
+                                        ui.label(if document.preview.is_empty() {
+                                            "空白笔记"
+                                        } else {
+                                            &document.preview
+                                        });
+                                        ui.small(saved_notes_age(document.saved_unix_ms));
+                                    });
+                                });
+                            });
+                            ui.separator();
+                        }
+                    });
+            });
+        if let Some(document) = selected {
+            if organ.restore_saved_document(document) {
+                open = false;
+            }
+        }
+        self.notes_browser = open;
+    }
+
     fn terminal_line(&mut self, line: impl Into<String>) {
         if self.terminal_output.len() >= Self::MAX_TERMINAL_LINES {
             self.terminal_output.remove(0);
@@ -142,21 +318,10 @@ impl ClientWindow {
     }
 
     fn restricted_terminal(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
-        // Only a nonempty preedit blocks Run; idle IME Enabled remains usable.
-        ui.input(|input| {
-            for event in &input.events {
-                match event {
-                    egui::Event::Ime(egui::ImeEvent::Preedit(text)) => {
-                        self.terminal_preedit_active = !text.is_empty();
-                    }
-                    egui::Event::Ime(egui::ImeEvent::Commit(_))
-                    | egui::Event::Ime(egui::ImeEvent::Disabled) => {
-                        self.terminal_preedit_active = false;
-                    }
-                    _ => {}
-                }
-            }
-        });
+        // Idempotent for the app update and direct widget regression tests.
+        // Read the lifecycle before TextEdit can consume the raw IME events.
+        self.activation.begin_frame(ctx);
+        self.terminal_preedit_active = self.activation.composing();
         ui.label("Restricted task terminal / 受限任务终端");
         ui.small("This is an explicit Rust app process. It does not invoke /bin/sh, pipes, redirects, or arbitrary host commands.");
         ui.small("Allowlist: help, status, version, echo <text>, clear, exit");
@@ -171,35 +336,29 @@ impl ClientWindow {
                 }
             });
         ui.separator();
+        let label = ui.label("Command / 命令");
         ui.horizontal(|ui| {
             ui.add(
                 egui::TextEdit::singleline(&mut self.terminal_input)
                     .id(egui::Id::new("restricted-terminal-input"))
                     .desired_width(f32::INFINITY)
                     .hint_text("help / status / echo <text> / clear / exit"),
-            );
-            // egui Response::clicked() includes keyboard Enter/Space when a
-            // button has focus, not only physical clicks. An IME candidate
-            // confirmation must NEVER become an executable command merely
-            // because focus moved onto Run. Require an explicit primary
-            // pointer click; keyboard activation is intentionally excluded.
-            if ui
-                .add_enabled(!self.terminal_preedit_active, egui::Button::new("Run"))
-                .clicked_by(egui::PointerButton::Primary)
+            )
+            .labelled_by(label.id);
+            // A deliberate focused Enter/Space is accessible activation. The
+            // shared guard fences preedit, Commit and trailing candidate keys.
+            if self
+                .activation
+                .activated(&ui.add_enabled(!self.terminal_preedit_active, egui::Button::new("Run")))
                 && !self.terminal_close_requested
             {
                 self.run_restricted_command();
             }
-            if ui
-                .button("Clear output")
-                .clicked_by(egui::PointerButton::Primary)
-            {
-                // A Chinese IME Enter/Space candidate key must not clear
-                // local command history when the button has keyboard focus.
+            if self.activation.activated(&ui.button("Clear output")) {
                 self.terminal_output.clear();
             }
         });
-        ui.small("IME: Enter confirms a candidate, not a command. Click Run to execute.");
+        ui.small("IME: Enter confirms a candidate. To execute, click Run or Tab to Run and press Enter/Space after composition ends.");
         if self.terminal_preedit_active {
             ui.colored_label(
                 egui::Color32::YELLOW,
@@ -298,6 +457,16 @@ impl ClientWindow {
     }
 }
 
+fn saved_notes_age(saved_unix_ms: u64) -> String {
+    let elapsed = trill_ui_core::unix_ms().saturating_sub(saved_unix_ms) / 1000;
+    match elapsed {
+        0..=59 => "刚刚保存".to_owned(),
+        60..=3599 => format!("{} 分钟前保存", elapsed / 60),
+        3600..=86399 => format!("{} 小时前保存", elapsed / 3600),
+        _ => format!("{} 天前保存", elapsed / 86400),
+    }
+}
+
 fn parse_kind(value: &str) -> Result<AppKind, String> {
     match value {
         "notes" => Ok(AppKind::Notes),
@@ -355,7 +524,9 @@ fn parse_arguments() -> Result<
             Some(identity)
         }
         _ => {
-            return Err("Notes destination requires both identity fields and Notes app kind".into())
+            return Err(
+                "Notes destination requires both identity fields and Notes app kind".into(),
+            );
         }
     };
     Ok((kind, workspace, task_id, notes))
@@ -366,6 +537,15 @@ fn main() -> eframe::Result {
         eprintln!("trill-app-window: {error}");
         std::process::exit(2);
     });
+    let notes_lifetime = notes_target
+        .as_ref()
+        .map(trill_ui_core::notes_lifetime::SessionLifetime::from_environment)
+        .transpose()
+        .unwrap_or_else(|error| {
+            eprintln!("trill-app-window: {error}");
+            std::process::exit(2);
+        })
+        .flatten();
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([740.0, 560.0]),
         ..Default::default()
@@ -377,15 +557,22 @@ fn main() -> eframe::Result {
             host_fonts::install(&cc.egui_ctx);
             let notes_organ = notes_target
                 .map(|target| {
-                    notes_organ::NotesAppChannel::from_inherited_stdin(cc.egui_ctx.clone(), target)
+                    notes_organ::NotesAppChannel::from_inherited_stdin(
+                        cc.egui_ctx.clone(),
+                        target,
+                        notes_lifetime,
+                    )
                 })
                 .transpose()?;
             Ok(Box::new(ClientWindow {
+                activation: activation::ActivationGuard::default(),
                 kind,
                 workspace,
                 task_id,
                 notes: String::new(),
+                notes_input: notes_input::NotesInput::default(),
                 notes_organ,
+                notes_browser: false,
                 left: String::new(),
                 right: String::new(),
                 result: String::new(),
@@ -409,11 +596,14 @@ mod tests {
     #[test]
     fn division_by_zero_never_claims_a_numeric_result() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Calculator,
             workspace: Workspace::Personal,
             task_id: 1,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
+            notes_browser: false,
             left: "4".into(),
             right: "0".into(),
             result: String::new(),
@@ -434,11 +624,14 @@ mod tests {
     #[test]
     fn restricted_terminal_rejects_shell_syntax_and_runs_only_allowlist() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 9,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -486,11 +679,14 @@ mod tests {
 
         let ctx = egui::Context::default();
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 17,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -558,8 +754,9 @@ mod tests {
     }
 
     #[test]
-    fn focused_run_button_enter_cannot_invent_a_pointer_click() {
+    fn focused_run_button_accepts_deliberate_keyboard_activation() {
         let ctx = egui::Context::default();
+        let mut activation = activation::ActivationGuard::default();
         let make_input = |events| egui::RawInput {
             focused: true,
             screen_rect: Some(egui::Rect::from_min_size(
@@ -578,7 +775,7 @@ mod tests {
         ctx.memory_mut(|memory| {
             memory.request_focus(run_button.expect("run button exists"));
         });
-        let mut pointer_activated = false;
+        let mut activated = false;
         let mut focused = false;
         let _ = ctx.run(
             make_input(vec![egui::Event::Key {
@@ -589,10 +786,11 @@ mod tests {
                 modifiers: egui::Modifiers::default(),
             }]),
             |ctx| {
+                activation.begin_frame(ctx);
                 egui::CentralPanel::default().show(ctx, |ui| {
                     let response = ui.button("Run");
                     focused = response.has_focus();
-                    pointer_activated = response.clicked_by(egui::PointerButton::Primary);
+                    activated = activation.activated(&response);
                 });
             },
         );
@@ -601,19 +799,22 @@ mod tests {
             "test must exercise an actual keyboard-focused button"
         );
         assert!(
-            !pointer_activated,
-            "keyboard Enter, including a stray IME candidate Enter, must not execute Run"
+            activated,
+            "deliberate Enter without an IME lifecycle must activate the focused Run button"
         );
     }
 
     #[test]
     fn restricted_terminal_refuses_forged_log_lines_and_bidi_controls() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 12,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -654,11 +855,14 @@ mod tests {
     #[test]
     fn restricted_terminal_bounds_input_and_clear_is_local_only() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Build,
             task_id: 10,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -701,11 +905,14 @@ mod tests {
     #[test]
     fn restricted_terminal_refuses_commands_over_wire_budget() {
         let mut state = ClientWindow {
+            activation: activation::ActivationGuard::default(),
             kind: AppKind::Terminal,
             workspace: Workspace::Personal,
             task_id: 11,
             notes: String::new(),
+            notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
+            notes_browser: false,
             left: String::new(),
             right: String::new(),
             result: String::new(),

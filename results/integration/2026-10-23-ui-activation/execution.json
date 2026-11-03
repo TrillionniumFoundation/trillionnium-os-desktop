@@ -1,0 +1,27 @@
+{
+  "recorded_at_utc": "2026-10-23T05:10:50.481150+00:00",
+  "base_commit": "1f4a252c22adf3bc4e1de1ce655e42387070f503",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "executed_scope": "Standalone renderer-independent activation policy tests; no egui build, window, IME backend or AT execution",
+  "compile_command": "rustc --edition=2021 -Dwarnings --test ui/activation_policy.rs -o activation-policy-tests",
+  "test_command": "./activation-policy-tests",
+  "test_exit_code": 0,
+  "tests_passed": 12,
+  "source_sha256": "a692c7681113dba29ef3882ae11eca4bcf2f16c696497dd1ec14149de815165a",
+  "gui_build": {
+    "status": "blocked_before_compile",
+    "command": "cargo test --manifest-path ui/Cargo.toml --locked --offline -p trill-shell -p trill-app-window --no-run",
+    "reason": "no matching package named eframe found in crates.io index"
+  },
+  "cargo_manifests_and_lock_unchanged": true,
+  "changed_files": {
+    "ui/app-window/src/main.rs": "55e1388098837dddad888893d07914c768d0e7b3d4738b23ec164113eb1e1fb2",
+    "ui/shell/src/conversation.rs": "4767a3a5fc178f42c8477cbc70829a40df717bfae676c5cd8648660df5114eb5",
+    "ui/shell/src/main.rs": "6ce12dbffbc4020544e1eed6058e6768f84aceb2d46cbc67e78413d76352634d",
+    "ui/activation_policy.rs": "a692c7681113dba29ef3882ae11eca4bcf2f16c696497dd1ec14149de815165a",
+    "ui/activation.rs": "7d30299528d341d0ddf9d456c25794d66c162f7eb7780213c6a7291c3dd3e82a",
+    "support/ui/X11_IME.md": "0387fbceae6caaa12437edcb65d26f296d58898f01ecaf8d7fa84348f295ad19"
+  },
+  "patch_sha256": "b0692189f9d569bde49432abe48ac4ab1cbd69891da4f615659cbac5244b361b",
+  "documentation_base_git_blob": "e607fe281b28362969a9f8d8cebbbea9bdae1afb"
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "hepta.g2-static-source-review-amendment.v1",
+  "source": {
+    "head": "b3d3f2d4b01f123d7ac17575c27fb54d00094f7f",
+    "tree": "b035a577969cb503d7c09620694a6b6c54178c97"
+  },
+  "dependency_tree": {
+    "path": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/native-static-agentd-b3-01/dependency-tree.txt",
+    "sha256": "5006ae19bd53e650d214b14cd7cb2c93603164318294da473b03ff4294528075",
+    "target": "x86_64-unknown-linux-gnu",
+    "package": "codex-hepta-agentd",
+    "edges": [
+      "normal",
+      "build"
+    ],
+    "default_features": true
+  },
+  "correction": "Earlier workspace-level V8 observations do not establish a V8 link dependency of Agentd. The actual original Cargo normal/build graph for Agentd contains no v8 package. V8 is used by the separately built code-mode-runtime/code-mode-host, and remains relevant to full product subprocess/runtime trust closure.",
+  "agentd_direct_v8_link_dependency": false,
+  "original_default_feature": "production-cognitive-write",
+  "production_authority_implied": false,
+  "prior_dev_small_elf_measurement_remains_actual": true,
+  "static_release_build_running": true,
+  "static_elf_dimensions_qualified": false,
+  "g2_completed": false,
+  "main_process_v8_jit_seal_conflict_proven": false,
+  "implication": "Do not use V8/JIT as a demonstrated reason that Agentd main cannot be sealed. The separately invoked code-mode host may require executable/JIT mappings and must remain a separate, unprivileged trust-closure concern. Actual static release ELF dimensions and bootstrap integration still need qualification."
+}

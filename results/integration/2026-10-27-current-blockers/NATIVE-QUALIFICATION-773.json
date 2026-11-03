@@ -1,0 +1,264 @@
+{
+  "schema": "hepta.windows-native-contract-probe-independent-qualification.v1",
+  "runId": 40444364580,
+  "jobId": 121991980305,
+  "attempt": 1,
+  "head": "773d34e16fc1ffb7820ce01cde97a60f076d645c",
+  "tree": "08f47fb7cd767520b977d904881dbef6ec743620",
+  "actualCheckoutHead": "773d34e16fc1ffb7820ce01cde97a60f076d645c",
+  "artifactId": 12707786552,
+  "artifactBytes": 11506,
+  "artifactSha256": "4a7f3d27842557e0005c320fc77a8e0caa27ebbb2e3b494c5484a8e19191464e",
+  "githubConclusion": "failure",
+  "originalReceiptStatus": "FAIL_DIAGNOSTIC_COLLECTION",
+  "exactScopes": [
+    {
+      "scope": "public-signature-producer",
+      "command": [
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-hepta-operator-acceptance",
+        "--lib",
+        "--cargo-profile",
+        "dev-small",
+        "-E",
+        "test(=trust::tests::windows_contract_probe::records_unmodified_openssh_stream_and_private_file_output)",
+        "--test-threads",
+        "1",
+        "--no-tests",
+        "fail",
+        "--retries",
+        "0",
+        "--run-ignored",
+        "only"
+      ],
+      "logSha256": "69cb823a2068f118ab42fa0baa00d36a7f0586a6fa306e7cf6592ec115dedc0b",
+      "seconds": 95.031,
+      "exitCode": 0,
+      "identities": [
+        [
+          "codex-hepta-operator-acceptance",
+          "trust::tests::windows_contract_probe::records_unmodified_openssh_stream_and_private_file_output"
+        ]
+      ],
+      "counts": {
+        "PASS": 1
+      },
+      "actual": [
+        [
+          "PASS",
+          "codex-hepta-operator-acceptance",
+          "trust::tests::windows_contract_probe::records_unmodified_openssh_stream_and_private_file_output"
+        ]
+      ],
+      "recap": [],
+      "actualExecutionCount": 1
+    },
+    {
+      "scope": "original-junction-fixture",
+      "command": [
+        "just",
+        "test",
+        "--locked",
+        "-p",
+        "codex-utils-path",
+        "--lib",
+        "--cargo-profile",
+        "dev-small",
+        "-E",
+        "test(=private_artifacts_windows::tests::native_reparse_directory_is_refused_before_child_effect)",
+        "--test-threads",
+        "1",
+        "--no-tests",
+        "fail",
+        "--retries",
+        "0"
+      ],
+      "logSha256": "45abd8501050eee7b20e3fb65017003e4fb028165e40eba0e84ae3743c8c24f2",
+      "seconds": 4.016,
+      "exitCode": 1,
+      "identities": [
+        [
+          "codex-utils-path",
+          "private_artifacts_windows::tests::native_reparse_directory_is_refused_before_child_effect"
+        ]
+      ],
+      "counts": {
+        "FAIL": 1
+      },
+      "actual": [
+        [
+          "FAIL",
+          "codex-utils-path",
+          "private_artifacts_windows::tests::native_reparse_directory_is_refused_before_child_effect"
+        ]
+      ],
+      "recap": [
+        [
+          "FAIL",
+          "codex-utils-path",
+          "private_artifacts_windows::tests::native_reparse_directory_is_refused_before_child_effect"
+        ]
+      ],
+      "actualExecutionCount": 1
+    }
+  ],
+  "modes": [
+    {
+      "mode": "stdin_stdout",
+      "originalProcessSuccess": true,
+      "raw": {
+        "bytes": 340,
+        "cr_bytes": 6,
+        "crlf_pairs": 6,
+        "exact_lf_footer": false,
+        "exact_lf_header": false,
+        "lf_bytes": 6,
+        "sha256": "408481af80d87b427d8489bc98bd1fd0cf77ef39929478ea53a23002bce1905c"
+      },
+      "strictRust": {
+        "ok": false,
+        "result": "Err(Invalid(\"SSHSIG armor differs from the admitted envelope\"))"
+      },
+      "originalProductionVerify": {
+        "ok": false,
+        "result": "Err(Invalid(\"detached signature is not an OpenSSH SSHSIG envelope\"))"
+      },
+      "fullIdentity": {
+        "file_id_16_bytes": [
+          132,
+          53,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ok": true,
+        "operation": "GetFileInformationByHandleEx(FileIdInfo)",
+        "volume_serial_hex": "b8d6c010d6bfcd3e"
+      },
+      "ownerDacl": "O:LAD:P(A;OICI;FA;;;LA)",
+      "canonicalPrivateSecurity": true,
+      "precreatedSameFullIdentityAndDacl": null
+    },
+    {
+      "mode": "filename_new",
+      "originalProcessSuccess": true,
+      "raw": {
+        "bytes": 334,
+        "cr_bytes": 0,
+        "crlf_pairs": 0,
+        "exact_lf_footer": true,
+        "exact_lf_header": true,
+        "lf_bytes": 6,
+        "sha256": "efcc8ad4e343df57c48aaac7092cce7333e6c01165abbef6d18985e64054821e"
+      },
+      "strictRust": {
+        "ok": true,
+        "result": "Ok(())"
+      },
+      "originalProductionVerify": {
+        "ok": false,
+        "result": "Err(Io(Custom { kind: PermissionDenied, error: \"private Windows filesystem identity is indeterminate\" }))"
+      },
+      "fullIdentity": {
+        "file_id_16_bytes": [
+          134,
+          53,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ok": true,
+        "operation": "GetFileInformationByHandleEx(FileIdInfo)",
+        "volume_serial_hex": "b8d6c010d6bfcd3e"
+      },
+      "ownerDacl": "O:LAD:P(A;;FA;;;BA)(A;;FA;;;SY)(A;;0x1301bf;;;LA)(A;;0x1301bf;;;WD)",
+      "canonicalPrivateSecurity": false,
+      "precreatedSameFullIdentityAndDacl": null
+    },
+    {
+      "mode": "filename_precreated_private",
+      "originalProcessSuccess": true,
+      "raw": {
+        "bytes": 334,
+        "cr_bytes": 0,
+        "crlf_pairs": 0,
+        "exact_lf_footer": true,
+        "exact_lf_header": true,
+        "lf_bytes": 6,
+        "sha256": "efcc8ad4e343df57c48aaac7092cce7333e6c01165abbef6d18985e64054821e"
+      },
+      "strictRust": {
+        "ok": true,
+        "result": "Ok(())"
+      },
+      "originalProductionVerify": {
+        "ok": false,
+        "result": "Err(Invalid(\"OpenSSH SSHSIG verification requires Unix inherited descriptors\"))"
+      },
+      "fullIdentity": {
+        "file_id_16_bytes": [
+          136,
+          53,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ok": true,
+        "operation": "GetFileInformationByHandleEx(FileIdInfo)",
+        "volume_serial_hex": "b8d6c010d6bfcd3e"
+      },
+      "ownerDacl": "O:LAD:P(A;OICI;FA;;;LA)",
+      "canonicalPrivateSecurity": true,
+      "precreatedSameFullIdentityAndDacl": true
+    }
+  ],
+  "sourceBeforeAfterClean": true,
+  "toolsBeforeAfterSame": true,
+  "protectedInputsBeforeAfterSame": true,
+  "nativeTraceValidated": true,
+  "functionalQualification": false,
+  "productionAuthorityGranted": false,
+  "original91Rerun": false,
+  "limitations": [
+    "The producer test PASS means diagnostic collection completed; all three original production verification results remain failures.",
+    "The junction fixture failed before backend assertions at original mklink.success assertion; no backend capability qualification occurred.",
+    "Path, full file ID, DACL and tool file metadata do not attest the launched child image or an inherited verifier handle chain.",
+    "The actual original 91-case qualification remains the immutable 378 run: 83 PASS, 7 FAIL, 1 LEAK. These two independent cases must not be added to it."
+  ]
+}

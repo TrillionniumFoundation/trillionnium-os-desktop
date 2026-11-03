@@ -126,13 +126,28 @@ fn do_sys_mmap(
             let file = get_file_fast!(&mut file_table, raw_fd.try_into()?).into_owned();
 
             let access_mode = file.access_mode();
-            if vm_perms.contains(VmPerms::READ) && !access_mode.is_readable() {
+            // File mappings require a readable descriptor even for PROT_NONE; otherwise
+            // mprotect could later grant access that the descriptor never had.
+            // See <https://man7.org/linux/man-pages/man2/mmap.2.html> (EACCES).
+            if !access_mode.is_readable() {
                 return_errno_with_message!(Errno::EACCES, "the file is not opened readable");
             }
-            if option.typ() == MMapType::Shared && !access_mode.is_writable() {
+            if option.typ().is_shared() && !access_mode.is_writable() {
                 if vm_perms.contains(VmPerms::WRITE) {
                     return_errno_with_message!(Errno::EACCES, "the file is not opened writable");
                 }
+                vm_may_perms.remove(VmPerms::MAY_WRITE);
+            }
+
+            if option.typ().is_shared()
+                && file.path().type_().is_regular_file()
+                && file.path().check_mount_writable().is_err()
+            {
+                if vm_perms.contains(VmPerms::WRITE) {
+                    return_errno_with_message!(Errno::EACCES, "the file is on a read-only mount");
+                }
+                // A read-only shared mapping must not gain write access with mprotect.
+                // Private mappings may still modify their copy-on-write pages.
                 vm_may_perms.remove(VmPerms::MAY_WRITE);
             }
 

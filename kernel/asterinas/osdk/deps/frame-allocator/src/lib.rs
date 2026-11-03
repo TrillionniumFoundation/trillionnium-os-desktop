@@ -39,6 +39,8 @@ use ostd::{
 mod cache;
 mod chunk;
 mod pools;
+#[cfg(any(ktest, feature = "physical-reserve"))]
+mod reserve;
 mod set;
 mod smp_counter;
 
@@ -50,7 +52,10 @@ fast_smp_counter! {
     pub static TOTAL_FREE_SIZE: usize;
 }
 
-/// Loads the total size (in bytes) of free memory in the allocator.
+/// Loads the approximate size (in bytes) available to ordinary allocation.
+///
+/// Active physical reserves are excluded. This observation is never used to
+/// admit a reserve or authorize an allocation.
 pub fn load_total_free_size() -> usize {
     TOTAL_FREE_SIZE.get()
 }
@@ -74,8 +79,39 @@ impl GlobalFrameAllocator for FrameAllocator {
 
     fn dealloc(&self, addr: Paddr, size: usize) {
         let guard = irq::disable_local();
+        #[cfg(any(ktest, feature = "physical-reserve"))]
+        if reserve::dealloc(&guard, addr, size) {
+            return;
+        }
         TOTAL_FREE_SIZE.add(guard.current_cpu(), size);
         cache::dealloc(&guard, addr, size);
+    }
+
+    #[cfg(any(ktest, feature = "physical-reserve"))]
+    fn create_reserve(&self, token: &ostd::mm::frame::PhysicalReserve, layout: Layout) -> bool {
+        reserve::create(token, layout)
+    }
+
+    #[cfg(any(ktest, feature = "physical-reserve"))]
+    fn alloc_reserved(
+        &self,
+        token: &ostd::mm::frame::PhysicalReserve,
+        layout: Layout,
+    ) -> Option<Paddr> {
+        reserve::alloc(token, layout)
+    }
+
+    #[cfg(any(ktest, feature = "physical-reserve"))]
+    fn close_reserve(&self, token: &ostd::mm::frame::PhysicalReserve) {
+        reserve::close(token);
+    }
+
+    #[cfg(any(ktest, feature = "physical-reserve"))]
+    fn reserve_snapshot(
+        &self,
+        token: &ostd::mm::frame::PhysicalReserve,
+    ) -> Option<ostd::mm::frame::PhysicalReserveSnapshot> {
+        reserve::snapshot(token)
     }
 
     fn add_free_memory(&self, addr: Paddr, size: usize) {

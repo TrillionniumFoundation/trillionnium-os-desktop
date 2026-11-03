@@ -1,0 +1,48 @@
+{
+  "schema": "trillionnium.source-bound-acceptance-publication.v1",
+  "raw_evidence_directory": "/data/asterinas-audit-build.8tdrjboi/proc-boot-native-d345-03",
+  "files": [
+    {
+      "raw": "boot-1.log",
+      "published": "boot-1.log.gz",
+      "raw_bytes": 84238,
+      "raw_sha256": "d3697c6583592cb12a80f33dbdb7bf7d072f8ae4fc320ab0306447bffd038ef3",
+      "published_sha256": "8f207b85302434db46b5f15e8dff983e4fb0d7c91f886a4b782c92237772b217",
+      "compressed": true
+    },
+    {
+      "raw": "boot-2.log",
+      "published": "boot-2.log.gz",
+      "raw_bytes": 84327,
+      "raw_sha256": "f8d3fa791ae6919976f179c42c695c08fa0dc1b124a653ba100c938ac5978911",
+      "published_sha256": "54d9a3c893d2cd427897eb21ec25fa3a986b1e35c43a90f2a6d3ea006ec95d58",
+      "compressed": true
+    },
+    {
+      "raw": "compile.log",
+      "published": "compile.log.gz",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "compressed": true
+    },
+    {
+      "raw": "result.json",
+      "published": "result.json",
+      "raw_bytes": 4765,
+      "raw_sha256": "d1fe7c71b5e6c0975abf67cd6271a48373e6b22d889bd452e3c6fe39f6eca4cd",
+      "published_sha256": "d1fe7c71b5e6c0975abf67cd6271a48373e6b22d889bd452e3c6fe39f6eca4cd",
+      "compressed": false
+    }
+  ],
+  "selection": "Original text receipts, manifests and logs. ELF/initrd/targets remain at the recorded raw location; their SHA256 is retained.",
+  "production_ready": false,
+  "g2_complete": false,
+  "kernel_source_head": "d345641a37ab0642738522f0efb16cb00726ac97",
+  "kernel_source_tree": "72d43ec157d3f172aa2efff0fa6c4a8027abef58",
+  "probe_correction_source": "7243cc79",
+  "passed": true,
+  "boots": 2,
+  "cases_each": 12,
+  "boundary": "Actual procfs UUID, pidfd lifecycle, BOOTTIME and original HOSR-header boot identity agree in each boot. Different observed UUIDs on two boots; no collision-free or entropy attestation."
+}

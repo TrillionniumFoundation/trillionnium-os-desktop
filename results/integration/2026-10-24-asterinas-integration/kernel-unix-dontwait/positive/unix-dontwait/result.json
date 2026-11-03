@@ -1,0 +1,112 @@
+{
+  "passed": true,
+  "oracle": {
+    "passed": true,
+    "checks": 33,
+    "errors": [],
+    "counterexample_accepted": false,
+    "product_passed": true
+  },
+  "inputs_unchanged": true,
+  "input_before": {
+    "kernel": "e995bab6f5d7084bf0a92bb814baa181ef6e01501ca7353eca66100b3097eacd",
+    "probe": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+    "reference": "d6a33ecc17a63238105db6b2945acab110ce29a856d9c8a58cf0a3d340a063e6",
+    "initramfs": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "source": "3cd9876b485b606444f415f52c75930a3cb84d71a75d6880a74dbc4fc5b11bf5",
+    "checker": "5fb152b5091c31b2bf4255c8265d13ab4d0b7855d84b118596e61b2c83035ba3",
+    "runner": "f255d623452897d80c139c34558b94b57cfc514fec50d23bfd727fd788d7b135"
+  },
+  "input_after": {
+    "kernel": "e995bab6f5d7084bf0a92bb814baa181ef6e01501ca7353eca66100b3097eacd",
+    "probe": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+    "reference": "d6a33ecc17a63238105db6b2945acab110ce29a856d9c8a58cf0a3d340a063e6",
+    "initramfs": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "source": "3cd9876b485b606444f415f52c75930a3cb84d71a75d6880a74dbc4fc5b11bf5",
+    "checker": "5fb152b5091c31b2bf4255c8265d13ab4d0b7855d84b118596e61b2c83035ba3",
+    "runner": "f255d623452897d80c139c34558b94b57cfc514fec50d23bfd727fd788d7b135"
+  },
+  "qemu_exit": 33,
+  "timed_out": false,
+  "elapsed_seconds": 4.309530499973334,
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/unix-dontwait/kernel.elf",
+    "-initrd",
+    "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/unix-dontwait/initramfs.cpio.gz",
+    "-bios",
+    "/data/trillionnium-closure-20261024/native-evidence/kernel-556615fc-02/unix-dontwait/bios.bin",
+    "-append",
+    "earlycon console=ttyS0 loglevel=warn SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "kvm",
+    "-cpu",
+    "host",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-nic",
+    "none",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "elf_shape": {
+    "entry": 4200496,
+    "bytes": 799744,
+    "loads": [
+      {
+        "start": 4194304,
+        "end": 4198400,
+        "file_end": 1272,
+        "entry_inside": false
+      },
+      {
+        "start": 4198400,
+        "end": 4722688,
+        "file_end": 526381,
+        "entry_inside": true
+      },
+      {
+        "start": 4722688,
+        "end": 4882432,
+        "file_end": 684066,
+        "entry_inside": false
+      },
+      {
+        "start": 4882432,
+        "end": 4935680,
+        "file_end": 711360,
+        "entry_inside": false
+      }
+    ],
+    "sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec"
+  },
+  "kernel_sha256": "e995bab6f5d7084bf0a92bb814baa181ef6e01501ca7353eca66100b3097eacd",
+  "probe_sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+  "probe_source_sha256": "3cd9876b485b606444f415f52c75930a3cb84d71a75d6880a74dbc4fc5b11bf5",
+  "linux_reference_receipt_sha256": "d6a33ecc17a63238105db6b2945acab110ce29a856d9c8a58cf0a3d340a063e6",
+  "runner_source_sha256": "f255d623452897d80c139c34558b94b57cfc514fec50d23bfd727fd788d7b135",
+  "checker_source_sha256": "5fb152b5091c31b2bf4255c8265d13ab4d0b7855d84b118596e61b2c83035ba3",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "initramfs_sha256": "da4ba76061db645530ad9ad124f6d59496a85b5479873a53554a0bf9ef2d1f83",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "serial_sha256": "c9a59d4570b5a1c541ed77fc1c825987078a556bc470501035b1595641404017",
+  "production_qualification": false,
+  "expected_old_blocking": false,
+  "counterexample_accepted": false,
+  "product_passed": true
+}

@@ -1,0 +1,240 @@
+{
+  "schema": "trill.actual-desktop-integration-static.v1",
+  "before": {
+    "desktop": {
+      "head": "e9642b55f2fdd720b3793237095ad4e8a55d6805",
+      "tree": "087da92341fbfe19ce01162104a6c6762a693cce",
+      "status": ""
+    },
+    "hepta": {
+      "head": "8d74739915cd12499f9c280d8d6f52a33b668bdf",
+      "tree": "85306350fa533285c9ec1c629a5321c232c5207c",
+      "status": ""
+    }
+  },
+  "steps": [
+    {
+      "name": "support-normal",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 48.85739711497445,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 204,
+        "sha256": "f7554cb423a3d1b13c5fa6436310db24d5699499e10f6822c687db55c44776c4"
+      }
+    },
+    {
+      "name": "support-optimized",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 85.21739698201418,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 204,
+        "sha256": "6dc4c57ab00efbf70f6b206fc625e2649d93d97fd541e2b19619ddecf0a18059"
+      }
+    },
+    {
+      "name": "isolated-cache-normal",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-X",
+        "pycache_prefix=/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/desktop-gate-integration-e9642b55/isolated-test-source-zt1fyx5i",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_notes_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 57.31675757697667,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 126,
+        "sha256": "c35b3f638c6fe412f52939cc361dce671d5d2c79bba552e3a46a359fab1b5055"
+      }
+    },
+    {
+      "name": "isolated-cache-optimized",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-X",
+        "pycache_prefix=/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/desktop-gate-integration-e9642b55/isolated-test-source-zt1fyx5i",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_notes_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 54.3737621140026,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 126,
+        "sha256": "e8935bb62e6e6ba6cb38122f2d67dbce52d0beb641c9993ad6d1702658864cac"
+      }
+    },
+    {
+      "name": "release-profile-normal",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-X",
+        "pycache_prefix=/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/desktop-gate-integration-e9642b55/isolated-test-source-zt1fyx5i",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/release",
+        "-p",
+        "test_organ_release_profile.py"
+      ],
+      "exit_code": 0,
+      "seconds": 14.719757612998364,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 124,
+        "sha256": "34dcfa5330238475cabc52b752738ee665ee2a6d37efd861e5911147d8efa14b"
+      }
+    },
+    {
+      "name": "release-profile-optimized",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-X",
+        "pycache_prefix=/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/desktop-gate-integration-e9642b55/isolated-test-source-zt1fyx5i",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/release",
+        "-p",
+        "test_organ_release_profile.py"
+      ],
+      "exit_code": 0,
+      "seconds": 24.763009006012,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 124,
+        "sha256": "17379d132d89ba4b058dd2e11ce3331ea191978e5aacc1f878cdd3854a77b040"
+      }
+    },
+    {
+      "name": "full-six-root",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-X",
+        "pycache_prefix=/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/desktop-gate-integration-e9642b55/isolated-test-source-zt1fyx5i",
+        "support/ui/verify_product_dependencies.py",
+        "--hepta-root",
+        "/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/development/final-ci-repairs-hepta-20261026"
+      ],
+      "exit_code": 0,
+      "seconds": 3.9572620909893885,
+      "stdout": {
+        "bytes": 1377710,
+        "sha256": "3a72af3b2a75cb9b8957d69e32962533512e138c0534a30e4f3f1bf9a3768f6f"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "module-docs",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-X",
+        "pycache_prefix=/home/qian-qi/Documents/Codex/2026-10-25/https-github-com-trillionniumfoundation-trillionnium-os/work/full-20261026/ci/desktop-gate-integration-e9642b55/isolated-test-source-zt1fyx5i",
+        "support/docs/check_modules.py"
+      ],
+      "exit_code": 0,
+      "seconds": 1.4961714649980422,
+      "stdout": {
+        "bytes": 470,
+        "sha256": "82ce08735c973f2e796438822cf4d06d7fbe0832a49c48d6734b8ff6dbe22a58"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "started_utc": "2026-10-27T03:27:35.467337+00:00",
+  "product_qualified": false,
+  "scope": "Source, dependency graph and script components; no actual product Root or Notes effect.",
+  "prior_failure": "desktop-gate-integration-1180148a: actual fresh-prefix suite failed35 cache-fixture path assumptions; retained unchanged. e964 fixes test-only parent/child prefix identity, not product guards.",
+  "after": {
+    "desktop": {
+      "head": "e9642b55f2fdd720b3793237095ad4e8a55d6805",
+      "tree": "087da92341fbfe19ce01162104a6c6762a693cce",
+      "status": ""
+    },
+    "hepta": {
+      "head": "8d74739915cd12499f9c280d8d6f52a33b668bdf",
+      "tree": "85306350fa533285c9ec1c629a5321c232c5207c",
+      "status": ""
+    }
+  },
+  "finished_utc": "2026-10-27T03:32:27.282652+00:00",
+  "passed": true
+}

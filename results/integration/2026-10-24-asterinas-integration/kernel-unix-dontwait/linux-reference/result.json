@@ -1,0 +1,37 @@
+{
+  "schema": "trillionnium.unix-dontwait-linux.v1",
+  "passed": true,
+  "source_sha256": "3cd9876b485b606444f415f52c75930a3cb84d71a75d6880a74dbc4fc5b11bf5",
+  "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+  "compiler_command": [
+    "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "-O2",
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "/data/trillionnium-closure-20261024/os-socket/tests/workloads/linux/unix_dontwait/probe.c",
+    "-o",
+    "/data/trillionnium-closure-20261024/native-evidence/unix-dontwait-linux/probe.elf"
+  ],
+  "host_kernel": "7.0.0-38-generic",
+  "runtime_scope": "linux_reference",
+  "native_guest_qualified": false,
+  "compile_exit": 0,
+  "binary_sha256": "178f67705b0bd4450733e92eaed5a5febd2e4d7279d071660e64a8819409d2ec",
+  "exit_code": 0,
+  "timed_out": false,
+  "oracle": {
+    "passed": true,
+    "checks": 33,
+    "errors": [],
+    "counterexample_accepted": false,
+    "product_passed": true
+  },
+  "stdout_sha256": "2126c12618b5a9af8d6437f5edac5d777be181b67068f72628fc491181303d01",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "checker_sha256": "5fb152b5091c31b2bf4255c8265d13ab4d0b7855d84b118596e61b2c83035ba3",
+  "source_unchanged": true,
+  "elapsed_seconds": 2.954304461949505
+}

@@ -181,7 +181,11 @@ impl InitStack {
         self.set_uninitialized();
 
         let vmo = {
-            let vmo_options = VmoOptions::new(self.max_size);
+            // The stopped initial image is loaded by a kernel task without a
+            // current Process. Charge stack writes to their destination VMAR,
+            // as for the trusted ELF and boot-page VMOs (Desktop PR #252).
+            let vmo_options =
+                VmoOptions::new(self.max_size).memory_owner(vmar.user_memory_owner().clone());
             vmo_options.alloc()?
         };
         let vmar_map_options = {
@@ -460,5 +464,106 @@ impl InitStackReader<'_> {
         let bytes_read = self.vmar.read_alien(read_at, writer)?;
 
         Ok(bytes_read)
+    }
+}
+
+#[cfg(ktest)]
+mod tests {
+    use ostd::{cpu::CpuId, prelude::ktest, sync::RcuDrop, task::Task};
+
+    use super::*;
+    use crate::{
+        fs::pseudofs::SockFs,
+        process::{Process, ProcessVm},
+        thread::kernel_thread::ThreadOptions,
+        util::random,
+        vm::{
+            user_memory::{UserMemoryAccount, current_owner},
+            vmar::VmarHandle,
+        },
+    };
+
+    fn stopped_image(limit_pages: usize) -> (VmarHandle, Arc<UserMemoryAccount>) {
+        // PR #252 regression: the real boot loader has no ambient process or
+        // attached-VMAR account from which VMO writes could infer ownership.
+        assert!(Process::current().is_none());
+        assert!(current_owner().is_none());
+        random::init();
+        let account = UserMemoryAccount::new(limit_pages);
+        let vmar =
+            VmarHandle::new_with_owner(ProcessVm::new(SockFs::new_path()), Some(account.clone()));
+        (vmar, account)
+    }
+
+    struct GraceWitness(Arc<core::sync::atomic::AtomicBool>);
+
+    impl Drop for GraceWitness {
+        fn drop(&mut self) {
+            self.0.store(true, Ordering::Release);
+        }
+    }
+
+    fn drop_stopped_image_after_rcu(vmar: VmarHandle, account: &UserMemoryAccount) {
+        let weak = vmar.clone_weak();
+        drop(vmar);
+        assert!(weak.upgrade().is_none());
+
+        // VMO pages live in an XArray. Its Drop detaches the nodes through
+        // RcuOption::update(None); the real frames stay charged until those
+        // RCU callbacks drop their last references. Never refund them early.
+        // Queue this witness after all detach callbacks, then pass actual
+        // scheduler quiescent states just as xarray's no_leakage test does.
+        let completed = Arc::new(core::sync::atomic::AtomicBool::new(false));
+        drop(RcuDrop::new(GraceWitness(completed.clone())));
+        // A real Core thread is accepted by both the OSTD FIFO scheduler and
+        // Core's class scheduler; raw TaskOptions.data(()) is not accepted by
+        // the latter. No VMAR or account is attached to this helper thread.
+        let worker = ThreadOptions::new(|| {})
+            .cpu_affinity(CpuId::current_racy().into())
+            .spawn();
+        for _ in 0..128 {
+            Task::yield_now();
+            if completed.load(Ordering::Acquire) && worker.is_exited() {
+                break;
+            }
+        }
+        assert!(worker.is_exited(), "RCU helper thread did not run");
+        assert!(
+            completed.load(Ordering::Acquire),
+            "RCU grace did not complete"
+        );
+        // The witness only establishes completion; it never changes account
+        // state. A remaining live frame or a leak still fails this exact zero.
+        assert_eq!(account.current_pages(), 0);
+    }
+
+    #[ktest]
+    fn stopped_initial_stack_charges_its_destination_without_a_current_process() {
+        let (vmar, account) = stopped_image(2);
+        // NUL plus this page-sized argument commits two actual stack pages.
+        let argument = CString::new(vec![b'a'; PAGE_SIZE]).unwrap();
+        vmar.process_vm()
+            .map_and_write_init_stack(&vmar, vec![argument], Vec::new(), AuxVec::new())
+            .unwrap();
+        assert_eq!(account.current_pages(), 2);
+        assert!(Process::current().is_none());
+        assert!(current_owner().is_none());
+
+        drop_stopped_image_after_rcu(vmar, &account);
+    }
+
+    #[ktest]
+    fn rejected_stopped_initial_stack_refunds_its_pages_when_the_image_is_dropped() {
+        let (vmar, account) = stopped_image(1);
+        let argument = CString::new(vec![b'a'; 2 * PAGE_SIZE]).unwrap();
+        let error = vmar
+            .process_vm()
+            .map_and_write_init_stack(&vmar, vec![argument], Vec::new(), AuxVec::new())
+            .unwrap_err();
+        assert!(error.is_user_frame_limit());
+        // The failed image still holds its first committed physical page;
+        // an admission error must not refund a page that remains live.
+        assert_eq!(account.current_pages(), 1);
+        drop_stopped_image_after_rcu(vmar, &account);
     }
 }

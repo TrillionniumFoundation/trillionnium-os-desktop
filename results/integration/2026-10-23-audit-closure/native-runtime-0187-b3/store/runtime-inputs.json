@@ -1,0 +1,248 @@
+{
+  "binaries": {
+    "fixture": {
+      "interpreter": "/lib64/ld-linux-x86-64.so.2",
+      "load_memory_bytes": 31110500,
+      "load_segments": [
+        {
+          "alignment": 4096,
+          "file_bytes": 10940148,
+          "flags": 4,
+          "memory_bytes": 10940148,
+          "offset": 0,
+          "virtual_address": 0
+        },
+        {
+          "alignment": 4096,
+          "file_bytes": 18762240,
+          "flags": 5,
+          "memory_bytes": 18762240,
+          "offset": 10940160,
+          "virtual_address": 10944256
+        },
+        {
+          "alignment": 4096,
+          "file_bytes": 1354880,
+          "flags": 6,
+          "memory_bytes": 1357568,
+          "offset": 29702400,
+          "virtual_address": 29710592
+        },
+        {
+          "alignment": 4096,
+          "file_bytes": 48768,
+          "flags": 6,
+          "memory_bytes": 50544,
+          "offset": 31057280,
+          "virtual_address": 31069568
+        }
+      ],
+      "machine": 62,
+      "needed": [
+        "libgcc_s.so.1",
+        "libm.so.6",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ],
+      "type": 3
+    }
+  },
+  "libraries": {
+    "ld-linux-x86-64.so.2": {
+      "bytes": 236616,
+      "elf": {
+        "interpreter": null,
+        "load_memory_bytes": 227241,
+        "load_segments": [
+          {
+            "alignment": 4096,
+            "file_bytes": 3520,
+            "flags": 4,
+            "memory_bytes": 3520,
+            "offset": 0,
+            "virtual_address": 0
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 172437,
+            "flags": 5,
+            "memory_bytes": 172437,
+            "offset": 4096,
+            "virtual_address": 4096
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 39132,
+            "flags": 4,
+            "memory_bytes": 39132,
+            "offset": 180224,
+            "virtual_address": 180224
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 11684,
+            "flags": 6,
+            "memory_bytes": 12152,
+            "offset": 222048,
+            "virtual_address": 222048
+          }
+        ],
+        "machine": 62,
+        "needed": [],
+        "type": 3
+      },
+      "guest_path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "host_path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da"
+    },
+    "libc.so.6": {
+      "bytes": 2129424,
+      "elf": {
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "load_memory_bytes": 2160091,
+        "load_segments": [
+          {
+            "alignment": 4096,
+            "file_bytes": 160656,
+            "flags": 4,
+            "memory_bytes": 160656,
+            "offset": 0,
+            "virtual_address": 0
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 1605689,
+            "flags": 5,
+            "memory_bytes": 1605689,
+            "offset": 163840,
+            "virtual_address": 163840
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 319714,
+            "flags": 4,
+            "memory_bytes": 319714,
+            "offset": 1773568,
+            "virtual_address": 1773568
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 19048,
+            "flags": 6,
+            "memory_bytes": 74032,
+            "offset": 2096224,
+            "virtual_address": 2100320
+          }
+        ],
+        "machine": 62,
+        "needed": [
+          "ld-linux-x86-64.so.2"
+        ],
+        "type": 3
+      },
+      "guest_path": "/lib/x86_64-linux-gnu/libc.so.6",
+      "host_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf"
+    },
+    "libgcc_s.so.1": {
+      "bytes": 183024,
+      "elf": {
+        "interpreter": null,
+        "load_memory_bytes": 175949,
+        "load_segments": [
+          {
+            "alignment": 4096,
+            "file_bytes": 14048,
+            "flags": 4,
+            "memory_bytes": 14048,
+            "offset": 0,
+            "virtual_address": 0
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 145237,
+            "flags": 5,
+            "memory_bytes": 145237,
+            "offset": 16384,
+            "virtual_address": 16384
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 15104,
+            "flags": 4,
+            "memory_bytes": 15104,
+            "offset": 163840,
+            "virtual_address": 163840
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 1088,
+            "flags": 6,
+            "memory_bytes": 1560,
+            "offset": 179600,
+            "virtual_address": 183696
+          }
+        ],
+        "machine": 62,
+        "needed": [
+          "libc.so.6",
+          "ld-linux-x86-64.so.2"
+        ],
+        "type": 3
+      },
+      "guest_path": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "host_path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb"
+    },
+    "libm.so.6": {
+      "bytes": 952616,
+      "elf": {
+        "interpreter": null,
+        "load_memory_bytes": 941573,
+        "load_segments": [
+          {
+            "alignment": 4096,
+            "file_bytes": 63208,
+            "flags": 4,
+            "memory_bytes": 63208,
+            "offset": 0,
+            "virtual_address": 0
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 517045,
+            "flags": 5,
+            "memory_bytes": 517045,
+            "offset": 65536,
+            "virtual_address": 65536
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 360272,
+            "flags": 4,
+            "memory_bytes": 360272,
+            "offset": 585728,
+            "virtual_address": 585728
+          },
+          {
+            "alignment": 4096,
+            "file_bytes": 1036,
+            "flags": 6,
+            "memory_bytes": 1048,
+            "offset": 949248,
+            "virtual_address": 949248
+          }
+        ],
+        "machine": 62,
+        "needed": [
+          "libc.so.6",
+          "ld-linux-x86-64.so.2"
+        ],
+        "type": 3
+      },
+      "guest_path": "/lib/x86_64-linux-gnu/libm.so.6",
+      "host_path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "fce00b6f25f459cf4ae0b7fae4257909a1a8a86f9149e7c029a5d617baf1ccd0"
+    }
+  }
+}

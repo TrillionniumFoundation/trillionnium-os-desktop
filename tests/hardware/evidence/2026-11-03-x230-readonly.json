@@ -1,0 +1,189 @@
+{
+  "schema": "trill.native-desktop-target-observation.v1",
+  "observed_date_utc": "2026-11-03",
+  "runtime_job": "1a1a1ff7d43-96a-7241",
+  "scope": "Read-only Linux hardware observation and exact Desktop source inspection; no native boot or disk write.",
+  "desktop_source": {
+    "commit": "e1f3898ff6c2181a6da27de9f9b0f5d1ec03123d",
+    "tree": "31f8eb04759aafd49a51084ce7ecb425b2d1f097"
+  },
+  "observation": {
+    "bios_vendor": "LENOVO",
+    "bios_version": "G2ET86WW (2.06 )",
+    "block_devices": {
+      "blockdevices": [
+        {
+          "children": [
+            {
+              "name": "sda1",
+              "rm": false,
+              "ro": false,
+              "size": "512M",
+              "tran": null,
+              "type": "part"
+            },
+            {
+              "name": "sda2",
+              "rm": false,
+              "ro": false,
+              "size": "1K",
+              "tran": null,
+              "type": "part"
+            },
+            {
+              "name": "sda5",
+              "rm": false,
+              "ro": false,
+              "size": "223.1G",
+              "tran": null,
+              "type": "part"
+            }
+          ],
+          "name": "sda",
+          "rm": false,
+          "ro": false,
+          "size": "223.6G",
+          "tran": "sata",
+          "type": "disk"
+        }
+      ]
+    },
+    "board_name": "23241W1",
+    "board_vendor": "LENOVO",
+    "cpu_model": "Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz",
+    "disk_writes": false,
+    "host_alias": "x230",
+    "input_names": [
+      "Lid Switch",
+      "Sleep Button",
+      "HDA Intel PCH Dock Mic",
+      "HDA Intel PCH Headphone",
+      "HDA Intel PCH Dock Headphone",
+      "HDA Intel PCH HDMI/DP,pcm=3",
+      "HDA Intel PCH HDMI/DP,pcm=7",
+      "HDA Intel PCH HDMI/DP,pcm=8",
+      "Power Button",
+      "AT Translated Set 2 keyboard",
+      "SynPS/2 Synaptics TouchPad",
+      "TPPS/2 IBM TrackPoint",
+      "ThinkPad Extra Buttons",
+      "Video Bus",
+      "HDA Intel PCH Mic"
+    ],
+    "kernel": "6.8.0-142-generic",
+    "machine": "x86_64",
+    "native_asterinas_qualified": false,
+    "pci": [
+      {
+        "bdf": "0000:00:02.0",
+        "class": "0x030000",
+        "device": "0x0166",
+        "driver": "i915",
+        "vendor": "0x8086"
+      },
+      {
+        "bdf": "0000:00:14.0",
+        "class": "0x0c0330",
+        "device": "0x1e31",
+        "driver": "xhci_hcd",
+        "vendor": "0x8086"
+      },
+      {
+        "bdf": "0000:00:19.0",
+        "class": "0x020000",
+        "device": "0x1502",
+        "driver": "e1000e",
+        "vendor": "0x8086"
+      },
+      {
+        "bdf": "0000:00:1a.0",
+        "class": "0x0c0320",
+        "device": "0x1e2d",
+        "driver": "ehci-pci",
+        "vendor": "0x8086"
+      },
+      {
+        "bdf": "0000:00:1d.0",
+        "class": "0x0c0320",
+        "device": "0x1e26",
+        "driver": "ehci-pci",
+        "vendor": "0x8086"
+      },
+      {
+        "bdf": "0000:00:1f.2",
+        "class": "0x010601",
+        "device": "0x1e03",
+        "driver": "ahci",
+        "vendor": "0x8086"
+      },
+      {
+        "bdf": "0000:00:1f.3",
+        "class": "0x0c0500",
+        "device": "0x1e22",
+        "driver": "i801_smbus",
+        "vendor": "0x8086"
+      },
+      {
+        "bdf": "0000:03:00.0",
+        "class": "0x028000",
+        "device": "0x8176",
+        "driver": "rtl8192ce",
+        "vendor": "0x10ec"
+      }
+    ],
+    "product_name": "23241W1",
+    "schema": "trill.hardware.readonly.v1",
+    "sys_vendor": "LENOVO",
+    "uefi": false
+  },
+  "projection": "Loop devices omitted; no serial numbers or personal files collected.",
+  "source_findings": {
+    "display": {
+      "candidate": "kernel/asterinas/kernel/comps/simpledrm/src/lib.rs",
+      "requires": "Bootloader framebuffer with verified pixel format, stride and bounds; not an Intel i915 driver."
+    },
+    "input": {
+      "candidate": "kernel/asterinas/kernel/comps/i8042/src/lib.rs",
+      "requires": "Physical keyboard, pointer and focus validation on the selected machine."
+    },
+    "storage": {
+      "device": "8086:1e03",
+      "linux_driver": "ahci",
+      "native_driver_found": false
+    },
+    "network": {
+      "device": "8086:1502",
+      "linux_driver": "e1000e",
+      "native_driver_found": false
+    },
+    "driver_search": {
+      "roots": [
+        "kernel/asterinas/kernel/comps",
+        "kernel/asterinas/kernel/core/src",
+        "kernel/asterinas/ostd/src"
+      ],
+      "extensions": [
+        "rs"
+      ],
+      "terms": [
+        "ahci",
+        "e1000e",
+        "8086:1502",
+        "8086:1e03"
+      ],
+      "matches": 0
+    }
+  },
+  "qualification": {
+    "native_boot": false,
+    "native_display": false,
+    "native_input": false,
+    "native_storage": false,
+    "native_network": false,
+    "recovery": false,
+    "hepta_original_owner": false,
+    "selected_boot_medium": null,
+    "internal_disk_modification": false,
+    "firmware_change": false
+  }
+}

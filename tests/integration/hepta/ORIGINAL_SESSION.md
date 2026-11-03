@@ -18,13 +18,13 @@ substitute for these runtime results.
 
 ## Build and run
 
-Build `trill-session` and `trill-ctl` with the committed UI lock using Rust 1.88.
+Build `trill-session` and `trill-ctl` with the committed UI lock using Rust 1.96.
 Bind the prebuilt files to the actual build command, desktop commit/tree and
 their SHA256 values. The gate hashes these supplied ELF files before and after
 execution; that alone does not establish which source produced a supplied ELF.
 
 ```sh
-CARGO_TARGET_DIR=/absolute/new-ui-target rustup run 1.88.0 cargo build \
+CARGO_TARGET_DIR=/absolute/new-ui-target rustup run 1.96.0 cargo build \
   --locked --manifest-path ui/Cargo.toml -p trill-session \
   --bin trill-session --bin trill-ctl
 

@@ -1,0 +1,182 @@
+{
+  "desktop": {
+    "head": "c5c88794bf227b1d862b2f914b02809a0090e854",
+    "tree": "87bc4e4d72697a7583fb0afafe4db4b41582941c"
+  },
+  "hepta": {
+    "head": "6d6097da843f5831dfaf9cee3530da512d072a15",
+    "tree": "f722fbe5f24275c324089be720559a40901105f3"
+  },
+  "schema": "hepta.native-original-runtime-source-review.v1",
+  "scope": "Original startup, registry/supervisor lifecycle fixture and observer projection. Selected-file review is not a whole-Hepta audit or execution evidence.",
+  "source_files": [
+    {
+      "git_blob": "60595420f4bf42089b5745830ac611df1c7ec2c2",
+      "path": "codex-rs/hepta-agentd/src/main.rs",
+      "repository": "hepta",
+      "sha256": "00f3134561b2f5773c1f114fba897e369db9f2c4f28192086596a37bf93ba319"
+    },
+    {
+      "git_blob": "afb9cac35db1c57d58edb3b31c6beee31bab2560",
+      "path": "codex-rs/hepta-agentd/src/config.rs",
+      "repository": "hepta",
+      "sha256": "354d6ffd820362b55928c0736a438e69d2608186b70bd25ce039fb45b2f55587"
+    },
+    {
+      "git_blob": "7f7241d8d7b1ad978cd6a07db785f3b0e4af612d",
+      "path": "codex-rs/hepta-agentd/src/runtime.rs",
+      "repository": "hepta",
+      "sha256": "b2eb80954a210d2f21ce93d40926b84f13d4859a6145c429ae0ec28b59ea5e41"
+    },
+    {
+      "git_blob": "0a17007f64bbbded6b8acfe9c1a79e7023b0054f",
+      "path": "codex-rs/hepta-agentd/src/state.rs",
+      "repository": "hepta",
+      "sha256": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a"
+    },
+    {
+      "git_blob": "8780d98cfebd3b1f2b6061c843b7cbe7fcf30dc0",
+      "path": "codex-rs/hepta-agentd/src/lib.rs",
+      "repository": "hepta",
+      "sha256": "bc233db96502f18d8d97fc12c63ba6ef9e7c1f7be7b4c78bd987ca65b1b1b54a"
+    },
+    {
+      "git_blob": "b17115eb5cffff5f890f34a786534c588d0d3aa5",
+      "path": "codex-rs/hepta-fleet/src/registry.rs",
+      "repository": "hepta",
+      "sha256": "714b160817bf07b71d11af569a6849769395df00b3769988898e7aff29880753"
+    },
+    {
+      "git_blob": "4e8ab6ced19748d22b543a6dbded5d9942ea463c",
+      "path": "codex-rs/hepta-fleet/src/model.rs",
+      "repository": "hepta",
+      "sha256": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e"
+    },
+    {
+      "git_blob": "d02b9b9b02af2b03f3904277f5028e1fb52672b4",
+      "path": "codex-rs/hepta-supervisor/src/unix.rs",
+      "repository": "hepta",
+      "sha256": "6d25f074cf050bc94b39a60634ac42a7c2a73fd096aab931ce3846a5577fba99"
+    },
+    {
+      "git_blob": "f854f1a0c40024a5fe01ea42b5139d8c77bfc778",
+      "path": "codex-rs/hepta-supervisor/src/supervisor.rs",
+      "repository": "hepta",
+      "sha256": "98ce7286ce2b9680bfb2838ec14e969c2333d7818c7ed14711263a08003e0b48"
+    },
+    {
+      "git_blob": "f33f7ea8141a65a8efbd1ee14fcae49833da6252",
+      "path": "codex-rs/hepta-supervisor/src/tick.rs",
+      "repository": "hepta",
+      "sha256": "41a6deb682fa12fd2c8220dd69df00ae08e3c1cf4823d1bcd673bb0bf4864975"
+    },
+    {
+      "git_blob": "290a1c2d0324868c649df6945b73ea1b74a85c1d",
+      "path": "codex-rs/hepta-supervisor/src/driver.rs",
+      "repository": "hepta",
+      "sha256": "aa6349e8b868ed07e0271f6c4045a2e98099dd6a81880eb06c79f4290d18a32b"
+    },
+    {
+      "git_blob": "30d3a88e199578ace3e2fb0387e86d0c467e3806",
+      "path": "codex-rs/hepta-paths/src/fleet.rs",
+      "repository": "hepta",
+      "sha256": "b2e9e821ec1bfc76a959b1fbd2cc971b7c45c47539eb2db80b6a1b86f731b9b1"
+    },
+    {
+      "git_blob": "64ac78157aeb3ee155ce971ee70cdc6c2d1d5f03",
+      "path": "codex-rs/hepta-paths/src/lib.rs",
+      "repository": "hepta",
+      "sha256": "b665da8b86a1d9f9b93b4c438e597090e7041d1dcf7f16d64405b5e5c3e97188"
+    },
+    {
+      "git_blob": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
+      "path": "tests/integration/hepta/original_agentd_probe.rs",
+      "repository": "desktop",
+      "sha256": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c"
+    },
+    {
+      "git_blob": "d1149f58b3a0067e167054ff89cf276ccfd40f91",
+      "path": "tests/integration/hepta/original_session_probe.rs",
+      "repository": "desktop",
+      "sha256": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5"
+    },
+    {
+      "git_blob": "b6d48c43b62f749e281c08810352014608406258",
+      "path": "tests/integration/hepta/run_original_agentd.py",
+      "repository": "desktop",
+      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+    },
+    {
+      "git_blob": "3b31dd8cbc51c5527d28dd35f98d68de838cb5d5",
+      "path": "tests/workloads/hepta_agentd_abi/cpio_codec.py",
+      "repository": "desktop",
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+    },
+    {
+      "git_blob": "0be14ffcedfda978c1ea7dbdf8d31a44d2e3060a",
+      "path": "services/hepta-os/Cargo.toml",
+      "repository": "desktop",
+      "sha256": "1848991accfad7863a51b1d8f8bba31533f7c46ed17aff333ddf5d75b3f3810b"
+    },
+    {
+      "git_blob": "e423f6e549fe60e8496ec159463dbc1c324c256c",
+      "path": "services/hepta-os/Cargo.lock",
+      "repository": "desktop",
+      "sha256": "ee584c436221e2dff1fc233a5e1c55995539ebaa1a3ea82fdf8baddd82334175"
+    },
+    {
+      "git_blob": "3ad1475511aede466456cd5a1d3749ccb87c0f2f",
+      "path": "services/hepta-os/src/bin/hepta-observe.rs",
+      "repository": "desktop",
+      "sha256": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7"
+    },
+    {
+      "git_blob": "60a32f5af8e8d3b7bcd6b68b9bd7e1f8dec9c79a",
+      "path": "services/hepta-os/src/client.rs",
+      "repository": "desktop",
+      "sha256": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8"
+    },
+    {
+      "git_blob": "b39b712b2daa058ef16ee85c235ce3a8359ddf3c",
+      "path": "services/hepta-os/src/wire.rs",
+      "repository": "desktop",
+      "sha256": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c"
+    },
+    {
+      "git_blob": "3cfec133e72bb5f6797999fd52d66b6268bb4c1a",
+      "path": "services/hepta-os/src/lib.rs",
+      "repository": "desktop",
+      "sha256": "7080b717b3a3e86018dcf97bf816f9849da5f570291c5825ac0dcca867903903"
+    },
+    {
+      "git_blob": "993f89c2cf5ccd9345ad16f17b482d45656c338b",
+      "path": "tests/workloads/hepta_agentd_abi/README.md",
+      "repository": "desktop",
+      "sha256": "67b6e38b78971b9b6a3f93ed57b89ac01463285f474c15c6cbeeb2aae2ccb771"
+    },
+    {
+      "git_blob": "be05914e7c5d5b315147f127ebe695dec7649585",
+      "path": "tests/workloads/hepta_agentd_abi/agentd_abi_probe.c",
+      "repository": "desktop",
+      "sha256": "744ccbeb2ff773afc3186f22e8ce7eb0da37638f43731bdd2c8f6a06545d6427"
+    },
+    {
+      "git_blob": "eae1f2c553a57183f938e62a0585001c161abed8",
+      "path": "tests/workloads/hepta_agentd_abi/run_agentd_abi.py",
+      "repository": "desktop",
+      "sha256": "0994e2452596ca8a4c3b59f6a6234d070c4ba5cb2edde4232271a7eefb1f535c"
+    },
+    {
+      "git_blob": "7a0abc1c998b6161711a6506d5a4cc0f10c27da5",
+      "path": "tests/workloads/hepta_agentd_abi/source-review.json",
+      "repository": "desktop",
+      "sha256": "741f46823b3de274d03791f6215af0bb2412504c8ce82e9b930896c25e97c19f"
+    },
+    {
+      "git_blob": "0e7e5bfdf39559dae838097adedfe53a83a45321",
+      "path": "tests/workloads/hepta_agentd_abi/test_agentd_abi.py",
+      "repository": "desktop",
+      "sha256": "9b87b8b3e54e3c2bc3dc0141a2c8982907aa5316b26cb78ffd7dd50a09277e71"
+    }
+  ]
+}

@@ -2,6 +2,9 @@
 
 //! User address space management.
 
+#[cfg(ktest)]
+mod fault_allocation_tests;
+
 mod handle;
 mod interval_set;
 mod rmap;
@@ -18,7 +21,7 @@ pub(crate) use self::{
     vmar_impls::{
         RssType, Vmar,
         map::{MmapMode, VmarMapOffset},
-        page_fault::PageFaultInfo,
+        page_fault::{PageFaultError, PageFaultInfo},
         remap::RemapOldMappingAction,
     },
 };

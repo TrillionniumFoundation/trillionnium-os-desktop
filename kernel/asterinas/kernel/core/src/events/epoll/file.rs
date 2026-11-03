@@ -342,3 +342,55 @@ impl Drop for EntryHolder {
         self.0.shutdown();
     }
 }
+#[cfg(ktest)]
+mod unix_rights_tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::net::socket::{
+        Socket,
+        unix::{UnixDatagramSocket, UnixSocketAddr, rights_message_for_test},
+        util::{MessageHeader, SendFlags},
+    };
+
+    #[ktest]
+    fn queued_epoll_watching_receiver_keeps_no_strong_socket_back_edge() {
+        crate::time::clocks::init_for_ktest();
+        crate::util::random::init();
+        let socket = UnixDatagramSocket::new(true).unwrap();
+        socket
+            .bind(UnixSocketAddr::Abstract(Arc::from(&b"rights-epoll-indirect"[..])).into())
+            .unwrap();
+        let epoll = EpollFile::new();
+        epoll
+            .add_interest(
+                3i32.try_into().unwrap(),
+                socket.clone(),
+                EpollEvent::new(IoEvents::IN, 17),
+                EpollFlags::empty(),
+            )
+            .unwrap();
+        let weak_socket = Arc::downgrade(&socket);
+        let weak_epoll = Arc::downgrade(&epoll);
+        let header = MessageHeader::new(
+            Some(socket.addr().unwrap()),
+            vec![rights_message_for_test(vec![epoll])],
+        );
+        assert_eq!(
+            socket
+                .sendmsg(
+                    &mut VmReader::from(&[][..]).to_fallible(),
+                    header,
+                    SendFlags::empty()
+                )
+                .unwrap(),
+            0
+        );
+        assert!(weak_epoll.upgrade().is_some());
+        // Actual queued FileLike owns epoll; its actual watched entry and ready
+        // observer must not keep this receiving socket alive in return.
+        drop(socket);
+        assert!(weak_socket.upgrade().is_none());
+        assert!(weak_epoll.upgrade().is_none());
+    }
+}
