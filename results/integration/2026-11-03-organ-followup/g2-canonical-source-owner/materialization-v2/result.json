@@ -1,0 +1,37 @@
+{
+  "schema": "hepta.original-owner-canonical-materialization.v1",
+  "started_at_utc": "2026-11-03T21:41:10.215935+00:00",
+  "passed": false,
+  "source_root": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+  "source_head": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+  "source_tree": "07cbb5e0187b4355200c2f5e0166228cecf1ecc1",
+  "first_preparation_job": "1a1a35524dd-96a-7673",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+      "exit_code": 0,
+      "label": "identity"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+      "exit_code": 128,
+      "label": "index-tree"
+    }
+  ],
+  "existing_paths_overwritten": false,
+  "kernel_built": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "error": "ValueError: index-tree failed: error: /home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/trillionnium-os-desktop/.git/objects: ignoring alternate object stores, nesting too deep\nerror: invalid object 100644 d00491fd7e5bb6fa28c517a0bb32b8b506539d4d for '.github/evidence/hepta-original-agentd-20261017/before-fix.exit'\nfatal: git-write-tree: error building trees\n",
+  "finished_at_utc": "2026-11-03T21:41:10.228706+00:00"
+}

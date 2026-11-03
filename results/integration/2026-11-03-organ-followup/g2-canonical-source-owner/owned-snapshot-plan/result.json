@@ -1,0 +1,109 @@
+{
+  "schema": "hepta.canonical-owned-source-snapshot-plan.v1",
+  "passed": true,
+  "started_at_utc": "2026-11-03T22:08:25.591504+00:00",
+  "input_repository": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+  "source_root": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source",
+  "source_head": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+  "source_tree": "07cbb5e0187b4355200c2f5e0166228cecf1ecc1",
+  "fixed_upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "snapshot_depth": 1,
+  "complete_git_history_claimed": false,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+      "exit_code": 0,
+      "label": "input-identity"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "cat-file",
+        "commit",
+        "fe55fe8e1764f4967bae295311d288d8049b6eae"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+      "exit_code": 0,
+      "label": "canonical-commit"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "ls-tree",
+        "-r",
+        "-t",
+        "-z",
+        "07cbb5e0187b4355200c2f5e0166228cecf1ecc1"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+      "exit_code": 0,
+      "label": "canonical-tree"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "ls-tree",
+        "-r",
+        "-t",
+        "-z",
+        "96605cf64aeae2d34f29b97e85eff9315fe10a8e"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+      "exit_code": 0,
+      "label": "upstream-tree"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "cat-file",
+        "--batch-check"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+      "exit_code": 0,
+      "label": "input-object-inventory"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "init",
+        "--quiet",
+        "--initial-branch=canonical-fe55",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "init-owned-source"
+    }
+  ],
+  "independent_object_store_verified": false,
+  "kernel_built": false,
+  "locked_204_graph_verified": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "canonical_parent_preserved_in_commit": [
+    "bf15a519e9192b063071e8b9b61ef3319bed416e"
+  ],
+  "canonical_commit_sha256": "3410778ad0b3c7464babad4bc126c537b71ef9c639e9822b5cdc4dd3181d9356",
+  "tree_inventory": [
+    {
+      "tree": "07cbb5e0187b4355200c2f5e0166228cecf1ecc1",
+      "recursive_entries": 14342
+    },
+    {
+      "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "recursive_entries": 3809
+    }
+  ],
+  "objects": 12345,
+  "object_bytes": 304614722,
+  "object_list_sha256": "7a943e0f8129ec28c2027df297f55390c7a9be19ea28bd099cb823f9aafbb81b",
+  "object_inventory_sha256": "ac9cb683097964459db754019e52374fe6f726c7222658ffff398e3745bc1c2f",
+  "pack_prefix": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source/.git/objects/pack/pack",
+  "finished_at_utc": "2026-11-03T22:08:25.892063+00:00"
+}

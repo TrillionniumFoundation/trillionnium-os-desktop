@@ -1,0 +1,170 @@
+{
+  "schema": "trill.g2-canonical-source-owner-independent-review.v1",
+  "reviewed_at_utc": "2026-11-03T22:31:12.695842+00:00",
+  "passed": true,
+  "meaning": "Archive byte/origin/status/source-scope verification only; no kernel, native or production qualification.",
+  "source_index_sha256": "1668efc410a4d30a412f9e66b003dab3c98b67fcf17f9372da2eaa11b2493159",
+  "indexed_files_checked": 47,
+  "indexed_bytes_checked": 104020,
+  "origin_kinds": {
+    "exact_remote_file": 13,
+    "original_runtime_status_text": 9,
+    "exact_runtime_log": 10,
+    "task_local_input_or_analysis": 5,
+    "task_local_host_check": 9,
+    "scope_explanation": 1
+  },
+  "complete_runtime_log_byte_cursors_checked": true,
+  "original_status_text_bytes_preserved": true,
+  "jobs": {
+    "source-preparation-v1": {
+      "job_id": "1a1a35524dd-96a-7673",
+      "state": "failed",
+      "exit_code": 1,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "materialization-v2": {
+      "job_id": "1a1a35bde2d-96a-7689",
+      "state": "failed",
+      "exit_code": 1,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "object-store-flatten-v3": {
+      "job_id": "1a1a36544f5-96a-7695",
+      "state": "succeeded",
+      "exit_code": 0,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "full-history-repack": {
+      "job_id": "1a1a36d03d7-96a-76a2",
+      "state": "failed",
+      "exit_code": 128,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "owned-snapshot-plan": {
+      "job_id": "1a1a374d39b-96a-76b5",
+      "state": "succeeded",
+      "exit_code": 0,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "owned-pack": {
+      "job_id": "1a1a379652d-96a-76c8",
+      "state": "succeeded",
+      "exit_code": 0,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "owned-source-verification": {
+      "job_id": "1a1a37a1b02-96a-76cc",
+      "state": "succeeded",
+      "exit_code": 0,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "owner-build": {
+      "job_id": "1a1a37b81a4-96a-76d2",
+      "state": "succeeded",
+      "exit_code": 0,
+      "timed_out": false,
+      "output_complete": true
+    },
+    "kernel-input-rejection": {
+      "job_id": "1a1a37cbdaa-96a-76d5",
+      "state": "failed",
+      "exit_code": 1,
+      "timed_out": false,
+      "output_complete": true
+    }
+  },
+  "source_verification": {
+    "source_head": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+    "source_tree": "07cbb5e0187b4355200c2f5e0166228cecf1ecc1",
+    "snapshot_depth": 1,
+    "complete_git_history_claimed": false,
+    "source_objects_verified": 12345,
+    "tracked_files_verified": 11726,
+    "tracked_bytes_verified": 399674910,
+    "remaining_alternates": [],
+    "own_pack": {
+      "name": "pack-7ba01f3177117908fa410411dfc17e231b40c77f.pack",
+      "bytes": 179885509,
+      "sha256": "299470a975206daf9d3dc0a02a5b0a181045353f57df0141043a946a2b1fe64e",
+      "index_bytes": 346732,
+      "index_sha256": "98edb4f85288396dfad9f6471bc66e65dda265af19018b3e38588f2b577b2001"
+    }
+  },
+  "tracked_snapshot_independently_downloaded": false,
+  "large_pack_independently_downloaded": false,
+  "original_owner_build": {
+    "source": {
+      "desktop": {
+        "head": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+        "tree": "07cbb5e0187b4355200c2f5e0166228cecf1ecc1"
+      },
+      "hepta": {
+        "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+        "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+      }
+    },
+    "command_exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "cache_reused": true,
+    "product": {
+      "bytes": 20138584,
+      "path": "packaged/hepta-g2-native-owner",
+      "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+    },
+    "image_profile_passed": true,
+    "legacy_static_profile_passed": false
+  },
+  "actual_first_kernel_entry_failed_before_osdk": true,
+  "empty_original_packaging_log_preserved": true,
+  "quiet_log_repair": {
+    "local_head": "309cde3ae07d7ee4f632ebe98283381c323e8551",
+    "canonical_head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+    "tree": "342ad0840d521e97d6de5845682cbc11a115f6f7",
+    "same_component_bytes_verified": true,
+    "normal_host_tests": 50,
+    "optimized_host_tests": 17,
+    "source_gate_checked_files": 118,
+    "canonical_kernel_reexecution_claimed": false
+  },
+  "remote_only_inventory_preserved": [
+    {
+      "path": "/data/trill-organ-20261103-f1-build/owner-canonical-source-fe55fe8e/clean.stdout",
+      "bytes": 258411,
+      "sha256": "8a42c255b8505058dc2482164bd19849c188ced3ba27418703ac30316ebe1cf4",
+      "scope": "complete original dirty-status listing retained on main; not copied here"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/owner-canonical-source-fe55fe8e/checkout.stderr",
+      "bytes": 532907,
+      "sha256": "022114f8414352f710c095cf8683d7db1113727da2fcea3b4436b14eac0130e9",
+      "scope": "complete original checkout diagnostics retained on main; not copied here"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/owner-fe55-owned-snapshot-verification-v1/tracked-source-snapshot.json",
+      "bytes": 3553514,
+      "sha256": "11231a6cff9eb988b44ca3459eee20bf04e6386ef22d33d7f70dbb08c6bdb28f",
+      "scope": "complete tracked source inventory retained on main; not copied here"
+    }
+  ],
+  "not_independently_copied": "Large pack, binaries, complete owner Cargo metadata and source snapshots are not included; only named small original files are retained here.",
+  "kernel_built": false,
+  "locked_204_graph_verified": false,
+  "native_execution_verified": false,
+  "after_effect_crash_verified": false,
+  "whole_guest_peak_verified": false,
+  "global_memory_reserve": false,
+  "g2_complete": false,
+  "production_ready": false
+}

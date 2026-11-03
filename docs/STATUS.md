@@ -6,6 +6,8 @@
 
 当前冻结产品已前进至 Desktop `fd8d56c52b971c2d5d0e6430f296803b43ef60a3` / tree `347fbb7e9931006c749b5bef0e1550c54bc08f27` 与原 Hepta `a39`。后续 `bf15` 修复的 9 项 CI 全部成功；Calculator 的组件用例、原 Memory 失败及 G2 原镜像尺寸拒绝见[后续证据](../results/integration/2026-11-03-organ-followup/README.md)和[镜像审查](../results/g2-original-owner-size-20261103/README.md)。这些后继分别保留自己的来源，完整安装后的 Notes、双应用任务、原生 F1/G2、手机及裸机资格仍按[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)验收。
 
+独立 G2 profile 的 `fe55/a39` 已完成无 alternates 的实际源码装配和原 owner 构建；其首次 kernel 入口在 OSDK/Cargo 前因合法空打包日志被拒绝。[47 份小原件](../results/integration/2026-11-03-organ-followup/g2-canonical-source-owner/README.md)保留三次先前源码失败、后续成功及这次入口失败。当前 `a286e0f922bf8e439e8951ae1538abeac0b26477` 只修复具名日志的空字节读取/归档，50 项普通及 17 项优化 host 检查通过；完整内核、实际依赖图和原生闭环仍需该来源自己的执行收据。
+
 本页作为日期账本保留原执行记录。下文 de0、4223、v10/v11、旧内核与 UI 的测试计数、当时的 PR/CI 状态和“当前”措辞只适用于各自固定来源，不是 2026-11-03 的运行结果。旧 README 空文件规则属于历史；现役规则允许版本化导航并要求普通文件。查找原日志、失败和来源使用[证据索引](EVIDENCE_INDEX.md)，开发与技术入口使用[模块索引](modules/README.md)。此导航修正不授予安装、生产授权、原生 F1/G2 或物理设备资格。
 
 <a id="2026-10-27-产品整改与当前选源"></a>

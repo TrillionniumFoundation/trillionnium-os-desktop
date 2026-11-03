@@ -23,6 +23,7 @@ component test into installed-product qualification.
 | Federation recheck | Same Hepta 0259; CPUQuota 400%, unchanged test limits | First attempt reached the original 60-second test timeout; second returned requested_peers=16 but completed_peers=0 and failed | Higher CPU quota did not resolve the failure; a specific I/O root cause is not established |
 | Original owner candidate stage 2 | Hepta `580a07bfadad97d1dfc13ece112facc13dcc00bb`, tree `cd6004e85a5ae28513a0bcf32da5bf7b190103f5` | Objective 66 passed / 2 skipped; causal receipt selection 1 passed / 407 unselected; Agentd selection 6 passed / 587 unselected | Original Core execution, subsequent joint Root changes, real windows and production authority |
 | Separate exact original-owner image profile | Pre-commit component identities retained below; same tree as published Desktop `fe55fe8e1764f4967bae295311d288d8049b6eae` | Fixed kernel toolchain admitted and installed; eight Rust components formatted; original host build.rs input checks passed; 47 normal and 14 optimized Python checks passed | Actual locked 204-package graph, full kernel, native original-owner effects and persistent G2 |
+| Canonical independent G2 source and original owner | Desktop fe55 / original Hepta a39 | Independent depth-1 source with no alternates passed 12,345 object / 11,726 tracked-file checks and the original 118-file gate; original warm-cache build/packaging produced the exact 20,138,584-byte ELF | First kernel entry failed on a legitimate empty packaging log before OSDK; successor a286 still needs its own kernel and native execution |
 | Private Xvfb diagnosis | Frozen fd startup configuration | Own socket/lock existed by 0.4 seconds; actual child was in D state with page/buffer waits; original 15-second readiness failed, owned child reaped | Notes window, IME, model/owner effects, product qualification |
 
 The complete host result files record commands, compiler identities and source
@@ -135,12 +136,17 @@ internal cause. The successful build/install does not override this result.
 ## Separate exact original-owner image profile
 
 [PR #284](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/284)
-publishes the default-off `g2-original-owner-a39-v1` source at
+initially published the default-off `g2-original-owner-a39-v1` source at
 `fe55fe8e1764f4967bae295311d288d8049b6eae`, tree
 `07cbb5e0187b4355200c2f5e0166228cecf1ecc1`. It fixes the original a39 ELF,
 digest, LOAD layout and four-role composition while retaining the loader's
 private snapshot, readback and sealing rules. The legacy 8/16 MiB profile and
 ordinary exec limits are unchanged.
+
+The current successor is `a286e0f922bf8e439e8951ae1538abeac0b26477`, tree
+`342ad0840d521e97d6de5845682cbc11a115f6f7`; its only additional change is the
+quiet original-log repair described below. Each execution retains its actual
+source identity.
 
 The [host-only evidence](g2-exact-owner-host/README.md) retains 32 original
 files, 57,728 bytes, including complete command outputs. An
@@ -160,6 +166,42 @@ process-tree accounting, successor overlap or global recovery reserve.
 The real locked graph, source-built OSDK, full kernel and positive original
 owner guest scenarios still need their own execution records. All native G2
 and production flags in this archive remain false.
+
+## Canonical source, original owner build and quiet-log repair
+
+The [47 original small files](g2-canonical-source-owner/README.md), totaling
+104,020 bytes, retain the failed first clone, excessive-alternates materialization,
+failed full-history repack, subsequent independent snapshot and actual original
+owner build. The [independent review](g2-canonical-source-owner/independent-review.json)
+checked each file against its indexed length/digest and its original RPC bytes
+or identified local input. Runtime log cursors reach the complete output; all
+nine saved runtime status texts preserve their exact bytes and actual exit codes.
+
+The verified source owns its depth-1, non-thin pack without alternate stores;
+the actual source operation checked 12,345 required objects and 11,726 tracked
+files / 399,674,910 bytes, followed by the original 118-file source gate. The
+179,885,509-byte pack, complete tracked inventory, owner binaries and full large
+owner metadata/source snapshots were not independently downloaded into this
+small archive. Its index labels three larger source diagnostic/inventory files
+as remote-only. No complete Git-history repair is claimed.
+
+On that exact fe55/a39 pair, all four original metadata/build/packaging/readelf
+commands exited 0. The unchanged locked/offline release build explicitly reused
+the existing exclusive cache and produced the expected 20,138,584-byte ELF with
+SHA-256 `6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454`.
+New-profile admission passed; the legacy 8/16 MiB admission remains false.
+
+The next kernel entry actually exited 1 before OSDK/Cargo: the original successful
+packaging command emitted zero bytes, which the input reader rejected. The empty
+log and complete 1,394-byte error remain unchanged. The three-file repair admits
+empty bytes only for that named packaging log and its exact-byte retention;
+documents, ELF, other inputs and default retention still require bytes. It
+preserves successful-command, source, digest and upper-bound checks. Fifty normal
+and seventeen optimized host checks passed on the same component bytes as the
+published a286 tree, including a real quiet child and original-byte readback.
+The [publication record](g2-canonical-source-owner/quiet-log-publication.json)
+keeps the local test checkpoint separate from the canonical commit. These host
+checks do not qualify a kernel or native execution of the successor.
 
 ## Open product work
 

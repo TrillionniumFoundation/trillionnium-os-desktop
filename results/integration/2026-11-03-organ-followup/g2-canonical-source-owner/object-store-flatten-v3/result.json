@@ -1,0 +1,111 @@
+{
+  "schema": "hepta.original-owner-object-store-preparation.v1",
+  "started_at_utc": "2026-11-03T21:51:26.316280+00:00",
+  "passed": true,
+  "source_root": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+  "source_head": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+  "source_tree": "07cbb5e0187b4355200c2f5e0166228cecf1ecc1",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "exit_code": 0,
+      "label": "identity"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "exit_code": 0,
+      "label": "canonical-index-tree"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "cat-file",
+        "-t",
+        "96605cf64aeae2d34f29b97e85eff9315fe10a8e"
+      ],
+      "exit_code": 0,
+      "label": "fixed-upstream-tree"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "update-ref",
+        "refs/task-inputs/asterinas-fixed-tree",
+        "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+        ""
+      ],
+      "exit_code": 0,
+      "label": "pin-verifier-tree"
+    }
+  ],
+  "independent_object_store_verified": false,
+  "kernel_built": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "object_store_chain": [
+    {
+      "store": "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/trillionnium-os-desktop/.git/objects",
+      "metadata_sha256": "3696becb0039a04a963f235eee9e31e5b05865176ac0aecb4bb0e68e04c4ab99",
+      "children": [
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/repo/.git/objects"
+      ]
+    },
+    {
+      "store": "/data/lan-archive-20261103/desktop/old-dev/os-audit-implementation-20261024-r1/desktop/.git/objects",
+      "metadata_sha256": "2978a00befc44a5f64fde3d66dd0c7a8159fe60ba2b39792b7bcc711c5ee4836",
+      "children": [
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/trillionnium-os-desktop/.git/objects"
+      ]
+    },
+    {
+      "store": "/data/lan-archive-20261103/desktop/old-dev/trill-product-convergence-20261026-root/desktop/.git/objects",
+      "metadata_sha256": "f12f8ac58b7c3f121d374879a9143be5ae4057d71f11b6b12dabdfa0c947b2cf",
+      "children": [
+        "/home/qian-qi/work/os-audit-implementation-20261024-r1/desktop/.git/objects"
+      ]
+    },
+    {
+      "store": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-current-source/.git/objects",
+      "metadata_sha256": "0af872c7a57074a8b83e8bfede0e3c20b1123d08a8aceb770c236d1f4ef55394",
+      "children": [
+        "/data/lan-archive-20261103/desktop/old-dev/trill-product-convergence-20261026-root/desktop/.git/objects"
+      ]
+    },
+    {
+      "store": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-g2-source/.git/objects",
+      "metadata_sha256": "58f89d597c3f83e42887bc56cc1eb476fa3fda02ce6518e48c6c477384d49479",
+      "children": [
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-current-source/.git/objects"
+      ]
+    },
+    {
+      "store": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-host-source/.git/objects",
+      "metadata_sha256": "d028634b1ef0e292f05db63958004472ab1983fd933227252c613a7e827c5295",
+      "children": [
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-g2-source/.git/objects"
+      ]
+    }
+  ],
+  "flattened_object_stores": [
+    "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/repo/.git/objects",
+    "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/trillionnium-os-desktop/.git/objects",
+    "/data/lan-archive-20261103/desktop/old-dev/os-audit-implementation-20261024-r1/desktop/.git/objects",
+    "/data/lan-archive-20261103/desktop/old-dev/trill-product-convergence-20261026-root/desktop/.git/objects",
+    "/home/qian-qi/work/trill-organ-20261103-f1/desktop-current-source/.git/objects",
+    "/home/qian-qi/work/trill-organ-20261103-f1/desktop-g2-source/.git/objects",
+    "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-host-source/.git/objects"
+  ],
+  "original_alternates_sha256": "0eb0eaffe49ce60a2e777f1d7c552157ef9a3da2e74c73fd88ed82026b2da2a1",
+  "flattened_alternates_sha256": "68d523ff29dcddf07d331189418b06ef6c276949e601cc6b193b6eafc86388d1",
+  "only_new_clone_alternates_flattened": true,
+  "fixed_upstream_tree_retained_by_ref": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "finished_at_utc": "2026-11-03T21:51:26.439831+00:00"
+}
