@@ -5,7 +5,7 @@
 原始收据或运行计数。模块有实质手册和链接有效，分别是文档事实；构建、原 owner
 授权、实际设备效果和持久恢复仍需本轮实际执行。当前跨仓来源以
 [SOURCES](../SOURCES.md#hepta-native-organ) 和实际 Cargo lock 为准。
-当前 Desktop/Hepta 依赖装配、两份 lock 与来源检查命令见
+当前 Desktop/Hepta 依赖装配、五个普通入口及独立 prepared SDK 入口的六份 lock 与来源检查命令见
 [DEPENDENCIES](../../support/ui/DEPENDENCIES.md)；此前固定组合保留其历史资格。
 
 ## 产品与支持模块

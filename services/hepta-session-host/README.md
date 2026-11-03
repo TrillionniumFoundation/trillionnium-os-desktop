@@ -3,12 +3,14 @@
 This Linux host library connects Desktop's existing `ObjectiveSubmission` state
 machine to Hepta's original `ProductionObjectiveSender` capability. It is a
 trusted embedding component. Its typed host accepts bounded user intentions
-through an injected original authority. It provides no issuer or database owner.
-An unconfigured standalone Session remains unavailable.
+through an injected original authority. The default library provides no issuer
+or database owner. The optional `product-root` binary assembles the original
+production owners through their existing factories; an unconfigured standalone
+Session remains unavailable.
 
 All original Hepta dependencies and Hepta-carried patches in this crate are
-fixed at `489f7096b0e5754968a30fa4477bb4417d24834f`, tree
-`4731de9117065bd773b2fcee92c815ff896b8488`, matching the native UI source.
+fixed at `a39a0871d9601ffccb5e0d95d8f39d54b3a63360`, tree
+`e03f9b3eca364222029298496d3e4f1f5e1bf5de`, matching the native UI source.
 The [fixed cross-repository map](../../docs/SOURCES.md#hepta-native-organ) and
 [latest scoped executions](../../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)
 keep component tests separate from the final combined workspace, installed
@@ -20,6 +22,34 @@ The optional native App Server text path has a separate
 points, feature/build commands, authenticated inputs, stream outputs and
 same-identity recovery. It uses the original Root/Agentd text worker and does
 not route model chat through the finite literal Notes compiler below.
+
+## Installed original Root
+
+The `product-root` feature builds `hepta-desktop-root`, the Linux composition
+entry point for the original Core thread, Agentd, Supervisor, authority host,
+Notes writer and human-session provider. Its
+[development and technical guide](src/product_root/README.md) defines the strict
+`initialize` configuration, actual logind session requirements, original factory
+sequence, bounded lifetime and same-identity recovery. The
+[Root product guide](../../support/ui/ROOT_PRODUCT.md) binds that executable to
+the source-verified native Desktop package and original runtime executables.
+
+The initializer uses a fresh private deployment prefix and generates authority
+material through the original production owners. An administrator supplies the
+actual installed executables, non-root user and graphical-session environment;
+the configuration does not accept an invented principal, grant, signing key or
+thread identity. Existing installations and unresolved submissions must use the
+original recovery paths. A successful source build or package verification does
+not establish a live deployment, a model result or an independently confirmed
+Notes write.
+
+```sh
+cargo +1.96.0 build --locked --manifest-path services/hepta-session-host/Cargo.toml --features product-root --bin hepta-desktop-root
+```
+
+Use the source-bound product builders and installer from the Root product guide
+for a deployable bundle; a standalone build does not supply its native Desktop
+payload, original runtime companions or deployment inputs.
 
 ## Sources and ownership
 
@@ -198,14 +228,16 @@ source-only candidate, queued CI job or test stopped by a resource guard is not 
 passed qualification. Tests against a local candidate path must be identified as
 such until the final pinned Git dependency graph is executed.
 
-## Remaining production gates
+## Adapter qualification boundary
 
-This slice does not itself supply the seven independent production inputs, the
-original authority service's operation handler, a protected checkpoint service,
-a Shell command, model execution, Notes readback/revocation,
-crash/power-loss qualification or real-device evidence. Those gates require their
-own original-owner execution records. Enabling renderer Send before those
-contracts are assembled and validated would overstate this library's scope.
+The library adapter tests do not establish the seven independent production
+inputs, the original authority service's operation handler, a protected
+checkpoint service, a Shell command, model execution, Notes readback/revocation,
+crash/power-loss qualification or real-device evidence. The `product-root`
+composition above supplies the installed integration path; each production gate
+still requires its own original-owner execution record. Renderer Send becomes
+available only after the actual original owners and their current authority are
+assembled and validated.
 
 
 ## Typed Session integration

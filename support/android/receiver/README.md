@@ -119,6 +119,19 @@ cell on a later phase. Android's and the host's time namespace must agree before
 the host `CLOCK_BOOTTIME` deadline is compared to native `elapsedRealtime`.
 Every step shares one 55-second helper budget.
 
+The strict cell transport also bounds retained output before appending it:
+4 MiB of stdout (including an installed APK inspection) and 64 KiB of stderr
+per process. It drains both streams concurrently and uses the original absolute
+`CLOCK_BOOTTIME` deadline; process creation and output reading do not renew that
+deadline. Overflow, expiry or interruption closes both pipes and performs
+bounded cleanup of only the newly created transport process group. A process
+already reaped is never signalled by its old numeric process-group identifier.
+Cleanup may take one additional second. Stopping this host transport neither
+proves cancellation inside Android nor resolves an unknown operation; it never
+causes a retry. Real owned-child host regressions cover UTF-8 output, both byte
+bounds, expiry, interruption and a result received after the deadline. They do
+not qualify the installed receiver or a device effect.
+
 Inside the original runner, the existing second full-tree resolution remains
 in effect. Immediately before its existing `performAction`, the strict path
 independently re-reads and compares generation, application incarnation,

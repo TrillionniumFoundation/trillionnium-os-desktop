@@ -4,6 +4,102 @@ This file is not executable on its own. build_receiver.py inserts it before the
 original dispatch function and preserves the existing CLI and global lock.
 """
 
+import selectors
+import signal
+
+
+def _organ_run_bounded(argv, *, deadline, pass_fds=(), stdout_limit=4 * 1024 * 1024,
+                       stderr_limit=65536):
+    """Read one owned transport within the original time and memory budgets.
+
+    Stopping this transport does not prove cancellation inside Android. Never
+    retry it or change the original operation's unknown outcome here.
+    """
+    require(type(stdout_limit) is int and 0 < stdout_limit <= 4 * 1024 * 1024
+            and type(stderr_limit) is int and 0 < stderr_limit <= 65536,
+            'INVALID_ORGAN_OUTPUT_BOUND', outcome_unknown=False, automatic_retry=False)
+    require(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+            'ORGAN_CHILD_WAIT_OWNER_REQUIRED', outcome_unknown=False, automatic_retry=False)
+    require(time.clock_gettime(time.CLOCK_BOOTTIME) < deadline,
+            'ORGAN_DEADLINE_EXCEEDED', outcome_unknown=False, automatic_retry=False)
+    process = subprocess.Popen(argv, stdin=subprocess.DEVNULL,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               env=HOST_ENV, pass_fds=pass_fds, start_new_session=True)
+    buffers = {'stdout': bytearray(), 'stderr': bytearray()}
+    limits = {'stdout': stdout_limit, 'stderr': stderr_limit}
+    completed = False
+    may_signal_group = True
+    try:
+        with selectors.DefaultSelector() as ready:
+            for name in buffers:
+                stream = getattr(process, name)
+                os.set_blocking(stream.fileno(), False)
+                ready.register(stream, selectors.EVENT_READ, name)
+            while ready.get_map():
+                remaining = deadline - time.clock_gettime(time.CLOCK_BOOTTIME)
+                require(remaining > 0, 'ORGAN_DEADLINE_EXCEEDED',
+                        outcome_unknown=True, automatic_retry=False)
+                for key, _ in ready.select(remaining):
+                    name = key.data
+                    # Read at most one byte beyond the admitted bound, and
+                    # reject it before extending a retained output buffer.
+                    chunk = os.read(key.fileobj.fileno(),
+                                    min(65536, limits[name] - len(buffers[name]) + 1))
+                    if not chunk:
+                        ready.unregister(key.fileobj)
+                        continue
+                    require(len(buffers[name]) + len(chunk) <= limits[name],
+                            'ORGAN_OUTPUT_LIMIT_EXCEEDED', outcome_unknown=True,
+                            automatic_retry=False)
+                    buffers[name].extend(chunk)
+        # Popen.wait may reap before propagating KeyboardInterrupt. Observe
+        # exit without consuming the child identity, and give up group signals
+        # *before* entering any call that can reap it.
+        while True:
+            remaining = deadline - time.clock_gettime(time.CLOCK_BOOTTIME)
+            require(remaining > 0, 'ORGAN_DEADLINE_EXCEEDED',
+                    outcome_unknown=True, automatic_retry=False)
+            try:
+                exited = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+            except ChildProcessError:
+                may_signal_group = False
+                raise ControlError('ORGAN_CHILD_WAIT_OWNER_LOST', outcome_unknown=True,
+                                   automatic_retry=False) from None
+            if exited is not None:
+                break
+            time.sleep(min(0.01, remaining))
+        may_signal_group = False
+        returncode = process.wait(timeout=1)
+        completed = True
+        require(time.clock_gettime(time.CLOCK_BOOTTIME) < deadline,
+                'ORGAN_DEADLINE_EXCEEDED', outcome_unknown=True, automatic_retry=False)
+        return subprocess.CompletedProcess(argv, returncode,
+                                           bytes(buffers['stdout']), bytes(buffers['stderr']))
+    except (OSError, subprocess.TimeoutExpired):
+        raise ControlError('ORGAN_TRANSPORT_UNKNOWN', outcome_unknown=True,
+                           automatic_retry=False) from None
+    finally:
+        if not completed:
+            # The unreaped leader pins our own newly created process-group
+            # identity, including a descendant which still holds an output FD.
+            if may_signal_group:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except (ProcessLookupError, PermissionError):
+                    # Popen.kill can itself poll/reap. No later path may use
+                    # the process-group number after that fallback call.
+                    may_signal_group = False
+                    try:
+                        process.kill()
+                    except (ProcessLookupError, PermissionError):
+                        pass
+            try:
+                process.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                pass
+        process.stdout.close()
+        process.stderr.close()
+
 
 def _organ_pairs(pairs):
     result = {}
@@ -79,7 +175,9 @@ class _OrganCell:
 
     def run(self, args, timeout=30):
         require(self.generation == _organ_generation(self.init), 'CELL_GENERATION_CHANGED')
-        remaining = min(timeout, self.deadline - time.clock_gettime(time.CLOCK_BOOTTIME))
+        now = time.clock_gettime(time.CLOCK_BOOTTIME)
+        deadline = min(self.deadline, now + timeout)
+        remaining = deadline - now
         require(remaining > 2, 'ORGAN_DEADLINE_EXCEEDED')
         switches = {'mnt': 'mount', 'pid': 'pid', 'uts': 'uts', 'ipc': 'ipc'}
         cmd = ['/usr/bin/nsenter'] + [
@@ -89,9 +187,8 @@ class _OrganCell:
                 str(max(1, remaining - 2))] + list(args)
         # Every namespace descriptor refers to the original cell even if its
         # numeric host PID is reused. No discover() call exists on this path.
-        process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                 timeout=remaining, env=HOST_ENV,
-                                 pass_fds=tuple(self.fds.values()))
+        process = _organ_run_bounded(cmd, deadline=deadline,
+                                     pass_fds=tuple(self.fds.values()))
         require(process.returncode == 0, 'ORGAN_TRANSPORT_UNKNOWN',
                 outcome_unknown=True, automatic_retry=False)
         require(self.generation == _organ_generation(self.init), 'CELL_GENERATION_CHANGED',

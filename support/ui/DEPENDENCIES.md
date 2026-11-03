@@ -22,9 +22,29 @@ together with the other original dependency security patches. Full verification
 covers the six lock roots listed below. The Notes model fixture, document
 readback fixture and prepared SDK helper must match that same source.
 
-## Selected source and current qualification (2026-10-27)
+## Selected source and qualification boundary (2026-11-03)
 
-The selected Hepta source is [`4223fc77944e9beb5651df063158b22ae1a4f701`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/4223fc77944e9beb5651df063158b22ae1a4f701), tree `7c19c9903d4e82baf3a61111214ff3fe46605cef`. The original Cargo 1.96.0 actually resolved all six roots in independent source/cache directories. Full original source-byte and critical dependency verification passed, followed by the original builder's actual Git-cache and prepared native graph checks. The [source-pair record](../../results/integration/2026-10-27-source-pin/README.md) retains exact lock/source hashes and commands. Ordinary updates were online; subsequent metadata checks were locked/offline. Three roots without Hepta dependencies retain unchanged locks. The paired Desktop recovery callsite uses original Fleet's validated spawn history. This source-resolution result does not compile or qualify the final product; each build must record its actual clean Desktop commit/tree, selected features and binary hashes.
+The selected Hepta source is
+[`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360),
+tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`, as recorded in
+[HEPTA_SHARED_PRESENTER.json](HEPTA_SHARED_PRESENTER.json), the three consuming
+Cargo manifests and the explicit preedit profile. The selected Desktop starting
+checkpoint is `745c0731aed270ee394145c6767371a6af47f49f`, tree
+`fa70b1b95206d25775009c6965245d34051468a4`. A later build records its actual clean
+Desktop commit/tree, all six locks, features, resources and binary hashes.
+
+This source selection does not carry forward the 4223 six-lock and Rust
+qualification, the 942/de0 CI results, or earlier native-window receipts.
+Run the source-only check below for local source consistency; use the full
+original Hepta checkout for source-byte and dependency-graph verification.
+Neither check runs the installed product. The current acceptance scope and
+remaining gates are maintained in
+[current capabilities](../../docs/CURRENT_CAPABILITIES.md#current-product-pair),
+with retained records in the [evidence index](../../docs/EVIDENCE_INDEX.md).
+
+## Historical qualification (2026-10-27: 4223 and 942/de0)
+
+The source selected at that time was [`4223fc77944e9beb5651df063158b22ae1a4f701`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/4223fc77944e9beb5651df063158b22ae1a4f701), tree `7c19c9903d4e82baf3a61111214ff3fe46605cef`. The original Cargo 1.96.0 actually resolved all six roots in independent source/cache directories. Full original source-byte and critical dependency verification passed, followed by the original builder's actual Git-cache and prepared native graph checks. The [source-pair record](../../results/integration/2026-10-27-source-pin/README.md) retains exact lock/source hashes and commands. Ordinary updates were online; subsequent metadata checks were locked/offline. Three roots without Hepta dependencies retain unchanged locks. The paired Desktop recovery callsite uses original Fleet's validated spawn history. This source-resolution result does not compile or qualify the final product; each build must record its actual clean Desktop commit/tree, selected features and binary hashes.
 
 The previous Desktop [`94234e6a63858dcf7312025f6e20c85e00cc07f6`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/94234e6a63858dcf7312025f6e20c85e00cc07f6), tree `13b211835e776adf0aa450d168b40a97fa39b842`, selected Hepta `de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c`, tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`. Its completed six-lock and native CI results below remain historical and do not transfer to 4223fc7.
 

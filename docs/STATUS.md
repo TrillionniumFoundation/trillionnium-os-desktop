@@ -1,6 +1,13 @@
 # 当前状态
 
-## 2026-10-27 产品整改与当前选源
+## 2026-11-03 当前入口与历史边界
+
+当前实施起点为 Desktop `745c0731aed270ee394145c6767371a6af47f49f` / tree `fa70b1b95206d25775009c6965245d34051468a4`，配对原 Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360` / tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`。完整当前范围和未完成门禁统一见[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)；实际后继产物须绑定自己的 Desktop commit/tree。
+
+本页作为日期账本保留原执行记录。下文 de0、4223、v10/v11、旧内核与 UI 的测试计数、当时的 PR/CI 状态和“当前”措辞只适用于各自固定来源，不是 2026-11-03 的运行结果。旧 README 空文件规则属于历史；现役规则允许版本化导航并要求普通文件。查找原日志、失败和来源使用[证据索引](EVIDENCE_INDEX.md)，开发与技术入口使用[模块索引](modules/README.md)。此导航修正不授予安装、生产授权、原生 F1/G2 或物理设备资格。
+
+<a id="2026-10-27-产品整改与当前选源"></a>
+## 2026-10-27 产品整改与 de0 选源（历史）
 
 当前选定 Hepta 为 `de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c` / tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`，显式 preedit SDK prepared tree 保持 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。本轮源pin收敛基线为 Desktop `1813bac14a829cd83ef3d5fdda4e96e71955190e` / tree `db199ec4e58bc645f0a10c13852950a7a3f7439e`；六根锁须由真实Cargo重新生成、解析与核验。最终干净Desktop commit/tree取锁生成后的新提交和实际selection，不以本段自指。
 
@@ -10,7 +17,7 @@
 
 `baf73bf0` / FD 的Cargo14命令及六根图、123份必需来源/219个manifest核验属于旧依赖配对。旧a9/H8d原生UI全部16条实际命令exit 0；H8d / `bb5677f6` 双owner负控effects=0；`e9642b55` 的103/26/24项静态检查与84文档/858链接均按原来源保留。
 
-最终同源UI/runtime/Root构建与安装、真实Root/人类/模型授权Notes保存和原thread回读仍待完成。Windows历史原91项83 PASS、7 FAIL、1 LEAK及773整体FAIL保留；独立0ba5的真实Windows run40460595505正在执行，GNU通过与helper构建不替代原生功能终态。Android原签名私钥未恢复，Asterinas最终体积、完整F1/G2与产品闭环仍未闭合。[当前能力](CURRENT_CAPABILITIES.md#2026-10-27-当前配对与产品整改)、[固定来源](SOURCES.md#hepta-native-organ)与[模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)列出开发技术入口；生产资格仍未取得。
+最终同源UI/runtime/Root构建与安装、真实Root/人类/模型授权Notes保存和原thread回读仍待完成。Windows历史原91项83 PASS、7 FAIL、1 LEAK及773整体FAIL保留；独立0ba5的真实Windows run40460595505正在执行，GNU通过与helper构建不替代原生功能终态。Android原签名私钥未恢复，Asterinas最终体积、完整F1/G2与产品闭环仍未闭合。[该配对能力记录](CURRENT_CAPABILITIES.md#2026-10-26-产品整改的当前来源)、[固定来源](SOURCES.md#hepta-native-organ)与[模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md)列出开发技术入口；生产资格仍未取得。
 
 下文按时间保留原记录；其中“当前”、README空文件规则和测试数仅描述各节来源，不覆盖本节。
 

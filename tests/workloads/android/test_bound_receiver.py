@@ -6,8 +6,12 @@ import hashlib
 import importlib.machinery
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
+import time
 import types
 import unittest
 from unittest.mock import patch
@@ -145,7 +149,7 @@ class BoundReceiverTests(unittest.TestCase):
                 patch.object(self.receiver.os, 'readlink', side_effect=['mnt:[11]', 'pid:[12]']), \
                 patch.object(self.receiver.os, 'close'), \
                 patch.object(self.receiver.time, 'clock_gettime', return_value=100), \
-                patch.object(self.receiver.subprocess, 'run', return_value=types.SimpleNamespace(returncode=0, stdout=b'fixed')) as run:
+                patch.object(self.receiver, '_organ_run_bounded', return_value=types.SimpleNamespace(returncode=0, stdout=b'fixed')) as run:
             cell = self.receiver._OrganCell()
             try:
                 cell.run(['/system/bin/getprop'])
@@ -160,16 +164,167 @@ class BoundReceiverTests(unittest.TestCase):
             self.assertIn('--pid=/proc/self/fd/22', argv)
             self.assertNotIn('-t', argv)
             self.assertEqual(call.kwargs['pass_fds'], (21, 22, 23, 24))
+            self.assertEqual(call.kwargs['deadline'], 130)
 
     def test_expired_cell_budget_never_starts_a_late_instrumentation(self):
         cell = self.receiver._OrganCell.__new__(self.receiver._OrganCell)
         cell.init, cell.env, cell.fds, cell.generation, cell.deadline = 123, {}, {}, {'a': 'b'}, 105
         with patch.object(self.receiver, '_organ_generation', return_value=cell.generation), \
                 patch.object(self.receiver.time, 'clock_gettime', return_value=106), \
-                patch.object(self.receiver.subprocess, 'run') as run:
+                patch.object(self.receiver, '_organ_run_bounded') as run:
             with self.assertRaises(self.receiver.ControlError):
                 cell.run(['/system/bin/getprop'])
         run.assert_not_called()
+
+    def test_real_transport_retains_utf8_and_exact_output_bounds(self):
+        value = '中文输入😀'.encode('utf-8')
+        reply = self.receiver._organ_run_bounded(
+            [sys.executable, '-c',
+             "import os; os.write(1, " + repr(value) + "); os.write(2, b'0123456789abcdef')"],
+            deadline=time.clock_gettime(time.CLOCK_BOOTTIME) + 5,
+            stdout_limit=len(value), stderr_limit=16)
+        self.assertEqual(reply.returncode, 0)
+        self.assertEqual(reply.stdout, value)
+        self.assertEqual(reply.stderr, b'0123456789abcdef')
+
+    def test_real_transport_bounds_both_streams_and_reaps_its_child(self):
+        popen = subprocess.Popen
+        for fd, limit in ((1, 64), (2, 16)):
+            children = []
+
+            def start(*args, **kwargs):
+                child = popen(*args, **kwargs)
+                children.append(child)
+                return child
+
+            with self.subTest(fd=fd), patch.object(self.receiver.subprocess, 'Popen', side_effect=start), \
+                    self.assertRaises(self.receiver.ControlError) as failed:
+                self.receiver._organ_run_bounded(
+                    [sys.executable, '-c',
+                     f"import os,time; os.write({fd}, b'x' * {limit + 1}); time.sleep(2)"],
+                    deadline=time.clock_gettime(time.CLOCK_BOOTTIME) + 5,
+                    stdout_limit=64, stderr_limit=16)
+            self.assertEqual(str(failed.exception), 'ORGAN_OUTPUT_LIMIT_EXCEEDED')
+            self.assertTrue(failed.exception.details['outcome_unknown'])
+            self.assertFalse(failed.exception.details['automatic_retry'])
+            self.assertEqual(len(children), 1)
+            self.assertIsNotNone(children[0].returncode)
+            self.assertTrue(children[0].stdout.closed)
+            self.assertTrue(children[0].stderr.closed)
+
+    def test_real_transport_deadline_reaps_without_retry(self):
+        popen = subprocess.Popen
+        children = []
+
+        def start(*args, **kwargs):
+            child = popen(*args, **kwargs)
+            children.append(child)
+            return child
+
+        with patch.object(self.receiver.subprocess, 'Popen', side_effect=start), \
+                self.assertRaises(self.receiver.ControlError) as failed:
+            self.receiver._organ_run_bounded(
+                [sys.executable, '-c', 'import time; time.sleep(2)'],
+                deadline=time.clock_gettime(time.CLOCK_BOOTTIME) + 0.2)
+        self.assertEqual(str(failed.exception), 'ORGAN_DEADLINE_EXCEEDED')
+        self.assertFalse(failed.exception.details['automatic_retry'])
+        self.assertEqual(len(children), 1)
+        self.assertIsNotNone(children[0].returncode)
+
+    def test_interrupted_transport_cleans_only_its_own_process_group(self):
+        popen = subprocess.Popen
+        children = []
+        killpg = os.killpg
+        groups = []
+
+        def start(*args, **kwargs):
+            child = popen(*args, **kwargs)
+            children.append(child)
+            return child
+
+        def stop(group, sig):
+            groups.append(group)
+            return killpg(group, sig)
+
+        with patch.object(self.receiver.subprocess, 'Popen', side_effect=start), \
+                patch.object(self.receiver.os, 'killpg', side_effect=stop), \
+                patch.object(self.receiver.selectors.DefaultSelector, 'select', side_effect=KeyboardInterrupt), \
+                self.assertRaises(KeyboardInterrupt):
+            self.receiver._organ_run_bounded(
+                [sys.executable, '-c', 'import time; time.sleep(2)'],
+                deadline=time.clock_gettime(time.CLOCK_BOOTTIME) + 5)
+        self.assertEqual(groups, [children[0].pid])
+        self.assertIsNotNone(children[0].returncode)
+        self.assertTrue(children[0].stdout.closed)
+        self.assertTrue(children[0].stderr.closed)
+
+    def test_late_result_never_signals_an_already_reaped_process_group(self):
+        popen, clock = subprocess.Popen, time.clock_gettime
+        deadline = clock(time.CLOCK_BOOTTIME) + 5
+        reaped = False
+
+        def start(*args, **kwargs):
+            child = popen(*args, **kwargs)
+            wait = child.wait
+
+            def finish(*args, **kwargs):
+                nonlocal reaped
+                result = wait(*args, **kwargs)
+                reaped = True
+                return result
+
+            child.wait = finish
+            return child
+
+        def observed_time(kind):
+            return deadline + 1 if reaped else clock(kind)
+
+        with patch.object(self.receiver.subprocess, 'Popen', side_effect=start), \
+                patch.object(self.receiver.time, 'clock_gettime', side_effect=observed_time), \
+                patch.object(self.receiver.os, 'killpg') as killpg, \
+                self.assertRaises(self.receiver.ControlError) as failed:
+            self.receiver._organ_run_bounded([sys.executable, '-c', 'pass'], deadline=deadline)
+        self.assertTrue(reaped)
+        self.assertEqual(str(failed.exception), 'ORGAN_DEADLINE_EXCEEDED')
+        killpg.assert_not_called()
+
+    def test_wait_interruption_after_owned_child_reap_never_signals_old_group(self):
+        # Popen.wait can reap the child and still re-raise KeyboardInterrupt.
+        # Use one normally exiting owned child and intercept all group signals;
+        # no PID reuse or unrelated process is involved in this regression.
+        popen = subprocess.Popen
+        children = []
+        wait_completed = False
+
+        def start(*args, **kwargs):
+            child = popen(*args, **kwargs)
+            children.append(child)
+            wait = child.wait
+
+            def interrupted_wait(*args, **kwargs):
+                nonlocal wait_completed
+                result = wait(*args, **kwargs)
+                if not wait_completed:
+                    wait_completed = True
+                    raise KeyboardInterrupt
+                return result
+
+            child.wait = interrupted_wait
+            return child
+
+        with patch.object(self.receiver.subprocess, 'Popen', side_effect=start), \
+                patch.object(self.receiver.os, 'killpg') as killpg, \
+                self.assertRaises(KeyboardInterrupt):
+            self.receiver._organ_run_bounded(
+                [sys.executable, '-c', 'pass'],
+                deadline=time.clock_gettime(time.CLOCK_BOOTTIME) + 5)
+
+        self.assertTrue(wait_completed)
+        self.assertEqual(len(children), 1)
+        self.assertIsNotNone(children[0].returncode)
+        self.assertTrue(children[0].stdout.closed)
+        self.assertTrue(children[0].stderr.closed)
+        killpg.assert_not_called()
 
 
 if __name__ == '__main__':

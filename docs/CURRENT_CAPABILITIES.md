@@ -1,6 +1,38 @@
 # 当前能力、源码与验收边界
 
-## 2026-10-27 审计修复候选：Linux 产品先行
+<a id="current-product-pair"></a>
+## 2026-11-03 当前实施起点：Linux Root、Session 与 Rust UI
+
+当前选择以下固定源码作为接续起点。它们定位实现，不是本次安装、运行或设备验收收据；后续代码和文档提交各有自己的 Desktop commit/tree。
+
+| 输入 | 精确身份与依据 |
+| --- | --- |
+| Desktop 实施起点 | [`745c0731aed270ee394145c6767371a6af47f49f`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/745c0731aed270ee394145c6767371a6af47f49f)，tree `fa70b1b95206d25775009c6965245d34051468a4` |
+| 原 Hepta owner / UI / 依赖补丁 | [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360)，tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`；由 [canonical source contract](../support/ui/HEPTA_SHARED_PRESENTER.json) 及实际 Cargo 入口选择 |
+| 产品构建与锁 | Rust/Cargo `1.96.0`；[DEPENDENCIES](../support/ui/DEPENDENCIES.md) 列出五个普通入口及独立 prepared UI 入口，共六份锁。源码选择、完整依赖图、构建和运行分别验证 |
+| 显式 preedit 输入候选 | [linux-preedit-profile.json](../support/ui/linux-preedit-profile.json) 选择同一 Hepta 来源；原 SDK `337566c8b25d47f7e4fff6a202157b65bf183330`，prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。默认 SDK、clipboard 候选和 preedit 候选不互借锁或运行资格 |
+
+本页是当前状态的唯一汇总入口。[模块索引](modules/README.md) 对应实际源码和开发/技术合同；[SOURCES](SOURCES.md#hepta-native-organ) 定位同一 Hepta commit 的原 owner 手册；[STATUS](STATUS.md) 与[证据索引](EVIDENCE_INDEX.md) 保留按日期、源码和场景绑定的结果。`4223` 的六锁/32项原包测试、`942/de0` 的三项 CI、较早 v10/v11 和真实窗口记录仍属于各自原配对，不能转记为 `745/a39` 的完整运行。
+
+### 当前交付范围与下一条实际验收
+
+| 领域 | 当前源码提供的入口 | 仍须以最终产物闭合的门禁 |
+| --- | --- | --- |
+| Linux 原 Root 与文本会话 | [product Root](../services/hepta-session-host/src/product_root/README.md)、[原文本 adapter](../services/hepta-session-host/TEXT_SESSION.md)、[同一 Root 的管理入口](../services/hepta-session-host/src/product_root/ADMIN.md)；原 authority、Current、writer/outbox 与 operation history 保留所属 owner | 最终安装包中的真实 Root/人类准入、原 thread/模型、期限/撤销与恢复，记录实际身份、命令和输出；源码合同不代替部署输入 |
+| Rust UI、安装和本地草稿 | [UI 五成员](../ui/README.md)、[产品安装/升级/回滚/卸载](../support/ui/PRODUCT.md)、[草稿与上下文](../support/ui/CHAT_WORKSPACE.md) | 同一个包的真实启动、Session/窗口身份、恢复、升级/回滚及卸载保留用户数据；最终 Makepad 的 IBus、AT-SPI 与物理输入另外验收 |
+| Notes 目的端 | [Notes organ](../support/ui/NOTES_ORGAN.md)、[独立文档回读和持久恢复](../support/ui/NOTES_DURABILITY.md)；原 operation/CAS 与应用文档 owner 相接 | 原授权→实际保存→独立回读→原 writer 持久终态，再按原门禁执行丢回复、撤销、并发编辑与 App 退出；模型文本不能作效果收据 |
+| 第二目的端与 Android | [Android 只读 adapter](../support/android/DEVICE_ORGAN.md)、[严格 receiver 合同](../support/android/receiver/README.md) 已有源码；当前 helper 在发现设备和 UI 调用前拒绝 `organ-set-text` | 每个新目的端独立绑定观察、目标身份/代际、授权、效果、撤销和原 owner 恢复；Android 还需原 signer、安装字节/peer 与真实回读资格。旧限定 APK smoke 不提供生产设备控制资格 |
+| Asterinas organ | [固定构建](../support/build/README.md)、[原 daemon runner](../tests/workloads/hepta_agentd_runtime/README.md)、[G1-d](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 与下方 A00–A10 合同 | 同一最终 guest/Hepta 输入的完整 F1、G2 持久效果和故障恢复；各历史 QEMU 切片保留，不能代替当前原生产品、GPU/ARM/BSP 或手机资格 |
+| 模块交接与证据 | [机器目录](modules/catalogue.json) 覆盖 15 个第一方 package、1 个 UI workspace、11 个开发域及当前 57 个内核成员 | `check_modules.py` 检查映射和链接，源码/构建/运行分别留收据；文档覆盖数不作为开发完成率 |
+
+本页尚未登记这条最终安装组合的完整产品验收；生产授权与效果、完整原生 F1/G2、通用桌面控制和手机资格保持未取得。关闭一个门禁时须补充实际 Desktop/Hepta commit/tree、features/锁、二进制/资源摘要、环境、原始退出码、日志和未执行范围。修改来源时同步 README、SOURCES、依赖说明及模块交接；不改历史收据的来源、计数和结论。
+
+## 历史配对记录
+
+以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-03 选源，也不把曾通过或曾失败的场景自动转授后继。
+
+<a id="2026-10-27-审计修复候选linux-产品先行"></a>
+## 2026-10-27 4223 审计修复候选（历史）
 
 当前 Hepta 来源为 [`4223fc77944e9beb5651df063158b22ae1a4f701`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/4223fc77944e9beb5651df063158b22ae1a4f701) / tree `7c19c9903d4e82baf3a61111214ff3fe46605cef`。原 Rust/Cargo 1.96.0 已实际完成五个普通入口和独立 prepared UI 入口的六根锁解析，随后通过完整原源码字节、关键依赖图、实际 Cargo Git checkout 和 prepared native graph 核对。普通更新使用在线 Cargo，后续 metadata 使用 `--locked --offline`；没有手改锁内来源。三根不依赖 Hepta 的锁保持原字节。原 SDK `337566c8` 与 prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf` 不变，详见[本次来源与命令收据](../results/integration/2026-10-27-source-pin/README.md)。最终 Desktop commit/tree、编译结果、资源与二进制由后续实际构建收据绑定。
 
@@ -52,7 +84,7 @@ Desktop `5b2f2db2` / FD 的实际 UI builder 与云端 native UI CI 均在 Sessi
 
 ## 2026-10-25 审计整改与当前配对
 
-本节保留2026-10-25时点的记录：当时的唯一 Hepta 来源及27份关键文件身份由依赖合同和source map绑定，三处Cargo入口与两产品锁同步更新。当前六锁范围和来源以上方2026-10-27记录及[依赖合同](../support/ui/DEPENDENCIES.md)、[source map](SOURCES.md#hepta-native-organ)为准。原生输入 SDK 只在显式 preedit profile 使用，默认 Git SDK 和 clipboard 候选各自保留独立合同。新的 ComposerTransaction 拒绝发布活动 preedit，确认后沿原 ChatWorkspace 更新；焦点补丁只处理同一窗口真实 gain/loss 转换，四项原 SDK 生命周期回归先复现再修复。
+本节保留2026-10-25时点的记录：当时的唯一 Hepta 来源及27份关键文件身份由依赖合同和source map绑定，三处Cargo入口与两产品锁同步更新。当前六锁范围和来源以[当前实施起点](#current-product-pair)及[依赖合同](../support/ui/DEPENDENCIES.md)、[source map](SOURCES.md#hepta-native-organ)为准。原生输入 SDK 只在显式 preedit profile 使用，默认 Git SDK 和 clipboard 候选各自保留独立合同。新的 ComposerTransaction 拒绝发布活动 preedit，确认后沿原 ChatWorkspace 更新；焦点补丁只处理同一窗口真实 gain/loss 转换，四项原 SDK 生命周期回归先复现再修复。
 
 真实窗口在 Desktop `f7d36b32` / Hepta `1a76b508` 配对下通过 AT-SPI 七项、原子编辑五项和输入法前三项后，因中文提交不能一次撤销而失败；该失败保留，完整输入法资格未通过。后续显式 SDK 将组词预览隔离为事务，提交只产生一次净撤销，取消恢复原选区，检查点只含已提交文本；合法区外编辑保持精确 UTF-8 范围。补丁树 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf` 的原绘制 TextInput 实际事件测试 35 项及窗口焦点四项通过，并经独立源码审查；新产品仍须在最终配对上重新完成构建、原完整 IBus 窗口和 Notes 恢复验收，不能继承旧配对的窗口资格。详见[显式输入配置](../support/ui/PREEDIT_TEXT_PROFILE.md)。
 

@@ -1,6 +1,8 @@
 # G1-b 开发与验证：原 CPU owner 的纳秒用量
 
 更新：2026-10-19。技术结构见 [A06 G1-b 手册](../../docs/ASTERINAS_CPU_USAGE_G1B.md)。
+2026-11-03 导航维护：下文保留 G1-b 切片的来源、计数和验收范围；当前整合状态见
+[当前能力](../../docs/CURRENT_CAPABILITIES.md#current-product-pair)。初始化命令遵循现役普通 README 文件规则，旧执行收据不改写。
 本文是当前实现的开发和验收契约，**不是最终组合候选的成功收据**。
 最终生产 commit/tree、全套客体、七个负控、普通产品和完整 Linux 32 项运行仍须分别登记。
 HOS2 设备仍仅开放 QueryAbi，用户态 ReadUsage 与另外三个效果/事件操作未开放。
@@ -53,7 +55,7 @@ QEMU 8.2.2 的既有 native profile 与上游完整开发容器的其他版本�
 ```sh
 set -euo pipefail
 test -z "$(git status --porcelain=v1 --untracked-files=all)"
-test ! -s README.md
+test -f README.md && test ! -L README.md
 g1b_head=$(git rev-parse HEAD)
 g1b_tree=$(git rev-parse HEAD^{tree})
 g1b_out=$(mktemp -d /tmp/g1b-qualification.XXXXXX)
