@@ -559,16 +559,15 @@ fn parse_kind(value: &str) -> Result<AppKind, String> {
     }
 }
 
-fn parse_arguments() -> Result<
-    (
-        AppKind,
-        Workspace,
-        u64,
-        Option<trill_ui_core::notes::NotesTargetIdentity>,
-        Option<trill_ui_core::calculator::CalculatorTargetIdentity>,
-    ),
-    String,
-> {
+struct AppArguments {
+    kind: AppKind,
+    workspace: Workspace,
+    task_id: u64,
+    notes_target: Option<trill_ui_core::notes::NotesTargetIdentity>,
+    calculator_target: Option<trill_ui_core::calculator::CalculatorTargetIdentity>,
+}
+
+fn parse_arguments() -> Result<AppArguments, String> {
     let mut kind = None;
     let mut workspace = None;
     let mut task_id = None;
@@ -641,15 +640,26 @@ fn parse_arguments() -> Result<
             )
         }
     };
-    Ok((kind, workspace, task_id, notes, calculator))
+    Ok(AppArguments {
+        kind,
+        workspace,
+        task_id,
+        notes_target: notes,
+        calculator_target: calculator,
+    })
 }
 
 fn main() -> eframe::Result {
-    let (kind, workspace, task_id, notes_target, calculator_target) = parse_arguments()
-        .unwrap_or_else(|error| {
-            eprintln!("trill-app-window: {error}");
-            std::process::exit(2);
-        });
+    let AppArguments {
+        kind,
+        workspace,
+        task_id,
+        notes_target,
+        calculator_target,
+    } = parse_arguments().unwrap_or_else(|error| {
+        eprintln!("trill-app-window: {error}");
+        std::process::exit(2);
+    });
     let notes_lifetime = notes_target
         .as_ref()
         .map(trill_ui_core::notes_lifetime::SessionLifetime::from_environment)
