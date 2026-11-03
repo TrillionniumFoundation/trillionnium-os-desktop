@@ -73,3 +73,15 @@ GPU/VMM/Android product/首台实机可行性与M0并行；完整设备实现不
 候选在选择本轮首个效果前查询原 sender 已保留的同 turn 请求；当前 callback 和原人类输入的来源核验仍有自己的只读前置步骤。通过这些核验并发现已有请求后，后续 callback 就按原操作只读核对；另一个 App 或另一个 call 的请求必须明确返回未执行。返回内容保留首个原 tool、destination、target、operation 和 receipt 的身份，UI 不把其他 App 的既有成功显示成本次执行成功。缺失列表、未知结果、断连或重启都不能清除这个持久约束，也不能据模型输出推定外部效果失败后再执行。
 
 原 AuthBus/queue 的人类输入持久证明、Core callback 身份与原 writer 的外部效果终态各有范围。该候选不承诺“最早持久化的 Core 工具项必定先执行”；最终被原 sender 接受的请求以其持久事实为准。实现必须在真实 SQLite sender/writer 上验证两应用顺序反转、并发竞争、丢回复及重开后的只读核对，并单独完成真实授权与两应用窗口验收。这里记录合同和依据，不给尚未运行的联合候选授予通过资格。
+
+## D14：有限原授权装配与长期运行分别交付
+
+当前 `fd/a39` 的[实际优化构建、测试和安装](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md)已完成，但产品组合仍是最多 300 秒的原 authority 限时装配候选。[Root 输入](../services/hepta-session-host/src/product_root/config.rs)接受 120–300 秒，[人类会话 provider](../support/ui/product/native_human.py)、原 Hepta [launcher](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/src/production_launcher_inputs.rs)及[authority 服务](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/src/authority_host_runtime.rs)各有自己的有限窗口。安装通过或一次效果通过，均不证明常驻生产运行与自动续期。
+
+[现有 writer 到期计算](../services/hepta-session-host/src/product_root/recovery_authority.rs)为 `now + min(180s, issuer_remaining - 60s)`；原 full-owner recovery 等待旧 writer 实际到期后再次使用同一公式。首 writer 创建时若 issuer 剩余不超过 240 秒，首 writer 会占用到 issuer 到期前 60 秒，届时没有正的 successor 窗口。计划完整恢复验收应从允许的 300 秒初始化，并记录实际到期值与准备耗时；这不是恢复一定成功的保证。不能事后改 config、改时钟或修改原 lease 冒充原授权仍然有效。
+
+原 [ProtectedLease](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/src/deployment_issuer_root.rs)同时固定 lease ID 和 revision，每次发行与观察都重新核对。底层注册表的 revision CAS 或 epoch 推进不等于产品续期：改变 revision 会使现存 issuer 拒绝旧绑定，推进 epoch 还会隔离旧授权。当前产品入口没有将这些原能力装配为连续运行事务。
+
+长期运行应在原 owner 内增加显式、可中断后核对的重新授权与代际接续：先冻结旧代际的新效果准入，保留原请求、未知操作和已持久终态；原 Root 在新的真实人类会话授权下建立有限的新 issuer/writer proof 及受监督通道；原 consumer 前沿、Current、撤销和任务身份完成一致交接后才开放新动作。每一阶段必须记录持久状态，重启后核对同一事务，旧未知操作继续只读核对，不按新的 call、目标、prefix 或 thread 重发。该事务尚未实现或验收，不以放宽 300 秒常量替代。
+
+真实人类准入还要求原同 UID 的活跃本地图形 logind、原 Shell 的存活身份及 AuthBus 已确认输入。私有 Xvfb 的窗口证据不替代该身份来源。若以后支持远程或无图形生产准入，应为原 Root 和 Hepta 实现独立版本的可信身份、会话寿命、撤销与原 route 绑定；当前版本不存在可以绕过这些前置的配置开关。

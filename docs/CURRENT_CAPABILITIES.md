@@ -30,7 +30,11 @@
 
 原 Hepta `0259fc82cc1b6ac9e245227dceffb767e306378f` 的完整 Memory 执行保留 393 passed / 1 failed / 13 skipped；不以随后定向通过项覆盖失败。唯一失败的原 federation 用例重查仍失败，2 秒预算和 16 个完成 peer 的原断言未放宽。独立 Xvfb 诊断还观察到页/缓冲等待及原 15 秒准备超时；原失败保留。后续同一 `fd/a39` 显式 preedit 产物的[私有 X11 窗口实测](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/README.md)按原期限通过 AT-SPI 7/7、原子 EditableText 5/5、真实 IBus 5/5，五个常驻自有子进程均清理。这次成功不确立唯一 I/O 根因，不授予物理键盘、Wayland、Orca、视觉检查或实际 AuthBus/Notes 效果资格。
 
-同一 `fd/a39` 的原 Root `dev-small` 两段编译及两项 strip 已完成，但 341,288,592-byte Agentd 被原 128 MiB 单文件门槛拒绝。[原构建失败](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/root/build-receipt.json)及 runner `blocked` 均保留；包、后续 host 全测试和最终安装未完成。原有 `product-linux` 优化配置的独立构建须按自己的结果验收，不能沿用进程 exit 0 或窗口成功替代。
+同一 `fd/a39` 的原 Root `dev-small` 两段编译及两项 strip 已完成，但 341,288,592-byte Agentd 被原 128 MiB 单文件门槛拒绝。[原构建失败](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/root/build-receipt.json)及 runner `blocked` 均保留；该次执行没有产生已验收的包或安装。
+
+随后同一精确来源的[原 `product-linux` 构建、测试与安装](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md)已实际通过。原 8 条构建命令全部退出 0，优化后 Agentd 为 117,408,600 bytes，Root 为 24,530,984 bytes，未改原文件/归档尺寸门槛。原 Session/product-root all-targets 为 53 passed / 2 ignored；两项原 ignored 另以实际特权各执行通过，总计 55 个不同通过用例。原 pack、verify、install 均通过，物理 release 为 `/opt/trill-organ-20261103/releases/fd8d56c52b97-053cc1957b40`。两份完整小证据归档共 31 个原文件已独立重算摘要，前后源码干净；安装器仍返回 `services_started: false` / `production_ready: false`，不能记为真实 Notes 效果或重启闭环已完成。
+
+当前 Root/issuer/人类准入组合最多 300 秒，完整 owner 恢复只允许在同一 issuer 窗口内进行。原产品没有连续重新授权/epoch 接续事务；[D14](DECISIONS.md)与[恢复合同](../services/hepta-session-host/src/product_root/RECOVERY.md)记录实际期限公式和缺口。短租约装配、真实人类动作与常驻生产运行分别验收。
 
 同一次窗口执行的[五张原始 IBus 截图](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/window/visual/README.md)已逐图核对原收据 SHA/尺寸并完成独立 AI 视觉观察。全显示截图可见 `ni hao`、高亮候选“你好”，提交后标题、选中会话与输入框保留“你好”；窗口单独截图的黑区对应外部候选框覆盖区域。原人类视觉、物理输入、Wayland、Orca 和授权发送资格不变。这些是原执行的图像观察，不是新增生产效果测试。
 

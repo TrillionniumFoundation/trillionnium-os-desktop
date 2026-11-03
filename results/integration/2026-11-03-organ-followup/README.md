@@ -12,7 +12,8 @@ component test into installed-product qualification.
 | --- | --- | --- | --- |
 | Notes/build successor CI | Desktop `bf15a519e9192b063071e8b9b61ef3319bed416e` | All 9 PR workflows successful, including the complete original Native UI, Root and prepared SDK gate | Installed Root, real Notes effect and restart reconciliation |
 | Frozen fd/a39 prepared UI and private window | Exact fd/a39, explicit prepared preedit SDK | All 16 UI build commands exited 0; private X11 AT-SPI 7/7, atomic EditableText 5/5 and real IBus 5/5; five owned long-lived children cleaned up | Physical/Wayland/Orca/visual checks, authenticated Send and installed original Root/Notes |
-| Frozen fd/a39 Root dev-small package | Same original source pair | Both build stages and two strip stages completed; 341,288,592-byte Agentd was rejected by the original 128 MiB per-file bound | Complete package and later original host tests; outer runner exit 0 does not change its blocked result |
+| Frozen fd/a39 Root dev-small package | Same original source pair | Both build stages and two strip stages completed; 341,288,592-byte Agentd was rejected by the original 128 MiB per-file bound | That execution produced no accepted package; its blocked result is unchanged |
+| Frozen fd/a39 Root product-linux build/install | Same original source pair, Rust 1.96 | Eight build commands passed; Agentd 117,408,600 bytes; original host tests 53 passed plus two actually executed privileged cases; original pack, verify and installation all passed | Real authenticated submission, Notes effect/readback/terminal/restart and continuous authority renewal |
 | Calculator Core | Desktop `5a8684cc4591a4163c162f198b4121ca4cfc6ebc`, tree `5bece45cf0c433194a2aeefdd924990844d3e398`, Rust 1.96 | 81 passed; zero failed, ignored or filtered | Original owner attachment, native windows, production tasks |
 | Calculator App/Session | Same Desktop 5a, default features | 138 top-level passed, zero failed, 2 ignored; actual Session normal exit and SIGKILL both reached idle egui Close at frame 4 with zero input events/effects | Compositor-window and original Root/owner end-to-end qualification |
 | Module documentation | Same clean complete Desktop 5a | 16 Cargo entries, 11 development domains, 57 kernel members, 91 documents, 1,504 local links; no errors | A documentation contract/link check is not runtime evidence or proof every module is finished; external URLs were not fetched |
@@ -104,6 +105,22 @@ resolves the window-only black region as an overlapping visible candidate panel;
 its `ni hao` and highlighted `你好` are legible. The original human/physical/Wayland/
 Orca and authenticated-Send flags remain false. These are the same execution's
 original images, not a new runtime test or an installed-product result.
+
+## Later optimized original Root installation
+
+The [fd/a39 product-linux record](owner-p0-fd-v5/README.md) retains its own
+successful build and installation. The original size limits, features and
+locks remain unchanged. All-targets and the separately executed privileged
+tests total 55 distinct passed cases. The two complete small archives contain
+31 original files, all independently checked by size and SHA-256. The actual
+installed release is `/opt/trill-organ-20261103/releases/fd8d56c52b97-053cc1957b40`;
+the installer explicitly did not start services or grant production readiness.
+The prior dev-small failure is not overwritten or reclassified.
+
+The implemented authority composition is limited to at most 300 seconds and
+one same-boot recovery inside the original issuer window. [D14](../../../docs/DECISIONS.md)
+records the missing continuous original-owner reauthorization transaction.
+Passing an installed finite run cannot qualify continuous production use.
 
 ## Open product work
 

@@ -1,0 +1,194 @@
+{
+  "schema": "trill.owner.fd-root-tests-package.v1",
+  "status": "passed",
+  "scope": "Frozen fd/a39 original host tests and package installation; no human/model/effect qualification",
+  "sources": {
+    "desktop": {
+      "commit": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+      "tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27",
+      "status": ""
+    },
+    "hepta": {
+      "commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de",
+      "status": ""
+    }
+  },
+  "commands": [
+    {
+      "name": "root-all-targets",
+      "command": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-session-host/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "product-root",
+        "--all-targets",
+        "--profile",
+        "dev-small",
+        "--jobs",
+        "2",
+        "--no-fail-fast",
+        "--message-format=json-render-diagnostics"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-owner-20261103/desktop-final-source",
+      "exit_code": 0,
+      "seconds": 61.773,
+      "stdout": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-all-targets.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-all-targets.stderr.log",
+      "stdout_sha256": "dfd77fde6100f70cedcee0313d2c3710e4f4f5bca8ccf66d5c3409cb738796f8",
+      "stderr_sha256": "b16c1997c321e34fa405ac02fa3614006f7111c4c8b4ce13daa4326cd93af39d"
+    },
+    {
+      "name": "root-privileged-1",
+      "command": [
+        "/usr/bin/sudo",
+        "-n",
+        "--",
+        "/data/trill-organ-owner-20261103/root-target/dev-small/deps/hepta_desktop_root-22883a7d4406ca88",
+        "--exact",
+        "product_root::recovery::tests::live_original_session_is_refused_and_actual_exit_can_be_observed",
+        "--ignored",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-owner-20261103/desktop-final-source",
+      "exit_code": 0,
+      "seconds": 0.038,
+      "stdout": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-privileged-1.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-privileged-1.stderr.log",
+      "stdout_sha256": "26a3dbf2c851452f07f88bcfc8862e52d46987e2237459541226f5485ecd9b81",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "root-privileged-2",
+      "command": [
+        "/usr/bin/sudo",
+        "-n",
+        "--",
+        "/data/trill-organ-owner-20261103/root-target/dev-small/deps/hepta_desktop_root-22883a7d4406ca88",
+        "--exact",
+        "product_root::recovery_sockets::tests::live_foreign_or_rebound_socket_is_not_removed_but_exact_stale_socket_retires",
+        "--ignored",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-owner-20261103/desktop-final-source",
+      "exit_code": 0,
+      "seconds": 0.019,
+      "stdout": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-privileged-2.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-privileged-2.stderr.log",
+      "stdout_sha256": "526c187f240ca3a488b50407c84d6504d4333ee356e35ca0970469e0783a0bd8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "root-package",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "support/ui/product/root_bundle.py",
+        "pack",
+        "--desktop-package",
+        "/data/trill-organ-owner-20261103/ui-extract-fd-v3/trillionnium-desktop",
+        "--root-build",
+        "/data/trill-organ-owner-20261103/root-build-fd-product-linux-v5",
+        "--output",
+        "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/trillionnium-desktop-root-fd-product-linux-v5.tar.gz"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-owner-20261103/desktop-final-source",
+      "exit_code": 0,
+      "seconds": 83.684,
+      "stdout": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-package.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-package.stderr.log",
+      "stdout_sha256": "139e0a722374b3ad5796d4d67368515a17b11543fe5d9fb973641b97333b4ea5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "root-package-verify",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/extract/trillionnium-desktop-root/root_bundle.py",
+        "verify",
+        "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/extract/trillionnium-desktop-root"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-owner-20261103/desktop-final-source",
+      "exit_code": 0,
+      "seconds": 2.289,
+      "stdout": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-package-verify.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-package-verify.stderr.log",
+      "stdout_sha256": "2abe341baf55dbfffc3c02c144501b8fc9079821a46bd714313a6d1567a9e853",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "root-package-install",
+      "command": [
+        "/usr/bin/sudo",
+        "-n",
+        "--",
+        "/usr/bin/python3",
+        "-B",
+        "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/extract/trillionnium-desktop-root/root_bundle.py",
+        "install",
+        "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/extract/trillionnium-desktop-root",
+        "--prefix",
+        "/opt/trill-organ-20261103"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-owner-20261103/desktop-final-source",
+      "exit_code": 0,
+      "seconds": 7.186,
+      "stdout": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-package-install.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/root-package-install.stderr.log",
+      "stdout_sha256": "51bb7dda00d5e5832f91712589d471302d22bf46ad6a513fee3ee17d60534edb",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "product_ready": false,
+  "test_profile": "dev-small",
+  "packaged_profile": "product-linux",
+  "target": "/data/trill-organ-owner-20261103/root-target",
+  "cargo_home": "/data/trill-organ-owner-20261103/cargo-home",
+  "host_before": {
+    "meminfo": "MemTotal:       131760804 kB\nMemFree:        21383124 kB\nMemAvailable:   99390852 kB\nBuffers:         2926176 kB\nCached:         47343960 kB\nSwapCached:        50168 kB\nActive:         15722428 kB\nInactive:       60286176 kB\nActive(anon):   11182636 kB\nInactive(anon): 13542708 kB\nActive(file):    4539792 kB\nInactive(file): 46743468 kB\nUnevictable:       26784 kB\nMlocked:           26784 kB\nSwapTotal:       8388604 kB\nSwapFree:         351524 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:             22404 kB\nWriteback:             0 kB\nAnonPages:      25716244 kB\nMapped:          1878364 kB\nShmem:            134600 kB\nKReclaimable:   27937752 kB\nSlab:           32606496 kB\nSReclaimable:   27937752 kB\nSUnreclaim:      4668744 kB\nKernelStack:       94416 kB\nPageTables:       298772 kB\nSecPageTables:     18144 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    74269004 kB\nCommitted_AS:   95724420 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:      316288 kB\nVmallocChunk:          0 kB\nPercpu:           186432 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:   4575232 kB\nFilePmdMapped:     55296 kB\nCmaTotal:              0 kB\nCmaFree:          201636 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nGPUActive:             0 kB\nGPUReclaim:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:    79054356 kB\nDirectMap2M:    46649344 kB\nDirectMap1G:    10485760 kB\n",
+    "io_pressure": "some avg10=0.70 avg60=0.58 avg300=1.29 total=35934672611\nfull avg10=0.69 avg60=0.55 avg300=1.23 total=33600630283\n",
+    "data_disk": {
+      "total": 983023263744,
+      "used": 806513102848,
+      "free": 126499852288
+    },
+    "affinity": 48
+  },
+  "original_build_evidence": {
+    "archive": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/original-v5-build-evidence.tar.gz",
+    "bytes": 498815,
+    "sha256": "4337e3b5f1ca90d2ab88128c7d936ef8c911f787ee6ad0a538cd9c0aba712461",
+    "index": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/original-v5-build-index.json"
+  },
+  "target_lease": {
+    "path": "/data/trill-organ-owner-20261103/root-target/.trill-product-build.lock",
+    "scope": "exclusive cooperating-product-builder lease through packaging"
+  },
+  "privileged_original_tests": [
+    {
+      "binary": "/data/trill-organ-owner-20261103/root-target/dev-small/deps/hepta_desktop_root-22883a7d4406ca88",
+      "sha256": "102bd231e561035d6e80ef7a9f3777b1e29d994fcb1f1b3f4149cdb460a6b7e3",
+      "test": "product_root::recovery::tests::live_original_session_is_refused_and_actual_exit_can_be_observed"
+    },
+    {
+      "binary": "/data/trill-organ-owner-20261103/root-target/dev-small/deps/hepta_desktop_root-22883a7d4406ca88",
+      "sha256": "102bd231e561035d6e80ef7a9f3777b1e29d994fcb1f1b3f4149cdb460a6b7e3",
+      "test": "product_root::recovery_sockets::tests::live_foreign_or_rebound_socket_is_not_removed_but_exact_stale_socket_retires"
+    }
+  ],
+  "installation": {
+    "archive": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/trillionnium-desktop-root-fd-product-linux-v5.tar.gz",
+    "archive_sha256": "76838c10be79708f79a0e46a89b8dbe056595a8f0fe73fe46abc9434ae6fd6e8",
+    "extracted": "/data/trill-organ-owner-20261103/root-fd-v5-tests-package-01/extract/trillionnium-desktop-root",
+    "prefix": "/opt/trill-organ-20261103",
+    "original_installer_result": "{\"installed\": \"/opt/trill-organ-20261103/releases/fd8d56c52b97-053cc1957b40\", \"production_ready\": false, \"release_id\": \"fd8d56c52b97-053cc1957b40\", \"services_started\": false}\n"
+  },
+  "source_clean_after": true
+}

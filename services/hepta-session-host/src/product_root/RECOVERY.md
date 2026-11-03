@@ -64,6 +64,16 @@ The successor receives at most `min(180s, issuer remaining - 60s)`. Expiry stops
 writing through the original runtime. No automatic new authority is issued.
 A deployment created without a separate writer/issuer window is refused.
 
+The 60-second subtraction is a reserve, not a promise that a replacement can
+consume those 60 seconds. If the issuer has at most 240 seconds remaining when
+the first writer is created, that writer reaches `issuer_expiry - 60s`; applying
+the same formula after its actual expiry leaves no positive successor window.
+For a planned full-owner acceptance run, initialize with the allowed 300-second
+lifetime and verify the actual remaining window and preparation time. Do not
+edit the original config or lease to extend an already issued authority.
+This version has no continuous issuer renewal; a fresh prefix creates a new
+agent/thread/authority and cannot stand in for the old operation's recovery.
+
 This first product entry admits one child-creation episode. Before that boundary,
 the same recovery command can resume interrupted preparation: waiting for the
 actual old writer expiry and rechecking/removing stale rendezvous. It first holds

@@ -10,6 +10,24 @@ the original App and can lose one selected reply body without modifying its
 installed ELF. Their process fixtures do not replace genuine Root, human,
 model, original-thread or durable owner-receipt acceptance.
 
+## Lifecycle supported by this version
+
+The current Root composition is a finite original-authority deployment of at
+most 300 seconds. It has one explicit same-boot owner recovery, inside the same
+original issuer window; it does not yet provide continuous reauthorization or
+cross-boot authority renewal. The real local graphical login, registered live
+Shell and acknowledged original AuthBus input remain mandatory for the human
+Notes path. A private Xvfb input test does not provide that identity.
+
+For an acceptance run that includes full owner recovery, choose the allowed
+300-second issuer lifetime at initialization and retain the actual issuer and
+writer expiry observations. The [recovery contract](../../services/hepta-session-host/src/product_root/RECOVERY.md)
+explains why shorter otherwise-valid inputs can leave no successor window.
+[D14](../../docs/DECISIONS.md) separates this implemented finite lifecycle from
+the original-owner continuation transaction still needed for a long-running
+production desktop. Increasing constants or starting a new prefix is not that
+transaction.
+
 ## Source and package contract
 
 Freeze one clean Desktop commit/tree and one clean Hepta commit/tree after
