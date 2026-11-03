@@ -1,0 +1,164 @@
+{
+  "schema": "hepta.fixed-nightly-source-format.v1",
+  "passed": true,
+  "started_at_utc": "2026-11-03T20:54:18.174202+00:00",
+  "source_head": "5d95730850a13728824fa89511231215f307e4e3",
+  "source_tree": "b799d050b129b11dd4df0d1d0bfe0d8355eb4a3f",
+  "original_source_modified": false,
+  "files": [
+    {
+      "path": "kernel/asterinas/kernel/core/build.rs",
+      "input_sha256": "f745f58916f490d8a8bdbddadd2c750ff1cab18a6061c4e30db9f8797b9b9143",
+      "formatted_sha256": "cd3c51135b172ee3969fd40851866df2be064e1864769e917c894e188fb36eeb",
+      "bytes": 6148,
+      "changed": true,
+      "diff_lines": 86
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "input_sha256": "ccf0917a6ce2431093468e1f34cfddb9b981843be407d20ddf0f3200cd4f4bec",
+      "formatted_sha256": "ccf0917a6ce2431093468e1f34cfddb9b981843be407d20ddf0f3200cd4f4bec",
+      "bytes": 17417,
+      "changed": false,
+      "diff_lines": 0
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/memory_observation.rs",
+      "input_sha256": "18e960b3cfee943ec71291b6758d0f5e5929f65339d7889362da1e37bb8f219e",
+      "formatted_sha256": "18e960b3cfee943ec71291b6758d0f5e5929f65339d7889362da1e37bb8f219e",
+      "bytes": 2333,
+      "changed": false,
+      "diff_lines": 0
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs",
+      "input_sha256": "8810f1e129a05938100d88231ac2535334f8b10e905987ed8910826e3dec6e01",
+      "formatted_sha256": "8810f1e129a05938100d88231ac2535334f8b10e905987ed8910826e3dec6e01",
+      "bytes": 10947,
+      "changed": false,
+      "diff_lines": 0
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs",
+      "input_sha256": "62c52ba9a41dd8b90af97227c1901a435b1074436fffc61537b8de90a98065f7",
+      "formatted_sha256": "62c52ba9a41dd8b90af97227c1901a435b1074436fffc61537b8de90a98065f7",
+      "bytes": 23229,
+      "changed": false,
+      "diff_lines": 0
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/mod.rs",
+      "input_sha256": "f96fc5de0f6b0fc912eb2556683b7d5e5f02d188ef4e6169f79d35e33efa45ee",
+      "formatted_sha256": "9cd25c993eb2ecfeb8f9948e2584440c21ff265c84104e8699ef94325e98b80c",
+      "bytes": 600,
+      "changed": true,
+      "diff_lines": 23
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs",
+      "input_sha256": "9f4d7079a292852ae257c13fdbc325940d967d2092d1f3cbf7c5314fc9e86147",
+      "formatted_sha256": "9f4d7079a292852ae257c13fdbc325940d967d2092d1f3cbf7c5314fc9e86147",
+      "bytes": 707,
+      "changed": false,
+      "diff_lines": 0
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs",
+      "input_sha256": "b886f86041e36015e95a2c1bdabda8aacdb035851895a2bd9c1899e0a2841df9",
+      "formatted_sha256": "b886f86041e36015e95a2c1bdabda8aacdb035851895a2bd9c1899e0a2841df9",
+      "bytes": 14782,
+      "changed": false,
+      "diff_lines": 0
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "exit_code": 0,
+      "label": "source-identity"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "exit_code": 0,
+      "label": "source-clean"
+    },
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustfmt",
+        "--version"
+      ],
+      "exit_code": 0,
+      "label": "rustfmt-version"
+    },
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--config-path",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-host-source/kernel/asterinas/rustfmt.toml",
+        "--config",
+        "skip_children=true",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/build.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc/memory_observation.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/program_loader/elf/mod.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs"
+      ],
+      "exit_code": 0,
+      "label": "format-private-copies"
+    },
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--config-path",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-host-source/kernel/asterinas/rustfmt.toml",
+        "--config",
+        "skip_children=true",
+        "--check",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/build.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc/memory_observation.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/program_loader/elf/mod.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/src/process/program_loader/elf/trusted_initial.rs"
+      ],
+      "exit_code": 0,
+      "label": "check-private-copies"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "exit_code": 0,
+      "label": "source-after-clean"
+    }
+  ],
+  "kernel_built": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "rustfmt_path": "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustfmt",
+  "rustfmt_sha256": "5e7ee8bc9eb06e5f52c423ca81d6b66558bfe9643a54d319825ae63eed6b6317",
+  "rustfmt_version": "rustfmt 1.9.0-nightly (87e5904f5e 2026-07-20)",
+  "formatted_copies_pass_check": true,
+  "source_inputs_already_formatted": false,
+  "finished_at_utc": "2026-11-03T20:54:18.544438+00:00"
+}

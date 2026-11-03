@@ -21,6 +21,7 @@ component test into installed-product qualification.
 | Hepta Memory | `0259fc82cc1b6ac9e245227dceffb767e306378f`, tree `4005ffe2bad095cf1d5e0d006393d08ced831cd8`, parent a39 | 394 executed: 393 passed, 1 failed; 13 skipped | A successful full Memory suite or Calculator production loop |
 | Federation recheck | Same Hepta 0259; CPUQuota 400%, unchanged test limits | First attempt reached the original 60-second test timeout; second returned requested_peers=16 but completed_peers=0 and failed | Higher CPU quota did not resolve the failure; a specific I/O root cause is not established |
 | Original owner candidate stage 2 | Hepta `580a07bfadad97d1dfc13ece112facc13dcc00bb`, tree `cd6004e85a5ae28513a0bcf32da5bf7b190103f5` | Objective 66 passed / 2 skipped; causal receipt selection 1 passed / 407 unselected; Agentd selection 6 passed / 587 unselected | Original Core execution, subsequent joint Root changes, real windows and production authority |
+| Separate exact original-owner image profile | Pre-commit component identities retained below; same tree as published Desktop `fe55fe8e1764f4967bae295311d288d8049b6eae` | Fixed kernel toolchain admitted and installed; eight Rust components formatted; original host build.rs input checks passed; 47 normal and 14 optimized Python checks passed | Actual locked 204-package graph, full kernel, native original-owner effects and persistent G2 |
 | Private Xvfb diagnosis | Frozen fd startup configuration | Own socket/lock existed by 0.4 seconds; actual child was in D state with page/buffer waits; original 15-second readiness failed, owned child reaped | Notes window, IME, model/owner effects, product qualification |
 
 The complete host result files record commands, compiler identities and source
@@ -122,6 +123,35 @@ one same-boot recovery inside the original issuer window. [D14](../../../docs/DE
 records the missing continuous original-owner reauthorization transaction.
 Passing an installed finite run cannot qualify continuous production use.
 
+## Separate exact original-owner image profile
+
+[PR #284](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/284)
+publishes the default-off `g2-original-owner-a39-v1` source at
+`fe55fe8e1764f4967bae295311d288d8049b6eae`, tree
+`07cbb5e0187b4355200c2f5e0166228cecf1ecc1`. It fixes the original a39 ELF,
+digest, LOAD layout and four-role composition while retaining the loader's
+private snapshot, readback and sealing rules. The legacy 8/16 MiB profile and
+ordinary exec limits are unchanged.
+
+The [host-only evidence](g2-exact-owner-host/README.md) retains 32 original
+files, 57,728 bytes, including complete command outputs. An
+[independent review](g2-exact-owner-host/independent-review.json) rehashed every
+original file and matched 22 component hashes to the published tree. The
+original format/build/test receipts describe their actual pre-commit state;
+their identities were not rewritten to claim a later canonical execution.
+The fixed nightly compiler was actually installed, all eight Rust components
+passed its formatter, and the source-owned build script compiled and checked
+the exact original ELF without executing it. The Python checks passed 47
+normal cases and 14 optimized cases on the same Python bytes.
+
+The new source also adds bounded lifecycle memory observations. The seven
+initial samples and optional successor samples are implementation points,
+not observed guest results. They cannot establish a continuous peak, complete
+process-tree accounting, successor overlap or global recovery reserve.
+The real locked graph, source-built OSDK, full kernel and positive original
+owner guest scenarios still need their own execution records. All native G2
+and production flags in this archive remain false.
+
 ## Open product work
 
 Linux Notes still needs installed original Root submission, the original writer
@@ -133,10 +163,10 @@ headless Weston checks and the full source graph are separate acceptance parts.
 The [original G2 owner records and resource review](../../g2-original-owner-size-20261103/README.md)
 show that its build/package succeeded but the old 8 MiB file / 16 MiB
 LOAD profile rejected its actual 20,138,584-byte ELF and 20,168,704-byte aligned
-LOAD total. This remains a failed static profile, not guest execution. A future
-independently versioned owner resource profile needs its own source, budget,
-unchanged image-identity/sealing rules and execution evidence. Whole-system
-recovery memory and trusted user-pause ingress remain open.
+LOAD total. This remains a failed static profile, not guest execution. The
+separately published profile above has its own source and host checks; its
+actual kernel and guest qualification remain open. Whole-system recovery
+memory and trusted user-pause ingress remain open.
 
 Original Android signing/installed-peer qualification and fixed X230 native
 drivers/recovery remain separate open conditions. This checkpoint claims no

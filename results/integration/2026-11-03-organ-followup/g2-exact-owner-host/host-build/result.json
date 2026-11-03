@@ -1,0 +1,85 @@
+{
+  "schema": "hepta.exact-owner-host-build-script-check.v1",
+  "passed": true,
+  "started_at_utc": "2026-11-03T20:59:31.488231+00:00",
+  "source_head_before_format_overlay": "5d95730850a13728824fa89511231215f307e4e3",
+  "source_components": [
+    {
+      "path": "kernel/asterinas/kernel/core/build.rs",
+      "sha256": "cd3c51135b172ee3969fd40851866df2be064e1864769e917c894e188fb36eeb"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs",
+      "sha256": "9f4d7079a292852ae257c13fdbc325940d967d2092d1f3cbf7c5314fc9e86147"
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustup",
+        "run",
+        "nightly-2026-07-21",
+        "rustc",
+        "--edition=2024",
+        "/data/trill-organ-20261103-f1-build/kernel-source-format-5d957308/formatted/kernel/asterinas/kernel/core/build.rs",
+        "-o",
+        "/data/trill-organ-20261103-f1-build/host-build-script-5dformatted-v1/source-owned-build-script"
+      ],
+      "label": "compile",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/host-build-script-5dformatted-v1/source-owned-build-script"
+      ],
+      "label": "ordinary-no-input",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/host-build-script-5dformatted-v1/source-owned-build-script"
+      ],
+      "label": "exact-first",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/host-build-script-5dformatted-v1/source-owned-build-script"
+      ],
+      "label": "exact-existing-sealed",
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/host-build-script-5dformatted-v1/source-owned-build-script"
+      ],
+      "label": "existing-writable-refused",
+      "exit_code": 101,
+      "expected_exit_code": 101
+    }
+  ],
+  "actual_original_owner_executed": false,
+  "kernel_built": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "global_memory_reserve": false,
+  "legacy_static_profile_passed": false,
+  "actual_rustc": {
+    "path": "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "752104a1bd1bc3a59e6a2bd8ec02fa7113acf0e5083f9ee59d43e983ecc5d48f"
+  },
+  "rustc_verbose": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+  "owner_sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454",
+  "owner_bytes": 20138584,
+  "compiled_build_script_sha256": "f2b55f25289a06ab7b0cd4b100d786abe15f4a7cec81092a450edf952631546d",
+  "host_build_script_verified": true,
+  "same_exact_bytes_frozen": true,
+  "ordinary_no_extra_input": true,
+  "repeated_sealed_input_preserved": true,
+  "writable_existing_input_refused_unchanged": true,
+  "finished_at_utc": "2026-11-03T20:59:33.360372+00:00"
+}

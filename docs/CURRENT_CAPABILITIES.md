@@ -42,6 +42,8 @@
 
 [原 G2 owner 镜像与资源审查](../results/g2-original-owner-size-20261103/README.md)绑定 Desktop `4dcd02d8058005b92b75b4e997ec4de08833e01d` / 原 Hepta `a39`：原 release 构建和 strip 完成，ELF 为 20,138,584 bytes，页对齐 LOAD 合计 20,168,704 bytes；原 8 MiB / 16 MiB 门禁仍然拒绝。独立版本的原 owner 实验 profile 和全局恢复资源分别按 [D11/D12](DECISIONS.md) 实现与验收，不能把普通 guest 生命周期、静态算式或放大预算记成 G2 CPU 持久闭环。
 
+默认关闭的独立 `g2-original-owner-a39-v1` 已在 [PR #284](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/284) 发布，来源为 `fe55fe8e1764f4967bae295311d288d8049b6eae` / tree `07cbb5e0187b4355200c2f5e0166228cecf1ecc1`。它固定上述原 ELF 的长度、摘要、LOAD 及四角色，保留原 loader 私有快照、回读与 sealing；旧 8/16 MiB profile 和普通 exec 不变。[主机证据](../results/integration/2026-11-03-organ-followup/g2-exact-owner-host/README.md)记录实际固定 nightly 安装、8 个 Rust 组件格式检查、原 build.rs 编译/输入封存，以及 47 项普通、14 项优化 Python 检查。32 份原文件与 22 个源码组件已独立复核；执行时的提交前身份保留，未改名成后发 canonical commit 的重新执行。源码增加有界内存观察点，但完整 204-package 图、内核、guest 效果和持久闭环尚未取得证据；这些观察点也不证明连续峰值、完整进程树或全局恢复预留。
+
 ### 当前交付范围与下一条实际验收
 
 | 领域 | 当前源码提供的入口 | 仍须以最终产物闭合的门禁 |

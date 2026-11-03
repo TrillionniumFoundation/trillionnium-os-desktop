@@ -1,0 +1,76 @@
+{
+  "scope": "host-only inert parser and normal own-child regression; no Rust/kernel/native qualification",
+  "source_head": "5d95730850a13728824fa89511231215f307e4e3",
+  "uncommitted_test_addition": true,
+  "started_at_utc": "2026-11-03T20:43:21.126809+00:00",
+  "commands": [
+    {
+      "label": "normal",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_original_owner_image_profile",
+        "test_native_owner_memory",
+        "test_trusted_daemon_profile",
+        "test_build_original_entry",
+        "test_native_owner_evidence"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "1b2fa579543da0415941568b61c63d804535117a4f0ede140d0b18ee8d43ce50",
+      "stderr_tail": [
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 47 tests in 0.761s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "label": "optimized",
+      "argv": [
+        "python3",
+        "-B",
+        "-O",
+        "-m",
+        "unittest",
+        "-v",
+        "test_original_owner_image_profile",
+        "test_native_owner_memory"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "cbe8e1f9c8e8f377724e4f4947792bf2f848047bec27d2496f31411057e82e92",
+      "stderr_tail": [
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 14 tests in 0.094s",
+        "",
+        "OK"
+      ]
+    }
+  ],
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "global_memory_reserve": false,
+  "tested_sources": {
+    "tests/workloads/hepta_cpu_control/native_owner_memory.py": "9713680ecf5b7c79c0f9192fe3d35baf0ec6406a62a91ef1db1162a073a7ccb0",
+    "tests/workloads/hepta_cpu_control/test_native_owner_evidence.py": "5e54b3c5c3aba0cac4bbb3b0c20e83b738b9e32354eafd1b00843ab597bfcc2a",
+    "tests/workloads/hepta_cpu_control/test_native_owner_memory.py": "ea692e7daf472112d300cb9a6748329524a93226553912fd9f9b87c6bb09d1a6",
+    "tests/workloads/hepta_cpu_control/test_trusted_daemon_profile.py": "ea3f110fb56a6aa99d141a8bd25dbe11aedf3c825dcddbfd7b8dfd1b2cdc952d",
+    "tests/workloads/hepta_cpu_control/test_build_original_entry.py": "65fbd8df88082925b5d9914ed97859853faaee1a48314ba4ac3f6d5fceb19cdc",
+    "tests/workloads/hepta_cpu_control/native_owner_evidence.py": "71dbc6b1db9ea13a791297691def685c180043bc95caf4dd4dc2524623ad95b4",
+    "tests/workloads/hepta_cpu_control/test_native_owner_runner.py": "a229a7fd235831a29ab4a684fe0e92d1db6017b445ec720e082317f70381da41",
+    "tests/workloads/hepta_cpu_control/native_owner_inputs.py": "61a2df5dde72a00b7f195b3c7c3ba66632cb8038e02d8bb35574345c5de47afa",
+    "tests/workloads/hepta_cpu_control/test_original_owner_image_profile.py": "07ef3a833c8d197fb1bda2eb8872f0dc2067d1e59ffcd61ee87c053ccd52184b",
+    "tests/workloads/hepta_cpu_control/run_native_owner.py": "b5d2a77cd11a5caa7cbc8ae3655933e05e3b3056e9c48cc457efe7e824ee5270",
+    "tests/workloads/hepta_cpu_control/build_original_entry.py": "50ed7107431d4c6fc683db164254b4180c0f0427c490da0026893de7fc5b5d77",
+    "tests/workloads/hepta_cpu_control/test_build_original_entry_supervision.py": "f7363df0fcb6d1ca41c45bf9d207a467657b66887201c5583bcded994a352834",
+    "support/build/original_owner_image.py": "d56be065237126a7c8d4debe1a0930e6b3b5cddd29cbd514e5fd3f58395292f4",
+    "support/build/prepare-trusted-image.py": "48db9588386659cc64a46bb8d51fca34b77181c634f78e940e9b8c5b37fef520"
+  },
+  "finished_at_utc": "2026-11-03T20:43:22.455025+00:00"
+}
