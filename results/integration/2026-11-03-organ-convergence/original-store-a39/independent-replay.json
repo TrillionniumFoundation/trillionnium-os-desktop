@@ -1,0 +1,39 @@
+{
+  "recorded_at_utc": "2026-11-03T16:10:47.467614+00:00",
+  "native_observer_replayed": true,
+  "host_observer_replayed": true,
+  "native_receipt_sha256": "69ad009ab12aa3941c7414b2374fee4da816133edc0a2e09e116d6a55a9f60e4",
+  "native_raw_serial_sha256": "e7a94a61d5731d0aff5dc161e0feca1f227b3a53edee41439db1815cf64baab9",
+  "native_raw_serial_bytes": 25323,
+  "native_observer_source_sha256": "cea4d3a1e0661848fd6f62f54b66b9bc90671f053fdcd0d4acd7feb2f9fffba4",
+  "checks": [
+    "original_source_memory_kg_commit",
+    "live_wal_before_sigkill",
+    "sigkill_exit_observed",
+    "legacy_reopen_exact_anchor_and_memory",
+    "source_retry_idempotent_after_sigkill",
+    "two_processes_ready_before_cas",
+    "one_cas_commit_one_conflict",
+    "losing_source_transaction_rolled_back",
+    "winning_memory_and_projection_persisted",
+    "graceful_close_reopen_exact_anchor"
+  ],
+  "authority_flags": {
+    "production_authority": false,
+    "production_writer_lock": false,
+    "authenticated_recovery": false,
+    "power_loss_durability": false,
+    "f1_completed": false,
+    "model_turn": false,
+    "device_effect": false
+  },
+  "compiled_hepta": {
+    "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+    "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+  },
+  "kernel_build_source": {
+    "head": "e1f3898ff6c2181a6da27de9f9b0f5d1ec03123d",
+    "tree": "31f8eb04759aafd49a51084ce7ecb425b2d1f097"
+  },
+  "runner_identity_record": "identity/store-native-v1-command.json"
+}

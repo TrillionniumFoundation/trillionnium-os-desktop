@@ -4,6 +4,19 @@ This is a fixed single-CPU qualification policy. Ordinary builds do not acquire
 this capability. It does not qualify a physical memory reserve, trusted user
 pause intent, SMP, production devices or durable Hepta delivery.
 
+The [dedicated CI workflow](../../.github/workflows/g1d-watchdog.yml) now invokes
+the original complete six-boot runner and its unchanged parser tests. It binds
+the actual checked-out head/tree, retains source/kernel/raw serial even on
+failure, and leaves all unsupported qualification flags false. Its first actual
+[run 41677081607](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/41677081607)
+passed all six boots on source `22a94f7d6cd9f77eb4e27c30dfc2befc00dbdb20` / tree
+`e9615b923eb4611124c295482bcaf3303b16055c`; each raw QEMU exit is 33. The
+[independent original-observer replay](../../results/integration/2026-11-03-organ-convergence/watchdog-native-22a94/independent-review.json)
+retains all six serial hashes and the unchanged false qualification flags.
+It is separate from the G1-d management workflow and does not replace that
+workflow's failed gate. Later implementation-stage pending statements below
+remain historical rather than the current execution verdict.
+
 ## Ownership and authority
 
 The sealed, stopped bootstrap registers one original OSTD hardware-timer

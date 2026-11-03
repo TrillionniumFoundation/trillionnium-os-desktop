@@ -62,6 +62,21 @@ The source-reviewed original release profile is read from the actual manifest.
 The ELF remains at most 8 MiB with the original 16 MiB LOAD-map bound enforced
 by `run_g1c_guest.inspect_probe_elf`.
 
+Only the separate product copy is writable while the unchanged original
+release script strips symbols and adds its debug link. The copy is frozen
+again on both success and failure; the Cargo product and retained unstripped
+artifact are not modified by packaging.
+
+The Linux build supervisor requires default `SIGCHLD` and sole wait ownership
+of its commands. It observes exit with `waitid(WNOWAIT)`, relinquishes numeric
+process-group signalling before any reaping call, and retains the Cargo target
+lease through timeout or interruption cleanup. A lost wait identity disarms
+group signalling. Nonzero exits, timeouts and interruptions remain failures in
+the retained record; they cannot qualify an original entry. Descendants that
+leave the created group and forced supervisor termination are outside this
+cleanup boundary. The local supervision tests use only their own ordinary
+child processes and grant no native runtime qualification.
+
 ## Product kernel pipeline
 
 Build the product kernel only after the complete original owner passes its

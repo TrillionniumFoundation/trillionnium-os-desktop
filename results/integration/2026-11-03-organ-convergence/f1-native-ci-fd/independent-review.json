@@ -1,0 +1,51 @@
+{
+  "schema": "trill.original-f1-independent-review.v1",
+  "workflow_run": 41672755245,
+  "sources": {
+    "desktop": {
+      "head": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+      "tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27"
+    },
+    "hepta": {
+      "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+    }
+  },
+  "kernel_sha256": "2d13b752c241391f218a14af23f834920e2ba8d582c21fdf3e3c754b117892e4",
+  "original_observer_replayed": true,
+  "original_observer_sha256": "b84a8dc9399be23090a7e9c5aad6f7e31b45feb67d8ea1ed5b72a5fbad1929c5",
+  "raw_serial_sha256": "035d86e6d1c5e071118380d3d8771e799bfd41675c063f24edaca7f4f3cd9201",
+  "observed_lifecycle": {
+    "old_spawn": 1,
+    "new_spawn": 5,
+    "old_pid": 26,
+    "new_pid": 162,
+    "checks": [
+      "original_starting",
+      "original_running",
+      "bounded_capabilities_events",
+      "missing_run_read",
+      "same_process_draining",
+      "original_restart",
+      "old_spawn_rejected",
+      "controlled_stop"
+    ],
+    "record_count": 8
+  },
+  "qemu_exit": 33,
+  "flags": {
+    "passed": true,
+    "original_owner_runtime_lifecycle_verified": true,
+    "f1_completed": false,
+    "g2_completed": false,
+    "production": false,
+    "hardware_verified": false,
+    "crash_durability_verified": false
+  },
+  "artifact": {
+    "id": 13250069831,
+    "bytes": 224367521,
+    "published_sha256": "85299183f6687b6b9626e7504b2e2ba6218096fdd0ecac66dfe98668c1d45c3f",
+    "complete_zip_digest_recomputed": false
+  }
+}

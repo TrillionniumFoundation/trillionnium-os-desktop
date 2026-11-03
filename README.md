@@ -42,15 +42,17 @@ every shipped file digest and `effects_authorized: false`.
 
 ## Linux host entry point
 
-The implementation checkpoint selected on 2026-11-03 is
-[Desktop `745c0731aed270ee394145c6767371a6af47f49f`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/745c0731aed270ee394145c6767371a6af47f49f),
-tree `fa70b1b95206d25775009c6965245d34051468a4`, paired with
+The product checkpoint frozen on 2026-11-03 is
+[Desktop `fd8d56c52b971c2d5d0e6430f296803b43ef60a3`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/fd8d56c52b971c2d5d0e6430f296803b43ef60a3),
+tree `347fbb7e9931006c749b5bef0e1550c54bc08f27`, paired with
 [Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360),
 tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`. The original Hepta UI/core,
 host packages and Hepta-carried patches select this same source and use
 Rust 1.96.0. [Current capabilities](docs/CURRENT_CAPABILITIES.md#current-product-pair)
-is the current status entry; later changes must record their actual Desktop
-commit/tree in the build receipt rather than reuse this starting checkpoint.
+is the current status entry. [Executed checks and remaining gates](results/integration/2026-11-03-organ-convergence/README.md)
+distinguish this product from its `e1f3898f` native-kernel parent and the original
+`745c0731` implementation base. Later code or documentation commits must record
+their actual Desktop commit/tree instead of reusing a predecessor's qualification.
 The UI Cargo root explicitly patches all four original AccessKit crates to this
 same source. `services/hepta-os` remains a local protocol/transport crate; it
 does not acquire a fictitious Hepta Git dependency.

@@ -73,6 +73,13 @@ above includes it. This exercises process/storage/transport boundaries with
 test identities; original Hepta production authority and physical power loss
 remain separate qualifications.
 
+The [original App exit/readback test](tests/notes_app_readback.rs) keeps its
+10-second persistence deadline and signals readiness over the child's private
+datagram only after the actual store commit. Its child runs libtest with one
+test thread, so CPU availability and human-readable test output cannot change
+the handshake. Normal exit and SIGKILL still require independent receipt
+readback on the original peer and reject replay through the recovery helper.
+
 The [executed ordinary reopen probe](../../tests/ui/evidence/2026-10-24-notes-reopen/README.md)
 records real close/reopen, picker selection, independent AT-SPI readback,
 continued editing and unchanged source storage, with exact binaries and

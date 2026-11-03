@@ -3,11 +3,50 @@
 
 import json
 from pathlib import Path
+import shutil
+import stat
 import subprocess
 import tempfile
 import unittest
 
 import build_original_entry as build
+
+
+class ProductPackagingTests(unittest.TestCase):
+    """Exercise normal local ELF stripping; these are not owner/runtime tests."""
+
+    def test_real_strip_uses_private_writable_copy_and_preserves_original(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "ordinary-elf"
+            shutil.copyfile("/usr/bin/true", source)
+            source.chmod(0o555)
+            original_sha = build.digest(source)
+            product = root / "packaged-elf"
+            report = {"commands": [], "g2_complete": False}
+            with build.packaging_copy(source, product):
+                self.assertEqual(stat.S_IMODE(product.stat().st_mode), 0o600)
+                self.assertNotEqual(product.stat().st_ino, source.stat().st_ino)
+                build.run(["/usr/bin/strip", "--strip-debug", "--strip-unneeded", product],
+                          root, build.BASE_ENV, root, "normal-strip.log", report, 10)
+            self.assertEqual(report["commands"][0]["exit_code"], 0)
+            self.assertEqual(product.read_bytes()[:4], b"\x7fELF")
+            self.assertEqual(stat.S_IMODE(product.stat().st_mode), 0o555)
+            self.assertEqual(build.digest(source), original_sha)
+            self.assertEqual(stat.S_IMODE(source.stat().st_mode), 0o555)
+            self.assertFalse(report["g2_complete"])
+
+    def test_packaging_failure_retains_nonwritable_copy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / "ordinary-input"
+            source.write_bytes(b"owned packaging input\n")
+            product = root / "retained-copy"
+            with self.assertRaisesRegex(ValueError, "ordinary packaging failure"):
+                with build.packaging_copy(source, product):
+                    raise ValueError("ordinary packaging failure")
+            self.assertEqual(product.read_bytes(), source.read_bytes())
+            self.assertEqual(stat.S_IMODE(product.stat().st_mode), 0o555)
 
 
 class SourceAndEntryTests(unittest.TestCase):

@@ -1,0 +1,94 @@
+{
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "case_counts": [
+    [
+      "connected_error_is_read_once_and_delivery_recovers",
+      11
+    ],
+    [
+      "receive_consumes_error",
+      7
+    ],
+    [
+      "send_consumes_error",
+      8
+    ],
+    [
+      "unconnected_socket_ignores_port_unreachable_without_recverr",
+      4
+    ],
+    [
+      "connected_socket_ignores_errors_for_another_destination",
+      8
+    ],
+    [
+      "self_delivery_has_no_error",
+      5
+    ]
+  ],
+  "check_count": 43,
+  "exact_49_lines": true,
+  "exact_markers": true,
+  "expected_stderr_sha256": "67178f9fdbe1e761bc9daad11b88f183658fc8ef7693c77db471464a627ac085",
+  "guest_inputs_unchanged": true,
+  "initramfs_sha256": "5af7b1f395dbab8286e4ec63058514ad79c8c3a5569bb16f5cec8c68c3859599",
+  "kernel_sha256": "dc530064db0dbf1946dc77e1d091bb4b9b431bdba40d635c50b49d1ed3b3af4c",
+  "linux_reference_receipt_sha256": "57b26a36b952b186ed57e679e2bbcdfcb9a96d164a7817c99d779782d90ec321",
+  "no_guest_failure": true,
+  "nonce": "5fcfe8ff0a651d8c221038315c904ac9cc7d2976e1d74689db9d1a0b86552eea",
+  "ordered_completion": true,
+  "original_agentd_lifecycle_qualified": false,
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "passed": true,
+  "probe_sha256": "1135ab036a12e463c612e150eb92e4d66692d747105575da16b5184054a0f07a",
+  "product_receipt_sha256": "a8960b14d6eddef79869cbe1aea46515fbd6e3c81d4c71f616f1b037985a5f3f",
+  "production_authority_qualified": false,
+  "qemu": {
+    "elapsed_seconds": 3.7567137919998004,
+    "process_group_cleanup_completed": true,
+    "returncode": 33,
+    "timed_out": false
+  },
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "remote_icmp_qualified": false,
+  "schema": "a06.udp-local-guest.v1",
+  "scope": "6 local UDP error/delivery cases; 43 checks",
+  "serial_sha256": "129eb3d822c954e5457a65ab78809403f610194aa10f81c25d8285b82e7da580",
+  "source": {
+    "files": {
+      "kernel/asterinas/test/initramfs/src/regression/common/test.h": {
+        "sha256": "f4aa055d5f5755bff51158db05d37b50278db0be7ff1d115ec9a5e1af55ac467",
+        "size": 8667
+      },
+      "kernel/asterinas/test/initramfs/src/regression/network/udp_local_error.c": {
+        "sha256": "e438e1242fe5be5e5886d05936a43666299504e20747ed37d5694d93def3f3e0",
+        "size": 6023
+      },
+      "tests/integration/hepta/run_original_agentd.py": {
+        "sha256": "f201671fb280e8f7d13c524de3983b905c8dadae6b362eac978d79ee67a42788",
+        "size": 30487
+      },
+      "tests/organ_backend/run_guest_probe.py": {
+        "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+        "size": 7644
+      },
+      "tests/workloads/linux/run_scm_rights_cloexec_guest.py": {
+        "sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d",
+        "size": 11957
+      },
+      "tests/workloads/linux/run_udp_local_error_guest.py": {
+        "sha256": "52a399843bbf5311c2dba05230a6f38504f36516633f66b0af44cf91390593e4",
+        "size": 20706
+      },
+      "tests/workloads/linux/udp_local_error.expected.stderr": {
+        "sha256": "67178f9fdbe1e761bc9daad11b88f183658fc8ef7693c77db471464a627ac085",
+        "size": 4658
+      }
+    },
+    "head": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+    "tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27"
+  },
+  "source_inputs_unchanged": true
+}

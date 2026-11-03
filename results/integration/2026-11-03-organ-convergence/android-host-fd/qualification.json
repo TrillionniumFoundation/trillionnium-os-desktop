@@ -1,0 +1,956 @@
+{
+  "android_apk_runtime": "not_executed",
+  "artifacts": {
+    "host-gates.json": {
+      "bytes": 14739,
+      "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/host-gates.json",
+      "sha256": "602e648313d08ea2613bdd76eeba9ce9761756e6492e6c40639abaeb7f00512e"
+    },
+    "javac-only/javac-record.json": {
+      "bytes": 2028,
+      "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/javac-only/javac-record.json",
+      "sha256": "9fd146fa6cd96c1c07a7058029609b17e67c7b5a7e9c219a78647c74272f0dc1"
+    },
+    "unsigned/aligned.apk": {
+      "bytes": 19402,
+      "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned/aligned.apk",
+      "sha256": "e32995b4d135b78d704c0f43ef35337b7360cadcb85508c626c637a6f270f4a1"
+    },
+    "unsigned/android-digitalis-observe-helper": {
+      "bytes": 49912,
+      "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned/android-digitalis-observe-helper",
+      "sha256": "3ff39160bad934df9a2e1057fd1c4f3c1e09d6377bb0c129ca4cb6fd85e8af7c"
+    },
+    "unsigned/build-record.json": {
+      "bytes": 2537,
+      "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned/build-record.json",
+      "sha256": "3304ed22c985cadb5d2a314f3de3d09f8ec851b6bf4165142a7eb1a6be4dc57d"
+    },
+    "unsigned/dex/classes.dex": {
+      "bytes": 36048,
+      "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned/dex/classes.dex",
+      "sha256": "8afb8f4d5d5fdc9196e5e07756a3511d180bd825118a666c5ed3aa6db0f83394"
+    }
+  },
+  "deployed_environment_modified": false,
+  "desktop_commit": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+  "desktop_tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27",
+  "device_mutation_attempts": 0,
+  "environment": {
+    "cc": "/usr/bin/cc",
+    "executable": "/usr/bin/python3",
+    "java": "/usr/bin/java",
+    "javac": "/usr/bin/javac",
+    "pillow": "10.2.0",
+    "pillow_file": "/usr/lib/python3/dist-packages/PIL/__init__.py",
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]"
+  },
+  "expected_complete_test_count": 257,
+  "finished_unix_ms": 1793722207621,
+  "hepta_executed": false,
+  "hepta_selected_commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "host_contract_success": true,
+  "host_gate": {
+    "android_apk_runtime": "not_executed",
+    "asterinas_source_gate": {
+      "android_runtime_verified": false,
+      "blocking_requirements": [
+        "binder",
+        "seccomp",
+        "mac"
+      ],
+      "kernel_runtime_verified": false,
+      "source_scan_exit": 2,
+      "status": "source_review_blocked"
+    },
+    "host_gates_passed": true,
+    "native_asterinas_qualified": false,
+    "scope": "LINUX_HOST_ONLY",
+    "status": "host_passed_only",
+    "unit_test_count": 257,
+    "unqualified_or_blocked": [
+      "execute_binder_abi"
+    ]
+  },
+  "host_operations": {
+    "compile_binder_abi": "passed",
+    "compile_binder_uapi_layout": "passed",
+    "compile_host_jni": "passed",
+    "compile_java_jni_harness": "passed",
+    "compile_kernel_abi": "passed",
+    "compile_seccomp_abi": "passed",
+    "execute_binder_abi": "binder_blocked_no_device",
+    "execute_binder_uapi_layout": "passed",
+    "execute_kernel_abi": "passed",
+    "execute_real_host_jni": "passed",
+    "execute_seccomp_abi": "passed",
+    "offline_unit_tests": "passed",
+    "source_integrity": "passed"
+  },
+  "native_asterinas_qualified": false,
+  "normal_tests": {
+    "count": 257,
+    "skipped": 0,
+    "summary": "OK"
+  },
+  "optimized_tests": {
+    "count": 257,
+    "skipped": 0,
+    "summary": "OK"
+  },
+  "original_apk": {
+    "bytes": 20847,
+    "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/inputs/original-actions-v2.apk",
+    "sha256": "a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058"
+  },
+  "original_apk_cache_source": {
+    "bytes": 20847,
+    "path": "/data/trillionnium-desktop-product-20261024-android-receiver-a762-01/inputs/original-actions-v2.apk",
+    "sha256": "a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058"
+  },
+  "original_signer_sha256": [
+    "7c36bafbdb2789384aeae9dabf69cca6b468f6c1a2d75952ab315288b77ff7f7"
+  ],
+  "output_root": "/data/trill-organ-android-fd8-20261103-kqt0e83g",
+  "package": {
+    "name": "local.pocket4.actions.v2",
+    "unchanged": true,
+    "version_code": "2"
+  },
+  "resource_preflight": {
+    "data_available_bytes": 212826185728,
+    "loadavg": "11.07 11.20 11.80 13/5884 589138",
+    "mem_available_kib": 100437660
+  },
+  "reviewed_helper_derivation": {
+    "frozen_input_sha256": "8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b",
+    "intermediate_sha256": "196fbfe525e9813a79a1582994445c63929f2998448d46ebee7c9ac582f66eec",
+    "patch": "legacy-enter-keyboard-source-v1",
+    "scope": "one exact legacy Enter argv change before strict organ composition; no deployment"
+  },
+  "schema_version": 1,
+  "scope": "LINUX_HOST_ONLY Java/DEX/unsigned candidate and complete original host gates; no Android effect or runtime qualification",
+  "scope_result": "unsigned candidate compiled and all Linux host contracts passed; original signer deployment and Android/Binder runtime remain blocked",
+  "sdk_android_jar": {
+    "bytes": 27092450,
+    "path": "/opt/android-sdk/platforms/android-35/android.jar",
+    "sha256": "4566663c3876e022b4fa4ced8c8697c4ab1688267f090114fd92d027b32e619b"
+  },
+  "signing_performed": false,
+  "source_after": {
+    "head": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+    "source_inputs": {
+      "compat/android/INTERFACES.md": "8729560f4b7edd5f8bb59e412a10984300c3b8562c06998c69e0184444561c21",
+      "compat/android/PHYSICAL_SMOKE.md": "34835078794d057a3f1534c6ee7d4450f8cf0a38a5133993e6f8566693ea460d",
+      "compat/android/aosp-profile.json": "77eacd092ed043e7be67cadcb873b7ab392b03b890b49b4712d55fc9f9c46ea2",
+      "compat/android/capability-matrix.json": "5812b31532c3892d6fd375667e2956dbe10d18ea4d513ed657d11b29dfcad01b",
+      "compat/android/device-organ-contract-v1.json": "30bd0f6fdf6671c26ba1cdc5b0ad01aec075cbdaa4409768a9607eccccd010fd",
+      "compat/android/kernel-gaps.json": "0fadc3646ffb58dea1b941c1f0415d27f2877756760b0d3ba522698d0f12a56d",
+      "compat/android/source-audit-main-0709ab5d.json": "f8228fe4e4348bfa9079fefd1437d407e0bfc339ae441b8eab74e8e9e3736456",
+      "compat/android/source-audit-main-18d9fca6.json": "63cbc0e1fd4b2799478f22a17271873377a3c02ef09eded8108aa3560c895f5d",
+      "compat/android/source-audit-main-3b2d15bc.json": "f93b2983344cb23a79721f1a6835bbc2b71a67e454061a20b886e12ed852de67",
+      "compat/android/source-audit-main-5aeff7b6.json": "9b5f1e5964b581c8be9f37a7ed9001101fd00c30b64a38c39fdf3f46f3ec7d57",
+      "compat/android/source-audit-main-acd9ee30.json": "1178077c2713b885bc4d6ea89f1d2ad3d26499bc221c2bf2e61e6fa81befce70",
+      "compat/android/source-audit-main-bc294f75.json": "49749c21cb6b972e5aec9b512b762e8010ef18cca924d515b7d24161dd51e851",
+      "compat/android/source-audit-main-e1b9d705.json": "5df31fdf18fd4780bcdba9a8ab24ca826e9f6b6e3317c6c9de4d48dfe7698827",
+      "compat/android/source-audit-main-e44c92ac.json": "f3b3ba67f83bc705471308b79570e494965f400a92cde48e573098ac26c6fd70",
+      "support/android/DEVICE_ORGAN.md": "c0bed2a76201569544b0e5a0d9da84b0320df44c49d4b49884a44635f6eb7194",
+      "support/android/README.md": "42467c0c302630d87adc582414301f0011e2455b31a2d87838a7670a8af26daf",
+      "support/android/aosp-lock.json": "27073ddbb1ed8fca12a3f83bf126c7cec51e8b4aba157a4c828c901e6f50fe45",
+      "support/android/aosp_reference.py": "6eb62590ac45d4a15b085a107537c25894ba27d8e94cfa5bc60a18c83e24f0fb",
+      "support/android/audit.py": "bdfef2eb6923cb7032967ace39a3e1760c0454800c5dcffc9b448a177c7dd26d",
+      "support/android/build_asterinas_abi.sh": "670b8ce6bc5d91809e8601c6496b728ccaecc59652ef3c545b5b2972bfa4fab4",
+      "support/android/build_physical_smoke_apk.py": "6b267a96e91c000e071bdd578ae89e8bee8276d625325318ec4d306c58293f76",
+      "support/android/build_smoke_apk.sh": "e340b5b0238ca0276f6597942fdae5404e328bc1f217123f930829db943fac22",
+      "support/android/capture_guest_logs.py": "bd3b72ea4aad9e2057b432a1e1613cdc922b456eadd96b5afda5093908dc7243",
+      "support/android/device_organ.py": "d8d4dff8b3e8f1c7e8dfb15e65fe8cd3e268dbebbf5f5f59f2c1e1ce670cfe5e",
+      "support/android/device_organ_transport.py": "a14df22f73fccc5d42674f33fffd7531745265b82f8a343f0d3485a01f05fd9a",
+      "support/android/generate_kernel_source_audit.py": "2a91f485d3bb6355855c7a8647169e5c36422d45e682012dc72229549c9333a4",
+      "support/android/kernel_contract.py": "bb4cc62306f059bc781cbfda6dfc5946fb15f10b7a0e71f32ccc0812af21ca32",
+      "support/android/prepare_aosp.sh": "38ad0322f4bd08bee90da0524b1218c271500b35b2e3463d62724ed65a635fde",
+      "support/android/prepare_asterinas_abi.py": "7908b97cf8e7173013bb6cf825768a51337bdb3b23f0ecbc7fa27ce07d8e5c7f",
+      "support/android/receiver/README.md": "06c0ed0ba2f694eb745050a4cbf4a3fd72b5f71ac9eee1f74c630bd49436aa98",
+      "support/android/receiver/build_receiver.py": "7f5dbaffc100c3bf599b246aaabe219c4758b069862cc68fc563cd9f24af7834",
+      "support/android/receiver/organ_extension.py": "c2457ebdfef79ec93ec4170c54d964607bed7baf0a10d7d5e13d803fa946870b",
+      "support/android/receiver/qualify_receiver.py": "9ff6320c685253cad94223688eefb7d0adbb2ce3092eaf837d0408d380448458",
+      "support/android/receiver/runner/OrganBinding.java": "8b477bf979b751a321b4829fc44cb5674e033fdd780e308dade2f732ec303597",
+      "support/android/receiver/runner/OrganJson.java": "4e6eae780d26262cd7ab333b9f62c44fa41ef537406cebb60961ad3a2848f42e",
+      "support/android/receiver/runner/OrganSnapshot.java": "04bee11faf6115b9eec3744afdf2797bf0df7d3a9b817a4cb49e1f63c11d2dfa",
+      "support/android/receiver/upstream/ActionRunner.java": "bf3a577bfbb9b0f4b9c6035c0423e73f8fef0e1df34dd7dea2140efbe6308570",
+      "support/android/receiver/upstream/android_app.py": "8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b",
+      "support/android/run_asterinas_abi.py": "30cf5afcd0bf4ab93bb75b70f31b761e533c9434768adda20c4ac34f04b30a67",
+      "support/android/run_physical_smoke.py": "3a1e88cdb7f10084901d714301c28606fa439e9b3774a756670f6b542dd7c8dd",
+      "support/android/run_reference_cuttlefish.sh": "5ceec49aae6ae42e6dc7f455e267935ff79e69a09b0fcb65672f6fe5de3a97cb",
+      "support/android/run_verified_apks.py": "427f2af5906a0a4d40c8250a5f41dc83471c107281ba37cd285210bb954e13ee",
+      "support/android/verify_host.py": "40278bc8c4da4ba15be6e97fcfd6987d86c4d76a503c6422248098ff2e7b5c7e",
+      "support/android/verify_launch_preflight.py": "7aabb36fb9653a0ee4630c1f26d100c991e95d051c226366ec5781bd1ceeb0cb",
+      "support/android/verify_product_source.py": "155b21c9c7e6946a669246fdb9d74f2ab2e1e5e19b0fbd2b4657efa5b6b6a328",
+      "support/android/verify_source_integrity.py": "bf4f50f050c47c9a15ea25fc0829dd755351561dee34a8b054a19b71c55069fb",
+      "support/android/verify_vintf.py": "8ddac508401cfa9ef8c517d6c305c6f2c80d0548f2db011fc2028728a3055bd2",
+      "support/upstream-lock.json": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+      "tests/workloads/android/apk-matrix.json": "3f8c93799a04021aeb74df817229272d42b97d5e9199482603a5e644e522d886",
+      "tests/workloads/android/apk-smoke/Android.bp": "a73e870e6b8d5a6e532ce5a21d74bf63075bc65ea00cda444e27bc38b5071598",
+      "tests/workloads/android/apk-smoke/app/build.gradle": "468ca01621daefe6bc4e2f72409a45ecb8141018c4c1028069b4b7be996230c8",
+      "tests/workloads/android/apk-smoke/app/src/main/AndroidManifest.xml": "9eb4cf2a7ce1272e170e871b341bfae84db37c1d9d60060f8cb515e20251f2ea",
+      "tests/workloads/android/apk-smoke/app/src/main/java/org/trillionnium/a08smoke/MainActivity.java": "e740b1117d8f726eb959903c005c3ed66fce18650108b1d23b04e88c7f5889bf",
+      "tests/workloads/android/apk-smoke/app/src/main/res/values/ids.xml": "aa74a6bd4b92488b088d7d8c27bed4634624d2dc294396bd745399957a8e4f5d",
+      "tests/workloads/android/apk-smoke/build.gradle": "8ebf0602839be8fd4c06f07a93e45da6b4a04444fa1b38df8b9def9c1b5c8032",
+      "tests/workloads/android/apk-smoke/native-smoke/app/src/main/AndroidManifest.xml": "8a937855ba50e906acd75dd3639336c7a1a206673eee7a919a8df7e184acdfe5",
+      "tests/workloads/android/apk-smoke/native-smoke/app/src/main/java/org/trillionnium/a08native/MainActivity.java": "2a2143556c2df4e105067380b357cc694e1afdc1c4b13ec291063421d447a781",
+      "tests/workloads/android/apk-smoke/native-smoke/app/src/main/res/values/ids.xml": "c5101c60aeb5a494dd426c96ba01a56147bb202f8e112a9dd08ce15e9906030f",
+      "tests/workloads/android/apk-smoke/native-smoke/jni/a08jni.c": "17f84b65aab356827f36a6c209c1971ae9a6ed6c4c885f27aa30c0d6aadd7e14",
+      "tests/workloads/android/apk-smoke/settings.gradle": "273c9a9f640027487c45d41267fe65e442744e580904ba061282a0a2a47b0142",
+      "tests/workloads/android/apk-workload.schema.json": "e850225864182f0857f99fac2add3458acf37a2b6b95a77286e3ca120da5774b",
+      "tests/workloads/android/binder_abi_probe.c": "a9ce997c1dc0440131aadc483a0482002b43590673cba577841943e3896e7184",
+      "tests/workloads/android/binder_uapi_layout.c": "936d9aec4bb2e6da07c44b4df3727de51ad5912006d67af8944fd4ac3fa8c4fc",
+      "tests/workloads/android/boot_gates.py": "afdb3c130f3184f4578bac0d11c90ff17e8029aac2f3cf91e64b69c5991fa8aa",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md": "63866c28fd6532994ce5dcff9050945fc085ff9f694437956cbe754c4896ca8f",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-lock-regression-result.json": "68e5911592e00d4cfff29955b83bf6215e5f1a692ae344d0746da69a1a99b757",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-lock-regression.log": "5eef0d2941bd59b75c981c7504112f95cda700e0062749bc12e01d00a88c04f0",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-regression-result.json": "e83855b32a02a4d294d5c7a55f256c698ad5c3aea8645f672476e7d59459dae4",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-regression.log": "6f830a21109d0e2566bbd342ddd1aded97a4f38ea36f30e815eeb4e133cd76fd",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/host-gates-result.json": "e05a956e484f95fd4453718821000e334701d81eb14872f59250f1d2378de217",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/host-gates.json": "8e2df4ac6f793a61c130fe1cfb3d663cd231569df10c7cce27690445a5cf50ec",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/host-gates.log": "c858158ec26ed0a07a7edfe126c9b3a49f842cb24687bc2118434357bd826a6f",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/main-source-snapshot.json": "1a89cc85b673fa330ffa6cfb7774ba02444bf8e835f9920f30d39f7f318e93b5",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest-optimized-result.json": "1ac6c64b6a26a6eac1d477057791e162640ad302308702fbbd8c60bfde26c913",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest-optimized.log": "99c4da19589b59ffd0dd767388a12eb714db1cbde88ced2183a8cdc6f044c5a6",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest-result.json": "652a4cf3cf95f599e1f269f7fcd2b3811d9f18b4c3685f31b81942e1dcc49ba4",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest.log": "c3b37eaee1a325606ad7e1db8c79e5dd9fcce155b5e3e7bd2fbb5ade8562a45f",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/host-gates-result.json": "47e192a952dd43b87a5f73cfc7c0a5c05d21e7d9e23eb590c7f50e9c14bfe581",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/host-gates.json": "7e119ee6fdeecb5dca8155cd4500f78c1d664057161899f2f6d662d917af0096",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/host-gates.log": "e27e9c23b4f6cde3b961ad75a19d117be1ced0f3b472a223b7eb86c22ed41b4c",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/main-source-verification.json": "4e6f9428cccce4a04e5297bafb520141833517f19bc74fbe97df2929f747ebfb",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/source-code-identity.json": "b1f1f8f70e1f910e23db8b772dd8f860ff29601c8aff5280d048fba597de1b0a",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/source-integrity.json": "8ca3f1c5740a5bfd7a8cc9709912b414e11b504e009153d7d2ef442c109425af",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-optimized-result.json": "b482fa9985bf6101516cfa47083c10992a1b4886f7812d91320554d5362808ae",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-optimized.log": "383ae5d4b4acf9b7fd6cf64bebfdaf742369716f888082c27af9824818dc418a",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-result.json": "8515af142baf516111dbc9fdf5d6e317fca7fc1dfa09acac781cbb28491e736b",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest.log": "5b880460f50e4e987e318e9e6ffef259f358776087684c69840c28a4824f3972",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/README.md": "87121584fc5751b9526155ac72ed17a3a68752c8c8057a233ad5f6d96428f212",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/baseline-result.json": "699de44537c14300bdbe92f899d50e60de3b7698864076cde3b0fc6c81abb6bf",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/baseline-unittest.log": "0a29e41f76c874dd848c731bf55465003aa3ca4dc68a3519b0cf776fdc6df459",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/historical-restore-result.json": "f0f793e17d8592529858bf488053dda7230a2ff9ddddd5522acd157c554e24bd",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/historical-restore-unittest.log": "a1e7e84985ddb205b97e3a03e6264aaab31a9f0d67faf1ebb3e4be6e85a16407",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-result.json": "27f304d9844c4eaccbcfa077d3932abb4658ed8a9ce11a72e2935b977dfa9f76",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-with-jdk-result.json": "69e96167082cd647e8639a9c6d7a56d41f1bec9686fcf26842897ebb051aa7bd",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-with-jdk.json": "30f2b23b81c6801bf2b9f6ed79128baa2ecb5b3aa29620041a6c4251b92474f5",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-with-jdk.log": "9628854e3a2cd1931be9ef11a2b3c54677b0dad3042f8d16c8043665be297f9e",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates.json": "f4f7c51dd4d2e1e3b4241004f7270a5d46d24cbb70ff1de68830fb78be7aa91e",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates.log": "2fd14d074e5015e04cbc2990f907c16a6df9103a92ffb7d494a678530f4bda8f",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/jdk-installation.json": "b0e60b33007b0577d86ce80cac720e8355e857f37b6cee70e0919cf58c58e2ef",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/recovery-provenance.json": "53cd755c6fbf4299f7ddf30e74676744c367b925af83b4c95200e735f72bb5e9",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/source-integrity.json": "4a270aca87a3494dbc9079a24a22821a84a55dd23e1be6acca94f4b22349c9ca",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/source-snapshot.json": "dfdc9325461600f5bbecce54844b289ff23b5893d96e69b56f6f603f53ae76fd",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest-optimized-result.json": "0bfe6723a155bfe54257c567dd6860c9ab9b76e213b5ea56b61ab8fbd937dbe9",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest-optimized.log": "fcc3b908c86deacf8d6d8453c5ff5f43876f582e23914430d898c83d51acffbb",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest-result.json": "759377a25bb7b2d1ebb79c57579956be45cf4cca5e7a3944b383ed31153c5f8f",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest.log": "a291970d6bca14ad115bc6407f0df653fb90ccc5fde55fe1fbf0402f40a1a4ac",
+      "tests/workloads/android/evidence/a08-fourth-wave.json": "6caf8426ae359d09b28aa191f207bb9878eca3fef5d81c96ad2025d13552b9b6",
+      "tests/workloads/android/evidence/a08-fourth-wave.log": "6e7b754e85a54ddb6d835fb1f5dd9e713ac5ffc3e1ef2c481d022c318fbc9790",
+      "tests/workloads/android/evidence/cloud-preflight-20261016.json": "d16aa9eeb9f8fe3aac783b4d941c29bcc104901d82c906d25ad5ec7b8e81f8c4",
+      "tests/workloads/android/evidence/cloud-preflight-20261016.log": "5844626aeba88ea12ffbc8fb299dc9f1938754c38dccf4b7870abddc3de06630",
+      "tests/workloads/android/evidence/cloud-preflight-20261017.json": "f1d0ef7cbeba9c8d6083804712d1de04d5db5cd88afcf52703dccc8a640ad7ce",
+      "tests/workloads/android/evidence/cloud-preflight-20261017.log": "cd48d9ab000a915285720c2dd3c96e60820119acd57e4ac08424a3a89effdd5e",
+      "tests/workloads/android/evidence/environment.json": "f7005a60bea7fd16b31ed3d5313bdcbffeedb534bb60698732432996af05b121",
+      "tests/workloads/android/evidence/host-abi-false-pass-regression.json": "bb01ad66f5f3d143d1d78ca8395a4b0e568a9500d6ad7bb5be606cb02adf2df5",
+      "tests/workloads/android/evidence/host-abi-false-pass-regression.log": "3b9644dfe7bf29895db07abb24c9baf646cd6b8a5cce99e5d484e8d51d6f2626",
+      "tests/workloads/android/evidence/host-asterinas-abi-guest.json": "164faf2016bf5272b4a232b96e35ac5457b2ec42d2fc9c99d6ffbe33b89699d1",
+      "tests/workloads/android/evidence/host-asterinas-abi-guest.log": "c2314fbb72adf1588dfa87651317d2ce5d68522cdf6b5e5f6cf421615cac4034",
+      "tests/workloads/android/evidence/host-binder-abi-probe.log": "0993cbb2f7b1f711e356c7a420ba51b062bfb8d04fb1f5c154aeb9497a6edade",
+      "tests/workloads/android/evidence/host-binder-uapi-layout.json": "2f56b65291c4614e395b7d8f4df95d7a4189d61d4e108eeaed5b7d6d4bcc2bba",
+      "tests/workloads/android/evidence/host-binder-uapi-layout.log": "49531d4fa867245d755242f51064267c8f36a93e03910852aa7ac3c3cb4277b1",
+      "tests/workloads/android/evidence/host-builder-preflight.log": "08154ed400cef5363b8353daa9c4eab253a524edf006fe0b3d1554ed042bcb3b",
+      "tests/workloads/android/evidence/host-fifth-wave-combined.json": "3e3f56a8b37ff42005ec676fd952c0987fb03121060df4968c447c3e1169c02b",
+      "tests/workloads/android/evidence/host-fifth-wave-combined.log": "06071df70ee4d62cc385dfad3471edf4e0bb79d9fd82060b032d018c91dde26d",
+      "tests/workloads/android/evidence/host-fifth-wave-verified.json": "f3c0cf489cb86f91718beab9306ba3d607e6976b990593e0fabf6b999cb45f22",
+      "tests/workloads/android/evidence/host-fifth-wave-verified.log": "e038563392cd2bb9e5033d42fc61870fd61460f06a20a78627bc66ea45feef49",
+      "tests/workloads/android/evidence/host-guest-seccomp.json": "8c2916bc38057ad6c5367d26df5fce1504df244c9ba0c1b1a3169eda1dcaddd6",
+      "tests/workloads/android/evidence/host-guest-seccomp.log": "ee8c1103eb6f1bf833d908f44329c478741de68e14c8189fbd81171e26d13c82",
+      "tests/workloads/android/evidence/host-jni-gate.json": "a5bb96fa62fad1e54674e1c845b48d5c9d2b8e09b780bf239f6d24815b168396",
+      "tests/workloads/android/evidence/host-linux-abi-probe.log": "4abd4b63409106c959edab79f89b78dc181c8a7efeb1c51ee628208c62e93f00",
+      "tests/workloads/android/evidence/host-next-run.json": "993cf674e9979b907ee41756ee1f2d7e89321b2407bf18b7ed6d72de39a616dd",
+      "tests/workloads/android/evidence/host-reference-preflight.log": "02858e7b5c393e189ad160194a9f85860a863f054bd9e6639dbc81c171c07eaa",
+      "tests/workloads/android/evidence/host-seccomp-abi-probe.log": "8101231259ca98a05d1fbcb7c86846882b6c08774191c9fe1cf1fd505b08278e",
+      "tests/workloads/android/evidence/host-seventh-apex.json": "19e21947680b417cd5585f8fbcff506583a227ce8c222dd40fb477bc0596669e",
+      "tests/workloads/android/evidence/host-seventh-apex.log": "3be9e824861544965ea1ce0420756292144e15343afe038b30394d7800eb9f5c",
+      "tests/workloads/android/evidence/host-seventh-boot-gates.json": "1c4fc2989a840d4bc6d00a81e4b183b84c46aa2e9dd4eb5e3f8c9d36ef93ad43",
+      "tests/workloads/android/evidence/host-seventh-boot-gates.log": "3f4ea98b87aaf74399b1d12f0751b886db1213f445fd6b37f45372f822840c16",
+      "tests/workloads/android/evidence/host-sixth-vintf.json": "b61edd864f7f90637f7ab80d6179f428e303a7c4fbf0cc6b2e59ea46b56f84d8",
+      "tests/workloads/android/evidence/host-sixth-vintf.log": "17a45f1073f56b3852a0fa4562ee1c48bff8613d4a79c2604e847221da1d3d9c",
+      "tests/workloads/android/evidence/host-suite-20261016.json": "25189198622286f5579f6f35105ef5c1f1160a114d7fbcf1aeb890fce06bf5bf",
+      "tests/workloads/android/evidence/host-suite-20261016.log": "1b56bd2482d1d9b50abf6ead6286c4adbdec7b2c207e0c6e639226a0a6565b76",
+      "tests/workloads/android/evidence/host-unit-tests-next.log": "013bfeaf427b4f66edd6a0a1f728542a61720b120bbeb7a672e7ba4d2721af1b",
+      "tests/workloads/android/evidence/host-unit-tests-rerun.log": "db0621b7aed03b7d416d3df6577c44f19ddebf054cba3b1b1008ac4e3830af71",
+      "tests/workloads/android/evidence/host-unit-tests.log": "ac184b461bd090d390ab074271176199367b694b3a5a8596320f50feeeca8da6",
+      "tests/workloads/android/host_jni/MainActivity.java": "5cedefdf6333ef8b4a7917174332bc5924b9b37b79d352f36993ab51213e9e42",
+      "tests/workloads/android/kernel_abi_probe.c": "8024cbe787f19d5089f442d4ab6a7c3e25b99551c107914de3212b8dac95e0ae",
+      "tests/workloads/android/run_apk.py": "aca860b0e24d76d9f851e841f0a08f5e0d427390a27b00acaf929ec83fae702f",
+      "tests/workloads/android/run_apk_workload.py": "b29974597a05e6074b7f31accd2a47e91951365a1027076622438797d4f9d493",
+      "tests/workloads/android/run_native_apk.py": "3499e276b63de46ed7cae0eb7f6a74450883b3725f2ec0cfcc3814e51f8e9077",
+      "tests/workloads/android/seccomp_abi_probe.c": "007e19d7e3fdac5f0c78e6a078b625c51eb675ab96c2110396e40741ad9268d4",
+      "tests/workloads/android/test_abi_result_parser.py": "c28dbbea92b5583bba019b7c2acb0cec81bd723d59c0d8150139f556fc45e618",
+      "tests/workloads/android/test_android_tools.py": "043429daa0159e4352c00c1a5fc5168fec8bb34b45b2f8d99df80cd9e5eae0e7",
+      "tests/workloads/android/test_apk.py": "c0490a499e96f336c179d0034ba14772237283ebf658f214dc4536cd996354ec",
+      "tests/workloads/android/test_asterinas_abi_guest.py": "570a92d7f03a8f07337838ce43072d8174d23192cb709d179aead61ca4858d66",
+      "tests/workloads/android/test_asterinas_abi_runner_transport.py": "4adc5ef8348a7b7cec63463e81cb82b11962c976645f1abe8268cbca88a55a84",
+      "tests/workloads/android/test_audit.py": "03ee405298ee8963f62f211c0353ca3b3b6e9554bfd4b9b06917cb9c8a2345b3",
+      "tests/workloads/android/test_binder_uapi_layout.py": "65bcb053134b9ad566dd9171a603115491913e0bc4b5483119ad3f256b847eb9",
+      "tests/workloads/android/test_boot_gates.py": "3667461e16f80d088f02200a22fa5f266b12911bf182083090cc1057ae2fcfa1",
+      "tests/workloads/android/test_bound_receiver.py": "7f27b56646bbeadc3432713ddbccae8856fe837ece70fb9654f2eb3dddac2e0b",
+      "tests/workloads/android/test_device_organ.py": "d4459e8ade72a046f686baaad6646b4b57fbeac45b45da83d60ea7eba57866bc",
+      "tests/workloads/android/test_kernel_abi_runtime_host.py": "37d2b4aaec7177a5cf61aaa8977a18a8a51aba45bf4e0a5216b4d1097bfbb097",
+      "tests/workloads/android/test_kernel_contract.py": "014c947e896deb14787a0bf2a68963978d74cf8a849a1ba8488e12542282f3a2",
+      "tests/workloads/android/test_kernel_source_audit.py": "a087a1d10eec8e1a4473461e8e79d55eaca1275440bfe2eeabb87716ca2352e5",
+      "tests/workloads/android/test_native_apk.py": "75aabbf2d5d3b20807fce4b1b66569625bfc96ca72e754b9cf3fb1cf92c778be",
+      "tests/workloads/android/test_physical_smoke.py": "e4b3e02ef7c9de6e934e484167315fab3ee5ea6ef78cc3440d831239ec51a4cb",
+      "tests/workloads/android/test_receiver_effect_boundary.py": "3b97f5c2bc4a4eedd73f862b2157632561c339d524c371cd2438036999ae701a",
+      "tests/workloads/android/test_receiver_qualification.py": "8b15d2cd01a661904375a4492c91afbcfc2a93ea7476eea3c2ef75ced2af2aa1",
+      "tests/workloads/android/test_seccomp_guest_contract.py": "2a8c6f861e9fc588fa7e900f46c759ce7ea599bdc2b4bf298df6338ab26bfb29",
+      "tests/workloads/android/test_source_integrity.py": "54482c2ace7a418caedaa0f9abb097b94882fe5af2e071a99cfef7196d439625",
+      "tests/workloads/android/test_verified_artifacts.py": "448653c14e952c94fce40f9c0f4c2efc894e14b96ef6837a9b4e5e0d5fc8e9d4",
+      "tests/workloads/android/test_verify_launch_preflight.py": "e4e334888f1a1dc446e29b0d6b5434fa292fbf23dbc03e9bdde427cc8dd62c84",
+      "tests/workloads/android/test_verify_product_source.py": "7964e159fdf246bb10b979e218c6d775cc53112b03645885aebb4644f91c50da",
+      "tests/workloads/android/test_verify_vintf.py": "705c83d344ac632334bbe07f7f994b8cc03b4506895e1a52f7b2d992238e50bc"
+    },
+    "status": "",
+    "tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27"
+  },
+  "source_before": {
+    "head": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+    "source_inputs": {
+      "compat/android/INTERFACES.md": "8729560f4b7edd5f8bb59e412a10984300c3b8562c06998c69e0184444561c21",
+      "compat/android/PHYSICAL_SMOKE.md": "34835078794d057a3f1534c6ee7d4450f8cf0a38a5133993e6f8566693ea460d",
+      "compat/android/aosp-profile.json": "77eacd092ed043e7be67cadcb873b7ab392b03b890b49b4712d55fc9f9c46ea2",
+      "compat/android/capability-matrix.json": "5812b31532c3892d6fd375667e2956dbe10d18ea4d513ed657d11b29dfcad01b",
+      "compat/android/device-organ-contract-v1.json": "30bd0f6fdf6671c26ba1cdc5b0ad01aec075cbdaa4409768a9607eccccd010fd",
+      "compat/android/kernel-gaps.json": "0fadc3646ffb58dea1b941c1f0415d27f2877756760b0d3ba522698d0f12a56d",
+      "compat/android/source-audit-main-0709ab5d.json": "f8228fe4e4348bfa9079fefd1437d407e0bfc339ae441b8eab74e8e9e3736456",
+      "compat/android/source-audit-main-18d9fca6.json": "63cbc0e1fd4b2799478f22a17271873377a3c02ef09eded8108aa3560c895f5d",
+      "compat/android/source-audit-main-3b2d15bc.json": "f93b2983344cb23a79721f1a6835bbc2b71a67e454061a20b886e12ed852de67",
+      "compat/android/source-audit-main-5aeff7b6.json": "9b5f1e5964b581c8be9f37a7ed9001101fd00c30b64a38c39fdf3f46f3ec7d57",
+      "compat/android/source-audit-main-acd9ee30.json": "1178077c2713b885bc4d6ea89f1d2ad3d26499bc221c2bf2e61e6fa81befce70",
+      "compat/android/source-audit-main-bc294f75.json": "49749c21cb6b972e5aec9b512b762e8010ef18cca924d515b7d24161dd51e851",
+      "compat/android/source-audit-main-e1b9d705.json": "5df31fdf18fd4780bcdba9a8ab24ca826e9f6b6e3317c6c9de4d48dfe7698827",
+      "compat/android/source-audit-main-e44c92ac.json": "f3b3ba67f83bc705471308b79570e494965f400a92cde48e573098ac26c6fd70",
+      "support/android/DEVICE_ORGAN.md": "c0bed2a76201569544b0e5a0d9da84b0320df44c49d4b49884a44635f6eb7194",
+      "support/android/README.md": "42467c0c302630d87adc582414301f0011e2455b31a2d87838a7670a8af26daf",
+      "support/android/aosp-lock.json": "27073ddbb1ed8fca12a3f83bf126c7cec51e8b4aba157a4c828c901e6f50fe45",
+      "support/android/aosp_reference.py": "6eb62590ac45d4a15b085a107537c25894ba27d8e94cfa5bc60a18c83e24f0fb",
+      "support/android/audit.py": "bdfef2eb6923cb7032967ace39a3e1760c0454800c5dcffc9b448a177c7dd26d",
+      "support/android/build_asterinas_abi.sh": "670b8ce6bc5d91809e8601c6496b728ccaecc59652ef3c545b5b2972bfa4fab4",
+      "support/android/build_physical_smoke_apk.py": "6b267a96e91c000e071bdd578ae89e8bee8276d625325318ec4d306c58293f76",
+      "support/android/build_smoke_apk.sh": "e340b5b0238ca0276f6597942fdae5404e328bc1f217123f930829db943fac22",
+      "support/android/capture_guest_logs.py": "bd3b72ea4aad9e2057b432a1e1613cdc922b456eadd96b5afda5093908dc7243",
+      "support/android/device_organ.py": "d8d4dff8b3e8f1c7e8dfb15e65fe8cd3e268dbebbf5f5f59f2c1e1ce670cfe5e",
+      "support/android/device_organ_transport.py": "a14df22f73fccc5d42674f33fffd7531745265b82f8a343f0d3485a01f05fd9a",
+      "support/android/generate_kernel_source_audit.py": "2a91f485d3bb6355855c7a8647169e5c36422d45e682012dc72229549c9333a4",
+      "support/android/kernel_contract.py": "bb4cc62306f059bc781cbfda6dfc5946fb15f10b7a0e71f32ccc0812af21ca32",
+      "support/android/prepare_aosp.sh": "38ad0322f4bd08bee90da0524b1218c271500b35b2e3463d62724ed65a635fde",
+      "support/android/prepare_asterinas_abi.py": "7908b97cf8e7173013bb6cf825768a51337bdb3b23f0ecbc7fa27ce07d8e5c7f",
+      "support/android/receiver/README.md": "06c0ed0ba2f694eb745050a4cbf4a3fd72b5f71ac9eee1f74c630bd49436aa98",
+      "support/android/receiver/build_receiver.py": "7f5dbaffc100c3bf599b246aaabe219c4758b069862cc68fc563cd9f24af7834",
+      "support/android/receiver/organ_extension.py": "c2457ebdfef79ec93ec4170c54d964607bed7baf0a10d7d5e13d803fa946870b",
+      "support/android/receiver/qualify_receiver.py": "9ff6320c685253cad94223688eefb7d0adbb2ce3092eaf837d0408d380448458",
+      "support/android/receiver/runner/OrganBinding.java": "8b477bf979b751a321b4829fc44cb5674e033fdd780e308dade2f732ec303597",
+      "support/android/receiver/runner/OrganJson.java": "4e6eae780d26262cd7ab333b9f62c44fa41ef537406cebb60961ad3a2848f42e",
+      "support/android/receiver/runner/OrganSnapshot.java": "04bee11faf6115b9eec3744afdf2797bf0df7d3a9b817a4cb49e1f63c11d2dfa",
+      "support/android/receiver/upstream/ActionRunner.java": "bf3a577bfbb9b0f4b9c6035c0423e73f8fef0e1df34dd7dea2140efbe6308570",
+      "support/android/receiver/upstream/android_app.py": "8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b",
+      "support/android/run_asterinas_abi.py": "30cf5afcd0bf4ab93bb75b70f31b761e533c9434768adda20c4ac34f04b30a67",
+      "support/android/run_physical_smoke.py": "3a1e88cdb7f10084901d714301c28606fa439e9b3774a756670f6b542dd7c8dd",
+      "support/android/run_reference_cuttlefish.sh": "5ceec49aae6ae42e6dc7f455e267935ff79e69a09b0fcb65672f6fe5de3a97cb",
+      "support/android/run_verified_apks.py": "427f2af5906a0a4d40c8250a5f41dc83471c107281ba37cd285210bb954e13ee",
+      "support/android/verify_host.py": "40278bc8c4da4ba15be6e97fcfd6987d86c4d76a503c6422248098ff2e7b5c7e",
+      "support/android/verify_launch_preflight.py": "7aabb36fb9653a0ee4630c1f26d100c991e95d051c226366ec5781bd1ceeb0cb",
+      "support/android/verify_product_source.py": "155b21c9c7e6946a669246fdb9d74f2ab2e1e5e19b0fbd2b4657efa5b6b6a328",
+      "support/android/verify_source_integrity.py": "bf4f50f050c47c9a15ea25fc0829dd755351561dee34a8b054a19b71c55069fb",
+      "support/android/verify_vintf.py": "8ddac508401cfa9ef8c517d6c305c6f2c80d0548f2db011fc2028728a3055bd2",
+      "support/upstream-lock.json": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+      "tests/workloads/android/apk-matrix.json": "3f8c93799a04021aeb74df817229272d42b97d5e9199482603a5e644e522d886",
+      "tests/workloads/android/apk-smoke/Android.bp": "a73e870e6b8d5a6e532ce5a21d74bf63075bc65ea00cda444e27bc38b5071598",
+      "tests/workloads/android/apk-smoke/app/build.gradle": "468ca01621daefe6bc4e2f72409a45ecb8141018c4c1028069b4b7be996230c8",
+      "tests/workloads/android/apk-smoke/app/src/main/AndroidManifest.xml": "9eb4cf2a7ce1272e170e871b341bfae84db37c1d9d60060f8cb515e20251f2ea",
+      "tests/workloads/android/apk-smoke/app/src/main/java/org/trillionnium/a08smoke/MainActivity.java": "e740b1117d8f726eb959903c005c3ed66fce18650108b1d23b04e88c7f5889bf",
+      "tests/workloads/android/apk-smoke/app/src/main/res/values/ids.xml": "aa74a6bd4b92488b088d7d8c27bed4634624d2dc294396bd745399957a8e4f5d",
+      "tests/workloads/android/apk-smoke/build.gradle": "8ebf0602839be8fd4c06f07a93e45da6b4a04444fa1b38df8b9def9c1b5c8032",
+      "tests/workloads/android/apk-smoke/native-smoke/app/src/main/AndroidManifest.xml": "8a937855ba50e906acd75dd3639336c7a1a206673eee7a919a8df7e184acdfe5",
+      "tests/workloads/android/apk-smoke/native-smoke/app/src/main/java/org/trillionnium/a08native/MainActivity.java": "2a2143556c2df4e105067380b357cc694e1afdc1c4b13ec291063421d447a781",
+      "tests/workloads/android/apk-smoke/native-smoke/app/src/main/res/values/ids.xml": "c5101c60aeb5a494dd426c96ba01a56147bb202f8e112a9dd08ce15e9906030f",
+      "tests/workloads/android/apk-smoke/native-smoke/jni/a08jni.c": "17f84b65aab356827f36a6c209c1971ae9a6ed6c4c885f27aa30c0d6aadd7e14",
+      "tests/workloads/android/apk-smoke/settings.gradle": "273c9a9f640027487c45d41267fe65e442744e580904ba061282a0a2a47b0142",
+      "tests/workloads/android/apk-workload.schema.json": "e850225864182f0857f99fac2add3458acf37a2b6b95a77286e3ca120da5774b",
+      "tests/workloads/android/binder_abi_probe.c": "a9ce997c1dc0440131aadc483a0482002b43590673cba577841943e3896e7184",
+      "tests/workloads/android/binder_uapi_layout.c": "936d9aec4bb2e6da07c44b4df3727de51ad5912006d67af8944fd4ac3fa8c4fc",
+      "tests/workloads/android/boot_gates.py": "afdb3c130f3184f4578bac0d11c90ff17e8029aac2f3cf91e64b69c5991fa8aa",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md": "63866c28fd6532994ce5dcff9050945fc085ff9f694437956cbe754c4896ca8f",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-lock-regression-result.json": "68e5911592e00d4cfff29955b83bf6215e5f1a692ae344d0746da69a1a99b757",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-lock-regression.log": "5eef0d2941bd59b75c981c7504112f95cda700e0062749bc12e01d00a88c04f0",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-regression-result.json": "e83855b32a02a4d294d5c7a55f256c698ad5c3aea8645f672476e7d59459dae4",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/baseline-regression.log": "6f830a21109d0e2566bbd342ddd1aded97a4f38ea36f30e815eeb4e133cd76fd",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/host-gates-result.json": "e05a956e484f95fd4453718821000e334701d81eb14872f59250f1d2378de217",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/host-gates.json": "8e2df4ac6f793a61c130fe1cfb3d663cd231569df10c7cce27690445a5cf50ec",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/host-gates.log": "c858158ec26ed0a07a7edfe126c9b3a49f842cb24687bc2118434357bd826a6f",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/main-source-snapshot.json": "1a89cc85b673fa330ffa6cfb7774ba02444bf8e835f9920f30d39f7f318e93b5",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest-optimized-result.json": "1ac6c64b6a26a6eac1d477057791e162640ad302308702fbbd8c60bfde26c913",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest-optimized.log": "99c4da19589b59ffd0dd767388a12eb714db1cbde88ced2183a8cdc6f044c5a6",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest-result.json": "652a4cf3cf95f599e1f269f7fcd2b3811d9f18b4c3685f31b81942e1dcc49ba4",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/before-lock-binding/unittest.log": "c3b37eaee1a325606ad7e1db8c79e5dd9fcce155b5e3e7bd2fbb5ade8562a45f",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/host-gates-result.json": "47e192a952dd43b87a5f73cfc7c0a5c05d21e7d9e23eb590c7f50e9c14bfe581",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/host-gates.json": "7e119ee6fdeecb5dca8155cd4500f78c1d664057161899f2f6d662d917af0096",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/host-gates.log": "e27e9c23b4f6cde3b961ad75a19d117be1ced0f3b472a223b7eb86c22ed41b4c",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/main-source-verification.json": "4e6f9428cccce4a04e5297bafb520141833517f19bc74fbe97df2929f747ebfb",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/source-code-identity.json": "b1f1f8f70e1f910e23db8b772dd8f860ff29601c8aff5280d048fba597de1b0a",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/source-integrity.json": "8ca3f1c5740a5bfd7a8cc9709912b414e11b504e009153d7d2ef442c109425af",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-optimized-result.json": "b482fa9985bf6101516cfa47083c10992a1b4886f7812d91320554d5362808ae",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-optimized.log": "383ae5d4b4acf9b7fd6cf64bebfdaf742369716f888082c27af9824818dc418a",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-result.json": "8515af142baf516111dbc9fdf5d6e317fca7fc1dfa09acac781cbb28491e736b",
+      "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest.log": "5b880460f50e4e987e318e9e6ffef259f358776087684c69840c28a4824f3972",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/README.md": "87121584fc5751b9526155ac72ed17a3a68752c8c8057a233ad5f6d96428f212",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/baseline-result.json": "699de44537c14300bdbe92f899d50e60de3b7698864076cde3b0fc6c81abb6bf",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/baseline-unittest.log": "0a29e41f76c874dd848c731bf55465003aa3ca4dc68a3519b0cf776fdc6df459",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/historical-restore-result.json": "f0f793e17d8592529858bf488053dda7230a2ff9ddddd5522acd157c554e24bd",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/historical-restore-unittest.log": "a1e7e84985ddb205b97e3a03e6264aaab31a9f0d67faf1ebb3e4be6e85a16407",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-result.json": "27f304d9844c4eaccbcfa077d3932abb4658ed8a9ce11a72e2935b977dfa9f76",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-with-jdk-result.json": "69e96167082cd647e8639a9c6d7a56d41f1bec9686fcf26842897ebb051aa7bd",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-with-jdk.json": "30f2b23b81c6801bf2b9f6ed79128baa2ecb5b3aa29620041a6c4251b92474f5",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-with-jdk.log": "9628854e3a2cd1931be9ef11a2b3c54677b0dad3042f8d16c8043665be297f9e",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates.json": "f4f7c51dd4d2e1e3b4241004f7270a5d46d24cbb70ff1de68830fb78be7aa91e",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates.log": "2fd14d074e5015e04cbc2990f907c16a6df9103a92ffb7d494a678530f4bda8f",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/jdk-installation.json": "b0e60b33007b0577d86ce80cac720e8355e857f37b6cee70e0919cf58c58e2ef",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/recovery-provenance.json": "53cd755c6fbf4299f7ddf30e74676744c367b925af83b4c95200e735f72bb5e9",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/source-integrity.json": "4a270aca87a3494dbc9079a24a22821a84a55dd23e1be6acca94f4b22349c9ca",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/source-snapshot.json": "dfdc9325461600f5bbecce54844b289ff23b5893d96e69b56f6f603f53ae76fd",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest-optimized-result.json": "0bfe6723a155bfe54257c567dd6860c9ab9b76e213b5ea56b61ab8fbd937dbe9",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest-optimized.log": "fcc3b908c86deacf8d6d8453c5ff5f43876f582e23914430d898c83d51acffbb",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest-result.json": "759377a25bb7b2d1ebb79c57579956be45cf4cca5e7a3944b383ed31153c5f8f",
+      "tests/workloads/android/evidence/2026-10-17-source-integrity/unittest.log": "a291970d6bca14ad115bc6407f0df653fb90ccc5fde55fe1fbf0402f40a1a4ac",
+      "tests/workloads/android/evidence/a08-fourth-wave.json": "6caf8426ae359d09b28aa191f207bb9878eca3fef5d81c96ad2025d13552b9b6",
+      "tests/workloads/android/evidence/a08-fourth-wave.log": "6e7b754e85a54ddb6d835fb1f5dd9e713ac5ffc3e1ef2c481d022c318fbc9790",
+      "tests/workloads/android/evidence/cloud-preflight-20261016.json": "d16aa9eeb9f8fe3aac783b4d941c29bcc104901d82c906d25ad5ec7b8e81f8c4",
+      "tests/workloads/android/evidence/cloud-preflight-20261016.log": "5844626aeba88ea12ffbc8fb299dc9f1938754c38dccf4b7870abddc3de06630",
+      "tests/workloads/android/evidence/cloud-preflight-20261017.json": "f1d0ef7cbeba9c8d6083804712d1de04d5db5cd88afcf52703dccc8a640ad7ce",
+      "tests/workloads/android/evidence/cloud-preflight-20261017.log": "cd48d9ab000a915285720c2dd3c96e60820119acd57e4ac08424a3a89effdd5e",
+      "tests/workloads/android/evidence/environment.json": "f7005a60bea7fd16b31ed3d5313bdcbffeedb534bb60698732432996af05b121",
+      "tests/workloads/android/evidence/host-abi-false-pass-regression.json": "bb01ad66f5f3d143d1d78ca8395a4b0e568a9500d6ad7bb5be606cb02adf2df5",
+      "tests/workloads/android/evidence/host-abi-false-pass-regression.log": "3b9644dfe7bf29895db07abb24c9baf646cd6b8a5cce99e5d484e8d51d6f2626",
+      "tests/workloads/android/evidence/host-asterinas-abi-guest.json": "164faf2016bf5272b4a232b96e35ac5457b2ec42d2fc9c99d6ffbe33b89699d1",
+      "tests/workloads/android/evidence/host-asterinas-abi-guest.log": "c2314fbb72adf1588dfa87651317d2ce5d68522cdf6b5e5f6cf421615cac4034",
+      "tests/workloads/android/evidence/host-binder-abi-probe.log": "0993cbb2f7b1f711e356c7a420ba51b062bfb8d04fb1f5c154aeb9497a6edade",
+      "tests/workloads/android/evidence/host-binder-uapi-layout.json": "2f56b65291c4614e395b7d8f4df95d7a4189d61d4e108eeaed5b7d6d4bcc2bba",
+      "tests/workloads/android/evidence/host-binder-uapi-layout.log": "49531d4fa867245d755242f51064267c8f36a93e03910852aa7ac3c3cb4277b1",
+      "tests/workloads/android/evidence/host-builder-preflight.log": "08154ed400cef5363b8353daa9c4eab253a524edf006fe0b3d1554ed042bcb3b",
+      "tests/workloads/android/evidence/host-fifth-wave-combined.json": "3e3f56a8b37ff42005ec676fd952c0987fb03121060df4968c447c3e1169c02b",
+      "tests/workloads/android/evidence/host-fifth-wave-combined.log": "06071df70ee4d62cc385dfad3471edf4e0bb79d9fd82060b032d018c91dde26d",
+      "tests/workloads/android/evidence/host-fifth-wave-verified.json": "f3c0cf489cb86f91718beab9306ba3d607e6976b990593e0fabf6b999cb45f22",
+      "tests/workloads/android/evidence/host-fifth-wave-verified.log": "e038563392cd2bb9e5033d42fc61870fd61460f06a20a78627bc66ea45feef49",
+      "tests/workloads/android/evidence/host-guest-seccomp.json": "8c2916bc38057ad6c5367d26df5fce1504df244c9ba0c1b1a3169eda1dcaddd6",
+      "tests/workloads/android/evidence/host-guest-seccomp.log": "ee8c1103eb6f1bf833d908f44329c478741de68e14c8189fbd81171e26d13c82",
+      "tests/workloads/android/evidence/host-jni-gate.json": "a5bb96fa62fad1e54674e1c845b48d5c9d2b8e09b780bf239f6d24815b168396",
+      "tests/workloads/android/evidence/host-linux-abi-probe.log": "4abd4b63409106c959edab79f89b78dc181c8a7efeb1c51ee628208c62e93f00",
+      "tests/workloads/android/evidence/host-next-run.json": "993cf674e9979b907ee41756ee1f2d7e89321b2407bf18b7ed6d72de39a616dd",
+      "tests/workloads/android/evidence/host-reference-preflight.log": "02858e7b5c393e189ad160194a9f85860a863f054bd9e6639dbc81c171c07eaa",
+      "tests/workloads/android/evidence/host-seccomp-abi-probe.log": "8101231259ca98a05d1fbcb7c86846882b6c08774191c9fe1cf1fd505b08278e",
+      "tests/workloads/android/evidence/host-seventh-apex.json": "19e21947680b417cd5585f8fbcff506583a227ce8c222dd40fb477bc0596669e",
+      "tests/workloads/android/evidence/host-seventh-apex.log": "3be9e824861544965ea1ce0420756292144e15343afe038b30394d7800eb9f5c",
+      "tests/workloads/android/evidence/host-seventh-boot-gates.json": "1c4fc2989a840d4bc6d00a81e4b183b84c46aa2e9dd4eb5e3f8c9d36ef93ad43",
+      "tests/workloads/android/evidence/host-seventh-boot-gates.log": "3f4ea98b87aaf74399b1d12f0751b886db1213f445fd6b37f45372f822840c16",
+      "tests/workloads/android/evidence/host-sixth-vintf.json": "b61edd864f7f90637f7ab80d6179f428e303a7c4fbf0cc6b2e59ea46b56f84d8",
+      "tests/workloads/android/evidence/host-sixth-vintf.log": "17a45f1073f56b3852a0fa4562ee1c48bff8613d4a79c2604e847221da1d3d9c",
+      "tests/workloads/android/evidence/host-suite-20261016.json": "25189198622286f5579f6f35105ef5c1f1160a114d7fbcf1aeb890fce06bf5bf",
+      "tests/workloads/android/evidence/host-suite-20261016.log": "1b56bd2482d1d9b50abf6ead6286c4adbdec7b2c207e0c6e639226a0a6565b76",
+      "tests/workloads/android/evidence/host-unit-tests-next.log": "013bfeaf427b4f66edd6a0a1f728542a61720b120bbeb7a672e7ba4d2721af1b",
+      "tests/workloads/android/evidence/host-unit-tests-rerun.log": "db0621b7aed03b7d416d3df6577c44f19ddebf054cba3b1b1008ac4e3830af71",
+      "tests/workloads/android/evidence/host-unit-tests.log": "ac184b461bd090d390ab074271176199367b694b3a5a8596320f50feeeca8da6",
+      "tests/workloads/android/host_jni/MainActivity.java": "5cedefdf6333ef8b4a7917174332bc5924b9b37b79d352f36993ab51213e9e42",
+      "tests/workloads/android/kernel_abi_probe.c": "8024cbe787f19d5089f442d4ab6a7c3e25b99551c107914de3212b8dac95e0ae",
+      "tests/workloads/android/run_apk.py": "aca860b0e24d76d9f851e841f0a08f5e0d427390a27b00acaf929ec83fae702f",
+      "tests/workloads/android/run_apk_workload.py": "b29974597a05e6074b7f31accd2a47e91951365a1027076622438797d4f9d493",
+      "tests/workloads/android/run_native_apk.py": "3499e276b63de46ed7cae0eb7f6a74450883b3725f2ec0cfcc3814e51f8e9077",
+      "tests/workloads/android/seccomp_abi_probe.c": "007e19d7e3fdac5f0c78e6a078b625c51eb675ab96c2110396e40741ad9268d4",
+      "tests/workloads/android/test_abi_result_parser.py": "c28dbbea92b5583bba019b7c2acb0cec81bd723d59c0d8150139f556fc45e618",
+      "tests/workloads/android/test_android_tools.py": "043429daa0159e4352c00c1a5fc5168fec8bb34b45b2f8d99df80cd9e5eae0e7",
+      "tests/workloads/android/test_apk.py": "c0490a499e96f336c179d0034ba14772237283ebf658f214dc4536cd996354ec",
+      "tests/workloads/android/test_asterinas_abi_guest.py": "570a92d7f03a8f07337838ce43072d8174d23192cb709d179aead61ca4858d66",
+      "tests/workloads/android/test_asterinas_abi_runner_transport.py": "4adc5ef8348a7b7cec63463e81cb82b11962c976645f1abe8268cbca88a55a84",
+      "tests/workloads/android/test_audit.py": "03ee405298ee8963f62f211c0353ca3b3b6e9554bfd4b9b06917cb9c8a2345b3",
+      "tests/workloads/android/test_binder_uapi_layout.py": "65bcb053134b9ad566dd9171a603115491913e0bc4b5483119ad3f256b847eb9",
+      "tests/workloads/android/test_boot_gates.py": "3667461e16f80d088f02200a22fa5f266b12911bf182083090cc1057ae2fcfa1",
+      "tests/workloads/android/test_bound_receiver.py": "7f27b56646bbeadc3432713ddbccae8856fe837ece70fb9654f2eb3dddac2e0b",
+      "tests/workloads/android/test_device_organ.py": "d4459e8ade72a046f686baaad6646b4b57fbeac45b45da83d60ea7eba57866bc",
+      "tests/workloads/android/test_kernel_abi_runtime_host.py": "37d2b4aaec7177a5cf61aaa8977a18a8a51aba45bf4e0a5216b4d1097bfbb097",
+      "tests/workloads/android/test_kernel_contract.py": "014c947e896deb14787a0bf2a68963978d74cf8a849a1ba8488e12542282f3a2",
+      "tests/workloads/android/test_kernel_source_audit.py": "a087a1d10eec8e1a4473461e8e79d55eaca1275440bfe2eeabb87716ca2352e5",
+      "tests/workloads/android/test_native_apk.py": "75aabbf2d5d3b20807fce4b1b66569625bfc96ca72e754b9cf3fb1cf92c778be",
+      "tests/workloads/android/test_physical_smoke.py": "e4b3e02ef7c9de6e934e484167315fab3ee5ea6ef78cc3440d831239ec51a4cb",
+      "tests/workloads/android/test_receiver_effect_boundary.py": "3b97f5c2bc4a4eedd73f862b2157632561c339d524c371cd2438036999ae701a",
+      "tests/workloads/android/test_receiver_qualification.py": "8b15d2cd01a661904375a4492c91afbcfc2a93ea7476eea3c2ef75ced2af2aa1",
+      "tests/workloads/android/test_seccomp_guest_contract.py": "2a8c6f861e9fc588fa7e900f46c759ce7ea599bdc2b4bf298df6338ab26bfb29",
+      "tests/workloads/android/test_source_integrity.py": "54482c2ace7a418caedaa0f9abb097b94882fe5af2e071a99cfef7196d439625",
+      "tests/workloads/android/test_verified_artifacts.py": "448653c14e952c94fce40f9c0f4c2efc894e14b96ef6837a9b4e5e0d5fc8e9d4",
+      "tests/workloads/android/test_verify_launch_preflight.py": "e4e334888f1a1dc446e29b0d6b5434fa292fbf23dbc03e9bdde427cc8dd62c84",
+      "tests/workloads/android/test_verify_product_source.py": "7964e159fdf246bb10b979e218c6d775cc53112b03645885aebb4644f91c50da",
+      "tests/workloads/android/test_verify_vintf.py": "705c83d344ac632334bbe07f7f994b8cc03b4506895e1a52f7b2d992238e50bc"
+    },
+    "status": "",
+    "tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27"
+  },
+  "source_bundle": {
+    "bytes": 10947,
+    "path": "/data/trill-organ-android-enter-ec33-20261103/final-fd8.bundle",
+    "sha256": "b3e1a860a987e0a8138d77a9c6d225ab44b88e4bf1a4115cd80e3c706b09213b"
+  },
+  "source_root": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+  "source_unchanged": true,
+  "started_unix_ms": 1793722121804,
+  "steps": [
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-current-source",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/source"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g",
+      "duration_seconds": 0.039,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "source-clone",
+      "stderr": {
+        "bytes": 79,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-clone.stderr",
+        "sha256": "8f837bfef1da88d62ef4f36288423c125c9b88b794975b3fed223b27ac34942c"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-clone.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "bundle",
+        "verify",
+        "/data/trill-organ-android-enter-ec33-20261103/final-fd8.bundle"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.033,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "source-bundle-verify",
+      "stderr": {
+        "bytes": 71,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-bundle-verify.stderr",
+        "sha256": "9d9621ebee42138a1617d5df350931166c42d41449832f1f60830b4d10788021"
+      },
+      "stdout": {
+        "bytes": 225,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-bundle-verify.stdout",
+        "sha256": "bbed3f9bd5732d49be9b15fff2dc9ff354ca5a8963986ba694459c566464f9a5"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "fetch",
+        "--no-tags",
+        "/data/trill-organ-android-enter-ec33-20261103/final-fd8.bundle",
+        "refs/heads/codex/organ-product-20261103"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.149,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "source-fetch",
+      "stderr": {
+        "bytes": 134,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-fetch.stderr",
+        "sha256": "9f502a0dcb7215f1edeec53c4cd637c5417c09288abcd4d3cd975c2f934325eb"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-fetch.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "fd8d56c52b971c2d5d0e6430f296803b43ef60a3"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 2.041,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "source-checkout",
+      "stderr": {
+        "bytes": 95,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-checkout.stderr",
+        "sha256": "1917357e425d453f0bfc667bec1271d0981f7b988469977fc007d226ccc64bf7"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/source-checkout.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-c",
+        "import sys,PIL,shutil,json;print(json.dumps(dict(python=sys.version,executable=sys.executable,pillow=PIL.__version__,pillow_file=PIL.__file__,java=shutil.which('java'),javac=shutil.which('javac'),cc=shutil.which('cc'))))"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.039,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "environment",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/environment.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 256,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/environment.stdout",
+        "sha256": "a5bdfc0e38cac24bcb0422df6622b35c145e51cf86cb024659149f6922b01475"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/javac",
+        "-version"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.606,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "javac-version",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/javac-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 16,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/javac-version.stdout",
+        "sha256": "2df6b9c76e710158266aeaae8f3578eaed8ddd747a2272483506ad9a8a5e644a"
+      }
+    },
+    {
+      "argv": [
+        "/opt/android-sdk/cmdline-tools/latest/bin/d8",
+        "--version"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.393,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "d8-version",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/d8-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/d8-version.stdout",
+        "sha256": "be00baab689915904814269317e02c5cdc29083140a7a7d614d836cbf301baa4"
+      }
+    },
+    {
+      "argv": [
+        "/opt/android-sdk/build-tools/35.0.1/apksigner",
+        "version"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.195,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "apksigner-version",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/apksigner-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 4,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/apksigner-version.stdout",
+        "sha256": "a839ab0447b2d415fe1732387938b5e06aa9d5aba7ed0f0c927837f0e77027f2"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "support/android/verify_host.py",
+        "--out",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/host-gates.json"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 20.54,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "full-verify-host",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/full-verify-host.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 127,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/full-verify-host.stdout",
+        "sha256": "05066d447cfa51c3fceee8b3e970504fab9179e69d4118cd903022d51b957178"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/android",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 16.371,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "full-discovery-normal-transcript",
+      "stderr": {
+        "bytes": 37683,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/full-discovery-normal-transcript.stderr",
+        "sha256": "1798bf2fb7403082a9e66ad8e0dfc3904d025393f02bb667b4a58e1fa972455e"
+      },
+      "stdout": {
+        "bytes": 1870,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/full-discovery-normal-transcript.stdout",
+        "sha256": "83f7c345ecdb29e100f46d51c8f66f74370e60b424784beb1ba2c8e98c0b6a26"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/android",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 18.726,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "full-discovery-optimized",
+      "stderr": {
+        "bytes": 37683,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/full-discovery-optimized.stderr",
+        "sha256": "d382e5219b9b33f3329083f5335aff03099bcf19d2aaa8ee1f8ef1684ca3ba22"
+      },
+      "stdout": {
+        "bytes": 1870,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/full-discovery-optimized.stdout",
+        "sha256": "dfb7b0d18057bebe3afb03ecaba60b4a9114454e36c4ad15b4069d4dcc04e91e"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "support/android/receiver/qualify_receiver.py",
+        "java",
+        "--output",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/javac-only",
+        "--sdk",
+        "/opt/android-sdk"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 4.372,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "javac-only",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/javac-only.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2287,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/javac-only.stdout",
+        "sha256": "dd5d4ff29c2c64f2517585f296919195680cce9a9a3a31502974bf11124b8134"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "support/android/receiver/build_receiver.py",
+        "--output",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned",
+        "--compile",
+        "--sdk",
+        "/opt/android-sdk",
+        "--reuse-original-resources",
+        "--original-apk",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/inputs/original-actions-v2.apk"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 20.89,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "unsigned-build",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/unsigned-build.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2537,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/unsigned-build.stdout",
+        "sha256": "3304ed22c985cadb5d2a314f3de3d09f8ec851b6bf4165142a7eb1a6be4dc57d"
+      }
+    },
+    {
+      "argv": [
+        "/opt/android-sdk/build-tools/35.0.1/aapt",
+        "dump",
+        "badging",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/inputs/original-actions-v2.apk"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.329,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "original-badging",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/original-badging.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 526,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/original-badging.stdout",
+        "sha256": "e441b32a56579b1afa348acb997758a0e153c65b2fa17b924acf80994ad8cb04"
+      }
+    },
+    {
+      "argv": [
+        "/opt/android-sdk/build-tools/35.0.1/aapt",
+        "dump",
+        "badging",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned/aligned.apk"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.005,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "candidate-badging",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/candidate-badging.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 526,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/candidate-badging.stdout",
+        "sha256": "e441b32a56579b1afa348acb997758a0e153c65b2fa17b924acf80994ad8cb04"
+      }
+    },
+    {
+      "argv": [
+        "/opt/android-sdk/build-tools/35.0.1/zipalign",
+        "-c",
+        "4",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned/aligned.apk"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.004,
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "name": "zipalign-check",
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/zipalign-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/zipalign-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/opt/android-sdk/build-tools/35.0.1/apksigner",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "/data/trill-organ-android-fd8-20261103-kqt0e83g/unsigned/aligned.apk"
+      ],
+      "cwd": "/data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+      "duration_seconds": 0.26,
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "name": "unsigned-signature-rejected-as-expected",
+      "stderr": {
+        "bytes": 52,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/unsigned-signature-rejected-as-expected.stderr",
+        "sha256": "1413af210d1627fde4f14e31934eb5d9d031684e4f7a5c3371a74b3bdeb8764c"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/trill-organ-android-fd8-20261103-kqt0e83g/logs/unsigned-signature-rejected-as-expected.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ]
+}
