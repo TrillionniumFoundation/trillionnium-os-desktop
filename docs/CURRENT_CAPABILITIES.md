@@ -36,6 +36,8 @@
 
 当前 Root/issuer/人类准入组合最多 300 秒，完整 owner 恢复只允许在同一 issuer 窗口内进行。原产品没有连续重新授权/epoch 接续事务；[D14](DECISIONS.md)与[恢复合同](../services/hepta-session-host/src/product_root/RECOVERY.md)记录实际期限公式和缺口。短租约装配、真实人类动作与常驻生产运行分别验收。
 
+安装后的[首次原 Root 实际启动](../results/integration/2026-11-03-organ-followup/owner-p0-notes-start-v1/README.md)现有明确失败证据：job `1a1a3519eb3-96a-766e` 与 Root 均 exit 1、无外层超时；Root 在 13,085 ms 后报告原 seed 子进程未在期限内退出。尚无 completed seed、Session、authority state 或 composition，GUI 写入请求为 0。15 份原文件、完整 354-byte job stdout 与独立只读 postmortem 已逐项核对。原构建/安装成功仍保留，当前尚无真实 Notes 效果、回读和恢复资格；服务内部唯一根因未由空日志确立。
+
 同一次窗口执行的[五张原始 IBus 截图](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/window/visual/README.md)已逐图核对原收据 SHA/尺寸并完成独立 AI 视觉观察。全显示截图可见 `ni hao`、高亮候选“你好”，提交后标题、选中会话与输入框保留“你好”；窗口单独截图的黑区对应外部候选框覆盖区域。原人类视觉、物理输入、Wayland、Orca 和授权发送资格不变。这些是原执行的图像观察，不是新增生产效果测试。
 
 后继双应用接入沿 [D13](DECISIONS.md) 使用同一原 sender/writer 对原 turn 的持久约束；Core callback 与活动列表各有来源核验范围，不作为完整持久历史证明。候选代码、SQLite 夹具与最终联合产品分别验收。

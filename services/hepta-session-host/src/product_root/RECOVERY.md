@@ -74,6 +74,17 @@ edit the original config or lease to extend an already issued authority.
 This version has no continuous issuer renewal; a fresh prefix creates a new
 agent/thread/authority and cannot stand in for the old operation's recovery.
 
+The existing sender's retained reads and recovered handles also require a
+live original writer and authority. The cold read-only CognitiveStore entry
+exposes only its anchor and Lane C projection, not sender/outbox results.
+Consequently this product does not provide an existing task-status capability
+across an expired issuer window. Continuous reauthorization needs a separately
+admitted, bounded original-owner result projection tied to the complete Current
+cut, revocation and retained operation identity. It must not remove the current
+live-authority checks or turn a direct database read into an effect receipt.
+[D14](../../../../docs/DECISIONS.md) records that missing capability, the
+same-epoch rotation boundary and checkpoint retention limit.
+
 This first product entry admits one child-creation episode. Before that boundary,
 the same recovery command can resume interrupted preparation: waiting for the
 actual old writer expiry and rechecking/removing stale rendezvous. It first holds

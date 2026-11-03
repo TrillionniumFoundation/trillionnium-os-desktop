@@ -14,6 +14,7 @@ component test into installed-product qualification.
 | Frozen fd/a39 prepared UI and private window | Exact fd/a39, explicit prepared preedit SDK | All 16 UI build commands exited 0; private X11 AT-SPI 7/7, atomic EditableText 5/5 and real IBus 5/5; five owned long-lived children cleaned up | Physical/Wayland/Orca/visual checks, authenticated Send and installed original Root/Notes |
 | Frozen fd/a39 Root dev-small package | Same original source pair | Both build stages and two strip stages completed; 341,288,592-byte Agentd was rejected by the original 128 MiB per-file bound | That execution produced no accepted package; its blocked result is unchanged |
 | Frozen fd/a39 Root product-linux build/install | Same original source pair, Rust 1.96 | Eight build commands passed; Agentd 117,408,600 bytes; original host tests 53 passed plus two actually executed privileged cases; original pack, verify and installation all passed | Real authenticated submission, Notes effect/readback/terminal/restart and continuous authority renewal |
+| Frozen fd/a39 first installed Root startup | Same installed release, unchanged 300,000 ms input and original seed exit bound | Actual job and Root failed exit 1; Root reported seed child exit timeout after 13,085 ms; no outer timeout; zero GUI write prompts | Completed seed, Session/authority composition, Notes effect and all recovery phases |
 | Calculator Core | Desktop `5a8684cc4591a4163c162f198b4121ca4cfc6ebc`, tree `5bece45cf0c433194a2aeefdd924990844d3e398`, Rust 1.96 | 81 passed; zero failed, ignored or filtered | Original owner attachment, native windows, production tasks |
 | Calculator App/Session | Same Desktop 5a, default features | 138 top-level passed, zero failed, 2 ignored; actual Session normal exit and SIGKILL both reached idle egui Close at frame 4 with zero input events/effects | Compositor-window and original Root/owner end-to-end qualification |
 | Module documentation | Same clean complete Desktop 5a | 16 Cargo entries, 11 development domains, 57 kernel members, 91 documents, 1,504 local links; no errors | A documentation contract/link check is not runtime evidence or proof every module is finished; external URLs were not fetched |
@@ -122,6 +123,14 @@ The implemented authority composition is limited to at most 300 seconds and
 one same-boot recovery inside the original issuer window. [D14](../../../docs/DECISIONS.md)
 records the missing continuous original-owner reauthorization transaction.
 Passing an installed finite run cannot qualify continuous production use.
+
+The [first actual installed Root startup](owner-p0-notes-start-v1/README.md)
+subsequently failed before composition. Its original seed child did not exit
+within the existing bound; no Session or authority state was created and no
+Notes write prompt was sent. Fifteen original files, complete process output
+and an independent read-only postmortem retain this failure. The seed shutdown
+stage is identified, but the empty App Server logs do not establish a unique
+internal cause. The successful build/install does not override this result.
 
 ## Separate exact original-owner image profile
 

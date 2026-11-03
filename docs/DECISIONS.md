@@ -84,4 +84,8 @@ GPU/VMM/Android product/首台实机可行性与M0并行；完整设备实现不
 
 长期运行应在原 owner 内增加显式、可中断后核对的重新授权与代际接续：先冻结旧代际的新效果准入，保留原请求、未知操作和已持久终态；原 Root 在新的真实人类会话授权下建立有限的新 issuer/writer proof 及受监督通道；原 consumer 前沿、Current、撤销和任务身份完成一致交接后才开放新动作。每一阶段必须记录持久状态，重启后核对同一事务，旧未知操作继续只读核对，不按新的 call、目标、prefix 或 thread 重发。该事务尚未实现或验收，不以放宽 300 秒常量替代。
 
+上述只读核对也是待实现的生产能力。[现有原 sender 读取](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-memory/src/objective_sender_read.rs)仍要求 live writer 和有效 authority；原 [cold read-only recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-memory/src/cognitive_store_recovery_read_only.rs)只暴露 anchor 与 Lane C 投影，没有原 sender/outbox 状态查询。重新授权间隙必须另补绑定原完整 Current cut、撤销状态及原操作身份的受限只读投影，不能去掉现有读路径的授权校验或把普通数据库查询当效果证明。
+
+原 [writer rotation](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/src/deployment_writer_rotate.rs)明确要求前后 authority epoch 相同，不能直接承担跨 epoch 接续。[Current material](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/src/authority_host_checkpoint_material.rs)目录还有 128 项容量门槛；长期化需要原 owner 内可核对的保留和回收策略，不能仅延长 lease 或放大目录上限。新事务须分别验收失回复、阶段间重启、旧 epoch 隔离、未知操作只读，以及仍被恢复者引用的 checkpoint 不被回收。
+
 真实人类准入还要求原同 UID 的活跃本地图形 logind、原 Shell 的存活身份及 AuthBus 已确认输入。私有 Xvfb 的窗口证据不替代该身份来源。若以后支持远程或无图形生产准入，应为原 Root 和 Hepta 实现独立版本的可信身份、会话寿命、撤销与原 route 绑定；当前版本不存在可以绕过这些前置的配置开关。

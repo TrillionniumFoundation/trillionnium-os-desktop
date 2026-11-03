@@ -70,8 +70,10 @@ features, binary hashes and execution receipts.
 
 The frozen fd/a39 pair now has its own successful [optimized Root build, 55
 distinct original tests, package verification and installation](results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md).
-The installer did not start services. Actual Notes effects and full owner
-recovery require separate receipts. The current authority composition lasts
+The installer did not start services. The [first actual installed Root startup](results/integration/2026-11-03-organ-followup/owner-p0-notes-start-v1/README.md)
+failed while stopping the seed App Server, before Session, authority or any
+Notes request. Actual effects and full owner recovery remain open.
+The current authority composition lasts
 at most 300 seconds; [continuous original-owner reauthorization](docs/DECISIONS.md)
 remains a product implementation gate.
 
