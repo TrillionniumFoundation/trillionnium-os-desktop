@@ -1,0 +1,46 @@
+{
+  "commit": "22e55edea1bbaae0044984e3b1bb413ec6b8d39b",
+  "tree": "41a3a52ee99717de509cbbde4033e04262c0f526",
+  "checked_at_utc": "2026-11-03T17:04:53.871828+00:00",
+  "runs": [
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_cpu_control",
+        "-p",
+        "test_build_original_entry*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/92e2482fa623/desktop-f1",
+      "exit_code": 0,
+      "log": "normal.log",
+      "sha256": "6faeb98f8b5f5d1b9f0d96c2b7c392c1d6c7ebdf3deb122630361bd49dfbffaf"
+    },
+    {
+      "argv": [
+        "python3",
+        "-O",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/hepta_cpu_control",
+        "-p",
+        "test_build_original_entry_supervision.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/92e2482fa623/desktop-f1",
+      "exit_code": 0,
+      "log": "optimized.log",
+      "sha256": "9ad28bbc29187fc03df521b9723bb084114b811dfb1979bab991fdb901d92781"
+    }
+  ],
+  "native_runtime_qualification": false,
+  "passed": true
+}

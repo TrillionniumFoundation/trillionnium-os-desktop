@@ -1,7 +1,7 @@
 # 2026-11-03 organ source convergence and executed evidence
 
-This checkpoint records actual source-bound executions. It is an evidence and
-documentation successor of the frozen product; it does not change that product's
+This checkpoint records actual source-bound executions. It is an evidence,
+documentation and build-supervision successor of the frozen product; it does not change that product's
 source identity or turn component checks into production qualification.
 
 ## Frozen sources
@@ -24,6 +24,34 @@ The PR includes the previously unmerged product implementation. Its entire
 diff against old `main` is not the amount of code newly written on this date.
 
 ## Executed checks
+
+The complete `fd/a39` product CI set has now finished: **16 successful workflows
+and one retained failed G1-d historical negative-control gate**. Its current
+[Session 23-case result](session-host-ci-fd/receipt.json),
+[full dependency verification](session-host-ci-fd/dependency-verification-summary.json),
+[native UI groups and SDK selections](native-ui-ci-fd/receipt.json),
+[native four-crate result](kernel-ci-fd/00-result.json), and
+[original Agentd lifecycle with independent observer replay](f1-native-ci-fd/independent-review.json)
+are separately retained. [The complete final CI snapshot](ci-status-fd-final.json)
+does not overwrite the earlier in-progress snapshot.
+
+Current `fd` native counts remain core 377, OSTD 233 reported / 230 exercised
+lower bound, allocator 20 and MLSDisk 15; no new skip is introduced. The exact
+`fd` ordinary kernel is
+`2d13b752c241391f218a14af23f834920e2ba8d582c21fdf3e3c754b117892e4`.
+The original daemon's eight observations include PID 26 / spawn 1 changing to
+PID 162 / spawn 5. Full F1/G2 and production flags remain false. The separate
+original Store run below continues to use its explicitly recorded `e1` kernel.
+
+The dedicated original timer-watchdog workflow also completed on evidence
+source `22a94f7d6cd9f77eb4e27c30dfc2befc00dbdb20`, tree
+`e9615b923eb4611124c295482bcaf3303b16055c`: **six original boots, each raw QEMU 33**.
+The [independent replay](watchdog-native-22a94/independent-review.json) checks all
+six raw serial streams against the original observer. Restore, healthy, zero,
+thread-directed zero cleanup, stopped and already-recovered cases all pass.
+`independent_timer_qualified=true`; trusted user-pause intent, complete physical
+reserve, SMP, physical clock faults, hardware and Hepta durability remain false.
+This additional gate does not replace the original failed G1-d gate.
 
 | Evidence | Exact source and actual result | Qualification boundary |
 | --- | --- | --- |
@@ -66,6 +94,16 @@ timeout; that exit alone does not satisfy the failed oracle. The original
 [inner failure](g1d-current-ci/05-result.json) and
 [QEMU record](g1d-current-ci/06-qemu.json) are retained. No evidence bound or
 pass criterion was relaxed and no prior green run replaces this red gate.
+
+The original CPU-control builder's timeout/interruption cleanup has a separate
+reviewed successor from `22e55ede`: it observes its own unreaped child with
+`WNOWAIT`, stops numeric process-group signalling before any wait can reap,
+preserves the exclusive Cargo lease through collection, and rejects a conflicting
+SIGCHLD owner before spawn. [Fourteen normal tests and six optimized supervision
+tests](builder-supervision-22e55/receipt.json) use ordinary owned children. They do
+not change the original entry, pins, features, locks or ELF/LOAD limits. The
+already running `e1` build keeps its actual original source and is not relabelled
+as a run of the corrected supervisor.
 
 The Linux installation test fixture now sets its intended directory mode
 explicitly, so a user's umask does not invalidate the fixture premise. The

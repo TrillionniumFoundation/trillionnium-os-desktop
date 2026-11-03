@@ -20,6 +20,8 @@
 
 `fd/a39` 已完成 Linux Python 合同 196 个不同用例（包括另以真实 UID 0 执行的 4 项），Android 正常/优化各 257 项及未签名 APK 构建；修复 Pillow 环境依赖后的 A08 CI 已通过。`a39` 原共享 Rust UI core/Robrix 在产品 Rust 1.96 下分别 55/55、24/24，无过滤或跳过。这些记录不表示安装后的 Root/Notes、真实手机、Web 渲染或完整 F1/G2 已验收。
 
+`fd/a39` 的全部 CI 现已终结：16 项成功、1 项失败；[最终状态](../results/integration/2026-11-03-organ-convergence/ci-status-fd-final.json)与[当前原 daemon 独立重放](../results/integration/2026-11-03-organ-convergence/f1-native-ci-fd/independent-review.json)均保留。当前 A06、Session 与 Native UI 也各自有新的 `fd` 收据，未把 `e1` 结果改名。G1-d 历史负控超过串口证据上限并有运行条件失败，仍为红灯。新增独立 watchdog workflow 在 `22a94f7` 后继上实际通过 6 次 guest，原 observer 已重放；合法 job-stop、零配额、一次恢复结果均保持原语义，但可信用户暂停入口及全局恢复资源仍未取得资格。
+
 ### 当前交付范围与下一条实际验收
 
 | 领域 | 当前源码提供的入口 | 仍须以最终产物闭合的门禁 |

@@ -1,0 +1,70 @@
+{
+  "schema": "trill.original-watchdog-independent-review.v1",
+  "workflow_run": 41677081607,
+  "job": 126060495487,
+  "source_head": "22a94f7d6cd9f77eb4e27c30dfc2befc00dbdb20",
+  "source_tree": "e9615b923eb4611124c295482bcaf3303b16055c",
+  "kernel_sha256": "9a23d81b6958af88521ef1a90d5dfc4bc650b735b159898cb6071132a9a36ce0",
+  "probe_sha256": "1d95dc45b3ed1a78a541d030d9b167f82d73ce0634859d1a34a22c30b893b588",
+  "original_observer_sha256": "ffa3b6761fa0e84b84cb8372f8ff56260ddb34c94a021b3f98fd0e158f229b1b",
+  "original_observer_replayed": true,
+  "cases": [
+    {
+      "case": "restore",
+      "passed": true,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "ad5a293a36e4b46a97aa963f04eb418918e85892c52b286f3a7f1ca8c30c7f71",
+      "bytes": 14115
+    },
+    {
+      "case": "healthy",
+      "passed": true,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "131aa17b675bd1dcdce25b6ab6cd6e7b7ccbfe965a66d742d27115335c099ea0",
+      "bytes": 13590
+    },
+    {
+      "case": "zero",
+      "passed": true,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "dd65122f89dfb9fbe01da255e34d07a50250c6f6f118ad73e0cde865ce98c719",
+      "bytes": 14019
+    },
+    {
+      "case": "zerothread",
+      "passed": true,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "0ab78342e549644884c79bd23ee6efc8ab04f27aeea1530f0d81b3b9b5c5d43e",
+      "bytes": 14049
+    },
+    {
+      "case": "stopped",
+      "passed": true,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "0dff3f756f722df5c565a91b80dd95cc8c01a7a6602a9494168591ec8a26aa7b",
+      "bytes": 13997
+    },
+    {
+      "case": "recovered",
+      "passed": true,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "5d8f4adada69bf037974f7ef5ff6f58b37342681e453d5f0cf30d1c7a2b4a4b2",
+      "bytes": 14203
+    }
+  ],
+  "qualification_flags": {
+    "trusted_user_pause_intent": false,
+    "global_physical_reserve": false,
+    "smp_qualification": false,
+    "physical_clock_fault_injection": false,
+    "hardware_qualification": false,
+    "hepta_durability": false,
+    "production_ready": false
+  },
+  "artifact": {
+    "id": 13250908847,
+    "bytes": 16520759,
+    "published_sha256": "d5de44a31c44573f869c50dd8868699b99c7eb86d3521a579e7214c0f209ffa0",
+    "complete_zip_digest_recomputed": false
+  }
+}

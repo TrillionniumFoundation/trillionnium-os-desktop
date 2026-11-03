@@ -132,6 +132,10 @@ def target_lease(path):
 
 
 def run(command, cwd, environment, output, label, report, timeout):
+    require(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+            "original command requires sole wait ownership and default SIGCHLD")
+    require(hasattr(os, "WNOWAIT") and hasattr(signal, "pthread_sigmask"),
+            "non-reaping Linux child supervision required")
     record = {"argv": [str(value) for value in command], "cwd": str(cwd), "log": label,
               "timeout_seconds": timeout, "completed": False}
     report["commands"].append(record)
@@ -140,30 +144,69 @@ def run(command, cwd, environment, output, label, report, timeout):
     with (output / label).open("xb") as log:
         process = subprocess.Popen(record["argv"], cwd=cwd, env=environment, stdout=log,
                                    stderr=subprocess.STDOUT, start_new_session=True)
+        may_signal_group = True
+        failure = None
         try:
-            record["exit_code"] = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            record["timed_out"] = True
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                pass
-            # Cargo may exit on TERM while a compiler child ignores it. Kill
-            # the whole retained group before releasing the writable cache.
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            process.wait(timeout=10)
-            record["exit_code"] = process.returncode
+            while True:
+                remaining = timeout - (time.monotonic() - started)
+                if remaining <= 0:
+                    record["timed_out"] = True
+                    break
+                try:
+                    exited = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                except ChildProcessError:
+                    may_signal_group = False
+                    record["wait_owner_lost"] = True
+                    raise ValueError("original command wait ownership was lost") from None
+                if exited is not None:
+                    # wait() may reap before propagating an interruption.
+                    # No later path may signal this numeric group after it.
+                    may_signal_group = False
+                    record["exit_code"] = process.wait()
+                    break
+                time.sleep(min(0.05, remaining))
+        except BaseException as error:
+            failure = error
+            record["error"] = type(error).__name__ + ": " + str(error)
         finally:
+            # Keep the caller's exclusive Cargo lease through cleanup/reap.
+            # Defer another Ctrl-C until the owned child has been collected.
+            previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGINT})
+            try:
+                if may_signal_group:
+                    try:
+                        os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                    except ChildProcessError:
+                        may_signal_group = False
+                        record["wait_owner_lost"] = True
+                    if may_signal_group:
+                        try:
+                            record["cleanup_group_signal"] = "SIGKILL"
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        finally:
+                            may_signal_group = False
+                while process.returncode is None and not record.get("wait_owner_lost"):
+                    try:
+                        record["exit_code"] = process.wait()
+                    except (KeyboardInterrupt, SystemExit) as error:
+                        if failure is None:
+                            failure = error
+                            record["error"] = type(error).__name__ + ": " + str(error)
+                record["exit_code"] = process.returncode
+            finally:
+                try:
+                    signal.pthread_sigmask(signal.SIG_SETMASK, previous_mask)
+                except (KeyboardInterrupt, SystemExit) as error:
+                    if failure is None:
+                        failure = error
+                        record["error"] = type(error).__name__ + ": " + str(error)
             record["elapsed_seconds"] = round(time.monotonic() - started, 3)
-            record["completed"] = True
+            record["completed"] = process.returncode is not None
             save(output / "result.json", report)
+        if failure is not None:
+            raise failure
     require(not record.get("timed_out") and record["exit_code"] == 0, "original command failed: " + label)
 
 
@@ -324,7 +367,8 @@ def main(argv=None):
                                                     args.cargo_home, args.target_cache, args.output)),
                 "absolute source, toolchain, cache and output paths required")
         execute(args, report)
-    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, AssertionError) as error:
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, AssertionError,
+            KeyboardInterrupt, SystemExit) as error:
         report["error"] = type(error).__name__ + ": " + str(error)
     report["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
     if report.get("output_created"):
