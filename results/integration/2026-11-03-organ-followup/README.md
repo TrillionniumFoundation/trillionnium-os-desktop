@@ -11,6 +11,8 @@ component test into installed-product qualification.
 | Scope | Actual source | Actual result | Still unqualified |
 | --- | --- | --- | --- |
 | Notes/build successor CI | Desktop `bf15a519e9192b063071e8b9b61ef3319bed416e` | All 9 PR workflows successful, including the complete original Native UI, Root and prepared SDK gate | Installed Root, real Notes effect and restart reconciliation |
+| Frozen fd/a39 prepared UI and private window | Exact fd/a39, explicit prepared preedit SDK | All 16 UI build commands exited 0; private X11 AT-SPI 7/7, atomic EditableText 5/5 and real IBus 5/5; five owned long-lived children cleaned up | Physical/Wayland/Orca/visual checks, authenticated Send and installed original Root/Notes |
+| Frozen fd/a39 Root dev-small package | Same original source pair | Both build stages and two strip stages completed; 341,288,592-byte Agentd was rejected by the original 128 MiB per-file bound | Complete package and later original host tests; outer runner exit 0 does not change its blocked result |
 | Calculator Core | Desktop `5a8684cc4591a4163c162f198b4121ca4cfc6ebc`, tree `5bece45cf0c433194a2aeefdd924990844d3e398`, Rust 1.96 | 81 passed; zero failed, ignored or filtered | Original owner attachment, native windows, production tasks |
 | Calculator App/Session | Same Desktop 5a, default features | 138 top-level passed, zero failed, 2 ignored; actual Session normal exit and SIGKILL both reached idle egui Close at frame 4 with zero input events/effects | Compositor-window and original Root/owner end-to-end qualification |
 | Module documentation | Same clean complete Desktop 5a | 16 Cargo entries, 11 development domains, 57 kernel members, 91 documents, 1,504 local links; no errors | A documentation contract/link check is not runtime evidence or proof every module is finished; external URLs were not fetched |
@@ -84,6 +86,17 @@ budget nor the 16-completed-peer assertion was relaxed; no mock store replaced
 the actual stores. Stage timing and failure coverage still need examination
 after competing large-build I/O subsides. The Xvfb page/buffer wait observation
 does not identify a particular file or establish a unique federation cause.
+
+## Later original private-window execution
+
+[The complete fd/a39 window and Root records](owner-p0-fd-v4/README.md)
+retain both the later original-window success and the separate Root package
+refusal. The private prepared-preedit window now has actual 7/5/5 AT-SPI,
+atomic-edit and IBus results under the original deadlines. This does not replace
+the earlier Xvfb failure, establish a unique I/O cause, or qualify installed
+Agentd/Notes effects. The raw UI build receipt's prior `window_qualified: false`
+continues to describe its build stage; the later window execution has its own
+receipt. The failed Root builder also retains its unchanged false fields.
 
 ## Open product work
 
