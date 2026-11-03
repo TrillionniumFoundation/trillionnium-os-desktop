@@ -62,6 +62,38 @@ run40388171921, fetching the obsolete Desktop658001 commit failed with
 `upload-pack: not our ref` before any build or guest execution. That failure is
 not an owner-test result and is not converted into a pass by this migration.
 
+### Bind a current local run explicitly
+
+Use the current native workflow for the complete build and guest sequence. For
+a local run, first create the same external binding from the clean Desktop
+checkout and the exact Hepta checkout selected by its product contract:
+
+```sh
+set -euo pipefail
+DESKTOP_SOURCE=/absolute/clean-desktop
+HEPTA_SOURCE=/absolute/clean-canonical-hepta
+F1_EVIDENCE=/absolute/new-f1-evidence
+mkdir -m 700 "$F1_EVIDENCE"
+export F1_SOURCE_REVIEW_PATH="$F1_EVIDENCE/current-source-review.json"
+export F1_HEPTA_SOURCE_ROOT="$HEPTA_SOURCE"
+python3 -I -B "$DESKTOP_SOURCE/tests/workloads/hepta_agentd_runtime/current_source_review.py" freeze \
+  --desktop-source "$DESKTOP_SOURCE" --hepta-source "$HEPTA_SOURCE" \
+  --output "$F1_SOURCE_REVIEW_PATH" --github-env "$F1_EVIDENCE/source.env"
+export F1_SOURCE_REVIEW_SHA256
+F1_SOURCE_REVIEW_SHA256=$(sha256sum "$F1_SOURCE_REVIEW_PATH" | cut -d ' ' -f 1)
+```
+
+Keep all three exported `F1_*` bindings in the environment when invoking that
+checkout's `build_kernel.py`, `prepare_inputs.py` and `run_agentd_runtime.py`.
+Pass `"$F1_SOURCE_REVIEW_SHA256"` as the kernel builder's
+`--expected-source-review-sha256`. Every stage reconstructs and checks the
+binding; a failed freeze stops this shell before a build. Do not use the digest
+of the committed historical `source-review.json` for a current run. Removing
+all three bindings selects historical replay; setting only part of the binding
+is an error, and a canonical a39 checkout cannot pass the historical a6 pin.
+
+### Historical 658001 candidate notes
+
 The following candidate design and device observations describe the historical
 658001 review; every current combination still requires its own source-bound
 build and lifecycle execution.
@@ -75,6 +107,8 @@ ACPI-table page fault above the permanent direct-map extent after xAPIC setup.
 The earlier `90d` boot-information retention hypothesis did not repair that
 failure and was removed. Its separate ordinary-build pass and device failure
 cannot qualify this candidate or be silently converted into new evidence.
+
+### Original build and boot inputs
 
 Use `build_kernel.py --execute` to run the original ordinary kernel build,
 boot and QueryAbi candidate gate, with an explicit SHA-256 of this source
@@ -150,16 +184,17 @@ installs the exact compiler from this source review for this regression.
 
 ## Reviewed userspace toolchain and runner identity
 
-The current `source-review.json` also requires `userspace_toolchain` with one
+The selected review also requires `userspace_toolchain` with one
 exact stable `channel`, the fixed `codex-rs/rust-toolchain.toml` path, and that
 manifest's SHA-256. Both the source manifest bytes and its parsed channel must
 match. Preparation then checks the actual Cargo and rustc `--version` output
 against this same channel. A binary at an expected path with a different
 version is rejected. The native workflow resolves its installation and binary
 paths from that review; it does not keep a second hard-coded userspace version.
-The historical b3 source uses Rust 1.95.0. The current a6 source has its own
-explicit Rust 1.96.0 source/toolchain review; the old 1.95.0 identity cannot
-be used for that build. Named moving channels,
+The historical b3 source uses Rust 1.95.0. The historical a6 review requires
+Rust 1.96.0; the current external review derives its exact compiler from the
+canonical Hepta manifest. The old 1.95.0 identity cannot qualify either 1.96.0
+build. Named moving channels,
 missing toolchain identities, stale hashes and version mismatches are refused.
 
 The runner's commit and the compiled Desktop commit may differ. The runner
@@ -258,7 +293,8 @@ repository identity. A new source tree requires a new review; there is no
 | `dependency_artifacts.py` | Validate and freeze the explicit V8 archive/bindings pair without ambient overrides. |
 | `test_dependency_artifacts.py` | Reject incomplete, replaced or changed supplier inputs using actual temporary files. |
 | `kernel_profile.py` | Reject trusted G1/G2 profiles in both fresh and retained ordinary kernel evidence. |
-| `source-review.json` | Fixed reviewed source identities and scope. |
+| `current_source_review.py` | Derive and verify the explicit current checkout/canonical Hepta binding outside both source trees. |
+| `source-review.json` | Historical 658001/a6 identities and selected-inventory template; not the current product pin. |
 | `retained-source-review.json` | Independent historical archive identities; never updated to relabel old binaries. |
 | `.github/workflows/f1-original-runtime-host.yml` | Run host tests and compile the guest launcher. This workflow never qualifies native runtime. |
 | `.github/workflows/f1-original-runtime-native.yml` | Build and qualify the current ordinary kernel and three original x86_64 executables, then evaluate the real no-turn lifecycle. |

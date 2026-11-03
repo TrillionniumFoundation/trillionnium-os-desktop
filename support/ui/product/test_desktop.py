@@ -647,6 +647,8 @@ class ProductTests(unittest.TestCase):
             desktop.runtime_environment(desktop.default_config(), prepare_state=False)
             self.assertFalse(state.exists())
             (state / "trillionnium-ui").mkdir(parents=True, mode=0o755)
+            # Establish the shared-mode fixture even under a private 0077 umask.
+            (state / "trillionnium-ui").chmod(0o755)
             with self.assertRaisesRegex(desktop.ProductError, "0700"):
                 desktop.runtime_environment(desktop.default_config())
         self.assertEqual((state / "trillionnium-ui").stat().st_mode & 0o777, 0o755)

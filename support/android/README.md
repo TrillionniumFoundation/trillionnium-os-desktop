@@ -96,8 +96,12 @@ the JDK source, digest and composition are in `jdk-installation.json`.
 Historical 2026-10-16 receipts remain historical.
 
 The A00-coordinated `.github/workflows/a08-host.yml` runs the source guard
-before discovery, installs actual JDK 17/JNI build inputs, and executes this
+before discovery, installs actual JDK 17/JNI build inputs and Pillow, and executes this
 complete host gate plus the optimized Python suite on relevant PR changes.
+The original receiver helper imports `PIL.Image` and `PIL.ImageChops`; on Ubuntu
+24.04 the workflow installs `python3-pil` and verifies its import with the same
+`python3` interpreter used by discovery. An import failure is a failed host gate,
+not a reason to skip receiver tests.
 It preserves raw reports even on failure. The workflow YAML and its shell
 steps were parsed locally; execution on its GitHub runner must be reported
 separately. A green host job still does not qualify Android guest execution.

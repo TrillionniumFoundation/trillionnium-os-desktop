@@ -38,6 +38,26 @@ package, manifest, permissions, instrumentation target and signing identity.
 The build does not generate a signing key and rejects a candidate whose signer
 certificate differs from the verified original APK.
 
+### Reviewed legacy Enter derivation
+
+The frozen `upstream/android_app.py` remains 34,048 bytes at SHA256
+`8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b`.
+A read-only comparison on 2026-11-03 found exactly one change in the existing
+Pocket4 helper: legacy `enter` adds the `keyboard` source argument before
+`keyevent`; `home` and `back` retain their original argument lists. That
+34,094-byte intermediate is SHA256
+`196fbfe525e9813a79a1582994445c63929f2998448d46ebee7c9ac582f66eec`.
+
+The generator now applies that one exact-context change after checking the
+frozen input, verifies the complete intermediate hash, and only then composes
+the strict organ extension. `reviewed_helper_derivation` records both identities
+in the build receipt. It does not read or accept arbitrary live code, change the
+read-only adapter's pin, or modify the deployed helper. The home/back/enter
+regression uses a mocked `arun` and sends no key events. Previous e1 build
+receipts remain tied to their unmodified source and generated helper; a new
+candidate needs its own build and qualification receipt. This compatibility
+change grants no organ effect authority or native-device qualification.
+
 ## Exact receiver protocol
 
 ### Development boundary: effects remain disabled

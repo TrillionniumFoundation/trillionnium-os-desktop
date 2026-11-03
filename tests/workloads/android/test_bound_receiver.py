@@ -61,6 +61,22 @@ class BoundReceiverTests(unittest.TestCase):
         original = (build_receiver.ROOT / 'upstream/android_app.py').read_text()
         generated = (self.output / 'android-digitalis-observe-helper').read_text()
         self.assertEqual(original[original.index('def client():'):], generated[generated.index('def client():'):])
+        self.assertEqual(self.record['reviewed_helper_derivation']['frozen_input_sha256'],
+                         build_receiver.PREIMAGES['android_app.py'])
+        self.assertEqual(self.record['reviewed_helper_derivation']['intermediate_sha256'],
+                         build_receiver.REVIEWED_LIVE_HELPER_SHA256)
+
+    def test_reviewed_legacy_home_back_enter_commands_use_only_mock_transport(self):
+        expected = {
+            'home': ['/system/bin/input', 'keyevent', 'KEYCODE_HOME'],
+            'back': ['/system/bin/input', 'keyevent', 'KEYCODE_BACK'],
+            'enter': ['/system/bin/input', 'keyboard', 'keyevent', 'KEYCODE_ENTER'],
+        }
+        for operation, argv in expected.items():
+            with self.subTest(operation=operation), patch.object(self.receiver, 'arun') as arun:
+                result = self.receiver.dispatch({'op': operation})
+                arun.assert_called_once_with(argv)
+                self.assertEqual(result, {'ok': True, 'performed': operation, 'visual_verified': False})
 
     def test_unknown_fields_and_nonexact_resource_fail_before_discovery(self):
         cases = [

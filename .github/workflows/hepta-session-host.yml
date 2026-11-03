@@ -165,3 +165,4 @@ jobs:
           path: |
             services/hepta-session-host/Cargo.lock
             ${{ runner.temp }}/hepta-session-host/
+            !${{ runner.temp }}/hepta-session-host/target/**
