@@ -85,7 +85,8 @@ reconciliation. Calculator needs a coherent newly pinned owner/Root pair and
 the same actual task protocol across two real destinations. Component tests,
 headless Weston checks and the full source graph are separate acceptance parts.
 
-The original G2 owner build/package succeeded but the old 8 MiB file / 16 MiB
+The [original G2 owner records and resource review](../../g2-original-owner-size-20261103/README.md)
+show that its build/package succeeded but the old 8 MiB file / 16 MiB
 LOAD profile rejected its actual 20,138,584-byte ELF and 20,168,704-byte aligned
 LOAD total. This remains a failed static profile, not guest execution. A future
 independently versioned owner resource profile needs its own source, budget,

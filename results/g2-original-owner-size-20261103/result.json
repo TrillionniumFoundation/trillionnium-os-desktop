@@ -1,0 +1,177 @@
+{
+  "built": true,
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--manifest-path",
+        "codex-rs/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "completed": true,
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/hepta-current-source",
+      "elapsed_seconds": 0.201,
+      "exit_code": 0,
+      "log": "metadata.log",
+      "timeout_seconds": 120
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--manifest-path",
+        "codex-rs/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--release",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "-p",
+        "codex-hepta-agentd",
+        "--bin",
+        "hepta-g2-native-owner",
+        "-j1"
+      ],
+      "completed": true,
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/hepta-current-source",
+      "elapsed_seconds": 2.959,
+      "exit_code": 0,
+      "log": "build.log",
+      "timeout_seconds": 7200
+    },
+    {
+      "argv": [
+        "/bin/bash",
+        "/home/qian-qi/work/trill-organ-20261103-f1/hepta-current-source/.github/scripts/archive-release-symbols-and-strip-binaries.sh",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "--artifact-name",
+        "hepta-original-native-entry",
+        "--release-dir",
+        "/data/trill-organ-20261103-f1-build/g2-owner-build-v3/packaged",
+        "--archive-dir",
+        "/data/trill-organ-20261103-f1-build/g2-owner-build-v3/symbols-dist",
+        "--binaries",
+        "hepta-g2-native-owner"
+      ],
+      "completed": true,
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/hepta-current-source",
+      "elapsed_seconds": 4.762,
+      "exit_code": 0,
+      "log": "original-packaging.log",
+      "timeout_seconds": 600
+    },
+    {
+      "argv": [
+        "/usr/bin/readelf",
+        "-W",
+        "-h",
+        "-l",
+        "-d",
+        "/data/trill-organ-20261103-f1-build/g2-owner-build-v3/packaged/hepta-g2-native-owner"
+      ],
+      "completed": true,
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/hepta-current-source",
+      "elapsed_seconds": 0.051,
+      "exit_code": 0,
+      "log": "original-readelf.log",
+      "timeout_seconds": 30
+    }
+  ],
+  "dependency_inputs": {},
+  "environment": {
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_HOME": "/data/trill-organ-20261103-f1-build/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_DIR": "/data/trill-organ-20261103-f1-build/static-target",
+    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C target-feature=+crt-static -C relocation-model=static -C link-arg=-no-pie",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "OPENSSL_STATIC": "1",
+    "PATH": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "RUSTC": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTUP_TOOLCHAIN": "1.96.0"
+  },
+  "error": "ValueError: static initial ELF size out of bounds",
+  "executed_binary": false,
+  "features_disabled": false,
+  "finished_at_utc": "2026-11-03T18:00:03.477961+00:00",
+  "fixture_created": false,
+  "g2_complete": false,
+  "limits_changed": false,
+  "native_role_verified": false,
+  "original_entry": {
+    "entry_sha256": "802d736f5f36e0181b49f44b503802339a56f2309a9b39a3a2ae6ca68f668e40",
+    "kind": "bin",
+    "name": "hepta-g2-native-owner",
+    "package": "codex-hepta-agentd",
+    "package_id": "path+file:///home/qian-qi/work/trill-organ-20261103-f1/hepta-current-source/codex-rs/hepta-agentd#codex-hepta-agentd@0.0.0",
+    "path": "codex-rs/hepta-agentd/src/bin/hepta-g2-native-owner.rs"
+  },
+  "original_lock_sha256": "5bd3faaf16a79eb12bcdcb89054e93da388bbd858f36439b9d6bcfb72f77d522",
+  "output_created": true,
+  "packaged": true,
+  "persistent_cpu_verified": false,
+  "product": {
+    "bytes": 20138584,
+    "path": "packaged/hepta-g2-native-owner",
+    "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+  },
+  "profile_overridden": false,
+  "recovery_verified": false,
+  "release_profile": {
+    "codegen-units": 4,
+    "debug": "line-tables-only",
+    "lto": "thin",
+    "split-debuginfo": "off",
+    "strip": false
+  },
+  "schema": "hepta.original-native-entry-build.v1",
+  "source_inputs_unchanged": true,
+  "sources": {
+    "desktop": {
+      "head": "4dcd02d8058005b92b75b4e997ec4de08833e01d",
+      "tree": "504d5850df75de8697dfb56572cc8745dcc59f13"
+    },
+    "hepta": {
+      "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+    }
+  },
+  "started_at_utc": "2026-11-03T17:54:16.561080+00:00",
+  "static_profile_passed": false,
+  "target_cache": {
+    "cache_reused": true,
+    "cold_build_claimed": false,
+    "device": 2067,
+    "exclusive_lease_acquired": true,
+    "inode": 50462770,
+    "lease_device": 2067,
+    "lease_file": "/data/trill-organ-20261103-f1-build/static-target/.hepta-native-userspace.lock",
+    "lease_inode": 50510795,
+    "path": "/data/trill-organ-20261103-f1-build/static-target"
+  },
+  "toolchains": {
+    "cargo": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f",
+      "version": "cargo 1.96.0 (30a34c682 2026-05-25)"
+    },
+    "rustc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75",
+      "version": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+    }
+  },
+  "unstripped": {
+    "bytes": 102836712,
+    "path": "hepta-g2-native-owner.unstripped",
+    "sha256": "b16eb4663f5b6661314091af5ad5ec40c5de65b0ae3f3f5544a5700b6ad9c4ac"
+  }
+}
