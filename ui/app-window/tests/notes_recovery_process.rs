@@ -3,8 +3,8 @@
 #![cfg(target_os = "linux")]
 
 use std::fs;
-use std::io::{BufRead, BufReader, Read, Write};
-use std::os::fd::OwnedFd;
+use std::io::{BufRead, BufReader, Read};
+use std::os::fd::{BorrowedFd, OwnedFd};
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::net::UnixDatagram;
 use std::path::PathBuf;
@@ -14,6 +14,8 @@ use std::time::Duration;
 use trill_ui_core::notes::*;
 use trill_ui_core::notes_recovery::*;
 use trill_ui_core::notes_store::NotesStore;
+
+const APPLICATION_COMMITTED: &[u8] = b"APPLICATION_SYNCED_NO_RECEIPT_DELIVERED";
 
 struct Directory(PathBuf);
 
@@ -139,17 +141,30 @@ fn exchange(channel: &UnixDatagram, request: &[u8]) -> Vec<u8> {
 #[test]
 fn process_crash_and_lost_retirement_ack_recover_without_replaying_the_effect() {
     let root = Directory::new();
+    let (commit_peer, application_peer) = UnixDatagram::pair().unwrap();
+    commit_peer
+        .set_read_timeout(Some(Duration::from_secs(10)))
+        .unwrap();
     let mut application = Process(
         Command::new(std::env::current_exe().unwrap())
-            .args(["--exact", "persist_without_reply_fixture", "--nocapture"])
+            .args([
+                "--exact",
+                "persist_without_reply_fixture",
+                "--nocapture",
+                "--test-threads=1",
+            ])
             .env("TRILL_HELPER_PROCESS_TEST_ROOT", &root.0)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
+            .stdin(Stdio::from(OwnedFd::from(application_peer)))
+            .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .spawn()
             .unwrap(),
     );
-    application.ready("APPLICATION_SYNCED_NO_RECEIPT_DELIVERED");
+    let mut committed = [0_u8; APPLICATION_COMMITTED.len() + 1];
+    let length = commit_peer
+        .recv(&mut committed)
+        .expect("controlled App did not persist within the original deadline");
+    assert_eq!(&committed[..length], APPLICATION_COMMITTED);
     application.kill();
     let raw = mutation();
     let query = serde_json::to_vec(&NotesObserve {
@@ -232,8 +247,15 @@ fn persist_without_reply_fixture() {
     };
     let mut store = NotesStore::create(&PathBuf::from(root), target()).unwrap();
     store.apply_exact(&mutation()).unwrap();
-    println!("APPLICATION_SYNCED_NO_RECEIPT_DELIVERED");
-    std::io::stdout().flush().unwrap();
-    let _ = std::io::stdin().read(&mut [0_u8; 1]);
+    // SAFETY: this selected fixture owns stdin's private commit-only peer.
+    let fd = unsafe { BorrowedFd::borrow_raw(0) }
+        .try_clone_to_owned()
+        .unwrap();
+    let channel = UnixDatagram::from(fd);
+    assert_eq!(
+        channel.send(APPLICATION_COMMITTED).unwrap(),
+        APPLICATION_COMMITTED.len()
+    );
+    let _ = channel.recv(&mut [0_u8; 1]);
     drop(store);
 }
