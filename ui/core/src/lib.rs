@@ -1,6 +1,10 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
+pub mod calculator;
+#[cfg(target_os = "linux")]
+pub mod calculator_lifetime;
 pub mod conversation;
+pub mod desktop_startup;
 pub mod hepta;
 pub mod notes;
 pub mod notes_bootstrap;
@@ -144,6 +148,8 @@ pub struct TaskRecord {
     pub wayland_socket_epoch_at_launch: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub notes_destination: Option<notes::NotesDestinationObservation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub calculator_destination: Option<calculator::CalculatorDestinationObservation>,
 }
 
 impl TaskRecord {
@@ -167,6 +173,7 @@ impl TaskRecord {
             ui_first_frame_unix_ms: None,
             wayland_socket_epoch_at_launch: None,
             notes_destination: None,
+            calculator_destination: None,
         }
     }
 

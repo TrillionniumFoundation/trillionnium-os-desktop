@@ -52,6 +52,31 @@ it, then complete the original handoff. A wrong nonce transfers no endpoints.
 These are physical transport fixtures, separate from genuine Root policy and
 whole-owner production execution evidence.
 
+## Explicit two-target candidate
+
+`--desktop-root-bootstrap-stdin` selects the separate `notes_calculator_v1`
+startup described in the [Calculator contract](../core/CALCULATOR_PROTOCOL.md).
+[desktop_bootstrap.rs](src/desktop_bootstrap.rs) starts from one fresh Session:
+real Notes task 1 and Calculator task 2 are prepared before one metadata-only
+reservation. The exact same target pair and nonce must be activated, then the
+existing Notes two-FD offer/ACK and the Calculator two-FD offer/ACK run in order
+under one 30-second startup budget. Failed or partial attachment closes both
+channels and cleans up the Session-owned children; it does not assert rollback
+of an original owner's possible effect. Public Launch never exports these handles.
+
+Notes retains its required original durable store and recovery helper. Calculator
+has an independent typed identity, inherited Session pidfd, effect stream and
+read/observe/retirement datagram. Only the initial task 2 of this explicit profile
+gets that channel; ordinary Calculator launches remain standalone. Task projections
+report channel and historical attachment observations, without claiming grants.
+The candidate needs the original Root's new profile, new original Core thread,
+shared writer/outbox and Device FinalUse composition before production use.
+Existing Notes-only startup and historical thread catalogs remain available.
+
+[Bootstrap tests](src/desktop_bootstrap_tests.rs) verify actual private descriptors,
+two distinct targets, activation binding and rejected second attachment. They do
+not install an original owner or prove a model-requested application effect.
+
 ## Build, run and verify
 
 Use [workspace setup](../README.md), then run trill-session and trill-shell
@@ -65,6 +90,7 @@ trill-ctl cancel <task-id> <session-generation>
 
 ```sh
 RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-session --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-session --locked desktop_bootstrap
 ```
 
 [tests](tests/) exercise real process/socket lifecycle within their declared

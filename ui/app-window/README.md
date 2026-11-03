@@ -51,6 +51,25 @@ for the bounded catalogue, lock/custody checks and race/failure behavior.
 The Terminal is an explicit built-in command allowlist; it does not execute
 arbitrary user shell commands. Preserve that boundary when adding commands.
 
+## Calculator organ candidate
+
+[calculator_organ.rs](src/calculator_organ.rs) queues a bounded private effect or
+readback request onto the actual egui thread. The same shared model holds visible
+operands/result, revision and one pending causal receipt. Checked canonical i64
+arithmetic applies only to the explicit organ profile; ordinary standalone
+Calculator behavior remains available. The [protocol](../core/CALCULATOR_PROTOCOL.md)
+specifies separate identity, exact raw hashes, observation/retirement, unknown
+results, the total BOOTTIME budget and original writer boundaries.
+
+The inherited Session pidfd is required for this profile. An idle window requests
+a read-only lifetime repaint within 100 ms and closes on Session loss; effect
+threads never mutate the model. This profile has no crash/reboot receipt store.
+The [transport tests](src/calculator_organ_tests.rs) exercise real socket pairs;
+the [lifetime tests](src/calculator_lifetime_tests.rs) use real parent/App processes
+and egui output-driven empty-input frames. They are host component evidence,
+separate from native compositor pixels and the original Core/Objective/FinalUse
+application-effect acceptance required by the protocol.
+
 ## Development and validation
 
 ```sh
@@ -72,6 +91,13 @@ digest, loses an actual retirement ACK, kills the helper, and checks
 above includes it. This exercises process/storage/transport boundaries with
 test identities; original Hepta production authority and physical power loss
 remain separate qualifications.
+
+The [original App exit/readback test](tests/notes_app_readback.rs) keeps its
+10-second persistence deadline and signals readiness over the child's private
+datagram only after the actual store commit. Its child runs libtest with one
+test thread, so CPU availability and human-readable test output cannot change
+the handshake. Normal exit and SIGKILL still require independent receipt
+readback on the original peer and reject replay through the recovery helper.
 
 The [executed ordinary reopen probe](../../tests/ui/evidence/2026-10-24-notes-reopen/README.md)
 records real close/reopen, picker selection, independent AT-SPI readback,

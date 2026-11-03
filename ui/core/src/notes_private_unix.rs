@@ -9,6 +9,11 @@ use std::time::Duration;
 
 const MAX_FRAME: usize = 1024;
 
+/// Descriptor validation only: no app identity or effect grant is constructed.
+pub fn require_private_datagram(channel: &UnixDatagram) -> io::Result<()> {
+    datagram(channel)
+}
+
 fn invalid(message: &str) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, message)
 }

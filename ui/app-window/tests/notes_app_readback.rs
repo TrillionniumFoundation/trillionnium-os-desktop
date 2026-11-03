@@ -6,7 +6,7 @@
 mod notes_readback;
 
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read, Write};
+use std::io::{self, Read, Write};
 use std::os::fd::{BorrowedFd, OwnedFd};
 use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
 use std::os::unix::net::UnixDatagram;
@@ -15,6 +15,8 @@ use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 use trill_ui_core::notes::*;
 use trill_ui_core::notes_store::NotesStore;
+
+const APP_STORED: &[u8] = b"TRILL_TEST_ORIGINAL_APP_STORED_V1";
 
 struct Directory(PathBuf);
 impl Directory {
@@ -107,34 +109,41 @@ fn continuation(kill: bool) {
                 "app_writes_once_fixture",
                 "--ignored",
                 "--nocapture",
+                "--test-threads=1",
             ])
             .env("TRILL_READBACK_COMPONENT_ROOT", &root.0)
             .env_remove(notes_readback::HELPER_SHA_ENV)
             .stdin(Stdio::from(OwnedFd::from(original_app_peer)))
-            .stdout(Stdio::piped())
+            .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .spawn()
             .unwrap(),
     );
     standby.pin_original(&mut application.0).unwrap();
-    let stdout = application.0.stdout.take().unwrap();
-    let (sender, receiver) = std::sync::mpsc::sync_channel(1);
-    let reader = std::thread::spawn(move || {
-        for line in BufReader::new(stdout).lines() {
-            if line.is_ok_and(|line| line == "ORIGINAL_APP_STORED") {
-                let _ = sender.send(());
-            }
+    // Libtest prefixes single-threaded --nocapture output with the test name.
+    // Read fixture readiness from its private peer, after the actual commit,
+    // so output presentation and available CPU count cannot change the gate.
+    original_owner
+        .set_read_timeout(Some(Duration::from_secs(10)))
+        .unwrap();
+    let mut ready_frame = [0_u8; APP_STORED.len() + 1];
+    let ready = original_owner.recv(&mut ready_frame).and_then(|length| {
+        if &ready_frame[..length] == APP_STORED {
+            Ok(())
+        } else {
+            Err(io::Error::other("unexpected fixture readiness frame"))
         }
     });
-    let ready = receiver.recv_timeout(Duration::from_secs(10));
     if ready.is_err() {
         let _ = application.0.kill();
         let _ = application.0.wait();
     }
     if let Err(error) = ready {
-        reader.join().unwrap();
         panic!("original fixture did not persist: {error}");
     }
+    original_owner
+        .set_read_timeout(Some(Duration::from_secs(2)))
+        .unwrap();
     assert!(
         standby.after_reap(&mut application.0).is_err(),
         "live App must retain its own receipt lane"
@@ -145,7 +154,6 @@ fn continuation(kill: bool) {
         original_owner.send(b"exit").unwrap();
     }
     let exit = application.0.wait().unwrap();
-    reader.join().unwrap();
     assert_eq!(exit.success(), !kill);
     standby.after_reap(&mut application.0).unwrap();
     let payload = mutation();
@@ -217,8 +225,9 @@ fn app_writes_once_fixture() -> io::Result<()> {
     // SAFETY: the controlled child owns stdin's original datagram descriptor.
     let fd = unsafe { BorrowedFd::borrow_raw(0) }.try_clone_to_owned()?;
     let channel = UnixDatagram::from(fd);
-    io::stdout().write_all(b"ORIGINAL_APP_STORED\n")?;
-    io::stdout().flush()?;
+    if channel.send(APP_STORED)? != APP_STORED.len() {
+        return Err(io::Error::other("incomplete fixture readiness frame"));
+    }
     let mut request = [0_u8; 16];
     let length = channel.recv(&mut request)?;
     if &request[..length] != b"exit" {

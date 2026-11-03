@@ -48,6 +48,12 @@ their own exact commit, features, locks and receipts.
 | [app-window](app-window/README.md) | Notes, Calculator and restricted Terminal windows |
 | [broker](broker/README.md) | Bounded admission and trusted-owner/target seams |
 
+The independent [Calculator organ candidate](core/CALCULATOR_PROTOCOL.md) adds a
+finite second destination through these existing crates. It requires an explicit
+`notes_calculator_v1` profile and a new original Core thread/catalog; the frozen
+fd8/a39 Notes-only product is not changed or qualified by this candidate's model
+or component tests. No additional Cargo package is introduced.
+
 ## Build and verify
 
 Run from the repository root with the pinned Linux host dependencies in

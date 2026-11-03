@@ -1,6 +1,8 @@
 //! Independent host-only process launcher/lifecycle owner.
 //! It is not a Wayland compositor and it grants no kernel permissions.
 mod deadline;
+#[cfg(target_os = "linux")]
+mod desktop_bootstrap;
 mod hepta;
 #[cfg(target_os = "linux")]
 mod notes_bootstrap;
@@ -26,6 +28,10 @@ use std::time::{Duration, Instant};
 
 #[cfg(target_os = "linux")]
 use trill_ui_broker::notes::NotesTarget;
+#[cfg(target_os = "linux")]
+use trill_ui_core::calculator::{
+    CalculatorChannelObservation, CalculatorDestinationObservation, CalculatorTargetIdentity,
+};
 #[cfg(target_os = "linux")]
 use trill_ui_core::host_peer;
 use trill_ui_core::host_peer::require_same_uid_peer;
@@ -136,6 +142,8 @@ impl DisplayTracker {
 struct Session {
     #[cfg(target_os = "linux")]
     notes_durable_required: bool,
+    #[cfg(target_os = "linux")]
+    calculator_profile: bool,
     objective: objective_bridge::ObjectiveBridge,
     hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
@@ -150,6 +158,8 @@ struct Session {
     // Standalone Session installs no Hepta authority or production owner.
     #[cfg(target_os = "linux")]
     notes_targets: BTreeMap<u64, NotesTarget>,
+    #[cfg(target_os = "linux")]
+    calculator_targets: BTreeMap<u64, desktop_bootstrap::CalculatorChannels>,
     #[cfg(target_os = "linux")]
     notes_readback: Option<notes_readback::Standby>,
     first_frame_tx: Sender<u64>,
@@ -168,6 +178,8 @@ impl Session {
         Ok(Self {
             #[cfg(target_os = "linux")]
             notes_durable_required: false,
+            #[cfg(target_os = "linux")]
+            calculator_profile: false,
             objective: objective_bridge::ObjectiveBridge::from_environment(),
             hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
@@ -180,6 +192,8 @@ impl Session {
             children: BTreeMap::new(),
             #[cfg(target_os = "linux")]
             notes_targets: BTreeMap::new(),
+            #[cfg(target_os = "linux")]
+            calculator_targets: BTreeMap::new(),
             #[cfg(target_os = "linux")]
             notes_readback: None,
             first_frame_tx,
@@ -244,7 +258,7 @@ impl Session {
         if let Err(error) = attached {
             // This closes only the Session-owned initial child. An attachment
             // timeout cannot prove the parent's grant/effect never occurred.
-            self.stop_bootstrap_child()?;
+            self.stop_bootstrap_child(1)?;
             return Err(error);
         }
         self.refresh();
@@ -261,20 +275,129 @@ impl Session {
     }
 
     #[cfg(target_os = "linux")]
-    fn stop_bootstrap_child(&mut self) -> io::Result<()> {
-        let _ = self.cancel(1);
-        if let Some(child) = self.children.get_mut(&1) {
+    fn stop_bootstrap_child(&mut self, id: u64) -> io::Result<()> {
+        let _ = self.cancel(id);
+        if let Some(child) = self.children.get_mut(&id) {
             let exit = child.wait()?;
-            if let Some(task) = self.tasks.get_mut(&1) {
+            if let Some(task) = self.tasks.get_mut(&id) {
                 settle_exit(task, exit);
                 if let Some(notes) = &mut task.notes_destination {
                     notes.channel = NotesChannelObservation::ChildExited;
                 }
+                if let Some(calculator) = &mut task.calculator_destination {
+                    calculator.channel = CalculatorChannelObservation::ChildExited;
+                }
             }
         }
-        self.children.remove(&1);
-        self.notes_targets.remove(&1);
+        self.children.remove(&id);
+        self.notes_targets.remove(&id);
+        self.calculator_targets.remove(&id);
         Ok(())
+    }
+
+    /// Both applications belong to this fresh Session and are attached through
+    /// one original Root reservation, before public IPC is served.
+    #[cfg(target_os = "linux")]
+    fn start_bootstrapped_desktop(
+        &mut self,
+        bootstrap: desktop_bootstrap::DesktopBootstrap,
+    ) -> io::Result<()> {
+        if self.next_id != 1 || !self.tasks.is_empty() || !self.children.is_empty() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Desktop bootstrap is startup-only",
+            ));
+        }
+        self.calculator_profile = true;
+        let attached = (|| {
+            for (id, app) in [(1, AppKind::Notes), (2, AppKind::Calculator)] {
+                let Response::Task { task, .. } = self.launch(Workspace::Build, app) else {
+                    return Err(io::Error::other("initial Desktop launch was refused"));
+                };
+                if task.id != id || task.state != TaskState::Running {
+                    return Err(io::Error::other("initial Desktop process did not start"));
+                }
+            }
+            let notes = self
+                .notes_targets
+                .remove(&1)
+                .ok_or_else(|| io::Error::other("initial Desktop Notes endpoint missing"))?
+                .into_initial_endpoints()?;
+            let calculator = self
+                .calculator_targets
+                .remove(&2)
+                .ok_or_else(|| io::Error::other("initial Calculator endpoint missing"))?;
+            bootstrap.offer(notes, calculator)?;
+            self.refresh();
+            if !self.children.contains_key(&1) || !self.children.contains_key(&2) {
+                return Err(io::Error::other(
+                    "initial Desktop app exited during attachment",
+                ));
+            }
+            self.tasks
+                .get_mut(&1)
+                .and_then(|task| task.notes_destination.as_mut())
+                .ok_or_else(|| io::Error::other("initial Desktop Notes observation missing"))?
+                .original_owner_registered = true;
+            self.tasks
+                .get_mut(&2)
+                .and_then(|task| task.calculator_destination.as_mut())
+                .ok_or_else(|| io::Error::other("initial Calculator observation missing"))?
+                .original_owner_registered = true;
+            Ok(())
+        })();
+        if let Err(error) = attached {
+            // Always attempt both owned-child cleanups. A rejected attachment
+            // does not prove that an original owner effect was rolled back.
+            let calculator_cleanup = self.stop_bootstrap_child(2);
+            let notes_cleanup = self.stop_bootstrap_child(1);
+            if let Err(cleanup) = calculator_cleanup.and(notes_cleanup) {
+                return Err(io::Error::other(format!(
+                    "Desktop attachment failed: {error}; owned-child cleanup: {cleanup}"
+                )));
+            }
+            return Err(error);
+        }
+        Ok(())
+    }
+
+    #[cfg(target_os = "linux")]
+    fn prepare_calculator_target(
+        &self,
+        id: u64,
+        command: &mut Command,
+    ) -> io::Result<desktop_bootstrap::CalculatorChannels> {
+        let mut random = [0_u8; 16];
+        File::open("/dev/urandom")?.read_exact(&mut random)?;
+        let target = CalculatorTargetIdentity {
+            session_instance: self.instance.clone(),
+            task_id: id,
+            incarnation: random.iter().map(|byte| format!("{byte:02x}")).collect(),
+        };
+        let (effect, child_effect) = UnixStream::pair()?;
+        let (recovery, child_recovery) = std::os::unix::net::UnixDatagram::pair()?;
+        let (bootstrap, child_bootstrap) = std::os::unix::net::UnixDatagram::pair()?;
+        let raw = serde_json::to_vec(&target).map_err(io::Error::other)?;
+        trill_ui_core::notes_private_unix::send_channels(
+            &bootstrap,
+            &raw,
+            &child_effect,
+            &child_recovery,
+            Duration::from_secs(1),
+        )?;
+        command
+            .arg("--calculator-session")
+            .arg(&target.session_instance)
+            .arg("--calculator-incarnation")
+            .arg(&target.incarnation)
+            .stdin(Stdio::from(OwnedFd::from(child_bootstrap)));
+        trill_ui_core::calculator_lifetime::SessionLifetimeSource::capture_current(target.clone())?
+            .inherit_into(command)?;
+        Ok(desktop_bootstrap::CalculatorChannels {
+            target,
+            effect,
+            recovery,
+        })
     }
 
     #[cfg(target_os = "linux")]
@@ -367,6 +490,8 @@ impl Session {
         command
             .env_remove(trill_ui_core::notes_lifetime::FD_ENV_V1)
             .env_remove(trill_ui_core::notes_lifetime::META_ENV_V1)
+            .env_remove(trill_ui_core::calculator_lifetime::FD_ENV_V1)
+            .env_remove(trill_ui_core::calculator_lifetime::META_ENV_V1)
             .env_remove(notes_readback::HELPER_SHA_ENV);
         #[cfg(target_os = "linux")]
         let notes_target = {
@@ -379,6 +504,29 @@ impl Session {
                     Err(_) => {
                         task.detail =
                             "Private Notes channel setup failed before child spawn".into();
+                        task.transition(TaskState::Failed);
+                        self.tasks.insert(id, task.clone());
+                        return Response::Task {
+                            task,
+                            session_instance: self.instance.clone(),
+                        };
+                    }
+                }
+            } else {
+                None
+            }
+        };
+        #[cfg(target_os = "linux")]
+        let calculator_target = {
+            let enabled = self.calculator_profile && id == 2 && app == AppKind::Calculator;
+            #[cfg(test)]
+            let enabled = enabled && self.cancellation_fixture_socket.is_none();
+            if enabled {
+                match self.prepare_calculator_target(id, &mut command) {
+                    Ok(target) => Some(target),
+                    Err(_) => {
+                        task.detail =
+                            "Private Calculator channel setup failed before child spawn".into();
                         task.transition(TaskState::Failed);
                         self.tasks.insert(id, task.clone());
                         return Response::Task {
@@ -427,6 +575,15 @@ impl Session {
                     });
                     self.notes_targets.insert(id, target);
                 }
+                #[cfg(target_os = "linux")]
+                if let Some(channels) = calculator_target {
+                    task.calculator_destination = Some(CalculatorDestinationObservation {
+                        incarnation: channels.target.incarnation.clone(),
+                        channel: CalculatorChannelObservation::PrivateChannelPrepared,
+                        original_owner_registered: false,
+                    });
+                    self.calculator_targets.insert(id, channels);
+                }
                 if let Some(stdout) = child.stdout.take() {
                     observe_first_frame(id, stdout, self.first_frame_tx.clone());
                 }
@@ -455,6 +612,10 @@ impl Session {
                     #[cfg(target_os = "linux")]
                     if let Some(notes) = &mut task.notes_destination {
                         notes.channel = NotesChannelObservation::AppLayoutObserved;
+                    }
+                    #[cfg(target_os = "linux")]
+                    if let Some(calculator) = &mut task.calculator_destination {
+                        calculator.channel = CalculatorChannelObservation::AppLayoutObserved;
                     }
                     task.ui_first_frame_unix_ms = Some(unix_ms());
                     task.updated_unix_ms = unix_ms();
@@ -496,12 +657,20 @@ impl Session {
             #[cfg(target_os = "linux")]
             {
                 self.notes_targets.remove(&id);
+                self.calculator_targets.remove(&id);
                 if let Some(notes) = self
                     .tasks
                     .get_mut(&id)
                     .and_then(|task| task.notes_destination.as_mut())
                 {
                     notes.channel = NotesChannelObservation::ChildExited;
+                }
+                if let Some(calculator) = self
+                    .tasks
+                    .get_mut(&id)
+                    .and_then(|task| task.calculator_destination.as_mut())
+                {
+                    calculator.channel = CalculatorChannelObservation::ChildExited;
                 }
             }
         }
@@ -854,6 +1023,7 @@ enum NotesBootstrapMode {
     None,
     Direct,
     Reserved,
+    DesktopReserved,
 }
 
 fn notes_bootstrap_requested(
@@ -868,9 +1038,12 @@ fn notes_bootstrap_requested(
         Some(flag) if flag == "--notes-root-bootstrap-stdin" && args.next().is_none() => {
             Ok(NotesBootstrapMode::Reserved)
         }
+        Some(flag) if flag == "--desktop-root-bootstrap-stdin" && args.next().is_none() => {
+            Ok(NotesBootstrapMode::DesktopReserved)
+        }
         _ => Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "expected no arguments, --notes-bootstrap-stdin or --notes-root-bootstrap-stdin",
+            "expected no arguments, --notes-bootstrap-stdin, --notes-root-bootstrap-stdin or --desktop-root-bootstrap-stdin",
         )),
     }
 }
@@ -878,12 +1051,15 @@ fn notes_bootstrap_requested(
 fn main() -> io::Result<()> {
     let requested = notes_bootstrap_requested(std::env::args_os().skip(1))?;
     #[cfg(target_os = "linux")]
-    if requested == NotesBootstrapMode::Reserved {
+    if matches!(
+        requested,
+        NotesBootstrapMode::Reserved | NotesBootstrapMode::DesktopReserved
+    ) {
         notes_lifetime::require_durable_storage()?;
     }
     #[cfg(target_os = "linux")]
     let notes_bootstrap = match requested {
-        NotesBootstrapMode::None => None,
+        NotesBootstrapMode::None | NotesBootstrapMode::DesktopReserved => None,
         NotesBootstrapMode::Direct => {
             Some(notes_bootstrap::NotesBootstrap::from_inherited_stdin()?)
         }
@@ -892,11 +1068,17 @@ fn main() -> io::Result<()> {
                 .with_root_startup_reservation(),
         ),
     };
+    #[cfg(target_os = "linux")]
+    let desktop_bootstrap = if requested == NotesBootstrapMode::DesktopReserved {
+        Some(desktop_bootstrap::DesktopBootstrap::from_inherited_stdin()?)
+    } else {
+        None
+    };
     #[cfg(not(target_os = "linux"))]
     if requested != NotesBootstrapMode::None {
         return Err(io::Error::new(
             io::ErrorKind::Unsupported,
-            "Notes bootstrap requires Linux",
+            "Private application bootstrap requires Linux",
         ));
     }
     let socket = socket_path()?;
@@ -934,8 +1116,11 @@ fn main() -> io::Result<()> {
     let mut session = Session::new(app_binary)?;
     #[cfg(target_os = "linux")]
     {
-        session.notes_durable_required = requested == NotesBootstrapMode::Reserved;
-        if requested == NotesBootstrapMode::Reserved {
+        session.notes_durable_required = matches!(
+            requested,
+            NotesBootstrapMode::Reserved | NotesBootstrapMode::DesktopReserved
+        );
+        if session.notes_durable_required {
             let expected = std::env::var(notes_readback::HELPER_SHA_ENV).map_err(|_| {
                 io::Error::other("Root Notes profile requires its actual readback helper digest")
             })?;
@@ -953,6 +1138,10 @@ fn main() -> io::Result<()> {
     #[cfg(target_os = "linux")]
     if let Some(bootstrap) = notes_bootstrap {
         session.start_bootstrapped_notes(bootstrap)?;
+    }
+    #[cfg(target_os = "linux")]
+    if let Some(bootstrap) = desktop_bootstrap {
+        session.start_bootstrapped_desktop(bootstrap)?;
     }
     // Reap children even while the shell/client is stopped. Blocking
     // incoming() would accumulate zombies until the GUI reconnects.
@@ -1001,6 +1190,10 @@ mod tests {
             notes_bootstrap_requested([OsString::from("--notes-root-bootstrap-stdin")]).unwrap(),
             NotesBootstrapMode::Reserved
         );
+        assert_eq!(
+            notes_bootstrap_requested([OsString::from("--desktop-root-bootstrap-stdin")]).unwrap(),
+            NotesBootstrapMode::DesktopReserved
+        );
         assert!(notes_bootstrap_requested([
             OsString::from("--notes-bootstrap-stdin"),
             OsString::from("extra")
@@ -1011,6 +1204,8 @@ mod tests {
             br#"{"type":"notes_bootstrap","fd":0}"#.as_slice(),
             br#"{"type":"offer_notes_target","target":{"task_id":1}}"#.as_slice(),
             br#"{"type":"notes_target_reserved","target":{"task_id":1},"nonce":"0000"}"#.as_slice(),
+            br#"{"type":"desktop_targets_reserved","profile":"notes_calculator_v1"}"#.as_slice(),
+            br#"{"type":"offer_calculator_target","target":{"task_id":2}}"#.as_slice(),
         ] {
             assert!(parse_host_request(request).is_err());
         }

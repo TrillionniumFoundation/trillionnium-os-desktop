@@ -220,7 +220,7 @@ fn send_descriptor(
     }
 }
 
-fn receive_ack(channel: &UnixDatagram, deadline: Instant) -> io::Result<Vec<u8>> {
+pub(super) fn receive_ack(channel: &UnixDatagram, deadline: Instant) -> io::Result<Vec<u8>> {
     loop {
         channel.set_read_timeout(Some(remaining(deadline)?))?;
         let mut bytes = [0u8; NOTES_BOOTSTRAP_MAX_BYTES + 1];

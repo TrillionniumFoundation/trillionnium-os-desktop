@@ -1,11 +1,12 @@
 #![cfg(target_os = "linux")]
 
 use std::fs;
-use std::io::{BufRead, BufReader, Read, Write};
+use std::io::{self, Read};
+use std::os::fd::{BorrowedFd, OwnedFd};
 use std::os::unix::fs::{symlink, PermissionsExt};
+use std::os::unix::net::UnixDatagram;
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
-use std::sync::mpsc;
+use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 use trill_ui_core::notes::*;
 use trill_ui_core::notes_recovery::*;
@@ -35,6 +36,41 @@ impl Drop for Directory {
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.0);
     }
+}
+
+fn persistence_fixture(name: &str, root_env: &str, root: &Directory) -> (Child, UnixDatagram) {
+    let (parent, child) = UnixDatagram::pair().unwrap();
+    parent
+        .set_read_timeout(Some(Duration::from_secs(10)))
+        .unwrap();
+    let process = Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", name, "--nocapture", "--test-threads=1"])
+        .env(root_env, &root.0)
+        .stdin(Stdio::from(OwnedFd::from(child)))
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()
+        .unwrap();
+    (process, parent)
+}
+
+fn receive_commit(channel: &UnixDatagram, expected: &[u8]) -> io::Result<()> {
+    let mut frame = vec![0_u8; expected.len() + 1];
+    let length = channel.recv(&mut frame)?;
+    if &frame[..length] != expected {
+        return Err(io::Error::other("unexpected persistence fixture frame"));
+    }
+    Ok(())
+}
+
+fn signal_commit_and_wait(marker: &[u8]) {
+    // SAFETY: the explicitly selected child fixture owns stdin's private peer.
+    let fd = unsafe { BorrowedFd::borrow_raw(0) }
+        .try_clone_to_owned()
+        .unwrap();
+    let channel = UnixDatagram::from(fd);
+    assert_eq!(channel.send(marker).unwrap(), marker.len());
+    let _ = channel.recv(&mut [0_u8; 1]);
 }
 
 fn target() -> NotesTargetIdentity {
@@ -284,28 +320,14 @@ fn restored_copy_survives_process_death_while_original_receipt_remains_recoverab
     let mut original = NotesStore::create(&root.0, target()).unwrap();
     let receipt = original.apply_exact(&request()).unwrap();
     drop(original);
-    let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--exact", "restore_then_wait_fixture", "--nocapture"])
-        .env("TRILL_NOTES_RESTORE_TEST_CHILD_ROOT", &root.0)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    let output = child.stdout.take().unwrap();
-    let (send, receive) = mpsc::channel();
-    let reader = std::thread::spawn(move || {
-        for line in BufReader::new(output).lines() {
-            if line.is_ok_and(|line| line == "NOTES_RESTORED_BEFORE_EXIT") {
-                let _ = send.send(());
-                return;
-            }
-        }
-    });
-    let committed = receive.recv_timeout(Duration::from_secs(10));
+    let (mut child, channel) = persistence_fixture(
+        "restore_then_wait_fixture",
+        "TRILL_NOTES_RESTORE_TEST_CHILD_ROOT",
+        &root,
+    );
+    let committed = receive_commit(&channel, b"NOTES_RESTORED_BEFORE_EXIT");
     let _ = child.kill();
     let status = child.wait().unwrap();
-    reader.join().unwrap();
     assert!(
         committed.is_ok(),
         "restoring child did not persist within the deadline"
@@ -338,10 +360,7 @@ fn restore_then_wait_fixture() {
         .documents
         .remove(0);
     copy.restore_saved_text(&root, &selected, 0).unwrap();
-    println!("NOTES_RESTORED_BEFORE_EXIT");
-    std::io::stdout().flush().unwrap();
-    let mut one = [0_u8; 1];
-    let _ = std::io::stdin().read(&mut one);
+    signal_commit_and_wait(b"NOTES_RESTORED_BEFORE_EXIT");
     drop(copy);
 }
 
@@ -475,28 +494,14 @@ fn failed_storage_freezes_effects_until_independent_recovery() {
 #[test]
 fn durable_receipt_survives_sigkill_before_delivery() {
     let root = Directory::new();
-    let mut child = Command::new(std::env::current_exe().unwrap())
-        .args(["--exact", "persist_then_wait_fixture", "--nocapture"])
-        .env("TRILL_NOTES_TEST_CHILD_ROOT", &root.0)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    let output = child.stdout.take().unwrap();
-    let (send, receive) = mpsc::channel();
-    let reader = std::thread::spawn(move || {
-        for line in BufReader::new(output).lines() {
-            if line.is_ok_and(|line| line == "NOTES_DURABLE_BEFORE_REPLY") {
-                let _ = send.send(());
-                return;
-            }
-        }
-    });
-    let committed = receive.recv_timeout(Duration::from_secs(10));
+    let (mut child, channel) = persistence_fixture(
+        "persist_then_wait_fixture",
+        "TRILL_NOTES_TEST_CHILD_ROOT",
+        &root,
+    );
+    let committed = receive_commit(&channel, b"NOTES_DURABLE_BEFORE_REPLY");
     let _ = child.kill();
     let status = child.wait().unwrap();
-    reader.join().unwrap();
     assert!(
         committed.is_ok(),
         "child did not persist before the bounded deadline"
@@ -521,9 +526,6 @@ fn persist_then_wait_fixture() {
     store.apply_exact(&request()).unwrap();
     // No effect receipt is delivered. The parent kills this real process
     // while it still holds the incarnation lock, then opens recovery alone.
-    println!("NOTES_DURABLE_BEFORE_REPLY");
-    std::io::stdout().flush().unwrap();
-    let mut one = [0_u8; 1];
-    let _ = std::io::stdin().read(&mut one);
+    signal_commit_and_wait(b"NOTES_DURABLE_BEFORE_REPLY");
     drop(store);
 }
