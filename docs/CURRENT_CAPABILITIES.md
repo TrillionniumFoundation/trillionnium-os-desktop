@@ -26,7 +26,7 @@
 
 [后续证据](../results/integration/2026-11-03-organ-followup/README.md)单独记录 `bf15a519e9192b063071e8b9b61ef3319bed416e` 的 9 项 CI 全部成功，包括原 Native UI、Root 和 prepared SDK 门禁。它修复了打包及 Notes 测试夹具问题；冻结产品仍为上表 `fd/a39`，后继的组件通过不授予最终安装、生产授权或实际 Notes 效果资格。
 
-第二目的端 Calculator 的 [PR #281](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/281) 中，实际测试来源 `5a8684cc4591a4163c162f198b4121ca4cfc6ebc` 的 Core 为 81 passed，App/Session 为 138 top-level passed / 2 ignored；嵌套子进程用例不重复累计。原 Hepta 候选 `580a07bfadad97d1dfc13ece112facc13dcc00bb` 的 Objective 为 66 passed / 2 skipped，另有 causal receipt 1 项和 Agentd 6 项定向通过，其余分别 407 / 587 项未选择。它们尚未组成一个已经运行的双应用原 Root 产品。`5a` 的 A10 在真实 Weston/AT-SPI 和共享输入检查之后因两项 Clippy 错误失败；`c2c369836e87e9cf27b4dc9aa8b7446e85efdf90` 只修复这两项，CI 和产品资格仍须绑定修复后的实际来源。
+第二目的端 Calculator 的 [PR #281](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/281) 中，实际测试来源 `5a8684cc4591a4163c162f198b4121ca4cfc6ebc` 的 Core 为 81 passed，App/Session 为 138 top-level passed / 2 ignored；嵌套子进程用例不重复累计。原 Hepta 候选 `580a07bfadad97d1dfc13ece112facc13dcc00bb` 的 Objective 为 66 passed / 2 skipped，另有 causal receipt 1 项和 Agentd 6 项定向通过，其余分别 407 / 587 项未选择。它们尚未组成一个已经运行的双应用原 Root 产品。`5a` 的 A10 在真实 Weston/AT-SPI 和共享输入检查之后因两项 Clippy 错误失败；`c2c369836e87e9cf27b4dc9aa8b7446e85efdf90` 只修复这两项，其[五项最终 CI](../results/integration/2026-11-03-organ-followup/calculator-ci-c2/calculator-c2-ci-status.json)现已全部成功，包括 A10 和 Native UI。后续联合 Root/owner 候选和安装产品仍须按自己的实际来源验收。
 
 原 Hepta `0259fc82cc1b6ac9e245227dceffb767e306378f` 的完整 Memory 执行保留 393 passed / 1 failed / 13 skipped；不以随后定向通过项覆盖失败。唯一失败的原 federation 用例重查仍失败，2 秒预算和 16 个完成 peer 的原断言未放宽。独立 Xvfb 诊断还观察到页/缓冲等待及原 15 秒准备超时；这些现象尚未证明同一个 I/O 根因，也不代表 Notes 窗口和输入法已验收。
 

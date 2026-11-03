@@ -45,7 +45,15 @@ argument tuple.
 uses direct Result handling and a named `AppArguments` structure with the same
 values. Its tree is `56f2672a7eeca971870e616762b0a730bec2d32b` and parent is 5a.
 It introduces no lint suppression, dependency, identity or acceptance-bound
-change. This directory records the repair without claiming c2 CI has passed.
+change. The exact c2 head subsequently completed all five PR workflows
+successfully: G0 41691929848, Session 41691930336, ARM64 original Agentd
+41691930194, Native UI 41691929883 and A10 41691929849.
+The [final CI snapshot](calculator-ci-c2/calculator-c2-ci-status.json),
+[Native UI steps](calculator-ci-c2/calculator-c2-native-ui-jobs.json) and
+[A10 steps](calculator-ci-c2/calculator-c2-a10-jobs.json) retain the API results.
+A10's formerly skipped cleanup, capture and phase/peer steps all actually ran
+and passed on c2. These are source-bound CI results; the later joint Root/owner
+candidate and installed two-application product remain unqualified.
 
 The published A10 artifact is 1,972,532,001 bytes because its artifact directory
 also contains the Cargo target. This checkpoint did not download the full ZIP.
