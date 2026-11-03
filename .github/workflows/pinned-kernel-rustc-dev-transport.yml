@@ -1,0 +1,85 @@
+name: Fixed kernel rustc-dev archive transport
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pinned-kernel-rustc-dev-transport.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pinned-kernel-rustc-dev-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fixed-archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      ARCHIVE_NAME: rustc-dev-nightly-x86_64-unknown-linux-gnu.tar.xz
+      ARCHIVE_URL: https://static.rust-lang.org/dist/2026-07-21/rustc-dev-nightly-x86_64-unknown-linux-gnu.tar.xz
+      EXPECTED_BYTES: '123224752'
+      EXPECTED_SHA256: 7327f182a1c8a1a62187c5e468922ee264dabd2b5c3c8e9bfae0391b869cbec1
+      SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Fetch the exact original archive through the hosted runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$RUNNER_TEMP/pinned-kernel-rustc-dev"
+          mkdir -m 700 "$output"
+          curl --fail --location --proto '=https' --proto-redir '=https' --tlsv1.2 \
+            --connect-timeout 30 --max-time 600 --retry 2 --retry-delay 2 \
+            --max-filesize "$EXPECTED_BYTES" --output "$output/$ARCHIVE_NAME" "$ARCHIVE_URL"
+          python3 -I -B - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          output = Path(os.environ['RUNNER_TEMP']) / 'pinned-kernel-rustc-dev'
+          path = output / os.environ['ARCHIVE_NAME']
+          size = path.stat().st_size
+          with path.open('rb') as stream:
+              digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+          if size != int(os.environ['EXPECTED_BYTES']):
+              raise SystemExit('Fixed rustc-dev archive size differs')
+          if digest != os.environ['EXPECTED_SHA256']:
+              raise SystemExit('Fixed rustc-dev official SHA-256 differs')
+          record = {
+              'schema': 'trill.pinned-kernel-toolchain-transport.v1',
+              'purpose': 'transport the unchanged official archive; no compilation or execution',
+              'nightly': 'nightly-2026-07-21',
+              'target': 'x86_64-unknown-linux-gnu',
+              'official_url': os.environ['ARCHIVE_URL'],
+              'archive': path.name,
+              'bytes': size,
+              'sha256': digest,
+              'expected_bytes': int(os.environ['EXPECTED_BYTES']),
+              'expected_sha256': os.environ['EXPECTED_SHA256'],
+              'source_head': os.environ['SOURCE_HEAD'],
+              'github_sha': os.environ['GITHUB_SHA'],
+              'github_workflow_ref': os.environ.get('GITHUB_WORKFLOW_REF'),
+              'github_run_id': os.environ['GITHUB_RUN_ID'],
+              'archive_verified': True,
+              'toolchain_installed': False,
+              'kernel_built': False,
+              'binary_executed': False,
+              'g2_complete': False,
+              'production_qualified': False,
+          }
+          (output / 'receipt.json').write_text(json.dumps(record, indent=2, sort_keys=True) + '\n')
+          (output / 'SHA256SUMS').write_text(digest + '  ' + path.name + '\n')
+          print(json.dumps(record, sort_keys=True))
+          PY
+
+      - name: Retain the verified original bytes
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pinned-rustc-dev-20260721-${{ github.run_id }}
+          path: ${{ runner.temp }}/pinned-kernel-rustc-dev/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
