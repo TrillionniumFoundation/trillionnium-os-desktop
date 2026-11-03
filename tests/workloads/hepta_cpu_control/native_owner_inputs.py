@@ -20,6 +20,21 @@ sys.dont_write_bytecode = True
 MAX_OWNER_BYTES = 8 * 1024**2
 MAX_KERNEL_BYTES = 64 * 1024**2
 PROFILE = "g2-trusted-daemon"
+EXACT_IMAGE_PROFILE = "g2-original-owner-a39-v1"
+IMAGE_PROFILES = (PROFILE, EXACT_IMAGE_PROFILE)
+
+
+def image_module(profile):
+    require(profile in IMAGE_PROFILES, "unknown original-owner image profile")
+    if profile == PROFILE:
+        return None
+    root = Path(__file__).resolve().parents[3]
+    return load_module("g2_exact_original_owner_image", root / "support/build/original_owner_image.py")
+
+
+def owner_file_limit(profile):
+    exact = image_module(profile)
+    return exact.descriptor()["image"]["file_bytes"] if exact else MAX_OWNER_BYTES
 
 
 def sha(path):
@@ -62,10 +77,15 @@ def source_identity(value):
     return value
 
 
-def review_inputs(path, expected):
+def review_inputs(path, expected, profile=PROFILE):
     value = document(path, 1024**2, expected)
-    obj(value, ("schema", "desktop", "hepta", "entry", "userspace_toolchain", "scope"), "original native owner source review")
-    require(value["schema"] == "hepta.native-original-owner-source-review.v1", "original owner review schema differs")
+    exact = image_module(profile)
+    fields = ("schema", "desktop", "hepta", "entry", "userspace_toolchain", "scope")
+    if exact:
+        fields += ("image_profile", "image_profile_descriptor_sha256")
+    obj(value, fields, "original native owner source review")
+    schema = "hepta.original-owner-image-source-review.v1" if exact else "hepta.native-original-owner-source-review.v1"
+    require(value["schema"] == schema, "original owner review schema differs")
     for key in ("desktop", "hepta"):
         source_identity(value[key])
     entry = obj(value["entry"], ("package", "name", "kind", "path", "sha256"), "reviewed original entry")
@@ -79,6 +99,11 @@ def review_inputs(path, expected):
             and toolchain["manifest"] == "codex-rs/rust-toolchain.toml", "fixed original toolchain manifest required")
     check_digest(toolchain["sha256"], "reviewed toolchain manifest")
     require(type(value["scope"]) is str and 0 < len(value["scope"]) <= 8192, "review scope must be explicit")
+    if exact:
+        require(value["image_profile"] == profile
+                and value["image_profile_descriptor_sha256"] == exact.DESCRIPTOR_SHA256,
+                "source review selects another exact original-owner image version")
+        exact.bind_source_review(value)
     return value
 
 
@@ -104,15 +129,31 @@ def source_snapshots(roots, review, builder):
     return snapshots
 
 
-def owner_build(receipt_path, expected, owner, review, snapshots, shape, hepta_source):
+def owner_build(receipt_path, expected, owner, review, snapshots, shape, hepta_source, profile=PROFILE):
     value = document(receipt_path, 8 * 1024**2, expected)
-    require(value.get("schema") == "hepta.original-native-entry-build.v1" and "error" not in value,
+    exact = image_module(profile)
+    schema = exact.BUILD_SCHEMA if exact else "hepta.original-native-entry-build.v1"
+    require(value.get("schema") == schema and "error" not in value,
             "successful original tracked-entry build receipt required")
-    for key in ("built", "packaged", "static_profile_passed", "source_inputs_unchanged"):
+    admission = "image_profile_passed" if exact else "static_profile_passed"
+    for key in ("built", "packaged", admission, "source_inputs_unchanged"):
         require(value.get(key) is True, "original entry build did not complete: " + key)
-    for key in ("features_disabled", "profile_overridden", "limits_changed", "fixture_created", "executed_binary",
+    for key in ("features_disabled", "profile_overridden", "fixture_created", "executed_binary",
                 "native_role_verified", "persistent_cpu_verified", "recovery_verified", "g2_complete"):
         require(value.get(key) is False, "entry build cannot substitute profiles or execution claims: " + key)
+    if exact:
+        require("static_profile_passed" not in value and "limits_changed" not in value,
+                "exact image admission must not impersonate the legacy static profile")
+        require(value.get("image_profile") == profile
+                and value.get("image_profile_descriptor_sha256") == exact.DESCRIPTOR_SHA256
+                and value.get("image_profile_descriptor") == exact.bind_source_review(review),
+                "owner receipt exact image descriptor differs")
+        for key in ("legacy_limits_unchanged", "selected_image_limits_differ_from_legacy", "release_profile_unchanged"):
+            require(value.get(key) is True, "exact image build scope differs: " + key)
+        for key in ("legacy_static_profile_passed", "whole_guest_peak_verified", "global_memory_reserve", "production_ready"):
+            require(value.get(key) is False, "image admission cannot transfer runtime/resource qualification: " + key)
+    else:
+        require(value.get("limits_changed") is False, "legacy owner build changed its 8/16 MiB limits")
     require(value.get("sources") == {name: review[name] for name in ("desktop", "hepta")}, "owner was built from another exact source pair")
     recorded = value.get("original_entry", {})
     for key in ("package", "name", "kind", "path"):
@@ -153,13 +194,14 @@ def owner_build(receipt_path, expected, owner, review, snapshots, shape, hepta_s
             and re.fullmatch(r"-j[1-8]", command[-1]), "owner build altered the original capabilities or release packaging")
     product = obj(value.get("product"), ("path", "bytes", "sha256"), "packaged original binary")
     check_digest(product["sha256"], "packaged original owner")
+    file_limit = owner_file_limit(profile)
     require(product["path"] == "packaged/" + recorded["name"] and type(product["bytes"]) is int
-            and 0 < product["bytes"] <= MAX_OWNER_BYTES, "original static owner exceeds the unchanged file bound")
+            and 0 < product["bytes"] <= file_limit, "original static owner exceeds its selected image bound")
     packaged = receipt_path.parent / product["path"]
-    content = read(packaged, MAX_OWNER_BYTES, product["sha256"])
-    require(read(owner, MAX_OWNER_BYTES, product["sha256"]) == content and len(content) == product["bytes"],
+    content = read(packaged, file_limit, product["sha256"])
+    require(read(owner, file_limit, product["sha256"]) == content and len(content) == product["bytes"],
             "explicit owner ELF differs from the actual packaged original")
-    info = shape.inspect_probe_elf(content)
+    info = exact.inspect_elf(content) if exact else shape.inspect_probe_elf(content)
     require(value.get("original_shape") == info, "original static ELF shape differs from its actual build receipt")
     retained = {receipt_path.name: receipt_path}
     for command in commands:
@@ -171,13 +213,24 @@ def owner_build(receipt_path, expected, owner, review, snapshots, shape, hepta_s
     return value, content, info, retained
 
 
-def kernel_build(directory, expected, review, owner_bytes, ordinary):
+def kernel_build(directory, expected, review, owner_bytes, ordinary, profile=PROFILE):
     pipeline_path = directory / "pipeline.json"
     value = document(pipeline_path, 8 * 1024**2, expected)
+    exact = image_module(profile)
     require(value.get("passed") is True and value.get("source_inputs_unchanged") is True
-            and value.get("kernel_profile") == PROFILE
+            and value.get("kernel_profile") == profile
             and value.get("source_head") == review["desktop"]["head"]
             and value.get("source_tree") == review["desktop"]["tree"], "actual source-bound G2 product kernel pipeline required")
+    if exact:
+        require(value.get("schema") == "hepta.original-owner-image-kernel-pipeline.v1"
+                and value.get("image_profile_descriptor_sha256") == exact.DESCRIPTOR_SHA256
+                and value.get("image_profile_descriptor") == exact.bind_source_review(review),
+                "actual kernel pipeline must name the separate exact image profile")
+        for key in ("legacy_static_profile_passed", "native_execution_verified", "whole_guest_peak_verified",
+                    "global_memory_reserve", "production_ready", "g2_complete"):
+            require(value.get(key) is False, "kernel image build cannot transfer qualification: " + key)
+        require(value.get("legacy_limits_unchanged") is True, "exact image experiment must retain legacy limits")
+        exact.inspect_elf(owner_bytes)
     desktop = Path(value.get("source_root", ""))
     require(desktop.is_absolute() and desktop.is_dir() and desktop.resolve(strict=True) == desktop,
             "actual kernel compiled-source root required")
@@ -222,11 +275,12 @@ def kernel_build(directory, expected, review, owner_bytes, ordinary):
     prefix = ["make", "-C", str(desktop / "kernel/asterinas"), "-f", "Makefile", "-f",
               str(desktop / "support/build/minimal.mk"), "kernel"]
     required = {"TARGET_ARCH=x86_64", "SMP=1", "MEM=512M", "ENABLE_KVM=0", "BOOT_PROTOCOL=multiboot", "INITRAMFS=on", "AUTO_TEST=none",
-                "HEPTA_G2_TRUSTED_DAEMON=1", "FEATURES=g2-trusted-daemon", f"A01_INITRAMFS={build / 'initramfs.cpio.gz'}",
+                "HEPTA_G2_ORIGINAL_OWNER_A39_V1=1" if exact else "HEPTA_G2_TRUSTED_DAEMON=1",
+                "FEATURES=" + profile, f"A01_INITRAMFS={build / 'initramfs.cpio.gz'}",
                 f"A01_QEMU_WRAPPER={desktop / 'support/build/record-qemu.py'}"}
     require(make[:8] == prefix and len(make) == 20 and make[8].startswith("CARGO_OSDK=") and set(make[9:]) == required,
             "actual product kernel profile differs from the fixed G2 N0 command")
-    require("--features=g2-trusted-daemon" in read(build / "kernel.log", 64 * 1024**2).decode(),
+    require("--features=" + profile in read(build / "kernel.log", 64 * 1024**2).decode(),
             "actual OSDK invocation lacks the explicit G2 feature")
     verified = subprocess.run([sys.executable, "-I", "-B", str(desktop / "support/build/verify-source.py")], cwd=desktop,
                               env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"},
@@ -238,7 +292,7 @@ def kernel_build(directory, expected, review, owner_bytes, ordinary):
             and len(tomllib.loads(locked.decode())["package"]) == 204,
             "G2 kernel must retain the original fixed 204-package product lock")
     manifest = document(build / "trusted-initial-manifest.json", 64 * 1024)
-    expected_manifest = {"schema": "hepta-g2-trusted-initial-v1", "profile": PROFILE,
+    expected_manifest = {"schema": "hepta-g2-trusted-initial-v1", "profile": profile,
                          "embedded_input": str(build / "trusted-initial.elf"), "bytes": len(owner_bytes),
                          "sha256": hashlib.sha256(owner_bytes).hexdigest(), "supported_ops": 62, "features": 0,
                          "bootstrap_version": 3, "bootstrap_bytes": 200, "roles": ["root", "manager", "workload", "recovery"],
@@ -246,11 +300,13 @@ def kernel_build(directory, expected, review, owner_bytes, ordinary):
                          "recovery_grace_ns": 30_000_000_000, "workload_address_space_bytes": 256 * 1024**2,
                          "root_role": 4, "root_pid_offset": 192, "workload_uid": 60002, "workload_gid": 60002,
                          "manager_history_ack": True, "original_writer_durability_verified": False, "g2_complete": False}
+    if exact:
+        expected_manifest.update(exact.manifest_fields())
     require(set(manifest) == set(expected_manifest) | {"source"}
             and all(type(manifest[key]) is type(item) and manifest[key] == item for key, item in expected_manifest.items()),
             "actual trusted initial manifest differs from the complete original G2 profile")
     require(Path(manifest["source"]).is_absolute(), "original embedded source provenance missing")
-    require(read(build / "trusted-initial.elf", MAX_OWNER_BYTES, expected_manifest["sha256"]) == owner_bytes
+    require(read(build / "trusted-initial.elf", owner_file_limit(profile), expected_manifest["sha256"]) == owner_bytes
             and stat.S_IMODE((build / "trusted-initial.elf").stat().st_mode) == 0o444,
             "original immutable embedded owner snapshot differs")
     check_digest(value.get("kernel_sha256"), "actual retained G2 kernel")

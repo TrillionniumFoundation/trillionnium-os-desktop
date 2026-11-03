@@ -24,11 +24,22 @@ use crate::{
     },
 };
 
+#[cfg(not(feature = "g2-original-owner-a39-v1"))]
 const EXPECTED_ELF: &[u8] = include_bytes!(env!("HEPTA_TRUSTED_INITIAL_ELF"));
+#[cfg(feature = "g2-original-owner-a39-v1")]
+use super::original_owner_profile;
+#[cfg(feature = "g2-original-owner-a39-v1")]
+const EXPECTED_ELF: &[u8] = include_bytes!(env!("HEPTA_REVIEWED_ORIGINAL_OWNER_ELF"));
 #[cfg(not(target_arch = "x86_64"))]
 compile_error!("g1c-trusted-observe is an explicitly x86_64-only experiment");
+#[cfg(not(feature = "g2-original-owner-a39-v1"))]
 const MAX_FILE_BYTES: usize = 8 * 1024 * 1024;
+#[cfg(not(feature = "g2-original-owner-a39-v1"))]
 const MAX_MAPPED_BYTES: usize = 16 * 1024 * 1024;
+#[cfg(feature = "g2-original-owner-a39-v1")]
+const MAX_FILE_BYTES: usize = original_owner_profile::FILE_BYTES;
+#[cfg(feature = "g2-original-owner-a39-v1")]
+const MAX_MAPPED_BYTES: usize = original_owner_profile::MAPPED_BYTES;
 const MAX_LOAD_SEGMENTS: usize = 16;
 
 /// Consumed only by the unique, stopped initial Process transaction.
@@ -118,6 +129,15 @@ impl TrustedInitialSnapshot {
         }
         // No later read, fault or mapping refers to the opened input or its inode.
         drop(file);
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        println!(
+            "[hepta-g2] original owner image profile selected: profile={} sha256={} file_bytes={} mapped_bytes={} max_segment_bytes={} global_memory_reserve=false",
+            original_owner_profile::PROFILE,
+            original_owner_profile::OWNER_SHA256,
+            original_owner_profile::FILE_BYTES,
+            original_owner_profile::MAPPED_BYTES,
+            original_owner_profile::MAX_SEGMENT_BYTES,
+        );
         Ok(Self { bytes: snapshot })
     }
 
@@ -172,6 +192,18 @@ impl TrustedInitialSnapshot {
         }
         if !entry_is_executable {
             return_errno_with_message!(Errno::ENOEXEC, "trusted initial entry is not executable")
+        }
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        if snapshot.len() != original_owner_profile::FILE_BYTES
+            || total != original_owner_profile::MAPPED_BYTES
+            || segments.len() != original_owner_profile::LOAD_SEGMENTS
+            || ranges.iter().map(|range| range.len()).max()
+                != Some(original_owner_profile::MAX_SEGMENT_BYTES)
+        {
+            return_errno_with_message!(
+                Errno::ENOEXEC,
+                "original owner image differs from its exact F/L/S profile"
+            )
         }
 
         for (segment, range) in segments.iter().zip(&ranges) {

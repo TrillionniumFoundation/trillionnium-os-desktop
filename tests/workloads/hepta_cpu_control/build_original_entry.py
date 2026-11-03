@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure a tracked original Agentd entry against the unchanged native profile.
+"""Measure a tracked original Agentd entry against an explicit image profile.
 
 This performs a real locked, offline static release build and the original
 release packaging. It creates no Cargo fixture, replaces no supplier, disables
@@ -23,6 +23,17 @@ import subprocess
 import sys
 import time
 import tomllib
+
+LEGACY_IMAGE_PROFILE = "g2-trusted-daemon"
+EXACT_IMAGE_PROFILE = "g2-original-owner-a39-v1"
+
+
+def exact_image_module(desktop):
+    path = desktop / "support/build/original_owner_image.py"
+    spec = importlib.util.spec_from_file_location("original_owner_image_profile", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 sys.dont_write_bytecode = True
 TARGET = "x86_64-unknown-linux-gnu"
@@ -278,6 +289,10 @@ def execute(args, report):
         before[name] = source_snapshot(root, getattr(args, name + "_head"), getattr(args, name + "_tree"))
     save(args.output / "source-before.json", before)
     report["sources"] = {name: {key: value[key] for key in ("head", "tree")} for name, value in before.items()}
+    exact = exact_image_module(args.desktop_source) if args.image_profile == EXACT_IMAGE_PROFILE else None
+    if exact:
+        report.update(image_profile_descriptor=exact.descriptor(),
+                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256)
     upstream = tomllib.loads((args.hepta_source / "codex-rs/Cargo.toml").read_text())
     toolchain = tomllib.loads((args.hepta_source / "codex-rs/rust-toolchain.toml").read_text())["toolchain"]["channel"]
     require(re.fullmatch(r"\d+\.\d+\.\d+", toolchain), "original fixed release toolchain required")
@@ -307,6 +322,9 @@ def execute(args, report):
             require(target["path"] in source_files and source_files[target["path"]]["sha256"] == target["entry_sha256"],
                     "entry is not a frozen tracked original source file")
             report["original_entry"] = target
+            if exact:
+                exact.bind_build(report["sources"], target, report["original_lock_sha256"],
+                                 digest(args.hepta_source / "codex-rs/rust-toolchain.toml"), toolchain)
             command = [cargo, "build", "--manifest-path", "codex-rs/Cargo.toml", "--locked", "--offline", "--release",
                        "--target", TARGET, "-p", PACKAGE, "--" + args.entry_kind, args.entry, "-j" + str(args.jobs)]
             run(command, args.hepta_source, env, args.output, "build.log", report, args.timeout)
@@ -331,8 +349,9 @@ def execute(args, report):
             module = importlib.util.module_from_spec(spec)
             sys.path.insert(0, str(inspector.parent))
             spec.loader.exec_module(module)
-            report["original_shape"] = module.inspect_probe_elf(binary.read_bytes())
-            report["static_profile_passed"] = True
+            content = binary.read_bytes()
+            report["original_shape"] = exact.inspect_elf(content) if exact else module.inspect_probe_elf(content)
+            report["image_profile_passed" if exact else "static_profile_passed"] = True
             require(digest(product) == report["unstripped"]["sha256"], "target product changed before freeze completed")
             for item in dependencies.values():
                 require(digest(Path(item["path"])) == item["sha256"], "original dependency input changed during build")
@@ -348,6 +367,8 @@ def execute(args, report):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--image-profile", choices=(LEGACY_IMAGE_PROFILE, EXACT_IMAGE_PROFILE),
+                        default=LEGACY_IMAGE_PROFILE)
     for name in ("desktop", "hepta"):
         parser.add_argument("--" + name + "-source", type=Path, required=True)
         parser.add_argument("--" + name + "-head", required=True)
@@ -370,6 +391,16 @@ def main(argv=None):
               "features_disabled": False, "profile_overridden": False, "limits_changed": False,
               "fixture_created": False, "executed_binary": False, "native_role_verified": False,
               "persistent_cpu_verified": False, "recovery_verified": False, "g2_complete": False}
+    if args.image_profile == EXACT_IMAGE_PROFILE:
+        # The new schema carries no legacy success field. Original v1
+        # consumers cannot credit this as an 8/16 MiB static-profile pass.
+        report.pop("static_profile_passed")
+        report.pop("limits_changed")
+        report.update(schema="hepta.original-owner-image-entry-build.v1", image_profile=EXACT_IMAGE_PROFILE,
+                      image_profile_passed=False, legacy_static_profile_passed=False,
+                      legacy_limits_unchanged=True, selected_image_limits_differ_from_legacy=True,
+                      release_profile_unchanged=True, whole_guest_peak_verified=False,
+                      global_memory_reserve=False, production_ready=False)
     if not args.execute:
         print(json.dumps({**report, "status": "disabled; explicit --execute required"}, sort_keys=True))
         return 0
@@ -385,7 +416,8 @@ def main(argv=None):
     if report.get("output_created"):
         save(args.output / "result.json", report)
     print(json.dumps(report, sort_keys=True))
-    return 0 if report["static_profile_passed"] and report.get("source_inputs_unchanged") and "error" not in report else 1
+    admitted = report.get("image_profile_passed") if args.image_profile == EXACT_IMAGE_PROFILE else report["static_profile_passed"]
+    return 0 if admitted and report.get("source_inputs_unchanged") and "error" not in report else 1
 
 
 if __name__ == "__main__":

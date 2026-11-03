@@ -66,9 +66,9 @@ def tool(path, expected=None):
     return selected, {"path": str(selected), "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
 
 
-def build_initramfs(original, owner, plan, replay):
-    require(len(original) <= 8 * 1024**2 and 0 < len(owner) <= inputs.MAX_OWNER_BYTES,
-            "original base or owner exceeds the unchanged input bounds")
+def build_initramfs(original, owner, plan, replay, image_profile=inputs.PROFILE):
+    require(len(original) <= 8 * 1024**2 and 0 < len(owner) <= inputs.owner_file_limit(image_profile),
+            "original base or owner exceeds its selected input bounds")
     raw = gzip.decompress(original)
     require(len(raw) <= 64 * 1024**2, "original initramfs exceeds its uncompressed bound")
     entries = replay.unpack(raw)
@@ -228,7 +228,7 @@ def rejection(raw, record, reason):
 
 
 def execute(args, report):
-    review = inputs.review_inputs(args.source_review, args.expected_source_review_sha256)
+    review = inputs.review_inputs(args.source_review, args.expected_source_review_sha256, args.image_profile)
     roots = {"desktop": args.desktop_source, "hepta": args.hepta_source}
     builder = inputs.load_module("original_native_entry_builder", HERE / "build_original_entry.py")
     snapshots = inputs.source_snapshots(roots, review, builder)
@@ -237,9 +237,9 @@ def execute(args, report):
     harness = builder.source_snapshot(ROOT, harness_head, harness_tree)
     shape, ordinary, replay = inputs.original_helpers(roots["desktop"])
     owner_receipt, owner, info, owner_files = inputs.owner_build(args.owner_build_receipt,
-        args.expected_owner_build_receipt_sha256, args.owner_elf, review, snapshots, shape, roots["hepta"])
+        args.expected_owner_build_receipt_sha256, args.owner_elf, review, snapshots, shape, roots["hepta"], args.image_profile)
     pipeline, kernel, base, kernel_files = inputs.kernel_build(args.kernel_pipeline,
-        args.expected_kernel_pipeline_sha256, review, owner, ordinary)
+        args.expected_kernel_pipeline_sha256, review, owner, ordinary, args.image_profile)
     bios = inputs.read(args.bios, 2 * 1024**2, replay.SEABIOS_SHA)
     qemu, qemu_identity = tool(args.qemu, args.expected_qemu_sha256)
     mkfs, mkfs_identity = tool(args.mkfs)
@@ -252,6 +252,10 @@ def execute(args, report):
     require(1 <= args.timeout <= 120, "unchanged G1d guest deadline must remain 1..120 seconds")
     output.mkdir(mode=0o700)
     report["output_created"] = True
+    exact = inputs.image_module(args.image_profile)
+    if exact:
+        report.update(image_profile_descriptor=exact.descriptor(),
+                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256)
     freeze_bytes(output / "source-review.json",
                  inputs.read(args.source_review, 1024**2, args.expected_source_review_sha256))
     save(output / "source-before.json", snapshots)
@@ -287,10 +291,15 @@ def execute(args, report):
         # This root-only file is an acceptance plan, never Root installation,
         # registration, a writer lease, Current, a signer or a FinalUse grant.
         save(directory / "run-plan.json", plan)
-        initramfs = build_initramfs(base, actual_owner, plan, replay)
+        initramfs = build_initramfs(base, actual_owner, plan, replay, args.image_profile)
         freeze_bytes(directory / "initramfs.cpio.gz", initramfs)
         result = {"passed": False, "scenario": name, "nonce": nonce,
                   "actual_initial_elf_sha256": hashlib.sha256(actual_owner).hexdigest(), "g2_complete": False}
+        if exact:
+            result.update(schema="hepta.original-owner-image-scenario.v1", image_profile=args.image_profile,
+                          image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256,
+                          legacy_static_profile_passed=False, whole_guest_peak_verified=False,
+                          global_memory_reserve=False, production_ready=False)
         if not is_control:
             result["state"] = format_state(directory, mkfs, mkfs_identity)
         report["stage"] = "guest:" + name
@@ -307,7 +316,7 @@ def execute(args, report):
                     "retained pristine state image changed during guest execution")
         try:
             observed = (rejection(raw, record, name) if is_control else oracle.evaluate(raw, record["raw_exit_code"],
-                        record["timed_out"], record["serial_excessive"], name, nonce, info))
+                        record["timed_out"], record["serial_excessive"], name, nonce, info, args.image_profile))
             if not is_control:
                 require(result["state"]["after_bytes"] == STATE_BYTES
                         and result["state"]["after_sha256"] != result["state"]["before_sha256"],
@@ -327,10 +336,10 @@ def execute(args, report):
     save(output / "source-after.json", after)
     save(output / "harness-source-after.json", final_harness)
     require(after == snapshots and final_harness == harness, "source or original evidence oracle changed during native execution")
-    inputs.review_inputs(args.source_review, args.expected_source_review_sha256)
+    inputs.review_inputs(args.source_review, args.expected_source_review_sha256, args.image_profile)
     inputs.owner_build(args.owner_build_receipt, args.expected_owner_build_receipt_sha256, args.owner_elf,
-                       review, snapshots, shape, roots["hepta"])
-    inputs.kernel_build(args.kernel_pipeline, args.expected_kernel_pipeline_sha256, review, owner, ordinary)
+                       review, snapshots, shape, roots["hepta"], args.image_profile)
+    inputs.kernel_build(args.kernel_pipeline, args.expected_kernel_pipeline_sha256, review, owner, ordinary, args.image_profile)
     for artifact in report["artifacts"].values():
         require(inputs.sha(Path(artifact["path"])) == artifact["sha256"], "retained actual artifact changed")
     passed = all(value["passed"] is True for group in (report["controls"], report["scenarios"]) for value in group.values())
@@ -343,6 +352,7 @@ def execute(args, report):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--image-profile", choices=inputs.IMAGE_PROFILES, default=inputs.PROFILE)
     for name in ("desktop-source", "hepta-source", "source-review", "owner-elf", "owner-build-receipt", "kernel-pipeline", "output"):
         parser.add_argument("--" + name, type=Path)
     for name in ("expected-source-review-sha256", "expected-owner-build-receipt-sha256", "expected-kernel-pipeline-sha256", "expected-qemu-sha256"):
@@ -361,6 +371,10 @@ def main(argv=None):
               "unbounded_persistent_cpu_verified": False, "power_loss_verified": False,
               "hardware_qualification": False, "production_ready": False, "g2_complete": False,
               "started_at_utc": datetime.now(timezone.utc).isoformat()}
+    if args.image_profile == inputs.EXACT_IMAGE_PROFILE:
+        report.update(schema="hepta.original-owner-image-runtime.v1", image_profile=args.image_profile,
+                      legacy_static_profile_passed=False, legacy_limits_unchanged=True,
+                      whole_guest_peak_verified=False, global_memory_reserve=False)
     if not args.execute:
         print(json.dumps({**report, "status": "disabled; explicit --execute and original source-bound owner/kernel inputs required"}, sort_keys=True))
         return 0
