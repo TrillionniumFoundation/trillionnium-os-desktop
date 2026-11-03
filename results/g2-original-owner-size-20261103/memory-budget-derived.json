@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "kind": "derived-source-and-artifact-analysis-not-runtime-receipt",
+  "desktop_head": "4dcd02d8058005b92b75b4e997ec4de08833e01d",
+  "hepta_head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "product_sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454",
+  "file_bytes": 20138584,
+  "private_load_bytes_per_role": 20168704,
+  "largest_load_range_bytes": 15323136,
+  "roles": 4,
+  "embedded_file_copies": 1,
+  "retained_snapshot_copies": 1,
+  "simultaneous_verification_vectors": 2,
+  "boot_page_bytes_per_role": 4096,
+  "stack_mapping_bytes_per_role": 8388608,
+  "image_and_verification_subtotal_bytes": 151614640,
+  "including_fully_touched_stack_capacity_bytes": 185169072,
+  "guest_configured_memory_bytes": 536870912,
+  "physical_rss_measured": false,
+  "whole_guest_peak_proven": false,
+  "global_memory_reserve": false,
+  "production_qualified": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "excluded_categories": [
+    "kernel other text/data and embedded inputs",
+    "initramfs and extracted executable/file cache",
+    "VDSO",
+    "page tables, slabs and VMO metadata",
+    "allocator page rounding and fragmentation",
+    "kernel/task stacks",
+    "owner threads, heaps, SQLite/WAL and caches",
+    "controller/history/device buffers",
+    "successor retirement overlap"
+  ],
+  "caveats": [
+    "The 8 MiB per-role stack is mapped; full touching is capacity accounting, not measured initial RSS.",
+    "Four-role figure describes initial preparation, not a complete lifetime physical-memory upper bound.",
+    "Only workload has the fixed 64 MiB selected-user-frame family account; Root/Manager/Recovery have no equivalent account in this path."
+  ]
+}
