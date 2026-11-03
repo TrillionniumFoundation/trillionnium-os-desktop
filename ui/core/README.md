@@ -14,6 +14,10 @@ not issue grants, sign requests, own a durable effect journal, or implement HOS2
   identity, freshness and unavailable/unknown state.
 - [notes.rs](src/notes.rs) and [notes_bootstrap.rs](src/notes_bootstrap.rs): private
   Notes identity, bounded messages and trusted bootstrap v2 data.
+- [calculator.rs](src/calculator.rs) and [desktop_startup.rs](src/desktop_startup.rs):
+  the separate candidate Calculator identity, checked integer state/receipt model
+  and versioned joint reservation. [Calculator protocol](CALCULATOR_PROTOCOL.md)
+  defines exact bytes, one pending receipt, recovery, lifecycle and acceptance scope.
 - [notes_recovery.rs](src/notes_recovery.rs) and
   [notes_private_unix.rs](src/notes_private_unix.rs): separately inherited
   recovery datagrams, exact acknowledgement and private descriptor checks.
@@ -41,6 +45,8 @@ establish the original Hepta writer's durable terminal state.
 
 ```sh
 RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-core --locked
+RUSTUP_TOOLCHAIN=1.96.0 cargo test --manifest-path ui/Cargo.toml -p trill-ui-core --locked \
+  emit_cross_repository_wire_fixture_from_app_serialization -- --nocapture
 ```
 
 See [workspace setup](../README.md), [integration contracts](../../support/ui/INTEGRATION_CONTRACTS.md),
@@ -48,3 +54,8 @@ See [workspace setup](../README.md), [integration contracts](../../support/ui/IN
 [Notes contract](../../support/ui/NOTES_ORGAN.md). These documents specify
 the wire, authority and persistence boundaries; package tests do not replace
 the complete host/owned-compositor checks.
+
+The emitted Calculator golden fixture comes from this shared Rust serializer and
+model. Its explicit `MODEL_SERIALIZATION_ONLY` scope excludes original Core,
+FinalUse, native window and production effect qualification. Existing Notes wire
+and receipt history are not migrated into the Calculator namespace.

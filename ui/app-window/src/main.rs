@@ -1,6 +1,7 @@
 //! One independent client window per app process. No embedded webview or Node.
 #[path = "../../activation.rs"]
 mod activation;
+mod calculator_organ;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
 mod notes_input;
@@ -18,6 +19,9 @@ struct ClientWindow {
     notes_input: notes_input::NotesInput,
     notes_organ: Option<notes_organ::NotesAppChannel>,
     notes_browser: bool,
+    calculator_organ: Option<calculator_organ::CalculatorAppChannel>,
+    calculator_operator: Option<trill_ui_core::calculator::CalculatorOperator>,
+    calculator_notice: Option<&'static str>,
     left: String,
     right: String,
     result: String,
@@ -46,6 +50,26 @@ impl eframe::App for ClientWindow {
             return;
         }
         self.notes_input.begin_activation(ctx, &mut self.activation);
+        if self
+            .calculator_organ
+            .as_ref()
+            .is_some_and(|organ| organ.close_if_session_ended(ctx))
+        {
+            return;
+        }
+        let mut calculator_updated = false;
+        if let Some(organ) = &mut self.calculator_organ {
+            let before = organ.revision();
+            organ.poll();
+            if organ.revision() != before {
+                self.left = organ.state().left.clone();
+                self.right = organ.state().right.clone();
+                self.result = organ.state().result.clone();
+                self.calculator_operator = organ.state().operator;
+                self.calculator_notice = None;
+                calculator_updated = true;
+            }
+        }
         self.terminal_preedit_active = self.activation.composing();
         let mut notes_updated = false;
         if let Some(organ) = &mut self.notes_organ {
@@ -127,6 +151,11 @@ impl eframe::App for ClientWindow {
                     }
                 }
                 AppKind::Calculator => {
+                    if let Some(organ) = &self.calculator_organ {
+                        ui.small("整数计算（除法须整除）");
+                        if organ.receipt_pending() { ui.small("正在等待操作结果确认"); }
+                    }
+                    if let Some(notice) = self.calculator_notice { ui.small(notice); }
                     ui.horizontal(|ui| {
                         let a = ui.label("A");
                         ui.text_edit_singleline(&mut self.left).labelled_by(a.id);
@@ -157,6 +186,23 @@ impl eframe::App for ClientWindow {
                 AppKind::Terminal => self.restricted_terminal(ui, ctx),
             }
         });
+        if let Some(organ) = &mut self.calculator_organ {
+            let before = organ.revision();
+            let next = trill_ui_core::calculator::CalculatorValueState {
+                left: self.left.clone(),
+                operator: self.calculator_operator,
+                right: self.right.clone(),
+                result: self.result.clone(),
+            };
+            if organ.local_edit(next).is_err() {
+                self.left = organ.state().left.clone();
+                self.right = organ.state().right.clone();
+                self.result = organ.state().result.clone();
+                self.calculator_operator = organ.state().operator;
+                self.calculator_notice = Some("输入过长或会话已结束，已保留之前的值");
+            }
+            calculator_updated |= organ.revision() != before;
+        }
         self.show_saved_notes(ctx);
         if let Some(organ) = &mut self.notes_organ {
             if organ.close_requested() {
@@ -210,6 +256,18 @@ impl eframe::App for ClientWindow {
                     "TRILL_NOTES_LAYOUT_V1:{}:{}\n",
                     organ.revision(),
                     trill_ui_core::notes::sha256_hex(self.notes.as_bytes())
+                );
+                let _ = std::io::stdout().write_all(marker.as_bytes());
+            }
+        }
+        if calculator_updated {
+            if let Some(organ) = &self.calculator_organ {
+                // The actual widget tree consumed these values. This layout
+                // witness remains separate from compositor pixel evidence.
+                let marker = format!(
+                    "TRILL_CALCULATOR_LAYOUT_V1:{}:{}\n",
+                    organ.revision(),
+                    organ.state().sha256()
                 );
                 let _ = std::io::stdout().write_all(marker.as_bytes());
             }
@@ -435,6 +493,31 @@ impl ClientWindow {
     }
 
     fn calculate(&mut self, operation: char) {
+        use trill_ui_core::calculator::{
+            checked_calculation, CalculatorNotAppliedReason, CalculatorOperator,
+        };
+        self.calculator_operator = match operation {
+            '+' => Some(CalculatorOperator::Add),
+            '-' => Some(CalculatorOperator::Subtract),
+            '*' => Some(CalculatorOperator::Multiply),
+            '/' => Some(CalculatorOperator::Divide),
+            _ => None,
+        };
+        if self.calculator_organ.is_some() {
+            self.result = self
+                .calculator_operator
+                .ok_or(CalculatorNotAppliedReason::InvalidOperand)
+                .and_then(|operator| checked_calculation(&self.left, operator, &self.right))
+                .unwrap_or_else(|reason| match reason {
+                    CalculatorNotAppliedReason::DivisionByZero => "Division by zero".into(),
+                    CalculatorNotAppliedReason::NonIntegralDivision => {
+                        "Integer division must be exact".into()
+                    }
+                    CalculatorNotAppliedReason::Overflow => "Integer overflow".into(),
+                    _ => "Canonical signed integer required".into(),
+                });
+            return;
+        }
         let (Ok(a), Ok(b)) = (
             self.left.trim().parse::<f64>(),
             self.right.trim().parse::<f64>(),
@@ -482,6 +565,7 @@ fn parse_arguments() -> Result<
         Workspace,
         u64,
         Option<trill_ui_core::notes::NotesTargetIdentity>,
+        Option<trill_ui_core::calculator::CalculatorTargetIdentity>,
     ),
     String,
 > {
@@ -490,6 +574,8 @@ fn parse_arguments() -> Result<
     let mut task_id = None;
     let mut notes_session = None;
     let mut notes_incarnation = None;
+    let mut calculator_session = None;
+    let mut calculator_incarnation = None;
     let mut args = std::env::args().skip(1);
     while let Some(flag) = args.next() {
         let value = args.next().ok_or_else(|| format!("{flag} missing value"))?;
@@ -506,6 +592,12 @@ fn parse_arguments() -> Result<
             "--task-id" => task_id = Some(value.parse::<u64>().map_err(|_| "invalid task id")?),
             "--notes-session" if notes_session.is_none() => notes_session = Some(value),
             "--notes-incarnation" if notes_incarnation.is_none() => notes_incarnation = Some(value),
+            "--calculator-session" if calculator_session.is_none() => {
+                calculator_session = Some(value)
+            }
+            "--calculator-incarnation" if calculator_incarnation.is_none() => {
+                calculator_incarnation = Some(value)
+            }
             _ => return Err(format!("unknown argument: {flag}")),
         }
     }
@@ -529,14 +621,35 @@ fn parse_arguments() -> Result<
             );
         }
     };
-    Ok((kind, workspace, task_id, notes))
+    let calculator = match (calculator_session, calculator_incarnation) {
+        (None, None) => None,
+        (Some(session_instance), Some(incarnation)) if kind == AppKind::Calculator => {
+            let identity = trill_ui_core::calculator::CalculatorTargetIdentity {
+                session_instance,
+                task_id,
+                incarnation,
+            };
+            identity
+                .validate()
+                .map_err(|_| "invalid Calculator target")?;
+            Some(identity)
+        }
+        _ => {
+            return Err(
+                "Calculator destination requires both identity fields and Calculator app kind"
+                    .into(),
+            )
+        }
+    };
+    Ok((kind, workspace, task_id, notes, calculator))
 }
 
 fn main() -> eframe::Result {
-    let (kind, workspace, task_id, notes_target) = parse_arguments().unwrap_or_else(|error| {
-        eprintln!("trill-app-window: {error}");
-        std::process::exit(2);
-    });
+    let (kind, workspace, task_id, notes_target, calculator_target) = parse_arguments()
+        .unwrap_or_else(|error| {
+            eprintln!("trill-app-window: {error}");
+            std::process::exit(2);
+        });
     let notes_lifetime = notes_target
         .as_ref()
         .map(trill_ui_core::notes_lifetime::SessionLifetime::from_environment)
@@ -546,6 +659,19 @@ fn main() -> eframe::Result {
             std::process::exit(2);
         })
         .flatten();
+    let calculator_lifetime = calculator_target
+        .as_ref()
+        .map(|target| {
+            trill_ui_core::calculator_lifetime::SessionLifetime::from_environment(target)?
+                .ok_or_else(|| {
+                    std::io::Error::other("Calculator organ requires its original Session lifetime")
+                })
+        })
+        .transpose()
+        .unwrap_or_else(|error| {
+            eprintln!("trill-app-window: {error}");
+            std::process::exit(2);
+        });
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([740.0, 560.0]),
         ..Default::default()
@@ -564,6 +690,18 @@ fn main() -> eframe::Result {
                     )
                 })
                 .transpose()?;
+            let calculator_organ = calculator_target
+                .map(|target| {
+                    let lifetime = calculator_lifetime.ok_or_else(|| {
+                        std::io::Error::other("missing Calculator Session lifetime")
+                    })?;
+                    calculator_organ::CalculatorAppChannel::from_inherited_stdin(
+                        cc.egui_ctx.clone(),
+                        target,
+                        lifetime,
+                    )
+                })
+                .transpose()?;
             Ok(Box::new(ClientWindow {
                 activation: activation::ActivationGuard::default(),
                 kind,
@@ -573,6 +711,9 @@ fn main() -> eframe::Result {
                 notes_input: notes_input::NotesInput::default(),
                 notes_organ,
                 notes_browser: false,
+                calculator_organ,
+                calculator_operator: None,
+                calculator_notice: None,
                 left: String::new(),
                 right: String::new(),
                 result: String::new(),
@@ -604,6 +745,9 @@ mod tests {
             notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             notes_browser: false,
+            calculator_organ: None,
+            calculator_operator: None,
+            calculator_notice: None,
             left: "4".into(),
             right: "0".into(),
             result: String::new(),
@@ -632,6 +776,9 @@ mod tests {
             notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             notes_browser: false,
+            calculator_organ: None,
+            calculator_operator: None,
+            calculator_notice: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -687,6 +834,9 @@ mod tests {
             notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             notes_browser: false,
+            calculator_organ: None,
+            calculator_operator: None,
+            calculator_notice: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -815,6 +965,9 @@ mod tests {
             notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             notes_browser: false,
+            calculator_organ: None,
+            calculator_operator: None,
+            calculator_notice: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -863,6 +1016,9 @@ mod tests {
             notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             notes_browser: false,
+            calculator_organ: None,
+            calculator_operator: None,
+            calculator_notice: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),
@@ -913,6 +1069,9 @@ mod tests {
             notes_input: notes_input::NotesInput::default(),
             notes_organ: None,
             notes_browser: false,
+            calculator_organ: None,
+            calculator_operator: None,
+            calculator_notice: None,
             left: String::new(),
             right: String::new(),
             result: String::new(),

@@ -8,6 +8,11 @@
 当前 Desktop/Hepta 依赖装配、五个普通入口及独立 prepared SDK 入口的六份 lock 与来源检查命令见
 [DEPENDENCIES](../../support/ui/DEPENDENCIES.md)；此前固定组合保留其历史资格。
 
+本候选的 [Calculator 技术与开发合同](../../ui/core/CALCULATOR_PROTOCOL.md)
+由现有 UI core、Session、app-window 和原 Hepta owner 接合实现，未新增 Cargo
+入口。其 `notes_calculator_v1` 双目标/新 Core thread 资格与冻结 fd8/a39 Notes
+产品分别记录；模型序列化、物理 socket 和 egui 组件测试不替代原 owner 效果验收。
+
 ## 产品与支持模块
 
 以下覆盖全部 **15 个第一方 Cargo package、1 个 UI virtual workspace**。每个入口

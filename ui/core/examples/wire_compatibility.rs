@@ -26,6 +26,7 @@ fn task(state: TaskState) -> TaskRecord {
         ui_first_frame_unix_ms: None,
         wayland_socket_epoch_at_launch: None,
         notes_destination: None,
+        calculator_destination: None,
     }
 }
 

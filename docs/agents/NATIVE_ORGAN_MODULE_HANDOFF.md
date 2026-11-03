@@ -2,6 +2,14 @@
 
 本页只定位本轮模块的实际源码、命令和合同。运行状态由
 [当前能力表](../CURRENT_CAPABILITIES.md) 与对应固定源码的原始收据记录。
+
+独立后继的 [Calculator organ 合同](../../ui/core/CALCULATOR_PROTOCOL.md)
+连接[共同模型](../../ui/core/README.md)、[双目标 Session 开发](../../ui/session/README.md#explicit-two-target-candidate)
+和[应用接线/验证](../../ui/app-window/README.md#calculator-organ-candidate)。它沿用现有
+16 个 Cargo 入口，在原 writer/outbox/Objective/FinalUse 上新增显式 profile 与新
+Core thread；旧 Notes catalog 和历史不迁移。当前候选的模型/组件命令与未验收
+范围见该合同，未承接本页任何历史运行计数或冻结 fd8/a39 产品资格。
+
 开始构建前按 [跨仓 source profile](ORGAN_RELEASE_PROFILE.md) 固定完整
 Desktop/Hepta commit；2026-11-03 的实施起点为 Desktop `745c0731aed270ee394145c6767371a6af47f49f` / tree `fa70b1b95206d25775009c6965245d34051468a4`。下方 Hepta 链接固定当前 `a39a0871d9601ffccb5e0d95d8f39d54b3a63360`，tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`，由当前 source contract 与 Cargo 入口选择。后续构建以实际 Desktop 身份、六根锁与所选 feature 绑定自己的收据。[完整 source map](../SOURCES.md#hepta-native-organ)另列原全局/organ 合同、AccessKit 来源及独立 SDK 候选；固定链接仍不是运行证明。
 
