@@ -49,11 +49,12 @@ def freeze_bytes(path, content, mode=0o444):
     return {"path": str(path), "bytes": len(content), "sha256": digest}
 
 
-def retain_files(directory, files):
+def retain_files(directory, files, *, empty_logs=()):
     result = {}
     for relative, source in files.items():
         require(not Path(relative).is_absolute() and ".." not in Path(relative).parts, "retained relative path escaped")
-        result[relative] = freeze_bytes(directory / relative, inputs.read(source, 512 * 1024**2))
+        result[relative] = freeze_bytes(directory / relative,
+                                       inputs.read(source, 512 * 1024**2, allow_empty=relative in empty_logs))
     return result
 
 
@@ -267,7 +268,8 @@ def execute(args, report):
                   kernel_pipeline_sha256=args.expected_kernel_pipeline_sha256,
                   input_attestation="caller-retained actual local build records and complete checked sources; not remote attestation",
                   tool_identities={"qemu": qemu_identity, "mkfs": mkfs_identity})
-    report["retained_owner_build"] = retain_files(output / "owner-build", owner_files)
+    report["retained_owner_build"] = retain_files(output / "owner-build", owner_files,
+                                                empty_logs=inputs.EMPTY_ORIGINAL_COMMAND_LOGS)
     report["retained_kernel_build"] = retain_files(output / "kernel-build-evidence", kernel_files)
     report["artifacts"] = {"owner": freeze_bytes(output / "original-owner.elf", owner),
                            "kernel": freeze_bytes(output / "product-kernel.elf", kernel),

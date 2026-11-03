@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -108,6 +109,50 @@ class NativeOwnerInputTests(unittest.TestCase):
                 (raw, {**record, "profile": {"cpu": "max"}})):
             with self.subTest(raw=changed_raw, record=changed_record), self.assertRaises(ValueError):
                 runner.rejection(changed_raw, changed_record, "entropy-not-ready")
+
+
+class NativeOwnerQuietPackagingTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+
+    def test_successful_quiet_command_keeps_its_exact_empty_log(self):
+        log = self.root / "original-packaging.log"
+        with log.open("xb") as stream:
+            completed = subprocess.run([sys.executable, "-I", "-B", "-c", "pass"],
+                                       stdin=subprocess.DEVNULL, stdout=stream, stderr=subprocess.STDOUT,
+                                       timeout=5, check=False)
+        self.assertEqual(completed.returncode, 0)
+        empty_sha = hashlib.sha256(b"").hexdigest()
+        self.assertEqual(inputs.read(log, 64 * 1024**2, empty_sha, allow_empty=True), b"")
+        retained = runner.retain_files(self.root / "retained", {log.name: log},
+                                       empty_logs=inputs.EMPTY_ORIGINAL_COMMAND_LOGS)
+        self.assertEqual(retained[log.name]["bytes"], 0)
+        self.assertEqual(retained[log.name]["sha256"], empty_sha)
+        self.assertEqual((self.root / "retained" / log.name).read_bytes(), b"")
+        self.assertEqual((self.root / "retained" / log.name).stat().st_mode & 0o777, 0o444)
+
+    def test_ordinary_inputs_documents_and_default_retention_still_require_bytes(self):
+        path = self.root / "input.json"
+        path.write_bytes(b"")
+        with self.assertRaises(ValueError):
+            inputs.read(path, 1024)
+        with self.assertRaises(ValueError):
+            inputs.document(path, 1024)
+        with self.assertRaises(ValueError):
+            runner.retain_files(self.root / "retained", {path.name: path})
+        self.assertFalse((self.root / "retained").exists())
+
+    def test_quiet_log_support_preserves_size_and_digest_checks(self):
+        log = self.root / "original-packaging.log"
+        content = b"normal command output\n"
+        log.write_bytes(content)
+        self.assertEqual(inputs.read(log, len(content), inputs.sha(log), allow_empty=True), content)
+        with self.assertRaises(ValueError):
+            inputs.read(log, len(content) - 1, allow_empty=True)
+        with self.assertRaisesRegex(ValueError, "frozen digest"):
+            inputs.read(log, len(content), hashlib.sha256(b"").hexdigest(), allow_empty=True)
 
 
 class NativeOwnerBoundedIoTests(unittest.TestCase):

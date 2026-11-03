@@ -22,6 +22,7 @@ MAX_KERNEL_BYTES = 64 * 1024**2
 PROFILE = "g2-trusted-daemon"
 EXACT_IMAGE_PROFILE = "g2-original-owner-a39-v1"
 IMAGE_PROFILES = (PROFILE, EXACT_IMAGE_PROFILE)
+EMPTY_ORIGINAL_COMMAND_LOGS = ("original-packaging.log",)
 
 
 def image_module(profile):
@@ -45,12 +46,13 @@ def sha(path):
     return result.hexdigest()
 
 
-def read(path, limit, expected=None):
+def read(path, limit, expected=None, *, allow_empty=False):
+    minimum = 0 if allow_empty else 1
     require(path.is_absolute() and path.is_file() and not path.is_symlink()
-            and path.resolve(strict=True) == path and 0 < path.stat().st_size <= limit,
+            and path.resolve(strict=True) == path and minimum <= path.stat().st_size <= limit,
             "canonical bounded regular input required: " + str(path))
     content = path.read_bytes()
-    require(0 < len(content) <= limit, "input changed its bounded size: " + str(path))
+    require(minimum <= len(content) <= limit, "input changed its bounded size: " + str(path))
     if expected is not None:
         require(hashlib.sha256(content).hexdigest() == check_digest(expected, "explicit input digest"),
                 "input differs from its explicit frozen digest: " + str(path))
@@ -206,7 +208,9 @@ def owner_build(receipt_path, expected, owner, review, snapshots, shape, hepta_s
     retained = {receipt_path.name: receipt_path}
     for command in commands:
         path = receipt_path.parent / command["log"]
-        read(path, 64 * 1024**2)
+        # The original successful strip script can be silent. Preserve that
+        # exact empty log; command completion and product checks above remain.
+        read(path, 64 * 1024**2, allow_empty=command["log"] in EMPTY_ORIGINAL_COMMAND_LOGS)
         retained[command["log"]] = path
     for name in ("source-before.json", "source-after.json"):
         retained[name] = receipt_path.parent / name
