@@ -22,6 +22,16 @@
 
 `fd/a39` 的全部 CI 现已终结：16 项成功、1 项失败；[最终状态](../results/integration/2026-11-03-organ-convergence/ci-status-fd-final.json)与[当前原 daemon 独立重放](../results/integration/2026-11-03-organ-convergence/f1-native-ci-fd/independent-review.json)均保留。当前 A06、Session 与 Native UI 也各自有新的 `fd` 收据，未把 `e1` 结果改名。G1-d 历史负控超过串口证据上限并有运行条件失败，仍为红灯。新增独立 watchdog workflow 在 `22a94f7` 后继上实际通过 6 次 guest，原 observer 已重放；合法 job-stop、零配额、一次恢复结果均保持原语义，但可信用户暂停入口及全局恢复资源仍未取得资格。
 
+### 后继修复与第二目的端的实际范围
+
+[后续证据](../results/integration/2026-11-03-organ-followup/README.md)单独记录 `bf15a519e9192b063071e8b9b61ef3319bed416e` 的 9 项 CI 全部成功，包括原 Native UI、Root 和 prepared SDK 门禁。它修复了打包及 Notes 测试夹具问题；冻结产品仍为上表 `fd/a39`，后继的组件通过不授予最终安装、生产授权或实际 Notes 效果资格。
+
+第二目的端 Calculator 的 [PR #281](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/281) 中，实际测试来源 `5a8684cc4591a4163c162f198b4121ca4cfc6ebc` 的 Core 为 81 passed，App/Session 为 138 top-level passed / 2 ignored；嵌套子进程用例不重复累计。原 Hepta 候选 `580a07bfadad97d1dfc13ece112facc13dcc00bb` 的 Objective 为 66 passed / 2 skipped，另有 causal receipt 1 项和 Agentd 6 项定向通过，其余分别 407 / 587 项未选择。它们尚未组成一个已经运行的双应用原 Root 产品。`5a` 的 A10 在真实 Weston/AT-SPI 和共享输入检查之后因两项 Clippy 错误失败；`c2c369836e87e9cf27b4dc9aa8b7446e85efdf90` 只修复这两项，CI 和产品资格仍须绑定修复后的实际来源。
+
+原 Hepta `0259fc82cc1b6ac9e245227dceffb767e306378f` 的完整 Memory 执行保留 393 passed / 1 failed / 13 skipped；不以随后定向通过项覆盖失败。唯一失败的原 federation 用例重查仍失败，2 秒预算和 16 个完成 peer 的原断言未放宽。独立 Xvfb 诊断还观察到页/缓冲等待及原 15 秒准备超时；这些现象尚未证明同一个 I/O 根因，也不代表 Notes 窗口和输入法已验收。
+
+[原 G2 owner 镜像与资源审查](../results/g2-original-owner-size-20261103/README.md)绑定 Desktop `4dcd02d8058005b92b75b4e997ec4de08833e01d` / 原 Hepta `a39`：原 release 构建和 strip 完成，ELF 为 20,138,584 bytes，页对齐 LOAD 合计 20,168,704 bytes；原 8 MiB / 16 MiB 门禁仍然拒绝。独立版本的原 owner 实验 profile 和全局恢复资源分别按 [D11/D12](DECISIONS.md) 实现与验收，不能把普通 guest 生命周期、静态算式或放大预算记成 G2 CPU 持久闭环。
+
 ### 当前交付范围与下一条实际验收
 
 | 领域 | 当前源码提供的入口 | 仍须以最终产物闭合的门禁 |
@@ -29,7 +39,7 @@
 | Linux 原 Root 与文本会话 | [product Root](../services/hepta-session-host/src/product_root/README.md)、[原文本 adapter](../services/hepta-session-host/TEXT_SESSION.md)、[同一 Root 的管理入口](../services/hepta-session-host/src/product_root/ADMIN.md)；原 authority、Current、writer/outbox 与 operation history 保留所属 owner | 最终安装包中的真实 Root/人类准入、原 thread/模型、期限/撤销与恢复，记录实际身份、命令和输出；源码合同不代替部署输入 |
 | Rust UI、安装和本地草稿 | [UI 五成员](../ui/README.md)、[产品安装/升级/回滚/卸载](../support/ui/PRODUCT.md)、[草稿与上下文](../support/ui/CHAT_WORKSPACE.md) | 同一个包的真实启动、Session/窗口身份、恢复、升级/回滚及卸载保留用户数据；最终 Makepad 的 IBus、AT-SPI 与物理输入另外验收 |
 | Notes 目的端 | [Notes organ](../support/ui/NOTES_ORGAN.md)、[独立文档回读和持久恢复](../support/ui/NOTES_DURABILITY.md)；原 operation/CAS 与应用文档 owner 相接 | 原授权→实际保存→独立回读→原 writer 持久终态，再按原门禁执行丢回复、撤销、并发编辑与 App 退出；模型文本不能作效果收据 |
-| 第二目的端与 Android | [Android 只读 adapter](../support/android/DEVICE_ORGAN.md)、[严格 receiver 合同](../support/android/receiver/README.md) 已有源码；当前 helper 在发现设备和 UI 调用前拒绝 `organ-set-text` | 每个新目的端独立绑定观察、目标身份/代际、授权、效果、撤销和原 owner 恢复；Android 还需原 signer、安装字节/peer 与真实回读资格。旧限定 APK smoke 不提供生产设备控制资格 |
+| 第二目的端与 Android | Calculator 已有上述独立 Core/App/Session 和原 owner 组件记录；[Android 只读 adapter](../support/android/DEVICE_ORGAN.md)、[严格 receiver 合同](../support/android/receiver/README.md) 已有源码，当前 helper 在发现设备和 UI 调用前拒绝 `organ-set-text` | 每个新目的端独立绑定观察、目标身份/代际、授权、效果、撤销和原 owner 恢复；Android 还需原 signer、安装字节/peer 与真实回读资格。旧限定 APK smoke 不提供生产设备控制资格 |
 | Asterinas organ | [固定构建](../support/build/README.md)、[原 daemon runner](../tests/workloads/hepta_agentd_runtime/README.md)、[G1-d](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 与下方 A00–A10 合同 | 同一最终 guest/Hepta 输入的完整 F1、G2 持久效果和故障恢复；各历史 QEMU 切片保留，不能代替当前原生产品、GPU/ARM/BSP 或手机资格 |
 | 模块交接与证据 | [机器目录](modules/catalogue.json) 覆盖 15 个第一方 package、1 个 UI workspace、11 个开发域及当前 57 个内核成员 | `check_modules.py` 检查映射和链接，源码/构建/运行分别留收据；文档覆盖数不作为开发完成率 |
 

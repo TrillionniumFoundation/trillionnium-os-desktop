@@ -16,6 +16,7 @@ writer, outbox and operation-history ownership.
 | Implementation sequence and remaining product work | [Roadmap](docs/ROADMAP.md) |
 | Dated execution records and their original source identities | [Status](docs/STATUS.md) |
 | Retained successes, failures and evidence locations | [Evidence index](docs/EVIDENCE_INDEX.md) |
+| Later Notes/build repairs, Calculator component results and original G2 size rejection | [Follow-up evidence](results/integration/2026-11-03-organ-followup/README.md) |
 | Kernel build, boot and source verification | [Build guide](support/build/README.md) |
 | UI development and execution | [UI run guide](support/ui/RUN.md) |
 | Install, launch, diagnose, upgrade, recover local drafts and uninstall | [Linux host product guide](support/ui/PRODUCT.md) |

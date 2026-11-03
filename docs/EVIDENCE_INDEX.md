@@ -10,6 +10,8 @@
 | 要核对的问题 | 保留的入口 | 使用边界 |
 | --- | --- | --- |
 | 2026-11-03 两仓固定版本和本轮实际执行 | [fd/e1 与 a39 检查点](../results/integration/2026-11-03-organ-convergence/README.md) | 原 Session、UI、F1 daemon、Store、内核、Android 和当前 CI 失败按各自来源分开；尚未取得完整 Notes/F1/G2/手机产品资格 |
+| Notes/build 后继、Calculator 和原 Memory 的执行结果 | [2026-11-03 后续证据](../results/integration/2026-11-03-organ-followup/README.md) | bf15 的 9 项 CI、5a 的组件通过与 A10 失败、Hepta stage 2 定向通过及 Memory 原失败分别绑定来源；未闭合最终双应用原 Root 和 Notes 生产链 |
+| 原 G2 owner 为何没有进入新 guest | [原镜像、旧门禁拒绝及内存核算](../results/g2-original-owner-size-20261103/README.md) | 原编译/strip 成功，20,138,584-byte ELF 被旧 8 MiB / 16 MiB profile 拒绝；派生内存算式不是 512 MiB guest 的实测峰值或恢复保留保证 |
 | 一次原 Hepta 来源更新是否真正运行 Cargo | [4223 六根锁生成与核验](../results/integration/2026-10-27-source-pin/README.md) | 保留生成命令、前后锁摘要和原32项组件资格；只适用于记录中的 4223 来源，不证明 a39 的最终安装包 |
 | 旧产品构建的成功与失败如何关联 | [942/de0 检查点](CURRENT_CAPABILITIES.md#2026-10-26-产品整改的当前来源)、[manifest 权限修复](../results/integration/2026-10-27-package-manifest-mode/result.json) | 三项旧 CI 与原优化 builder、随后归档拒绝分别记录；修复测试不能替代重新打包/安装 |
 | 当前线程/文本/UI 合同从哪些旧执行延续 | [v10/v11 原包 scoped 记录](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)、[App-only 恢复组件交接](../results/integration/2026-10-26-product-readiness/app-only-component-handoff.json) | 原包、默认 SDK、真实进程及 host 夹具各有范围；不继承为当前完整 workspace、prepared SDK、实际 Root/模型或设备通过 |
