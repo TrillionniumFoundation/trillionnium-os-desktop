@@ -1,0 +1,74 @@
+{
+  "source": "/home/qian-qi/work/trill-organ-owner-20261103/hepta-calculator-source",
+  "parent": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "status": "passed",
+  "stages": [
+    {
+      "name": "format",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "fmt",
+        "--base",
+        "0259fc82cc1b6ac9e245227dceffb767e306378f"
+      ],
+      "exit_code": 0,
+      "seconds": 0.731,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "objective-tests",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "test",
+        "-p",
+        "codex-hepta-objective",
+        "--locked",
+        "--offline",
+        "--test-threads",
+        "1"
+      ],
+      "exit_code": 0,
+      "seconds": 24.157,
+      "log_sha256": "91addda468eb3c3bfd33edd821f7b5f509646fec4cb24ce508cb9ef0747b162f"
+    },
+    {
+      "name": "causal-receipt-test",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "test",
+        "-p",
+        "codex-hepta-memory",
+        "--locked",
+        "--offline",
+        "--test-threads",
+        "1",
+        "-E",
+        "test(later_manual_state_does_not_erase_an_earlier_causal_applied_receipt)"
+      ],
+      "exit_code": 0,
+      "seconds": 61.081,
+      "log_sha256": "aebce3a11e1b1b51e6c0cd68896ffb4037ac7d03a1e36c81301bbaff3d92a6c4"
+    },
+    {
+      "name": "agentd-profile-tests",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "test",
+        "-p",
+        "codex-hepta-agentd",
+        "--locked",
+        "--offline",
+        "--test-threads",
+        "1",
+        "-E",
+        "test(calculator_) | test(desktop_thread_) | test(desktop_startup)"
+      ],
+      "exit_code": 0,
+      "seconds": 1854.528,
+      "log_sha256": "185239cdbcb72996c0759bf58fe43ea7c8a22fd64c6bf223c75296b313d80201"
+    }
+  ],
+  "scope": "New Desktop Objective, catalog, seed and private transport contracts; no production authority, original Core execution or GUI qualification",
+  "commit": "580a07bfadad97d1dfc13ece112facc13dcc00bb",
+  "tree": "cd6004e85a5ae28513a0bcf32da5bf7b190103f5"
+}

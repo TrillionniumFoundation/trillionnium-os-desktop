@@ -1,0 +1,26 @@
+{
+  "compiler": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "compile_exit": 0,
+  "compile_stderr": "",
+  "scope": "libtest output presentation only; not the original 1.96 product test",
+  "runs": [
+    {
+      "test_threads": 1,
+      "exit": 0,
+      "stdout": "\nrunning 1 test\ntest app_writes_once_fixture ... ORIGINAL_APP_STORED\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "exact_marker_seen": false
+    },
+    {
+      "test_threads": 2,
+      "exit": 0,
+      "stdout": "\nrunning 1 test\nORIGINAL_APP_STORED\ntest app_writes_once_fixture ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "exact_marker_seen": true
+    },
+    {
+      "test_threads": 4,
+      "exit": 0,
+      "stdout": "\nrunning 1 test\nORIGINAL_APP_STORED\ntest app_writes_once_fixture ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "exact_marker_seen": true
+    }
+  ]
+}

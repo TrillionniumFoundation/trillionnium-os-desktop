@@ -1,0 +1,39 @@
+{
+  "source": "/home/qian-qi/work/trill-organ-owner-20261103/hepta-calculator-source",
+  "parent": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "status": "blocked",
+  "stages": [
+    {
+      "name": "format",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "fmt",
+        "--base",
+        "a39a0871d9601ffccb5e0d95d8f39d54b3a63360"
+      ],
+      "exit_code": 0,
+      "seconds": 0.767,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "memory-tests",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "test",
+        "-p",
+        "codex-hepta-memory",
+        "--locked",
+        "--offline",
+        "--test-threads",
+        "1"
+      ],
+      "exit_code": 100,
+      "seconds": 1894.886,
+      "log_sha256": "bee383454352a5ca85698b3f3f5d0500cb8bf62a4dd3105a4ab4b701e491b001"
+    }
+  ],
+  "scope": "Calculator target and original writer contract tests; no production authority or GUI qualification",
+  "commit": "0259fc82cc1b6ac9e245227dceffb767e306378f",
+  "tree": "4005ffe2bad095cf1d5e0d006393d08ced831cd8",
+  "error": "RuntimeError: memory-tests failed"
+}

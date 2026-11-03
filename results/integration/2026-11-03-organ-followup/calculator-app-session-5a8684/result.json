@@ -1,0 +1,149 @@
+{
+  "environment": {
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_HOME": "/data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_TARGET_DIR": "/data/trill-calculator-core-5a8684-rhfqpcqf/target",
+    "CARGO_TERM_COLOR": "never",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTC": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTDOC": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustdoc",
+    "RUSTFLAGS": "",
+    "RUST_BACKTRACE": "1",
+    "XDG_CACHE_HOME": "/data/trill-calculator-app-session-5a8684-agwr13u_/cache",
+    "XDG_CONFIG_HOME": "/data/trill-calculator-app-session-5a8684-agwr13u_/config",
+    "XDG_DATA_HOME": "/data/trill-calculator-app-session-5a8684-agwr13u_/data",
+    "XDG_RUNTIME_DIR": "/data/trill-calculator-app-session-5a8684-agwr13u_/runtime",
+    "XDG_STATE_HOME": "/data/trill-calculator-app-session-5a8684-agwr13u_/state"
+  },
+  "euid": 1000,
+  "head": "5a8684cc4591a4163c162f198b4121ca4cfc6ebc",
+  "loadavg": [
+    34.66552734375,
+    24.37353515625,
+    19.26416015625
+  ],
+  "mem_available_kib": 93278904,
+  "module_docs": {
+    "bytes": 25086,
+    "path": "/data/trill-calculator-app-session-5a8684-agwr13u_/module-docs.json",
+    "sha256": "f8835cd3f9910ecd05bc05d544898992b07a1b6e807cf6745142f8cc126d385b"
+  },
+  "native_window_qualified": false,
+  "output": "/data/trill-calculator-app-session-5a8684-agwr13u_",
+  "passed": true,
+  "previous_own_job": "1a1a2847033-96a-7401",
+  "private_target_reused": "/data/trill-calculator-core-5a8684-rhfqpcqf/target",
+  "runner_sha256": "7c53498fd9e98b48c6eabc88ea864658926195c250e9c106b45e101c377c13f0",
+  "runtime_qualified": false,
+  "scope": "Full trill-app-window and trill-session default-feature package tests; egui host components only, no native compositor window or original-owner qualification",
+  "source_after": {
+    "alternates": false,
+    "bytes": 396685570,
+    "clean": true,
+    "files": 11562,
+    "full_checkout": true,
+    "manifest": "/data/trill-calculator-app-session-5a8684-agwr13u_/source-after.json",
+    "manifest_sha256": "ecd1df685d19a515aebe78e568d26db5b14eab1400c6d6513c8f96ce6c59d4cf"
+  },
+  "source_before": {
+    "alternates": false,
+    "bytes": 396685570,
+    "clean": true,
+    "files": 11562,
+    "full_checkout": true,
+    "manifest": "/data/trill-calculator-app-session-5a8684-agwr13u_/source-before.json",
+    "manifest_sha256": "ecd1df685d19a515aebe78e568d26db5b14eab1400c6d6513c8f96ce6c59d4cf"
+  },
+  "steps": [
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "elapsed_seconds": 0.015,
+      "exit": 0,
+      "log": "/data/trill-calculator-app-session-5a8684-agwr13u_/rustc-version.log",
+      "log_bytes": 196,
+      "log_sha256": "f64c55ed9f210d80a9b248206104a47175faf5ec94a093e4ad132549209089fc",
+      "name": "rustc-version"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "support/docs/check_modules.py",
+        "--report",
+        "/data/trill-calculator-app-session-5a8684-agwr13u_/module-docs.json"
+      ],
+      "elapsed_seconds": 1.073,
+      "exit": 0,
+      "log": "/data/trill-calculator-app-session-5a8684-agwr13u_/module-docs.log",
+      "log_bytes": 471,
+      "log_sha256": "6d7946a89c2f15d494b1e194260af9bf78e07d4bcf7654b5919e3244bb694e33",
+      "name": "module-docs"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-app-window",
+        "-p",
+        "trill-session",
+        "--locked",
+        "--offline",
+        "--",
+        "--nocapture"
+      ],
+      "elapsed_seconds": 358.666,
+      "exit": 0,
+      "log": "/data/trill-calculator-app-session-5a8684-agwr13u_/app-session-tests.log",
+      "log_bytes": 27677,
+      "log_sha256": "555536b6efd328c05818402153e26c0a909c0ff3792f07b45227d69d901fc874",
+      "name": "app-session-tests"
+    }
+  ],
+  "test_summaries": [
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 0.10s",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 0.18s",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 0.19s",
+    "test result: ok. 65 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 14.06s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 1.63s",
+    "test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 6.20s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.72s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.23s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.30s",
+    "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.55s",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.73s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "toolchain": {
+    "cargo": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+    },
+    "rustc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75"
+    },
+    "rustdoc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustdoc",
+      "sha256": "ead78a0e00004d88ef7a3209a20552ba805cc9cb7cde7b061093a1b2dfb037c0"
+    }
+  },
+  "tree": "5bece45cf0c433194a2aeefdd924990844d3e398"
+}

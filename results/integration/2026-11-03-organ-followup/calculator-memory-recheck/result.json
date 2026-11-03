@@ -1,0 +1,41 @@
+{
+  "source": "/home/qian-qi/work/trill-organ-owner-20261103/hepta-calculator-source",
+  "parent": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "status": "blocked",
+  "stages": [
+    {
+      "name": "federation-deadline-recheck",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "test",
+        "-p",
+        "codex-hepta-memory",
+        "--locked",
+        "--offline",
+        "--test-threads",
+        "1",
+        "-E",
+        "test(=cognitive_runtime_tests::product_v2_reports_peer_truncation_before_aggregation)"
+      ],
+      "exit_code": 100,
+      "seconds": 114.611,
+      "log_sha256": "772e6dea56d02266c6aa7a6d3e763fd2436d3955a919a6a7a69aa631c3f75793"
+    }
+  ],
+  "scope": "Only the previously failing original federation deadline test; unchanged source; CPUQuota400% instead of100%; no production effect",
+  "commit": "0259fc82cc1b6ac9e245227dceffb767e306378f",
+  "tree": "4005ffe2bad095cf1d5e0d006393d08ced831cd8",
+  "format_bundle": {
+    "path": "/home/qian-qi/work/trill-organ-owner-20261103/calculator-format-0259.bundle",
+    "size": 2433,
+    "sha256": "c1ad4373121c41bad752889f470511200b621ebed375956113e5ef349ac56091"
+  },
+  "resource_limits": {
+    "cpu_quota_percent": 400,
+    "memory_max_bytes": 12884901888,
+    "nice": 15,
+    "test_threads": 1,
+    "cargo_jobs": 1
+  },
+  "error": "RuntimeError: federation-deadline-recheck failed"
+}

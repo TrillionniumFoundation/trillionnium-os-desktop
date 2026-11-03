@@ -1,0 +1,198 @@
+{
+  "binaries": {
+    "Xvfb": {
+      "path": "/usr/bin/Xvfb",
+      "sha256": "0081b27338b510ec5e2068a93c6db31480872de9bb082f347f3747ef1648e794"
+    },
+    "xauth": {
+      "path": "/usr/bin/xauth",
+      "sha256": "ffcb5f569bf9fce94cbf37f5d61790d463508c6122511a5f4c6e280d3633086e"
+    },
+    "xdpyinfo": {
+      "path": "/usr/bin/xdpyinfo",
+      "sha256": "0d6934a0a06afe4dce863fc5f5990c4455ba8cfcb7f84359ce1c34777884a3b1"
+    }
+  },
+  "child": {
+    "argv": [
+      "Xvfb",
+      ":1235",
+      "-nolisten",
+      "tcp",
+      "-screen",
+      "0",
+      "1440x1000x24",
+      "-auth",
+      "/tmp/trill-xvfb-owned-md1zi65f/Xauthority"
+    ],
+    "held_waitable_child": true,
+    "pid": 1321386
+  },
+  "child_reaped": true,
+  "cleanup_exit_code": -9,
+  "diagnostic_outcome": "not_ready_within_original_budget",
+  "environment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/tmp/trill-xvfb-owned-md1zi65f/runtime/session-bus",
+    "DISPLAY": ":1235",
+    "GDK_BACKEND": "x11",
+    "GSETTINGS_BACKEND": "memory",
+    "GSETTINGS_SCHEMA_DIR": "/tmp/trill-xvfb-owned-md1zi65f/schemas",
+    "GTK_IM_MODULE": "ibus",
+    "IBUS_ADDRESS": "unix:path=/tmp/trill-xvfb-owned-md1zi65f/runtime/ibus",
+    "IBUS_USE_PORTAL": "0",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "LIBGL_ALWAYS_SOFTWARE": "1",
+    "LP_NUM_THREADS": "2",
+    "MESA_SHADER_CACHE_DISABLE": "true",
+    "PATH": "/usr/local/bin:/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "QT_IM_MODULE": "ibus",
+    "TRILL_UI_DRAFT_RECOVERY": "1",
+    "TRILL_UI_MAKEPAD_RESOURCES": "/data/trill-organ-owner-20261103/ui-extract-fd-v3/trillionnium-desktop/resources",
+    "WINIT_UNIX_BACKEND": "x11",
+    "XAUTHORITY": "/tmp/trill-xvfb-owned-md1zi65f/Xauthority",
+    "XDG_CACHE_HOME": "/tmp/trill-xvfb-owned-md1zi65f/cache",
+    "XDG_CONFIG_HOME": "/tmp/trill-xvfb-owned-md1zi65f/config",
+    "XDG_CURRENT_DESKTOP": "TRILL_NATIVE_PRIVATE_TEST",
+    "XDG_DATA_HOME": "/tmp/trill-xvfb-owned-md1zi65f/data",
+    "XDG_RUNTIME_DIR": "/tmp/trill-xvfb-owned-md1zi65f/runtime",
+    "XDG_STATE_HOME": "/tmp/trill-xvfb-owned-md1zi65f/state",
+    "XMODIFIERS": "@im=ibus"
+  },
+  "euid": 1000,
+  "existing_display_accessed": false,
+  "group_signals_disarmed": true,
+  "guard_sha256": "f201671fb280e8f7d13c524de3983b905c8dadae6b362eac978d79ee67a42788",
+  "observation_elapsed_seconds": 15.034618,
+  "original_deadline_seconds": 15,
+  "output": "/data/trill-xvfb-fd-diagnostic-mmalqasy",
+  "own_private_directory_removed": true,
+  "probes": [
+    {
+      "elapsed_before_seconds": 0.401432,
+      "elapsed_seconds": 8.040932,
+      "exit_code": null,
+      "owned_lock_and_socket_verified": true,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-xvfb-fd-diagnostic-mmalqasy/probe-000-stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/trill-xvfb-fd-diagnostic-mmalqasy/probe-000-stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": true,
+      "timeout_seconds": 8
+    },
+    {
+      "elapsed_before_seconds": 8.643502,
+      "elapsed_seconds": 6.390654,
+      "exit_code": null,
+      "owned_lock_and_socket_verified": true,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/trill-xvfb-fd-diagnostic-mmalqasy/probe-001-stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/trill-xvfb-fd-diagnostic-mmalqasy/probe-001-stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": true,
+      "timeout_seconds": 6.35649972606916
+    }
+  ],
+  "product_qualified": false,
+  "ready": false,
+  "samples": [
+    {
+      "elapsed_seconds": 1.4e-05,
+      "status": {
+        "Name": "Xvfb",
+        "PPid": "1321315",
+        "State": "R (running)",
+        "Threads": "1",
+        "VmHWM": "576 kB",
+        "VmRSS": "576 kB"
+      },
+      "wchan": "0"
+    },
+    {
+      "elapsed_seconds": 0.200444,
+      "lock": {
+        "inode": 36971440,
+        "pid": 1321386,
+        "uid": 1000
+      },
+      "status": {
+        "Name": "Xvfb",
+        "PPid": "1321315",
+        "State": "D (disk sleep)",
+        "Threads": "1",
+        "VmHWM": "6888 kB",
+        "VmRSS": "6888 kB"
+      },
+      "wchan": "__wait_on_buffer"
+    },
+    {
+      "elapsed_seconds": 0.40102,
+      "lock": {
+        "inode": 36971440,
+        "pid": 1321386,
+        "uid": 1000
+      },
+      "socket": {
+        "device": 2050,
+        "inode": 36971647,
+        "uid": 1000
+      },
+      "status": {
+        "Name": "Xvfb",
+        "PPid": "1321315",
+        "State": "D (disk sleep)",
+        "Threads": "1",
+        "VmHWM": "8344 kB",
+        "VmRSS": "8344 kB"
+      },
+      "wchan": "folio_wait_bit_common"
+    },
+    {
+      "elapsed_seconds": 8.642955,
+      "lock": {
+        "inode": 36971440,
+        "pid": 1321386,
+        "uid": 1000
+      },
+      "socket": {
+        "device": 2050,
+        "inode": 36971647,
+        "uid": 1000
+      },
+      "status": {
+        "Name": "Xvfb",
+        "PPid": "1321315",
+        "State": "D (disk sleep)",
+        "Threads": "1",
+        "VmHWM": "25896 kB",
+        "VmRSS": "25896 kB"
+      },
+      "wchan": "folio_wait_bit_common"
+    }
+  ],
+  "scope": "Owned Xvfb startup diagnosis only; not product qualification",
+  "user_bus_accessed": false,
+  "xvfb_logs": {
+    "xvfb.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "xvfb.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

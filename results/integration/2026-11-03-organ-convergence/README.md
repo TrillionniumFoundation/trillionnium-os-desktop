@@ -4,6 +4,11 @@ This checkpoint records actual source-bound executions. It is an evidence,
 documentation and build-supervision successor of the frozen product; it does not change that product's
 source identity or turn component checks into production qualification.
 
+The [follow-up evidence](../2026-11-03-organ-followup/README.md) records the
+completed nine-workflow `bf15a519` repair CI, Calculator component and original
+owner selections, the retained Memory failure and private Xvfb diagnosis. Each
+keeps its actual source identity; none is an installed-product completion claim.
+
 ## Frozen sources
 
 | Role | Commit | Tree |
@@ -102,8 +107,51 @@ preserves the exclusive Cargo lease through collection, and rejects a conflictin
 SIGCHLD owner before spawn. [Fourteen normal tests and six optimized supervision
 tests](builder-supervision-22e55/receipt.json) use ordinary owned children. They do
 not change the original entry, pins, features, locks or ELF/LOAD limits. The
-already running `e1` build keeps its actual original source and is not relabelled
+earlier `e1` build keeps its actual original source and is not relabelled
 as a run of the corrected supervisor.
+
+That [original G2 build](g2-original-build-v2/g2-owner-v2-result.json) completed
+Cargo's unchanged default release command in 5,554.231 seconds. Its subsequent
+original packaging command failed because the builder had frozen its private
+product copy to mode `0555` before invoking the original in-place strip script.
+The [original error](g2-original-build-v2/g2-owner-v2-original-packaging.log)
+is retained. The 102,836,712-byte unstripped ELF is not a passed static profile;
+packaging, the unchanged 8 MiB ELF / 16 MiB LOAD checks and G2 execution remained
+false. No binary was executed by that failed build.
+
+The reviewed packaging successor makes only this private copy writable for the
+original script, then restores mode `0555` on success or failure. The existing
+task-private `RUNNER_TEMP` already isolates the script's symbol directory.
+[Two ordinary packaging regressions](packaging-nonroot-bde8/result.json) passed
+as actual main-host UID/EUID 1000, with source hashes independently checked.
+They qualify the copy/strip component only. The new original G2 attempt freezes
+Desktop `4dcd02d8058005b92b75b4e997ec4de08833e01d`, tree
+`504d5850df75de8697dfb56572cc8745dcc59f13`, with the same original Hepta `a39`;
+the original packaging script now succeeds and preserves the same unstripped
+ELF digest. Its actual stripped ELF is 20,138,584 bytes, with a page-aligned
+LOAD total of 20,168,704 bytes. The original kernel/host 8 MiB file and 16 MiB
+LOAD profile correctly rejects it. No native G2 execution or static pass is
+claimed. A new owner resource profile would require separate source, budget
+review and qualification rather than relabelling this failure.
+
+The [first fixed-nightly download failure](g2-original-build-v2/nightly-range-v1-result.json)
+retains its TLS timeout/reset and expected official whole-archive digest. A
+partial download is not a usable pinned toolchain and does not permit a version
+substitution.
+
+The installed-product attempt also exposed Notes tests parsing libtest's human
+stdout as a readiness protocol. A [small Rust 1.95 presentation diagnostic](notes-readiness-diagnostic-1.95/observation.json)
+shows that single-threaded libtest prefixes the marker with the test name;
+the exact-line parser misses it. This diagnostic is not a Rust 1.96 original
+product execution. The successor's real persistence/recovery fixtures now send
+their post-commit readiness through their private datagram and explicitly run
+their child with one test thread. The original ten-second deadline, SIGKILL,
+independent readback, no-replay and retirement checks remain. The standalone
+recovery binary's actual readiness protocol and all product code are unchanged.
+Exact-source Rust 1.96 CI on `bf15a519e9192b063071e8b9b61ef3319bed416e` now
+passes the complete original native UI, Root and prepared SDK workflow.
+All nine workflows on that repair head succeeded. The separately retained
+Calculator 5a Core/App/Session executions also exercise the corrected fixtures.
 
 The Linux installation test fixture now sets its intended directory mode
 explicitly, so a user's umask does not invalidate the fixture premise. The
@@ -121,7 +169,7 @@ effect. The strict effect receiver remains disabled before device discovery.
 | P0 Linux Notes | Final exact-source product build/package, real local login and original Root/authority, real model task, application effect, independent readback, original writer terminal, disconnection and restart reconciliation |
 | P0 F1 / G2 | Compose original production runtime/writer/outbox and HOS2 in the same native execution; lost reply must not duplicate mutation and retirement must follow durable terminal acknowledgement. The separate daemon and Store executions do not prove this composition |
 | P1 resource recovery | Covered process-family memory admission and original reserve/watchdog components have evidence; whole-kernel allocation containment, production recovery resources and trusted user-pause ingress remain open |
-| P1 second target | Calculator has a separate development branch. It requires its own bounded target protocol, causal readback, original typed writer evidence and a new versioned original tool profile/thread; an ordinary local calculator UI is not an organ |
+| P1 second target | Calculator's bounded App/Session target and independent readback have actual component evidence, and the original owner has passed scoped protocol/profile selections. The new paired Root/Core version, installed two-application windows and real task/reconnect/cancel loop remain open |
 | P1 Android | Recover the original signing authority through its existing authorized channel, qualify exact installed peer/helper and original owner target, then actual Chinese text/focus/rotation/reconnect/cancel episodes |
 | P1 shared UI | Shared Rust core contracts are tested. Final Makepad IBus/AT-SPI, workspace-switch input transactions and the independently pinned Web build/runtime need their own executions |
 | P2 fixed hardware | [Actual X230 inventory and driver gaps](../../../support/hardware/X230_NATIVE_DESKTOP.md). No boot medium selected; no native boot or disk/firmware mutation. AHCI/e1000e and the complete device recovery path remain unqualified |

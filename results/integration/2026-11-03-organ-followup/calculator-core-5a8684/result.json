@@ -1,0 +1,209 @@
+{
+  "bundle_bytes": 43770,
+  "bundle_sha256": "3136796a03123b2347d5ae5fe1eae5641e9f0e3eda6d59fe3f402a9a01f08430",
+  "cache": {
+    "copied_directories": [
+      "registry",
+      "git"
+    ],
+    "original": "/data/trill-organ-owner-20261103/cargo-home",
+    "original_used_read_only": true,
+    "private_copy": "/data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home",
+    "shared_target_used": false
+  },
+  "euid": 1000,
+  "fixture": {
+    "bytes": 3331,
+    "path": "/data/trill-calculator-core-5a8684-rhfqpcqf/calculator-wire-fixture.json",
+    "scope": "model serialization only",
+    "sha256": "3fe384300463b8692cba32e720df5ac5f61403c4dfa6223e0ffdd1e6dbb303c7"
+  },
+  "head": "5a8684cc4591a4163c162f198b4121ca4cfc6ebc",
+  "native_window_qualified": false,
+  "output": "/data/trill-calculator-core-5a8684-rhfqpcqf",
+  "passed": true,
+  "runner_sha256": "b363b4592b86fee7c9fcf43a0695001baf14d18e751263fe27034ffba63a1138",
+  "runtime_qualified": false,
+  "scope": "Full trill-ui-core package tests only; no native window, original owner or runtime qualification",
+  "source_after": {
+    "alternates": false,
+    "bytes": 396685570,
+    "clean": true,
+    "files": 11562,
+    "full_checkout": true,
+    "manifest": "/data/trill-calculator-core-5a8684-rhfqpcqf/source-after.json",
+    "manifest_sha256": "ecd1df685d19a515aebe78e568d26db5b14eab1400c6d6513c8f96ce6c59d4cf"
+  },
+  "source_before": {
+    "alternates": false,
+    "bytes": 396685570,
+    "clean": true,
+    "files": 11562,
+    "full_checkout": true,
+    "manifest": "/data/trill-calculator-core-5a8684-rhfqpcqf/source-before.json",
+    "manifest_sha256": "ecd1df685d19a515aebe78e568d26db5b14eab1400c6d6513c8f96ce6c59d4cf"
+  },
+  "steps": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "clone",
+        "--quiet",
+        "--no-local",
+        "--no-hardlinks",
+        "--depth=1",
+        "file:///data/trill-organ-android-fd8-20261103-kqt0e83g/source",
+        "/data/trill-calculator-core-5a8684-rhfqpcqf/source"
+      ],
+      "elapsed_seconds": 21.115,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/clone.log",
+      "log_bytes": 596,
+      "log_sha256": "1c8a8ea25b6a791ecef7b75394b1b0ae38c984cacd7d5b15c1814d1f014e006d",
+      "name": "clone"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "bundle",
+        "verify",
+        "/data/trill-calculator-core-5a8684-rhfqpcqf/source.bundle"
+      ],
+      "elapsed_seconds": 0.008,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/bundle-verify.log",
+      "log_bytes": 275,
+      "log_sha256": "2049f8029ba7ef28b16e8bb7ded8b6c592af0b7d1385f555c2d4296a2452728d",
+      "name": "bundle-verify"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        "/data/trill-calculator-core-5a8684-rhfqpcqf/source.bundle",
+        "HEAD"
+      ],
+      "elapsed_seconds": 0.132,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/bundle-fetch.log",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "bundle-fetch"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "checkout",
+        "--quiet",
+        "--detach",
+        "5a8684cc4591a4163c162f198b4121ca4cfc6ebc"
+      ],
+      "elapsed_seconds": 0.245,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/checkout.log",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "checkout"
+    },
+    {
+      "argv": [
+        "/usr/bin/cp",
+        "-a",
+        "--reflink=auto",
+        "--",
+        "/data/trill-organ-owner-20261103/cargo-home/registry",
+        "/data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home/registry"
+      ],
+      "elapsed_seconds": 43.362,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/copy-cache-registry.log",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "copy-cache-registry"
+    },
+    {
+      "argv": [
+        "/usr/bin/cp",
+        "-a",
+        "--reflink=auto",
+        "--",
+        "/data/trill-organ-owner-20261103/cargo-home/git",
+        "/data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home/git"
+      ],
+      "elapsed_seconds": 28.615,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/copy-cache-git.log",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "copy-cache-git"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "elapsed_seconds": 0.014,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/rustc-version.log",
+      "log_bytes": 196,
+      "log_sha256": "f64c55ed9f210d80a9b248206104a47175faf5ec94a093e4ad132549209089fc",
+      "name": "rustc-version"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "-V"
+      ],
+      "elapsed_seconds": 0.008,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/cargo-version.log",
+      "log_bytes": 36,
+      "log_sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068",
+      "name": "cargo-version"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-ui-core",
+        "--locked",
+        "--offline",
+        "--",
+        "--nocapture"
+      ],
+      "elapsed_seconds": 63.995,
+      "exit": 0,
+      "log": "/data/trill-calculator-core-5a8684-rhfqpcqf/core-tests.log",
+      "log_bytes": 14191,
+      "log_sha256": "0d89da084f0a230474f7459a2ef5329d718ef0b288fea02a63fc511d592651a3",
+      "name": "core-tests"
+    }
+  ],
+  "test_summaries": [
+    "test result: ok. 57 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s",
+    "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s",
+    "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.70s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "toolchain": {
+    "cargo": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f"
+    },
+    "rustc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75"
+    },
+    "rustdoc": {
+      "path": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustdoc",
+      "sha256": "ead78a0e00004d88ef7a3209a20552ba805cc9cb7cde7b061093a1b2dfb037c0"
+    }
+  },
+  "tree": "5bece45cf0c433194a2aeefdd924990844d3e398"
+}

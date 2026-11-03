@@ -1,0 +1,20 @@
+{
+  "acknowledge_request_bytes": "{\"schema_version\":1,\"action\":\"acknowledge\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"operation_id\":\"original-1\",\"payload_sha256\":\"f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0\",\"receipt_sha256\":\"6ccbc1b07aa43ac2f1ad7a7f0b67474a659ebc31868fc36adabeae54b275bd4c\"}",
+  "acknowledged_bytes": "{\"schema_version\":1,\"action\":\"acknowledged\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"operation_id\":\"original-1\",\"payload_sha256\":\"f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0\",\"receipt_sha256\":\"6ccbc1b07aa43ac2f1ad7a7f0b67474a659ebc31868fc36adabeae54b275bd4c\",\"status\":\"retired\"}",
+  "applied_bytes": "{\"schema_version\":1,\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"operation_id\":\"original-1\",\"payload_sha256\":\"f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0\",\"result\":{\"status\":\"applied\",\"previous_revision\":0,\"revision\":1,\"state\":{\"left\":\"12\",\"operator\":\"add\",\"right\":\"30\",\"result\":\"42\"},\"state_sha256\":\"1ce69e4a380ebbccdc1ff31a3671359cf5418a5fb34ba59968387d6de253172f\"}}",
+  "predecessor_sha256": "381600e70b8bfee64ff978d99cc06e2042c8c7030ac8c670dff2fe5503033197",
+  "read_request_bytes": "{\"schema_version\":1,\"action\":\"read_calculator\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"observation_id\":\"33333333333333333333333333333333\"}",
+  "readback_bytes": "{\"schema_version\":1,\"action\":\"calculator_state\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"observation_id\":\"33333333333333333333333333333333\",\"revision\":1,\"state\":{\"left\":\"12\",\"operator\":\"add\",\"right\":\"30\",\"result\":\"42\"},\"state_sha256\":\"1ce69e4a380ebbccdc1ff31a3671359cf5418a5fb34ba59968387d6de253172f\",\"receipt_pending\":true}",
+  "receipt_sha256": "6ccbc1b07aa43ac2f1ad7a7f0b67474a659ebc31868fc36adabeae54b275bd4c",
+  "request_bytes": "{\"schema_version\":1,\"action\":\"evaluate\",\"operation_id\":\"original-1\",\"destination_id\":\"trill.calculator:11111111111111111111111111111111:2:22222222222222222222222222222222\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"expected_revision\":0,\"left\":\"12\",\"operator\":\"add\",\"right\":\"30\"}",
+  "request_sha256": "f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0",
+  "schema": "trill.calculator.wire-fixture.v1",
+  "scope": "MODEL_SERIALIZATION_ONLY; not real GUI or original-owner acceptance",
+  "scope_sha256": "26f0b23d411fc006bb1af3f6fe3a89d8a3f208a42618d0de5626d94ef9a218f2",
+  "state_sha256": "1ce69e4a380ebbccdc1ff31a3671359cf5418a5fb34ba59968387d6de253172f",
+  "target": {
+    "incarnation": "22222222222222222222222222222222",
+    "session_instance": "11111111111111111111111111111111",
+    "task_id": 2
+  }
+}
