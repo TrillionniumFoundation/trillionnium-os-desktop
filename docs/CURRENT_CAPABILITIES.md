@@ -1,18 +1,24 @@
 # 当前能力、源码与验收边界
 
 <a id="current-product-pair"></a>
-## 2026-11-03 当前实施起点：Linux Root、Session 与 Rust UI
+## 2026-11-03 冻结产品：Linux Root、Session 与 Rust UI
 
-当前选择以下固定源码作为接续起点。它们定位实现，不是本次安装、运行或设备验收收据；后续代码和文档提交各有自己的 Desktop commit/tree。
+当前产品冻结为 `fd8d56c / a39a087`。下面的精确身份、组件执行和产品门禁分别记录；后续代码和本文档提交各有自己的 Desktop commit/tree，不继承已测二进制的资格。
 
 | 输入 | 精确身份与依据 |
 | --- | --- |
-| Desktop 实施起点 | [`745c0731aed270ee394145c6767371a6af47f49f`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/745c0731aed270ee394145c6767371a6af47f49f)，tree `fa70b1b95206d25775009c6965245d34051468a4` |
+| Desktop 冻结产品 | [`fd8d56c52b971c2d5d0e6430f296803b43ef60a3`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/fd8d56c52b971c2d5d0e6430f296803b43ef60a3)，tree `347fbb7e9931006c749b5bef0e1550c54bc08f27`；`e1f3898f` 为首轮集成/原生内核执行来源，`745c0731` 为完整产品实现起点 |
 | 原 Hepta owner / UI / 依赖补丁 | [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360)，tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`；由 [canonical source contract](../support/ui/HEPTA_SHARED_PRESENTER.json) 及实际 Cargo 入口选择 |
 | 产品构建与锁 | Rust/Cargo `1.96.0`；[DEPENDENCIES](../support/ui/DEPENDENCIES.md) 列出五个普通入口及独立 prepared UI 入口，共六份锁。源码选择、完整依赖图、构建和运行分别验证 |
 | 显式 preedit 输入候选 | [linux-preedit-profile.json](../support/ui/linux-preedit-profile.json) 选择同一 Hepta 来源；原 SDK `337566c8b25d47f7e4fff6a202157b65bf183330`，prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。默认 SDK、clipboard 候选和 preedit 候选不互借锁或运行资格 |
 
 本页是当前状态的唯一汇总入口。[模块索引](modules/README.md) 对应实际源码和开发/技术合同；[SOURCES](SOURCES.md#hepta-native-organ) 定位同一 Hepta commit 的原 owner 手册；[STATUS](STATUS.md) 与[证据索引](EVIDENCE_INDEX.md) 保留按日期、源码和场景绑定的结果。`4223` 的六锁/32项原包测试、`942/de0` 的三项 CI、较早 v10/v11 和真实窗口记录仍属于各自原配对，不能转记为 `745/a39` 的完整运行。
+
+### 本轮已经实际执行
+
+[本轮证据目录](../results/integration/2026-11-03-organ-convergence/README.md)保留原始来源、退出码、计数与未取得的资格：`e1/a39` 原 Session host 23 项、原 daemon guest 生命周期、同一普通内核上的原 CognitiveStore 10 项重开/CAS，以及原生 core 377 项、allocator 20 项、MLSDisk 15 项均通过；OSTD 报告 233 项，其中 3 项原 TCG soft-skip，实际执行下界为 230。原 Native UI CI 各组共 400 passed / 5 ignored，另有过滤的文本与 SDK 组件范围；不把 ignored 或 filtered 计为已执行。
+
+`fd/a39` 已完成 Linux Python 合同 196 个不同用例（包括另以真实 UID 0 执行的 4 项），Android 正常/优化各 257 项及未签名 APK 构建；修复 Pillow 环境依赖后的 A08 CI 已通过。`a39` 原共享 Rust UI core/Robrix 在产品 Rust 1.96 下分别 55/55、24/24，无过滤或跳过。这些记录不表示安装后的 Root/Notes、真实手机、Web 渲染或完整 F1/G2 已验收。
 
 ### 当前交付范围与下一条实际验收
 

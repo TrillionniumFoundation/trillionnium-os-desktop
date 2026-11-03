@@ -1,0 +1,73 @@
+{
+  "schema": "trill.session-host-ci-execution.v1",
+  "desktop": {
+    "commit": "e1f3898ff6c2181a6da27de9f9b0f5d1ec03123d",
+    "tree": "31f8eb04759aafd49a51084ce7ecb425b2d1f097"
+  },
+  "hepta": {
+    "commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+    "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+  },
+  "workflow": {
+    "run_id": 41662601208,
+    "job_id": 126009430872,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/41662601208/job/126009430872"
+  },
+  "source_verification": {
+    "critical_graph_checked": true,
+    "original_source_bytes_checked": true,
+    "manifest_dependencies": 39,
+    "locked_original_packages": {
+      "services/hepta-os/Cargo.lock": 0,
+      "services/hepta-session-host/Cargo.lock": 152,
+      "support/ui/Cargo.lock": 0,
+      "support/ui/preedit-sdk/Cargo.lock": 157,
+      "tests/ui/Cargo.lock": 0,
+      "ui/Cargo.lock": 157
+    }
+  },
+  "test_groups": [
+    {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 0
+    },
+    {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 0
+    },
+    {
+      "passed": 14,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 0
+    },
+    {
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 0
+    }
+  ],
+  "total_passed": 23,
+  "toolchain": "1.96.0",
+  "profile": "dev-small",
+  "command": "cargo test --manifest-path services/hepta-session-host/Cargo.toml --locked --all-targets --profile dev-small --jobs 1 -- --test-threads=1",
+  "artifact": {
+    "id": 13245985707,
+    "size_in_bytes": 850348490,
+    "sha256": "e072c2deac0a8d78cdf41907d7885ada54a8f1141c16b2afc1c11e86f1e5f514",
+    "expires_at": "2027-02-01T15:18:59Z",
+    "downloaded_here": false
+  },
+  "scope": "Real original-writer/Unix-socket and host component tests; no installed production Root, interactive Notes effect, native guest or mobile qualification."
+}

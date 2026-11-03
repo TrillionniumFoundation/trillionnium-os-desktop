@@ -1,0 +1,60 @@
+{
+  "desktop_commit": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+  "desktop_tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27",
+  "hepta_commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "scope": "Original Python contracts on real Linux; no authority initialization, model call or product effect",
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "/home/qian-qi/work/trill-organ-owner-20261103/python-tests-fd/ui-contracts.log",
+      "sha256": "60cd6b61319efee3a4c5521d61caed834c8a1d48aa5f762d99df3de486c3d243"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui/product",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "/home/qian-qi/work/trill-organ-owner-20261103/python-tests-fd/product-contracts.log",
+      "sha256": "309d02e6b1e9cf47e9a64ccd8b18d6ca80144aa4f2e07cc82ab83c66205b9d0d"
+    },
+    {
+      "command": [
+        "sudo",
+        "-n",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "test_native_human.ProtectedFileTests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "/home/qian-qi/work/trill-organ-owner-20261103/python-tests-fd/root-file-contracts.log",
+      "sha256": "48bfaf2a96528e85d9e080a534eb3b814af3508df92f9d41e3867f149081ba9b"
+    }
+  ]
+}

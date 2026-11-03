@@ -4,6 +4,14 @@ This is a fixed single-CPU qualification policy. Ordinary builds do not acquire
 this capability. It does not qualify a physical memory reserve, trusted user
 pause intent, SMP, production devices or durable Hepta delivery.
 
+The [dedicated CI workflow](../../.github/workflows/g1d-watchdog.yml) now invokes
+the original complete six-boot runner and its unchanged parser tests. It binds
+the actual checked-out head/tree, retains source/kernel/raw serial even on
+failure, and leaves all unsupported qualification flags false. Adding this
+workflow is not execution evidence; its actual run must pass before updating
+the source-bound status. It is separate from the G1-d management workflow and
+does not replace that workflow's failed gate.
+
 ## Ownership and authority
 
 The sealed, stopped bootstrap registers one original OSTD hardware-timer

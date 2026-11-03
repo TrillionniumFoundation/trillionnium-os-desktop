@@ -1,8 +1,15 @@
 # Physical reserve in the original frame allocator
 
-Status: implemented candidate; native allocator tests have not yet run. This
-slice has `global_recovery_guarantee=false`. It does not close the full F04
-recovery blocker or authorize a production recovery image.
+Current execution update (2026-11-03): the original complete allocator suite
+passed **20/20** on Desktop `e1f3898ff6c2181a6da27de9f9b0f5d1ec03123d`, with
+raw QEMU exit 33, no filtering and no soft skips. Its actual exhaustion receipt
+holds 127093 ordinary frames, keeps the withdrawn 64-page reserve usable, and
+returns it to the original allocator. See the
+[source-bound four-crate receipt](../../results/integration/2026-11-03-organ-convergence/kernel-ci/00-result.json)
+and [execution scope](../../results/integration/2026-11-03-organ-convergence/README.md).
+`global_recovery_guarantee=false` remains unchanged. This does not close the
+full F04 recovery blocker or authorize a production recovery image. Later
+paragraphs retain the original implementation-stage pending/failed history.
 
 ## Owner and authority
 

@@ -1,0 +1,44 @@
+warning: patch `anymap2 v0.13.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+warning: patch `crossterm v0.29.0 (https://github.com/openai-oss-forks/crossterm?rev=45fecb9508105988f42fe6ff0441783ed3717f92#45fecb95)` was not used in the crate graph
+warning: patch `imbl v6.1.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+warning: patch `matrix-sdk-crypto v0.18.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+warning: patch `matrix-sdk-sqlite v0.18.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling hepta-session-host v0.1.0 (/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/services/hepta-session-host)
+    Finished `test` profile [unoptimized] target(s) in 8.23s
+     Running unittests src/bin/hepta-desktop-root.rs (/home/runner/work/_temp/hepta-native-ui/target/debug/deps/hepta_desktop_root-68792ef649fc87d7)
+
+running 27 tests
+test product_root::admin_client::grants::tests::finite_grant_selectors_refuse_ambiguity_and_duplicate_flags ... ok
+test product_root::admin_client::grants::tests::partial_or_unconfirmed_original_revoke_never_reports_success ... ok
+test product_root::admin_client::grants::tests::export_shape_preserves_exact_bytes_and_refuses_digest_or_schema_changes ... ok
+test product_root::admin_client::tests::finite_admin_cli_rejects_duplicates_missing_versions_and_reasons ... ok
+test product_root::admin_client::tests::cumulative_deadline_does_not_restart_for_a_ready_frame_or_connect ... ok
+test product_root::admin_client::tests::actual_process_cannot_match_descriptor_with_wrong_boot_or_birth ... ok
+test product_root::admin_client::tests::original_admin_descriptor_refuses_unknown_and_duplicate_fields ... ok
+test product_root::admin_client::tests::real_admin_frame_rejects_oversize_before_body_and_preserves_exact_bytes ... ok
+test product_root::packet::tests::metadata_peek_keeps_exact_original_packet_and_kernel_credential ... ok
+test product_root::recovery::tests::live_original_session_is_refused_and_actual_exit_can_be_observed ... ignored, actual Root same-boot process-retirement qualification
+test product_root::packet::tests::rejected_unexpected_rights_are_actually_closed ... ok
+test product_root::recovery::tests::recorded_session_lifetime_is_correlated_and_never_an_exit_claim ... ok
+test product_root::packet::tests::wrong_actual_sender_and_truncated_metadata_are_rejected ... ok
+test product_root::recovery::tests::writer_window_stops_before_the_original_issuer_without_renewal ... ok
+test product_root::recovery::tests::recovery_selector_is_explicit_exclusive_and_preserves_the_exact_old_id ... ok
+test product_root::recovery_preparation::tests::actual_exclusive_lock_blocks_another_invocation_until_owner_drop ... ok
+test product_root::recovery_preparation::tests::lock_custody_rejects_shared_writes_aliases_and_nonempty_state ... ok
+test product_root::recovery_preparation::tests::incomplete_stage_order_cannot_consume_a_spawn ... ok
+test product_root::recovery_preparation::tests::interrupted_pre_spawn_preparation_reopens_exact_identity_without_rewriting ... ok
+test product_root::recovery_sockets::tests::live_foreign_or_rebound_socket_is_not_removed_but_exact_stale_socket_retires ... ignored, actual Root path-custody qualification
+test product_root::supervisor::tests::changed_original_command_consumes_the_arm_before_any_child_can_start ... ok
+test product_root::supervisor::tests::duplicate_inherited_slot_is_rejected_without_leaving_a_transferable_alias ... ok
+test product_root::supervisor::tests::historical_recovery_cannot_spawn_or_reuse_a_new_descriptor_episode ... ok
+test product_root::supervisor::tests::partial_inheritance_failure_restores_the_first_original_cloexec_bit ... ok
+test product_root::recovery_preparation::tests::malformed_oversized_and_aliased_admission_remain_rejected_and_intact ... ok
+test product_root::recovery_preparation::tests::possible_legacy_or_partial_spawn_never_rearms_preparation ... ok
+test product_root::packet::tests::metadata_wait_uses_only_the_remaining_original_episode ... ok
+
+test result: ok. 25 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.25s
+

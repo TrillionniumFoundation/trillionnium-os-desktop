@@ -1,0 +1,187 @@
+{
+  "binary_sha256": {
+    "agentd": "1910a326d09499de014dab6ad18bdb305eb891d61ec0f2a0de1900a781a43dbe",
+    "fixture": "347732d7a437766392719f7f019a71a26f0d1f374bda540b0a66c88124c26bc5",
+    "kernel": "be188450f0c67b5085a7d6c6a42d6dc959c39c83969bca2b5a2c2b8389ba923b",
+    "observer": "0aedf64bd6b89d107c319abc6271e338e2dbbbef156d9099913cb2bc3e8ba257"
+  },
+  "built": true,
+  "cargo_targets": {
+    "cache_reused": false,
+    "cold_build_claimed": false,
+    "lease_policy": "private-new-output",
+    "mode": "new-output-targets",
+    "targets": {
+      "observer": {
+        "exclusive_lease_acquired": false,
+        "path": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/observer-target"
+      },
+      "original": {
+        "exclusive_lease_acquired": false,
+        "path": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/original-target"
+      }
+    }
+  },
+  "dependency_artifacts": {
+    "frozen": {},
+    "mode": "original-build-default",
+    "runtime_executed": false,
+    "supplied": {}
+  },
+  "finished_at_utc": "2026-11-03T15:44:03.227695+00:00",
+  "input_manifest_sha256": "24b788407fa26dcc0f2634b686d5321d6a01df8a95728a0998e53c640702234e",
+  "output_created": true,
+  "preflight_passed": true,
+  "runtime_executed": false,
+  "schema": "hepta.native-original-runtime-preparation.v1",
+  "sources": {
+    "desktop": {
+      "head": "e1f3898ff6c2181a6da27de9f9b0f5d1ec03123d",
+      "tree": "31f8eb04759aafd49a51084ce7ecb425b2d1f097"
+    },
+    "hepta": {
+      "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+    }
+  },
+  "started_at_utc": "2026-11-03T15:24:04.086642+00:00",
+  "steps": [
+    {
+      "argv": [
+        "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "fetch",
+        "--locked",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "--manifest-path",
+        "/home/runner/work/_temp/f1-native-41662601267-1/desktop-source/services/hepta-os/Cargo.toml"
+      ],
+      "cargo_target_dir": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/observer-target",
+      "command_timeout_seconds": 3600,
+      "cwd": "/home/runner/work/_temp/f1-native-41662601267-1/desktop-source",
+      "name": "fetch-observer",
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "fetch",
+        "--locked",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "--manifest-path",
+        "/home/runner/work/_temp/f1-native-41662601267-1/hepta-source/codex-rs/Cargo.toml"
+      ],
+      "cargo_target_dir": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/original-target",
+      "command_timeout_seconds": 3600,
+      "cwd": "/home/runner/work/_temp/f1-native-41662601267-1/hepta-source/codex-rs",
+      "name": "fetch-agentd",
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/home/runner/work/_temp/f1-native-41662601267-1/desktop-source/services/hepta-os/Cargo.toml",
+        "--bin",
+        "hepta-observe"
+      ],
+      "cargo_target_dir": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/observer-target",
+      "command_timeout_seconds": 3600,
+      "cwd": "/home/runner/work/_temp/f1-native-41662601267-1/desktop-source",
+      "name": "observer",
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--no-default-features",
+        "-p",
+        "codex-hepta-agentd",
+        "--bin",
+        "codex-hepta-agentd",
+        "-j1"
+      ],
+      "cargo_target_dir": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/original-target",
+      "command_timeout_seconds": 3600,
+      "cwd": "/home/runner/work/_temp/f1-native-41662601267-1/hepta-source/codex-rs",
+      "name": "agentd",
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--offline",
+        "--filter-platform",
+        "x86_64-unknown-linux-gnu",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/fixture-build/Cargo.toml"
+      ],
+      "cargo_target_dir": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/original-target",
+      "command_timeout_seconds": 3600,
+      "cwd": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/fixture-build",
+      "name": "fixture-resolution",
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--filter-platform",
+        "x86_64-unknown-linux-gnu",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/fixture-build/Cargo.toml"
+      ],
+      "cargo_target_dir": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/original-target",
+      "command_timeout_seconds": 3600,
+      "cwd": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/fixture-build",
+      "name": "fixture-locked-metadata",
+      "status": "passed"
+    },
+    {
+      "argv": [
+        "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--manifest-path",
+        "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/fixture-build/Cargo.toml",
+        "-j1"
+      ],
+      "cargo_target_dir": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/original-target",
+      "command_timeout_seconds": 3600,
+      "cwd": "/home/runner/work/_temp/f1-native-41662601267-1/frozen-inputs/fixture-build",
+      "name": "fixture",
+      "status": "passed"
+    }
+  ],
+  "toolchains": {
+    "cargo": {
+      "path": "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "f30f9fd1b1d0b8fd10dc33219eb4cd4bec3543f40e434ac71f5a03fd0359063f",
+      "version": "cargo 1.96.0 (30a34c682 2026-05-25)"
+    },
+    "rustc": {
+      "path": "/home/runner/work/_temp/f1-native-41662601267-1/rustup-home/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "ba4b837efb6612dfa8d941c5a72b8a50d1d03a0f36216743b173949aa8d9eb75",
+      "version": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+    }
+  }
+}
