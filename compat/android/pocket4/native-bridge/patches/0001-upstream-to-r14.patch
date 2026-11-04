@@ -1,0 +1,2065 @@
+diff --git a/Android.bp b/Android.bp
+index e08ee89..257995a 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -435,6 +435,7 @@ cc_test_host {
+                 "libberberis_lite_translator_arm64_to_x86_64",
+                 "libberberis_lite_translator_arm64_to_x86_64_unit_tests",
+                 "libberberis_kernel_api_arm64_unit_tests",
++                "libberberis_kernel_api_arm64_cpuinfo_unit_tests",
+                 "libberberis_guest_os_primitives_arm64_unit_tests",
+                 "libberberis_jni_table_unit_tests",
+                 "libberberis_digitalis_extra_proxy_arm64_unit_tests",
+diff --git a/decoder/include/berberis/decoder/arm64/decoder.h b/decoder/include/berberis/decoder/arm64/decoder.h
+index 2d6a887..2ac547c 100644
+--- a/decoder/include/berberis/decoder/arm64/decoder.h
++++ b/decoder/include/berberis/decoder/arm64/decoder.h
+@@ -503,6 +503,11 @@ class Decoder {
+     // expected fast paths instead of the SIGILL-handler-driven probe
+     // fallbacks that can spin in detection loops.
+     kMidrEl1 = SysRegEncoding(3, 0, 0, 0, 0),  // MIDR_EL1
++    // Linux userspace CPU feature query, emulated for the translated ISA.
++    kIdAa64Pfr0El1 = SysRegEncoding(3, 0, 0, 4, 0),  // ID_AA64PFR0_EL1
++    kIdAa64Pfr1El1 = SysRegEncoding(3, 0, 0, 4, 1),  // ID_AA64PFR1_EL1
++    kIdAa64Isar0El1 = SysRegEncoding(3, 0, 0, 6, 0),  // ID_AA64ISAR0_EL1
++    kIdAa64Isar1El1 = SysRegEncoding(3, 0, 0, 6, 1),  // ID_AA64ISAR1_EL1
+     // RNDR / RNDRRS (FEAT_RNG). Read by getentropy/ASLR seeding; the interpreter
+     // wires these to a host RNG and reports success (NZCV cleared), rather than
+     // faulting.
+diff --git a/guest_os_primitives/Android.bp b/guest_os_primitives/Android.bp
+index 5cc2491..03861c4 100644
+--- a/guest_os_primitives/Android.bp
++++ b/guest_os_primitives/Android.bp
+@@ -254,7 +254,10 @@ cc_test_library {
+     srcs: [
+         "arm64/guest_signal_action_dual_abi_test.cc",
+         "arm64/breakpoint_ptrace_test.cc",
++        "arm64/undefined_signal_test.cc",
++        "arm64/undefined_signal_transport_test.cc",
+         "arm64/ucontext_layout_test.cc",
++        "guest_stack_test.cc",
+     ],
+     local_include_dirs: [
+         ".",
+@@ -275,6 +278,7 @@ cc_test_library {
+         "libberberis_guest_state_headers",
+         "libberberis_guest_state_arm64_headers",
+         "libberberis_kernel_api_headers",
++        "libberberis_interpreter_arm64_headers",
+         "libberberis_runtime_headers",
+         "libberberis_runtime_primitives_headers",
+     ],
+@@ -286,6 +290,7 @@ filegroup {
+     srcs: [
+         "guest_map_shadow_test.cc",
+         "guest_signal_action_test.cc",
++        "guest_stack_test.cc",
+         "guest_thread_test.cc",
+     ],
+ }
+diff --git a/guest_os_primitives/arm64/guest_context_arch.h b/guest_os_primitives/arm64/guest_context_arch.h
+index 504fdb7..6d53184 100644
+--- a/guest_os_primitives/arm64/guest_context_arch.h
++++ b/guest_os_primitives/arm64/guest_context_arch.h
+@@ -46,7 +46,7 @@ class GuestContext {
+     memcpy(ctx_.uc_mcontext.regs, cpu->x, sizeof(ctx_.uc_mcontext.regs));
+     ctx_.uc_mcontext.sp = cpu->sp;
+     ctx_.uc_mcontext.pc = cpu->insn_addr;
+-    ctx_.uc_mcontext.pstate = cpu->flags;
++    ctx_.uc_mcontext.pstate = GuestPstate(cpu->flags);
+ 
+     // Per the Linux arm64 ABI, FPSIMD state is delivered to the guest signal
+     // handler as a chained _aarch64_ctx block at the start of
+@@ -80,7 +80,10 @@ class GuestContext {
+     memcpy(cpu->x, ctx_.uc_mcontext.regs, sizeof(ctx_.uc_mcontext.regs));
+     cpu->sp = ctx_.uc_mcontext.sp;
+     cpu->insn_addr = ctx_.uc_mcontext.pc;
+-    cpu->flags = static_cast<uint16_t>(ctx_.uc_mcontext.pstate);
++    // CPUState keeps NZCV in a host layout. Only architectural NZCV is
++    // writable here; keep the saved non-NZCV host bookkeeping unchanged.
++    cpu->flags = static_cast<uint16_t>((cpu->flags & ~kFlagsNZCVMask) |
++                                       HostFlags(ctx_.uc_mcontext.pstate));
+ 
+     // Restore FPSIMD from the chained block at the start of __reserved.
+     // If the guest handler clobbered or unchained the FPSIMD context, the
+@@ -98,6 +101,23 @@ class GuestContext {
+   void* ptr() { return &ctx_; }
+ 
+  private:
++  // Linux arm64 signal frames use architectural PSTATE.NZCV at bits 31:28,
++  // not CPUState::flags' host LAHF/SETO layout. Other PSTATE fields are not
++  // represented by CPUState::flags and must not leak host bits or be restored.
++  static uint64_t GuestPstate(uint16_t flags) {
++    return ((flags & CPUState::kFlagNegative) ? uint64_t{1} << 31 : 0) |
++           ((flags & CPUState::kFlagZero) ? uint64_t{1} << 30 : 0) |
++           ((flags & CPUState::kFlagCarry) ? uint64_t{1} << 29 : 0) |
++           ((flags & CPUState::kFlagOverflow) ? uint64_t{1} << 28 : 0);
++  }
++
++  static uint16_t HostFlags(uint64_t pstate) {
++    return ((pstate & (uint64_t{1} << 31)) ? CPUState::kFlagNegative : 0) |
++           ((pstate & (uint64_t{1} << 30)) ? CPUState::kFlagZero : 0) |
++           ((pstate & (uint64_t{1} << 29)) ? CPUState::kFlagCarry : 0) |
++           ((pstate & (uint64_t{1} << 28)) ? CPUState::kFlagOverflow : 0);
++  }
++
+   static constexpr uint32_t FPSIMD_MAGIC = 0x46508001;
+ 
+   // See bionic/libc/kernel/uapi/asm-arm64/asm/sigcontext.h
+diff --git a/guest_os_primitives/arm64/ucontext_layout_test.cc b/guest_os_primitives/arm64/ucontext_layout_test.cc
+index bfe6345..6150a14 100644
+--- a/guest_os_primitives/arm64/ucontext_layout_test.cc
++++ b/guest_os_primitives/arm64/ucontext_layout_test.cc
+@@ -111,8 +111,12 @@ TEST(UContextLayout, SigcontextOffsetsMatchBionic) {
+   }
+   EXPECT_EQ(ReadAt<uint64_t>(mctx, kSpOff), 0xBB00BB00BB00BB00ULL);
+   EXPECT_EQ(ReadAt<uint64_t>(mctx, kPcOff), 0xCC00CC00CC00CC00ULL);
+-  // pstate is uint64; CPUState::flags is uint16, zero-extended at the boundary.
+-  EXPECT_EQ(ReadAt<uint64_t>(mctx, kPstateOff), 0xABCDULL);
++  // CPUState::flags 0xABCD has N(0x8000), C(0x0100), V(0x0001), not
++  // Z(0x4000). The architectural signal PSTATE is N/C/V at bits 31/29/28;
++  // other host bookkeeping bits must not leak into the guest ABI.
++  static_assert((0xABCDU & kFlagsNZCVMask) ==
++                (CPUState::kFlagNegative | CPUState::kFlagCarry | CPUState::kFlagOverflow));
++  EXPECT_EQ(ReadAt<uint64_t>(mctx, kPstateOff), 0xB0000000ULL);
+ }
+ 
+ TEST(UContextLayout, FpsimdEmbeddedInReservedWithBionicMagic) {
+diff --git a/guest_os_primitives/arm64/undefined_signal_test.cc b/guest_os_primitives/arm64/undefined_signal_test.cc
+new file mode 100644
+index 0000000..621f833
+--- /dev/null
++++ b/guest_os_primitives/arm64/undefined_signal_test.cc
+@@ -0,0 +1,728 @@
++// Copyright 2026 The Droidloom Authors
++// SPDX-License-Identifier: Apache-2.0
++
++#include "gtest/gtest.h"
++
++#include "guest_context_arch.h"
++
++#include <pthread.h>
++#include <signal.h>
++#include <sys/mman.h>
++#include <sys/prctl.h>
++#include <sys/resource.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++#include <array>
++#include <cerrno>
++#include <cstddef>
++#include <cstdint>
++#include <cstring>
++#include <new>
++#include <vector>
++
++#include "berberis/guest_os_primitives/gen_syscall_numbers_arch.h"
++#include "berberis/guest_os_primitives/guest_map_shadow.h"
++#include "berberis/guest_os_primitives/guest_signal.h"
++#include "berberis/guest_os_primitives/guest_signal_arch.h"
++#include "berberis/guest_os_primitives/guest_thread_manager.h"
++#include "berberis/guest_state/guest_addr.h"
++#include "berberis/guest_state/guest_state.h"
++#include "berberis/interpreter/arm64/interpreter.h"
++#include "berberis/runtime/berberis.h"
++#include "berberis/runtime/execute_guest.h"
++#include "berberis/runtime_primitives/signal_queue.h"
++#include "berberis/runtime_primitives/translation_cache.h"
++
++namespace berberis {
++namespace {
++
++TEST(SignalQueue, SynchronousFaultPrecedesOrdinaryPriorityAndReusedNodeDoesNotKeepIt) {
++  SignalQueue q;
++  siginfo_t* ordinary = q.AllocSignal();
++  ordinary->si_signo = SIGINT;
++  q.EnqueueSignal(ordinary);
++  siginfo_t* fault = q.AllocSignal();
++  fault->si_signo = SIGILL;
++  q.EnqueueSynchronousSignal(fault);
++  EXPECT_EQ(q.DequeueSignalUnsafe(), fault);
++  EXPECT_EQ(q.DequeueSignalUnsafe(), ordinary);
++  q.FreeSignal(ordinary);
++  q.FreeSignal(fault);
++
++  siginfo_t* reused = q.AllocSignal();
++  reused->si_signo = SIGILL;
++  q.EnqueueSignal(reused);
++  siginfo_t* lower = q.AllocSignal();
++  lower->si_signo = SIGINT;
++  q.EnqueueSignal(lower);
++  EXPECT_EQ(q.DequeueSignalUnsafe(), lower);
++  EXPECT_EQ(q.DequeueSignalUnsafe(), reused);
++  EXPECT_EQ(q.DequeueSignalUnsafe(), nullptr);
++  q.FreeSignal(lower);
++  q.FreeSignal(reused);
++}
++
++constexpr uint32_t kInvalid = 0x337aabe9U;
++constexpr uint64_t SignalBit(int signal) { return uint64_t{1} << (signal - 1); }
++
++// These are real ARM64 instructions, not host callbacks standing in for a
++// guest handler. The syscall number is the actual guest-architecture constant.
++constexpr uint32_t MovX(unsigned rd, unsigned rm) {
++  return 0xaa0003e0U | (rm << 16) | rd;
++}
++constexpr uint32_t MovZ(unsigned rd, unsigned value) {
++  return 0xd2800000U | (value << 5) | rd;
++}
++constexpr uint32_t AddX(unsigned rd, unsigned rn, unsigned value) {
++  return 0x91000000U | (value << 10) | (rn << 5) | rd;
++}
++constexpr uint32_t LdrX(unsigned rt, unsigned rn, unsigned offset) {
++  return 0xf9400000U | ((offset / 8) << 10) | (rn << 5) | rt;
++}
++constexpr uint32_t StrX(unsigned rt, unsigned rn, unsigned offset) {
++  return 0xf9000000U | ((offset / 8) << 10) | (rn << 5) | rt;
++}
++constexpr uint32_t LdpX(unsigned rt, unsigned rt2, unsigned rn, unsigned offset) {
++  return 0xa9400000U | ((offset / 8) << 15) | (rt2 << 10) | (rn << 5) | rt;
++}
++constexpr uint32_t StpX(unsigned rt, unsigned rt2, unsigned rn, unsigned offset) {
++  return 0xa9000000U | ((offset / 8) << 15) | (rt2 << 10) | (rn << 5) | rt;
++}
++constexpr uint32_t CmpXOne(unsigned rn) { return 0xf100041fU | (rn << 5); }
++constexpr uint32_t BranchCond(unsigned distance_in_words, unsigned condition) {
++  return 0x54000000U | (distance_in_words << 5) | condition;
++}
++static_assert(LdpX(3, 4, 1, 0) == 0xa9401023U);
++static_assert(StpX(3, 4, 19, 0) == 0xa9001263U);
++static_assert(LdrX(3, 2, 440) == 0xf940dc43U);
++static_assert(AddX(3, 3, 4) == 0x91001063U);
++static_assert(GUEST_NR_rt_sigprocmask == 135);
++static_assert(MovZ(8, GUEST_NR_rt_sigprocmask) == 0xd28010e8U);
++
++struct alignas(16) SignalRecord {
++  siginfo_t info;
++  uint64_t pc;
++  uint64_t mask;
++  uint64_t mask_syscall_result;
++  uint64_t reserved;
++};
++static_assert(sizeof(siginfo_t) == 128);
++static_assert(sizeof(SignalRecord) == 160);
++static_assert(offsetof(SignalRecord, pc) == 128);
++static_assert(offsetof(SignalRecord, mask) == 136);
++static_assert(offsetof(SignalRecord, mask_syscall_result) == 144);
++
++// Shared only between the test process and its freshly forked child. It proves
++// the first guest handler ran even when a nested fault must terminate the child.
++struct alignas(16) Capture {
++  SignalRecord records[2];
++  uint64_t count;
++  uint64_t fault_pc;
++  uint64_t nested_fault_pc;
++  uint64_t stop_pc;
++  uint64_t final_pc;
++  uint64_t initial_sp;
++  uint64_t final_sp;
++  uint64_t initial_flags;
++  uint64_t final_flags;
++  uint64_t host_mask_before;
++  uint64_t host_mask_after;
++  uint64_t pending_count;
++  uint64_t pending_saw_sync_count;
++  uint64_t pending_redirect_pc;
++  std::array<uint64_t, 31> initial_gprs;
++  std::array<uint64_t, 31> final_gprs;
++};
++static_assert(offsetof(Capture, count) == 320);
++
++class SharedCapture {
++ public:
++  SharedCapture() {
++    void* memory = mmap(nullptr, sizeof(Capture), PROT_READ | PROT_WRITE,
++                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
++    if (memory != MAP_FAILED) capture_ = new (memory) Capture{};
++  }
++  ~SharedCapture() { if (capture_) munmap(capture_, sizeof(Capture)); }
++  Capture* get() const { return capture_; }
++ private:
++  Capture* capture_ = nullptr;
++};
++
++std::vector<uint32_t> MakeHandler(bool nested, bool advance_pc, size_t* nested_index) {
++  std::vector<uint32_t> words {
++      LdrX(3, 19, offsetof(Capture, count)),
++      AddX(3, 3, 1),
++      StrX(3, 19, offsetof(Capture, count)),
++      MovX(22, 3),  // Remember this invocation number across a nested handler.
++      MovX(21, 19),
++      CmpXOne(3),
++      BranchCond(2, 0),  // b.eq first_record (skip the next add).
++      AddX(21, 21, sizeof(SignalRecord)),
++  };
++  for (unsigned offset = 0; offset != sizeof(siginfo_t); offset += 16) {
++    words.push_back(LdpX(3, 4, 1, offset));
++    words.push_back(StpX(3, 4, 21, offset));
++  }
++  words.insert(words.end(), {
++      LdrX(3, 2, 440),  // Linux ARM64 ucontext.uc_mcontext.pc.
++      StrX(3, 21, offsetof(SignalRecord, pc)),
++      MovX(20, 2),      // Keep the ucontext pointer while making a real syscall.
++      MovZ(0, SIG_BLOCK),
++      MovX(1, 31),      // set=nullptr: query only.
++      AddX(2, 21, offsetof(SignalRecord, mask)),
++      MovZ(3, sizeof(Guest_sigset_t)),
++      MovZ(8, GUEST_NR_rt_sigprocmask),
++      0xd4000001U,      // svc #0, through the real guest syscall implementation.
++      StrX(0, 21, offsetof(SignalRecord, mask_syscall_result)),
++  });
++  if (nested) {
++    words.push_back(CmpXOne(22));
++    words.push_back(BranchCond(2, 1));  // b.ne after_invalid.
++    *nested_index = words.size();
++    words.push_back(kInvalid);
++  }
++  if (advance_pc) {
++    words.insert(words.end(), {
++        LdrX(3, 20, 440),
++        AddX(3, 3, 4),
++        StrX(3, 20, 440),  // Only the guest handler authorizes resumption.
++    });
++  }
++  words.push_back(0xd65f03c0U);  // ret
++  return words;
++}
++
++uint64_t HostMask() {
++  sigset_t current {};
++  EXPECT_EQ(pthread_sigmask(SIG_SETMASK, nullptr, &current), 0);
++  uint64_t result = 0;
++  memcpy(&result, &current, sizeof(result));
++  return result;
++}
++
++bool SetAction(int signal, GuestAddr handler, unsigned long flags, uint64_t mask = 0) {
++  Guest_sigaction action {};
++  action.guest_sa_sigaction = handler;
++  action.sa_flags = flags;
++  action.sa_mask.__bits[0] = mask;
++  int error = 0;
++  bool result = SetGuestSignalHandler(signal, &action, nullptr, &error);
++  EXPECT_EQ(error, 0);
++  return result;
++}
++
++enum class Mode {
++  kHandler,
++  kNoPcEdit,
++  kDefault,
++  kIgnored,
++  kBlockedCustom,
++  kNestedMasked,
++  kNestedNodefer,
++  kPendingLower,
++};
++
++void RunGuestFixture(Capture* capture, Mode mode, bool nodefer) {
++  InitBerberis();
++  GuestThread* thread = GetCurrentGuestThread();
++  ASSERT_NE(thread, nullptr);
++  auto& cpu = thread->state()->cpu;
++  alignas(16) uint8_t stack[65536];
++  alignas(4) const uint32_t code[] = {kInvalid, 0x14000001U};  // invalid; b stop.
++  bool nested = mode == Mode::kNestedMasked || mode == Mode::kNestedNodefer;
++  size_t nested_index = 0;
++  auto handler = MakeHandler(nested, mode != Mode::kNoPcEdit, &nested_index);
++  auto* shadow = GuestMapShadow::GetInstance();
++  shadow->SetExecutable(ToGuestAddr(code), sizeof(code));
++  shadow->SetExecutable(ToGuestAddr(handler.data()), handler.size() * sizeof(uint32_t));
++  InvalidateGuestRange(ToGuestAddr(code), ToGuestAddr(code) + sizeof(code));
++  InvalidateGuestRange(ToGuestAddr(handler.data()),
++                       ToGuestAddr(handler.data()) + handler.size() * sizeof(uint32_t));
++  capture->fault_pc = ToGuestAddr(code);
++  capture->nested_fault_pc = nested ? ToGuestAddr(handler.data() + nested_index) : 0;
++  capture->stop_pc = ToGuestAddr(code + 2);
++  capture->pending_redirect_pc = capture->stop_pc;
++  TranslationCache::GetInstance()->SetStop(capture->stop_pc);
++
++  // A controlled child-only mask: the caller's signal environment is untouched.
++  sigset_t initial_mask {};
++  sigemptyset(&initial_mask);
++  sigaddset(&initial_mask, SIGUSR2);
++  ASSERT_EQ(pthread_sigmask(SIG_SETMASK, &initial_mask, nullptr), 0);
++  capture->host_mask_before = HostMask();
++  ASSERT_TRUE(SetAction(SIGILL, Guest_SIG_DFL, 0));
++  if (mode == Mode::kIgnored) {
++    ASSERT_TRUE(SetAction(SIGILL, Guest_SIG_IGN, 0));
++  } else if (mode != Mode::kDefault) {
++    unsigned long flags = SA_SIGINFO;
++    if (nodefer || mode == Mode::kNestedNodefer) flags |= SA_NODEFER;
++    ASSERT_TRUE(SetAction(SIGILL, ToGuestAddr(handler.data()), flags, SignalBit(SIGUSR1)));
++  }
++  if (mode == Mode::kBlockedCustom) {
++    sigset_t block {};
++    sigemptyset(&block);
++    sigaddset(&block, SIGILL);
++    ASSERT_EQ(pthread_sigmask(SIG_BLOCK, &block, nullptr), 0);
++  }
++
++  for (unsigned i = 0; i != 31; ++i) cpu.x[i] = 0x1234567800000000ULL + i;
++  cpu.x[19] = ToGuestAddr(capture);
++  cpu.sp = ToGuestAddr(stack + sizeof(stack));
++  cpu.flags = CPUState::kFlagNegative | CPUState::kFlagCarry;
++  cpu.insn_addr = capture->fault_pc;
++  memcpy(capture->initial_gprs.data(), cpu.x, sizeof(cpu.x));
++  capture->initial_sp = cpu.sp;
++  capture->initial_flags = cpu.flags;
++  thread->TestAndEnablePendingSignals();
++
++  // A lower-numbered already-pending signal must not replace the precise fault
++  // context before the synchronous handler sees it. InterpretInsn deliberately
++  // enters one real Decoder/SemanticsPlayer/Interpreter instruction without the
++  // outer ExecuteGuest pending check; all other resumable cases use ExecuteGuest.
++  std::vector<uint32_t> pending_handler;
++  if (mode == Mode::kPendingLower) {
++    pending_handler = {
++        LdrX(3, 19, offsetof(Capture, count)),
++        StrX(3, 19, offsetof(Capture, pending_saw_sync_count)),
++        MovZ(3, 1),
++        StrX(3, 19, offsetof(Capture, pending_count)),
++        LdrX(3, 19, offsetof(Capture, pending_redirect_pc)),
++        StrX(3, 2, 440),  // This separate guest handler deliberately edits PC.
++        0xd65f03c0U,
++    };
++    shadow->SetExecutable(ToGuestAddr(pending_handler.data()),
++                          pending_handler.size() * sizeof(uint32_t));
++    InvalidateGuestRange(ToGuestAddr(pending_handler.data()),
++                         ToGuestAddr(pending_handler.data()) +
++                             pending_handler.size() * sizeof(uint32_t));
++    ASSERT_TRUE(SetAction(SIGINT, ToGuestAddr(pending_handler.data()), SA_SIGINFO));
++    siginfo_t info {};
++    info.si_signo = SIGINT;
++    info.si_code = SI_QUEUE;
++    info.si_pid = getpid();
++    info.si_uid = getuid();
++    info.si_value.sival_ptr = reinterpret_cast<void*>(0x12345678);
++    thread->SetSignalFromHost(info);
++    InterpretInsn(thread->state());
++    if (ArePendingSignalsPresent(*thread->state())) thread->ProcessPendingSignals();
++  } else if (mode == Mode::kNoPcEdit) {
++    InterpretInsn(thread->state());
++  } else {
++    ExecuteGuest(thread->state());
++  }
++  capture->final_pc = cpu.insn_addr;
++  capture->final_sp = cpu.sp;
++  capture->final_flags = cpu.flags;
++  memcpy(capture->final_gprs.data(), cpu.x, sizeof(cpu.x));
++  capture->host_mask_after = HostMask();
++}
++
++int RunOwnedChild(Capture* capture, Mode mode, bool nodefer = false) {
++  pid_t child = fork();
++  if (child < 0) {
++    ADD_FAILURE() << "fork failed: " << errno;
++    return -1;
++  }
++  if (child == 0) {
++    prctl(PR_SET_PDEATHSIG, SIGKILL);
++    rlimit core {0, 0};
++    setrlimit(RLIMIT_CORE, &core);
++    struct sigaction deadline {};
++    deadline.sa_handler = SIG_DFL;
++    sigaction(SIGALRM, &deadline, nullptr);
++    sigset_t deadline_mask {};
++    sigemptyset(&deadline_mask);
++    sigaddset(&deadline_mask, SIGALRM);
++    pthread_sigmask(SIG_UNBLOCK, &deadline_mask, nullptr);
++    alarm(10);
++    RunGuestFixture(capture, mode, nodefer);
++    _exit(testing::Test::HasFailure() ? 1 : 0);
++  }
++  int status = -1;
++  pid_t waited;
++  do { waited = waitpid(child, &status, 0); } while (waited < 0 && errno == EINTR);
++  if (waited != child) {
++    ADD_FAILURE() << "waitpid for owned child failed: " << errno;
++    return -1;
++  }
++  return status;
++}
++
++void ExpectArchitecturalInfo(const SignalRecord& record, uint64_t pc) {
++  siginfo_t expected {};
++  expected.si_signo = SIGILL;
++  expected.si_code = ILL_ILLOPC;
++  expected.si_errno = 0;
++  expected.si_addr = reinterpret_cast<void*>(pc);
++  EXPECT_EQ(record.info.si_signo, SIGILL);
++  EXPECT_EQ(record.info.si_code, ILL_ILLOPC);
++  EXPECT_EQ(record.info.si_errno, 0);
++  EXPECT_EQ(record.info.si_addr, reinterpret_cast<void*>(pc));
++  EXPECT_EQ(record.pc, pc);
++  EXPECT_EQ(memcmp(&record.info, &expected, sizeof(expected)), 0);
++}
++
++void ExpectSuccessfulRegisters(const Capture& capture) {
++  EXPECT_EQ(capture.final_gprs, capture.initial_gprs);
++  EXPECT_EQ(capture.final_sp, capture.initial_sp);
++  EXPECT_EQ(capture.final_flags, capture.initial_flags);
++  EXPECT_EQ(capture.host_mask_after, capture.host_mask_before);
++}
++
++TEST(Arm64UndefinedSignal, GuestHandlerGetsFullArchitecturalRecordAndCanResume) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kHandler);
++  ASSERT_TRUE(WIFEXITED(status)) << status;
++  ASSERT_EQ(WEXITSTATUS(status), 0);
++  const Capture& capture = *shared.get();
++  EXPECT_EQ(capture.count, 1U);
++  ExpectArchitecturalInfo(capture.records[0], capture.fault_pc);
++  EXPECT_EQ(capture.final_pc, capture.stop_pc);
++  ExpectSuccessfulRegisters(capture);
++}
++
++TEST(Arm64UndefinedSignal, HandlerWithoutPcEditLeavesFaultingInstructionCurrent) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kNoPcEdit);
++  ASSERT_TRUE(WIFEXITED(status)) << status;
++  ASSERT_EQ(WEXITSTATUS(status), 0);
++  EXPECT_EQ(shared.get()->count, 1U);
++  ExpectArchitecturalInfo(shared.get()->records[0], shared.get()->fault_pc);
++  EXPECT_EQ(shared.get()->final_pc, shared.get()->fault_pc);
++  ExpectSuccessfulRegisters(*shared.get());
++}
++
++TEST(Arm64UndefinedSignal, DefaultDispositionTerminatesWithSigill) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kDefault);
++  ASSERT_TRUE(WIFSIGNALED(status)) << status;
++  EXPECT_EQ(WTERMSIG(status), SIGILL);
++  EXPECT_EQ(shared.get()->count, 0U);
++}
++
++TEST(Arm64UndefinedSignal, IgnoredDispositionCannotIgnoreSynchronousFault) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kIgnored);
++  ASSERT_TRUE(WIFSIGNALED(status)) << status;
++  EXPECT_EQ(WTERMSIG(status), SIGILL);
++  EXPECT_EQ(shared.get()->count, 0U);
++}
++
++TEST(Arm64UndefinedSignal, BlockedCustomHandlerTakesDefaultSigillAction) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kBlockedCustom);
++  ASSERT_TRUE(WIFSIGNALED(status)) << status;
++  EXPECT_EQ(WTERMSIG(status), SIGILL);
++  EXPECT_EQ(shared.get()->count, 0U);
++}
++
++TEST(Arm64UndefinedSignal, GuestSyscallObservesActionMaskAndNodefer) {
++  for (bool nodefer : {false, true}) {
++    SharedCapture shared;
++    ASSERT_NE(shared.get(), nullptr);
++    int status = RunOwnedChild(shared.get(), Mode::kHandler, nodefer);
++    ASSERT_TRUE(WIFEXITED(status)) << status;
++    ASSERT_EQ(WEXITSTATUS(status), 0);
++    const Capture& capture = *shared.get();
++    EXPECT_EQ(capture.records[0].mask_syscall_result, 0U);
++    uint64_t expected = capture.host_mask_before | SignalBit(SIGUSR1);
++    if (!nodefer) expected |= SignalBit(SIGILL);
++    EXPECT_EQ(capture.records[0].mask, expected);
++    EXPECT_EQ(capture.host_mask_after, capture.host_mask_before);
++  }
++  // This tests actual action/current masks, not the preexisting unsupported
++  // guest ucontext.uc_sigmask edit/return contract.
++}
++
++TEST(Arm64UndefinedSignal, NestedFaultWithoutNodeferTerminatesAfterFirstHandler) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kNestedMasked);
++  ASSERT_TRUE(WIFSIGNALED(status)) << status;
++  EXPECT_EQ(WTERMSIG(status), SIGILL);
++  EXPECT_EQ(shared.get()->count, 1U);
++  ExpectArchitecturalInfo(shared.get()->records[0], shared.get()->fault_pc);
++  EXPECT_NE(shared.get()->records[0].mask & SignalBit(SIGILL), 0U);
++}
++
++TEST(Arm64UndefinedSignal, NodeferAllowsNestedHandlerWithExplicitPcEdits) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kNestedNodefer);
++  ASSERT_TRUE(WIFEXITED(status)) << status;
++  ASSERT_EQ(WEXITSTATUS(status), 0);
++  const Capture& capture = *shared.get();
++  EXPECT_EQ(capture.count, 2U);
++  ExpectArchitecturalInfo(capture.records[0], capture.fault_pc);
++  ExpectArchitecturalInfo(capture.records[1], capture.nested_fault_pc);
++  EXPECT_EQ(capture.records[0].mask_syscall_result, 0U);
++  EXPECT_EQ(capture.records[1].mask_syscall_result, 0U);
++  EXPECT_EQ(capture.records[0].mask & SignalBit(SIGILL), 0U);
++  EXPECT_EQ(capture.records[1].mask & SignalBit(SIGILL), 0U);
++  EXPECT_EQ(capture.final_pc, capture.stop_pc);
++  ExpectSuccessfulRegisters(capture);
++}
++
++TEST(Arm64UndefinedSignal, CurrentFaultPrecedesQueuedLowerSignalWithoutLosingIt) {
++  SharedCapture shared;
++  ASSERT_NE(shared.get(), nullptr);
++  int status = RunOwnedChild(shared.get(), Mode::kPendingLower);
++  ASSERT_TRUE(WIFEXITED(status)) << status;
++  ASSERT_EQ(WEXITSTATUS(status), 0);
++  const Capture& capture = *shared.get();
++  EXPECT_EQ(capture.count, 1U);
++  ExpectArchitecturalInfo(capture.records[0], capture.fault_pc);
++  EXPECT_EQ(capture.pending_count, 1U);
++  EXPECT_EQ(capture.pending_saw_sync_count, 1U);
++  EXPECT_EQ(capture.final_pc, capture.pending_redirect_pc);
++  ExpectSuccessfulRegisters(capture);
++}
++
++// The signal ABI exposes architectural NZCV, independently of the host flag
++// storage layout. Explicit values keep the expected matrix separate from the
++// production conversion implementation.
++constexpr std::array<uint16_t, 16> kPstateHostFlags {
++    0, CPUState::kFlagOverflow, CPUState::kFlagCarry,
++    CPUState::kFlagCarry | CPUState::kFlagOverflow,
++    CPUState::kFlagZero, CPUState::kFlagZero | CPUState::kFlagOverflow,
++    CPUState::kFlagZero | CPUState::kFlagCarry,
++    CPUState::kFlagZero | CPUState::kFlagCarry | CPUState::kFlagOverflow,
++    CPUState::kFlagNegative, CPUState::kFlagNegative | CPUState::kFlagOverflow,
++    CPUState::kFlagNegative | CPUState::kFlagCarry,
++    CPUState::kFlagNegative | CPUState::kFlagCarry | CPUState::kFlagOverflow,
++    CPUState::kFlagNegative | CPUState::kFlagZero,
++    CPUState::kFlagNegative | CPUState::kFlagZero | CPUState::kFlagOverflow,
++    CPUState::kFlagNegative | CPUState::kFlagZero | CPUState::kFlagCarry,
++    CPUState::kFlagNegative | CPUState::kFlagZero | CPUState::kFlagCarry |
++        CPUState::kFlagOverflow,
++};
++
++CPUState SeedPstateCpu(unsigned nzcv) {
++  CPUState cpu {};
++  for (unsigned i = 0; i != 31; ++i) cpu.x[i] = 0x123456789abc0000ULL + i;
++  auto* v = reinterpret_cast<unsigned char*>(cpu.v);
++  for (size_t i = 0; i != sizeof(cpu.v); ++i) v[i] = static_cast<unsigned char>(11 + i * 37);
++  cpu.sp = 0x1234567800001000ULL;
++  cpu.insn_addr = 0x1234567800002000ULL;
++  cpu.flags = static_cast<uint16_t>(kPstateHostFlags[nzcv] | ~kFlagsNZCVMask);
++  cpu.cached_fpcr = 0x00400000U;
++  cpu.emulated_fpsr = 0x08000000U;
++  return cpu;
++}
++
++uint64_t ReadContextPstate(GuestContext* context) {
++  uint64_t pstate;
++  // Actual Linux/Bionic ARM64 ucontext: mcontext@176 + pstate@272 = 448.
++  memcpy(&pstate, static_cast<unsigned char*>(context->ptr()) + 448, sizeof(pstate));
++  return pstate;
++}
++void WriteContextPstate(GuestContext* context, uint64_t pstate) {
++  memcpy(static_cast<unsigned char*>(context->ptr()) + 448, &pstate, sizeof(pstate));
++}
++void ExpectPstateCpu(const CPUState& actual, const CPUState& expected) {
++  for (unsigned i = 0; i != 31; ++i) EXPECT_EQ(actual.x[i], expected.x[i]) << i;
++  EXPECT_EQ(actual.sp, expected.sp);
++  EXPECT_EQ(actual.insn_addr, expected.insn_addr);
++  EXPECT_EQ(actual.flags, expected.flags);
++  EXPECT_EQ(memcmp(actual.v, expected.v, sizeof(actual.v)), 0);
++  EXPECT_EQ(actual.cached_fpcr, expected.cached_fpcr);
++  EXPECT_EQ(actual.emulated_fpsr, expected.emulated_fpsr);
++}
++
++TEST(Arm64GuestContextPstate, AllNzcvSaveAndRoundTripWithoutHostBitLeak) {
++  for (unsigned flags = 0; flags != 16; ++flags) {
++    SCOPED_TRACE(flags);
++    CPUState before = SeedPstateCpu(flags);
++    GuestContext context;
++    context.Save(&before);
++    EXPECT_EQ(ReadContextPstate(&context), uint64_t{flags} << 28);
++    CPUState after {};
++    context.Restore(&after);
++    ExpectPstateCpu(after, before);
++  }
++}
++
++TEST(Arm64GuestContextPstate, AllArchitecturalEditsPreserveSavedNonNzcvState) {
++  const std::array<uint16_t, 3> bookkeeping {
++      0, static_cast<uint16_t>(~kFlagsNZCVMask),
++      static_cast<uint16_t>(0x1234U & ~kFlagsNZCVMask)};
++  for (unsigned saved = 0; saved != 16; ++saved) {
++    for (unsigned edited = 0; edited != 16; ++edited) {
++      SCOPED_TRACE(saved * 16 + edited);
++      for (uint16_t internal : bookkeeping) {
++        CPUState before = SeedPstateCpu(saved);
++        before.flags = static_cast<uint16_t>(kPstateHostFlags[saved] | internal);
++        for (uint64_t unsupported : {uint64_t{0}, ~uint64_t{0xf0000000}}) {
++          GuestContext context;
++          context.Save(&before);
++          WriteContextPstate(&context, (uint64_t{edited} << 28) | unsupported);
++          CPUState expected = before;
++          expected.flags = static_cast<uint16_t>(internal | kPstateHostFlags[edited]);
++          CPUState after {};
++          after.flags = 0xffff;  // Restore must use saved bookkeeping, not this.
++          context.Restore(&after);
++          ExpectPstateCpu(after, expected);
++        }
++      }
++    }
++  }
++}
++
++struct alignas(16) PstateCapture {
++  uint64_t seen_pstate, edited_pstate, seen_pc, fault_pc, count, observed_nzcv;
++  uint64_t branch_results[14];
++  uint64_t stop_pc, final_pc, initial_sp, final_sp;
++  std::array<uint64_t, 31> initial_gprs, final_gprs;
++  alignas(16) unsigned char initial_v[512], final_v[512];
++  uint32_t final_fpcr, final_fpsr;
++};
++static_assert(sizeof(CPUState{}.v) == 512);
++static_assert(LdrX(3, 2, 448) == 0xf940e043U);
++static_assert(StrX(3, 2, 448) == 0xf900e043U);
++
++bool ExpectedPstateCondition(unsigned nzcv, unsigned condition) {
++  bool n = nzcv & 8, z = nzcv & 4, c = nzcv & 2, v = nzcv & 1;
++  switch (condition) {
++    case 0: return z; case 1: return !z;
++    case 2: return c; case 3: return !c;
++    case 4: return n; case 5: return !n;
++    case 6: return v; case 7: return !v;
++    case 8: return c && !z; case 9: return !c || z;
++    case 10: return n == v; case 11: return n != v;
++    case 12: return !z && n == v; case 13: return z || n != v;
++    default: return false;
++  }
++}
++
++void RunPstateGuest(PstateCapture* capture, unsigned initial) {
++  InitBerberis();
++  GuestThread* thread = GetCurrentGuestThread();
++  ASSERT_NE(thread, nullptr);
++  auto& cpu = thread->state()->cpu;
++  alignas(16) uint8_t stack[65536];
++  std::vector<uint32_t> code {kInvalid, 0xd53b4203U,  // mrs x3,NZCV after sigreturn.
++      StrX(3, 19, offsetof(PstateCapture, observed_nzcv))};
++  for (unsigned condition = 0; condition != 14; ++condition) {
++    code.insert(code.end(), {MovZ(3, 1), BranchCond(2, condition), MovZ(3, 0),
++        StrX(3, 19, offsetof(PstateCapture, branch_results) + condition * 8)});
++  }
++  code.push_back(0x14000001U);  // b stop, no flag-setting instruction after return.
++  const std::vector<uint32_t> handler {
++      LdrX(3, 2, 448), StrX(3, 19, offsetof(PstateCapture, seen_pstate)),
++      LdrX(3, 19, offsetof(PstateCapture, edited_pstate)), StrX(3, 2, 448),
++      LdrX(3, 2, 440), StrX(3, 19, offsetof(PstateCapture, seen_pc)),
++      AddX(3, 3, 4), StrX(3, 2, 440),  // Only the handler edits the fault PC.
++      LdrX(3, 19, offsetof(PstateCapture, count)), AddX(3, 3, 1),
++      StrX(3, 19, offsetof(PstateCapture, count)), 0xd65f03c0U,
++  };
++  auto* shadow = GuestMapShadow::GetInstance();
++  shadow->SetExecutable(ToGuestAddr(code.data()), code.size() * 4);
++  shadow->SetExecutable(ToGuestAddr(handler.data()), handler.size() * 4);
++  InvalidateGuestRange(ToGuestAddr(code.data()), ToGuestAddr(code.data()) + code.size() * 4);
++  InvalidateGuestRange(ToGuestAddr(handler.data()), ToGuestAddr(handler.data()) + handler.size() * 4);
++  capture->fault_pc = ToGuestAddr(code.data());
++  capture->stop_pc = ToGuestAddr(code.data() + code.size());
++  TranslationCache::GetInstance()->SetStop(capture->stop_pc);
++  sigset_t mask {};
++  sigemptyset(&mask);
++  ASSERT_EQ(pthread_sigmask(SIG_SETMASK, &mask, nullptr), 0);
++  ASSERT_TRUE(SetAction(SIGILL, ToGuestAddr(handler.data()), SA_SIGINFO));
++  CPUState seed = SeedPstateCpu(initial);
++  cpu = seed;
++  cpu.flags = kPstateHostFlags[initial];
++  // Real execution uses ordinary valid FP control; direct tests above also
++  // cover preservation of nonzero FPCR/FPSR and non-NZCV host bookkeeping.
++  cpu.cached_fpcr = 0;
++  cpu.emulated_fpsr = 0;
++  cpu.x[19] = ToGuestAddr(capture);
++  cpu.sp = ToGuestAddr(stack + sizeof(stack));
++  cpu.insn_addr = capture->fault_pc;
++  memcpy(capture->initial_gprs.data(), cpu.x, sizeof(cpu.x));
++  memcpy(capture->initial_v, cpu.v, sizeof(cpu.v));
++  capture->initial_sp = cpu.sp;
++  thread->TestAndEnablePendingSignals();
++  ExecuteGuest(thread->state());
++  capture->final_pc = cpu.insn_addr;
++  capture->final_sp = cpu.sp;
++  memcpy(capture->final_gprs.data(), cpu.x, sizeof(cpu.x));
++  memcpy(capture->final_v, cpu.v, sizeof(cpu.v));
++  capture->final_fpcr = cpu.cached_fpcr;
++  capture->final_fpsr = cpu.emulated_fpsr;
++}
++
++TEST(Arm64UndefinedSignal, HandlerPstateEditsControlNzcvAndConditionalExecution) {
++  for (unsigned initial = 0; initial != 16; ++initial) {
++    SCOPED_TRACE(initial);
++    unsigned edited = initial ^ 15U;
++    void* memory = mmap(nullptr, sizeof(PstateCapture), PROT_READ | PROT_WRITE,
++                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
++    ASSERT_NE(memory, MAP_FAILED);
++    auto* capture = new (memory) PstateCapture {};
++    capture->edited_pstate = uint64_t{edited} << 28;
++    pid_t child = fork();
++    ASSERT_GE(child, 0);
++    if (child == 0) {
++      prctl(PR_SET_PDEATHSIG, SIGKILL);
++      rlimit core {0, 0};
++      setrlimit(RLIMIT_CORE, &core);
++      struct sigaction deadline {};
++      deadline.sa_handler = SIG_DFL;
++      sigaction(SIGALRM, &deadline, nullptr);
++      sigset_t deadline_mask {};
++      sigemptyset(&deadline_mask);
++      sigaddset(&deadline_mask, SIGALRM);
++      pthread_sigmask(SIG_UNBLOCK, &deadline_mask, nullptr);
++      alarm(10);
++      // Parent expectations from earlier matrix iterations may already have
++      // failed in the baseline negative run. Count only new child assertions;
++      // never reset or hide either the parent's or this child's failures.
++      const auto* result = testing::UnitTest::GetInstance()->current_test_info()->result();
++      int before_parts = result->total_part_count();
++      RunPstateGuest(capture, initial);
++      _exit(result->total_part_count() == before_parts ? 0 : 1);
++    }
++    int status = -1;
++    pid_t waited;
++    do { waited = waitpid(child, &status, 0); } while (waited < 0 && errno == EINTR);
++    EXPECT_EQ(waited, child);
++    EXPECT_TRUE(WIFEXITED(status)) << status;
++    if (WIFEXITED(status)) EXPECT_EQ(WEXITSTATUS(status), 0);
++    printf("OWNED_PSTATE_RECEIPT {\"initial_nzcv\":%u,\"edited_nzcv\":%u,"
++           "\"seen_pstate\":%llu,\"edited_pstate\":%llu,\"observed_nzcv\":%llu,"
++           "\"count\":%llu,\"child_wait_status\":%d,\"branch_results\":[",
++           initial, edited, static_cast<unsigned long long>(capture->seen_pstate),
++           static_cast<unsigned long long>(capture->edited_pstate),
++           static_cast<unsigned long long>(capture->observed_nzcv),
++           static_cast<unsigned long long>(capture->count), status);
++    for (unsigned condition = 0; condition != 14; ++condition)
++      printf("%s%llu", condition ? "," : "",
++             static_cast<unsigned long long>(capture->branch_results[condition]));
++    printf("],\"sp_preserved\":%s,\"fpsimd_preserved\":%s}\n",
++           capture->initial_sp == capture->final_sp ? "true" : "false",
++           memcmp(capture->initial_v, capture->final_v, sizeof(capture->initial_v)) == 0
++               ? "true" : "false");
++    EXPECT_EQ(capture->count, 1U);
++    EXPECT_EQ(capture->seen_pstate, uint64_t{initial} << 28);
++    EXPECT_EQ(capture->seen_pc, capture->fault_pc);
++    EXPECT_EQ(capture->observed_nzcv, uint64_t{edited} << 28);
++    for (unsigned condition = 0; condition != 14; ++condition)
++      EXPECT_EQ(capture->branch_results[condition], ExpectedPstateCondition(edited, condition)) << condition;
++    EXPECT_EQ(capture->final_pc, capture->stop_pc);
++    EXPECT_EQ(capture->final_sp, capture->initial_sp);
++    for (unsigned i = 0; i != 31; ++i)
++      if (i != 3) EXPECT_EQ(capture->final_gprs[i], capture->initial_gprs[i]) << i;
++    EXPECT_EQ(memcmp(capture->initial_v, capture->final_v, sizeof(capture->initial_v)), 0);
++    EXPECT_EQ(capture->final_fpcr, 0U);
++    EXPECT_EQ(capture->final_fpsr, 0U);
++    EXPECT_EQ(munmap(memory, sizeof(PstateCapture)), 0);
++  }
++}
++
++}  // namespace
++}  // namespace berberis
+diff --git a/guest_os_primitives/arm64/undefined_signal_transport_test.cc b/guest_os_primitives/arm64/undefined_signal_transport_test.cc
+new file mode 100644
+index 0000000..7483643
+--- /dev/null
++++ b/guest_os_primitives/arm64/undefined_signal_transport_test.cc
+@@ -0,0 +1,348 @@
++// Copyright 2026 The Droidloom Authors
++// SPDX-License-Identifier: Apache-2.0
++#include "gtest/gtest.h"
++#include <pthread.h>
++#include <signal.h>
++#include <sys/mman.h>
++#include <sys/prctl.h>
++#include <sys/ptrace.h>
++#include <sys/resource.h>
++#include <sys/syscall.h>
++#include <sys/wait.h>
++#include <unistd.h>
++#include <cerrno>
++#include <cstddef>
++#include <cstdint>
++#include <cstdio>
++#include <cstring>
++#include <new>
++#include <vector>
++#include "berberis/guest_os_primitives/guest_map_shadow.h"
++#include "berberis/guest_os_primitives/guest_signal.h"
++#include "berberis/guest_os_primitives/guest_signal_arch.h"
++#include "berberis/guest_os_primitives/guest_thread_manager.h"
++#include "berberis/guest_state/guest_state.h"
++#include "berberis/interpreter/arm64/interpreter.h"
++#include "berberis/runtime/berberis.h"
++#include "berberis/runtime/execute_guest.h"
++#include "berberis/runtime_primitives/interpret_helpers.h"
++#include "berberis/runtime_primitives/translation_cache.h"
++namespace berberis {
++namespace {
++alignas(4) const uint32_t kInvalidWord = 0x337aabe9U;
++alignas(4) const uint32_t kOwnedReplacement = 0xd503201fU;
++constexpr uintptr_t kPayload = 0x123456789abcdef0ULL;
++struct alignas(16) Capture {
++  siginfo_t info{};
++  uint64_t pc = 0;
++  uint64_t count = 0;
++  uint64_t fault_pc = 0;
++  uint64_t after_pc = 0;
++  uint64_t stop_pc = 0;
++};
++static_assert(sizeof(siginfo_t) == 128);
++static_assert(offsetof(Capture, pc) == 128 && offsetof(Capture, count) == 136);
++Capture* g_native_capture = nullptr;
++void CaptureNative(int, siginfo_t* info, void*) {
++  g_native_capture->info = *info;
++  ++g_native_capture->count;
++}
++class SharedCapture {
++ public:
++  SharedCapture() {
++    void* p = mmap(nullptr, sizeof(Capture), PROT_READ | PROT_WRITE,
++                   MAP_SHARED | MAP_ANONYMOUS, -1, 0);
++    if (p != MAP_FAILED) capture_ = new (p) Capture{};
++  }
++  ~SharedCapture() { if (capture_) munmap(capture_, sizeof(Capture)); }
++  Capture* get() { return capture_; }
++ private:
++  Capture* capture_ = nullptr;
++};
++class OwnedChild {
++ public:
++  explicit OwnedChild(pid_t pid) : pid_(pid) {}
++  ~OwnedChild() {
++    if (pid_ <= 0) return;
++    kill(pid_, SIGKILL);
++    ptrace(PTRACE_CONT, pid_, nullptr, nullptr);
++    int status;
++    for (;;) {
++      pid_t p = waitpid(pid_, &status, 0);
++      if (p < 0 && errno == EINTR) continue;
++      if (p < 0 || WIFEXITED(status) || WIFSIGNALED(status)) break;
++      ptrace(PTRACE_CONT, pid_, nullptr, reinterpret_cast<void*>(SIGKILL));
++    }
++  }
++  void Reaped() { pid_ = -1; }
++ private:
++  pid_t pid_;
++};
++void ChildLimits() {
++  prctl(PR_SET_PDEATHSIG, SIGKILL);
++  rlimit core{0, 0};
++  setrlimit(RLIMIT_CORE, &core);
++  struct sigaction action{};
++  action.sa_handler = SIG_DFL;
++  sigaction(SIGALRM, &action, nullptr);
++  sigset_t unblocked{};
++  sigemptyset(&unblocked);
++  sigaddset(&unblocked, SIGALRM);
++  pthread_sigmask(SIG_UNBLOCK, &unblocked, nullptr);
++  alarm(10);
++}
++std::vector<uint32_t> CopyHandler(bool advance) {
++  std::vector<uint32_t> code;
++  for (uint32_t offset = 0; offset < 128; offset += 16) {
++    code.push_back(0xa9401023U | ((offset / 8) << 15)); // ldp x3,x4,[x1,#offset]
++    code.push_back(0xa9001263U | ((offset / 8) << 15)); // stp x3,x4,[x19,#offset]
++  }
++  for (uint32_t word : {0xf940dc43U, // ldr x3,[x2,#440] (saved PC)
++                         0xf9004263U, // str x3,[x19,#128]
++                         0xf9404663U, // ldr x3,[x19,#136]
++                         0x91000463U, // add x3,x3,#1
++                         0xf9004663U}) code.push_back(word);
++  if (advance) {
++    for (uint32_t word : {0xf940dc43U, 0x91001063U, 0xf900dc43U}) code.push_back(word);
++  }
++  code.push_back(0xd65f03c0U);
++  return code;
++}
++enum class Mode { kNative, kUser, kTkill, kQueue, kUndefined, kRecovery };
++enum class TraceAction { kDeliver, kSuppress, kReplaceFault, kReplaceQueue };
++void ChildRun(Mode mode, Capture* capture) {
++  ChildLimits();
++  alignas(16) uint8_t stack[65536];
++  alignas(4) const uint32_t code[] = {
++      mode == Mode::kRecovery ? 0xf9400020U : kInvalidWord, 0x14000001U};
++  auto handler = CopyHandler(mode == Mode::kUndefined || mode == Mode::kRecovery);
++  GuestThread* thread = nullptr;
++  if (mode == Mode::kNative) {
++    g_native_capture = capture;
++    struct sigaction action{};
++    action.sa_sigaction = CaptureNative;
++    action.sa_flags = SA_SIGINFO;
++    sigemptyset(&action.sa_mask);
++    if (sigaction(SIGILL, &action, nullptr)) _exit(90);
++    capture->fault_pc = ToGuestAddr(&kInvalidWord);
++  } else {
++    InitBerberis();
++    thread = GetCurrentGuestThread();
++    if (!thread) _exit(91);
++    auto* shadow = GuestMapShadow::GetInstance();
++    shadow->SetExecutable(ToGuestAddr(handler.data()), handler.size() * 4);
++    shadow->SetExecutable(ToGuestAddr(code), sizeof(code));
++    Guest_sigaction action{};
++    action.guest_sa_sigaction = ToGuestAddr(handler.data());
++    action.sa_flags = SA_SIGINFO;
++    int error = 0;
++    if (!SetGuestSignalHandler(mode == Mode::kRecovery ? SIGSEGV : SIGILL,
++                               &action, nullptr, &error)) _exit(92);
++    auto& cpu = thread->state()->cpu;
++    cpu.sp = ToGuestAddr(stack + sizeof(stack));
++    cpu.x[19] = ToGuestAddr(capture);
++    cpu.x[1] = 0;
++    cpu.insn_addr = ToGuestAddr(code);
++    capture->fault_pc = cpu.insn_addr;
++    capture->stop_pc = ToGuestAddr(code + 2);
++    TranslationCache::GetInstance()->SetStop(capture->stop_pc);
++    thread->ProcessAndDisablePendingSignals();
++    if (mode == Mode::kUndefined || mode == Mode::kRecovery) thread->TestAndEnablePendingSignals();
++  }
++  if (ptrace(PTRACE_TRACEME, 0, nullptr, nullptr)) _exit(93);
++  raise(SIGSTOP);
++  long result = 0;
++  switch (mode) {
++    case Mode::kNative: UndefinedInsn(ToGuestAddr(&kInvalidWord)); break;
++    case Mode::kUser: result = kill(getpid(), SIGILL); break;
++    case Mode::kTkill: result = syscall(SYS_tgkill, getpid(), syscall(SYS_gettid), SIGILL); break;
++    case Mode::kQueue: {
++      sigval value{};
++      value.sival_ptr = reinterpret_cast<void*>(kPayload);
++      result = sigqueue(getpid(), SIGILL, value);
++      break;
++    }
++    case Mode::kUndefined: InterpretInsn(thread->state()); break;
++    case Mode::kRecovery: ExecuteGuest(thread->state()); break;
++  }
++  if (result) _exit(94);
++  if (thread) capture->after_pc = thread->state()->cpu.insn_addr;
++  _exit(0);
++}
++struct TraceResult {
++  siginfo_t original{};
++  siginfo_t delivered{};
++  pid_t child = 0;
++  int status = -1;
++  bool complete = false;
++};
++void TraceOwned(Mode mode, TraceAction action, Capture* capture, TraceResult* result) {
++  pid_t child = fork();
++  ASSERT_GE(child, 0);
++  if (!child) ChildRun(mode, capture);
++  OwnedChild cleanup(child);
++  result->child = child;
++  int status;
++  ASSERT_EQ(waitpid(child, &status, 0), child);
++  if (WIFEXITED(status) || WIFSIGNALED(status)) cleanup.Reaped();
++  ASSERT_TRUE(WIFSTOPPED(status) && WSTOPSIG(status) == SIGSTOP) << status;
++  ASSERT_EQ(ptrace(PTRACE_CONT, child, nullptr, nullptr), 0);
++  ASSERT_EQ(waitpid(child, &status, 0), child);
++  if (WIFEXITED(status) || WIFSIGNALED(status)) cleanup.Reaped();
++  ASSERT_TRUE(WIFSTOPPED(status)) << status;
++  const int signal = mode == Mode::kRecovery ? SIGSEGV : SIGILL;
++  ASSERT_EQ(WSTOPSIG(status), signal);
++  ASSERT_EQ(ptrace(PTRACE_GETSIGINFO, child, nullptr, &result->original), 0);
++  result->delivered = result->original;
++  if (action == TraceAction::kReplaceFault || action == TraceAction::kReplaceQueue) {
++    siginfo_t replacement{};
++    replacement.si_signo = SIGILL;
++    if (action == TraceAction::kReplaceFault) {
++      replacement.si_code = ILL_ILLOPC;
++      replacement.si_errno = EIO;
++      replacement.si_addr = const_cast<uint32_t*>(&kOwnedReplacement);
++    } else {
++      // Deliberate tracer modification in its own child; the sender is this
++      // actual tracer, not a fabricated application/process identity.
++      replacement.si_code = SI_QUEUE;
++      replacement.si_pid = getpid();
++      replacement.si_uid = getuid();
++      replacement.si_value.sival_ptr = reinterpret_cast<void*>(kPayload);
++    }
++    ASSERT_EQ(ptrace(PTRACE_SETSIGINFO, child, nullptr, &replacement), 0);
++    ASSERT_EQ(ptrace(PTRACE_GETSIGINFO, child, nullptr, &result->delivered), 0);
++    ASSERT_EQ(memcmp(&result->delivered, &replacement, sizeof(replacement)), 0);
++  }
++  ASSERT_EQ(ptrace(PTRACE_CONT, child, nullptr,
++                  reinterpret_cast<void*>(action == TraceAction::kSuppress ? 0 : signal)), 0);
++  ASSERT_EQ(waitpid(child, &status, 0), child);
++  if (WIFEXITED(status) || WIFSIGNALED(status)) cleanup.Reaped();
++  ASSERT_TRUE(WIFEXITED(status)) << status;
++  ASSERT_EQ(WEXITSTATUS(status), 0);
++  result->status = status;
++  result->complete = true;
++}
++void ExpectOriginalFault(const TraceResult& result, const Capture& capture) {
++  EXPECT_EQ(result.original.si_signo, SIGILL);
++  EXPECT_EQ(result.original.si_code, ILL_ILLOPC);
++  EXPECT_EQ(result.original.si_errno, 0);
++  EXPECT_EQ(result.original.si_addr, reinterpret_cast<void*>(capture.fault_pc));
++}
++void PrintRawReceipt(const char* name, const char* consumer,
++                     const TraceResult& result, const Capture& capture) {
++  printf("OWNED_SIGNAL_RECEIPT {\"case\":\"%s\",\"consumer\":\"%s\","
++         "\"original_code\":%d,\"delivered_code\":%d,\"count\":%llu,"
++         "\"fault_pc\":\"0x%llx\",\"saved_pc\":\"0x%llx\",\"after_pc\":\"0x%llx\",",
++         name, consumer, result.original.si_code, result.delivered.si_code,
++         static_cast<unsigned long long>(capture.count),
++         static_cast<unsigned long long>(capture.fault_pc),
++         static_cast<unsigned long long>(capture.pc),
++         static_cast<unsigned long long>(capture.after_pc));
++  auto bytes = [](const char* key, const siginfo_t& info) {
++    printf("\"%s\":\"", key);
++    for (size_t i = 0; i < sizeof(info); ++i)
++      printf("%02x", reinterpret_cast<const unsigned char*>(&info)[i]);
++    printf("\"");
++  };
++  bytes("kernel_original_hex", result.original); printf(",");
++  bytes("kernel_delivered_hex", result.delivered); printf(",");
++  bytes("consumer_record_hex", capture.info); printf("}\n");
++  fflush(stdout);
++}
++TEST(Arm64UndefinedSignalTransport, NativeSiginfoAndPtraceSeeArchitecturalFault) {
++  SharedCapture data; ASSERT_NE(data.get(), nullptr);
++  TraceResult result; TraceOwned(Mode::kNative, TraceAction::kDeliver, data.get(), &result);
++  ASSERT_TRUE(result.complete);
++  ExpectOriginalFault(result, *data.get());
++  EXPECT_EQ(data.get()->count, 1U);
++  EXPECT_EQ(memcmp(&result.original, &data.get()->info, 128), 0);
++  PrintRawReceipt("native_undefined", "native-SA_SIGINFO", result, *data.get());
++}
++TEST(Arm64UndefinedSignalTransport, RealSoftwareSigillPreservesEntireKernelRecord) {
++  for (Mode mode : {Mode::kUser, Mode::kTkill, Mode::kQueue}) {
++    SharedCapture data; ASSERT_NE(data.get(), nullptr);
++    TraceResult result; TraceOwned(mode, TraceAction::kDeliver, data.get(), &result);
++    ASSERT_TRUE(result.complete);
++    EXPECT_EQ(result.original.si_code, mode == Mode::kUser ? SI_USER :
++              mode == Mode::kTkill ? SI_TKILL : SI_QUEUE);
++    EXPECT_EQ(result.original.si_pid, result.child);
++    EXPECT_EQ(result.original.si_uid, getuid());
++    if (mode == Mode::kQueue) EXPECT_EQ(result.original.si_value.sival_ptr,
++                                      reinterpret_cast<void*>(kPayload));
++    EXPECT_EQ(data.get()->count, 1U);
++    EXPECT_EQ(data.get()->pc, data.get()->fault_pc);
++    EXPECT_EQ(data.get()->after_pc, data.get()->fault_pc);
++    EXPECT_EQ(memcmp(&result.original, &data.get()->info, 128), 0);
++    PrintRawReceipt(mode == Mode::kUser ? "SI_USER" : mode == Mode::kTkill ?
++                    "SI_TKILL" : "SI_QUEUE", "real-guest-handler", result, *data.get());
++  }
++}
++TEST(Arm64UndefinedSignalTransport, TracerSuppressionDoesNotAdvanceGuestPc) {
++  SharedCapture data; ASSERT_NE(data.get(), nullptr);
++  TraceResult result; TraceOwned(Mode::kUndefined, TraceAction::kSuppress, data.get(), &result);
++  ASSERT_TRUE(result.complete); ExpectOriginalFault(result, *data.get());
++  EXPECT_EQ(data.get()->count, 0U);
++  EXPECT_EQ(data.get()->after_pc, data.get()->fault_pc);
++  PrintRawReceipt("tracer_suppression", "no-handler-delivery", result, *data.get());
++}
++TEST(Arm64UndefinedSignalTransport, TracerFaultMetadataEditsReachRealGuestHandler) {
++  SharedCapture data; ASSERT_NE(data.get(), nullptr);
++  TraceResult result; TraceOwned(Mode::kUndefined, TraceAction::kReplaceFault, data.get(), &result);
++  ASSERT_TRUE(result.complete); ExpectOriginalFault(result, *data.get());
++  EXPECT_EQ(data.get()->count, 1U);
++  EXPECT_EQ(data.get()->pc, data.get()->fault_pc);
++  EXPECT_EQ(data.get()->after_pc, data.get()->fault_pc + 4);
++  EXPECT_EQ(memcmp(&result.delivered, &data.get()->info, 128), 0);
++  PrintRawReceipt("tracer_fault_edit", "real-guest-handler", result, *data.get());
++}
++TEST(Arm64UndefinedSignalTransport, TracerSoftwareReplacementKeepsSenderAndValue) {
++  SharedCapture data; ASSERT_NE(data.get(), nullptr);
++  TraceResult result; TraceOwned(Mode::kUndefined, TraceAction::kReplaceQueue, data.get(), &result);
++  ASSERT_TRUE(result.complete); ExpectOriginalFault(result, *data.get());
++  EXPECT_EQ(data.get()->count, 1U);
++  EXPECT_EQ(data.get()->after_pc, data.get()->fault_pc + 4);
++  EXPECT_EQ(memcmp(&result.delivered, &data.get()->info, 128), 0);
++  PrintRawReceipt("tracer_queue_replacement", "real-guest-handler", result, *data.get());
++}
++TEST(Arm64UndefinedSignalTransport, GenuineHostIllegalInstructionStillTakesFatalPath) {
++  SharedCapture data; ASSERT_NE(data.get(), nullptr);
++  pid_t child = fork(); ASSERT_GE(child, 0);
++  if (!child) {
++    ChildLimits(); InitBerberis();
++    alignas(16) uint8_t stack[65536];
++    auto handler = CopyHandler(true);
++    GuestMapShadow::GetInstance()->SetExecutable(ToGuestAddr(handler.data()), handler.size() * 4);
++    Guest_sigaction action{}; action.sa_flags = SA_SIGINFO;
++    action.guest_sa_sigaction = ToGuestAddr(handler.data());
++    int error = 0;
++    if (!SetGuestSignalHandler(SIGILL, &action, nullptr, &error)) _exit(95);
++    auto* thread = GetCurrentGuestThread();
++    thread->state()->cpu.sp = ToGuestAddr(stack + sizeof(stack));
++    thread->state()->cpu.x[19] = ToGuestAddr(data.get());
++    thread->state()->cpu.insn_addr = ToGuestAddr(&kInvalidWord);
++    thread->TestAndEnablePendingSignals();
++    asm volatile("ud2");
++    _exit(96);
++  }
++  OwnedChild cleanup(child);
++  int status; ASSERT_EQ(waitpid(child, &status, 0), child);
++  if (WIFEXITED(status) || WIFSIGNALED(status)) cleanup.Reaped();
++  ASSERT_TRUE(WIFSIGNALED(status)) << status;
++  EXPECT_EQ(WTERMSIG(status), SIGILL);
++  EXPECT_EQ(data.get()->count, 0U);
++}
++TEST(Arm64UndefinedSignalTransport, ExistingGeneratedMemoryFaultRecoveryStillWorks) {
++  SharedCapture data; ASSERT_NE(data.get(), nullptr);
++  TraceResult result; TraceOwned(Mode::kRecovery, TraceAction::kDeliver, data.get(), &result);
++  ASSERT_TRUE(result.complete);
++  EXPECT_EQ(result.original.si_signo, SIGSEGV);
++  EXPECT_GT(result.original.si_code, 0);
++  EXPECT_EQ(result.original.si_addr, nullptr);
++  EXPECT_EQ(data.get()->count, 1U);
++  EXPECT_EQ(data.get()->pc, data.get()->fault_pc);
++  EXPECT_EQ(data.get()->after_pc, data.get()->stop_pc);
++  EXPECT_EQ(memcmp(&result.delivered, &data.get()->info, 128), 0);
++  PrintRawReceipt("real_memory_recovery", "real-guest-handler", result, *data.get());
++}
++} // namespace
++} // namespace berberis
+diff --git a/guest_os_primitives/guest_signal_handling.cc b/guest_os_primitives/guest_signal_handling.cc
+index 72c3c71..4d39269 100644
+--- a/guest_os_primitives/guest_signal_handling.cc
++++ b/guest_os_primitives/guest_signal_handling.cc
+@@ -45,6 +45,7 @@
+ // endregion
+ #include "berberis/runtime_primitives/crash_reporter.h"
+ #include "berberis/runtime_primitives/recovery_code.h"
++#include "berberis/runtime_primitives/interpret_helpers.h"
+ 
+ #include "guest_signal_action.h"
+ #include "guest_thread_manager_impl.h"  // AttachCurrentThread, DetachCurrentThread
+@@ -167,10 +168,24 @@ void HandleHostSignal(int sig, siginfo_t* info, void* context) {
+   // and for this signal now. While running the handlers, enable nested signals
+   // to be pending.
+   bool prev_pending_signals_enabled = thread->TestAndEnablePendingSignals();
+-  thread->SetSignalFromHost(*info);
+-  if (!prev_pending_signals_enabled) {
++  bool synchronized_undefined = false;
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64) && defined(__x86_64__)
++  synchronized_undefined =
++      ConsumeSynchronizedUndefinedDelivery(thread->state(), GetHostRegIP(ucontext));
++#endif
++  if (synchronized_undefined) {
++    // Preserve the actual kernel/tracer record. The token establishes precise
++    // guest state at this delivery point, not the record's producer identity.
++    thread->SetSynchronousSignalFromHost(*info);
++  } else {
++    thread->SetSignalFromHost(*info);
++  }
++  if (!prev_pending_signals_enabled || synchronized_undefined) {
+     CHECK_EQ(GetResidence(*thread->state()), kOutsideGeneratedCode);
+     thread->ProcessAndDisablePendingSignals();
++    if (prev_pending_signals_enabled) {
++      CHECK_EQ(false, thread->TestAndEnablePendingSignals());
++    }
+     if (attached) {
+       DetachCurrentThread();
+     }
+@@ -380,12 +395,50 @@ void GuestThread::CloneSignalActionsTableFrom(GuestSignalActionsTable* from_tabl
+ 
+ // Can be interrupted by another SetSignal!
+ void GuestThread::SetSignalFromHost(const siginfo_t& host_info) {
++  EnqueueHostSignal(host_info, false);
++}
++
++void GuestThread::SetSynchronousSignalFromHost(const siginfo_t& host_info) {
++  EnqueueHostSignal(host_info, true);
++}
++
++void GuestThread::PrepareSynchronousSignal(int signal) {
++  // Do not hold the action mutex while emitting a signal or running a guest
++  // handler. Block signals only while inspecting/updating the shared table.
++  ScopedSignalBlocker blocker;
++  uint64_t old_mask{};
++  ConvertToSmallSigset(*blocker.old_mask(), &old_mask);
++  HostStructSigaction host_action{};
++  CHECK_EQ(HostSigaction(signal, nullptr, &host_action), 0);
++  std::lock_guard<std::mutex> lock(*GetSignalActionsGuardMutex());
++  GuestSignalAction& action = signal_actions_->at(signal - 1);
++  if ((old_mask & (uint64_t{1} << (signal - 1))) || host_action.sa_handler == SIG_IGN) {
++    Guest_sigaction dfl{};
++    dfl.guest_sa_sigaction = Guest_SIG_DFL;
++    int error = 0;
++    CHECK(action.Change(signal, &dfl, HandleHostSignal, nullptr, &error));
++  }
++}
++
++void GuestThread::EnqueueHostSignal(const siginfo_t& host_info, bool synchronous) {
+   siginfo_t* guest_info = pending_signals_.AllocSignal();
+ 
+   // Convert host siginfo to guest.
+   *guest_info = host_info;
+-  switch (host_info.si_signo) {
+-    case SIGILL:
++  // A precise emulated fault already has guest metadata. Ptrace may replace
++  // any fields, so preserve its actual record instead of reconstructing it.
++  if (!synchronous) switch (host_info.si_signo) {
++    case SIGILL: {
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64) && defined(__x86_64__)
++      // Nonpositive codes use the overlapping sender/value union.
++      if (host_info.si_code > 0) {
++        guest_info->si_addr = ToHostAddr<void>(GetInsnAddr(GetCPUState(*state_)));
++      }
++#else
++      guest_info->si_addr = ToHostAddr<void>(GetInsnAddr(GetCPUState(*state_)));
++#endif
++      break;
++    }
+     case SIGFPE: {
+       guest_info->si_addr = ToHostAddr<void>(GetInsnAddr(GetCPUState(*state_)));
+       break;
+@@ -402,7 +455,8 @@ void GuestThread::SetSignalFromHost(const siginfo_t& host_info) {
+ 
+   // This is never interrupted by code that clears queue or status,
+   // so the order in which to set them is not important.
+-  pending_signals_.EnqueueSignal(guest_info);
++  if (synchronous) pending_signals_.EnqueueSynchronousSignal(guest_info);
++  else pending_signals_.EnqueueSignal(guest_info);
+   // Check that pending signals are not disabled and mark them as present.
+   uint8_t old_status = GetPendingSignalsStatusAtomic(*state_).exchange(kPendingSignalsPresent,
+                                                                        std::memory_order_relaxed);
+diff --git a/guest_os_primitives/guest_stack_test.cc b/guest_os_primitives/guest_stack_test.cc
+new file mode 100644
+index 0000000..4eb6062
+--- /dev/null
++++ b/guest_os_primitives/guest_stack_test.cc
+@@ -0,0 +1,65 @@
++/*
++ * Copyright (C) 2026 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include "gtest/gtest.h"
++
++#include <sys/mman.h>
++
++#include <cerrno>
++#include <memory>
++
++#include "berberis/base/mmap.h"
++#include "berberis/guest_os_primitives/guest_thread.h"
++
++namespace berberis {
++
++namespace {
++
++TEST(GuestStackTest, SuppliedStackRetainedWithoutTakingMappingOwnership) {
++  const size_t guard_sizes[] = {0, kPageSize};
++  for (size_t guard_size : guard_sizes) {
++    SCOPED_TRACE(guard_size);
++    ScopedMmap stack(4 * kPageSize);
++    auto* bytes = static_cast<unsigned char*>(stack.data());
++    bytes[0] = 0x5a;
++    bytes[stack.size() - 1] = 0xa5;
++
++    std::unique_ptr<GuestThread, decltype(&GuestThread::Destroy)> thread(
++        GuestThread::CreatePthread(stack.data(), stack.size(), guard_size), GuestThread::Destroy);
++    ASSERT_NE(thread.get(), nullptr);
++
++    GuestAddr stack_base = 0;
++    size_t actual_stack_size = 0;
++    size_t actual_guard_size = 0;
++    thread->GetAttr(&stack_base, &actual_stack_size, &actual_guard_size);
++    EXPECT_EQ(stack_base, ToGuestAddr(stack.data()));
++    EXPECT_EQ(actual_stack_size, stack.size());
++    EXPECT_EQ(actual_guard_size, guard_size);
++    EXPECT_EQ(thread->GetStackTop(), ToGuestAddr(stack.data()) + stack.size());
++
++    thread.reset();
++
++    // Check the entire caller-owned mapping before accessing it. An erroneous
++    // Destroy unmap must produce a test failure rather than a sentinel read fault.
++    ASSERT_EQ(mprotect(stack.data(), stack.size(), PROT_READ | PROT_WRITE), 0) << errno;
++    EXPECT_EQ(bytes[0], 0x5a);
++    EXPECT_EQ(bytes[stack.size() - 1], 0xa5);
++  }
++}
++
++}  // namespace
++
++}  // namespace berberis
+diff --git a/guest_os_primitives/guest_thread.cc b/guest_os_primitives/guest_thread.cc
+index fe6a6c6..e3d3cab 100644
+--- a/guest_os_primitives/guest_thread.cc
++++ b/guest_os_primitives/guest_thread.cc
+@@ -217,8 +217,8 @@ bool GuestThread::AllocStack(void* stack, size_t stack_size, size_t guard_size)
+ 
+   if (stack) {
+     // User-provided stack.
+-    stack_ = nullptr;  // Do not unmap in Destroy!
+-    mmap_size_ = 0;
++    stack_ = stack;  // Preserve the supplied base for GetAttr.
++    mmap_size_ = 0;  // Caller-owned mapping: do not unmap in Destroy.
+     guard_size_ = guard_size;
+     stack_size_ = stack_size;
+     stack_top_ = ToGuestAddr(stack) + stack_size_;
+diff --git a/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h b/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h
+index e8f68ab..54ee96a 100644
+--- a/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h
++++ b/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h
+@@ -77,6 +77,10 @@ class GuestThread {
+   bool TestAndEnablePendingSignals();
+ 
+   void SetSignalFromHost(const siginfo_t& info);
++  void SetSynchronousSignalFromHost(const siginfo_t& info);
++
++  // Coordinate guest/native disposition before emitting a synchronous fault.
++  void PrepareSynchronousSignal(int signal);
+ 
+   void GetAttr(GuestAddr* stack_base, size_t* stack_size, size_t* guard_size) const {
+     *stack_base = ToGuestAddr(stack_);
+@@ -115,6 +119,7 @@ class GuestThread {
+   bool AllocStaticTls();
+ 
+   void ProcessPendingSignalsImpl();
++  void EnqueueHostSignal(const siginfo_t& info, bool synchronous);
+ 
+   // Set the default table for the main process.
+   void SetDefaultSignalActionsTable();
+diff --git a/interpreter/arm64/interpreter.h b/interpreter/arm64/interpreter.h
+index 5df7f18..7918316 100644
+--- a/interpreter/arm64/interpreter.h
++++ b/interpreter/arm64/interpreter.h
+@@ -573,6 +573,32 @@ class Interpreter {
+         state_->cpu.flags = 0;  // NZCV = 0b0000 (success)
+         return static_cast<Register>(rng());
+       }
++      case Decoder::SystemReg::kIdAa64Pfr0El1:
++        // Linux arm64's userspace-sanitized PFR0, describing this translated
++        // ISA. Hidden EL0/EL1 use the kernel ABI's safe AArch64-only value 1;
++        // this does not grant privileged guest execution. FP/AdvSIMD=0 means
++        // baseline support (0xf would mean absent), matching AT_HWCAP FP/ASIMD.
++        // FP16, SVE, DIT and the other unadvertised extensions remain clear.
++        // No host CPU identity or additional HWCAP bits are exposed by this read.
++        return 0x11ULL;
++      case Decoder::SystemReg::kIdAa64Pfr1El1:
++        // Describe the translated execution environment, not the host CPU.
++        // BT, SSBS, MTE, SME and GCS are not implemented. Linux masks the
++        // remaining userspace-invisible fields to zero. This is read-only;
++        // MSR and all other unsupported system registers still fault.
++        return 0;
++      case Decoder::SystemReg::kIdAa64Isar0El1:
++        // Guaranteed translated baseline: AES=2 includes PMULL, SHA1=1,
++        // SHA2=1 means SHA256 (not SHA512), CRC32=1 and Atomic=2 means LSE
++        // (not LSE128). Their instruction semantics are already implemented.
++        // All other fields, including RNDR, remain clear; this is a virtual
++        // ISA profile, not a physical CPU ID or a new HWCAP advertisement.
++        return 0x211120ULL;
++      case Decoder::SystemReg::kIdAa64Isar1El1:
++        // This baseline promises no ISAR1 optional extensions. In particular,
++        // pointer stripping/NOPs are not PAuth, and cache/barrier fallbacks do
++        // not establish the persistence/speculation-control guarantees.
++        return 0;
+       case Decoder::SystemReg::kCntfrqEl0:
+         // Counter frequency: 19.2 MHz, the de-facto Android generic-timer rate.
+         // CNTVCT/CNTPCT below are scaled to match, so cntvct/cntfrq = seconds.
+@@ -3333,8 +3359,8 @@ class Interpreter {
+   }
+ 
+   void Undefined() {
+-    UndefinedInsn(GetInsnAddr());
+     exception_raised_ = true;
++    berberis_HandleUndefinedInsn(state_);
+   }
+ 
+   //
+diff --git a/interpreter/arm64/interpreter_only_families_test.cc b/interpreter/arm64/interpreter_only_families_test.cc
+index 6c380e8..62535a1 100644
+--- a/interpreter/arm64/interpreter_only_families_test.cc
++++ b/interpreter/arm64/interpreter_only_families_test.cc
+@@ -72,6 +72,120 @@ class Arm64InterpreterOnlyTest : public ::testing::Test {
+     EXPECT_EQ(vreg_pair.second, (hi));           \
+   } while (0)
+ 
++TEST_F(Arm64InterpreterOnlyTest, MrsPfr0ReadOnlyFeatureQuery) {
++  // Linux's sanitized EL0/EL1 are AArch64-only (1 each). FP and AdvSIMD
++  // are baseline (0 each), with no advertised FP16, SVE, DIT or other extras.
++  for (uint32_t nzcv = 0; nzcv != 16; ++nzcv) {
++    const auto flags = ((nzcv & 8) ? CPUState::kFlagNegative : 0) |
++                       ((nzcv & 4) ? CPUState::kFlagZero : 0) |
++                       ((nzcv & 2) ? CPUState::kFlagCarry : 0) |
++                       ((nzcv & 1) ? CPUState::kFlagOverflow : 0);
++    for (uint32_t rt = 0; rt != 31; ++rt) {
++      for (uint32_t i = 0; i != 31; ++i) state_.cpu.x[i] = ~uint64_t{0} - i;
++      state_.cpu.sp = 0x123456789abcdef0ULL;
++      state_.cpu.flags = flags;
++      Interpret(0xd5380400U | rt);  // Includes exact Marriott MRS x11, PFR0.
++      EXPECT_EQ(state_.cpu.x[rt], 0x11ULL);
++      EXPECT_EQ(state_.cpu.sp, 0x123456789abcdef0ULL);
++      EXPECT_EQ(state_.cpu.flags, flags);
++      EXPECT_EQ(state_.cpu.insn_addr, ToGuestAddr(&insn_) + 4);
++      for (uint32_t i = 0; i != 31; ++i) {
++        if (i != rt) EXPECT_EQ(state_.cpu.x[i], ~uint64_t{0} - i);
++      }
++    }
++  }
++}
++
++TEST_F(Arm64InterpreterOnlyTest, MrsInstructionSetFeatureQueriesReadOnly) {
++  const struct {
++    uint32_t opcode;
++    uint64_t value;
++  } queries[] = {{0xd5380600U, 0x211120ULL}, {0xd5380620U, 0}};
++  for (const auto& query : queries) {
++    for (uint32_t nzcv = 0; nzcv != 16; ++nzcv) {
++      const auto flags = ((nzcv & 8) ? CPUState::kFlagNegative : 0) |
++                         ((nzcv & 4) ? CPUState::kFlagZero : 0) |
++                         ((nzcv & 2) ? CPUState::kFlagCarry : 0) |
++                         ((nzcv & 1) ? CPUState::kFlagOverflow : 0);
++      for (uint32_t rt = 0; rt != 32; ++rt) {
++        for (uint32_t i = 0; i != 31; ++i) state_.cpu.x[i] = ~uint64_t{0} - i;
++        state_.cpu.sp = 0x123456789abcdef0ULL;
++        state_.cpu.flags = flags;
++        Interpret(query.opcode | rt);  // Includes XZR and both observed words.
++        for (uint32_t i = 0; i != 31; ++i) {
++          EXPECT_EQ(state_.cpu.x[i], i == rt ? query.value : ~uint64_t{0} - i);
++        }
++        EXPECT_EQ(state_.cpu.sp, 0x123456789abcdef0ULL);
++        EXPECT_EQ(state_.cpu.flags, flags);
++        EXPECT_EQ(state_.cpu.insn_addr, ToGuestAddr(&insn_) + 4);
++      }
++    }
++  }
++}
++
++TEST_F(Arm64InterpreterOnlyTest, MrsInstructionSetFeatureProfileFields) {
++  Interpret(0xd538060aU);  // Exact observed MRS x10, ID_AA64ISAR0_EL1.
++  const uint64_t isar0 = state_.cpu.x[10];
++  EXPECT_EQ((isar0 >> 4) & 0xf, 2U);   // AES + PMULL.
++  EXPECT_EQ((isar0 >> 8) & 0xf, 1U);   // SHA1.
++  EXPECT_EQ((isar0 >> 12) & 0xf, 1U);  // SHA256, no SHA512 promise.
++  EXPECT_EQ((isar0 >> 16) & 0xf, 1U);  // CRC32.
++  EXPECT_EQ((isar0 >> 20) & 0xf, 2U);  // LSE, no LSE128 promise.
++  EXPECT_EQ(isar0 & ~0x00fffff0ULL, 0U);  // No other extension or reserved bits.
++  Interpret(0xd5380629U);  // Exact observed MRS x9, ID_AA64ISAR1_EL1.
++  EXPECT_EQ(state_.cpu.x[9], 0U);  // No guaranteed ISAR1 optional extensions.
++}
++
++TEST_F(Arm64InterpreterOnlyTest, MrsPfr0ZeroRegisterDiscardsResult) {
++  for (uint32_t nzcv = 0; nzcv != 16; ++nzcv) {
++    const auto flags = ((nzcv & 8) ? CPUState::kFlagNegative : 0) |
++                       ((nzcv & 4) ? CPUState::kFlagZero : 0) |
++                       ((nzcv & 2) ? CPUState::kFlagCarry : 0) |
++                       ((nzcv & 1) ? CPUState::kFlagOverflow : 0);
++    for (uint32_t i = 0; i != 31; ++i) state_.cpu.x[i] = ~uint64_t{0} - i;
++    state_.cpu.sp = 0x123456789abcdef0ULL;
++    state_.cpu.flags = flags;
++    Interpret(0xd538041fU);  // mrs xzr, ID_AA64PFR0_EL1
++    for (uint32_t i = 0; i != 31; ++i) EXPECT_EQ(state_.cpu.x[i], ~uint64_t{0} - i);
++    EXPECT_EQ(state_.cpu.sp, 0x123456789abcdef0ULL);
++    EXPECT_EQ(state_.cpu.flags, flags);
++    EXPECT_EQ(state_.cpu.insn_addr, ToGuestAddr(&insn_) + 4);
++  }
++}
++
++// Exact instruction from the Marriott crash. This query must return the
++// translator's actual feature set and preserve all flags and other registers.
++TEST_F(Arm64InterpreterOnlyTest, MrsPfr1ReadOnlyFeatureQuery) {
++  for (uint32_t rt = 0; rt != 31; ++rt) {
++    for (uint32_t i = 0; i != 31; ++i) state_.cpu.x[i] = ~uint64_t{0} - i;
++    state_.cpu.sp = 0x123456789abcdef0ULL;
++    const auto sp = state_.cpu.sp;
++    state_.cpu.flags = CPUState::kFlagNegative | CPUState::kFlagCarry;
++    const auto flags = state_.cpu.flags;
++    Interpret(0xd5380420U | rt);  // mrs Xt, ID_AA64PFR1_EL1
++    EXPECT_EQ(state_.cpu.x[rt], 0ULL);
++    EXPECT_EQ(state_.cpu.sp, sp);
++    EXPECT_EQ(state_.cpu.flags, flags);
++    EXPECT_EQ(state_.cpu.insn_addr, ToGuestAddr(&insn_) + 4);
++    for (uint32_t i = 0; i != 31; ++i) {
++      if (i != rt) EXPECT_EQ(state_.cpu.x[i], ~uint64_t{0} - i);
++    }
++  }
++}
++
++TEST_F(Arm64InterpreterOnlyTest, MrsPfr1ZeroRegisterDiscardsResult) {
++  for (uint32_t i = 0; i != 31; ++i) state_.cpu.x[i] = ~uint64_t{0} - i;
++  state_.cpu.sp = 0x123456789abcdef0ULL;
++  const auto sp = state_.cpu.sp;
++  state_.cpu.flags = CPUState::kFlagNegative | CPUState::kFlagCarry;
++  const auto flags = state_.cpu.flags;
++  Interpret(0xd538043fU);  // mrs xzr, ID_AA64PFR1_EL1
++  for (uint32_t i = 0; i != 31; ++i) EXPECT_EQ(state_.cpu.x[i], ~uint64_t{0} - i);
++  EXPECT_EQ(state_.cpu.sp, sp);
++  EXPECT_EQ(state_.cpu.flags, flags);
++  EXPECT_EQ(state_.cpu.insn_addr, ToGuestAddr(&insn_) + 4);
++}
++
+ 
+ // crc32b w0, w1, w2
+ TEST_F(Arm64InterpreterOnlyTest, Crc32_crc32b) {
+diff --git a/kernel_api/Android.bp b/kernel_api/Android.bp
+index 7ea70e8..034b1c2 100644
+--- a/kernel_api/Android.bp
++++ b/kernel_api/Android.bp
+@@ -195,3 +195,16 @@ cc_test_library {
+     ],
+ }
+ // endregion
++
++// Keep the ARM64 profile's architecture-guarded interface in a correctly
++// configured test TU without changing the legacy kernel test library's flags.
++cc_test_library {
++    name: "libberberis_kernel_api_arm64_cpuinfo_unit_tests",
++    defaults: ["berberis_arm64_defaults"],
++    host_supported: true,
++    shared: {
++        enabled: false,
++    },
++    srcs: ["arm64/cpuinfo_profile_test.cc"],
++    header_libs: ["libberberis_kernel_api_headers"],
++}
+diff --git a/kernel_api/arm64/cpuinfo_profile_test.cc b/kernel_api/arm64/cpuinfo_profile_test.cc
+new file mode 100644
+index 0000000..69a4401
+--- /dev/null
++++ b/kernel_api/arm64/cpuinfo_profile_test.cc
+@@ -0,0 +1,76 @@
++// Copyright (C) 2026 Droidloom contributors
++// SPDX-License-Identifier: Apache-2.0
++
++#if !defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64) || defined(NATIVE_BRIDGE_GUEST_ARCH_RISCV64)
++#error "CPUinfo profile tests require the isolated ARM64 test-library compile contract"
++#endif
++
++#include "berberis/kernel_api/open_emulation.h"
++
++#include <gtest/gtest.h>
++
++#include <cstdint>
++#include <map>
++#include <set>
++#include <sstream>
++#include <string>
++
++namespace berberis {
++namespace {
++
++std::set<std::string> Features(const std::string& cpuinfo) {
++  const std::string key = "Features\t: ";
++  const auto begin = cpuinfo.find(key);
++  if (begin == std::string::npos) return {};
++  std::istringstream stream(cpuinfo.substr(begin + key.size(),
++      cpuinfo.find('\n', begin) - begin - key.size()));
++  std::set<std::string> features;
++  for (std::string feature; stream >> feature;) features.insert(feature);
++  return features;
++}
++
++TEST(Arm64GuestCpuinfo, FeaturesMatchConservativeAuxvProfile) {
++  // Linux arm64 HWCAP bit positions; matches guest_loader_arch.cc and the
++  // observed guest AT_HWCAP. This tests advertisement, not instruction support.
++  const std::map<std::string, uint64_t> bits = {
++      {"fp", 1ULL << 0}, {"asimd", 1ULL << 1}, {"aes", 1ULL << 3},
++      {"pmull", 1ULL << 4}, {"sha1", 1ULL << 5}, {"sha2", 1ULL << 6},
++      {"crc32", 1ULL << 7}, {"atomics", 1ULL << 8},
++  };
++  uint64_t mask = 0;
++  const auto features = Features(FormatGuestCpuinfo(8));
++  ASSERT_EQ(features.size(), bits.size());
++  for (const auto& feature : features) {
++    const auto bit = bits.find(feature);
++    ASSERT_NE(bit, bits.end()) << feature;
++    mask |= bit->second;
++  }
++  EXPECT_EQ(mask, 0x1fbULL);
++}
++
++TEST(Arm64GuestCpuinfo, PreservesRequestedCountAndClamp) {
++  for (int count : {-1, 0, 1, 8, 64}) {
++    const auto cpuinfo = FormatGuestCpuinfo(count);
++    const int expected = count < 1 ? 1 : count;
++    size_t position = 0;
++    for (int cpu = 0; cpu < expected; ++cpu) {
++      const auto line = "processor\t: " + std::to_string(cpu) + "\n";
++      const auto at = cpuinfo.find(line, position);
++      ASSERT_NE(at, std::string::npos);
++      position = at + line.size();
++    }
++    EXPECT_EQ(cpuinfo.find("processor\t: ", position), std::string::npos);
++  }
++}
++
++TEST(Arm64GuestCpuinfo, PreservesExistingNonFeatureFields) {
++  const auto cpuinfo = FormatGuestCpuinfo(1);
++  for (const char* line : {"BogoMIPS\t: 38.40\n", "CPU implementer\t: 0x41\n",
++      "CPU architecture: 8\n", "CPU variant\t: 0x1\n", "CPU part\t: 0xd05\n",
++      "CPU revision\t: 0\n"}) {
++    EXPECT_NE(cpuinfo.find(line), std::string::npos);
++  }
++}
++
++}  // namespace
++}  // namespace berberis
+diff --git a/kernel_api/arm64/open_emulation.cc b/kernel_api/arm64/open_emulation.cc
+index 7731242..359971e 100644
+--- a/kernel_api/arm64/open_emulation.cc
++++ b/kernel_api/arm64/open_emulation.cc
+@@ -115,10 +115,12 @@ std::string FormatGuestCpuinfo(int num_cpus) {
+     num_cpus = 1;
+   }
+   // One block per online CPU, in the ARM64 /proc/cpuinfo field layout the
+-  // guest cpuinfo library parses. The feature list is the ARM64 ISA surface
+-  // Digitalis translates (matches the HWCAPs the guest sees: LSE 'atomics',
+-  // FP16 'fphp'/'asimdhp', RDM 'asimdrdm', LRCPC 'lrcpc', DC CVAP 'dcpop',
+-  // dotprod 'asimddp', AES/PMULL/SHA1/SHA2/CRC32). The implementer/part/variant
++  // guest cpuinfo library parses. Report the same conservative feature profile
++  // as InitKernelArgs' AT_HWCAP (0x1fb), including LSE 'atomics' and
++  // AES/PMULL/SHA1/SHA2/CRC32. Do not advertise optional features absent from
++  // that guest ABI profile, even if individual instructions are translated.
++  // In particular, 'cpuid' would promise user-mode ID-register access that
++  // the guest auxv does not advertise. The implementer/part/variant
+   // describe a generic ARMv8 core (0x41 = 'ARM', 0xd05 = Cortex-A55); only the
+   // CPU count is taken from the real device, so a guest sees the emulator's
+   // actual online core count rather than a hard-coded value.
+@@ -129,8 +131,7 @@ std::string FormatGuestCpuinfo(int num_cpus) {
+     int n = snprintf(block, sizeof(block),
+                      "processor\t: %d\n"
+                      "BogoMIPS\t: 38.40\n"
+-                     "Features\t: fp asimd evtstrm aes pmull sha1 sha2 crc32 "
+-                     "atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp\n"
++                     "Features\t: fp asimd aes pmull sha1 sha2 crc32 atomics\n"
+                      "CPU implementer\t: 0x41\n"
+                      "CPU architecture: 8\n"
+                      "CPU variant\t: 0x1\n"
+diff --git a/lite_translator/arm64_to_x86_64/lite_translate_region_exec_tests.cc b/lite_translator/arm64_to_x86_64/lite_translate_region_exec_tests.cc
+index baa65af..4d6c68c 100644
+--- a/lite_translator/arm64_to_x86_64/lite_translate_region_exec_tests.cc
++++ b/lite_translator/arm64_to_x86_64/lite_translate_region_exec_tests.cc
+@@ -17792,6 +17792,77 @@ TEST_F(Arm64LiteTranslateRegionTest, HvcDeliversSigill) {
+   EXPECT_EQ(g_brk_signal, SIGILL);
+ }
+ 
++TEST_F(Arm64LiteTranslateRegionTest, InstructionSetQueriesDoNotPermitWritesOrOtherIds) {
++  struct sigaction sa = {};
++  struct sigaction old_sa = {};
++  sa.sa_handler = BrkTrapHandler;
++  sigemptyset(&sa.sa_mask);
++  ASSERT_EQ(sigaction(SIGILL, &sa, &old_sa), 0);
++  for (uint32_t insn : {0xd518060aU,  // msr ID_AA64ISAR0_EL1, x10
++                        0xd5180629U,  // msr ID_AA64ISAR1_EL1, x9
++                        0xd5380649U,  // ISAR2 remains unsupported.
++                        0xd53806e9U,  // Unknown neighboring ID register.
++                        0x337aabe9U}) {  // Invalid word remains invalid.
++    for (uint32_t i = 0; i != 31; ++i) state_.cpu.x[i] = ~uint64_t{0} - i;
++    state_.cpu.sp = 0x123456789abcdef0ULL;
++    state_.cpu.flags = CPUState::kFlagNegative | CPUState::kFlagZero |
++                       CPUState::kFlagCarry | CPUState::kFlagOverflow;
++    const auto flags = state_.cpu.flags;
++    state_.cpu.insn_addr = ToGuestAddr(&insn);
++    g_brk_signal = 0;
++    if (sigsetjmp(g_brk_jmp, 1) == 0) InterpretInsn(&state_);
++    EXPECT_EQ(g_brk_signal, SIGILL) << std::hex << insn;
++    EXPECT_EQ(state_.cpu.insn_addr, ToGuestAddr(&insn));
++    EXPECT_EQ(state_.cpu.flags, flags);
++    EXPECT_EQ(state_.cpu.sp, 0x123456789abcdef0ULL);
++    for (uint32_t i = 0; i != 31; ++i) EXPECT_EQ(state_.cpu.x[i], ~uint64_t{0} - i);
++  }
++  sigaction(SIGILL, &old_sa, nullptr);
++}
++
++TEST_F(Arm64LiteTranslateRegionTest, Pfr0QueryDoesNotPermitWritesOrUnknownInstructions) {
++  struct sigaction sa = {};
++  struct sigaction old_sa = {};
++  sa.sa_handler = BrkTrapHandler;
++  sigemptyset(&sa.sa_mask);
++  ASSERT_EQ(sigaction(SIGILL, &sa, &old_sa), 0);
++  for (uint32_t insn : {0xd518040bU,  // msr ID_AA64PFR0_EL1, x11: read-only
++                        0xd53804ebU,  // mrs x11, S3_0_C0_C4_7: unsupported
++                        0x337aabe9U}) {  // Remains an invalid instruction.
++    for (uint32_t i = 0; i != 31; ++i) state_.cpu.x[i] = ~uint64_t{0} - i;
++    state_.cpu.sp = 0x123456789abcdef0ULL;
++    state_.cpu.flags = CPUState::kFlagNegative | CPUState::kFlagZero |
++                       CPUState::kFlagCarry | CPUState::kFlagOverflow;
++    const auto flags = state_.cpu.flags;
++    state_.cpu.insn_addr = ToGuestAddr(&insn);
++    g_brk_signal = 0;
++    if (sigsetjmp(g_brk_jmp, 1) == 0) InterpretInsn(&state_);
++    EXPECT_EQ(g_brk_signal, SIGILL) << std::hex << insn;
++    EXPECT_EQ(state_.cpu.insn_addr, ToGuestAddr(&insn));
++    EXPECT_EQ(state_.cpu.flags, flags);
++    EXPECT_EQ(state_.cpu.sp, 0x123456789abcdef0ULL);
++    for (uint32_t i = 0; i != 31; ++i) EXPECT_EQ(state_.cpu.x[i], ~uint64_t{0} - i);
++  }
++  sigaction(SIGILL, &old_sa, nullptr);
++}
++
++TEST_F(Arm64LiteTranslateRegionTest, Pfr1QueryDoesNotPermitWritesOrUnknownInstructions) {
++  struct sigaction sa = {};
++  struct sigaction old_sa = {};
++  sa.sa_handler = BrkTrapHandler;
++  sigemptyset(&sa.sa_mask);
++  ASSERT_EQ(sigaction(SIGILL, &sa, &old_sa), 0);
++  for (uint32_t insn : {0xd5180429U,  // msr S3_0_C0_C4_1, x9: read-only PFR1
++                        0xd53804e9U,  // mrs x9, S3_0_C0_C4_7: unsupported ID register
++                        0x337aabe9U}) {  // Invalid word seen in the separate CEA crash.
++    state_.cpu.insn_addr = ToGuestAddr(&insn);
++    g_brk_signal = 0;
++    if (sigsetjmp(g_brk_jmp, 1) == 0) InterpretInsn(&state_);
++    EXPECT_EQ(g_brk_signal, SIGILL) << std::hex << insn;
++  }
++  sigaction(SIGILL, &old_sa, nullptr);
++}
++
+ TEST_F(Arm64LiteTranslateRegionTest, SmcDeliversSigill) {
+   struct sigaction sa = {};
+   struct sigaction old_sa = {};
+diff --git a/runtime/arm64/run_guest_call.cc b/runtime/arm64/run_guest_call.cc
+index 859b94e..ebeda14 100644
+--- a/runtime/arm64/run_guest_call.cc
++++ b/runtime/arm64/run_guest_call.cc
+@@ -27,9 +27,31 @@
+ #include "berberis/guest_state/guest_state_arch.h"
+ #include "berberis/instrument/guest_call.h"
+ #include "berberis/runtime_primitives/virtual_guest_call_frame.h"
++#include "berberis/runtime_primitives/interpret_helpers.h"
+ 
+ namespace berberis {
+ 
++extern "C" __attribute__((used, __visibility__("hidden"))) void berberis_HandleUndefinedInsn(
++    ThreadState* state) {
++  CHECK(state);
++#if defined(__x86_64__)
++  GuestThread* thread = GetGuestThread(*state);
++  ThreadState* precise_state = nullptr;
++  if (thread) {
++    CHECK_EQ(thread->state(), state);
++    CHECK_EQ(GetResidence(*state), kOutsideGeneratedCode);
++    thread->PrepareSynchronousSignal(SIGILL);
++    // Keep precision valid if another thread changes the action before the
++    // emission. Native handlers do not consume this marker; every subsequent
++    // emitter overwrites it, including null for the naked native helper.
++    precise_state = state;
++  }
++  UndefinedInsnWithContext(GetInsnAddr(GetCPUState(*state)), precise_state);
++#else
++  UndefinedInsn(GetInsnAddr(GetCPUState(*state)));
++#endif
++}
++
+ // Call a guest function from the host with the given arguments.
+ // ARM64 AAPCS64: x0-x7 for integer args, v0-v7 for FP/SIMD args.
+ // SP is a separate register in CPUState (not part of x[]).
+diff --git a/runtime_primitives/include/berberis/runtime_primitives/interpret_helpers.h b/runtime_primitives/include/berberis/runtime_primitives/interpret_helpers.h
+index e9f06de..854554e 100644
+--- a/runtime_primitives/include/berberis/runtime_primitives/interpret_helpers.h
++++ b/runtime_primitives/include/berberis/runtime_primitives/interpret_helpers.h
+@@ -21,8 +21,16 @@
+ 
+ namespace berberis {
+ 
++struct ThreadState;
++
+ void UndefinedInsn(GuestAddr pc);
+ 
++// Only the synchronized interpreter fault entry supplies a state. A matching
++// native delivery point says that this state is precise, not that siginfo has
++// escaped ptrace replacement or standard-signal coalescing.
++void UndefinedInsnWithContext(GuestAddr pc, ThreadState* state);
++bool ConsumeSynchronizedUndefinedDelivery(ThreadState* state, uintptr_t native_pc);
++
+ // region digitalis - BRK #imm software breakpoint: raise a synchronous SIGTRAP
+ // so the Berberis host signal handler routes it to the guest's SIGTRAP action.
+ void BreakpointInsn(GuestAddr pc);
+diff --git a/runtime_primitives/include/berberis/runtime_primitives/runtime_library.h b/runtime_primitives/include/berberis/runtime_primitives/runtime_library.h
+index de35deb..cc50c68 100644
+--- a/runtime_primitives/include/berberis/runtime_primitives/runtime_library.h
++++ b/runtime_primitives/include/berberis/runtime_primitives/runtime_library.h
+@@ -42,6 +42,7 @@ static_assert(berberis_entry_NotTranslated != berberis_entry_Translating,
+               "code to distinguish entry status got optimized");
+ 
+ __attribute__((__visibility__("hidden"))) void berberis_HandleNoExec(ThreadState* state);
++__attribute__((__visibility__("hidden"))) void berberis_HandleUndefinedInsn(ThreadState* state);
+ 
+ }  // extern "C"
+ 
+diff --git a/runtime_primitives/include/berberis/runtime_primitives/signal_queue.h b/runtime_primitives/include/berberis/runtime_primitives/signal_queue.h
+index ca53c07..fe71a57 100644
+--- a/runtime_primitives/include/berberis/runtime_primitives/signal_queue.h
++++ b/runtime_primitives/include/berberis/runtime_primitives/signal_queue.h
+@@ -55,6 +55,10 @@ class SignalQueue {
+   // Can be called concurrently from multiple threads.
+   void EnqueueSignal(siginfo_t* info);
+ 
++  // A precise synchronous fault precedes older asynchronous records.
++  // Ordinary signal-number priority and equal-number FIFO remain unchanged.
++  void EnqueueSynchronousSignal(siginfo_t* info);
++
+   // Get next signal from the queue according to priorities.
+   // ATTENTION: call from single thread only!
+   siginfo_t* DequeueSignalUnsafe();
+@@ -67,8 +71,11 @@ class SignalQueue {
+   struct Node {
+     siginfo_t info;
+     Node* next;
++    bool synchronous;
+   };
+ 
++  void EnqueueWithPriority(siginfo_t* info, bool synchronous);
++
+   std::atomic<Node*> produced_;
+   Node* consumed_;
+ 
+diff --git a/runtime_primitives/interpret_helpers_arm64.cc b/runtime_primitives/interpret_helpers_arm64.cc
+index e517910..ac62ce7 100644
+--- a/runtime_primitives/interpret_helpers_arm64.cc
++++ b/runtime_primitives/interpret_helpers_arm64.cc
+@@ -24,28 +24,113 @@
+ 
+ #include <cstdint>
+ #include <cstring>
++#include <atomic>
+ 
+ #include "berberis/base/checks.h"
+ #include "berberis/base/tracing.h"
++#include "berberis/base/host_signal.h"
+ #include "berberis/guest_state/guest_addr.h"
+ 
+ namespace berberis {
+ 
+-void UndefinedInsn(GuestAddr pc) {
++namespace {
++#if defined(__x86_64__)
++constinit thread_local std::atomic<ThreadState*> g_synchronized_undefined_state{nullptr};
++static_assert(std::atomic<ThreadState*>::is_always_lock_free);
++
++// The kernel signal frame resumes at exactly this hidden label. In particular,
++// a native fault in tracing, memcpy, or any other host instruction does not
++// acquire the synchronized guest-delivery classification.
++extern "C" long berberis_QueueUndefinedSignal(pid_t, pid_t, const siginfo_t*);
++extern "C" char berberis_UndefinedSignalReturn;
++#define BERBERIS_UNDEFINED_STRINGIFY_IMPL(x) #x
++#define BERBERIS_UNDEFINED_STRINGIFY(x) BERBERIS_UNDEFINED_STRINGIFY_IMPL(x)
++asm(".text\n"
++    ".hidden berberis_QueueUndefinedSignal\n"
++    ".type berberis_QueueUndefinedSignal,@function\n"
++    "berberis_QueueUndefinedSignal:\n"
++    ".cfi_startproc\n"
++    "mov %rdx,%r10\n"
++    "mov $4,%edx\n"
++    "mov $" BERBERIS_UNDEFINED_STRINGIFY(__NR_rt_tgsigqueueinfo) ",%eax\n"
++    "syscall\n"
++    ".globl berberis_UndefinedSignalReturn\n"
++    ".hidden berberis_UndefinedSignalReturn\n"
++    "berberis_UndefinedSignalReturn:\n"
++    "ret\n"
++    ".cfi_endproc\n"
++    ".size berberis_QueueUndefinedSignal,.-berberis_QueueUndefinedSignal\n");
++#undef BERBERIS_UNDEFINED_STRINGIFY
++#undef BERBERIS_UNDEFINED_STRINGIFY_IMPL
++
++void PrepareNativeUndefinedSignal() {
++  HostSigset mask{};
++  RTSigprocmaskSyscallOrDie(SIG_SETMASK, nullptr, &mask);
++  HostStructSigaction action{};
++  CHECK_EQ(HostSigaction(SIGILL, nullptr, &action), 0);
++  // Model the blocked/ignored policy of Linux force_sig_fault: a blocked
++  // synchronous fault must not call a handler that the thread blocked.
++  // This userspace sequence is not the kernel's atomic sighand operation.
++  if (sigismember(&mask, SIGILL) || action.sa_handler == SIG_IGN) {
++    HostStructSigaction dfl{};
++    dfl.sa_handler = SIG_DFL;
++    CHECK_EQ(HostSigaction(SIGILL, &dfl, nullptr), 0);
++    HostSigset unblock{};
++    sigemptyset(&unblock);
++    HostSigaddset(&unblock, SIGILL);
++    RTSigprocmaskSyscallOrDie(SIG_UNBLOCK, &unblock, nullptr);
++  }
++}
++#endif
++}  // namespace
++
++bool ConsumeSynchronizedUndefinedDelivery(ThreadState* state, uintptr_t native_pc) {
++#if defined(__x86_64__)
++  if (!state) return false;
++  if (native_pc != reinterpret_cast<uintptr_t>(&berberis_UndefinedSignalReturn)) return false;
++  ThreadState* expected = state;
++  return g_synchronized_undefined_state.compare_exchange_strong(
++      expected, nullptr, std::memory_order_acq_rel);
++#else
++  (void)state;
++  (void)native_pc;
++  return false;
++#endif
++}
++
++void UndefinedInsn(GuestAddr pc) { UndefinedInsnWithContext(pc, nullptr); }
++
++void UndefinedInsnWithContext(GuestAddr pc, ThreadState* state) {
+   auto* addr = ToHostAddr<const uint32_t>(pc);
+   // ARM64 instructions are always 4 bytes.
+   uint32_t code;
+   memcpy(&code, addr, sizeof(code));
+   TRACE_AND_ALOGE("Undefined arm64 instruction 0x%" PRIx32 " at %p", code, addr);
+-#ifdef __GLIBC__
+-  // Our old 2.17 glibc has a bug resulting in raise() failing after any CLONE_VM.
+-  // Work around by calling tgkill directly.
++#if defined(__x86_64__)
++  PrepareNativeUndefinedSignal();
+   pid_t pid = syscall(__NR_getpid);
+   pid_t tid = syscall(__NR_gettid);
+-  syscall(SYS_tgkill, pid, tid, SIGILL);
++  siginfo_t info{};
++  info.si_signo = SIGILL;
++  info.si_code = ILL_ILLOPC;
++  info.si_addr = ToHostAddr<void>(pc);
++  // Every invocation overwrites a previous value, including the naked native
++  // helper's null state. No token points at a C++ stack object. Consume before
++  // running any guest handler; clear on normal return, including suppression.
++  g_synchronized_undefined_state.store(state, std::memory_order_release);
++  long result = berberis_QueueUndefinedSignal(pid, tid, &info);
++  g_synchronized_undefined_state.store(nullptr, std::memory_order_release);
++  CHECK_EQ(result, 0);
++#else
++  // Other host backends retain their previous transport until they have an
++  // equally precise native-delivery marker and dispatcher qualification.
++  (void)state;
++#ifdef __GLIBC__
++  syscall(SYS_tgkill, syscall(__NR_getpid), syscall(__NR_gettid), SIGILL);
+ #else
+   raise(SIGILL);
+ #endif
++#endif
+ }
+ 
+ void BreakpointInsn(GuestAddr pc) {
+diff --git a/runtime_primitives/signal_queue.cc b/runtime_primitives/signal_queue.cc
+index b9d8312..62abe15 100644
+--- a/runtime_primitives/signal_queue.cc
++++ b/runtime_primitives/signal_queue.cc
+@@ -29,7 +29,16 @@ siginfo_t* SignalQueue::AllocSignal() {
+ }
+ 
+ void SignalQueue::EnqueueSignal(siginfo_t* info) {
++  EnqueueWithPriority(info, false);
++}
++
++void SignalQueue::EnqueueSynchronousSignal(siginfo_t* info) {
++  EnqueueWithPriority(info, true);
++}
++
++void SignalQueue::EnqueueWithPriority(siginfo_t* info, bool synchronous) {
+   Node* node = bit_cast<Node*>(info);
++  node->synchronous = synchronous;
+   Node* produced = produced_.load(std::memory_order_relaxed);
+   do {
+     node->next = produced;
+@@ -58,7 +67,9 @@ siginfo_t* SignalQueue::DequeueSignalUnsafe() {
+   Node** best_p = &consumed_;
+   for (Node** curr_p = &consumed_->next; *curr_p; curr_p = &(*curr_p)->next) {
+     // As the list is in reverse order, use '<=' to get last match.
+-    if ((*curr_p)->info.si_signo <= (*best_p)->info.si_signo) {
++    if (((*curr_p)->synchronous && !(*best_p)->synchronous) ||
++        ((*curr_p)->synchronous == (*best_p)->synchronous &&
++         (*curr_p)->info.si_signo <= (*best_p)->info.si_signo)) {
+       best_p = curr_p;
+     }
+   }

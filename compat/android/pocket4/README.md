@@ -8,6 +8,8 @@ The [Camera source delivery](camera/README.md) includes the zero-device/teardown
 
 The [presenter timing source bundle](presenter/README.md) preserves the complete public preimage and the four-file timing repair. Its release build and 70 scoped checks passed; Main deployment and fresh application acceptance remain separate gates.
 
+The [native-bridge source bundle](native-bridge/README.md) preserves R15 alarm semantics and R16 guest maps offsets, their complete inherited translator source chain, the full public builder precondition, and separate raw/effective compiler input locks. Source reconstruction passed for all 906/907/908 translator files and 389 builder files. Both Android engines and full host suites were built; isolated runtime and actual application qualification remain open. The LMKD pressure candidate is explicitly blocked from Main deployment after a real foreground-survival failure.
+
 The [framework epoch guard](acceptance/framework-epoch/README.md) binds acceptance observations and actions to init, zygote, system_server and SurfaceFlinger identities. Ten real-process Linux regressions and a read-only check of the actual Android framework passed. This standalone module supports new acceptance workflows; it does not replace the installed action helper.
 
 [Framework restart evidence](evidence/framework-restart-20261104.json) explains the interrupted Bilibili trial. Public Unicode search passed in the prior framework epoch. Before the later video-open attempt, a zero presentation timestamp caused the composer service to exit and init to restart the Android framework. The later action timed out with unknown outcome; playback did not pass. This is not evidence of a fresh Bilibili crash or proof of a memory-pressure cause.

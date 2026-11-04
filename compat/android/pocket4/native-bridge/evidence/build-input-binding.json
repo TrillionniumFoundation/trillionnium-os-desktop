@@ -1,0 +1,72 @@
+{
+  "schema": "pocket4-native-build-input-binding-v1",
+  "checks": [
+    {
+      "revision": "r15",
+      "source_receipt_sha256": "696a409ab5958a1a74665a78e705bbe9b3a0e084d8aa183d7bf9bd6afc15375a",
+      "inputs_receipt_sha256": "c10f010b1256bb1fc7f9a1c0d2e1df5142f8698f8e243904b848f16d7c9947ca",
+      "common_receipt_fields_match": {
+        "effective_teto_files": true,
+        "effective_projection": true,
+        "builder_files": true,
+        "compiler_entry_sha256": true,
+        "compiler_revision": true,
+        "source_lock_sha256": true,
+        "native_bridge_lock_sha256": true,
+        "source_snapshot": true
+      },
+      "engine_sha256": "a770eda38e27d072f10568b7dee164a429f9eb05261667f7cb3c6f1c10e0d535",
+      "host_test_binary_sha256": "e802578d9109eb99257c341ad491731baf9321075f1adedcebf31ffea3d4c7ef",
+      "frozen_engine_hash_matches_source_receipt": true,
+      "frozen_host_test_hash_matches_source_receipt": true,
+      "logical_targets": [
+        "libberberis_arm64",
+        "berberis_arm64_host_tests"
+      ],
+      "tests_requested": true,
+      "suite_receipt_sha256": "a3ba078d0df07f57d1fb7a840478cac9b544155da6ed25d972c249089b393c98",
+      "source_snapshot_count": 907,
+      "effective_teto_file_count": 907,
+      "compiler_flags_and_target_abis_are_not_claimed_identical": true,
+      "full_suite_binary_matches_build_receipt": true
+    },
+    {
+      "revision": "r16",
+      "source_receipt_sha256": "9b46dca0395ecc77a75fa493d6788c3ea8c9e7a8f3b844c7a57aa5e78bfccf11",
+      "inputs_receipt_sha256": "005f4a7f2923aee3cfb88662c3f68a8eeca48c9bc667f3d956bebb7442df029b",
+      "common_receipt_fields_match": {
+        "effective_teto_files": true,
+        "effective_projection": true,
+        "builder_files": true,
+        "compiler_entry_sha256": true,
+        "compiler_revision": true,
+        "source_lock_sha256": true,
+        "native_bridge_lock_sha256": true,
+        "source_snapshot": true
+      },
+      "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+      "host_test_binary_sha256": "35433eb0e466dd24387b0fcfbe933bcc0477b7fea193ad474e68e1c0a9d5141d",
+      "frozen_engine_hash_matches_source_receipt": true,
+      "frozen_host_test_hash_matches_source_receipt": true,
+      "logical_targets": [
+        "libberberis_arm64",
+        "berberis_arm64_host_tests"
+      ],
+      "tests_requested": true,
+      "suite_receipt_sha256": "1b03cabfaf8cd0ef4ba953fa28d5dc74d4d203a30e6f09b838aca1010eba5886",
+      "source_snapshot_count": 908,
+      "effective_teto_file_count": 908,
+      "compiler_flags_and_target_abis_are_not_claimed_identical": true,
+      "full_suite_binary_matches_build_receipt": true
+    }
+  ],
+  "header_projection": {
+    "builder_file": "tools/droidloom-update/src/native_bridge.rs",
+    "builder_file_sha256": "1e2489c3fc2e579cee1bdbbf2557fe6483b5720a854d2e5e4b55dccf76e0405d",
+    "path": "interpreter/arm64/interpreter.h",
+    "raw_sha256": "6a07de1c3b9b0b4be2dc521829734ec2fed82a3764247b0a4b73afc93464a174",
+    "effective_sha256": "c2dbb95f386e5d542c62031123b85926e6661cf3a31dca9090e353713ef78d87",
+    "occurrence_count": 1,
+    "exact_diff": "--- a/interpreter/arm64/interpreter.h\n+++ b/interpreter/arm64/interpreter.h\n@@ -4024,8 +4024,6 @@\n   void LoadStoreExclusive(const Decoder::LoadStoreExclusiveArgs& args, Register base) {\n     CHECK(!exception_raised_);\n     void* host_addr = ToHostAddr<void>(ApplyTbi(base));\n-    bool need_write = (args.op != Decoder::AtomicOp::kLdxr &&\n-                       args.op != Decoder::AtomicOp::kLdar);\n     // Atomic ops use __atomic builtins which handle their own faults via\n     // the registered FaultyLoad/FaultyStore recovery code addresses.\n \n"
+  }
+}

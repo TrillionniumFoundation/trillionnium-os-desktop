@@ -980,5 +980,74 @@
     "real_zero_wire_negative_control_failed_as_expected": true,
     "source_bundle": "presenter/",
     "business_requalification_pending": true
-  }
+  },
+  "native_bridge_candidates": {
+    "status": "BUILT_HOST_TESTED_NOT_MAIN_DEPLOYED",
+    "source_bundle": "native-bridge/",
+    "source_reconstruction_verified": {
+      "translator_stage_file_counts": [
+        906,
+        907,
+        908
+      ],
+      "public_builder_files": 389,
+      "complete_public_builder_precondition": true
+    },
+    "raw_and_effective_inputs_separately_locked": true,
+    "effective_differences_per_revision": {
+      "android_bp_files": 21,
+      "interpreter_header_files": 1
+    },
+    "header_projection": "Remove only unused need_write declaration; exact raw/effective SHA and diff published.",
+    "r15": {
+      "source_commit": "a2cbf8072a580fb1949924e3dda858a6ba6ed984",
+      "engine_sha256": "a770eda38e27d072f10568b7dee164a429f9eb05261667f7cb3c6f1c10e0d535",
+      "focused_cases_passed": 8,
+      "existing_controls_passed": 30,
+      "predecessor_negative_cases_failed": 3,
+      "full_host_suite": {
+        "registered": 3789,
+        "executed": 3787,
+        "failed": 0,
+        "disabled": 2,
+        "skipped": 3
+      }
+    },
+    "r16": {
+      "source_commit": "a9496d886a85752ba407b76509952c06cd79ddb8",
+      "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+      "focused_cases_passed": 4,
+      "existing_controls_passed": 38,
+      "predecessor_negative_cases_failed": 2,
+      "full_host_suite": {
+        "registered": 3793,
+        "executed": 3791,
+        "failed": 0,
+        "disabled": 2,
+        "skipped": 3
+      }
+    },
+    "counts_note": "Executed includes skipped; registered includes disabled. These counts do not mean every registered case passed.",
+    "isolated_runtime_canary": "IN_PROGRESS_NO_RESULT_CLAIM",
+    "actual_application_fixes_verified": false,
+    "production_ready": false
+  },
+  "lmkd_candidate": {
+    "status": "DO_NOT_DEPLOY_MAIN",
+    "candidate_sha256": "b09939386d2f3e128d827701ede4da7594f9b333c92e296ddc1f7bbc50782c8f",
+    "probe": "PASS",
+    "protocol": "PASS",
+    "pressure": "FAIL_FOREGROUND_SURVIVAL",
+    "evidence_run": "r10-domain07-pressure01",
+    "original_result_sha256": "d476e6afe256835eb8216f2b98cd78bed829b15df82fc50b8b0919ed7f0b26fc",
+    "cached_and_foreground_both_disappeared": true,
+    "protected_and_sentinel_survived": true,
+    "oom_count": 0,
+    "main_and_framework_preserved": true,
+    "cause": "Unresolved. Ack wait did not drain private log socket; kill-decision logs are incomplete. Error errno suffix is not a proven syscall cause.",
+    "positive_pressure_acceptance": false,
+    "production_ready": false,
+    "source_and_evidence_delivery": "Pending completed diagnostic review; failed historical result remains retained on the test host."
+  },
+  "updated_at_utc": "2026-11-04T07:21:20Z"
 }

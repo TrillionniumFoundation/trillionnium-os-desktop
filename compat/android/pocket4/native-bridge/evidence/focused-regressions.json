@@ -1,0 +1,733 @@
+{
+  "schema": "pocket4-native-focused-regressions-v1",
+  "r15": {
+    "baseline": {
+      "original_xml_sha256": "54936a0d6a5657258d249945d4cb8dc22a33eef021ac7e7408eecb2556bcf32f",
+      "counts": {
+        "tests": 8,
+        "failures": 3,
+        "disabled": 0,
+        "errors": 0
+      },
+      "cases": [
+        {
+          "name": "HostFaultSignalDisposition.DefaultAlarmStillTerminates",
+          "status": "run",
+          "result": "completed",
+          "failed": true,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ArmedDeadlineStillTerminates",
+          "status": "run",
+          "result": "completed",
+          "failed": true,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.BlockedPendingAlarmIsNotDiscarded",
+          "status": "run",
+          "result": "completed",
+          "failed": true,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExistingPlainHandlerIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.UserSignalCauseAndSenderArePreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExplicitIgnoreIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExistingMaskIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.OtherSignalDispositionsArePreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        }
+      ],
+      "xml_timestamp_as_recorded": "2026-11-03T21:50:32.573",
+      "xml_timestamp_timezone_unspecified": true
+    },
+    "candidate": {
+      "original_xml_sha256": "1348ed40e1e256296fc9a2bfd43034c551a419e30d5ed38b8355517e06a0c5b3",
+      "counts": {
+        "tests": 8,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0
+      },
+      "cases": [
+        {
+          "name": "HostFaultSignalDisposition.DefaultAlarmStillTerminates",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ArmedDeadlineStillTerminates",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.BlockedPendingAlarmIsNotDiscarded",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExistingPlainHandlerIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.UserSignalCauseAndSenderArePreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExplicitIgnoreIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExistingMaskIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.OtherSignalDispositionsArePreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        }
+      ],
+      "xml_timestamp_as_recorded": "2026-11-03T21:50:29.021",
+      "xml_timestamp_timezone_unspecified": true
+    },
+    "r14_controls": {
+      "original_xml_sha256": "e314959ce3180535e576d8a90f63d04ad02e1886dad8e8d11be79b18ed1a363f",
+      "counts": {
+        "tests": 30,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0
+      },
+      "cases": [
+        {
+          "name": "Arm64BreakpointPtrace.GuestHandlerCanResumeAfterBrk",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64BreakpointPtrace.GuestSoftwareTrapPreservesSenderAndValue",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.SynchronousFaultPrecedesOrdinaryPriorityAndReusedNodeDoesNotKeepIt",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.EnqueueDequeue",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.FIFO",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.Priority",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.Stress",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.GuestHandlerGetsFullArchitecturalRecordAndCanResume",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.HandlerWithoutPcEditLeavesFaultingInstructionCurrent",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.DefaultDispositionTerminatesWithSigill",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.IgnoredDispositionCannotIgnoreSynchronousFault",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.BlockedCustomHandlerTakesDefaultSigillAction",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.GuestSyscallObservesActionMaskAndNodefer",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.NestedFaultWithoutNodeferTerminatesAfterFirstHandler",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.NodeferAllowsNestedHandlerWithExplicitPcEdits",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.CurrentFaultPrecedesQueuedLowerSignalWithoutLosingIt",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.HandlerPstateEditsControlNzcvAndConditionalExecution",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64GuestContextPstate.AllNzcvSaveAndRoundTripWithoutHostBitLeak",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64GuestContextPstate.AllArchitecturalEditsPreserveSavedNonNzcvState",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.NativeSiginfoAndPtraceSeeArchitecturalFault",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.RealSoftwareSigillPreservesEntireKernelRecord",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.TracerSuppressionDoesNotAdvanceGuestPc",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.TracerFaultMetadataEditsReachRealGuestHandler",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.TracerSoftwareReplacementKeepsSenderAndValue",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.GenuineHostIllegalInstructionStillTakesFatalPath",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.ExistingGeneratedMemoryFaultRecoveryStillWorks",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.SigcontextOffsetsMatchBionic",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.FpsimdEmbeddedInReservedWithBionicMagic",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.RestoreRoundTrip",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.RestoreHonorsHandlerWritesToReserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        }
+      ],
+      "xml_timestamp_as_recorded": "2026-11-03T21:50:29.048",
+      "xml_timestamp_timezone_unspecified": true
+    },
+    "scope": "Real fork/signal behavior with the production signal implementation and real runtime providers; no Main deployment."
+  },
+  "r16": {
+    "baseline": {
+      "original_xml_sha256": "9945eb1b784e87f41d858717b51bd11410fce995e3287aebd9c25f2bdffe6e82",
+      "counts": {
+        "tests": 4,
+        "failures": 2,
+        "disabled": 0,
+        "errors": 0
+      },
+      "cases": [
+        {
+          "name": "ProcMapsFileOffset.SplitFileMappingAdvancesOffsets",
+          "status": "run",
+          "result": "completed",
+          "failed": true,
+          "skipped": false
+        },
+        {
+          "name": "ProcMapsFileOffset.SplitLargeFileMappingPreservesHighOffsetBits",
+          "status": "run",
+          "result": "completed",
+          "failed": true,
+          "skipped": false
+        },
+        {
+          "name": "ProcMapsFileOffset.UnsplitFileMappingPreservesOffset",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "ProcMapsFileOffset.SplitAnonymousMappingKeepsZeroOffsets",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        }
+      ],
+      "xml_timestamp_as_recorded": "2026-11-03T22:23:51.966",
+      "xml_timestamp_timezone_unspecified": true
+    },
+    "candidate": {
+      "original_xml_sha256": "4a920f1c9be8d54d8c421b09c224603a285541215b62f6b7c81dbc05d0f21508",
+      "counts": {
+        "tests": 4,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0
+      },
+      "cases": [
+        {
+          "name": "ProcMapsFileOffset.SplitFileMappingAdvancesOffsets",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "ProcMapsFileOffset.SplitLargeFileMappingPreservesHighOffsetBits",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "ProcMapsFileOffset.UnsplitFileMappingPreservesOffset",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "ProcMapsFileOffset.SplitAnonymousMappingKeepsZeroOffsets",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        }
+      ],
+      "xml_timestamp_as_recorded": "2026-11-03T22:25:17.730",
+      "xml_timestamp_timezone_unspecified": true
+    },
+    "r15_controls": {
+      "original_xml_sha256": "e4aab97e9e736434f918a2055abbdea161007683d4814d6b9dff023e64c79058",
+      "counts": {
+        "tests": 38,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0
+      },
+      "cases": [
+        {
+          "name": "Arm64BreakpointPtrace.GuestHandlerCanResumeAfterBrk",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64BreakpointPtrace.GuestSoftwareTrapPreservesSenderAndValue",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.SynchronousFaultPrecedesOrdinaryPriorityAndReusedNodeDoesNotKeepIt",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.EnqueueDequeue",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.FIFO",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.Priority",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "SignalQueue.Stress",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.GuestHandlerGetsFullArchitecturalRecordAndCanResume",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.HandlerWithoutPcEditLeavesFaultingInstructionCurrent",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.DefaultDispositionTerminatesWithSigill",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.IgnoredDispositionCannotIgnoreSynchronousFault",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.BlockedCustomHandlerTakesDefaultSigillAction",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.GuestSyscallObservesActionMaskAndNodefer",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.NestedFaultWithoutNodeferTerminatesAfterFirstHandler",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.NodeferAllowsNestedHandlerWithExplicitPcEdits",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.CurrentFaultPrecedesQueuedLowerSignalWithoutLosingIt",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignal.HandlerPstateEditsControlNzcvAndConditionalExecution",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64GuestContextPstate.AllNzcvSaveAndRoundTripWithoutHostBitLeak",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64GuestContextPstate.AllArchitecturalEditsPreserveSavedNonNzcvState",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.NativeSiginfoAndPtraceSeeArchitecturalFault",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.RealSoftwareSigillPreservesEntireKernelRecord",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.TracerSuppressionDoesNotAdvanceGuestPc",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.TracerFaultMetadataEditsReachRealGuestHandler",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.TracerSoftwareReplacementKeepsSenderAndValue",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.GenuineHostIllegalInstructionStillTakesFatalPath",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Arm64UndefinedSignalTransport.ExistingGeneratedMemoryFaultRecoveryStillWorks",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.SigcontextOffsetsMatchBionic",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.FpsimdEmbeddedInReservedWithBionicMagic",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.RestoreRoundTrip",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "UContextLayout.RestoreHonorsHandlerWritesToReserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.DefaultAlarmStillTerminates",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ArmedDeadlineStillTerminates",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.BlockedPendingAlarmIsNotDiscarded",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExistingPlainHandlerIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.UserSignalCauseAndSenderArePreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExplicitIgnoreIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.ExistingMaskIsPreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "HostFaultSignalDisposition.OtherSignalDispositionsArePreserved",
+          "status": "run",
+          "result": "completed",
+          "failed": false,
+          "skipped": false
+        }
+      ],
+      "xml_timestamp_as_recorded": "2026-11-03T22:25:17.845",
+      "xml_timestamp_timezone_unspecified": true
+    },
+    "scope": "Real memfd and anonymous mappings exported by OpenatForGuest; the first fixture initialization failure is preserved locally and is not a pass."
+  },
+  "production_changes": false,
+  "third_party_app_fix_proven": false
+}
