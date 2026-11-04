@@ -1,0 +1,536 @@
+{
+  "schema": 1,
+  "started_utc": "2026-11-04T23:45:15.670668+00:00",
+  "scope": "fixed readonly post-Go6r2 OOM projection and output diagnosis",
+  "uid": 1000,
+  "euid": 1000,
+  "terminal_binding": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-02/attempt-01/terminal.json",
+    "bytes": 1407,
+    "sha256": "d588bc53ba3235756ac5f0545e9f47a3b546bd62a8059e709560b6ac394c7523",
+    "identity": [
+      66306,
+      34659645,
+      1407,
+      1793835275143677782,
+      1793835275143677782
+    ]
+  },
+  "files": [
+    {
+      "kind": "inputs",
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-02/android-out/target/product/droidloom_x86_64/droidloom-native-engine-inputs.json",
+      "error_type": "RuntimeError",
+      "error": "fixed regular file bound"
+    },
+    {
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/ui/build/soong.go",
+      "bytes": 31887,
+      "sha256": "ea5d759aa3d57c2bc9bce434746309ee988b3554923966a1fb78ec0ce3c18343",
+      "identity": [
+        66306,
+        40769641,
+        31887,
+        1793834615497691833,
+        1793834615497691833
+      ],
+      "relevant_lines": [
+        {
+          "line": 210,
+          "text": ""
+        },
+        {
+          "line": 211,
+          "text": "\tif pb.config.incrementalDebugFile != \"\" {"
+        },
+        {
+          "line": 212,
+          "text": "\t\tcommonArgs = append(commonArgs, \"--incremental-debug-file\")"
+        },
+        {
+          "line": 213,
+          "text": "\t\tcommonArgs = append(commonArgs, pb.config.incrementalDebugFile)"
+        },
+        {
+          "line": 214,
+          "text": "\t}"
+        },
+        {
+          "line": 215,
+          "text": ""
+        },
+        {
+          "line": 216,
+          "text": "\tcommonArgs = append(commonArgs, \"-l\", filepath.Join(pb.config.FileListDir(), \"Android.bp.list\"))"
+        },
+        {
+          "line": 217,
+          "text": "\tinvocationEnv := make(map[string]string)"
+        },
+        {
+          "line": 218,
+          "text": "\t// Private leaf build on a 24 GiB desktop. env -i drops outer Go settings;"
+        },
+        {
+          "line": 219,
+          "text": "\t// give the analyzer the supported Go soft memory budget explicitly."
+        },
+        {
+          "line": 220,
+          "text": "\t// This changes collection frequency, not module or dependency validation."
+        },
+        {
+          "line": 221,
+          "text": "\tinvocationEnv[\"GOMEMLIMIT\"] = \"6GiB\""
+        },
+        {
+          "line": 222,
+          "text": "\tif pb.debugPort != \"\" {"
+        },
+        {
+          "line": 223,
+          "text": "\t\t//debug mode"
+        },
+        {
+          "line": 224,
+          "text": "\t\tcommonArgs = append(commonArgs, \"--delve_listen\", pb.debugPort,"
+        },
+        {
+          "line": 225,
+          "text": "\t\t\t\"--delve_path\", shared.ResolveDelveBinary())"
+        },
+        {
+          "line": 226,
+          "text": "\t\t// GODEBUG=asyncpreemptoff=1 disables the preemption of goroutines. This"
+        },
+        {
+          "line": 227,
+          "text": "\t\t// is useful because the preemption happens by sending SIGURG to the OS"
+        },
+        {
+          "line": 228,
+          "text": "\t\t// thread hosting the goroutine in question and each signal results in"
+        },
+        {
+          "line": 229,
+          "text": "\t\t// work that needs to be done by Delve; it uses ptrace to debug the Go"
+        },
+        {
+          "line": 230,
+          "text": "\t\t// process and the tracer process must deal with every signal (it is not"
+        },
+        {
+          "line": 231,
+          "text": "\t\t// possible to selectively ignore SIGURG). This makes debugging slower,"
+        },
+        {
+          "line": 232,
+          "text": "\t\t// sometimes by an order of magnitude depending on luck."
+        },
+        {
+          "line": 233,
+          "text": "\t\t// The original reason for adding async preemption to Go is here:"
+        },
+        {
+          "line": 234,
+          "text": "\t\t// https://github.com/golang/proposal/blob/master/design/24543-non-cooperative-preemption.md"
+        },
+        {
+          "line": 235,
+          "text": "\t\tinvocationEnv[\"GODEBUG\"] = \"asyncpreemptoff=1\""
+        },
+        {
+          "line": 236,
+          "text": "\t}"
+        },
+        {
+          "line": 237,
+          "text": ""
+        },
+        {
+          "line": 238,
+          "text": "\tvar allArgs []string"
+        },
+        {
+          "line": 239,
+          "text": "\tallArgs = append(allArgs, pb.specificArgs...)"
+        },
+        {
+          "line": 240,
+          "text": ""
+        },
+        {
+          "line": 241,
+          "text": "\tallArgs = append(allArgs, commonArgs...)"
+        },
+        {
+          "line": 242,
+          "text": "\tallArgs = append(allArgs, environmentArgs(pb.config, pb.name)...)"
+        },
+        {
+          "line": 254,
+          "text": "\t\tArgs:        allArgs,"
+        },
+        {
+          "line": 255,
+          "text": "\t\tDescription: pb.description,"
+        },
+        {
+          "line": 256,
+          "text": "\t\t// NB: Changing the value of this environment variable will not result in a"
+        },
+        {
+          "line": 257,
+          "text": "\t\t// rebuild. The bootstrap Ninja file will change, but apparently Ninja does"
+        },
+        {
+          "line": 258,
+          "text": "\t\t// not consider changing the pool specified in a statement a change that's"
+        },
+        {
+          "line": 259,
+          "text": "\t\t// worth rebuilding for."
+        },
+        {
+          "line": 260,
+          "text": "\t\tConsole: os.Getenv(\"SOONG_UNBUFFERED_OUTPUT\") == \"1\","
+        },
+        {
+          "line": 261,
+          "text": "\t\tEnv:     invocationEnv,"
+        },
+        {
+          "line": 262,
+          "text": "\t}"
+        },
+        {
+          "line": 263,
+          "text": "}"
+        },
+        {
+          "line": 264,
+          "text": ""
+        },
+        {
+          "line": 265,
+          "text": "// bootstrapEpochCleanup deletes files used by bootstrap during incremental builds across"
+        },
+        {
+          "line": 266,
+          "text": "// incompatible changes.  Incompatible changes are marked by incrementing the bootstrapEpoch"
+        },
+        {
+          "line": 267,
+          "text": "// constant.  A tree is considered out of date for the current epoch of the"
+        },
+        {
+          "line": 268,
+          "text": "// .soong.bootstrap.epoch.<epoch> file doesn't exist."
+        },
+        {
+          "line": 507,
+          "text": "\t\treturn err"
+        },
+        {
+          "line": 508,
+          "text": "\t}"
+        },
+        {
+          "line": 509,
+          "text": "\treturn nil"
+        },
+        {
+          "line": 510,
+          "text": "}"
+        },
+        {
+          "line": 511,
+          "text": ""
+        },
+        {
+          "line": 512,
+          "text": "// b/376466642: If the concurrency of updateSymlinks is unbounded, Go's runtime spawns a"
+        },
+        {
+          "line": 513,
+          "text": "// theoretically unbounded number of threads to handle blocking syscalls. This causes the runtime to"
+        },
+        {
+          "line": 514,
+          "text": "// panic due to hitting thread limits in rare cases. Limiting to GOMAXPROCS concurrent symlink"
+        },
+        {
+          "line": 515,
+          "text": "// updates should make this a non-issue."
+        },
+        {
+          "line": 516,
+          "text": "func newUpdateSemaphore() chan struct{} {"
+        },
+        {
+          "line": 517,
+          "text": "\tnumPermits := runtime.GOMAXPROCS(0)"
+        },
+        {
+          "line": 518,
+          "text": "\tc := make(chan struct{}, numPermits)"
+        },
+        {
+          "line": 519,
+          "text": "\tfor i := 0; i < numPermits; i++ {"
+        },
+        {
+          "line": 520,
+          "text": "\t\tc <- struct{}{}"
+        },
+        {
+          "line": 521,
+          "text": "\t}"
+        },
+        {
+          "line": 522,
+          "text": "\treturn c"
+        },
+        {
+          "line": 523,
+          "text": "}"
+        },
+        {
+          "line": 524,
+          "text": ""
+        }
+      ],
+      "kind": "soong_go"
+    },
+    {
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/go/linux-x86/VERSION",
+      "bytes": 35,
+      "sha256": "6a9c019e68916fea57fb97b855ce069fe38bc8916b2f58c1e33abf3d60024946",
+      "identity": [
+        66306,
+        40556570,
+        35,
+        1792770274359938058,
+        1792770274359938058
+      ],
+      "text": "go1.25.4\ntime 2025-10-31T13:24:27Z\n",
+      "kind": "go_version"
+    },
+    {
+      "path": "/proc/meminfo",
+      "bytes": 1672,
+      "sha256": "894757bede2f9fd7b468d90edc9b9149e49f1db74d57fac7e5d71c7010cfe063",
+      "text": "MemTotal:       25739556 kB\nMemFree:        12475324 kB\nMemAvailable:   15741704 kB\nBuffers:          763280 kB\nCached:          2057048 kB\nSwapCached:        60568 kB\nActive:          4163268 kB\nInactive:        5125744 kB\nActive(anon):    3775776 kB\nInactive(anon):  2968184 kB\nActive(file):     387492 kB\nInactive(file):  2157560 kB\nUnevictable:       10192 kB\nMlocked:           10192 kB\nSwapTotal:      16777208 kB\nSwapFree:        3106472 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:              9976 kB\nWriteback:             0 kB\nAnonPages:       6436848 kB\nMapped:           769748 kB\nShmem:            266156 kB\nKReclaimable:    1138280 kB\nSlab:            2169576 kB\nSReclaimable:    1138280 kB\nSUnreclaim:      1031296 kB\nKernelStack:      109296 kB\nPageTables:       265032 kB\nSecPageTables:      5984 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    29646984 kB\nCommitted_AS:   352698812 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:      215456 kB\nVmallocChunk:          0 kB\nPercpu:            69408 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:      6144 kB\nFilePmdMapped:         0 kB\nCmaTotal:              0 kB\nCmaFree:               0 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nGPUActive:      37038300 kB\nGPUReclaim:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:    21652720 kB\nDirectMap2M:     5210112 kB\nDirectMap1G:           0 kB\n",
+      "kind": "memory"
+    }
+  ],
+  "directory": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go6-02/android-out/soong",
+    "identity": [
+      66306,
+      34626123,
+      4096,
+      1793835222517622064,
+      1793835222517622064
+    ],
+    "entries": [
+      {
+        "name": ".soong.bootstrap.epoch.1",
+        "mode": 33152,
+        "inode": 34648288,
+        "bytes": 0
+      },
+      {
+        "name": ".temp",
+        "mode": 16832,
+        "inode": 34626150,
+        "bytes": 4096
+      },
+      {
+        "name": "action_sandboxing_workdir",
+        "mode": 16832,
+        "inode": 34626124,
+        "bytes": 4096
+      },
+      {
+        "name": "bootstrap.ninja",
+        "mode": 33152,
+        "inode": 34648289,
+        "bytes": 4994271
+      },
+      {
+        "name": "build.droidloom_x86_64.0.ninja",
+        "mode": 33152,
+        "inode": 34659635,
+        "bytes": 156110610
+      },
+      {
+        "name": "build.droidloom_x86_64.1.ninja",
+        "mode": 33152,
+        "inode": 34659636,
+        "bytes": 134217728
+      },
+      {
+        "name": "build.droidloom_x86_64.2.ninja",
+        "mode": 33152,
+        "inode": 34659637,
+        "bytes": 184549376
+      },
+      {
+        "name": "build.droidloom_x86_64.3.ninja",
+        "mode": 33152,
+        "inode": 34659638,
+        "bytes": 184549376
+      },
+      {
+        "name": "build.droidloom_x86_64.4.ninja",
+        "mode": 33152,
+        "inode": 34659639,
+        "bytes": 100663296
+      },
+      {
+        "name": "build.droidloom_x86_64.5.ninja",
+        "mode": 33152,
+        "inode": 34659640,
+        "bytes": 67108864
+      },
+      {
+        "name": "build.droidloom_x86_64.6.ninja",
+        "mode": 33152,
+        "inode": 34659641,
+        "bytes": 117440512
+      },
+      {
+        "name": "build.droidloom_x86_64.7.ninja",
+        "mode": 33152,
+        "inode": 34659642,
+        "bytes": 134217728
+      },
+      {
+        "name": "build.droidloom_x86_64.8.ninja",
+        "mode": 33152,
+        "inode": 34659643,
+        "bytes": 683061788
+      },
+      {
+        "name": "build.droidloom_x86_64.9.ninja",
+        "mode": 33152,
+        "inode": 34659644,
+        "bytes": 100663296
+      },
+      {
+        "name": "build.droidloom_x86_64.dist.ninja",
+        "mode": 33152,
+        "inode": 34659633,
+        "bytes": 93472
+      },
+      {
+        "name": "build.droidloom_x86_64.ninja",
+        "mode": 33152,
+        "inode": 34659634,
+        "bytes": 134217728
+      },
+      {
+        "name": "build.droidloom_x86_64.ninja.glob_results",
+        "mode": 33152,
+        "inode": 34648291,
+        "bytes": 0
+      },
+      {
+        "name": "build.droidloom_x86_64.nodist.ninja",
+        "mode": 33152,
+        "inode": 34659631,
+        "bytes": 4635
+      },
+      {
+        "name": "build.droidloom_x86_64.phony.ninja",
+        "mode": 33152,
+        "inode": 34659632,
+        "bytes": 139796713
+      },
+      {
+        "name": "build_hostname.txt",
+        "mode": 33152,
+        "inode": 34626130,
+        "bytes": 13
+      },
+      {
+        "name": "build_number.txt",
+        "mode": 33152,
+        "inode": 34626129,
+        "bytes": 8
+      },
+      {
+        "name": "build_uuid-droidloom_x86_64.txt",
+        "mode": 33152,
+        "inode": 34626131,
+        "bytes": 43
+      },
+      {
+        "name": "dexpreopt-droidloom_x86_64.config",
+        "mode": 33152,
+        "inode": 34648272,
+        "bytes": 1876
+      },
+      {
+        "name": "module_bp_cc_deps.json",
+        "mode": 33152,
+        "inode": 34659627,
+        "bytes": 50757237
+      },
+      {
+        "name": "module_bp_java_deps.json",
+        "mode": 33152,
+        "inode": 34659619,
+        "bytes": 12780397
+      },
+      {
+        "name": "raw-droidloom_x86_64",
+        "mode": 16832,
+        "inode": 34649197,
+        "bytes": 4096
+      },
+      {
+        "name": "release-config",
+        "mode": 16832,
+        "inode": 34648269,
+        "bytes": 4096
+      },
+      {
+        "name": "soong.droidloom_x86_64.extra.variables",
+        "mode": 33152,
+        "inode": 34648284,
+        "bytes": 2477
+      },
+      {
+        "name": "soong.droidloom_x86_64.variables",
+        "mode": 33152,
+        "inode": 34648283,
+        "bytes": 111696
+      },
+      {
+        "name": "soong.environment.available",
+        "mode": 33152,
+        "inode": 34648287,
+        "bytes": 6791
+      },
+      {
+        "name": "soong_api",
+        "mode": 16832,
+        "inode": 34748059,
+        "bytes": 4096
+      },
+      {
+        "name": "use_partial_compile-droidloom_x86_64.sh",
+        "mode": 33152,
+        "inode": 34648285,
+        "bytes": 35
+      }
+    ],
+    "recursive": false
+  },
+  "writes": 0,
+  "process_scan": false,
+  "sudo": false,
+  "finished_utc": "2026-11-04T23:45:15.749510+00:00"
+}
