@@ -1,6 +1,6 @@
 //! The actual non-Root Session and metadata-only initial reservation peek.
 use super::{Result, config::Inputs, fs, geometry::Product, packet, process};
-use codex_hepta_memory::NotesTargetIdentity;
+use codex_hepta_memory::{CalculatorTargetIdentity, NotesTargetIdentity};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::os::fd::{AsRawFd, FromRawFd};
@@ -14,6 +14,7 @@ pub(super) struct Session {
     pub pair: UnixDatagram,
     pub end: Instant,
     pub target: NotesTargetIdentity,
+    pub calculator: Option<CalculatorTargetIdentity>,
     pub environment: BTreeMap<String, String>,
 }
 
@@ -52,7 +53,11 @@ impl Session {
             .open(fresh.admin.join("session.stderr"))?;
         let mut command = Command::new(format!("/proc/self/fd/{}", program.as_raw_fd()));
         command
-            .arg("--notes-root-bootstrap-stdin")
+            .arg(if inputs.is_desktop() {
+                "--desktop-root-bootstrap-stdin"
+            } else {
+                "--notes-root-bootstrap-stdin"
+            })
             .current_dir(&fresh.user)
             .env_clear()
             .envs(&environment)
@@ -97,18 +102,9 @@ impl Session {
             packet::Rights::None,
             end,
         )?;
-        let reservation = trill_ui_core::notes_startup::NotesStartupReservation::parse_exact(&raw)
-            .map_err(std::io::Error::other)?;
-        let target: NotesTargetIdentity =
-            serde_json::from_value(serde_json::to_value(&reservation.target)?)?;
-        target.validate()?;
-        if target.task_id != 1
-            || birth != packet::pinned_metadata(&owner.pidfd, owner.pid())?
-            || serde_json::to_value(&target)? != serde_json::to_value(&reservation.target)?
-        {
-            return Err(
-                "actual initial Session target/birth or canonical Notes identity changed".into(),
-            );
+        let (target, calculator) = reservation_targets(&raw, inputs.is_desktop())?;
+        if target.task_id != 1 || birth != packet::pinned_metadata(&owner.pidfd, owner.pid())? {
+            return Err("actual initial Session target or birth changed".into());
         }
         process::actual_credentials(owner.pid(), inputs.uid, inputs.gid)?;
         Ok(Self {
@@ -116,19 +112,53 @@ impl Session {
             pair,
             end,
             target,
+            calculator,
             environment,
         })
     }
 }
 
-pub(super) fn deployment() -> Result<(File, File)> {
-    // SAFETY: static NUL-terminated name, returns a new private sealable FD.
-    let raw = unsafe {
-        libc::memfd_create(
-            c"trill-original-notes-deployment".as_ptr(),
-            libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING,
-        )
+fn reservation_targets(
+    raw: &[u8],
+    desktop: bool,
+) -> Result<(NotesTargetIdentity, Option<CalculatorTargetIdentity>)> {
+    if desktop {
+        let reserved = trill_ui_core::desktop_startup::DesktopStartupReservation::parse_exact(raw)
+            .map_err(std::io::Error::other)?;
+        let target: NotesTargetIdentity =
+            serde_json::from_value(serde_json::to_value(&reserved.notes)?)?;
+        let calculator: CalculatorTargetIdentity =
+            serde_json::from_value(serde_json::to_value(&reserved.calculator)?)?;
+        target.validate()?;
+        calculator.validate()?;
+        if serde_json::to_value(&target)? != serde_json::to_value(&reserved.notes)?
+            || serde_json::to_value(&calculator)? != serde_json::to_value(&reserved.calculator)?
+        {
+            return Err("canonical original Notes or Calculator identity changed".into());
+        }
+        Ok((target, Some(calculator)))
+    } else {
+        let reserved = trill_ui_core::notes_startup::NotesStartupReservation::parse_exact(raw)
+            .map_err(std::io::Error::other)?;
+        let target: NotesTargetIdentity =
+            serde_json::from_value(serde_json::to_value(&reserved.target)?)?;
+        target.validate()?;
+        if serde_json::to_value(&target)? != serde_json::to_value(&reserved.target)? {
+            return Err("canonical original Notes identity changed".into());
+        }
+        Ok((target, None))
+    }
+}
+
+pub(super) fn deployment(desktop: bool) -> Result<(File, File)> {
+    let name = if desktop {
+        c"trill-original-desktop-deployment"
+    } else {
+        c"trill-original-notes-deployment"
     };
+    // SAFETY: static NUL-terminated name, returns a new private sealable FD.
+    let raw =
+        unsafe { libc::memfd_create(name.as_ptr(), libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING) };
     if raw < 0 {
         return Err(std::io::Error::last_os_error().into());
     }
@@ -141,3 +171,7 @@ pub(super) fn deployment() -> Result<(File, File)> {
     let consumer = File::open(format!("/proc/self/fd/{}", file.as_raw_fd()))?;
     Ok((file, consumer))
 }
+
+#[cfg(test)]
+#[path = "session_profile_tests.rs"]
+mod profile_tests;

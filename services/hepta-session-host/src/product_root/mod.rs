@@ -36,8 +36,17 @@ pub(super) fn administer(args: impl Iterator<Item = OsString>) -> Result<()> {
 }
 
 pub(super) fn initialize(path: &Path) -> Result<()> {
+    initialize_selected(path, false)
+}
+
+pub(super) fn initialize_desktop(path: &Path) -> Result<()> {
+    initialize_selected(path, true)
+}
+
+fn initialize_selected(path: &Path, desktop: bool) -> Result<()> {
     root_environment()?;
     let inputs = config::Inputs::read(path)?;
+    inputs.require_entry(desktop)?;
     let fresh = geometry::Product::create(&inputs)?;
     fs::json_new(&fresh.admin.join("original-inputs.json"), &inputs)?;
     let runtime = tokio::runtime::Builder::new_current_thread()
@@ -61,7 +70,7 @@ pub(super) fn recover(path: &Path, selection: RecoverySelection) -> Result<()> {
     run(
         inputs,
         fresh,
-        old.seed.clone(),
+        seed::ThreadSeed::Notes(old.seed.clone()),
         replay,
         runtime,
         Some((old, issuer_expiry)),
@@ -88,17 +97,20 @@ fn root_environment() -> Result<()> {
 fn run(
     inputs: config::Inputs,
     fresh: geometry::Product,
-    seed: codex_hepta_agentd::NotesThreadSeedReceipt,
+    seed: seed::ThreadSeed,
     replay: std::path::PathBuf,
     runtime: tokio::runtime::Runtime,
     previous: Option<(recovery::Existing, u64)>,
 ) -> Result<()> {
+    if inputs.is_desktop() != seed.is_desktop() || (inputs.is_desktop() && previous.is_some()) {
+        return Err("Root target profile differs from the original seed or recovery entry".into());
+    }
     if let Some((old, _)) = &previous {
         old.consume_spawn()?;
     }
     // Only now begins the one 30-second Session/Root bootstrap episode.
     let staged = session::Session::spawn(&inputs, &fresh)?;
-    let (deployment, consumer) = session::deployment()?;
+    let (deployment, consumer) = session::deployment(inputs.is_desktop())?;
     let (root_handoff, child_handoff) = UnixDatagram::pair()?;
     let control = bind_root_agentd_socket(
         fresh.record.layout.agentd_control_socket(),
@@ -110,11 +122,15 @@ fn run(
         inputs.uid,
         inputs.gid,
     )?;
-    let notes_listener = bind_root_agentd_socket(
-        &fresh.record.layout.run_root().join("notes-objective.sock"),
-        inputs.uid,
-        inputs.gid,
-    )?;
+    let notes_listener = if inputs.is_desktop() {
+        None
+    } else {
+        Some(bind_root_agentd_socket(
+            &fresh.record.layout.run_root().join("notes-objective.sock"),
+            inputs.uid,
+            inputs.gid,
+        )?)
+    };
     let app_pair = staged.pair.try_clone()?;
     let inherited_session = staged.owner.pidfd.try_clone()?;
     let mut args = Vec::<OsString>::new();
@@ -122,7 +138,15 @@ fn run(
         args.push(name.into());
         args.push(value);
     };
-    pair("--root-production-profile", "notes".into());
+    pair(
+        "--root-production-profile",
+        if inputs.is_desktop() {
+            "desktop"
+        } else {
+            "notes"
+        }
+        .into(),
+    );
     pair(
         "--root-production-handoff-fd",
         child_handoff.as_raw_fd().to_string().into(),
@@ -141,20 +165,29 @@ fn run(
         "--root-production-lifetime-ms",
         inputs.lifetime_ms.to_string().into(),
     );
+    let (handoff_flag, deployment_flag, session_flag) = if inputs.is_desktop() {
+        (
+            "--desktop-production-handoff-fd",
+            "--desktop-thread-deployment-fd",
+            "--desktop-session-pidfd",
+        )
+    } else {
+        (
+            "--notes-production-handoff-fd",
+            "--notes-literal-deployment-fd",
+            "--notes-session-pidfd",
+        )
+    };
+    pair(handoff_flag, app_pair.as_raw_fd().to_string().into());
+    pair(deployment_flag, consumer.as_raw_fd().to_string().into());
+    if let Some(listener) = &notes_listener {
+        pair(
+            "--notes-literal-ui-fd",
+            listener.as_raw_fd().to_string().into(),
+        );
+    }
     pair(
-        "--notes-production-handoff-fd",
-        app_pair.as_raw_fd().to_string().into(),
-    );
-    pair(
-        "--notes-literal-deployment-fd",
-        consumer.as_raw_fd().to_string().into(),
-    );
-    pair(
-        "--notes-literal-ui-fd",
-        notes_listener.as_raw_fd().to_string().into(),
-    );
-    pair(
-        "--notes-session-pidfd",
+        session_flag,
         inherited_session.as_raw_fd().to_string().into(),
     );
     pair(
@@ -173,7 +206,7 @@ fn run(
             .record
             .layout
             .home_root()
-            .join("notes-thread-profile.json")
+            .join(inputs.objective_profile_name())
             .into_os_string(),
     );
     let start_owner = if previous.is_some() {
@@ -181,22 +214,26 @@ fn run(
     } else {
         supervisor::start_original
     };
+    let mut inherited = vec![
+        child_handoff.as_fd(),
+        control.as_fd(),
+        app_server.as_fd(),
+        app_pair.as_fd(),
+        consumer.as_fd(),
+        inherited_session.as_fd(),
+    ];
+    if let Some(listener) = &notes_listener {
+        inherited.push(listener.as_fd());
+    }
     let mut owner = start_owner(
         fresh.registry.clone(),
         &fresh.agent,
         AgentCommand::new(&inputs.programs.agentd, args)?,
-        &[
-            child_handoff.as_fd(),
-            control.as_fd(),
-            app_server.as_fd(),
-            app_pair.as_fd(),
-            consumer.as_fd(),
-            notes_listener.as_fd(),
-            inherited_session.as_fd(),
-        ],
+        &inherited,
         inputs.uid,
         inputs.gid,
     )?;
+    drop(inherited);
     // Root keeps no unneeded inherited endpoint aliases.
     drop((
         child_handoff,
@@ -209,7 +246,14 @@ fn run(
     ));
     packet::remaining(staged.end)?;
     let files = match &previous {
-        None => authority::initialize(&inputs, &fresh, &owner.registration, &seed, &staged.target)?,
+        None => authority::initialize(
+            &inputs,
+            &fresh,
+            &owner.registration,
+            &seed,
+            &staged.target,
+            staged.calculator.as_ref(),
+        )?,
         Some((old, expiry)) => {
             recovery_authority::rotate(&inputs, &fresh, old, &owner.registration, *expiry)?
         }
@@ -254,9 +298,17 @@ fn run(
         pair: application_pair,
         end,
         target,
+        calculator,
         environment,
     } = staged;
     let prepared = match &previous {
+        None if inputs.is_desktop() => prepared.with_desktop_startup_from_session_before(
+            &files.profile,
+            application_pair,
+            session_owner.pidfd.try_clone()?,
+            deployment,
+            end,
+        )?,
         None => prepared.with_notes_startup_from_session_before(
             &files.profile,
             application_pair,
@@ -281,19 +333,25 @@ fn run(
     if let Some((old, _)) = &previous {
         old.stage(&fresh, "30-bootstrap-sealed", &serde_json::json!({"original_operation_selector":old.selection,"old_target":old.target,"new_target_for_future_operations_only":target,"thread":seed,"scope":"same-identity sealed bootstrap remains undispatched until original listeners are serving; old outcome requires original writer/helper readback; no old dispatch"}))?;
     }
-    fs::json_new(
-        &fresh.admin.join("actual-composition.json"),
-        &serde_json::json!({
-            "schema":"trill.original-desktop-root.composition.v1",
-            "scope":if previous.is_some() {"existing same-boot composition; original outcome still requires original thread/receipt readback"} else {"fresh Root bootstrap and original process composition; model/Notes effect acceptance requires original runtime receipts"},
-            "registration":registration, "original_thread_seed":seed,
-            "objective_profile":&files.objective,
-            "notes_state_dir":fresh.user.join("notes"),
-            "notes_target":target,
-            "session_pid":session_owner.pid(), "session_birth":packet::pinned_metadata(&session_owner.pidfd, session_owner.pid())?,
-            "bootstrap_model_turn_sent":false,
-        }),
-    )?;
+    let mut composition = serde_json::json!({
+        "schema":"trill.original-desktop-root.composition.v1",
+        "scope":if previous.is_some() {"existing same-boot composition; original outcome still requires original thread/receipt readback"} else {"fresh Root bootstrap and original process composition; model/Notes effect acceptance requires original runtime receipts"},
+        "registration":registration, "original_thread_seed":seed,
+        "objective_profile":&files.objective,
+        "notes_state_dir":fresh.user.join("notes"),
+        "notes_target":target,
+        "session_pid":session_owner.pid(), "session_birth":packet::pinned_metadata(&session_owner.pidfd, session_owner.pid())?,
+        "bootstrap_model_turn_sent":false,
+    });
+    if inputs.is_desktop() {
+        composition["schema"] = "trill.original-desktop-root.composition.v2".into();
+        composition["profile"] = "notes_calculator_v1".into();
+        composition["calculator_target"] = serde_json::to_value(
+            calculator.ok_or("joint composition lost its actual Calculator target")?,
+        )?;
+        composition["scope"] = "fresh joint Root bootstrap and original process composition; original owner, model, Notes and Calculator effect acceptance require their actual runtime receipts".into();
+    }
+    fs::json_new(&fresh.admin.join("actual-composition.json"), &composition)?;
     let (profile, leader) = human::capture(&inputs, &fresh, &files, &human_owner, &environment)?;
     let mut prepared = prepared.with_original_logind_session(&profile, leader)?;
     let admin_capability = prepared.enable_root_admin()?;

@@ -1,5 +1,11 @@
 # Original Linux product Root entry
 
+The independent Notes+Calculator successor is specified in
+[DESKTOP_PROFILE](DESKTOP_PROFILE.md). It adds an explicit v2 fresh entry and
+new original Core thread. That page records its source checkpoint and pending
+owner CLI, pin/lock, compilation and runtime acceptance; it is not a completed
+replacement for the frozen Notes product described below.
+
 This module is the finite first-deployment entry for the original Hepta Notes
 product. It is built by the `product-root` feature of `hepta-session-host` as
 `hepta-desktop-root`. It does not replace the existing open-only authority
@@ -185,6 +191,31 @@ human input, real model and original-thread operation/result receipts.
 SQLite pool shutdown is not a Root crash or a power-loss test.
 
 ## Verification
+
+The explicit ignored
+`product_root::seed::tests::actual_seed_start_resume_closes_client_and_reaps_first_signal_child`
+test exercises the original Notes branch of `seed::create` with a real App Server
+ELF, original remote client and original Core Start/Resume. Build the
+`hepta-desktop-root` test target with `product-root`, then run that exact test
+alone as actual Root under `unshare --mount --propagation private`, with
+`TRILL_ROOT_SEED_TEST_CONFIG` naming a new Root0600 input file. Its fresh prefix
+and all program/source paths pass the normal `Inputs::read` checks. The fixture
+requires a distinct mount namespace from its parent and never reuses a failed
+prefix. It does not create Session, authority, human admission, or a model turn.
+In the joint-profile successor it explicitly rejects Desktop-profile inputs
+and requires the original typed Notes receipt. The earlier mixed component
+pass does not qualify this new source pair.
+
+Success requires the original seed function to close its actual client, reap
+its actual child after the first SIGTERM within the unchanged 10-second bound,
+verify the persisted seed, retire its seed socket, and normally detach its
+owned mount. The test preserves all metadata/logs and writes
+`admin/seed-lifecycle-observation.json` only after those checks; an external
+runner must require that observation as well as the exact test's successful
+exit, so zero selected tests cannot qualify it. The receipt records the actual
+App Server hash and explicitly states component-only scope. A mixed component
+test is not an installed source-pair qualification, and the original failed
+product attempt remains failed.
 
 The optional `product-linux` Cargo profile is an explicit size candidate for
 the original Root companion and Hepta runtime. It selects size optimization,

@@ -22,25 +22,56 @@ together with the other original dependency security patches. Full verification
 covers the six lock roots listed below. The Notes model fixture, document
 readback fixture and prepared SDK helper must match that same source.
 
-## Selected source and qualification boundary (2026-11-03)
+## Selected joint candidate and qualification boundary (2026-11-04)
 
-The selected Hepta source is
+This independent `notes_calculator_v1` candidate selects original Hepta
+[`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3),
+tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`.
+[HEPTA_SHARED_PRESENTER.json](HEPTA_SHARED_PRESENTER.json) records 194 exact
+original files, including the mandatory Root and joint organ source sets.
+All 39 Git dependency and patch declarations in the three consuming manifests,
+and the explicit preedit helper profile, select that same commit. Each build
+must record its actual clean Desktop commit/tree, features and binary hashes.
+
+Cargo 1.96.0 generated the ordinary UI and Session host locks, then generated
+the distinct prepared SDK lock through the existing controlled source-copy
+workflow. The three other locks retain their original bytes. Fresh locked,
+offline metadata covered all six roots, with `product-root` selected for the
+Session host and `trill-shell/hepta-native-preedit-sdk` for the native UI
+comparison. The original dependency verifier checked all six locks against
+219 original owner manifests, and the original source-cache check verified the
+resolved Hepta checkout. The SDK helper verified the exact reviewed prepared
+tree and all 102 SDK package overrides. These are source and graph results;
+they do not compile the Desktop or run an installed Root, model or application.
+
+The [original candidate verification ledger](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/DESKTOP_ORGAN_CANDIDATE.md)
+retains the source-bound 26a whole-package failures, the separate 47 custody
+fixture result, and the scoped signal/seed component results. Earlier Notes,
+window, App/Session or CI receipts remain attached to their recorded sources.
+The new profile needs a new original Core thread and both original target
+identities; source selection does not migrate an existing Notes catalog,
+grant human admission, renew an owner lease or qualify joint recovery.
+[The Calculator protocol](../../ui/core/CALCULATOR_PROTOCOL.md) and
+[Root assembly documentation](../../services/hepta-session-host/src/product_root/README.md)
+describe those runtime boundaries.
+
+Run the source-only check below for local source consistency, and use the full
+original checkout for source-byte and dependency verification. Installation
+and real-effect qualification are separate recorded steps. The broader
+acceptance ledger remains in [current capabilities](../../docs/CURRENT_CAPABILITIES.md)
+and the [evidence index](../../docs/EVIDENCE_INDEX.md).
+
+## Previous source selection (2026-11-03)
+
+The preceding source selection used
 [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360),
-tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`, as recorded in
-[HEPTA_SHARED_PRESENTER.json](HEPTA_SHARED_PRESENTER.json), the three consuming
-Cargo manifests and the explicit preedit profile. The selected Desktop starting
-checkpoint is `745c0731aed270ee394145c6767371a6af47f49f`, tree
-`fa70b1b95206d25775009c6965245d34051468a4`. A later build records its actual clean
-Desktop commit/tree, all six locks, features, resources and binary hashes.
-
-This source selection does not carry forward the 4223 six-lock and Rust
+tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`.
+Its Desktop starting checkpoint was
+`745c0731aed270ee394145c6767371a6af47f49f`, tree
+`fa70b1b95206d25775009c6965245d34051468a4`; later receipts bind their actual
+Desktop heads. The frozen fd/a39 product and its original records retain their
+own identities. The selection did not carry forward the 4223 six-lock and Rust
 qualification, the 942/de0 CI results, or earlier native-window receipts.
-Run the source-only check below for local source consistency; use the full
-original Hepta checkout for source-byte and dependency-graph verification.
-Neither check runs the installed product. The current acceptance scope and
-remaining gates are maintained in
-[current capabilities](../../docs/CURRENT_CAPABILITIES.md#current-product-pair),
-with retained records in the [evidence index](../../docs/EVIDENCE_INDEX.md).
 
 ## Historical qualification (2026-10-27: 4223 and 942/de0)
 
@@ -248,3 +279,26 @@ the exact SDK source and upstream security patches, then run the complete
 original dependency/source/manifest checks against that actual Hepta checkout.
 [ROOT_PRODUCT.md](ROOT_PRODUCT.md) and the [administrative entry](../../services/hepta-session-host/src/product_root/ADMIN.md)
 describe the corresponding product and development limits.
+
+## Joint Desktop organ source contract
+
+The independent `notes_calculator_v1` candidate also requires
+[desktop_organ_sources.py](desktop_organ_sources.py). Selection and verification
+share this mandatory set: the new Core catalog and seed, original Root joint
+reservation and sealed loader, finite Objective compiler, shared original
+sender/turn fence, Calculator effect and observation channels, typed terminal
+receipt and retirement acknowledgement, and their original regression sources.
+The original text peer channel and its bounded connection lifetime are included.
+The original App Server's retained Unix shutdown subscriptions and owned-child
+regressions are also bound to that source; their narrow signal-retention result
+does not establish complete server cleanup within the embedding's deadline.
+An older Notes-only source record cannot satisfy this candidate's contract.
+
+The source updater must run against the final clean, reviewed original Hepta
+checkout. Cargo must generate the three Hepta-consuming locks, and the original
+dependency verifier must still check all six locks and the fixed SDK variant.
+The source set does not alter authority, migrate an old Notes thread or extend
+its catalog. It does not establish a live Calculator effect, human admission,
+application restart or joint product recovery. The actual App/Session wire and
+execution boundary is described in the
+[Calculator protocol](../../ui/core/CALCULATOR_PROTOCOL.md).
