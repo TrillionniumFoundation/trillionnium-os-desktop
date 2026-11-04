@@ -172,3 +172,30 @@ fn lock_custody_rejects_shared_writes_aliases_and_nonempty_state() {
     symlink(alias, path).unwrap();
     assert!(RecoveryPreparation::lock_directory(directory.path()).is_err());
 }
+
+#[test]
+fn final_owner_drop_releases_inherited_description_without_unlocking_successor() {
+    let directory = private_admin();
+    let first = RecoveryPreparation::lock_directory(directory.path()).unwrap();
+    let inode = first._lock.metadata().unwrap().ino();
+    // dup shares the same open file description, as a concurrent fork does
+    // until its CLOEXEC descriptor closes. No timing or child retry is needed.
+    let inherited = first._lock.try_clone().unwrap();
+    assert!(RecoveryPreparation::lock_directory(directory.path()).is_err());
+    drop(first);
+
+    let successor = RecoveryPreparation::lock_directory(directory.path()).expect(
+        "the final preparation owner must release its lock while an inherited descriptor remains",
+    );
+    assert_eq!(successor._lock.metadata().unwrap().ino(), inode);
+    assert_eq!(inherited.metadata().unwrap().ino(), inode);
+    assert!(RecoveryPreparation::lock_directory(directory.path()).is_err());
+
+    // A late close of the old fork snapshot cannot unlock the successor's
+    // distinct open file description.
+    drop(inherited);
+    assert!(RecoveryPreparation::lock_directory(directory.path()).is_err());
+    drop(successor);
+    let reopened = RecoveryPreparation::lock_directory(directory.path()).unwrap();
+    assert_eq!(reopened._lock.metadata().unwrap().ino(), inode);
+}

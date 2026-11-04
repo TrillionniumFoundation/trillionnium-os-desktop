@@ -5,7 +5,7 @@ use super::{Result, fs};
 use serde::Serialize;
 use serde_json::Value;
 use std::fs::{File, OpenOptions};
-use std::io::Read;
+use std::io::{Read, Write};
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 
@@ -16,6 +16,21 @@ const SPAWN_CONSUMED: &str = "06-spawn-consumed.json";
 pub(super) struct RecoveryPreparation {
     pub directory: PathBuf,
     _lock: File,
+}
+
+impl Drop for RecoveryPreparation {
+    fn drop(&mut self) {
+        // A concurrent fork can retain this open file description until exec,
+        // even with CLOEXEC. Release the lock when the final preparation owner
+        // drops; closing only this descriptor could leave the inherited copy
+        // holding it. Arc owners still keep this guard alive through cleanup.
+        if let Err(error) = self._lock.unlock() {
+            let _ = writeln!(
+                std::io::stderr().lock(),
+                "original recovery preparation lock release failed: {error}"
+            );
+        }
+    }
 }
 
 impl RecoveryPreparation {
