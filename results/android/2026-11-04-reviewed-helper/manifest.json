@@ -1,0 +1,152 @@
+{
+  "schema": "trill.android.reviewed-helper-evidence.v1",
+  "status": "source_build_and_actual_readonly_passed",
+  "source_commit": "5e70377956f585fdb9763d49a709841dc79d5924",
+  "source_tree": "5e3b9f66ad07d428e994a5526fb63b030b475066",
+  "base_commit": "f5fbc7e1a533e5bec588575ab56312a3203f6d8c",
+  "original_runtime_jobs": [
+    {
+      "host": "desktop",
+      "purpose": "host_regressions_and_actual_sdk_unsigned_build",
+      "at_unix_ms": 1793794115707,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a6757398-fc05-2595",
+      "launch_nonce": "f9d93ba42166df1c884f922a23f14dba",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
+        },
+        "stdout": {
+          "seen": 234,
+          "stored": 234
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "purpose": "actual_fixed_tool_readonly_qualification",
+      "at_unix_ms": 1793794320912,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a679224b-fc05-25dd",
+      "launch_nonce": "7e1ae4ff9fd80b8d364e3f90d7ffc726",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
+        },
+        "stdout": {
+          "seen": 2546,
+          "stored": 2546
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    }
+  ],
+  "source_import": {
+    "commit": "5e70377956f585fdb9763d49a709841dc79d5924",
+    "tree": "5e3b9f66ad07d428e994a5526fb63b030b475066",
+    "clean": true,
+    "runtime_job_id": "1a1a6784641-fc05-25ca"
+  },
+  "results": {
+    "normal_tests_passed": 79,
+    "optimized_tests_passed": 79,
+    "source_integrity": true,
+    "actual_sdk35_javac": true,
+    "actual_original_resource_unsigned_apk": true,
+    "original_apk_signer_verified": true,
+    "pocket4_readonly_qualified": true,
+    "ui_observation_executed": false,
+    "device_mutation_attempts": 0,
+    "candidate_signed": false,
+    "candidate_installed": false,
+    "original_owner_effect_qualified": false,
+    "physical_handset_qualified": false,
+    "android_on_asterinas_verified": false
+  },
+  "original_signer_sha256": "7c36bafbdb2789384aeae9dabf69cca6b468f6c1a2d75952ab315288b77ff7f7",
+  "remaining": [
+    "Original signing material is absent at the documented path on desktop and pocket4, the scoped desktop archive search, and the original Pocket4 controls directory; other locations were not exhaustively searched.",
+    "Same-original-signer installation, installed-byte qualification and original retained MCP/FinalUse effect composition remain unqualified.",
+    "The unconditional organ-set-text refusal is preserved; no device mutation was attempted."
+  ],
+  "files": [
+    {
+      "path": "results/android/2026-11-04-reviewed-helper/execution.json",
+      "sha256": "3aa2749e6687d9a62f27b1e5df5f5419e5fc4c6ff7b6efd1684b6df1ca2423c9",
+      "original_path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/result.json"
+    },
+    {
+      "path": "results/android/2026-11-04-reviewed-helper/unsigned-build.json",
+      "sha256": "95631f2ec25c5b508fa14c3b175ed0987e22ba5c6d42c73ed7f7e0246f874e5f",
+      "original_path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/unsigned/build-record.json"
+    },
+    {
+      "path": "results/android/2026-11-04-reviewed-helper/tests-normal.log",
+      "sha256": "bb9f28643184efc43d5da839efe5b6465427af1b98ac60f9ce0e493e54b82cf2",
+      "original_path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/receiver-and-readonly-normal.stderr.log"
+    },
+    {
+      "path": "results/android/2026-11-04-reviewed-helper/tests-optimized.log",
+      "sha256": "e46a2fd341353fe32c4d7519456f338baa54c39c9871d45414f57ca779f98a7f",
+      "original_path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/receiver-and-readonly-optimized.stderr.log"
+    },
+    {
+      "path": "results/android/2026-11-04-reviewed-helper/java-compilation.json",
+      "sha256": "a090a9211570cb4da0be57dedc7ed5356da10fd9f534b712fd1d57c2e92e363c",
+      "original_path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/actual-sdk35-javac.stdout.log"
+    },
+    {
+      "path": "results/android/2026-11-04-reviewed-helper/source-integrity.json",
+      "sha256": "91a47d9f3205ebf357e9b5fffbb641c52d7d13f612e690ac33180bc2df1630be",
+      "original_path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/source-integrity.stdout.log"
+    },
+    {
+      "path": "results/android/2026-11-04-reviewed-helper/pocket4-readonly.json",
+      "sha256": "f9a18b22031e10c129e616d2640037cc814d07a31c6d3c199fe419f94e61584a",
+      "original_path": "/home/alex/work/trill-android-readonly-20261104-v1/result.json"
+    }
+  ]
+}

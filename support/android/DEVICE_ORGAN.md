@@ -36,19 +36,26 @@ this adapter, discover devices or acquire device authority.
 ## Source pins and invocation
 
 The reviewed helper is
-`/usr/local/libexec/android-digitalis-observe-helper`, 34,048 bytes, SHA256
-`8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b`.
-The separately measured `/usr/bin/droidloomctl` was 1,687,600 bytes, SHA256
-`aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376` on
-2026-10-23. The adapter requires the latter pin explicitly from the trusted
-operator; it does not learn a trusted pin from the same untrusted response it
-is about to accept. A changed helper requires source review and an explicit
-profile update.
+`/usr/local/libexec/android-digitalis-observe-helper`, 36,401 bytes, SHA256
+`088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae`,
+measured on 2026-11-04. Its complete diff from the frozen original is recorded
+in [the reviewed delta](receiver/reviewed-live-helper-delta-v1.json): legacy
+Enter uses the keyboard source; accessibility restoration is checked before
+both success and failure; launch distinguishes ActivityManager acknowledgement,
+foreground observation and unknown outcomes without retry. The source generator
+reproduces these exact bytes and checks the complete hash before composing any
+strict receiver increment.
 
+The separately measured `/usr/bin/droidloomctl` is 1,705,648 bytes, SHA256
+`f81e0223f6b256584d07a5e8fbc72f3f4c764ab53a88469b45b587c101e12c79` on
+2026-11-04. The adapter requires this pin explicitly from the trusted operator;
+it does not learn a trusted pin from the response it is about to accept.
+Historical 2026-10-23 measurements remain in the machine-readable contract.
+A changed helper requires source review and an explicit profile update.
 Both files must be regular, executable, non-symlink files without group/world
 write permission. The privileged helper must remain owned by root. Droidloom's
 owner UID is a separate explicit pin: root by default, or the current original
-operator UID. The actual 2026-10-23 deployment has Droidloom owned by UID 1000,
+operator UID. The measured 2026-11-04 deployment has Droidloom owned by UID 1000,
 the original operator, and the helper owned by UID 0; both modes are 0755. Supply
 `--droidloomctl-owner-uid 1000` for that measured deployment. A different user or
 an invalid UID is rejected before invocation. The initial root-default probe
@@ -65,7 +72,7 @@ From an isolated checkout or an exact two-file transfer on that selected host:
 
 ```sh
 python3 support/android/device_organ.py \
-  --droidloomctl-sha256 aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376 \
+  --droidloomctl-sha256 f81e0223f6b256584d07a5e8fbc72f3f4c764ab53a88469b45b587c101e12c79 \
   --droidloomctl-owner-uid 1000 \
   qualify
 ```
@@ -90,7 +97,7 @@ An explicitly requested window observation uses:
 
 ```sh
 python3 support/android/device_organ.py \
-  --droidloomctl-sha256 aa1e415db5ddb865f600b0b201e5eea83715efab8d9c0db86902b568ec539376 \
+  --droidloomctl-sha256 f81e0223f6b256584d07a5e8fbc72f3f4c764ab53a88469b45b587c101e12c79 \
   --droidloomctl-owner-uid 1000 \
   observe --package org.example.notes
 ```
@@ -167,8 +174,9 @@ CLI command to submit it. `commit-text` explicitly returns
 An opt-in source candidate for the **same** helper/instrumentation is now in
 [`receiver/README.md`](receiver/README.md). It includes native generation,
 window/node/scope checks, original-payload binding and independent readback.
-It has not yet qualified the deployed APK, signer or production owner; the
-read-only adapter and its original deployed helper pin therefore stay unchanged.
+The candidate still needs same-original-signer installation and production-owner
+qualification. The read-only adapter now pins the separately reviewed deployed
+legacy helper; this pin update does not deploy or authorize the strict candidate.
 
 The reviewed helper's `dispatch` semantic branch selects only `op`, `selector`,
 `index`, `value`, `display`, `include_invisible`, `accessibility_mode`, and

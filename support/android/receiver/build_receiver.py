@@ -24,7 +24,8 @@ PREIMAGES = {
 }
 ORIGINAL_APK_SHA256 = 'a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058'
 ANDROID_JAR_SHA256 = '4566663c3876e022b4fa4ced8c8697c4ab1688267f090114fd92d027b32e619b'
-REVIEWED_LIVE_HELPER_SHA256 = '196fbfe525e9813a79a1582994445c63929f2998448d46ebee7c9ac582f66eec'
+REVIEWED_ENTER_HELPER_SHA256 = '196fbfe525e9813a79a1582994445c63929f2998448d46ebee7c9ac582f66eec'
+REVIEWED_LIVE_HELPER_SHA256 = '088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae'
 
 
 def sha(path):
@@ -44,13 +45,24 @@ def sources(output):
         if sha(ROOT / 'upstream' / name) != expected:
             raise ValueError('upstream source pin mismatch: ' + name)
     helper = (ROOT / 'upstream/android_app.py').read_text()
-    # Retain the frozen upstream bytes. The only reviewed live delta selects
-    # the keyboard source for legacy Enter; no other live drift is accepted.
+    # Preserve the frozen upstream, then reproduce only the reviewed deployment
+    # through exact contexts and whole-file hashes. Arbitrary live code is never
+    # read by this generator or accepted as a new trusted preimage.
     helper = replace_once(helper,
         "        arun(['/system/bin/input','keyevent',{'home':'KEYCODE_HOME','back':'KEYCODE_BACK','enter':'KEYCODE_ENTER'}[op]])\n",
         "        arun(['/system/bin/input'] + (['keyboard'] if op == 'enter' else []) + ['keyevent',{'home':'KEYCODE_HOME','back':'KEYCODE_BACK','enter':'KEYCODE_ENTER'}[op]])\n")
-    if hashlib.sha256(helper.encode('utf-8')).hexdigest() != REVIEWED_LIVE_HELPER_SHA256:
+    if hashlib.sha256(helper.encode('utf-8')).hexdigest() != REVIEWED_ENTER_HELPER_SHA256:
         raise ValueError('reviewed legacy Enter helper identity mismatch')
+    delta = json.loads((ROOT / 'reviewed-live-helper-delta-v1.json').read_text())
+    if (delta.get('schema_version') != 1 or
+            delta.get('input_sha256') != REVIEWED_ENTER_HELPER_SHA256 or
+            delta.get('output_sha256') != REVIEWED_LIVE_HELPER_SHA256 or
+            len(delta.get('patches', [])) != 3):
+        raise ValueError('reviewed live helper delta identity mismatch')
+    for change in delta['patches']:
+        helper = replace_once(helper, change['old'], change['new'])
+    if hashlib.sha256(helper.encode('utf-8')).hexdigest() != REVIEWED_LIVE_HELPER_SHA256:
+        raise ValueError('reviewed complete live helper identity mismatch')
     extension = (ROOT / 'organ_extension.py').read_text()
     helper = replace_once(helper, 'def dispatch(r):\n', extension + '\n\ndef dispatch(r):\n'
                           "    if r.get('op') in ('organ-observe','organ-set-text','organ-readback'):return _organ_dispatch(r)\n")
@@ -90,10 +102,12 @@ def sources(output):
         'schema_version': 1, 'scope': 'generated sources only; no deployment or Android qualification',
         'package': 'local.pocket4.actions.v2', 'original_source_sha256': PREIMAGES,
         'reviewed_helper_derivation': {
-            'patch': 'legacy-enter-keyboard-source-v1',
+            'patch': 'reviewed-live-helper-delta-v1',
             'frozen_input_sha256': PREIMAGES['android_app.py'],
+            'legacy_enter_sha256': REVIEWED_ENTER_HELPER_SHA256,
             'intermediate_sha256': REVIEWED_LIVE_HELPER_SHA256,
-            'scope': 'one exact legacy Enter argv change before strict organ composition; no deployment',
+            'delta_sha256': sha(ROOT / 'reviewed-live-helper-delta-v1.json'),
+            'scope': 'exact reviewed Enter, restoration and launch receipt changes before strict organ composition; no deployment',
         },
         'source_sha256': {str(p.relative_to(output)): sha(p) for p in sorted(output.rglob('*')) if p.is_file()},
     }
