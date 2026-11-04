@@ -1,0 +1,54 @@
+{
+  "schema": "hepta.original-owner-kernel-independent-review.v1",
+  "source": {
+    "commit": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+    "tree": "342ad0840d521e97d6de5845682cbc11a115f6f7"
+  },
+  "job": {
+    "id": "1a1a3f034a3-96a-7794",
+    "state": "succeeded",
+    "exit_code": 0,
+    "output_complete": true,
+    "timed_out": false,
+    "cancelled": false
+  },
+  "pipeline": {
+    "bytes": 4726,
+    "sha256": "48632b857172c339036988519eefbc77fc0218c1def691c740dd38d10dd60649",
+    "passed": true,
+    "source_inputs_unchanged": true,
+    "reviewed_original_validator_passed": true
+  },
+  "kernel": {
+    "bytes": 28908256,
+    "sha256": "08b13737c465aabbebc8d14ce1ccf4da220e59c7c22756a010c8f00baa91d838",
+    "root_downloaded": false
+  },
+  "original_sdk_payloads": [
+    {
+      "operation_id": "ec36acba33036035bbd5cc51be34ab424ad766bf5442d84b33e4798e7822532e",
+      "bytes": 6292,
+      "sha256": "0b0ba57f257347cc5e7c0d8a335cb98fff7e7265782d4c2f67d53919d475d7ee",
+      "pages": 1
+    },
+    {
+      "operation_id": "5bef29befb7f36b03d28f428d5df273af4ebbb8fbb4dd1a4272a710aef8d0ee7",
+      "bytes": 127385,
+      "sha256": "3380fb15488702427c4d9906463cfbf14754a7932f2aca42f70920976de1d727",
+      "pages": 8
+    }
+  ],
+  "independent_byte_checks": {
+    "original_payload_length_and_sha256": true,
+    "all_pages_contiguous": true,
+    "all_original_file_sizes_and_sha256": true,
+    "four_logs_equal_retained_native_receipt": true,
+    "generated_lock_packages": 204
+  },
+  "scope": "Original full kernel/OSDK compilation and validator only. Root independently read original receipts and complete retained logs, not the large kernel binary or full source inventories.",
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "whole_guest_peak_verified": false,
+  "global_memory_reserve": false,
+  "production_ready": false
+}

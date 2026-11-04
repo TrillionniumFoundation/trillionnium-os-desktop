@@ -1,0 +1,475 @@
+{
+  "schema": "hepta.joint-owning-tests-26a-evidence-index.v1",
+  "source_head": "26a46e3fe763b53e1f0362793701f112383a72fa",
+  "source_tree": "2175f198948308c3a2f9d61f8282bc179669e798",
+  "remote_job": "1a1a397dd99-96a-7709",
+  "packages": [
+    {
+      "package": "codex-hepta-objective",
+      "exit_code": 0,
+      "passed": 66,
+      "failed": 0,
+      "skipped": 2,
+      "flaky": 0,
+      "command_elapsed_seconds": 7.899630315951072,
+      "raw_summary": "66 tests run: 66 passed, 2 skipped"
+    },
+    {
+      "package": "codex-hepta-memory",
+      "exit_code": 100,
+      "passed": 399,
+      "failed": 1,
+      "skipped": 13,
+      "flaky": 0,
+      "command_elapsed_seconds": 453.34074575302657,
+      "raw_summary": "400 tests run: 399 passed, 1 failed, 13 skipped"
+    },
+    {
+      "package": "codex-hepta-agentd",
+      "exit_code": 100,
+      "passed": 546,
+      "failed": 1,
+      "skipped": 60,
+      "flaky": 0,
+      "command_elapsed_seconds": 867.8443659190089,
+      "raw_summary": "547 tests run: 546 passed (1 slow), 1 failed, 60 skipped"
+    },
+    {
+      "package": "codex-app-server",
+      "exit_code": 100,
+      "passed": 1315,
+      "failed": 16,
+      "skipped": 2,
+      "flaky": 0,
+      "command_elapsed_seconds": 1990.8973858229583,
+      "raw_summary": "1331 tests run: 1315 passed, 16 failed, 2 skipped"
+    }
+  ],
+  "appserver": {
+    "state": "complete",
+    "stderr_bytes": 404859,
+    "stderr_sha256": "61c4167e207e2df0315a054efe30d544ed8d3c5b82995b57370699abab991161",
+    "original_exit_code": 100
+  },
+  "pipeline_metadata_exit_confirmed": true,
+  "complete_owning_suite_passed": false,
+  "production_qualified": false,
+  "files": [
+    {
+      "path": "objective/result.json",
+      "bytes": 1629,
+      "sha256": "b187b8fca2860d987a611f6fbf95e940ccdb03129bd0a37e97ac86227b95e5e4",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-objective-26a46e3f-tests-v1/result.json",
+        "version": "2067:55979959:1629:1793746010010779853:1793746010010779853",
+        "rpc_wrapper": "transport/test-objective-26a46e3f-originals.json"
+      }
+    },
+    {
+      "path": "objective/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-objective-26a46e3f-tests-v1/stdout.log",
+        "version": "2067:55979960:0:1793746002110285218:1793746002110285218",
+        "rpc_wrapper": "transport/test-objective-26a46e3f-originals.json"
+      }
+    },
+    {
+      "path": "objective/stderr.log",
+      "bytes": 10677,
+      "sha256": "a809de2d4f05db91bd0d53cd89581689c3863d00bf464b4f911ac7313555ff3b",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-objective-26a46e3f-tests-v1/stderr.log",
+        "version": "2067:55979961:10677:1793746009941919020:1793746009941919020",
+        "rpc_wrappers": [
+          "transport/test-objective-26a46e3f-originals.json"
+        ]
+      }
+    },
+    {
+      "path": "transport/test-objective-26a46e3f-originals.json",
+      "bytes": 13502,
+      "sha256": "9a2364d8c0ed2be33c3750577cf6f260b324d5ef74d86ee33d3614c81ddc1bf4",
+      "origin": {
+        "kind": "retained_rpc_response",
+        "host": "main",
+        "local_original": "audit-cache/hepta-fc9-verify/test-objective-26a46e3f-originals.json"
+      }
+    },
+    {
+      "path": "root-review/objective-log-review-26a.json",
+      "bytes": 495,
+      "sha256": "1142f6363b65b27274e7942c0fccb10e9e5e2203f55f0c805198f0964b09e33a",
+      "origin": {
+        "kind": "root_local_review",
+        "scope": "Independent byte, source identity, original result and raw-log inspection; not another execution."
+      }
+    },
+    {
+      "path": "memory/result.json",
+      "bytes": 1630,
+      "sha256": "4b9fad65c7493a6bdfb0254fa382480ff53b22001e77b4b1505f13676f8f1207",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-memory-26a46e3f-tests-v1/result.json",
+        "version": "2067:55979967:1630:1793746463531938571:1793746463531938571",
+        "rpc_wrapper": "transport/test-memory-26a46e3f-result-originals.json"
+      }
+    },
+    {
+      "path": "memory/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-memory-26a46e3f-tests-v1/stdout.log",
+        "version": "2067:55979968:0:1793746010189666081:1793746010189666081",
+        "rpc_wrapper": "transport/test-memory-26a46e3f-result-originals.json"
+      }
+    },
+    {
+      "path": "memory/stderr.log",
+      "bytes": 77916,
+      "sha256": "413d9f3c22b859df676f3888293de73666db4ad4935860b31672ac5ff4320fef",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-memory-26a46e3f-tests-v1/stderr.log",
+        "version": "2067:55979969:77916:1793746463483682318:1793746463483682318",
+        "rpc_wrappers": [
+          "transport/test-memory-26a46e3f-stderr-transfer.json"
+        ]
+      }
+    },
+    {
+      "path": "transport/test-memory-26a46e3f-result-originals.json",
+      "bytes": 2452,
+      "sha256": "95dcda632d5017c4ff3f91555bdc870929639363465d39e177e19f85369b0fed",
+      "origin": {
+        "kind": "retained_rpc_response",
+        "host": "main",
+        "local_original": "audit-cache/hepta-fc9-verify/test-memory-26a46e3f-result-originals.json"
+      }
+    },
+    {
+      "path": "transport/test-memory-26a46e3f-stderr-transfer.json",
+      "bytes": 104549,
+      "sha256": "dbdcb7701c8999eb37a3d383d460eb20a7d12c52cc976169ee3be8cc84f1cbea",
+      "origin": {
+        "kind": "retained_rpc_response",
+        "host": "main",
+        "local_original": "audit-cache/hepta-fc9-verify/test-memory-26a46e3f-stderr-transfer.json"
+      }
+    },
+    {
+      "path": "root-review/memory-log-review-26a.json",
+      "bytes": 2054,
+      "sha256": "79948ce6f85a7c77089ace95b3443b53f1ec189a728daa0dce22f11074c58c0b",
+      "origin": {
+        "kind": "root_local_review",
+        "scope": "Independent byte, source identity, original result and raw-log inspection; not another execution."
+      }
+    },
+    {
+      "path": "agentd/result.json",
+      "bytes": 1630,
+      "sha256": "dac948b9c8332adef82ca1728b92b61f30632bb3e4204a5c04ee331abe7bbdd6",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-agentd-26a46e3f-tests-v1/result.json",
+        "version": "2067:55979971:1630:1793747331548278929:1793747331548278929",
+        "rpc_wrapper": "transport/test-agentd-26a46e3f-result-originals.json"
+      }
+    },
+    {
+      "path": "agentd/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-agentd-26a46e3f-tests-v1/stdout.log",
+        "version": "2067:55979972:0:1793746463702686332:1793746463702686332",
+        "rpc_wrapper": "transport/test-agentd-26a46e3f-result-originals.json"
+      }
+    },
+    {
+      "path": "agentd/stderr.log",
+      "bytes": 127220,
+      "sha256": "6f39a71d087bec0b457f1f71ab0fdb6dcff13878a13f3e775d52f821831a87cf",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-agentd-26a46e3f-tests-v1/stderr.log",
+        "version": "2067:55979973:127220:1793747331493178353:1793747331493178353",
+        "rpc_wrappers": [
+          "transport/test-agentd-26a46e3f-stderr-slice0.json",
+          "transport/test-agentd-26a46e3f-stderr-slice65536.json"
+        ]
+      }
+    },
+    {
+      "path": "transport/test-agentd-26a46e3f-result-originals.json",
+      "bytes": 2452,
+      "sha256": "4353b5d034175d16e73ad9a67c3dda5413c912783a02d818343a8d456f15d30a",
+      "origin": {
+        "kind": "retained_rpc_response",
+        "host": "main",
+        "local_original": "audit-cache/hepta-fc9-verify/test-agentd-26a46e3f-result-originals.json"
+      }
+    },
+    {
+      "path": "transport/test-agentd-26a46e3f-stderr-slice0.json",
+      "bytes": 87712,
+      "sha256": "e0faa59676510b7f10d5565c832ceacbdd7c292de0846f897bbb50bcd18f3137",
+      "origin": {
+        "kind": "retained_rpc_response",
+        "host": "main",
+        "local_original": "audit-cache/hepta-fc9-verify/test-agentd-26a46e3f-stderr-slice0.json"
+      }
+    },
+    {
+      "path": "transport/test-agentd-26a46e3f-stderr-slice65536.json",
+      "bytes": 82580,
+      "sha256": "a83f43bf1738cadeadb3d82a4e8db35222687f1d0283c0228d3853bdea62256f",
+      "origin": {
+        "kind": "retained_rpc_response",
+        "host": "main",
+        "local_original": "audit-cache/hepta-fc9-verify/test-agentd-26a46e3f-stderr-slice65536.json"
+      }
+    },
+    {
+      "path": "root-review/agentd-log-review-26a.json",
+      "bytes": 2620,
+      "sha256": "c8a529ea9996159f692bc5de4bed9698276ab2049490caef210072d25accd86b",
+      "origin": {
+        "kind": "root_local_review",
+        "scope": "Independent byte, source identity, original result and raw-log inspection; not another execution."
+      }
+    },
+    {
+      "path": "transport/tests-26a46e3f-final-results-original.json",
+      "bytes": 5316,
+      "sha256": "d939db63823039b78a606954a3169f1070e7551be954281662be9c8e393fedbd",
+      "origin": {
+        "kind": "original_rpc_wrapper",
+        "host": "main"
+      }
+    },
+    {
+      "path": "transport/tests-26a46e3f-final-status-original.json",
+      "bytes": 673,
+      "sha256": "a024f0f0dc6f47e71f9a4f94d10f4f03d1b8b94a8990ea85fb6394e84a426e1b",
+      "origin": {
+        "kind": "original_rpc_wrapper",
+        "host": "main"
+      }
+    },
+    {
+      "path": "pipeline/result.json",
+      "bytes": 1975,
+      "sha256": "9e0c61045ffd1a44c6a977daa26bdb63f13a9d7e28343f94066ea0123b9330c1",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/pipelines/26a46e3f-tests-v1/result.json",
+        "version": "2067:55979957:1975:1793749322679020051:1793749322679020051",
+        "rpc_wrapper": "transport/tests-26a46e3f-final-results-original.json"
+      }
+    },
+    {
+      "path": "appserver/result.json",
+      "bytes": 1629,
+      "sha256": "4d0680b67a97a30194748fd950c5e953963744d1d7fe03c81b690cbc39fdc1e1",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-app-server-26a46e3f-tests-v1/result.json",
+        "version": "2067:55979975:1629:1793749322625812056:1793749322625812056",
+        "rpc_wrapper": "transport/tests-26a46e3f-final-results-original.json"
+      }
+    },
+    {
+      "path": "pipeline/process-status.json",
+      "bytes": 477,
+      "sha256": "1c57942cd5deca4e49fddcdcac4f414f99ea16228c33063d99750ef1ad1a581f",
+      "origin": {
+        "kind": "original_runtime_status_text",
+        "host": "main",
+        "job_id": "1a1a397dd99-96a-7709"
+      }
+    },
+    {
+      "path": "transport/appserver-native-0.json",
+      "bytes": 87818,
+      "sha256": "0febf5ddf946705b0d00eecaa8fadce3056324020bcfc48578adb4b394dd0cde",
+      "origin": {
+        "kind": "original_retained_native_payload",
+        "operation_id": "ca1b0dfd3d71963302b9f729a52e3eff868dc476d296e4e1ba1c13de5d17fffb",
+        "original_payload_sha256": "0febf5ddf946705b0d00eecaa8fadce3056324020bcfc48578adb4b394dd0cde"
+      }
+    },
+    {
+      "path": "transport/appserver-native-65536.json",
+      "bytes": 87823,
+      "sha256": "d919e4981b202bf3086152418e5b10265e743ccab8d36d55b4b6540997df22b4",
+      "origin": {
+        "kind": "original_retained_native_payload",
+        "operation_id": "a30aff7c84a8cf6a8b2013a1e2cb2321f942ecdd1ccb6dbeaf605ce163f99a19",
+        "original_payload_sha256": "d919e4981b202bf3086152418e5b10265e743ccab8d36d55b4b6540997df22b4"
+      }
+    },
+    {
+      "path": "transport/appserver-native-131072.json",
+      "bytes": 87824,
+      "sha256": "eba4df18f7cdf532f67b717ba86ff6ebb997cbe144b7e3f757b20ab002a3188d",
+      "origin": {
+        "kind": "original_retained_native_payload",
+        "operation_id": "e5d3ac43e9d435b3af42edc783a9753f0bd15203c70b853ae7ab46ac0d8398bd",
+        "original_payload_sha256": "eba4df18f7cdf532f67b717ba86ff6ebb997cbe144b7e3f757b20ab002a3188d"
+      }
+    },
+    {
+      "path": "transport/appserver-native-196608.json",
+      "bytes": 87824,
+      "sha256": "7ae635f9357b9e450f2028d6c59fbca582858ddc35fabdd3ca4f88f6466aab06",
+      "origin": {
+        "kind": "original_retained_native_payload",
+        "operation_id": "143921188913e0d78956634bba7f6ab6be2a0f01a629d36b352839db5f272e01",
+        "original_payload_sha256": "7ae635f9357b9e450f2028d6c59fbca582858ddc35fabdd3ca4f88f6466aab06"
+      }
+    },
+    {
+      "path": "transport/appserver-native-262144.json",
+      "bytes": 87824,
+      "sha256": "4cb3aea269d1f07b88be02582c72dd5bc069934aa7c8885ba98c5932ee8fa5dc",
+      "origin": {
+        "kind": "original_retained_native_payload",
+        "operation_id": "43f8903c67457b7af1dc0af9813a08cf54e7407a420e63510143353556b8f7ab",
+        "original_payload_sha256": "4cb3aea269d1f07b88be02582c72dd5bc069934aa7c8885ba98c5932ee8fa5dc"
+      }
+    },
+    {
+      "path": "transport/appserver-native-327680.json",
+      "bytes": 87824,
+      "sha256": "81680850eabb8f9b4d757155a982aefdf736f63c230258236062b8cf653af5c4",
+      "origin": {
+        "kind": "original_retained_native_payload",
+        "operation_id": "f4c870fe1aed192da3a20051ad848742adab9e4a926d2786e59179fc5b6f8941",
+        "original_payload_sha256": "81680850eabb8f9b4d757155a982aefdf736f63c230258236062b8cf653af5c4"
+      }
+    },
+    {
+      "path": "transport/appserver-native-393216.json",
+      "bytes": 15963,
+      "sha256": "e66b4df8f1f9e7ca156f4412ac87310b907beb8c93e155789a1b85b39bd41e6e",
+      "origin": {
+        "kind": "original_retained_native_payload",
+        "operation_id": "9f121c70ca2b87cf35d8e7f3344a0f39230ac529a678bbb9d07b9184751516e4",
+        "original_payload_sha256": "e66b4df8f1f9e7ca156f4412ac87310b907beb8c93e155789a1b85b39bd41e6e"
+      }
+    },
+    {
+      "path": "appserver/stderr.log",
+      "bytes": 404859,
+      "sha256": "61c4167e207e2df0315a054efe30d544ed8d3c5b82995b57370699abab991161",
+      "origin": {
+        "kind": "exact_remote_file",
+        "host": "main",
+        "path": "/data/trill-calculator-joint-20261103-v1/steps/test-app-server-26a46e3f-tests-v1/stderr.log",
+        "version": "2067:55979977:404859:1793749322578907866:1793749322578907866",
+        "transport": [
+          {
+            "path": "transport/appserver-native-0.json",
+            "file_offset": 0,
+            "chunk_sha256": "5f8600d4b27ed6e193b1c3be6e918752cc5e6728a4989751ba78ebc7e9077354",
+            "native_payload_sha256": "0febf5ddf946705b0d00eecaa8fadce3056324020bcfc48578adb4b394dd0cde"
+          },
+          {
+            "path": "transport/appserver-native-65536.json",
+            "file_offset": 65536,
+            "chunk_sha256": "fbf5b9098ddae783ffc7752d55434808f902019486a0c08f95085cb01839e46a",
+            "native_payload_sha256": "d919e4981b202bf3086152418e5b10265e743ccab8d36d55b4b6540997df22b4"
+          },
+          {
+            "path": "transport/appserver-native-131072.json",
+            "file_offset": 131072,
+            "chunk_sha256": "536abe47ed2e308a5ae928407ea9f39480e7dd84fa7e563a7d9ea3b9391cedf3",
+            "native_payload_sha256": "eba4df18f7cdf532f67b717ba86ff6ebb997cbe144b7e3f757b20ab002a3188d"
+          },
+          {
+            "path": "transport/appserver-native-196608.json",
+            "file_offset": 196608,
+            "chunk_sha256": "6f7edff30d6b997baa351d3d74da8d54e5ce6eba8bcad05f805d41a1f9d175a5",
+            "native_payload_sha256": "7ae635f9357b9e450f2028d6c59fbca582858ddc35fabdd3ca4f88f6466aab06"
+          },
+          {
+            "path": "transport/appserver-native-262144.json",
+            "file_offset": 262144,
+            "chunk_sha256": "9f226757f3678bb99e78805d1ab818f45f043a01a826f3fe3407e4a8e76a0322",
+            "native_payload_sha256": "4cb3aea269d1f07b88be02582c72dd5bc069934aa7c8885ba98c5932ee8fa5dc"
+          },
+          {
+            "path": "transport/appserver-native-327680.json",
+            "file_offset": 327680,
+            "chunk_sha256": "8c2be28a23c694c7dc79e324faae15d3443339e0610ab35ab332fde531022711",
+            "native_payload_sha256": "81680850eabb8f9b4d757155a982aefdf736f63c230258236062b8cf653af5c4"
+          },
+          {
+            "path": "transport/appserver-native-393216.json",
+            "file_offset": 393216,
+            "chunk_sha256": "e2a0e4da1f0be83f9a4c6fe319d4008e7396d934abe96fc93a340b33528930a1",
+            "native_payload_sha256": "e66b4df8f1f9e7ca156f4412ac87310b907beb8c93e155789a1b85b39bd41e6e"
+          }
+        ]
+      }
+    },
+    {
+      "path": "root-review/appserver-log-review-26a.json",
+      "bytes": 1080,
+      "sha256": "0f86358b5bee86d0ec6908d01afe0363209f93154f1305c46cb8d9f0642c9071",
+      "origin": {
+        "kind": "root_local_review"
+      }
+    },
+    {
+      "path": "root-review/appserver-failure-index.json",
+      "bytes": 9768,
+      "sha256": "ac7032785c9fdacbd62004497cc16a91d2098545b12f62e1296bf4431ed66c7d",
+      "origin": {
+        "kind": "derived_failure_navigation",
+        "source": "appserver/stderr.log"
+      }
+    },
+    {
+      "path": "root-review/command-child-static-review.json",
+      "bytes": 1957,
+      "sha256": "9259ebece1522f8fd45a673ff8fbd58c5d509d22bfc6a10e1196661d2bdd089d",
+      "origin": {
+        "kind": "root_static_source_review",
+        "new_test_executions": 0
+      }
+    }
+  ],
+  "verification": {
+    "exact_source_before_after": true,
+    "complete_raw_logs": true,
+    "all_chunks_same_file_version": true,
+    "original_nextest_retry_policy_unchanged": true,
+    "failures_preserved": true,
+    "skipped_tests_counted_as_passed": false
+  },
+  "scope": "Original completed package invocations only. A later fixture repair, different source tree, signal component or product build cannot relabel these results.",
+  "pipeline_exit_code": 1,
+  "pipeline_output_complete": true
+}

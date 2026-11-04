@@ -1,0 +1,193 @@
+{
+  "schema": "trill.canonical14.cargo-ordinary-locks.v1",
+  "state": "complete",
+  "passed": true,
+  "steps": [
+    {
+      "name": "compiler-version",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 0.039773302036337554,
+      "stdout": {
+        "bytes": 196,
+        "sha256": "f64c55ed9f210d80a9b248206104a47175faf5ec94a093e4ad132549209089fc"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "cargo-version",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version",
+        "--verbose"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 0.02311089402064681,
+      "stdout": {
+        "bytes": 336,
+        "sha256": "7e559125c54fb05442b72617981d4c494ec7b8831956e690b0bcefb513f16633"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "ui-update",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "update",
+        "--workspace",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/ui/Cargo.toml"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 24.233157347072847,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 51450,
+        "sha256": "bed7304b75620a4ff6eb2f2e9d120cf305c2c3049a8675afff052f95e3f2204d"
+      }
+    },
+    {
+      "name": "session-host-update",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "update",
+        "--workspace",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/services/hepta-session-host/Cargo.toml"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 10.41901103395503,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 48934,
+        "sha256": "ee068fbccd76dc01e94249a5f537e5d17581fa292f5bb65b26d648d9e128c642"
+      }
+    }
+  ],
+  "scope": "Cargo-generated ordinary lock resolution only; no compile, authority, application effect or runtime qualification.",
+  "script": {
+    "bytes": 7244,
+    "sha256": "19d9e186ba0ca0f50dae37461e33b88f1c54eaa7594e9ce88983bebec0947842"
+  },
+  "desktop_before": {
+    "commit": "a0fb81e34d19c71aea4c2fce28e07a3aec2e0880",
+    "tree": "2279bb09d9e1e5672c8fe17fa1ca0a4af1b9c0dc",
+    "status": " M services/hepta-session-host/Cargo.toml\n M support/ui/HEPTA_SHARED_PRESENTER.json\n M support/ui/linux-preedit-profile.json\n M ui/Cargo.toml\n M ui/core/Cargo.toml\n"
+  },
+  "hepta_before": {
+    "commit": "14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+    "tree": "0e12d53adf6a13721fdb2feef0e974d903b92e85",
+    "status": ""
+  },
+  "locks_before": {
+    "ui/Cargo.lock": {
+      "bytes": 428742,
+      "sha256": "a8b00de25b9b5d47cba0d3458ab24f1c20871a6a2420f91e9c7bf0c1d792c35f"
+    },
+    "services/hepta-session-host/Cargo.lock": {
+      "bytes": 346287,
+      "sha256": "be106a642fb1c59d4e81019077556dd77062f0ebef65cef5a2d0c20dc4fc6c75"
+    },
+    "services/hepta-os/Cargo.lock": {
+      "bytes": 6763,
+      "sha256": "cf09ebb1625ef65ee7722d1ed09f00f874a4390f619b7fbfde0588f61c52a302"
+    },
+    "support/ui/Cargo.lock": {
+      "bytes": 248,
+      "sha256": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614"
+    },
+    "tests/ui/Cargo.lock": {
+      "bytes": 169,
+      "sha256": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940"
+    },
+    "support/ui/preedit-sdk/Cargo.lock": {
+      "bytes": 411449,
+      "sha256": "cffd56585d6ee9336fb11595193c875dc607c78f03d1c3b04c4b848afd2e9361"
+    }
+  },
+  "resources": {
+    "disk_free": 91962810368,
+    "mem_available_kib": 103932280
+  },
+  "transport": {
+    "kind": "process-local Git insteadOf to independently verified exact original source",
+    "source_commit": "14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+    "source_tree": "0e12d53adf6a13721fdb2feef0e974d903b92e85",
+    "source": "/data/trill-desktop-canonical14-20261104/hepta-source",
+    "global_git_config_changed": false,
+    "cargo_cache_populated_by": "Cargo only",
+    "source_ids_changed": false
+  },
+  "cargo_environment": {
+    "CARGO_HOME": "/data/trill-organ-owner-20261103/cargo-home",
+    "CARGO_TARGET_DIR": "/data/trill-desktop-canonical14-20261104/metadata-target",
+    "RUSTC": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTDOC": "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustdoc",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+    "CARGO_NET_RETRY": "0",
+    "CARGO_HTTP_TIMEOUT": "30"
+  },
+  "locks_after": {
+    "ui/Cargo.lock": {
+      "bytes": 428742,
+      "sha256": "ed267155b566c555cc2cb419662d0bdacbc3096e656801890c059b3e4fd4a143"
+    },
+    "services/hepta-session-host/Cargo.lock": {
+      "bytes": 346287,
+      "sha256": "b10d7eec2ce509ae97b1aa77ea2d53d0350ad8ef2ae1ebe87acb5034080534a3"
+    },
+    "services/hepta-os/Cargo.lock": {
+      "bytes": 6763,
+      "sha256": "cf09ebb1625ef65ee7722d1ed09f00f874a4390f619b7fbfde0588f61c52a302"
+    },
+    "support/ui/Cargo.lock": {
+      "bytes": 248,
+      "sha256": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614"
+    },
+    "tests/ui/Cargo.lock": {
+      "bytes": 169,
+      "sha256": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940"
+    },
+    "support/ui/preedit-sdk/Cargo.lock": {
+      "bytes": 411449,
+      "sha256": "cffd56585d6ee9336fb11595193c875dc607c78f03d1c3b04c4b848afd2e9361"
+    }
+  },
+  "desktop_after": {
+    "commit": "a0fb81e34d19c71aea4c2fce28e07a3aec2e0880",
+    "tree": "2279bb09d9e1e5672c8fe17fa1ca0a4af1b9c0dc",
+    "status": " M services/hepta-session-host/Cargo.lock\n M services/hepta-session-host/Cargo.toml\n M support/ui/HEPTA_SHARED_PRESENTER.json\n M support/ui/linux-preedit-profile.json\n M ui/Cargo.lock\n M ui/Cargo.toml\n M ui/core/Cargo.toml\n"
+  },
+  "hepta_after": {
+    "commit": "14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+    "tree": "0e12d53adf6a13721fdb2feef0e974d903b92e85",
+    "status": ""
+  },
+  "elapsed_seconds": 35.370968081988394
+}

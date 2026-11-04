@@ -1,20 +1,22 @@
 # 当前能力、源码与验收边界
 
 <a id="current-product-pair"></a>
-## 2026-11-03 冻结产品：Linux Root、Session 与 Rust UI
+## 2026-11-04 实施配对：联合 Root 源码已收敛，运行验收未完成
 
-当前产品冻结为 `fd8d56c / a39a087`。下面的精确身份、组件执行和产品门禁分别记录；后续代码和本文档提交各有自己的 Desktop commit/tree，不继承已测二进制的资格。
+当前实施候选为 Desktop `f5fbc7e1` / Hepta `14e2d89b`，分别发布在 [Desktop PR #285](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/285) 和 [Hepta PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749)。39 处声明、三份相关 Cargo 锁和六个实际依赖图已收敛；这些是源码与依赖门禁。当前归档尚未给出该配对的完整构建、安装、真实 Notes 或 Calculator 效果及恢复资格。此前安装的 `fd/a39` 单独保留为既有基线。
 
-| 输入 | 精确身份与依据 |
+| 输入或基线 | 精确身份与依据 |
 | --- | --- |
-| Desktop 冻结产品 | [`fd8d56c52b971c2d5d0e6430f296803b43ef60a3`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/fd8d56c52b971c2d5d0e6430f296803b43ef60a3)，tree `347fbb7e9931006c749b5bef0e1550c54bc08f27`；`e1f3898f` 为首轮集成/原生内核执行来源，`745c0731` 为完整产品实现起点 |
-| 原 Hepta owner / UI / 依赖补丁 | [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360)，tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`；由 [canonical source contract](../support/ui/HEPTA_SHARED_PRESENTER.json) 及实际 Cargo 入口选择 |
-| 产品构建与锁 | Rust/Cargo `1.96.0`；[DEPENDENCIES](../support/ui/DEPENDENCIES.md) 列出五个普通入口及独立 prepared UI 入口，共六份锁。源码选择、完整依赖图、构建和运行分别验证 |
-| 显式 preedit 输入候选 | [linux-preedit-profile.json](../support/ui/linux-preedit-profile.json) 选择同一 Hepta 来源；原 SDK `337566c8b25d47f7e4fff6a202157b65bf183330`，prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。默认 SDK、clipboard 候选和 preedit 候选不互借锁或运行资格 |
+| 当前 Desktop 实施候选 | [`f5fbc7e1a533e5bec588575ab56312a3203f6d8c`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/f5fbc7e1a533e5bec588575ab56312a3203f6d8c)，tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`；完整树与实际完成来源检查的本地 `5ef1bfc2` 相同，随后真实 fetch/checkout 已核为 f5 clean，见[发布与源码收据](../results/integration/2026-11-03-organ-followup/joint-desktop-canonical14-source-20261104/README.md) |
+| 当前 Hepta 原 owner | [`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3)，tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`；保留原 sender/writer、authority 与账本，新 joint profile 使用新的原 Core thread；[原包执行和发布身份](../results/integration/2026-11-03-organ-followup/joint-hepta-canonical-publication/README.md)分开记录 |
+| 当前构建与依赖合同 | Rust/Cargo `1.96.0`；[f5 固定 source contract](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/f5fbc7e1a533e5bec588575ab56312a3203f6d8c/support/ui/HEPTA_SHARED_PRESENTER.json)及[同源 DEPENDENCIES](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/f5fbc7e1a533e5bec588575ab56312a3203f6d8c/support/ui/DEPENDENCIES.md)选择 14；39 处声明、三份真实 Cargo 生成锁、其余三份未消费 Hepta 的原锁及六份 fresh locked/offline metadata 均已核对 |
+| 显式 preedit SDK | 原 SDK `337566c8b25d47f7e4fff6a202157b65bf183330`、prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`；新 pair 已重新解析自己的 prepared 图。默认 SDK、clipboard 与 preedit 各用原合同，旧窗口资格不转授 f5 |
+| 既有已安装 Desktop 基线 | [`fd8d56c52b971c2d5d0e6430f296803b43ef60a3`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/fd8d56c52b971c2d5d0e6430f296803b43ef60a3)，tree `347fbb7e9931006c749b5bef0e1550c54bc08f27`；[原 product-linux 构建与安装](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md)通过，安装器的服务启动和生产就绪仍为 false |
+| 已安装基线的 Hepta | [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360)，tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`；[首次真实 Root 启动](../results/integration/2026-11-03-organ-followup/owner-p0-notes-start-v1/README.md)在 seed 退出阶段失败，尚未建立 Session/authority 或发送 Notes 写入 |
 
-本页是当前状态的唯一汇总入口。[模块索引](modules/README.md) 对应实际源码和开发/技术合同；[SOURCES](SOURCES.md#hepta-native-organ) 定位同一 Hepta commit 的原 owner 手册；[STATUS](STATUS.md) 与[证据索引](EVIDENCE_INDEX.md) 保留按日期、源码和场景绑定的结果。`4223` 的六锁/32项原包测试、`942/de0` 的三项 CI、较早 v10/v11 和真实窗口记录仍属于各自原配对，不能转记为 `745/a39` 的完整运行。
+本页是当前状态的唯一汇总入口。[模块索引](modules/README.md)对应实际源码和开发/技术合同；[STATUS](STATUS.md)与[证据索引](EVIDENCE_INDEX.md)保留按日期、源码和场景绑定的结果。本证据分支的相对源码链接仍属于各自提交；上表以不可变 f5 链接定位最新依赖合同。较早 `4223`、`942/de0`、`e1/a39`、`fd/a39` 和 Calculator 组件结果均保留原来源，不转记为 `f5/14` 的完整运行。
 
-### 本轮已经实际执行
+### 既有基线已经实际执行
 
 [本轮证据目录](../results/integration/2026-11-03-organ-convergence/README.md)保留原始来源、退出码、计数与未取得的资格：`e1/a39` 原 Session host 23 项、原 daemon guest 生命周期、同一普通内核上的原 CognitiveStore 10 项重开/CAS，以及原生 core 377 项、allocator 20 项、MLSDisk 15 项均通过；OSTD 报告 233 项，其中 3 项原 TCG soft-skip，实际执行下界为 230。原 Native UI CI 各组共 400 passed / 5 ignored，另有过滤的文本与 SDK 组件范围；不把 ignored 或 filtered 计为已执行。
 
@@ -22,14 +24,60 @@
 
 `fd/a39` 的全部 CI 现已终结：16 项成功、1 项失败；[最终状态](../results/integration/2026-11-03-organ-convergence/ci-status-fd-final.json)与[当前原 daemon 独立重放](../results/integration/2026-11-03-organ-convergence/f1-native-ci-fd/independent-review.json)均保留。当前 A06、Session 与 Native UI 也各自有新的 `fd` 收据，未把 `e1` 结果改名。G1-d 历史负控超过串口证据上限并有运行条件失败，仍为红灯。新增独立 watchdog workflow 在 `22a94f7` 后继上实际通过 6 次 guest，原 observer 已重放；合法 job-stop、零配额、一次恢复结果均保持原语义，但可信用户暂停入口及全局恢复资源仍未取得资格。
 
+### 后继修复与第二目的端的实际范围
+
+[后续证据](../results/integration/2026-11-03-organ-followup/README.md)单独记录 `bf15a519e9192b063071e8b9b61ef3319bed416e` 的 9 项 CI 全部成功，包括原 Native UI、Root 和 prepared SDK 门禁。它修复了打包及 Notes 测试夹具问题；这些 CI 属于该后继源码，已安装基线仍为上表 `fd/a39`；当前 `f5/14` 须用自己的产物验收。组件通过不授予生产授权或实际 Notes 效果资格。
+
+第二目的端 Calculator 的 [PR #281](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/281) 中，实际测试来源 `5a8684cc4591a4163c162f198b4121ca4cfc6ebc` 的 Core 为 81 passed，App/Session 为 138 top-level passed / 2 ignored；嵌套子进程用例不重复累计。原 Hepta 候选 `580a07bfadad97d1dfc13ece112facc13dcc00bb` 的 Objective 为 66 passed / 2 skipped，另有 causal receipt 1 项和 Agentd 6 项定向通过，其余分别 407 / 587 项未选择。它们尚未组成一个已经运行的双应用原 Root 产品。`5a` 的 A10 在真实 Weston/AT-SPI 和共享输入检查之后因两项 Clippy 错误失败；`c2c369836e87e9cf27b4dc9aa8b7446e85efdf90` 只修复这两项，其[五项最终 CI](../results/integration/2026-11-03-organ-followup/calculator-ci-c2/calculator-c2-ci-status.json)现已全部成功，包括 A10 和 Native UI。后续联合 Root/owner 候选和安装产品仍须按自己的实际来源验收。
+
+原 Hepta `0259fc82cc1b6ac9e245227dceffb767e306378f` 的完整 Memory 执行保留 393 passed / 1 failed / 13 skipped；不以随后定向通过项覆盖失败。唯一失败的原 federation 用例重查仍失败，2 秒预算和 16 个完成 peer 的原断言未放宽。独立 Xvfb 诊断还观察到页/缓冲等待及原 15 秒准备超时；原失败保留。后续同一 `fd/a39` 显式 preedit 产物的[私有 X11 窗口实测](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/README.md)按原期限通过 AT-SPI 7/7、原子 EditableText 5/5、真实 IBus 5/5，五个常驻自有子进程均清理。这次成功不确立唯一 I/O 根因，不授予物理键盘、Wayland、Orca、视觉检查或实际 AuthBus/Notes 效果资格。
+
+同一 `fd/a39` 的原 Root `dev-small` 两段编译及两项 strip 已完成，但 341,288,592-byte Agentd 被原 128 MiB 单文件门槛拒绝。[原构建失败](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/root/build-receipt.json)及 runner `blocked` 均保留；该次执行没有产生已验收的包或安装。
+
+随后同一精确来源的[原 `product-linux` 构建、测试与安装](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md)已实际通过。原 8 条构建命令全部退出 0，优化后 Agentd 为 117,408,600 bytes，Root 为 24,530,984 bytes，未改原文件/归档尺寸门槛。原 Session/product-root all-targets 为 53 passed / 2 ignored；两项原 ignored 另以实际特权各执行通过，总计 55 个不同通过用例。原 pack、verify、install 均通过，物理 release 为 `/opt/trill-organ-20261103/releases/fd8d56c52b97-053cc1957b40`。两份完整小证据归档共 31 个原文件已独立重算摘要，前后源码干净；安装器仍返回 `services_started: false` / `production_ready: false`，不能记为真实 Notes 效果或重启闭环已完成。
+
+当前 Root/issuer/人类准入组合最多 300 秒，完整 owner 恢复只允许在同一 issuer 窗口内进行。原产品没有连续重新授权/epoch 接续事务；[D14](DECISIONS.md)与[恢复合同](../services/hepta-session-host/src/product_root/RECOVERY.md)记录实际期限公式和缺口。短租约装配、真实人类动作与常驻生产运行分别验收。
+
+安装后的[首次原 Root 实际启动](../results/integration/2026-11-03-organ-followup/owner-p0-notes-start-v1/README.md)现有明确失败证据：job `1a1a3519eb3-96a-766e` 与 Root 均 exit 1、无外层超时；Root 在 13,085 ms 后报告原 seed 子进程未在期限内退出。尚无 completed seed、Session、authority state 或 composition，GUI 写入请求为 0。15 份原文件、完整 354-byte job stdout 与独立只读 postmortem 已逐项核对。原构建/安装成功仍保留，当前尚无真实 Notes 效果、回读和恢复资格；服务内部唯一根因未由空日志确立。
+
+同一次窗口执行的[五张原始 IBus 截图](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v4/window/visual/README.md)已逐图核对原收据 SHA/尺寸并完成独立 AI 视觉观察。全显示截图可见 `ni hao`、高亮候选“你好”，提交后标题、选中会话与输入框保留“你好”；窗口单独截图的黑区对应外部候选框覆盖区域。原人类视觉、物理输入、Wayland、Orca 和授权发送资格不变。这些是原执行的图像观察，不是新增生产效果测试。
+
+后继双应用接入沿 [D13](DECISIONS.md) 使用同一原 sender/writer 对原 turn 的持久约束；Core callback 与活动列表各有来源核验范围，不作为完整持久历史证明。候选代码、SQLite 夹具与最终联合产品分别验收。
+
+[原 G2 owner 镜像与资源审查](../results/g2-original-owner-size-20261103/README.md)绑定 Desktop `4dcd02d8058005b92b75b4e997ec4de08833e01d` / 原 Hepta `a39`：原 release 构建和 strip 完成，ELF 为 20,138,584 bytes，页对齐 LOAD 合计 20,168,704 bytes；原 8 MiB / 16 MiB 门禁仍然拒绝。独立版本的原 owner 实验 profile 和全局恢复资源分别按 [D11/D12](DECISIONS.md) 实现与验收，不能把普通 guest 生命周期、静态算式或放大预算记成 G2 CPU 持久闭环。
+
+默认关闭的独立 `g2-original-owner-a39-v1` 已在 [PR #284](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/284) 发布；此前 quiet-log 修复来源为 `a286e0f922bf8e439e8951ae1538abeac0b26477` / tree `342ad0840d521e97d6de5845682cbc11a115f6f7`，前一 canonical 来源为 `fe55fe8e1764f4967bae295311d288d8049b6eae` / tree `07cbb5e0187b4355200c2f5e0166228cecf1ecc1`。它固定上述原 ELF 的长度、摘要、LOAD 及四角色，保留原 loader 私有快照、回读与 sealing；旧 8/16 MiB profile 和普通 exec 不变。[首轮主机证据](../results/integration/2026-11-03-organ-followup/g2-exact-owner-host/README.md)记录实际固定 nightly 安装、8 个 Rust 组件格式检查、原 build.rs 编译/输入封存，以及 47 项普通、14 项优化 Python 检查。32 份原文件与 22 个源码组件已独立复核；执行时的提交前身份保留，未改名成后发 canonical commit 的重新执行。
+
+随后 `fe55/a39` 的[独立源码与原 owner 构建](../results/integration/2026-11-03-organ-followup/g2-canonical-source-owner/README.md)已实际通过：depth-1 自有 pack、无 alternates，12,345 个所需对象与 11,726 个受控文件共 399,674,910 bytes 经原执行逐个核对，原 source gate 118 项通过。原 release/strip 在显式复用缓存下重建出完全相同的 20,138,584-byte ELF。首次 kernel 入口在 OSDK/Cargo 之前因合法的空 `original-packaging.log` 被拒绝，原 exit 1 和空日志均保留。`a286` 仅允许这个具名原日志在读取和归档时为零字节；JSON、ELF、清单、其他输入、摘要及上界不变，同组件 50 项普通与 17 项优化检查通过。[独立复核](../results/integration/2026-11-03-organ-followup/g2-canonical-source-owner/independent-review.json)检查了 47 份小原件的字节、摘要和实际运行状态；大 pack、完整 inventory 和二进制未下载为本归档。这一旧检查点尚无 `a286` 自身的构建收据；它的后续实际源码、原 owner 和 OSDK 结果见下方 2026-11-04 检查点。完整 204-package 图、内核、guest 效果和持久闭环尚未由这些记录证明。有界内存观察点也不证明连续峰值、完整进程树或全局恢复预留。
+
+### 2026-11-04：种子生命周期、联合包测试与内核构建
+
+联合 Hepta 的[草稿 PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749)已发布固定来源 `14e2d89b3367232ec5dbe6187f09feed0f2b68d3` / tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`，完整远端树与最终本地文档后继一致，原 `a39` 是明确父提交及审查基线。[发布记录](../results/integration/2026-11-03-organ-followup/joint-hepta-canonical-publication/README.md)与实际执行分开。Desktop 的 39 处声明和 3 份相关 Cargo 锁现已在 `f5/14` 实际收敛；六个 fresh locked/offline 图、194 份来源文件、219 个原 owner manifests、102 个 SDK packages 和 90 项联合必需来源均经原门禁核对。[当前源码检查点](../results/integration/2026-11-03-organ-followup/joint-desktop-canonical14-source-20261104/README.md)另记录原依赖回归普通/优化各 41 项通过，以及本地 clean `5ef` 上 91 文档/1,509 链接。后者是产品源码当时的文档检查计数，不是本证据后继的计数，也不替代联合构建和安装。
+
+原 App Server 信号修复的[实际组件构建](../results/integration/2026-11-03-organ-followup/original-appserver-signal-component/README.md)全部 19 条命令成功，三项首信号退出及两项原 drain 用例首次通过；41 成员的完整小归档已经独立复核。随后[原 seed 生命周期](../results/integration/2026-11-03-organ-followup/original-seed-lifecycle-857d/README.md)真实执行 1 passed / 0 failed / 0 ignored / 27 filtered，原 job exit 0；首次终止信号后子进程在原 10,000 ms 边界内退出，socket 退役、临时挂载解除。14,360 ms 是整个 create 的耗时。实际来源为 Hepta `857d8f61`、Desktop test `92a06c4b` 与原库 `a39`，未把混合组件转为最终联合产品资格；旧 `fd/a39` 启动失败保留，真实用户提交、Notes 效果及恢复仍待最终组合执行。
+
+联合 Hepta `26a46e3fe763b53e1f0362793701f112383a72fa` / tree `2175f198948308c3a2f9d61f8282bc179669e798` 的[四个原 owning package](../results/integration/2026-11-03-organ-followup/joint-hepta-26a-tests/README.md)全部完成。Objective 为 66 passed / 0 failed / 2 skipped，Memory 为 399 / 1 / 13，Agentd 为 546 / 1 / 60，App Server 为 1,315 / 16 / 2；原 job exit 1、无外层超时或取消。Memory 保留原 2 秒 federation 预算失败，Agentd 保留锁释放夹具失败；App Server 的 14 项涉及缺失原 helper 程序，另两项是断连进程回收及冷恢复父 thread 身份。完整原始日志和原 retry 结果保留，定向环境准备或修复不能把这次完整红灯改为全绿。
+
+`a286/a39` 已取得[自己的独立源码与原 ELF 构建收据](../results/integration/2026-11-03-organ-followup/g2-a286-build-and-cache-evidence-20261103/README.md)，原 source gate 118 项通过。首次 OSDK 下载失败后，从既有原项目缓存按锁摘要接纳 143 份 archive；随后原 OSDK 0.19.0 已从源码在 251.450 秒内成功构建。该次 kernel 入口因固定 nightly 标准库缺失 `getopts 0.2.24` 退出，尚未形成完整内核。[独立恢复的 19 份原件](../results/integration/2026-11-03-organ-followup/g2-a286-read-recovery-evidence-20261103/README.md)保留原 OSDK 全日志、退出状态、固定标准库锁及四份 checksum 对齐的 create-only 缓存接纳。生成的 kernel 锁与原 204-package 锁逐字一致，仅证明输入文件；实际完整图门禁、内核、guest 效果、丢回复及持久终态后的退役仍未由此通过。
+
+上述 Agentd 失败的[单文件测试夹具修复 47](../results/integration/2026-11-03-organ-followup/joint-hepta-47-custody/README.md)已实际通过原 fmt、scoped fix 和一个精确 custody 用例，首次通过、其余 554 项未选择。它在原一秒期限内等待 Weak 退役和原 contender 实际取得锁，生产 custody 不变。16 份原件、10 个完整文件 RPC、三命令日志和原 job 状态/输出已独立核对；没有重新宣称整个 Agentd 包通过。
+
+`a286` 的[第三次普通内核构建](../results/integration/2026-11-03-organ-followup/g2-a286-kernel-v3-20261104/README.md)已实际进入 `aster-core`，kernel 步骤 202.642 秒后在三处 `parse_metadata!()` 报错并退出 2，原 pipeline/job exit 1、无超时/取消、来源未变。完整 31,131-byte 日志与原 metadata 状态已独立复核；日志仅有 `cannot get metadata`，没有底层 stderr，后续正常 metadata 诊断单独留证。这次 v3 执行没有取得完整内核或原生 G2 资格，后续 v4 的成功另列如下。
+
+随后同一 `a286/a39` 的[原 kernel v4](../results/integration/2026-11-03-organ-followup/g2-a286-kernel-v4-20261104/README.md)完整通过：OSDK 命令 exit 0 / 0.352 秒，原 kernel 命令 exit 0 / 173.759 秒，原 validator、204-package 生成锁及来源未变检查通过。内核为 28,908,256 bytes，SHA256 `08b13737c465aabbebc8d14ce1ccf4da220e59c7c22756a010c8f00baa91d838`。这是实际完整内核构建；它没有执行 guest，也不证明 G2 持久效果或全局恢复资源。
+
+第一次[原 native v1](../results/integration/2026-11-03-organ-followup/g2-a286-native-preflight-v1-20261104/README.md)在 `inputs_frozen` 阶段以 `ValueError: archive exceeds limit` 退出 1，无外层超时或取消；QEMU 未启动，controls/scenarios 均为空。保留的成功内核没有把这次主机准备失败变为 guest 执行。
+
+[具名归档修复 `00d1dfde8699fe70758519a5508c550476fd5f5c`](../results/integration/2026-11-03-organ-followup/g2-exact-archive-source-20261104/README.md) / tree `7c81e102aba4971bcf36055d1666c002981cc9dc` 已在 PR #284 发布。它仅为固定 a39 owner/base、两个有限 run plan 和 64 个十六进制字符的 nonce 传入 22,268,496-byte 上限；通用 codec 的 16 MiB 默认值、旧 profile 和内核不变。普通/优化各 6 项 host 检查及两个真实原 ELF/base 的 host 打包回读通过；这不是新 guest 结果。原生正向场景、真实丢回复、效果发生后未写终态时的恢复和整机资源保证仍未取得资格。
+
 ### 当前交付范围与下一条实际验收
 
 | 领域 | 当前源码提供的入口 | 仍须以最终产物闭合的门禁 |
 | --- | --- | --- |
 | Linux 原 Root 与文本会话 | [product Root](../services/hepta-session-host/src/product_root/README.md)、[原文本 adapter](../services/hepta-session-host/TEXT_SESSION.md)、[同一 Root 的管理入口](../services/hepta-session-host/src/product_root/ADMIN.md)；原 authority、Current、writer/outbox 与 operation history 保留所属 owner | 最终安装包中的真实 Root/人类准入、原 thread/模型、期限/撤销与恢复，记录实际身份、命令和输出；源码合同不代替部署输入 |
-| Rust UI、安装和本地草稿 | [UI 五成员](../ui/README.md)、[产品安装/升级/回滚/卸载](../support/ui/PRODUCT.md)、[草稿与上下文](../support/ui/CHAT_WORKSPACE.md) | 同一个包的真实启动、Session/窗口身份、恢复、升级/回滚及卸载保留用户数据；最终 Makepad 的 IBus、AT-SPI 与物理输入另外验收 |
+| Rust UI、安装和本地草稿 | [UI 五成员](../ui/README.md)、[产品安装/升级/回滚/卸载](../support/ui/PRODUCT.md)、[草稿与上下文](../support/ui/CHAT_WORKSPACE.md) | 同一个包的真实启动、Session/窗口身份、恢复、升级/回滚及卸载保留用户数据；既有 `fd/a39` 显式 preedit 的私有 X11/IBus 有上述 7/5/5 记录，实际安装、物理输入与 Wayland 另验 |
 | Notes 目的端 | [Notes organ](../support/ui/NOTES_ORGAN.md)、[独立文档回读和持久恢复](../support/ui/NOTES_DURABILITY.md)；原 operation/CAS 与应用文档 owner 相接 | 原授权→实际保存→独立回读→原 writer 持久终态，再按原门禁执行丢回复、撤销、并发编辑与 App 退出；模型文本不能作效果收据 |
-| 第二目的端与 Android | [Android 只读 adapter](../support/android/DEVICE_ORGAN.md)、[严格 receiver 合同](../support/android/receiver/README.md) 已有源码；当前 helper 在发现设备和 UI 调用前拒绝 `organ-set-text` | 每个新目的端独立绑定观察、目标身份/代际、授权、效果、撤销和原 owner 恢复；Android 还需原 signer、安装字节/peer 与真实回读资格。旧限定 APK smoke 不提供生产设备控制资格 |
+| 第二目的端与 Android | Calculator 已有独立 Core/App/Session 和原 owner 组件记录，`f5/14` 新 joint profile 的来源与依赖已收敛；[Android 只读 adapter](../support/android/DEVICE_ORGAN.md)、[严格 receiver 合同](../support/android/receiver/README.md) 已有源码，当前 helper 在发现设备和 UI 调用前拒绝 `organ-set-text` | 每个新目的端独立绑定观察、目标身份/代际、授权、效果、撤销和原 owner 恢复；Android 还需原 signer、安装字节/peer 与真实回读资格。旧限定 APK smoke 不提供生产设备控制资格 |
 | Asterinas organ | [固定构建](../support/build/README.md)、[原 daemon runner](../tests/workloads/hepta_agentd_runtime/README.md)、[G1-d](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 与下方 A00–A10 合同 | 同一最终 guest/Hepta 输入的完整 F1、G2 持久效果和故障恢复；各历史 QEMU 切片保留，不能代替当前原生产品、GPU/ARM/BSP 或手机资格 |
 | 模块交接与证据 | [机器目录](modules/catalogue.json) 覆盖 15 个第一方 package、1 个 UI workspace、11 个开发域及当前 57 个内核成员 | `check_modules.py` 检查映射和链接，源码/构建/运行分别留收据；文档覆盖数不作为开发完成率 |
 
@@ -37,7 +85,7 @@
 
 ## 历史配对记录
 
-以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-03 选源，也不把曾通过或曾失败的场景自动转授后继。
+以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-04 的 `f5/14` 实施选源，也不把曾通过或曾失败的场景自动转授后继。
 
 <a id="2026-10-27-审计修复候选linux-产品先行"></a>
 ## 2026-10-27 4223 审计修复候选（历史）

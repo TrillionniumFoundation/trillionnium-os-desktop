@@ -1,0 +1,296 @@
+{
+  "after_effect_crash_verified": false,
+  "artifacts": {
+    "base_initramfs": {
+      "bytes": 1107990,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/base-initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    "bios": {
+      "bytes": 262144,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/bios.bin",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "kernel": {
+      "bytes": 28908256,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/product-kernel.elf",
+      "sha256": "08b13737c465aabbebc8d14ce1ccf4da220e59c7c22756a010c8f00baa91d838"
+    },
+    "owner": {
+      "bytes": 20138584,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/original-owner.elf",
+      "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+    },
+    "qemu_binary": {
+      "bytes": 26415624,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/source-qemu-binary",
+      "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    }
+  },
+  "bounded_steady_state_verified": false,
+  "controls": {},
+  "cross_boot_unknown_preservation_verified": false,
+  "error": "ValueError: archive exceeds limit",
+  "finished_at_utc": "2026-11-04T00:31:08.431936+00:00",
+  "g2_complete": false,
+  "global_memory_reserve": false,
+  "grant_renewal_verified": false,
+  "hardware_qualification": false,
+  "harness_source": {
+    "head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+    "tree": "342ad0840d521e97d6de5845682cbc11a115f6f7"
+  },
+  "image_profile": "g2-original-owner-a39-v1",
+  "image_profile_descriptor": {
+    "cargo_lock_sha256": "5bd3faaf16a79eb12bcdcb89054e93da388bbd858f36439b9d6bcfb72f77d522",
+    "entry": {
+      "kind": "bin",
+      "name": "hepta-g2-native-owner",
+      "package": "codex-hepta-agentd",
+      "path": "codex-rs/hepta-agentd/src/bin/hepta-g2-native-owner.rs",
+      "sha256": "802d736f5f36e0181b49f44b503802339a56f2309a9b39a3a2ae6ca68f668e40"
+    },
+    "g2_complete": false,
+    "global_memory_reserve": false,
+    "guest_memory_bytes": 536870912,
+    "hepta": {
+      "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+    },
+    "image": {
+      "file_bytes": 20138584,
+      "largest_load_range_bytes": 15323136,
+      "load_segments": 4,
+      "mapped_load_bytes": 20168704,
+      "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+    },
+    "known_image_verification_and_full_stack_bytes": 185169072,
+    "legacy_profile": {
+      "max_file_bytes": 8388608,
+      "max_mapped_load_bytes": 16777216,
+      "profile": "g2-trusted-daemon",
+      "static_profile_passed": false
+    },
+    "native_execution_verified": false,
+    "production_ready": false,
+    "profile": "g2-original-owner-a39-v1",
+    "roles": [
+      "root",
+      "manager",
+      "workload",
+      "recovery"
+    ],
+    "schema": "hepta.original-owner-image-profile.v1",
+    "userspace_toolchain": {
+      "channel": "1.96.0",
+      "manifest": "codex-rs/rust-toolchain.toml",
+      "sha256": "e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380"
+    },
+    "whole_guest_peak_verified": false
+  },
+  "image_profile_descriptor_sha256": "138043c29a3d3428fb8b494d6aa40d14b0010f6793a58d1f9ca46892bca5b758",
+  "input_attestation": "caller-retained actual local build records and complete checked sources; not remote attestation",
+  "kernel_pipeline_sha256": "48632b857172c339036988519eefbc77fc0218c1def691c740dd38d10dd60649",
+  "legacy_limits_unchanged": true,
+  "legacy_static_profile_passed": false,
+  "native_execution_attempted": false,
+  "original_elf_shape": {
+    "bytes": 20138584,
+    "entry": 6825728,
+    "loads": [
+      {
+        "end": 6823936,
+        "entry_inside": false,
+        "file_end": 4724464,
+        "start": 2097152
+      },
+      {
+        "end": 22147072,
+        "entry_inside": true,
+        "file_end": 20042928,
+        "start": 6823936
+      },
+      {
+        "end": 22188032,
+        "entry_inside": false,
+        "file_end": 20080168,
+        "start": 22147072
+      },
+      {
+        "end": 22265856,
+        "entry_inside": false,
+        "file_end": 20129280,
+        "start": 22188032
+      }
+    ],
+    "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+  },
+  "original_entry": {
+    "kind": "bin",
+    "name": "hepta-g2-native-owner",
+    "package": "codex-hepta-agentd",
+    "path": "codex-rs/hepta-agentd/src/bin/hepta-g2-native-owner.rs",
+    "sha256": "802d736f5f36e0181b49f44b503802339a56f2309a9b39a3a2ae6ca68f668e40"
+  },
+  "original_native_owner_cycle_verified": false,
+  "output_created": true,
+  "owner_build_receipt_sha256": "fcec381e0a93de928e46d5fd75afcff192bc755e163c41fd66690eef7de39138",
+  "passed": false,
+  "power_loss_verified": false,
+  "production_ready": false,
+  "repeated_recovery_verified": false,
+  "retained_kernel_build": {
+    "g2-kernel.log": {
+      "bytes": 64926,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/g2-kernel.log",
+      "sha256": "57145273bfbc06f8cbbdffa1588b5582e1106e1d3dfa709a040dbaf8871a3515"
+    },
+    "kernel-build/command.sh": {
+      "bytes": 694,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/command.sh",
+      "sha256": "eb152e9911b5e3a39a70b89a9f656655bc739660b2dab95c570b530a4b7a2fc6"
+    },
+    "kernel-build/environment.log": {
+      "bytes": 2569,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/environment.log",
+      "sha256": "8b0040bbceb6f0e7fc0f7c962fdfb69f2736aebb9d54fb8c3a44ecbe538c8813"
+    },
+    "kernel-build/generated.Cargo.lock": {
+      "bytes": 41937,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/generated.Cargo.lock",
+      "sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506"
+    },
+    "kernel-build/initramfs-manifest.json": {
+      "bytes": 7121,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/initramfs-manifest.json",
+      "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+    },
+    "kernel-build/kernel.log": {
+      "bytes": 64739,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/kernel.log",
+      "sha256": "cb325ed452a19d4a8738699f03c183933d8a22462ca53bef49fdb22db1971433"
+    },
+    "kernel-build/log-exit-code.txt": {
+      "bytes": 2,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/log-exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "kernel-build/make-exit-code.txt": {
+      "bytes": 2,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/make-exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "kernel-build/run-exit-code.txt": {
+      "bytes": 2,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/run-exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "kernel-build/source-inputs.json": {
+      "bytes": 3532,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/source-inputs.json",
+      "sha256": "c7f6462558bf102fa79c6011d67de87e8ac15cc8f46c09b83014eacc88c9e9ef"
+    },
+    "kernel-build/trusted-initial-manifest.json": {
+      "bytes": 2852,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/trusted-initial-manifest.json",
+      "sha256": "34be46ceca8b112c3cb2b8a3a0aaea521458f687f1648ef1f8f5c4c13a2b3836"
+    },
+    "kernel-build/trusted-initial.elf": {
+      "bytes": 20138584,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/kernel-build/trusted-initial.elf",
+      "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+    },
+    "osdk-build.log": {
+      "bytes": 560,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/osdk-build.log",
+      "sha256": "013d0b905ceddfb879f21f91a9137e7871e91dc95caf501f42d3c203248984e9"
+    },
+    "pipeline.json": {
+      "bytes": 4726,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/pipeline.json",
+      "sha256": "48632b857172c339036988519eefbc77fc0218c1def691c740dd38d10dd60649"
+    },
+    "source-after.json": {
+      "bytes": 3377754,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/source-after.json",
+      "sha256": "029b1f82adc4662124bc47eeedbcfc2b3c13c792496c17b8a41209d6b64dc0b5"
+    },
+    "source-before.json": {
+      "bytes": 3377754,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/source-before.json",
+      "sha256": "029b1f82adc4662124bc47eeedbcfc2b3c13c792496c17b8a41209d6b64dc0b5"
+    },
+    "source-built-cargo-osdk": {
+      "bytes": 8504728,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/kernel-build-evidence/source-built-cargo-osdk",
+      "sha256": "fc0669f46c50bfd1a9274f40bb6f586f981e580b244c0d531a0a002bbf7daa4f"
+    }
+  },
+  "retained_owner_build": {
+    "build.log": {
+      "bytes": 9380,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/owner-build/build.log",
+      "sha256": "5c2132fcbaa90ed993320674094e2994e55e50fa069fc5b0ea6e94bf8c7ded68"
+    },
+    "metadata.log": {
+      "bytes": 962442,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/owner-build/metadata.log",
+      "sha256": "0fc222f6ed8e6e93dc68e791fac23e95f7749c3c9f41413e345c8a821e173820"
+    },
+    "original-packaging.log": {
+      "bytes": 0,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/owner-build/original-packaging.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "original-readelf.log": {
+      "bytes": 2559,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/owner-build/original-readelf.log",
+      "sha256": "d8d036b6f6d9eb4df266a8fb6f022d191f6dfbe95feffcfd86f2c468a37f1cfb"
+    },
+    "result.json": {
+      "bytes": 8679,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/owner-build/result.json",
+      "sha256": "fcec381e0a93de928e46d5fd75afcff192bc755e163c41fd66690eef7de39138"
+    },
+    "source-after.json": {
+      "bytes": 6858435,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/owner-build/source-after.json",
+      "sha256": "39271d7be00c806682e2f7d59a2805da8693260588adf9a046e1c9c4793de1d4"
+    },
+    "source-before.json": {
+      "bytes": 6858435,
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/owner-build/source-before.json",
+      "sha256": "39271d7be00c806682e2f7d59a2805da8693260588adf9a046e1c9c4793de1d4"
+    }
+  },
+  "same_boot_authenticated_successor_verified": false,
+  "scenarios": {},
+  "schema": "hepta.original-owner-image-runtime.v1",
+  "source_review_sha256": "5b6430e653771d53c2febf8b1720db44b27c2a146a00d4ad75663fbb6e2ca843",
+  "sources": {
+    "desktop": {
+      "head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+      "tree": "342ad0840d521e97d6de5845682cbc11a115f6f7"
+    },
+    "hepta": {
+      "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+    }
+  },
+  "stage": "inputs_frozen",
+  "started_at_utc": "2026-11-04T00:30:56.642179+00:00",
+  "tool_identities": {
+    "mkfs": {
+      "bytes": 133752,
+      "path": "/usr/sbin/mke2fs",
+      "sha256": "07cd24ce58a410cc9cee93c55ae5ac95986df016c5907dc7a49b55389bd41ed2"
+    },
+    "qemu": {
+      "bytes": 26415624,
+      "path": "/usr/bin/qemu-system-x86_64",
+      "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+    }
+  },
+  "unbounded_persistent_cpu_verified": false,
+  "whole_guest_peak_verified": false
+}

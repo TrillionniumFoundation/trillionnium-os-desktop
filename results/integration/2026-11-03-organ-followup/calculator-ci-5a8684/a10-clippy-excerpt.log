@@ -1,0 +1,40 @@
+2026-11-03T18:01:59.6218180Z     Checking trill-ui-broker v0.1.0 (/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/ui/broker)
+2026-11-03T18:01:59.7227641Z     Checking trill-app-window v0.1.0 (/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/ui/app-window)
+2026-11-03T18:01:59.7796690Z     Checking trill-shell v0.1.0 (/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/ui/shell)
+2026-11-03T18:02:00.7350474Z     Checking trill-session v0.1.0 (/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/ui/session)
+2026-11-03T18:02:00.8501033Z error: called `ok().expect()` on a `Result` value
+2026-11-03T18:02:00.8526019Z   --> app-window/src/calculator_organ_tests.rs:53:5
+2026-11-03T18:02:00.8545791Z    |
+2026-11-03T18:02:00.8575815Z 53 |     work.join().ok().expect("channel thread passed")
+2026-11-03T18:02:00.8576699Z    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-03T18:02:00.8605777Z    |
+2026-11-03T18:02:00.8636184Z    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#ok_expect
+2026-11-03T18:02:00.8637616Z    = note: `-D clippy::ok-expect` implied by `-D warnings`
+2026-11-03T18:02:00.8665990Z    = help: to override `-D warnings` add `#[allow(clippy::ok_expect)]`
+2026-11-03T18:02:00.8695886Z help: call `expect()` directly on the `Result`
+2026-11-03T18:02:00.8725809Z    |
+2026-11-03T18:02:00.8726515Z 53 -     work.join().ok().expect("channel thread passed")
+2026-11-03T18:02:00.8755955Z 53 +     work.join().expect("channel thread passed")
+2026-11-03T18:02:00.8786055Z    |
+2026-11-03T18:02:00.8815563Z 
+2026-11-03T18:02:01.0904383Z error: very complex type used. Consider factoring parts into `type` definitions
+2026-11-03T18:02:01.0976003Z    --> app-window/src/main.rs:562:25
+2026-11-03T18:02:01.1005733Z     |
+2026-11-03T18:02:01.1035800Z 562 |   fn parse_arguments() -> Result<
+2026-11-03T18:02:01.1065965Z     |  _________________________^
+2026-11-03T18:02:01.1095637Z 563 | |     (
+2026-11-03T18:02:01.1116014Z 564 | |         AppKind,
+2026-11-03T18:02:01.1145721Z 565 | |         Workspace,
+2026-11-03T18:02:01.1175683Z ...   |
+2026-11-03T18:02:01.1205672Z 570 | |     String,
+2026-11-03T18:02:01.1206057Z 571 | | > {
+2026-11-03T18:02:01.1206381Z     | |_^
+2026-11-03T18:02:01.1206688Z     |
+2026-11-03T18:02:01.1207531Z     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.96.0/index.html#type_complexity
+2026-11-03T18:02:01.1208741Z     = note: `-D clippy::type-complexity` implied by `-D warnings`
+2026-11-03T18:02:01.1236047Z     = help: to override `-D warnings` add `#[allow(clippy::type_complexity)]`
+2026-11-03T18:02:01.1245443Z 
+2026-11-03T18:02:01.1826701Z error: could not compile `trill-app-window` (bin "trill-app-window" test) due to 2 previous errors
+2026-11-03T18:02:01.1827720Z warning: build failed, waiting for other jobs to finish...
+2026-11-03T18:02:01.2631389Z error: could not compile `trill-app-window` (bin "trill-app-window") due to 1 previous error
+2026-11-03T18:02:01.7836568Z ##[error]Process completed with exit code 101.

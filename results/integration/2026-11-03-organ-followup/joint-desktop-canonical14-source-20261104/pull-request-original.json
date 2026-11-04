@@ -1,0 +1,47 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Action completed."
+    }
+  ],
+  "structuredContent": {
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/285",
+    "number": 285,
+    "state": "open",
+    "merged": false,
+    "mergeable": false,
+    "draft": true,
+    "body": "## Problem and change\n\nDesktop, Hepta UI and the original owner previously selected different source revisions. This draft freezes one reviewable pair and gives Root explicit Notes and Notes/Calculator profiles.\n\n- Desktop: `f5fbc7e1a533e5bec588575ab56312a3203f6d8c`, tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`.\n- Hepta: `14e2d89b3367232ec5dbe6187f09feed0f2b68d3`, tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`; companion draft TrillionniumFoundation/hepta-private-ci#4749.\n- Base is #281 at `c2c369836e87e9cf27b4dc9aa8b7446e85efdf90`; this PR changes exactly 24 paths.\n\nThe original source updater and Cargo 1.96 generated all three committed locks. The ordinary UI lock, Session Host lock and prepared SDK lock all select the canonical Hepta revision. Complete source, ancestry, goldens, resolved graph and actual Cargo Git-cache checks remain enabled. Root receives an explicit profile, and the actual original seed child lifecycle is retained as a separate privileged integration regression.\n\n## Validation actually completed\n\n- Six fresh locked/offline metadata graphs and the original verifier passed: 194 checked source files, 219 manifests, 39 declarations and 102 SDK packages.\n- Original dependency checks: 41 normal and 41 optimized cases passed; original Rust 1.96 formatting passed.\n- Original documentation gate passed at the clean local equivalent commit: 91 documents, 1,509 local links, 16 Cargo entry points, 11 domains and 57 kernel members.\n- Local tested source `5ef1bfc20bda019e1695df2412299665b1e020ed` has exactly the same full tree as this canonical GitHub commit. Publication independently checked all 24 file SHA256 values; the three large locks were read with version-bound chunks and complete-file hash verification.\n- Source publication manifest: SHA256 `f513663befc39235a5459c50ce35d047c1433c82c02e5c807df90731c66625e8`.\n- The first finalization wrapper stopped because its documentation-checker glob matched both the checker and its tests. That failed receipt is retained. The corrected exact-basename wrapper completed; the 82 passed dependency cases were not needlessly rerun.\n\n## Runtime acceptance still open\n\nThis is a source/dependency checkpoint, not a jointly compiled or production-qualified release. A fresh original UI build, Root all-target tests, optimized original owner/Root build, privileged tests, package verification and installation are next. The new pair must then perform the installed Notes path with independent readback and durable reconciliation.\n\nExisting Notes-only bounded recovery is scoped to the Notes profile. The joint Notes/Calculator profile has no qualified recovery path yet. Earlier component and installed-seed successes remain evidence for their original revisions, not for this pair. The complete four-package Hepta run at its earlier revision still has the recorded failures in #283; no global green claim is made.\n\nNo authority, model turn, device effect or production service is initialized by this source publication.",
+    "title": "Freeze the Desktop/Hepta organ pair and explicit Root profiles",
+    "base": "codex/calculator-organ-20261103",
+    "base_sha": "c2c369836e87e9cf27b4dc9aa8b7446e85efdf90",
+    "head": "codex/desktop-hepta-canonical-20261104",
+    "head_sha": "f5fbc7e1a533e5bec588575ab56312a3203f6d8c",
+    "head_repo_id": 1421656803,
+    "head_repo_full_name": "TrillionniumFoundation/trillionnium-os-desktop",
+    "merge_commit_sha": null,
+    "user": {
+      "login": "Tomasrgbsf",
+      "name": "Tomasrgbsf",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/273673612?v=4",
+      "id": 273673612
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-11-04T00:55:12Z",
+    "updated_at": "2026-11-04T00:55:12Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 1,
+    "changed_files": 24,
+    "additions": 2101,
+    "deletions": 723,
+    "display_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/285",
+    "display_title": "Freeze the Desktop/Hepta organ pair and explicit Root profiles"
+  },
+  "isError": false
+}

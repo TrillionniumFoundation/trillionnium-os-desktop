@@ -1,0 +1,120 @@
+{
+  "schema": "hepta.original-owner-canonical-source-preparation.v1",
+  "scope": "canonical source materialization only; no kernel/native build",
+  "started_at_utc": "2026-11-03T21:33:49.395934+00:00",
+  "passed": false,
+  "source_root": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+  "source_head": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+  "source_tree": "07cbb5e0187b4355200c2f5e0166228cecf1ecc1",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-C",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-host-source",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "old-head"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-C",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-host-source",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "old-clean"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-host-source",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "clone"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-C",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+        "bundle",
+        "verify",
+        "/data/trill-organ-20261103-f1-build/desktop-owner-fe55-from-bf15.bundle"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "verify-bundle"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-C",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+        "fetch",
+        "--no-tags",
+        "/data/trill-organ-20261103-f1-build/desktop-owner-fe55-from-bf15.bundle",
+        "refs/heads/codex/g2-owner-canonical-export-fe55:refs/heads/canonical-fe55"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "fetch-bundle"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-C",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+        "checkout",
+        "--detach",
+        "fe55fe8e1764f4967bae295311d288d8049b6eae"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "checkout"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-C",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "identity"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-C",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-image-fe55fe8e",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "clean"
+    }
+  ],
+  "kernel_built": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "error": "ValueError: canonical identity or clean state differs",
+  "finished_at_utc": "2026-11-03T21:33:53.191047+00:00"
+}

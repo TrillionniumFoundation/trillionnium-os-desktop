@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/data/trill-organ-20261103-f1-build/run-exact-owner-kernel-pipeline-v1.py", line 230, in <module>
+    raise SystemExit(execute(parser.parse_args()))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/trill-organ-20261103-f1-build/run-exact-owner-kernel-pipeline-v1.py", line 143, in execute
+    _, owner_bytes, _, _ = inputs.owner_build(owner_receipt, args.owner_receipt_sha256, owner, review, snapshots, shape, hepta, profile)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source/tests/workloads/hepta_cpu_control/native_owner_inputs.py", line 209, in owner_build
+    read(path, 64 * 1024**2)
+  File "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source/tests/workloads/hepta_cpu_control/native_owner_inputs.py", line 49, in read
+    require(path.is_absolute() and path.is_file() and not path.is_symlink()
+  File "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source/tests/workloads/hepta_cpu_control/native_owner_evidence.py", line 48, in require
+    raise ValueError(message)
+ValueError: canonical bounded regular input required: /data/trill-organ-20261103-f1-build/g2-owner-exact-fe55-owned-build-v1/original-packaging.log

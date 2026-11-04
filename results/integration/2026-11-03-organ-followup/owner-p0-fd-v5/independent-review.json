@@ -1,0 +1,69 @@
+{
+  "schema": "trill.owner.fd-v5.independent-review.v1",
+  "recorded_at_utc": "2026-11-03T20:53:21.556393+00:00",
+  "review_type": "independent_original_receipt_archive_hash_and_scope_review",
+  "source_pair": {
+    "hepta": {
+      "commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+    },
+    "os": {
+      "commit": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+      "tree": "347fbb7e9931006c749b5bef0e1550c54bc08f27"
+    }
+  },
+  "build_archive": {
+    "archive_sha256": "4337e3b5f1ca90d2ab88128c7d936ef8c911f787ee6ad0a538cd9c0aba712461",
+    "bytes": 498815,
+    "members_verified": 18,
+    "all_matched": true,
+    "observed_partial_bytes": 196608,
+    "partial_prefix_verified": 131072
+  },
+  "tests_package_archive": {
+    "archive_sha256": "afc3cc18aac97a118944633cf99ee59e2e5a8932c75ee97347761b01f9de4583",
+    "bytes": 79924,
+    "members_verified": 13,
+    "all_matched": true,
+    "test_summaries": {
+      "root-all-targets.stdout.log": [
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 25 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 3.41s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.07s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.49s"
+      ],
+      "root-privileged-1.stdout.log": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 26 filtered out; finished in 0.01s"
+      ],
+      "root-privileged-2.stdout.log": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 26 filtered out; finished in 0.00s"
+      ],
+      "root-package.stdout.log": [],
+      "root-package-verify.stdout.log": [],
+      "root-package-install.stdout.log": []
+    }
+  },
+  "build_original_command_count": 8,
+  "tests_package_original_command_count": 6,
+  "all_original_commands_exit_zero": true,
+  "build_source_clean_after": true,
+  "tests_package_source_clean_after": true,
+  "unprivileged_test_passed": 53,
+  "unprivileged_test_ignored": 2,
+  "privileged_previously_ignored_actual_passed": 2,
+  "unique_test_passed_across_original_groups": 55,
+  "test_profile": "dev-small",
+  "packaged_profile": "product-linux",
+  "installed_release": "/opt/trill-organ-20261103/releases/fd8d56c52b97-053cc1957b40",
+  "installed_package_sha256_recorded_by_original_builder": "76838c10be79708f79a0e46a89b8dbe056595a8f0fe73fe46abc9434ae6fd6e8",
+  "complete_product_tar_downloaded_by_reviewer": false,
+  "services_started_by_installer": false,
+  "authenticated_human_submission_qualified": false,
+  "real_notes_effect_qualified": false,
+  "full_owner_restart_qualified": false,
+  "continuous_authority_renewal_qualified": false,
+  "production_qualified": false,
+  "qualifications_are_stage_bound": true,
+  "preserved_previous_failure": "../owner-p0-fd-v4/root/build-receipt.json"
+}

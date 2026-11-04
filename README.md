@@ -16,6 +16,7 @@ writer, outbox and operation-history ownership.
 | Implementation sequence and remaining product work | [Roadmap](docs/ROADMAP.md) |
 | Dated execution records and their original source identities | [Status](docs/STATUS.md) |
 | Retained successes, failures and evidence locations | [Evidence index](docs/EVIDENCE_INDEX.md) |
+| Later Root installation, Calculator results and the separate original G2 image profile | [Follow-up evidence](results/integration/2026-11-03-organ-followup/README.md) |
 | Kernel build, boot and source verification | [Build guide](support/build/README.md) |
 | UI development and execution | [UI run guide](support/ui/RUN.md) |
 | Install, launch, diagnose, upgrade, recover local drafts and uninstall | [Linux host product guide](support/ui/PRODUCT.md) |
@@ -66,6 +67,15 @@ Those results do not qualify this successor's release binaries, real window,
 installed deployment or signed Android receiver. Each final source profile
 must bind the actual complete Desktop commit/tree, Cargo-generated locks,
 features, binary hashes and execution receipts.
+
+The frozen fd/a39 pair now has its own successful [optimized Root build, 55
+distinct original tests, package verification and installation](results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md).
+The installer did not start services. The [first actual installed Root startup](results/integration/2026-11-03-organ-followup/owner-p0-notes-start-v1/README.md)
+failed while stopping the seed App Server, before Session, authority or any
+Notes request. Actual effects and full owner recovery remain open.
+The current authority composition lasts
+at most 300 seconds; [continuous original-owner reauthorization](docs/DECISIONS.md)
+remains a product implementation gate.
 
 The original runtime contracts are pinned beside their owners:
 [Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),

@@ -1,0 +1,54 @@
+{
+  "schema": "hepta.calculator.custody-fixture-repair.v1",
+  "state": "complete",
+  "passed": true,
+  "source_before": {
+    "head": "26a46e3fe763b53e1f0362793701f112383a72fa",
+    "tree": "2175f198948308c3a2f9d61f8282bc179669e798",
+    "status": ""
+  },
+  "source_after": {
+    "head": "47b3335357c5607e2f09791fcb028ee1207a9cd7",
+    "tree": "eab8c04e0bd441ee990356f3bf98c6f4d1e59eda",
+    "status": ""
+  },
+  "runner_sha256": "846aff880b705110caf5f12949e2df87e9761a3a5604192fd76dfcc3bfc41db8",
+  "bundle_sha256": "c40f4ca9ef011dc6df1cf535e716f2c39f6b5d3405d7acd8eaf69425c606f73b",
+  "steps": [
+    {
+      "command": "fmt",
+      "result_path": "/data/trill-calculator-joint-20261103-v1/steps/fmt-47b33353-custody-v1/result.json",
+      "result_sha256": "30904fb87ea652164cdf1377de6f7f66b5b57b638296c8a3920db82c6ae029d7",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "command": "fix-agentd",
+      "result_path": "/data/trill-calculator-joint-20261103-v1/steps/fix-agentd-47b33353-custody-v1/result.json",
+      "result_sha256": "98d89a214f2a3a792100bd5a39a82fb90837060b4d8411859d1569c57f09fca1",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "command": "test-agentd-custody",
+      "result_path": "/data/trill-calculator-joint-20261103-v1/steps/test-agentd-custody-47b33353-custody-v1/result.json",
+      "result_sha256": "0ecd8118d6132fcca053831ef32c68e3d7a881cbc01110d8a6374e0ff4ff79bf",
+      "passed": true,
+      "exit_code": 0
+    }
+  ],
+  "scope": "One reviewed test-only file release synchronization repair. The original 26a package failures remain unchanged; a selected-case pass is not a full package or runtime qualification.",
+  "elapsed_seconds": 124.51015606196597,
+  "selection": {
+    "qualified_test": "root_authority_session::tests::file_custody::original_blocking_cas_keeps_file_after_session_and_worker_retire",
+    "selected_tests": 1,
+    "selected_binaries": 1,
+    "retry_observed": false,
+    "full_agentd_suite_rerun": false
+  },
+  "source_final": {
+    "head": "47b3335357c5607e2f09791fcb028ee1207a9cd7",
+    "tree": "eab8c04e0bd441ee990356f3bf98c6f4d1e59eda",
+    "status": ""
+  }
+}

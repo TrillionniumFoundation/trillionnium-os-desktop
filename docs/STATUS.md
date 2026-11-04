@@ -1,8 +1,38 @@
 # 当前状态
 
+## 2026-11-04 canonical 实施配对与完整内核构建
+
+当前实施源码为 [Desktop PR #285](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/285) 的 `f5fbc7e1a533e5bec588575ab56312a3203f6d8c` / tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`，配对 [Hepta PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749) 的 `14e2d89b3367232ec5dbe6187f09feed0f2b68d3` / tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`。[原源码收据](../results/integration/2026-11-03-organ-followup/joint-desktop-canonical14-source-20261104/README.md)记录真实 Rust/Cargo 1.96 的 39 处声明、三份生成锁、其余三锁核对和六个 fresh locked/offline 图；194 份来源、219 个原 owner manifests、102 个 SDK packages 及普通/优化各 41 项依赖回归通过。完整发布 tree 与已检查本地 `5ef` 相同，实际 canonical 切换后 f5 clean。源码门禁没有编译或运行这条产品配对。
+
+此前已安装的产品仍是 `fd8d56c/a39a087`，原[构建与安装成功](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md)和[首次 Root 启动失败](../results/integration/2026-11-03-organ-followup/owner-p0-notes-start-v1/README.md)分别保留。安装器没有启动服务；原启动在 seed 退出阶段失败，尚无 Session/authority、Notes 写入或恢复。新配对仍需自己的 UI/Root 构建、特权用例、安装、真实人类准入、Notes 效果/独立回读/持久终态和单独 Calculator 目的端验收。
+
+`a286/a39` 的[原 kernel v4](../results/integration/2026-11-03-organ-followup/g2-a286-kernel-v4-20261104/README.md)已完整构建并通过原 validator，kernel 命令 exit 0 / 173.759 秒，来源前后不变。产物 28,908,256 bytes / SHA256 `08b13737c465aabbebc8d14ce1ccf4da220e59c7c22756a010c8f00baa91d838`；更早 v3 metadata 失败仍按原来源保留。随后[第一次 native v1](../results/integration/2026-11-03-organ-followup/g2-a286-native-preflight-v1-20261104/README.md)在主机归档准备时被原 16 MiB codec 门槛拒绝，exit 1，QEMU 未启动，没有 controls/scenarios 执行。
+
+[PR #284 的具名 archive 后继](../results/integration/2026-11-03-organ-followup/g2-exact-archive-source-20261104/README.md)为 `00d1dfde8699fe70758519a5508c550476fd5f5c` / tree `7c81e102aba4971bcf36055d1666c002981cc9dc`。固定原 owner/base 的专用 22,268,496-byte 上限通过普通/优化各 6 项 host 检查和两个实际 host roundtrip；通用 codec、旧 profile 和内核未改。此收据没有运行 guest，不授予原生 G2、实际丢回复、effect-before-terminal 恢复或全局内存保证。
+
+本次证据导航还修复了 `d27ae5de` 的派生索引路径错误：新 67 文件已提交，但总表被误写为顶层 `evidence-index.json`，既有 `index.json` 仍为 320 项。现在逐项重核后将 387 项归回规范 [index.json](../results/integration/2026-11-03-organ-followup/index.json)，更新 README 摘要并移除误放的派生副本；原 d27 及所有原始日志保留。下方时点记录及其“尚未”“当前”不覆盖本节，完整能力汇总见 [CURRENT_CAPABILITIES](CURRENT_CAPABILITIES.md#current-product-pair)。
+
+## 2026-11-04 原 seed 与联合候选检查点（较早记录）
+
+联合 Hepta 已发布为 [PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749) 的 `14e2d89b3367232ec5dbe6187f09feed0f2b68d3` / tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`。原 `a39` 父提交、完整本地/远端 tree 等值及实际执行身份由[发布记录](../results/integration/2026-11-03-organ-followup/joint-hepta-canonical-publication/README.md)分别保留；这尚非新的联合安装包验收。
+
+原 App Server 的持久信号监听修复已完成 Rust 1.96 组件构建，19 条命令全部成功；其三项首次信号退出和两项原 drain 用例通过。[实际原 seed 测试](../results/integration/2026-11-03-organ-followup/original-seed-lifecycle-857d/README.md)随后真实通过 1 项，原 job exit 0，原 10 秒子进程退出边界不变，socket 和临时挂载均退役。实际为 Hepta `857d8f61` / Desktop test `92a06c4b` / 原库 `a39` 的明确组件组合，未授予新联合产品、用户提交、Notes 效果或重启资格；旧 `fd/a39` 首次启动失败继续保留。
+
+[Hepta 26a 的完整四包执行](../results/integration/2026-11-03-organ-followup/joint-hepta-26a-tests/README.md)已结束：Objective 66/0/2、Memory 399/1/13、Agentd 546/1/60、App Server 1,315/16/2，顺序为 passed/failed/skipped。原 job exit 1、无外层超时或取消。14 项 App Server 失败涉及缺失原 helper，另两项是断连进程回收和冷恢复 parent thread；原失败日志及 retries 全部保留，后续选测不能替代完整执行。
+
+[a286 的独立源码与原 owner](../results/integration/2026-11-03-organ-followup/g2-a286-build-and-cache-evidence-20261103/README.md)已实际构建并通过原 118-file 来源门禁。原 OSDK 0.19.0 从源码构建成功，后续 kernel 在缺少固定 nightly 标准库的 `getopts 0.2.24` 时失败。[原结果恢复与精确缓存接纳](../results/integration/2026-11-03-organ-followup/g2-a286-read-recovery-evidence-20261103/README.md)已另存；204-package 生成锁字节一致不等于实际图门禁或内核通过。新内核、正向 guest、原 writer/outbox 持久 G2 和完整资源恢复继续逐项验收。
+
+后续[47 custody 选测](../results/integration/2026-11-03-organ-followup/joint-hepta-47-custody/README.md)已在原一秒期限内通过实际物理锁释放观察，fmt/fix/精确一项均成功；26a 全包红灯不变。[a286 kernel v3](../results/integration/2026-11-03-organ-followup/g2-a286-kernel-v3-20261104/README.md)实际编译到 `aster-core` 后因三处原 metadata 宏失败，完整原日志、退出码和来源未变记录保留，尚无内核或 G2 成功。
+
+下方日期节及其“当前”“仍需”属于原时点；最新汇总以[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)为准。
+
 ## 2026-11-03 当前入口与历史边界
 
 当前实施起点为 Desktop `745c0731aed270ee394145c6767371a6af47f49f` / tree `fa70b1b95206d25775009c6965245d34051468a4`，配对原 Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360` / tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`。完整当前范围和未完成门禁统一见[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)；实际后继产物须绑定自己的 Desktop commit/tree。
+
+当前冻结产品已前进至 Desktop `fd8d56c52b971c2d5d0e6430f296803b43ef60a3` / tree `347fbb7e9931006c749b5bef0e1550c54bc08f27` 与原 Hepta `a39`。后续 `bf15` 修复的 9 项 CI 全部成功；Calculator 的组件用例、原 Memory 失败及 G2 原镜像尺寸拒绝见[后续证据](../results/integration/2026-11-03-organ-followup/README.md)和[镜像审查](../results/g2-original-owner-size-20261103/README.md)。这些后继分别保留自己的来源，完整安装后的 Notes、双应用任务、原生 F1/G2、手机及裸机资格仍按[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)验收。
+
+独立 G2 profile 的 `fe55/a39` 已完成无 alternates 的实际源码装配和原 owner 构建；其首次 kernel 入口在 OSDK/Cargo 前因合法空打包日志被拒绝。[47 份小原件](../results/integration/2026-11-03-organ-followup/g2-canonical-source-owner/README.md)保留三次先前源码失败、后续成功及这次入口失败。当前 `a286e0f922bf8e439e8951ae1538abeac0b26477` 只修复具名日志的空字节读取/归档，50 项普通及 17 项优化 host 检查通过；完整内核、实际依赖图和原生闭环仍需该来源自己的执行收据。
 
 本页作为日期账本保留原执行记录。下文 de0、4223、v10/v11、旧内核与 UI 的测试计数、当时的 PR/CI 状态和“当前”措辞只适用于各自固定来源，不是 2026-11-03 的运行结果。旧 README 空文件规则属于历史；现役规则允许版本化导航并要求普通文件。查找原日志、失败和来源使用[证据索引](EVIDENCE_INDEX.md)，开发与技术入口使用[模块索引](modules/README.md)。此导航修正不授予安装、生产授权、原生 F1/G2 或物理设备资格。
 

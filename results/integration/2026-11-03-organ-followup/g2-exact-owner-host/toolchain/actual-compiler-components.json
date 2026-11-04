@@ -1,0 +1,109 @@
+{
+  "schema": "hepta.fixed-kernel-toolchain-observation.v1",
+  "passed": true,
+  "started_at_utc": "2026-11-03T20:45:32.092467+00:00",
+  "channel": "nightly-2026-07-21",
+  "installer_job": "1a1a31a3366-96a-75cc",
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustup",
+        "run",
+        "nightly-2026-07-21",
+        "rustc",
+        "--version",
+        "--verbose"
+      ],
+      "exit_code": 0,
+      "label": "rustc-verbose"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustup",
+        "run",
+        "nightly-2026-07-21",
+        "cargo",
+        "--version"
+      ],
+      "exit_code": 0,
+      "label": "cargo-version"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustup",
+        "component",
+        "list",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "--installed"
+      ],
+      "exit_code": 0,
+      "label": "components"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustup",
+        "target",
+        "list",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "--installed"
+      ],
+      "exit_code": 0,
+      "label": "targets"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustup",
+        "which",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "rustc"
+      ],
+      "exit_code": 0,
+      "label": "rustc-path"
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustup",
+        "which",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "cargo"
+      ],
+      "exit_code": 0,
+      "label": "cargo-path"
+    }
+  ],
+  "kernel_built": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "rustc_verbose": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+  "cargo_version": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)",
+  "installed_components": [
+    "cargo-x86_64-unknown-linux-gnu",
+    "llvm-tools-x86_64-unknown-linux-gnu",
+    "rust-src",
+    "rust-std-x86_64-unknown-linux-gnu",
+    "rust-std-x86_64-unknown-none",
+    "rustc-x86_64-unknown-linux-gnu",
+    "rustc-dev-x86_64-unknown-linux-gnu"
+  ],
+  "installed_targets": [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-none"
+  ],
+  "actual_tools": {
+    "rustc": {
+      "path": "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "752104a1bd1bc3a59e6a2bd8ec02fa7113acf0e5083f9ee59d43e983ecc5d48f"
+    },
+    "cargo": {
+      "path": "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03"
+    }
+  },
+  "rustfmt_present": false,
+  "disk_available_bytes": 125141680128,
+  "finished_at_utc": "2026-11-03T20:45:32.721525+00:00"
+}

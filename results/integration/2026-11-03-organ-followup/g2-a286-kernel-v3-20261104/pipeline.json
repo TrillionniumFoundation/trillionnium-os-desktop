@@ -1,0 +1,115 @@
+{
+  "error": "ValueError: g2-kernel did not succeed",
+  "finished_at_utc": "2026-11-03T23:50:13.890697+00:00",
+  "g2_complete": false,
+  "global_memory_reserve": false,
+  "image_profile_descriptor": {
+    "cargo_lock_sha256": "5bd3faaf16a79eb12bcdcb89054e93da388bbd858f36439b9d6bcfb72f77d522",
+    "entry": {
+      "kind": "bin",
+      "name": "hepta-g2-native-owner",
+      "package": "codex-hepta-agentd",
+      "path": "codex-rs/hepta-agentd/src/bin/hepta-g2-native-owner.rs",
+      "sha256": "802d736f5f36e0181b49f44b503802339a56f2309a9b39a3a2ae6ca68f668e40"
+    },
+    "g2_complete": false,
+    "global_memory_reserve": false,
+    "guest_memory_bytes": 536870912,
+    "hepta": {
+      "head": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "tree": "e03f9b3eca364222029298496d3e4f1f5e1bf5de"
+    },
+    "image": {
+      "file_bytes": 20138584,
+      "largest_load_range_bytes": 15323136,
+      "load_segments": 4,
+      "mapped_load_bytes": 20168704,
+      "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+    },
+    "known_image_verification_and_full_stack_bytes": 185169072,
+    "legacy_profile": {
+      "max_file_bytes": 8388608,
+      "max_mapped_load_bytes": 16777216,
+      "profile": "g2-trusted-daemon",
+      "static_profile_passed": false
+    },
+    "native_execution_verified": false,
+    "production_ready": false,
+    "profile": "g2-original-owner-a39-v1",
+    "roles": [
+      "root",
+      "manager",
+      "workload",
+      "recovery"
+    ],
+    "schema": "hepta.original-owner-image-profile.v1",
+    "userspace_toolchain": {
+      "channel": "1.96.0",
+      "manifest": "codex-rs/rust-toolchain.toml",
+      "sha256": "e8b379eaa492bf59d35187de269afd1c4f55d85e0322f6fea32803a3fec1a380"
+    },
+    "whole_guest_peak_verified": false
+  },
+  "image_profile_descriptor_sha256": "138043c29a3d3428fb8b494d6aa40d14b0010f6793a58d1f9ca46892bca5b758",
+  "kernel_profile": "g2-original-owner-a39-v1",
+  "legacy_limits_unchanged": true,
+  "legacy_static_profile_passed": false,
+  "native_execution_verified": false,
+  "operational_wrapper_sha256": "f2c1a93f77db1729bf2dc76dfcb671d98d49e1ccbd70bb6922f69738d8a3d7e1",
+  "osdk_sha256": "fc0669f46c50bfd1a9274f40bb6f586f981e580b244c0d531a0a002bbf7daa4f",
+  "osdk_source_root": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/osdk",
+  "osdk_target_directory": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/osdk-target",
+  "osdk_warm_cache": true,
+  "owner_build_receipt_sha256": "fcec381e0a93de928e46d5fd75afcff192bc755e163c41fd66690eef7de39138",
+  "owner_sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454",
+  "passed": false,
+  "production": false,
+  "production_ready": false,
+  "schema": "hepta.original-owner-image-kernel-pipeline.v1",
+  "source_head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+  "source_inputs_unchanged": true,
+  "source_review_sha256": "5b6430e653771d53c2febf8b1720db44b27c2a146a00d4ad75663fbb6e2ca843",
+  "source_root": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+  "source_tree": "342ad0840d521e97d6de5845682cbc11a115f6f7",
+  "started_at_utc": "2026-11-03T23:46:46.483805+00:00",
+  "steps": [
+    {
+      "argv": [
+        "/data/trill-organ-20261103-f1-build/cargo-home/bin/cargo",
+        "+nightly-2026-07-21",
+        "install",
+        "--locked",
+        "--offline",
+        "--force",
+        "cargo-osdk",
+        "--path",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/osdk",
+        "--target-dir",
+        "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/osdk-target"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+      "elapsed_seconds": 0.503,
+      "exit_code": 0,
+      "finished_at_utc": "2026-11-03T23:46:46.987598+00:00",
+      "label": "osdk-build",
+      "started_at_utc": "2026-11-03T23:46:46.484677+00:00",
+      "timed_out": false,
+      "timeout_seconds": 7200
+    },
+    {
+      "argv": [
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/kernel.sh",
+        "kernel"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+      "elapsed_seconds": 202.642,
+      "exit_code": 2,
+      "finished_at_utc": "2026-11-03T23:50:09.701723+00:00",
+      "label": "g2-kernel",
+      "started_at_utc": "2026-11-03T23:46:47.059167+00:00",
+      "timed_out": false,
+      "timeout_seconds": 7200
+    }
+  ],
+  "whole_guest_peak_verified": false
+}

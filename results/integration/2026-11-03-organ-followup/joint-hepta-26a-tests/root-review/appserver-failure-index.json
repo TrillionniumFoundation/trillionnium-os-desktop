@@ -1,0 +1,162 @@
+[
+  {
+    "start_line": 659,
+    "name": "suite::v2::code_mode_host::app_server_shares_flag_selected_code_mode_host_across_threads",
+    "errors": [
+      {
+        "line": 673,
+        "text": "Error: could not locate binary \"codex-code-mode-host\"; tried env vars [\"CARGO_BIN_EXE_codex-code-mode-host\", \"CARGO_BIN_EXE_codex_code_mode_host\", \"NEXTEST_BIN_EXE_codex-code-mode-host\", \"NEXTEST_BIN_EXE_codex_code_mode_host\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 691,
+    "name": "suite::v2::code_mode_host::app_server_shares_flag_selected_grpc_code_mode_host_across_threads",
+    "errors": [
+      {
+        "line": 705,
+        "text": "Error: could not locate binary \"codex-code-mode-host\"; tried env vars [\"CARGO_BIN_EXE_codex-code-mode-host\", \"CARGO_BIN_EXE_codex_code_mode_host\", \"NEXTEST_BIN_EXE_codex-code-mode-host\", \"NEXTEST_BIN_EXE_codex_code_mode_host\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 734,
+    "name": "suite::v2::command_exec::command_exec_process_ids_are_connection_scoped_and_disconnect_terminates_process",
+    "errors": [
+      {
+        "line": 761,
+        "text": "Error: process marker \"codex-command-exec-marker-1793747944536944896\" did not exit before timeout"
+      }
+    ]
+  },
+  {
+    "start_line": 868,
+    "name": "suite::v2::executor_mcp::guardian_review_does_not_discover_executor_mcp",
+    "errors": [
+      {
+        "line": 882,
+        "text": "Error: could not locate binary \"codex\"; tried env vars [\"CARGO_BIN_EXE_codex\", \"NEXTEST_BIN_EXE_codex\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 900,
+    "name": "suite::v2::executor_mcp::legacy_executor_skips_required_browser_and_keeps_host_owned_mcp",
+    "errors": [
+      {
+        "line": 914,
+        "text": "Error: could not locate binary \"codex\"; tried env vars [\"CARGO_BIN_EXE_codex\", \"NEXTEST_BIN_EXE_codex\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 932,
+    "name": "suite::v2::executor_mcp::selected_executor_discovers_browser_mcp_with_executor_only_bearer_token",
+    "errors": [
+      {
+        "line": 946,
+        "text": "Error: could not locate binary \"codex\"; tried env vars [\"CARGO_BIN_EXE_codex\", \"NEXTEST_BIN_EXE_codex\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 964,
+    "name": "suite::v2::executor_mcp::selected_executor_plugin_exposes_its_mcps_only_to_that_thread",
+    "errors": [
+      {
+        "line": 978,
+        "text": "Error: could not locate binary \"codex\"; tried env vars [\"CARGO_BIN_EXE_codex\", \"NEXTEST_BIN_EXE_codex\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 1100,
+    "name": "suite::v2::imagegen_extension::standalone_image_generation_is_callable_from_code_mode_only",
+    "errors": [
+      {
+        "line": 1155,
+        "text": "    thread 'suite::v2::imagegen_extension::standalone_image_generation_is_callable_from_code_mode_only' (2359694) panicked at app-server/tests/suite/v2/imagegen_extension.rs:747:5:\n    assertion failed: `(left == right)`\n\n    Diff < left / right > :\n    <Null\n    >Object {\n    >    \"detail\": String(\"high\"),\n    >    \"image_url\": String(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==\"),\n    >    \"type\": String(\"input_image\"),\n    >}\n\n\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n    [mcp stderr] 2026-11-03T23:25:01.148438Z  WARN codex_mcp::rmcp_client: failed to initialize MCP client during shutdown: MCP startup failed: handshaking with MCP server failed: Send message error Transport [codex_rmcp_client::event_notification_transport::EventNotificationTransport<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>] error: unexpected server response: HTTP 404: , when send initialize request\n"
+      }
+    ]
+  },
+  {
+    "start_line": 1288,
+    "name": "suite::v2::mcp_server_status::mcp_server_status_list_reports_disconnected_stdio_transport",
+    "errors": [
+      {
+        "line": 1302,
+        "text": "Error: could not locate binary \"test_stdio_server\"; tried env vars [\"CARGO_BIN_EXE_test_stdio_server\", \"NEXTEST_BIN_EXE_test_stdio_server\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 1324,
+    "name": "suite::v2::mcp_server_status::mcp_server_status_list_waits_for_live_stdio_metadata_before_using_cached_tools",
+    "errors": [
+      {
+        "line": 1338,
+        "text": "Error: could not locate binary \"test_stdio_server\"; tried env vars [\"CARGO_BIN_EXE_test_stdio_server\", \"NEXTEST_BIN_EXE_test_stdio_server\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 1395,
+    "name": "suite::v2::multi_agent_v2_developer_instructions::cold_resume_preserves_effective_developer_instructions_for_worker::test_case_3_reapplies_updated_configured_role_settings_and_restores_paginated_usage",
+    "errors": [
+      {
+        "line": 1503,
+        "text": "    thread 'suite::v2::multi_agent_v2_developer_instructions::cold_resume_preserves_effective_developer_instructions_for_worker::test_case_3_reapplies_updated_configured_role_settings_and_restores_paginated_usage' (2386458) panicked at app-server/tests/suite/v2/multi_agent_v2_developer_instructions.rs:975:5:\n    assertion failed: `(left == right)`\n\n    Diff < left / right > :\n     (\n         \"01a1a3be-91d8-77e6-bc9e-e18287573ccf\",\n         Some(\n             \"01a1a3be-8fd9-775b-ba72-34baf5c5e925\",\n         ),\n         SubAgent(\n             ThreadSpawn {\n                 parent_thread_id: ThreadId {\n    <                uuid: 01a1a3be-8fd9-775b-ba72-34baf5c5e925,\n    >                uuid: 01a1a3be-9700-7340-a3bb-f4d3dc06c2e9,\n                 },\n                 depth: 1,\n                 agent_path: Some(\n                     AgentPath(\n                         \"/root/worker\",\n                     ),\n                 ),\n                 agent_nickname: Some(\n                     \"Faraday\",\n                 ),\n                 agent_role: Some(\n                     \"custom\",\n                 ),\n             },\n         ),\n         Idle,\n         Some(\n             false,\n         ),\n         \"mock_provider\",\n         ReadOnly {\n             network_access: false,\n         },\n         Never,\n         User,\n         None,\n     )\n\n\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+      }
+    ]
+  },
+  {
+    "start_line": 1725,
+    "name": "suite::v2::plugin_install::plugin_install_makes_bundled_mcp_servers_available_to_followup_requests",
+    "errors": [
+      {
+        "line": 1739,
+        "text": "Error: could not locate binary \"test_stdio_server\"; tried env vars [\"CARGO_BIN_EXE_test_stdio_server\", \"NEXTEST_BIN_EXE_test_stdio_server\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 1996,
+    "name": "suite::v2::selected_capability_stack::selected_capabilities_become_available_between_samples_in_one_turn",
+    "errors": [
+      {
+        "line": 2010,
+        "text": "Error: could not locate binary \"test_stdio_server\"; tried env vars [\"CARGO_BIN_EXE_test_stdio_server\", \"NEXTEST_BIN_EXE_test_stdio_server\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 2028,
+    "name": "suite::v2::selected_capability_stack::selected_capability_stack_tracks_environment_availability_and_resume",
+    "errors": [
+      {
+        "line": 2042,
+        "text": "Error: could not locate binary \"test_stdio_server\"; tried env vars [\"CARGO_BIN_EXE_test_stdio_server\", \"NEXTEST_BIN_EXE_test_stdio_server\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 2308,
+    "name": "suite::v2::thread_start::thread_start_with_managed_read_only_does_not_trust_or_load_project_mcp",
+    "errors": [
+      {
+        "line": 2322,
+        "text": "Error: could not locate binary \"test_stdio_server\"; tried env vars [\"CARGO_BIN_EXE_test_stdio_server\", \"NEXTEST_BIN_EXE_test_stdio_server\"]; Cargo/Bazel binary metadata is unavailable"
+      }
+    ]
+  },
+  {
+    "start_line": 2363,
+    "name": "suite::v2::turn_start::code_mode_exec_emits_correlated_production_analytics",
+    "errors": [
+      {
+        "line": 2415,
+        "text": "    thread 'suite::v2::turn_start::code_mode_exec_emits_correlated_production_analytics' (2477069) panicked at app-server/tests/suite/v2/turn_start.rs:1202:5:\n    assertion failed: `(left == right)`\n\n    Diff < left / right > :\n     Object {\n    <    \"hasCell\": Bool(false),\n    >    \"hasCell\": Bool(true),\n         \"origin\": String(\"resp-1\"),\n         \"subsequent\": String(\"resp-2\"),\n         \"tool\": String(\"exec\"),\n     }\n\n\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n    [mcp stderr] 2026-11-03T23:39:59.001979Z  WARN codex_mcp::rmcp_client: failed to initialize MCP client during shutdown: MCP startup failed: handshaking with MCP server failed: Send message error Transport [codex_rmcp_client::event_notification_transport::EventNotificationTransport<rmcp::transport::worker::WorkerTransport<rmcp::transport::streamable_http_client::StreamableHttpClientWorker<codex_rmcp_client::http_client_adapter::StreamableHttpClientAdapter>>>] error: unexpected server response: HTTP 404: , when send initialize request\n"
+      }
+    ]
+  }
+]

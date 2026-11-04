@@ -1,0 +1,21 @@
+{
+  "schema": "trill.root-appserver-package-log-review.v1",
+  "source": "26a46e3fe763b53e1f0362793701f112383a72fa",
+  "raw_size": 404859,
+  "raw_sha256": "61c4167e207e2df0315a054efe30d544ed8d3c5b82995b57370699abab991161",
+  "selected": 1331,
+  "passed_first_attempt": 1315,
+  "failed": 16,
+  "skipped": 2,
+  "flaky": 0,
+  "original_retry_policy_unchanged": true,
+  "observed_failure_groups": {
+    "missing_cross_package_fixture_binary_related": 14,
+    "command_child_tree_did_not_exit_in_original_observation": 1,
+    "cold_resume_parent_thread_identity_mismatch": 1
+  },
+  "qualification": "Original complete package remains failed. Fourteen cases have direct missing binary errors or explicit host executable ENOENT in their failure output. A later correctly bound helper invocation needs its own result; these observations do not predeclare it successful.",
+  "all_native_payload_pages_verified": true,
+  "all_file_chunks_version_bound": true,
+  "stdout_scope": "Original completed command receipt records zero bytes and the empty SHA; no separate stdout read is claimed."
+}

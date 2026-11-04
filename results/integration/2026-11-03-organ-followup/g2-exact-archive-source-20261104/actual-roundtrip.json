@@ -1,0 +1,52 @@
+{
+  "archive_profile": {
+    "base_canonical_bytes": 2129504,
+    "base_canonical_sha256": "b27430a9bfc4018ddd9808524bd4729515c9da8b282cfa35ed6b4ef211c977ce",
+    "base_gzip_bytes": 1107990,
+    "base_gzip_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "base_raw_bytes": 2129920,
+    "image_profile": "g2-original-owner-a39-v1",
+    "image_profile_descriptor_sha256": "138043c29a3d3428fb8b494d6aa40d14b0010f6793a58d1f9ca46892bca5b758",
+    "legacy_default_archive_bytes": 16777216,
+    "legacy_limits_unchanged": true,
+    "maximum_archive_bytes": 22268496,
+    "maximum_plan_bytes": 140,
+    "native_execution_verified": false,
+    "owner_file_bytes": 20138584,
+    "schema": "hepta.original-owner-image-archive.v1"
+  },
+  "base": {
+    "bytes": 1107990,
+    "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/base-initramfs.cpio.gz",
+    "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+  },
+  "g2_complete": false,
+  "guest_started": false,
+  "inputs_unchanged": true,
+  "native_execution_verified": false,
+  "normal_archives": [
+    {
+      "gzip_bytes": 9457359,
+      "gzip_sha256": "09c76d2aa91b17e4fd5a80f84917de728590ab04accd7cda0fdeb70058173254",
+      "newc_bytes": 22268484,
+      "newc_sha256": "de6810e82f1f48cc003308246f7dd7af41e14c5de354ec4408b73e0b2ac8be3a",
+      "roundtrip_passed": true,
+      "scenario": "steady-state-v1"
+    },
+    {
+      "gzip_bytes": 9457370,
+      "gzip_sha256": "2e7d41a4df5709d0c1778b888c0c5d86d2243bcc7009d22502a0b00e0e2866e9",
+      "newc_bytes": 22268496,
+      "newc_sha256": "98a6e45776c72609c332184db484cd92c413883354ca224d9e0e294e11423c1b",
+      "roundtrip_passed": true,
+      "scenario": "manager-exit-after-terminal-v1"
+    }
+  ],
+  "owner": {
+    "bytes": 20138584,
+    "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-native-v1/original-owner.elf",
+    "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454"
+  },
+  "passed": true,
+  "schema": "hepta.original-owner-archive-roundtrip.v1"
+}

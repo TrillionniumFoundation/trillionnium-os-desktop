@@ -1,0 +1,226 @@
+diff --git a/tests/workloads/hepta_cpu_control/ORIGINAL_OWNER_IMAGE_PROFILE.md b/tests/workloads/hepta_cpu_control/ORIGINAL_OWNER_IMAGE_PROFILE.md
+index fce6298..d5fc5a0 100644
+--- a/tests/workloads/hepta_cpu_control/ORIGINAL_OWNER_IMAGE_PROFILE.md
++++ b/tests/workloads/hepta_cpu_control/ORIGINAL_OWNER_IMAGE_PROFILE.md
+@@ -124,6 +124,55 @@ use newly generated, matching receipts; it cannot relabel the retained legacy
+ failure or an ordinary F1/Store result. The legacy consumers reject new schemas,
+ the new profile name and its extra kernel selection marker.
+ 
++## Fixed initramfs archive contract
++
++The a286 original kernel pipeline completed, but its first native invocation
++stopped during initramfs preparation, before any QEMU boot: the inherited newc
++decoder's default archive bound is 16,777,216 bytes, smaller than the exact owner
++file itself. That failed invocation remains a failed preflight result. It does
++not establish guest behavior, startup-control success, or an original writer
++effect.
++
++Only this named image profile now uses the separate, source-owned
++`hepta.original-owner-image-archive.v1` contract. The generic codec in
++`tests/organ_backend/run_guest_probe.py` is unchanged; its default stays 16 MiB.
++The old G1-c/G1-d/legacy G2 image and LOAD limits also remain unchanged. The new
++runner passes the codec's existing explicit `max_bytes` argument only after
++checking the fixed original base and the two finite plans below.
++
++| Archive input | Fixed identity or size |
++| --- | --- |
++| Original A01 gzip SHA-256 | `86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3` |
++| Original gzip / decompressed bytes | 1,107,990 / 2,129,920 |
++| Canonical newc base bytes | 2,129,504 |
++| Canonical newc base SHA-256 | `b27430a9bfc4018ddd9808524bd4729515c9da8b282cfa35ed6b4ef211c977ce` |
++| Exact original owner file bytes | 20,138,584 |
++| Added owner / plan newc headers and name alignment | 132 / 136 bytes |
++| Compact steady-state / manager-after-terminal plan | 125 / 140 bytes |
++| Maximum complete newc archive | **22,268,496 bytes** |
++
++The maximum is `2,129,504 + 20,138,584 + 132 + 136 + 140`, derived from the
++fixed artifacts and entry layout. It is not a rounded allowance or a
++caller-supplied resource setting. Both plans have exactly `schema_version=1`,
++one of `steady-state-v1` or `manager-exit-after-terminal-v1`, and a 64-character
++lowercase hexadecimal nonce. Extra plan fields, another scenario, or a different
++base identity fail before archive admission. A normal steady-state archive is
++22,268,484 bytes; the manager-after-terminal archive reaches the fixed maximum.
++
++The runner first admits the complete original ELF through its existing
++source/build/hash gates. The subsequent archive step also permits the original
++one-byte-truncated startup-control length; the unchanged kernel must still
++reject it and the original byte-mismatch control before role activation.
++Packing does not grant ELF, role, or execution authority. No new control or
++recovery scenario is added.
++
++Normal host roundtrips of the actual fixed owner and base validate only this
++archive construction. Fresh source-bound owner/kernel receipts and the original
++guest runner remain required after a source change. The earlier a286 kernel
++receipt cannot be relabeled for a later Desktop commit. Keep all runtime,
++lost-reply, memory-reservation, and production claims pending until their own
++real observations exist.
++
+ ## Memory accounting remains an experimental boundary
+ 
+ The initial image-related capacity calculation is:
+diff --git a/tests/workloads/hepta_cpu_control/run_native_owner.py b/tests/workloads/hepta_cpu_control/run_native_owner.py
+index e7f5b9f..f4e7511 100644
+--- a/tests/workloads/hepta_cpu_control/run_native_owner.py
++++ b/tests/workloads/hepta_cpu_control/run_native_owner.py
+@@ -13,6 +13,7 @@ import hashlib
+ import json
+ import os
+ from pathlib import Path
++import re
+ import selectors
+ import shutil
+ import signal
+@@ -67,17 +68,66 @@ def tool(path, expected=None):
+     return selected, {"path": str(selected), "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
+ 
+ 
++def original_owner_archive_contract():
++    """One source-owned envelope for the pinned base and original a39 image."""
++    exact = inputs.image_module(inputs.EXACT_IMAGE_PROFILE)
++    image = exact.descriptor()["image"]
++    require(image["file_bytes"] == 20_138_584, "archive contract requires the reviewed original image length")
++    # newc header/name padding is 132 bytes for the owner and 136 for the plan.
++    # The larger reviewed compact plan is 140 bytes, already four-byte aligned.
++    maximum = 2_129_504 + image["file_bytes"] + 132 + 136 + 140
++    require(maximum == 22_268_496, "fixed original-owner archive budget differs")
++    return {"schema": "hepta.original-owner-image-archive.v1",
++            "image_profile": inputs.EXACT_IMAGE_PROFILE,
++            "image_profile_descriptor_sha256": exact.DESCRIPTOR_SHA256,
++            "base_gzip_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
++            "base_gzip_bytes": 1_107_990, "base_raw_bytes": 2_129_920,
++            "base_canonical_bytes": 2_129_504,
++            "base_canonical_sha256": "b27430a9bfc4018ddd9808524bd4729515c9da8b282cfa35ed6b4ef211c977ce",
++            "owner_file_bytes": image["file_bytes"], "maximum_plan_bytes": 140,
++            "maximum_archive_bytes": maximum, "legacy_default_archive_bytes": 16 * 1024**2,
++            "legacy_limits_unchanged": True, "native_execution_verified": False}
++
++
++def original_owner_archive_plan(plan):
++    require(type(plan) is dict and set(plan) == {"schema_version", "scenario", "nonce"}
++            and type(plan["schema_version"]) is int and plan["schema_version"] == 1
++            and plan["scenario"] in ("steady-state-v1", "manager-exit-after-terminal-v1")
++            and type(plan["nonce"]) is str and re.fullmatch(r"[0-9a-f]{64}", plan["nonce"]) is not None,
++            "exact original-owner archive requires a reviewed finite plan and 32-byte nonce")
++    encoded = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
++    require(len(encoded) <= 140, "exact original-owner compact plan exceeds its fixed bound")
++    return encoded
++
++
+ def build_initramfs(original, owner, plan, replay, image_profile=inputs.PROFILE):
+     require(len(original) <= 8 * 1024**2 and 0 < len(owner) <= inputs.owner_file_limit(image_profile),
+             "original base or owner exceeds its selected input bounds")
+     raw = gzip.decompress(original)
+     require(len(raw) <= 64 * 1024**2, "original initramfs exceeds its uncompressed bound")
+     entries = replay.unpack(raw)
+-    require(replay.unpack(replay.pack(entries)) == entries, "original cpio does not roundtrip")
++    canonical = replay.pack(entries)
++    require(replay.unpack(canonical) == entries, "original cpio does not roundtrip")
+     require(sum(name.lstrip("./") == "test" and stat.S_ISDIR(fields[1]) for name, fields, _ in entries) == 1,
+             "original base initramfs must contain one test directory")
++    contract = None
++    encoded_plan = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
++    if image_profile == inputs.EXACT_IMAGE_PROFILE:
++        contract = original_owner_archive_contract()
++        require(len(original) == contract["base_gzip_bytes"]
++                and hashlib.sha256(original).hexdigest() == contract["base_gzip_sha256"]
++                and len(raw) == contract["base_raw_bytes"]
++                and len(canonical) == contract["base_canonical_bytes"]
++                and hashlib.sha256(canonical).hexdigest() == contract["base_canonical_sha256"],
++                "exact original-owner archive base differs from its fixed identity")
++        # execute() admits the complete original ELF before deriving its existing
++        # startup controls. Packing is not ELF admission: the unchanged kernel
++        # still refuses the byte-mismatch and one-byte-truncated control images.
++        require(len(owner) in (contract["owner_file_bytes"], contract["owner_file_bytes"] - 1),
++                "exact original-owner archive has an unreviewed image length")
++        encoded_plan = original_owner_archive_plan(plan)
+     additions = (("test/hepta-g2-owner", 0o100555, owner),
+-                 ("test/hepta-g2-run.json", 0o100400, (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()))
++                 ("test/hepta-g2-run.json", 0o100400, encoded_plan))
+     names = {name.lstrip("./") for name, _, _ in entries}
+     inode = max(fields[0] for _, fields, _ in entries)
+     modified = list(entries)
+@@ -87,8 +137,15 @@ def build_initramfs(original, owner, plan, replay, image_profile=inputs.PROFILE)
+         fields = [inode, mode, 0, 0, 1, 0, len(content), 0, 0, 0, 0, len(name.encode()) + 1, 0]
+         modified.append((name, fields, content))
+     packed = replay.pack(modified)
+-    require(len(packed) <= 64 * 1024**2 and replay.unpack(packed) == modified,
+-            "original owner/plan image exceeds the unchanged cpio bound or changed bytes")
++    require(len(packed) <= 64 * 1024**2, "original owner/plan image exceeds the unchanged outer cpio bound")
++    if contract is None:
++        # Preserve the generic codec's original 16 MiB default for every legacy caller.
++        decoded = replay.unpack(packed)
++    else:
++        require(len(packed) <= contract["maximum_archive_bytes"],
++                "exact original-owner archive exceeds its fixed envelope")
++        decoded = replay.unpack(packed, max_bytes=contract["maximum_archive_bytes"])
++    require(decoded == modified, "original owner/plan archive roundtrip changed bytes")
+     return gzip.compress(packed, mtime=0)
+ 
+ 
+@@ -256,7 +313,8 @@ def execute(args, report):
+     exact = inputs.image_module(args.image_profile)
+     if exact:
+         report.update(image_profile_descriptor=exact.descriptor(),
+-                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256)
++                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256,
++                      initramfs_archive_contract=original_owner_archive_contract())
+     freeze_bytes(output / "source-review.json",
+                  inputs.read(args.source_review, 1024**2, args.expected_source_review_sha256))
+     save(output / "source-before.json", snapshots)
+diff --git a/tests/workloads/hepta_cpu_control/test_native_owner_runner.py b/tests/workloads/hepta_cpu_control/test_native_owner_runner.py
+index 8871961..049768b 100644
+--- a/tests/workloads/hepta_cpu_control/test_native_owner_runner.py
++++ b/tests/workloads/hepta_cpu_control/test_native_owner_runner.py
+@@ -1,5 +1,7 @@
+ """Real bounded host I/O tests; synthetic child output never qualifies a guest."""
+ import contextlib
++import gzip
++import inspect
+ import hashlib
+ import io
+ import json
+@@ -111,6 +113,44 @@ class NativeOwnerInputTests(unittest.TestCase):
+                 runner.rejection(changed_raw, changed_record, "entropy-not-ready")
+ 
+ 
++class NativeOwnerArchiveTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        _, _, cls.replay = inputs.original_helpers(runner.ROOT)
++
++    def test_normal_legacy_archive_keeps_the_original_codec_default(self):
++        fields = [1, 0o040755, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
++        original = gzip.compress(self.replay.pack([("test", fields, b"")]), mtime=0)
++        owner = b"inert archive content; never an admitted executable"
++        plan = {"schema_version": 1, "scenario": "steady-state-v1", "nonce": "01" * 32}
++        output = runner.build_initramfs(original, owner, plan, self.replay)
++        restored = {name: content for name, _, content in self.replay.unpack(gzip.decompress(output))}
++        self.assertEqual(restored["test/hepta-g2-owner"], owner)
++        self.assertEqual(json.loads(restored["test/hepta-g2-run.json"]), plan)
++        self.assertEqual(inspect.signature(self.replay.unpack).parameters["max_bytes"].default, 16 * 1024**2)
++
++    def test_fixed_contract_uses_the_source_owned_original_image(self):
++        contract = runner.original_owner_archive_contract()
++        exact = inputs.image_module(inputs.EXACT_IMAGE_PROFILE)
++        self.assertEqual(contract["image_profile_descriptor_sha256"], exact.DESCRIPTOR_SHA256)
++        self.assertEqual(contract["owner_file_bytes"], exact.descriptor()["image"]["file_bytes"])
++        self.assertEqual(contract["maximum_archive_bytes"], 22_268_496)
++        self.assertEqual(contract["legacy_default_archive_bytes"], 16 * 1024**2)
++        self.assertFalse(contract["native_execution_verified"])
++
++    def test_only_the_two_finite_compact_plans_fit_the_named_contract(self):
++        for scenario, length in (("steady-state-v1", 125), ("manager-exit-after-terminal-v1", 140)):
++            plan = {"schema_version": 1, "scenario": scenario, "nonce": "ab" * 32}
++            encoded = runner.original_owner_archive_plan(plan)
++            self.assertEqual(len(encoded), length)
++            self.assertEqual(json.loads(encoded), plan)
++        valid = {"schema_version": 1, "scenario": "steady-state-v1", "nonce": "ab" * 32}
++        for change in ({"schema_version": True}, {"scenario": "unreviewed"}, {"nonce": "ab" * 31},
++                       {"nonce": "AB" * 32}, {"max_bytes": 64 * 1024**2}):
++            with self.subTest(change=change), self.assertRaises(ValueError):
++                runner.original_owner_archive_plan({**valid, **change})
++
++
+ class NativeOwnerQuietPackagingTests(unittest.TestCase):
+     def setUp(self):
+         self.temp = tempfile.TemporaryDirectory()

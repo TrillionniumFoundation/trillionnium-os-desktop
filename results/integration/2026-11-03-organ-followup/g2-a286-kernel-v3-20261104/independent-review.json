@@ -1,0 +1,32 @@
+{
+  "schema": "trill.original-owner-kernel-v3-independent-review.v1",
+  "job_id": "1a1a3ceade8-96a-776b",
+  "source_head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+  "source_tree": "342ad0840d521e97d6de5845682cbc11a115f6f7",
+  "source_inputs_unchanged": true,
+  "original_job_exit_code": 1,
+  "original_steps": [
+    {
+      "label": "osdk-build",
+      "exit_code": 0,
+      "elapsed_seconds": 0.503,
+      "timed_out": false
+    },
+    {
+      "label": "g2-kernel",
+      "exit_code": 2,
+      "elapsed_seconds": 202.642,
+      "timed_out": false
+    }
+  ],
+  "observed_compilation": "Complete log reaches aster-core and three original parse_metadata macro panics. Underlying metadata stderr is absent.",
+  "transport_verification": "All three immutable pages, offsets, total, full native payload SHA, both complete original file texts/versions/size/SHA, and direct job status checked.",
+  "job_output_scope": "Status records stdout101/stderr0. No separate process_read is claimed.",
+  "full_kernel_passed": false,
+  "actual_204_graph_gate_passed": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "production_ready": false,
+  "legacy_limits_unchanged": true,
+  "unique_underlying_metadata_cause_established": false
+}

@@ -1,0 +1,186 @@
+{
+  "schema": "trill.audit.window-ai-visual-review.v2",
+  "review_kind": "AI static image observation, not human acceptance",
+  "reviewed_at_utc": "2026-11-03T20:17:21.843729+00:00",
+  "supersedes_initial_two_window_observation": {
+    "file": "ai-visual-review-initial-two-window.json",
+    "sha256": "06c5ad3d276352f7e31d33e79869b5d37cd920379822ec956805f61b7f253e73",
+    "reason": "The same original IBus receipt contains the full private-display captures and the committed-stage window. All five originals are now inspected; the full preedit display reveals the overlapping candidate panel."
+  },
+  "source_pair_from_original_launch_record": {
+    "desktop_commit": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+    "hepta_commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+    "job_id": "1a1a2e1fd54-96a-7544",
+    "scope": "Original packaged native Makepad/AT-SPI/IBus and atomic EditableText; no Agentd/model/Notes effect."
+  },
+  "source_receipts": {
+    "ibus": {
+      "source_path": "/workspace/scratch/92e2482fa623/owner-evidence/p0-fd-v4-raw/window/ibus-receipt.json",
+      "sha256": "031445d5b0528c5c7d4bfff1adf63ddcd785066176587572cf7f55e51b7077f2",
+      "schema": "trill.native-real-ibus.v1",
+      "engine": "libpinyin",
+      "app_xid": 12582916,
+      "display_xid": 935
+    },
+    "inventory": {
+      "source_path": "/workspace/scratch/92e2482fa623/owner-evidence/p0-fd-v4-raw/window/inventory.json",
+      "sha256": "f8d1cc8b1018fc45594f5d0d35018bf82424a8df9ed032ca583743c946e31162"
+    },
+    "original_qualification": {
+      "source_path": "/workspace/scratch/92e2482fa623/owner-evidence/p0-fd-v4-raw/window/receipt.json",
+      "sha256": "326b398e9d91c2d81357486fc65b73be8e726bf2c80b6864c27b43b3ff29604b"
+    }
+  },
+  "inputs": [
+    {
+      "file": "ime-preedit-window.png",
+      "window": 12582916,
+      "width": 1280,
+      "height": 800,
+      "bytes": 74497,
+      "sha256": "14f8b395e698971ac48b4e0b89f807058ce5279048a75b86001d94e9bc70481b",
+      "capture": "XGetImage actual private X11 framebuffer",
+      "human_visual_review_required": true,
+      "nonuniform_rgb": true,
+      "uniform_rgb": null,
+      "path": "/workspace/scratch/92e2482fa623/owner-evidence/window-fd-v4-visual-review/ime-preedit-window.png",
+      "actually_viewed_with_view_image": true,
+      "detail": "original",
+      "modified": false,
+      "transport_kind": "verified-member-of-version-bound-archive",
+      "transport_file": "transport.json"
+    },
+    {
+      "file": "ime-preedit-display.png",
+      "window": 935,
+      "width": 1440,
+      "height": 1000,
+      "bytes": 87934,
+      "sha256": "329afd0a44236fc9206fa49ceaf770af1544f494a8a72eba8848a1ed7b9ef05f",
+      "capture": "XGetImage actual private X11 framebuffer",
+      "human_visual_review_required": true,
+      "nonuniform_rgb": true,
+      "uniform_rgb": null,
+      "path": "/workspace/scratch/92e2482fa623/owner-evidence/window-fd-v4-visual-review/ime-preedit-display.png",
+      "actually_viewed_with_view_image": true,
+      "detail": "original",
+      "modified": false,
+      "transport_kind": "direct-version-bound-binary-read",
+      "remote_version": "2067:31634973:87934:1793734118663337107:1793734118663337107",
+      "transport_file": "ime-preedit-display.png.transport.json"
+    },
+    {
+      "file": "ime-committed-window.png",
+      "window": 12582916,
+      "width": 1280,
+      "height": 800,
+      "bytes": 73500,
+      "sha256": "881436d8fc6511c96daf8dfa7e3860b32ca2beecac8127f40fdef4a96e359e19",
+      "capture": "XGetImage actual private X11 framebuffer",
+      "human_visual_review_required": true,
+      "nonuniform_rgb": true,
+      "uniform_rgb": null,
+      "path": "/workspace/scratch/92e2482fa623/owner-evidence/window-fd-v4-visual-review/ime-committed-window.png",
+      "actually_viewed_with_view_image": true,
+      "detail": "original",
+      "modified": false,
+      "transport_kind": "direct-version-bound-binary-read",
+      "remote_version": "2067:31634974:73500:1793734118989662603:1793734118989662603",
+      "transport_file": "ime-committed-window.png.transport.json"
+    },
+    {
+      "file": "ime-final-window.png",
+      "window": 12582916,
+      "width": 1280,
+      "height": 800,
+      "bytes": 73383,
+      "sha256": "4c5038218f19539885609b87f1d1d4a4bc84131b3d619135984f01de57c61008",
+      "capture": "XGetImage actual private X11 framebuffer",
+      "human_visual_review_required": true,
+      "nonuniform_rgb": true,
+      "uniform_rgb": null,
+      "path": "/workspace/scratch/92e2482fa623/owner-evidence/window-fd-v4-visual-review/ime-final-window.png",
+      "actually_viewed_with_view_image": true,
+      "detail": "original",
+      "modified": false,
+      "transport_kind": "verified-member-of-version-bound-archive",
+      "transport_file": "transport.json"
+    },
+    {
+      "file": "ime-final-display.png",
+      "window": 935,
+      "width": 1440,
+      "height": 1000,
+      "bytes": 83738,
+      "sha256": "7e40cf3c74021129b46603193ef3ad2273a3b73d46249243dd03ab397a772d87",
+      "capture": "XGetImage actual private X11 framebuffer",
+      "human_visual_review_required": true,
+      "nonuniform_rgb": true,
+      "uniform_rgb": null,
+      "path": "/workspace/scratch/92e2482fa623/owner-evidence/window-fd-v4-visual-review/ime-final-display.png",
+      "actually_viewed_with_view_image": true,
+      "detail": "original",
+      "modified": false,
+      "transport_kind": "direct-version-bound-binary-read",
+      "remote_version": "2067:31634977:83738:1793734119889570049:1793734119889570049",
+      "transport_file": "ime-final-display.png.transport.json"
+    }
+  ],
+  "inspection": {
+    "tool": "view_image",
+    "detail": "original",
+    "all_five_images_actually_viewed": true,
+    "images_modified": false,
+    "new_runtime_execution": false
+  },
+  "observations": [
+    {
+      "image": "ime-preedit-window.png",
+      "observation": "The composer visibly contains underlined 你好; the main heading and selected sidebar item still read New conversation. The lower composer has a black rectangle near window coordinates x=373..700, y=733..799.",
+      "interpretation": "Window-only capture limitation: by itself this image does not show the external IBus popup pixels. It is not evidence of a black or broken candidate panel."
+    },
+    {
+      "image": "ime-preedit-display.png",
+      "observation": "The full private display visibly contains a white IBus panel at approximately display x=523..850, y=793..859, below the preedit text. Its top line reads ni hao; candidate 1 你好 is highlighted; subsequent visible entries include 你好吗, 你, 尼 and 呢, with paging arrows. The panel is inside the 1440 by 1000 capture and has no obvious clipping in this frame.",
+      "interpretation": "The App origin is approximately (150,60), so this panel rectangle coincides with the black area in the window-only capture. The pair supports overlapping-popup/window-capture occlusion as the explanation, not a panel rendering failure. This is a frame-specific AI observation, not candidate-position qualification."
+    },
+    {
+      "image": "ime-committed-window.png",
+      "observation": "The heading, selected sidebar title/preview and composer read 你好. The local window no longer has the preedit capture black rectangle.",
+      "interpretation": "The retained committed-stage capture is preserved in addition to the preedit and final captures. It shows local draft state, not an authenticated send or target effect."
+    },
+    {
+      "image": "ime-final-window.png and ime-final-display.png",
+      "observation": "Both final captures visibly retain 你好 in the heading, sidebar and composer. The complete private display no longer shows the IBus candidate panel. The primary App remains positioned at approximately (150,60) and fits the display.",
+      "interpretation": "Consistent with the original receipt after its undo/redo and owned-focus round trip. These pictures alone do not prove event chronology."
+    },
+    {
+      "image": "ime-final-display.png",
+      "observation": "A small blue-grey rectangle is visible at display x=1350..1420, y=10..60.",
+      "interpretation": "The exact fd capture.py focus_window source creates its owned focus probe at (1350,10) with size 70 by 50 and color 0x334455. The fd ibus_client.py takes the final capture before Display.close destroys that probe. This is a retained test focus target, not an unexplained product window."
+    },
+    {
+      "image": "all five",
+      "observation": "Chinese glyphs in 你好 and the Notes labels/controls are legible. Sidebar, heading, tabs, status, controls and composer occupy separate regions. Host-session, sending and Notes-readback unavailable text remains visible; the committed/final composer says Local draft · chat owner unavailable.",
+      "interpretation": "The evidence supports this local window and draft rendering only. It does not establish an original Agentd/model/Notes or Calculator effect closure, full glyph coverage, physical input or human accessibility acceptance."
+    }
+  ],
+  "remaining_limits": [
+    "Window-only XGetImage cannot substitute for the complete private-display capture when inspecting an overlapping input-method popup.",
+    "Caret-relative placement is observed only in this one size/state; other sizes, scale factors, monitors and input methods are not qualified.",
+    "The small monochrome pictogram in older sidebar fixture rows does not establish complete emoji/ZWJ/font rendering coverage.",
+    "No human visual, physical-keyboard, Wayland IME or human Orca qualification is added."
+  ],
+  "original_visual_and_device_flags_preserved": {
+    "physical_keyboard_qualified": false,
+    "wayland_ime_qualified": false,
+    "orca_human_evaluation": false,
+    "candidate_position_visually_qualified": false,
+    "font_pixels_visually_qualified": false,
+    "authenticated_send_qualified": false
+  },
+  "human_visual_qualification_added": false,
+  "original_qualification_receipts_modified": false,
+  "overall_visual_pass_claimed": false,
+  "qualification_authority_of_this_ai_observation": false
+}

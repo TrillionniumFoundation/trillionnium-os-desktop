@@ -1,0 +1,76 @@
+{
+  "schema": "hepta.original-owner-quiet-command-log-host-check.v1",
+  "passed": true,
+  "started_at_utc": "2026-11-03T22:21:12.275778+00:00",
+  "base_head": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+  "checks": [
+    {
+      "label": "normal",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_original_owner_image_profile",
+        "test_native_owner_memory",
+        "test_trusted_daemon_profile",
+        "test_build_original_entry",
+        "test_native_owner_evidence",
+        "test_native_owner_runner.NativeOwnerQuietPackagingTests"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3117599deb70b7df8c43b483cafc08849382d539fca4b5c345d184227cdd091d"
+    },
+    {
+      "label": "optimized",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "-O",
+        "-m",
+        "unittest",
+        "-v",
+        "test_original_owner_image_profile",
+        "test_native_owner_memory",
+        "test_native_owner_runner.NativeOwnerQuietPackagingTests"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5fd4d06cc9eb93d2642d2cf5b4d0c1c0599eaadeeb353e5dbfd5eded409c4763"
+    },
+    {
+      "label": "source-gate",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-B",
+        "/workspace/scratch/92e2482fa623/desktop-f1/support/build/verify-source.py"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "c7f6462558bf102fa79c6011d67de87e8ac15cc8f46c09b83014eacc88c9e9ef",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "kernel_built": false,
+  "locked_204_graph_verified": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "component_sha256": {
+    "tests/workloads/hepta_cpu_control/native_owner_inputs.py": "02129c2948d8fd619730d7b517654c7a8f9be3502eeb4dbe7994878f41492429",
+    "tests/workloads/hepta_cpu_control/run_native_owner.py": "38167d300c30abac9a936e96e6b2a617cbfb1014559bf184b4526825e03d4ee2",
+    "tests/workloads/hepta_cpu_control/test_native_owner_runner.py": "f733fc31d0348f7e502362d103405819a4d1914c98447c49662558540149309f"
+  },
+  "finished_at_utc": "2026-11-03T22:21:13.715712+00:00"
+}

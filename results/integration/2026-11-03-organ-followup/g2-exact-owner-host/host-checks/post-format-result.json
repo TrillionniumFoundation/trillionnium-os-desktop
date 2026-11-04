@@ -1,0 +1,61 @@
+{
+  "schema": "hepta.original-owner-profile-host-candidate-check.v1",
+  "passed": true,
+  "checks": [
+    {
+      "label": "source-check",
+      "argv": [
+        "python3",
+        "-B",
+        "/workspace/scratch/92e2482fa623/desktop-f1/support/build/verify-source.py"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "c7f6462558bf102fa79c6011d67de87e8ac15cc8f46c09b83014eacc88c9e9ef",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "host-tests",
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_original_owner_image_profile",
+        "test_native_owner_memory",
+        "test_trusted_daemon_profile",
+        "test_build_original_entry",
+        "test_native_owner_evidence"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "506c55ee302e7eb6b9cf2eed8228c45c8aa8202430937cc6f8171725f44084b3"
+    }
+  ],
+  "kernel_built": false,
+  "locked_graph_verified": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "source_head": "5d95730850a13728824fa89511231215f307e4e3",
+  "pending_paths": [
+    "kernel/asterinas/kernel/core/build.rs",
+    "kernel/asterinas/kernel/core/src/process/program_loader/elf/mod.rs",
+    "tests/workloads/hepta_cpu_control/test_original_owner_image_profile.py"
+  ],
+  "pending_component_sha256": {
+    "kernel/asterinas/kernel/core/build.rs": "cd3c51135b172ee3969fd40851866df2be064e1864769e917c894e188fb36eeb",
+    "kernel/asterinas/kernel/core/src/process/program_loader/elf/mod.rs": "9cd25c993eb2ecfeb8f9948e2584440c21ff265c84104e8699ef94325e98b80c",
+    "tests/workloads/hepta_cpu_control/test_original_owner_image_profile.py": "07ef3a833c8d197fb1bda2eb8872f0dc2067d1e59ffcd61ee87c053ccd52184b"
+  }
+}

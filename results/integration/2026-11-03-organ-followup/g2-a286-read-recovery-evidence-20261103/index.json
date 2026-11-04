@@ -1,0 +1,211 @@
+{
+  "schema": "hepta.g2-a286-read-recovery-evidence-index.v1",
+  "desktop_head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+  "files": [
+    {
+      "path": "fixed-nightly/library.Cargo.lock",
+      "bytes": 9835,
+      "sha256": "9e87d1ac04edbf5fa61e27cb21984a83566573a007767713868965fba70acb6d",
+      "scope": "Exact installed toolchain standard-library lock: 49 packages, 30 registry versions, separate from the project 204 graph.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/Cargo.lock"
+      }
+    },
+    {
+      "path": "provenance/library-lock-native-result.json",
+      "bytes": 13595,
+      "sha256": "dfafa56fe144b3a8e5e0509332ef5d36a2d1aa96c44ba2801221b4f24fec2983",
+      "scope": "Byte-exact original retained SDK payload supporting the complete library lock read.",
+      "origin": {
+        "operation_id": "33dd8e9db459b8b4e4b6294f88edf897078a92b72a7a3179c9d44f000bb2e046"
+      }
+    },
+    {
+      "path": "kernel-v2/osdk-build.log",
+      "bytes": 4280,
+      "sha256": "1fa3d84f136821d105a74353812c46e604098b1fbebd9315387fe7d7d8063bdd",
+      "scope": "Complete original source-built OSDK success log; no kernel or guest qualification.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/osdk-build.log"
+      }
+    },
+    {
+      "path": "kernel-v2/generated.Cargo.lock",
+      "bytes": 41937,
+      "sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "scope": "Generated lock observed: exact canonical 41,937 bytes and 204 packages. Compilation failed before full locked graph/build admission.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/kernel-target/osdk/asterinas-run-base/Cargo.lock"
+      }
+    },
+    {
+      "path": "provenance/kernel-v2-files-native-result.json",
+      "bytes": 58458,
+      "sha256": "8b5ea038788d0f0ebdbfc05eb9a0049ecc4aa4a22b18892ea4090e88eb6827c1",
+      "scope": "Byte-exact original retained SDK payload; independent file snapshots, not an atomic pair.",
+      "origin": {
+        "operation_id": "a60fcb6923caf347867d778a028e4940b2910cc5e53e84c24571a00049f2124c"
+      }
+    },
+    {
+      "path": "kernel-v2/process-status.json",
+      "bytes": 475,
+      "sha256": "f564928c38a920339c28cda9fb6aa09d97931c281b45df0a6accee883185704c",
+      "scope": "Recovered authoritative outer job: failed, exit 1, no timeout/cancellation, complete output. Original pipeline separates OSDK success from kernel failure.",
+      "origin": {
+        "host": "main",
+        "tool": "process_status",
+        "rpc_wrapper": "owner-exact-a286-kernel-v2-status-recovered-2.json",
+        "job_id": "1a1a3a95c62-96a-7731"
+      }
+    },
+    {
+      "path": "std-cache-inventory/result.json",
+      "bytes": 52558,
+      "sha256": "19b0272f0a27cf93c21efd11fe836eaa4b70c9fc101ccd2ab6462f5c42357ea3",
+      "scope": "Read-only inventory of fixed library lock and two existing caches, before admission.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/fixed-nightly-std-cache-a286-v1/result.json"
+      }
+    },
+    {
+      "path": "provenance/std-cache-inventory-native-result.json",
+      "bytes": 70499,
+      "sha256": "34a3a1dd77a8def8dc0c0a178e61d4c0f5b85b5badc4f32b9bd5dde87908fc77",
+      "scope": "Byte-exact original retained SDK payload supporting complete inventory read.",
+      "origin": {
+        "operation_id": "972feca8334e9892fe18376dcddff6f0f99174ddca1d45ee0172d666efe90bca"
+      }
+    },
+    {
+      "path": "std-cache-inventory/process-status.json",
+      "bytes": 478,
+      "sha256": "eeabd7284b80aa3f0c2c4e57321de3f30d04aa938650afe6fe852d9da6fa6855",
+      "scope": "Inventory authoritative success, exit 0; no cache writes or build.",
+      "origin": {
+        "host": "main",
+        "tool": "process_status",
+        "rpc_wrapper": "fixed-nightly-std-cache-process-status-v1.json",
+        "job_id": "1a1a3c6c476-96a-7754"
+      }
+    },
+    {
+      "path": "operational-inputs/audit_fixed_nightly_std_cache.py",
+      "bytes": 5913,
+      "sha256": "31c058b1aa2c4b959619fe805891c8c5cdd6346498826c6b93b2603286d34783",
+      "scope": "Actual external inventory helper; not product source or kernel validation.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/audit-fixed-nightly-std-cache-v1.py"
+      }
+    },
+    {
+      "path": "transport/old-job-async-explicit-refusal.json",
+      "bytes": 1130,
+      "sha256": "c0d1d720f3f7d438fc532bd05e0434c1f5741f241d753250754ad09f84cfbf12",
+      "scope": "Explicit service rejection: not_submitted; no original build request replay.",
+      "origin": {
+        "tool": "operation_start",
+        "requested_tool": "process_status",
+        "job_id": "1a1a3a95c62-96a-7731"
+      }
+    },
+    {
+      "path": "std-cache-admission/result.json",
+      "bytes": 3127,
+      "sha256": "254a1a0f492291582e7889750b696f13a789968716d2c9029c10f7a831bde75a",
+      "scope": "Four create-only original-checksum archive copies, 954,962 bytes; no shared source/cache, index or lock modification.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/fixed-nightly-std-cache-admission-a286-v1/result.json"
+      }
+    },
+    {
+      "path": "provenance/std-cache-admission-native-result.json",
+      "bytes": 4598,
+      "sha256": "9b228378a95fa08a670988bd7f2c5cb41d631a35fccfa2bad9ac9cf7f3d08f4b",
+      "scope": "Byte-exact original SDK payload supporting complete admission receipt read.",
+      "origin": {
+        "operation_id": "9b3ad68dce0c0e4c9c9e2ab9c903fea88552b51e8a04a508392ffb5472f0cac9"
+      }
+    },
+    {
+      "path": "std-cache-admission/process-status.json",
+      "bytes": 476,
+      "sha256": "a589673d84181a4c27989a44286b8c9bd1ce8fbdc7848123a7fc913cb1ae9162",
+      "scope": "Cache admission authoritative exit 0, no timeout/cancellation.",
+      "origin": {
+        "host": "main",
+        "tool": "process_status",
+        "rpc_wrapper": "fixed-nightly-std-cache-admission-status-v1.json",
+        "job_id": "1a1a3cd5e9f-96a-7767"
+      }
+    },
+    {
+      "path": "operational-inputs/admit_fixed_nightly_std_cache.py",
+      "bytes": 7214,
+      "sha256": "283702228f84f433dcc0d1e75c77d1fdce9c13b9df028dc4b65ae8e218331a8f",
+      "scope": "Actual external admission helper; four fixed archives and existing task-private build leases.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/admit-fixed-nightly-std-cache-v1.py"
+      }
+    },
+    {
+      "path": "operational-inputs/run_exact_owner_kernel_pipeline_offline_v3.py",
+      "bytes": 13739,
+      "sha256": "f2c1a93f77db1729bf2dc76dfcb671d98d49e1ccbd70bb6922f69738d8a3d7e1",
+      "scope": "Submitted operational wrapper: official Cargo --target-dir reuses only task-owned v2 OSDK target, no compiler interception or product-source change.",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/run-exact-owner-kernel-pipeline-offline-v3.py"
+      }
+    },
+    {
+      "path": "kernel-v3/launch-request.json",
+      "bytes": 1332,
+      "sha256": "46303f07bcd7b886144513920bc14cca0f0c877319d1746666af9d53441fd351",
+      "scope": "Exact persisted original a286 normal pipeline launch request; no completion implied.",
+      "origin": {
+        "kind": "persisted request before launch"
+      }
+    },
+    {
+      "path": "kernel-v3/launch-response.json",
+      "bytes": 2117,
+      "sha256": "10436b7e21bb5fca7c9e1d412b9b84c378c090dec139de866e2e08852c11f9ea",
+      "scope": "Single launch confirmed, reused false; this is admission, not a successful build.",
+      "origin": {
+        "host": "main",
+        "tool": "shell_start",
+        "rpc_wrapper": "owner-exact-a286-kernel-v3-launch-response.json",
+        "job_id": "1a1a3ceade8-96a-776b"
+      }
+    },
+    {
+      "path": "README.md",
+      "bytes": 2890,
+      "sha256": "f6d697b02544713ac10cc46a1278bb09ef66550ed670834b54d55d40c3b65f57",
+      "scope": "Scope and provenance explanation",
+      "origin": {
+        "kind": "derived narrative"
+      }
+    }
+  ],
+  "prior_archive_index_sha256": "82aa002e30d702e7a5cea03c0abfcd82a0e915ea5d906c4a36d829ef86275303",
+  "generated_lock_bytes_observed": true,
+  "generated_lock_package_count": 204,
+  "kernel_built": false,
+  "locked_204_graph_verified": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "std_cache_admission_passed": true,
+  "kernel_v3_launch_confirmed": true,
+  "kernel_v3_result_in_this_archive": false,
+  "whole_guest_peak_verified": false,
+  "global_memory_reserve": false
+}

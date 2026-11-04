@@ -1,0 +1,550 @@
+initramfs: 1107990 bytes, sha256=86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3
+make: Entering directory '/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'
+Makefile:323: warning: ignoring old recipe for target 'initramfs'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:10: warning: overriding recipe for target '/data/trill-organ-20261103-f1-build/cargo-home/bin/cargo-osdk'
+Makefile:298: warning: ignoring old recipe for target '/data/trill-organ-20261103-f1-build/cargo-home/bin/cargo-osdk'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'
+Makefile:291: warning: ignoring old recipe for target 'install_osdk'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:39: warning: overriding recipe for target 'kernel'
+Makefile:338: warning: ignoring old recipe for target 'kernel'
+cd kernel && cargo osdk build --release --boot-method=vmm-direct --grub-boot-protocol=multiboot --initramfs="/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v3/kernel-build/initramfs.cpio.gz" --kcmd-args="loglevel=info" --kcmd-args="earlycon" --kcmd-args="console=ttyS0" --qemu-exe="/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/record-qemu.py" --features=g2-original-owner-a39-v1
+   Compiling compiler_builtins v0.1.160 (/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/compiler-builtins/compiler-builtins)
+   Compiling core v0.0.0 (/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core)
+   Compiling alloc v0.0.0 (/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc)
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.46
+   Compiling unicode-ident v1.0.24
+   Compiling syn v2.0.118
+   Compiling syn v1.0.109
+   Compiling zerocopy v0.8.54
+   Compiling zerocopy-derive v0.8.54
+   Compiling libc v0.2.186
+   Compiling autocfg v1.5.1
+   Compiling scopeguard v1.2.0
+   Compiling bitflags v2.13.0
+   Compiling getrandom v0.3.4
+   Compiling lock_api v0.4.14
+   Compiling log v0.4.33
+   Compiling bitflags v1.3.2
+   Compiling cfg-if v1.0.4
+   Compiling spin v0.9.9
+   Compiling uguid v2.2.1
+   Compiling bit_field v0.10.3
+   Compiling strsim v0.10.0
+   Compiling ident_case v1.0.1
+   Compiling thiserror v2.0.18
+   Compiling const_fn v0.4.12
+   Compiling radium v0.7.0
+   Compiling rustversion v1.0.23
+   Compiling fnv v1.0.7
+   Compiling darling_core v0.13.4
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_core v0.9.5
+   Compiling thiserror-impl v2.0.18
+   Compiling ptr_meta_derive v0.3.1
+   Compiling tap v1.0.1
+   Compiling wyz v0.5.1
+   Compiling ptr_meta v0.3.1
+   Compiling rand_chacha v0.9.0
+   Compiling darling_macro v0.13.4
+   Compiling lazy_static v1.5.0
+   Compiling raw-cpuid v10.7.0
+   Compiling num-traits v0.2.19
+   Compiling int-to-c-enum-derive v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/int-to-c-enum/derive)
+   Compiling volatile v0.4.6
+   Compiling funty v2.0.0
+   Compiling x86 v0.52.0
+   Compiling bitvec v1.1.1
+   Compiling x86_64 v0.15.5
+   Compiling int-to-c-enum v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/int-to-c-enum)
+warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: `int-to-c-enum` (lib) generated 1 warning
+   Compiling iced-x86 v1.21.0
+   Compiling darling v0.13.4
+   Compiling rand v0.9.5
+   Compiling multiboot2-common v0.3.0
+   Compiling uefi-raw v0.12.0
+   Compiling uefi-raw v0.14.0
+   Compiling ostd-pod-macros v0.4.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/ostd-pod/macros)
+   Compiling padding-struct v0.2.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/padding-struct)
+   Compiling gimli v0.34.0
+   Compiling smallvec v1.15.2
+   Compiling serde_core v1.0.228
+   Compiling unwinding v0.2.10
+   Compiling ostd-pod v0.4.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/ostd-pod)
+warning: `ostd-pod` (lib) generated 1 warning (1 duplicate)
+   Compiling tdx-guest v0.5.0
+   Compiling multiboot2 v0.24.1
+   Compiling ostd-macros v0.19.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/ostd-macros)
+   Compiling inherit-methods-macro v0.1.0 (https://github.com/asterinas/inherit-methods-macro?rev=98f7e3e#98f7e3eb)
+   Compiling id-alloc v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/id-alloc)
+warning: `id-alloc` (lib) generated 1 warning (1 duplicate)
+   Compiling acpi v5.2.0
+   Compiling ostd-test v0.19.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/ostd-test)
+warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+   Compiling linux-boot-params v0.19.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/linux-bzimage/boot-params)
+warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+   Compiling align_ext v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd/libs/align_ext)
+warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+   Compiling volatile v0.6.1
+   Compiling gimli v0.28.1
+   Compiling serde v1.0.228
+   Compiling ostd v0.19.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/ostd)
+warning: `ostd` (lib) generated 1 warning (1 duplicate)
+   Compiling either v1.16.0
+   Compiling itertools v0.10.5
+   Compiling hashbrown v0.17.1
+   Compiling equivalent v1.0.2
+   Compiling indexmap v2.14.0
+   Compiling toml_datetime v0.6.11
+   Compiling serde_spanned v0.6.9
+   Compiling winnow v0.5.40
+   Compiling toml_edit v0.19.15
+   Compiling toml v0.7.8
+   Compiling json v0.12.4
+   Compiling component-macro v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/comp-sys/component-macro)
+   Compiling inventory v0.3.24
+   Compiling component v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/comp-sys/component)
+warning: `component` (lib) generated 1 warning (1 duplicate)
+   Compiling typeflags v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/typeflags)
+   Compiling typeflags-util v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/typeflags-util)
+warning: `typeflags-util` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-rights v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/aster-rights)
+warning: `aster-rights` (lib) generated 1 warning (1 duplicate)
+   Compiling osdk-heap-allocator v0.19.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/osdk/deps/heap-allocator)
+warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-rights-proc v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/aster-rights-proc)
+   Compiling aster-util v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/aster-util)
+warning: `aster-util` (lib) generated 1 warning (1 duplicate)
+   Compiling memoffset v0.9.1
+   Compiling intrusive-collections v0.9.7
+   Compiling paste v1.0.15
+   Compiling aster-softirq v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/softirq)
+warning: `aster-softirq` (lib) generated 1 warning (1 duplicate)
+   Compiling byteorder v1.5.0
+   Compiling heapless v0.8.0
+   Compiling hash32 v0.3.1
+   Compiling dma-pool v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/dma-pool)
+warning: `dma-pool` (lib) generated 1 warning (1 duplicate)
+   Compiling stable_deref_trait v1.2.1
+   Compiling smoltcp v0.11.0 (https://github.com/asterinas/smoltcp?tag=r_2026-08-11_1b7629c#56ab8379)
+   Compiling device-id v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/device-id)
+warning: `device-id` (lib) generated 1 warning (1 duplicate)
+   Compiling ext-trait-proc_macros v1.0.1
+   Compiling managed v0.8.0
+   Compiling macro_rules_attribute-proc_macro v0.1.3
+   Compiling version_check v0.9.5
+   Compiling ahash v0.8.12
+   Compiling macro_rules_attribute v0.1.3
+   Compiling ext-trait v1.0.1
+   Compiling aster-console v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/console)
+warning: `aster-console` (lib) generated 1 warning (1 duplicate)
+   Compiling io-util v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/io-util)
+warning: `io-util` (lib) generated 1 warning (1 duplicate)
+   Compiling nougat-proc_macros v0.2.4
+   Compiling allocator-api2 v0.2.21
+   Compiling takeable v0.2.2
+   Compiling jhash v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/jhash)
+warning: `jhash` (lib) generated 1 warning (1 duplicate)
+   Compiling owo-colors v4.3.0
+   Compiling aster-bigtcp v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/aster-bigtcp)
+warning: `aster-bigtcp` (lib) generated 1 warning (1 duplicate)
+   Compiling nougat v0.2.4
+   Compiling aster-block v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/block)
+warning: `aster-block` (lib) generated 1 warning (1 duplicate)
+   Compiling extension-traits v1.0.1
+   Compiling aster-pci v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/pci)
+warning: `aster-pci` (lib) generated 1 warning (1 duplicate)
+   Compiling lending-iterator-proc_macros v0.1.7
+   Compiling konst_macro_rules v0.2.19
+   Compiling polonius-the-crab v0.2.1
+   Compiling foldhash v0.2.0
+   Compiling once_cell v1.21.4
+   Compiling never-say-never v6.6.666
+   Compiling unicode-xid v0.2.6
+   Compiling const_format_proc_macros v0.2.34
+   Compiling lending-iterator v0.1.7
+   Compiling hashbrown v0.16.1
+   Compiling konst v0.2.20
+   Compiling aster-network v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/network)
+warning: `aster-network` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-systree v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/systree)
+warning: `aster-systree` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-cmdline v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/cmdline)
+warning: `aster-cmdline` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-input v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/input)
+warning: `aster-input` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-fuse v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/aster-fuse)
+warning: `aster-fuse` (lib) generated 1 warning (1 duplicate)
+   Compiling short-vis-path v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/short-vis-path)
+   Compiling adler2 v2.0.1
+   Compiling font8x8 v0.2.7
+   Compiling time-core v0.1.9
+   Compiling powerfmt v0.2.0
+   Compiling deranged v0.5.8
+   Compiling zero v0.1.3
+   Compiling num-conv v0.2.2
+   Compiling aster-core v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core)
+warning: unreachable `pub` item
+ --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs:9:1
+  |
+9 | pub const PROFILE: &str = "g2-original-owner-a39-v1";
+  | ---^^^^^^^^^^^^^^^^^^^^
+  | |
+  | help: consider restricting its visibility: `pub(crate)`
+  |
+  = help: or consider exporting it for use by other crates
+  = note: requested on the command line with `-W unreachable-pub`
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs:10:1
+   |
+10 | pub const OWNER_SHA256: &str = "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454";
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs:11:1
+   |
+11 | pub const FILE_BYTES: usize = 20_138_584;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs:12:1
+   |
+12 | pub const MAPPED_BYTES: usize = 20_168_704;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs:13:1
+   |
+13 | pub const MAX_SEGMENT_BYTES: usize = 15_323_136;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs:14:1
+   |
+14 | pub const LOAD_SEGMENTS: usize = 4;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/program_loader/elf/original_owner_profile.rs:15:1
+   |
+15 | pub const INITIAL_ROLES: usize = 4;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: `aster-core` (build script) generated 7 warnings
+   Compiling time v0.3.53
+   Compiling xmas-elf v0.10.0
+   Compiling aster-framebuffer v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/framebuffer)
+warning: `aster-framebuffer` (lib) generated 1 warning (1 duplicate)
+   Compiling miniz_oxide v0.8.9
+   Compiling aster-virtio v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/virtio)
+warning: `aster-virtio` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-device v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/device)
+warning: `aster-device` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-logger v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/logger)
+warning: `aster-logger` (lib) generated 1 warning (1 duplicate)
+   Compiling hashbrown v0.14.5
+   Compiling const_format v0.2.36
+   Compiling lru v0.16.4
+   Compiling cpio-decoder v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/cpio-decoder)
+warning: `cpio-decoder` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-nvme v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/nvme)
+warning: `aster-nvme` (lib) generated 1 warning (1 duplicate)
+   Compiling osdk-frame-allocator v0.19.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/osdk/deps/frame-allocator)
+warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-time v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/comps/time)
+warning: `aster-time` (lib) generated 1 warning (1 duplicate)
+   Compiling xarray v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/xarray)
+warning: `xarray` (lib) generated 1 warning (1 duplicate)
+   Compiling ring-buffer v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/ring-buffer)
+warning: `ring-buffer` (lib) generated 1 warning (1 duplicate)
+   Compiling os-control v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/libs/os-control)
+warning: `os-control` (lib) generated 1 warning (1 duplicate)
+   Compiling atomic-integer-wrapper v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/atomic-integer-wrapper)
+   Compiling getset v0.1.7
+   Compiling keyable-arc v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/keyable-arc)
+warning: `keyable-arc` (lib) generated 1 warning (1 duplicate)
+   Compiling sparse-id-alloc v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/sparse-id-alloc)
+warning: `sparse-id-alloc` (lib) generated 1 warning (1 duplicate)
+   Compiling logo-ascii-art v0.1.0 (/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/libs/logo-ascii-art)
+warning: `logo-ascii-art` (lib) generated 1 warning (1 duplicate)
+error: proc macro panicked
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/init.rs:26:47
+   |
+26 |     component::init_all(InitStage::Bootstrap, component::parse_metadata!()).unwrap();
+   |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: message: cannot get metadata
+
+error: proc macro panicked
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/init.rs:43:45
+   |
+43 |     component::init_all(InitStage::Process, component::parse_metadata!()).unwrap();
+   |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: message: cannot get metadata
+
+error: proc macro panicked
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/init.rs:267:45
+    |
+267 |     component::init_all(InitStage::Kthread, component::parse_metadata!()).unwrap();
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: message: cannot get metadata
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/trusted_control/watchdog.rs:344:10
+    |
+344 |     ) -> aster_systree::Result<()> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: requested on the command line with `-W unused-qualifications`
+help: remove the unnecessary path segments
+    |
+344 -     ) -> aster_systree::Result<()> {
+344 +     ) -> Result<()> {
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:336:26
+    |
+336 |             .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+336 -             .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+336 +             .map_err(|_| Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+    |
+
+warning: unnecessary qualification
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs:54:5
+   |
+54 |     super::memory_observation::system("before_snapshot", 0);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+help: remove the unnecessary path segments
+   |
+54 -     super::memory_observation::system("before_snapshot", 0);
+54 +     memory_observation::system("before_snapshot", 0);
+   |
+
+warning: unnecessary qualification
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs:69:5
+   |
+69 |     super::memory_observation::system("snapshot_retained", 0);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+help: remove the unnecessary path segments
+   |
+69 -     super::memory_observation::system("snapshot_retained", 0);
+69 +     memory_observation::system("snapshot_retained", 0);
+   |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs:158:9
+    |
+158 |         super::memory_observation::role(
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+158 -         super::memory_observation::role(
+158 +         memory_observation::role(
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs:181:20
+    |
+181 |     let launcher = super::trusted_launcher::TrustedLauncher::new(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+181 -     let launcher = super::trusted_launcher::TrustedLauncher::new(
+181 +     let launcher = trusted_launcher::TrustedLauncher::new(
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_daemon.rs:224:5
+    |
+224 |     super::memory_observation::system("initial_roles_ready", 0);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+224 -     super::memory_observation::system("initial_roles_ready", 0);
+224 +     memory_observation::system("initial_roles_ready", 0);
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs:405:9
+    |
+405 |         super::memory_observation::system("successor_before_images", generation);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+405 -         super::memory_observation::system("successor_before_images", generation);
+405 +         memory_observation::system("successor_before_images", generation);
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs:427:9
+    |
+427 |         super::memory_observation::role(
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+427 -         super::memory_observation::role(
+427 +         memory_observation::role(
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs:437:9
+    |
+437 |         super::memory_observation::role(
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+437 -         super::memory_observation::role(
+437 +         memory_observation::role(
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs:478:9
+    |
+478 |         super::memory_observation::system("successor_roles_ready", generation);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+478 -         super::memory_observation::system("successor_roles_ready", generation);
+478 +         memory_observation::system("successor_roles_ready", generation);
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs:490:9
+    |
+490 |         super::memory_observation::system("history_before_image", generation);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+490 -         super::memory_observation::system("history_before_image", generation);
+490 +         memory_observation::system("history_before_image", generation);
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs:508:9
+    |
+508 |         super::memory_observation::role(
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+508 -         super::memory_observation::role(
+508 +         memory_observation::role(
+    |
+
+warning: unnecessary qualification
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/trusted_launcher.rs:532:9
+    |
+532 |         super::memory_observation::system("history_role_ready", generation);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: remove the unnecessary path segments
+    |
+532 -         super::memory_observation::system("history_role_ready", generation);
+532 +         memory_observation::system("history_role_ready", generation);
+    |
+
+warning: the item `Mutex` is imported redundantly
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/trusted_control.rs:17:5
+   |
+17 | use ostd::sync::Mutex;
+   |     ^^^^^^^^^^^^^^^^^
+...
+24 |     prelude::*,
+   |     ---------- the item `Mutex` is already imported here
+   |
+   = note: requested on the command line with `-W redundant-imports`
+
+warning: unused imports: `kill_all`, `kill_group`, `kill_owned`, `kill`, `tgkill_owned`, and `tgkill`
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/mod.rs:34:5
+   |
+34 |     kill, kill_all, kill_all_with, kill_group, kill_group_with, kill_owned, kill_owned_with,
+   |     ^^^^  ^^^^^^^^                 ^^^^^^^^^^                   ^^^^^^^^^^
+35 |     kill_process_via_thread, tgkill, tgkill_owned, tgkill_owned_with,
+   |                              ^^^^^^  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `process::KernelControlBackend`
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/mod.rs:44:16
+   |
+44 | pub(crate) use process::KernelControlBackend;
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `core::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/image.rs:125:34
+    |
+125 |                 match next_nonce.fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |                                  ^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+    |
+125 -                 match next_nonce.fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+125 +                 match next_nonce.try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |
+
+warning: use of deprecated method `core::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency
+  --> /home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas/kernel/core/src/process/process/init_proc/memory_observation.rs:35:32
+   |
+35 |     let Ok(previous) = SAMPLES.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
+   |                                ^^^^^^^^^^^^
+   |
+help: replace the use of the deprecated method
+   |
+35 -     let Ok(previous) = SAMPLES.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
+35 +     let Ok(previous) = SAMPLES.try_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
+   |
+
+warning: `aster-core` (lib) generated 20 warnings (1 duplicate)
+error: could not compile `aster-core` (lib) due to 3 previous errors; 20 warnings emitted
+[Error]: Cargo build failed
+make: *** [/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:39: kernel] Error 6
+make: Leaving directory '/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas'
+evidence: /data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v3/kernel-build

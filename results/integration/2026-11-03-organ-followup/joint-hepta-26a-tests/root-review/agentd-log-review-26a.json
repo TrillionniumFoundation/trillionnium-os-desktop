@@ -1,0 +1,20 @@
+{
+  "schema": "trill.root-package-log-review.v1",
+  "source": "26a46e3fe763b53e1f0362793701f112383a72fa",
+  "package": "codex-hepta-agentd",
+  "raw_size": 127220,
+  "raw_sha256": "6f39a71d087bec0b457f1f71ab0fdb6dcff13878a13f3e775d52f821831a87cf",
+  "selected": 547,
+  "passed": 546,
+  "failed": 1,
+  "skipped": 60,
+  "flaky": 0,
+  "original_retry_policy_unchanged": true,
+  "failure_observations": [
+    "    fixture frontier CAS entered: wait=false, boottime_ns=824744913993727\n    fixture frontier CAS completed after 52.881µs\n    fixture frontier CAS entered: wait=true, boottime_ns=824744932178911\n    fixture frontier CAS completed after 2.177675ms\n\n    thread 'root_authority_session::tests::file_custody::original_blocking_cas_keeps_file_after_session_and_worker_retire' (2256920) panicked at hepta-agentd/src/root_authority_file_custody_tests.rs:74:5:\n    assertion failed: takes_lock(&contender)?\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n  TRY 2 FAIL [   0.195s] (382/547) codex-hepta-agentd root_authority_session::tests::file_custody::original_blocking_cas_keeps_file_after_session_and_worker_retire\n  stdout ───\n\n    running 1 test",
+    "    fixture frontier CAS entered: wait=false, boottime_ns=824745117885783\n    fixture frontier CAS completed after 36.189µs\n    fixture frontier CAS entered: wait=true, boottime_ns=824745128828559\n    fixture frontier CAS completed after 2.229554ms\n\n    thread 'root_authority_session::tests::file_custody::original_blocking_cas_keeps_file_after_session_and_worker_retire' (2256926) panicked at hepta-agentd/src/root_authority_file_custody_tests.rs:74:5:\n    assertion failed: takes_lock(&contender)?\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n        PASS [   0.053s] (383/547) codex-hepta-agentd root_authority_session::tests::resources::retired_original_session_releases_both_journals_and_live_root_after_worker_exit\n        PASS [   0.211s] (384/547) codex-hepta-agentd root_authority_session::tests::uncertain_original_consumer_update_fences_even_with_fresh_root_responses\n        PASS [   0.020s] (385/547) codex-hepta-agentd root_bound_socket::tests::refuses_shared_or_aliased_parent_without_creating_a_rendezvous\n        PASS [   0.021s] (386/547) codex-hepta-agentd root_observation_cache::tests::fresh_unrelated_registry_updates_do_not_fence_fixed_lease"
+  ],
+  "complete_package_passed": false,
+  "fixture_fix_verified": false,
+  "scope": "Retain original full-suite failure. Later narrow fixture repair cannot relabel this execution green."
+}

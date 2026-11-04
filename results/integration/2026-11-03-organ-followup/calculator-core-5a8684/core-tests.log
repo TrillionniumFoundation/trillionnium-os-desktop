@@ -1,0 +1,156 @@
+warning: skipping duplicate package `bitflags v2.10.0 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/bitflags/Cargo.toml
+in favor of /data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/bitflags/Cargo.toml
+
+warning: skipping duplicate package `cfg-if v1.0.4 (https://github.com/kevinaboos/makepad?rev=337566c8b25d47f7e4fff6a202157b65bf183330#337566c8)`:
+  /data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/vulkan/cfg-if/Cargo.toml
+in favor of /data/trill-calculator-core-5a8684-rhfqpcqf/cargo-home/git/checkouts/makepad-69d78fae78fc8901/337566c/libs/cfg-if/Cargo.toml
+
+warning: patch `anymap2 v0.13.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+warning: patch `crossterm v0.29.0 (https://github.com/openai-oss-forks/crossterm?rev=45fecb9508105988f42fe6ff0441783ed3717f92#45fecb95)` was not used in the crate graph
+warning: patch `imbl v6.1.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+warning: patch `matrix-sdk-crypto v0.18.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+warning: patch `matrix-sdk-sqlite v0.18.0 (https://github.com/TrillionniumFoundation/hepta-private-ci?rev=a39a0871d9601ffccb5e0d95d8f39d54b3a63360#a39a0871)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling typenum v1.20.1
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling syn v3.0.9
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling serde_json v1.0.154
+   Compiling libc v0.2.191
+   Compiling serde v1.0.229
+   Compiling digest v0.10.7
+   Compiling serde_derive v1.0.229
+   Compiling cpufeatures v0.2.17
+   Compiling cfg-if v1.0.5
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling sha2 v0.10.9
+   Compiling trill-ui-core v0.1.0 (/data/trill-calculator-core-5a8684-rhfqpcqf/source/ui/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 43.13s
+     Running unittests src/lib.rs (/data/trill-calculator-core-5a8684-rhfqpcqf/target/debug/deps/trill_ui_core-d7ffbf93ddbfcfa8)
+
+running 57 tests
+test calculator::tests::actual_model_mutation_and_independent_readback_bind_exact_bytes ... ok
+test calculator::tests::bounded_schema_and_observation_nonce_are_checked_before_mutation ... ok
+test calculator::tests::checked_integer_profile_has_explicit_non_effects ... ok
+test calculator::tests::deadline_and_arithmetic_refusals_leave_app_state_unmodified ... ok
+test calculator::tests::emit_cross_repository_wire_fixture_from_app_serialization ... CALCULATOR_WIRE_FIXTURE_V1 {"acknowledge_request_bytes":"{\"schema_version\":1,\"action\":\"acknowledge\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"operation_id\":\"original-1\",\"payload_sha256\":\"f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0\",\"receipt_sha256\":\"6ccbc1b07aa43ac2f1ad7a7f0b67474a659ebc31868fc36adabeae54b275bd4c\"}","acknowledged_bytes":"{\"schema_version\":1,\"action\":\"acknowledged\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"operation_id\":\"original-1\",\"payload_sha256\":\"f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0\",\"receipt_sha256\":\"6ccbc1b07aa43ac2f1ad7a7f0b67474a659ebc31868fc36adabeae54b275bd4c\",\"status\":\"retired\"}","applied_bytes":"{\"schema_version\":1,\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"operation_id\":\"original-1\",\"payload_sha256\":\"f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0\",\"result\":{\"status\":\"applied\",\"previous_revision\":0,\"revision\":1,\"state\":{\"left\":\"12\",\"operator\":\"add\",\"right\":\"30\",\"result\":\"42\"},\"state_sha256\":\"1ce69e4a380ebbccdc1ff31a3671359cf5418a5fb34ba59968387d6de253172f\"}}","predecessor_sha256":"381600e70b8bfee64ff978d99cc06e2042c8c7030ac8c670dff2fe5503033197","read_request_bytes":"{\"schema_version\":1,\"action\":\"read_calculator\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"observation_id\":\"33333333333333333333333333333333\"}","readback_bytes":"{\"schema_version\":1,\"action\":\"calculator_state\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"observation_id\":\"33333333333333333333333333333333\",\"revision\":1,\"state\":{\"left\":\"12\",\"operator\":\"add\",\"right\":\"30\",\"result\":\"42\"},\"state_sha256\":\"1ce69e4a380ebbccdc1ff31a3671359cf5418a5fb34ba59968387d6de253172f\",\"receipt_pending\":true}","receipt_sha256":"6ccbc1b07aa43ac2f1ad7a7f0b67474a659ebc31868fc36adabeae54b275bd4c","request_bytes":"{\"schema_version\":1,\"action\":\"evaluate\",\"operation_id\":\"original-1\",\"destination_id\":\"trill.calculator:11111111111111111111111111111111:2:22222222222222222222222222222222\",\"target\":{\"session_instance\":\"11111111111111111111111111111111\",\"task_id\":2,\"incarnation\":\"22222222222222222222222222222222\"},\"expected_revision\":0,\"left\":\"12\",\"operator\":\"add\",\"right\":\"30\"}","request_sha256":"f2604897d0641366919a36284d53dfa621f994206a3d30301d1cc13c6332bbc0","schema":"trill.calculator.wire-fixture.v1","scope":"MODEL_SERIALIZATION_ONLY; not real GUI or original-owner acceptance","scope_sha256":"26f0b23d411fc006bb1af3f6fe3a89d8a3f208a42618d0de5626d94ef9a218f2","state_sha256":"1ce69e4a380ebbccdc1ff31a3671359cf5418a5fb34ba59968387d6de253172f","target":{"incarnation":"22222222222222222222222222222222","session_instance":"11111111111111111111111111111111","task_id":2}}
+ok
+test calculator::tests::expired_duplicate_preserves_known_applied_and_retired_becomes_unknown ... ok
+test calculator::tests::local_edits_share_revision_but_preserve_original_causal_receipt ... ok
+test calculator::tests::new_incarnation_cannot_receive_old_effect_or_readback ... ok
+test calculator::tests::pending_receipt_is_retired_only_by_exact_original_identity ... ok
+test calculator::tests::recovery_lane_rejects_effect_and_never_infers_receipt_from_result ... ok
+test calculator::tests::revision_exhaustion_is_atomic_and_applied_response_is_validated ... ok
+test calculator::tests::semantically_equal_new_serialization_is_not_original_payload ... ok
+test calculator_lifetime::tests::concurrent_spawn_does_not_clear_session_parent_descriptor_cloexec ... ok
+test conversation::tests::missing_task_is_unknown_and_only_matching_full_snapshot_resolves ... ok
+test conversation::tests::reused_task_number_in_new_session_never_rebinds_or_changes_quote ... ok
+test conversation::tests::runtime_context_tracks_one_original_source_independently_of_host_tasks ... ok
+test conversation::tests::serialized_local_context_cannot_add_authority_fields ... ok
+test conversation::tests::typed_draft_round_trip_preserves_unicode_and_source_and_rejects_cross_workspace ... ok
+test desktop_startup::tests::activation_binds_both_targets_and_nonce ... ok
+test desktop_startup::tests::calculator_offer_and_ack_do_not_alias_notes_or_other_incarnations ... ok
+test desktop_startup::tests::reservation_requires_distinct_targets_in_one_session ... ok
+test desktop_startup::tests::startup_is_bounded_and_rejects_unknown_profile ... ok
+test hepta::tests::an_unconfigured_run_keeps_the_previous_exact_wire_shape ... ok
+test hepta::tests::diagnostic_projection_has_no_control_characters_and_respects_utf8_bound ... ok
+test hepta::tests::event_labels_never_render_bidi_overrides_or_line_spoofing ... ok
+test hepta::tests::missing_observation_is_unknown_after_transport_failure ... ok
+test hepta::tests::runtime_sample_clock_never_deserializes_invalid_or_missing_age_as_zero ... ok
+test host_peer::tests::both_ends_read_the_kernel_credentials_and_reject_foreign_uid ... ok
+test notes::checkpoint::tests::canonical_model_round_trip_preserves_distinct_protocol_domains ... ok
+test notes::checkpoint::tests::checkpoint_rejects_unknown_mixed_duplicate_or_missing_fields ... ok
+test notes::recovery_tests::pending_receipt_survives_new_effects_and_only_exact_ack_releases_capacity ... ok
+test notes::recovery_tests::recovery_golden_matches_exact_receipt_and_ack_bytes ... ok
+test notes::tests::document_cas_preserves_user_edits_and_replay_does_not_repeat_effect ... ok
+test notes::tests::exact_bytes_and_only_retained_receipt_bound_observation ... ok
+test notes::tests::fixed_cross_language_wire_fixture_matches_exact_payload_scope_and_predecessor ... ok
+test notes::tests::schema_rejects_duplicates_unknown_fields_oversize_and_wrong_destination ... ok
+test notes_bootstrap::tests::bootstrap_rejects_duplicates_unknown_fields_and_noninitial_identity ... ok
+test notes_bootstrap::tests::fixed_bootstrap_fixture_pins_the_initial_target_and_ack ... ok
+test notes_lifetime::tests::concurrent_spawn_does_not_clear_session_parent_descriptor_cloexec ... ok
+test notes_store::lock_tests::construction_error_releases_an_acquired_lock_before_store_construction ... ok
+test notes_store::lock_tests::retired_owner_releases_lock_despite_a_retained_open_description ... ok
+test objective::tests::actual_document_readback_is_independent_of_unknown_objective_delivery ... ok
+test objective::tests::navigation_recovery_rejects_duplicate_foreign_and_excessive_ids ... ok
+test objective::tests::typed_intents_reject_authority_injection_and_duplicate_fields ... ok
+test observation::tests::both_clocks_are_bounded_without_rejuvenating_queued_samples ... ok
+test tests::all_unsettled_states_have_distinct_labels ... ok
+test tests::framing_rejects_unterminated_or_oversized_inputs ... ok
+test tests::host_request_schema_rejects_unknown_and_duplicate_fields_before_effects ... ok
+test tests::old_host_snapshot_defaults_to_unconfigured_wayland ... ok
+test tests::old_task_json_without_socket_epoch_is_fail_closed ... ok
+test tests::older_session_snapshot_cannot_claim_a_hepta_connection ... ok
+test tests::per_app_wayland_socket_epoch_is_never_surface_restoration_proof ... ok
+test tests::real_terminal_state_requires_prior_running ... ok
+test tests::serialized_ipc_output_is_also_bounded ... ok
+test tests::unknown_task_status_does_not_deserialize_as_success ... ok
+test tests::utf8_round_trip_preserves_chinese_ime_text ... ok
+test tests::write_commands_require_session_fencing_identity ... ok
+
+test result: ok. 57 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/host_load_legacy.rs (/data/trill-calculator-core-5a8684-rhfqpcqf/target/debug/deps/host_load_legacy-f17989bd51ff74ff)
+
+running 8 tests
+test integer_negative_zero_remains_zero_across_json_feature_sets ... ok
+test legacy_load_f32_overflow_keeps_the_original_accepted_observation ... ok
+test legacy_load_large_signed_integer_is_not_double_rounded ... ok
+test legacy_load_large_unsigned_integer_is_not_double_rounded ... ok
+test legacy_load_missing_and_null_remain_optional ... ok
+test legacy_load_non_numeric_or_json_overflow_remain_rejected ... ok
+test legacy_load_rounding_and_finite_boundaries_are_preserved ... ok
+test native_graph_numeric_observation_roundtrips_through_value ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/notes_migration.rs (/data/trill-calculator-core-5a8684-rhfqpcqf/target/debug/deps/notes_migration-71a6b4049558c757)
+
+running 2 tests
+test invalid_or_mixed_legacy_file_is_rejected_without_rewriting_it ... ok
+test legacy_open_is_read_only_and_retirement_upgrades_without_transferring_identity ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/notes_store.rs (/data/trill-calculator-core-5a8684-rhfqpcqf/target/debug/deps/notes_store-8fc7ba8860b92a55)
+
+running 14 tests
+test changed_source_and_intervening_current_edits_are_not_overwritten ... ok
+test corrupt_or_rebound_checkpoints_are_rejected ... ok
+test durable_receipt_survives_sigkill_before_delivery ... 
+running 1 test
+test persist_then_wait_fixture ... ok
+test failed_restore_write_freezes_only_the_new_incarnation_and_retains_original ... ok
+test failed_storage_freezes_effects_until_independent_recovery ... ok
+test original_hepta_read_contract_is_correlated_and_reflects_pending_receipt ... ok
+test persist_then_wait_fixture ... ok
+test recovery_preserves_exact_receipt_and_retirement_without_restoring_effects ... ok
+test required_durable_root_preflight_uses_original_private_canonical_guard ... ok
+test restore_then_wait_fixture ... ok
+test restored_copy_survives_process_death_while_original_receipt_remains_recoverable ... 
+running 1 test
+test restore_then_wait_fixture ... ok
+test saved_picker_and_restore_refuse_locked_or_symlinked_sources ... ok
+test saved_picker_is_bounded_and_keeps_utf8_previews_intact ... ok
+test saved_text_opens_under_new_identity_without_receipts_or_old_effect_capability ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 19.70s
+
+   Doc-tests trill_ui_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

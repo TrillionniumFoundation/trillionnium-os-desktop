@@ -1,0 +1,45 @@
+{
+  "schema": "trill.audit.original-notes-live.v1",
+  "status": "blocked_or_unknown",
+  "started_unix_ms": 1793741398351,
+  "desktop_commit": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+  "hepta_commit": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+  "release": "/opt/trill-organ-20261103/releases/fd8d56c52b97-053cc1957b40",
+  "config_sha256": "6a373c9e6bc949598aaa9a42d5eba46020113fa93ae10a3466f05ce68cfd52ec",
+  "scope": "Original installed Root, real logind, original user GUI and original finite model/Notes flow in a private mount namespace",
+  "lifetime_ms": 300000,
+  "long_running_production_qualified": false,
+  "physical_keyboard_qualified": false,
+  "requested_notes_text": "Hepta 原 owner Notes 验收 20261103 · fd8d56c5/a39a0871",
+  "requested_notes_sha256": "23d67a85139d5527760671a4ecc107611383b93fd284a9b7376243ab2cc3e591",
+  "phases": [
+    {
+      "name": "initializing_original_root",
+      "unix_ms": 1793741398538,
+      "private_mount_namespace": "mnt:[4026532641]"
+    }
+  ],
+  "roots": [
+    {
+      "mode": "initialize",
+      "argv": [
+        "/opt/trill-organ-20261103/releases/fd8d56c52b97-053cc1957b40/bin/hepta-desktop-root",
+        "initialize",
+        "--config",
+        "/root/trill-organ-owner-20261103/initialize.json"
+      ],
+      "pid": 2017019,
+      "started_unix_ms": 1793741398710,
+      "exit_code": 1,
+      "finished_observation_unix_ms": 1793741411795
+    }
+  ],
+  "held_processes": [],
+  "write_prompts_sent": 0,
+  "model_effect_result_qualified": false,
+  "app_only_readback_qualified": false,
+  "same_boot_recovery_qualified": false,
+  "error": "RuntimeError('original composition: original Root exited 1')",
+  "traceback": "Traceback (most recent call last):\n  File \"<string>\", line 208, in <module>\n  File \"<string>\", line 102, in setup\n  File \"<string>\", line 74, in wait\nRuntimeError: original composition: original Root exited 1\n",
+  "finished_unix_ms": 1793741411795
+}

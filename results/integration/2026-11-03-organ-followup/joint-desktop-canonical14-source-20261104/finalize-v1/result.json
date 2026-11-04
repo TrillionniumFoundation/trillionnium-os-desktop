@@ -1,0 +1,136 @@
+{
+  "schema": "trill.canonical14.final-desktop-source.v1",
+  "state": "failed",
+  "passed": false,
+  "steps": [
+    {
+      "name": "session-format",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/services/hepta-session-host/Cargo.toml"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2720277550397441,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "session-format-check",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/services/hepta-session-host/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2652823090320453,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "dependency-tests",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_product_dependencies.py",
+        "-v"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 25.433403864037246,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 7091,
+        "sha256": "44298bb11d9ff2ceab230559bbb9976467e8f5d819f690de7408bd9dcea47adc"
+      }
+    },
+    {
+      "name": "dependency-tests-optimized",
+      "argv": [
+        "/usr/bin/python3",
+        "-O",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/ui",
+        "-p",
+        "test_product_dependencies.py",
+        "-v"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 25.20203365397174,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 7091,
+        "sha256": "bee261c4e0b97ffcb7c57ea24120bf0dc45e187bf37a64bb9aa4991c0f5e4926"
+      }
+    }
+  ],
+  "script": {
+    "bytes": 12382,
+    "sha256": "c2f342bde520e4b81279ad104b24f529fa7d064f68e57841d9b8e2631e40b6e9"
+  },
+  "scope": "Clean source, Cargo-generated locks, actual metadata/source verification, formatting and dependency guard regressions only.",
+  "compiled": false,
+  "runtime_qualified": false,
+  "effects_authority": false,
+  "desktop_before": {
+    "commit": "190077f4069b28aba33d746da2bb0a509055de9c",
+    "tree": "f533f63bbbf1b5d234a145b9ab0560904ce743a0",
+    "status": " M support/ui/preedit-sdk/Cargo.lock\n"
+  },
+  "resources": {
+    "disk_free": 91135639552,
+    "mem_available_kib": 103931332
+  },
+  "controlled_environment_removed_keys": [
+    "DBUS_SESSION_BUS_ADDRESS",
+    "DISPLAY",
+    "HEPTA_RUNTIME_JOB_ID",
+    "WAYLAND_DISPLAY"
+  ],
+  "fixture_format_delta": {
+    "bytes": 836,
+    "sha256": "133e3dc34520194b87052adfffc8c49b507266f1511eed0d0e3dfd90f95fa036"
+  },
+  "error": "RuntimeError('module documentation checker must be unambiguous')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/qian-qi/work/trill-organ-owner-20261103/desktop-docs-finalize14-v1.py\", line 83, in <module>\n    require(len(paths)==1,\"module documentation checker must be unambiguous\")\n  File \"/home/qian-qi/work/trill-organ-owner-20261103/desktop-docs-finalize14-v1.py\", line 18, in require\n    if not ok:raise RuntimeError(msg)\n              ^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: module documentation checker must be unambiguous\n",
+  "elapsed_seconds": 51.83003755193204
+}

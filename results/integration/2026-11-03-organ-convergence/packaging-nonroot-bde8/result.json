@@ -1,0 +1,42 @@
+{
+  "scope": "ORDINARY_ELF_PACKAGING_COMPONENT_ONLY; no original owner or guest runtime execution",
+  "source_commit": "bde8dcaba61c15923cdae4d00d9237565a0d0daa",
+  "uid": 1000,
+  "euid": 1000,
+  "gid": 1000,
+  "egid": 1000,
+  "user": "qian-qi",
+  "output_root": "/data/trill-packaging-nonroot-bde8-h69j1c6n",
+  "files": {
+    "build_original_entry.py": {
+      "sha256": "b9ae25253ae3930f83d0f639467c86139264fbdb5dfb81c8e4da5b098f533cf7",
+      "bytes": 22874
+    },
+    "test_build_original_entry.py": {
+      "sha256": "65fbd8df88082925b5d9914ed97859853faaee1a48314ba4ac3f6d5fceb19cdc",
+      "bytes": 8104
+    }
+  },
+  "passed": true,
+  "g2_complete": false,
+  "runtime_verified": false,
+  "argv": [
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "-v",
+    "test_build_original_entry.ProductPackagingTests"
+  ],
+  "cwd": "/data/trill-packaging-nonroot-bde8-h69j1c6n/source",
+  "exit_code": 0,
+  "elapsed_seconds": 0.486,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "a9f4c1848a136326fdabd9bd4365b15e5d6db883c2c9c92de3e44f5274b766b2",
+  "stdout": "",
+  "stderr": "test_packaging_failure_retains_nonwritable_copy (test_build_original_entry.ProductPackagingTests.test_packaging_failure_retains_nonwritable_copy) ... ok\ntest_real_strip_uses_private_writable_copy_and_preserves_original (test_build_original_entry.ProductPackagingTests.test_real_strip_uses_private_writable_copy_and_preserves_original) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.055s\n\nOK\n",
+  "tests_run": [
+    "2"
+  ],
+  "inputs_unchanged": true
+}

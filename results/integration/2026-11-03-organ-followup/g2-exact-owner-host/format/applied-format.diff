@@ -1,0 +1,109 @@
+--- a/kernel/asterinas/kernel/core/build.rs
++++ b/kernel/asterinas/kernel/core/build.rs
+@@ -32,7 +32,10 @@
+         env::var_os("HEPTA_TRUSTED_INITIAL_ELF")
+             .expect("the exact original-owner image profile requires its reviewed ELF"),
+     );
+-    assert!(source.is_absolute(), "original-owner input must be absolute");
++    assert!(
++        source.is_absolute(),
++        "original-owner input must be absolute"
++    );
+     let source_text = source.to_str().expect("UTF-8 original-owner input path");
+     assert!(!source_text.contains('\n') && !source_text.contains('\r'));
+     println!("cargo:rerun-if-changed={source_text}");
+@@ -48,7 +51,11 @@
+         .take(profile::FILE_BYTES as u64 + 1)
+         .read_to_end(&mut bytes)
+         .expect("read the one bounded original-owner snapshot");
+-    assert_eq!(bytes.len(), profile::FILE_BYTES, "original-owner file length differs");
++    assert_eq!(
++        bytes.len(),
++        profile::FILE_BYTES,
++        "original-owner file length differs"
++    );
+ 
+     // Hash the byte vector already read, not a second pathname lookup. The
+     // compiler's private input below is written from this exact same vector.
+@@ -60,9 +67,14 @@
+         .spawn()
+         .expect("the experimental Linux build host requires /usr/bin/sha256sum");
+     let written = digest.stdin.take().unwrap().write_all(&bytes);
+-    let output = digest.wait_with_output().expect("wait for original-owner digest");
++    let output = digest
++        .wait_with_output()
++        .expect("wait for original-owner digest");
+     written.expect("send the complete original-owner snapshot to sha256sum");
+-    assert!(output.status.success(), "original-owner digest command failed");
++    assert!(
++        output.status.success(),
++        "original-owner digest command failed"
++    );
+     assert_eq!(
+         output.stdout,
+         format!("{}  -\n", profile::OWNER_SHA256).as_bytes(),
+@@ -74,7 +86,11 @@
+     match fs::symlink_metadata(&frozen) {
+         Ok(metadata) => {
+             assert!(metadata.file_type().is_file() && metadata.len() == bytes.len() as u64);
+-            assert_eq!(fs::read(&frozen).unwrap(), bytes, "existing compiler input differs");
++            assert_eq!(
++                fs::read(&frozen).unwrap(),
++                bytes,
++                "existing compiler input differs"
++            );
+             assert_eq!(metadata.permissions().mode() & 0o777, 0o444);
+         }
+         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+@@ -87,10 +103,16 @@
+                         ".reviewed-original-owner-{}-{attempt}.tmp",
+                         std::process::id()
+                     ));
+-                    match fs::OpenOptions::new().write(true).create_new(true).open(&path) {
++                    match fs::OpenOptions::new()
++                        .write(true)
++                        .create_new(true)
++                        .open(&path)
++                    {
+                         Ok(file) => Some((path, file)),
+                         Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => None,
+-                        Err(error) => panic!("cannot create private compiler staging input: {error}"),
++                        Err(error) => {
++                            panic!("cannot create private compiler staging input: {error}")
++                        }
+                     }
+                 })
+                 .expect("private compiler staging names are occupied");
+@@ -116,5 +138,8 @@
+     }
+     // The loader includes this checked copy. It cannot embed a later pathname
+     // replacement of the supplied HEPTA_TRUSTED_INITIAL_ELF.
+-    println!("cargo:rustc-env=HEPTA_REVIEWED_ORIGINAL_OWNER_ELF={}", frozen.display());
++    println!(
++        "cargo:rustc-env=HEPTA_REVIEWED_ORIGINAL_OWNER_ELF={}",
++        frozen.display()
++    );
+ }
+--- a/kernel/asterinas/kernel/core/src/process/program_loader/elf/mod.rs
++++ b/kernel/asterinas/kernel/core/src/process/program_loader/elf/mod.rs
+@@ -2,17 +2,17 @@
+ 
+ mod elf_file;
+ mod load_elf;
+-mod relocate;
+ #[cfg(feature = "g2-original-owner-a39-v1")]
+ #[allow(dead_code)]
+ mod original_owner_profile;
++mod relocate;
+ #[cfg(feature = "g1c-trusted-observe")]
+ mod trusted_initial;
+ 
+ pub(super) use elf_file::ElfHeaders;
+ pub(in crate::process) use load_elf::ElfLoadInfo;
+ pub(super) use load_elf::load_elf_to_vmar;
++#[cfg(feature = "g1d-trusted-control")]
++pub(in crate::process) use trusted_initial::TrustedInitialSnapshot;
+ #[cfg(feature = "g1c-trusted-observe")]
+ pub(in crate::process) use trusted_initial::{LoadedInitialImage, load_trusted_initial};
+-#[cfg(feature = "g1d-trusted-control")]
+-pub(in crate::process) use trusted_initial::TrustedInitialSnapshot;
