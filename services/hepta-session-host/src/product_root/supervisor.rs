@@ -6,6 +6,7 @@ use std::os::fd::AsRawFd;
 use std::os::fd::BorrowedFd;
 use std::os::fd::FromRawFd;
 use std::os::fd::OwnedFd;
+use std::path::Path;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -25,6 +26,10 @@ use codex_hepta_supervisor::Supervisor;
 use codex_hepta_supervisor::SupervisorConfig;
 use codex_hepta_supervisor::UnixManagedProcess;
 use codex_hepta_supervisor::UnixProcessDriver;
+
+use super::supervisor_diagnostics::{
+    Captured, CleanupObservation, DiagnosticSink, ObservationPhase,
+};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -80,10 +85,12 @@ pub(super) struct OriginalOwner {
 struct SupervisorLease {
     supervisor: Supervisor<OneOriginalSpawn>,
     agent: AgentId,
+    diagnostics: DiagnosticSink,
+    phase: ObservationPhase,
 }
 
-impl Drop for SupervisorLease {
-    fn drop(&mut self) {
+impl SupervisorLease {
+    fn cleanup_original(&mut self) -> CleanupObservation {
         let _ = self.supervisor.stop(&self.agent, Instant::now());
         let until = Instant::now() + Duration::from_secs(6);
         loop {
@@ -96,7 +103,7 @@ impl Drop for SupervisorLease {
                 .snapshot(&self.agent)
                 .is_none_or(|s| s.process_system_id.is_none())
             {
-                return;
+                return CleanupObservation::StopLoopReturned;
             }
             if Instant::now() >= until {
                 break;
@@ -114,11 +121,36 @@ impl Drop for SupervisorLease {
                 .snapshot(&self.agent)
                 .is_none_or(|s| s.process_system_id.is_none())
             {
-                return;
+                return CleanupObservation::KillLoopReturned;
             }
             std::thread::sleep(Duration::from_millis(20));
         }
         eprintln!("original Supervisor did not acknowledge cleanup");
+        CleanupObservation::Unconfirmed
+    }
+}
+
+impl Drop for SupervisorLease {
+    fn drop(&mut self) {
+        // Capture in memory before the original cleanup. No additional tick,
+        // log drain, retry, signal or I/O delays its existing stop/kill path.
+        let before = self
+            .supervisor
+            .snapshot(&self.agent)
+            .map(Captured::from_snapshot);
+        let cleanup = self.cleanup_original();
+        let after = self
+            .supervisor
+            .snapshot(&self.agent)
+            .map(Captured::from_snapshot);
+        if self
+            .diagnostics
+            .retain(&self.agent, self.phase, cleanup, before, after)
+            .is_err()
+        {
+            // Raw child bytes and private paths never enter public stderr.
+            eprintln!("original Supervisor final private diagnostic unavailable");
+        }
     }
 }
 
@@ -134,6 +166,7 @@ impl OriginalOwner {
             registration,
             pidfd,
         } = self;
+        supervisor.phase = ObservationPhase::Monitor;
         let (stop, receiver) = std::sync::mpsc::channel();
         let worker = std::thread::spawn(move || {
             loop {
@@ -213,8 +246,17 @@ pub(super) fn start_original(
     rights: &[BorrowedFd<'_>],
     uid: u32,
     gid: u32,
+    diagnostic_directory: &Path,
 ) -> Result<OriginalOwner> {
-    start_registered(registry, agent, command, rights, uid, gid, Admission::Fresh)
+    start_registered(
+        registry,
+        agent,
+        command,
+        rights,
+        (uid, gid),
+        diagnostic_directory,
+        Admission::Fresh,
+    )
 }
 
 pub(super) fn start_successor(
@@ -224,14 +266,15 @@ pub(super) fn start_successor(
     rights: &[BorrowedFd<'_>],
     uid: u32,
     gid: u32,
+    diagnostic_directory: &Path,
 ) -> Result<OriginalOwner> {
     start_registered(
         registry,
         agent,
         command,
         rights,
-        uid,
-        gid,
+        (uid, gid),
+        diagnostic_directory,
         Admission::Successor,
     )
 }
@@ -246,14 +289,16 @@ fn start_registered(
     agent: &AgentId,
     command: AgentCommand,
     rights: &[BorrowedFd<'_>],
-    uid: u32,
-    gid: u32,
+    owner_credentials: (u32, u32),
+    diagnostic_directory: &Path,
     admission: Admission,
 ) -> Result<OriginalOwner> {
+    let (uid, gid) = owner_credentials;
     // SAFETY: these calls only read actual process credentials.
     if unsafe { libc::getuid() } != 0 || unsafe { libc::geteuid() } != 0 || uid == 0 || gid == 0 {
         return Err("explicit Root and actual non-Root product owner are required".into());
     }
+    let diagnostics = DiagnosticSink::prepare(diagnostic_directory)?;
     let before = registry.load_agent(agent)?;
     if registry.load()?.agents.len() != 1
         || match admission {
@@ -283,6 +328,8 @@ fn start_registered(
     let mut supervisor = SupervisorLease {
         supervisor,
         agent: agent.clone(),
+        diagnostics,
+        phase: ObservationPhase::Startup,
     };
     if supervisor
         .supervisor

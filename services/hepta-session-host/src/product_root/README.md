@@ -236,3 +236,10 @@ freeze; no fixture or zero-selected test result satisfies it.
 Human capture uses the actual remaining writer lease, and the returned profile
 expiry must not exceed that original writer expiry. The provider and Hepta
 native launcher independently repeat the same cap; no field renews authority.
+
+## Original Supervisor diagnostics
+
+[SUPERVISOR_DIAGNOSTICS](SUPERVISOR_DIAGNOSTICS.md) describes the bounded,
+Root-private final observation retained for startup and monitor failures. The
+file contains only observations of the existing original Supervisor and is
+never a source of authority, an effect receipt, or a retry instruction.
