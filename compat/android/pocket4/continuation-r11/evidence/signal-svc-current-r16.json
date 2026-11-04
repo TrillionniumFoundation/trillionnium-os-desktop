@@ -1,0 +1,85 @@
+{
+  "phase": "run",
+  "kind": "signal",
+  "package": "org.droidloom.signalprobe",
+  "started_utc": "2026-11-04T12:50:42.930598+00:00",
+  "action_attempted": true,
+  "outcome_unknown": false,
+  "commands": [
+    {
+      "name": "packages-before",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "74e81a1f7a756e763fe96bf3943f84f68a5e0427d946735c687ac439fa948a6a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "package-path",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "path",
+        "org.droidloom.signalprobe"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "a6eb6abbb2f5eda0b47d41a78e9bca3f0967f31e9aae74a6183cd94f369b9128",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "instrument",
+      "argv": [
+        "/system/bin/am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "nonce",
+        "p4-r11-signal-svc-20261104-01",
+        "-e",
+        "case",
+        "svc",
+        "org.droidloom.signalprobe/org.droidloom.signalprobe.SignalProbeInstrumentation"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "570150b005e352b7ca4cf44137d4dc4644778c4c9861a45bb927c75af55579dd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "packages-after",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "74e81a1f7a756e763fe96bf3943f84f68a5e0427d946735c687ac439fa948a6a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "package_count_before": 183,
+  "installed_identity": {
+    "version_code": 1,
+    "uid": 10153
+  },
+  "apk_sha256": "7982ebd6e951a6c2159755afa79d1d7bafe43b6b6aa8c29f43a7d0c1496e3f59",
+  "instrumentation_output": "INSTRUMENTATION_STATUS: case=svc\nINSTRUMENTATION_STATUS: nonce=p4-r11-signal-svc-20261104-01\nINSTRUMENTATION_STATUS: phase=STARTED\nINSTRUMENTATION_STATUS: result_path=/data/user/0/org.droidloom.signalprobe/files/signal-probe/p4-r11-signal-svc-20261104-01.json\nINSTRUMENTATION_STATUS_CODE: 1\nINSTRUMENTATION_RESULT: case=svc\nINSTRUMENTATION_RESULT: evidence_json={\"schema\":1,\"phase\":\"PASS\",\"case\":\"svc\",\"nonce\":\"p4-r11-signal-svc-20261104-01\",\"java_pid\":96887,\"elapsed_ms\":10,\"target_sdk\":33,\"package\":\"org.droidloom.signalprobe\",\"fingerprint\":\"generic\\/aosp_cf_x86_64_only_phone\\/vsoc_x86_64_only:17\\/CP2A.260605.016\\/15885347:userdebug\\/test-keys\",\"java_os_arch\":\"aarch64\",\"java_process_is_64_bit\":true,\"watchdog_ms\":10000,\"self_security\":{\"seccomp\":\"0\",\"no_new_privs\":\"0\",\"status_read_error\":null,\"attr_current\":\"unconfined\",\"attr_read_error\":null},\"native\":{\"schema\":1,\"case\":\"svc\",\"status\":\"PASS\",\"reason\":0,\"errno\":0,\"pid\":96887,\"tid\":96901,\"elapsed_ns\":450322,\"guest_isa\":\"aarch64\",\"checks\":\"0x000000000007e001\",\"required_checks\":\"0x000000000007e001\",\"instruction\":{\"fault_pc\":\"0x00007e83d94c6a80\",\"resume_pc\":\"0x00007e83d94c6a84\",\"word_before\":\"0xd4000001\",\"word_after\":\"0xd4000001\"},\"signal\":{\"precise_siginfo_observed\":false,\"count\":0,\"unexpected\":0,\"signo\":0,\"info_signo\":0,\"si_code\":0,\"si_errno\":0,\"si_addr\":\"0x0000000000000000\",\"guest_pc\":\"0x0000000000000000\",\"guest_sp\":\"0x0000000000000000\",\"pstate\":\"0x0000000000000000\",\"context_sigill_blocked\":0,\"context_sigusr1_blocked\":0,\"handler_mask_query_rc\":0,\"handler_kernel_mask\":\"0x0000000000000000\",\"x\":[\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\",\"0x0000000000000000\"]},\"after\":{\"x0\":\"0x0000000000017a77\",\"x1\":\"0x0000000000002222\",\"x8\":\"0x00000000000000ac\",\"x9\":\"0x0000000000009999\",\"x10\":\"0x000000000000aaaa\",\"sp\":\"0x00007e83d91ebe40\",\"resume_pc\":\"0x00007e83d94c6a84\",\"cookie\":\"0x0000000000004f4b\",\"nzcv\":\"0x00000000a0000000\",\"return_value\":\"0x0000000000017a77\"},\"restore\":{\"mask_before\":\"0x0000000080001204\",\"mask_after\":\"0x0000000080001204\",\"action_rc\":0,\"mask_rc\":0,\"action_readback_rc\":0,\"action_equal\":true,\"original_action_flags\":\"0x8000004\",\"original_action_pointer\":\"0x00007e83ac219040\",\"original_action_mask\":\"0xfffffffffffbfeff\",\"restored_action_flags\":\"0x8000004\",\"restored_action_pointer\":\"0x00007e83ac219040\",\"restored_action_mask\":\"0xfffffffffffbfeff\"},\"child\":{\"pid\":0,\"recorded_pid\":0,\"recorded_ppid\":0,\"recorded_tid\":0,\"phase\":0,\"setup_reason\":0,\"setup_errno\":0,\"pdeathsig\":0,\"wait_observed\":false,\"wait_status\":0,\"wifsignaled\":false,\"termination_signal\":0,\"wifexited\":false,\"exit_status\":0,\"timed_out\":false,\"kill_rc\":-1,\"kill_errno\":0,\"reaped\":false,\"elapsed_ns\":0,\"deadline_ms\":2000,\"cleanup_bound_ms\":1000,\"original_sigchld_flags\":\"0x0\",\"original_sigchld_pointer\":\"0x0000000000000000\"}}}\nINSTRUMENTATION_RESULT: nonce=p4-r11-signal-svc-20261104-01\nINSTRUMENTATION_RESULT: phase=PASS\nINSTRUMENTATION_RESULT: result_path=/data/user/0/org.droidloom.signalprobe/files/signal-probe/p4-r11-signal-svc-20261104-01.json\nINSTRUMENTATION_CODE: -1\n",
+  "all_package_identities_preserved": true,
+  "ok": true,
+  "finished_utc": "2026-11-04T12:50:43.358486+00:00"
+}

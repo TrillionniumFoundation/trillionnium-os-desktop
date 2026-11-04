@@ -1,0 +1,82 @@
+{
+  "phase": "run",
+  "kind": "owner",
+  "package": "local.pocket4.fdownerprobe.r11",
+  "started_utc": "2026-11-04T12:37:05.222897+00:00",
+  "action_attempted": true,
+  "outcome_unknown": false,
+  "commands": [
+    {
+      "name": "packages-before",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "0283057a4e595269379af910d392976ad7f10413a9afc84fdae5b70cff11b642",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "package-path",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "path",
+        "local.pocket4.fdownerprobe.r11"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e6fa070949b7b2f021acd8a80678c951ead2c07b5925d337577289dc52650f31",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "instrument",
+      "argv": [
+        "/system/bin/am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "nonce",
+        "p4-r11-owner-policy-20261104-01",
+        "local.pocket4.fdownerprobe.r11/local.pocket4.fdownerprobe.ProbeInstrumentation"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "6e48925991dd68383c2814f2a012fd195af928da1830d0cf27cd9702323af245",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "packages-after",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "0283057a4e595269379af910d392976ad7f10413a9afc84fdae5b70cff11b642",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "package_count_before": 183,
+  "installed_identity": {
+    "version_code": 11,
+    "uid": 10152
+  },
+  "apk_sha256": "ec41aa66ab21706011fdbdab136907091e5c32bb88090288d8bbf398f897e9b8",
+  "instrumentation_output": "INSTRUMENTATION_RESULT: debuggable=false\nINSTRUMENTATION_RESULT: nonce=p4-r11-owner-policy-20261104-01\nINSTRUMENTATION_RESULT: pid=91850\nINSTRUMENTATION_RESULT: policy=NoNewPrivs:\t0\nSeccomp:\t0\nSeccomp_filters:\t0\n\nINSTRUMENTATION_RESULT: probe_result={\"probe\":\"owned_private_fd_owner\",\"pass\":true,\"child_reaped\":true,\"timeout\":false,\"child_signal\":0,\"child_exit\":0,\"step\":7,\"unshare_rc\":0,\"unshare_errno\":0,\"clear_rc\":0,\"clear_errno\":0,\"pidfd_rc\":0,\"pidfd_errno\":0,\"getfd_rc\":1,\"getfd_errno\":0,\"stat_rc\":0,\"stat_errno\":0,\"statfs_rc\":0,\"statfs_errno\":0,\"identity_matches\":1,\"caller_fd_survived\":1,\"fd_limit_reached\":1,\"setup_error\":0,\"thread_error\":0}\n\nINSTRUMENTATION_RESULT: sdk=37\nINSTRUMENTATION_RESULT: uid=10152\nINSTRUMENTATION_CODE: -1\n",
+  "all_package_identities_preserved": true,
+  "ok": true,
+  "finished_utc": "2026-11-04T12:37:05.546598+00:00"
+}

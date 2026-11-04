@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "candidate": "owned-arm64-signal-probe-r2",
+  "frozen_utc": "2026-11-04T12:42:45.548616+00:00",
+  "package": "org.droidloom.signalprobe",
+  "version_code": 1,
+  "target_sdk": 33,
+  "debuggable": false,
+  "test_only": true,
+  "aggregate_sha256": "d836694684ae34296ebea65914251203f284381124b79a132919abff563a2ecc",
+  "validation": {
+    "manifest_static": "PASS",
+    "source_peer_review": "r1 review retained; r2 exact minimal Runnable-only diff verified",
+    "android_build": "R2_ROOT_PENDING; r1 native passed, r1 Java failed on missing LambdaMetafactory",
+    "android_execution": "NOT_RUN_BY_THIS_AGENT"
+  },
+  "files": [
+    {
+      "path": "AndroidManifest.xml",
+      "bytes": 773,
+      "sha256": "f55e83dc6483b81ed5262cfaccb7120206e546f457cec9febdcf2dd094c11c28"
+    },
+    {
+      "path": "README.md",
+      "bytes": 10371,
+      "sha256": "aed504a01e4c8c46bbc7aa62e888018960794020689db6ec99f831979eba357d"
+    },
+    {
+      "path": "java/org/droidloom/signalprobe/SignalProbeInstrumentation.java",
+      "bytes": 10860,
+      "sha256": "e70f08614147e7c6539f84f9f553f93068f4de6f4785fa005c313528378adda4"
+    },
+    {
+      "path": "native/probe_abi.h",
+      "bytes": 2037,
+      "sha256": "c445f923888768d4e688c2761f578575b253429dd62279a14237dc0f2de2f589"
+    },
+    {
+      "path": "native/probe_arm64.S",
+      "bytes": 1787,
+      "sha256": "5f4cb56e646194e8d1c6255d28f41c9a870df119d83b7138c6f6954369f84544"
+    },
+    {
+      "path": "native/signal_probe.c",
+      "bytes": 25592,
+      "sha256": "83f69385750cbc80d111eb951ce2fdfa881d304cae3ce44aac330cea42cdf1a7"
+    }
+  ],
+  "predecessor": {
+    "candidate": "owned-arm64-signal-probe-r1",
+    "source_pins_sha256": "694854d984023c75beff6a5ff7fd88a07938e302fd671052ed0bcba4a5c83611",
+    "source_snapshot": "/workspace/scratch/94990735b266/signal-probe-r1-frozen",
+    "build_report": "/workspace/scratch/94990735b266/signal-probe-r1-build-report.json"
+  },
+  "change": "Replace only Java watchdog lambda with explicit Runnable; same native, manifest and interfaces.",
+  "aggregate_format": "SHA256 of UTF-8 concatenation: sha256 + two spaces + path + newline, in files array order"
+}
