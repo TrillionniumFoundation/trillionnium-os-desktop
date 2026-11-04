@@ -177,6 +177,15 @@ is adopted or signalled. The dedicated bind is normally unmounted only after
 owned resources close; a busy mount remains visible and is never force/lazily
 detached. Product data is never recursively deleted by this entry.
 
+The recovery preparation guard keeps its exclusive kernel lock until its last
+owner, including mount cleanup, drops. It explicitly unlocks its private file
+description at that point: a concurrent fork can otherwise retain the same
+description until exec despite CLOEXEC. Late closure of such an inherited
+descriptor cannot unlock the successor's separately opened description. The
+real-file regression checks both lifetimes without timing retries; the existing
+Arc ownership test still requires exclusion until cleanup releases its guard.
+This does not change admission, the consumed-spawn marker, or recovery authority.
+
 A Session or native Notes app may have local drafts. Existing user sessions,
 services, model transport and displays are not stopped. The entry refuses an
 existing Session socket; it does not use Root privileges to remove arbitrary
