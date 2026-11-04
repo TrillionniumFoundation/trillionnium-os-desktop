@@ -960,7 +960,7 @@
       "apps": [
         "Meituan Takeout"
       ],
-      "flow": "Public merchant/item search, matching merchant menu, return with state preserved."
+      "flow": "Diagnose the explicit System.exit(0) startup loop from preserved evidence, then verify public merchant/item search, matching menu/details and return. No cause is inferred from adjacent logs."
     },
     {
       "apps": [
@@ -1103,7 +1103,7 @@
     },
     "actual_main_integration": "lmkd/evidence/r5-build/main-integration-summary.json"
   },
-  "updated_at_utc": "2026-11-04T10:27:59.851463+00:00",
+  "updated_at_utc": "2026-11-04T11:15:32.824758+00:00",
   "main_activation": {
     "schema": "pocket4-main-activation-public-summary-v1",
     "evidence_basis": "Parent actual verification stdout, authoritative rc0 status, and read-only saved-after review; publication agent inspected cached records, not complete private after JSON.",
@@ -1165,6 +1165,16 @@
       "evidence": "evidence/business-beike-20261104.json",
       "query_suggestions_verified": true,
       "listing_details_verified": false
+    },
+    {
+      "app": "Meituan Takeout",
+      "package": "com.sankuai.meituan.takeoutnew",
+      "status": "FAIL_STARTUP_EXIT_SELF_LOOP",
+      "production_ready": false,
+      "evidence": "evidence/business-meituan-20261104.json",
+      "startup_main_process_self_exit_zero": true,
+      "merchant_query_attempted": false,
+      "normal_owned_close_verified": true
     }
   ],
   "current_business_flow_runtime": {

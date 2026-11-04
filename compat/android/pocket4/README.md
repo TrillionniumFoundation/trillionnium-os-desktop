@@ -1,6 +1,6 @@
 # Pocket4 Android application repair snapshot
 
-Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, and Beike reaches a blank login router. LMKD integration remains unqualified.
+Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. LMKD integration remains unqualified.
 
 This directory preserves repair source and dated evidence for Android 17 in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on this repository's Asterinas kernel.
 
@@ -18,13 +18,14 @@ The [LMKD bundle](lmkd/README.md) reconstructs r3/r4/r5 sources, includes scoped
 
 ## Current business observations
 
-All three records are bound to the verified post-activation framework epoch. [Business acceptance](acceptance/business-flows/README.md) separates completed subflows from untested behavior.
+All four records are bound to the verified post-activation framework epoch. [Business acceptance](acceptance/business-flows/README.md) separates completed subflows from untested behavior.
 
 | App | Current evidence | Remaining gate |
 | --- | --- | --- |
 | Bilibili | Public Unicode search, matching video, three visually inspected frames showing content progression, actual R16 mapping and normal owned-task close. | Audio, pause/seek, in-app back, reopen and broader App behavior remain untested. |
 | Marriott | Fresh exact-App SIGSEGV during the single launch; no completed task receipt. | Launch and all business behavior remain failed/unqualified; the original unknown launch result is retained. |
 | Beike | Exact Chinese query and matching suggestions passed. Selecting the region automatically entered login; an App-originated second login intent removed LoginActivity and left OneLoginRouterActivity blank. | Listing results/details/return are blocked. No login was performed; the reason for the repeated login route is unresolved. |
+| Meituan Takeout | One native launch, actual R16 mapping and normal owned-task close were verified. Saved logs explicitly record repeated System.exit(0), with matching EXIT_SELF/0 exit records while the startup task persisted. | Merchant search and menu/details were never reached. The exit caller/trigger and replacement-process start authority are unresolved; no native-signal or pressure cause is inferred. |
 
 ## Acceptance scope
 

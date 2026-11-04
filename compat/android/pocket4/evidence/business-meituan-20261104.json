@@ -1,0 +1,168 @@
+{
+  "schema": "pocket4-business-flow-public-summary-v1",
+  "app": "Meituan Takeout",
+  "package": "com.sankuai.meituan.takeoutnew",
+  "flow": "r10/business-flows/meituan-01",
+  "evidence_date_utc": "2026-11-04",
+  "status": "FAIL_STARTUP_EXIT_SELF_LOOP",
+  "production_ready": false,
+  "runtime_binding": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "evidence_basis": "The publication/App evidence agent executed the single-launch same-epoch flow and read its original saved helper, exit-info and App-UID logs. Only deidentified conclusions and original hashes are distributed.",
+  "native_launch": {
+    "count": 1,
+    "verified": true,
+    "at_utc": "2026-11-04T11:06:32.604203+00:00",
+    "receipt_sha256": "911092fd3af8f7fe72437f31ba05495dbd8fd2da82b334ac9e5286769d6d26cf",
+    "native_stdout_sha256": "69787eeb3f2b0492085e7c4eef9791e79729e2aaf6eacf6c63c3d5a4834da81f",
+    "new_task_ownership_established": true,
+    "automatic_retry": false
+  },
+  "business": {
+    "merchant_query_attempted": false,
+    "merchant_results_verified": false,
+    "menu_or_item_detail_verified": false,
+    "in_app_return_verified": false,
+    "reopen_verified": false,
+    "ui_click_count": 0,
+    "ui_set_text_count": 0,
+    "order_or_cart_action": false,
+    "authentication_performed": false
+  },
+  "observations": [
+    {
+      "step": "02-home-dump",
+      "at_utc": "2026-11-04T11:07:33.701572+00:00",
+      "ok": true,
+      "visible_nodes": 20,
+      "merchant_controls_observed": false,
+      "description": "The only extracted actionable candidate was a generic WebView. No merchant/query controls were available.",
+      "stdout_sha256": "f0b7088b1c3dd1dd0ac73ed1aae7c57eb9c1ce7e5e026996206015a451b563da",
+      "receipt_sha256": "8c96a793520baa7776c62d40a67e806006f96163e984d68641f35e07f0bdfff0"
+    },
+    {
+      "step": "03-home-observe",
+      "at_utc": "2026-11-04T11:08:17.269128+00:00",
+      "ok": false,
+      "helper_returncode": 1,
+      "timed_out": false,
+      "helper_error": "WINDOW_CHANGED",
+      "action_attempted": false,
+      "outcome_unknown": false,
+      "png_produced": false,
+      "stderr_sha256": "ae71effb89cac542b314883bc17b3bbad3f5c5051f9e575c55d4227cca2b18d4",
+      "command_receipt_sha256": "50e3ca1817476421770a3470f700216e11ba0602c5368f4c8d056be836adc098",
+      "step_receipt_sha256": "1d899f684d015fd058645f651c52506fc6185dc81a7d642ad4dc0ab0e0f9311d"
+    },
+    {
+      "step": "04-after-transition-dump",
+      "at_utc": "2026-11-04T11:09:42.664534+00:00",
+      "ok": true,
+      "visible_nodes": 5,
+      "meaningful_controls": 0,
+      "stdout_sha256": "d2a25854883fec4820fb85615e479a91b0dc840855dbf1d93e8b3cffe6a549cc",
+      "receipt_sha256": "819f862372f4833676b17b5e9ae0a30bc5616180831a7a4b6076c7bae7110f5f"
+    }
+  ],
+  "startup_failure": {
+    "top_activity_in_saved_task_records": "com.sankuai.meituan.takeoutnew.ui.page.boot.SplashAdActivity",
+    "exact_main_process_exit_records": [
+      {
+        "at_utc": "2026-11-04T11:11:40.620Z",
+        "reason": "EXIT_SELF",
+        "reason_code": 1,
+        "status": 0
+      },
+      {
+        "at_utc": "2026-11-04T11:11:46.295Z",
+        "reason": "EXIT_SELF",
+        "reason_code": 1,
+        "status": 0
+      },
+      {
+        "at_utc": "2026-11-04T11:11:52.001Z",
+        "reason": "EXIT_SELF",
+        "reason_code": 1,
+        "status": 0
+      },
+      {
+        "at_utc": "2026-11-04T11:11:57.709Z",
+        "reason": "EXIT_SELF",
+        "reason_code": 1,
+        "status": 0
+      },
+      {
+        "at_utc": "2026-11-04T11:12:03.508Z",
+        "reason": "EXIT_SELF",
+        "reason_code": 1,
+        "status": 0
+      }
+    ],
+    "exit_record_count_is_complete_for_entire_flow": false,
+    "app_log_system_exit_zero_at_utc": [
+      "2026-11-04T11:11:51.954Z",
+      "2026-11-04T11:11:57.654Z",
+      "2026-11-04T11:12:03.451Z"
+    ],
+    "log_interpretation": "Each inspected main-process context explicitly records System.exit with status 0 followed by AndroidRuntime VM exit with result code 0. The corresponding exit-info records report self-exit, not a fatal signal.",
+    "repeated_process_appearance_origin": "Multiple distinct main processes appeared while the same foreground startup task persisted. The exact authority/caller starting each replacement process has not been independently established.",
+    "exit_caller_or_trigger": "Not established. Adjacent Bluetooth service, Chromium paint-metric and App configuration messages are not causal proof.",
+    "explicit_external_native_launches_by_this_flow": 1,
+    "framework_epoch_preserved": true
+  },
+  "actual_engine_mapping": {
+    "verified": true,
+    "at_utc": "2026-11-04T11:11:00.526784+00:00",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "receipt_sha256": "86e9d8e13662225ec26ec6066f5b2d0a3414b1688f2cb970fdbfc7e28c770315",
+    "mapping_identity_checks": "Frozen recorder verified live App identity, exact ELF bytes and mapped device/inode before and after the read."
+  },
+  "diagnostics": {
+    "captured_before_close": true,
+    "capture_ended_at_utc": "2026-11-04T11:12:05.719648+00:00",
+    "exit_info_original_sha256": "bcc6c1edb9c9a45cd282556d4b74549c84fc9aef566f9fdf01aab0df69a6d4fc",
+    "exit_info_bytes": 6376,
+    "app_uid_log_original_sha256": "ba2c4bf097c73779f1e8270a355b49f09f19f55104bfb3cc9ff8f32cc0bcd600",
+    "app_uid_log_bytes": 1338500,
+    "archive_only_context_review_sha256": "1983259affcdc93027eda99dfe174006d8992f37d0a61746787bd4a77a656b2a",
+    "archive_context_review_at_utc": "2026-11-04T11:15:32.824758+00:00",
+    "raw_logs_published": false
+  },
+  "normal_close": {
+    "at_utc": "2026-11-04T11:12:53.671865+00:00",
+    "receipt_sha256": "956987ccac2456080fb23a1bd9a11de3ba321d1b28d10081d014b5451746cd7e",
+    "new_owned_leaf_removed": true,
+    "other_tasks_preserved": true,
+    "only_preexisting_home_remained": true,
+    "outcome_unknown": false,
+    "automatic_retry": false
+  },
+  "recorded_resource_observations": {
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "original_memory_high_bytes": 5368709120,
+    "original_memory_max_bytes": 6442450944,
+    "memory_current_after_launch_bytes": 5363142656,
+    "memory_current_after_close_bytes": 4556607488,
+    "full_psi_avg10_at_samples": 0,
+    "memory_high_events_before_launch": 10100,
+    "memory_high_events_after_close": 10403,
+    "continuous_monitoring": false,
+    "limits_changed": false,
+    "pressure_causality_inferred": false
+  },
+  "images_or_raw_ui_published": false,
+  "claim_limits": [
+    "The failed observation did not produce a screenshot. No visual white-page claim is made from the accessibility dumps alone.",
+    "The flow never reached merchant search or menu details; launch and engine mapping do not qualify business behavior.",
+    "The self-exit trigger and replacement-process start authority remain unresolved. No memory-pressure, native-translation, WebView or App-protection cause is inferred from nearby messages.",
+    "One native launch and one normal owned-task removal were issued. No UI click, set-text, login, purchase, clear-data, force-stop or global task removal was performed."
+  ]
+}
