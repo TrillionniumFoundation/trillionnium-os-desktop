@@ -218,3 +218,11 @@ python3 -B -m unittest discover \
 Parser fixtures explicitly remain inert. Bounded-I/O tests execute harmless
 local subprocesses and the real ext2 formatter on new temporary files. A green
 host suite is not a substitute for the source-bound QEMU executions above.
+
+## Separate exact original-owner image experiment
+
+The default commands in this runbook retain the original `g2-trusted-daemon`
+8 MiB / 16 MiB image profile. The separately versioned, fixed-a39 experiment is
+documented in [ORIGINAL_OWNER_IMAGE_PROFILE.md](ORIGINAL_OWNER_IMAGE_PROFILE.md).
+It requires explicit selectors and new source/build/kernel/runtime schemas;
+none of its results can be credited to the legacy profile.
