@@ -1,0 +1,726 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -3,9 +3,10 @@
+ //! Reference-source candidate, not an installed supervisor patch.
+ //!
+ //! This module authenticates one accepted Unix peer against lifecycle-owned
+-//! handles and retains a revocable notification capability. It does not open
+-//! memory.pressure, register a trigger, choose a victim or signal a process.
+-//! The PSI worker and the Android enrollment client remain integration work.
++//! handles and retains a revocable notification capability. Optional monitors
++//! register only the exact held cgroup; no victim is chosen or signaled here.
++//! The optional PSI registrar/worker is in psi.rs. Android enrollment remains
++//! integration work, and no Main/source deployment is included.
+ #![deny(unsafe_op_in_unsafe_fn)]
+ 
+ use sha2::{Digest, Sha256};
+@@ -21,6 +22,9 @@
+ use std::sync::{Arc, Mutex, MutexGuard};
+ use std::thread::{self, JoinHandle};
+ use std::time::{Duration, Instant};
++
++mod psi;
++pub use psi::{PressureConfig, PressureLevel, RegisteredLease, ScopeRequest, WorkerDiagnostics};
+ 
+ const CGROUP2_MAGIC: libc::c_long = 0x6367_7270;
+ const PROC_MAGIC: libc::c_long = 0x9fa0;
+@@ -593,11 +597,11 @@
+ }
+ 
+ /// Actual generation owner plus independent, bounded-poll revocation worker.
+-/// There is still no PSI registration, pressure producer or Android grant codec.
++/// The optional PSI monitors share this worker; no Android grant codec exists.
+ /// Explicit retirement must complete before lifecycle may replace a cell.
+ pub struct LeaseOwner {
+     peer: Option<Arc<VerifiedPeer>>, generation: [u8; 32], state: Arc<LeaseState>,
+-    cancel: OwnedFd, worker: Option<JoinHandle<()>>,
++    cancel: OwnedFd, worker: Option<JoinHandle<()>>, counters: Arc<psi::Counters>, slots_sealed: bool,
+ }
+ impl LeaseOwner {
+     pub fn new(peer: VerifiedPeer, host: Arc<HostContext>, authority: Arc<CellAuthority>) -> Result<Self> {
+@@ -605,42 +609,37 @@
+         let mut generation = [0u8; 32];
+         let got = unsafe { libc::getrandom(generation.as_mut_ptr().cast(), generation.len(), 0) };
+         if got != generation.len() as isize || generation.iter().all(|b| *b == 0) { return Err(err("fresh process lease nonce")); }
++        Self::start_with_monitors(peer, host, authority, generation, Vec::new(), Vec::with_capacity(2))
++    }
++    fn start_with_monitors(peer: VerifiedPeer, host: Arc<HostContext>, authority: Arc<CellAuthority>,
++        generation: [u8; 32], monitors: Vec<psi::WorkerMonitor>, send_ends: Vec<OwnedFd>) -> Result<Self> {
++        peer.revalidate(&host, &authority)?;
++        let slots_sealed = !monitors.is_empty();
+         let raw_cancel = unsafe { libc::eventfd(0, libc::EFD_CLOEXEC | libc::EFD_NONBLOCK) };
+         if raw_cancel < 0 { return Err(err("create owned cancellation fd")); }
+         let cancel = unsafe { OwnedFd::from_raw_fd(raw_cancel) };
+         let worker_cancel = duplicate(cancel.as_raw_fd())?;
+-        let state = Arc::new(LeaseState { active: AtomicBool::new(true), send_ends: Mutex::new(Vec::with_capacity(2)) });
++        let state = Arc::new(LeaseState { active: AtomicBool::new(true), send_ends: Mutex::new(send_ends) });
++        let counters = Arc::new(psi::Counters::default());
++        let worker_counters = Arc::clone(&counters);
+         let peer = Arc::new(peer);
+         let worker_peer = Arc::clone(&peer);
+         let worker_state = Arc::clone(&state);
+         let worker = thread::Builder::new().name("p4-psi-lease".into()).spawn(move || {
+-            // No lifecycle CLI lock is acquired here. These are only retained
+-            // process/control/cancellation descriptors, never pressure FDs.
+-            let mut poll = [
+-                libc::pollfd { fd: worker_cancel.as_raw_fd(), events: libc::POLLIN, revents: 0 },
+-                libc::pollfd { fd: worker_peer.pin.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 },
+-                libc::pollfd { fd: authority.owner.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 },
+-                libc::pollfd { fd: authority.init.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 },
+-                libc::pollfd { fd: worker_peer.connection.socket.as_raw_fd(), events: libc::POLLIN | libc::POLLRDHUP, revents: 0 },
+-            ];
+-            loop {
+-                if !worker_state.active.load(Ordering::Acquire) || worker_peer.revalidate(&host, &authority).is_err() { break; }
+-                for p in &mut poll { p.revents = 0; }
+-                // Liveness cadence only; this is not a new PSI policy window.
+-                // Kernel metadata I/O can stall, so retirement requires an
+-                // actual thread-completion receipt, not merely this timeout.
+-                let count = unsafe { libc::poll(poll.as_mut_ptr(), poll.len() as libc::nfds_t, 100) };
+-                if count < 0 || poll.iter().any(|p| p.revents != 0) { break; }
+-            }
++            // One worker owns both identity/liveness and actual PSI monitors.
++            // No lifecycle CLI lock is acquired and no victim is selected here.
++            psi::run_worker(&worker_peer, &host, &authority, generation,
++                &worker_cancel, &worker_state, &worker_counters, monitors);
+             worker_state.revoke();
+         }).map_err(|e| io_err("spawn owned revocation worker", e))?;
+-        Ok(Self { peer: Some(peer), generation, state, cancel, worker: Some(worker) })
+-    }
++        Ok(Self { peer: Some(peer), generation, state, cancel, worker: Some(worker), counters, slots_sealed })
++    }
++    pub fn diagnostics(&self) -> WorkerDiagnostics { self.counters.snapshot() }
+     pub fn generation(&self) -> [u8; 32] { if self.is_retired() { [0; 32] } else { self.generation } }
+     /// Return only the permanently read-only recipient capability. The owner
+     /// retains both the sole sender and the authority to shutdown all aliases.
+     pub fn prepare_recipient(&mut self, host: &HostContext, authority: &CellAuthority) -> Result<OwnedFd> {
+-        if self.is_retired() { self.retire(); return Err(Error::Reject("inactive lease")); }
++        if self.is_retired() || self.slots_sealed { self.retire(); return Err(Error::Reject("inactive or sealed lease")); }
+         if let Err(e) = self.refresh(host, authority) { self.retire(); return Err(e); }
+         let mut pair = [-1; 2];
+         if unsafe { libc::socketpair(libc::AF_UNIX, libc::SOCK_SEQPACKET | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC, 0, pair.as_mut_ptr()) } < 0 { self.retire(); return Err(err("prepare notification socketpair")); }
+--- a/src/bin/owned_ipc_controls.rs
++++ b/src/bin/owned_ipc_controls.rs
+@@ -125,6 +125,14 @@
+         let mut cmd = Command::new(std::env::current_exe()?);
+         cmd.arg("--peer").arg(path);
+         if let Some(source) = projection { cmd.arg(source); }
++        Self::spawn_command(cmd)
++    }
++    fn spawn_psi(path: &Path, target: &Path) -> TestResult<Self> {
++        let mut cmd = Command::new(std::env::current_exe()?);
++        cmd.arg("--psi-peer").arg(path).arg(target);
++        Self::spawn_command(cmd)
++    }
++    fn spawn_command(mut cmd: Command) -> TestResult<Self> {
+         let mut process = cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::inherit()).spawn()?;
+         let output = BufReader::new(process.stdout.take().ok_or("missing owned stdout")?);
+         let mut child = Self { process, output };
+@@ -166,6 +174,9 @@
+     }
+ }
+ fn authority(host: &HostContext, peer: &mut PeerChild, uid: u32, gid: u32, wrong_exe: bool, wrong_ns: bool) -> TestResult<CellAuthority> {
++    authority_with_root(host, peer, uid, gid, wrong_exe, wrong_ns, host.owned_self_cgroup()?)
++}
++fn authority_with_root(host: &HostContext, peer: &mut PeerChild, uid: u32, gid: u32, wrong_exe: bool, wrong_ns: bool, root: std::fs::File) -> TestResult<CellAuthority> {
+     let peer_pin = host.pin_owned_child(&mut peer.process)?;
+     let namespaces = if wrong_ns { host.pin_self()?.namespace_pins()? } else { peer_pin.namespace_pins()? };
+     // Resolve this fixed host test fixture, then still open the resolved file
+@@ -175,7 +186,7 @@
+     let sha = ExecutablePin::hash_file_for_receipt(&file)?;
+     let executable = ExecutablePin::from_lifecycle(file, sha)?;
+     let role = RolePolicy { uid, gid, namespaces, executable };
+-    Ok(CellAuthority::from_lifecycle(host.owned_self_cgroup()?, host.pin_self()?, host.pin_self()?, role)?)
++    Ok(CellAuthority::from_lifecycle(root, host.pin_self()?, host.pin_self()?, role)?)
+ }
+ fn rejected(result: Result<VerifiedPeer>, expected: &str) -> TestResult<()> {
+     match result {
+@@ -315,12 +326,120 @@
+     println!("RESULT PASS mode={}", if private_projection { "private-host-mount-only" } else { "host-negative-controls" });
+     Ok(())
+ }
++fn psi_peer(path: &Path, target: &Path) -> TestResult<()> {
++    checked(unsafe { libc::geteuid() } == 0, "owned PSI namespace control requires root")?;
++    let parent = unsafe { libc::getppid() };
++    checked(parent > 1, "missing PSI test parent")?;
++    if unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) } < 0 { return Err(io::Error::last_os_error().into()); }
++    checked(unsafe { libc::getppid() } == parent, "PSI parent changed")?;
++    fs::write(target.join("cgroup.procs"), format!("{}\n", std::process::id()))?;
++    let old_ns = fs::metadata("/proc/self/ns/cgroup")?;
++    if unsafe { libc::unshare(libc::CLONE_NEWCGROUP) } < 0 { return Err(io::Error::last_os_error().into()); }
++    checked(fs::metadata("/proc/self/ns/cgroup")?.ino() != old_ns.ino(), "cgroup namespace did not change")?;
++    checked(fs::read_to_string("/proc/self/cgroup")? == "0::/\n", "owned target is not namespace root")?;
++    // Open after entering the new cgroup namespace, before the read-only bind.
++    // This proves the nsdelegate write gate rather than merely EROFS.
++    let pressure = OpenOptions::new().read(true).write(true).custom_flags(libc::O_NONBLOCK | libc::O_NOFOLLOW | libc::O_CLOEXEC).open(target.join("memory.pressure"))?;
++    let trigger = b"full 70000 1000000";
++    let written = unsafe { libc::write(pressure.as_raw_fd(), trigger.as_ptr().cast(), trigger.len()) };
++    checked(written == -1 && io::Error::last_os_error().raw_os_error() == Some(libc::EPERM), "noninitial namespace root registration did not fail EPERM")?;
++    drop(pressure);
++    eprintln!("NAMESPACE_ROOT_PROOF new_cgroup_ns=true membership_root=true pressure_open_after_unshare=true write_errno=EPERM");
++    child(path, Some(target))
++}
++fn pressure_fd_count(target: &Path) -> TestResult<usize> {
++    let exact = target.join("memory.pressure");
++    let mut count = 0;
++    for entry in fs::read_dir("/proc/self/fd")? {
++        if fs::read_link(entry?.path()).is_ok_and(|p| p == exact) { count += 1; }
++    }
++    Ok(count)
++}
++fn psi_suite(target: &Path, parent: &Path, sibling: &Path) -> TestResult<()> {
++    checked(unsafe { libc::geteuid() } == 0, "PSI suite requires owned root fixture")?;
++    let host = Arc::new(HostContext::open()?);
++    let uid = unsafe { libc::geteuid() }; let gid = unsafe { libc::getegid() };
++    let tmp = std::env::temp_dir().join(format!("p4-psi-register-{}", std::process::id()));
++    fs::create_dir(&tmp)?; fs::set_permissions(&tmp, fs::Permissions::from_mode(0o700))?;
++    let path = tmp.join("enroll.sock");
++    let root_open = || OpenOptions::new().read(true).custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC).open(target);
++    let configs = [
++        PressureConfig { level: PressureLevel::Medium, window_us: 1_000_000, stall_us: 70_000 },
++        PressureConfig { level: PressureLevel::Critical, window_us: 1_000_000, stall_us: 70_000 },
++    ];
++    let before_fds = fd_count()?;
++    {
++        let listener = Listener::bind(&path)?;
++        for mode in ["parent", "sibling", "old-generation", "wrong-budget"] {
++            let mut peer = PeerChild::spawn_psi(&path, target)?;
++            let authority = Arc::new(authority_with_root(&host, &mut peer, uid, gid, false, false, root_open()?)?);
++            let verified = host.authenticate(accept(&listener)?, &authority)?;
++            let mut request = authority.scope_request();
++            match mode {
++                "parent" | "sibling" => {
++                    let m = fs::metadata(if mode == "parent" { parent } else { sibling })?;
++                    let different = FileId { device: m.dev(), inode: m.ino() };
++                    checked(different != request.cgroup, "scope negative is not a different real cgroup")?;
++                    request.cgroup = different;
++                },
++                "old-generation" => request.authority_generation[0] ^= 1,
++                "wrong-budget" => request.budget[0] ^= 1,
++                _ => unreachable!(),
++            }
++            match LeaseOwner::register(verified, Arc::clone(&host), Arc::clone(&authority), request, &configs) {
++                Ok(_) => return Err("wrong scope registered a PSI lease".into()),
++                Err(e) => checked(e.to_string().contains("requested scope is not the held cell generation"), "unexpected wrong-scope failure")?,
++            }
++            checked(pressure_fd_count(target)? == 0, "rejected request opened or leaked a pressure fd")?;
++            peer.finish()?;
++            emit(&format!("real held target rejects {mode} scope before pressure open"));
++        }
++        for mode in ["explicit-retire", "peer-exit", "generation-change", "sealed-slots"] {
++            let mut peer = PeerChild::spawn_psi(&path, target)?;
++            let authority = Arc::new(authority_with_root(&host, &mut peer, uid, gid, false, false, root_open()?)?);
++            let verified = host.authenticate(accept(&listener)?, &authority)?;
++            let mut lease = LeaseOwner::register(verified, Arc::clone(&host), Arc::clone(&authority), authority.scope_request(), &configs)?;
++            checked(lease.configs == configs && pressure_fd_count(target)? == 2, "real monitor count or exact configuration differs")?;
++            let duplicate_recipient = duplicate(&lease.recipients[0])?;
++            std::thread::sleep(Duration::from_millis(250));
++            let d = lease.owner.diagnostics();
++            checked(!lease.owner.is_retired() && d.observations == 0 && d.packets_queued == 0 && d.stop_reason == 0, "quiet real PSI lease is not live and quiet")?;
++            for fd in &lease.recipients {
++                let mut p = libc::pollfd { fd: fd.as_raw_fd(), events: libc::POLLIN | libc::POLLRDHUP, revents: 0 };
++                checked(unsafe { libc::poll(&mut p, 1, 0) } == 0 && p.revents == 0, "quiet kernel trigger synthesized data or closure")?;
++            }
++            match mode {
++                "explicit-retire" => lease.owner.retire(),
++                "peer-exit" => { peer.finish()?; wait_hup(&lease.recipients[0])?; checked(lease.owner.is_retired(), "PSI peer death did not automatically retire")?; },
++                "generation-change" => {
++                    let replacement = authority_with_root(&host, &mut peer, uid, gid, false, false, root_open()?)?;
++                    checked(lease.owner.refresh(&host, &replacement).is_err(), "old PSI generation survived replacement")?;
++                },
++                "sealed-slots" => checked(lease.owner.prepare_recipient(&host, &authority).is_err(), "registered monitor set was mutable")?,
++                _ => unreachable!(),
++            }
++            checked(lease.owner.finish_retirement(Duration::from_secs(2))?, "real PSI worker failed retirement")?;
++            checked(pressure_fd_count(target)? == 0, "real PSI fd survived worker completion")?;
++            checked(lease.recipients.iter().all(|fd| endpoint_hup(fd).unwrap_or(false)) && endpoint_hup(&duplicate_recipient)?, "real PSI lease aliases not revoked")?;
++            if mode != "peer-exit" { peer.finish()?; }
++            emit(&format!("real exact-cgroup PSI registration, quiet poll and complete revoke: {mode}"));
++        }
++    }
++    checked(fd_count()? == before_fds && pressure_fd_count(target)? == 0, "PSI suite leaked descriptors")?;
++    checked(!path.exists(), "PSI socket not removed")?;
++    fs::remove_dir(&tmp)?;
++    emit("PSI descriptors and notification aliases closed; workers joined; owned peers reaped; socket removed");
++    println!("RESULT PASS mode=real-psi-registration-without-pressure");
++    Ok(())
++}
+ fn main() {
+     let args: Vec<_> = std::env::args_os().collect();
+     let result = if args.get(1).is_some_and(|s| s == "--peer") {
+         if args.len() < 3 || args.len() > 4 { Err("invalid peer arguments".into()) }
+         else { child(Path::new(&args[2]), args.get(3).map(Path::new)) }
+-    } else if args.len() == 1 { test_run(false) }
++    } else if args.len() == 4 && args[1] == "--psi-peer" { psi_peer(Path::new(&args[2]), Path::new(&args[3])) }
++    else if args.len() == 5 && args[1] == "--psi-suite" { psi_suite(Path::new(&args[2]), Path::new(&args[3]), Path::new(&args[4])) }
++    else if args.len() == 1 { test_run(false) }
+     else if args.len() == 2 && args[1] == "--private-projection" { test_run(true) }
+     else { Err("unsupported control arguments".into()) };
+     if let Err(error) = result { eprintln!("RESULT FAIL: {error}"); std::process::exit(2); }
+--- /dev/null
++++ b/src/psi.rs
+@@ -0,0 +1,210 @@
++// Copyright 2026 Droidloom contributors
++// SPDX-License-Identifier: Apache-2.0
++use super::*;
++use std::sync::atomic::{AtomicU32, AtomicU64};
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum PressureLevel { Medium, Critical }
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct PressureConfig { pub level: PressureLevel, pub window_us: u64, pub stall_us: u64 }
++impl PressureConfig {
++    fn validate(self) -> Result<()> {
++        if !(500_000..=10_000_000).contains(&self.window_us) || self.stall_us == 0 || self.stall_us > self.window_us {
++            return Err(Error::Reject("invalid existing PSI monitor parameters"));
++        }
++        Ok(())
++    }
++    pub fn exact_trigger(self) -> Result<String> {
++        self.validate()?;
++        Ok(format!("{} {} {}", match self.level { PressureLevel::Medium => "some", PressureLevel::Critical => "full" }, self.stall_us, self.window_us))
++    }
++}
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct ScopeRequest { pub cgroup: FileId, pub budget: [u8; 32], pub authority_generation: [u8; 32] }
++impl CellAuthority {
++    pub fn scope_request(&self) -> ScopeRequest {
++        ScopeRequest { cgroup: self.root_id, budget: self.budget.canonical(), authority_generation: self.generation }
++    }
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct WorkerDiagnostics { pub observations: u64, pub packets_queued: u64, pub stop_reason: u32 }
++#[derive(Default)]
++pub(super) struct Counters { observations: AtomicU64, queued: AtomicU64, reason: AtomicU32 }
++impl Counters {
++    pub(super) fn snapshot(&self) -> WorkerDiagnostics {
++        WorkerDiagnostics { observations: self.observations.load(Ordering::Acquire), packets_queued: self.queued.load(Ordering::Acquire), stop_reason: self.reason.load(Ordering::Acquire) }
++    }
++    fn stop(&self, reason: u32) { let _ = self.reason.compare_exchange(0, reason, Ordering::AcqRel, Ordering::Acquire); }
++}
++pub(super) struct WorkerMonitor { pressure: File, sender: OwnedFd, config: PressureConfig, sequence: u64 }
++pub struct RegisteredLease { pub owner: LeaseOwner, pub recipients: Vec<OwnedFd>, pub configs: Vec<PressureConfig> }
++
++fn notification_pair() -> Result<(OwnedFd, OwnedFd)> {
++    let mut pair = [-1; 2];
++    if unsafe { libc::socketpair(libc::AF_UNIX, libc::SOCK_SEQPACKET | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC, 0, pair.as_mut_ptr()) } < 0 { return Err(err("PSI notification pair")); }
++    let sender = unsafe { OwnedFd::from_raw_fd(pair[0]) };
++    let recipient = unsafe { OwnedFd::from_raw_fd(pair[1]) };
++    let size: libc::c_int = 4096;
++    if unsafe { libc::setsockopt(sender.as_raw_fd(), libc::SOL_SOCKET, libc::SO_SNDBUF, (&size as *const libc::c_int).cast(), size_of::<libc::c_int>() as libc::socklen_t) } < 0 ||
++        socket_integer(sender.as_raw_fd(), libc::SO_SNDBUF)? > 8192 ||
++        unsafe { libc::shutdown(sender.as_raw_fd(), libc::SHUT_RD) } < 0 ||
++        unsafe { libc::shutdown(recipient.as_raw_fd(), libc::SHUT_WR) } < 0 {
++        return Err(Error::Reject("PSI notification capability setup failed"));
++    }
++    Ok((sender, recipient))
++}
++fn register_exact(authority: &CellAuthority, config: PressureConfig) -> Result<File> {
++    config.validate()?;
++    authority.validate()?;
++    let file = open_at(&authority.root, "memory.pressure", libc::O_RDWR | libc::O_NONBLOCK | libc::O_NOFOLLOW)?;
++    require_fs(&file, CGROUP2_MAGIC)?;
++    let id = FileId::of(&file)?;
++    if id.device != authority.root_id.device { return Err(Error::Reject("pressure file filesystem differs")); }
++    let trigger = config.exact_trigger()?;
++    let count = unsafe { libc::write(file.as_raw_fd(), trigger.as_ptr().cast(), trigger.len()) };
++    if count < 0 { return Err(err("register exact held cgroup PSI trigger")); }
++    if count as usize != trigger.len() { return Err(Error::Reject("short PSI registration write")); }
++    if FileId::of(&file)? != id { return Err(Error::Reject("pressure file identity changed")); }
++    authority.validate()?;
++    Ok(file)
++}
++impl LeaseOwner {
++    /// Scope and configuration fields may be echoed from a request, but none
++    /// supplies authority. Only the exact held authority can be registered.
++    /// Every partial resource is RAII-owned before the next fallible operation.
++    pub fn register(peer: VerifiedPeer, host: Arc<HostContext>, authority: Arc<CellAuthority>,
++        request: ScopeRequest, configs: &[PressureConfig]) -> Result<RegisteredLease> {
++        peer.revalidate(&host, &authority)?;
++        if request != authority.scope_request() { return Err(Error::Reject("requested scope is not the held cell generation")); }
++        if configs.is_empty() || configs.len() > 2 { return Err(Error::Reject("PSI monitor count outside bound")); }
++        for config in configs { config.validate()?; }
++        if configs.len() == 2 && configs[0].level == configs[1].level { return Err(Error::Reject("duplicate PSI level")); }
++        let mut generation = [0u8; 32];
++        let got = unsafe { libc::getrandom(generation.as_mut_ptr().cast(), generation.len(), 0) };
++        if got != generation.len() as isize || generation.iter().all(|b| *b == 0) { return Err(err("fresh registered lease nonce")); }
++        let mut monitors = Vec::with_capacity(configs.len());
++        let mut revokers = Vec::with_capacity(configs.len());
++        let mut recipients = Vec::with_capacity(configs.len());
++        for config in configs {
++            let pressure = register_exact(&authority, *config)?;
++            let (sender, recipient) = notification_pair()?;
++            revokers.push(duplicate(sender.as_raw_fd())?);
++            recipients.push(recipient);
++            monitors.push(WorkerMonitor { pressure, sender, config: *config, sequence: 0 });
++            peer.revalidate(&host, &authority)?;
++        }
++        let owner = Self::start_with_monitors(peer, host, authority, generation, monitors, revokers)?;
++        Ok(RegisteredLease { owner, recipients, configs: configs.to_vec() })
++    }
++}
++
++fn now_ns() -> Result<u64> {
++    let mut t: libc::timespec = unsafe { zeroed() };
++    if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut t) } != 0 || t.tv_sec < 0 || !(0..1_000_000_000).contains(&t.tv_nsec) {
++        return Err(Error::Reject("invalid monotonic clock"));
++    }
++    let value = (t.tv_sec as u64).checked_mul(1_000_000_000).and_then(|s| s.checked_add(t.tv_nsec as u64)).ok_or(Error::Reject("monotonic overflow"))?;
++    if value == 0 { return Err(Error::Reject("zero monotonic clock")); }
++    Ok(value)
++}
++fn put(frame: &mut [u8; 128], offset: usize, value: u64, bytes: usize) {
++    frame[offset..offset + bytes].copy_from_slice(&value.to_le_bytes()[..bytes]);
++}
++fn frame(authority: &CellAuthority, generation: [u8; 32], config: PressureConfig, sequence: u64, observed: u64) -> [u8; 128] {
++    let mut frame = [0u8; 128];
++    frame[..8].copy_from_slice(b"P4PSI01!"); put(&mut frame, 8, 1, 4);
++    put(&mut frame, 12, match config.level { PressureLevel::Medium => 1, PressureLevel::Critical => 2 }, 4);
++    frame[16..48].copy_from_slice(&generation);
++    put(&mut frame, 48, authority.root_id.device, 8); put(&mut frame, 56, authority.root_id.inode, 8);
++    frame[64..96].copy_from_slice(&authority.budget.canonical());
++    put(&mut frame, 96, config.window_us, 8); put(&mut frame, 104, config.stall_us, 8);
++    put(&mut frame, 112, sequence, 8); put(&mut frame, 120, observed, 8);
++    frame
++}
++fn elapsed_valid(now: u64, before: u64, window: Option<u64>) -> bool {
++    now >= before && window.is_none_or(|w| now - before < w)
++}
++
++pub(super) fn run_worker(peer: &VerifiedPeer, host: &HostContext, authority: &CellAuthority,
++    generation: [u8; 32], cancel: &OwnedFd, state: &LeaseState, counters: &Counters,
++    mut monitors: Vec<WorkerMonitor>) {
++    struct RevokeBeforeMonitorsDrop<'a>(&'a LeaseState);
++    impl Drop for RevokeBeforeMonitorsDrop<'_> { fn drop(&mut self) { self.0.revoke(); } }
++    // A local guard is dropped before function parameters, including monitors,
++    // on every return/unwind. Invalidate/shutdown before PSI release can stall.
++    let _revoke = RevokeBeforeMonitorsDrop(state);
++    // Stop reasons are bounded metadata: 1 cancellation, 2 process/control,
++    // 3 identity/budget, 4 clock/progress, 5 monitor error, 6 send/sequence.
++    let minimum_window = monitors.iter().map(|m| m.config.window_us * 1000).min();
++    let timeout_ms = minimum_window.map(|n| (n / 4 / 1_000_000).min(100) as libc::c_int).unwrap_or(100);
++    let mut poll = Vec::with_capacity(5 + monitors.len());
++    poll.extend([
++        libc::pollfd { fd: cancel.as_raw_fd(), events: libc::POLLIN, revents: 0 },
++        libc::pollfd { fd: peer.pin.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 },
++        libc::pollfd { fd: authority.owner.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 },
++        libc::pollfd { fd: authority.init.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 },
++        libc::pollfd { fd: peer.connection.socket.as_raw_fd(), events: libc::POLLIN | libc::POLLRDHUP, revents: 0 },
++    ]);
++    for m in &monitors { poll.push(libc::pollfd { fd: m.pressure.as_raw_fd(), events: libc::POLLPRI, revents: 0 }); }
++    let mut progress = match now_ns() { Ok(t) => t, Err(_) => { counters.stop(4); return; } };
++    loop {
++        if !state.active.load(Ordering::Acquire) { counters.stop(1); break; }
++        if peer.revalidate(host, authority).is_err() { counters.stop(3); break; }
++        let pre_poll = match now_ns() { Ok(t) if elapsed_valid(t, progress, minimum_window) => t, _ => { counters.stop(4); break; } };
++        for p in &mut poll { p.revents = 0; }
++        let n = unsafe { libc::poll(poll.as_mut_ptr(), poll.len() as libc::nfds_t, timeout_ms) };
++        let observed = match now_ns() { Ok(t) if elapsed_valid(t, progress, minimum_window) && t >= pre_poll => t, _ => { counters.stop(4); break; } };
++        if n < 0 { counters.stop(5); break; }
++        if poll[..5].iter().any(|p| p.revents != 0) { counters.stop(if poll[0].revents != 0 { 1 } else { 2 }); break; }
++        if poll[5..].iter().any(|p| p.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 || p.revents & !libc::POLLPRI != 0) { counters.stop(5); break; }
++        // PSI poll consumes an event bit. Never confirm it with another poll.
++        if poll[5..].iter().any(|p| p.revents & libc::POLLPRI != 0) {
++            if peer.revalidate(host, authority).is_err() { counters.stop(3); break; }
++            let mut failed = false;
++            for (i, monitor) in monitors.iter_mut().enumerate() {
++                if poll[i + 5].revents & libc::POLLPRI == 0 { continue; }
++                counters.observations.fetch_add(1, Ordering::AcqRel);
++                let before_send = match now_ns() {
++                    Ok(t) if elapsed_valid(t, progress, minimum_window) && elapsed_valid(t, observed, Some(monitor.config.window_us * 1000)) => t,
++                    _ => { counters.stop(4); failed = true; break; }
++                };
++                if !state.active.load(Ordering::Acquire) { counters.stop(1); failed = true; break; }
++                monitor.sequence = match monitor.sequence.checked_add(1) {
++                    Some(s) if s != u64::MAX => s,
++                    _ => { counters.stop(6); failed = true; break; }
++                };
++                let packet = frame(authority, generation, monitor.config, monitor.sequence, observed);
++                if unsafe { libc::send(monitor.sender.as_raw_fd(), packet.as_ptr().cast(), packet.len(), libc::MSG_DONTWAIT | libc::MSG_NOSIGNAL) } != packet.len() as isize {
++                    counters.stop(6); failed = true; break;
++                }
++                counters.queued.fetch_add(1, Ordering::AcqRel);
++                match now_ns() {
++                    Ok(t) if t >= before_send && elapsed_valid(t, progress, minimum_window) && elapsed_valid(t, observed, Some(monitor.config.window_us * 1000)) => {},
++                    _ => { counters.stop(4); failed = true; break; }
++                }
++            }
++            if failed { break; }
++        }
++        progress = match now_ns() { Ok(t) if elapsed_valid(t, progress, minimum_window) && t >= observed => t, _ => { counters.stop(4); break; } };
++    }
++    // The caller revokes every host sender alias. Dropping this vector also
++    // closes all real PSI descriptions before thread completion is observable.
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn exact_thresholds_and_bounded_progress_are_not_relaxed() {
++        let c = PressureConfig { level: PressureLevel::Critical, window_us: 1_000_000, stall_us: 70_000 };
++        assert_eq!(c.exact_trigger().unwrap(), "full 70000 1000000");
++        assert!(PressureConfig { window_us: 499_999, ..c }.validate().is_err());
++        assert!(PressureConfig { window_us: 10_000_001, ..c }.validate().is_err());
++        assert!(PressureConfig { stall_us: 0, ..c }.validate().is_err());
++        assert!(PressureConfig { stall_us: 1_000_001, ..c }.validate().is_err());
++        assert!(elapsed_valid(1_999_999_999, 1_000_000_000, Some(1_000_000_000)));
++        assert!(!elapsed_valid(2_000_000_000, 1_000_000_000, Some(1_000_000_000)));
++        assert!(!elapsed_valid(999_999_999, 1_000_000_000, Some(1_000_000_000)));
++    }
++}
+--- /dev/null
++++ b/owned_registration_fixture.py
+@@ -0,0 +1,252 @@
++#!/usr/bin/env python3
++# Copyright 2026 Droidloom contributors; SPDX-License-Identifier: Apache-2.0
++"""One admitted job's owned cgroup subtree; registration only, never pressure.
++
++This fixture is not a production service. Root is needed only for its exact
++job-owned hierarchy/mount-namespace controls. Unknown job members fail closed.
++"""
++import hashlib
++import json
++import os
++from pathlib import Path
++import select
++import subprocess
++import sys
++import uuid
++
++
++def check(value, message):
++    if not value:
++        raise RuntimeError(message)
++
++
++def read_at(fd, name):
++    n = os.open(name, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=fd)
++    try:
++        data = os.read(n, 65537)
++        check(len(data) <= 65536, "metadata bound")
++        return data.decode()
++    finally:
++        os.close(n)
++
++
++def birth(text, pid):
++    left, right = text.index("("), text.rindex(")")
++    check(int(text[:left].strip()) == pid, "proc PID view mismatch")
++    return int(text[right + 1:].split()[19])
++
++
++class Pin:
++    def __init__(self, pid, expected_cgroup):
++        self.pid = pid
++        self.fd = os.pidfd_open(pid)
++        self.proc = os.open(f"/proc/{pid}", os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
++        self.start = birth(read_at(self.proc, "stat"), pid)
++        self.status = tuple(line for line in read_at(self.proc, "status").splitlines() if line.startswith(("Uid:", "Gid:", "NSpid:")))
++        self.namespaces = {}
++        self.namespace_fds = []
++        for name in ("pid", "mnt", "cgroup", "user", "time", "net", "ipc", "uts"):
++            fd = os.open("ns/" + name, os.O_RDONLY | os.O_CLOEXEC, dir_fd=self.proc)
++            self.namespace_fds.append(fd)
++            self.namespaces[name] = (os.fstat(fd).st_dev, os.fstat(fd).st_ino)
++        self.exe = os.readlink("exe", dir_fd=self.proc)
++        self.verify(expected_cgroup)
++
++    def alive(self):
++        p = select.poll()
++        p.register(self.fd, select.POLLIN)
++        return not p.poll(0)
++
++    def verify(self, expected_cgroup):
++        check(self.alive(), "pinned job process died")
++        check(birth(read_at(self.proc, "stat"), self.pid) == self.start, "job process birth changed")
++        status = tuple(line for line in read_at(self.proc, "status").splitlines() if line.startswith(("Uid:", "Gid:", "NSpid:")))
++        check(status == self.status and os.readlink("exe", dir_fd=self.proc) == self.exe, "job process credentials/executable changed")
++        for name, identity in self.namespaces.items():
++            s = os.stat("ns/" + name, dir_fd=self.proc)
++            check((s.st_dev, s.st_ino) == identity, "job process namespace changed")
++        check(read_at(self.proc, "cgroup") == expected_cgroup, "job process membership changed unexpectedly")
++        check(self.alive(), "job process died during verification")
++
++    def close(self):
++        for fd in self.namespace_fds:
++            os.close(fd)
++        os.close(self.proc)
++        os.close(self.fd)
++
++
++def identity(path):
++    s = path.stat()
++    return (s.st_dev, s.st_ino)
++
++
++def pids(path):
++    return set(map(int, (path / "cgroup.procs").read_text().split()))
++
++
++def events(path):
++    return dict((k, int(v)) for k, v in (line.split() for line in (path / "memory.events").read_text().splitlines()))
++
++
++def main():
++    check(len(sys.argv) == 2 and os.geteuid() == 0, "requires exact owned test binary and root")
++    binary = Path(sys.argv[1]).resolve(strict=True)
++    expected_membership = os.environ["P4_EXPECTED_JOB_CGROUP"]
++    membership = Path("/proc/self/cgroup").read_text()
++    check(membership == expected_membership and membership.startswith("0::/"), "not the admitted job")
++    relative = membership.strip()[4:]
++    check(relative and ".." not in Path(relative).parts, "unsafe job scope")
++    job = Path("/sys/fs/cgroup") / relative
++    check(job.name.startswith("hepta-runtime-job-"), "scope is not a fresh runtime job")
++    job_id = identity(job)
++    keys = ("memory.max", "memory.high", "memory.swap.max", "cpu.max", "pids.max")
++    original_limits = {k: (job / k).read_text() for k in keys}
++    check(original_limits["memory.max"].strip() != "max" and 0 < int(original_limits["memory.max"]) <= 536870912, "memory admission")
++    job_cap = int(original_limits["memory.max"])
++    check(int((job / "memory.current").read_text()) < job_cap // 2, "job is not quiet enough for registration controls")
++    fixture_cap = min(268435456, job_cap)
++    check(fixture_cap >= 134217728, "job too small for conservative owned fixture")
++    task_cap = min(64, int(original_limits["pids.max"]) if original_limits["pids.max"].strip() != "max" else 64)
++    check(task_cap >= 32, "job task budget too small for owned fixture")
++    q, period = map(int, original_limits["cpu.max"].split())
++    check(0 < q <= period, "CPU admission")
++    original_controllers = (job / "cgroup.subtree_control").read_text()
++    check(not original_controllers.strip() and (job / "cgroup.type").read_text() == "domain\n", "job not a fresh empty-controller domain")
++    controllers = (job / "cgroup.controllers").read_text().split()
++    check(set(("cpu", "memory", "pids")) <= set(controllers), "required controllers not delegated")
++    original_events = events(job)
++    original_parent_ns = {n: identity(Path("/proc/self/ns") / n) for n in ("pid", "mnt", "cgroup", "user", "time")}
++    original_projection = identity(Path("/sys/fs/cgroup"))
++    original_dirs = {p.name: identity(p) for p in job.iterdir() if p.is_dir()}
++    original_pids = pids(job)
++    check(os.getpid() in original_pids and 1 <= len(original_pids) <= 12, "job membership admission")
++    pins = []
++    root = job / ("psi-owned-" + uuid.uuid4().hex)
++    control, target, sibling = (root / n for n in ("control", "target", "sibling"))
++    control_membership = "0::/" + str(control.relative_to("/sys/fs/cgroup")) + "\n"
++    moved = []
++    created = []
++    cleanup = []
++    outcome = {"scope": "owned host registration/revocation only; no Android/private cell, Main or pressure", "kernel": os.uname().release, "limits": {k: v.strip() for k, v in original_limits.items()}, "job_member_count": len(original_pids), "test_binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest()}
++    code = 2
++    try:
++        for pid in sorted(original_pids):
++            pins.append(Pin(pid, membership))
++        check(pids(job) == original_pids and identity(job) == job_id, "job changed before setup")
++        root.mkdir(mode=0o700)
++        created.append((root, identity(root)))
++        for path in (control, target, sibling):
++            path.mkdir(mode=0o700)
++            created.append((path, identity(path)))
++        # Only these frozen members of this new job move; no name-based lookup.
++        for pin in pins:
++            pin.verify(membership)
++            (control / "cgroup.procs").write_text(str(pin.pid) + "\n")
++            moved.append(pin)
++            pin.verify(control_membership)
++        check(not pids(job) and pids(control) == original_pids, "no-internal-process boundary not achieved")
++        (job / "cgroup.subtree_control").write_text("+cpu +memory +pids\n")
++        (root / "memory.max").write_text(str(fixture_cap) + "\n")
++        (root / "memory.high").write_text("max\n")
++        (root / "memory.swap.max").write_text("0\n")
++        (root / "cpu.max").write_text(f"{q} {period}\n")
++        (root / "pids.max").write_text(str(task_cap) + "\n")
++        (root / "cgroup.subtree_control").write_text("+cpu +memory +pids\n")
++        for path, cap in ((control, fixture_cap // 2), (target, fixture_cap // 4), (sibling, fixture_cap // 4)):
++            check(int((path / "memory.current").read_text()) < cap // 2, "owned leaf budget admission")
++            (path / "memory.max").write_text(str(cap) + "\n")
++            (path / "memory.high").write_text("max\n")
++            (path / "memory.swap.max").write_text("0\n")
++            (path / "cpu.max").write_text(f"{q} {period}\n")
++            (path / "pids.max").write_text("32\n")
++        check({k: (job / k).read_text() for k in keys} == original_limits, "parent limits changed")
++        before = {name: events(path) for name, path in (("root", root), ("control", control), ("target", target), ("sibling", sibling))}
++        run = subprocess.Popen([str(binary), "--psi-suite", str(target), str(root), str(sibling)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
++        try:
++            stdout, stderr = run.communicate(timeout=25)
++            outcome.update(test_rc=run.returncode, test_stdout=stdout, test_stderr=stderr, timed_out=False)
++        except subprocess.TimeoutExpired:
++            # Popen owns this unreaped exact child, so its PID cannot be reused.
++            # Cancel only that owned test; its peers arm parent-death SIGKILL.
++            run.kill()
++            stdout, stderr = run.communicate(timeout=5)
++            outcome.update(test_rc=run.returncode, test_stdout=stdout, test_stderr=stderr, timed_out=True, cancelled_owned_test=True)
++            raise RuntimeError("owned registration test timed out; partial output retained")
++        after = {name: events(path) for name, path in (("root", root), ("control", control), ("target", target), ("sibling", sibling))}
++        outcome.update(memory_events_before=before, memory_events_after=after)
++        check(before == after, "owned resource events changed during no-pressure control")
++        check(not pids(target) and not pids(sibling) and pids(control) == original_pids, "owned tests left live tasks")
++        code = run.returncode
++    except Exception as error:
++        outcome["failure"] = repr(error)
++    finally:
++        # Run independent legal cleanup steps even after a partial mkdir or
++        # member-restore failure. Unknown tasks/generations veto hierarchy edits.
++        steps = []
++        def attempt(name, function):
++            try:
++                function()
++                steps.append({"step": name, "ok": True})
++                return True
++            except Exception as error:
++                cleanup.append(name + ": " + repr(error))
++                steps.append({"step": name, "ok": False})
++                return False
++        def scope_safe():
++            check(identity(job) == job_id, "parent directory generation changed")
++            for path, expected_id in created:
++                check(path.exists() and identity(path) == expected_id, "created directory generation changed")
++                if path == control: check(pids(path) <= original_pids, "unbound task in control leaf")
++                else: check(not pids(path), "unknown/live task prevents cleanup")
++        safe = attempt("bound hierarchy and member check", scope_safe)
++        def disable(path):
++            actual = (path / "cgroup.subtree_control").read_text().split()
++            check(set(actual) <= {"cpu", "memory", "pids"}, "unexpected controller")
++            if actual: (path / "cgroup.subtree_control").write_text(" ".join("-" + c for c in actual) + "\n")
++        if safe:
++            root_disabled = True
++            if any(path == root for path, _ in created):
++                root_disabled = attempt("disable owned-root controllers", lambda: disable(root))
++            job_disabled = root_disabled and attempt("restore job controller state", lambda: disable(job))
++            if job_disabled:
++                for index, pin in enumerate(pins):
++                    def restore(pin=pin):
++                        if pin.alive():
++                            actual = read_at(pin.proc, "cgroup")
++                            check(actual in (membership, control_membership), "bound member escaped known migration endpoints")
++                            pin.verify(actual)
++                            if actual == control_membership:
++                                (job / "cgroup.procs").write_text(str(pin.pid) + "\n")
++                            pin.verify(membership)
++                    attempt("restore bound member " + str(index), restore)
++                for path, expected_id in reversed(created):
++                    def remove(path=path, expected_id=expected_id):
++                        check(identity(path) == expected_id and not pids(path), "leaf generation or emptiness changed")
++                        path.rmdir()
++                    attempt("remove owned " + ("root" if path == root else path.name), remove)
++        def verify_final():
++            check({k: (job / k).read_text() for k in keys} == original_limits, "parent budgets were not preserved")
++            check((job / "cgroup.subtree_control").read_text() == original_controllers, "parent controller state not restored")
++            check({p.name: identity(p) for p in job.iterdir() if p.is_dir()} == original_dirs, "owned cgroup subtree remains")
++            check(Path("/proc/self/cgroup").read_text() == membership, "fixture parent not restored")
++            check({n: identity(Path("/proc/self/ns") / n) for n in original_parent_ns} == original_parent_ns, "fixture parent namespace changed")
++            check(identity(Path("/sys/fs/cgroup")) == original_projection, "parent projection changed")
++            check(events(job) == original_events, "parent memory event counters changed")
++            for pin in pins:
++                if pin.alive(): pin.verify(membership)
++            check(pids(job) == {pin.pid for pin in pins if pin.alive()}, "unbound job member remains after restoration")
++        final_ok = attempt("verify complete restored parent boundary", verify_final)
++        if final_ok and not cleanup:
++            outcome["cleanup"] = {"original_members_restored_or_naturally_exited": True, "owned_subtree_empty_and_removed": True, "parent_budget_controller_namespace_projection_preserved": True, "parent_memory_events_unchanged": True}
++        if cleanup: code = 2
++        outcome["cleanup_steps"] = steps
++        for pin in pins:
++            pin.close()
++        outcome["cleanup_errors"] = cleanup
++        outcome["result"] = "PASS" if code == 0 and not cleanup and "failure" not in outcome else "FAIL"
++        print(json.dumps(outcome, indent=2), flush=True)
++    return 0 if outcome["result"] == "PASS" else 2
++
++
++if __name__ == "__main__":
++    sys.exit(main())

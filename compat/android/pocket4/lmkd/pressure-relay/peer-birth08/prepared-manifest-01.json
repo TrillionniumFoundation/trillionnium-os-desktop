@@ -1,0 +1,60 @@
+{
+  "schema": "pocket4-relay-expected-peer-birth-prepared-v1",
+  "status": "PREPARED_NOT_EXECUTED_NOT_DEPLOYABLE",
+  "base_source_manifest_sha256": "665f8136e633375b5a0dc42f2469d4ad0015dace1d198b1cee3742cd75276e51",
+  "files": {
+    "Cargo.lock": {
+      "sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+      "bytes": 2433
+    },
+    "Cargo.toml": {
+      "sha256": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+      "bytes": 379
+    },
+    "README.md": {
+      "sha256": "59bef71cd5f8106244838d9f3512bf0ce4cce1b672265f42054b70c5714886ba",
+      "bytes": 3281
+    },
+    "negative-controls/old-api-controls.rs": {
+      "sha256": "70bc83aa7c7072c0d103f2c78272c19b470739f67c4424caeb2382eef812afb9",
+      "bytes": 35533
+    },
+    "negative-controls/original-lib.rs": {
+      "sha256": "063a54453e2062b2094ccf702d26a072e8e2d4518c00144cee90992e39ee97d9",
+      "bytes": 40370
+    },
+    "peer-birth.patch": {
+      "sha256": "075ddf7eeb2cd1763cc069fe157a6663b72e7c1c582a4a19e223734c55ea65bb",
+      "bytes": 14875
+    },
+    "run_host_controls.py": {
+      "sha256": "794ed3b84a624c5e2ed4cc743f58b7e69c35769717e90146ff2c144ef269c59d",
+      "bytes": 9233
+    },
+    "src/bin/owned_ipc_controls.rs": {
+      "sha256": "e67fdf4db5943dba354ad14507ff840f165cd818657d81f2e0d01786ed0dde6a",
+      "bytes": 35558
+    },
+    "src/event_fixture.rs": {
+      "sha256": "429361324cbe45b27d897f9ae8e291b7197ae55046de7be131668e86959d4c70",
+      "bytes": 29336
+    },
+    "src/lib.rs": {
+      "sha256": "6ec44520061b7c4d15ee868ede9365d21e648c909638665fcd08df717f5fbff6",
+      "bytes": 41175
+    },
+    "src/psi.rs": {
+      "sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+      "bytes": 13156
+    }
+  },
+  "bounds": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "psi_registration": false,
+    "pressure": false,
+    "android": false,
+    "main_mutation": false
+  },
+  "negative_expected": "exact original owner library admits and revalidates same-class different owned process; new library rejects exact process-generation mismatch"
+}

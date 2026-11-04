@@ -1116,9 +1116,38 @@
       "positive_pressure_acceptance": false,
       "evidence": "lmkd/evidence/r5-build/build-summary.json"
     },
-    "actual_main_integration": "lmkd/evidence/r5-build/main-integration-summary.json"
+    "actual_main_integration": "lmkd/evidence/r5-build/main-integration-summary.json",
+    "pressure_relay": {
+      "source_and_evidence": "lmkd/pressure-relay/",
+      "status": "SCOPED_HOST_STAGES_ONLY_NOT_ANDROID_OR_MAIN_DEPLOYABLE",
+      "registration_06a": {
+        "status": "REAL_OWNED_REGISTRATION_AND_REVOCATION_CONTROLS_PASS",
+        "source_manifest_sha256": "9593f4b06195f826df24e9d4b9b05fc5f38a62b368675ee08ffc8fe11a09da8f",
+        "expected_process_birth_binding_missing": true
+      },
+      "event_07b": {
+        "status": "ONE_REAL_SCOPED_HOST_CRITICAL_PSI_EVENT_PASS",
+        "original_source_manifest_sha256": "665f8136e633375b5a0dc42f2469d4ad0015dace1d198b1cee3742cd75276e51",
+        "public_adaptation_manifest_sha256": "7cd8fb73825eedd1b8b568b141ad8834f4a758c34505bdf394fc59e4b6ed5e79",
+        "public_adaptation_executed": false,
+        "evidence_manifest_sha256": "303b12e6563cd8ae042506fcc72177c9eda8e2ed7e9637f6225766d9f785813c",
+        "original_trial_all_owned_cleanup_verified": true,
+        "expected_process_birth_binding_missing": true
+      },
+      "peer_birth_08": {
+        "status": "REAL_HOST_EXPECTED_PROCESS_BINDING_CONTROLS_PASS",
+        "source_manifest_sha256": "57dd0c9fc8bd6d2cc3f3e57265d6fdda4b7cefce68ef8a458dbe4b0846a26128",
+        "exact_old_library_wrong_caller_negative_failed_as_expected": true,
+        "psi_requalification_on_new_library": false
+      },
+      "stage_results_not_combinable_into_one_qualified_version": true,
+      "android_grant_and_lmkd_victim_selection_qualified": false,
+      "prior_r7_foreground_failure_retained": true,
+      "main_deployed": false,
+      "production_ready": false
+    }
   },
-  "updated_at_utc": "2026-11-04T12:46:21.319019Z",
+  "updated_at_utc": "2026-11-04T13:40:29.561071Z",
   "main_activation": {
     "schema": "pocket4-main-activation-public-summary-v1",
     "evidence_basis": "Parent actual verification stdout, authoritative rc0 status, and read-only saved-after review; publication agent inspected cached records, not complete private after JSON.",
@@ -1228,6 +1257,30 @@
       "product_results_and_detail_verified": false,
       "protected_screenshot_not_treated_as_render_failure": true,
       "normal_owned_close_verified": true
+    },
+    {
+      "app": "Amazon",
+      "package": "com.amazon.mShop.android.shopping",
+      "status": "PARTIAL_QUERY_SUGGESTIONS_RETURN_VERIFIED_PRODUCT_SEARCH_NOT_COMPLETED",
+      "production_ready": false,
+      "evidence": "evidence/business-amazon-20261104.json",
+      "query_and_matching_suggestions_verified": true,
+      "product_results_and_details_verified": false,
+      "back_return_verified": true,
+      "normal_owned_close_verified": true,
+      "search_navigation_cause_established": false
+    },
+    {
+      "app": "Hertz",
+      "package": "com.hertz.android.digital",
+      "status": "FAIL_NATIVE_SIG11_AFTER_ACKNOWLEDGED_LAUNCH",
+      "production_ready": false,
+      "evidence": "evidence/business-hertz-20261104.json",
+      "fresh_exact_app_sigsegv": true,
+      "native_launch_acknowledged": true,
+      "business_verified": false,
+      "crash_cause_established": false,
+      "owned_task_absence_verified": true
     }
   ],
   "current_business_flow_runtime": {
@@ -1237,5 +1290,14 @@
     "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
     "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
     "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "proc_fd_provenance_candidate": {
+    "status": "HOST_CONTRACTS_QUALIFIED_ANDROID_AND_APP_GATES_PENDING",
+    "evidence": "native-bridge/proc-provenance/evidence/host-qualification-v1.json",
+    "source_bundle_final_android_inputs_not_in_this_snapshot": true,
+    "host_receipt_sha256": "bc7241c9a8abd9fff763051bfb784d41795392cf1ded71a26848ea3761f2524e",
+    "main_deployed": false,
+    "marriott_corrected_runtime_ab_verified": false,
+    "production_ready": false
   }
 }

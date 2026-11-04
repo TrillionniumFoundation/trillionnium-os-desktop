@@ -1,0 +1,235 @@
+{
+  "schema": 1,
+  "status": "REAL_OWNED_PSI_REGISTRATION_REVOCATION_PASS; EVENT_AND_PRESSURE_UNQUALIFIED; DO_NOT_DEPLOY",
+  "at": "2026-11-04T11:09:52.598248+00:00",
+  "at_end": "2026-11-04T11:09:54.578253+00:00",
+  "kernel": "7.0.0-38-generic",
+  "source_sha256": {
+    "Cargo.toml": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+    "Cargo.lock": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+    "src/lib.rs": "063a54453e2062b2094ccf702d26a072e8e2d4518c00144cee90992e39ee97d9",
+    "src/psi.rs": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+    "src/bin/owned_ipc_controls.rs": "50b4720bf2c2033c5f6ca64587602e09433fc45b6422d3657f94cc0c87124f2a",
+    "owned_registration_fixture.py": "41e9b120bdfe010a53f16190f3248cc5b4dbfa936fb97af394225bffac169985"
+  },
+  "test_binary_sha256": "53ed9c83c99fab0ebb1f30c69eeb4071db4cea1e727b6ebb46d35c28aabd812c",
+  "build": {
+    "rc": 0,
+    "unit": {
+      "rc": 0,
+      "stdout": "\nrunning 2 tests\ntest psi::tests::exact_thresholds_and_bounded_progress_are_not_relaxed ... ok\ntest tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+    },
+    "ordinary_host_controls": {
+      "rc": 0,
+      "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS ordinary host child fails the required exact cgroup projection gate\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=host-negative-controls\n"
+    },
+    "compiler_mode": "cargo --locked --offline -j1; RUSTFLAGS=-Ccodegen-units=1 -Dwarnings"
+  },
+  "scope": {
+    "owned_host_fixture": true,
+    "android_or_private_cell": false,
+    "main_read_or_changed": false,
+    "pressure_intentionally_generated": false,
+    "actual_psi_triggers_registered": true,
+    "actual_pressure_events_qualified": false,
+    "main_lmkd_changed": false
+  },
+  "limits_before": {
+    "memory.max": "536870912",
+    "memory.high": "max",
+    "memory.swap.max": "max",
+    "cpu.max": "100000 100000",
+    "pids.max": "30053"
+  },
+  "limits_after": {
+    "memory.max": "536870912",
+    "memory.high": "max",
+    "memory.swap.max": "max",
+    "cpu.max": "100000 100000",
+    "pids.max": "30053"
+  },
+  "configured_owned_budgets": {
+    "note": "Source-configured under the unchanged admitted parent, not a new Main budget",
+    "root_memory_max": 268435456,
+    "control_memory_max": 134217728,
+    "target_memory_max": 67108864,
+    "sibling_memory_max": 67108864,
+    "high": "max",
+    "swap_max": 0
+  },
+  "job_bound_member_count": 4,
+  "tests": {
+    "rc": 0,
+    "stdout": "PASS real held target rejects parent scope before pressure open\nPASS real held target rejects sibling scope before pressure open\nPASS real held target rejects old-generation scope before pressure open\nPASS real held target rejects wrong-budget scope before pressure open\nPASS real exact-cgroup PSI registration, quiet poll and complete revoke: explicit-retire\nPASS real exact-cgroup PSI registration, quiet poll and complete revoke: peer-exit\nPASS real exact-cgroup PSI registration, quiet poll and complete revoke: generation-change\nPASS real exact-cgroup PSI registration, quiet poll and complete revoke: sealed-slots\nPASS PSI descriptors and notification aliases closed; workers joined; owned peers reaped; socket removed\nRESULT PASS mode=real-psi-registration-without-pressure\n",
+    "namespace_root_denial_proofs": 8,
+    "denial_errno": "EPERM",
+    "opened_after_cgroup_unshare": true,
+    "denial_checked_before_readonly_bind": true,
+    "readonly_private_projection_proofs": 8,
+    "real_scope_controls": [
+      "parent",
+      "sibling",
+      "old-generation",
+      "wrong-budget"
+    ],
+    "registered_monitor_parameters": [
+      "some 70000 1000000",
+      "full 70000 1000000"
+    ],
+    "quiet_observations": 0,
+    "quiet_packets_queued": 0,
+    "revocation_modes": [
+      "explicit-retire",
+      "peer-exit without caller refresh",
+      "generation-change",
+      "sealed-slots"
+    ],
+    "actual_psi_fd_count_per_live_lease": 2,
+    "actual_psi_fd_count_after_worker_completion": 0,
+    "timed_out": false
+  },
+  "memory_events_before": {
+    "root": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "control": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "target": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "sibling": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    }
+  },
+  "memory_events_after": {
+    "root": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "control": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "target": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "sibling": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    }
+  },
+  "cleanup": {
+    "original_members_restored_or_naturally_exited": true,
+    "owned_subtree_empty_and_removed": true,
+    "parent_budget_controller_namespace_projection_preserved": true,
+    "parent_memory_events_unchanged": true
+  },
+  "cleanup_steps": [
+    {
+      "step": "bound hierarchy and member check",
+      "ok": true
+    },
+    {
+      "step": "disable owned-root controllers",
+      "ok": true
+    },
+    {
+      "step": "restore job controller state",
+      "ok": true
+    },
+    {
+      "step": "restore bound member 0",
+      "ok": true
+    },
+    {
+      "step": "restore bound member 1",
+      "ok": true
+    },
+    {
+      "step": "restore bound member 2",
+      "ok": true
+    },
+    {
+      "step": "restore bound member 3",
+      "ok": true
+    },
+    {
+      "step": "remove owned sibling",
+      "ok": true
+    },
+    {
+      "step": "remove owned target",
+      "ok": true
+    },
+    {
+      "step": "remove owned control",
+      "ok": true
+    },
+    {
+      "step": "remove owned root",
+      "ok": true
+    },
+    {
+      "step": "verify complete restored parent boundary",
+      "ok": true
+    }
+  ],
+  "cleanup_errors": [],
+  "runner_membership_restored": true,
+  "parent_controllers_after": "",
+  "owned_direct_children_empty": true,
+  "result": "PASS",
+  "not_qualified": [
+    "genuine PSI-event delivery under bounded pressure",
+    "event/stats timing under actual host or target stalls",
+    "Android grant client and LMKD regular/watchdog lease gates",
+    "installed Main supervisor source/binary lineage",
+    "r5 true pressure qualification and unresolved r7 foreground loss"
+  ]
+}

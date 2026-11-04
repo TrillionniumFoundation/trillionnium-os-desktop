@@ -88,3 +88,11 @@ Only the minimal pidfd signaling route was exercised. PID-reuse behavior and pro
 ## Current Main integration boundary
 
 A separate read-only observation after presenter/native activation found that Main still selects `/vendor/bin/droidloom-lmkd-compat`, a service that drains and acknowledges commands and never kills. `/system/bin/lmkd` has the same binary hash. `DROIDLOOM_CELL=1` is present and the LMKD cgroup variable is absent. A file hash alone cannot prove real LMKD integration. The observed cgroup-root/`nsdelegate` layout and source-level PSI denial condition are distinguished from an actual trigger-write test: no Main write was attempted. A scoped monitor-access design, explicit service/environment verification and successful survival canaries remain prerequisites. See `evidence/r5-build/main-integration-summary.json`.
+
+## Host pressure relay: separate staged qualification
+
+The [pressure relay bundle](pressure-relay/README.md) publishes four exact stages, their licenses, source hashes, retained negative controls and scope limits. Registration/revocation controls and one short real critical-PSI event passed on owned host fixtures. The later mandatory lifecycle process-birth fix has real host positive and exact-old-source negative controls, but the new library has not repeated PSI qualification.
+
+The original library's acceptance of a different same-class process is a real authorization gap, demonstrated by the later negative control. Earlier bounded fixture results remain historical evidence, not a production authorization implementation. The public path-adapted event runner was not executed and does not inherit the original operation's authorization. Private activation/predecessor/toolchain inputs remain required.
+
+No Android LMKD victim decision, guest lifecycle adoption, installed-supervisor source lineage, complete listener lifecycle, or Main deployment is qualified by these host records. The r7 foreground loss remains unresolved and b099 stays prohibited.

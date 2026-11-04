@@ -1,0 +1,72 @@
+--- a/host-owner/src/lib.rs
++++ b/host-owner/src/lib.rs
+@@ -18,7 +18,7 @@
+ use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
+ use std::path::{Path, PathBuf};
+ use std::sync::atomic::{AtomicBool, Ordering};
+-use std::sync::{Arc, Mutex};
++use std::sync::{Arc, Mutex, MutexGuard};
+ use std::thread::{self, JoinHandle};
+ use std::time::{Duration, Instant};
+ 
+@@ -570,6 +570,18 @@
+ 
+ struct LeaseState { active: AtomicBool, send_ends: Mutex<Vec<OwnedFd>> }
+ impl LeaseState {
++    fn lock_for_prepare(&self) -> Result<MutexGuard<'_, Vec<OwnedFd>>> {
++        match self.send_ends.lock() {
++            Ok(guard) => Ok(guard),
++            Err(poisoned) => {
++                // PoisonError owns the acquired guard. Release it before
++                // revoke reacquires this mutex; otherwise retirement deadlocks.
++                drop(poisoned.into_inner());
++                self.revoke();
++                Err(Error::Reject("poisoned lease state"))
++            }
++        }
++    }
+     fn revoke(&self) {
+         self.active.store(false, Ordering::Release);
+         let mut guard = self.send_ends.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+@@ -648,7 +660,11 @@
+             self.retire(); return Err(e);
+         }
+         {
+-            let mut ends = self.state.send_ends.lock().map_err(|_| Error::Reject("poisoned lease state"))?;
++            let state = Arc::clone(&self.state);
++            let mut ends = match state.lock_for_prepare() {
++                Ok(ends) => ends,
++                Err(error) => { self.retire(); return Err(error); }
++            };
+             if !self.state.active.load(Ordering::Acquire) || ends.len() == 2 {
+                 drop(ends);
+                 self.retire();
+@@ -699,3 +715,28 @@
+         }
+     }
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn poisoned_sender_lock_revokes_existing_real_capability_without_deadlock() {
++        let mut pair = [-1; 2];
++        assert_eq!(unsafe { libc::socketpair(libc::AF_UNIX, libc::SOCK_SEQPACKET | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC, 0, pair.as_mut_ptr()) }, 0);
++        let sender = unsafe { OwnedFd::from_raw_fd(pair[0]) };
++        let recipient = unsafe { OwnedFd::from_raw_fd(pair[1]) };
++        let state = Arc::new(LeaseState { active: AtomicBool::new(true), send_ends: Mutex::new(vec![sender]) });
++        let child_state = Arc::clone(&state);
++        assert!(thread::spawn(move || {
++            let _guard = child_state.send_ends.lock().unwrap();
++            panic!("owned poison negative control");
++        }).join().is_err());
++        assert!(state.lock_for_prepare().is_err());
++        assert!(!state.active.load(Ordering::Acquire));
++        let mut p = libc::pollfd { fd: recipient.as_raw_fd(), events: libc::POLLIN | libc::POLLRDHUP, revents: 0 };
++        assert_eq!(unsafe { libc::poll(&mut p, 1, 0) }, 1);
++        assert_ne!(p.revents & (libc::POLLHUP | libc::POLLRDHUP), 0);
++        // Failure closes old capabilities and cannot be retried as healthy.
++        assert!(state.lock_for_prepare().is_err());
++    }
++}

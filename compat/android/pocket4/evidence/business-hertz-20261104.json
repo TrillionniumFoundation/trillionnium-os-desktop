@@ -1,0 +1,107 @@
+{
+  "schema": "pocket4-current-business-flow-public-summary-v1",
+  "app": "Hertz",
+  "package": "com.hertz.android.digital",
+  "flow": "hertz-01",
+  "evidence_date_utc": "2026-11-04",
+  "started_utc": "2026-11-04T13:23:21.308175Z",
+  "completed_utc": "2026-11-04T13:40:29.561071Z",
+  "status": "FAIL_NATIVE_SIG11_AFTER_ACKNOWLEDGED_LAUNCH",
+  "production_ready": false,
+  "runtime": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "app_version": {
+    "version_name": "5.6.0",
+    "version_code": 1389,
+    "primary_abi": "arm64-v8a",
+    "min_sdk": 26,
+    "target_sdk": 36,
+    "metadata_sha256": "5197965425c828443790df362c79d4820b6ee54080e0d60cda15f890f7951902"
+  },
+  "native_launch": {
+    "attempts": 1,
+    "acknowledged": true,
+    "returncode": 0,
+    "outcome_unknown": false,
+    "at_utc": "2026-11-04T13:23:22.810824Z",
+    "receipt_sha256": "3484085323259ef72bcd5f212a3905d65acc02b73c52e4eedececb4ed9990e6f",
+    "native_stdout_sha256": "f1b553602c269dec19183271e52daa1c420d43dbeffc2e3416b1ddff2da343cd"
+  },
+  "later_observation": {
+    "at_utc": "2026-11-04T13:26:56.892952Z",
+    "error": "FLOW_TASK_SCOPE_CHANGED",
+    "action_attempted": false,
+    "outcome_unknown": false,
+    "screenshot_captured": false,
+    "receipt_sha256": "cd737489b970958509d133eba2355e676e28d434501658110659b1ff646674d9"
+  },
+  "fresh_exit": {
+    "at_utc": "2026-11-04T13:23:33.956Z",
+    "process_matches_exact_package": true,
+    "reason": 2,
+    "reason_name": "SIGNALED",
+    "status": 11,
+    "signal": "SIGSEGV",
+    "predates_cleanup": true,
+    "approximately_seconds_after_acknowledged_launch": 11,
+    "original_exit_info_sha256": "80f0afb4d682bde183ecf8b8e9b3e3b0b5b1ef47dd3debe6cc3d8cdb59d3a6fe",
+    "original_exit_info_bytes": 5953
+  },
+  "diagnostic": {
+    "receipt_sha256": "4305016c33408ef87dd0c1810c099ff8a47cb6506011e417a9dadc057bf921b8",
+    "uid_log_bytes": 0,
+    "uid_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "crash_buffer_bytes": 3758,
+    "crash_buffer_sha256": "839d24f92e3cc558b14c1aafe80cb79e320c13aec78a5c9fc1bcaa8b7306fa59",
+    "matching_package_crash_stack_captured": false,
+    "causal_stack_or_root_cause_established": false,
+    "actual_app_engine_mapping_captured_before_death": false,
+    "raw_logs_published": false
+  },
+  "completion": {
+    "owned_task_already_absent": true,
+    "task_removal_attempted": false,
+    "app_signal_sent": false,
+    "only_preexisting_home_observed": true,
+    "framework_epoch_preserved": true,
+    "receipt_sha256": "1e0379cc8fbe91c24e742a1bcc0fdb4a959b77eaa2715cad37ddfef9fafe7754"
+  },
+  "archive_audit": {
+    "sha256": "49326da89da678e2e50d8f946f5043bc6e9aad4cf5b18a2214b48280c66c3a20",
+    "step_receipts": 4,
+    "raw_command_stdout_stderr_pairs": 10,
+    "screenshots": 0,
+    "all_rehashes_passed": true
+  },
+  "health": {
+    "after_completion_memory_current_bytes": 3012177920,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "memory_high_event_counter_unchanged": 14902
+  },
+  "unqualified": {
+    "business_flow": false,
+    "cold_start": false,
+    "rental_query": false,
+    "vehicle_results": false,
+    "detail": false,
+    "return": false,
+    "reopen": false,
+    "crash_fix": false
+  },
+  "limitations": [
+    "The fresh exact-App SIGSEGV is current evidence, separate from historical crashes.",
+    "The native launch receipt was successful; later task disappearance and exact exit attribution establish startup failure, not successful business use.",
+    "Captured UID logs were empty and the crash buffer had no matching package stack. Cause is unresolved; neither memory pressure nor the R16 repair is established as causal.",
+    "The deployed Main engine is pinned by activation, but this App died before an actual App maps sample was captured.",
+    "No launch replay, force-stop, data clearing, account login or rental transaction was performed."
+  ]
+}
+

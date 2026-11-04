@@ -1,0 +1,36 @@
+{
+  "scope": "owned mutex/socket semantic controls only; no cell/PSI/mount/cgroup change",
+  "limits": {
+    "memory.max": "536870912",
+    "cpu.max": "100000 100000"
+  },
+  "candidate_source_sha256": {
+    "Cargo.toml": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+    "Cargo.lock": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+    "src/lib.rs": "3198b92851748662f539f58b8543f2dfd842434cda10b860451032afe8fea478",
+    "src/bin/owned_ipc_controls.rs": "d0ff0e62268591ccbb89b8aece8bc37418b6ab1ee8d893a5adcc42aefedcbc4e"
+  },
+  "negative_scope": "single helper mutated to old fail-open-on-poison branch; not an unchanged full freeze05 source",
+  "negative_lib_sha256": "58a8c3028570033f92ef4fa2375009c714fa140c32f69aba1b1843a96c8c7213",
+  "negative": {
+    "rc": 101,
+    "actual_failed_assertion": "!state.active.load(Ordering::Acquire)",
+    "tests_failed": 1
+  },
+  "candidate": {
+    "rc": 0,
+    "stdout": "\nrunning 1 test\ntest tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+  },
+  "remaining_children_empty": true,
+  "candidate_test_command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-j",
+    "1",
+    "--lib"
+  ],
+  "rustflags": "-Ccodegen-units=1 -Dwarnings",
+  "qualification": "POISON_CONTROL_ONLY; NO_PSI_PRESSURE; DO_NOT_DEPLOY"
+}

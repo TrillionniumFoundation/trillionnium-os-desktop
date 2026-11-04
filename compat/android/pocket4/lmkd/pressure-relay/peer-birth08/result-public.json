@@ -1,0 +1,212 @@
+{
+  "scope": "host owned peer process birth authentication only; no PSI registration, pressure, cgroup mutation, Android or Main",
+  "started_utc": "2026-11-04T13:11:37.272175+00:00",
+  "finished_utc": "2026-11-04T13:11:44.949195+00:00",
+  "limits_before": {
+    "memory.max": "536870912",
+    "memory.high": "max",
+    "memory.swap.max": "max",
+    "cpu.max": "100000 100000",
+    "pids.max": "30053"
+  },
+  "limits_after": {
+    "memory.max": "536870912",
+    "memory.high": "max",
+    "memory.swap.max": "max",
+    "cpu.max": "100000 100000",
+    "pids.max": "30053"
+  },
+  "source_sha256": {
+    "Cargo.lock": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+    "Cargo.toml": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+    "README.md": "59bef71cd5f8106244838d9f3512bf0ce4cce1b672265f42054b70c5714886ba",
+    "negative-controls/old-api-controls.rs": "70bc83aa7c7072c0d103f2c78272c19b470739f67c4424caeb2382eef812afb9",
+    "negative-controls/original-lib.rs": "063a54453e2062b2094ccf702d26a072e8e2d4518c00144cee90992e39ee97d9",
+    "peer-birth.patch": "075ddf7eeb2cd1763cc069fe157a6663b72e7c1c582a4a19e223734c55ea65bb",
+    "run_host_controls.py": "794ed3b84a624c5e2ed4cc743f58b7e69c35769717e90146ff2c144ef269c59d",
+    "src/bin/owned_ipc_controls.rs": "e67fdf4db5943dba354ad14507ff840f165cd818657d81f2e0d01786ed0dde6a",
+    "src/event_fixture.rs": "429361324cbe45b27d897f9ae8e291b7197ae55046de7be131668e86959d4c70",
+    "src/lib.rs": "6ec44520061b7c4d15ee868ede9365d21e648c909638665fcd08df717f5fbff6",
+    "src/psi.rs": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b"
+  },
+  "negative_library_expected_sha256": "063a54453e2062b2094ccf702d26a072e8e2d4518c00144cee90992e39ee97d9",
+  "candidate_binary_sha256": "ddc4964bee35f21f571af63890edeeb09bb28e85637e47e5b4c3fff4689101e4",
+  "old_library_binary_sha256": "69fe78101a68a678bac4c34d1ce8fe35d175b88597aca7373207026bee375e85",
+  "old_library_negative_test_adaptation": "one RolePolicy initializer removes unavailable expected_peer field; all actual test assertions unchanged",
+  "membership_preserved": true,
+  "job_process_generations_preserved": true,
+  "remaining_direct_children": "",
+  "hierarchy_unchanged": true,
+  "controllers_unchanged": true,
+  "local_memory_events_unchanged": true,
+  "parent_mount_namespace_preserved": true,
+  "parent_projection_preserved": true,
+  "parent_mountinfo_unchanged": true,
+  "owned_scope_preserved": true,
+  "rc": 0,
+  "result": "PASS",
+  "schema": "pocket4-owned-peer-process-birth-controls-public-v1",
+  "original_receipt_sha256": "b31d4d98b73ce5703d6a2b15481330a95525f7f48c95b2888aad4e5b453c8698",
+  "original_receipt_bytes": 11595,
+  "prepared_manifest_sha256": "7d08f8d83429007f974100816b835886379eed354e7bb744c1415f009c65f2a9",
+  "runtime_job_terminal": true,
+  "runtime_output_durable": true,
+  "raw_logs_published": false,
+  "steps": {
+    "candidate-build": {
+      "argv": [
+        "${CARGO}",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "--bin",
+        "owned-ipc-controls"
+      ],
+      "rc": 0,
+      "expected_rc": 0,
+      "original_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_stderr_sha256": "0a0760a8a8ed039f41b2ed7171abf32096017006d7b88523df11d1dbd33aa27d",
+      "pass_lines": [],
+      "rust_test_totals": []
+    },
+    "candidate-unit": {
+      "argv": [
+        "${CARGO}",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "--lib",
+        "--bins"
+      ],
+      "rc": 0,
+      "expected_rc": 0,
+      "original_stdout_sha256": "a4cf8cd1743f4b88ccc9ec642584910d0469d712ae3d87f288830fda6636cc26",
+      "original_stderr_sha256": "618153e218a61cea8c2ece1b9a3074d3a6bd54e30c105901dacb0ac2ca63cf29",
+      "pass_lines": [],
+      "rust_test_totals": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        },
+        {
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      ]
+    },
+    "candidate-ordinary-host": {
+      "argv": [
+        "${SOURCE_ROOT}/target/debug/owned-ipc-controls"
+      ],
+      "rc": 0,
+      "expected_rc": 0,
+      "original_stdout_sha256": "104aa87a93390453e0f7ec04a79feea7106e124039c510eaccc57ff806a7e6f4",
+      "original_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pass_lines": [
+        "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified",
+        "PASS kernel accepted credentials reject wrong UID",
+        "PASS kernel accepted credentials reject wrong GID",
+        "PASS pinned executable rejects a different trusted file",
+        "PASS lifecycle-pinned expected peer exit rejects stale enrollment after normal reap",
+        "PASS SO_PEERPIDFD retains dead connection generation while expected lifecycle peer remains alive",
+        "PASS ordinary host child fails the required exact cgroup projection gate",
+        "PASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged"
+      ],
+      "rust_test_totals": []
+    },
+    "candidate-private-projection": {
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/env",
+        "P4_EXPECTED_JOB_CGROUP=${OWNED_JOB_MEMBERSHIP}",
+        "${SOURCE_ROOT}/target/debug/owned-ipc-controls",
+        "--private-projection"
+      ],
+      "rc": 0,
+      "expected_rc": 0,
+      "original_stdout_sha256": "0a03d63ba1dfe7717d14e1a4f60111f1c9bb19d5963bb517f5a29748701ae6b7",
+      "original_stderr_sha256": "d043472fa2a3bba5c1430d81629ed28cb6d22888892aa1538d0d1e859bca41ba",
+      "pass_lines": [
+        "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified",
+        "PASS kernel accepted credentials reject wrong UID",
+        "PASS kernel accepted credentials reject wrong GID",
+        "PASS pinned executable rejects a different trusted file",
+        "PASS lifecycle-pinned expected peer exit rejects stale enrollment after normal reap",
+        "PASS SO_PEERPIDFD retains dead connection generation while expected lifecycle peer remains alive",
+        "PASS actual private mount namespace rejects host namespace expectation",
+        "PASS owned second process shares all ten namespaces, UID/GID, executable, root, cgroup and projection; birth tuple differs",
+        "PASS lifecycle-pinned peer authenticates; same-class different owned caller rejected; legitimate peer survives rejection",
+        "PASS full authenticated owned host capability: explicit-retire",
+        "PASS full authenticated owned host capability: peer-exit",
+        "PASS full authenticated owned host capability: unexpected-data",
+        "PASS full authenticated owned host capability: slot-limit",
+        "PASS full authenticated owned host capability: generation-change",
+        "PASS full authenticated owned host capability: state-change",
+        "PASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged"
+      ],
+      "rust_test_totals": [],
+      "projection_proofs": {
+        "count": 14,
+        "all_readonly_cgroup2_private_propagation_and_unchanged_membership": true,
+        "mount_identifiers_omitted": true
+      }
+    },
+    "old-library-build": {
+      "argv": [
+        "${CARGO}",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "--bin",
+        "owned-ipc-controls"
+      ],
+      "rc": 0,
+      "expected_rc": 0,
+      "original_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_stderr_sha256": "9f4b49e828260c81b34078c1eacc822253df3d7d73711aa727724e2486d540d2",
+      "pass_lines": [],
+      "rust_test_totals": []
+    },
+    "old-library-same-class-negative": {
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/env",
+        "P4_EXPECTED_JOB_CGROUP=${OWNED_JOB_MEMBERSHIP}",
+        "${SOURCE_ROOT}/old-library-negative/target/debug/owned-ipc-controls",
+        "--peer-birth-only"
+      ],
+      "rc": 2,
+      "expected_rc": 2,
+      "original_stdout_sha256": "6c66b3e7687c0ceee876a1e0ba71292a3c29e006bc6cf0679b07465ce4ffec7f",
+      "original_stderr_sha256": "294ad51738332b324cba7c867e52e52cd4cef20b1ce57d5a8c16cdfacb1afc96",
+      "pass_lines": [
+        "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified",
+        "PASS owned second process shares all ten namespaces, UID/GID, executable, root, cgroup and projection; birth tuple differs",
+        "PASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged"
+      ],
+      "rust_test_totals": [],
+      "projection_proofs": {
+        "count": 1,
+        "all_readonly_cgroup2_private_propagation_and_unchanged_membership": true,
+        "mount_identifiers_omitted": true
+      },
+      "exact_failure": "BIRTH_BINDING_MISSING: same-class different owned process authenticated",
+      "actual_old_library_authentication_and_revalidation_succeeded": true,
+      "normal_owned_cleanup_verified_before_expected_failure": true
+    }
+  }
+}

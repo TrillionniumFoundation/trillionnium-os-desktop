@@ -1,0 +1,123 @@
+{
+  "schema": "pocket4-owned-host-psi-event-qualification-v1",
+  "status": "ONE_REAL_OWNED_HOST_EVENT_PASS_ANDROID_LMKD_NOT_QUALIFIED",
+  "source_manifest_sha256": "665f8136e633375b5a0dc42f2469d4ad0015dace1d198b1cee3742cd75276e51",
+  "runner_sha256": "ecb17458af2bafb44dadae5dcfbb1e367cc66bb6f03b7d757c53bfb83f36a646",
+  "binary_sha256": "ddb2d6319cf6467c44df0ac66995ef22137ccc340d263e22c67049f193435b1d",
+  "operation_count": 1,
+  "idempotency_key": "p4-r10-relay-event07-pressure-01",
+  "job_id": "1a1a69931b5-fc05-2747",
+  "started_utc": "2026-11-04T12:47:01.592334+00:00",
+  "finished_utc": "2026-11-04T12:47:02.012302+00:00",
+  "raw_outer_result": {
+    "sha256": "9c945acca447032ec41c9964a956e41d09e63c734d0dc429f245a55f3891a003",
+    "bytes": 8288
+  },
+  "raw_inner_result": {
+    "sha256": "6ac6e8372b7fca8d0fc920a328537e95d5c5fd0a1be2fda364e8be95a858f1de",
+    "bytes": 5521
+  },
+  "raw_build03_receipt_sha256": "ad9c656d53e6152cf4d6412a2f2a268064e89113ab849f0484bebff047742c00",
+  "health_frame_count": 9,
+  "host_available_min_bytes": 14411755520,
+  "host_swap_free_min_bytes": 4717862912,
+  "main_current_max_bytes": 3721793536,
+  "main_pids_max": 3250,
+  "host_full_avg10_max": 0,
+  "main_full_avg10_max": 0,
+  "main_memory_events_unchanged": true,
+  "main_pids_events_unchanged": true,
+  "maximum_recorded_active_health_start_gap_ns": 57509587,
+  "maximum_recorded_collection_ns": 3909616,
+  "recorded_collection_duration_excludes_fsync": true,
+  "collection_plus_persistence_bounded_by_successful_source_guard": true,
+  "event": {
+    "observed_monotonic_ns": 822131195131439,
+    "received_monotonic_ns": 822131200551382,
+    "sample_collected_monotonic_ns": 822131200788040,
+    "current": 25948160,
+    "high": 25165824,
+    "full_total_before": 0,
+    "full_total_after": 113535,
+    "high_before": 0,
+    "high_after": 52,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "foreground_live": true,
+    "protected_live": true,
+    "allocator_live": true,
+    "first_sequence": 1,
+    "critical_window_us": 1000000,
+    "critical_stall_us": 70000
+  },
+  "worker_observation_to_host_receipt_ns": 5419943,
+  "workloads": [
+    {
+      "role": "allocator",
+      "bytes_touched": 22544384,
+      "lifetime_ns": 144084495,
+      "pressure_ns": 126146583,
+      "cooperative": true
+    },
+    {
+      "role": "foreground",
+      "bytes_touched": 1048576,
+      "lifetime_ns": 231390154,
+      "pressure_ns": 0,
+      "cooperative": true
+    },
+    {
+      "role": "protected",
+      "bytes_touched": 1048576,
+      "lifetime_ns": 231831329,
+      "pressure_ns": 0,
+      "cooperative": true
+    }
+  ],
+  "main_pins_before_after_sha256": "30c862fa58ad0ece1c19a5ac1e2fae0d67494f3fcb6f731675c8b0e7f8a0e4a4",
+  "main_pins_byte_identical": true,
+  "main_framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "main_limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "job_limits_before": {
+    "memory.max": "536870912",
+    "memory.high": "max",
+    "memory.swap.max": "max",
+    "cpu.max": "100000 100000",
+    "pids.max": "30053"
+  },
+  "job_limits_after": {
+    "memory.max": "536870912",
+    "memory.high": "max",
+    "memory.swap.max": "max",
+    "cpu.max": "100000 100000",
+    "pids.max": "30053"
+  },
+  "cleanup": {
+    "original_members_restored_or_naturally_exited": true,
+    "owned_subtree_empty_and_removed": true,
+    "parent_budget_controller_namespace_projection_preserved": true,
+    "parent_local_events_and_max_oom_unchanged": true
+  },
+  "cleanup_errors": [],
+  "ipc_cleanup_errors": [],
+  "forced_owned_child_kill": false,
+  "remaining_owned_direct_children": "",
+  "remaining_owned_subtree_names": [],
+  "parent_local_events_unchanged": true,
+  "parent_aggregate_high_delta": 52,
+  "not_qualified": [
+    "host recipient, not Android SCM_RIGHTS grant client",
+    "no LMKD victim decision and r7 foreground failure unresolved",
+    "shared-cell expected-peer birth matching remains a separate gate",
+    "installed supervisor exact source lineage remains unverified",
+    "no Main configuration or budget change"
+  ]
+}

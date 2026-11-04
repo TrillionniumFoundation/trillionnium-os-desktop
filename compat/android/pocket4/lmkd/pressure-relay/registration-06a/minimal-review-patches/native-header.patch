@@ -1,0 +1,11 @@
+--- a/pressure_relay.h
++++ b/pressure_relay.h
+@@ -106,7 +106,7 @@
+ #endif
+ 
+ private:
+-    Result ConsumeAt(const Scope& scope, uint64_t now_ns);
++    Result ConsumeAt(const Scope& scope, uint64_t now_ns, bool live_clock);
+     Result Fail(Error error);
+     bool TransportHealthy(short* readiness);
+     int fd_ = -1;

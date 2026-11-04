@@ -1,0 +1,51 @@
+--- a/pressure_relay.cpp
++++ b/pressure_relay.cpp
+@@ -189,15 +189,16 @@
+ Result Monitor::Consume(const Scope& scope) {
+     uint64_t before = 0, after = 0;
+     if (!MonotonicNow(&before)) return Fail(Error::ClockInvalid);
+-    Result result = ConsumeAt(scope, before);
++    Result result = ConsumeAt(scope, before, true);
+     if (result.status == Status::Revoked) return result;
+     // Nonblocking I/O can still fault or stall on a kernel memory charge. A
+     // fresh entry timestamp cannot certify an event after such a delay.
++    short readiness = 0;
++    if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
++    // This must follow the final health I/O as well as the record drain.
+     if (!MonotonicNow(&after) || after < before || after < last_local_ns_)
+         return Fail(Error::ClockInvalid);
+     last_local_ns_ = after;
+-    short readiness = 0;
+-    if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
+     if (result.status == Status::Event &&
+         after - result.observed_monotonic_ns >= config_.window_us * 1000) {
+         result.status = Status::Stale;
+@@ -207,10 +208,10 @@
+ }
+ #ifdef DROIDLOOM_RELAY_TEST
+ Result Monitor::ConsumeAtForTest(const Scope& scope, uint64_t now_ns) {
+-    return ConsumeAt(scope, now_ns);
++    return ConsumeAt(scope, now_ns, false);
+ }
+ #endif
+-Result Monitor::ConsumeAt(const Scope& scope, uint64_t now_ns) {
++Result Monitor::ConsumeAt(const Scope& scope, uint64_t now_ns, bool live_clock) {
+     if (!active()) return {Status::Revoked, Error::Transport, 0, 0, 0};
+     if (!(scope == scope_)) return Fail(Error::ScopeChanged);
+     if (!now_ns || now_ns < last_local_ns_) return Fail(Error::ClockInvalid);
+@@ -241,6 +242,15 @@
+         if (unexpected_control || (message.msg_flags & MSG_CTRUNC)) return Fail(Error::AncillaryData);
+         if (received != static_cast<ssize_t>(wire.size()) || (message.msg_flags & MSG_TRUNC))
+             return Fail(Error::RecordSize);
++        if (live_clock) {
++            uint64_t received_ns = 0;
++            // A host notification can be generated after entry and arrive
++            // during recvmsg. Compare it with receipt time, not entry time.
++            if (!MonotonicNow(&received_ns) || received_ns < now_ns || received_ns < last_local_ns_)
++                return Fail(Error::ClockInvalid);
++            now_ns = received_ns;
++            last_local_ns_ = received_ns;
++        }
+         Event event;
+         if (!Decode(wire, &event)) return Fail(Error::RecordEncoding);
+         if (!(event.scope == scope_)) return Fail(Error::EventScope);

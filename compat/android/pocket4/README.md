@@ -1,6 +1,6 @@
 # Pocket4 Android application repair snapshot
 
-Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. Douyin has a verified public-browsing subset; StreetEasy remains blocked by a connection alert and JD.COM by login after query. LMKD integration remains unqualified.
+Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. Douyin has a verified public-browsing subset; StreetEasy remains blocked by a connection alert and JD.COM by login after query. Amazon verified query suggestions and return, but product search did not complete. LMKD integration remains unqualified.
 
 This directory preserves repair source and dated evidence for Android 17 in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on this repository's Asterinas kernel.
 
@@ -16,6 +16,12 @@ The [native bridge bundle](native-bridge/README.md) preserves R15 alarm semantic
 
 The [LMKD bundle](lmkd/README.md) reconstructs r3/r4/r5 sources, includes scoped controls and retains failed pressure trials. **r4/b099 must not deploy:** a real trial lost its foreground process. Separate r5 is Android-built but has no protocol/pressure canary or Main deployment. Its new-unit `-MD` records improve dependency evidence; four reused objects still have a historical system-header gap. Main currently uses the drain/ACK-only compatibility service, so a file replacement alone cannot establish LMKD integration.
 
+## Additional isolated host contracts
+
+The [pressure relay bundle](lmkd/pressure-relay/README.md) separates registration controls, one real bounded host PSI event, and the later expected-process-birth repair. The actual old-library negative proves that the earlier owner could accept a different same-class process. The new owner has host identity controls but no PSI requalification. These stages do not compose into Android LMKD qualification; the r7 foreground-survival failure and b099 deployment prohibition remain.
+
+The [proc-FD host receipt](native-bridge/proc-provenance/README.md) preserves real factory/accounting, C++ metadata and nested-namespace controls plus a full-FD-table regression. Final Android source/build and App A/B gates remain separate.
+
 ## Current business observations
 
 The current records are bound to the verified post-activation framework epoch. [Business acceptance](acceptance/business-flows/README.md) separates completed subflows from untested behavior.
@@ -29,6 +35,8 @@ The current records are bound to the verified post-activation framework epoch. [
 | Douyin | Optional login sheet closed normally; public video content visibly changed; related recommendations loaded; a selected video detail and in-app return were verified; normal close preserved Home. | Search was not exercised because no entry was visible in the inspected views. Audio, playback controls, seek and reopen remain unqualified; original helper/audit failures and a separately reconciled unknown click are retained. |
 | StreetEasy | One native launch and actual R16 mapping passed. The connection-error dialog was visually confirmed; one explicit Try again after the known error returned the same error. Normal close preserved Home. | Property query/results/details were never reached. The generic alert and empty UID log capture do not establish an offline-host, TLS or service cause. |
 | JD.COM | Exact 笔记本电脑 readback, matching suggestions and search-submit acknowledgment passed. The App then presented phone-login semantics; normal close preserved Home. | Product results/detail/return were not verified. LoginActivity was visible and SECURE; the inspected capture was all black, recorded as a protected-capture limitation without bypass or a rendering-failure claim. |
+| Amazon | Exact query and matching suggestions; actual R16 mapping; Back returns to populated home; owned close. | Two acknowledged suggestion-delivery methods did not produce observed results. Product details and the cause remain unqualified. |
+| Hertz | One acknowledged native launch on the current epoch; fresh exact-app exit evidence. | SIGSEGV shortly after startup; no business flow, no causal stack in the captured buffers. |
 
 ## Acceptance scope
 

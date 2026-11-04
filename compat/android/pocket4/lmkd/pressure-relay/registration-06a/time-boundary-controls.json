@@ -1,0 +1,19 @@
+{
+  "scope": "Local real packet sockets and wrapped monotonic/health I/O; no memory pressure",
+  "future_control_asserts_error_timestamp": true,
+  "test_sha256": "70202adb1aa3a347905ff3bddf4e583d7db16869c779f71bb5ac6e0e5d496c8b",
+  "baseline": {
+    "chunk_id": "50ec3c",
+    "wall_time_seconds": 0.000067511,
+    "exit_code": 2,
+    "original_token_count": 67,
+    "output": "FAIL health I/O after data cannot return an expired event as fresh\nFAIL genuine in-call arrival is valid against receipt time\nPASS timestamp beyond actual receipt is still rejected\nPASS quiet real channel never synthesizes a notification\nRESULT time-boundaries FAIL\n"
+  },
+  "candidate": {
+    "chunk_id": "fbae67",
+    "wall_time_seconds": 0.000029394,
+    "exit_code": 0,
+    "original_token_count": 67,
+    "output": "PASS health I/O after data cannot return an expired event as fresh\nPASS genuine in-call arrival is valid against receipt time\nPASS timestamp beyond actual receipt is still rejected\nPASS quiet real channel never synthesizes a notification\nRESULT time-boundaries PASS\n"
+  }
+}

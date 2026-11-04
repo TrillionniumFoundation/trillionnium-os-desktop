@@ -1,0 +1,24 @@
+[package]
+name = "droidloom-pressure-relay-owner-candidate"
+version = "0.0.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+libc = "=0.2.188"
+sha2 = "=0.10.9"
+
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.release]
+opt-level = 1
+debug = 0
+lto = false
+codegen-units = 1
+
+[[bin]]
+name = "owned-ipc-controls"
+path = "src/bin/owned_ipc_controls.rs"

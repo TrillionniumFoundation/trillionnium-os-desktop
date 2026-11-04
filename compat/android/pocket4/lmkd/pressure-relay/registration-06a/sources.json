@@ -1,0 +1,53 @@
+{
+  "schema": "pocket4-lmkd-pressure-relay-reference-sources-v1",
+  "host_supervisor_binary_source_provenance_verified": false,
+  "host_design_reference": {
+    "repository": "https://github.com/denialwm/droidloom.git",
+    "upstream_commit": "75c5acf086f25fb8d2a31d159a57cdb4e75f85de",
+    "recorded_candidate_commit": "568f3cea524ec80d09ed42fdcff15f90b870120b",
+    "public_manifest_sha256": "a594a722b734c930ef39f9724dadd73ba7fe9ba53098b94a58caf1e29302b331",
+    "inherited_patch_sha256": "e08fec33ca358a1ebe9bd9688bdf3e02ff32fcb5c10024316e7d915370da9c55",
+    "files": {
+      "runtime/droidloom-supervisor/src/control.rs": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200",
+      "runtime/droidloom-supervisor/src/development.rs": "df93b135cd56ae06e50590658dfbf577a745ba536e6d8a16c4df62249f3fe001",
+      "runtime/droidloom-supervisor/src/linux_plan.rs": "71193ab76d7e0946791447193397039bb00f2074569262583bf1cf168c03bd9b"
+    },
+    "qualification": "Design reference only; current Main supervisor binary has not been matched to this source.",
+    "reference_source_lock_sha256": "5c1c84829a3ced7b12349d07e83d0bf5c433464870dda49a97c8d3db464b1322",
+    "reference_cargo_lock_sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62"
+  },
+  "kernel_primary_sources": [
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/cgroup/cgroup.c",
+      "git_blob": "4ca3cb993da299aa10174cc619268840b7984049"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/sched/psi.c",
+      "git_blob": "d9c9d9480a45b735a996cc22f5d7a4bef6545a3c"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "net/core/sock.c",
+      "git_blob": "5976100a9d55a0044608ce9466476e243a84d289"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "include/uapi/asm-generic/socket.h",
+      "git_blob": "53b5a8c002b1eeeaa0485ca09a13c6f5666fb8fc"
+    }
+  ],
+  "lmkd_reference": {
+    "upstream_commit": "c3601e823bd07c9c190f67e2f9bc7486e4978328",
+    "r5_source_manifest_sha256": "798d9c9e7ed305ce0af6fde6943e0f787c5ec1340cf9ce206a29e12001cec895",
+    "built_r5_target_sha256": "c6d49d95c16d1ce6d94293313ae9f6f683a079ebd4cc821338a701dfe5b2cf6f",
+    "relay_patched_into_r5": false
+  },
+  "host_owner_independently_authored": true,
+  "installed_supervisor_patched": false
+}
