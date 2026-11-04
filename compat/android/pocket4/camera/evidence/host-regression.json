@@ -1,0 +1,42 @@
+{
+  "schema": "pocket4-camera-host-regression-v1",
+  "scope": "Host Java logic only; bindings are not Android runtime code.",
+  "production_ready": false,
+  "cases_expected": 15,
+  "results": {
+    "candidate": {
+      "source_sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca",
+      "compile_exit": 0,
+      "test_exit": 0,
+      "passed_cases": [
+        "healthy characteristics and selected facing",
+        "enumerated device disappears before characteristics",
+        "enumeration race preserves remaining connected device",
+        "cached device removal selects replacement",
+        "camera service checked failure retains cause",
+        "unrelated runtime failure is not swallowed",
+        "missing lens facing skipped",
+        "null device list is unavailable",
+        "null ID entry skipped",
+        "null selected device becomes checked failure",
+        "null characteristics becomes checked failure",
+        "availability event invalidates same ID facing cache",
+        "cached ID list failure reports unavailable",
+        "external camera fallback retained",
+        "callback registration and teardown retained"
+      ],
+      "verified": true
+    },
+    "negative_control": {
+      "source_sha256": "2019878f9f838e1985367d26c4d0e0c497907235a47d15ccc34d5968d4858ca8",
+      "compile_exit": 0,
+      "test_exit": 1,
+      "passed_cases": [
+        "healthy characteristics and selected facing"
+      ],
+      "expected_failure_observed": true,
+      "verified": true
+    }
+  },
+  "success": true
+}

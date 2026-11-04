@@ -1,0 +1,1 @@
+package com.google.common.base;public final class Optional<T>{private final T v;private Optional(T x){v=x;}public static<T>Optional<T> absent(){return new Optional<T>(null);}public static<T>Optional<T> of(T x){return new Optional<T>(x);}}

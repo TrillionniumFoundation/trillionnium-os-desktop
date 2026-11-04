@@ -1,0 +1,934 @@
+{
+  "schema": "pocket4-app-readiness-snapshot-v1",
+  "snapshot_date_utc": "2026-11-04",
+  "platform": "Pocket4 Linux host, Android 17 in DroidLoom; not an Asterinas runtime result.",
+  "overall_status": "NO-GO",
+  "all_apps_production_ready": false,
+  "complete_installed_app_inventory": false,
+  "evidence_rules": [
+    "Launch/foreground observation does not prove a business flow.",
+    "A prior guest-flow result is historical until repeated on the current runtime.",
+    "Owned test apps and host bindings do not qualify third-party Android app business behavior."
+  ],
+  "latest_baseline": {
+    "run": "native-baseline-09",
+    "finished_at_utc": "2026-11-04T04:08:25.379154+00:00",
+    "state": "completed",
+    "attempted": 13,
+    "remaining_not_attempted": 0,
+    "business_verification_performed": false,
+    "supersedes": "Run08 stopped at resource admission before any app launch. Its unexecuted count is no longer current."
+  },
+  "latest_manual_updates": [
+    {
+      "app": "Contacts",
+      "package": "com.android.contacts",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "r10/contacts-flow-01",
+      "source": "Parent runtime verification summary",
+      "status": "launch_and_onboarding_verified",
+      "optional_notification_prompt_dismissed": true,
+      "empty_contact_list_visible": true,
+      "business_create_edit_persist_sync_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Camera",
+      "package": "com.android.camera2",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "r10/camera-release07 + r10/camera-flow-01",
+      "source": "Parent runtime verification summary",
+      "active_apk_sha256": "0f6fb58ea0b81be5f588ee35796d35e4de65d19e866a51ea0e4ac79b26012c4e",
+      "install_verified": true,
+      "application_data_preserved": true,
+      "android_runtime_restart": false,
+      "native_launch_succeeded": true,
+      "onboarding_location_opt_out_verified": true,
+      "observed_result": "Handled Camera error: cannot connect to camera",
+      "fresh_unhandled_exception_observed": false,
+      "old_exit_history_not_misclassified_as_new": true,
+      "preview_verified": false,
+      "photo_verified": false,
+      "reopen_business_verified": false,
+      "status": "BLOCKED_PROVIDER_CONNECTION",
+      "production_ready": false
+    }
+  ],
+  "dated_app_observations": [
+    {
+      "app": "Hertz",
+      "package": "com.hertz.android.digital",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-04a",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        false,
+        false
+      ],
+      "controls_t3_t10": [
+        0,
+        0
+      ],
+      "notes": [
+        "Fresh exact-app SIGSEGV; causal stack unavailable in capture."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Hilton",
+      "package": "com.hilton.android.hhonors",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-04a",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        18,
+        18
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "IHG",
+      "package": "com.ihg.apps.android",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-04a",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        142,
+        142
+      ],
+      "notes": [
+        "Login prompt observed."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "TextFree",
+      "package": "com.pinger.textfree",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        15,
+        15
+      ],
+      "notes": [
+        "GMS_ENVIRONMENT_ERROR."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "DiDi",
+      "package": "com.sdu.didi.psnger",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        77,
+        77
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Taobao",
+      "package": "com.taobao.taobao",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        34,
+        34
+      ],
+      "notes": [
+        "Login prompt observed."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "WeChat",
+      "package": "com.tencent.mm",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        false,
+        false
+      ],
+      "controls_t3_t10": [
+        0,
+        0
+      ],
+      "notes": [
+        "Target root present but invisible; no controls."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Uber",
+      "package": "com.ubercab",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        7,
+        21
+      ],
+      "notes": [
+        "Login prompt observed."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "United",
+      "package": "com.united.mobile.android",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        31,
+        31
+      ],
+      "notes": [
+        "Login prompt observed."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Pinduoduo",
+      "package": "com.xunmeng.pinduoduo",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        false,
+        false
+      ],
+      "controls_t3_t10": [
+        0,
+        0
+      ],
+      "notes": [
+        "Foreground package mismatch; observation restoration verified."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Zhubajie",
+      "package": "com.zhubajie.client",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        8,
+        11
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "StreetEasy",
+      "package": "com.zillow.android.streeteasy",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        18,
+        18
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Ctrip",
+      "package": "ctrip.android.view",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        211,
+        13
+      ],
+      "notes": [
+        "INCOMPLETE_UI_TREE at t3."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "ANA",
+      "package": "jp.co.ana.android.tabidachi",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        85,
+        85
+      ],
+      "notes": [
+        "Login prompt observed."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "SZZC",
+      "package": "com.szzc",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-05",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": null,
+      "controls_t3_t10": null,
+      "notes": [
+        "Fresh exact-app SIGSEGV reconciled after launch-result stop."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Air China",
+      "package": "com.rytong.airchina",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-06",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": null,
+      "controls_t3_t10": null,
+      "notes": [
+        "Fresh exact-app SIGKILL; kill origin unknown; fresh crash not proven."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "TextNow",
+      "package": "com.enflick.android.TextNow",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-07",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        83,
+        83
+      ],
+      "notes": [
+        "Login prompt; messaging and calling not tested."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Beike",
+      "package": "com.lianjia.beike",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-07",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        223,
+        214
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Bilibili",
+      "package": "tv.danmaku.bili",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-07",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        67,
+        140
+      ],
+      "notes": [
+        "Login prompt; playback not tested in this run."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "12306",
+      "package": "com.MobileTicket",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-07",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        18,
+        91
+      ],
+      "notes": [
+        "LOGIN_REQUIRED at t10."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "JD",
+      "package": "com.jingdong.app.mall",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-07",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        false,
+        true
+      ],
+      "controls_t3_t10": [
+        0,
+        12
+      ],
+      "notes": [
+        "Foreground became visible between t3 and t10."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Marriott",
+      "package": "com.marriott.mrt",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-07",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": null,
+      "controls_t3_t10": null,
+      "notes": [
+        "Fresh exact-app SIGSEGV; root cause unknown in this dated evidence."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Douyin",
+      "package": "com.ss.android.ugc.aweme",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        240,
+        29
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Contacts",
+      "package": "com.android.contacts",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        false,
+        false
+      ],
+      "controls_t3_t10": [
+        0,
+        0
+      ],
+      "notes": [
+        "Historical notification prompt; superseded for launch/onboarding by r10 manual verification."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "DeskClock",
+      "package": "com.android.deskclock",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        36,
+        36
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Dialer",
+      "package": "com.android.dialer",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        41,
+        41
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "DocumentsUI",
+      "package": "com.android.documentsui",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        54,
+        54
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Gallery",
+      "package": "com.android.gallery3d",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        18,
+        18
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Messaging",
+      "package": "com.android.messaging",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        18,
+        18
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "QuickSearchBox",
+      "package": "com.android.quicksearchbox",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        9,
+        9
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Thread network demo",
+      "package": "com.android.threadnetwork.demoapp",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        26,
+        26
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Google Play services",
+      "package": "com.google.android.gms",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        70,
+        70
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "WebView shell",
+      "package": "org.chromium.webview_shell",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        13,
+        13
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Editor contract QA",
+      "package": "org.droidloom.qa.editorcontract",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        6,
+        6
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Fcitx5",
+      "package": "org.fcitx.fcitx5.android",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "native-baseline-09",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        72,
+        72
+      ],
+      "notes": [],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Meituan Takeout",
+      "package": "com.sankuai.meituan.takeoutnew",
+      "evidence_date_utc": "2026-11-03",
+      "evidence_run": "native-baseline-03",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        true
+      ],
+      "controls_t3_t10": [
+        15,
+        5
+      ],
+      "notes": [
+        "INCOMPLETE_UI_TREE at t3."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    },
+    {
+      "app": "Amazon",
+      "package": "com.amazon.mShop.android.shopping",
+      "evidence_date_utc": "2026-11-03",
+      "evidence_run": "native-baseline-03",
+      "evidence_level": "launch_and_foreground_observation",
+      "historical_snapshot": true,
+      "foreground_t3_t10": [
+        true,
+        false
+      ],
+      "controls_t3_t10": [
+        60,
+        0
+      ],
+      "notes": [
+        "Foreground lost by t10; October guest-core result does not establish current readiness."
+      ],
+      "business_verified_in_this_run": false,
+      "cold_start_verified": false,
+      "production_ready": false
+    }
+  ],
+  "dated_guest_business_results": [
+    {
+      "app": "12306",
+      "package": "com.MobileTicket",
+      "evidence_at_utc": "2026-10-29T18:31:01Z",
+      "flow": "Public train query, matching service details, seats/prices/timetable, return preserves query",
+      "guest_core_pass": true,
+      "production_ready": false
+    },
+    {
+      "app": "National",
+      "package": "com.ehi.national.mobile",
+      "evidence_at_utc": "2026-10-29T18:02:04Z",
+      "flow": "Guest location/date query, vehicle results, matching class details and price breakdown",
+      "guest_core_pass": true,
+      "production_ready": false
+    },
+    {
+      "app": "Best Buy",
+      "package": "com.bestbuy.android",
+      "evidence_at_utc": "2026-10-29T17:12:03Z",
+      "flow": "Public product search and matching product details",
+      "guest_core_pass": true,
+      "visual_issue": "Pale rendering cause unestablished",
+      "production_ready": false
+    },
+    {
+      "app": "Hilton",
+      "package": "com.hilton.android.hhonors",
+      "evidence_at_utc": "2026-10-29T16:48:55Z",
+      "flow": "Public hotel query and matching hotel image/address/amenities details",
+      "guest_core_pass": true,
+      "production_ready": false
+    },
+    {
+      "app": "Amazon",
+      "package": "com.amazon.mShop.android.shopping",
+      "evidence_at_utc": "2026-10-29T10:52:30Z",
+      "flow": "Public product search and matching detail availability",
+      "guest_core_pass": true,
+      "newer_regression": "Nov3 t10 foreground unconfirmed",
+      "production_ready": false
+    },
+    {
+      "apps": [
+        "Bilibili",
+        "United",
+        "IHG"
+      ],
+      "evidence_at_utc": "2026-10-29T09:13:01Z",
+      "evidence_level": "Historical checkpoint summary; individual business artifacts not re-expanded in this audit",
+      "reported_core_pass": true,
+      "production_ready": false
+    }
+  ],
+  "coverage_gaps": [
+    "No new qualified CEAIR or Hyatt business result was found in the audited Nov4 runs.",
+    "This is an audited evidence subset, not a complete installed-package inventory.",
+    "Authenticated, transactional, persistence and extended lifecycle flows remain unqualified where not separately evidenced."
+  ],
+  "next_business_tests": [
+    {
+      "apps": [
+        "Bilibili",
+        "Douyin"
+      ],
+      "flow": "Search/select public content, confirm actual playback and progress, navigate back, reopen."
+    },
+    {
+      "apps": [
+        "Beike"
+      ],
+      "flow": "Public listing search, matching listing detail, return with query state preserved."
+    },
+    {
+      "apps": [
+        "Meituan Takeout"
+      ],
+      "flow": "Public merchant/item search, matching merchant menu, return with state preserved."
+    },
+    {
+      "apps": [
+        "Hilton",
+        "IHG",
+        "National",
+        "SZZC",
+        "CEAIR",
+        "ANA",
+        "United",
+        "Air China"
+      ],
+      "flow": "Public place/date query, populated results, matching availability and detail; native launch blockers must be resolved first."
+    },
+    {
+      "apps": [
+        "Contacts"
+      ],
+      "flow": "Controlled create/edit/persistence test after launch/onboarding verification."
+    },
+    {
+      "apps": [
+        "TextNow",
+        "TextFree"
+      ],
+      "flow": "Resolve legitimate login/environment prerequisites, then verify actual messaging/calling behavior."
+    },
+    {
+      "apps": [
+        "Camera"
+      ],
+      "flow": "Resolve provider connection; verify preview, photo output, normal close and reopen."
+    }
+  ]
+}

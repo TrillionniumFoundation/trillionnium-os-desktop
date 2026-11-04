@@ -1,0 +1,58 @@
+{
+  "schema": "pocket4-camera-portable-unsigned-rebuild-v1",
+  "started_at_utc": "2026-11-04T05:44:55.091397+00:00",
+  "success": true,
+  "production_ready": false,
+  "signed": false,
+  "installed": false,
+  "clean_full_apk_reproduction_verified": false,
+  "verified_external_inputs": 60,
+  "source_sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca",
+  "commands": [
+    {
+      "label": "javac",
+      "exit_code": 0,
+      "elapsed_seconds": 0.8196309680351987
+    },
+    {
+      "label": "d8",
+      "exit_code": 0,
+      "elapsed_seconds": 28.528691306943074
+    },
+    {
+      "label": "zipalign",
+      "exit_code": 0,
+      "elapsed_seconds": 0.01604950404725969
+    },
+    {
+      "label": "alignment_verify",
+      "exit_code": 0,
+      "elapsed_seconds": 0.003649923950433731
+    }
+  ],
+  "unsigned_apk": {
+    "name": "Camera2-aligned-unsigned.apk",
+    "sha256": "c70393824f1032dd1d34c6a9d1a9349261defe0ad994a026b7f9bf94e6dd56f6",
+    "bytes": 11803887
+  },
+  "program": {
+    "name": "program.jar",
+    "sha256": "7d2baf8a6dd6b41cb3a54de42fb75aa7b6b251f9943a0c697b8a9b01a4b6dc80",
+    "bytes": 14162721
+  },
+  "class_sha256": "04d4a5813deeaffa2a629bf439d426b4e15ae993c77b05871cf18d1a3b4c487c",
+  "validation": {
+    "real_android_sdk_compile": true,
+    "recorded_manager_class_reproduced": true,
+    "recorded_program_jar_reproduced": true,
+    "one_reviewed_class_changed": true,
+    "dex_class_set_equal": true,
+    "class_count": 9682,
+    "test_bindings_absent": true,
+    "non_dex_payload_byte_equal": true,
+    "preserved_non_dex_entries": 1045,
+    "alignment_16k_verified": true,
+    "runtime_execution": false
+  },
+  "finished_at_utc": "2026-11-04T05:45:26.764702+00:00"
+}

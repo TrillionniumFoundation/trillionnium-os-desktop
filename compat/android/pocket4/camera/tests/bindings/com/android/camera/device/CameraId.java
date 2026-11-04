@@ -1,0 +1,1 @@
+package com.android.camera.device; public final class CameraId {private final String v; private CameraId(String s){v=s;} public static CameraId from(String s){return new CameraId(s);} public String getValue(){return v;} }

@@ -1,0 +1,490 @@
+--- a/frameworks/ex/camera2/portability/src/com/android/ex/camera2/portability/AndroidCameraAgentImpl.java
++++ b/frameworks/ex/camera2/portability/src/com/android/ex/camera2/portability/AndroidCameraAgentImpl.java
+@@ -173,6 +173,10 @@
+ 
+         @Override
+         public Characteristics getCharacteristics(int cameraId) {
++            // A camera can be absent at startup or disappear after hot unplug.
++            if (cameraId < 0 || cameraId >= mCameraInfos.length) {
++                return null;
++            }
+             Camera.CameraInfo info = mCameraInfos[cameraId];
+             if (info != null) {
+                 return new AndroidCharacteristics(info);
+--- a/packages/apps/Camera2/src/com/android/camera/CameraActivity.java
++++ b/packages/apps/Camera2/src/com/android/camera/CameraActivity.java
+@@ -2176,6 +2176,12 @@
+         // Ensure anything that checks for "isPaused" returns true.
+         mPaused = true;
+ 
++        // Release module-owned threads and callbacks while its controller is
++        // still valid. Pausing alone does not dispose of these resources.
++        if (mCurrentModule != null) {
++            mCurrentModule.destroy();
++        }
++
+         mSettingsManager.removeAllListeners();
+         if (mCameraController != null) {
+             mCameraController.removeCallbackReceiver();
+@@ -2451,11 +2457,21 @@
+                                  modeIndex);
+         }
+ 
+-        closeModule(mCurrentModule);
++        CameraModule previousModule = mCurrentModule;
++        if (previousModule != null) {
++            closeModule(previousModule);
++        }
+ 
+         // Select the correct module index from the mode switcher index.
+         modeIndex = getPreferredChildModeIndex(modeIndex);
+         setModuleFromModeIndex(modeIndex);
++
++        // A missing agent can keep the previous module. Dispose only an
++        // instance that was actually replaced, before the new one registers
++        // callbacks in openModule().
++        if (previousModule != null && mCurrentModule != previousModule) {
++            previousModule.destroy();
++        }
+ 
+         mCameraAppUI.resetBottomControls(mCurrentModule, modeIndex);
+         mCameraAppUI.addShutterListener(mCurrentModule);
+--- a/packages/apps/Camera2/src/com/android/camera/CaptureModule.java
++++ b/packages/apps/Camera2/src/com/android/camera/CaptureModule.java
+@@ -89,6 +89,7 @@
+ import com.android.camera.util.Size;
+ import com.android.camera2.R;
+ import com.android.ex.camera2.portability.CameraAgent.CameraProxy;
++import com.android.ex.camera2.portability.CameraDeviceInfo;
+ import com.google.common.logging.eventprotos;
+ 
+ import java.util.concurrent.Executors;
+@@ -165,13 +166,15 @@
+      * Flag that is used when Fatal Error Handler is running and the app should
+      * not continue execution
+      */
+-    private boolean mShowErrorAndFinish;
++    private volatile boolean mShowErrorAndFinish;
+     private TouchCoordinate mLastShutterTouchCoordinate = null;
+ 
+     private FocusController mFocusController;
+     private OneCameraCharacteristics mCameraCharacteristics;
+     final private PreviewTransformCalculator mPreviewTransformCalculator;
+ 
++    private final Object mCameraAccessLock = new Object();
++    private volatile boolean mDestroyed;
+     private ScheduledExecutorService mOnCameraAccessService;
+     private ScheduledFuture mOnCameraAccessFuture;
+ 
+@@ -393,15 +396,21 @@
+     }
+ 
+     private boolean updateCameraCharacteristics() {
+-        try {
+-            CameraId cameraId = mOneCameraManager.findFirstCameraFacing(mCameraFacing);
+-            if (cameraId != null && cameraId.getValue() != null) {
+-                mCameraCharacteristics = mOneCameraManager.getOneCameraCharacteristics(cameraId);
+-                return mCameraCharacteristics != null;
+-            }
+-        } catch (OneCameraAccessException ignored) { }
+-            mAppController.getFatalErrorHandler().onGenericCameraAccessFailure();
+-            return false;
++        if (mOneCameraManager != null && mCameraFacing != null) {
++            try {
++                CameraId cameraId = mOneCameraManager.findFirstCameraFacing(mCameraFacing);
++                if (cameraId != null && cameraId.getValue() != null) {
++                    OneCameraCharacteristics characteristics =
++                            mOneCameraManager.getOneCameraCharacteristics(cameraId);
++                    if (characteristics != null) {
++                        mCameraCharacteristics = characteristics;
++                        return true;
++                    }
++                }
++            } catch (OneCameraAccessException ignored) { }
++        }
++        mAppController.getFatalErrorHandler().onGenericCameraAccessFailure();
++        return false;
+     }
+ 
+     @Override
+@@ -412,21 +421,22 @@
+         thread.start();
+         mCameraHandler = new Handler(thread.getLooper());
+         mOneCameraOpener = mAppController.getCameraOpener();
+-        mOnCameraAccessService = Executors.newSingleThreadScheduledExecutor();
+ 
+         try {
+             mOneCameraManager = OneCameraModule.provideOneCameraManager();
+         } catch (OneCameraException e) {
+             Log.e(TAG, "Unable to provide a OneCameraManager. ", e);
+         }
+-        mOneCameraManager.setAvailabilityCallback(this, mCameraHandler);
+         mDisplayRotation = CameraUtil.getDisplayRotation(activity);
+         mCameraFacing = getFacingFromCameraId(
+               mSettingsManager.getInteger(mAppController.getModuleScope(), Keys.KEY_CAMERA_ID));
+         mShowErrorAndFinish = !updateCameraCharacteristics();
+         if (mShowErrorAndFinish) {
+-            return;
+-        }
++            guard.stop("Camera unavailable");
++            return;
++        }
++        mOnCameraAccessService = Executors.newSingleThreadScheduledExecutor();
++        mOneCameraManager.setAvailabilityCallback(this, mCameraHandler);
+         mUI = new CaptureModuleUI(activity, mAppController.getModuleLayoutRoot(), mUIListener);
+         mAppController.setPreviewStatusListener(mPreviewStatusListener);
+         synchronized (mSurfaceTextureLock) {
+@@ -514,23 +524,28 @@
+ 
+     @Override
+     public void onCameraAccessPrioritiesChanged() {
+-        Log.d(TAG, "onCameraAccessPrioritiesChanged");
+-        Runnable runnable = () -> {
+-            mMainThread.execute(() -> {
+-                if (!mPaused && mCamera == null && !mAppController.isPaused()) {
+-                    openCameraAndStartPreview();
+-                }
+-            });
+-        };
+-
+-        // onCameraAccessPrioritiesChanged callbacks come in rapid fire due to the way process oom
+-        // scores are updated. To avoid redundantly opening the camera, wait for 300 ms of silence
+-        // before trying on the main thread.
+-        if (mOnCameraAccessFuture != null) {
+-            mOnCameraAccessFuture.cancel(false);
+-        }
+-        mOnCameraAccessFuture = mOnCameraAccessService.schedule(runnable, 300,
+-                TimeUnit.MILLISECONDS);
++        synchronized (mCameraAccessLock) {
++            if (mDestroyed || mShowErrorAndFinish || mOnCameraAccessService == null) {
++                return;
++            }
++            Log.d(TAG, "onCameraAccessPrioritiesChanged");
++            Runnable runnable = () -> {
++                mMainThread.execute(() -> {
++                    if (!mDestroyed && !mShowErrorAndFinish && !mPaused && mCamera == null
++                            && !mAppController.isPaused()) {
++                        openCameraAndStartPreview();
++                    }
++                });
++            };
++
++            // Coalesce rapid priority changes. Scheduling and executor shutdown
++            // share this lock so a late callback cannot schedule after destroy.
++            if (mOnCameraAccessFuture != null) {
++                mOnCameraAccessFuture.cancel(false);
++            }
++            mOnCameraAccessFuture = mOnCameraAccessService.schedule(runnable, 300,
++                    TimeUnit.MILLISECONDS);
++        }
+     }
+ 
+ 
+@@ -672,14 +687,17 @@
+     }
+ 
+     private void reopenCamera() {
+-        if (mPaused) {
++        if (mDestroyed || mPaused) {
+             return;
+         }
+         AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+             @Override
+             public void run() {
++                if (mDestroyed) {
++                    return;
++                }
+                 closeCamera();
+-                if(!mAppController.isPaused()) {
++                if (!mDestroyed && !mAppController.isPaused()) {
+                     openCameraAndStartPreview();
+                 }
+             }
+@@ -703,7 +721,7 @@
+ 
+     @Override
+     public void resume() {
+-        if (mShowErrorAndFinish) {
++        if (mDestroyed || mShowErrorAndFinish) {
+             return;
+         }
+         Profile guard = mProfiler.create("CaptureModule.resume").start();
+@@ -753,7 +771,9 @@
+ 
+     @Override
+     public void pause() {
+-        if (mShowErrorAndFinish) {
++        // Initialization can fail before UI resources are allocated. A later
++        // camera failure still needs to release resources that were allocated.
++        if (mDestroyed || mUI == null) {
+             return;
+         }
+         cancelCountDown();
+@@ -772,9 +792,33 @@
+ 
+     @Override
+     public void destroy() {
+-        mSoundPlayer.release();
++        synchronized (mCameraAccessLock) {
++            if (mDestroyed) {
++                return;
++            }
++            mDestroyed = true;
++            mPaused = true;
++            if (mOnCameraAccessFuture != null) {
++                mOnCameraAccessFuture.cancel(false);
++                mOnCameraAccessFuture = null;
++            }
++            if (mOnCameraAccessService != null) {
++                mOnCameraAccessService.shutdownNow();
++                mOnCameraAccessService = null;
++            }
++        }
++        if (mOneCameraManager != null) {
++            mOneCameraManager.setAvailabilityCallback(null, mCameraHandler);
++        }
++        if (mSoundPlayer != null) {
++            mSoundPlayer.release();
++            mSoundPlayer = null;
++        }
+         mMediaActionSound.release();
+-        mCameraHandler.getLooper().quitSafely();
++        if (mCameraHandler != null) {
++            mCameraHandler.getLooper().quitSafely();
++            mCameraHandler = null;
++        }
+     }
+ 
+     @Override
+@@ -790,11 +834,20 @@
+     @Override
+     public void hardResetSettings(SettingsManager settingsManager) {
+         if (mStickyGcamCamera) {
++            if (mDestroyed || mShowErrorAndFinish || mOneCameraManager == null) {
++                return;
++            }
++            CameraId backCameraId = mOneCameraManager.findFirstCameraFacing(Facing.BACK);
++            if (backCameraId == null || backCameraId.getValue() == null) {
++                mShowErrorAndFinish = true;
++                mAppController.getFatalErrorHandler().onGenericCameraAccessFailure();
++                return;
++            }
+             // Sticky HDR+ mode should hard reset HDR+ to on, and camera back
+             // facing.
+             settingsManager.set(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_HDR_PLUS, true);
+             settingsManager.set(mAppController.getModuleScope(), Keys.KEY_CAMERA_ID,
+-                  mOneCameraManager.findFirstCameraFacing(Facing.BACK).getValue());
++                  backCameraId.getValue());
+         }
+     }
+ 
+@@ -803,11 +856,15 @@
+         return new HardwareSpec() {
+             @Override
+             public boolean isFrontCameraSupported() {
+-                return mOneCameraManager.hasCameraFacing(Facing.FRONT);
++                return !mShowErrorAndFinish && mOneCameraManager != null
++                        && mOneCameraManager.hasCameraFacing(Facing.FRONT);
+             }
+ 
+             @Override
+             public boolean isHdrSupported() {
++                if (mShowErrorAndFinish || mCameraCharacteristics == null) {
++                    return false;
++                }
+                 if (ApiHelper.IS_NEXUS_4 && is16by9AspectRatio(mPictureSize)) {
+                     Log.v(TAG, "16:9 N4, no HDR support");
+                     return false;
+@@ -818,6 +875,9 @@
+ 
+             @Override
+             public boolean isHdrPlusSupported() {
++                if (mShowErrorAndFinish || mCameraFacing == null) {
++                    return false;
++                }
+                 OneCameraFeatureConfig featureConfig = mAppController.getCameraFeatureConfig();
+                 return featureConfig.getHdrPlusSupportLevel(mCameraFacing) !=
+                         OneCameraFeatureConfig.HdrPlusSupportLevel.NONE;
+@@ -825,13 +885,18 @@
+ 
+             @Override
+             public boolean isFlashSupported() {
+-                return mCameraCharacteristics.isFlashSupported();
++                return !mShowErrorAndFinish && mCameraCharacteristics != null
++                        && mCameraCharacteristics.isFlashSupported();
+             }
+         };
+     }
+ 
+     @Override
+     public BottomBarUISpec getBottomBarSpec() {
++        if (mShowErrorAndFinish || mCameraCharacteristics == null) {
++            // The fatal-error dialog owns the unavailable state; keep controls disabled.
++            return new BottomBarUISpec();
++        }
+         HardwareSpec hardwareSpec = getHardwareSpec();
+         BottomBarUISpec bottomBarSpec = new BottomBarUISpec();
+         bottomBarSpec.enableGridLines = true;
+@@ -1344,6 +1409,10 @@
+      */
+     private void openCameraAndStartPreview() {
+         Profile guard = mProfiler.create("CaptureModule.openCameraAndStartPreview()").start();
++        if (mDestroyed || mShowErrorAndFinish || mPaused || mAppController.isPaused()) {
++            guard.stop("Camera unavailable or paused");
++            return;
++        }
+         try {
+             // TODO Given the current design, we cannot guarantee that one of
+             // CaptureReadyCallback.onSetupFailed or onReadyForCapture will
+@@ -1361,8 +1430,15 @@
+ 
+         guard.mark("Acquired mCameraOpenCloseLock");
+ 
+-        if (mOneCameraOpener == null) {
++        if (mDestroyed || mShowErrorAndFinish || mPaused || mAppController.isPaused()) {
++            mCameraOpenCloseLock.release();
++            guard.stop("Camera became unavailable or paused");
++            return;
++        }
++        if (mOneCameraOpener == null || mOneCameraManager == null
++                || mCameraFacing == null || mCameraCharacteristics == null) {
+             Log.e(TAG, "no available OneCameraManager, showing error dialog");
++            mShowErrorAndFinish = true;
+             mCameraOpenCloseLock.release();
+             mAppController.getFatalErrorHandler().onGenericCameraAccessFailure();
+             guard.stop("No OneCameraManager");
+@@ -1376,6 +1452,15 @@
+             return;
+         }
+ 
++        CameraId cameraId = mOneCameraManager.findFirstCameraFacing(mCameraFacing);
++        if (cameraId == null || cameraId.getValue() == null) {
++            mShowErrorAndFinish = true;
++            mCameraOpenCloseLock.release();
++            mAppController.getFatalErrorHandler().onGenericCameraAccessFailure();
++            guard.stop("Camera disappeared before open");
++            return;
++        }
++
+         // Derive objects necessary for camera creation.
+         MainThread mainThread = MainThread.create();
+         ImageRotationCalculator imageRotationCalculator = ImageRotationCalculatorImpl
+@@ -1384,7 +1469,6 @@
+         // Only enable GCam on the back camera
+         boolean useHdr = mHdrPlusEnabled && mCameraFacing == Facing.BACK;
+ 
+-        CameraId cameraId = mOneCameraManager.findFirstCameraFacing(mCameraFacing);
+         final String settingScope = SettingsManager.getCameraSettingScope(cameraId.getValue());
+ 
+         OneCameraCaptureSetting captureSetting;
+@@ -1395,7 +1479,10 @@
+             captureSetting = OneCameraCaptureSetting.create(mPictureSize, mSettingsManager,
+                     getHardwareSpec(), settingScope, useHdr);
+         } catch (OneCameraAccessException ex) {
++            mShowErrorAndFinish = true;
++            mCameraOpenCloseLock.release();
+             mAppController.getFatalErrorHandler().onGenericCameraAccessFailure();
++            guard.stop("Camera characteristics unavailable");
+             return;
+         }
+ 
+@@ -1590,8 +1677,15 @@
+      * Returns which way around the camera is facing, based on it's ID.
+      */
+     private Facing getFacingFromCameraId(int cameraId) {
+-        return mAppController.getCameraProvider().getCharacteristics(cameraId)
+-                .isFacingFront() ? Facing.FRONT : Facing.BACK;
++        if (cameraId < 0 || cameraId >= mAppController.getCameraProvider().getNumberOfCameras()) {
++            return null;
++        }
++        CameraDeviceInfo.Characteristics characteristics =
++                mAppController.getCameraProvider().getCharacteristics(cameraId);
++        if (characteristics == null) {
++            return null;
++        }
++        return characteristics.isFacingFront() ? Facing.FRONT : Facing.BACK;
+     }
+ 
+     private void resetTextureBufferSize() {
+--- a/packages/apps/Camera2/src/com/android/camera/app/CameraController.java
++++ b/packages/apps/Camera2/src/com/android/camera/app/CameraController.java
+@@ -106,7 +106,7 @@
+ 
+     @Override
+     public CameraDeviceInfo.Characteristics getCharacteristics(int cameraId) {
+-        if (mInfo == null) {
++        if (mInfo == null || cameraId < 0 || cameraId >= mInfo.getNumberOfCameras()) {
+             return null;
+         }
+         return mInfo.getCharacteristics(cameraId);
+@@ -147,7 +147,7 @@
+         if (mInfo == null) {
+             return false;
+         }
+-        if (id >= mInfo.getNumberOfCameras() || mInfo.getCharacteristics(id) == null) {
++        if (id < 0 || id >= mInfo.getNumberOfCameras() || mInfo.getCharacteristics(id) == null) {
+             Log.e(TAG, "Camera info not available:" + id);
+             return false;
+         }
+@@ -159,7 +159,7 @@
+         if (mInfo == null) {
+             return false;
+         }
+-        if (id >= mInfo.getNumberOfCameras() || mInfo.getCharacteristics(id) == null) {
++        if (id < 0 || id >= mInfo.getNumberOfCameras() || mInfo.getCharacteristics(id) == null) {
+             Log.e(TAG, "Camera info not available:" + id);
+             return false;
+         }
+--- a/packages/apps/Camera2/src/com/android/camera/one/OneCameraManager.java
++++ b/packages/apps/Camera2/src/com/android/camera/one/OneCameraManager.java
+@@ -61,6 +61,11 @@
+     public OneCameraCharacteristics getOneCameraCharacteristics(CameraId cameraId)
+           throws OneCameraAccessException;
+ 
++    /**
++     * Registers a callback, or detaches it when {@code callback} is null.
++     * The handler is used only for registration. A callback already dispatched
++     * before detachment may still run, so clients must guard their own teardown.
++     */
+     public void setAvailabilityCallback(AvailabilityCallback callback, Handler handler);
+ 
+     public interface AvailabilityCallback {
+--- a/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java
++++ b/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java
+@@ -67,7 +67,7 @@
+ 
+     private final CameraManager mCameraManager;
+     private Hashtable<Facing, String> mCameraFacingCache = new Hashtable<Facing, String>();
+-    private AvailabilityCallback mAvailabilityCallback;
++    private volatile AvailabilityCallback mAvailabilityCallback;
+ 
+     public Camera2OneCameraManagerImpl(CameraManager cameraManger) {
+         mCameraManager = cameraManger;
+@@ -126,9 +126,13 @@
+     }
+ 
+     @Override
+-    public void setAvailabilityCallback(AvailabilityCallback callback, Handler handler) {
++    public synchronized void setAvailabilityCallback(AvailabilityCallback callback, Handler handler) {
+         mAvailabilityCallback = callback;
+-        mCameraManager.registerAvailabilityCallback(this, handler);
++        if (callback == null) {
++            mCameraManager.unregisterAvailabilityCallback(this);
++        } else {
++            mCameraManager.registerAvailabilityCallback(this, handler);
++        }
+     }
+ 
+     public CameraCharacteristics getCameraCharacteristics(
+@@ -143,8 +147,9 @@
+ 
+     @Override
+     public void onCameraAccessPrioritiesChanged() {
+-        if (mAvailabilityCallback != null) {
+-            mAvailabilityCallback.onCameraAccessPrioritiesChanged();
++        AvailabilityCallback callback = mAvailabilityCallback;
++        if (callback != null) {
++            callback.onCameraAccessPrioritiesChanged();
+         }
+     }
+ 
