@@ -42,34 +42,55 @@ every shipped file digest and `effects_authorized: false`.
 
 ## Linux host entry point
 
-The implementation checkpoint selected on 2026-11-03 is
-[Desktop `745c0731aed270ee394145c6767371a6af47f49f`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/745c0731aed270ee394145c6767371a6af47f49f),
-tree `fa70b1b95206d25775009c6965245d34051468a4`, paired with
-[Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360),
-tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`. The original Hepta UI/core,
-host packages and Hepta-carried patches select this same source and use
-Rust 1.96.0. [Current capabilities](docs/CURRENT_CAPABILITIES.md#current-product-pair)
-is the current status entry; later changes must record their actual Desktop
-commit/tree in the build receipt rather than reuse this starting checkpoint.
-The UI Cargo root explicitly patches all four original AccessKit crates to this
-same source. `services/hepta-os` remains a local protocol/transport crate; it
-does not acquire a fictitious Hepta Git dependency.
+<!-- current-hepta-source:start -->
+The current independent `notes_calculator_v1` candidate selects one original
+Hepta source for Root, Agentd, UI/core and the carried dependency patches:
 
-The canonical Hepta identity is in
-[HEPTA_SHARED_PRESENTER.json](support/ui/HEPTA_SHARED_PRESENTER.json); the
-[dependency guide](support/ui/DEPENDENCIES.md) lists all six product lock roots
-and source checks. The [evidence index](docs/EVIDENCE_INDEX.md) preserves earlier
-component, Cargo, kernel and UI records with their exact tested sources.
-Those results do not qualify this successor's release binaries, real window,
-installed deployment or signed Android receiver. Each final source profile
-must bind the actual complete Desktop commit/tree, Cargo-generated locks,
-features, binary hashes and execution receipts.
+| Input | Exact identity |
+| --- | --- |
+| Hepta commit | [`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3) |
+| Hepta tree | `0e12d53adf6a13721fdb2feef0e974d903b92e85` |
+
+The Desktop code handoff is
+[`f5fbc7e1a533e5bec588575ab56312a3203f6d8c`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/f5fbc7e1a533e5bec588575ab56312a3203f6d8c),
+tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`. This identifies the candidate
+source, not a completed build or installation. Every successor records its
+actual Desktop commit/tree in its build receipt. All 39 Hepta Git dependencies
+and patches in the three consuming manifests select the commit above and use
+Rust 1.96.0. The UI Cargo root explicitly patches all four original AccessKit
+crates to this source. `services/hepta-os` remains a local protocol/transport
+crate without a Hepta Git dependency.
+
+[HEPTA_SHARED_PRESENTER.json](support/ui/HEPTA_SHARED_PRESENTER.json) is the
+canonical Hepta identity. The [dependency guide](support/ui/DEPENDENCIES.md)
+records the six product lock roots and source/graph checks, while
+[Current capabilities](docs/CURRENT_CAPABILITIES.md#current-product-pair)
+records the outstanding execution gates. The joint profile needs a new original
+Core thread and both original Notes/Calculator target identities; selecting it
+does not migrate a Notes-only catalog, grant human admission, renew an owner
+lease or qualify joint recovery. See the [Root assembly contract](services/hepta-session-host/src/product_root/DESKTOP_PROFILE.md)
+and [Calculator protocol](ui/core/CALCULATOR_PROTOCOL.md).
+
+The [evidence index](docs/EVIDENCE_INDEX.md) retains earlier component, Cargo,
+kernel and UI results with their exact tested sources. Those results do not
+qualify this candidate's release binaries, real window, installed deployment or
+signed Android receiver. Each final source profile must bind the actual complete
+Desktop commit/tree, Cargo-generated locks, features, binary hashes and execution
+receipts; source and graph verification do not authorize production effects.
 
 The original runtime contracts are pinned beside their owners:
-[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
-[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
-[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
-and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/a39a0871d9601ffccb5e0d95d8f39d54b3a63360/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
+[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
+[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
+[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
+and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
+<!-- current-hepta-source:end -->
+
+The preceding 2026-11-03 checkpoint was Desktop
+`745c0731aed270ee394145c6767371a6af47f49f`, tree
+`fa70b1b95206d25775009c6965245d34051468a4`, with Hepta
+[`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360),
+tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`. Its selection and any receipts
+remain historical; they are not the current Cargo pin or successor qualification.
 
 Use the [product guide](support/ui/PRODUCT.md) to wrap verified native binaries
 and install them for the current user. The generated `trillionnium-desktop`
