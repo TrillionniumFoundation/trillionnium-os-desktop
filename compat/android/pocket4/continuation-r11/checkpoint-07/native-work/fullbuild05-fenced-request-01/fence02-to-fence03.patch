@@ -1,0 +1,18 @@
+--- a/fenced-build02.py
++++ b/fenced-build05.py
+@@ -9,11 +9,11 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = 'ba4dffc59b224b32e6f42f7f66222d35cdd62eecb82dabea67d05dc888635d6d'
++CONTROLLER_SHA = 'e56f06abdbda5aa95fe42e4ecf14d7f79f53e53821a8d5b1d43d0dce0776c655'
+ SNAPSHOT_SHA = 'f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb'
+-PREPARATION_SHA = '30044956dbcc2d73a067750abb36f62e4ff52d5aa703f5321aedcba80397c743'
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined04-01')
+-FENCE_ROOT = ROOT / 'build-fences-02'
++PREPARATION_SHA = 'bb6e0d92c8b0df36ca8ccf1f25dd4286491c09999fa9225ff9f15955e00cd9d0'
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-01')
++FENCE_ROOT = ROOT / 'build-fences-03'
+ 
+ 
+ def require(value, reason):

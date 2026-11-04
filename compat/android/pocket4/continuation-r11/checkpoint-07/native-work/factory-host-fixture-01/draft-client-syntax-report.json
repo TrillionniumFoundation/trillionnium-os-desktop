@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "state": "DRAFT_CLIENT_SYNTAX_ONLY",
+  "source_files": {
+    "bionic_branch_view.cc": {
+      "bytes": 784,
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857"
+    },
+    "client_control.cc": {
+      "bytes": 15956,
+      "sha256": "cdcbbab212b5d4be64094d8050b46c96111cc4bfbc88b2a7348978962d94bd50"
+    },
+    "include/berberis/kernel_api/proc_maps_factory_protocol.h": {
+      "bytes": 5051,
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9"
+    },
+    "include/berberis/kernel_api/proc_maps_kernel_statfs.h": {
+      "bytes": 2480,
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0"
+    },
+    "include/berberis/kernel_api/proc_maps_provenance.h": {
+      "bytes": 4201,
+      "sha256": "79e871b78d6fc2461f2fe103df070d6dc6504acf43ff6b64fcecec142eb618b0"
+    },
+    "include/berberis/kernel_api/proc_maps_raw_metadata_owner.h": {
+      "bytes": 2668,
+      "sha256": "7e8ae5c660c783c8fb8f5db75c054e5359690275a2f4acc2a9fe1c9af7c11554"
+    }
+  },
+  "compile": [
+    "/usr/bin/x86_64-linux-gnu-g++-13",
+    "-std=c++17",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-DBERBERIS_PROCMAPS_RAW_METADATA_OWNER=1",
+    "-I",
+    "include",
+    "-fsyntax-only",
+    "client_control.cc",
+    "bionic_branch_view.cc"
+  ],
+  "compiler_sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73",
+  "syntax_exit_code": 0,
+  "actual_implementation_linked": false,
+  "root_factory_started": false,
+  "client_cases_executed": false,
+  "Android_executed": false,
+  "ownership": "root owns new controller.py/build_fixture.py; these client files paused for review",
+  "production_ready": false
+}

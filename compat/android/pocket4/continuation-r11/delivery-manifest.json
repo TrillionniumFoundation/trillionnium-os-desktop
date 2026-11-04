@@ -1,15 +1,15 @@
 {
-  "schema": "pocket4-r11-public-checkpoint-v6",
-  "checkpoint": "06",
-  "base_commit": "37dc01c6997f6e36975aa2bda894024958e43df0",
-  "base_tree": "225cda8c7337da687ad0b19cca0ea1468a171e07",
+  "schema": "pocket4-r11-public-checkpoint-v7",
+  "checkpoint": "07",
+  "base_commit": "bef03784ba3fb4948cef0b128092bda769a6364b",
+  "base_tree": "06ad6adfb62b8e88474edf713dc9b865237f9ea0",
   "branch": "fix/pocket4-android-production-20261104-r11",
   "pull_request": 292,
-  "previous_manifest_sha256": "31fb119c20ebd9a6def6602ff01b56aa1495fa08ae30cb5a04fb05e81b8045d0",
+  "previous_manifest_sha256": "c34561b87a63f57ca21628cf347646cf6bd72440a21a01a549867c80f827ef12",
   "frozen": true,
-  "inherited_payload_files": 1390,
+  "inherited_payload_files": 1858,
   "inherited_payloads_modified": 0,
-  "new_payload_files": 468,
+  "new_payload_files": 672,
   "commercial_apps_production_ready": 0,
   "launcher_apps_in_scope": 45,
   "all_apps_production_ready": false,
@@ -131,16 +131,17 @@
     "production_integration_qualified": false
   },
   "pending": [
-    "Combined V2 metadata/factory source must include all six signal changes and pass the matching full engine/ART build.",
-    "Owned runtime factory authentication, cross-PID-namespace maps identity, descriptor/lifetime/error controls and an actual Android positive path.",
-    "Outer ARM64 adapter execution and NOFILE-zero behavior; paired APEX signing and updater/lifecycle qualification.",
-    "Real supervisor/init/broker finite-domain startup, native LMKD enrollment, generation loss and exact retirement on an owned Android cell.",
-    "Native LMKD stale-drop/above-high behavior, production cgroup.kill, PID-reuse and escaped-descendant qualification.",
-    "Bilibili recorder transport integration, complete business controls and app-attributed audible playback.",
-    "Complete whole-app business acceptance for all 45 launcher Apps."
+    "Resolve first factory client namespace/credential EPERM without weakening identity or authority checks.",
+    "Review independent smaller build profile; pass actual full combined engine build and host/Android regression.",
+    "Repair NOFILE-zero raw and ordinary TMPFS EMFILE with correct descriptor ownership and no ABA fallback.",
+    "Prove actual prefix system_server comparison cause, then qualify owned namespace/unit retirement.",
+    "Qualify actual supervisor/init/broker finite-domain startup, native LMKD enrollment and abandoned-generation recovery on an owned Android cell.",
+    "Run recorder R3 read-only admission; bind installed action-runner APK to exact source/build before UI acceptance.",
+    "Complete Bilibili playback/controls/app-attributed audio and all remaining whole-App business-flow gates.",
+    "Paired ART/APEX signing, production updater/lifecycle and whole-App acceptance remain open; 0/45 launcher Apps qualified."
   ],
-  "files_excluding_manifest": 1858,
-  "bytes_excluding_manifest": 16228471,
+  "files_excluding_manifest": 2530,
+  "bytes_excluding_manifest": 24305735,
   "files": [
     {
       "path": "acceptance/collect_inventory.py",
@@ -11289,6 +11290,4083 @@
       "sha256": "8c3de9b6a526db075533de35350c6b64af7e7414021aa5d1c5e1c4bac643e7ec",
       "bytes": 4581,
       "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/README.md",
+      "sha256": "58c2de03f30f06453d25bd1f032a43335934198faa828114750c3939bec18c95",
+      "bytes": 10432,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/README-addendum-01.md",
+      "sha256": "0f5aa0fa89d3b69d31fb5f8b114988f6f0a681eed866b80b571367c5f2918c1d",
+      "bytes": 1947,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/README.md",
+      "sha256": "6b2a423ba1e243e38a930afd7f9eccc7997654451967a77c3fa0621874306970",
+      "bytes": 4087,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/assemble_allowlist.py",
+      "sha256": "8d29749048aaf93a6154243d2e3cac58b0897f9dfc87792682838f2e836a5f69",
+      "bytes": 9683,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-hash/receipt.json",
+      "sha256": "f8a14d3d295bf2e180081d34d7494d9f11b6b08c85aa8ddfcfbe996d10fbcf81",
+      "bytes": 1416,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-hash/start.json",
+      "sha256": "43f9143196106425963e4e726f23e1f675b4ff6b6e80627e8da9d2636568ca9d",
+      "bytes": 1019,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-hash/stdout.json",
+      "sha256": "639307156669adb1ef8b33c33e67d70fac357d8fd795b47c20dbf4486f59232d",
+      "bytes": 1299,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-hash/terminal.json",
+      "sha256": "ff08490a28f521a533bdc5f6049aaaac7441698e088bf93b024a100d0bfd4a97",
+      "bytes": 731,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-metadata/diagnostic-result.json",
+      "sha256": "476686a05d49afb8c300a0b81445d07eabc1946f301d459fce5abb86764b88ec",
+      "bytes": 2422,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-metadata/receipt.json",
+      "sha256": "637be1e0418ded15550c24d8e6e65f08b8e4562c3b58f80fd64e0b86975cd03b",
+      "bytes": 3616,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-metadata/start.json",
+      "sha256": "624a5193f972896c9d9a6fe429a5fd6d827ee8a2f70465417e5f1d249e174461",
+      "bytes": 1023,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/actual-helper-metadata/terminal.json",
+      "sha256": "3d477bd779788c5925d3df8fb884002f7274ad8871c04642f42ca064269446ff",
+      "bytes": 731,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/candidates/input-error-context-r3-01/control.py",
+      "sha256": "ab3eadb1d9d0232e5a950369d3866be1067a6089d288c81d51e6cdeaf250c6cc",
+      "bytes": 3332,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/candidates/input-error-context-r3-01/control.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/candidates/input-error-context-r3-01/control.stdout.json",
+      "sha256": "e06ef35bcc0e92d05913d581da0c93e3890dbf69f9a656c45a6eb586beea6f52",
+      "bytes": 814,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/candidates/input-error-context-r3-01/error-context.patch",
+      "sha256": "497c2f1c2b37d20b0045dfa24fa1fa58005ff74a95f2bbf8d532a54a5008b9be",
+      "bytes": 637,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/candidates/input-error-context-r3-01/preimage_source_contract.py",
+      "sha256": "c868748bac4f1537670b50b7b962ca8c86650483d98466127149c6cdd508b9ae",
+      "bytes": 8654,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/candidates/input-error-context-r3-01/source_contract.py",
+      "sha256": "21513339d1e389f462a56fcd816cd4f5ed5832cb4ee50a3cd1f99331e556463d",
+      "bytes": 8911,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/diagnostic-request/analysis-and-request.json",
+      "sha256": "24fd273b4cf231c1939ad8112945a9e1d570288392c37575934b89679b1df00b",
+      "bytes": 1747,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/diagnostic-request/diagnose.py",
+      "sha256": "613404e54655b123cd0d12adb861850ec5e00fc312886047e544e65c86312d15",
+      "bytes": 3794,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/diagnostic-request/process-start-request.json",
+      "sha256": "6691f98f0f47f58ed2d5094df13a75a0fc9765910b7152d5fe08bde4c8ea370d",
+      "bytes": 4212,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/freeze-receipts/recorder-held-r1-freeze-01-receipt.json",
+      "sha256": "6cab8acb4b4a20eb5b1d59be5428c0e8a771589bd3628e870baf9a4e4e5a503f",
+      "bytes": 1879,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/freeze-receipts/recorder-held-r2-freeze-01.finalization.json",
+      "sha256": "761b9c2b53c74304bc54469ad1bd8c82ccbeb58e9c7c5b51e14a046797c9153e",
+      "bytes": 2688,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/freeze-receipts/recorder-held-r3-freeze-01.finalization.json",
+      "sha256": "5e63f983cf7a3f3c3882a9907236cee38eaf3a3868982f0c7967699026ab54f8",
+      "bytes": 2244,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/helper-hash-request/default-plan.stdout.json",
+      "sha256": "6519ecbfb1c00da60e345cfd9bc29abecd2447507cc5a16d781278ab3504debb",
+      "bytes": 641,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/helper-hash-request/hash_helper.py",
+      "sha256": "2937f28539bb6c25f79328d2382d363f398fc29d3ff70444c578520734138c72",
+      "bytes": 3940,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/helper-hash-request/process-start-request.json",
+      "sha256": "179e46ed13dd6239396097e04e23127b2a55767327f2fbe388dd4dbf1165297f",
+      "bytes": 4375,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/helper-hash-request/request-summary.json",
+      "sha256": "0cd9e840d874bc49f30d67a7bb6e3ad172344df3e6d3351d0c8e951a435fda56",
+      "bytes": 1359,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/archive-readback-verified.json",
+      "sha256": "313d3bfff0dbc33ad4ad56d5957461a35c4f1efeef292fd8daf409bf3f49abe0",
+      "bytes": 321,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/collector-report.json",
+      "sha256": "e0228979fee18b57362791c1e6044686844519f052da80b8fda35f96c01265a2",
+      "bytes": 2077,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/collector-start-request.json",
+      "sha256": "8cd0d26902810f5dc94e7a8abce0381c42e6d9596fb299cd72b3199d9007bbfb",
+      "bytes": 6781,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/collector-start-tool-result.json",
+      "sha256": "8c5048557b2e397010f3069d8e7f733e0531df455fda6181d5ce28022aa2c1a2",
+      "bytes": 1244,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/collector-terminal-00.json",
+      "sha256": "ca06c4ba8a5491908500d19436b3a96f218447220f74842483dc71226ccc84b4",
+      "bytes": 954,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/collector.py",
+      "sha256": "41d2c1bd76687828e5f4543d0caa3807625736689b429da71c4942bd0279bcdc",
+      "bytes": 6318,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/concise-original-failure.json",
+      "sha256": "e2ec5cc73ee48c1d0090f0d1b239f92070b9c713051ddf1aea3892908a42714f",
+      "bytes": 3587,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/readback-validation.json",
+      "sha256": "a999f0a869b716d5f4bfce7319eae592e561fec91165b477e7be36cd8f14d70c",
+      "bytes": 968,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/01-init.intent.json",
+      "sha256": "d4cfb4a5ff555bed8d3330c33aff0ca0c8ebab5b1299833824b680228c3a54f9",
+      "bytes": 775,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/01-init.result.json",
+      "sha256": "1ea7a7976e619e9764ddf8bc35a824032ceb07391d5905d8205de10d8cb1ac6c",
+      "bytes": 1568,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/01-init.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/01-init.stdout",
+      "sha256": "688b4189c3f9dfa6d4a713510654523e68e3c64f3ea806c0c4b90697d5744164",
+      "bytes": 124,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/02-admission.intent.json",
+      "sha256": "e377a269ff3035e12220aa994e2089ca3c826889418b980258c29330eacb5ea9",
+      "bytes": 478,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/02-admission.result.json",
+      "sha256": "094de91984b33d71ef13121475ea53ba1930c35425572b234146c3d8352faaf9",
+      "bytes": 1276,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/02-admission.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/evidence/02-admission.stdout",
+      "sha256": "28fe8e1e0b8879926ecf2e2cb033a185924683b89ece9764676c47b531b083ca",
+      "bytes": 333,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/flow/scope.json",
+      "sha256": "ebc277553a8251373ea175c4d679d6d3c64f05345b1eea2a40aa39f28ab93796",
+      "bytes": 662,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/flow/steps/readonly-admission-01/intent.json",
+      "sha256": "4602f399c7fe8f45f90643f17503bed72ca5a727e2357640f1928caf5ba2d821",
+      "bytes": 927,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/flow/steps/readonly-admission-01/result.json",
+      "sha256": "8563fc56936629443889e94b59fed75019ef71410e112e6042e457092cd10f69",
+      "bytes": 353,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/retained-files/result.json",
+      "sha256": "7100c62f9512e3514c49744fef578575eb895fa7891a1891739ac6a16470fe72",
+      "bytes": 1830,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/runtime-terminal-00.json",
+      "sha256": "b8810c47a19602b2aa17ba9d70f76286faf1231b8c0875843bc9356efded1a6c",
+      "bytes": 949,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/start-tool-result.json",
+      "sha256": "3e3068a40d4867454775d26e89e601f5ed52df898a6afa66128cf74724c0999c",
+      "bytes": 1270,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-failure/upload-tool-result.json",
+      "sha256": "8c41edc650f79e50d6c11def33ebfd1e270c34786c2e41843aed8721dc90575b",
+      "bytes": 330,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-request/coordinator.py",
+      "sha256": "88140f6b1effdf0a6f15008cca2169c805a70d97541c20a5942d256de731174a",
+      "bytes": 16900,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-request/local-static-and-staging.json",
+      "sha256": "a6f65ef18d1e0dfd85d29ba323e22470ad3644e098937c7f25e44d3394117cac",
+      "bytes": 1093,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-request/process-start-request.json",
+      "sha256": "295d59c5cd249dec1099c1fc34db6597242b50fe8d7799f083498ec1437a82f1",
+      "bytes": 17574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r2-request/request-summary.json",
+      "sha256": "e8ee550c86ae4bb0fb3ad2badcfb364ab57e7cfca8c1471c9cb873381d78bebe",
+      "bytes": 2932,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r3-request/coordinator-r2-to-r3.patch",
+      "sha256": "6988a1fd1937cc479dd682856ee30440e32dba64e54c950af0df28180f8fbe5f",
+      "bytes": 2283,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r3-request/coordinator.py",
+      "sha256": "e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd",
+      "bytes": 16900,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r3-request/local-static-and-staging.json",
+      "sha256": "90f9e42d5922b93f2bc013bf16f9afaf740eeef3bfc21c84ca68e112fed3af87",
+      "bytes": 1244,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r3-request/process-start-request.json",
+      "sha256": "11de32e4685d648d362286707bd5888ac11ffb3ac8d80835acbd38bfc5b001a1",
+      "bytes": 17574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/readonly-r3-request/request-summary.json",
+      "sha256": "a146cc70ae6128751d7d07373c3023a2dd4c7848aabdb454229677967b89d58b",
+      "bytes": 2558,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/CALL_INVENTORY.md",
+      "sha256": "39fdb2a7fc88c4833977a95fe5db940879262b3d7016b595dc163b87a5b106e5",
+      "bytes": 5785,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/EXTERNAL_INPUTS.json",
+      "sha256": "60d47e4182eee43f916f99221f03a01a7e7e527fa880ec186802226733979798",
+      "bytes": 5162,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/README.md",
+      "sha256": "6df0846f27b6031402ffaecea8d1ddfb93e7050cdae58d8d7468285e881c804d",
+      "bytes": 7085,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/REOPEN_AUDIO_PLAN.md",
+      "sha256": "34176a8cfd39efaa9a4e45ba28c9d6e075ad869e30cf3cad30088202399988d6",
+      "bytes": 5399,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/bound_android_transport.py",
+      "sha256": "ca3e30796961acc38737b6a9f22c3519abc9da1a7a6a384b732dd5a374a325d9",
+      "bytes": 14376,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/evidence/actual-tool-result.json",
+      "sha256": "24ffb1341f9febc20be97e59b95e448f9b13c62812f431d4d5808191d3a93785",
+      "bytes": 6848,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/evidence/controls-report.json",
+      "sha256": "cd23b2ca2f3e2960c124b51362416aa5192bd99af70a4472751ab06205462d86",
+      "bytes": 6667,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/evidence/controls.combined.log",
+      "sha256": "3129bedf25a68333e1894d6751bb9e036db8432e6629a017d44c7ec972c7e32b",
+      "bytes": 6383,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/existing_ui_entry.py",
+      "sha256": "36da94a76fc336d259c19b33c522e1a6746d676d7e59ccaffab115dcadc68ebc",
+      "bytes": 12963,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/main_binding.py",
+      "sha256": "aaca2029095816a70db353eb5c1060141373b36abfed4a19e61aec1bd55e82db",
+      "bytes": 8594,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/recorder-integration.patch",
+      "sha256": "f0fdf8205ac929088a72d3d66b46688e0d0345dabe603706b7bb4733816fa950",
+      "bytes": 18329,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/recorder.py",
+      "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+      "bytes": 40090,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/references/android_app.py",
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+      "bytes": 37574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/references/android_backend.py",
+      "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae",
+      "bytes": 36401,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/references/bound_android_transport_r3.py",
+      "sha256": "def4e9af81bda71cc4125b61c8a15251e07e4866627b577650e77a4fb127ecae",
+      "bytes": 13721,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/references/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "bytes": 8658,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/references/held_runtime_r5.py",
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
+      "bytes": 22691,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/references/original_recorder.py",
+      "sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+      "bytes": 31945,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/references/task_scope_baseline.py",
+      "sha256": "a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528",
+      "bytes": 17281,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/source-manifest.json",
+      "sha256": "687f0a3ed1dccff13da1b25e2806128ee70aea5def5900beaaf6c9c5ec3572ec",
+      "bytes": 3438,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/source_contract.py",
+      "sha256": "c868748bac4f1537670b50b7b962ca8c86650483d98466127149c6cdd508b9ae",
+      "bytes": 8654,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/tests/integration_controls.py",
+      "sha256": "28edac91e9dd41fa757c31db28496638e5980fed94996431575bb54fec028a9b",
+      "bytes": 41301,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r1/transport-from-r3.patch",
+      "sha256": "72e18d5ea2b244f48d7485523d00453715600931f3b65fa51fd8b9d3dcee09c2",
+      "bytes": 2705,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/CALL_INVENTORY.md",
+      "sha256": "39fdb2a7fc88c4833977a95fe5db940879262b3d7016b595dc163b87a5b106e5",
+      "bytes": 5785,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/EXTERNAL_INPUTS.json",
+      "sha256": "60d47e4182eee43f916f99221f03a01a7e7e527fa880ec186802226733979798",
+      "bytes": 5162,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/R1-SOURCE-MANIFEST.json",
+      "sha256": "687f0a3ed1dccff13da1b25e2806128ee70aea5def5900beaaf6c9c5ec3572ec",
+      "bytes": 3438,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/README.md",
+      "sha256": "a83cd009d23fa97af9d66860809775afb878329952d3c4f9c37181d19f76b371",
+      "bytes": 8594,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/REOPEN_AUDIO_PLAN.md",
+      "sha256": "34176a8cfd39efaa9a4e45ba28c9d6e075ad869e30cf3cad30088202399988d6",
+      "bytes": 5399,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/bound_android_transport.py",
+      "sha256": "ca3e30796961acc38737b6a9f22c3519abc9da1a7a6a384b732dd5a374a325d9",
+      "bytes": 14376,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/classpath-primary-error-r2.patch",
+      "sha256": "e3dbf9b59a3819b8e5f45c496d6bee9a2d0746714c3348b6577658be95de7d5d",
+      "bytes": 963,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/actual-tool-result.json",
+      "sha256": "24ffb1341f9febc20be97e59b95e448f9b13c62812f431d4d5808191d3a93785",
+      "bytes": 6848,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/classpath-primary-r2-02.stdout.json",
+      "sha256": "2600b159ad747d156f74fa85d14ffadbd6c30649d247049071e86dc673a9c81e",
+      "bytes": 1829,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/classpath-primary-r2-execution-02.json",
+      "sha256": "c8ab9a847ddffd094f922ad24ae3c91bd8dd6a415f61ff09e9d409b6ddfc9110",
+      "bytes": 231,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/classpath-primary-r2-execution.json",
+      "sha256": "476d8d44cff70c8fa7cfecbcc00bce19b2f226b027a109ef8276a54d934a983f",
+      "bytes": 231,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/classpath-primary-r2.stderr",
+      "sha256": "7cf9718255c4e6c497319464346c333d1d199c38da0d104fab48d292d95ed650",
+      "bytes": 512,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/controls-report.json",
+      "sha256": "cd23b2ca2f3e2960c124b51362416aa5192bd99af70a4472751ab06205462d86",
+      "bytes": 6667,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/controls.combined.log",
+      "sha256": "3129bedf25a68333e1894d6751bb9e036db8432e6629a017d44c7ec972c7e32b",
+      "bytes": 6383,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/draft-edit-failure-01.json",
+      "sha256": "5798db3c6bdaaa7faf7217fbcfc2533ba98470e293e3d6f641194a30108e6fcc",
+      "bytes": 452,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/evidence/production-delta-scope.json",
+      "sha256": "ebc23cc66cbe58e897d9af5dfdd5afd2ae2b5fb67b0bb0292d0de552040da550",
+      "bytes": 385,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/existing_ui_entry.py",
+      "sha256": "36da94a76fc336d259c19b33c522e1a6746d676d7e59ccaffab115dcadc68ebc",
+      "bytes": 12963,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/main_binding.py",
+      "sha256": "da78aabbea484955bb3bfaedddee962aa030e160f6c4b38a386b5e33483a42b2",
+      "bytes": 8904,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/recorder-integration.patch",
+      "sha256": "f0fdf8205ac929088a72d3d66b46688e0d0345dabe603706b7bb4733816fa950",
+      "bytes": 18329,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/recorder.py",
+      "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+      "bytes": 40090,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/android_app.py",
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+      "bytes": 37574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/android_backend.py",
+      "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae",
+      "bytes": 36401,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/bound_android_transport_r3.py",
+      "sha256": "def4e9af81bda71cc4125b61c8a15251e07e4866627b577650e77a4fb127ecae",
+      "bytes": 13721,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "bytes": 8658,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/held_runtime_r5.py",
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
+      "bytes": 22691,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/main_binding_r1.py",
+      "sha256": "aaca2029095816a70db353eb5c1060141373b36abfed4a19e61aec1bd55e82db",
+      "bytes": 8594,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/original_recorder.py",
+      "sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+      "bytes": 31945,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/references/task_scope_baseline.py",
+      "sha256": "a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528",
+      "bytes": 17281,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/source-manifest.json",
+      "sha256": "2c2c2a51ec91402a04237738ca5eba840a0d5dad62803e09c8752d691394ab72",
+      "bytes": 5203,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/source_contract.py",
+      "sha256": "c868748bac4f1537670b50b7b962ca8c86650483d98466127149c6cdd508b9ae",
+      "bytes": 8654,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/tests/classpath_primary_control.py",
+      "sha256": "6343b8e5da712a3080fb958935c51c6e2e3c27f6166649171076eb9de98dde14",
+      "bytes": 4856,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/tests/integration_controls.py",
+      "sha256": "28edac91e9dd41fa757c31db28496638e5980fed94996431575bb54fec028a9b",
+      "bytes": 41301,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r2/transport-from-r3.patch",
+      "sha256": "72e18d5ea2b244f48d7485523d00453715600931f3b65fa51fd8b9d3dcee09c2",
+      "bytes": 2705,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/CALL_INVENTORY.md",
+      "sha256": "39fdb2a7fc88c4833977a95fe5db940879262b3d7016b595dc163b87a5b106e5",
+      "bytes": 5785,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/EXTERNAL_INPUTS.json",
+      "sha256": "e4dc9b8443854d108ba8e757b5d47da50f3023d0f2117032d6edf8feed4f7bc9",
+      "bytes": 5626,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/R1-SOURCE-MANIFEST.json",
+      "sha256": "687f0a3ed1dccff13da1b25e2806128ee70aea5def5900beaaf6c9c5ec3572ec",
+      "bytes": 3438,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/R2-SOURCE-MANIFEST.json",
+      "sha256": "2c2c2a51ec91402a04237738ca5eba840a0d5dad62803e09c8752d691394ab72",
+      "bytes": 5203,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/README.md",
+      "sha256": "b66cecd845e27a386c0b72c1b47866aedceb23f0752df96233ff9326440eb19d",
+      "bytes": 10869,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/REOPEN_AUDIO_PLAN.md",
+      "sha256": "34176a8cfd39efaa9a4e45ba28c9d6e075ad869e30cf3cad30088202399988d6",
+      "bytes": 5399,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/bound_android_transport.py",
+      "sha256": "ca3e30796961acc38737b6a9f22c3519abc9da1a7a6a384b732dd5a374a325d9",
+      "bytes": 14376,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/classpath-primary-error-r2.patch",
+      "sha256": "e3dbf9b59a3819b8e5f45c496d6bee9a2d0746714c3348b6577658be95de7d5d",
+      "bytes": 963,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/actual-helper-hash.receipt.json",
+      "sha256": "f8a14d3d295bf2e180081d34d7494d9f11b6b08c85aa8ddfcfbe996d10fbcf81",
+      "bytes": 1416,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/actual-helper-hash.stdout.json",
+      "sha256": "639307156669adb1ef8b33c33e67d70fac357d8fd795b47c20dbf4486f59232d",
+      "bytes": 1299,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/actual-helper-hash.terminal.json",
+      "sha256": "ff08490a28f521a533bdc5f6049aaaac7441698e088bf93b024a100d0bfd4a97",
+      "bytes": 731,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/actual-helper-metadata.receipt.json",
+      "sha256": "637be1e0418ded15550c24d8e6e65f08b8e4562c3b58f80fd64e0b86975cd03b",
+      "bytes": 3616,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/actual-helper-metadata.stdout.json",
+      "sha256": "476686a05d49afb8c300a0b81445d07eabc1946f301d459fce5abb86764b88ec",
+      "bytes": 2422,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/actual-helper-metadata.terminal.json",
+      "sha256": "3d477bd779788c5925d3df8fb884002f7274ad8871c04642f42ca064269446ff",
+      "bytes": 731,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/actual-tool-result.json",
+      "sha256": "24ffb1341f9febc20be97e59b95e448f9b13c62812f431d4d5808191d3a93785",
+      "bytes": 6848,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/classpath-primary-r2-02.stdout.json",
+      "sha256": "2600b159ad747d156f74fa85d14ffadbd6c30649d247049071e86dc673a9c81e",
+      "bytes": 1829,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/classpath-primary-r2-execution-02.json",
+      "sha256": "c8ab9a847ddffd094f922ad24ae3c91bd8dd6a415f61ff09e9d409b6ddfc9110",
+      "bytes": 231,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/classpath-primary-r2-execution.json",
+      "sha256": "476d8d44cff70c8fa7cfecbcc00bce19b2f226b027a109ef8276a54d934a983f",
+      "bytes": 231,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/classpath-primary-r2.stderr",
+      "sha256": "7cf9718255c4e6c497319464346c333d1d199c38da0d104fab48d292d95ed650",
+      "bytes": 512,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/controls-report.json",
+      "sha256": "cd23b2ca2f3e2960c124b51362416aa5192bd99af70a4472751ab06205462d86",
+      "bytes": 6667,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/controls.combined.log",
+      "sha256": "3129bedf25a68333e1894d6751bb9e036db8432e6629a017d44c7ec972c7e32b",
+      "bytes": 6383,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/draft-edit-failure-01.json",
+      "sha256": "5798db3c6bdaaa7faf7217fbcfc2533ba98470e293e3d6f641194a30108e6fcc",
+      "bytes": 452,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/helper-artifact-boundary-controls.json",
+      "sha256": "c9ec8df040d68bcd709fdad31dfcc626960476a8ed718fb41ef6e4b10dc9996b",
+      "bytes": 3466,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/production-delta-r3.json",
+      "sha256": "a8b216c203be60e7751a8723a32e76ed4c563fb22fce91c39e4db8812f543fde",
+      "bytes": 1277,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/evidence/production-delta-scope.json",
+      "sha256": "ebc23cc66cbe58e897d9af5dfdd5afd2ae2b5fb67b0bb0292d0de552040da550",
+      "bytes": 385,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/existing_ui_entry.py",
+      "sha256": "36da94a76fc336d259c19b33c522e1a6746d676d7e59ccaffab115dcadc68ebc",
+      "bytes": 12963,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/helper-artifact-bound-r3.patch",
+      "sha256": "4ad9a5856662f27f00974f2fae39ed090fa5f1d85cef9dcda00f8c8713cbe6bd",
+      "bytes": 1928,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/main_binding.py",
+      "sha256": "da78aabbea484955bb3bfaedddee962aa030e160f6c4b38a386b5e33483a42b2",
+      "bytes": 8904,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/recorder-integration.patch",
+      "sha256": "f0fdf8205ac929088a72d3d66b46688e0d0345dabe603706b7bb4733816fa950",
+      "bytes": 18329,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/recorder.py",
+      "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+      "bytes": 40090,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/android_app.py",
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+      "bytes": 37574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/android_backend.py",
+      "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae",
+      "bytes": 36401,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/bound_android_transport_r3.py",
+      "sha256": "def4e9af81bda71cc4125b61c8a15251e07e4866627b577650e77a4fb127ecae",
+      "bytes": 13721,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "bytes": 8658,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/held_runtime_r5.py",
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
+      "bytes": 22691,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/main_binding_r1.py",
+      "sha256": "aaca2029095816a70db353eb5c1060141373b36abfed4a19e61aec1bd55e82db",
+      "bytes": 8594,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/original_recorder.py",
+      "sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+      "bytes": 31945,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/source_contract_r2.py",
+      "sha256": "c868748bac4f1537670b50b7b962ca8c86650483d98466127149c6cdd508b9ae",
+      "bytes": 8654,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/references/task_scope_baseline.py",
+      "sha256": "a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528",
+      "bytes": 17281,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/source-manifest.json",
+      "sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
+      "bytes": 7492,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/source_contract.py",
+      "sha256": "51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d",
+      "bytes": 9103,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/tests/classpath_primary_control.py",
+      "sha256": "6343b8e5da712a3080fb958935c51c6e2e3c27f6166649171076eb9de98dde14",
+      "bytes": 4856,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/tests/helper_artifact_boundary_control.py",
+      "sha256": "64080a051c092556de6bfa254c682fe7773ab650e5e9a54567fb0e66576cac30",
+      "bytes": 8866,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/tests/integration_controls.py",
+      "sha256": "28edac91e9dd41fa757c31db28496638e5980fed94996431575bb54fec028a9b",
+      "bytes": 41301,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/recorder-held-r3/transport-from-r3.patch",
+      "sha256": "72e18d5ea2b244f48d7485523d00453715600931f3b65fa51fd8b9d3dcee09c2",
+      "bytes": 2705,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r2/bound_android_transport.py",
+      "sha256": "d380a388c1cc4391a3dd572dc12a293cfc1015f02627a5187136cf786ea3e018",
+      "bytes": 11902,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r2/reference/android-app",
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+      "bytes": 37574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r2/reference/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "bytes": 8658,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r2/source-manifest.json",
+      "sha256": "3695ebec0bd7250b4a08f4eca11d3dc282a3f608d8d4dd4854714ca7e9f3e7e5",
+      "bytes": 1508,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r2/test_bound_android_transport.py",
+      "sha256": "0d6012d76892941f22414a0b0de9257d95e14ac26c2dbc6e54cb6c6bba784533",
+      "bytes": 13122,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r2/transport-controls-02.json",
+      "sha256": "0db04cb0cfaa0a83fc41133f34f4484c58564550ccca3c64ccac6ae143def696",
+      "bytes": 3560,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/README.md",
+      "sha256": "addff804b5941d63451202beca7d5a86b31f29d372ca1625a03cb7da9417d649",
+      "bytes": 1973,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/bound_android_transport.py",
+      "sha256": "def4e9af81bda71cc4125b61c8a15251e07e4866627b577650e77a4fb127ecae",
+      "bytes": 13721,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/controls.json",
+      "sha256": "9bf41298e800bd3b329fce6bbaaddf163c183eee928b027193ec6323155357f7",
+      "bytes": 4487,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/entry-lifetime.patch",
+      "sha256": "fcf78ce6392aaaab4b0100e6f16fadc9b9271128e9134fd35e352af185b6b07b",
+      "bytes": 7453,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/negative-control/bound_android_transport_r2.py",
+      "sha256": "d380a388c1cc4391a3dd572dc12a293cfc1015f02627a5187136cf786ea3e018",
+      "bytes": 11902,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/reference/android-app",
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+      "bytes": 37574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/reference/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "bytes": 8658,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/source-manifest.json",
+      "sha256": "9974d015bf635beadcae5961df70817c77d2e1b30c33ee13552b6a6913c64fcd",
+      "bytes": 1633,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/bilibili/transport-r3/test_bound_android_transport.py",
+      "sha256": "2b43967927cfe57073e0efb42c59f472fdc04d39bbfcb87be74d659b980da444",
+      "bytes": 17791,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/packaging01-failure.json",
+      "sha256": "801aaea6c25520bc794180de2d1c7ef178a9734b2500f2f3995b144e8963eda7",
+      "bytes": 883,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/packaging02-failure.json",
+      "sha256": "aa545892fcf8d52f845bda6b1090727ca3a6a4f768269196f84e055b60e406ce",
+      "bytes": 878,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/bili-frontend/inventory-scoped-review.json",
+      "sha256": "fda0eca1ae633243be284ad95241aa83ee3cb2280be8ffd9b1c0fe7074d9cc2e",
+      "bytes": 4514,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/child-join-control.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/child-join-control.stdout.json",
+      "sha256": "b23dbea68aff64e76cfcab1159217684c02a4cbf2380ff53de1556fa6b06778f",
+      "bytes": 577,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/child_join_failure_control.py",
+      "sha256": "a66c1427d9dfb72e31d6a0812f3ff975a20cb5a55af4bb1630bf6ca66e0a29dc",
+      "bytes": 2603,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/controller-fix-reviewed.patch",
+      "sha256": "075cdca92bd63599e9602c5ec8674867fef27417d1a9079c991c7115b381b366",
+      "bytes": 7589,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/controller-fixed-badfc916.py",
+      "sha256": "badfc916b151999ff074847057f3a0e06421636c2d759ce10c3d8576e0203358",
+      "bytes": 43424,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/controller-reviewed-5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186.py",
+      "sha256": "5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186",
+      "bytes": 41461,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/factory-main-cgroup-delta-review-04/controller-reviewed-fb354f07.py",
+      "sha256": "fb354f07b94d57eca9006c713a0ba0156e548d0f05284ebeaa2579e8b4ab862c",
+      "bytes": 43492,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/factory-main-cgroup-delta-review-04/report.json",
+      "sha256": "fc69d229c87f5b93e39abd2a37aeb8e4efc2e9eff56d1a30e2a2a1e921a90c22",
+      "bytes": 3096,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/factory-main-cgroup-delta-review-04/reviewed.patch",
+      "sha256": "ec5be096bc50bb08b89e99c612a588579e016597f71ddc8172be326bf4acc84e",
+      "bytes": 868,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/factory-main-cgroup-delta-review-04/root-delta-receipt.json",
+      "sha256": "f2d24080dfad3973472c8e35a8dac80aaabe23dc90e49a899e0f604e599e50e2",
+      "bytes": 1554,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/factory-r2-fix-review-03.json",
+      "sha256": "bfc943c56dbee860f9c9160ebae9d8b0949bace6de66a3d4024c6ca5f8b79bd3",
+      "bytes": 4347,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fixed-independent-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fixed-independent-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fixed-independent-control-result.json",
+      "sha256": "eaa8876510597fa5b52c5eab312aa8ba01701e0a38d22f2558c1cd760dc6ca53",
+      "bytes": 1081,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fixed-independent-run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fixed-independent-run.stdout.jsonl",
+      "sha256": "71e1b0f86818af2248938b7db154968eb8c6fdc0bb897c56d61bee9ea7775f8b",
+      "bytes": 706,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fullbuild05-readonly-terminal-01/receipt.json",
+      "sha256": "925a9497b907040185d9aced7b10d8164c5cc7ea458e3296c20512207e523bf2",
+      "bytes": 1178,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fullbuild05-readonly-terminal-01/stdout.json",
+      "sha256": "7c03532f30f9c302ec697b046c833389d93828bb90874214eeb69072aa5cac03",
+      "bytes": 839,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/fullbuild05-readonly-terminal-01/terminal.json",
+      "sha256": "fd2733c0941afb5cc0ef8cfe48cdd590b180ac025eb19f480f742f5d7c8365bd",
+      "bytes": 726,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/host-build02-reviewed-sources/build01-to-build02.patch",
+      "sha256": "6cade5cfee5ffef87d1f7c90e6f9df125c886652fdb3100ad1747716158d1ebd",
+      "bytes": 4782,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/host-build02-reviewed-sources/build_fixture.py",
+      "sha256": "2b4764804b9faaf735cb84c96000f3c3544de023371ba5727c5969fa38e7d57d",
+      "bytes": 13349,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/host-build02-reviewed-sources/stage_and_build02.py",
+      "sha256": "2e48a450fe4e54fb6a20896b5463546c70207ffe8334788132747947d6daa2ce",
+      "bytes": 3528,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/host-build02-stage-review-01.json",
+      "sha256": "15414676b6b408c9e983601f6a26a15d086933a4a5ed1b282d6acaf46c415603",
+      "bytes": 5770,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/receive-control-result.json",
+      "sha256": "d5cebf03c881b0bf1f22cf04ac201a2b11e560bb9ecae19ada51719db99ea266",
+      "bytes": 297,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/receive-control.stderr",
+      "sha256": "00083eab9885c1fd59dbbbd463e26650097d184b929c69ee97846a3e933efb7a",
+      "bytes": 34,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/receive-control.stdout.jsonl",
+      "sha256": "07417cc87e3bd8fa36573ac25032454a89c139325e8a685308b0fbb92ed1b879",
+      "bytes": 116,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/receive_fixed_socketpair_control.cc",
+      "sha256": "eb5690657891581cb4847e8a116e45e5af01f54a76fcfa859969fe441b5f158d",
+      "bytes": 5082,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/receive_pidfd_control.cc",
+      "sha256": "c050d27a508e1edbef8097f9a01052fbad537eed1c266770175ec1fbf502c045",
+      "bytes": 5685,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/receive_pidfd_socketpair_control.cc",
+      "sha256": "72e3dd4c0930717b715e383e913bea010e526b9b2a33fe1024dc951152859f1b",
+      "bytes": 5073,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/report.json",
+      "sha256": "97df93040351c81e7c9a2370f45316cd61e1f735c4883608fa469c2ff5fd6eae",
+      "bytes": 9947,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/review-addendum-02.json",
+      "sha256": "3ddddbd7fcbef6cf89f18f9a19cf866a93b953edc94f19b0d973f2e6b9aa9a5a",
+      "bytes": 2663,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/runtime02-stage-and-pins-review-05/SOURCE_PINS.json",
+      "sha256": "d252732705c3be940a1bb40083c68784c07cc394590cd1840f96903946f47b9f",
+      "bytes": 738,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/runtime02-stage-and-pins-review-05/pins-and-result-mode.patch",
+      "sha256": "2086c0bc447476e8b0460e65348bac0a78fb8b60c74743e6a32cb214616fa071",
+      "bytes": 1404,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/runtime02-stage-and-pins-review-05/report.json",
+      "sha256": "1c0b61ba65f491bd551b46efa08292c7740f34822c47f67cdc32fb027ba0bb34",
+      "bytes": 4157,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/runtime02-stage-and-pins-review-05/stage_runtime.py",
+      "sha256": "4824e8e3bfbd5155bc219aabf58fb2c478d9ab692cc1a12d7c88e46763680177",
+      "bytes": 1052,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/socketpair-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/socketpair-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/socketpair-control-result.json",
+      "sha256": "7a8217cdeace9d9b02e1468bc796859f9e62aa9ad16884bbfa033a4587c9d750",
+      "bytes": 968,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/socketpair-run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/factory-v2/socketpair-run.stdout.jsonl",
+      "sha256": "3a137c319ecd4cdc77e555ce088c13fc93646f76e0b1726a0722afb120799753",
+      "bytes": 688,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/prefix-normal-reader-review-01/report.json",
+      "sha256": "71c8636cd18a49c5f0746c318d6e18cc25bdad2d9267fc01562ebb5e48846dd7",
+      "bytes": 3491,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/prefix-normal-reader-review-01/reviewed-source.py",
+      "sha256": "c3d8476dddcc8edd86987469727685ffeb74cfde0c4756a04ca39e2b532e11c4",
+      "bytes": 6632,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/root-verbatim/bilibili-recorder-r2-root-source-review.json",
+      "sha256": "f164edaf6e7cf91d4c0162f78ee66d69488b76c7c67ac9547be74bbe960d1720",
+      "bytes": 1345,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/root-verbatim/bilibili-three-input-diagnostic-root-review.json",
+      "sha256": "60cfb098a9d71046d439738b01865beab9f4a9df2e1dcd4a4e1eecbb6ad3582d",
+      "bytes": 780,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/root-verbatim/factory-child-output-bound-fixed-01.json",
+      "sha256": "317742a71b9030196aec9e8afa5f5c19f5e826e2027ddfb2fedc9b1324e71fdf",
+      "bytes": 661,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/root-verbatim/factory-pidfd-original-pocket4-control-result.json",
+      "sha256": "d5208ca0fbe7a64e88aeceeb0f4e887f877a499b89d9ca6e0f89aeea6e293a07",
+      "bytes": 5467,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/root-verbatim/factory-receive-pidfd-local-01.json",
+      "sha256": "b99ae5c2a92238596c2804d3ec937fe670a76fc5ad2152c70bb6d0dfab8f3e5c",
+      "bytes": 496,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/android-acceptance/reviews/root-verbatim/factory-v2-r2-root-source-review.json",
+      "sha256": "2bb207c70666502b4ed53cf75f66a721a2b40511171df256643d1224e92847da",
+      "bytes": 1293,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/build-admission-fences-02/MANIFEST.json",
+      "sha256": "1a28e0725e921d8db5ff104f2f138222aeb311d109f990c85eb1588170cdc215",
+      "bytes": 1027,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/build-admission-fences-02/README.md",
+      "sha256": "a0b4987854db7e4f6bdcf1a1c1563fe5f17f59161ffb41fc31d89a2556b16e8f",
+      "bytes": 2110,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/build-admission-fences-02/fenced_build.py",
+      "sha256": "bc31ba59729166c7d87aebcfab699d5abc7f8433b58a34eee9cfea229b90adbc",
+      "bytes": 8453,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/build-admission-fences-02/main_snapshot.py",
+      "sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb",
+      "bytes": 6778,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/build-admission-fences-02/offline-controls.json",
+      "sha256": "5e998fa9d88405a758d5bd16f596cc8868d2abcbcc1b3dcf4e5b2110cf86c635",
+      "bytes": 2589,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/build-admission-fences-02/verify_fences.py",
+      "sha256": "a6ce1bfe1620df718efcea321058fc02d7f637bc3f7ee844b17488d9c44f1368",
+      "bytes": 5550,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/admission.json",
+      "sha256": "145637fbf6e8d05062e3ef21fa66e603ce988c80b1ce03b8e2a10a2e83119937",
+      "bytes": 1286,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/authoritative-terminal.json",
+      "sha256": "33c574ca69e3ca0f312bdff4fb9bea78371533d6f9a5028cfb6e8013dbb6e14d",
+      "bytes": 1007,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/durable-output.json",
+      "sha256": "03129f96e143005f74db8193ce61de5a806631dd15fa9bcfd4287b974b489615",
+      "bytes": 1591,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/exact-process-start-request.json",
+      "sha256": "876761893cee4624712dba910151beed21ed6731cc7c4c9209599e63f16ae41d",
+      "bytes": 475134,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/failure.json",
+      "sha256": "261c8420ba4ad7c82e4144c6ab2c12e42f3ac344119a6b03caf56cabb3f1a00e",
+      "bytes": 798,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/signal-mask-r1-pins.json",
+      "sha256": "6a24ef53595e9d8da458a626effbfca4280a5de18c90ad1d5dd036ad3e936bf2",
+      "bytes": 3976,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/signal-source/guest_os_primitives/arm64/guest_context_arch.h",
+      "sha256": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+      "bytes": 8640,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/signal-source/guest_os_primitives/guest_signal_handling.cc",
+      "sha256": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+      "bytes": 28870,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/signal-source/guest_os_primitives/guest_signal_handling_arch.cc",
+      "sha256": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+      "bytes": 6274,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/signal-source/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h",
+      "sha256": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+      "bytes": 3611,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/signal-source/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h",
+      "sha256": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+      "bytes": 6115,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate03/signal-source/guest_os_primitives/scoped_guest_signal_mask.h",
+      "sha256": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9",
+      "bytes": 2869,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate04/admission.json",
+      "sha256": "0b35b858ed797e50a75b28f1fc6d9820326576f2ad7effdaf727713b5f60c838",
+      "bytes": 1286,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate04/authoritative-terminal.json",
+      "sha256": "d7ea3f940142a90a88e335c243d0e3346aece542b70dd3ed41c12a0cf16093d0",
+      "bytes": 954,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate04/control-report.json",
+      "sha256": "5309622bd9ab29908f820e28eaaa7266d9a2beac8dbf4af9e1b23234720761df",
+      "bytes": 87450,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate04/durable-output.json",
+      "sha256": "5a244af5a9826c075aecff267c62cd71d09ddca94e9dea8fb0dadc1fc520cec4",
+      "bytes": 6226,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate04/exact-process-start-request.json",
+      "sha256": "559958c00afa7de331502c4381e39e5b9006ade14ce87a23f71691600177159d",
+      "bytes": 476196,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate04/scoped-result.json",
+      "sha256": "b77669dcb7c7e7ca6f9499361d565e8788ac4a96ad02dc2f446765a787f27a25",
+      "bytes": 5673,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate04/source-report.json",
+      "sha256": "b5d5be65e75d9125fe52e94fac440f4b1051a26ddc8ca468d6d59666ec9394b8",
+      "bytes": 4859,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate05/compose_small_gate.py",
+      "sha256": "b4ffeeb5dd912d79e4bb97169b62a2ec894d55258f7c43a2d4da7604f43860c3",
+      "bytes": 18493,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate05/default-plan.json",
+      "sha256": "e6711296ee6bf53cf714eb57b26744e4606874822464a563821e49d50dfdf8c0",
+      "bytes": 509,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate05/exact-process-start-request.json",
+      "sha256": "ad1140bc4a46e8de06ce4d83c7a94ec8b2f4ac1a156b0684ee03dd3c4cc82ddc",
+      "bytes": 291743,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate05/handoff-generator-controls.json",
+      "sha256": "22059614c90952fa1f72bf8c9b9243daa3aef74f883c4eb7981af857661156c0",
+      "bytes": 993,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate05/make_fullbuild_handoff.py",
+      "sha256": "999a2253299f6ac6ef45114e17b965253ad931d273a00f3f17758004385d9e91",
+      "bytes": 12318,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate05/request-static-check.json",
+      "sha256": "e9bcbc30acbe6ec58745241b13f5eef640ee7376c932f66e7dfb21df2b8620d4",
+      "bytes": 829,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/combined-candidate05/source-bundle.json",
+      "sha256": "fed272af40ecb286ec152254de55c7c6a6d1e722fd90028bd696037ca5c4e174",
+      "bytes": 260307,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-controller-lineage/controller-preimage-01.py",
+      "sha256": "5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186",
+      "bytes": 41461,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-controller-lineage/controller-preimage-02.py",
+      "sha256": "badfc916b151999ff074847057f3a0e06421636c2d759ce10c3d8576e0203358",
+      "bytes": 43424,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-controller-lineage/controller-preimage-03.py",
+      "sha256": "fb354f07b94d57eca9006c713a0ba0156e548d0f05284ebeaa2579e8b4ab862c",
+      "bytes": 43492,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/audit_worker_binary.py",
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "bytes": 5841,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/bionic_branch_view.cc",
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857",
+      "bytes": 784,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/build_fixture.py",
+      "sha256": "f2cd2b63362e2149e0cd166b24f3fd3666b00d2693430fdf3306fd0aede6b9f0",
+      "bytes": 11571,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/client_control.cc",
+      "sha256": "cdcbbab212b5d4be64094d8050b46c96111cc4bfbc88b2a7348978962d94bd50",
+      "bytes": 15956,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/draft-client-syntax-report.json",
+      "sha256": "085c4c7f62fafcf4c03ce21df2c5040b65bb968c5cb9a6ba27f5355e53383385",
+      "bytes": 1711,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9",
+      "bytes": 5051,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+      "bytes": 2480,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/include/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "79e871b78d6fc2461f2fe103df070d6dc6504acf43ff6b64fcecec142eb618b0",
+      "bytes": 4201,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-fixture-01/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "sha256": "7e8ae5c660c783c8fb8f5db75c054e5359690275a2f4acc2a9fe1c9af7c11554",
+      "bytes": 2668,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-runtime02-freeze-01/SOURCE_PINS.json",
+      "sha256": "d252732705c3be940a1bb40083c68784c07cc394590cd1840f96903946f47b9f",
+      "bytes": 738,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-runtime02-freeze-01/controller.py",
+      "sha256": "a039681fd250270c631309d2ff42320a9953234ada530b734de42afde93202f1",
+      "bytes": 43521,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-runtime02-freeze-01/exact-process-start-request.json",
+      "sha256": "0283c900588bb7b9e030735d48804ca9b11db24aef4959b66b106ed5dbf10219",
+      "bytes": 45967,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-runtime02-freeze-01/pins-and-result-mode.patch",
+      "sha256": "2086c0bc447476e8b0460e65348bac0a78fb8b60c74743e6a32cb214616fa071",
+      "bytes": 1404,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-runtime02-freeze-01/scope.json",
+      "sha256": "400b3b52844c190b374bf242309528b761238d2dae2ea813b30585273ceff5f2",
+      "bytes": 941,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-host-runtime02-freeze-01/stage_runtime.py",
+      "sha256": "4824e8e3bfbd5155bc219aabf58fb2c478d9ab692cc1a12d7c88e46763680177",
+      "bytes": 1052,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/README.md",
+      "sha256": "544524cb6dd72918f811ce17302f46e7019b7982f3455f51badac9c989ad7486",
+      "bytes": 5785,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/SOURCE_PINS.json",
+      "sha256": "c1a486413918f910af880768ac2ca87e81cbd79ecca8af89500a880d5db3a6a4",
+      "bytes": 15689,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-bionic-branch-fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-bionic-branch-fixture.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-factory.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-factory.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-glibc.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-glibc.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-negative-kernel-loses-ST_VALID.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-negative-kernel-loses-ST_VALID.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-negative-libc-gets-raw-flags.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/compile-negative-libc-gets-raw-flags.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/factory-default-plan-only.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/factory-default-plan-only.stdout",
+      "sha256": "4227369189c289289737019c9cc74f75ae346930286dc3ddd7680a3e5111c4bd",
+      "bytes": 115,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/negative-kernel-loses-ST_VALID.cc",
+      "sha256": "b6726370d6357fa79de3d343c8116091341414c2d158e995f493c4ae2c120881",
+      "bytes": 8677,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/negative-libc-gets-raw-flags.cc",
+      "sha256": "2f56891ea1ab4c28f7c3198e427cd27ae59fd391b98968c5e6b8908d2a0ee954",
+      "bytes": 8664,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/report.json",
+      "sha256": "d47ab914f22cb81d1a35c8becbb693a846ec66c3f5742fdacc19c344c650a6fe",
+      "bytes": 9107,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-bionic-branch-fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-bionic-branch-fixture.stdout",
+      "sha256": "d68c604b7fe3ded6a0a4cf79d627059d873527d3e4072f957dc3f66e366c29d1",
+      "bytes": 1321,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-glibc.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-glibc.stdout",
+      "sha256": "d68c604b7fe3ded6a0a4cf79d627059d873527d3e4072f957dc3f66e366c29d1",
+      "bytes": 1321,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-negative-kernel-loses-ST_VALID.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-negative-kernel-loses-ST_VALID.stdout",
+      "sha256": "3071c3046fe6e5861eebe6c446ed94a2d5a5e67ae3944354269205fd174fab0b",
+      "bytes": 1322,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-negative-libc-gets-raw-flags.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-01/run-negative-libc-gets-raw-flags.stdout",
+      "sha256": "88335000e1fa34bb66a416d4659496ea599aaebf87c56b306ff4295ec3332a5a",
+      "bytes": 1322,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-bionic-branch-fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-bionic-branch-fixture.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-factory.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-factory.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-glibc.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-glibc.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-negative-kernel-loses-ST_VALID.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-negative-kernel-loses-ST_VALID.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-negative-libc-gets-raw-flags.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/compile-negative-libc-gets-raw-flags.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/factory-default-plan-only.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/factory-default-plan-only.stdout",
+      "sha256": "4227369189c289289737019c9cc74f75ae346930286dc3ddd7680a3e5111c4bd",
+      "bytes": 115,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/negative-kernel-loses-ST_VALID.cc",
+      "sha256": "b6726370d6357fa79de3d343c8116091341414c2d158e995f493c4ae2c120881",
+      "bytes": 8677,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/negative-libc-gets-raw-flags.cc",
+      "sha256": "2f56891ea1ab4c28f7c3198e427cd27ae59fd391b98968c5e6b8908d2a0ee954",
+      "bytes": 8664,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/report.json",
+      "sha256": "44d731019777e604821bc8b4eb70c9e6376f2c64342859b4200baea5cf56b24a",
+      "bytes": 9107,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-bionic-branch-fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-bionic-branch-fixture.stdout",
+      "sha256": "5a2c60c12537f58f9df16a54c51b44ae85121330d2a7835ccb5dee76b097f677",
+      "bytes": 1458,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-glibc.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-glibc.stdout",
+      "sha256": "5a2c60c12537f58f9df16a54c51b44ae85121330d2a7835ccb5dee76b097f677",
+      "bytes": 1458,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-negative-kernel-loses-ST_VALID.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-negative-kernel-loses-ST_VALID.stdout",
+      "sha256": "24ef1df6fae6220d11e37207abc70a49f7793948a613c865225248f0b3580b03",
+      "bytes": 1459,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-negative-libc-gets-raw-flags.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-02/run-negative-libc-gets-raw-flags.stdout",
+      "sha256": "2b7ff00aa3090e7168f0d8f3838945498f857baea62eaa925b13deb11ffcb2fb",
+      "bytes": 1459,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-bionic-branch-fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-bionic-branch-fixture.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-factory.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-factory.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-glibc.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-glibc.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-negative-kernel-loses-ST_VALID.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-negative-kernel-loses-ST_VALID.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-negative-libc-gets-raw-flags.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/compile-negative-libc-gets-raw-flags.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/factory-default-plan-only.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/factory-default-plan-only.stdout",
+      "sha256": "4227369189c289289737019c9cc74f75ae346930286dc3ddd7680a3e5111c4bd",
+      "bytes": 115,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/negative-kernel-loses-ST_VALID.cc",
+      "sha256": "b6726370d6357fa79de3d343c8116091341414c2d158e995f493c4ae2c120881",
+      "bytes": 8677,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/negative-libc-gets-raw-flags.cc",
+      "sha256": "2f56891ea1ab4c28f7c3198e427cd27ae59fd391b98968c5e6b8908d2a0ee954",
+      "bytes": 8664,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/report.json",
+      "sha256": "c158c604aa88c92e83d49a1e95899decde3cfc12d64d1947067795a5e224dde6",
+      "bytes": 9888,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-bionic-branch-fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-bionic-branch-fixture.stdout",
+      "sha256": "5a2c60c12537f58f9df16a54c51b44ae85121330d2a7835ccb5dee76b097f677",
+      "bytes": 1458,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-glibc.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-glibc.stdout",
+      "sha256": "5a2c60c12537f58f9df16a54c51b44ae85121330d2a7835ccb5dee76b097f677",
+      "bytes": 1458,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-negative-kernel-loses-ST_VALID.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-negative-kernel-loses-ST_VALID.stdout",
+      "sha256": "24ef1df6fae6220d11e37207abc70a49f7793948a613c865225248f0b3580b03",
+      "bytes": 1459,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-negative-libc-gets-raw-flags.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-03/run-negative-libc-gets-raw-flags.stdout",
+      "sha256": "2b7ff00aa3090e7168f0d8f3838945498f857baea62eaa925b13deb11ffcb2fb",
+      "bytes": 1459,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-04/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-04/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-04/default.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-04/default.stdout",
+      "sha256": "4227369189c289289737019c9cc74f75ae346930286dc3ddd7680a3e5111c4bd",
+      "bytes": 115,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/controls-04/report.json",
+      "sha256": "57e59cf324134165a368ec04de55b6deb51f0be80deb21b14e89567a9a4cff06",
+      "bytes": 3674,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/engine-delta/proc_maps_provenance.cc",
+      "sha256": "bc68ad924a1c3a31d2a8b97099130ad796f52c6d7c9bca5b68267de995e0d62f",
+      "bytes": 31616,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9",
+      "bytes": 5051,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+      "bytes": 2480,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/include/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "79e871b78d6fc2461f2fe103df070d6dc6504acf43ff6b64fcecec142eb618b0",
+      "bytes": 4201,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/overlay-delta/engine/kernel_api/Android.bp",
+      "sha256": "c33b194a2f4c5c688bd978f532d15d74a49ddf9d32604ab3d6e34c827e7f1057",
+      "bytes": 6781,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/overlay-delta/engine/kernel_api/include/berberis/kernel_api/proc_maps_generation_protocol.h",
+      "sha256": "913d7a0dd717ff9d697bc926906958029b1be7ba9fb612b57218bc40fe6e27dd",
+      "bytes": 1110,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/overlay-delta/engine/kernel_api/proc_maps_generation.cc",
+      "sha256": "82daaa0c7069303ca6d8f749efd75aa2d05857dce5128eb9642b6ed62f928ecf",
+      "bytes": 9016,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/overlay-delta/platform/art/libnativebridge/droidloom_generation.cc",
+      "sha256": "1e43381bdb0eba44777317bb1372346eca99322139c5b2662932724fdc82aa68",
+      "bytes": 2462,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/overlay-delta/platform/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h",
+      "sha256": "913d7a0dd717ff9d697bc926906958029b1be7ba9fb612b57218bc40fe6e27dd",
+      "bytes": 1110,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/preimage-01/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "sha256": "2198e3f574ba7b69778f0cc957e60fe91d8db2fe54e3df4dd2c201dfd0258163",
+      "bytes": 5051,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/preimage-01/run_pure_controls.py",
+      "sha256": "ffe4baec65df31c040a27dde0ca2cd3f466ccc5cba790632f3cde8889d1d02a6",
+      "bytes": 4057,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/preimage-01/tests/wire_context_controls.cc",
+      "sha256": "5c69645e4f7336fedeec53af81851ca118008d3af680926430ca579765b37c91",
+      "bytes": 10834,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/preimage-02/run_pure_controls.py",
+      "sha256": "9e5be7e473a6f7a551bc3d187b6bac8393617b92c00738f48ef00728693403ce",
+      "bytes": 4057,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/preimage-02/source/factory_main.cc",
+      "sha256": "62c8b5f10b66e455c9d59d001b4cc31f0be7c67c82efd13fd722d0a894710fd4",
+      "bytes": 27300,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/preimage-03/factory_main.cc",
+      "sha256": "5f1f13a0ca99a17942ab2b98f596d3085c06252a3689b6d44daa56e3e1ac627b",
+      "bytes": 27496,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/run_pure_controls.py",
+      "sha256": "9a2ea550995828ce9bfc04c0e34de81ced40d7bb03302dbf9d70597dfd2f891c",
+      "bytes": 4289,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/source/factory_context.cc",
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a",
+      "bytes": 5377,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/source/factory_context.h",
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1",
+      "bytes": 954,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/source/factory_main.cc",
+      "sha256": "19abcf92feca3bd1ef46306e15fd8110c8e238c443a536625ba308f52fda45fb",
+      "bytes": 27886,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/source/proc_maps_factory_wire.cc",
+      "sha256": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608",
+      "bytes": 8661,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r1/tests/wire_context_controls.cc",
+      "sha256": "04372ac519b69d1e6b52f12c08e0fdf591ec97d00d809aeca24559f7f9dbd116",
+      "bytes": 11474,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/README.md",
+      "sha256": "8ad432c4fdcafd30a30e1f6ebd4ae5f7bea78bd66a312f6fac58bba3d719c110",
+      "bytes": 3129,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/SOURCE_PINS.json",
+      "sha256": "d087c114ecbeb76086abc2d91736d5f9fcbfa9e093cdff32bb63771f434cc202",
+      "bytes": 5800,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/compile-fixed.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/compile-fixed.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/compile-preimage.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/compile-preimage.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/listener-local-build.json",
+      "sha256": "64107491966fb20be561161dd088e14662e45bfa84ce6c137b8b1654f9be8b67",
+      "bytes": 1461,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/report.json",
+      "sha256": "7f23a0fbb64341fdabb687c394a145aa69b71118413912392ac7b45dd60a7447",
+      "bytes": 5884,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/run-fixed.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/run-fixed.stdout",
+      "sha256": "1b6647d0eedea14de54fbf31fa3a44ab4218585203702efed059a2a4094d945c",
+      "bytes": 8241,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/run-preimage.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/run-preimage.stdout",
+      "sha256": "63168f334b8c0d9c2effe248a4d383dfa1d8afec1417878e1a16a4cfa583ea71",
+      "bytes": 8266,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/controls-01/uapi-header-reference.json",
+      "sha256": "46fd2857458392937720d8189b48e83e2a8e97abc59be0db2776104c2ceeba38",
+      "bytes": 468,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/engine-delta/proc_maps_provenance.cc",
+      "sha256": "f4e6685f5b689d3b408dc6aa7723e36b2174e6e2545e743fbb5c5896f6142137",
+      "bytes": 32621,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9",
+      "bytes": 5051,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/include/berberis/kernel_api/proc_maps_fd_owner.h",
+      "sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+      "bytes": 3884,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+      "bytes": 2480,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/include/berberis/kernel_api/proc_maps_path.h",
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "bytes": 1314,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/include/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "79e871b78d6fc2461f2fe103df070d6dc6504acf43ff6b64fcecec142eb618b0",
+      "bytes": 4201,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "sha256": "7e8ae5c660c783c8fb8f5db75c054e5359690275a2f4acc2a9fe1c9af7c11554",
+      "bytes": 2668,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/preimage/client-stage-derivation.json",
+      "sha256": "038d330b1edfbb35813a39cac0f6cc667514d438174fae77c3c0cab1728bef5e",
+      "bytes": 673,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/preimage/derived-client-stage.cc",
+      "sha256": "ad02b720b49133f689cfce432d5eeaa03cd68b930f253bb9d6439ec924e61a97",
+      "bytes": 31798,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/preimage/engine-delta/proc_maps_provenance.cc",
+      "sha256": "bc68ad924a1c3a31d2a8b97099130ad796f52c6d7c9bca5b68267de995e0d62f",
+      "bytes": 31616,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/preimage/source/factory_main.cc",
+      "sha256": "19abcf92feca3bd1ef46306e15fd8110c8e238c443a536625ba308f52fda45fb",
+      "bytes": 27886,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/scm-pidfd-r2.patch",
+      "sha256": "8340b0605780127590a5afd8cbb0ee5efad22542813a7063aaf357d7d3dbe695",
+      "bytes": 6717,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/source/factory_context.cc",
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a",
+      "bytes": 5377,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/source/factory_context.h",
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1",
+      "bytes": 954,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/source/factory_main.cc",
+      "sha256": "18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9",
+      "bytes": 28588,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/source/proc_maps_factory_wire.cc",
+      "sha256": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608",
+      "bytes": 8661,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/tests/ancillary_controls.cc",
+      "sha256": "c791c4286d00d8fb3e936f750104aa76cd3afee32005b5afc7c4b916ee513a3d",
+      "bytes": 8991,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/factory-v2-r2/tests/listener_inheritance_control.cc",
+      "sha256": "4680aa87cb8316419b70aa4f03d1a86e974e7da2626a93c0df090854dce6b11c",
+      "bytes": 5708,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/MANIFEST.json",
+      "sha256": "39b15c30b4499ad239cd567daf3eef26aabc067e2ec3b0ed544b8f7860171cc9",
+      "bytes": 2175,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/README.md",
+      "sha256": "adda2ccd86d7f30889dd4fc8dfdd73263735da1dd7b2bb30d465860ea25b5ab5",
+      "bytes": 6469,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/combined_build.py",
+      "sha256": "ba4dffc59b224b32e6f42f7f66222d35cdd62eecb82dabea67d05dc888635d6d",
+      "bytes": 33967,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/default-plan.json",
+      "sha256": "e010fcfda40267141e90a9f1cc325d5f4e60404c85305ebe1cacc941a6adc125",
+      "bytes": 1893,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/exact-preparation-request.json",
+      "sha256": "3f9e163d78fa7f4559a012341d4e5dde84f1dda5f6eb0c77916c93afd95f11d9",
+      "bytes": 36489,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/make_build_request.py",
+      "sha256": "f2ad2dfea054a8f3d9734b50fe582e84ff6eea289e0a44d1ff8a6ec43f113320",
+      "bytes": 1993,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/offline-controls.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/offline-controls.stdout.json",
+      "sha256": "61a829b463d7073a235168582db6946942937db41da6746d36197f4b6db97bf0",
+      "bytes": 1922,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/pre-freeze-control-findings.json",
+      "sha256": "fce7649637ef845999cd892687351f8b8413f92df5fb03cc4bc952d820f437b8",
+      "bytes": 662,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/r16-projection-expectation.json",
+      "sha256": "b881fe5ba704bfed653c0530fe531f0f02a93830eecd269ba8c087d0d8e7e0f7",
+      "bytes": 5974,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/source-input-pins.json",
+      "sha256": "4cdeb1b98f38d1fc2c3b45c392353722bc4e547e9f87ca98582dcb788553a66a",
+      "bytes": 3619,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/verify_controller.py",
+      "sha256": "af9b56ec374f3763495216b4bac6d396a181ce2cb583fd139c3c2476fc6d0686",
+      "bytes": 7211,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/freeze-01/wrapper-integrity-controls.json",
+      "sha256": "d611f04a7b960f9c3527b602efb91068576c04530e3fd7c707525407cbab7ac8",
+      "bytes": 193,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/references-read/main.rs",
+      "sha256": "7a17d5b3fbf067efad68022595009a59b381041c769b85c9c36b967ea635ff61",
+      "bytes": 17860,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/references-read/native-engine-read-timeout.json",
+      "sha256": "74bff5a4eccbb6bb8fed864729d9948834f05539bcf0517d07dbcee1775533a3",
+      "bytes": 493,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/references-read/native_bridge.rs",
+      "sha256": "1e2489c3fc2e579cee1bdbbf2557fe6483b5720a854d2e5e4b55dccf76e0405d",
+      "bytes": 37579,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/references-read/references/engine-native_bridge-Android.bp",
+      "sha256": "0e64166163f7dbc7094a6fcc634aeca631ed73c5caf9a019939c5a322fbbf410",
+      "bytes": 3517,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild-plan-01/references-read/util.rs",
+      "sha256": "ac8e63e0355d8f2b98c2bf4bc12fd6fbfc295ae3244bb51816c394189440d969",
+      "bytes": 7802,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/SOURCE_PINS.json",
+      "sha256": "4241a6bda47e38bd757e4d9479de5507a5c9bf93e69a23e4a799886f01b8367d",
+      "bytes": 1091,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/authoritative-terminal.json",
+      "sha256": "0f97cd16de6714df8ff0694c221868faefd22fd6f0e1178460980d80fe850e50",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/durable-output.json",
+      "sha256": "1ff4d7fdd124deeae6aae6e11e1a9475ddee29298e8652d4ed5d3845bcdcdbcd",
+      "bytes": 1105,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/host-health.json",
+      "sha256": "837ddf5129ac0be94bdf913096ab13d33af1049312406def4b8fc1906850b3ff",
+      "bytes": 413,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/preparation.json",
+      "sha256": "bb6e0d92c8b0df36ca8ccf1f25dd4286491c09999fa9225ff9f15955e00cd9d0",
+      "bytes": 115794,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/reconcile-admission.json",
+      "sha256": "bea7c76e77a94b4407a30f560ab1132ee232b9caa822e896c8def6a3fd7ef45f",
+      "bytes": 1413,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/recovery-and-file-verification.json",
+      "sha256": "5cf88ff54eccce725afdb356c370e9d448d68067075e5e7dddd4884438381e16",
+      "bytes": 1148,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-actual-preparation-01/registry-observation-summary.json",
+      "sha256": "fa436e000b3419293795ac33c16a3993df95723105fa9c35d3237af055ba4cbf",
+      "bytes": 386,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-admission-01/admission.json",
+      "sha256": "328585e1baf725b1c514e4c07c05c5ab4f6647c576c71a70467d80acd06a6539",
+      "bytes": 1565,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-fenced-request-01/REQUEST_PINS.json",
+      "sha256": "7c8b0af730eba3b403292a9b9f847308f6ed6da23456d9c3743937b5a7d52bde",
+      "bytes": 1577,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-fenced-request-01/exact-fullbuild-request.json",
+      "sha256": "dbf5a7cb276645f8e181ecaa28b55ba83c01781f715272e6b67087be53d0d399",
+      "bytes": 56715,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-fenced-request-01/fence02-to-fence03.patch",
+      "sha256": "c4bcb9e98d959822cad1bf845cd499434bbcafba263f3e30bd96f3e9bafba93c",
+      "bytes": 862,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-fenced-request-01/fenced_build05.py",
+      "sha256": "befac6dc2351b6b0297c3c2352d32f659f37f09c4bdb1bed550e10b12b95c701",
+      "bytes": 8453,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-fenced-request-01/main_snapshot.py",
+      "sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb",
+      "bytes": 6778,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-fenced-request-01/verified-source-packet.json",
+      "sha256": "e7e339bbe704c3625e9d020e2992762219a4789f74d8f6cb8c0e7fa6fead1506",
+      "bytes": 52461,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-prepare-01/STAGE_PINS.json",
+      "sha256": "18e80616934bd7dae9ffaf44c72e15daec42109b95595dc81c6a1d1db7ba4278",
+      "bytes": 1317,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-prepare-01/actual-matched-gate-report.json",
+      "sha256": "e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803",
+      "bytes": 23088,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-prepare-01/actual-source-report.json",
+      "sha256": "33697d93292428c660f69c629ab9851248f5e5e1c3653f9531e5382f49479d36",
+      "bytes": 967,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-prepare-01/combined_build05.py",
+      "sha256": "e56f06abdbda5aa95fe42e4ecf14d7f79f53e53821a8d5b1d43d0dce0776c655",
+      "bytes": 34855,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-prepare-01/controller04-to-controller05.patch",
+      "sha256": "52f6b531152243a621be2fe838b8684e44886f8c2c72217c8a5b35634b98963e",
+      "bytes": 3765,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/fullbuild05-prepare-01/exact-preparation-request.json",
+      "sha256": "87a4d058b82f3744b55cc2c1bcf66c50d1fa606a49bfd8f476c461b427d84979",
+      "bytes": 37396,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/HANDOFF_PINS.json",
+      "sha256": "59da69b2d15cfa80ecad04c8ddb5f2405729bcc7246dd77e4caf969d18a2c51f",
+      "bytes": 2787,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/README.md",
+      "sha256": "613b686ae1234648ac946ff6e4fb679adc6a101ebe8bcc159f87a7fb586383f2",
+      "bytes": 4200,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/STAGE_PINS.json",
+      "sha256": "fa2902e3c379d11a88c96ffbcc4ed9a565089fff9f78063efd1509884a98ec4a",
+      "bytes": 3423,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/actual-candidate05-matched-gate.json",
+      "sha256": "e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803",
+      "bytes": 23088,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/actual-candidate05-source-report.json",
+      "sha256": "33697d93292428c660f69c629ab9851248f5e5e1c3653f9531e5382f49479d36",
+      "bytes": 967,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/actual-prior-build01-result.json",
+      "sha256": "adb1b0cb4bfa12d3d154c0538e931a7752046f8ab295e2bab77687615af6c81e",
+      "bytes": 67684,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/audit_worker_binary.py",
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "bytes": 5841,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/bionic_branch_view.cc",
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857",
+      "bytes": 784,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/build01-to-build02.patch",
+      "sha256": "6cade5cfee5ffef87d1f7c90e6f9df125c886652fdb3100ad1747716158d1ebd",
+      "bytes": 4782,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/build_fixture.py",
+      "sha256": "2b4764804b9faaf735cb84c96000f3c3544de023371ba5727c5969fa38e7d57d",
+      "bytes": 13349,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/client_control.cc",
+      "sha256": "cdcbbab212b5d4be64094d8050b46c96111cc4bfbc88b2a7348978962d94bd50",
+      "bytes": 15956,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/exact-process-start-request.json",
+      "sha256": "dcdc20d5e798ed03003a415039f003bc7c03e27c0d15c42f36d1e594ebded291",
+      "bytes": 44583,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/stage_and_build02.py",
+      "sha256": "2e48a450fe4e54fb6a20896b5463546c70207ffe8334788132747947d6daa2ce",
+      "bytes": 3528,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/actual-handoff-01/verified-source-packet.json",
+      "sha256": "4e66be7f5c8a951607dfd08ec544628886f2e55bdf6cf5aa9db7846a4243013d",
+      "bytes": 41779,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/make_host02_handoff.py",
+      "sha256": "360bb34c3b80745bef16dcabd39e5894924eb2065603ba13007efbffc1c7b282",
+      "bytes": 15833,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/offline-controls.json",
+      "sha256": "b813ab70d57260bff23a8dd1823a135717be167bbea9e254abab4ab22ba51982",
+      "bytes": 2157,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host-fixture-build02/verify_handoff.py",
+      "sha256": "f3922c78212d44c10ca4f0fdd0d1a1c5f12c39c228c9d6bd019a9a580f45266a",
+      "bytes": 5151,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host02-actual-build-01/SOURCE_PINS.json",
+      "sha256": "e60ffedaeaafdb02933f266d9e6cc9a459e99655e424c597a11bbc38d09d6736",
+      "bytes": 956,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host02-actual-build-01/admission.json",
+      "sha256": "d7828d135b897fc0a39395919304d7bebe65a129a1d55f97834316cdc9cee4a8",
+      "bytes": 1542,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host02-actual-build-01/authoritative-terminal.json",
+      "sha256": "753cf587c78d245326dcedb802ab132f13f0a46c97724791750643c8a9217633",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host02-actual-build-01/build-result.json",
+      "sha256": "fd4a8d8a3b4b037bdf9ee72992cda69544ce8c94ea44e46696d028c0ad041142",
+      "bytes": 67979,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host02-actual-build-01/durable-output.json",
+      "sha256": "d97c8075833bbab850e1d092939b1ea3c21897cb1c0e8ada71f82a2f15f3037a",
+      "bytes": 1092,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host02-actual-build-01/verified-summary.json",
+      "sha256": "bb70f74edbe8031e138648a8124872d996cb035b6ef87ecfe8f55b02298b4dd3",
+      "bytes": 2370,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/host02-actual-build-01/worker-audit.json",
+      "sha256": "838149e04b8672ab7ca262983d66c835fc7d7530efffee5cec6a6ed217b3afdf",
+      "bytes": 5118,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/child-join-control.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/child-join-control.stdout.json",
+      "sha256": "b23dbea68aff64e76cfcab1159217684c02a4cbf2380ff53de1556fa6b06778f",
+      "bytes": 577,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/child_join_failure_control.py",
+      "sha256": "a66c1427d9dfb72e31d6a0812f3ff975a20cb5a55af4bb1630bf6ca66e0a29dc",
+      "bytes": 2603,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/controller-fix-reviewed.patch",
+      "sha256": "075cdca92bd63599e9602c5ec8674867fef27417d1a9079c991c7115b381b366",
+      "bytes": 7589,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/controller-fixed-badfc916.py",
+      "sha256": "badfc916b151999ff074847057f3a0e06421636c2d759ce10c3d8576e0203358",
+      "bytes": 43424,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/controller-reviewed-5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186.py",
+      "sha256": "5e12b5a87c2eed4f5796b5c86559a46b3d4839ef9f76e4b2baf18af2794b6186",
+      "bytes": 41461,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/factory-r2-fix-review-03.json",
+      "sha256": "bfc943c56dbee860f9c9160ebae9d8b0949bace6de66a3d4024c6ca5f8b79bd3",
+      "bytes": 4347,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/fixed-independent-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/fixed-independent-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/fixed-independent-control-result.json",
+      "sha256": "eaa8876510597fa5b52c5eab312aa8ba01701e0a38d22f2558c1cd760dc6ca53",
+      "bytes": 1081,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/fixed-independent-run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/fixed-independent-run.stdout.jsonl",
+      "sha256": "71e1b0f86818af2248938b7db154968eb8c6fdc0bb897c56d61bee9ea7775f8b",
+      "bytes": 706,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/host-build02-stage-review-01.json",
+      "sha256": "15414676b6b408c9e983601f6a26a15d086933a4a5ed1b282d6acaf46c415603",
+      "bytes": 5770,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/receive-control-result.json",
+      "sha256": "d5cebf03c881b0bf1f22cf04ac201a2b11e560bb9ecae19ada51719db99ea266",
+      "bytes": 297,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/receive-control.stderr",
+      "sha256": "00083eab9885c1fd59dbbbd463e26650097d184b929c69ee97846a3e933efb7a",
+      "bytes": 34,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/receive-control.stdout.jsonl",
+      "sha256": "07417cc87e3bd8fa36573ac25032454a89c139325e8a685308b0fbb92ed1b879",
+      "bytes": 116,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/receive_fixed_socketpair_control.cc",
+      "sha256": "eb5690657891581cb4847e8a116e45e5af01f54a76fcfa859969fe441b5f158d",
+      "bytes": 5082,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/receive_pidfd_control.cc",
+      "sha256": "c050d27a508e1edbef8097f9a01052fbad537eed1c266770175ec1fbf502c045",
+      "bytes": 5685,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/receive_pidfd_socketpair_control.cc",
+      "sha256": "72e3dd4c0930717b715e383e913bea010e526b9b2a33fe1024dc951152859f1b",
+      "bytes": 5073,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/report.json",
+      "sha256": "97df93040351c81e7c9a2370f45316cd61e1f735c4883608fa469c2ff5fd6eae",
+      "bytes": 9947,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/review-addendum-02.json",
+      "sha256": "3ddddbd7fcbef6cf89f18f9a19cf866a93b953edc94f19b0d973f2e6b9aa9a5a",
+      "bytes": 2663,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/socketpair-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/socketpair-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/socketpair-control-result.json",
+      "sha256": "7a8217cdeace9d9b02e1468bc796859f9e62aa9ad16884bbfa033a4587c9d750",
+      "bytes": 968,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/socketpair-run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/independent-review/socketpair-run.stdout.jsonl",
+      "sha256": "3a137c319ecd4cdc77e555ce088c13fc93646f76e0b1726a0722afb120799753",
+      "bytes": 688,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/memory-admission-diagnostic-01/SOURCE_PINS.json",
+      "sha256": "ace6c82653c9c656f02b7760b745c740cbb61bd8e16abe13d4b94894e5447e92",
+      "bytes": 1361,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/memory-admission-diagnostic-01/admission.json",
+      "sha256": "81b4084053c7ca355a096f37e0862e274aa3d626236a046ee58f55a559d63735",
+      "bytes": 1293,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/memory-admission-diagnostic-01/authoritative-terminal.json",
+      "sha256": "8a8f99ed35bec265df9a8cc360ed6ca4585eeb45a8b9466fbd5e1b4c727eef1d",
+      "bytes": 732,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/memory-admission-diagnostic-01/derived-observations.json",
+      "sha256": "13af322f6d8b22b3a694b4ab4a0a34c2bb10f03d9dcf7778ff1a015b4c7faf69",
+      "bytes": 3140,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/memory-admission-diagnostic-01/exact-process-start-request.json",
+      "sha256": "49082fcc5e19ce828dfa21413b042a2bb529558a16f7a55d0f64c8c0c570cbf7",
+      "bytes": 3610,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/memory-admission-diagnostic-01/raw-memory-result.json",
+      "sha256": "3727bfd0b4e97b2a4fcb2e93ac34810f198a949391b43d8f1d2377817244012e",
+      "bytes": 8056,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/memory-admission-diagnostic-01/read_memory.py",
+      "sha256": "3834d2f72f24d953a2c565f2039a66bf98cf7cfd2fda6e9f8be188b61fffdd7d",
+      "bytes": 2901,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/prior-builder-reference/android.rs",
+      "sha256": "fa6f6a995a1cedf17c342ac900df34d1742d6177651af4db6d3c44e6f5478958",
+      "bytes": 264052,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/prior-builder-reference/native_engine.rs",
+      "sha256": "61dcb93b6432dc41429807728ca164fc152507ced97ebf08621cc3be51548970",
+      "bytes": 14715,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/prior-builder-reference/original-signal-attempt04-controller.py",
+      "sha256": "e461786834ced2c99106e1ec1ed37d17aebbbaf2961eeb84596b24a8141d1bdd",
+      "bytes": 6266,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/prior-builder-reference/prior-signal-fullbuild-attempt04-success.json",
+      "sha256": "bd24988902d487b8499a3076d157097ca72c43af4ce4340e56df861137831f60",
+      "bytes": 6988,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/prior-builder-reference/prior-signal-fullbuild-preparation.json",
+      "sha256": "dbd395beae3e57ad3c28fe5d54c232dd376446b9b3c902eb8640efd4a890417b",
+      "bytes": 2596,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/prior-builder-reference/read-result.json",
+      "sha256": "08688c28a86c496b2083484b413793cc046f28ea267f66b6a277b71686c15c84",
+      "bytes": 9057,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/combined04-fullbuild-preparation-root-review.json",
+      "sha256": "df2d96174bb0ef22c20ed5115300c7afbdf70fd29139d9dd950c0d17c24b7001",
+      "bytes": 933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/combined05-fullbuild-prepare-dispatch-unknown-01.json",
+      "sha256": "19a1ff15206c6abfefc22d586efccc80e38c61da1033f0fa0e9435b573b2635f",
+      "bytes": 540,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/combined05-gates-and-preparation-root-review.json",
+      "sha256": "8d1304f8289df25beadfef96219de2924773f576e6541e0b561de9ab91235802",
+      "bytes": 1615,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/combined05-small-gates-01/candidate-05-report.json",
+      "sha256": "33697d93292428c660f69c629ab9851248f5e5e1c3653f9531e5382f49479d36",
+      "bytes": 967,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/combined05-small-gates-01/matched-gate-report.json",
+      "sha256": "e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803",
+      "bytes": 23088,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/combined05-small-gates-01/terminal.json",
+      "sha256": "11038ec3b30fd65ca904b3794612a4c3d7a4bd6491b82fea0f826e0c58936df6",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-child-output-bound-fixed-01.json",
+      "sha256": "317742a71b9030196aec9e8afa5f5c19f5e826e2027ddfb2fedc9b1324e71fdf",
+      "bytes": 661,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-host-build01/build-result.json",
+      "sha256": "adb1b0cb4bfa12d3d154c0538e931a7752046f8ab295e2bab77687615af6c81e",
+      "bytes": 67684,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-host-build01/worker-audit.json",
+      "sha256": "bcef68b74b78a7b3e6b40354810fdf0a58c7ad3e5a89dde7f3487983cbf1ec3f",
+      "bytes": 5118,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-main-local-compile-01.json",
+      "sha256": "1c46fdd851b8b9243172d5d82510fe5453da6162e37e8094d35c8a458d26bd09",
+      "bytes": 588,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-pidfd-original-pocket4-control-01.py",
+      "sha256": "189f4a2a3f2dbe447c5e5e3a3ca87d898827bd1f1e31d35bf8ff6ddbcec3a91a",
+      "bytes": 11536,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-pidfd-original-pocket4-control-result.json",
+      "sha256": "d5208ca0fbe7a64e88aeceeb0f4e887f877a499b89d9ca6e0f89aeea6e293a07",
+      "bytes": 5467,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-receive-pidfd-local-01.json",
+      "sha256": "b99ae5c2a92238596c2804d3ec937fe670a76fc5ad2152c70bb6d0dfab8f3e5c",
+      "bytes": 496,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/factory-v2-r2-root-source-review.json",
+      "sha256": "2bb207c70666502b4ed53cf75f66a721a2b40511171df256643d1224e92847da",
+      "bytes": 1293,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/native-work/root-evidence/native-main-fences02-root-source-review.json",
+      "sha256": "290a8b27773d4da22ccb182bc1095308df36c776c3c299744008c4094a960344",
+      "bytes": 1094,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/publication-inputs/01-native-allowlist.json",
+      "sha256": "db81d0ffc0cd0fab1b6b73bea4fd788f6886150bc57d12028b1ba016ad45f372",
+      "bytes": 101177,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/publication-inputs/02-native-allowlist.json",
+      "sha256": "f0ca8d3dc0fc6545a1245459afad1c67d0859b1d25ea1c3c6aaf16525058906e",
+      "bytes": 9550,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/publication-inputs/03-android-allowlist.json",
+      "sha256": "643ee0c61b13cea68c7ad832d7357e8c901ca650d128b12d87c18fb9abf3dc02",
+      "bytes": 92174,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/publication-inputs/04-android-allowlist.json",
+      "sha256": "be67d609292c4d3a7d8da52f71f6f3c641ef8b7014cd781f0c817213df4fc225",
+      "bytes": 46097,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/publication-inputs/05-supervisor-allowlist.json",
+      "sha256": "39023a63aa082b30b453ac420a3956068bb287ea8004386a2bdfb3cfe1688cb0",
+      "bytes": 20399,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/bilibili-recorder-r2-root-source-review.json",
+      "sha256": "f164edaf6e7cf91d4c0162f78ee66d69488b76c7c67ac9547be74bbe960d1720",
+      "bytes": 1345,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/bilibili-recorder-r3-root-source-review.json",
+      "sha256": "b5e03f003190c1e02423445c5a0eba54477bf94bdff361a91c7bafbe481f4b8d",
+      "bytes": 1266,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/bilibili-three-input-diagnostic-root-review.json",
+      "sha256": "60cfb098a9d71046d439738b01865beab9f4a9df2e1dcd4a4e1eecbb6ad3582d",
+      "bytes": 780,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/combined04-fullbuild-preparation-root-review.json",
+      "sha256": "df2d96174bb0ef22c20ed5115300c7afbdf70fd29139d9dd950c0d17c24b7001",
+      "bytes": 933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/combined05-fullbuild-prepare-dispatch-unknown-01.json",
+      "sha256": "19a1ff15206c6abfefc22d586efccc80e38c61da1033f0fa0e9435b573b2635f",
+      "bytes": 540,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/combined05-gates-and-preparation-root-review.json",
+      "sha256": "8d1304f8289df25beadfef96219de2924773f576e6541e0b561de9ab91235802",
+      "bytes": 1615,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/combined05-small-gates-01/candidate-05-report.json",
+      "sha256": "33697d93292428c660f69c629ab9851248f5e5e1c3653f9531e5382f49479d36",
+      "bytes": 967,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/combined05-small-gates-01/matched-gate-report.json",
+      "sha256": "e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803",
+      "bytes": 23088,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/combined05-small-gates-01/terminal.json",
+      "sha256": "11038ec3b30fd65ca904b3794612a4c3d7a4bd6491b82fea0f826e0c58936df6",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-child-output-bound-fixed-01.json",
+      "sha256": "317742a71b9030196aec9e8afa5f5c19f5e826e2027ddfb2fedc9b1324e71fdf",
+      "bytes": 661,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-host-build01/build-result.json",
+      "sha256": "adb1b0cb4bfa12d3d154c0538e931a7752046f8ab295e2bab77687615af6c81e",
+      "bytes": 67684,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-host-build01/worker-audit.json",
+      "sha256": "bcef68b74b78a7b3e6b40354810fdf0a58c7ad3e5a89dde7f3487983cbf1ec3f",
+      "bytes": 5118,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-main-cgroup-root-admission-fix.json",
+      "sha256": "f2d24080dfad3973472c8e35a8dac80aaabe23dc90e49a899e0f604e599e50e2",
+      "bytes": 1554,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-main-local-compile-01.json",
+      "sha256": "1c46fdd851b8b9243172d5d82510fe5453da6162e37e8094d35c8a458d26bd09",
+      "bytes": 588,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-pidfd-original-pocket4-control-01.py",
+      "sha256": "189f4a2a3f2dbe447c5e5e3a3ca87d898827bd1f1e31d35bf8ff6ddbcec3a91a",
+      "bytes": 11536,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-pidfd-original-pocket4-control-result.json",
+      "sha256": "d5208ca0fbe7a64e88aeceeb0f4e887f877a499b89d9ca6e0f89aeea6e293a07",
+      "bytes": 5467,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-receive-pidfd-local-01.json",
+      "sha256": "b99ae5c2a92238596c2804d3ec937fe670a76fc5ad2152c70bb6d0dfab8f3e5c",
+      "bytes": 496,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/factory-v2-r2-root-source-review.json",
+      "sha256": "2bb207c70666502b4ed53cf75f66a721a2b40511171df256643d1224e92847da",
+      "bytes": 1293,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/native-main-fences02-root-source-review.json",
+      "sha256": "290a8b27773d4da22ccb182bc1095308df36c776c3c299744008c4094a960344",
+      "bytes": 1094,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/prefix01-root-source-review.json",
+      "sha256": "aa7aed2c1b3e1846fe139bad1a7b0c66f46ec839c1d03bd180baae23060e136e",
+      "bytes": 1491,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/source-read-01/android.rs",
+      "sha256": "fa6f6a995a1cedf17c342ac900df34d1742d6177651af4db6d3c44e6f5478958",
+      "bytes": 264052,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/source-read-01/droidloomd.rs",
+      "sha256": "85ba21c0d4bdb99218f95e3ea5c4242f01634e1266fff6b9b13ad84afeddb9b0",
+      "bytes": 1869,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/source-read-01/native_engine.rs",
+      "sha256": "61dcb93b6432dc41429807728ca164fc152507ced97ebf08621cc3be51548970",
+      "bytes": 14715,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/root-review/source-read-01/original-signal-attempt04-controller.py",
+      "sha256": "e461786834ced2c99106e1ec1ed37d17aebbbaf2961eeb84596b24a8141d1bdd",
+      "bytes": 6266,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/build04-work/build-template.py",
+      "sha256": "4b5b47f60d92cab5d2e51831f6e3c43975d4b5955de0c6de642748e8c672791c",
+      "bytes": 9144,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/build04-work/request-summary.json",
+      "sha256": "ad5ef902a64ffbc4f37413bd69f86d96a6de02a13ba8751e169910dfb7262cfa",
+      "bytes": 1587,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/build05-work/build-template.py",
+      "sha256": "5d533f14817f90ec77e766e5a06fdb76bcc6afcf1362c9d67ebb446ef9ea8b47",
+      "bytes": 9022,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/build05-work/request-summary.json",
+      "sha256": "a40b4f4e9c3b9c93b01daf28f75ada9093a2c48090e35b7d18cdd05ed360f78c",
+      "bytes": 896,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/factory-host-runtime-01/launch.json",
+      "sha256": "c4adbcfdc6361548b0919e347961f2bc3ec6f243f8c19dea1c574d1032c303bd",
+      "bytes": 2224,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/factory-host-runtime-01/manifest.json",
+      "sha256": "158a4c5a024734f1ed81db5e37b8827e125a0c8830ad24e5b3c506dcf5aaaddd",
+      "bytes": 787,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/factory-host-runtime-01/readback-verification.json",
+      "sha256": "ca25b3e664ed55ea2bd5458174db22447025ecb737e6cd328d67b55d90690ae7",
+      "bytes": 652,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/factory-host-runtime-01/runtime-result.json",
+      "sha256": "b91c34d11b134965d6b4fd69df4eca5d2dbcc07637c3d372f934934bcf849faf",
+      "bytes": 16054,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/factory-host-runtime-01/stdout.txt",
+      "sha256": "389ab9a0f04fe5fad897ea008ced0c4aa1a900d08208d6fe464458e97ee6f3f7",
+      "bytes": 954,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/factory-host-runtime-01/terminal.json",
+      "sha256": "c11de7cf3d9814e0bc56896c5d20fc3b6e1ad42e1db377624696568ba8e430f3",
+      "bytes": 726,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/integration-core-build-01/build-result.json",
+      "sha256": "bd5e2d48769b8ec69791178695831fa13d30b437f0cb668ee6a8a6eed05eb97e",
+      "bytes": 51404,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/integration-peer-build-02/build-result.json",
+      "sha256": "edd9e0d07e967f9c0a2743235e49a824cc4331e2351a67f6e77e61c3da19e9c7",
+      "bytes": 54328,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/integration-producer-build-03/build-result.json",
+      "sha256": "cc0209eca13b637a47ae0a7b397f56071baaaca650bd34576ab1f5aa9c6f4bc1",
+      "bytes": 37019,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/integration-producer-build-04/build-result.json",
+      "sha256": "0a8db6485bd5352d120365c921a67d8d7332d6205c9609860390b996deb3ba5e",
+      "bytes": 34691,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/integration-producer-build-05/build-result.json",
+      "sha256": "1623811c108a7cac8af3460d828c063ed9e7064519d2d4e41d70bce4ab25e64c",
+      "bytes": 34073,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/integration-producer-build-05/stdout.txt",
+      "sha256": "13432e747921c845117a9b718248408e2872742f854ce9b818c690115b1a78d5",
+      "bytes": 783,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/integration-producer-build-05/terminal.json",
+      "sha256": "9c56f3a497aedb87eed8c1f27be763ec9d717709a8c0788ed929927f15b12ac9",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/launch.json",
+      "sha256": "52acb1c81f5b7470dfeda84547c7022bb78c42810243ea07515a292b429879fb",
+      "bytes": 1108,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/manifest.json",
+      "sha256": "743e6965af6dc01714c0598929cef15b6646bc3fd77139d8fad1c403ca299a47",
+      "bytes": 1095,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/preflight-result.json",
+      "sha256": "0b29fe07377483c57406145b838e38a3854a64276a09e16ac9aa4bd5fddb35ad",
+      "bytes": 2454,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/readback-verification.json",
+      "sha256": "03c2f857e82f382bad831a91fbede523e9099d4937b587aa3e5909223bf0e7be",
+      "bytes": 499,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/reader-launch.json",
+      "sha256": "ccf0134a1f9097eb9f4c223fcf0cdab20f654ecb1cea6d0095d8e91c36777111",
+      "bytes": 1130,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/reader-request.json",
+      "sha256": "250d1d353273b5d380cfdb5ef89ee40367d481a47ec269be1b7010c5392b7b02",
+      "bytes": 2563,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/reader-terminal.json",
+      "sha256": "51f23948318626d16166d7cb6cf064978a692110c9280d811b1ed9adcf1ab0e1",
+      "bytes": 731,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/stdout.txt",
+      "sha256": "4044e25b1d56ec7703423bd130b3fe1748af3310171ed6b1094bf3c1f165f1c2",
+      "bytes": 365,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-normal-preflight-01/terminal.json",
+      "sha256": "8ad6a4d2de2bbe296db464787c8acbe2ca57f1b3c97b2ae0e00a599161f06d67",
+      "bytes": 726,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/build-result.json",
+      "sha256": "1e70d9df93309ff5be991f0a20e4b5b4493e57a0b64fcc3881075e652a5ae712",
+      "bytes": 11910,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/manifest.json",
+      "sha256": "1de1293f7a2733a8210610087e1d7c10e5f37c611de8c785661c050e39552f93",
+      "bytes": 1274,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/prepare-launch.json",
+      "sha256": "eb64c8ff0edd4c98a14ed8259828aab944ac24000b480cc5593a8b9779f4fed9",
+      "bytes": 1029,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/prepare-summary.json",
+      "sha256": "db7db82c45186bec046accfa6413ac1e12cd6c092300d899625cc6856202c4bd",
+      "bytes": 381,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/prepare-terminal.json",
+      "sha256": "56aa36c3fbe2daf75e0a5ca8f074d70f4b8272c91c9dd656231010ebbee53d28",
+      "bytes": 729,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/readback-verification.json",
+      "sha256": "731fd373a80875a5596068717e72f1ad5e1f74e44e12cd8c17a4161549a9bb4c",
+      "bytes": 921,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/reader-launch.json",
+      "sha256": "0b1c2657d974699c822fd910e239ca5348243b1f7b2c56e50e88bab3ca895469",
+      "bytes": 1127,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/evidence/prefix-prepare-01/reader-terminal.json",
+      "sha256": "cbbf5d5adcc778f19a9fe449789c94138c530549610294645db1f3070a2c98e1",
+      "bytes": 733,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/launch-source-reference-04/compat-unshare.py",
+      "sha256": "fe3a685034ed0dc948597436965dfd35ea183fc2b0519d9b0c5730c79d7c060b",
+      "bytes": 560,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/launch-source-reference-04/cpu-placement-lib.rs",
+      "sha256": "b711e37a7245dc0d817e69d6589263b864cfd7ea43f2428c6d590c7e47863ab0",
+      "bytes": 1956,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/launch-source-reference-04/cpu-placement-linux.rs",
+      "sha256": "addc956fcae5d493cdf9bf55bd82ea79119caffb58bd8bc1fee44e17069357f8",
+      "bytes": 11370,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/launch-source-reference-04/manifest.json",
+      "sha256": "556462a482a31e259ae46064b418064b1ad5063bbb1e05106687e2a7a9f81834",
+      "bytes": 1137,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/launch-source-reference-05/collector.py",
+      "sha256": "914f0b71c3bd9fb92dfae6c2a40f070d02b595db568a91fcc1e42c20dfa3840e",
+      "bytes": 2781,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/launch-source-reference-05/read-result.json",
+      "sha256": "bf316b27302e7fcf3c5be35d98e6f23aea5103733e3c91dc8681ef4063ddc8e0",
+      "bytes": 3548,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/launch-source-reference-05/terminal.json",
+      "sha256": "891afb98df393d5603e277c9f6f5f44c4a11aabda06173ffa1489c13227d088a",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/README.md",
+      "sha256": "26ba5fabfb8ec9acc9411e6dbd93f88df52ffe94085e4ba935f2ad399e42c8c4",
+      "bytes": 4331,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/execute-request.json",
+      "sha256": "884e3264922db7662f4283db2743b134487c7bfeb433ca0186189d366a7eeb1c",
+      "bytes": 726,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/manifest.json",
+      "sha256": "4bd4792dff525f3820ae747cf4d5205e02eb4fa78b6e1b8ab63c264e1e701e8c",
+      "bytes": 1449,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/normal-plan.json",
+      "sha256": "dd9c420ae36678e3dc6fc4cbac4b08730a133a6b4b37ae11496c6f4b46babaef",
+      "bytes": 7258,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/read-preflight.py",
+      "sha256": "278117fcdb3b833a69d7c4b16c44f998c45da2691e80952f5851384af0f2de0a",
+      "bytes": 2036,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/stage-template.py",
+      "sha256": "98110cab14d7c129baea75d7c6d4025258ef5ebf5dd35a73bf25951a5da1745f",
+      "bytes": 7935,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/summary.json",
+      "sha256": "7696134105537549c11b8dc2da3834d9be4d0be29eabd1f1b4a05c69f23ce991",
+      "bytes": 1892,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-normal-admission-01/validation.json",
+      "sha256": "72a7215be03647f2cc105b667120b29c3b820aa9d345db451d09a52c88e7780c",
+      "bytes": 573,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-prepare-work-01/request-summary.json",
+      "sha256": "771bb5ab81e80775a2f0a3231e2cc2748044a7c757d40f27f47edd5c6c7b3ad9",
+      "bytes": 747,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-prepare-work-02/read-receipt.py",
+      "sha256": "1450b8cd08c13c5939eac1d7153d3b8cc321a86b08219681cadd419c5891480d",
+      "bytes": 2024,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-prepare-work-02/request-summary.json",
+      "sha256": "ef287ade019743eee76b66115352bb0599de04ab2626a5b58c9938dafedde6f1",
+      "bytes": 817,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/ANDROID-CANARY-PLAN.md",
+      "sha256": "1a808cd00a5af404bf75d7c0f7e8ba6e4b8d373909ab335febfc01cbc7fc09ca",
+      "bytes": 14533,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/NONEXECUTABLE-plan-template.json",
+      "sha256": "0618f1125741a9a98775a4474709faa803915746200ab67e2b90430041388324",
+      "bytes": 7205,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/PROTOCOL.md",
+      "sha256": "b875c91381240439cb97735a8e734791bf23bea96271212d8bfc01c9d706247d",
+      "bytes": 3220,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/README.md",
+      "sha256": "6db0e028bc6867e5dabfd384cad2c1493da18e092086cbf140bdb1ef902a3ae5",
+      "bytes": 9738,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/first-local-control-failure.json",
+      "sha256": "32cbf7eb3bd31657683eba98975f3e118917a9f1a1d143bdfa39462d01c1ed46",
+      "bytes": 973,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/local-controls-result.json",
+      "sha256": "e36171963c0f1a53aa3bb04cb9ca4e60d263af668faa64196a103debcdd1fd0c",
+      "bytes": 1933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/local-native-controls-result.json",
+      "sha256": "cd779c553382116a12e2dab237dd2a7c1b646a438be26abbabab76df7d68f6a4",
+      "bytes": 1707,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/producer05-build-result.json",
+      "sha256": "1623811c108a7cac8af3460d828c063ed9e7064519d2d4e41d70bce4ab25e64c",
+      "bytes": 34073,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/producer05-terminal.json",
+      "sha256": "9c56f3a497aedb87eed8c1f27be763ec9d717709a8c0788ed929927f15b12ac9",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/scm-pidfd-original-rejection.json",
+      "sha256": "84529eacd6e8a45fd6e12928c876183b12008bc620c1d4211a84e6d30e7e1024",
+      "bytes": 406,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/test_prefix_control.py.stderr",
+      "sha256": "344d2ad2ae305b5e84ce842468d37114b83f01ecbcf80153d299675520f871c8",
+      "bytes": 2075,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/test_prefix_control.py.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/test_prefix_coordinator.py.stderr",
+      "sha256": "ec9553a810947a8be4a7a1cdb48d16b7ec3fec62ab9cd1d30f899c2e9fdd4d19",
+      "bytes": 3271,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/test_prefix_coordinator.py.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/tool-read-collector.py",
+      "sha256": "914f0b71c3bd9fb92dfae6c2a40f070d02b595db568a91fcc1e42c20dfa3840e",
+      "bytes": 2781,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/tool-read-result.json",
+      "sha256": "bf316b27302e7fcf3c5be35d98e6f23aea5103733e3c91dc8681ef4063ddc8e0",
+      "bytes": 3548,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/evidence/tool-read-terminal.json",
+      "sha256": "891afb98df393d5603e277c9f6f5f44c4a11aabda06173ffa1489c13227d088a",
+      "bytes": 730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/manifest.json",
+      "sha256": "d84fa55f59642618d3c2a876ff77ae23db021ffddb34b8e9b0d358c65b7b6bd8",
+      "bytes": 4841,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/regressions/first-local-control-source/full_prefix_control.py",
+      "sha256": "5aabbad089855b2824828f9e4b30aea9a853ed8b36eaf607a4b238b27716dc8a",
+      "bytes": 29691,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/regressions/first-local-control-source/test_prefix_control.py",
+      "sha256": "656c9a708f83cf02302efa71ba34914a61e39ad9e4ba21cc5e54348a8118fbe3",
+      "bytes": 7404,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/regressions/scm-pidfd-and-cleanup.diff",
+      "sha256": "e1aba8496af6af1e5e56ea6c44e7ab2844bf786ef8b76d725f087b3d66004c9e",
+      "bytes": 2756,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/regressions/scm-pidfd-preimage.py",
+      "sha256": "940a491a9dfcb2ec147a90769ed807236703eece42f8874291cb680639a837c9",
+      "bytes": 30056,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/source/full_prefix_control.py",
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745",
+      "bytes": 30605,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/source/prefix_coordinator.py",
+      "sha256": "05bf5f46240b303b1af7f3850b5d683dcaa295fd4ee94a973c2b104eb08641ba",
+      "bytes": 40200,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/source/prefix_probe.c",
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a",
+      "bytes": 9662,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/source/prepare-template.py",
+      "sha256": "8a7483c66c8cee150b872198fde77f131aa4ad2eca870a2dd66206341e271ed2",
+      "bytes": 5804,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/source/test_prefix_control.py",
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887",
+      "bytes": 8284,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/source/test_prefix_coordinator.py",
+      "sha256": "bab7d9d5ffab2898d41e3b8951f61097c1935547f7fa35e0dc7dfc5cae26f2dc",
+      "bytes": 10441,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/prefix-submitted-01/validation.json",
+      "sha256": "113c1a0d1e6892927df21a57d6de7a594918ff700fe4f7df9cff6809fd9d7369",
+      "bytes": 763,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/manifest.json",
+      "sha256": "6a6510c3db9c337d711d6f8d1db67f4cc75363939ac23ac608c4c42a949369c2",
+      "bytes": 3376,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "sha256": "c28b2c31ac14ebfea2d3aec0650bff6ed6b708e329115d2e67b3ae8f013374be",
+      "bytes": 50933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "e15e5bb552e6e12406522b7fa9f992770db349f65bc55126c5bdf218824c6df3",
+      "bytes": 73000,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/development.rs",
+      "sha256": "591e87b7ec03b5f91b2ac36f715e9c572aa5a895c5f7f382c6623eea462c0ab9",
+      "bytes": 91967,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/lib.rs",
+      "sha256": "4588181c5c6d509412d0678e9da312788f66073a45d274b946f73b26b356237d",
+      "bytes": 34420,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/main.rs",
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8",
+      "bytes": 2872,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs",
+      "sha256": "8f647a6b788ffed8a063ed1f59c1275e59d0971a6e0b35d9d6756311fc600c63",
+      "bytes": 19594,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+      "sha256": "40ed58a3bc60664e99a96432aafc44ada0b8c5b9e9bc9c2f8f6e4b08503b8281",
+      "bytes": 18113,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+      "sha256": "ef23b247f247dd70f4bda216b63a8ac88b6234431bdcf68277fe8c542f507235",
+      "bytes": 22230,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs",
+      "sha256": "85048032af0a842a6a2866c45e8f8f8cc7308a2d1cc4a070ff0031fc43672dd8",
+      "bytes": 223,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+      "sha256": "2d437fa32999cd2ce842212951062ba950f53da5cf2f839728c165aa3fa422f2",
+      "bytes": 31252,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs",
+      "sha256": "96231f5974f7d8bbcbf9b7e4756c5fa632385e00fb5aaf5e535ca7d0ad32fa27",
+      "bytes": 9554,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-03/source/runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs",
+      "sha256": "a4b04fe15e3d88cb0fdaaf62f566b57ec044b65a1ccc8bed18d86739a446c9d4",
+      "bytes": 5377,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/README.md",
+      "sha256": "868f7102901f2ed5c8927cdf01a201d5f8a9edf2f9e133dc53cedaf08750c4f3",
+      "bytes": 4333,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/evidence/producer03-build-result.json",
+      "sha256": "cc0209eca13b637a47ae0a7b397f56071baaaca650bd34576ab1f5aa9c6f4bc1",
+      "bytes": 37019,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/manifest.json",
+      "sha256": "8005bbf4fe540a2c2c3ef72ab33661cdc8a416033ebfe7dd0d791f72dc23e250",
+      "bytes": 3322,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "sha256": "c28b2c31ac14ebfea2d3aec0650bff6ed6b708e329115d2e67b3ae8f013374be",
+      "bytes": 50933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "3039960c751d1aeec0554e0047ceba83b41eb7256d70c326f6664bc3877dba98",
+      "bytes": 78441,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/development.rs",
+      "sha256": "8563142c778e03013ab1640c03bd6ad93a17d709cc4dd759ad957be7c069d265",
+      "bytes": 92900,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/lib.rs",
+      "sha256": "4588181c5c6d509412d0678e9da312788f66073a45d274b946f73b26b356237d",
+      "bytes": 34420,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/main.rs",
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8",
+      "bytes": 2872,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs",
+      "sha256": "921a5be310db43331d70763335610a8d56858dd3fb9648d68fcc0b2fec9eda49",
+      "bytes": 19540,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+      "sha256": "7bee497acf3d8a3e15efe4797011bde996590189355d44d28963dc2384fc9031",
+      "bytes": 17598,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+      "sha256": "d32a37292a74df15e53baa1da6b7e4d736cf6c3b5f9e8c35305d642a52f062e2",
+      "bytes": 24807,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs",
+      "sha256": "85048032af0a842a6a2866c45e8f8f8cc7308a2d1cc4a070ff0031fc43672dd8",
+      "bytes": 223,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+      "sha256": "6b6badb5405389583515a6d505c66c5565fcf453d471b6521078764ed733a39a",
+      "bytes": 32162,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs",
+      "sha256": "96231f5974f7d8bbcbf9b7e4756c5fa632385e00fb5aaf5e535ca7d0ad32fa27",
+      "bytes": 9554,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/source/runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs",
+      "sha256": "22f55d1adfb76dbd68f44d6b101a69aeedf7e8dd3dca0b207b2f1bf2a4d61bd6",
+      "bytes": 5394,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/submitted03-to04.diff",
+      "sha256": "0b2a78a2061d2518d194b75ecc92b12b79f97edbfade3507a151a573cead12b8",
+      "bytes": 23919,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-04/validation.json",
+      "sha256": "f9d24ed27e11c346d4ee74ba32cc99c86dd5d42edfa0922e4774052cfd1faa93",
+      "bytes": 5320,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-05/README.md",
+      "sha256": "806c581b6ad3cfd999bc26c766d9c882893254d52720dda8def9d0119d3a07ed",
+      "bytes": 2002,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-05/manifest.json",
+      "sha256": "eec4b8de91596da3375071233efca6cde533caf29d9b1bc214fb9f898d03412d",
+      "bytes": 911,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-05/producer04-actual-build-result.json",
+      "sha256": "0a8db6485bd5352d120365c921a67d8d7332d6205c9609860390b996deb3ba5e",
+      "bytes": 34691,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-05/source/runtime/droidloom-supervisor/src/development.rs",
+      "sha256": "b64453bf041d24210354dccc5cd93a629f30b6e66cbf2249646c53051e729710",
+      "bytes": 94452,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-05/submitted04-to05.diff",
+      "sha256": "6dd9248c882aa62216c870640a5fdd1f0f59a5b92f31386a99081af9d87a0eb2",
+      "bytes": 4269,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/producer-submitted-05/validation.json",
+      "sha256": "064835351f497ed3d80ed1a5b288f3b605b4dae94d897c808f15b33160821158",
+      "bytes": 783,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/publication-cp07-allowlist-01/README.md",
+      "sha256": "6f750fb4b9fced842bed8181d979124cab36d9e1d919351774076a24ef1a36d4",
+      "bytes": 5133,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/publication-cp07-allowlist-01/exclusions.json",
+      "sha256": "6b9ac40137e9883ff99ad1ab5b8045562f3b2c4408f697a38043b5bde6f06a8f",
+      "bytes": 5095,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/publication-cp07-allowlist-01/source-closure-status.json",
+      "sha256": "1affa13d7c650b26867bfdf1282073b19dfd08ff9da81f1ac8132253566e00af",
+      "bytes": 8792,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-07/supervisor-work/reviews/bili-recorder-frontend-freeze01-review-01/report.json",
+      "sha256": "fda0eca1ae633243be284ad95241aa83ee3cb2280be8ffd9b1c0fe7074d9cc2e",
+      "bytes": 4514,
+      "encoding": "utf-8"
     }
-  ]
+  ],
+  "factory_candidate05": {
+    "manifest_sha256": "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba",
+    "small_gate_sha256": "e53c3e9e5846d36f971bae6140c394b837fa54525c0e2df4ac153c9ef5540803",
+    "host02_build_sha256": "fd4a8d8a3b4b037bdf9ee72992cda69544ce8c94ea44e46696d028c0ad041142",
+    "runtime01_state": "FAILED_FIRST_CLIENT_STAGE1_EPERM",
+    "runtime01_result_sha256": "b91c34d11b134965d6b4fd69df4eca5d2dbcc07637c3d372f934934bcf849faf",
+    "request_sent": false,
+    "Android_factory_qualified": false,
+    "production_ready": false
+  },
+  "fullbuild05": {
+    "preparation_sha256": "bb6e0d92c8b0df36ca8ccf1f25dd4286491c09999fa9225ff9f15955e00cd9d0",
+    "actual_job": "1a1a886d2c7-fc05-2ef4",
+    "state": "FAILED_15_GiB_MEMAVAILABLE_ADMISSION_BEFORE_INNER_BUILD",
+    "inner_builder_started": false,
+    "Main_fence_passed": true,
+    "Go5_profile": "LOCAL_PROPOSAL_NOT_EXECUTED_AT_SNAPSHOT"
+  },
+  "producer05": {
+    "report_sha256": "1623811c108a7cac8af3460d828c063ed9e7064519d2d4e41d70bce4ab25e64c",
+    "supervisor_tests": 122,
+    "relay_tests": 23,
+    "ordinary_IPC_controls": 7,
+    "compiled_worker_context_and_entry_ABI_passed": true,
+    "Android_lifecycle_qualified": false
+  },
+  "prefix01": {
+    "prepare_sha256": "1e70d9df93309ff5be991f0a20e4b5b4493e57a0b64fcc3881075e652a5ae712",
+    "python_controls": 40,
+    "native_controls": 6,
+    "normal_preflight_state": "FAILED_MAIN_SYSTEM_SERVER_CAPTURE_COMPARISON",
+    "normal_preflight_sha256": "0b29fe07377483c57406145b838e38a3854a64276a09e16ac9aa4bd5fddb35ad",
+    "runtime_started": false,
+    "actual_cause_verified": false
+  },
+  "bilibili_recorder": {
+    "R2_readonly_admission": "FAILED_ORIGINAL_HELPER_ARTIFACT_EXCEEDS_GENERIC_BOUND",
+    "actual_original_helper_bytes": 4366312,
+    "actual_original_helper_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+    "R3_manifest_sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
+    "R3_nine_owned_boundary_controls_passed": true,
+    "R3_readonly_admission": "NOT_SUBMITTED_AT_SNAPSHOT",
+    "new_UI_audio_actions": 0,
+    "production_ready": false
+  }
 }

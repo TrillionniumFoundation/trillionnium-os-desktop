@@ -1,0 +1,144 @@
+{
+  "started_utc": "2026-11-04T21:50:35.239207+00:00",
+  "uid": 1000,
+  "host": {
+    "MemTotal": {
+      "bytes": 26357305344,
+      "GiB": 24.547153
+    },
+    "MemAvailable": {
+      "bytes": 15127670784,
+      "GiB": 14.088741
+    },
+    "MemFree": {
+      "bytes": 8208809984,
+      "GiB": 7.64505
+    },
+    "SwapTotal": {
+      "bytes": 17179860992,
+      "GiB": 15.999992
+    },
+    "SwapFree": {
+      "bytes": 4115038208,
+      "GiB": 3.832428
+    },
+    "AnonPages": {
+      "bytes": 7342059520,
+      "GiB": 6.837826
+    },
+    "Cached": {
+      "bytes": 5164437504,
+      "GiB": 4.809757
+    },
+    "Shmem": {
+      "bytes": 326184960,
+      "GiB": 0.303783
+    },
+    "SReclaimable": {
+      "bytes": 1279037440,
+      "GiB": 1.191196
+    }
+  },
+  "root_stat": {
+    "anon": {
+      "bytes": 7342542848,
+      "GiB": 6.838276
+    },
+    "file": {
+      "bytes": 6402269184,
+      "GiB": 5.962578
+    },
+    "shmem": {
+      "bytes": 326184960,
+      "GiB": 0.303783
+    },
+    "inactive_anon": {
+      "bytes": 2393993216,
+      "GiB": 2.22958
+    },
+    "active_anon": {
+      "bytes": 5480964096,
+      "GiB": 5.104546
+    },
+    "inactive_file": {
+      "bytes": 4507430912,
+      "GiB": 4.197872
+    },
+    "active_file": {
+      "bytes": 1559359488,
+      "GiB": 1.452267
+    },
+    "slab_reclaimable": {
+      "bytes": 377410048,
+      "GiB": 0.35149
+    }
+  },
+  "main": {
+    "memory_current": 3773165568,
+    "memory_swap_current": 5104992256,
+    "memory_max": 6442450944,
+    "memory_high": 5368709120,
+    "stat": {
+      "anon": {
+        "bytes": 1323094016,
+        "GiB": 1.232227
+      },
+      "file": {
+        "bytes": 1967370240,
+        "GiB": 1.832256
+      },
+      "shmem": {
+        "bytes": 192139264,
+        "GiB": 0.178944
+      },
+      "inactive_anon": {
+        "bytes": 238338048,
+        "GiB": 0.22197
+      },
+      "active_anon": {
+        "bytes": 1351770112,
+        "GiB": 1.258934
+      },
+      "inactive_file": {
+        "bytes": 850481152,
+        "GiB": 0.792072
+      },
+      "active_file": {
+        "bytes": 914923520,
+        "GiB": 0.852089
+      },
+      "slab_reclaimable": {
+        "bytes": 66429400,
+        "GiB": 0.061867
+      }
+    },
+    "events": {
+      "low": 0,
+      "high": 15620,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 2927
+    },
+    "memory_current_GiB": 3.5140342712402344,
+    "memory_swap_current_GiB": 4.75439453125,
+    "memory_current_percent_of_MemTotal": 14.315445068283228
+  },
+  "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=5094139812\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=4889301084\n",
+  "errors": [
+    {
+      "path": "/sys/fs/cgroup/memory.current",
+      "errno": 2,
+      "error": "[Errno 2] No such file or directory: '/sys/fs/cgroup/memory.current'"
+    },
+    {
+      "path": "/sys/fs/cgroup/memory.swap.current",
+      "errno": 2,
+      "error": "[Errno 2] No such file or directory: '/sys/fs/cgroup/memory.swap.current'"
+    }
+  ],
+  "same_instant_atomic_snapshot": false,
+  "state_changes": false,
+  "MemAvailable_below_15GiB_bytes": 978456576
+}

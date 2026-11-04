@@ -1,0 +1,4 @@
+{"scope":"actual Receive with real socketpairs and ancillary; no listener inheritance, service or namespace","kernel":"6.18.57"}
+{"case":"ordinary","validate_socket_rc":0,"receiver_passpidfd":0,"receive_rc":0,"receive_errno":0,"adopted_scm_rights":2,"fds_after_rights_destructor_delta":0,"unowned_pidfds":0,"control_closed_leaks":true,"fd_table_restored":true,"finding_reproduced":true}
+{"case":"passpidfd","validate_socket_rc":0,"receiver_passpidfd":1,"receive_rc":-1,"receive_errno":71,"adopted_scm_rights":2,"fds_after_rights_destructor_delta":1,"unowned_pidfds":1,"control_closed_leaks":true,"fd_table_restored":true,"finding_reproduced":true}
+{"all_control_descriptors_closed":true}

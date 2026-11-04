@@ -1,0 +1,40 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-"
+  ],
+  "cwd": "/home/alex/work",
+  "idempotency_key": "p4-supervisor-producer-build04-be5736801677",
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 1073741824,
+  "nice": 10,
+  "timeout_seconds": 600,
+  "stdin_sha256": "be57368016778ee3cedb558f03f8d193cf3626f2a74d6df26496bee7370245e5",
+  "stdin_bytes": 402453,
+  "request_sha256": "0a3f5703fb491895ac6c751f7d3d84b2e858ef5649b72cd98c6e3d2037dc1cb3",
+  "request_bytes": 402829,
+  "submission_manifest_sha256": "8005bbf4fe540a2c2c3ef72ab33661cdc8a416033ebfe7dd0d791f72dc23e250",
+  "overlay_paths": [
+    "runtime/droidloom-supervisor/src/control.rs",
+    "runtime/droidloom-supervisor/src/development.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+    "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs"
+  ],
+  "actual_input_pins": 31,
+  "expected_tests": {
+    "droidloom-pressure-relay": 23,
+    "droidloom-supervisor": 121,
+    "ordinary_ipc": 7
+  },
+  "expected_additional_controls": [
+    "actual leader/worker/fork HostContext",
+    "compiled entry ABI"
+  ],
+  "remote_output": "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-producer-build-04",
+  "remote_snapshot": "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/integration-producer-review-03",
+  "runtime_started": false
+}

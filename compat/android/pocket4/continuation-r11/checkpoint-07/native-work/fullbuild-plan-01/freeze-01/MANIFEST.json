@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "state": "FROZEN_PREPARATION_AND_UNRUN_BUILD_CONTROLLER",
+  "files": {
+    "README.md": {
+      "bytes": 6469,
+      "sha256": "adda2ccd86d7f30889dd4fc8dfdd73263735da1dd7b2bb30d465860ea25b5ab5"
+    },
+    "combined_build.py": {
+      "bytes": 33967,
+      "sha256": "ba4dffc59b224b32e6f42f7f66222d35cdd62eecb82dabea67d05dc888635d6d"
+    },
+    "default-plan.json": {
+      "bytes": 1893,
+      "sha256": "e010fcfda40267141e90a9f1cc325d5f4e60404c85305ebe1cacc941a6adc125"
+    },
+    "exact-preparation-request.json": {
+      "bytes": 36489,
+      "sha256": "3f9e163d78fa7f4559a012341d4e5dde84f1dda5f6eb0c77916c93afd95f11d9"
+    },
+    "make_build_request.py": {
+      "bytes": 1993,
+      "sha256": "f2ad2dfea054a8f3d9734b50fe582e84ff6eea289e0a44d1ff8a6ec43f113320"
+    },
+    "offline-controls.stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "offline-controls.stdout.json": {
+      "bytes": 1922,
+      "sha256": "61a829b463d7073a235168582db6946942937db41da6746d36197f4b6db97bf0"
+    },
+    "pre-freeze-control-findings.json": {
+      "bytes": 662,
+      "sha256": "fce7649637ef845999cd892687351f8b8413f92df5fb03cc4bc952d820f437b8"
+    },
+    "r16-projection-expectation.json": {
+      "bytes": 5974,
+      "sha256": "b881fe5ba704bfed653c0530fe531f0f02a93830eecd269ba8c087d0d8e7e0f7"
+    },
+    "source-input-pins.json": {
+      "bytes": 3619,
+      "sha256": "4cdeb1b98f38d1fc2c3b45c392353722bc4e547e9f87ca98582dcb788553a66a"
+    },
+    "verify_controller.py": {
+      "bytes": 7211,
+      "sha256": "af9b56ec374f3763495216b4bac6d396a181ce2cb583fd139c3c2476fc6d0686"
+    },
+    "wrapper-integrity-controls.json": {
+      "bytes": 193,
+      "sha256": "d611f04a7b960f9c3527b602efb91068576c04530e3fd7c707525407cbab7ac8"
+    }
+  },
+  "remote_preparation_started_by_root": true,
+  "root_preparation_job": "1a1a859c601-fc05-2e68",
+  "build_request_requires_additional_root_main_fences": true,
+  "note": "Do not execute the unfenced build request; root requested a separate wrapper that records Main epoch/activation/resource/OOM before and after. Frozen source stays unchanged."
+}

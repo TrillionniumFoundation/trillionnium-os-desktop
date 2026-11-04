@@ -1,0 +1,92 @@
+--- producer04/runtime/droidloom-supervisor/src/development.rs
++++ producer05/runtime/droidloom-supervisor/src/development.rs
+@@ -494,26 +494,8 @@
+     let mut network = DevelopmentNetwork::create(spec)?;
+     let parent_pid = unsafe { libc::getpid() };
+     let entry = relay.as_ref().map_or_else(|| entry_executable.to_path_buf(), |relay| relay.entry_path());
+-    let mut command = droidloom_cpu_placement::command("ip");
+-    command
+-        .args(["netns", "exec", network.namespace(), "unshare"])
+-        .args([
+-            OsStr::new("--mount"),
+-            OsStr::new("--pid"),
+-            // Host-side setup helpers also need /proc to describe this PID
+-            // namespace (not only the procfs later exposed inside Android).
+-            OsStr::new("--mount-proc"),
+-            OsStr::new("--ipc"),
+-            OsStr::new("--uts"),
+-            OsStr::new("--fork"),
+-            OsStr::new("--kill-child=TERM"),
+-            OsStr::new("--forward-signals"),
+-            OsStr::new("--propagation=private"),
+-            entry.as_os_str(),
+-            OsStr::new("development-enter"),
+-            OsStr::new("--spec"),
+-            spec_path.as_os_str(),
+-        ]);
++    let mut command = development_namespace_command(
++        network.namespace(), &entry, spec_path, relay.is_some());
+     // If the lifecycle owner disappears even under SIGKILL or a crash,
+     // terminate `unshare`; its own --kill-child contract then terminates
+     // Android PID 1. Only deterministic network/path residue remains for the
+@@ -552,6 +534,31 @@
+             Err(io_error("execute networked unshare", source))
+         }
+     }
++}
++
++/// Keep the exact Child as the kernel unshare owner on the relay path.
++/// The historical compatibility wrapper forks again and closes all four
++/// capability FDs. It remains part of the legacy None path only.
++fn development_namespace_command(
++    namespace: &str,
++    entry: &Path,
++    spec_path: &Path,
++    relay_required: bool,
++) -> std::process::Command {
++    let mut command = droidloom_cpu_placement::command(
++        if relay_required { "/usr/bin/ip" } else { "ip" });
++    command.args(["netns", "exec", namespace,
++        if relay_required { "/usr/bin/unshare" } else { "unshare" }]);
++    command.args([
++        "--mount", "--pid", "--mount-proc", "--ipc", "--uts", "--fork", "--kill-child=TERM",
++    ]);
++    if !relay_required {
++        // The paired legacy shim implements this unsupported util-linux flag.
++        command.arg("--forward-signals");
++    }
++    command.arg("--propagation=private")
++        .arg(entry).arg("development-enter").arg("--spec").arg(spec_path);
++    command
+ }
+ 
+ /// Remove deterministic host residue from a previously interrupted cell.
+@@ -2135,6 +2142,28 @@
+     use std::io::Write;
+ 
+     #[test]
++    fn relay_namespace_prefix_avoids_the_fd_closing_legacy_wrapper() {
++        let entry = Path::new("/proc/self/fd/201");
++        let spec = Path::new("/owned/cell.json");
++        let legacy = development_namespace_command("owned-net", entry, spec, false);
++        let expected_legacy = [
++            "netns", "exec", "owned-net", "unshare", "--mount", "--pid", "--mount-proc",
++            "--ipc", "--uts", "--fork", "--kill-child=TERM", "--forward-signals",
++            "--propagation=private", "/proc/self/fd/201", "development-enter", "--spec", "/owned/cell.json",
++        ];
++        assert_eq!(legacy.get_program(), OsStr::new("ip"));
++        assert_eq!(legacy.get_args().collect::<Vec<_>>(),
++            expected_legacy.iter().map(OsStr::new).collect::<Vec<_>>());
++        let relay = development_namespace_command("owned-net", entry, spec, true);
++        let mut expected_relay = expected_legacy.to_vec();
++        expected_relay[3] = "/usr/bin/unshare";
++        expected_relay.retain(|value| *value != "--forward-signals");
++        assert_eq!(relay.get_program(), OsStr::new("/usr/bin/ip"));
++        assert_eq!(relay.get_args().collect::<Vec<_>>(),
++            expected_relay.iter().map(OsStr::new).collect::<Vec<_>>());
++    }
++
++    #[test]
+     fn cleanup_failure_repeats_until_the_owned_runtime_is_removed() {
+         let directory = tempfile::tempdir().unwrap();
+         let spec = owned_cleanup_test_spec(directory.path());

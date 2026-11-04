@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "state": "PREPARED_NOT_SUBMITTED",
+  "original_failure": "INPUT_SHAPE_OR_BOUND_CHANGED",
+  "original_source_contract_sha256": "c868748bac4f1537670b50b7b962ca8c86650483d98466127149c6cdd508b9ae",
+  "actual_call_chain": [
+    "recorder Flow.admission -> Flow.bind",
+    "MainBinding.__init__: verify_scope -> contract.load held R5/transport -> source.verify_shared_helper",
+    "verify_shared_helper reads exact helper source at default131072 bound, exact helper binary at4194304 bound, then exact qualification at131072 bound; only afterward its three evidence records at4194304 each"
+  ],
+  "source_guard_condition": "stat.S_ISREG(st_mode) and st_nlink==1 and st_size<=limit; this is the only source_contract origin for the observed error string",
+  "known_evidence": [
+    "init source contract/manifest gate passed",
+    "post-failure source contract verified unchanged",
+    "held-main-binding absent and no command intent; no UID query verdict",
+    "all Main post checks preserved and both CLI children joined"
+  ],
+  "inference_not_claimed_root_cause": "The external shared-helper inputs are the first unqualified bounded_file calls in binding. No exact offending path/field is yet established.",
+  "scope": "Only three fixed-path fstat records; only pinned qualification JSON content may be read. It may report three exact evidence paths for a later decision; it never opens those paths.",
+  "source_bytes": 3794,
+  "source_sha256": "613404e54655b123cd0d12adb861850ec5e00fc312886047e544e65c86312d15",
+  "request_sha256": "6691f98f0f47f58ed2d5094df13a75a0fc9765910b7152d5fe08bde4c8ea370d",
+  "default_plan_actual_rc": 0,
+  "remote_execution": "NOT_RUN",
+  "changes_to_limits_or_original_flow": false,
+  "UI_audio": false
+}

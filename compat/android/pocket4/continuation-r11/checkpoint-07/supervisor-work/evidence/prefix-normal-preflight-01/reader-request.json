@@ -1,0 +1,20 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-",
+    "--expected-sha256",
+    "0b29fe07377483c57406145b838e38a3854a64276a09e16ac9aa4bd5fddb35ad"
+  ],
+  "cwd": "/home/alex/work",
+  "stdin": "\"\"\"Read one fixed owned build receipt through root stdout, without mutation.\"\"\"\nimport argparse\nimport hashlib\nimport json\nimport os\nimport re\nimport stat\n\nPATH = \"/home/alex/work/pocket4-relay-prefix-r11-source-05-01/normal-plan-01-preflight.json\"\nparser = argparse.ArgumentParser(description=__doc__)\nparser.add_argument(\"--expected-sha256\", required=True)\nargs = parser.parse_args()\nif os.getuid() != 0 or os.geteuid() != 0 or not re.fullmatch(\"[0-9a-f]{64}\", args.expected_sha256):\n    raise RuntimeError(\"exact root caller and observed receipt digest required\")\nfd = os.open(PATH, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)\ntry:\n    before = os.fstat(fd)\n    if not (stat.S_ISREG(before.st_mode) and before.st_uid == before.st_gid == 0\n            and before.st_nlink == 1 and stat.S_IMODE(before.st_mode) == 0o600\n            and 0 < before.st_size <= 65536):\n        raise RuntimeError(\"fixed receipt metadata/bound differs\")\n    raw = bytearray()\n    while True:\n        part = os.read(fd, min(8192, 65537 - len(raw)))\n        if not part:\n            break\n        raw.extend(part)\n        if len(raw) > 65536:\n            raise RuntimeError(\"fixed receipt exceeded bound\")\n    after = os.fstat(fd)\n    fields = lambda value: (value.st_dev, value.st_ino, value.st_mode, value.st_uid, value.st_gid,\n                            value.st_size, value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)\n    digest = hashlib.sha256(raw).hexdigest()\n    if fields(before) != fields(after) or len(raw) != before.st_size or digest != args.expected_sha256:\n        raise RuntimeError(\"fixed receipt changed or observed digest differs\")\nfinally:\n    os.close(fd)\ntext = bytes(raw).decode(\"utf-8\", \"strict\")\njson.loads(text)\noutput = json.dumps({\"schema\": 1, \"path\": PATH, \"sha256\": digest, \"bytes\": len(raw), \"text\": text,\n                     \"root_artifact_read_only\": True, \"namespace_actions\": 0}, ensure_ascii=True)\nif len(output.encode()) > 131072:\n    raise RuntimeError(\"receipt stdout envelope exceeded\")\nprint(output, flush=True)\n",
+  "idempotency_key": "p4-prefix-preflight-read01-0b29fe07377483c5",
+  "cpu_quota_percent": 25,
+  "memory_max_bytes": 134217728,
+  "nice": 10,
+  "timeout_seconds": 30
+}

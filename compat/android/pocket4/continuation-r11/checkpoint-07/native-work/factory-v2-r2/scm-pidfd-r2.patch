@@ -1,0 +1,147 @@
+--- a/source/factory_main.cc
++++ b/source/factory_main.cc
+@@ -28,6 +28,12 @@
+ namespace p=berberis::proc_maps_provenance;
+ namespace {
+ constexpr int kPeerPidfd=77;
++// Linux SCM_PIDFD is one received descriptor, unlike non-FD ancillary data.
++// Keep the UAPI value available when building against older libc headers.
++constexpr int kScmPidfd=0x04;
++#ifdef SCM_PIDFD
++static_assert(kScmPidfd==SCM_PIDFD);
++#endif
+ constexpr unsigned long kPidfdPidNamespace=_IO(0xff,5);
+ constexpr unsigned long kPidfdUserNamespace=_IO(0xff,9);
+ constexpr short kDead=POLLERR|POLLHUP|POLLNVAL|POLLRDHUP;
+@@ -419,6 +425,14 @@
+     for(struct cmsghdr* header=CMSG_FIRSTHDR(&message);header;header=CMSG_NXTHDR(&message,header)) {
+       ++headers;
+       if(header->cmsg_level!=SOL_SOCKET||header->cmsg_type!=SCM_RIGHTS||header->cmsg_len<CMSG_LEN(0)){
++        // recvmsg has already installed this descriptor, even though this
++        // protocol rejects the extra header. Never treat credentials or other
++        // unknown non-FD payloads as an array of descriptors.
++        if(header->cmsg_level==SOL_SOCKET&&header->cmsg_type==kScmPidfd&&
++           header->cmsg_len>=CMSG_LEN(sizeof(int))) {
++          int pidfd;memcpy(&pidfd,CMSG_DATA(header),sizeof(pidfd));
++          Fd rejected_pidfd(pidfd);
++        }
+         valid=false;continue;
+       }
+       const size_t size=header->cmsg_len-CMSG_LEN(0);
+--- a/engine-delta/proc_maps_provenance.cc
++++ b/engine-delta/proc_maps_provenance.cc
+@@ -35,6 +35,10 @@
+ constexpr int kPidfdThread = O_EXCL;
+ constexpr unsigned long kPidfdUserNamespace = _IO(0xff, 9);
+ constexpr int kPeerPidfd = 77;  // SO_PEERPIDFD, Linux asm-generic/socket.h
++constexpr int kScmPidfd = 0x04;  // Linux SCM_PIDFD: exactly one received descriptor.
++#ifdef SCM_PIDFD
++static_assert(kScmPidfd == SCM_PIDFD);
++#endif
+ 
+ class Fd {
+  public:
+@@ -336,6 +340,59 @@
+     if (!Number(cursor, end, tid) || *tid <= 0) return false;
+   }
+   return Consume(cursor, end, "/fd/") && Number(cursor, end, descriptor) && cursor == end;
++}
++
++// Receive-stage ownership only. CreateSnapshot still authenticates the root
++// peer before this call and validates the returned snapshot provenance after it.
++int ReceiveSnapshotReply(int connection) {
++  unsigned char reply[kReplyBytes];
++  alignas(struct cmsghdr) unsigned char receive_control[CMSG_SPACE(sizeof(int) * 16)]{};
++  struct iovec reply_iov{reply, sizeof(reply)};
++  struct msghdr message{};
++  message.msg_iov = &reply_iov;
++  message.msg_iovlen = 1;
++  message.msg_control = receive_control;
++  message.msg_controllen = sizeof(receive_control);
++  const ssize_t received = recvmsg(connection, &message, MSG_CMSG_CLOEXEC);
++  if (received < 0) return -1;
++  int received_fd = -1;
++  size_t fd_count = 0;
++  bool invalid_control = false;
++  for (struct cmsghdr* ancillary = CMSG_FIRSTHDR(&message); ancillary; ancillary = CMSG_NXTHDR(&message, ancillary)) {
++    if (ancillary->cmsg_level != SOL_SOCKET || ancillary->cmsg_type != SCM_RIGHTS ||
++        ancillary->cmsg_len < CMSG_LEN(0)) {
++      // SO_PASSPIDFD can be changed by another thread sharing this socket.
++      // Reject its known FD-bearing header, but first adopt and close the one
++      // descriptor installed by recvmsg. Non-FD ancillary remains untouched.
++      if (ancillary->cmsg_level == SOL_SOCKET && ancillary->cmsg_type == kScmPidfd &&
++          ancillary->cmsg_len >= CMSG_LEN(sizeof(int))) {
++        int pidfd;
++        memcpy(&pidfd, CMSG_DATA(ancillary), sizeof(pidfd));
++        Fd rejected_pidfd(pidfd);
++      }
++      invalid_control = true;
++      continue;
++    }
++    const size_t count_bytes = ancillary->cmsg_len - CMSG_LEN(0);
++    if (count_bytes % sizeof(int) != 0) invalid_control = true;
++    for (size_t i = 0; i + sizeof(int) <= count_bytes; i += sizeof(int)) {
++      int descriptor;
++      memcpy(&descriptor, CMSG_DATA(ancillary) + i, sizeof(descriptor));
++      if (fd_count++ == 0) received_fd = descriptor;
++      else { Fd extra(descriptor); }
++    }
++  }
++  Fd output(received_fd);
++  if (invalid_control || (message.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) != 0 ||
++      received != sizeof(reply) || memcmp(reply, kReplyMagic, 8) != 0 ||
++      GetU32(reply + 8) != kVersion || !AllZero(reply + 16, 16)) return Error(EPROTO);
++  const uint32_t error = GetU32(reply + 12);
++  if (error != 0) {
++    if (fd_count != 0 || error > 4095) return Error(EPROTO);
++    return Error(static_cast<int>(error));
++  }
++  if (fd_count != 1 || output.get() < 0) return Error(EPROTO);
++  return output.release();
+ }
+ 
+ }  // namespace
+@@ -512,41 +569,8 @@
+   const ssize_t sent = sendmsg(connection.get(), &message, MSG_NOSIGNAL);
+   if (sent < 0) return -1;
+   if (sent != sizeof(request)) return Error(EPROTO);
+-  unsigned char reply[kReplyBytes];
+-  alignas(struct cmsghdr) unsigned char receive_control[CMSG_SPACE(sizeof(int) * 16)]{};
+-  struct iovec reply_iov{reply, sizeof(reply)};
+-  message = {};
+-  message.msg_iov = &reply_iov;
+-  message.msg_iovlen = 1;
+-  message.msg_control = receive_control;
+-  message.msg_controllen = sizeof(receive_control);
+-  const ssize_t received = recvmsg(connection.get(), &message, MSG_CMSG_CLOEXEC);
+-  if (received < 0) return -1;
+-  int received_fd = -1;
+-  size_t fd_count = 0;
+-  bool invalid_control = false;
+-  for (ancillary = CMSG_FIRSTHDR(&message); ancillary; ancillary = CMSG_NXTHDR(&message, ancillary)) {
+-    if (ancillary->cmsg_level != SOL_SOCKET || ancillary->cmsg_type != SCM_RIGHTS ||
+-        ancillary->cmsg_len < CMSG_LEN(0)) { invalid_control = true; continue; }
+-    const size_t count_bytes = ancillary->cmsg_len - CMSG_LEN(0);
+-    if (count_bytes % sizeof(int) != 0) invalid_control = true;
+-    for (size_t i = 0; i + sizeof(int) <= count_bytes; i += sizeof(int)) {
+-      int descriptor;
+-      memcpy(&descriptor, CMSG_DATA(ancillary) + i, sizeof(descriptor));
+-      if (fd_count++ == 0) received_fd = descriptor;
+-      else { Fd extra(descriptor); }
+-    }
+-  }
+-  Fd output(received_fd);
+-  if (invalid_control || (message.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) != 0 ||
+-      received != sizeof(reply) || memcmp(reply, kReplyMagic, 8) != 0 ||
+-      GetU32(reply + 8) != kVersion || !AllZero(reply + 16, 16)) return Error(EPROTO);
+-  const uint32_t error = GetU32(reply + 12);
+-  if (error != 0) {
+-    if (fd_count != 0 || error > 4095) return Error(EPROTO);
+-    return Error(static_cast<int>(error));
+-  }
+-  if (fd_count != 1 || output.get() < 0) return Error(EPROTO);
++  Fd output(ReceiveSnapshotReply(connection.get()));
++  if (output.get() < 0) return -1;
+   Origin origin;
+   const Lookup lookup = QueryPinned(output.get(), config, &origin);
+   if (lookup == Lookup::kError) return -1;

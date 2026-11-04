@@ -1,0 +1,7 @@
+{
+  "stage": "first r2 work copy inherited frozen read-only main_binding.py",
+  "error": "PermissionError Errno13 while applying delta; original r1 and copied r2 remained unchanged",
+  "control_first_rc": 1,
+  "first_control_limitation": "new source was still r1 because patch application failed; original failure retained",
+  "resolution": "changed write permission only on the new own work copy, then applied the intended delta; no frozen r1 edit"
+}

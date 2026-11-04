@@ -1,0 +1,123 @@
+--- r2/bound_android_transport.py
++++ r3/bound_android_transport.py
+@@ -163,15 +163,38 @@
+                         "timeout_seconds": timeout, "inner_timeout_seconds": inner,
+                         "automatic_retry": False, "numeric_pid_target_used": False}
+             self.record("intent", identity)
+-            with self.target.entry(command) as (argv, descriptors):
++            primary = None
++            completed = None
++            attempted = False
++            entered = False
++            manager = None
++            status = {**identity, "action_attempted": False, "outcome_unknown": False}
++
++            def remember(failure, code, phase, **metadata):
++                nonlocal primary
++                if primary is None:
++                    if isinstance(failure, (TransportError, TransportTimeout)):
++                        primary = failure
++                    else:
++                        primary = TransportError(code, attempted=attempted, unknown=attempted)
++                        primary.__cause__ = failure
++                primary.details.update(metadata)
++                primary.details.setdefault("observed_errors", []).append({
++                    "phase": phase, "exception_type": type(failure).__name__,
++                    "errno": getattr(failure, "errno", None)})
++
++            try:
++                manager = self.target.entry(command)
++                entry_value = manager.__enter__()
++                entered = True
++                argv, descriptors = entry_value
+                 require(len(descriptors) == 7 and len(set(descriptors)) == 7
+                         and all(type(fd) is int and fd >= 3 for fd in descriptors),
+                         "HELD_AUTHORITY_SET_DIFFERS")
+                 require("--target" not in argv and "-t" not in argv
+                         and all(not part.startswith("--target=") for part in argv),
+                         "NUMERIC_PID_ENTRY_FORBIDDEN")
+-                primary = None
+-                completed = None
++                attempted = True
+                 try:
+                     completed = self.runner(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         timeout=timeout, env=HOST_ENV, pass_fds=tuple(descriptors), close_fds=True)
+@@ -182,37 +205,48 @@
+                     primary = TransportError("HOST_COMMAND_INTERRUPTED", attempted=True, unknown=True,
+                                              exception_type=type(failure).__name__)
+                     primary.__cause__ = failure
+-            if completed is None:
+-                status = {**identity, "first_cause": str(primary),
+-                    "action_attempted": True, "outcome_unknown": True}
+-            else:
+-                status = {**identity, "returncode": completed.returncode,
+-                    "stdout_bytes": len(completed.stdout), "stderr_bytes": len(completed.stderr),
+-                    "stdout_sha256": hashlib.sha256(completed.stdout).hexdigest(),
+-                    "stderr_sha256": hashlib.sha256(completed.stderr).hexdigest(),
+-                    "action_attempted": True, "outcome_unknown": completed.returncode != 0}
+-                if completed.returncode in (124, 137):
+-                    primary = TransportTimeout("ANDROID_COMMAND_TIMEOUT", inner,
+-                                               returncode=completed.returncode)
+-                elif completed.returncode != 0:
+-                    primary = TransportError("ANDROID_COMMAND_FAILED", attempted=True, unknown=True,
+-                                             returncode=completed.returncode)
+-            # Retain the command's primary cause even if evidence writing or the
+-            # mandatory post-command epoch check also fails. No next command runs.
+-            try:
+-                self.record("command-result", status)
++                if completed is None:
++                    status = {**identity, "first_cause": str(primary),
++                        "action_attempted": True, "outcome_unknown": True}
++                else:
++                    status = {**identity, "returncode": completed.returncode,
++                        "stdout_bytes": len(completed.stdout), "stderr_bytes": len(completed.stderr),
++                        "stdout_sha256": hashlib.sha256(completed.stdout).hexdigest(),
++                        "stderr_sha256": hashlib.sha256(completed.stderr).hexdigest(),
++                        "action_attempted": True, "outcome_unknown": completed.returncode != 0}
++                    if completed.returncode in (124, 137):
++                        primary = TransportTimeout("ANDROID_COMMAND_TIMEOUT", inner,
++                                                   returncode=completed.returncode)
++                    elif completed.returncode != 0:
++                        primary = TransportError("ANDROID_COMMAND_FAILED", attempted=True, unknown=True,
++                                                 returncode=completed.returncode)
++                # This observation precedes lease exit: a release exception must
++                # not erase a command that was already sent or replace its cause.
++                try:
++                    self.record("command-result", status)
++                except BaseException as failure:
++                    remember(failure, "COMMAND_RESULT_RECORD_FAILED", "command_result_record",
++                             command_result_record_failed=True)
+             except BaseException as failure:
+-                if primary is None:
+-                    primary = TransportError("COMMAND_RESULT_RECORD_FAILED", attempted=True, unknown=True)
+-                    primary.__cause__ = failure
+-                primary.details["command_result_record_failed"] = True
+-            try:
+-                self._check(True)
+-            except BaseException as failure:
+-                if primary is None:
+-                    primary = TransportError("POST_COMMAND_EPOCH_OR_TARGET_CHANGED", attempted=True, unknown=True)
+-                    primary.__cause__ = failure
+-                primary.details["post_command_guard_failed"] = True
++                phase = "entry_acquire" if not entered else "command_observation"
++                code = "HELD_ENTRY_ACQUIRE_FAILED" if not entered else "COMMAND_OBSERVATION_FAILED"
++                remember(failure, code, phase)
++            finally:
++                if entered:
++                    try:
++                        # Even if a context manager reports suppression, an
++                        # already observed command failure stays authoritative.
++                        manager.__exit__(type(primary) if primary else None, primary,
++                                         primary.__traceback__ if primary else None)
++                    except BaseException as failure:
++                        remember(failure, "HELD_ENTRY_RELEASE_FAILED", "entry_release",
++                                 entry_release_failed=True)
++                if attempted:
++                    try:
++                        self._check(True)
++                    except BaseException as failure:
++                        remember(failure, "POST_COMMAND_EPOCH_OR_TARGET_CHANGED", "post_command_guard",
++                                 post_command_guard_failed=True)
+             if primary is not None:
+                 try:
+                     self.record("failure", {**status, "first_cause": str(primary), **primary.details})

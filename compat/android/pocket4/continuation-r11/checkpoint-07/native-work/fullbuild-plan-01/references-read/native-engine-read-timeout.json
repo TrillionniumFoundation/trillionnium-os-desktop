@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "tool call error: tool call failed for `codex_apps/heptaruntime_mac_controller.binary_read`\n\nCaused by:\n    Mcp error: -32603: MCP request timed out"
+      }
+    ],
+    "isError": true
+  },
+  "followup_process_start_executed": false,
+  "note": "First readonly binary_read returned MCP timeout; the dependent process_start was never reached. No file-absence or native-code failure inference."
+}

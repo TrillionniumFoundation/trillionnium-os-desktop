@@ -1,0 +1,39 @@
+--- r2/coordinator.py
++++ r3/coordinator.py
+@@ -19,12 +19,12 @@
+ import traceback
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-bilibili-readonly-r2-01')
+-ARCHIVE = Path('/home/alex/work/pocket4-bilibili-held-r2-source-01.tar.gz')
+-ARCHIVE_SHA = 'ff856ef8c23fde572060917f32e039cdf02923a6d77ee38e87b9c5287501dbfa'
+-ARCHIVE_BYTES = 108190
+-TOP = 'recorder-held-r2-freeze-01'
+-MANIFEST_SHA = '2c2c2a51ec91402a04237738ca5eba840a0d5dad62803e09c8752d691394ab72'
++ROOT = Path('/home/alex/work/pocket4-bilibili-readonly-r3-01')
++ARCHIVE = Path('/home/alex/work/pocket4-bilibili-held-r3-source-01.tar.gz')
++ARCHIVE_SHA = '8bcbbc4d8a313c37394fda2345516512cd1ba911433311d8d46e7d9577d88126'
++ARCHIVE_BYTES = 117257
++TOP = 'recorder-held-r3-freeze-01'
++MANIFEST_SHA = '4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906'
+ ACTIVATION = Path('/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json')
+ ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ VERIFIED = ACTIVATION.with_name('activation-verified-01.json')
+@@ -132,7 +132,7 @@
+         manifest_raw = files['source-manifest.json']
+         require(digest(manifest_raw) == MANIFEST_SHA, 'external source manifest mismatch')
+         manifest = json.loads(manifest_raw)
+-        require(manifest['schema'] == 1 and manifest['revision'] == 2 and len(manifest['files']) == 32,
++        require(manifest['schema'] == 1 and manifest['revision'] == 3 and len(manifest['files']) == 44,
+                 'source revision or exact payload count')
+         require(set(files) == set(manifest['files']) | {'source-manifest.json'}, 'exact archive file closure')
+         for name, row in manifest['files'].items():
+@@ -243,7 +243,7 @@
+     ROOT.mkdir(mode=0o700)
+     evidence = ROOT / 'evidence'
+     evidence.mkdir(mode=0o700)
+-    result = {'schema': 1, 'success': False, 'request': 'pocket4-bilibili-readonly-r2-01',
++    result = {'schema': 1, 'success': False, 'request': 'pocket4-bilibili-readonly-r3-01',
+         'source_manifest_sha256': MANIFEST_SHA, 'archive_sha256': ARCHIVE_SHA,
+         'automatic_retry': False, 'UI_audio_launch_close': False, 'whole_app_production_ready': False,
+         'secondary_errors': [], 'cli_operations': []}

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "scope": "actual spawn/Child with one owned ordinary child; no namespace or Main action",
+  "controller_sha256": "badfc916b151999ff074847057f3a0e06421636c2d759ce10c3d8576e0203358",
+  "primary_error": "owned child output exceeded bound",
+  "retained_stdout_bytes": 65536,
+  "observed_stdout_bytes": 65537,
+  "observed_stdout_sha256": "bc8bcc87a68a62aeba9c2ada5510f3907d43bd53d107170f328f2152246657da",
+  "truncated": true,
+  "eof": true,
+  "reaped": true,
+  "returncode": 0,
+  "join_errors": [
+    {
+      "type": "RuntimeError",
+      "message": "owned child output exceeded bound"
+    }
+  ],
+  "all_owned_fds_closed": true,
+  "pass": true
+}

@@ -1,0 +1,149 @@
+--- old-5e12
++++ fixed-badfc
+@@ -145,14 +145,16 @@
+     """Adopt every delivered fd before validating framing; caller closes all."""
+     received, valid = [], True
+     for level, kind, payload in ancillary:
+-        if level != socket.SOL_SOCKET or kind != socket.SCM_RIGHTS:
++        if level != socket.SOL_SOCKET or kind not in (socket.SCM_RIGHTS, 4):
+             valid = False
+             continue
+         decoded = array.array('i')
+         usable = len(payload) - len(payload) % decoded.itemsize
+         decoded.frombytes(payload[:usable])
+         received.extend(decoded)
+-        valid = valid and usable == len(payload)
++        # Linux SCM_PIDFD (4) also installs an fd. Adopt it for closure, then
++        # reject it; never interpret credentials or unknown payloads as fds.
++        valid = valid and usable == len(payload) and kind == socket.SCM_RIGHTS
+     return received, valid
+ 
+ 
+@@ -166,26 +168,45 @@
+         self.pid, self.pidfd, self.stdout, self.stderr, self.label = pid, pidfd, stdout, stderr, label
+         self.returncode = None
+         self.result = None
++        self.outputs = {stdout: bytearray(), stderr: bytearray()}
++        self.hashes = {stdout: hashlib.sha256(), stderr: hashlib.sha256()}
++        self.seen = {stdout: 0, stderr: 0}
++        self.open_fds = {stdout, stderr}
++        self.eof_fds = set()
++        self.over_bound = set()
++        self.join_errors = []
++        self.forced_kill = False
++
++    def observation(self):
++        streams = {}
++        for name, fd in (('stdout', self.stdout), ('stderr', self.stderr)):
++            streams[name] = self.outputs[fd].decode('utf-8', 'replace')
++            streams[name + '_observed_bytes'] = self.seen[fd]
++            streams[name + '_observed_sha256'] = self.hashes[fd].hexdigest()
++            streams[name + '_retained_bytes'] = len(self.outputs[fd])
++            streams[name + '_truncated'] = fd in self.over_bound
++            streams[name + '_eof'] = fd in self.eof_fds
++        return {'label': self.label, 'pid_in_fixture': self.pid, 'returncode': self.returncode,
++                'forced_kill': self.forced_kill, 'reaped': self.returncode is not None,
++                'join_errors': list(self.join_errors), **streams}
+ 
+     def join(self, seconds=6, kill_on_timeout=False):
+         if self.result is not None:
+             return self.result
+         deadline = time.monotonic() + seconds
+-        outputs = {self.stdout: bytearray(), self.stderr: bytearray()}
+-        open_fds = set(outputs)
+-        forced = False
++        timeout_kill_sent = False
+         try:
+-            while self.returncode is None or open_fds:
++            while self.returncode is None or self.open_fds:
+                 remaining = deadline - time.monotonic()
+                 if remaining <= 0:
+-                    if kill_on_timeout and self.returncode is None and not forced:
++                    if kill_on_timeout and self.returncode is None and not timeout_kill_sent:
+                         signal.pidfd_send_signal(self.pidfd, signal.SIGKILL)
+-                        forced = True
++                        timeout_kill_sent = self.forced_kill = True
+                         deadline = time.monotonic() + 2
+                         continue
+                     raise TimeoutError(self.label + ' wait/drain deadline')
+                 poller = select.poll()
+-                for fd in open_fds:
++                for fd in self.open_fds:
+                     poller.register(fd, select.POLLIN | select.POLLHUP)
+                 if self.returncode is None:
+                     poller.register(self.pidfd, select.POLLIN)
+@@ -194,30 +215,42 @@
+                         waited, status = os.waitpid(self.pid, 0)
+                         must(waited == self.pid, 'wrong child reaped')
+                         self.returncode = os.waitstatus_to_exitcode(status)
+-                    elif fd in open_fds:
++                    elif fd in self.open_fds:
+                         block = os.read(fd, 8192)
+                         if block:
+-                            outputs[fd].extend(block)
+-                            must(len(outputs[fd]) <= 65536, 'owned child output exceeded bound')
++                            self.hashes[fd].update(block)
++                            self.seen[fd] += len(block)
++                            self.outputs[fd].extend(block[:max(0, 65536 - len(self.outputs[fd]))])
++                            if self.seen[fd] > 65536 and fd not in self.over_bound:
++                                self.over_bound.add(fd)
++                                raise RuntimeError('owned child output exceeded bound')
+                         else:
+-                            open_fds.remove(fd)
+-            self.result = {'label': self.label, 'pid_in_fixture': self.pid, 'returncode': self.returncode,
+-                           'forced_kill': forced, 'reaped': True,
+-                           'stdout': outputs[self.stdout].decode('utf-8', 'strict'),
+-                           'stderr': outputs[self.stderr].decode('utf-8', 'strict')}
++                            os.close(fd)
++                            self.open_fds.remove(fd)
++                            self.eof_fds.add(fd)
++            self.result = self.observation()
+             return self.result
+-        finally:
+-            if self.returncode is not None:
+-                for fd in (self.stdout, self.stderr):
+-                    try:
+-                        os.close(fd)
+-                    except OSError:
+-                        pass
++        except BaseException as error:
++            self.join_errors.append({'type': type(error).__name__, 'message': str(error)})
++            raise
+ 
+     def retire(self):
+         if self.returncode is None and alive(self.pidfd):
+             signal.pidfd_send_signal(self.pidfd, signal.SIGKILL)
++            self.forced_kill = True
+         return self.join(3, kill_on_timeout=True)
++
++    def close_streams(self):
++        # Only descriptors still owned by this object are closed. A successful
++        # EOF close removes the number, so a later reuse cannot be closed twice.
++        errors = []
++        for fd in list(self.open_fds):
++            try:
++                os.close(fd)
++                self.open_fds.remove(fd)
++            except BaseException as error:
++                errors.append(repr(error))
++        return errors
+ 
+ 
+ def spawn(label, function, keep=(), cross_pid=False, remount_proc=True):
+@@ -522,12 +555,15 @@
+                 was_alive = child.returncode is None and alive(child.pidfd)
+                 result = child.retire()
+                 self.retirement.append({'label': child.label, 'was_alive_at_cleanup': was_alive,
+-                                        **{key: result[key] for key in ('returncode', 'reaped', 'forced_kill', 'stdout', 'stderr')}})
++                                        **child.observation()})
+                 if was_alive:
+                     errors.append({'stage': 'unexpected-live-child', 'label': child.label})
+             except BaseException as error:
+                 errors.append({'stage': 'child-retire', 'label': child.label, 'error': repr(error)})
++                self.retirement.append({'label': child.label, 'retirement_error': repr(error), **child.observation()})
+             finally:
++                for error in child.close_streams():
++                    errors.append({'stage': 'child-stream-close', 'label': child.label, 'error': error})
+                 try:
+                     os.close(child.pidfd)
+                 except BaseException as error:

@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "state": "PREPARED_SINGLE_MEMORY_BUDGET_DELTA",
+  "builder_sha256": "16df26d88391c22c9f076917531f022907ec5608bd31e58e05c898605db9dcc4",
+  "source": "/home/alex/work/pocket4-signal-semantics-r15-20261104/builder-source",
+  "destination": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source",
+  "before_manifest_sha256": "6e82e72dfa3a9b309d5b70264d8237358b3774d83659f8f6d0f4b4baaf6c51b7",
+  "after_manifest_sha256": "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017",
+  "changed_paths": [
+    "android/apex-compat/0008-soong-leaf-go-memory-budget.patch"
+  ],
+  "patch_preimage_sha256": "f2070410f9d2a37f6b67ebabcb1c0db3da7341dfc3a61ca3a0392fc3343727bb",
+  "patch_sha256": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e",
+  "engine_source_changes": [
+    {
+      "path": "guest_os_primitives/arm64/guest_context_arch.h",
+      "preimage_sha256": "ca4daaa682994ad830180291f3cef07375c5d938aa0ab9f58b45c5e15fff34cf",
+      "sha256": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+      "bytes": 8640
+    },
+    {
+      "path": "guest_os_primitives/guest_signal_handling.cc",
+      "preimage_sha256": "8c4052082617327c3c52126eb3124fa0a3259c4b36a380e61e7b20503277bbeb",
+      "sha256": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+      "bytes": 28870
+    },
+    {
+      "path": "guest_os_primitives/guest_signal_handling_arch.cc",
+      "preimage_sha256": "6097d09a396d77c516cf91c5b75abb3b0cbd1e7fccbcc1e1555b84e7d1292963",
+      "sha256": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+      "bytes": 6274
+    },
+    {
+      "path": "guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h",
+      "preimage_sha256": "8a343fa094ac83a0411cbcfe82372881ff77f32f08cc5d5a8ae15cdf8ec11877",
+      "sha256": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+      "bytes": 3611
+    },
+    {
+      "path": "guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h",
+      "preimage_sha256": "4b27ba2f90bee2c9e92c49d3f3b2beb6a07fb7ee27087d9e8e04d369603fa737",
+      "sha256": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+      "bytes": 6115
+    },
+    {
+      "path": "guest_os_primitives/scoped_guest_signal_mask.h",
+      "preimage_sha256": null,
+      "sha256": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9",
+      "bytes": 2869
+    }
+  ],
+  "files": 449,
+  "source_bytes": 5683986,
+  "locks_and_recovery": "normal unmodified builder entry",
+  "full_build_qualified": false
+}

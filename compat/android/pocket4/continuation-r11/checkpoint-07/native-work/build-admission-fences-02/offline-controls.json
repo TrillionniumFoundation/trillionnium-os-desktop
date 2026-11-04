@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "all_pass": true,
+  "checks": [
+    {
+      "name": "matching_observed_invariants",
+      "pass": true
+    },
+    {
+      "name": "reject_changed_activation_sha256",
+      "pass": true
+    },
+    {
+      "name": "reject_changed_framework_epoch_sha256",
+      "pass": true
+    },
+    {
+      "name": "reject_changed_host_processes",
+      "pass": true
+    },
+    {
+      "name": "reject_changed_limits",
+      "pass": true
+    },
+    {
+      "name": "reject_changed_main_cgroup_identity",
+      "pass": true
+    },
+    {
+      "name": "reject_oom_increase",
+      "pass": true
+    },
+    {
+      "name": "reject_oom_kill_increase",
+      "pass": true
+    },
+    {
+      "name": "reject_oom_group_kill_increase",
+      "pass": true
+    },
+    {
+      "name": "pressure_increase_reported_without_zero_interference_claim",
+      "pass": true
+    },
+    {
+      "name": "counter_regression_rejected",
+      "pass": true
+    },
+    {
+      "name": "success_post_fence_attempted",
+      "pass": true
+    },
+    {
+      "name": "success_inner_admission",
+      "pass": true
+    },
+    {
+      "name": "success_result",
+      "pass": true
+    },
+    {
+      "name": "before_error_post_fence_attempted",
+      "pass": true
+    },
+    {
+      "name": "before_error_inner_admission",
+      "pass": true
+    },
+    {
+      "name": "before_error_result",
+      "pass": true
+    },
+    {
+      "name": "inner_error_post_fence_attempted",
+      "pass": true
+    },
+    {
+      "name": "inner_error_inner_admission",
+      "pass": true
+    },
+    {
+      "name": "inner_error_result",
+      "pass": true
+    },
+    {
+      "name": "after_error_post_fence_attempted",
+      "pass": true
+    },
+    {
+      "name": "after_error_inner_admission",
+      "pass": true
+    },
+    {
+      "name": "after_error_result",
+      "pass": true
+    },
+    {
+      "name": "terminal_save_error_post_fence_attempted",
+      "pass": true
+    },
+    {
+      "name": "terminal_save_error_inner_admission",
+      "pass": true
+    },
+    {
+      "name": "terminal_save_error_result",
+      "pass": true
+    },
+    {
+      "name": "default_plan_no_packet_or_actions",
+      "pass": true
+    }
+  ],
+  "fenced_build_sha256": "bc31ba59729166c7d87aebcfab699d5abc7f8433b58a34eee9cfea229b90adbc",
+  "main_snapshot_sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb",
+  "Main_snapshot_executed": false,
+  "inner_fullbuild_executed": false,
+  "root_helper_executed": false,
+  "scope": "Real outer control flow with explicit Main and inner-build seams; actual temporary receipt writes only."
+}

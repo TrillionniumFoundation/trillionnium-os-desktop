@@ -1,0 +1,491 @@
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -226,6 +226,7 @@
+     config: DaemonConfig,
+     active: Option<ActiveCell>,
+     last_exit: Option<String>,
++    last_run_failed: bool,
+     retirement_error: Option<String>,
+     progress: Reporter,
+ }
+@@ -236,6 +237,7 @@
+             config,
+             active: None,
+             last_exit: None,
++            last_run_failed: false,
+             retirement_error: None,
+             progress: Reporter::default(),
+         }
+@@ -248,10 +250,23 @@
+         };
+         match active.cell.try_wait().map_err(development_error) {
+             Ok(Some(status)) => {
+-                self.last_exit = Some(format!("Android cell exited with {status}"));
++                let reason = active.cell.termination_reason().map(str::to_owned);
++                if let Some(reason) = reason {
++                    self.last_run_failed = true;
++                    self.last_exit = Some(format!("Android cell failed and exited with {status}: {reason}"));
++                } else if !self.last_run_failed {
++                    self.last_exit = Some(format!("Android cell exited with {status}"));
++                }
+                 self.active = None;
+             }
+-            Ok(None) => {}
++            Ok(None) => {
++                if active.cell.relay_generation_enrolled() {
++                    // A new relay owner alone does not clear the old run's
++                    // failure. Wait for actual init commit and native grant.
++                    self.last_exit = None;
++                    self.last_run_failed = false;
++                }
++            }
+             Err(error) => {
+                 return Err(self.record_retirement_failure(error));
+             }
+@@ -340,7 +355,9 @@
+             spec: spec.clone(),
+             cell,
+         });
+-        self.last_exit = None;
++        if spec.pressure_relay.is_none() && !self.last_run_failed {
++            self.last_exit = None;
++        }
+         if self.active.as_ref().is_some_and(|active| active.spec.pressure_relay.is_some()) {
+             // A post-spawn failure stays in ActiveCell, but start must report
+             // it immediately instead of describing that failed owner as ready.
+@@ -371,10 +388,17 @@
+         if let Err(error) = active.cell.stop().map_err(development_error) {
+             return Err(self.record_retirement_failure(error));
+         }
++        let reason = active.cell.termination_reason().map(str::to_owned);
+         self.active = None;
+         self.retirement_error = None;
+-        self.last_exit = None;
+-        Ok(self.success(format!("stopped cell {cell_id}")))
++        if let Some(reason) = &reason {
++            self.last_run_failed = true;
++            self.last_exit = Some(format!("Android cell failed and has stopped: {reason}"));
++        } else if !self.last_run_failed {
++            self.last_exit = None;
++        }
++        Ok(self.success(reason.map_or_else(|| format!("stopped cell {cell_id}"),
++            |reason| format!("stopped cell {cell_id}; previous runtime failure: {reason}"))))
+     }
+ 
+     fn restart(
+@@ -395,7 +419,7 @@
+         if let Some(active) = &self.active {
+             authorize_uid(peer_uid, active.spec.host_uid)?;
+             let (_, phase) = android_boot_snapshot(&active.spec)?;
+-            Ok(self.success(format!(
++            let message = format!(
+                 "cell {} is running from {}; {}",
+                 active.spec.id(),
+                 active.spec_path.display(),
+@@ -403,9 +427,14 @@
+                     || "Android is ready".to_owned(),
+                     |phase| format!("Android boot phase: {phase}")
+                 )
+-            )))
++            );
++            if self.last_run_failed {
++                Ok(self.failure(format!("{message}; previous runtime failure remains recorded: {}",
++                    self.last_exit.as_deref().unwrap_or("unspecified prior failure"))))
++            } else { Ok(self.success(message)) }
+         } else {
+-            Ok(self.success(self.last_exit.as_deref().unwrap_or("cell is stopped")))
++            let message = self.last_exit.as_deref().unwrap_or("cell is stopped");
++            Ok(if self.last_run_failed { self.failure(message) } else { self.success(message) })
+         }
+     }
+ 
+@@ -693,6 +722,10 @@
+         {
+             return Err(self.record_retirement_failure(error));
+         }
++        if let Some(reason) = self.active.as_ref().and_then(|active| active.cell.termination_reason()) {
++            self.last_run_failed = true;
++            self.last_exit = Some(format!("Android cell failed and has stopped: {reason}"));
++        }
+         self.active = None;
+         self.retirement_error = None;
+         Ok(())
+@@ -709,7 +742,12 @@
+         let message = format!(
+             "Android cell cleanup is incomplete; retained owner blocks start/restart: {error}"
+         );
+-        self.last_exit = Some(message.clone());
++        // Keep the prior run's cause separate from a later cleanup failure.
++        // An explicit successful cleanup retry must not replace that cause
++        // with a now-obsolete "cleanup incomplete" message.
++        if !self.last_run_failed {
++            self.last_exit = Some(message.clone());
++        }
+         self.retirement_error = Some(message.clone());
+         ControlError::Invalid(message)
+     }
+@@ -1513,6 +1551,66 @@
+ mod tests {
+     use super::*;
+     use std::sync::Arc;
++
++    #[test]
++    fn a_retired_run_failure_survives_poll_stop_shutdown_and_status_serialization() {
++        let directory = tempfile::tempdir().unwrap();
++        let spec = crate::development::owned_cleanup_test_spec(directory.path());
++        fs::create_dir(&spec.runtime_dir).unwrap();
++        let mut child = std::process::Command::new("/bin/true").spawn().unwrap();
++        assert!(child.wait().unwrap().success());
++        let mut daemon = Daemon::new(DaemonConfig {
++            socket: directory.path().join("unused.sock"),
++            supervisor: directory.path().join("unused-supervisor"),
++            spec_directory: directory.path().join("unused-specs"),
++        });
++        // The first runtime cause is a status seam. Real Child exit and real
++        // runtime-directory teardown still execute. Exit 0 must not hide it.
++        let cause = "native LMKD enrollment failed before its startup deadline";
++        daemon.active = Some(ActiveCell {
++            spec_path: directory.path().join("unused.json"),
++            cell: DevelopmentCell::from_owned_child_for_test(spec.clone(), child)
++                .with_retired_run_failure_for_test(cause),
++            spec,
++        });
++        daemon.poll().unwrap();
++        assert!(daemon.active.is_none());
++        assert!(daemon.retirement_error.is_none());
++        assert!(!directory.path().join("runtime").exists());
++        for _ in 0..3 {
++            daemon.poll().unwrap();
++            assert!(daemon.stop(1001).unwrap().ok);
++            daemon.shutdown().unwrap();
++            let status = daemon.handle(1001, ControlRequest::Status, None);
++            assert!(!status.ok);
++            assert_eq!(status.state, CellState::Stopped);
++            assert!(status.message.contains(cause));
++            assert_eq!(serde_json::from_slice::<ControlResponse>(&serde_json::to_vec(&status).unwrap()).unwrap(), status);
++        }
++        assert!(daemon.start(1001, &directory.path().join("absent-spec.json")).is_err());
++        assert!(daemon.status(1001).unwrap().message.contains(cause));
++        // Another normally exiting owned child with no authenticated ACTIVE
++        // observation cannot clear history merely by completing cleanup.
++        let spec = crate::development::owned_cleanup_test_spec(directory.path());
++        fs::create_dir(&spec.runtime_dir).unwrap();
++        let mut child = std::process::Command::new("/bin/true").spawn().unwrap();
++        assert!(child.wait().unwrap().success());
++        daemon.active = Some(ActiveCell {
++            spec_path: directory.path().join("unused-next.json"),
++            cell: DevelopmentCell::from_owned_child_for_test(spec.clone(), child), spec,
++        });
++        let blocker = directory.path().join("runtime/android-cmdline");
++        fs::create_dir(&blocker).unwrap();
++        assert!(daemon.poll().is_err());
++        assert_eq!(daemon.handle(1001, ControlRequest::Status, None).state, CellState::CleanupFailed);
++        assert!(daemon.last_exit.as_deref().unwrap().contains(cause));
++        fs::remove_dir(&blocker).unwrap();
++        assert!(daemon.stop(1001).unwrap().ok);
++        daemon.poll().unwrap();
++        let status = daemon.status(1001).unwrap();
++        assert!(!status.ok); assert_eq!(status.state, CellState::Stopped);
++        assert!(status.message.contains(cause));
++    }
+ 
+     fn daemon_with_owned_cleanup_failure(
+         directory: &Path,
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -258,6 +258,9 @@
+         .map_err(|source| io_error("resolve supervisor executable", source))?;
+     let mut cell = start_development_cell(spec_path, spec, &executable)?;
+     let status = cell.wait()?;
++    if let Some(reason) = cell.termination_reason() {
++        return Err(io_error("Android relay generation failed", io::Error::other(reason.to_owned())));
++    }
+     if status.success() {
+         Ok(())
+     } else {
+@@ -275,6 +278,7 @@
+     child: Child,
+     network: Option<DevelopmentNetwork>,
+     relay: Option<crate::relay_lifecycle::owner::Owner>,
++    termination_reason: Option<String>,
+     cleaned: bool,
+ }
+ 
+@@ -282,6 +286,13 @@
+     /// Host PID of the exact `unshare` namespace owner.
+     pub fn host_pid(&self) -> u32 {
+         self.child.id()
++    }
++
++    pub(crate) fn termination_reason(&self) -> Option<&str> {
++        self.termination_reason.as_deref()
++    }
++    pub(crate) fn relay_generation_enrolled(&self) -> bool {
++        self.relay.as_ref().is_some_and(|relay| relay.enrolled())
+     }
+ 
+     /// Return the child exit status without blocking.
+@@ -376,6 +387,7 @@
+         if let Some(relay) = &mut self.relay {
+             relay.retire_before_network(&mut self.child)
+                 .map_err(|source| io_error("retire exact init/broker/domain generation", source))?;
++            self.termination_reason = relay.termination_reason().map(str::to_owned);
+         }
+         if let Some(network) = self.network.as_mut() {
+             // Keep the exact remaining network owner and its recovery record
+@@ -400,8 +412,17 @@
+             child,
+             network: None,
+             relay: None,
++            termination_reason: None,
+             cleaned: false,
+         }
++    }
++
++    #[cfg(test)]
++    pub(crate) fn with_retired_run_failure_for_test(mut self, reason: &str) -> Self {
++        // Pure status-propagation seam; it creates no relay, namespace, or
++        // retirement proof. The enclosing test still owns/reaps a real Child.
++        self.termination_reason = Some(reason.to_owned());
++        self
+     }
+ }
+ 
+@@ -521,7 +542,7 @@
+             // Retain all ownership before any post-spawn fallible pinning or
+             // real init protocol operation. attach records failure in Cell.
+             let mut cell = DevelopmentCell { spec: spec.clone(), child,
+-                network: Some(network), relay, cleaned: false };
++                network: Some(network), relay, termination_reason: None, cleaned: false };
+             if let Some(relay) = &mut cell.relay { relay.attach(&mut cell.child); }
+             Ok(cell)
+         }
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs
+@@ -103,7 +103,6 @@
+     pub(crate) fn pid(&self) -> i32 { self.pid }
+     pub(crate) fn start(&self) -> u64 { self.start }
+     pub(crate) fn fd(&self) -> &File { &self.pidfd }
+-    pub(crate) fn proc(&self) -> &File { &self.proc }
+     pub(crate) fn try_clone(&self) -> io::Result<Self> {
+         self.live()?;
+         Ok(Self { pid: self.pid, pidfd: self.pidfd.try_clone()?, proc: self.proc.try_clone()?, start: self.start })
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
+@@ -36,14 +36,6 @@
+     if name.as_bytes().contains(&b'/') { return Err(error("relative capability component contains slash")); }
+     at(parent.as_raw_fd(), &name, flags, 0)
+ }
+-pub(crate) fn duplicate(raw: RawFd) -> io::Result<File> {
+-    // SAFETY: F_DUPFD_CLOEXEC creates an independent descriptor reference.
+-    let result = unsafe { libc::fcntl(raw, libc::F_DUPFD_CLOEXEC, 3) };
+-    if result < 0 { Err(io::Error::last_os_error()) } else {
+-        // SAFETY: fcntl returned a newly owned descriptor.
+-        Ok(unsafe { File::from_raw_fd(result) })
+-    }
+-}
+ pub(crate) fn directory(path: &Path) -> io::Result<File> {
+     if !path.is_absolute() { return Err(error("capability directory is not absolute")); }
+     let mut file = OpenOptions::new().read(true)
+@@ -204,7 +196,6 @@
+     }
+     pub(crate) fn android(&self) -> &File { &self.android }
+     pub(crate) fn identity(&self) -> Identity { self.android_id }
+-    pub(crate) fn envelope_identity(&self) -> Identity { self.outer_id }
+     pub(crate) fn validate(&self) -> io::Result<()> {
+         if self.removed || self.failed_retirement { return Err(error("generation domain is retired or poisoned")); }
+         let outer = at(self.parent.as_raw_fd(), &self.name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
+@@ -247,7 +238,6 @@
+         if result.is_err() { self.failed_retirement = true; } else { self.removed = true; }
+         result
+     }
+-    pub(crate) fn removed(&self) -> bool { self.removed }
+     pub(crate) fn prove_removed(&self) -> io::Result<()> {
+         if !self.removed || self.failed_retirement { return Err(error("domain has no completed removal proof")); }
+         match at(self.parent.as_raw_fd(), &self.name, libc::O_PATH, 0) {
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -18,6 +18,7 @@
+ use std::path::Path;
+ use std::process::Command;
+ 
++/// Exact pure-CLI pairing value required before private relay entry may spawn.
+ pub const ABI: &str = "droidloom-relay-entry-v1";
+ pub(crate) const ENTRY_ENV: [&str; 3] = [
+     "DROIDLOOM_RELAY_ENTRY_ABI", "DROIDLOOM_RELAY_ENTRY_NONCE", "DROIDLOOM_RELAY_ENTRY_SPEC_SHA256",
+@@ -178,7 +179,7 @@
+         bind_readonly(&root, &format!("{BOOTSTRAP}/libdroidloom_init_relay.so"), self.barrier.file())?;
+         bind_readonly(&root, &format!("{BOOTSTRAP}/lmkd"), self.lmkd.file())?;
+         let mut generated = domain::at(directory.as_raw_fd(), c"lmkd.rc", libc::O_RDWR | libc::O_CREAT | libc::O_EXCL, 0o644)?;
+-        generated.write_all(lmkd_rc(&self.policy).as_bytes())?; generated.sync_all()?;
++        generated.write_all(lmkd_rc(self.policy.lmkd_uid, self.policy.lmkd_gid).as_bytes())?; generated.sync_all()?;
+         old_rc.validate(true)?;
+         bind_readonly(&root, "system/etc/init/lmkd.rc", &generated)?;
+         // Preserve the pre-existing loader/preload pair and a non-set-ID init
+@@ -204,6 +205,7 @@
+     pub(crate) fn configure_init(&mut self, command: &mut Command) -> io::Result<()> {
+         if !self.prepared || self.sealed { return Err(error("init release preparation reused or incomplete")); }
+         self.sealed = true;
++        require_init_command(command)?;
+         pidfd_alive(&self.owner)?;
+         self.barrier.validate(false)?; self.lmkd.validate(false)?;
+         clean_command_environment(command);
+@@ -217,6 +219,13 @@
+         // SAFETY: the entry is single-threaded. This pre-exec closure performs
+         // only async-signal-safe syscalls and changes no shared parent state.
+         unsafe { command.pre_exec(move || {
++            // This is the final pre-exec callback, after any CPU placement
++            // callbacks. Keep the inherited parent-death link explicit at
++            // the exact direct, nonprivileged init exec boundary.
++            if libc::getuid() != 0 || libc::geteuid() != 0 || libc::getgid() != 0 || libc::getegid() != 0
++                || libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) < 0 {
++                return Err(io::Error::other("init credentials or parent-death contract changed before exec"));
++            }
+             let mut poll = libc::pollfd { fd: owner, events: libc::POLLIN, revents: 0 };
+             if libc::poll(&mut poll, 1, 0) != 0 || poll.revents != 0 {
+                 return Err(io::Error::other("entry owner died immediately before init exec"));
+@@ -225,6 +234,15 @@
+         }); }
+         Ok(())
+     }
++}
++
++fn require_init_command(command: &Command) -> io::Result<()> {
++    let mut args = command.get_args();
++    if command.get_program() != std::ffi::OsStr::new("/init")
++        || args.next() != Some(std::ffi::OsStr::new("second_stage")) || args.next().is_some() {
++        return Err(error("relay barrier requires a direct exact /init second_stage exec"));
++    }
++    Ok(())
+ }
+ 
+ fn make_parent(root: &File, name: &str) -> io::Result<File> {
+@@ -310,25 +328,51 @@
+     if !found { return Err(error("init has no PT_INTERP; constructor cannot be guaranteed")); }
+     Ok(())
+ }
+-fn lmkd_rc(policy: &PressureRelaySpec) -> String {
+-    format!("# Package-owned native relay LMKD; init constructor owns the startup barrier.\n\
+-service lmkd {}\n\
+-    class core\n\
+-    user {}\n\
+-    group {} system readproc\n\
+-    capabilities DAC_OVERRIDE KILL IPC_LOCK SYS_NICE SYS_RESOURCE\n\
+-    socket lmkd seqpacket+passcred 0660 system system\n\
+-    task_profiles ServiceCapacityLow\n\
+-    stdio_to_kmsg\n\
+-    setenv DROIDLOOM_CELL 1\n\
+-    setenv DROIDLOOM_LMKD_CGROUP /sys/fs/cgroup\n\
+-    setenv DROIDLOOM_LMKD_PRESSURE relay-required\n", init_peer::LMKD, policy.lmkd_uid, policy.lmkd_gid)
++fn lmkd_rc(uid: u32, gid: u32) -> String {
++    // Do not use escaped physical newlines: Rust strips their leading
++    // whitespace and would remove the service-option indentation.
++    format!(concat!(
++        "# Package-owned native relay LMKD; init constructor owns the startup barrier.\n",
++        "service lmkd {}\n",
++        "    class core\n",
++        "    user {}\n",
++        "    group {} system readproc\n",
++        "    capabilities DAC_OVERRIDE KILL IPC_LOCK SYS_NICE SYS_RESOURCE\n",
++        "    socket lmkd seqpacket+passcred 0660 system system\n",
++        "    task_profiles ServiceCapacityLow\n",
++        "    stdio_to_kmsg\n",
++        "    setenv DROIDLOOM_CELL 1\n",
++        "    setenv DROIDLOOM_LMKD_CGROUP /sys/fs/cgroup\n",
++        "    setenv DROIDLOOM_LMKD_PRESSURE relay-required\n",
++    ), init_peer::LMKD, uid, gid)
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+     use std::os::unix::fs::symlink;
++    #[test]
++    fn final_init_exec_contract_rejects_wrappers_and_other_stage() {
++        let mut command = Command::new("/init");
++        command.arg("second_stage"); require_init_command(&command).unwrap();
++        command.arg("unexpected"); assert!(require_init_command(&command).is_err());
++        let mut wrong = Command::new("/init"); wrong.arg("first_stage");
++        assert!(require_init_command(&wrong).is_err());
++        let mut wrapper = Command::new("taskset"); wrapper.args(["/init", "second_stage"]);
++        assert!(require_init_command(&wrapper).is_err());
++    }
++    #[test]
++    fn generated_native_lmkd_options_remain_inside_one_service_block() {
++        let text = lmkd_rc(1069, 1069);
++        let mut lines = text.lines().filter(|line| !line.is_empty() && !line.starts_with('#'));
++        assert_eq!(lines.next(), Some("service lmkd /droidloom/lmkd-bootstrap/lmkd"));
++        let options: Vec<_> = lines.collect();
++        assert_eq!(options.len(), 10);
++        assert!(options.iter().all(|line| line.starts_with("    ") && !line.starts_with("     ")));
++        assert!(options.contains(&"    user 1069"));
++        assert!(options.contains(&"    group 1069 system readproc"));
++        assert!(options.contains(&"    setenv DROIDLOOM_LMKD_PRESSURE relay-required"));
++    }
+     #[test]
+     fn init_alias_cannot_escape_the_private_image() {
+         let temp = tempfile::tempdir().unwrap(); let root = domain::directory(temp.path()).unwrap();
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
+@@ -311,7 +311,11 @@
+         self.owner.require_dead(Duration::from_secs(2))
+     }
+     fn prove_retired(&self) -> io::Result<()> {
+-        if self.retirement_error.is_some() || self.phase.load(Ordering::Acquire) != RETIRED
++        if let Some(retirement) = &self.retirement_error {
++            let first = self.reason.as_deref().unwrap_or("lifecycle retirement requested");
++            return Err(io::Error::other(format!("{first}; retirement remains incomplete: {retirement}")));
++        }
++        if self.phase.load(Ordering::Acquire) != RETIRED
+             || self.domain.is_some() || self.hello.is_some()
+             || self.broker.as_ref().is_none_or(|b| !b.retirement_complete()) {
+             return Err(error("worker has no complete generation retirement proof"));
+@@ -342,6 +346,7 @@
+     process: Option<Process>,
+     worker: Option<Worker<Session>>,
+     failure: Option<String>,
++    termination_reason: Option<String>,
+     resources_removed: bool,
+     released: bool,
+ }
+@@ -372,6 +377,7 @@
+             barrier_image: Some(barrier_image), lmkd_image: Some(lmkd_image), channel_host: Some(channel_host),
+             channel_child: Some(channel_child), transfers: None, cancel: Arc::new(Cancel::new()?),
+             phase: Arc::new(AtomicU8::new(WAITING)), process: None, worker: None, failure: None,
++            termination_reason: None,
+             resources_removed: false, released: false }))
+     }
+     pub(crate) fn prepare_endpoint(&mut self) -> io::Result<()> {
+@@ -451,6 +457,12 @@
+         Ok(())
+     }
+     pub(crate) fn request_stop(&self) -> io::Result<()> { self.cancel.request() }
++    pub(crate) fn termination_reason(&self) -> Option<&str> { self.termination_reason.as_deref() }
++    pub(crate) fn enrolled(&self) -> bool {
++        // ACTIVE can only follow the actual init COMMIT/DONE and the exact
++        // broker's authenticated grant-delivery status. It proves no PSI event.
++        self.failure.is_none() && self.phase.load(Ordering::Acquire) == ACTIVE
++    }
+     pub(crate) fn retire_before_network(&mut self, child: &mut Child) -> io::Result<()> {
+         if self.resources_removed { return Ok(()); }
+         self.cancel.request()?;
+@@ -462,6 +474,9 @@
+         worker.join(Duration::from_secs(10))?;
+         let resources = worker.resources()?;
+         resources.prove_retired()?;
++        // Snapshot the original run failure while ownership is still held.
++        // Releasing resources successfully must not erase why the cell died.
++        self.termination_reason = resources.reason.clone();
+         let process = self.process.as_ref().ok_or_else(|| error("owned namespace process pin missing"))?;
+         if process.pid() as u32 != child.id() { return Err(error("cleanup Child differs from retained owner")); }
+         process.require_dead(Duration::ZERO)?;
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs
+@@ -63,6 +63,7 @@
+     }
+     /// Failure cleanup may inspect retained resources only after the actual
+     /// thread finished. This does not create a join or retirement receipt.
++    #[cfg(test)]
+     pub(crate) fn failed_resources(&self) -> io::Result<MutexGuard<'_, T>> {
+         if self.handle.as_ref().is_some_and(|handle| !handle.is_finished()) {
+             return Err(domain::error("failed worker still owns its resources"));

@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import sys,hashlib,json;raw=sys.stdin.buffer.read();assert hashlib.sha256(raw).hexdigest()=='e7e339bbe704c3625e9d020e2992762219a4789f74d8f6cb8c0e7fa6fead1506';packet=json.loads(raw);source=packet['outer_source'];assert hashlib.sha256(source.encode()).hexdigest()=='befac6dc2351b6b0297c3c2352d32f659f37f09c4bdb1bed550e10b12b95c701';scope={'__name__':'__main__','__file__':'<verified-combined05-fenced-build>','PACKET':packet};exec(compile(source,'fenced_build05.py','exec'),scope,scope)",
+      "--execute-once"
+    ],
+    "created_unix_ms": 1793828770503,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1a886d2c7-fc05-2ef4",
+    "idempotency_key": "pocket4-native-combined05-fenced-full-engine-flag0-build-01-20261104",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1a886d2c7-fc05-2ef4",
+    "request_digest": "7858b0be98d25200c7026014d5df060c6b53b7303014178f5d91ad27a7d8d7e5",
+    "request_fingerprint": 8671875415156085000,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1a886d2c7-fc05-2ef4"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1a886d2c7-fc05-2ef4"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

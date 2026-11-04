@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "scope": "actual V2 shared wire/context source, strict host build and pure controls; no service, socket, Android, namespace or mount operation",
+  "compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "sources": {
+    "engine-delta/proc_maps_provenance.cc": "bc68ad924a1c3a31d2a8b97099130ad796f52c6d7c9bca5b68267de995e0d62f",
+    "include/berberis/kernel_api/proc_maps_factory_protocol.h": "2198e3f574ba7b69778f0cc957e60fe91d8db2fe54e3df4dd2c201dfd0258163",
+    "include/berberis/kernel_api/proc_maps_kernel_statfs.h": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+    "include/berberis/kernel_api/proc_maps_provenance.h": "79e871b78d6fc2461f2fe103df070d6dc6504acf43ff6b64fcecec142eb618b0",
+    "source/factory_context.cc": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a",
+    "source/factory_context.h": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1",
+    "source/factory_main.cc": "62c8b5f10b66e455c9d59d001b4cc31f0be7c67c82efd13fd722d0a894710fd4",
+    "source/proc_maps_factory_wire.cc": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608",
+    "tests/wire_context_controls.cc": "5c69645e4f7336fedeec53af81851ca118008d3af680926430ca579765b37c91"
+  },
+  "commands": [
+    {
+      "name": "compile-factory",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_main.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/proc_maps_factory_wire.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/factory-v2"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "factory-default-plan-only",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/factory-v2"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "4227369189c289289737019c9cc74f75ae346930286dc3ddd7680a3e5111c4bd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compile-glibc",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/tests/wire_context_controls.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/proc_maps_factory_wire.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/glibc"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "run-glibc",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/glibc"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "d68c604b7fe3ded6a0a4cf79d627059d873527d3e4072f957dc3f66e366c29d1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compile-bionic-branch-fixture",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source",
+        "-D__BIONIC__",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/tests/wire_context_controls.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/proc_maps_factory_wire.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/bionic-branch-fixture"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "run-bionic-branch-fixture",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/bionic-branch-fixture"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "d68c604b7fe3ded6a0a4cf79d627059d873527d3e4072f957dc3f66e366c29d1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compile-negative-kernel-loses-ST_VALID",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source",
+        "-D__BIONIC__",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/tests/wire_context_controls.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/negative-kernel-loses-ST_VALID.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/negative-kernel-loses-ST_VALID"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "run-negative-kernel-loses-ST_VALID",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/negative-kernel-loses-ST_VALID"
+      ],
+      "returncode": 1,
+      "stdout_sha256": "3071c3046fe6e5861eebe6c446ed94a2d5a5e67ae3944354269205fd174fab0b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compile-negative-libc-gets-raw-flags",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/include",
+        "-I",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source",
+        "-D__BIONIC__",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/tests/wire_context_controls.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/negative-libc-gets-raw-flags.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/negative-libc-gets-raw-flags"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "run-negative-libc-gets-raw-flags",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r1/controls-01/negative-libc-gets-raw-flags"
+      ],
+      "returncode": 1,
+      "stdout_sha256": "88335000e1fa34bb66a416d4659496ea599aaebf87c56b306ff4295ec3332a5a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "production_ready": false,
+  "service_run": false,
+  "Android_run": false,
+  "state": "PURE_CONTROLS_PASS",
+  "source_unchanged": true,
+  "positive_controls_per_build": 17,
+  "negative_mutants_detected": 2
+}

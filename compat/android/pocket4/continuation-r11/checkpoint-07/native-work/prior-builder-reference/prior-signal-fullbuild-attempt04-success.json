@@ -1,0 +1,133 @@
+{
+  "actual_resources": {
+    "max_events_nonzero": true,
+    "memory.events": {
+      "high": 0,
+      "low": 0,
+      "max": 27,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory.peak": 11811160064,
+    "memory.swap.peak": 1073741824,
+    "oom_events_zero": true
+  },
+  "admission_host_headroom_required_bytes": 4294967296,
+  "admission_mem_available_bytes": 16463257600,
+  "all_apps_production_ready": false,
+  "authoritative_terminal": {
+    "cancelled": false,
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "timed_out": false
+  },
+  "automatic_retry": false,
+  "builder_sha256": "16df26d88391c22c9f076917531f022907ec5608bd31e58e05c898605db9dcc4",
+  "builder_source_manifest_sha256": "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017",
+  "builder_source_unchanged": true,
+  "candidate_build_inputs": {
+    "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-inputs.json",
+    "sha256": "ccf2ebc89bfb4a06722719e292723669332e69691894717d702ff96eaf30e898"
+  },
+  "candidate_build_receipt": {
+    "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+    "sha256": "4096ca1581c648063b16375786ca207be360e8fe788da68a523c16c602e4c4de"
+  },
+  "claim": {
+    "path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/attempt04/claim.json",
+    "sha256": "200a8b795cb1754cce0520f3630f73383746a01b413f5a6edaa979379e74fb99"
+  },
+  "effective_signal_hashes": {
+    "guest_os_primitives/arm64/guest_context_arch.h": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+    "guest_os_primitives/guest_signal_handling.cc": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+    "guest_os_primitives/guest_signal_handling_arch.cc": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+    "guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+    "guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+    "guest_os_primitives/scoped_guest_signal_mask.h": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9"
+  },
+  "engine": {
+    "build_id": "f10ba1e3552625462ab5f92eb0242307",
+    "bytes": 2708864,
+    "elf": {
+      "class": "ELF64",
+      "endianness": "little",
+      "machine": "EM_X86_64"
+    },
+    "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/system/lib64/libberberis_arm64.so",
+    "sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "soname": "libberberis_arm64.so"
+  },
+  "finished_utc": "2026-11-04T15:51:10.974795+00:00",
+  "go_soft_memory_budget": "6GiB",
+  "host_artifacts": {
+    "binary_path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/berberis_arm64_host_tests",
+    "binary_sha256": "a14288dae95a85d8f92eb35403c00714a0705241ecfae13ed3704b713fb854f1",
+    "built": true,
+    "data": {
+      "decoder/arm64_test/arm64_decoder_encodings.txt": "3c07b2f3e9e1121ee8b0a413a77ed6d76021e68dcf732b3aae613302ee728505",
+      "decoder/arm64_test/arm64_decoder_undefined_baseline.txt": "402fe6c840a188f392cf95a7c774ff156a049c8bc2324e906c7794fc9b8be121",
+      "heavy_optimizer/arm64/arm64_tier_coverage.txt": "1925182f2f2e0ac598a548bef73c6ea4f57ab6e5e8c2b62eebc2e117c6680e47"
+    },
+    "directory": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests",
+    "executed": false,
+    "libraries": {
+      "libbase.so": "64ed09763bc786598efd694dbed64219704915754859c472db2ca88f89aaae93",
+      "libc++.so": "acca15da090d439bbd4f6d7bbfb43bd53652639ad20487ea87304c8d00edb306",
+      "liblog.so": "936872310a280e215e254c0b327731ebfd0d4000c8b98e92258ab4278e74a912"
+    },
+    "shared_library_directory": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/host/linux-x86/lib64"
+  },
+  "input_final_receipt_equal_except_status": true,
+  "installation_performed": false,
+  "invocation_id": "ac37bbdc47e54a8893ccff1a34f82053",
+  "job": "1a1a72ab69a-fc05-2a6c",
+  "kind": "actual-signal-mask-r1-complete-build-attempt04",
+  "logs": {
+    "stderr": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/attempt04/build.stderr",
+      "sha256": "c15999d75ebbec31ea85e8fd3c502e54cdb547d227f0774d31cbc3a343f784b7"
+    },
+    "stdout": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/attempt04/build.stdout",
+      "sha256": "863e0a6f9c1de091d354bbc2ac87a6f15f1c9a1b8bd71656e9abcd98b50ca1c5"
+    }
+  },
+  "main_resource_settings_changed": false,
+  "notes": [
+    "Build reached its enforced 11GiB memory maximum and 1GiB swap maximum, with 27 max events and zero OOM/OOM-kill events. These facts are retained; this is not a zero-pressure build.",
+    "Successful complete host qualification is a separate subsequent receipt; no Main engine deployment follows from build success."
+  ],
+  "raw_signal_hashes": {
+    "guest_os_primitives/arm64/guest_context_arch.h": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+    "guest_os_primitives/guest_signal_handling.cc": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+    "guest_os_primitives/guest_signal_handling_arch.cc": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+    "guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+    "guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+    "guest_os_primitives/scoped_guest_signal_mask.h": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9"
+  },
+  "schema": 1,
+  "scope": "Pinned normal native-engine --tests builder with the separately copied 6GiB Go soft budget projection and its existing shared-source lock/recovery. This is a build receipt, not Android runtime or commercial-app readiness.",
+  "seconds": 1512.316893056035,
+  "six_signal_changes_match_frozen_r1": true,
+  "source_preparation": {
+    "path": "signal-build-memory-r1/actual-preparation.json",
+    "sha256": "dbd395beae3e57ad3c28fe5d54c232dd376446b9b3c902eb8640efd4a890417b"
+  },
+  "started_utc": "2026-11-04T15:25:58.634138+00:00",
+  "state": "FULL_NATIVE_ENGINE_AND_HOST_TEST_ARTIFACTS_BUILT",
+  "unit": "hepta-runtime-job-1a1a72ab69a-fc05-2a6c.service",
+  "unit_limits": {
+    "cpu_affinity": [
+      22,
+      23
+    ],
+    "cpu_quota_percent": 200,
+    "memory.max": 11811160064,
+    "memory.swap.max": 1073741824
+  }
+}

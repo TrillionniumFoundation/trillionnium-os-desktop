@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "source_revision": "producer-submitted-03",
+  "runtime_executed": false,
+  "Android_constructor_executed": false,
+  "installed_files_changed": false,
+  "validation_status": "host matching build dispatched; terminal not yet read",
+  "job_id": "1a1a825bd33-fc05-2dd1",
+  "expected_supervisor_tests": 118,
+  "previous_actual_supervisor_tests": 109,
+  "new_owned_controls": [
+    "capability::privileged_exec_mode_cannot_clear_the_parent_death_contract",
+    "entry::init_alias_cannot_escape_the_private_image",
+    "entry::wrong_or_missing_dynamic_loader_cannot_open_init_barrier",
+    "entry::ordinary_file_does_not_substitute_for_entry_owner_pidfd",
+    "entry::sealed_fixed_capabilities_do_not_reach_an_ordinary_exec",
+    "worker::panic_and_second_join_never_release_owned_child",
+    "worker::incomplete_join_keeps_the_thread_and_owned_record",
+    "owner::cancellation_remains_latched_across_repeated_stop_requests",
+    "owner::altered_broker_marker_cannot_authorize_directory_cleanup"
+  ],
+  "files": [
+    {
+      "path": "source/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "bytes": 50933,
+      "sha256": "c28b2c31ac14ebfea2d3aec0650bff6ed6b708e329115d2e67b3ae8f013374be"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 73000,
+      "sha256": "e15e5bb552e6e12406522b7fa9f992770db349f65bc55126c5bdf218824c6df3"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/development.rs",
+      "bytes": 91967,
+      "sha256": "591e87b7ec03b5f91b2ac36f715e9c572aa5a895c5f7f382c6623eea462c0ab9"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/lib.rs",
+      "bytes": 34420,
+      "sha256": "4588181c5c6d509412d0678e9da312788f66073a45d274b946f73b26b356237d"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/main.rs",
+      "bytes": 2872,
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs",
+      "bytes": 19594,
+      "sha256": "8f647a6b788ffed8a063ed1f59c1275e59d0971a6e0b35d9d6756311fc600c63"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs",
+      "bytes": 18113,
+      "sha256": "40ed58a3bc60664e99a96432aafc44ada0b8c5b9e9bc9c2f8f6e4b08503b8281"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+      "bytes": 22230,
+      "sha256": "ef23b247f247dd70f4bda216b63a8ac88b6234431bdcf68277fe8c542f507235"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs",
+      "bytes": 223,
+      "sha256": "85048032af0a842a6a2866c45e8f8f8cc7308a2d1cc4a070ff0031fc43672dd8"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs",
+      "bytes": 31252,
+      "sha256": "2d437fa32999cd2ce842212951062ba950f53da5cf2f839728c165aa3fa422f2"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs",
+      "bytes": 9554,
+      "sha256": "96231f5974f7d8bbcbf9b7e4756c5fa632385e00fb5aaf5e535ca7d0ad32fa27"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs",
+      "bytes": 5377,
+      "sha256": "a4b04fe15e3d88cb0fdaaf62f566b57ec044b65a1ccc8bed18d86739a446c9d4"
+    }
+  ]
+}

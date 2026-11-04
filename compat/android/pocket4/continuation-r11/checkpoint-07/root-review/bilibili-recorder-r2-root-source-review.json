@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "scope": "Bilibili recorder r2 source and local controls only; readonly init/admission request still to review",
+  "manifest_sha256": "2c2c2a51ec91402a04237738ca5eba840a0d5dad62803e09c8752d691394ab72",
+  "payload_files_verified": 32,
+  "production_review": [
+    "source_contract.py complete",
+    "main_binding.py complete plus r2 diff",
+    "existing_ui_entry.py complete",
+    "bound_android_transport.py complete",
+    "recorder.py original guard/init and complete production integration diff"
+  ],
+  "four_other_production_files_byte_identical_to_reviewed_r1": true,
+  "primary_classpath_error_preserved": true,
+  "actual_Main_entry_run": false,
+  "UI_actions_admitted": false,
+  "action_runner_APK_source_gate": "OPEN",
+  "whole_app_production_ready": false,
+  "root_notes": [
+    "Init and admission must be separate processes because the original flow lock persists to process exit.",
+    "Readonly admission performs only one package UID query through a held target; classpath and data directory binding are preconditions.",
+    "42 original local controls are inherited only for unchanged code; the narrow four-arm actual-function cleanup control applies to main_classpaths r2.",
+    "No artifact/source claim is made for the installed action-runner APK beyond its current package UID and activation binding."
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "scope": "OWNED_HOST_PREFIX_ONLY_NO_ANDROID",
+  "runtime_started": false,
+  "requests_submitted": false,
+  "plan_sha256": "dd9c420ae36678e3dc6fc4cbac4b08730a133a6b4b37ae11496c6f4b46babaef",
+  "plan_bytes": 7258,
+  "probe_sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82",
+  "actual_matching_receipt_sha256": "1e70d9df93309ff5be991f0a20e4b5b4493e57a0b64fcc3881075e652a5ae712",
+  "nonce": "5dcff218dbef5869c213de3c4bcf475ff76111794ac3bb302fac2d73d396f2be",
+  "mode": "normal",
+  "predecessor": null,
+  "namespace": "p4-relay-prefix-5dcff218dbef5869c213de3c",
+  "unit": "p4-relay-prefix-5dcff218dbef5869c213de3c-normal.service",
+  "cgroup": "/system.slice/p4-relay-prefix-5dcff218dbef5869c213de3c-normal.service",
+  "evidence": "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-5dcff218dbef5869c213de3c-normal",
+  "plan_remote": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/normal-plan-01.json",
+  "preflight_remote": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/normal-plan-01-preflight.json",
+  "plan_delta": [
+    "fresh nonce",
+    "actual matching probe digest"
+  ],
+  "source_payload_changes": 0,
+  "inner_limits": {
+    "cpu.max": "100000 100000",
+    "memory.max": "268435456",
+    "memory.swap.max": "0",
+    "pids.max": "32"
+  },
+  "inner_runtime_max_sec": 60,
+  "inner_timeout_stop_sec": 8,
+  "outer_cpu_percent": 25,
+  "outer_memory_max_bytes": 134217728,
+  "outer_timeout_sec": 120,
+  "actual_Rust_Owner_executed": false,
+  "Android_operations": 0,
+  "production_ready": false,
+  "gates": [
+    "root reviews exact plan + stage + execute request",
+    "stage/check authoritative exit0 and complete externally pinned preflight",
+    "one execute dispatch only; unknown transport reconciles same key",
+    "whole qualification requires exact process/unit/cgroup/netns retirement and unchanged Main"
+  ]
+}

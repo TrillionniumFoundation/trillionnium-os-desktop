@@ -1,0 +1,41 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import os,sys,hashlib\nfrom pathlib import Path\nexpected='a039681fd250270c631309d2ff42320a9953234ada530b734de42afde93202f1'\nsource_path=Path('/home/alex/work/pocket4-factory-v2-host-runtime-source-01/controller.py')\nexpected_args=['--execute','--out','/home/alex/work/pocket4-factory-v2-host-runtime-01']\nif sys.argv[1:] != expected_args: raise RuntimeError('exact owned host-only runtime arguments required')\nraw=sys.stdin.buffer.read()\nif hashlib.sha256(raw).hexdigest()!=expected: raise RuntimeError('frozen runtime source changed')\ncompile(raw,str(source_path),'exec')\nos.umask(0o077)\nsource_path.parent.mkdir(mode=0o700)\nfd=os.open(source_path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC,0o400)\nwith os.fdopen(fd,'wb') as stream:\n stream.write(raw);stream.flush();os.fsync(stream.fileno())\nif source_path.read_bytes()!=raw: raise RuntimeError('new root-owned source differs')\nsys.argv=[str(source_path),*expected_args]\nscope={'__name__':'__main__','__file__':str(source_path)}\nexec(compile(raw,str(source_path),'exec'),scope,scope)\n",
+      "--execute",
+      "--out",
+      "/home/alex/work/pocket4-factory-v2-host-runtime-01"
+    ],
+    "created_unix_ms": 1793829355828,
+    "cwd": "/",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1a88fc134-fc05-2f19",
+    "idempotency_key": "pocket4-factory-v2-repaired-host-runtime-01-20261104",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1a88fc134-fc05-2f19",
+    "request_digest": "5b0219c2420de0ef3127f190c00a8f33353df773daee8333c40e73bcb4f9b14a",
+    "request_fingerprint": 6557832329527419119,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1a88fc134-fc05-2f19"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1a88fc134-fc05-2f19"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

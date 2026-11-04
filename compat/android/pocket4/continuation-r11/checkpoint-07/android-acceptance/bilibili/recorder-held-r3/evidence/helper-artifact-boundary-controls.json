@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "state": "NINE_OWNED_BOUNDARY_CONTROLS_PASS",
+  "actual_execution": {
+    "tool": "exec_command",
+    "chunk_id": "004860",
+    "exit_code": 0,
+    "wall_time_seconds": 0.032646967,
+    "argv": [
+      "python3",
+      "-I",
+      "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r3-work-01/tests/helper_artifact_boundary_control.py"
+    ],
+    "record_type": "normalized observed tool result; raw stdout remains in the tool transcript, not claimed as a byte-exact retained transport log"
+  },
+  "control_source": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r3-work-01/tests/helper_artifact_boundary_control.py",
+    "bytes": 8866,
+    "sha256": "64080a051c092556de6bfa254c682fe7773ab650e5e9a54567fb0e66576cac30"
+  },
+  "old_source": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r2-freeze-01/source_contract.py",
+    "bytes": 8654,
+    "sha256": "c868748bac4f1537670b50b7b962ca8c86650483d98466127149c6cdd508b9ae"
+  },
+  "new_source": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r3-work-01/source_contract.py",
+    "bytes": 9103,
+    "sha256": "51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d"
+  },
+  "cases": [
+    {
+      "case": "original_r2_rejects_same_size_owned_fixture_at_4MiB",
+      "observed_as_expected": true,
+      "expected_error": "INPUT_SHAPE_OR_BOUND_CHANGED"
+    },
+    {
+      "case": "new_exact_artifact_size_and_full_owned_qualification_pass",
+      "observed_as_expected": true,
+      "expected_error": null
+    },
+    {
+      "case": "artifact_plus_one_rejected_with_exact_path_size_bound",
+      "observed_as_expected": true,
+      "expected_error": "INPUT_SHAPE_OR_BOUND_CHANGED"
+    },
+    {
+      "case": "artifact_minus_one_rejected_by_explicit_exact_size",
+      "observed_as_expected": true,
+      "expected_error": "HELD_HELPER_BINARY_SIZE_CHANGED"
+    },
+    {
+      "case": "same_size_modified_content_still_rejected_by_hash",
+      "observed_as_expected": true,
+      "expected_error": "HELD_HELPER_BINARY_CHANGED"
+    },
+    {
+      "case": "evidence_file_keeps_original_4MiB_limit",
+      "observed_as_expected": true,
+      "expected_error": "INPUT_SHAPE_OR_BOUND_CHANGED"
+    },
+    {
+      "case": "helper_single_link_gate_preserved",
+      "observed_as_expected": true,
+      "expected_error": "INPUT_SHAPE_OR_BOUND_CHANGED"
+    },
+    {
+      "case": "helper_final_symlink_still_rejected",
+      "observed_as_expected": true,
+      "expected_error": "ELOOP/40"
+    },
+    {
+      "case": "generic_default_stays_131072",
+      "observed_as_expected": true,
+      "expected_error": "INPUT_SHAPE_OR_BOUND_CHANGED"
+    }
+  ],
+  "actual_source_functions": [
+    "verify_shared_helper",
+    "bounded_file"
+  ],
+  "owned_fixture_substitutions": [
+    "HELPER_SOURCE/HELPER_PATH/HELPER_QUALIFICATION paths",
+    "expected hashes of those owned source/helper/qualification fixture files"
+  ],
+  "real_io_and_guards": true,
+  "read_fstat_close_functions_not_mocked": true,
+  "fixture_is_original_ELF": false,
+  "actual_original_ELF_identity_proof": "Separate actual Pocket4 metadata/hash receipts in this evidence directory",
+  "owned_descriptors_restored": true,
+  "temporary_fixtures_removed": true,
+  "helper_executed": false,
+  "Android_UI_audio_actions": 0,
+  "whole_app_production_ready": false
+}

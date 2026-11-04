@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "state": "PREPARED_NOT_SUBMITTED",
+  "coordinator": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r3-01/coordinator.py",
+    "bytes": 16900,
+    "sha256": "e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd"
+  },
+  "process_request": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r3-01/process-start-request.json",
+    "bytes": 17574,
+    "sha256": "11de32e4685d648d362286707bd5888ac11ffb3ac8d80835acbd38bfc5b001a1"
+  },
+  "create_only_upload_request": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r3-01/upload-request.json",
+    "bytes": 156492,
+    "sha256": "dea2fe2a950cd9b9f5f16e64bcc3d12ef974dc9f246c26212d6493fb0f2ed68f"
+  },
+  "delta": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r3-01/coordinator-r2-to-r3.patch",
+    "bytes": 2283,
+    "sha256": "6988a1fd1937cc479dd682856ee30440e32dba64e54c950af0df28180f8fbe5f"
+  },
+  "local_checks": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/readonly-request-r3-01/local-static-and-staging.json",
+    "bytes": 1244,
+    "sha256": "90f9e42d5922b93f2bc013bf16f9afaf740eeef3bfc21c84ca68e112fed3af87"
+  },
+  "source_manifest": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r3-freeze-01/source-manifest.json",
+    "bytes": 7492,
+    "sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906"
+  },
+  "source_archive": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r3-freeze-01.tar.gz",
+    "bytes": 117257,
+    "sha256": "8bcbbc4d8a313c37394fda2345516512cd1ba911433311d8d46e7d9577d88126"
+  },
+  "fresh_root": "/home/alex/work/pocket4-bilibili-readonly-r3-01",
+  "fresh_flow": "/home/alex/work/pocket4-bilibili-readonly-r3-01/flow",
+  "idempotency_key": "pocket4-bilibili-readonly-r3-admission-01",
+  "exact_android_command": [
+    "/system/bin/cmd",
+    "package",
+    "list",
+    "packages",
+    "-U",
+    "--user",
+    "0",
+    "tv.danmaku.bili"
+  ],
+  "expected_uid": 10117,
+  "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "two_independent_CLI_processes_joined_sequentially": true,
+  "Main_guards_and_own_child_timeout_protocol_unchanged": true,
+  "automatic_retry": false,
+  "no_UI_audio_launch_close": true,
+  "whole_app_production_ready": false
+}

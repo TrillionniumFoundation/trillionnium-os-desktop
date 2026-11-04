@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "controller_sha256": "ba4dffc59b224b32e6f42f7f66222d35cdd62eecb82dabea67d05dc888635d6d",
+  "controller_bytes": 33967,
+  "all_pass": true,
+  "checks": [
+    {
+      "name": "default_plan_no_action",
+      "pass": true
+    },
+    {
+      "name": "build_requires_receipt",
+      "pass": true
+    },
+    {
+      "name": "prepare_cannot_reuse_receipt",
+      "pass": true
+    },
+    {
+      "name": "plan_cannot_consume_receipt",
+      "pass": true
+    },
+    {
+      "name": "exclusive_modes",
+      "pass": true
+    },
+    {
+      "name": "reject_relative_''",
+      "pass": true
+    },
+    {
+      "name": "reject_relative_'.'",
+      "pass": true
+    },
+    {
+      "name": "reject_relative_'../x'",
+      "pass": true
+    },
+    {
+      "name": "reject_relative_'a/../b'",
+      "pass": true
+    },
+    {
+      "name": "reject_relative_'/x'",
+      "pass": true
+    },
+    {
+      "name": "reject_relative_'a//b'",
+      "pass": true
+    },
+    {
+      "name": "reject_relative_'a/.git/b'",
+      "pass": true
+    },
+    {
+      "name": "valid_relative",
+      "pass": true
+    },
+    {
+      "name": "reject_symlink_ancestor",
+      "pass": true
+    },
+    {
+      "name": "cleanup_enumeration_failure_not_pass",
+      "pass": true
+    },
+    {
+      "name": "cleanup_one_failure_continues_next_owned_child",
+      "pass": true
+    },
+    {
+      "name": "actual_owned_tree_pidfd_stop_and_exact_reap",
+      "pass": true
+    }
+  ],
+  "scope": "offline admission; local own child tree only; explicit failure seams",
+  "owned_tree_control": {
+    "complete": true,
+    "direct_reaped": 1,
+    "nested_reaped": 1,
+    "remaining": 0,
+    "enumeration_seam": true
+  },
+  "actual_remote_proc_children_enumeration": "NOT_PERFORMED; preflight must pass before build",
+  "remote_called": false,
+  "prepare_executed": false,
+  "build_executed": false,
+  "Android_executed": false,
+  "factory_executed": false
+}

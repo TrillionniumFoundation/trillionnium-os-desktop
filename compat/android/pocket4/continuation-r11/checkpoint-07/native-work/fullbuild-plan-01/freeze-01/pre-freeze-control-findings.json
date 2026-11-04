@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "relative_dot": {
+    "initial_control": "FAILED",
+    "reason": "PurePosixPath dot has an empty parts tuple; initial validator accepted it",
+    "fixed_before_freeze": true,
+    "final_negative_control": "PASS"
+  },
+  "local_proc_enumeration": {
+    "initial_actual_control": "FAILED",
+    "reason": "local getpid=3 while /proc/self names host TGID; task children file unavailable",
+    "controller_now_rejects_mismatched_proc_view": true,
+    "final_local_syscall_cleanup_control_uses_exact_owned_pid_enumeration_seam": true,
+    "remote_actual_proc_children": "NOT_RUN; explicit build admission prerequisite"
+  },
+  "remote_mutations": 0
+}

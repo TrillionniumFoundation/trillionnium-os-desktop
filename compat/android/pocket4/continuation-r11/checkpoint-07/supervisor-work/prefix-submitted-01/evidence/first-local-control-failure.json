@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "scope": "ordinary local controls; no namespace/systemd/Android action",
+  "command": [
+    "python3",
+    "-B",
+    "producer05-work/prefix-control/test_prefix_control.py"
+  ],
+  "exit_code": 1,
+  "tests_run": 15,
+  "failures": 1,
+  "errors": 1,
+  "observed_failure_causes": [
+    "current local primary Python ELF uid=65534 is correctly rejected by the root-owned artifact gate",
+    "local subprocess.pid is in a private PID namespace while /proc fdinfo exposes its ancestor PID; original test incorrectly assumed a host PID view"
+  ],
+  "source_files": {
+    "full_prefix_control.py": "5aabbad089855b2824828f9e4b30aea9a853ed8b36eaf607a4b238b27716dc8a",
+    "test_prefix_control.py": "656c9a708f83cf02302efa71ba34914a61e39ad9e4ba21cc5e54348a8118fbe3"
+  },
+  "matching_device_host_contract_qualified": false,
+  "receipt_origin": "first tool terminal and immediately observed environment metadata; complete unittest stderr remains in tool transcript"
+}

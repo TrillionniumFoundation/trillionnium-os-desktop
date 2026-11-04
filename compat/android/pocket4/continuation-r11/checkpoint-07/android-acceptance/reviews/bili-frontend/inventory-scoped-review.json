@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "scope": "independent narrow readonly review of existing client/backend once-claims, original action flock, primary failure/release handling, and retained exact task cleanup",
+  "source_root": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r1-freeze-01",
+  "source_manifest_sha256": "687f0a3ed1dccff13da1b25e2806128ee70aea5def5900beaaf6c9c5ec3572ec",
+  "all_manifest_payload_pins_verified": 22,
+  "reviewed_primary_pins": {
+    "existing_ui_entry.py": {
+      "bytes": 12963,
+      "sha256": "36da94a76fc336d259c19b33c522e1a6746d676d7e59ccaffab115dcadc68ebc"
+    },
+    "recorder.py": {
+      "bytes": 40090,
+      "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511"
+    },
+    "references/android_app.py": {
+      "bytes": 37574,
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+    },
+    "references/android_backend.py": {
+      "bytes": 36401,
+      "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae"
+    },
+    "references/original_recorder.py": {
+      "bytes": 31945,
+      "sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b"
+    },
+    "bound_android_transport.py": {
+      "bytes": 14376,
+      "sha256": "ca3e30796961acc38737b6a9f22c3519abc9da1a7a6a384b732dd5a374a325d9"
+    },
+    "source_contract.py": {
+      "bytes": 8654,
+      "sha256": "c868748bac4f1537670b50b7b962ca8c86650483d98466127149c6cdd508b9ae"
+    }
+  },
+  "reviewed_sections": {
+    "existing_ui_entry.py": "complete file",
+    "recorder.py": [
+      "source/flow setup",
+      "Flow.guard",
+      "Flow.close",
+      "Flow.bind",
+      "Flow.begin",
+      "Flow.command",
+      "Flow.android",
+      "Flow.admission",
+      "Flow.selected_task",
+      "Flow.ui",
+      "Flow.cleanup",
+      "main"
+    ],
+    "bound_android_transport.py": "BoundArun.__call__ acquisition/result/lease release/postguard/poison path",
+    "references/android_backend.py": "helper root request parser, original global action flock, dispatch call and finally close",
+    "references/android_app.py": "client original protected-production gate, one exact backend spawn, nonzero return propagation and scoped output write",
+    "source_contract.py": "bounded_file, SourceContract manifest/closure verification and private module load"
+  },
+  "findings": [],
+  "confirmed_properties": [
+    "Client durable journal mkdir and client.claim are create-only; a repeated client cannot adopt an earlier unknown command. Exact original argv and physical redirect remain bound to the parent intent.",
+    "Backend requires the actually recorded client request and dispatch digest, then creates its own backend.claim before calling the pinned original helper; no replay branch is present.",
+    "Only the private backend module arun is replaced. The original helper still acquires the same global action flock before dispatch and closes it in finally.",
+    "The bound transport records the actual command observation before entry lease release, retains a primary command failure through release/postguard/evidence failures, and permanently poisons that transport after a failure.",
+    "If backend close or final result publication fails after helper success, the backend returns nonzero and the original client propagates it before forwarding success stdout. A release error cannot make an earlier failure green.",
+    "Flow.cleanup has exactly the same Python AST as the frozen original recorder: preserves preexisting tasks, uses the original selected task scope, takes the original action lock, durably marks one removal attempt, checks exact leaf, then verifies removal and other-task preservation."
+  ],
+  "cleanup_ast_equal": true,
+  "cleanup_ast_sha256": "29ee7b4e149624f81c59afc60a310e4534bfc981d7ca58d910fb19dad2832466",
+  "r2_same_two_primary_files": {
+    "existing_ui_entry.py": true,
+    "recorder.py": true
+  },
+  "limitations": [
+    "No independent execution of the existing 42 controls in this review.",
+    "No Hepta/device/namespace/Android/UI/audio actions.",
+    "This is not a whole-wrapper or shared namespace helper qualification.",
+    "The r1 main_classpaths release-error issue is outside this narrow scope; parent/owner reported its separate r2 fix.",
+    "Action-runner APK qualification, actual UI requests, app reopen/audio and whole-app production readiness remain open."
+  ],
+  "new_confirmed_blocker_in_reviewed_scope": false,
+  "whole_app_production_ready": false
+}

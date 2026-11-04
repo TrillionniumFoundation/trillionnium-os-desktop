@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "scope": "local host compile and exact-FD ordinary exec controls only",
+  "Android_operations": 0,
+  "namespace_operations": 0,
+  "cgroup_operations": 0,
+  "network_operations": 0,
+  "runtime_qualified": false,
+  "source": {
+    "bytes": 9662,
+    "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "producer05-work/prefix-control/prefix_probe.c",
+        "-o",
+        "producer05-work/prefix-control/local-build-02/prefix-probe"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "controls": [
+    {
+      "name": "ordinary exec has no fixed capabilities",
+      "exit_code": 0,
+      "expected": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "detect inherited capability 198",
+      "exit_code": 93,
+      "expected": 93,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "detect inherited capability 199",
+      "exit_code": 93,
+      "expected": 93,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "detect inherited capability 200",
+      "exit_code": 93,
+      "expected": 93,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "detect inherited capability 201",
+      "exit_code": 93,
+      "expected": 93,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "ordinary process rejected before capability effects",
+      "exit_code": 97,
+      "expected": 97,
+      "stdout": "",
+      "stderr": "prefix-probe: not owned private root PID 1\n"
+    }
+  ],
+  "success": true
+}
