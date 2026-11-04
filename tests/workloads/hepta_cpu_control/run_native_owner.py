@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import selectors
 import shutil
 import signal
@@ -67,17 +68,66 @@ def tool(path, expected=None):
     return selected, {"path": str(selected), "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
 
 
+def original_owner_archive_contract():
+    """One source-owned envelope for the pinned base and original a39 image."""
+    exact = inputs.image_module(inputs.EXACT_IMAGE_PROFILE)
+    image = exact.descriptor()["image"]
+    require(image["file_bytes"] == 20_138_584, "archive contract requires the reviewed original image length")
+    # newc header/name padding is 132 bytes for the owner and 136 for the plan.
+    # The larger reviewed compact plan is 140 bytes, already four-byte aligned.
+    maximum = 2_129_504 + image["file_bytes"] + 132 + 136 + 140
+    require(maximum == 22_268_496, "fixed original-owner archive budget differs")
+    return {"schema": "hepta.original-owner-image-archive.v1",
+            "image_profile": inputs.EXACT_IMAGE_PROFILE,
+            "image_profile_descriptor_sha256": exact.DESCRIPTOR_SHA256,
+            "base_gzip_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+            "base_gzip_bytes": 1_107_990, "base_raw_bytes": 2_129_920,
+            "base_canonical_bytes": 2_129_504,
+            "base_canonical_sha256": "b27430a9bfc4018ddd9808524bd4729515c9da8b282cfa35ed6b4ef211c977ce",
+            "owner_file_bytes": image["file_bytes"], "maximum_plan_bytes": 140,
+            "maximum_archive_bytes": maximum, "legacy_default_archive_bytes": 16 * 1024**2,
+            "legacy_limits_unchanged": True, "native_execution_verified": False}
+
+
+def original_owner_archive_plan(plan):
+    require(type(plan) is dict and set(plan) == {"schema_version", "scenario", "nonce"}
+            and type(plan["schema_version"]) is int and plan["schema_version"] == 1
+            and plan["scenario"] in ("steady-state-v1", "manager-exit-after-terminal-v1")
+            and type(plan["nonce"]) is str and re.fullmatch(r"[0-9a-f]{64}", plan["nonce"]) is not None,
+            "exact original-owner archive requires a reviewed finite plan and 32-byte nonce")
+    encoded = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    require(len(encoded) <= 140, "exact original-owner compact plan exceeds its fixed bound")
+    return encoded
+
+
 def build_initramfs(original, owner, plan, replay, image_profile=inputs.PROFILE):
     require(len(original) <= 8 * 1024**2 and 0 < len(owner) <= inputs.owner_file_limit(image_profile),
             "original base or owner exceeds its selected input bounds")
     raw = gzip.decompress(original)
     require(len(raw) <= 64 * 1024**2, "original initramfs exceeds its uncompressed bound")
     entries = replay.unpack(raw)
-    require(replay.unpack(replay.pack(entries)) == entries, "original cpio does not roundtrip")
+    canonical = replay.pack(entries)
+    require(replay.unpack(canonical) == entries, "original cpio does not roundtrip")
     require(sum(name.lstrip("./") == "test" and stat.S_ISDIR(fields[1]) for name, fields, _ in entries) == 1,
             "original base initramfs must contain one test directory")
+    contract = None
+    encoded_plan = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    if image_profile == inputs.EXACT_IMAGE_PROFILE:
+        contract = original_owner_archive_contract()
+        require(len(original) == contract["base_gzip_bytes"]
+                and hashlib.sha256(original).hexdigest() == contract["base_gzip_sha256"]
+                and len(raw) == contract["base_raw_bytes"]
+                and len(canonical) == contract["base_canonical_bytes"]
+                and hashlib.sha256(canonical).hexdigest() == contract["base_canonical_sha256"],
+                "exact original-owner archive base differs from its fixed identity")
+        # execute() admits the complete original ELF before deriving its existing
+        # startup controls. Packing is not ELF admission: the unchanged kernel
+        # still refuses the byte-mismatch and one-byte-truncated control images.
+        require(len(owner) in (contract["owner_file_bytes"], contract["owner_file_bytes"] - 1),
+                "exact original-owner archive has an unreviewed image length")
+        encoded_plan = original_owner_archive_plan(plan)
     additions = (("test/hepta-g2-owner", 0o100555, owner),
-                 ("test/hepta-g2-run.json", 0o100400, (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()))
+                 ("test/hepta-g2-run.json", 0o100400, encoded_plan))
     names = {name.lstrip("./") for name, _, _ in entries}
     inode = max(fields[0] for _, fields, _ in entries)
     modified = list(entries)
@@ -87,8 +137,15 @@ def build_initramfs(original, owner, plan, replay, image_profile=inputs.PROFILE)
         fields = [inode, mode, 0, 0, 1, 0, len(content), 0, 0, 0, 0, len(name.encode()) + 1, 0]
         modified.append((name, fields, content))
     packed = replay.pack(modified)
-    require(len(packed) <= 64 * 1024**2 and replay.unpack(packed) == modified,
-            "original owner/plan image exceeds the unchanged cpio bound or changed bytes")
+    require(len(packed) <= 64 * 1024**2, "original owner/plan image exceeds the unchanged outer cpio bound")
+    if contract is None:
+        # Preserve the generic codec's original 16 MiB default for every legacy caller.
+        decoded = replay.unpack(packed)
+    else:
+        require(len(packed) <= contract["maximum_archive_bytes"],
+                "exact original-owner archive exceeds its fixed envelope")
+        decoded = replay.unpack(packed, max_bytes=contract["maximum_archive_bytes"])
+    require(decoded == modified, "original owner/plan archive roundtrip changed bytes")
     return gzip.compress(packed, mtime=0)
 
 
@@ -256,7 +313,8 @@ def execute(args, report):
     exact = inputs.image_module(args.image_profile)
     if exact:
         report.update(image_profile_descriptor=exact.descriptor(),
-                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256)
+                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256,
+                      initramfs_archive_contract=original_owner_archive_contract())
     freeze_bytes(output / "source-review.json",
                  inputs.read(args.source_review, 1024**2, args.expected_source_review_sha256))
     save(output / "source-before.json", snapshots)

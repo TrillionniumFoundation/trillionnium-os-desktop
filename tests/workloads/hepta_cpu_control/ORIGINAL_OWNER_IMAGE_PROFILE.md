@@ -124,6 +124,55 @@ use newly generated, matching receipts; it cannot relabel the retained legacy
 failure or an ordinary F1/Store result. The legacy consumers reject new schemas,
 the new profile name and its extra kernel selection marker.
 
+## Fixed initramfs archive contract
+
+The a286 original kernel pipeline completed, but its first native invocation
+stopped during initramfs preparation, before any QEMU boot: the inherited newc
+decoder's default archive bound is 16,777,216 bytes, smaller than the exact owner
+file itself. That failed invocation remains a failed preflight result. It does
+not establish guest behavior, startup-control success, or an original writer
+effect.
+
+Only this named image profile now uses the separate, source-owned
+`hepta.original-owner-image-archive.v1` contract. The generic codec in
+`tests/organ_backend/run_guest_probe.py` is unchanged; its default stays 16 MiB.
+The old G1-c/G1-d/legacy G2 image and LOAD limits also remain unchanged. The new
+runner passes the codec's existing explicit `max_bytes` argument only after
+checking the fixed original base and the two finite plans below.
+
+| Archive input | Fixed identity or size |
+| --- | --- |
+| Original A01 gzip SHA-256 | `86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3` |
+| Original gzip / decompressed bytes | 1,107,990 / 2,129,920 |
+| Canonical newc base bytes | 2,129,504 |
+| Canonical newc base SHA-256 | `b27430a9bfc4018ddd9808524bd4729515c9da8b282cfa35ed6b4ef211c977ce` |
+| Exact original owner file bytes | 20,138,584 |
+| Added owner / plan newc headers and name alignment | 132 / 136 bytes |
+| Compact steady-state / manager-after-terminal plan | 125 / 140 bytes |
+| Maximum complete newc archive | **22,268,496 bytes** |
+
+The maximum is `2,129,504 + 20,138,584 + 132 + 136 + 140`, derived from the
+fixed artifacts and entry layout. It is not a rounded allowance or a
+caller-supplied resource setting. Both plans have exactly `schema_version=1`,
+one of `steady-state-v1` or `manager-exit-after-terminal-v1`, and a 64-character
+lowercase hexadecimal nonce. Extra plan fields, another scenario, or a different
+base identity fail before archive admission. A normal steady-state archive is
+22,268,484 bytes; the manager-after-terminal archive reaches the fixed maximum.
+
+The runner first admits the complete original ELF through its existing
+source/build/hash gates. The subsequent archive step also permits the original
+one-byte-truncated startup-control length; the unchanged kernel must still
+reject it and the original byte-mismatch control before role activation.
+Packing does not grant ELF, role, or execution authority. No new control or
+recovery scenario is added.
+
+Normal host roundtrips of the actual fixed owner and base validate only this
+archive construction. Fresh source-bound owner/kernel receipts and the original
+guest runner remain required after a source change. The earlier a286 kernel
+receipt cannot be relabeled for a later Desktop commit. Keep all runtime,
+lost-reply, memory-reservation, and production claims pending until their own
+real observations exist.
+
 ## Memory accounting remains an experimental boundary
 
 The initial image-related capacity calculation is:
