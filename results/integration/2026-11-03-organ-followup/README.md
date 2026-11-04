@@ -2,9 +2,12 @@
 
 This directory retains source-bound executions after the
 [initial convergence checkpoint](../2026-11-03-organ-convergence/README.md).
-It does not replace the frozen Desktop `fd8d56c52b971c2d5d0e6430f296803b43ef60a3`
-and Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360` product pair, or turn a
-component test into installed-product qualification.
+The current implementation candidate is Desktop `f5fbc7e1a533e5bec588575ab56312a3203f6d8c`
+and Hepta `14e2d89b3367232ec5dbe6187f09feed0f2b68d3`. The previously installed
+Desktop `fd8d56c52b971c2d5d0e6430f296803b43ef60a3` / Hepta
+`a39a0871d9601ffccb5e0d95d8f39d54b3a63360` remains a separate baseline.
+Source publication, component execution, installation and effects each retain
+their actual source and scope.
 
 ## 2026-11-04 execution checkpoint
 
@@ -13,9 +16,20 @@ The reviewed joint Hepta source is now published in
 at `14e2d89b3367232ec5dbe6187f09feed0f2b68d3`, tree
 `0e12d53adf6a13721fdb2feef0e974d903b92e85`. The
 [publication record](joint-hepta-canonical-publication/README.md) binds the
-complete local/remote tree equality and exact a39 review base. It is a source
-publication; the Desktop dependency/lock selection, joint build and installed
-effect sequence remain separate gates.
+complete local/remote tree equality and exact a39 review base. The paired [Desktop source checkpoint](joint-desktop-canonical14-source-20261104/README.md)
+is now published as [PR #285](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/285)
+at `f5fbc7e1a533e5bec588575ab56312a3203f6d8c`, tree
+`2998926686ce45c38ec14d6f42ab0871ba25faa1`. Original Cargo 1.96 generated the
+three consuming locks; the other three locks and six fresh locked/offline
+metadata graphs were checked. The 39 declarations, 194 source files, 219
+original-owner manifests and 102 SDK packages were verified. Original normal
+and optimized dependency tests each passed 41 cases. The clean product-source
+documentation gate at local 5ef checked 91 documents and 1,509 links; those
+counts do not describe this later evidence branch. Root verified all 24 changed
+files and full tree equality, and the actual canonical fetch/checkout left f5
+clean. This source gate did not compile or runtime-qualify f5/14. Joint builds,
+privileged cases, installation, original Notes and Calculator effects and
+recovery remain separate gates.
 
 The new [original App Server component build](original-appserver-signal-component/README.md)
 completed all 19 commands on Rust 1.96. Its three first-signal lifecycle tests
@@ -58,10 +72,32 @@ then failed at three original metadata macro call sites. Its complete log,
 original pipeline and authoritative exit-1 status are independently retained.
 That log does not expose the nested metadata stderr or establish its cause.
 
+The later [complete a286 kernel v4](g2-a286-kernel-v4-20261104/README.md)
+passed both original commands and the unchanged validator/source checks. The
+kernel command exited 0 in 173.759 seconds and produced 28,908,256 bytes,
+SHA256 `08b13737c465aabbebc8d14ce1ccf4da220e59c7c22756a010c8f00baa91d838`.
+The original v3 failure remains failed. The first [native v1](g2-a286-native-preflight-v1-20261104/README.md)
+then failed at `inputs_frozen` with `ValueError: archive exceeds limit`,
+before QEMU. Its controls and scenarios are empty; the successful kernel does
+not turn this host preparation failure into guest execution.
+
+The [exact archive successor](g2-exact-archive-source-20261104/README.md)
+is Desktop `00d1dfde8699fe70758519a5508c550476fd5f5c`, tree
+`7c81e102aba4971bcf36055d1666c002981cc9dc`, in PR #284. It binds the original
+owner/base, two finite plans and a 64-character hex nonce to a 22,268,496-byte
+envelope. The shared 16 MiB codec default, legacy limits and kernel are unchanged.
+Six normal and six optimized host cases and two actual original-ELF/base host
+roundtrips passed. Those checks launched no QEMU and do not establish native
+G2, actual reply loss, effect-before-terminal recovery or global memory bounds.
+
 ## Results and exact scope
 
 | Scope | Actual source | Actual result | Still unqualified |
 | --- | --- | --- | --- |
+| Canonical joint source and dependency gate | Desktop f5 / Hepta 14; actual source checks at same-tree clean local 5ef | 39 declarations, three Cargo-generated locks, three unchanged non-consuming locks, six fresh locked/offline graphs; 41 normal and 41 optimized dependency cases; clean canonical checkout | New-pair build, installation, original authority/Notes/Calculator effects and recovery |
+| Original full G2 kernel v4 | Desktop a286 / original Hepta a39 | Original OSDK/kernel and validator passed; 28,908,256-byte kernel, clean source; complete command logs retained | Native guest effects, durable G2, actual reply loss and complete process-tree resource bounds |
+| Original native preflight v1 | Same a286/a39 owner and kernel | Host archive preparation failed exit 1 before QEMU; no controls or scenarios ran | No guest result was obtained |
+| Exact archive source successor | Desktop 00d1, fixed original a39 image/base | 6 normal + 6 optimized host checks; two actual host archive roundtrips; generic codec and legacy limits unchanged | This successor's own native execution, real reply-loss and effect-before-terminal recovery |
 | Notes/build successor CI | Desktop `bf15a519e9192b063071e8b9b61ef3319bed416e` | All 9 PR workflows successful, including the complete original Native UI, Root and prepared SDK gate | Installed Root, real Notes effect and restart reconciliation |
 | Frozen fd/a39 prepared UI and private window | Exact fd/a39, explicit prepared preedit SDK | All 16 UI build commands exited 0; private X11 AT-SPI 7/7, atomic EditableText 5/5 and real IBus 5/5; five owned long-lived children cleaned up | Physical/Wayland/Orca/visual checks, authenticated Send and installed original Root/Notes |
 | Frozen fd/a39 Root dev-small package | Same original source pair | Both build stages and two strip stages completed; 341,288,592-byte Agentd was rejected by the original 128 MiB per-file bound | That execution produced no accepted package; its blocked result is unchanged |
@@ -195,10 +231,11 @@ digest, LOAD layout and four-role composition while retaining the loader's
 private snapshot, readback and sealing rules. The legacy 8/16 MiB profile and
 ordinary exec limits are unchanged.
 
-The current successor is `a286e0f922bf8e439e8951ae1538abeac0b26477`, tree
-`342ad0840d521e97d6de5845682cbc11a115f6f7`; its only additional change is the
-quiet original-log repair described below. Each execution retains its actual
-source identity.
+The quiet-log successor `a286e0f922bf8e439e8951ae1538abeac0b26477`, tree
+`342ad0840d521e97d6de5845682cbc11a115f6f7`, has the complete kernel v4 result
+above. The latest source successor is the separately documented exact archive
+repair 00d1. Each execution retains its actual source identity; neither source
+publication nor an earlier kernel build supplies the successor's guest result.
 
 The [host-only evidence](g2-exact-owner-host/README.md) retains 32 original
 files, 57,728 bytes, including complete command outputs. An
@@ -217,9 +254,10 @@ not observed guest results. They cannot establish a continuous peak, complete
 process-tree accounting, successor overlap or global recovery reserve.
 At that initial host-only checkpoint, the real locked graph, source-built OSDK,
 full kernel and positive original owner guest scenarios remained unexecuted.
-The later a286 records above separately establish source-built OSDK; they do
-not yet establish the full kernel or native scenarios. All native G2 and
-production flags in this archive remain false.
+The later a286 v4 record separately establishes the full original kernel build.
+The following native v1 record stopped before QEMU; all native G2 and production
+flags in these records remain false. Their earlier failed stages retain the
+original observations.
 
 ## Canonical source, original owner build and quiet-log repair
 
@@ -261,16 +299,17 @@ checks do not qualify a kernel or native execution of the successor.
 
 Linux Notes still needs installed original Root submission, the original writer
 effect, independent App readback, durable terminal and disconnect/restart
-reconciliation. Calculator needs a coherent newly pinned owner/Root pair and
-the same actual task protocol across two real destinations. Component tests,
+reconciliation. Calculator now has the coherent f5/14 source pair and dependency gate; it still
+needs the actual original task protocol across two real destinations, with
+same-writer settlement, independent readback and causal receipts. Component tests,
 headless Weston checks and the full source graph are separate acceptance parts.
 
 The [original G2 owner records and resource review](../../g2-original-owner-size-20261103/README.md)
 show that its build/package succeeded but the old 8 MiB file / 16 MiB
 LOAD profile rejected its actual 20,138,584-byte ELF and 20,168,704-byte aligned
 LOAD total. This remains a failed static profile, not guest execution. The
-separately published profile above has its own source and host checks; its
-actual kernel and guest qualification remain open. Whole-system recovery
+separately published profile above has its own source and host checks; the actual a286 kernel v4 now passes, while native guest qualification and the
+00d1 successor's own execution remain open. Whole-system recovery
 memory and trusted user-pause ingress remain open.
 
 Original Android signing/installed-peer qualification and fixed X230 native
@@ -281,7 +320,14 @@ phone effect, bare-metal boot or production qualification.
 
 The complete host files were read with immutable version bindings and verified
 against independent SHA-256 calculations and the original result receipts.
-`index.json` records exact file sizes and digests. GitHub CI snapshots are API
+[index.json](index.json) records exact file sizes and digests. Commit d27ae5de
+contained all 67 new files but mistakenly published its expanded 387-entry
+summary as the top-level `evidence-index.json`, leaving the established
+`index.json` at 320 entries. This navigation correction rehashes the complete
+387-file set, restores the expanded summary to `index.json`, updates this
+README's digest and removes only that misplaced derived copy. The original d27
+commit preserves it; all raw files and the four groups' own `evidence-index.json`
+files remain unchanged. GitHub CI snapshots are API
 state observations, and the A10 excerpt is an explicitly selected contiguous
 portion of the decoded job log. They do not claim a full artifact ZIP digest.
 Failed, ignored, filtered and unexecuted conditions retain their original scope.

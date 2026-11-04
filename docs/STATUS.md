@@ -1,6 +1,18 @@
 # 当前状态
 
-## 2026-11-04 原 seed 与联合候选检查点
+## 2026-11-04 canonical 实施配对与完整内核构建
+
+当前实施源码为 [Desktop PR #285](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/285) 的 `f5fbc7e1a533e5bec588575ab56312a3203f6d8c` / tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`，配对 [Hepta PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749) 的 `14e2d89b3367232ec5dbe6187f09feed0f2b68d3` / tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`。[原源码收据](../results/integration/2026-11-03-organ-followup/joint-desktop-canonical14-source-20261104/README.md)记录真实 Rust/Cargo 1.96 的 39 处声明、三份生成锁、其余三锁核对和六个 fresh locked/offline 图；194 份来源、219 个原 owner manifests、102 个 SDK packages 及普通/优化各 41 项依赖回归通过。完整发布 tree 与已检查本地 `5ef` 相同，实际 canonical 切换后 f5 clean。源码门禁没有编译或运行这条产品配对。
+
+此前已安装的产品仍是 `fd8d56c/a39a087`，原[构建与安装成功](../results/integration/2026-11-03-organ-followup/owner-p0-fd-v5/README.md)和[首次 Root 启动失败](../results/integration/2026-11-03-organ-followup/owner-p0-notes-start-v1/README.md)分别保留。安装器没有启动服务；原启动在 seed 退出阶段失败，尚无 Session/authority、Notes 写入或恢复。新配对仍需自己的 UI/Root 构建、特权用例、安装、真实人类准入、Notes 效果/独立回读/持久终态和单独 Calculator 目的端验收。
+
+`a286/a39` 的[原 kernel v4](../results/integration/2026-11-03-organ-followup/g2-a286-kernel-v4-20261104/README.md)已完整构建并通过原 validator，kernel 命令 exit 0 / 173.759 秒，来源前后不变。产物 28,908,256 bytes / SHA256 `08b13737c465aabbebc8d14ce1ccf4da220e59c7c22756a010c8f00baa91d838`；更早 v3 metadata 失败仍按原来源保留。随后[第一次 native v1](../results/integration/2026-11-03-organ-followup/g2-a286-native-preflight-v1-20261104/README.md)在主机归档准备时被原 16 MiB codec 门槛拒绝，exit 1，QEMU 未启动，没有 controls/scenarios 执行。
+
+[PR #284 的具名 archive 后继](../results/integration/2026-11-03-organ-followup/g2-exact-archive-source-20261104/README.md)为 `00d1dfde8699fe70758519a5508c550476fd5f5c` / tree `7c81e102aba4971bcf36055d1666c002981cc9dc`。固定原 owner/base 的专用 22,268,496-byte 上限通过普通/优化各 6 项 host 检查和两个实际 host roundtrip；通用 codec、旧 profile 和内核未改。此收据没有运行 guest，不授予原生 G2、实际丢回复、effect-before-terminal 恢复或全局内存保证。
+
+本次证据导航还修复了 `d27ae5de` 的派生索引路径错误：新 67 文件已提交，但总表被误写为顶层 `evidence-index.json`，既有 `index.json` 仍为 320 项。现在逐项重核后将 387 项归回规范 [index.json](../results/integration/2026-11-03-organ-followup/index.json)，更新 README 摘要并移除误放的派生副本；原 d27 及所有原始日志保留。下方时点记录及其“尚未”“当前”不覆盖本节，完整能力汇总见 [CURRENT_CAPABILITIES](CURRENT_CAPABILITIES.md#current-product-pair)。
+
+## 2026-11-04 原 seed 与联合候选检查点（较早记录）
 
 联合 Hepta 已发布为 [PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749) 的 `14e2d89b3367232ec5dbe6187f09feed0f2b68d3` / tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`。原 `a39` 父提交、完整本地/远端 tree 等值及实际执行身份由[发布记录](../results/integration/2026-11-03-organ-followup/joint-hepta-canonical-publication/README.md)分别保留；这尚非新的联合安装包验收。
 
