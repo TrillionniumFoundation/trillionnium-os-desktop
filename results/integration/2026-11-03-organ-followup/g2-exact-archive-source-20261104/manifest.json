@@ -1,0 +1,275 @@
+{
+  "actual_roundtrip": {
+    "bytes": 2072,
+    "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/actual-roundtrip.json",
+    "sha256": "0d86e2d1d50ebf2b2b994f4138e4ca5edfd653e0637e3f636b0e580fedf26798"
+  },
+  "candidate_tree": "7c81e102aba4971bcf36055d1666c002981cc9dc",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "clone",
+        "--local",
+        "--no-hardlinks",
+        "--no-checkout",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 180,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/clone.log",
+        "sha256": "45094110b1ddf6e78c10fead87c318fe68d88bb1624cf88621d92839010ee0d9"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "checkout",
+        "--detach",
+        "a286e0f922bf8e439e8951ae1538abeac0b26477"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 101,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-1.log",
+        "sha256": "03c6901216ae253de509943efa472e0eb9e587ee0b19a3b01f4fa627aa1ded0c"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 41,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-2.log",
+        "sha256": "ee235a95b19fc689f5b84cbebaff6c0e1004e2b761f822d80c832d08a26f6b95"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 41,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-3.log",
+        "sha256": "7c8f608b6ee93221069df239278c3b7df923efcec9caf84292c8367b1d967ec5"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 0,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-4.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 0,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-5.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-c",
+        "import sys,unittest;sys.path.insert(0,'/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source/tests/workloads/hepta_cpu_control');unittest.main(module=None,argv=['unittest','-v','test_native_owner_runner.NativeOwnerArchiveTests','test_native_owner_runner.NativeOwnerQuietPackagingTests'])"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 1195,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/normal-host-tests.log",
+        "sha256": "0f30f3d2145ddc5ca3e29b9ab4a2eb26f8b6db2ef0d66d5a6f8fdac3bc685533"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-O",
+        "-c",
+        "import sys,unittest;sys.path.insert(0,'/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source/tests/workloads/hepta_cpu_control');unittest.main(module=None,argv=['unittest','-v','test_native_owner_runner.NativeOwnerArchiveTests','test_native_owner_runner.NativeOwnerQuietPackagingTests'])"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 1195,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/normal-host-tests-optimized.log",
+        "sha256": "84588ba821cf29a7d843fe2921c07b4a80b4cf9109a6c863b48be9bd5cf8ef43"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "diff",
+        "--name-only"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 182,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-8.log",
+        "sha256": "bde090d9ecb2219dd7b0537ff122456f0474c3e65049e3210681cff838ee8c7b"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "add",
+        "--",
+        "tests/workloads/hepta_cpu_control/ORIGINAL_OWNER_IMAGE_PROFILE.md",
+        "tests/workloads/hepta_cpu_control/run_native_owner.py",
+        "tests/workloads/hepta_cpu_control/test_native_owner_runner.py"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 0,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-9.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "write-tree"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 41,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/git-10.log",
+        "sha256": "32d293ebfa25532ea5d88e783579cd9dd841c12fc73a65c9dee27850492b84df"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+        "diff",
+        "--cached",
+        "--binary"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1",
+      "exit_code": 0,
+      "log": {
+        "bytes": 13674,
+        "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/candidate-diff.log",
+        "sha256": "c5c4f026f327f60acd8080e7b33cbf94b75a1fed92e7f47f30ac8115bc9cf513"
+      }
+    }
+  ],
+  "files": [
+    {
+      "absolute_path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source/tests/workloads/hepta_cpu_control/run_native_owner.py",
+      "bytes": 28761,
+      "git_blob_sha": "f4e7511b6248f35b12b410888a68dd03330ce934",
+      "mode": "0o600",
+      "path": "tests/workloads/hepta_cpu_control/run_native_owner.py",
+      "sha256": "9518cf9166dae728630a2ab02f14afb7de471e561168df51ed36cdde3c6f0f04"
+    },
+    {
+      "absolute_path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source/tests/workloads/hepta_cpu_control/test_native_owner_runner.py",
+      "bytes": 14185,
+      "git_blob_sha": "049768b9b5c34a714ae9345f6ca48bc035837056",
+      "mode": "0o600",
+      "path": "tests/workloads/hepta_cpu_control/test_native_owner_runner.py",
+      "sha256": "ff9d321f5dc0c3df920efe79ce6459ab234c7a0fedce8ceee8b0da4a0d77c430"
+    },
+    {
+      "absolute_path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source/tests/workloads/hepta_cpu_control/ORIGINAL_OWNER_IMAGE_PROFILE.md",
+      "bytes": 15503,
+      "git_blob_sha": "d5fc5a0d78ee3adadf8a0c4c72f257674d8717e8",
+      "mode": "0o600",
+      "path": "tests/workloads/hepta_cpu_control/ORIGINAL_OWNER_IMAGE_PROFILE.md",
+      "sha256": "874f93a95b14827f91868deffb7b613bcfdcf4532f8fee6a2a7062889bdac5f3"
+    }
+  ],
+  "finished_at_utc": "2026-11-04T00:48:01.465121+00:00",
+  "g2_complete": false,
+  "guest_started": false,
+  "input": {
+    "bytes": 61506,
+    "path": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1-input.json",
+    "sha256": "1f1446071d726f0df15f188c865eb9b77749721eed8f1d4a1e138ed7e5d4cc2c"
+  },
+  "legacy_codec_sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+  "native_execution_verified": false,
+  "no_alternates": true,
+  "parent": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+  "parent_tree": "342ad0840d521e97d6de5845682cbc11a115f6f7",
+  "passed": true,
+  "production_ready": false,
+  "schema": "hepta.original-owner-archive-source-check.v1",
+  "source": "/data/trill-organ-20261103-f1-build/a286-archive-contract-candidate-v1/source",
+  "source_changes_exactly_expected": true,
+  "started_at_utc": "2026-11-04T00:47:45.629618+00:00"
+}

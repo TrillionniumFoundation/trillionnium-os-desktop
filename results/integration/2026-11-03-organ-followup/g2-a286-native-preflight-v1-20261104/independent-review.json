@@ -1,0 +1,37 @@
+{
+  "schema": "hepta.original-owner-native-preflight-independent-review.v1",
+  "job": {
+    "id": "1a1a3f74e02-96a-77aa",
+    "state": "failed",
+    "exit_code": 1,
+    "output_complete": true,
+    "timed_out": false,
+    "cancelled": false
+  },
+  "receipt": {
+    "bytes": 12664,
+    "sha256": "250f3d7715aea0ab7c88685b7e32a48f4e861fffa4ac588e640f3c8cef8e3e36",
+    "stage": "inputs_frozen",
+    "error": "ValueError: archive exceeds limit",
+    "native_execution_attempted": false,
+    "controls": {},
+    "scenarios": {}
+  },
+  "original_sdk_payload": {
+    "operation_id": "be68d21882656a85fb2f80e3376da38bff959c4ae47f0d554f9a695e92f5136c",
+    "bytes": 17305,
+    "sha256": "708bcd13d03d617c566adc028f19771843e4366aa736806e1073f129718d682c",
+    "pages": 2,
+    "inner_tool": "binary_read"
+  },
+  "independent_byte_checks": {
+    "payload_length_and_sha256": true,
+    "page_offsets_and_eof": true,
+    "file_length_and_sha256": true,
+    "file_offset_zero_and_complete_eof": true
+  },
+  "scope": "Host preparation failed before QEMU; neither a failed guest nor a passed guest is inferred.",
+  "g2_complete": false,
+  "native_execution_verified": false,
+  "production_ready": false
+}

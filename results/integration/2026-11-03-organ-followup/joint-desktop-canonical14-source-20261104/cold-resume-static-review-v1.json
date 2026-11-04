@@ -1,0 +1,49 @@
+{
+  "actual_failed_execution": {
+    "commit": "26a46e3fe763b53e1f0362793701f112383a72fa",
+    "result": "/data/trill-calculator-joint-20261103-v1/steps/test-app-server-26a46e3f-tests-v1/result.json",
+    "result_sha256": "4d0680b67a97a30194748fd950c5e953963744d1d7fe03c81b690cbc39fdc1e1",
+    "status_preserved": "failed; no result relabeling",
+    "stderr": "/data/trill-calculator-joint-20261103-v1/steps/test-app-server-26a46e3f-tests-v1/stderr.log",
+    "stderr_bytes": 404859,
+    "stderr_sha256": "61c4167e207e2df0315a054efe30d544ed8d3c5b82995b57370699abab991161",
+    "tree": "2175f198948308c3a2f9d61f8282bc179669e798"
+  },
+  "case": "suite::v2::multi_agent_v2_developer_instructions::cold_resume_preserves_effective_developer_instructions_for_worker::test_case_3_reapplies_updated_configured_role_settings_and_restores_paginated_usage",
+  "facts": [
+    {
+      "finding": "The Paginated fixture replaces metadata.source ThreadSpawn.parent_thread_id with a new random ID and replaces expected.thread.source. Its top-level expected.thread.parent_thread_id stays unchanged. The full authority tuple assertion remains at line975.",
+      "lines": "865-888;961-975",
+      "path": "codex-rs/app-server/tests/suite/v2/multi_agent_v2_developer_instructions.rs"
+    },
+    {
+      "finding": "Owner-mediated reload selects stored_thread.parent_thread_id, requires that immediate parent to be loaded, and calls that parent's existing agent control without public configuration overrides.",
+      "lines": "1282-1312",
+      "path": "codex-rs/core/src/thread_manager.rs"
+    },
+    {
+      "finding": "The loader verifies the actual parent instance and control-state identity. SessionSource comes from original resumed history, falling back to stored_source only when history lacks it. History source parent, recorded parent and typed stored parent must agree with the owner.",
+      "lines": "305-385",
+      "path": "codex-rs/core/src/agent/control/spawn.rs"
+    },
+    {
+      "finding": "Cold V2 attach goes through the resolved original child. Paginated running resume first materializes the original live owner, then reads via its original handle before building the response.",
+      "lines": "3911-3953;4484-4497;4530-4540",
+      "path": "codex-rs/app-server/src/request_processors/thread_processor.rs"
+    },
+    {
+      "finding": "materialize_thread explicitly awaits original live history and pending thread metadata through live_thread.persist; errors remain propagated.",
+      "lines": "357-372",
+      "path": "codex-rs/core/src/codex_thread.rs"
+    }
+  ],
+  "followup": "Preserve the original failure and full tuple oracle. A separate fixture follow-up must retain a witnessed stale-metadata mutation and independent original-parent/permission assertions, and explicitly establish the original-history source precedence. Do not change Core or the frozen14e2 pair for this observation.",
+  "inference": "The mismatch is consistent with original-owner history rematerialization replacing the fixture's deliberately stale display source. This evidence does not show parent authority substitution. It does not by itself settle every public source-field compatibility expectation.",
+  "observation": "The logged tuple differs only in nested thread.source.subAgent.thread_spawn.parent_thread_id. Top-level parentThreadId, canAcceptDirectInput, sandbox and approval fields retain their expected original values.",
+  "schema": "trill.audit.cold-resume-static-review.v1",
+  "scope": "read-only source follow-up; no reexecution, source change, authority initialization or qualification",
+  "static_source": {
+    "commit": "14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+    "tree": "0e12d53adf6a13721fdb2feef0e974d903b92e85"
+  }
+}

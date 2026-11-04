@@ -1,0 +1,623 @@
+{
+  "schema": "trill.canonical14.final-desktop-source.v1",
+  "state": "complete",
+  "passed": true,
+  "steps": [
+    {
+      "name": "module-docs",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/support/docs/check_modules.py"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 1.5999150109710172,
+      "stdout": {
+        "bytes": 470,
+        "sha256": "6c18ded2543b39410a6527cd7eb7db7361470ed4a5a2e34387460a99b067fe52"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "final-ui-native-metadata",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/ui/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1",
+        "--features",
+        "trill-shell/hepta-native-preedit-sdk"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 1.593354359967634,
+      "stdout": {
+        "bytes": 8072509,
+        "sha256": "a36948bb6129296a2cbf2f5f726bb6aff3c4996543ae842a3f2efff0755c9670"
+      },
+      "stderr": {
+        "bytes": 2034,
+        "sha256": "18f3c685dc9f476786c3049a40dd8e43e27ae288e5035bd1ab52dae6270b9f1c"
+      }
+    },
+    {
+      "name": "final-session-root-metadata",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/services/hepta-session-host/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1",
+        "--features",
+        "product-root"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 1.3894897890277207,
+      "stdout": {
+        "bytes": 6760012,
+        "sha256": "032a8e162acb23cd9ea3641fd1db81aaf10e5d22aae5ae816c41e13d3fd66c95"
+      },
+      "stderr": {
+        "bytes": 1233,
+        "sha256": "a85f8d0569e665982fb2972a499ed3e9c5c0f33c227e9383755ff0bd2e5fdfaf"
+      }
+    },
+    {
+      "name": "final-os-metadata",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 0.08316551498137414,
+      "stdout": {
+        "bytes": 154689,
+        "sha256": "24b411bb8df106bf63de19cf1f68e2c9b78d6d6d92e49d97f73ab111bc381866"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "final-support-metadata",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/support/ui/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 0.05378962797112763,
+      "stdout": {
+        "bytes": 4986,
+        "sha256": "597e298e6b4dc9ae9b1b7f5b226d24598fd2e309e0f053ec9538b0ec3ed51b33"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "final-tests-metadata",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "metadata",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/desktop-source/tests/ui/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 0.056305077974684536,
+      "stdout": {
+        "bytes": 1879,
+        "sha256": "512eacb4335f8691ff223f3e58d433ec44ae8d49f7508fa19ce224d082cedee2"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "final-prepared-native-metadata",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--config",
+        "/data/trill-desktop-canonical14-20261104/prepared-lock-v1/sdk-overrides.toml",
+        "metadata",
+        "--manifest-path",
+        "/data/trill-desktop-canonical14-20261104/finalize-v2/desktop-prepared-source/ui/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1",
+        "--features",
+        "trill-shell/hepta-native-preedit-sdk"
+      ],
+      "cwd": "/data/trill-desktop-canonical14-20261104/finalize-v2/desktop-prepared-source",
+      "state": "complete",
+      "exit_code": 0,
+      "elapsed_seconds": 1.5604978339979425,
+      "stdout": {
+        "bytes": 8032294,
+        "sha256": "322bb170114e21cac214655d60845fd013bf0c9c68ed38cc194ba006d1c79c0f"
+      },
+      "stderr": {
+        "bytes": 2977,
+        "sha256": "96b958594ed9f45b36b4461b94dd894d3ae5f8314de1b524fe5a97db7d9272a7"
+      }
+    }
+  ],
+  "script": {
+    "bytes": 12949,
+    "sha256": "6f4c0584edbe1dffe776df4b4e44d7e9485bc980555aad7b313066f7735d4826"
+  },
+  "scope": "Clean source, Cargo-generated locks, actual metadata/source verification, formatting and dependency guard regressions only.",
+  "compiled": false,
+  "runtime_qualified": false,
+  "effects_authority": false,
+  "desktop_before": {
+    "commit": "190077f4069b28aba33d746da2bb0a509055de9c",
+    "tree": "f533f63bbbf1b5d234a145b9ab0560904ce743a0",
+    "status": " M services/hepta-session-host/src/product_root/seed_tests.rs\n M support/ui/DEPENDENCIES.md\n M support/ui/preedit-sdk/Cargo.lock\n"
+  },
+  "resources": {
+    "disk_free": 90514587648,
+    "mem_available_kib": 99790432
+  },
+  "controlled_environment_removed_keys": [
+    "DBUS_SESSION_BUS_ADDRESS",
+    "DISPLAY",
+    "HEPTA_RUNTIME_JOB_ID",
+    "WAYLAND_DISPLAY"
+  ],
+  "inherited_completed_checks": {
+    "result": {
+      "bytes": 4564,
+      "sha256": "8aab7a3980bfa9881663d110a5e31913b84628345f65bc1deb22ce309d0fdd34"
+    },
+    "steps": [
+      {
+        "name": "session-format",
+        "argv": [
+          "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "fmt",
+          "--manifest-path",
+          "/data/trill-desktop-canonical14-20261104/desktop-source/services/hepta-session-host/Cargo.toml"
+        ],
+        "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+        "state": "complete",
+        "exit_code": 0,
+        "elapsed_seconds": 0.2720277550397441,
+        "stdout": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "session-format-check",
+        "argv": [
+          "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "fmt",
+          "--manifest-path",
+          "/data/trill-desktop-canonical14-20261104/desktop-source/services/hepta-session-host/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+        "state": "complete",
+        "exit_code": 0,
+        "elapsed_seconds": 0.2652823090320453,
+        "stdout": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "dependency-tests",
+        "argv": [
+          "/usr/bin/python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "support/ui",
+          "-p",
+          "test_product_dependencies.py",
+          "-v"
+        ],
+        "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+        "state": "complete",
+        "exit_code": 0,
+        "elapsed_seconds": 25.433403864037246,
+        "stdout": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "bytes": 7091,
+          "sha256": "44298bb11d9ff2ceab230559bbb9976467e8f5d819f690de7408bd9dcea47adc"
+        }
+      },
+      {
+        "name": "dependency-tests-optimized",
+        "argv": [
+          "/usr/bin/python3",
+          "-O",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "support/ui",
+          "-p",
+          "test_product_dependencies.py",
+          "-v"
+        ],
+        "cwd": "/data/trill-desktop-canonical14-20261104/desktop-source",
+        "state": "complete",
+        "exit_code": 0,
+        "elapsed_seconds": 25.20203365397174,
+        "stdout": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "bytes": 7091,
+          "sha256": "bee261c4e0b97ffcb7c57ea24120bf0dc45e187bf37a64bb9aa4991c0f5e4926"
+        }
+      }
+    ],
+    "fixture_format_delta": {
+      "bytes": 836,
+      "sha256": "133e3dc34520194b87052adfffc8c49b507266f1511eed0d0e3dfd90f95fa036"
+    },
+    "scope": "Same unchanged tested Rust and dependency bytes; no repeated tests and no transferred product qualification."
+  },
+  "module_checker": "support/docs/check_modules.py",
+  "desktop": {
+    "commit": "5ef1bfc20bda019e1695df2412299665b1e020ed",
+    "tree": "2998926686ce45c38ec14d6f42ab0871ba25faa1"
+  },
+  "source_manifest": {
+    "bytes": 10587,
+    "sha256": "19525360bb75b62d5180516af873f525d1c5f4ef4cd44b5c3370d14644c260b4"
+  },
+  "source_receipt": {
+    "bytes": 926,
+    "sha256": "80c69e7fa87e97f137fbcc68c769217f7dde971aac7ca7d9f8ac548a59f3788b"
+  },
+  "declared_prepared_source": {
+    "schema": "trill.declared-preedit-build-source.v1",
+    "base": {
+      "commit": "5ef1bfc20bda019e1695df2412299665b1e020ed",
+      "tree": "2998926686ce45c38ec14d6f42ab0871ba25faa1"
+    },
+    "root": "/data/trill-desktop-canonical14-20261104/finalize-v2/desktop-prepared-source",
+    "only_changed_path": "ui/Cargo.lock",
+    "committed_lock": {
+      "path": "support/ui/preedit-sdk/Cargo.lock",
+      "git_blob": "e3b8a830c1bd7a8ae7e9cddd99859be417a18d71",
+      "sha256": "0b72252375295b408cf35e8c0b068aaa48da7ba87d8e026c277c09b988ccb030",
+      "bytes": 411449
+    },
+    "compiled_lock_sha256": "0b72252375295b408cf35e8c0b068aaa48da7ba87d8e026c277c09b988ccb030",
+    "rust_sources_changed": false
+  },
+  "sdk_source_profile": {
+    "bytes": 13830,
+    "sha256": "534554c0cad32717f3d500a5de3e6a84882d1889b9ed9bae06b255e07e4cfc71"
+  },
+  "native_graph": {
+    "trill-shell": {
+      "id": "path+file:///data/trill-desktop-canonical14-20261104/finalize-v2/desktop-prepared-source/ui/shell#trill-shell@0.1.0",
+      "source": null,
+      "features": [
+        "default",
+        "hepta-native-makepad",
+        "hepta-native-preedit-sdk",
+        "hepta-shared-presenter"
+      ]
+    },
+    "hepta-session-host": {
+      "id": "path+file:///data/trill-desktop-canonical14-20261104/finalize-v2/desktop-prepared-source/services/hepta-session-host#0.1.0",
+      "source": null,
+      "features": [
+        "native-text"
+      ]
+    },
+    "hepta-robrix-ui": {
+      "id": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#hepta-robrix-ui@0.1.0",
+      "source": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+      "features": [
+        "native-presentation",
+        "ui"
+      ]
+    },
+    "hepta-control-core": {
+      "id": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#hepta-control-core@0.1.0",
+      "source": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+      "features": []
+    },
+    "codex-hepta-agentd": {
+      "id": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#codex-hepta-agentd@0.0.0",
+      "source": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+      "features": [
+        "default",
+        "production-cognitive-write"
+      ]
+    },
+    "codex-hepta-memory": {
+      "id": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#codex-hepta-memory@0.0.0",
+      "source": "git+https://github.com/TrillionniumFoundation/hepta-private-ci?rev=14e2d89b3367232ec5dbe6187f09feed0f2b68d3#14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+      "features": []
+    },
+    "makepad-widgets": {
+      "id": "path+file:///data/trill-organ-owner-20261103/prepared-makepad/widgets#makepad-widgets@2.0.0",
+      "source": null,
+      "features": [
+        "default",
+        "serde"
+      ]
+    }
+  },
+  "source_caches": {
+    "hepta": {
+      "root": "/data/trill-organ-owner-20261103/cargo-home/git/checkouts/hepta-private-ci-4e02da04eb01edbd/14e2d89",
+      "commit": "14e2d89b3367232ec5dbe6187f09feed0f2b68d3",
+      "tree": "0e12d53adf6a13721fdb2feef0e974d903b92e85",
+      "manifests": [
+        "apps/hepta-control-ui/rust/core/Cargo.toml",
+        "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml",
+        "codex-rs/agent-graph-store/Cargo.toml",
+        "codex-rs/agent-identity/Cargo.toml",
+        "codex-rs/analytics/Cargo.toml",
+        "codex-rs/app-server-client/Cargo.toml",
+        "codex-rs/app-server-protocol-noop-macros/Cargo.toml",
+        "codex-rs/app-server-protocol/Cargo.toml",
+        "codex-rs/app-server-transport/Cargo.toml",
+        "codex-rs/app-server/Cargo.toml",
+        "codex-rs/apply-patch/Cargo.toml",
+        "codex-rs/arg0/Cargo.toml",
+        "codex-rs/async-utils/Cargo.toml",
+        "codex-rs/aws-auth/Cargo.toml",
+        "codex-rs/backend-client/Cargo.toml",
+        "codex-rs/chatgpt/Cargo.toml",
+        "codex-rs/cloud-config/Cargo.toml",
+        "codex-rs/code-mode-protocol/Cargo.toml",
+        "codex-rs/code-mode/Cargo.toml",
+        "codex-rs/codex-api/Cargo.toml",
+        "codex-rs/codex-backend-openapi-models/Cargo.toml",
+        "codex-rs/codex-client/Cargo.toml",
+        "codex-rs/codex-experimental-api-macros/Cargo.toml",
+        "codex-rs/codex-home/Cargo.toml",
+        "codex-rs/codex-mcp/Cargo.toml",
+        "codex-rs/collaboration-mode-templates/Cargo.toml",
+        "codex-rs/config/Cargo.toml",
+        "codex-rs/connectors/Cargo.toml",
+        "codex-rs/context-fragments/Cargo.toml",
+        "codex-rs/core-plugins/Cargo.toml",
+        "codex-rs/core/Cargo.toml",
+        "codex-rs/diagnostics/Cargo.toml",
+        "codex-rs/exec-server-protocol/Cargo.toml",
+        "codex-rs/exec-server/Cargo.toml",
+        "codex-rs/exec-server/tests/support/Cargo.toml",
+        "codex-rs/execpolicy/Cargo.toml",
+        "codex-rs/ext/agent/Cargo.toml",
+        "codex-rs/ext/connectors/Cargo.toml",
+        "codex-rs/ext/extension-api/Cargo.toml",
+        "codex-rs/ext/git-attribution/Cargo.toml",
+        "codex-rs/ext/goal/Cargo.toml",
+        "codex-rs/ext/guardian-v2/Cargo.toml",
+        "codex-rs/ext/hepta-governance/Cargo.toml",
+        "codex-rs/ext/hepta-memory/Cargo.toml",
+        "codex-rs/ext/hepta-prompt/Cargo.toml",
+        "codex-rs/ext/history-notes/Cargo.toml",
+        "codex-rs/ext/image-generation/Cargo.toml",
+        "codex-rs/ext/items/Cargo.toml",
+        "codex-rs/ext/mcp/Cargo.toml",
+        "codex-rs/ext/memories/Cargo.toml",
+        "codex-rs/ext/queue/Cargo.toml",
+        "codex-rs/ext/skills/Cargo.toml",
+        "codex-rs/ext/web-search/Cargo.toml",
+        "codex-rs/external-agent-migration/Cargo.toml",
+        "codex-rs/features/Cargo.toml",
+        "codex-rs/feedback/Cargo.toml",
+        "codex-rs/file-search/Cargo.toml",
+        "codex-rs/file-system/Cargo.toml",
+        "codex-rs/file-watcher/Cargo.toml",
+        "codex-rs/git-utils/Cargo.toml",
+        "codex-rs/hepta-agent-protocol/Cargo.toml",
+        "codex-rs/hepta-agentd/Cargo.toml",
+        "codex-rs/hepta-authbus/Cargo.toml",
+        "codex-rs/hepta-automation/Cargo.toml",
+        "codex-rs/hepta-bellman-operator/Cargo.toml",
+        "codex-rs/hepta-codex-adapter/Cargo.toml",
+        "codex-rs/hepta-cognitive-read/Cargo.toml",
+        "codex-rs/hepta-cognitive-store/Cargo.toml",
+        "codex-rs/hepta-cognitive-types/Cargo.toml",
+        "codex-rs/hepta-context-compiler/Cargo.toml",
+        "codex-rs/hepta-contracts/Cargo.toml",
+        "codex-rs/hepta-control-plane/Cargo.toml",
+        "codex-rs/hepta-evidence/Cargo.toml",
+        "codex-rs/hepta-fleet/Cargo.toml",
+        "codex-rs/hepta-infer-core/Cargo.toml",
+        "codex-rs/hepta-intelligence-eval/Cargo.toml",
+        "codex-rs/hepta-intelligence/Cargo.toml",
+        "codex-rs/hepta-intuition/Cargo.toml",
+        "codex-rs/hepta-kg/Cargo.toml",
+        "codex-rs/hepta-learning-artifacts/Cargo.toml",
+        "codex-rs/hepta-learning-ledger/Cargo.toml",
+        "codex-rs/hepta-matrix-protocol/Cargo.toml",
+        "codex-rs/hepta-memory-federation/Cargo.toml",
+        "codex-rs/hepta-memory-retrieval/Cargo.toml",
+        "codex-rs/hepta-memory/Cargo.toml",
+        "codex-rs/hepta-ndu/Cargo.toml",
+        "codex-rs/hepta-neuron/Cargo.toml",
+        "codex-rs/hepta-objective/Cargo.toml",
+        "codex-rs/hepta-operations/Cargo.toml",
+        "codex-rs/hepta-paths/Cargo.toml",
+        "codex-rs/hepta-plasticity/Cargo.toml",
+        "codex-rs/hepta-prompt-optimizer/Cargo.toml",
+        "codex-rs/hepta-prompt-registry/Cargo.toml",
+        "codex-rs/hepta-supervisor/Cargo.toml",
+        "codex-rs/hepta-types/Cargo.toml",
+        "codex-rs/hepta-wire/Cargo.toml",
+        "codex-rs/history/Cargo.toml",
+        "codex-rs/hooks/Cargo.toml",
+        "codex-rs/http-client/Cargo.toml",
+        "codex-rs/install-context/Cargo.toml",
+        "codex-rs/keyring-store/Cargo.toml",
+        "codex-rs/linux-sandbox/Cargo.toml",
+        "codex-rs/login/Cargo.toml",
+        "codex-rs/memories/read/Cargo.toml",
+        "codex-rs/memories/write/Cargo.toml",
+        "codex-rs/model-provider-info/Cargo.toml",
+        "codex-rs/model-provider/Cargo.toml",
+        "codex-rs/models-manager/Cargo.toml",
+        "codex-rs/network-proxy/Cargo.toml",
+        "codex-rs/otel/Cargo.toml",
+        "codex-rs/plugin/Cargo.toml",
+        "codex-rs/process-hardening/Cargo.toml",
+        "codex-rs/prompts/Cargo.toml",
+        "codex-rs/protocol/Cargo.toml",
+        "codex-rs/response-debug-context/Cargo.toml",
+        "codex-rs/rmcp-client/Cargo.toml",
+        "codex-rs/rollout-trace/Cargo.toml",
+        "codex-rs/rollout/Cargo.toml",
+        "codex-rs/sandboxing/Cargo.toml",
+        "codex-rs/secrets/Cargo.toml",
+        "codex-rs/shell-command/Cargo.toml",
+        "codex-rs/shell-escalation/Cargo.toml",
+        "codex-rs/skills/Cargo.toml",
+        "codex-rs/state/Cargo.toml",
+        "codex-rs/terminal-detection/Cargo.toml",
+        "codex-rs/third_party/accesskit-0.17.1/common/Cargo.toml",
+        "codex-rs/third_party/accesskit-0.17.1/consumer/Cargo.toml",
+        "codex-rs/third_party/accesskit-0.17.1/platforms/atspi-common/Cargo.toml",
+        "codex-rs/third_party/accesskit-0.17.1/platforms/unix/Cargo.toml",
+        "codex-rs/third_party/aws-config-1.12.0/Cargo.toml",
+        "codex-rs/third_party/i18n-config-0.4.8/Cargo.toml",
+        "codex-rs/third_party/secret-service-6.0.0/Cargo.toml",
+        "codex-rs/third_party/zbus-secret-service-keyring-store-1.0.1/Cargo.toml",
+        "codex-rs/thread-store/Cargo.toml",
+        "codex-rs/tools/Cargo.toml",
+        "codex-rs/uds/Cargo.toml",
+        "codex-rs/utils/absolute-path/Cargo.toml",
+        "codex-rs/utils/audio/Cargo.toml",
+        "codex-rs/utils/cache/Cargo.toml",
+        "codex-rs/utils/cargo-bin/Cargo.toml",
+        "codex-rs/utils/cli/Cargo.toml",
+        "codex-rs/utils/home-dir/Cargo.toml",
+        "codex-rs/utils/image/Cargo.toml",
+        "codex-rs/utils/json-to-toml/Cargo.toml",
+        "codex-rs/utils/output-truncation/Cargo.toml",
+        "codex-rs/utils/path-uri/Cargo.toml",
+        "codex-rs/utils/path-utils/Cargo.toml",
+        "codex-rs/utils/plugins/Cargo.toml",
+        "codex-rs/utils/pty/Cargo.toml",
+        "codex-rs/utils/redacted-string/Cargo.toml",
+        "codex-rs/utils/rustls-provider/Cargo.toml",
+        "codex-rs/utils/stream-parser/Cargo.toml",
+        "codex-rs/utils/string/Cargo.toml",
+        "codex-rs/utils/template/Cargo.toml",
+        "codex-rs/websocket-client/Cargo.toml",
+        "codex-rs/windows-sandbox-rs/Cargo.toml",
+        "codex-rs/workload-identity/Cargo.toml"
+      ],
+      "tracked_clean": true,
+      "untracked_files": "not assessed; Cargo markers allowed"
+    }
+  },
+  "full_dependencies": {
+    "bytes": 1913804,
+    "sha256": "3ff6ab9e498d0caacb0676e3a0da9713968f643eac7ce32faecb8932f32d1b4d"
+  },
+  "manifest_dependencies": 39,
+  "locked_original_packages": {
+    "ui/Cargo.lock": 157,
+    "services/hepta-session-host/Cargo.lock": 152,
+    "services/hepta-os/Cargo.lock": 0,
+    "support/ui/Cargo.lock": 0,
+    "tests/ui/Cargo.lock": 0,
+    "support/ui/preedit-sdk/Cargo.lock": 157
+  },
+  "source_files": 194,
+  "original_owner_manifests": 219,
+  "sdk_packages": 102,
+  "locks": {
+    "ui/Cargo.lock": {
+      "bytes": 428742,
+      "sha256": "ed267155b566c555cc2cb419662d0bdacbc3096e656801890c059b3e4fd4a143"
+    },
+    "services/hepta-session-host/Cargo.lock": {
+      "bytes": 346287,
+      "sha256": "b10d7eec2ce509ae97b1aa77ea2d53d0350ad8ef2ae1ebe87acb5034080534a3"
+    },
+    "services/hepta-os/Cargo.lock": {
+      "bytes": 6763,
+      "sha256": "cf09ebb1625ef65ee7722d1ed09f00f874a4390f619b7fbfde0588f61c52a302"
+    },
+    "support/ui/Cargo.lock": {
+      "bytes": 248,
+      "sha256": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614"
+    },
+    "tests/ui/Cargo.lock": {
+      "bytes": 169,
+      "sha256": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940"
+    },
+    "support/ui/preedit-sdk/Cargo.lock": {
+      "bytes": 411449,
+      "sha256": "0b72252375295b408cf35e8c0b068aaa48da7ba87d8e026c277c09b988ccb030"
+    }
+  },
+  "publication_manifest": {
+    "bytes": 7973,
+    "sha256": "f513663befc39235a5459c50ce35d047c1433c82c02e5c807df90731c66625e8"
+  },
+  "publication_changed_paths": 24,
+  "elapsed_seconds": 20.16559030197095
+}

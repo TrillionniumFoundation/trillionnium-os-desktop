@@ -1,0 +1,14 @@
+diff --git a/services/hepta-session-host/src/product_root/seed_tests.rs b/services/hepta-session-host/src/product_root/seed_tests.rs
+index b2628e7..373eb6c 100644
+--- a/services/hepta-session-host/src/product_root/seed_tests.rs
++++ b/services/hepta-session-host/src/product_root/seed_tests.rs
+@@ -38,7 +38,8 @@ fn actual_seed_start_resume_closes_client_and_reaps_first_signal_child() -> Resu
+         .enable_all()
+         .build()?;
+     let started = Instant::now();
+-    let super::ThreadSeed::Notes(receipt) = runtime.block_on(super::create(&inputs, &fresh))? else {
++    let super::ThreadSeed::Notes(receipt) = runtime.block_on(super::create(&inputs, &fresh))?
++    else {
+         return Err("the Notes-only seed fixture received a different profile receipt".into());
+     };
+     let elapsed_ms = started.elapsed().as_millis();
